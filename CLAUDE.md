@@ -82,8 +82,16 @@ En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo 
   le falta**, una vuelta, a esa persona; quien recibe algo nuevo lo pasa una vez más. Nunca por
   temporizador. Una zona sin nadie no se pierde: sus cambios esperan en los jugadores que estuvieron.
 
-**Abierto todavía:** qué pasa cuando dos islas separadas ven "primero" traspasos distintos del mismo objeto
-(se detecta al unirse; falta definir la resolución).
+## Traspasos por mutuo acuerdo (Capitán, 2026-10-28)
+
+- **Un traspaso vale solo con las dos firmas**: la de quien da y la de quien recibe, cada una con la hora
+  UTC de **su** reloj. Con las dos firmas, el poder pasa al que recibe y quien dio ya no puede traspasarlo.
+- **Una segunda firma del dueño anterior no vale por construcción**: firmó algo que ya no era suyo.
+  Cuando se unen dos islas, gana el traspaso de mutuo acuerdo más temprano, el otro se anula y el doble
+  firmante queda marcado. Todos los pares llegan solos a la misma respuesta.
+- **Anclas de la hora**: un reloj puede adelantarse o atrasarse. Una hora futura se recorta a "ahora" (como
+  en Wenas). Contra una hora atrasada (quien recibe en connivencia con quien da), el traspaso cita la huella
+  del último hecho firmado de la zona que conoce: no puede estar fechado antes de lo que cita.
 
 ## Red y recursos (la regla de la casa aplicada a un MMO)
 
