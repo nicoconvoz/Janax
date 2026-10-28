@@ -7,7 +7,7 @@
 
 - El juego y el motor se escriben **una sola vez**, en el **idioma Janax**: un assembler propio, diseñado
   por nosotros para ser fácil de traducir.
-- El **módulo de arranque en Zig**:
+- El **módulo de arranque** (escrito en Janax desde 2026-10-28: todo en assembler, sin Zig):
   1. Detecta la familia (x86-64, ARM64, RISC-V…) y las **extensiones** del procesador (SSE/AVX2/AVX-512,
      NEON/SVE…). Se elige por capacidad, nunca por modelo.
   2. **Traduce el juego** a ese procesador, aprovechando las extensiones que tenga.

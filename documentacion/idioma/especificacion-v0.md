@@ -4,12 +4,17 @@ Estado: **propuesta**. Cada número dice qué mide y de dónde sale; lo que es c
 
 ## Escalones del compilador
 
-1. **Intérprete de referencia en Zig.** Ejecuta el idioma tal cual dice esta especificación. Es lento a
-   propósito: es la **especificación ejecutable** y la vara de todas las pruebas.
-2. **Traductor a x86-64** (PC). Cada programa de prueba da el mismo resultado que el intérprete, bit por bit.
-3. **Traductor a ARM64** (celulares). Misma vara.
-4. **Extensiones** (AVX2, NEON…), solo donde una medición muestre ganancia.
-5. **Familias nuevas** (RISC-V).
+**Todo en assembler, sin Zig ni ningún otro lenguaje** (Capitán, 2026-10-28).
+
+0. **Escalón 0, escrito a mano en assembler x86-64** (Windows, la PC del Capitán): un intérprete de
+   referencia (la **especificación ejecutable**, lento a propósito, vara de todas las pruebas) y un
+   traductor mínimo de Janax a x86-64.
+1. **El traductor de verdad se escribe en Janax** y lo compila el escalón 0. Desde ahí Janax se compila a
+   sí mismo: una sola versión también para el traductor y el arranque.
+2. **Traductor a ARM64** (celulares), escrito en Janax. Cada programa de prueba da el mismo resultado que
+   el intérprete, bit por bit.
+3. **Extensiones** (AVX2, NEON…), solo donde una medición muestre ganancia.
+4. **Familias nuevas** (RISC-V): se agrega un destino al traductor, escrito en Janax.
 
 ## Máquina
 
