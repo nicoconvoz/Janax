@@ -1,0 +1,3 @@
+log_*.txt
+*.log
+.atl/.skill-registry.cache.json
