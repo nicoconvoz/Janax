@@ -51,9 +51,28 @@ Lo que se toma de Wenas, como principio:
 - **El núcleo del protocolo es independiente del transporte y determinista**, con sus pruebas como
   especificación.
 
-**Problemas abiertos que un MMO agrega a Wenas** (no se tapan con parches; se resuelven con el Capitán):
-quién arbitra un combate o un botín sin autoridad central (trampas), dónde vive el estado del mundo cuando
-no queda nadie en una zona, y cómo se evita el doble gasto en la economía.
+## Nada duplicado, todo original: firmas en lugar de autoridad
+
+La regla general de Wenas: **lo que vale no se guarda, se prueba.** Cada cosa lleva su historia firmada y
+cualquier par la verifica sola; una copia perfecta no sirve porque la historia ya dice dónde terminó.
+
+- **Objetos únicos** (`economy/prize.dart`): id único dentro de la firma de quien lo crea; cada traspaso lo
+  firma el dueño anterior con el hash del paso previo; poseerlo se demuestra respondiendo un desafío
+  nuevo que vale una vez y vence. Estado terminal = terminal aunque exista una copia idéntica. Si alguien
+  firma dos traspasos del mismo paso, gana el primero visto y **el doble firmante queda marcado**.
+- **Monedero** (`economy/coin.dart`): cada operación `IC1` firmada, con contador consecutivo por clave; una
+  repetida o salteada se rechaza. El saldo de quien paga lo prueba su propio historial firmado.
+- **Recompensas** (`claim` en `coin.dart`): cada premio tiene una **clave de unicidad** (una bienvenida por
+  clave, un regalo por día, un giro por compra) y una prueba firmada de que se ganó.
+- **Combate** (`games/match.dart`): semilla compartida + motor determinista en todos los pares; solo viajan
+  las jugadas, numeradas y en orden. La información oculta se compromete con su huella al empezar y se
+  revela al final para que el otro verifique cada respuesta.
+
+En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo código como referencia.
+
+**Abierto todavía:** dónde vive el estado de una zona cuando no queda nadie en ella, y qué pasa cuando
+dos islas separadas ven "primero" traspasos distintos del mismo objeto (se detecta al unirse; falta definir
+la resolución).
 
 ## Red y recursos (la regla de la casa aplicada a un MMO)
 
