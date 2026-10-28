@@ -29,7 +29,16 @@ procesadores que todavía no existen.
 - Matemática de la simulación en **punto fijo**, no flotantes.
 - Las firmas Ed25519 tienen vectores de prueba compartidos con Wenas (`icebreak_core/test/vectors.json`).
 
-## Abierto
+## Familia de procesador nueva: traductor de instrucciones (Capitán, 2026-10-28)
 
-- **Familia de procesador nueva** (p. ej. RISC-V): ningún assembler x86/ARM corre ahí. Falta decidir qué
-  hace el juego en ese caso.
+En una familia sin assembler propio (p. ej. RISC-V), el arranque traduce nuestro assembler a la familia
+nueva:
+
+- **Solo traduce nuestro código.** El assembler del juego se limita a un **subconjunto documentado** de
+  instrucciones; el traductor cubre ese subconjunto y nada más. Una instrucción fuera del subconjunto es un
+  error de compilación del juego, no un caso del traductor.
+- **Traduce una vez, antes de arrancar**, y guarda el resultado en disco (con la huella del original para
+  invalidarlo si cambia). Los arranques siguientes usan la traducción guardada.
+- **Escrito en Zig**, que compila para la familia nueva.
+- **Mismas pruebas bit por bit**: el código traducido da el mismo resultado que el original.
+- **Más lento que el nativo**: cuánto, se mide cuando exista; no hay número todavía.
