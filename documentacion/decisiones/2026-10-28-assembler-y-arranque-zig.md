@@ -1,3 +1,5 @@
+> **REEMPLAZADA** el 2026-10-28 por `2026-10-28-idioma-janax.md`: el juego se escribe una sola vez en el idioma Janax y se traduce a cada procesador. Se conserva como historia.
+
 # Núcleo en assembler, arranque en Zig
 
 **Fecha:** 2026-10-28 · **Decide:** Capitán
