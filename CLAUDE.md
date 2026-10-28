@@ -70,9 +70,20 @@ cualquier par la verifica sola; una copia perfecta no sirve porque la historia y
 
 En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo código como referencia.
 
-**Abierto todavía:** dónde vive el estado de una zona cuando no queda nadie en ella, y qué pasa cuando
-dos islas separadas ven "primero" traspasos distintos del mismo objeto (se detecta al unirse; falta definir
-la resolución).
+## Zonas: el diseño es la base, los cambios viven en los jugadores (Capitán, 2026-10-28)
+
+- **La zona la define el diseño del juego** y viaja con el juego: nadie tiene que guardarla ni servirla.
+- **Los cambios son hechos firmados** (un cofre abierto, un jefe caído, una puerta rota) que guardan
+  **quienes los causaron y quienes los vieron**.
+- **Estado de una zona = diseño + cambios firmados aplicados en orden**, con el motor determinista: dos
+  jugadores con los mismos cambios ven exactamente la misma zona.
+- **Se replican entre jugadores como los estados y los cofres de Wenas**
+  (`social/social_node.dart`): al encontrarse se compara una **huella** y cada uno pasa **solo lo que al otro
+  le falta**, una vuelta, a esa persona; quien recibe algo nuevo lo pasa una vez más. Nunca por
+  temporizador. Una zona sin nadie no se pierde: sus cambios esperan en los jugadores que estuvieron.
+
+**Abierto todavía:** qué pasa cuando dos islas separadas ven "primero" traspasos distintos del mismo objeto
+(se detecta al unirse; falta definir la resolución).
 
 ## Red y recursos (la regla de la casa aplicada a un MMO)
 
