@@ -1,4 +1,4 @@
-# Janax — MMORPG con motor propio
+# Janax — MMORPG P2P con motor propio
 
 Reglas que no cambian. El estado del proyecto (decisiones con fecha, mediciones, tablas) va a
 `documentacion/`, no acá. Este archivo se carga en cada turno: tiene que seguir siendo chico.
@@ -9,7 +9,7 @@ propio de Janax.
 
 ## Qué es
 
-Un MMORPG con **motor propio**: no Unity, no Unreal, no Godot. El motor es parte del producto, así que
+Un MMORPG **sin servidores** y con **motor propio**: no Unity, no Unreal, no Godot. El motor es parte del producto, así que
 se diseña y se prueba con el mismo cuidado que el juego.
 
 ## Stack
@@ -24,15 +24,42 @@ decisión se anota en `documentacion/decisiones/` con el porqué. No asumir ning
 - **Screaming architecture:** las carpetas dicen qué hace el juego (`combate/`, `mundo/`, `inventario/`),
   no qué tecnología usan.
 - **Motor y juego separados.** El motor no sabe que existe Janax; Janax usa el motor por su interfaz.
-- **Servidor autoritativo.** El cliente pide, el servidor decide. Nada que importe (daño, botín, posición
-  válida, economía) se confía al cliente.
-- **Simulación determinista** donde se pueda: mismo estado + mismas entradas = mismo resultado. Es lo que
-  hace posible probar, repetir partidas y reconciliar cliente con servidor.
+- **Simulación determinista**: mismo estado + mismas entradas = mismo resultado. Sin servidor, es lo que
+  permite que cualquier par **verifique** lo que otro dice que pasó, en lugar de creerle.
+
+## Sin servidores (heredado de Wenas / IceBreak)
+
+Janax es un MMORPG **P2P puro**: los equipos de los jugadores son toda la red. Cero componentes centrales:
+ni servidor de juego, ni bootstrap, ni señalización, ni STUN/TURN, ni registro. El mundo existe mientras
+haya gente jugándolo. Referencia probada: `E:/IceBreak-codigo` (`CLAUDE.md`, `prototype/p2p/core.js`,
+`app/packages/icebreak_core`).
+
+Lo que se toma de Wenas, como principio:
+
+- **Identidad = clave firmada** (Ed25519). Nunca datos del equipo. Todo lo que importa viaja firmado.
+- **Entrada por cadena de invitación**: un jugador firma el certificado del nuevo, encadenado hasta un
+  fundador; se verifica sin conexión. Sin cadena válida, no se enlaza.
+- **Lista de miembros descentralizada** por gossip (ola al entrar + anti-entropía por huella), **acotada a
+  la zona** propia y las vecinas, nunca el mundo entero.
+- **Replicación por cercanía**: el origen empuja a pocos, cada uno reparte a pocos dentro de su radio,
+  hasta cubrir a quienes están cerca del hecho. En Janax la cercanía es **dentro del mundo del juego**.
+- **Señalización por vecinos comunes, relés que son pares**, pares públicos como reflectores.
+- **Órdenes de control firmadas** (versionadas, con ventana de validez) que verifica cada par; el poder
+  de administración vive en claves, no en un servidor.
+- **Economía en libro firmado**, reconstruido y verificado al arrancar.
+- **Liviano primero**: todo lo que pueda viajar como texto plano, viaja así; codificación compacta después.
+- **El núcleo del protocolo es independiente del transporte y determinista**, con sus pruebas como
+  especificación.
+
+**Problemas abiertos que un MMO agrega a Wenas** (no se tapan con parches; se resuelven con el Capitán):
+quién arbitra un combate o un botín sin autoridad central (trampas), dónde vive el estado del mundo cuando
+no queda nadie en una zona, y cómo se evita el doble gasto en la economía.
 
 ## Red y recursos (la regla de la casa aplicada a un MMO)
 
 - Nada se envía por temporizador "por las dudas". Se manda **lo que cambió**, a **quien le importa**
-  (interés por zona/visibilidad), comparando huella y pasando solo la diferencia.
+  (interés por zona/visibilidad), comparando huella y pasando solo la diferencia. Lección de Wenas: un
+  libro reenviado entero cada 20 s costaba ~1 GB por hora por teléfono.
 - Si hay un tick de simulación, un tick sin cambios tiene que costar casi cero en bytes y procesador, y
   eso se **mide** antes de darlo por bueno.
 - Tick rate, ancho de banda por jugador, jugadores por zona: **cada número sale de una medición**, con la
