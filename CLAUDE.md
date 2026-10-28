@@ -18,7 +18,9 @@ se diseña y se prueba con el mismo cuidado que el juego.
   **arranque** detecta familia y capacidades del procesador (nunca el modelo) y traduce el juego a ese
   procesador una vez, antes de empezar, con caché en disco.
 - **Todo en assembler, sin Zig ni otro lenguaje.** Un escalón 0 escrito a mano en x86-64 compila el
-  traductor, que está escrito en Janax: Janax se compila a sí mismo. Un pedazo caliente puede tener assembler a
+  traductor, que está escrito en Janax: Janax se compila a sí mismo.
+- **Ensamblador del escalón 0: FASM 1.73.35**, portable en `E:/DevCache/fasm/FASM.EXE` (arma el `.exe` de
+  Windows directo, sin linker). Un pedazo caliente puede tener assembler a
   mano para una familia y reemplaza al traducido.
   Detalle: `documentacion/decisiones/2026-10-28-idioma-janax.md`.
 - **Gráficos propios**: sin SDL ni motores; solo la API del driver (Vulkan/DirectX/OpenGL) y la ventana
