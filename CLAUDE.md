@@ -14,8 +14,14 @@ se diseña y se prueba con el mismo cuidado que el juego.
 
 ## Stack
 
-**Sin decidir todavía.** Lenguaje, render, red y persistencia se eligen con el Capitán, midiendo, y la
-decisión se anota en `documentacion/decisiones/` con el porqué. No asumir ninguno hasta entonces.
+- **Juego y motor en assembler** (x86-64 y ARM64); **arranque en Zig** que detecta las capacidades del
+  procesador y engancha la variante más rápida antes de empezar. Se elige por capacidad, nunca por modelo.
+  Detalle: `documentacion/decisiones/2026-10-28-assembler-y-arranque-zig.md`.
+- **Gráficos propios**: sin SDL ni motores; solo la API del driver (Vulkan/DirectX/OpenGL) y la ventana
+  del sistema, declaradas por nosotros.
+- Todas las variantes de una función dan el mismo resultado bit por bit; simulación en punto fijo.
+- Lo demás (red física, persistencia) se decide con el Capitán, midiendo, y se anota en
+  `documentacion/decisiones/`.
 
 ## Arquitectura
 
