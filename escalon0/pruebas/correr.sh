@@ -16,6 +16,14 @@ for fuente in janax traductor; do
   fi
 done
 
+# The test programs are built by the PDP assembler on Janax OS (no FASM for Janax): Janax OS itself is x86
+# and still built by FASM.
+if ! "$fasm" "$raiz/../so/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2>&1; then
+  echo "janaxos.asm no ensambla:"; cat "$salida/janaxos.log"; exit 1
+fi
+armar() { bash "$raiz/../so/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$@"; }
+armar "$aqui"/*.jsm || exit 1
+
 rm -f "$salida"/*.x64             # first translator run of each test starts without cache
 
 ok=0; mal=0
@@ -29,8 +37,8 @@ for p in "$aqui"/*.jsm; do
       '; codigo: '*) cod=${linea#'; codigo: '} ;;
     esac
   done < "$p"
-  if ! "$fasm" "$p" "$salida/$n.bin" > /dev/null 2>&1; then
-    echo "MAL  $n (no ensambla)"; mal=$((mal + 1)); continue
+  if [ ! -f "$salida/$n.bin" ]; then
+    echo "MAL  $n (no se armo)"; mal=$((mal + 1)); continue
   fi
   # translator twice: the second run comes from the cache and must give the same
   for motor in janax traductor traductor; do
@@ -58,7 +66,7 @@ check() {
 programa() {   # programa <count>  [extra line]: j0 = 1 + ... + count
   printf "include '%s/janax.inc'\njldi j0, 0\njldi j1, %s\njldi j2, 1\nvuelta:\njadd j0, j0, j1\njsub j1, j1, j2\njjnz j1, vuelta\n%s\njhalt\n" \
     "$(cygpath -m "$raiz")" "$1" "${2:-}" > "$salida/diff.jsm"
-  "$fasm" "$salida/diff.jsm" "$salida/diff.bin" > /dev/null
+  armar "$salida/diff.jsm" > /dev/null || echo "MAL  diff: no se armo"
 }
 rm -f "$salida/diff.bin.x64"
 programa 10;            check "sin cache"      0000000000000037 "traducidas 7 de 7"

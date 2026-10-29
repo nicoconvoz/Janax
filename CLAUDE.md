@@ -20,7 +20,8 @@ se diseña y se prueba con el mismo cuidado que el juego.
 - **Todo en assembler, sin Zig ni otro lenguaje.** Un escalón 0 escrito a mano en x86-64 compila el
   traductor, que está escrito en Janax: Janax se compila a sí mismo.
 - **Ensamblador del escalón 0: FASM 1.73.35**, portable en `E:/DevCache/fasm/FASM.EXE` (arma el `.exe` de
-  Windows directo, sin linker). Un pedazo caliente puede tener assembler a
+  Windows directo, sin linker). **Los programas Janax los arma el ensamblador PDP** (escrito en Janax, desde
+  su semilla `so/pdp/semilla`, con `so/herramientas/armar.sh`): FASM solo arma lo que es x86. Un pedazo caliente puede tener assembler a
   mano para una familia y reemplaza al traducido.
   Detalle: `documentacion/decisiones/2026-10-28-idioma-janax.md`.
 - **El Cambiaformas** (idea del Capitán): el arranque elige, para cada mecanismo Janax, la secuencia del

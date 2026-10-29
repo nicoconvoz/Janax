@@ -78,3 +78,22 @@ PDP copia las carpetas del repositorio (`PDP/escalon0/pruebas/...`, `PDP/so/prue
   los 82; FASM lo resuelve relativo a cada archivo).
 - La huella todavía no incluye el código del ensamblador (un programa no puede leer sus propias palabras):
   cambiar el ensamblador sin cambiar su tabla no rearma lo ya armado.
+
+## Sin FASM para Janax (2026-10-29)
+
+> *"Hacé los 4, y donde te trabes preguntame, que yo veo lo que vos no ves."* — Capitán
+
+- **Datos y texto**: `db` (números y texto entre comillas), `dd` y `dq` con listas, y `times cantidad
+  sentencia` (otro texto anidado: la sentencia copiada tantas veces). Con eso **la tabla del ensamblador es
+  una fuente Janax** (`ensamblador.datos.jsm`) y el ensamblador la arma idéntica a FASM.
+- **El nombre de la salida**: `X.jsm` → `X.bin`; `X.ext.jsm` → `X.ext` (por ejemplo `ensamblador.datos`).
+- **La semilla** (`so/pdp/semilla/ensamblador.bin` y `.datos`): el ensamblador armado por sí mismo, guardado
+  en el repositorio. Nada de FASM para tenerlo: la semilla arma el ensamblador y su tabla desde sus fuentes,
+  y ese resultado tiene que armarse a sí mismo idéntico (**su punto fijo**). Si el resultado ya no es la
+  semilla (porque cambió el ensamblador), no se arma nada y el mensaje dice qué copiar a `semilla/`.
+  Verificado: con un cambio real en el ensamblador avisa (código 3); con un cambio solo en los comentarios,
+  no (los bytes son los mismos).
+- **`so/herramientas/armar.sh`** arma cualquier lista de fuentes con el ensamblador PDP sobre Janax OS. Las
+  dos suites (escalón 0 y Janax OS) lo usan para todos sus programas de prueba. FASM sigue como **testigo**
+  en la suite del SO (los 82 programas y las combinaciones se comparan con él) y como ensamblador de lo x86
+  (el núcleo y el escalón 0).

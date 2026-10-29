@@ -13,12 +13,9 @@ mkdir -p "$salida"
 if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2>&1; then
   echo "janaxos.asm no ensambla:"; cat "$salida/janaxos.log"; exit 1
 fi
-mkdir -p "$salida/pdp"     # the PDP assembler and its table, built by FASM: the seed
-"$fasm" "$raiz/pdp/ensamblador/ensamblador.jsm" "$salida/pdp/ensamblador.bin" > /dev/null || { echo "ensamblador.jsm no ensambla"; exit 1; }
-"$fasm" "$raiz/pdp/ensamblador/ensamblador.datos.asm" "$salida/pdp/ensamblador.datos" > /dev/null || { echo "ensamblador.datos.asm no ensambla"; exit 1; }
-for p in "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm; do
-  "$fasm" "$p" "$salida/$(basename "$p" .jsm).bin" > /dev/null || { echo "no ensambla: $p"; exit 1; }
-done
+# The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
+# fixed point, then every test program.
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 archivos="$salida/archivos"           # the system's own folder for files, empty at every run
 export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"

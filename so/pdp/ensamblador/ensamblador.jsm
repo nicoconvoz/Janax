@@ -75,6 +75,7 @@ V_NEST    = 1168h
 V_LINE    = 1170h
 V_TABLE   = 1178h               ; find_entry: the table and its mask
 V_MASK    = 1180h
+V_OUTLEN  = 1188h               ; bytes of the output label
 OUTLBL    = 1200h
 HLBL      = 1300h
 FPBUF     = 1400h
@@ -104,6 +105,9 @@ F_MACRO   = 13
 F_REPEAT  = 14
 F_END     = 15
 F_LOCAL   = 16
+F_DB      = 17
+F_DQ      = 18
+F_TIMES   = 19
 
 start:
 jfirst j1, 640000h
@@ -361,8 +365,29 @@ jst j2, j14, V_NAMELEN
 jldi j3, 4
 jsub j2, j2, j3
 jst j2, j14, V_BASELEN
-jldi j3, OUTLBL                 ; "X.bin"
+jldi j3, OUTLBL                 ; the output: X.jsm -> X.bin, or X.ext.jsm -> X.ext (data, for example)
 jcall copy_bytes
+jld j1, j14, V_BASELEN
+jst j1, j14, V_OUTLEN
+jld j1, j14, V_NAME             ; does the name have its own extension? (a dot after its last "/")
+jld j2, j14, V_BASELEN
+jldi j5, 0
+jwhile j2
+  jldb j4, j1, 0
+  jldi j6, 2Eh
+  jsub j6, j4, j6
+  jjnz j6, df_not_dot
+  jldi j5, 1
+df_not_dot:
+  jldi j6, 2Fh
+  jsub j6, j4, j6
+  jjnz j6, df_not_slash
+  jldi j5, 0
+df_not_slash:
+  jadd j1, j1, j13
+  jsub j2, j2, j13
+jwend
+jjnz j5, df_named
 jldi j4, 2Eh
 jstb j4, j3, 0
 jldi j4, 62h
@@ -371,6 +396,11 @@ jldi j4, 69h
 jstb j4, j3, 2
 jldi j4, 6Eh
 jstb j4, j3, 3
+jld j1, j14, V_OUTLEN
+jldi j2, 4
+jadd j1, j1, j2
+jst j1, j14, V_OUTLEN
+df_named:
 jld j1, j14, V_NAME             ; "X.huella"
 jld j2, j14, V_BASELEN
 jldi j3, HLBL
@@ -435,9 +465,7 @@ jst j0, j14, V_ERRS
 jjmp df_out
 df_write:
 jldi j1, OUTLBL
-jld j2, j14, V_BASELEN
-jldi j3, 4
-jadd j2, j2, j3
+jld j2, j14, V_OUTLEN
 jldi j3, 12h
 jshi j3, 0
 jld j4, j14, V_PC
@@ -644,6 +672,15 @@ jjz j1, op_macro
 jldi j1, F_REPEAT
 jsub j1, j0, j1
 jjz j1, op_repeat
+jldi j1, F_DB
+jsub j1, j0, j1
+jjz j1, op_db
+jldi j1, F_DQ
+jsub j1, j0, j1
+jjz j1, op_dq
+jldi j1, F_TIMES
+jsub j1, j0, j1
+jjz j1, op_times
 jst j13, j14, V_ERR             ; a name that is not a statement (a register, end, local)
 jret
 op_none:
@@ -833,9 +870,141 @@ jldi j4, 0
 jcall emit
 jret
 op_dd:
+jldi j0, 4
+jjmp op_data
+op_db:
+jldi j0, 1
+jjmp op_data
+op_dq:
+jldi j0, 8
+; Values separated by commas, each of j0 bytes; in db, a text in quotes gives its bytes.
+op_data:
+jsub j15, j15, j12
+jst j8, j15, 0
+jst j0, j14, V_N
+jldi j0, 1
+jst j0, j14, V_NEST             ; another value follows
+jld j0, j14, V_NEST
+jwhile j0
+  jcall skip_spaces
+  jcall peek
+  jldi j1, 27h
+  jsub j1, j0, j1
+  jjnz j1, od_value
+  jld j1, j14, V_N
+  jsub j1, j1, j13
+  jjnz j1, od_error             ; texts only in db
+  jcall advance
+  jldi j8, 1
+  jwhile j8
+    jcall peek
+    jldi j1, 27h
+    jsub j1, j0, j1
+    jjz j1, od_text_end
+    jldi j1, 10
+    jsub j1, j0, j1
+    jjz j1, od_text_bad
+    jjz j0, od_text_bad
+    jadd j1, j0, j14
+    jldi j5, 1
+    jcall emit_bytes
+    jcall advance
+    jjmp od_text_next
+od_text_bad:
+    jst j13, j14, V_ERR
+    jldi j8, 0
+    jjmp od_text_next
+od_text_end:
+    jcall advance
+    jldi j8, 0
+od_text_next:
+  jwend
+  jjmp od_comma
+od_value:
+  jcall expr
+  jadd j1, j0, j14
+  jld j5, j14, V_N
+  jcall emit_bytes
+od_comma:
+  jcall skip_spaces
+  jcall peek
+  jldi j1, 2Ch
+  jsub j1, j0, j1
+  jjnz j1, od_last
+  jcall advance
+  jjmp od_next
+od_last:
+  jst j14, j14, V_NEST
+od_next:
+  jld j0, j14, V_NEST
+  jld j1, j14, V_ERR
+  jjz j1, od_go
+  jldi j0, 0
+od_go:
+jwend
+jjmp od_out
+od_error:
+jst j13, j14, V_ERR
+od_out:
+jld j8, j15, 0
+jadd j15, j15, j12
+jret
+
+; times count statement: the rest of the line, count times (each copy a line of its own).
+op_times:
+jsub j15, j15, j12
+jst j8, j15, 0
+jsub j15, j15, j12
+jst j9, j15, 0
 jcall expr
-jadd j1, j0, j14
-jcall emit_word
+jst j0, j14, V_N
+jld j0, j14, V_POS
+jst j0, j14, V_START
+jcall end_line
+jld j0, j14, V_POS
+jst j0, j14, V_BACK
+jsub j0, j0, j13                ; the end of the statement: before the line end, if there is one
+jldb j1, j0, 0
+jldi j2, 10
+jsub j1, j1, j2
+jjz j1, ot_stop
+jadd j0, j0, j13
+ot_stop:
+jst j0, j14, V_STOP
+jst j13, j14, V_SWITCH
+jld j9, j14, V_N
+jldi j1, 63
+jshr j1, j9, j1
+jjz j1, ot_count
+jldi j9, 0
+ot_count:
+jld j8, j14, V_TEXT
+jwhile j9
+  jld j1, j14, V_START
+  jld j2, j14, V_STOP
+  jsub j2, j2, j1
+  jadd j3, j8, j14
+  jcall copy_text
+  jadd j8, j3, j14
+  jldi j1, 10
+  jstb j1, j8, 0
+  jadd j8, j8, j13
+  jld j0, j14, V_ERR
+  jjz j0, ot_copied
+  jldi j9, 1
+ot_copied:
+  jsub j9, j9, j13
+jwend
+jstb j14, j8, 0
+jld j0, j14, V_ERR
+jjnz j0, ot_out
+jld j1, j14, V_TEXT
+jcall enter_text
+ot_out:
+jld j9, j15, 0
+jadd j15, j15, j12
+jld j8, j15, 0
+jadd j15, j15, j12
 jret
 op_include:                     ; only janax.inc: the language itself, which this assembler knows
 jcall skip_spaces
@@ -1185,8 +1354,11 @@ jor j1, j1, j4
 jcall emit_word
 jret
 
-; j1: its low 32 bits are the next word (written in the second pass). Uses j2-j4.
+; j1: its low 32 bits are the next word (written in the second pass). Uses j2-j6.
 emit_word:
+jldi j5, 4
+; j1: its low j5 bytes, little-endian, are the next ones (written in the second pass). Uses j2-j6.
+emit_bytes:
 jld j2, j14, V_PC
 jld j3, j14, V_PASS
 jldi j4, 2
@@ -1195,16 +1367,15 @@ jjnz j3, ew_count
 jldi j3, 12h
 jshi j3, 0
 jadd j3, j3, j2
-jstb j1, j3, 0
-jshr j1, j1, j12
-jstb j1, j3, 1
-jshr j1, j1, j12
-jstb j1, j3, 2
-jshr j1, j1, j12
-jstb j1, j3, 3
+jadd j6, j5, j14
+jwhile j6
+  jstb j1, j3, 0
+  jshr j1, j1, j12
+  jadd j3, j3, j13
+  jsub j6, j6, j13
+jwend
 ew_count:
-jldi j3, 4
-jadd j2, j2, j3
+jadd j2, j2, j5
 jst j2, j14, V_PC
 jldi j3, 10h
 jshi j3, 0

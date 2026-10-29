@@ -2,7 +2,7 @@
 ; their Janax their own (rename an instruction, add another name for a register) without touching the
 ; assembler. Entries of 16 bytes: the name (up to 8 bytes, padded with zeros), its value (dword) and its
 ; format (dword). An empty name ends the table.
-; Built with FASM for now: fasm ensamblador.datos.asm ensamblador.datos
+; Built by the PDP assembler itself: X.datos.jsm becomes X.datos.
 
 F_NONE    = 0                   ; no operands: jhalt, jret
 F_RI      = 1                   ; rd, imm: jldi, jshi
@@ -14,13 +14,16 @@ F_RR      = 6                   ; rd, ra: jsys
 F_WHILE   = 7                   ; r: jwhile, jwhilez (value = the condition that repeats)
 F_WEND    = 8                   ; jwend
 F_FIRST   = 9                   ; r, size: jfirst
-F_DD      = 10                  ; a 32-bit word
+F_DD      = 10                  ; 32-bit values
 F_CONST   = 11                  ; a name for a number: the registers
 F_INCLUDE = 12                  ; include 'file'
 F_MACRO   = 13                  ; macro name params { body }
 F_REPEAT  = 14                  ; repeat count ... end repeat
 F_END     = 15                  ; end (of a repeat)
 F_LOCAL   = 16                  ; local names (inside a macro)
+F_DB      = 17                  ; bytes, and texts in quotes
+F_DQ      = 18                  ; 64-bit values
+F_TIMES   = 19                  ; times count statement
 
 macro entry name, value, format {
   local start
@@ -63,6 +66,9 @@ entry 'macro',   0,   F_MACRO
 entry 'repeat',  0,   F_REPEAT
 entry 'end',     0,   F_END
 entry 'local',   0,   F_LOCAL
+entry 'db',      0,   F_DB
+entry 'dq',      0,   F_DQ
+entry 'times',   0,   F_TIMES
 entry 'j0',  0,  F_CONST
 entry 'j1',  1,  F_CONST
 entry 'j2',  2,  F_CONST
