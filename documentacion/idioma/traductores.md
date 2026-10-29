@@ -47,7 +47,6 @@ solo.
 | 7 | demasiadas llamadas anidadas |
 | 8 | `jret` sin `jcall` |
 | 9 | error del traductor: una instrucción salió más larga que su límite |
-| 10 | (ARM64) un `jjz`/`jjnz` a más de ±1 MiB: todavía no se maneja |
 
 ## La idea x/y/a (Capitán)
 
@@ -117,7 +116,10 @@ y al volver los guarda; el código generado nunca toca `rsp` y termina con `ret`
 - **Registros**: ARM64 tiene 31, así que **los 16 de Janax entran todos**: `jK = xK`. Trabajo: `x16`,
   `x17`. Fijos: `x19` memoria de datos, `x20`/`x21` pila de retorno y profundidad, `x22`/`x23` límites de
   memoria (8 y 1 byte).
-- **Saltos**: `B` (±128 MiB) y `CBZ`/`CBNZ` (±1 MiB), enlazados al final con una lista de arreglos.
+- **Saltos**: `B` (±128 MiB) y `CBZ`/`CBNZ` (±1 MiB), enlazados al final con una lista de arreglos. Un
+  `CBZ`/`CBNZ` que no alcanza se marca y la traducción se rehace con la **forma larga**: la condición
+  contraria salta sobre un `B`. Los largos solo crecen, así que converge (prueba `35_salto_lejano`: un salto
+  de ~1,08 MB hacia atrás). ⚠️ Generado y revisado en la PC; **falta correrlo en el teléfono**.
 - Al `jhalt` una rutina fija escribe `j0` en hexadecimal con la llamada `write` y sale con `exit`.
 - **En el teléfono**: Moto E7 Plus, Android 10, aarch64; se corre desde `/data/local/tmp` sin root. adb
   en `C:/Users/Nico/AppData/Local/Android/Sdk/platform-tools/adb.exe` (con `MSYS_NO_PATHCONV=1` desde Git
@@ -140,7 +142,7 @@ PC y teléfono son procesadores distintos: comparar entre ellos no mide al tradu
 
 ## Pendiente
 
-- ARM64: saltos condicionales a más de ±1 MiB (hoy código 10).
+- ARM64: correr `35_salto_lejano` en el teléfono (la forma larga está generada y revisada en la PC).
 - x86-64: el uso de registros se cuenta en el texto del programa, sin pesar los bucles.
 - Caché por procesador y elección de candidatos verificados (el Cambiaformas de `cambiaformas.md`).
 - Traductor y arranque escritos en Janax (escalón 1).
