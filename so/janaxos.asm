@@ -262,6 +262,15 @@ section '.data' data readable writeable
             dq t_sar, t_and, t_or, t_xor, t_jmp, t_jz, t_jnz, t_shi
             dq t_ld, t_st, t_ldb, t_stb, t_call, t_ret, t_sys
   assert ($ - ttable) = OP_COUNT * 8
+  ; the same instruction fused with the jjz / jjnz after it (0: it cannot be fused)
+  ftable_jz  dq 0, t_ldi_jz, t_add_jz, t_sub_jz, t_mul_jz, t_div_jz, t_shl_jz, t_shr_jz
+             dq t_sar_jz, t_and_jz, t_or_jz, t_xor_jz, 0, 0, 0, t_shi_jz
+             dq t_ld_jz, t_st_jz, t_ldb_jz, t_stb_jz, 0, 0, 0
+  assert ($ - ftable_jz) = OP_COUNT * 8
+  ftable_jnz dq 0, t_ldi_jnz, t_add_jnz, t_sub_jnz, t_mul_jnz, t_div_jnz, t_shl_jnz, t_shr_jnz
+             dq t_sar_jnz, t_and_jnz, t_or_jnz, t_xor_jnz, 0, 0, 0, t_shi_jnz
+             dq t_ld_jnz, t_st_jnz, t_ldb_jnz, t_stb_jnz, 0, 0, 0
+  assert ($ - ftable_jnz) = OP_COUNT * 8
 
   ; engine: 1 = routines (each program decoded once), 0 = the interpreter, kept as the reference
   motor      db 1

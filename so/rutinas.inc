@@ -45,6 +45,7 @@ decode_program:
         jmp     .next
 @@:     mov     r8, [ttable + rdx*8]
         mov     [rcx], r8
+        mov     [rcx + 11], dl          ; opcode, for the fusion pass
         mov     r8d, eax
         shr     r8d, 8
         and     r8d, 15
@@ -116,6 +117,33 @@ decode_program:
 .thread:
         cmp     rbx, r12
         jb      .thread_lap
+        ; An instruction followed by a jjz/jjnz decides that condition at its end. Every lap of a (rotated)
+        ; while ends in its condition, so every lap pays one routine less. The condition keeps its own record:
+        ; jumps that land on it still find it.
+        mov     ebx, 1
+        jmp     .fuse
+.fuse_lap:
+        mov     rcx, rbx
+        shl     rcx, 4
+        add     rcx, rdi                ; the condition
+        lea     r8, [ftable_jz]
+        lea     rdx, [t_jz]
+        cmp     [rcx], rdx
+        je      @f
+        lea     r8, [ftable_jnz]
+        lea     rdx, [t_jnz]
+        cmp     [rcx], rdx
+        jne     .fuse_next
+@@:     movzx   edx, byte [rcx - R_SIZE + 11]
+        mov     rdx, [r8 + rdx*8]
+        test    rdx, rdx
+        jz      .fuse_next              ; the one before cannot be fused (a jump, a call, jsys...)
+        mov     [rcx - R_SIZE], rdx
+.fuse_next:
+        inc     rbx
+.fuse:
+        cmp     rbx, r12
+        jb      .fuse_lap
 .threaded:
         mov     rax, rdi
 .done:
@@ -191,13 +219,55 @@ t_ended:
         mov     qword [rbx + P_DONE], 1
         jmp     t_store
 
-t_ldi:
-        movsxd  rax, dword [rdx + 12]
-        movzx   ecx, byte [rdx + 8]
-        mov     [r14 + rcx], rax
-        t_next
+; How a routine ends. T_NEXT runs the next record. T_JZ/T_JNZ also run the condition right after it (the
+; next record), counted as the instruction it is: if the turn ends there, the process stops at the
+; condition, exactly where the interpreter would.
+T_NEXT = 0
+T_JZ   = 1
+T_JNZ  = 2
 
-macro t_binop name, insn {
+macro t_end kind {
+  local taken
+  if kind = T_NEXT
+          t_next
+  else
+          sub     rbp, 1
+          jc      t_suspend               ; r12 already points at the condition
+          movzx   ecx, byte [r12 + 8]
+          cmp     qword [r14 + rcx], 0
+    if kind = T_JZ
+          je      taken
+    else
+          jne     taken
+    end if
+          add     r12, R_SIZE
+          t_next
+  taken:
+          mov     eax, [r12 + 12]
+          lea     r12, [r13 + rax]
+          t_next
+  end if
+}
+
+; Each instruction that ends by falling through exists three times: alone, and fused with a jjz or a
+; jjnz after it (name, name_jz, name_jnz).
+macro t_fusable defining, name, [arg] {
+  common
+          defining name, T_NEXT, arg
+          defining name#_jz, T_JZ, arg
+          defining name#_jnz, T_JNZ, arg
+}
+
+macro t_ldi_r name, kind, unused {
+  name:
+          movsxd  rax, dword [rdx + 12]
+          movzx   ecx, byte [rdx + 8]
+          mov     [r14 + rcx], rax
+          t_end   kind
+}
+t_fusable t_ldi_r, t_ldi
+
+macro t_binop name, kind, insn {
   name:
           movzx   ecx, byte [rdx + 9]
           mov     rax, [r14 + rcx]
@@ -205,39 +275,43 @@ macro t_binop name, insn {
           insn    rax, [r14 + rcx]
           movzx   ecx, byte [rdx + 8]
           mov     [r14 + rcx], rax
-          t_next
+          t_end   kind
 }
 
-t_binop t_add, add
-t_binop t_sub, sub
-t_binop t_mul, imul
-t_binop t_and, and
-t_binop t_or,  or
-t_binop t_xor, xor
+t_fusable t_binop, t_add, add
+t_fusable t_binop, t_sub, sub
+t_fusable t_binop, t_mul, imul
+t_fusable t_binop, t_and, and
+t_fusable t_binop, t_or,  or
+t_fusable t_binop, t_xor, xor
 
-t_div:
-        movzx   ecx, byte [rdx + 9]
-        mov     rax, [r14 + rcx]
-        movzx   ecx, byte [rdx + 10]
-        mov     rcx, [r14 + rcx]
-        movzx   r8d, byte [rdx + 8]
-        test    rcx, rcx
-        jz      .by_zero
-        cmp     rcx, -1
-        je      .by_minus_one
-        cqo
-        idiv    rcx
-        jmp     .store
-.by_zero:
-        xor     eax, eax                ; Janax: x / 0 = 0
-        jmp     .store
-.by_minus_one:
-        neg     rax                     ; MIN / -1 = MIN
-.store:
-        mov     [r14 + r8], rax
-        t_next
+macro t_div_r name, kind, unused {
+  local by_zero, by_minus_one, store
+  name:
+          movzx   ecx, byte [rdx + 9]
+          mov     rax, [r14 + rcx]
+          movzx   ecx, byte [rdx + 10]
+          mov     rcx, [r14 + rcx]
+          movzx   r8d, byte [rdx + 8]
+          test    rcx, rcx
+          jz      by_zero
+          cmp     rcx, -1
+          je      by_minus_one
+          cqo
+          idiv    rcx
+          jmp     store
+  by_zero:
+          xor     eax, eax                ; Janax: x / 0 = 0
+          jmp     store
+  by_minus_one:
+          neg     rax                     ; MIN / -1 = MIN
+  store:
+          mov     [r14 + r8], rax
+          t_end   kind
+}
+t_fusable t_div_r, t_div
 
-macro t_shiftop name, insn {
+macro t_shiftop name, kind, insn {
   name:
           movzx   r8d, byte [rdx + 9]
           mov     rax, [r14 + r8]
@@ -247,12 +321,12 @@ macro t_shiftop name, insn {
           insn    rax, cl
           movzx   r8d, byte [rdx + 8]
           mov     [r14 + r8], rax
-          t_next
+          t_end   kind
 }
 
-t_shiftop t_shl, shl
-t_shiftop t_shr, shr
-t_shiftop t_sar, sar
+t_fusable t_shiftop, t_shl, shl
+t_fusable t_shiftop, t_shr, shr
+t_fusable t_shiftop, t_sar, sar
 
 t_jmp:
         mov     eax, [rdx + 12]
@@ -300,16 +374,20 @@ macro t_jmp_cond name, exits_when {
 t_jmp_cond t_jmp_jz,  je
 t_jmp_cond t_jmp_jnz, jne
 
-t_shi:
-        movzx   ecx, byte [rdx + 8]
-        mov     rax, [r14 + rcx]
-        shl     rax, 16
-        mov     r8d, [rdx + 12]
-        or      rax, r8
-        mov     [r14 + rcx], rax
-        t_next
+macro t_shi_r name, kind, unused {
+  name:
+          movzx   ecx, byte [rdx + 8]
+          mov     rax, [r14 + rcx]
+          shl     rax, 16
+          mov     r8d, [rdx + 12]
+          or      rax, r8
+          mov     [r14 + rcx], rax
+          t_end   kind
+}
+t_fusable t_shi_r, t_shi
 
-macro t_memop name, size, align_check, is_load, body {
+; size, alignment check, load or store
+macro t_memop name, kind, size, align_check, is_load {
   name:
           movsxd  rax, dword [rdx + 12]
           movzx   ecx, byte [rdx + 9]
@@ -323,20 +401,28 @@ macro t_memop name, size, align_check, is_load, body {
           jnz     t_fail_align
     end if
           movzx   r8d, byte [rdx + 8]
-    if ~ is_load
-          mov     rcx, [r14 + r8]
-    end if
-          body
     if is_load
+      if size = 8
+          mov     rax, [r15 + rax]
+      else
+          movzx   eax, byte [r15 + rax]
+      end if
           mov     [r14 + r8], rax
+    else
+          mov     rcx, [r14 + r8]
+      if size = 8
+          mov     [r15 + rax], rcx
+      else
+          mov     [r15 + rax], cl
+      end if
     end if
-          t_next
+          t_end   kind
 }
 
-t_memop t_ld,  8, 1, 1, <mov rax, [r15 + rax]>
-t_memop t_st,  8, 1, 0, <mov [r15 + rax], rcx>
-t_memop t_ldb, 1, 0, 1, <movzx eax, byte [r15 + rax]>
-t_memop t_stb, 1, 0, 0, <mov [r15 + rax], cl>
+t_fusable t_memop, t_ld,  8, 1, 1
+t_fusable t_memop, t_st,  8, 1, 0
+t_fusable t_memop, t_ldb, 1, 0, 1
+t_fusable t_memop, t_stb, 1, 0, 0
 
 t_call:
         cmp     rdi, RET_DEPTH

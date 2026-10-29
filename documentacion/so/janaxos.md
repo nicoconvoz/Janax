@@ -159,6 +159,16 @@ de registros de 16 bytes, uno por palabra más uno final:
   destino es un `jjz`/`jjnz` recibe una rutina que hace las dos cosas (y cuenta las dos instrucciones;
   si el turno se termina entre ellas, el proceso queda parado en la condición, como en el intérprete). El
   salto de entrada de cada while cae sobre su condición, así que entrar a un bucle cuesta una rutina menos.
+- **Una instrucción seguida de una condición se funde con ella** (2026-10-29): al decodificar, toda
+  instrucción que termina siguiendo de largo (`jldi`, la aritmética, los desplazamientos, `jshi`, la
+  memoria) y tiene un `jjz`/`jjnz` justo después recibe una rutina que hace las dos cosas. La condición
+  conserva su registro, así que los saltos que caen sobre ella la siguen encontrando. Se cuentan las dos
+  instrucciones: si el turno se termina entre ellas, el proceso queda en la condición, y si la primera
+  falla (memoria fuera de rango), la condición ni se cuenta. **La regla salió de contar**: un contador de
+  parejas ejecutadas (scratchpad, `parejas.pl`) mostró que ninguna pareja concreta domina (en `calculo`,
+  las diez parejas del bucle pesan 10 % cada una), pero toda vuelta de todo while termina en "algo →
+  condición". Por eso no se funde `jsub`+`jjnz`: se funde cualquier instrucción con la condición que la
+  sigue, y vale también para los `if`.
 - `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
   y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
 
@@ -200,7 +210,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-82/82 (80 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+86/86 (84 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -281,6 +291,20 @@ intérprete haya pasado de ~2,9 s a ~4 s **no es el while**: el núcleo viejo co
 intercalado en ese momento, también daba ~3,8–4,2 s. La máquina estaba más lenta y el intérprete lo
 sufre más que las rutinas. Por eso los motores se comparan siempre intercalados, en el mismo momento.
 
+### Fundir la condición con la instrucción anterior
+
+Núcleo anterior (4501856) contra el nuevo, **intercalados** con el orden alternado, seis rondas, `c` = 0,
+2026-10-29. Mismos `j0` y `t` en las 24 corridas.
+
+| Banco | Rutinas por vuelta | Sin fundir | Fundido | Ganancia |
+|---|---|---|---|---|
+| `suma_1000m` (3.000 M instrucciones; bucle `jadd`, `jsub`, `jjnz`) | 3 → 2 | ~4.547–5.512 ms | **~3.558–3.943 ms** | **~21 %** |
+| `calculo` (671 M; bucle de 10) | 10 → 9 | ~1.438–1.567 ms | **~1.318–1.549 ms** | ~8 % |
+
+La ganancia sigue a las rutinas que se ahorran: un tercio menos de despachos da ~21 %, un décimo da ~8 %.
+Lo que queda es el trabajo de cada instrucción (los registros Janax viven en memoria). ⚠️ Una primera
+medición con `suma_100m` (0,4 s) daba entre 7 y 40 %: el arranque y el ruido la tapaban.
+
 ### Compartir el procesador con el motor de rutinas
 
 Banco `calculo` (671 M instrucciones por copia), los dos motores **intercalados**, tres rondas, 2026-10-29.
@@ -318,8 +342,7 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 ## Pendiente
 
 - Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
-  lanzamiento lee el archivo de nuevo). Medir qué rutinas pesan más y fundir las parejas frecuentes
-  (por ejemplo `jsub` + `jjnz`, el final de casi todo while) en una sola rutina.
+  lanzamiento lee el archivo de nuevo).
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

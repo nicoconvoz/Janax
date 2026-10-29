@@ -92,6 +92,19 @@ costo de cambio: 3.00 instrucciones (fijado)
 P0 codigo=0 j0=0000000000000037 t=65
 P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 
+# An instruction and the condition after it run as one routine: the turn may end between them, and a
+# failure in the first one ends the process before the condition is counted.
+caso "pareja fundida: el turno corta en cualquier punto" 0 0 "$fijo0
+P2 codigo=5 j0=0000000000000000 t=4
+P0 codigo=0 j0=0000000000006625 t=125
+P1 codigo=0 j0=0000000000006625 t=126" fusion fusion fusion_falla
+
+caso "pareja fundida: con costo de cambio" 3 0 "modo: simbiosis
+costo de cambio: 3.00 instrucciones (fijado)
+P2 codigo=5 j0=0000000000000000 t=8
+P0 codigo=0 j0=0000000000006625 t=123
+P1 codigo=0 j0=0000000000006625 t=126" fusion fusion fusion_falla
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)
