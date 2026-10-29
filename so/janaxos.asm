@@ -292,6 +292,40 @@ section '.data' data readable writeable
   MOTOR_REF_LEN = $ - motor_ref - 1
   calib_table dq 0
 
+section '.idata' import data readable writeable
+
+  library kernel32, 'KERNEL32.DLL',\
+          normaliz, 'NORMALIZ.DLL'
+
+  import kernel32,\
+         GetCommandLineA, 'GetCommandLineA',\
+         lstrlenA, 'lstrlenA',\
+         CreateFileA, 'CreateFileA',\
+         ReadFile, 'ReadFile',\
+         CloseHandle, 'CloseHandle',\
+         CreateDirectoryA, 'CreateDirectoryA',\
+         GetSystemInfo, 'GetSystemInfo',\
+         VirtualAlloc, 'VirtualAlloc',\
+         VirtualFree, 'VirtualFree',\
+         GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
+         GetCurrentThread, 'GetCurrentThread',\
+         SetThreadAffinityMask, 'SetThreadAffinityMask',\
+         GetThreadPriority, 'GetThreadPriority',\
+         SetThreadPriority, 'SetThreadPriority',\
+         GetStdHandle, 'GetStdHandle',\
+         WriteFile, 'WriteFile',\
+         ExitProcess, 'ExitProcess',\
+         DeleteFileA, 'DeleteFileA',\
+         MoveFileA, 'MoveFileA',\
+         FindFirstFileA, 'FindFirstFileA',\
+         FindNextFileA, 'FindNextFileA',\
+         FindClose, 'FindClose',\
+         MultiByteToWideChar, 'MultiByteToWideChar',\
+         WideCharToMultiByte, 'WideCharToMultiByte'
+
+  import normaliz,\
+         NormalizeString, 'NormalizeString'
+
 section '.text' code readable executable
 
 code_begin:                             ; code_begin..code_end feeds the kernel's fingerprint
@@ -1398,9 +1432,11 @@ macro memop name, size, align_check, is_load, body {
           mov     [r14 + r11*8], rax
     end if
           jmp     next
+  postpone \{                     ; the package goes after all the code: the routine stays small
   translate:
           room_package size, fail_mem
           jmp     inside
+  \}
 }
 
 memop op_ld,  8, 1, 1, <mov rax, [r15 + rax]>
@@ -3185,38 +3221,8 @@ fail_file:
 
 include 'rutinas.inc'
 
+; the translation packages (postpone, ambientes.inc) are emitted after this point: code_end goes after them
+postpone {
 code_end:
+}
 
-section '.idata' import data readable writeable
-
-  library kernel32, 'KERNEL32.DLL',\
-          normaliz, 'NORMALIZ.DLL'
-
-  import kernel32,\
-         GetCommandLineA, 'GetCommandLineA',\
-         lstrlenA, 'lstrlenA',\
-         CreateFileA, 'CreateFileA',\
-         ReadFile, 'ReadFile',\
-         CloseHandle, 'CloseHandle',\
-         CreateDirectoryA, 'CreateDirectoryA',\
-         GetSystemInfo, 'GetSystemInfo',\
-         VirtualAlloc, 'VirtualAlloc',\
-         VirtualFree, 'VirtualFree',\
-         GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
-         GetCurrentThread, 'GetCurrentThread',\
-         SetThreadAffinityMask, 'SetThreadAffinityMask',\
-         GetThreadPriority, 'GetThreadPriority',\
-         SetThreadPriority, 'SetThreadPriority',\
-         GetStdHandle, 'GetStdHandle',\
-         WriteFile, 'WriteFile',\
-         ExitProcess, 'ExitProcess',\
-         DeleteFileA, 'DeleteFileA',\
-         MoveFileA, 'MoveFileA',\
-         FindFirstFileA, 'FindFirstFileA',\
-         FindNextFileA, 'FindNextFileA',\
-         FindClose, 'FindClose',\
-         MultiByteToWideChar, 'MultiByteToWideChar',\
-         WideCharToMultiByte, 'WideCharToMultiByte'
-
-  import normaliz,\
-         NormalizeString, 'NormalizeString'

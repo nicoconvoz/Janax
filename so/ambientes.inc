@@ -21,7 +21,7 @@
 ROOM_SHIFT = 32                         ; a room's number starts at this bit of an address
 
 ; The fixed package every memory access past room 0's fast limit runs: it translates the whole address
-; in one block, inside the instruction (no call), and it is still that one Janax instruction.
+; in one block (no call, no stack), and it is still that one Janax instruction.
 ; rax = Janax address -> rax = its offset in the hull, or a jump to fail. Uses rcx, r9.
 macro room_package width, fail {
           mov     rcx, rax
@@ -296,3 +296,4 @@ cabin_at:
         clc
 .no:
         ret
+

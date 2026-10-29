@@ -93,3 +93,5 @@ sacada de contar parejas ejecutadas: ninguna domina, pero toda vuelta de while t
 2026-10-29 — Ambientes (Capitán): direcciones "ambiente + posición", agrandar construye en el lugar, destruir corre
 los de atrás sobre el hueco y devuelve las páginas (64 MB: 66,6 → 2,4 MB); paquete fijo de traducción. Ambiente 0 ~+5 %
 (sin explicar), ambiente construido ~+25 %. 96/96.
+2026-10-29 — Ambientes: el ~5 % del ambiente 0 era el lugar del paquete (engordaba las rutinas), no lo que hace.
+Paquete por rutina armado al final del código (postpone): ambiente 0 ~1.453 ms contra ~1.486 de antes; traducido ~1.764 ms. 96/96.

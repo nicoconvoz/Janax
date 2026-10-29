@@ -408,9 +408,11 @@ macro t_memop name, kind, size, align_check, is_load {
       end if
     end if
           t_end   kind
+  postpone \{                     ; the package goes after all the code: the routine stays small
   translate:
           room_package size, t_fail_mem
           jmp     inside
+  \}
 }
 
 t_fusable t_memop, t_ld,  8, 1, 1

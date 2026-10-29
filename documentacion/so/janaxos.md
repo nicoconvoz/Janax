@@ -209,7 +209,10 @@ Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_h
   cola que se está atendiendo no se puede destruir.
 - **El núcleo traduce**, por eso mover ambientes es invisible: el acceso al ambiente 0 hace una
   comparación (el ambiente 0 siempre está al principio). Cualquier otro corre **un paquete fijo** de
-  traducción metido entero en la rutina, sin llamadas, que sigue siendo esa misma instrucción Janax. La
+  traducción, de una sola vez y sin llamadas, que sigue siendo esa misma instrucción Janax. Cada rutina de
+  memoria tiene el suyo, pero FASM lo arma **al final del código** (`postpone`): la rutina conserva solo el
+  salto hacia él y queda chica. Por eso la sección de código es la última del ejecutable y `code_end` (la
+  huella del núcleo) va después de los paquetes. La
   ventanilla y los pedidos de archivos, listas y firmas traducen cada dirección con `cabin_at` en el
   momento de usarla.
 - Tocar un ambiente destruido, o pasarse de su tamaño, es código 5, al byte, igual con cualquier tamaño de
@@ -355,13 +358,16 @@ Contra cc5b297, intercalados, `c` = 0, 2026-10-29. Mismos resultados.
 | Caso | Antes | Ahora |
 |---|---|---|
 | Un ambiente de 64 MB construido y destruido: memoria privada del proceso | — | 66,6 MB → **2,4 MB** |
-| `calculo` (memoria en el ambiente 0), 10 corridas | ~1.381–1.467 ms | ~1.456–1.659 ms (**~+5 %**) |
-| `calculo_ambiente` (la misma memoria en un ambiente construido), 8 corridas | — | ~1.697–2.190 ms (~+25 % sobre el anterior) |
+| `calculo` (memoria en el ambiente 0), mediana de 8 | ~1.486 ms | **~1.453 ms** |
+| `calculo_ambiente` (la misma memoria en un ambiente construido), mediana de 8 | — | ~1.764 ms (~+20 %) |
 
-⚠️ Lo que no está explicado: el acceso al ambiente 0 hace **menos** instrucciones que antes (una
-comparación contra memoria en vez de cargar, restar y comparar) y sin embargo mide ~5 % más lento. Sospecho
-la disposición del código (las rutinas de memoria crecieron con el paquete de traducción). Alinear las
-rutinas de memoria a 16 bytes no lo cambió. Queda sin resolver.
+**La primera versión hacía al ambiente 0 ~5 % más lento, y no era por lo que el paquete hace.** Variantes
+medidas intercaladas (medianas): con la comparación de antes ~+3 %; con el casco chico de antes, igual que
+la versión lenta (el casco no era); **sin el paquete dentro de las rutinas, empatado**. El culpable era el
+**lugar**: metido en cada rutina de memoria, la engordaba aunque casi nunca se ejecutara. Un paquete único
+compartido afuera arreglaba el ambiente 0, pero hacía al acceso traducido ~20 % más lento (su salto de
+vuelta va a destinos distintos y se adivina peor: 2.212 contra 1.830 ms). Un paquete por rutina armado al
+final del código da las dos cosas: ambiente 0 igual que antes de los ambientes y traducido en ~1.764 ms.
 
 ### Compartir el programa entre copias
 
