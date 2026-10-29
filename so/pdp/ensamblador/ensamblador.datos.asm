@@ -17,6 +17,10 @@ F_FIRST   = 9                   ; r, size: jfirst
 F_DD      = 10                  ; a 32-bit word
 F_CONST   = 11                  ; a name for a number: the registers
 F_INCLUDE = 12                  ; include 'file'
+F_MACRO   = 13                  ; macro name params { body }
+F_REPEAT  = 14                  ; repeat count ... end repeat
+F_END     = 15                  ; end (of a repeat)
+F_LOCAL   = 16                  ; local names (inside a macro)
 
 macro entry name, value, format {
   local start
@@ -55,6 +59,10 @@ entry 'jwend',   0,   F_WEND
 entry 'jfirst',  0,   F_FIRST
 entry 'dd',      0,   F_DD
 entry 'include', 0,   F_INCLUDE
+entry 'macro',   0,   F_MACRO
+entry 'repeat',  0,   F_REPEAT
+entry 'end',     0,   F_END
+entry 'local',   0,   F_LOCAL
 entry 'j0',  0,  F_CONST
 entry 'j1',  1,  F_CONST
 entry 'j2',  2,  F_CONST

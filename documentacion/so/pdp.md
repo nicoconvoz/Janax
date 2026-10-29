@@ -22,10 +22,18 @@ Janax OS**: recorre la carpeta `PDP` del sistema y arma cada fuente `X.jsm` en `
   etiquetas viven en una tabla de 65.536 entradas con dispersión FNV y una generación por fuente (no hace
   falta borrarla entre fuentes). `jwhile`/`jwend` usan una pila de whiles abiertos y recuerdan, por orden,
   dónde quedó cada condición.
-- **v0 entiende**: comentarios, etiquetas, `nombre = expresión`, las 23 instrucciones, `jwhile`/`jwhilez`/
-  `jwend`, `jfirst`, `dd`, `include` de `janax.inc` (el idioma mismo, que conoce de nacimiento) y
-  expresiones con números (decimales, hexadecimales con `h`), nombres, `$`, `+ - * /` y paréntesis.
-- **Todavía no**: macros, `repeat` e `include` de otros archivos (las usan 9 de los 82 programas).
+- **Entiende**: comentarios, etiquetas, `nombre = expresión`, las 23 instrucciones, `jwhile`/`jwhilez`/
+  `jwend`, `jfirst`, `dd`, expresiones con números (decimales, hexadecimales con `h`), nombres, `$`,
+  `+ - * /` y paréntesis, y **las estructuras**: `include` (de `janax.inc` no lee nada: es el idioma mismo;
+  cualquier otro archivo se lee relativo a la carpeta de la fuente, con `..`), `repeat` ... `end repeat`, y
+  macros con parámetros, nombres `local` y argumentos agrupados entre `<` y `>`.
+- **Las tres estructuras son textos anidados**: un archivo leído, un cuerpo copiado tantas veces como se
+  pide, o un cuerpo con sus argumentos en su lugar (cada nombre `local` recibe el número de esa expansión).
+  Se leen como parte de la fuente y después la lectura vuelve adonde estaba: una pila de lugares para
+  volver. Los nombres `macro`, `repeat`, `end` y `local` también están en la tabla.
+- **La huella suma los archivos incluidos**: si cambia `ambientes.inc`, se rearman los 7 programas que lo
+  usan y nada más. Para saber qué incluye una fuente hay que leerla, así que la primera pasada corre siempre
+  (una corrida sin nada nuevo cuesta la mitad que armar todo).
 - Al terminar, `j0` = fuentes armadas + (fuentes con errores << 32).
 - Mismas reglas que FASM donde importan para los bytes: el inmediato se recorta a 16 bits, y los saltos
   cuentan palabras desde la siguiente (`(destino - $ - 4) / 4`).
@@ -36,14 +44,18 @@ En `so/pruebas/correr.sh`, con los dos motores: FASM arma el ensamblador y su ta
 carpeta del sistema se ponen las 82 fuentes de Janax (escalón 0, Janax OS, bancos y **el propio
 ensamblador**) bajo `PDP/`. Se exige:
 
-1. que arme **las 73 que entiende** y cuente como error las 9 que no;
-2. que las 73 salgan **idénticas byte por byte** a las de FASM;
+1. que arme **las 82**;
+2. que las 82 salgan **idénticas byte por byte** a las de FASM;
 3. que una segunda corrida **no arme nada** (todo está al día);
-4. que, cambiando una fuente, **arme solo esa**, y siga idéntica.
+4. que, cambiando una fuente, **arme solo esa**, y siga idéntica;
+5. que, cambiando un archivo incluido, **arme justo las fuentes que lo incluyen** (7), y sigan idénticas.
 
-**El ensamblador se arma a sí mismo** (4.728 bytes) y da idéntico a lo que da FASM.
+**82 de 82, el ensamblador incluido: se arma a sí mismo** (7.728 bytes) y da idéntico a lo que da FASM. Entre
+los 82 están el `repeat` de 30.000 instrucciones (120 KB), las macros con nombres locales y el `include` con
+`..`.
 
-Primera corrida medida: 3 programas en 53.788 instrucciones Janax; la corrida que no arma nada, 8.590.
+Medido (motor de rutinas): armar los 82 desde cero, 147 millones de instrucciones Janax, ~615 ms; una corrida
+sin nada nuevo, 74 millones, ~385 ms.
 
 ## Todas las combinaciones (Capitán: "así ya sabés que es igual byte a byte")
 
@@ -60,6 +72,9 @@ PDP copia las carpetas del repositorio (`PDP/escalon0/pruebas/...`, `PDP/so/prue
 
 ## Lo que sigue
 
-- Macros, `repeat` e `include` de otros archivos, para entender los 82.
+- Guardar en la huella la lista de archivos incluidos, para no correr la primera pasada de lo que está al
+  día.
+- Un `include` anidado se resuelve relativo a la fuente principal, no al archivo que lo incluye (alcanza para
+  los 82; FASM lo resuelve relativo a cada archivo).
 - La huella todavía no incluye el código del ensamblador (un programa no puede leer sus propias palabras):
   cambiar el ensamblador sin cambiar su tabla no rearma lo ya armado.

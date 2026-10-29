@@ -107,3 +107,5 @@ cambió (huella), tabla en ensamblador.datos. Arma 73 de 82 programas idénticos
 Faltan macros, repeat e include de otros archivos. 124/124.
 2026-10-29 — Prueba de todas las combinaciones (Capitán): 31 fuentes generadas (~700.000 instrucciones: todas las combinaciones
 de registros y los 65.536 inmediatos y distancias de salto), idénticas a FASM byte por byte. PDP copia las carpetas del repo. 125/125.
+2026-10-29 — Ensamblador PDP: include, repeat y macros como textos anidados (pila de lugares para volver); la huella suma
+los incluidos. 82 de 82 idénticos a FASM, él mismo incluido (7.728 bytes). 82 desde cero: ~615 ms. 129/129.

@@ -368,7 +368,6 @@ ventanilla: *" familia_abuelo
 pdp="$salida/pdp_$motor"; rm -rf "$pdp" "$salida/pdp_fasm"; mkdir -p "$pdp" "$salida/pdp_fasm"
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 entiende=(); no_entiende=0
-PDP_NO_ENTIENDE='^[[:space:]]*(macro|repeat)[[:space:]]|^[[:space:]]*include .*ambientes'   # not yet: v0
 # PDP mirrors the repository, folders and all, so relative includes find their files.
 for f in "$proyecto"/so/pruebas/*.inc; do
   cp "$f" "$pdp/$(etiqueta "PDP/${f#$proyecto/}")"
@@ -403,6 +402,13 @@ pdp_corrida "lo ya armado no se vuelve a armar" 0
 printf '\n; one more line\n' >> "$pdp/$(etiqueta "PDP/escalon0/pruebas/02_ldi.jsm")"
 pdp_corrida "solo lo que cambio" 1
 pdp_iguales "byte por byte despues del cambio"
+# an included file changed: every source that includes it is built again, and only those
+usan=$(grep -l "include .*ambientes.inc" "$proyecto"/escalon0/pruebas/*.jsm "$aqui"/*.jsm "$raiz"/bancos/*.jsm | wc -l)
+printf '
+; one more line
+' >> "$pdp/$(etiqueta "PDP/so/pruebas/ambientes.inc")"
+pdp_corrida "un include cambiado rearma a quienes lo usan" "$usan"
+pdp_iguales "byte por byte despues del include"
 
 # Every combination of every instruction (so/herramientas/combinaciones.pl), byte for byte as FASM. Once,
 # with the routines: the assembler itself is already tried with both engines above.
