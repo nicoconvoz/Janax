@@ -123,6 +123,18 @@ P0 codigo=5 j0=0000000000000007 t=2" sin_primera_orden
 caso "primera orden imposible" 0 0 "$fijo0
 P0 codigo=5 j0=0000000000000007 t=2" primera_orden_imposible
 
+# The return stack weighs what it holds: it grows with the calls and shrinks between turns. Same limit.
+caso "pila de retorno: honda, al limite y uno de mas" 0 0 "$fijo0
+P1 codigo=7 j0=0000000000000000 t=36882
+P0 codigo=0 j0=0000000000002000 t=94235
+P2 codigo=0 j0=0000000000002000 t=94236" llamadas_hondas llamadas_demasiadas llamadas_hondas
+
+caso "pila de retorno: con costo de cambio" 3 0 "modo: simbiosis
+costo de cambio: 3.00 instrucciones (fijado)
+P1 codigo=7 j0=0000000000000000 t=37079
+P0 codigo=0 j0=0000000000002000 t=94073
+P2 codigo=0 j0=0000000000002000 t=94236" llamadas_hondas llamadas_demasiadas llamadas_hondas
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)

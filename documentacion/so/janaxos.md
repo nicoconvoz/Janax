@@ -224,6 +224,13 @@ Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_h
 - Tocar un ambiente destruido, o pasarse de su tamaño, es código 5, al byte, igual con cualquier tamaño de
   página.
 
+- **La pila de retorno también pesa lo que ocupa**: se reserva para `RET_DEPTH` llamadas (el límite, igual
+  que el intérprete: la llamada 4097 sigue siendo código 7) y se le dan páginas a medida que las llamadas
+  la necesitan, duplicando desde una página. Al terminar cada turno se achica a la mitad mientras la
+  profundidad use un cuarto o menos (la regla que mantiene constante el costo por llamada, sin ir y venir),
+  nunca por debajo de una página; un proceso que terminó la devuelve entera. El camino que agranda está
+  fuera de la rutina de llamada (`postpone`). Pruebas: `llamadas_hondas`, `llamadas_demasiadas`.
+
 ## Todo bucle del núcleo es un while rotado (Capitán: "todo en while")
 
 Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
@@ -262,7 +269,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-102/102 (100 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+106/106 (104 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -378,6 +385,18 @@ final del código da las dos cosas: ambiente 0 igual que antes de los ambientes 
 **Primera orden** (contra 9e065c6): 64 procesos (`calculo` + 63 copias de `02_ldi`), memoria privada
 máxima **69 MB → 4 MB**. Lo que queda por proceso es casi todo su pila de retorno (32 KB fijos).
 
+**Pila de retorno** (contra bc60a58): 64 procesos, memoria privada máxima **4 MB → 2 MB**; `calculo` (una
+llamada por vuelta) ~1.416 contra ~1.461 ms, dentro del ruido de esta máquina.
+
+**Toda rutina alineada a 16 bytes.** Midiendo la pila apareció `calculo` 18 % más lento, y variantes que
+cambiaban de a una cosa daban resultados sin lógica: sacar una sola instrucción de otra rutina lo
+acercaba al anterior. La causa era el lugar: el motor salta a cada rutina por una tabla, y cualquier byte
+agregado antes corre a todas las que siguen; según cómo caigan respecto de los bloques de 16 bytes que el
+procesador trae para decodificar, la velocidad se movía hasta ~15 %. Regla general: **cada rutina a la que
+salta la tabla empieza alineada a 16 bytes** (en los dos motores). Medido: núcleo anterior ~1.402 →
+~1.358 ms alineado; con la pila nueva ~1.598 → ~1.398 ms. Las que se alcanzan cayendo desde la anterior
+(`t_store`, `t_ended`) no se alinean: el relleno quedaría en el camino.
+
 ### Compartir el programa entre copias
 
 Núcleo anterior (1080ef3) contra el nuevo, 2026-10-29.
@@ -430,8 +449,6 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 ## Pendiente
 
-- La pila de retorno de cada proceso es de 32 KB fijos (`RET_DEPTH`): hoy es casi todo lo que pesa un
-  proceso que no usa memoria.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

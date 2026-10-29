@@ -66,7 +66,8 @@ P_NROOMS = 296
 P_ROOMCAP = 304
 P_LIM8   = 312                  ; an 8-byte access to room 0 below this needs no translation (ambientes.inc)
 P_LIM1   = 320                  ; the same for a 1-byte access: room 0's size
-PROC_SIZE = 328
+P_RETCAP = 328                  ; return stack entries committed: it grows with the calls (ambientes.inc)
+PROC_SIZE = 336
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -127,6 +128,7 @@ section '.data' data readable writeable
   rooms_new dq 0
   rooms_newcap dq 0
   rooms_number dq 0
+  ret_rsp   dq 0                  ; ret_grow / ret_trim: the stack they came with
   queue_end dq 0
   wtotal    dq 0
   wbuf      dq 0
@@ -724,7 +726,7 @@ make_process:
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_DATA], rax
-        invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_RESERVE, PAGE_READWRITE   ; addresses only: it grows with the calls
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_RET], rax
@@ -1296,10 +1298,12 @@ next:
 suspend:
         mov     [rbx + P_PC], r12
         mov     [rbx + P_DEPTH], rdi
+        call    ret_trim
         mov     rax, [budget0]
         sub     rax, rbp
         ret
 
+        align 16
 op_halt:
         xor     ecx, ecx
         jmp     ended
@@ -1325,12 +1329,14 @@ ended:
         mov     qword [rbx + P_DONE], 1
         jmp     suspend
 
+        align 16
 op_ldi:
         movsx   rax, r9w
         mov     [r14 + r11*8], rax
         jmp     next
 
 macro binop name, insn {
+  align 16
   name:
           mov     rax, [r14 + r8*8]
           insn    rax, [r14 + r10*8]
@@ -1345,6 +1351,7 @@ binop op_and, and
 binop op_or,  or
 binop op_xor, xor
 
+        align 16
 op_div:
         mov     rax, [r14 + r8*8]
         mov     rcx, [r14 + r10*8]
@@ -1365,6 +1372,7 @@ op_div:
         jmp     next
 
 macro shiftop name, insn {
+  align 16
   name:
           mov     rax, [r14 + r8*8]
           mov     rcx, [r14 + r10*8]
@@ -1378,11 +1386,13 @@ shiftop op_shl, shl
 shiftop op_shr, shr
 shiftop op_sar, sar
 
+        align 16
 op_jmp:
         movsx   rax, r9w
         add     r12, rax
         jmp     next
 
+        align 16
 op_jz:
         cmp     qword [r14 + r11*8], 0
         jne     next
@@ -1390,6 +1400,7 @@ op_jz:
         add     r12, rax
         jmp     next
 
+        align 16
 op_jnz:
         cmp     qword [r14 + r11*8], 0
         je      next
@@ -1397,6 +1408,7 @@ op_jnz:
         add     r12, rax
         jmp     next
 
+        align 16
 op_shi:
         mov     rax, [r14 + r11*8]
         shl     rax, 16
@@ -1408,6 +1420,7 @@ include 'ambientes.inc'
 
 macro memop name, size, align_check, is_load, body {
   local translate, inside
+  align 16
   name:
           movsx   rax, r9w
           add     rax, [r14 + r8*8]
@@ -1438,15 +1451,27 @@ memop op_st,  8, 1, 0, <mov [r15 + rax], rcx>
 memop op_ldb, 1, 0, 1, <movzx eax, byte [r15 + rax]>
 memop op_stb, 1, 0, 0, <mov [r15 + rax], cl>
 
+        align 16
 op_call:
-        cmp     rdi, RET_DEPTH
-        jae     fail_call
+        cmp     rdi, [rbx + P_RETCAP]
+        jae     .more
+.room:
         mov     [rsi + rdi*8], r12
         inc     rdi
         movsx   rax, r9w
         add     r12, rax
         jmp     next
 
+postpone {
+op_call.more:
+        push    r9
+        call    ret_grow
+        pop     r9
+        jc      fail_call
+        jmp     op_call.room
+}
+
+        align 16
 op_ret:
         test    rdi, rdi
         jz      fail_ret
@@ -1454,6 +1479,7 @@ op_ret:
         mov     r12, [rsi + rdi*8]
         jmp     next
 
+        align 16
 op_sys:
         mov     [sys_rd], r11
         mov     rax, [r14 + r8*8]       ; queue address

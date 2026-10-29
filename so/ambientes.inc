@@ -329,3 +329,72 @@ rooms_first:
 .done:
         add     rsp, 8
         ret
+
+; The return stack also weighs what it holds: reserved for RET_DEPTH entries (the limit, as in the
+; interpreter) and committed as the calls need it, doubling from one page; at the end of a turn it halves
+; while the depth uses a quarter or less of it (the rule that keeps growing and shrinking at a constant cost
+; per call), never below one page; a process that ended gives it all back.
+
+; One more step for the return stack of rbx. CF = 1 if it is at the limit or there is no memory. Callable
+; with any stack alignment; keeps rbx, rsi, rdi, rbp, r12-r15.
+ret_grow:
+        mov     [ret_rsp], rsp
+        and     rsp, -16
+        mov     rax, [rbx + P_RETCAP]
+        cmp     rax, RET_DEPTH
+        jae     .no
+        add     rax, rax
+        jnz     @f
+        mov     rax, [page_size]
+        shr     rax, 3                  ; one page of entries
+@@:     cmp     rax, RET_DEPTH
+        jbe     @f
+        mov     eax, RET_DEPTH
+@@:     mov     [rbx + P_RETCAP], rax
+        shl     rax, 3
+        invoke  VirtualAlloc, qword [rbx + P_RET], rax, MEM_COMMIT, PAGE_READWRITE
+        test    rax, rax
+        jnz     .yes
+        mov     rax, [rbx + P_RETCAP]   ; no memory: as it was
+        shr     rax, 1
+        mov     [rbx + P_RETCAP], rax
+.no:
+        mov     rsp, [ret_rsp]
+        stc
+        ret
+.yes:
+        mov     rsp, [ret_rsp]
+        clc
+        ret
+
+; End of a turn of rbx: give back the part of the return stack it does not need. Callable with any stack
+; alignment; keeps rbx, rsi, rdi, rbp, r12-r15.
+ret_trim:
+        mov     rax, [rbx + P_RETCAP]
+        test    rax, rax
+        jz      .done                   ; nothing committed
+        xor     edx, edx                ; ended: all of it
+        cmp     qword [rbx + P_DONE], 0
+        jne     .give_back
+        mov     rcx, [page_size]
+        shr     rcx, 3
+        cmp     rax, rcx
+        jbe     .done                   ; one page stays while it lives
+        mov     rdx, [rbx + P_DEPTH]
+        shl     rdx, 2
+        cmp     rdx, rax
+        ja      .done                   ; it uses more than a quarter
+        mov     rdx, rax
+        shr     rdx, 1
+.give_back:                             ; keep rdx entries
+        mov     [ret_rsp], rsp
+        and     rsp, -16
+        mov     [rbx + P_RETCAP], rdx
+        sub     rax, rdx
+        shl     rax, 3
+        shl     rdx, 3
+        add     rdx, [rbx + P_RET]
+        invoke  VirtualFree, rdx, rax, MEM_DECOMMIT
+        mov     rsp, [ret_rsp]
+.done:
+        ret

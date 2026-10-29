@@ -11,6 +11,10 @@
 ; process with code 2 like the interpreter's fetch check; an unknown opcode gets the routine that ends
 ; it with code 1. The final record gives back its instruction: the interpreter fails before counting.
 ;
+; Every routine the table jumps to starts aligned to 16 bytes, the block the processor fetches to decode at once: its speed
+; then does not depend on how many bytes the routines before it take. Measured: without it, a change of
+; a few bytes anywhere before moved calculo by up to ~15 %.
+;
 ; Registers while running: r12 = next record, r13 = table, r14 = Janax registers, r15 = data memory,
 ; rsi = return stack (record addresses), rdi = depth, rbp = budget left, rbx = process, rdx = record
 ; being run. The interpreter stays as the reference (JANAX_MOTOR=interprete); the tests compare both.
@@ -173,6 +177,7 @@ macro t_next {
 }
         t_next
 
+        align 16
 t_suspend:
         xor     ebp, ebp                ; the budget is spent (or the turn was cut)
 t_store:
@@ -180,29 +185,37 @@ t_store:
         shr     r12, 4
         mov     [rbx + P_PC], r12
         mov     [rbx + P_DEPTH], rdi
+        call    ret_trim
         mov     rax, [budget0]
         sub     rax, rbp
         ret
 
+        align 16
 t_halt:
         xor     ecx, ecx
         jmp     t_ended
+        align 16
 t_fail_op:
         mov     ecx, 1                  ; counted, like the interpreter
         jmp     t_ended
+        align 16
 t_fail_pc:
         inc     rbp                     ; the interpreter fails before counting the fetch
         mov     ecx, 2
         jmp     t_ended
+        align 16
 t_fail_mem:
         mov     ecx, 5
         jmp     t_ended
+        align 16
 t_fail_align:
         mov     ecx, 6
         jmp     t_ended
+        align 16
 t_fail_call:
         mov     ecx, 7
         jmp     t_ended
+        align 16
 t_fail_ret:
         mov     ecx, 8
 t_ended:
@@ -250,6 +263,7 @@ macro t_fusable defining, name, [arg] {
 }
 
 macro t_ldi_r name, kind, unused {
+  align 16
   name:
           movsxd  rax, dword [rdx + 12]
           movzx   ecx, byte [rdx + 8]
@@ -259,6 +273,7 @@ macro t_ldi_r name, kind, unused {
 t_fusable t_ldi_r, t_ldi
 
 macro t_binop name, kind, insn {
+  align 16
   name:
           movzx   ecx, byte [rdx + 9]
           mov     rax, [r14 + rcx]
@@ -278,6 +293,7 @@ t_fusable t_binop, t_xor, xor
 
 macro t_div_r name, kind, unused {
   local by_zero, by_minus_one, store
+  align 16
   name:
           movzx   ecx, byte [rdx + 9]
           mov     rax, [r14 + rcx]
@@ -303,6 +319,7 @@ macro t_div_r name, kind, unused {
 t_fusable t_div_r, t_div
 
 macro t_shiftop name, kind, insn {
+  align 16
   name:
           movzx   r8d, byte [rdx + 9]
           mov     rax, [r14 + r8]
@@ -319,11 +336,13 @@ t_fusable t_shiftop, t_shl, shl
 t_fusable t_shiftop, t_shr, shr
 t_fusable t_shiftop, t_sar, sar
 
+        align 16
 t_jmp:
         mov     eax, [rdx + 12]
         lea     r12, [r13 + rax]
         t_next
 
+        align 16
 t_jz:
         movzx   ecx, byte [rdx + 8]
         cmp     qword [r14 + rcx], 0
@@ -332,6 +351,7 @@ t_jz:
         lea     r12, [r13 + rax]
 @@:     t_next
 
+        align 16
 t_jnz:
         movzx   ecx, byte [rdx + 8]
         cmp     qword [r14 + rcx], 0
@@ -343,6 +363,7 @@ t_jnz:
 ; jjmp + the jjz/jjnz it lands on, counted as the two instructions they are. If the turn ends between
 ; them, the process stops at the condition, exactly where the interpreter would.
 macro t_jmp_cond name, exits_when {
+  align 16
   name:
           mov     eax, [rdx + 12]
           lea     r8, [r13 + rax]         ; the condition's record
@@ -366,6 +387,7 @@ t_jmp_cond t_jmp_jz,  je
 t_jmp_cond t_jmp_jnz, jne
 
 macro t_shi_r name, kind, unused {
+  align 16
   name:
           movzx   ecx, byte [rdx + 8]
           mov     rax, [r14 + rcx]
@@ -380,6 +402,7 @@ t_fusable t_shi_r, t_shi
 ; size, alignment check, load or store
 macro t_memop name, kind, size, align_check, is_load {
   local translate, inside
+  align 16
   name:
           movsxd  rax, dword [rdx + 12]
           movzx   ecx, byte [rdx + 9]
@@ -420,15 +443,18 @@ t_fusable t_memop, t_st,  8, 1, 0
 t_fusable t_memop, t_ldb, 1, 0, 1
 t_fusable t_memop, t_stb, 1, 0, 0
 
+        align 16
 t_call:
-        cmp     rdi, RET_DEPTH
-        jae     t_fail_call
+        cmp     rdi, [rbx + P_RETCAP]
+        jae     .more
+.room:
         mov     [rsi + rdi*8], r12      ; the record after the call
         inc     rdi
         mov     eax, [rdx + 12]
         lea     r12, [r13 + rax]
         t_next
 
+        align 16
 t_ret:
         test    rdi, rdi
         jz      t_fail_ret
@@ -436,6 +462,7 @@ t_ret:
         mov     r12, [rsi + rdi*8]
         t_next
 
+        align 16
 t_sys:
         movzx   ecx, byte [rdx + 8]
         mov     [sys_rd], rcx           ; rd * 8
@@ -460,3 +487,12 @@ t_sys:
         sub     [budget0], rbp
         xor     ebp, ebp
         jmp     t_store
+
+postpone {                              ; cold: after all the code, so t_call stays small
+t_call.more:                            ; the return stack is full: one more page, or past the limit
+        push    rdx
+        call    ret_grow
+        pop     rdx
+        jc      t_fail_call
+        jmp     t_call.room
+}

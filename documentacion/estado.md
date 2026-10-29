@@ -97,3 +97,5 @@ los de atrás sobre el hueco y devuelve las páginas (64 MB: 66,6 → 2,4 MB); p
 Paquete por rutina armado al final del código (postpone): ambiente 0 ~1.453 ms contra ~1.486 de antes; traducido ~1.764 ms. 96/96.
 2026-10-29 — Primera orden (Capitán): el proceso nace sin memoria; su primer jsys (tamaño en el registro, macro
 jfirst) construye el ambiente 0. Todos los programas que usan memoria la llevan. 64 procesos: 69 → 4 MB. 102/102.
+2026-10-29 — Pila de retorno a medida (crece al llamar, se achica al fin del turno; mismo límite): 64 procesos 4 → 2 MB.
+Destapó que el motor es sensible al lugar de cada rutina (±15 %): toda rutina de la tabla alineada a 16 bytes. 106/106.
