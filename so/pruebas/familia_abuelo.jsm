@@ -3,6 +3,7 @@
 ; With the parent's shadow, the grandchild's request is never the grandparent's business: j0 = 1
 ; (only the launch of "hijo" by "padre" was signed here).
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

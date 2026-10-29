@@ -77,8 +77,8 @@ P1 codigo=0 j0=000000000000002A t=3" 19_opcode_invalido 02_ldi
 
 # Same address in two processes that keep switching: each one sees only its own value.
 caso "camarotes separados" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000007 t=37
-P1 codigo=0 j0=0000000000000009 t=38" camarote_7 camarote_9
+P0 codigo=0 j0=0000000000000007 t=41
+P1 codigo=0 j0=0000000000000009 t=42" camarote_7 camarote_9
 
 # The while: two copies taking turns of one or two instructions, so a turn ends at every point of the
 # loop (also between the entry jump and the condition, which the routine engine runs as one routine).
@@ -95,15 +95,15 @@ P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 # An instruction and the condition after it run as one routine: the turn may end between them, and a
 # failure in the first one ends the process before the condition is counted.
 caso "pareja fundida: el turno corta en cualquier punto" 0 0 "$fijo0
-P2 codigo=5 j0=0000000000000000 t=4
-P0 codigo=0 j0=0000000000006625 t=125
-P1 codigo=0 j0=0000000000006625 t=126" fusion fusion fusion_falla
+P2 codigo=5 j0=0000000000000000 t=10
+P0 codigo=0 j0=0000000000006625 t=131
+P1 codigo=0 j0=0000000000006625 t=132" fusion fusion fusion_falla
 
 caso "pareja fundida: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
-P2 codigo=5 j0=0000000000000000 t=8
-P0 codigo=0 j0=0000000000006625 t=123
-P1 codigo=0 j0=0000000000006625 t=126" fusion fusion fusion_falla
+P2 codigo=5 j0=0000000000000000 t=10
+P0 codigo=0 j0=0000000000006625 t=127
+P1 codigo=0 j0=0000000000006625 t=132" fusion fusion fusion_falla
 
 # Copies of one program share its words and its table; a program with the same length and one different
 # word is another program.
@@ -113,11 +113,21 @@ P3 codigo=0 j0=000000000000002D t=132
 P0 codigo=0 j0=0000000000000037 t=137
 P2 codigo=0 j0=0000000000000037 t=138" while_suma while_suma_9 while_suma while_suma_9
 
+# A process is born without memory; its first order builds room 0.
+caso "primera orden: construye el ambiente 0" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000001005 t=8" primera_orden
+
+caso "sin primera orden no hay memoria" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000007 t=2" sin_primera_orden
+
+caso "primera orden imposible" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000007 t=2" primera_orden_imposible
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)
 P* codigo=0 j0=000000000000000[79] t=*
-P* codigo=0 j0=000000000000000[79] t=38" camarote_7 camarote_9
+P* codigo=0 j0=000000000000000[79] t=42" camarote_7 camarote_9
 
 # The next boot on the same machine and kernel remembers it instead of measuring again.
 caso "costo recordado" "" 0 "modo: simbiosis
@@ -129,56 +139,56 @@ caso "sin programas" 0 4 "$fijo0"
 # --- the window: requests tuned to the fewest screens possible, served in batches ---
 caso "ventanilla: escribir" 0 0 "$fijo0
 hola
-P0 codigo=0 j0=0000000000000005 t=15
+P0 codigo=0 j0=0000000000000005 t=17
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=1 pedidos=1" ventanilla_hola
 
 caso "ventanilla: tres escrituras, una llamada" 0 0 "$fijo0
 a
 b
 c
-P0 codigo=0 j0=0000000000000003 t=25
+P0 codigo=0 j0=0000000000000003 t=27
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=1 pedidos=3" ventanilla_lote
 
 caso "ventanilla: dos sintonias, dos pantallas" 0 0 "$fijo0
 x
-P0 codigo=0 j0=0000000100000000 t=19
+P0 codigo=0 j0=0000000100000000 t=21
 ventanilla: pantallas=2 resintonias=0 llamadas al anfitrion=1 pedidos=2" ventanilla_dos_tipos
 
 caso "ventanilla: la pantalla cambia de sintonia" 0 0 "$fijo0
 y
-P0 codigo=0 j0=0000000100000000 t=20
+P0 codigo=0 j0=0000000100000000 t=22
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=1 pedidos=2" ventanilla_resintonia
 
 caso "ventanilla: tipo desconocido" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=8
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=10
 ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=1" ventanilla_tipo_desconocido
 
 caso "ventanilla: cola fuera del camarote" 0 0 "$fijo0
-P0 codigo=5 j0=0000000000000000 t=2" ventanilla_cola_afuera
+P0 codigo=5 j0=0000000000000000 t=4" ventanilla_cola_afuera
 
 caso "ambientes: construir en el lugar, destruir solo uno" 0 0 "$fijo0
-P0 codigo=0 j0=0000000300000075 t=51
+P0 codigo=0 j0=0000000300000075 t=53
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=5" ambientes
 
 caso "ambientes: un ambiente destruido es un hueco" 0 0 "$fijo0
-P0 codigo=5 j0=0000000000000000 t=25
+P0 codigo=5 j0=0000000000000000 t=27
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=3" ambiente_hueco
 
 caso "ambientes: la ventanilla no lee de un hueco" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=32
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=34
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" ambiente_hueco_ventanilla
 
 caso "ambientes: el numero se reusa, en ceros" 0 0 "$fijo0
-P0 codigo=0 j0=0000000100000000 t=28
+P0 codigo=0 j0=0000000100000000 t=30
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=3" ambiente_reconstruir
 
 caso "ambientes: destruir el del medio une los extremos" 0 0 "$fijo0
-P0 codigo=0 j0=0000000100000066 t=54
+P0 codigo=0 j0=0000000100000066 t=56
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=5" ambientes_unir
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000004 t=56
+P0 codigo=0 j0=0000000000000004 t=58
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=3 pedidos=3" archivo_guardar
 
 # On the host the label is stored in hexadecimal: valid on any file system, never two labels in one name.
@@ -191,26 +201,26 @@ fi
 
 # Another run of the system finds what the first one saved.
 caso "archivo: leer en otra corrida" 0 0 "$fijo0
-P0 codigo=0 j0=00000000616C6F68 t=41
+P0 codigo=0 j0=00000000616C6F68 t=43
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=2 pedidos=2" archivo_leer
 
 caso "archivo: etiqueta que no es UTF-8" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=18
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=20
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_etiqueta_invalida
 
 caso "archivo: manija que no se abrio" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=19
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=21
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_manija_mala
 
 # --- porters: a tree with wide branches; a process gets only the permissions it was launched with ---
 # (p screen, m memory, l read files, g write files; no @ = all). Nodes: root + 3 door porters + 3 per process.
 caso "porteros: sin pantalla" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=15
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=17
 ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=1
 porteros: nodos=7 negados=1" ventanilla_hola@m
 
 caso "porteros: sin archivos" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=56
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=58
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=3
 porteros: nodos=7 negados=2" archivo_guardar@p
 
@@ -246,20 +256,20 @@ fi
 
 # --- porters by label: a prefix (hexadecimal at launch) limits which labels a process can touch ---
 caso "porteros: prefijo que permite" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000004 t=56
+P0 codigo=0 j0=0000000000000004 t=58
 ventanilla: *" archivo_guardar@lg:f09fa68e
 
 caso "porteros: prefijo que no permite" 0 0 "$fijo0
-P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=56
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=58
 ventanilla: *
 porteros: nodos=7 negados=1" archivo_guardar@lg:61
 
 carpeta=$(cygpath -m "$salida/archivos_lista")    # holds one label: "c"
 caso "porteros: listar ve lo permitido" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000001 t=12
+P0 codigo=0 j0=0000000000000001 t=14
 ventanilla: *" archivo_listar@l:63
 caso "porteros: listar oculta lo demas" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000000 t=12
+P0 codigo=0 j0=0000000000000000 t=14
 ventanilla: *" archivo_listar@l:64
 unset carpeta
 
@@ -303,7 +313,7 @@ hola
 P1 codigo=0 j0=0000000000000005 t=*
 ventanilla: *" familia_huerfano
 
-familia familia_permisos ventanilla_achicar
+familia familia_permisos ventanilla_agrandar
 caso "familia: el hijo no tiene mas que su padre" 0 0 "$fijo0
 P1 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 P0 codigo=0 j0=0000000000000000 t=*

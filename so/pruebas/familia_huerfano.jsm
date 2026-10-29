@@ -1,6 +1,7 @@
 ; The parent launches "hijo", waits until the child has a request waiting for its signature, and ends
 ; without signing: the kernel adopts the child and signs for it. j0 = 7.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

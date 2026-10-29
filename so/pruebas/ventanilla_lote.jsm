@@ -1,5 +1,6 @@
 ; Three "write" requests in one touch of the window: one screen, one call to the host.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j1, 200h
 jldi j2, 0A61h
 jst j2, j1, 0

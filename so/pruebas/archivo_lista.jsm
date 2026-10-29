@@ -2,6 +2,7 @@
 ; Listing format: per label a qword with its length, then its bytes padded to 8.
 ; j0 = first count << 16 | second count << 8 | first byte of the second listing = 0x020163.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

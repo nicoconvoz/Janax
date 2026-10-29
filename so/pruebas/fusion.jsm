@@ -1,6 +1,7 @@
 ; Every instruction that can be followed by a condition, followed by one: jjz/jjnz, taken and not taken.
 ; Each block shifts j0 left and adds 1 when the condition is not taken, so j0 records every decision.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j0, 0
 jldi j1, 5
 jldi j2, 3

@@ -1,5 +1,6 @@
 ; Round 1 "write", round 2 "grow": the free screen changes its tuning instead of opening another one.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j1, 200h
 jldi j2, 0A79h
 jst j2, j1, 0

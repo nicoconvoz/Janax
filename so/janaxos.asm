@@ -724,17 +724,11 @@ make_process:
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_DATA], rax
-        invoke  VirtualAlloc, rax, DATA_SIZE, MEM_COMMIT, PAGE_READWRITE  ; its first room
-        test    rax, rax
-        jz      fail_file
-        mov     qword [rbx + P_LIM8], DATA_SIZE - 7
-        mov     qword [rbx + P_LIM1], DATA_SIZE
         invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_RET], rax
-        mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
-        mov     qword [rbx + P_SIZE], DATA_SIZE
+        ; born without memory: its first order builds room 0 (rooms_first)
         mov     r15d, 1                 ; one microporter per door
         jmp     .gate
 .gate_lap:
@@ -1500,6 +1494,15 @@ op_sys:
 ; the cabin.
 ventanilla:
         push    rsi rdi rbp r12 r13 r14 r15
+        cmp     qword [rbx + P_ROOMS], 0
+        jne     .queue
+        cmp     qword [rbx + P_LIM1], 0
+        jne     .queue
+        call    rooms_first             ; no room yet: this is the first order, rax = the size
+        cmp     rax, -1
+        je      .bad
+        jmp     .out
+.queue:
         mov     r12, rax
         mov     [queue_addr], rax
         test    r12b, 7

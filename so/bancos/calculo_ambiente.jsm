@@ -2,6 +2,7 @@
 ; through the translation package. Its time against calculo is what translating costs.
 include '../../escalon0/janax.inc'
 include '../pruebas/ambientes.inc'
+jfirst j1, 1000h               ; first order: room 0 (the queue at 100h)
 jldi j3, 100h
 jldi j8, 8
 pedido 2, j8, j4                ; a room of one qword: j4 = its address

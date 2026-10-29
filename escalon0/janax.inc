@@ -77,3 +77,15 @@ macro jret               { j_word 15h, 0, 0, 0 }
 ; Janax OS window: rd = requests attended; ra = address of the request queue in the cabin.
 ; Queue: count (8 bytes), then count entries of 32 bytes: type, a, b, result. Only inside Janax OS.
 macro jsys rd, ra        { j_word 16h, rd, ra, 0 }
+; A process is born without memory: its first order (Janax OS) builds its room 0 of size bytes, with the
+; size right in the register (there is no room yet for a queue). r ends at 0, the room's address; j15 at the
+; room's top. Touching memory before it is code 5.
+macro jfirst r, size {
+  if (size) < 8000h
+    jldi r, size
+  else
+    jldi r, (size) shr 16
+    jshi r, (size) and 0FFFFh
+  end if
+  jsys r, r
+}

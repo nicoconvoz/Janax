@@ -193,11 +193,17 @@ de registros de 16 bytes, uno por palabra más uno final:
 Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_hueco_ventanilla`,
 `ambiente_reconstruir`, `ambientes_unir`.
 
+- **El proceso nace sin memoria; su primera orden construye el ambiente 0** (Capitán: *"que sea la primer
+  orden del proceso"*). Como todavía no hay dónde poner una cola, la primera orden es un `jsys` con el
+  tamaño directo en el registro (macro `jfirst r, tamaño` en `escalon0/janax.inc`): `r` queda en 0 (la
+  dirección del ambiente) y `j15` en su tope. Tocar memoria antes es código 5; pedir 0 bytes también.
+  ⚠️ La primera orden no pasa por los porteros: es parte de nacer. Un proceso sin permiso de memoria
+  igual tiene su ambiente 0, pero no puede agrandar (prueba "familia: el hijo no tiene más que su padre").
 - **El casco se reserva una vez y nunca se muda** (`HULL_SIZE` = 4 GiB de direcciones, que no ocupan
   memoria). ⚠️ Ese número es criterio, no medición: es el techo de un camarote.
 - **Una dirección Janax dice qué ambiente y dónde**: el número de ambiente en los 32 bits altos y la
-  posición en los 32 bajos. El ambiente 0 es el de siempre (1 MiB), así que un programa que nunca agranda
-  ve las mismas direcciones que antes.
+  posición en los 32 bajos. El ambiente 0 empieza en la dirección 0, así que un programa que nunca
+  agranda ve las mismas direcciones que antes.
 - **Agrandar** construye un ambiente del tamaño pedido (redondeado a 8 bytes, el acceso más ancho de
   Janax, para que cada ambiente empiece alineado) al final del casco, sin copiar nada, y responde su
   dirección. Se le piden a Windows justo las páginas que hacen falta para que entren todos los ambientes:
@@ -256,7 +262,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-96/96 (94 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+102/102 (100 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -369,6 +375,9 @@ compartido afuera arreglaba el ambiente 0, pero hacía al acceso traducido ~20 %
 vuelta va a destinos distintos y se adivina peor: 2.212 contra 1.830 ms). Un paquete por rutina armado al
 final del código da las dos cosas: ambiente 0 igual que antes de los ambientes y traducido en ~1.764 ms.
 
+**Primera orden** (contra 9e065c6): 64 procesos (`calculo` + 63 copias de `02_ldi`), memoria privada
+máxima **69 MB → 4 MB**. Lo que queda por proceso es casi todo su pila de retorno (32 KB fijos).
+
 ### Compartir el programa entre copias
 
 Núcleo anterior (1080ef3) contra el nuevo, 2026-10-29.
@@ -421,6 +430,8 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 ## Pendiente
 
+- La pila de retorno de cada proceso es de 32 KB fijos (`RET_DEPTH`): hoy es casi todo lo que pesa un
+  proceso que no usa memoria.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

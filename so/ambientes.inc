@@ -297,3 +297,35 @@ cabin_at:
 .no:
         ret
 
+
+; A process is born without memory. Its first order (a jsys with no room yet) builds room 0 of rax bytes,
+; with the size right in the register because there is nowhere to put a queue. j15 starts at its top.
+; -> rax = 0 (room 0's address), or -1 if it cannot be built (nothing asked, too big, no memory).
+rooms_first:
+        sub     rsp, 8
+        test    rax, rax
+        jz      .invalid
+        add     rax, 7
+        jc      .invalid
+        and     rax, -8
+        mov     rcx, HULL_SIZE
+        cmp     rax, rcx
+        ja      .invalid
+        mov     [rbx + P_SIZE], rax
+        invoke  VirtualAlloc, qword [rbx + P_DATA], rax, MEM_COMMIT, PAGE_READWRITE
+        test    rax, rax
+        jz      .no_memory
+        mov     rax, [rbx + P_SIZE]
+        mov     [rbx + P_LIM1], rax
+        mov     [rbx + P_REGS + 15*8], rax
+        sub     rax, 7
+        mov     [rbx + P_LIM8], rax
+        xor     eax, eax
+        jmp     .done
+.no_memory:
+        mov     qword [rbx + P_SIZE], 0
+.invalid:
+        mov     rax, -1
+.done:
+        add     rsp, 8
+        ret

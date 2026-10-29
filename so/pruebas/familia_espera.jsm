@@ -1,6 +1,7 @@
 ; The parent launches "hijo" with every permission and waits (a while loop) until it ends.
 ; j0 = the child's exit code.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

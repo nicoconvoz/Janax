@@ -1,5 +1,6 @@
 ; One "write" request: prints hola, then j0 = bytes written.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j1, 200h
 jldi j2, 0Ah
 jshi j2, 616Ch

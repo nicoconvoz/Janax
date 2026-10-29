@@ -2,6 +2,7 @@
 ; addresses; the next room takes A's number and starts in zeros. j0 = 11h + 22h + 0 + 33h + (1 << 32).
 include '../../escalon0/janax.inc'
 include 'ambientes.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j8, 1000h
 pedido 2, j8, j10       ; A

@@ -1,6 +1,7 @@
 ; Pure computation: 67,108,864 rounds of 10 instructions (jcall, memory, add, shift, xor, jret, loop),
 ; about 671 M instructions with no touch of the window. Compares engines: JANAX_MOTOR=interprete or not.
 include '../../escalon0/janax.inc'
+jfirst j1, 8               ; first order: room 0 (one qword)
 jldi j1, 400h
 jshi j1, 0                      ; j1 = 4000000h rounds
 jldi j2, 1

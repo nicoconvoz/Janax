@@ -2,6 +2,7 @@
 ; is refused ("y" is not a label A allows). Using A, opening "🦎 notas.txt" is refused.
 ; j0 = answer of the second cede + answer of the open = -1 + -1 = -2.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

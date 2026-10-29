@@ -1,5 +1,6 @@
 ; The same 10,000 lines, one touch of the window per line (how a classic system call works).
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j6, 80h
 jldi j2, 0A78h
 jst j2, j6, 0

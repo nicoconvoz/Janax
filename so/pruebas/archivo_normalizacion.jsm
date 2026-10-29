@@ -1,6 +1,7 @@
 ; Two labels that look the same: "é" in one piece (C3 A9) and "e" + combining acute (65 CC 81).
 ; Saved through the first, read through the second: same file. j0 = the byte read ("1" = 31h).
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

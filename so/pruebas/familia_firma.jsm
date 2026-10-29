@@ -1,6 +1,7 @@
 ; The parent launches "hijo", looks at what is waiting for its signature and answers 1
 ; (1 sign, 0 reject), then waits until the child ends. j0 = the child's exit code.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j5, 32

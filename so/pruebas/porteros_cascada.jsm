@@ -2,6 +2,7 @@
 ; is refused. Then the process drops its own privileges (C = child of S with no rights) and its write is
 ; refused. j0 = answer of "use B" + answer of the write = -1 + -1 = -2.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j4, 1
 jldi j10, 11                    ; consult: my porter for door 1 (screen)

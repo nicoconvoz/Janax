@@ -95,3 +95,5 @@ los de atrás sobre el hueco y devuelve las páginas (64 MB: 66,6 → 2,4 MB); p
 (sin explicar), ambiente construido ~+25 %. 96/96.
 2026-10-29 — Ambientes: el ~5 % del ambiente 0 era el lugar del paquete (engordaba las rutinas), no lo que hace.
 Paquete por rutina armado al final del código (postpone): ambiente 0 ~1.453 ms contra ~1.486 de antes; traducido ~1.764 ms. 96/96.
+2026-10-29 — Primera orden (Capitán): el proceso nace sin memoria; su primer jsys (tamaño en el registro, macro
+jfirst) construye el ambiente 0. Todos los programas que usan memoria la llevan. 64 procesos: 69 → 4 MB. 102/102.

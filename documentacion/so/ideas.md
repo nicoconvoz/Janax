@@ -372,3 +372,6 @@ Devolución: es la segmentación de los sistemas clásicos (cada ambiente con su
 ambientes que se construyen y se destruyen, y compactación como la de los recolectores de memoria: mover es
 invisible porque el programa habla en "ambiente + posición" y el núcleo traduce. Lo construido y medido:
 `janaxos.md`, sección "Ambientes".
+
+> *"Que sea la primer orden del proceso."* — el proceso nace sin memoria y su primera orden construye su
+> ambiente 0. Tocar memoria sin haberla dado es error 5 (*"exacto, construí"*).

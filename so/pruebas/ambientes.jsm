@@ -4,6 +4,7 @@
 ; of a room) - 1 (the room with the queue).
 include '../../escalon0/janax.inc'
 include 'ambientes.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
 jldi j8, 2000h
 pedido 2, j8, j10       ; room A: 1 << 32

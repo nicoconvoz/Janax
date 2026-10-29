@@ -1,6 +1,7 @@
 ; "write" and "grow" in the same round: two screens. Growing answers the new room's address (room 1,
 ; position 0), and a store there proves the room was built.
 include '../../escalon0/janax.inc'
+jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j1, 200h
 jldi j2, 0A78h
 jst j2, j1, 0
