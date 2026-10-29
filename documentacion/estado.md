@@ -53,3 +53,5 @@ por proceso, atenuación, verificar subiendo a la raíz, revocar = una marca con
 (programa.bin@pmlg), pedidos ceder/usar/revocar/consultar. 23/23.
 2026-10-29 — Archivos: borrar, renombrar, listar y normalización NFC (vía Windows en simbiosis). 26/26. ARM64: forma larga
 de saltos condicionales (generada en PC, falta el teléfono).
+2026-10-29 — Porteros por etiqueta: prefijo por nodo (al lanzar @..:hex o pedido 15), verificado en toda la subida,
+listar filtra. 31/31.

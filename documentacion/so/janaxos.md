@@ -85,6 +85,13 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      propios privilegios), **10 revocar** (`a` = un portero que cuelga del propio, nunca el propio),
      **11 consultar** (`a` = puerta → mi portero). Un portero es "propio" si subiendo desde él se llega,
      sin nada revocado en el camino, al portero del proceso para esa puerta.
+   - **Permisos por etiqueta**: un portero puede llevar un **prefijo de etiqueta** (normalizado). Un pedido
+     de archivos (abrir, borrar, renombrar las dos etiquetas, listar) solo pasa si la etiqueta empieza con
+     el prefijo de **cada** portero en la subida; listar oculta lo que no se puede ver. Al lanzar:
+     `programa.bin@lg:f09fa68e` (prefijo en hexadecimal: la línea de comandos de Windows no lleva emojis).
+     Pedido **15 ceder con etiqueta** (`a` = padre propio, `b` = bloque {permisos, largo, bytes}). Un hijo
+     nunca sale del prefijo de su padre: su prefijo tiene que ser una etiqueta que el padre permita, y eso
+     se verifica con la misma rutina.
    - Un pedido negado responde −1. Si hubo negados: `porteros: nodos=N negados=M`.
 
 Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
@@ -103,7 +110,11 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-26/26. Archivos (2): **listar, borrar y renombrar** en una carpeta limpia (2 etiquetas, borrar "a", "b" →
+31/31. Porteros por etiqueta: prefijo `🦎` permite guardar `🦎 notas.txt`; prefijo `a` lo niega; listar con
+prefijo `c` ve 1 y con `d` ve 0; un hijo con prefijo `x` no puede ceder uno con `y`, y desde `x` no se abre
+`🦎 notas.txt`.
+
+Archivos (2): **listar, borrar y renombrar** en una carpeta limpia (2 etiquetas, borrar "a", "b" →
 "c", queda 1: "c"); **etiquetas que se ven iguales son el mismo archivo** (guardado por `é` de una pieza,
 leído por `e` + acento, y en Windows hay un solo archivo: `c3a9`).
 
@@ -157,7 +168,7 @@ mejorar si hace falta.
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
   desconocido.
-- Porteros: permisos por etiqueta o grupo de etiquetas (hoy son por puerta), y que dar un permiso
-  importante pida la firma de más de un portero, como las órdenes firmadas de Wenas.
+- Porteros: que dar un permiso importante pida la firma de más de un portero, como las órdenes firmadas
+  de Wenas (falta decidir quién firma).
 - La campana (0..1) y la cubierta.
 - Modo cero.

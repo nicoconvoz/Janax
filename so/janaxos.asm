@@ -66,7 +66,9 @@ N_PARENT = 0                    ; -1 for the root
 N_RIGHTS = 8
 N_ALIVE  = 16
 N_DOOR   = 24
-NODE_SIZE = 32
+N_PREFIX = 32                   ; label prefix: offset in the prefix pool
+N_PLEN   = 40                   ; and its length (0 = any label)
+NODE_SIZE = 48
 
 section '.data' data readable writeable
 
@@ -86,8 +88,8 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 14                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
-                                ; consult, delete, rename, list
+  KINDS     = 15                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
+                                ; consult, delete, rename, list, cede with label
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -107,10 +109,11 @@ section '.data' data readable writeable
   t_reqs    db ' pedidos=', 0
   serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
+              dq serve_cede_label
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3
-  kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0
+  kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
   assert $ - kind_right = KINDS + 1
   ; porters
   nodes     dq 0
@@ -118,6 +121,16 @@ section '.data' data readable writeable
   capnodes  dq 0
   denied    dq 0
   launch_rights dq 0
+  launch_raw db HOST_PATH dup 0
+  launch_pfx db NORM_CAP dup 0
+  launch_pfx_len dq 0
+  nn_pptr   dq 0
+  nn_plen   dq 0
+  nn_poff   dq 0
+  pfx_pool  dq 0
+  pfx_used  dq 0
+  pfx_cap   dq 0
+  cede_rights dq 0
   nn_parent dq 0
   nn_rights dq 0
   nn_door   dq 0
@@ -140,6 +153,7 @@ section '.data' data readable writeable
   wide_in   dw WIDE_CAP dup 0
   wide_out  dw WIDE_CAP dup 0
   wide_len  dq 0
+  norm_len  dq 0
   norm_label db NORM_CAP dup 0
   FIND_NAME = 44                ; cFileName inside WIN32_FIND_DATAA
   find_data db 320 dup 0
@@ -356,6 +370,7 @@ start:
 .path:
         mov     r14, rsi                ; this path
         mov     qword [launch_rights], R_ALL   ; no "@": every permission
+        mov     qword [launch_pfx_len], 0      ; and no label prefix
 .path_end:
         mov     al, [rsi]
         test    al, al
@@ -384,10 +399,52 @@ start:
         je      .grant
         mov     edx, R_WRITE
         cmp     al, 'g'
-        jne     .letter
+        je      .grant
+        cmp     al, ':'
+        je      .prefix
+        jmp     .letter
 .grant:
         or      [launch_rights], rdx
         jmp     .letter
+.prefix:                                ; @...:hex = a label prefix for files (hex: the command line has no emojis)
+        lea     rdi, [launch_raw]
+        xor     ecx, ecx
+.prefix_pair:
+        movzx   eax, byte [rsi]
+        test    eax, eax
+        jz      .prefix_read
+        call    hex_digit
+        js      fail_args
+        mov     edx, eax
+        movzx   eax, byte [rsi + 1]
+        call    hex_digit
+        js      fail_args
+        shl     edx, 4
+        or      eax, edx
+        stosb
+        add     rsi, 2
+        inc     ecx
+        cmp     ecx, HOST_PATH
+        jae     fail_args
+        jmp     .prefix_pair
+.prefix_read:
+        test    ecx, ecx
+        jz      fail_args
+        push    rsi
+        sub     rsp, 8
+        lea     rsi, [launch_raw]
+        call    normalize_bytes
+        add     rsp, 8
+        pop     rsi
+        test    eax, eax
+        jz      fail_args
+        push    rsi
+        lea     rsi, [norm_label]
+        lea     rdi, [launch_pfx]
+        mov     rcx, [norm_len]
+        mov     [launch_pfx_len], rcx
+        rep     movsb
+        pop     rsi
 .open:
         invoke  CreateFileA, r14, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
         cmp     rax, -1
@@ -422,7 +479,13 @@ start:
         mov     rdx, [rax + N_RIGHTS]
         and     rdx, [launch_rights]    ; never more than its porter has
         mov     r8, r15
-        call    new_node
+        cmp     r15d, 3                 ; the files microporter carries the launch prefix, if any
+        jne     @f
+        lea     rax, [launch_pfx]
+        mov     [nn_pptr], rax
+        mov     rax, [launch_pfx_len]
+        mov     [nn_plen], rax
+@@:     call    new_node
         mov     [rbx + P_GATES + r15*8 - 8], rax
         inc     r15d
         cmp     r15d, DOORS
@@ -475,6 +538,24 @@ start:
         invoke  WriteFile, [hout], line, rdi, written, 0
 .quit:
         invoke  ExitProcess, 0
+
+; eax = character -> its value 0..15 for 0-9 a-f A-F, or -1 with the sign flag set.
+hex_digit:
+        sub     eax, '0'
+        cmp     eax, 9
+        jbe     .ok
+        or      eax, 20h                ; A-F as a-f
+        sub     eax, 'a' - '0' or 20h
+        cmp     eax, 5
+        ja      .bad
+        add     eax, 10
+.ok:
+        test    eax, eax
+        ret
+.bad:
+        mov     eax, -1
+        test    eax, eax
+        ret
 
 ; Copies the zero-terminated text at rsi to rdi; leaves rdi just past it.
 put_text:
@@ -1249,6 +1330,9 @@ serve_open:
         call    label_path
         test    eax, eax
         jz      .invalid
+        call    files_prefix_ok
+        test    eax, eax
+        jz      .invalid
         invoke  CreateFileA, host_path, GENERIC_READ + GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
         inc     qword [hostcalls]
         cmp     rax, -1
@@ -1277,20 +1361,12 @@ serve_open:
 ; -> eax = 1 and "folder\hex" written, where hex is the label in Unicode normal form C (the one-piece
 ; form, so two labels that look the same are the same file); eax = 0 if the label is outside the
 ; cabin, empty, not UTF-8, or too long for the host. In symbiosis the host does the normalization.
-label_path:
-        push    r12 r13 r14
-        mov     r12, rdi
-        test    rcx, rcx
-        jz      .no
-        mov     rax, [rbx + P_SIZE]
-        cmp     rsi, rax
-        ja      .no
-        sub     rax, rsi
-        cmp     rcx, rax
-        ja      .no
+; rsi = bytes, rcx = how many -> eax = 1 and norm_label / norm_len = the same text in Unicode normal
+; form C; eax = 0 if it is not valid UTF-8 or does not fit. In symbiosis the host normalizes.
+normalize_bytes:
+        sub     rsp, 8
         cmp     rcx, WIDE_CAP
         ja      .no
-        add     rsi, [rbx + P_DATA]
         mov     [lab_ptr], rsi
         mov     [lab_len], rcx
         call    utf8_ok
@@ -1307,7 +1383,73 @@ label_path:
         invoke  WideCharToMultiByte, CP_UTF8, 0, wide_out, [wide_len], norm_label, NORM_CAP, 0, 0
         test    eax, eax
         jz      .no
-        mov     r13, rax
+        mov     [norm_len], rax
+        mov     eax, 1
+        add     rsp, 8
+        ret
+.no:
+        xor     eax, eax
+        add     rsp, 8
+        ret
+
+; r8 = node -> r8 = 1 if norm_label (norm_len bytes) starts with the label prefix of every porter on the
+; way up to the root (porters without a prefix allow any label), else 0. Uses r9, r10, r11, rsi, rdi, rcx.
+prefix_allows:
+        cmp     r8, -1
+        je      .yes
+        cmp     r8, [nnodes]
+        jae     .no
+        imul    r10, r8, NODE_SIZE
+        add     r10, [nodes]
+        mov     rcx, [r10 + N_PLEN]
+        test    rcx, rcx
+        jz      .up
+        cmp     rcx, [norm_len]
+        ja      .no
+        mov     rsi, [r10 + N_PREFIX]
+        add     rsi, [pfx_pool]
+        lea     rdi, [norm_label]
+        repe    cmpsb
+        jne     .no
+.up:
+        mov     r8, [r10 + N_PARENT]
+        jmp     prefix_allows
+.yes:
+        mov     r8d, 1
+        ret
+.no:
+        xor     r8d, r8d
+        ret
+
+; The label just normalized must be allowed by the process's files porter; a refusal counts.
+; -> eax = 1 allowed, 0 refused.
+files_prefix_ok:
+        push    rsi rdi
+        mov     r8, [rbx + P_GATES + 2*8]
+        call    prefix_allows
+        mov     eax, r8d
+        test    eax, eax
+        jnz     @f
+        inc     qword [denied]
+@@:     pop     rdi rsi
+        ret
+
+label_path:
+        push    r12 r13 r14
+        mov     r12, rdi
+        test    rcx, rcx
+        jz      .no
+        mov     rax, [rbx + P_SIZE]
+        cmp     rsi, rax
+        ja      .no
+        sub     rax, rsi
+        cmp     rcx, rax
+        ja      .no
+        add     rsi, [rbx + P_DATA]
+        call    normalize_bytes
+        test    eax, eax
+        jz      .no
+        mov     r13, [norm_len]
         lea     rax, [r13*2]            ; folder + "\" + two characters per byte + 0 must fit
         add     rax, [dir_len]
         add     rax, 2
@@ -1360,6 +1502,9 @@ serve_delete:
         call    label_path
         test    eax, eax
         jz      .invalid
+        call    files_prefix_ok
+        test    eax, eax
+        jz      .invalid
         invoke  DeleteFileA, host_path
         inc     qword [hostcalls]
         test    eax, eax
@@ -1395,12 +1540,18 @@ serve_rename:
         call    label_path
         test    eax, eax
         jz      .invalid
+        call    files_prefix_ok
+        test    eax, eax
+        jz      .invalid
         mov     rsi, [rbp + r13 + 8]
         add     rsi, [rbp + r13 + 16]
         jc      .invalid
         mov     ecx, [rbp + r13 + 4]
         lea     rdi, [host_path_2]
         call    label_path
+        test    eax, eax
+        jz      .invalid
+        call    files_prefix_ok
         test    eax, eax
         jz      .invalid
         invoke  MoveFileA, host_path, host_path_2
@@ -1475,6 +1626,13 @@ list_one:
         call    list_decode             ; eax = label bytes in norm_label, or -1
         cmp     eax, -1
         je      .another
+        mov     [norm_len], rax         ; only what the process's porters allow is listed
+        push    rax
+        mov     r8, [rbx + P_GATES + 2*8]
+        call    prefix_allows
+        pop     rax
+        test    r8d, r8d
+        jz      .another
         mov     ecx, eax
         lea     rdx, [rcx + 15]         ; qword length + bytes padded to 8
         and     rdx, -8
@@ -1829,6 +1987,44 @@ new_node:
 @@:     mov     rax, [nn_new]
         mov     [nodes], rax
 .room:
+        ; its label prefix (nn_plen bytes at nn_pptr, 0 = none) goes to the prefix pool, which doubles
+        mov     qword [nn_poff], 0
+        mov     rcx, [nn_plen]
+        test    rcx, rcx
+        jz      .no_prefix
+        mov     rax, [pfx_used]
+        add     rax, rcx
+        cmp     rax, [pfx_cap]
+        jbe     .pool_room
+        mov     rdx, [pfx_cap]
+        add     rdx, rdx
+        cmp     rdx, rax
+        jae     @f
+        mov     rdx, rax
+@@:     mov     [pfx_cap], rdx
+        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [nn_new], rax
+        mov     rdi, rax
+        mov     rsi, [pfx_pool]
+        mov     rcx, [pfx_used]
+        rep     movsb
+        cmp     qword [pfx_pool], 0
+        je      @f
+        invoke  VirtualFree, [pfx_pool], 0, MEM_RELEASE
+@@:     mov     rax, [nn_new]
+        mov     [pfx_pool], rax
+.pool_room:
+        mov     rax, [pfx_used]
+        mov     [nn_poff], rax
+        mov     rdi, [pfx_pool]
+        add     rdi, rax
+        mov     rsi, [nn_pptr]
+        mov     rcx, [nn_plen]
+        add     [pfx_used], rcx
+        rep     movsb
+.no_prefix:
         mov     rax, [nnodes]
         imul    rdx, rax, NODE_SIZE
         add     rdx, [nodes]
@@ -1839,6 +2035,11 @@ new_node:
         mov     qword [rdx + N_ALIVE], 1
         mov     rcx, [nn_door]
         mov     [rdx + N_DOOR], rcx
+        mov     rcx, [nn_poff]
+        mov     [rdx + N_PREFIX], rcx
+        mov     rcx, [nn_plen]
+        mov     [rdx + N_PLEN], rcx
+        mov     qword [nn_plen], 0      ; the next node has no prefix unless its creator sets one
         inc     qword [nnodes]
         add     rsp, 8
         pop     rdi rsi
@@ -1981,6 +2182,63 @@ gate_consult:
         mov     qword [rbp + r13 + 24], -1
         ret
 
+; 15 cede with label: a = parent (mine), b = block {rights qword, length qword, label bytes} -> a child
+; that can only touch labels starting with that prefix. The prefix itself has to be a label the parent
+; allows, so a child never escapes its parent's prefix.
+serve_gate serve_cede_label, 15, gate_cede_label
+
+gate_cede_label:
+        mov     r8, [rbp + r13 + 8]
+        call    mine
+        test    r9d, r9d
+        jz      gate_refused
+        mov     rax, [rbp + r13 + 16]   ; the block must be inside the cabin
+        mov     rcx, [rbx + P_SIZE]
+        cmp     rax, rcx
+        ja      .invalid
+        sub     rcx, rax
+        cmp     rcx, 16
+        jb      .invalid
+        sub     rcx, 16
+        mov     rdx, [rbx + P_DATA]
+        add     rdx, rax
+        mov     rax, [rdx + 8]          ; prefix length
+        cmp     rax, rcx
+        ja      .invalid
+        test    rax, rax
+        jz      .invalid
+        mov     r9, [rdx]
+        mov     [cede_rights], r9
+        lea     rsi, [rdx + 16]
+        mov     rcx, rax
+        push    rsi rdi
+        call    normalize_bytes
+        pop     rdi rsi
+        test    eax, eax
+        jz      .invalid
+        mov     r8, [rbp + r13 + 8]
+        push    rsi rdi
+        call    prefix_allows
+        pop     rdi rsi
+        test    r8d, r8d
+        jz      gate_refused
+        mov     rcx, [rbp + r13 + 8]
+        imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rdx, [cede_rights]
+        and     rdx, [rax + N_RIGHTS]
+        mov     r8, [rax + N_DOOR]
+        lea     rax, [norm_label]
+        mov     [nn_pptr], rax
+        mov     rax, [norm_len]
+        mov     [nn_plen], rax
+        call    new_node
+        mov     [rbp + r13 + 24], rax
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        ret
+
 gate_refused:
         mov     qword [rbp + r13 + 24], -1
         inc     qword [denied]
@@ -2052,6 +2310,7 @@ zero_mode:                              ; started by the firmware: not built yet
         jmp     zero_mode
 
 no_programs:
+fail_args:                              ; also a launch argument that does not parse
         invoke  ExitProcess, 4
 fail_file:
         invoke  ExitProcess, 3

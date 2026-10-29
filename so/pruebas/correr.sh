@@ -186,5 +186,29 @@ else
   echo "MAL  archivo normalizado en el anfitrion: esperaba 'c3a9', hay '$nfc'"; mal=$((mal + 1))
 fi
 
+# --- porters by label: a prefix (hexadecimal at launch) limits which labels a process can touch ---
+caso "porteros: prefijo que permite" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000004 t=56
+ventanilla: *" archivo_guardar@lg:f09fa68e
+
+caso "porteros: prefijo que no permite" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=56
+ventanilla: *
+porteros: nodos=7 negados=1" archivo_guardar@lg:61
+
+carpeta=$(cygpath -m "$salida/archivos_lista")    # holds one label: "c"
+caso "porteros: listar ve lo permitido" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000001 t=12
+ventanilla: *" archivo_listar@l:63
+caso "porteros: listar oculta lo demas" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000000 t=12
+ventanilla: *" archivo_listar@l:64
+unset carpeta
+
+caso "porteros: un hijo no sale del prefijo del padre" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=*
+ventanilla: *
+porteros: nodos=8 negados=2" porteros_etiqueta
+
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]
