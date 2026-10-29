@@ -38,6 +38,32 @@ macro jjz rd, target     { j_word 0Dh, rd, 0, ((target) - $ - 4) / 4 }
 macro jjnz rd, target    { j_word 0Eh, rd, 0, ((target) - $ - 4) / 4 }
 macro jshi rd, imm       { j_word 0Fh, rd, 0, imm }
 
+; The while is the only loop of Janax (Capitan): the condition at the top, the body, the jump back.
+; There is no "for": a counted loop is a while on its counter. Whiles nest (a stack of labels).
+;   jwhile r  ... jwend   repeats while r is not zero
+;   jwhilez r ... jwend   repeats while r is zero
+; Shape (a rotated while): jjmp check / body: ... / check: jjnz/jjz r, body
+; It asks before the first lap like any while, but a lap costs the body + 1 instruction, not + 2.
+macro j_while_open repeat_op, r {
+  local check, body
+  jjmp check
+  body:
+  j_while_check equ check
+  j_while_body equ body
+  j_while_reg equ r
+  j_while_op equ repeat_op
+}
+macro jwhile r  { j_while_open 0Eh, r }
+macro jwhilez r { j_while_open 0Dh, r }
+macro jwend {
+  j_while_check:
+  j_word j_while_op, j_while_reg, 0, ((j_while_body) - $ - 4) / 4
+  restore j_while_check
+  restore j_while_body
+  restore j_while_reg
+  restore j_while_op
+}
+
 ; Memory: 64-bit accesses must be 8-byte aligned; byte accesses zero-extend on load.
 macro jld rd, ra, imm    { j_word 10h, rd, ra, imm }
 macro jst rd, ra, imm    { j_word 11h, rd, ra, imm }

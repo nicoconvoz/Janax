@@ -61,14 +61,14 @@ P0 codigo=0 j0=000000000000002A t=2" 02_ldi
 caso "lo corto primero" 0 0 "$fijo0
 P1 codigo=0 j0=000000000000002A t=6
 P2 codigo=0 j0=000000000000002A t=9
-P0 codigo=0 j0=000000000007A314 t=3010" largo_1000 02_ldi 04_suma
+P0 codigo=0 j0=000000000007A314 t=3012" largo_1000 02_ldi 04_suma
 
 # Switch cost 4: the first turn is t = ((D + c) + sqrt((D + c)^2 + 4 c s)) / 2 = 4 for the long one
 # (D = 0, s = 0); then the short one (D = 4) gets 8 and ends after its 2 instructions.
 caso "la prioridad decide el turno" 4 0 "modo: simbiosis
 costo de cambio: 4.00 instrucciones (fijado)
 P1 codigo=0 j0=000000000000002A t=6
-P0 codigo=0 j0=000000000007A314 t=3006" largo_1000 02_ldi
+P0 codigo=0 j0=000000000007A314 t=3008" largo_1000 02_ldi
 
 # A process that breaks only breaks its own cabin.
 caso "un pasajero rompe lo suyo" 0 0 "$fijo0
@@ -77,14 +77,26 @@ P1 codigo=0 j0=000000000000002A t=3" 19_opcode_invalido 02_ldi
 
 # Same address in two processes that keep switching: each one sees only its own value.
 caso "camarotes separados" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000007 t=33
-P1 codigo=0 j0=0000000000000009 t=34" camarote_7 camarote_9
+P0 codigo=0 j0=0000000000000007 t=37
+P1 codigo=0 j0=0000000000000009 t=38" camarote_7 camarote_9
+
+# The while: two copies taking turns of one or two instructions, so a turn ends at every point of the
+# loop (also between the entry jump and the condition, which the routine engine runs as one routine).
+# Per copy: 3 + entry jump + 10 laps * 3 + last check + jhalt = 36.
+caso "while: el turno corta en cualquier punto" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000037 t=71
+P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
+
+caso "while: con costo de cambio" 3 0 "modo: simbiosis
+costo de cambio: 3.00 instrucciones (fijado)
+P0 codigo=0 j0=0000000000000037 t=65
+P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)
 P* codigo=0 j0=000000000000000[79] t=*
-P* codigo=0 j0=000000000000000[79] t=34" camarote_7 camarote_9
+P* codigo=0 j0=000000000000000[79] t=38" camarote_7 camarote_9
 
 # The next boot on the same machine and kernel remembers it instead of measuring again.
 caso "costo recordado" "" 0 "modo: simbiosis

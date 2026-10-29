@@ -16,13 +16,14 @@ jadd j11, j1, j9
 jldi j12, 4
 jcall tocar
 jadd j6, j13, j9                ; the child's number
-espera:
-jldi j10, 19                    ; child's state: -1 while it runs
-jadd j11, j6, j9
-jcall tocar
-jldi j8, 1
-jadd j7, j13, j8
-jjz j7, espera
+jldi j7, 0
+jwhilez j7
+  jldi j10, 19                    ; child's state: -1 while it runs
+  jadd j11, j6, j9
+  jcall tocar
+  jldi j8, 1
+  jadd j7, j13, j8
+jwend
 jadd j0, j13, j9
 jhalt
 tocar:

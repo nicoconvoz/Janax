@@ -6,10 +6,10 @@ jshi j1, 0                      ; j1 = 4000000h rounds
 jldi j2, 1
 jldi j3, 3
 jldi j4, 0                      ; address 0 of the cabin
-vuelta:
-jcall paso
-jsub j1, j1, j2
-jjnz j1, vuelta
+jwhile j1
+  jcall paso
+  jsub j1, j1, j2
+jwend
 jhalt
 paso:
 jld j5, j4, 0

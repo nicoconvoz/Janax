@@ -12,12 +12,12 @@ jldi j8, 32
 jadd j7, j3, j9
 jldi j10, 8
 jadd j7, j7, j10                ; first entry
-llenar:
-jst j1, j7, 0                   ; kind 1: write
-jst j6, j7, 8
-jst j4, j7, 16
-jadd j7, j7, j8
-jsub j5, j5, j1
-jjnz j5, llenar
+jwhile j5
+  jst j1, j7, 0                   ; kind 1: write
+  jst j6, j7, 8
+  jst j4, j7, 16
+  jadd j7, j7, j8
+  jsub j5, j5, j1
+jwend
 jsys j0, j3
 jhalt

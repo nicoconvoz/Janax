@@ -20,20 +20,21 @@ jldi j12, 5
 jcall tocar
 jadd j6, j13, j9                ; the parent's number
 jldi j7, 0                      ; signatures given
-bucle:
-jcall firmar_todo
-jldi j10, 19
-jadd j11, j6, j9
-jcall tocar
-jldi j8, 1
-jadd j2, j13, j8
-jjz j2, bucle                   ; while the parent runs
+jldi j2, 0
+jwhilez j2                      ; while the parent runs
+  jcall firmar_todo
+  jldi j10, 19
+  jadd j11, j6, j9
+  jcall tocar
+  jldi j8, 1
+  jadd j2, j13, j8
+jwend
 jldi j1, 100                    ; and a while after
-mira:
-jcall firmar_todo
-jldi j8, 1
-jsub j1, j1, j8
-jjnz j1, mira
+jwhile j1
+  jcall firmar_todo
+  jldi j8, 1
+  jsub j1, j1, j8
+jwend
 jadd j0, j7, j9
 jhalt
 firmar_todo:                    ; sign the first request waiting for me, if any

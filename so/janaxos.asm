@@ -227,13 +227,14 @@ section '.data' data readable writeable
   fixed_text db ' instrucciones (fijado)', 13, 10
   FIXED_LEN = $ - fixed_text
 
-  ; calibration program: 2 * CALIB_LOOPS instructions of a tight loop (jsub / jjnz)
+  ; calibration program: a while of CALIB_LOOPS laps of 2 instructions (jsub / its condition)
   CALIB_LOOPS = 200000h         ; criterion: ~4 M instructions per run, so a clock speed change weighs little
   calib_prog dd 01h or (1 shl 8) or ((CALIB_LOOPS shr 16) shl 16)          ; jldi j1, high
              dd 0Fh or (1 shl 8) or ((CALIB_LOOPS and 0FFFFh) shl 16)      ; jshi j1, low
              dd 01h or (2 shl 8) or (1 shl 16)                             ; jldi j2, 1
-             dd 03h or (1 shl 8) or (1 shl 12) or (2 shl 16)               ; vuelta: jsub j1, j1, j2
-             dd 0Eh or (1 shl 8) or ((-2 and 0FFFFh) shl 16)               ; jjnz j1, vuelta
+             dd 0Ch or (1 shl 16)                                          ; jwhile j1: jjmp check
+             dd 03h or (1 shl 8) or (1 shl 12) or (2 shl 16)               ; body: jsub j1, j1, j2
+             dd 0Eh or (1 shl 8) or ((-2 and 0FFFFh) shl 16)               ; jwend: check: jjnz j1, body
              dd 00h                                                        ; jhalt
   CALIB_WORDS = ($ - calib_prog) / 4
   calib_procs db 2 * PROC_SIZE dup 0

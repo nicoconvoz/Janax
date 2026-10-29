@@ -7,12 +7,12 @@ jldi j3, 100h
 jldi j5, 10000
 jldi j1, 1
 jldi j4, 2
-otra:
-jst j1, j3, 0                   ; count 1
-jst j1, j3, 8                   ; kind 1: write
-jst j6, j3, 16
-jst j4, j3, 24
-jsys j0, j3
-jsub j5, j5, j1
-jjnz j5, otra
+jwhile j5
+  jst j1, j3, 0                   ; count 1
+  jst j1, j3, 8                   ; kind 1: write
+  jst j6, j3, 16
+  jst j4, j3, 24
+  jsys j0, j3
+  jsub j5, j5, j1
+jwend
 jhalt

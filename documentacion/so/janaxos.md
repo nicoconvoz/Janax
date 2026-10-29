@@ -155,6 +155,10 @@ de registros de 16 bytes, uno por palabra más uno final:
   del intérprete (y devuelve esa instrucción, porque el intérprete falla antes de contarla). Un opcode
   desconocido tiene la rutina que termina con código 1.
 - El tiempo se sigue contando en instrucciones Janax, así que el planificador ve exactamente lo mismo.
+- **Un salto que cae sobre un salto condicional se resuelve en el lugar**: al decodificar, un `jjmp` cuyo
+  destino es un `jjz`/`jjnz` recibe una rutina que hace las dos cosas (y cuenta las dos instrucciones;
+  si el turno se termina entre ellas, el proceso queda parado en la condición, como en el intérprete). El
+  salto de entrada de cada while cae sobre su condición, así que entrar a un bucle cuesta una rutina menos.
 - `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
   y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
 
@@ -164,7 +168,7 @@ de registros de 16 bytes, uno por palabra más uno final:
 bash so/pruebas/correr.sh
 ```
 
-76/76: **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+80/80: **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -197,7 +201,7 @@ sintonía** entre rondas (1 pantalla, 1 resintonización); tipo desconocido (−
 camarote (código 5); achicar no pasa el fin de la cola.
 
 Planificador (con `c` fijado, salvo uno): un proceso; **lo corto primero** (un proceso largo puesto primero en la fila y dos cortos:
-terminan los cortos en t=6 y t=9 y el largo en t=3010, exactamente lo que da la regla calculada a mano); un
+terminan los cortos en t=6 y t=9 y el largo en t=3012, exactamente lo que da la regla calculada a mano); un
 proceso que rompe solo lo suyo; **camarotes separados** (dos procesos escriben la misma dirección mientras
 se alternan y cada uno lee su propio valor); **la prioridad decide el turno** (con `c = 4` la fórmula da
 turnos de 4 y 8, calculados a mano); **costo medido** (los resultados no cambian aunque `c` cambie de
@@ -239,6 +243,12 @@ tres corridas cada uno, 2026-10-29.
 **El doble de rápido**, con el mismo `j0` y el mismo `t`. ⚠️ Una primera medición con un banco 16 veces
 más corto daba "1,6×": el arranque tapaba la diferencia. El banco largo es el que vale.
 
+Más tarde el mismo día, con el banco escrito en while (mismas instrucciones por vuelta, 2 más en total) y
+los dos motores **intercalados**: rutinas ~1,51–1,67 s, intérprete ~3,69–4,34 s (≈2,5×). ⚠️ Que el
+intérprete haya pasado de ~2,9 s a ~4 s **no es el while**: el núcleo viejo con el banco viejo, medido
+intercalado en ese momento, también daba ~3,8–4,2 s. La máquina estaba más lenta y el intérprete lo
+sufre más que las rutinas. Por eso los motores se comparan siempre intercalados, en el mismo momento.
+
 ### Cuánto ahorra el lote de la ventanilla
 
 Bancos `so/bancos/lote_10000.jsm` y `uno_por_uno_10000.jsm`: las mismas 10.000 líneas, salida a un archivo
@@ -257,7 +267,9 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 - Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
   lanzamiento lee el archivo de nuevo). Medir qué rutinas pesan más y fundir las parejas frecuentes
-  (por ejemplo `jsub` + `jjnz`) en una sola rutina.
+  (por ejemplo `jsub` + `jjnz`, el final de casi todo while) en una sola rutina.
+- El núcleo mismo (`janaxos.asm`, x86) todavía tiene bucles en las dos formas: llevarlos todos a la forma
+  del while rotado.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

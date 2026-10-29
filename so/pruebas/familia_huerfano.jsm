@@ -15,12 +15,13 @@ jor j10, j10, j8
 jadd j11, j1, j9
 jldi j12, 4
 jcall tocar
-mira:
-jldi j10, 18
-jldi j11, 800h
-jldi j12, 100h
-jcall tocar
-jjz j13, mira
+jldi j13, 0
+jwhilez j13
+  jldi j10, 18
+  jldi j11, 800h
+  jldi j12, 100h
+  jcall tocar
+jwend
 jldi j0, 7
 jhalt
 tocar:

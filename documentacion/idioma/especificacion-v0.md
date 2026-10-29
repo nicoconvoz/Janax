@@ -67,6 +67,41 @@ memoria, 6 acceso desalineado, 7 demasiadas llamadas anidadas, 8 `jret` sin `jca
 
 Equivalentes en cada procesador y el mecanismo de adaptación: `cambiaformas.md`.
 
+### El while: el único bucle (marca de Janax, Capitán 2026-10-29)
+
+En Janax **no existe el `for`**: todo bucle es un while. Un bucle con contador es un while sobre su contador.
+
+```
+jwhile r      ; repite mientras r no sea cero
+  ...
+jwend
+
+jwhilez r     ; repite mientras r sea cero
+  ...
+jwend
+```
+
+Se pueden anidar. Son macros sobre las instrucciones de salto, con la forma de un **while rotado**:
+
+```
+      jjmp pregunta
+cuerpo:
+      ...
+pregunta:
+      jjnz r, cuerpo        ; jjz para jwhilez
+```
+
+Pregunta antes de la primera vuelta, como todo while (un while con `r` = 0 da cero vueltas), pero una
+vuelta cuesta el cuerpo + 1 instrucción, igual que un bucle que pregunta al final. Escrito con la pregunta
+arriba costaría el cuerpo + 2, y eso lo pagarían el intérprete y los dos traductores. Por todo el bucle se
+pagan 2 instrucciones más que con un bucle que pregunta al final: el salto de entrada y la última pregunta.
+
+Un bucle que tiene que dar al menos una vuelta (esperar a que algo pase) se escribe poniendo la condición
+antes de entrar: `jldi r, 0` / `jwhilez r` / … calcula `r` … / `jwend`.
+
+Los saltos `jjz`/`jjnz`/`jjmp` sueltos siguen existiendo para las decisiones ("si pasa esto, saltá"), no
+para bucles.
+
 Opcode desconocido y salirse del programa son errores del intérprete (códigos 1 y 2), nunca comportamiento
 indefinido.
 

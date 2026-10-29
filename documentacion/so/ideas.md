@@ -324,6 +324,20 @@ Reemplaza al gemelo nativo de arriba (que generaba código de máquina y lo guar
 - Nombre técnico: *direct-threaded code* con decodificación previa (lo usan Forth, el intérprete de Lua
   y el "template interpreter" de Java).
 
+## 2026-10-29 — Todo en while: la marca registrada de Janax (Capitán)
+
+> "Sólo usá el bucle while en todo el diseño, y que sea la marca registrada de nuestro diseño. Si es for,
+> lo convertimos en while. Todo en while."
+
+- El idioma trae `jwhile r` / `jwhilez r` … `jwend` como **única** forma de bucle; no hay `for`
+  (`documentacion/idioma/especificacion-v0.md`).
+- Con física a favor: se arma como **while rotado** (entra saltando a la pregunta, que vive abajo), así
+  que cada vuelta cuesta lo mismo que un bucle que pregunta al final. Escribir todo en while es gratis, y
+  lo gana cada motor: intérprete, traductores y rutinas.
+- Todos los programas, bancos y la calibración del núcleo pasaron a while. Las esperas ("hacé y después
+  preguntá") se escriben poniendo la condición antes de entrar.
+- Falta llevar los bucles del propio núcleo x86 a la misma forma.
+
 ## 2026-10-29 — Los bucles (Capitán)
 
 > "Me gusta más el while que el for."

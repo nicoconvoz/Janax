@@ -69,3 +69,6 @@ con los permisos del padre; se disuelve sin nadie debajo. 38/38.
 2026-10-29 — Cambio de estrategia (Capitán): en vez de generar código nativo, motor de rutinas: cada programa se
 decodifica una vez a una tabla de rutinas nativas ya compiladas en el núcleo. 671 M instrucciones: 1,41 s contra 2,85 s
 del intérprete (2×), mismos resultados. La suite corre con los dos motores: 76/76.
+2026-10-29 — Todo en while (Capitán): `jwhile`/`jwhilez`/`jwend`, único bucle del idioma, armado como while rotado
+(cada vuelta cuesta lo mismo; +2 instrucciones por bucle). Programas, bancos y calibración convertidos; el motor de
+rutinas resuelve en el lugar el salto que cae sobre una condición. Escalón 0 113/113 (PC), Janax OS 80/80.

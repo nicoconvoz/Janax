@@ -88,6 +88,33 @@ decode_program:
         shl     rcx, 4
         lea     rdx, [t_fail_pc]
         mov     [rdi + rcx], rdx
+        ; A jjmp that lands on a jjz/jjnz decides that condition in place. The entry jump of every
+        ; (rotated) while lands on its condition, so entering a loop pays one routine less.
+        xor     ebx, ebx
+.thread:
+        cmp     rbx, r12
+        jae     .threaded
+        mov     rcx, rbx
+        shl     rcx, 4
+        add     rcx, rdi
+        lea     rdx, [t_jmp]
+        cmp     [rcx], rdx
+        jne     .thread_next
+        mov     eax, [rcx + 12]
+        mov     rax, [rdi + rax]        ; the routine at the target
+        lea     rdx, [t_jz]
+        lea     r8, [t_jmp_jz]
+        cmp     rax, rdx
+        je      @f
+        lea     rdx, [t_jnz]
+        lea     r8, [t_jmp_jnz]
+        cmp     rax, rdx
+        jne     .thread_next
+@@:     mov     [rcx], r8
+.thread_next:
+        inc     rbx
+        jmp     .thread
+.threaded:
         mov     rax, rdi
 .done:
         mov     rsp, r13
@@ -245,6 +272,31 @@ t_jnz:
         mov     eax, [rdx + 12]
         lea     r12, [r13 + rax]
 @@:     t_next
+
+; jjmp + the jjz/jjnz it lands on, counted as the two instructions they are. If the turn ends between
+; them, the process stops at the condition, exactly where the interpreter would.
+macro t_jmp_cond name, exits_when {
+  name:
+          mov     eax, [rdx + 12]
+          lea     r8, [r13 + rax]         ; the condition's record
+          sub     rbp, 1
+          jc      .cut
+          movzx   ecx, byte [r8 + 8]
+          cmp     qword [r14 + rcx], 0
+          exits_when .taken
+          lea     r12, [r8 + R_SIZE]
+          t_next
+  .taken:
+          mov     eax, [r8 + 12]
+          lea     r12, [r13 + rax]
+          t_next
+  .cut:
+          mov     r12, r8
+          jmp     t_suspend
+}
+
+t_jmp_cond t_jmp_jz,  je
+t_jmp_cond t_jmp_jnz, jne
 
 t_shi:
         movzx   ecx, byte [rdx + 8]

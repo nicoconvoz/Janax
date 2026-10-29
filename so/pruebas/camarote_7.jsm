@@ -6,8 +6,8 @@ jldi j2, 7
 jst j2, j1, 0
 jldi j3, 5
 jldi j4, 1
-espera:
-jsub j3, j3, j4
-jjnz j3, espera
+jwhile j3
+  jsub j3, j3, j4
+jwend
 jld j0, j1, 0
 jhalt

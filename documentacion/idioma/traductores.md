@@ -27,7 +27,8 @@ corredor ensambla los tres programas y corre cada prueba en:
    regla de la casa). Si no hay teléfono, avisa y no cuenta esas pruebas.
 
 Además prueba la traducción incremental (caché vacío, desde caché, una palabra distinta, cambio de largo,
-cambio del mapa de registros). Al 2026-10-28: **141/141**.
+cambio del mapa de registros). Al 2026-10-28: **141/141**. Al 2026-10-29, con la prueba 36 (el while):
+**113/113 en la PC** (intérprete y x86-64; sin teléfono conectado, ARM64 sin correr).
 
 **El instrumento se verifica**: una prueba trampa con una expectativa falsa tiene que salir MAL en los
 cuatro motores (verificado para intérprete, x86-64 y ARM64), y un caché corrupto tiene que descartarse
