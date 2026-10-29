@@ -158,3 +158,39 @@ Cada idea, con la devolución del Doc: qué la sostiene, qué se parece en el mu
   casi no se toca.
 - Camino que sale de esto: empezar **leyendo** los formatos ajenos y escribiendo en un **archivo
   contenedor propio**; la escritura directa en NTFS, cuando esté probada contra particiones de prueba.
+
+## 2026-10-28 — Usar los drivers de Windows, Linux y Android (Capitán)
+
+> "¿No se pueden leer los drivers de Windows, de Android o de Linux y traducirlos a nuestro sistema?"
+
+**Sí, y está hecho en el mundo, por partes.** Un driver tiene dos cosas:
+
+1. **Sus instrucciones** (x86 o ARM). Traducirlas es lo que el Cambiaformas ya sabe hacer.
+2. **Las llamadas al capitán de su sistema**: pedir memoria, recibir interrupciones, usar DMA, bloquear,
+   esperar. Un driver de Windows llama a funciones del núcleo de Windows; uno de Linux, a las de Linux.
+   **Esta es la parte difícil**: hay que imitar al capitán que el driver espera.
+
+**Precedentes que funcionaron:**
+
+| Proyecto | Qué hizo |
+|---|---|
+| NDISwrapper | Linux corría drivers de wifi **de Windows** imitando la interfaz de red de Windows (NDIS) |
+| ReactOS | carga drivers de Windows NT tal cual, porque imita el núcleo de Windows |
+| LinuxKPI (FreeBSD) | compila drivers de video **de Linux** con una capa que imita las funciones de Linux |
+| DDE (micronúcleos L4) | metía drivers de Linux en un camarote propio con su capa de imitación |
+| libhybris | usaba los drivers de video **de Android** desde otro Linux (Ubuntu Touch, Sailfish) |
+
+**Encaja con la partición activa**: en una PC con Windows, sus drivers ya están en el disco
+(`C:\Windows\System32\drivers`). El sistema los lee de ahí, traduce las instrucciones si hace falta y les
+ofrece la imitación del capitán de Windows.
+
+**Riesgos:**
+
+- La imitación conviene hacerla **por familia** (red, disco, video), como NDISwrapper con el wifi o
+  LinuxKPI con el video: imitar el núcleo entero de Windows es el proyecto de ReactOS, que lleva décadas.
+- Un driver ajeno corre con mucho poder: va en **su propio camarote** (como en DDE), para que si falla no
+  se lleve el barco.
+- ⚠️ **Licencias, dicho de entrada**: los drivers de Windows son privativos (usar los que ya están en la
+  máquina del usuario es la práctica de NDISwrapper; **redistribuirlos no**). Los de Linux son GPL: si su
+  código entra al sistema, el sistema queda atado a esa licencia. Hay que decidirlo antes de copiar una
+  línea.
