@@ -102,3 +102,6 @@ Destapó que el motor es sensible al lugar de cada rutina (±15 %): toda rutina 
 2026-10-29 — Datos iniciales (Capitán): X.datos al lado de X, copiado al ambiente 0 en la primera orden; vale para los
 programas que lanza un proceso. Base del ensamblador propio (PDP, caché por huella y prueba de todas las combinaciones,
 anotados en ideas.md). 112/112.
+2026-10-29 — Ensamblador PDP v0 (Capitán): Janax armado por Janax dentro de Janax OS; recorre PDP, rearma solo lo que
+cambió (huella), tabla en ensamblador.datos. Arma 73 de 82 programas idénticos a FASM byte por byte, incluido él mismo.
+Faltan macros, repeat e include de otros archivos. 124/124.

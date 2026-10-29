@@ -13,6 +13,9 @@ mkdir -p "$salida"
 if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2>&1; then
   echo "janaxos.asm no ensambla:"; cat "$salida/janaxos.log"; exit 1
 fi
+mkdir -p "$salida/pdp"     # the PDP assembler and its table, built by FASM: the seed
+"$fasm" "$raiz/pdp/ensamblador/ensamblador.jsm" "$salida/pdp/ensamblador.bin" > /dev/null || { echo "ensamblador.jsm no ensambla"; exit 1; }
+"$fasm" "$raiz/pdp/ensamblador/ensamblador.datos.asm" "$salida/pdp/ensamblador.datos" > /dev/null || { echo "ensamblador.datos.asm no ensambla"; exit 1; }
 for p in "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm; do
   "$fasm" "$p" "$salida/$(basename "$p" .jsm).bin" > /dev/null || { echo "no ensambla: $p"; exit 1; }
 done
@@ -359,11 +362,47 @@ hola
 P2 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=0000000000000001 t=*
 ventanilla: *" familia_abuelo
+# --- the PDP assembler: Janax assembled by Janax. Every source it understands must come out byte for byte
+# as FASM builds it, the assembler's own source included; a source that uses what v0 does not have yet
+# (macros, repeat, other includes) must be counted as an error and left unbuilt.
+pdp="$salida/pdp_$motor"; rm -rf "$pdp" "$salida/pdp_fasm"; mkdir -p "$pdp" "$salida/pdp_fasm"
+etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
+entiende=(); no_entiende=0
+for f in "$proyecto"/escalon0/pruebas/*.jsm "$aqui"/*.jsm "$raiz"/bancos/*.jsm "$raiz"/pdp/ensamblador/ensamblador.jsm; do
+  n=$(basename "$f" .jsm)
+  cp "$f" "$pdp/$(etiqueta "PDP/$n.jsm")"
+  if grep -qE '^[[:space:]]*(macro|repeat)[[:space:]]' "$f" || grep -E '^[[:space:]]*include' "$f" | grep -qv "janax.inc'"; then
+    no_entiende=$((no_entiende + 1))
+  else
+    "$fasm" "$f" "$salida/pdp_fasm/$n.bin" > /dev/null || { echo "no ensambla con FASM: $f"; exit 1; }
+    entiende+=("$n")
+  fi
+done
+pdp_corrida() {   # pdp_corrida <name> <expected built> : runs the assembler on the folder and checks j0
+  local esp got
+  esp=$(printf 'j0=%08X%08X' "$no_entiende" "$2")
+  got=$(JANAX_ARCHIVOS="$(cygpath -m "$pdp")" JANAX_CAMBIO=0 timeout 120 "$salida/janaxos.exe" "$(cygpath -m "$salida/pdp/ensamblador.bin")" | tr -d '\r' | grep -o 'j0=[0-9A-F]*')
+  if [ "$got" = "$esp" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] pdp $1: esperaba $esp, dio $got"; mal=$((mal + 1)); fi
+}
+pdp_iguales() {   # every source it understands, byte for byte as FASM
+  local n distintos=0
+  for n in "${entiende[@]}"; do
+    cmp -s "$salida/pdp_fasm/$n.bin" "$pdp/$(etiqueta "PDP/$n.bin")" || { echo "MAL  [$motor] pdp $1: $n.bin no es igual al de FASM"; distintos=$((distintos + 1)); }
+  done
+  if [ "$distintos" = 0 ]; then ok=$((ok + 1)); else mal=$((mal + 1)); fi
+}
+pdp_corrida "arma todo lo que entiende" "${#entiende[@]}"
+pdp_iguales "byte por byte"
+pdp_corrida "lo ya armado no se vuelve a armar" 0
+printf '\n; one more line\n' >> "$pdp/$(etiqueta "PDP/02_ldi.jsm")"
+pdp_corrida "solo lo que cambio" 1
+pdp_iguales "byte por byte despues del cambio"
+
 unset carpeta
 done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
-for f in janaxos.asm rutinas.inc; do
+for f in janaxos.asm rutinas.inc ambientes.inc datos.inc; do
   if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
     ok=$((ok + 1))
   else

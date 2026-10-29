@@ -138,5 +138,6 @@ En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo 
 - `documentacion/idioma/cambiaformas.md` — diseño del Cambiaformas, incluido lo que falta.
 - `documentacion/so/ideas.md` — sistema operativo: las ideas del Capitán y su devolución.
 - `documentacion/so/janaxos.md` — sistema operativo: lo construido, cómo se prueba, mediciones.
+- `documentacion/so/pdp.md` — PDP y el ensamblador propio (Janax armado por Janax).
 - **Cada paso se documenta en el mismo commit que el código** (regla del Capitán: "nunca te olvides de
   documentar").
