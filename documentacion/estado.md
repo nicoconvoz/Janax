@@ -34,3 +34,6 @@ ARM64). Los 16 registros Janax en nativos (jK = xK); división y desplazamientos
 Probado en el teléfono real del Capitán (Moto E7 Plus, Android 10) por adb: 34/34; suite total 141/141 (trampa detectada
 también en ARM). suma_1000m en el teléfono: ~1.450 ms, ejecutable de 420 bytes. Pendiente: saltos jjz/jjnz más allá de
 ±1 MiB (código 10, no implementado).
+
+2026-10-28 — CAMBIO DE RUMBO (Capitán): el MMORPG queda para después. Antes se diseña un sistema operativo.
+Todo lo hecho (idioma Janax, intérprete, traductores x86-64 y ARM64, diseño P2P del MMORPG) queda como está.
