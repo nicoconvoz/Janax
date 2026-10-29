@@ -115,3 +115,6 @@ Janax OS 129/129. FASM queda para lo x86 y como testigo.
 2026-10-29 — jhost, la ventanita al anfitrión (Capitán): catálogo por nombre, "escribir"; intérprete, traductor x86-64,
 ARM64 en el teléfono (rutina del ayudante codificada a mano, anduvo al primer intento) y Janax OS (ventana vacía para los
 procesos). JANAX_SIN achica la ventana. Escalón 0 174/174 con el teléfono, Janax OS 131/131.
+2026-10-29 — Primera pieza del núcleo en Janax: el planificador (so/nucleo/planificador.inc), turno exacto en enteros;
+216 casos idénticos a la matemática exacta en intérprete, x86 y el teléfono. Cuesta ~300-890 instrucciones por turno;
+falta decidir cómo conectarlo. Escalón 0 178/178.

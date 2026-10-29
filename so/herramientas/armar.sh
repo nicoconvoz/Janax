@@ -44,8 +44,9 @@ done
 # the sources, at their place under PDP
 [ $# -gt 0 ] || exit 0
 sistema="$salida/pdp/fuentes"; rm -rf "${sistema:?}"; mkdir -p "$sistema"
-for i in "$proyecto"/escalon0/*.inc "$proyecto"/escalon0/pruebas/*.inc "$proyecto"/so/pruebas/*.inc "$proyecto"/so/bancos/*.inc; do
-  [ -f "$i" ] && cp "$i" "$sistema/$(etiqueta "PDP/${i#$proyecto/}")"
+fd -e inc --exclude build . "$proyecto/escalon0" "$proyecto/so" | while IFS= read -r i; do
+  i=$(cd "$(dirname "$i")" && pwd)/$(basename "$i")
+  cp "$i" "$sistema/$(etiqueta "PDP/${i#$proyecto/}")"
 done
 for f in "$@"; do
   r=${f#$proyecto/}

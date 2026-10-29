@@ -238,6 +238,24 @@ el sistema por la ventanilla, bajo sus porteros, así que el anfitrión no le of
 vacío** (la ventana más chica), el catálogo responde 0 y cualquier pedido responde −1. Los chequeos (bloque
 adentro de un ambiente, alineado) son los de todos los puertos. Prueba: `ventanita_vacia`.
 
+## El núcleo en Janax: el planificador (2026-10-29)
+
+Primera pieza del núcleo escrita en Janax: `so/nucleo/planificador.inc`, rutina `turno` (j1 = D, j2 = s, j3 = c en
+dieciseisavos de instrucción → j0 = t). La regla del Capitán (sigue mientras `(t − D)·t < c·(s + t)`) da el
+menor `t ≥ D + 1` con `t·(t − D − c) ≥ c·s`: la raíz de esa ecuación es la fórmula de siempre, redondeada hacia
+arriba. **En enteros y exacta** (la versión x86 usa punto flotante): búsqueda por duplicación y después por
+mitades, comparando con una división en lugar de multiplicar, así nada se desborda mientras `16·c·s < 2⁶³`
+(con un cambio de 8 instrucciones, hasta ~7·10¹⁶ instrucciones servidas a un proceso).
+
+- **Probado contra la matemática exacta**: `so/herramientas/turnos.pl` calcula el turno esperado con enteros
+  grandes y genera `escalon0/pruebas/41_turnos.jsm` (216 casos, bordes y aleatorios). Da idéntico en el
+  intérprete, en x86-64 y en ARM64 en el teléfono. ⚠️ La primera corrida dio 1 distinto: el que mentía era la
+  referencia (aceptaba t = 0). Arreglada la referencia, 216 de 216.
+- **Costo medido** (instrucciones Janax por turno): 28 con `s = 0`; ~300 con `s = 1.000`; ~690 con `s = 10⁹`;
+  ~890 con `s = 10¹²`. Es mucho más que un cambio de proceso (~8): si el núcleo lo usara así, el costo de
+  cambio medido crecería y los turnos se alargarían (como `√(c·s)`). Antes de conectarlo hay que decidir cómo.
+- **Todavía no está conectado**: el núcleo x86 sigue usando su versión de punto flotante.
+
 ## Datos iniciales: `X.datos` al lado de `X` (Capitán, 2026-10-29)
 
 > *"Cualquiera quiero que lo pueda mejorar y personalizar su Janax sin partir de cero."*
