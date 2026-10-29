@@ -37,6 +37,7 @@ PROLOGUE_INSNS = 26
 K_B_WORD  = 0                   ; B rel26 to a word (or the outside exit)
 K_CB_WORD = 1                   ; CBZ/CBNZ rel19 to a word
 K_B_STUB  = 2                   ; B rel26 to a stub
+FIXUP_SIZE = 32                 ; position, kind, target, word
 ; stubs
 S_FINISH  = 0
 S_EXIT    = 3
@@ -48,6 +49,8 @@ section '.data' data readable writeable
   outbuf       dq 0
   offs      dq 0
   fixups    dq 0
+  longcb    dq 0
+  relax     db 0
   stub_off  dq 16 dup 0
   prologue_off dq 0
   bss_off   dq 0
@@ -109,7 +112,8 @@ add_fixup:
         mov     [rbx], rax
         mov     [rbx + 8], rcx
         mov     [rbx + 16], rdx
-        add     rbx, 24
+        mov     [rbx + 24], r12         ; the word it belongs to
+        add     rbx, FIXUP_SIZE
         ret
 
 ; rdx = target word of this jump: index + 1 + imm, anything outside the program -> the outside exit
@@ -184,6 +188,9 @@ e_jnz:
         mov     eax, 0B5000000h         ; CBNZ xD
 cb:
         or      eax, r11d
+        mov     rdx, [longcb]
+        cmp     byte [rdx + r12], 0
+        jne     .long
         push    rax
         call    jump_target
         mov     ecx, K_CB_WORD
@@ -191,6 +198,11 @@ cb:
         pop     rax
         stosd
         ret
+.long:                                  ; target beyond +-1 MiB: the opposite test skips a B (+-128 MiB)
+        xor     eax, 01000000h          ; CBZ <-> CBNZ
+        or      eax, 2 shl 5            ; +8: over the B
+        stosd
+        jmp     e_jmp
 
 e_shi:
         mov     eax, r11d               ; lsl xD, xD, #16
@@ -386,14 +398,21 @@ start:
         jz      fail_file
         mov     [offs], rax
         mov     rdx, [nwords]
-        imul    rdx, 3 * 24
-        add     rdx, 24 * 16
+        imul    rdx, 3 * FIXUP_SIZE
+        add     rdx, FIXUP_SIZE * 16
         invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
         jz      fail_file
         mov     [fixups], rax
+        mov     rdx, [nwords]           ; one flag per word: its CBZ/CBNZ needs the long form
+        inc     rdx
+        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [longcb], rax
 
         ; --- translate, one word after the other ---
+.translate:
         mov     r13, [outbuf]
         lea     rdi, [r13 + CODE_OFF]
         mov     rbx, [fixups]
@@ -530,16 +549,27 @@ start:
         jmp     .next_fixup
 .rel19:
         cmp     rax, -(1 shl 18)
-        jl      fail_far
+        jl      .too_far
         cmp     rax, 1 shl 18
-        jge     fail_far
+        jge     .too_far
         and     eax, 7FFFFh
         shl     eax, 5
         or      [r13 + r8], eax
+        jmp     .next_fixup
+.too_far:                               ; mark it and translate again; lengths only grow, so it ends
+        mov     rax, [rsi + 24]
+        mov     rdx, [longcb]
+        mov     byte [rdx + rax], 1
+        mov     byte [relax], 1
 .next_fixup:
-        add     rsi, 24
+        add     rsi, FIXUP_SIZE
         jmp     .link
 .linked:
+        cmp     byte [relax], 0
+        je      .relaxed
+        mov     byte [relax], 0
+        jmp     .translate
+.relaxed:
 
         ; --- ELF header, program header, digits and output line ---
         mov     rdi, r13
@@ -608,8 +638,6 @@ fail_args:
         invoke  ExitProcess, 4
 fail_block:
         invoke  ExitProcess, 9          ; translator bug: a word outgrew MAX_INSNS or the prologue size
-fail_far:
-        invoke  ExitProcess, 10         ; a jjz/jjnz beyond the +-1 MiB reach of CBZ/CBNZ: not handled yet
 
 section '.idata' import data readable writeable
 
