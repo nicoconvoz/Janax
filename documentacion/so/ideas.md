@@ -194,3 +194,38 @@ ofrece la imitación del capitán de Windows.
   máquina del usuario es la práctica de NDISwrapper; **redistribuirlos no**). Los de Linux son GPL: si su
   código entra al sistema, el sistema queda atado a esa licencia. Hay que decidirlo antes de copiar una
   línea.
+
+## ⭐ 2026-10-28 — La identidad del núcleo (Capitán)
+
+> "Un kernel que tenga identidad de cambiaformas de todos los sistemas operativos que existen, incluso de
+> los que vienen nuevos, tomando lo mejor de cada uno y automejorándose."
+
+Es la idea que ordena todas las anteriores:
+
+| Pieza | Se cambia de forma según… |
+|---|---|
+| Traductor (ya existe) | el **procesador**: x86-64, ARM64, RISC-V |
+| Arranque | el **piso**: hierro (modo cero) o anfitrión (simbiosis) |
+| Drivers | el **sistema dueño del driver**: imita al capitán que el driver espera |
+| **Núcleo** | **todos los sistemas**: habla el idioma de cada uno y se queda con lo mejor |
+
+**Devolución del Doc:**
+
+- "Hablar el idioma de cada sistema" tiene nombre: **personalidades**. Windows NT nació con esa idea (un
+  núcleo con personalidades OS/2, POSIX y Win32) y WSL1 hacía que el núcleo de Windows atendiera las
+  llamadas de Linux. Cada personalidad es un **adaptador** sobre un núcleo único: hexagonal puro.
+- "Tomar lo mejor de cada uno" y "automejorarse" es el Cambiaformas con su regla: cada mecanismo tiene
+  candidatos (el planificador de uno, la memoria de otro), se **verifican** contra la referencia, se
+  **miden** en esta máquina y gana el mejor. Nada se adopta a ojo.
+- "Los que vienen nuevos": igual que con las instrucciones nuevas, el núcleo no puede adivinar qué hace
+  un sistema que nunca vio. Aprende cuando alguien le describe el idioma nuevo (como una entrada nueva
+  del catálogo), y desde ahí lo prueba y lo adopta solo.
+- Riesgo de escala: cada personalidad es un sistema entero para imitar. Se avanza **una personalidad y
+  una familia de llamadas por vez**, cada una con sus pruebas.
+
+## Cómo se prueba cada modo (regla de la casa: cero emuladores)
+
+- **Simbiosis**: se prueba ya, en esta PC, como un programa más (igual que los traductores).
+- **Modo cero**: necesita **hardware real**, booteando desde un pendrive en una máquina. Sin emuladores, no
+  hay otro camino; conviene una máquina o un disco de pruebas, nunca la partición con los datos del
+  Capitán.
