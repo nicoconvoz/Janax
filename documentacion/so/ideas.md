@@ -292,6 +292,21 @@ así que la adopción no podía dar permisos; pero sí perdía el criterio del p
   rechaza el resto. Nadie más decide por esa línea: ni el abuelo ni el kernel.
 - La sombra se disuelve (y sus porteros con ella) cuando no queda ningún proceso debajo.
 
+## 2026-10-29 — Traducir una vez: el sistema vive en nativo (Capitán)
+
+> "Que el intérprete trabaje, pero que todo el sistema funcionando opere en la arquitectura de la máquina
+> que maneja. El intérprete ya no tiene que traducir todo, porque al hacerlo una sola vez, los procesos y
+> todo lo demás que salga del sistema vienen en su propia arquitectura, ya conociendo las reglas de
+> antemano."
+
+- Cada programa tiene su **gemelo nativo** guardado (huella del programa + del núcleo + del procesador).
+  Lanzar = cargar el gemelo; se traduce solo la primera vez o si cambia una huella.
+- Lo que el sistema produzca después sale directo en nativo.
+- El original Janax se conserva: es la vara para verificar al gemelo, lo que viaja a otras máquinas y de
+  donde se rehace el gemelo si cambia el procesador.
+- Antecedentes: Android ART (compila a nativo al instalar y guarda el resultado), Rosetta 2 (traduce al
+  instalar, no al abrir).
+
 ## 2026-10-29 — Los bucles (Capitán)
 
 > "Me gusta más el while que el for."
