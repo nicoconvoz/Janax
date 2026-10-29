@@ -42,9 +42,9 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      instrucción nueva `jsys rd, ra` (op `16h`): `ra` = dirección de la cola, `rd` = pedidos atendidos.
      Cola: cantidad (8 bytes) y una entrada de 32 bytes por pedido: tipo, `a`, `b`, respuesta. Al volver,
      cada entrada tiene su respuesta y la cantidad queda en 0.
-   - Tipos: **1 escribir** (`a` = dirección, `b` = bytes; responde `b`), **2 crecer** el camarote (`a` =
-     bytes; responde el tamaño nuevo), **3 achicarlo** (`a` = bytes; responde el tamaño nuevo, nunca por
-     debajo del fin de la cola, para que las respuestas tengan dónde ir). Otro tipo: responde −1.
+   - Tipos: **1 escribir** (`a` = dirección, `b` = bytes; responde `b`), **2 agrandar**: construye un ambiente de
+     `a` bytes y responde su dirección; **3 destruir** el ambiente que empieza en `a` (responde 0, o −1 si ahí
+     no empieza un ambiente o es el de la cola). Ver "Ambientes". Otro tipo: responde −1.
    - Una **pantalla** atiende una sola sintonía y la atiende **en lote**: todas las escrituras de la ronda
      salen en **una sola llamada** al anfitrión.
    - **Mínimas pantallas**: un tipo que ya tiene su pantalla la conserva; uno que no tiene toma una
@@ -183,6 +183,38 @@ de registros de 16 bytes, uno por palabra más uno final:
 - `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
   y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
 
+## Ambientes: el camarote crece y se achica sin mudarse (Capitán, 2026-10-29)
+
+> *"Cada camarote tiene su ambiente; cuando se da la orden de agrandar se agrega un ambiente y se construye
+> en el mismo camarote; cuando ya no queremos el ambiente se destruye solo el ambiente."* — *"Si quedan
+> huecos entre un ambiente y otro por quitar el del medio, unir los extremos y liberar si queda libre
+> página."* — *"Armá un paquete fijo para esa parte que traduzca el paquete entero."*
+
+Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_hueco_ventanilla`,
+`ambiente_reconstruir`, `ambientes_unir`.
+
+- **El casco se reserva una vez y nunca se muda** (`HULL_SIZE` = 4 GiB de direcciones, que no ocupan
+  memoria). ⚠️ Ese número es criterio, no medición: es el techo de un camarote.
+- **Una dirección Janax dice qué ambiente y dónde**: el número de ambiente en los 32 bits altos y la
+  posición en los 32 bajos. El ambiente 0 es el de siempre (1 MiB), así que un programa que nunca agranda
+  ve las mismas direcciones que antes.
+- **Agrandar** construye un ambiente del tamaño pedido (redondeado a 8 bytes, el acceso más ancho de
+  Janax, para que cada ambiente empiece alineado) al final del casco, sin copiar nada, y responde su
+  dirección. Se le piden a Windows justo las páginas que hacen falta para que entren todos los ambientes:
+  la página es ajustable, solo que se entrega de a partes fijas (el tamaño lo dice `GetSystemInfo`).
+- **Destruir** recibe la dirección de un ambiente y destruye solo ese. **Los que vienen después se corren
+  hacia atrás** sobre su lugar: el camarote nunca tiene huecos. Las páginas que sobran al final vuelven a
+  Windows, y los bytes sobrantes de la última página se ponen en cero, así que un ambiente nuevo siempre
+  arranca en ceros. Su número se reusa para el próximo ambiente (nunca el 0). El ambiente que tiene la
+  cola que se está atendiendo no se puede destruir.
+- **El núcleo traduce**, por eso mover ambientes es invisible: el acceso al ambiente 0 hace una
+  comparación (el ambiente 0 siempre está al principio). Cualquier otro corre **un paquete fijo** de
+  traducción metido entero en la rutina, sin llamadas, que sigue siendo esa misma instrucción Janax. La
+  ventanilla y los pedidos de archivos, listas y firmas traducen cada dirección con `cabin_at` en el
+  momento de usarla.
+- Tocar un ambiente destruido, o pasarse de su tamaño, es código 5, al byte, igual con cualquier tamaño de
+  página.
+
 ## Todo bucle del núcleo es un while rotado (Capitán: "todo en while")
 
 Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
@@ -221,7 +253,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-88/88 (86 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+96/96 (94 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -315,6 +347,21 @@ Núcleo anterior (4501856) contra el nuevo, **intercalados** con el orden altern
 La ganancia sigue a las rutinas que se ahorran: un tercio menos de despachos da ~21 %, un décimo da ~8 %.
 Lo que queda es el trabajo de cada instrucción (los registros Janax viven en memoria). ⚠️ Una primera
 medición con `suma_100m` (0,4 s) daba entre 7 y 40 %: el arranque y el ruido la tapaban.
+
+### Ambientes
+
+Contra cc5b297, intercalados, `c` = 0, 2026-10-29. Mismos resultados.
+
+| Caso | Antes | Ahora |
+|---|---|---|
+| Un ambiente de 64 MB construido y destruido: memoria privada del proceso | — | 66,6 MB → **2,4 MB** |
+| `calculo` (memoria en el ambiente 0), 10 corridas | ~1.381–1.467 ms | ~1.456–1.659 ms (**~+5 %**) |
+| `calculo_ambiente` (la misma memoria en un ambiente construido), 8 corridas | — | ~1.697–2.190 ms (~+25 % sobre el anterior) |
+
+⚠️ Lo que no está explicado: el acceso al ambiente 0 hace **menos** instrucciones que antes (una
+comparación contra memoria en vez de cargar, restar y comparar) y sin embargo mide ~5 % más lento. Sospecho
+la disposición del código (las rutinas de memoria crecieron con el paquete de traducción). Alinear las
+rutinas de memoria a 16 bytes no lo cambió. Queda sin resolver.
 
 ### Compartir el programa entre copias
 

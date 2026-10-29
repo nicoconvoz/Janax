@@ -141,12 +141,12 @@ ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=1 pedidos=3" ventani
 
 caso "ventanilla: dos sintonias, dos pantallas" 0 0 "$fijo0
 x
-P0 codigo=0 j0=0000000000101000 t=21
+P0 codigo=0 j0=0000000100000000 t=19
 ventanilla: pantallas=2 resintonias=0 llamadas al anfitrion=1 pedidos=2" ventanilla_dos_tipos
 
 caso "ventanilla: la pantalla cambia de sintonia" 0 0 "$fijo0
 y
-P0 codigo=0 j0=0000000000100008 t=20
+P0 codigo=0 j0=0000000100000000 t=20
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=1 pedidos=2" ventanilla_resintonia
 
 caso "ventanilla: tipo desconocido" 0 0 "$fijo0
@@ -156,9 +156,25 @@ ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=1" ventani
 caso "ventanilla: cola fuera del camarote" 0 0 "$fijo0
 P0 codigo=5 j0=0000000000000000 t=2" ventanilla_cola_afuera
 
-caso "ventanilla: achicar no pasa el fin de la cola" 0 0 "$fijo0
-P0 codigo=0 j0=0000000000000128 t=11
-ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" ventanilla_achicar
+caso "ambientes: construir en el lugar, destruir solo uno" 0 0 "$fijo0
+P0 codigo=0 j0=0000000300000075 t=51
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=5" ambientes
+
+caso "ambientes: un ambiente destruido es un hueco" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000000 t=25
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=3" ambiente_hueco
+
+caso "ambientes: la ventanilla no lee de un hueco" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=32
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" ambiente_hueco_ventanilla
+
+caso "ambientes: el numero se reusa, en ceros" 0 0 "$fijo0
+P0 codigo=0 j0=0000000100000000 t=28
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=3" ambiente_reconstruir
+
+caso "ambientes: destruir el del medio une los extremos" 0 0 "$fijo0
+P0 codigo=0 j0=0000000100000066 t=54
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=5" ambientes_unir
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0

@@ -35,6 +35,9 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
+; Address space each cabin reserves for its rooms. It takes no memory, only addresses. Criterion, not a
+; measurement: it is a cabin's ceiling, and with 128 TiB of user addresses it leaves room for ~32.000 cabins.
+HULL_SIZE   = 1 shl 32
 OP_COUNT    = 17h
 FOREVER     = 7FFFFFFFFFFFFFFFh
 
@@ -49,7 +52,7 @@ P_DEPTH  = 168
 P_SERVED = 176                  ; instructions executed so far (attained service)
 P_DONE   = 184
 P_CODE   = 192
-P_SIZE   = 200                  ; bytes of data memory (the cabin grows and shrinks)
+P_SIZE   = 200                  ; end of the last room: the cabin grows and shrinks by rooms
 P_FILES  = 208                  ; table of host file handles (0 = free slot)
 P_NFILES = 216                  ; slots in that table
 P_GATES  = 224                  ; the process's porter for each door (3 nodes)
@@ -58,7 +61,12 @@ P_PARENT = 256                  ; parent process, 0 = the kernel
 P_WAITING = 264                 ; important requests waiting for the parent's signature
 P_SHADOW = 272                  ; 1 = ended, its shadow decides for its line; 2 = shadow gone
 P_TABLE  = 280                  ; its program decoded once into routines (rutinas.inc), shared by every process with the same words
-PROC_SIZE = 288
+P_ROOMS  = 288                  ; its rooms {start, end} in address order (ambientes.inc), 0 = only the first
+P_NROOMS = 296
+P_ROOMCAP = 304
+P_LIM8   = 312                  ; an 8-byte access to room 0 below this needs no translation (ambientes.inc)
+P_LIM1   = 320                  ; the same for a 1-byte access: room 0's size
+PROC_SIZE = 328
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -103,7 +111,7 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 19                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 19                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state
   requests  dq 0
   hostcalls dq 0
@@ -114,15 +122,19 @@ section '.data' data readable writeable
   present   db KINDS + 1 dup 0  ; kinds present this round (index = kind)
   sys_rd    dq 0
   queue_addr dq 0
+  page_size dq 0                  ; the part the host delivers memory in (GetSystemInfo)
+  sysinfo   rb 48
+  rooms_new dq 0
+  rooms_newcap dq 0
+  rooms_number dq 0
   queue_end dq 0
   wtotal    dq 0
   wbuf      dq 0
-  move_new  dq 0
   t_screens db 'ventanilla: pantallas=', 0
   t_retunes db ' resintonias=', 0
   t_host    db ' llamadas al anfitrion=', 0
   t_reqs    db ' pedidos=', 0
-  serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
+  serve_table dq serve_write, serve_grow, serve_destroy, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
@@ -311,6 +323,9 @@ start:
 .dir_named:
         mov     [dir_len], rax
         invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
+        invoke  GetSystemInfo, sysinfo
+        mov     eax, dword [sysinfo + 4] ; dwPageSize
+        mov     [page_size], rax
 
         ; --- engine: JANAX_MOTOR=interprete runs the reference interpreter ---
         invoke  GetEnvironmentVariableA, motor_env, env_value, 31
@@ -671,10 +686,15 @@ make_process:
         call    share_program
         mov     rax, [mp_parent]
         mov     [rbx + P_PARENT], rax
-        invoke  VirtualAlloc, 0, DATA_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        invoke  VirtualAlloc, 0, HULL_SIZE, MEM_RESERVE, PAGE_READWRITE   ; the hull: addresses, no memory
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_DATA], rax
+        invoke  VirtualAlloc, rax, DATA_SIZE, MEM_COMMIT, PAGE_READWRITE  ; its first room
+        test    rax, rax
+        jz      fail_file
+        mov     qword [rbx + P_LIM8], DATA_SIZE - 7
+        mov     qword [rbx + P_LIM1], DATA_SIZE
         invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
         jz      fail_file
@@ -1356,14 +1376,16 @@ op_shi:
         mov     [r14 + r11*8], rax
         jmp     next
 
+include 'ambientes.inc'
+
 macro memop name, size, align_check, is_load, body {
+  local translate, inside
   name:
           movsx   rax, r9w
           add     rax, [r14 + r8*8]
-          mov     rcx, [rbx + P_SIZE]     ; this cabin's size: it grows and shrinks
-          sub     rcx, size
-          cmp     rax, rcx
-          ja      fail_mem
+          cmp     rax, [rbx + P_LIM#size]   ; room 0, below its end: nothing to translate
+          jae     translate
+  inside:
     if align_check
           test    al, 7
           jnz     fail_align
@@ -1376,6 +1398,9 @@ macro memop name, size, align_check, is_load, body {
           mov     [r14 + r11*8], rax
     end if
           jmp     next
+  translate:
+          room_package size, fail_mem
+          jmp     inside
 }
 
 memop op_ld,  8, 1, 1, <mov rax, [r15 + rax]>
@@ -1431,8 +1456,8 @@ op_sys:
 ;    this round (the screen changes its tuning), and only if there is none a new screen opens. So there
 ;    are never more screens than kinds present at the same time.
 ;  - Rounds are touches of the window (events), never a clock.
-; Kinds: 1 write (a = address, b = bytes; answer b), 2 grow (a = bytes; answer the new size),
-; 3 shrink (a = bytes; answer the new size, never below the end of the queue). Others: answer -1.
+; Kinds: 1 write (a = address, b = bytes; answer b), 2 grow: build a room of a bytes (answer its address),
+; 3 destroy the room at address a (answer 0; -1 if no room starts there or it holds the queue). Others: -1.
 ; Within a kind the order of the queue is kept.
 ;
 ; rbx = process, rax = queue address. Returns rax = requests attended, or -1 if the queue is outside
@@ -1441,21 +1466,23 @@ ventanilla:
         push    rsi rdi rbp r12 r13 r14 r15
         mov     r12, rax
         mov     [queue_addr], rax
-        mov     r14, [rbx + P_SIZE]
         test    r12b, 7
         jnz     .bad
-        mov     rax, r14
-        sub     rax, 8
-        cmp     r12, rax
-        ja      .bad
-        mov     r13, [rbx + P_DATA]
-        mov     r15, [r13 + r12]        ; how many requests
-        mov     rax, r14
-        sub     rax, r12
-        sub     rax, 8
-        shr     rax, 5
+        mov     edx, 8
+        call    cabin_at                ; the count must be inside one room
+        jc      .bad
+        mov     r15, [rax]              ; how many requests
+        mov     r13, rax
+        sub     r13, r12                ; [r13 + queue address] = the queue (until a room moves)
+        mov     rax, HULL_SIZE / 32
         cmp     r15, rax
-        ja      .bad                    ; the entries would go past the cabin
+        ja      .bad                    ; more entries than any room can hold
+        mov     rax, r12
+        mov     rdx, r15
+        shl     rdx, 5
+        add     rdx, 8
+        call    cabin_at                ; and the whole queue too
+        jc      .bad
         test    r15, r15
         jz      .none
         add     [requests], r15
@@ -1614,11 +1641,12 @@ ventanilla:
         jb      .serve_lap
 .served:
 
-        ; answers back into the queue (the cabin may have moved); the queue is left empty
-        mov     r13, [rbx + P_DATA]
+        ; answers back into the queue (its room may have moved, never been destroyed); the queue is left empty
         mov     rax, [queue_addr]
-        mov     qword [r13 + rax], 0
-        lea     rdi, [r13 + rax + 8]
+        mov     edx, 8
+        call    cabin_at
+        mov     qword [rax], 0
+        lea     rdi, [rax + 8]
         mov     rsi, rbp
         mov     rcx, r15
         shl     rcx, 5
@@ -1640,7 +1668,6 @@ ventanilla:
 serve_write:
         push    r12 r13 r14 r15
         sub     rsp, 8
-        mov     r14, [rbx + P_SIZE]
         xor     r8, r8                  ; total bytes
         xor     ecx, ecx
         jmp     .length
@@ -1651,12 +1678,12 @@ serve_write:
         jne     .length_next
         mov     rdx, [rbp + rax + 8]    ; a
         mov     r9, [rbp + rax + 16]    ; b
-        cmp     rdx, r14
-        ja      .invalid
-        mov     r10, r14
-        sub     r10, rdx
-        cmp     r9, r10
-        ja      .invalid
+        push    rax
+        mov     rax, rdx
+        mov     rdx, r9
+        call    cabin_at                ; all of it inside one room
+        pop     rax
+        jc      .invalid
         add     r8, r9
         mov     [rbp + rax + 24], r9
         jmp     .length_next
@@ -1687,8 +1714,12 @@ serve_write:
         mov     rcx, [rbp + rax + 24]
         cmp     rcx, -1
         je      .copy_next
-        mov     rsi, [rbp + rax + 8]
-        add     rsi, r13
+        push    rcx
+        mov     rdx, rcx
+        mov     rax, [rbp + rax + 8]
+        call    cabin_at
+        mov     rsi, rax
+        pop     rcx
         rep     movsb
 .copy_next:
         inc     r12
@@ -1704,7 +1735,7 @@ serve_write:
         pop     r15 r14 r13 r12
         ret
 
-; Screen tuned to "grow": each request adds a (rounded up to 8) bytes to the cabin.
+; Screen tuned to "grow": each request builds a room of a bytes at the end of the cabin (ambientes.inc).
 serve_grow:
         push    r12 r13 r14 r15
         sub     rsp, 8
@@ -1716,60 +1747,7 @@ serve_grow:
         cmp     dword [rbp + r13], 2
         jne     .next
         mov     rax, [rbp + r13 + 8]
-        add     rax, 7
-        jc      .invalid
-        and     rax, -8
-        add     rax, [rbx + P_SIZE]
-        jc      .invalid
-        mov     r14, rax                ; new size
-        call    move_cabin
-        test    rax, rax
-        jz      .invalid
-        mov     [rbp + r13 + 24], r14
-        jmp     .next
-.invalid:
-        mov     qword [rbp + r13 + 24], -1
-.next:
-        inc     r12
-.one:
-        cmp     r12, r15
-        jb      .one_lap
-.done:
-        add     rsp, 8
-        pop     r15 r14 r13 r12
-        ret
-
-; Screen tuned to "shrink": each request gives back a (rounded up to 8) bytes, never below the end of
-; the queue, so the answers still have somewhere to go.
-serve_shrink:
-        push    r12 r13 r14 r15
-        sub     rsp, 8
-        xor     r12d, r12d
-        jmp     .one
-.one_lap:
-        mov     r13, r12
-        shl     r13, 5
-        cmp     dword [rbp + r13], 3
-        jne     .next
-        mov     rax, [rbp + r13 + 8]
-        add     rax, 7
-        jc      .floor
-        and     rax, -8
-        mov     r14, [rbx + P_SIZE]
-        sub     r14, rax
-        jc      .floor
-        cmp     r14, [queue_end]
-        jae     .size_ok
-.floor:
-        mov     r14, [queue_end]
-.size_ok:
-        cmp     r14, [rbx + P_SIZE]
-        jae     .unchanged
-        call    move_cabin
-        test    rax, rax
-        jz      .unchanged
-.unchanged:
-        mov     rax, [rbx + P_SIZE]
+        call    rooms_grow
         mov     [rbp + r13 + 24], rax
 .next:
         inc     r12
@@ -1781,27 +1759,28 @@ serve_shrink:
         pop     r15 r14 r13 r12
         ret
 
-; The cabin moves to fresh memory of r14 bytes (new part zeroed by the host). Returns rax = 0 if the
-; host has no memory for it (the cabin stays as it was).
-move_cabin:
+; Screen tuned to "destroy": each request destroys the room that starts at a, and only that one.
+serve_destroy:
+        push    r12 r13 r14 r15
         sub     rsp, 8
-        invoke  VirtualAlloc, 0, r14, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
-        test    rax, rax
-        jz      .done
-        mov     rdi, rax
-        mov     rsi, [rbx + P_DATA]
-        mov     rcx, [rbx + P_SIZE]
-        cmp     rcx, r14
-        jbe     @f
-        mov     rcx, r14                ; shrinking: keep only what fits
-@@:     rep     movsb
-        mov     [move_new], rax
-        invoke  VirtualFree, qword [rbx + P_DATA], 0, MEM_RELEASE
-        mov     rax, [move_new]
-        mov     [rbx + P_DATA], rax
-        mov     [rbx + P_SIZE], r14
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 3
+        jne     .next
+        mov     rax, [rbp + r13 + 8]
+        call    rooms_destroy
+        mov     [rbp + r13 + 24], rax
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
+        pop     r15 r14 r13 r12
         ret
 
 ; ---------------------------------------------------------------- files
@@ -1940,13 +1919,13 @@ label_path:
         mov     r12, rdi
         test    rcx, rcx
         jz      .no
-        mov     rax, [rbx + P_SIZE]
-        cmp     rsi, rax
-        ja      .no
-        sub     rax, rsi
-        cmp     rcx, rax
-        ja      .no
-        add     rsi, [rbx + P_DATA]
+        push    rax rdx
+        mov     rax, rsi
+        mov     rdx, rcx
+        call    cabin_at
+        mov     rsi, rax
+        pop     rdx rax
+        jc      .no
         call    normalize_bytes
         test    eax, eax
         jz      .no
@@ -2105,13 +2084,9 @@ list_one:
         push    r14 rsi rdi
         mov     rax, [rbp + r13 + 8]    ; destination offset and room must be inside the cabin
         mov     rdx, [rbp + r13 + 16]
-        mov     rcx, [rbx + P_SIZE]
-        cmp     rax, rcx
-        ja      .invalid
-        sub     rcx, rax
-        cmp     rdx, rcx
-        ja      .invalid
-        mov     [list_pos], rax
+        call    cabin_at
+        jc      .invalid
+        mov     [list_pos], rax         ; a pointer: nothing moves rooms while listing
         add     rax, rdx
         mov     [list_end], rax
         mov     qword [list_count], 0
@@ -2149,8 +2124,7 @@ list_one:
         sub     rax, [list_pos]
         cmp     rdx, rax
         ja      .full
-        mov     rdi, [rbx + P_DATA]
-        add     rdi, [list_pos]
+        mov     rdi, [list_pos]
         add     [list_pos], rdx
         mov     [rdi], rcx
         add     rdi, 8
@@ -2249,13 +2223,11 @@ macro serve_io name, kind, api {
           mov     r14, rax
           mov     rdx, [rbp + r13 + 8]
           mov     r8, [rbp + r13 + 16]
-          mov     rax, [rbx + P_SIZE]
-          cmp     rdx, rax
-          ja      .invalid
-          sub     rax, rdx
-          cmp     r8, rax
-          ja      .invalid
-          add     rdx, [rbx + P_DATA]
+          mov     rax, rdx
+          mov     rdx, r8
+          call    cabin_at
+          jc      .invalid
+          mov     rdx, rax
           mov     dword [fio_bytes], 0
           invoke  api, r14, rdx, r8, fio_bytes, 0
           inc     qword [hostcalls]
@@ -2715,21 +2687,23 @@ gate_cede_label:
         call    mine
         test    r9d, r9d
         jz      gate_refused
-        mov     rax, [rbp + r13 + 16]   ; the block must be inside the cabin
-        mov     rcx, [rbx + P_SIZE]
-        cmp     rax, rcx
-        ja      .invalid
-        sub     rcx, rax
-        cmp     rcx, 16
-        jb      .invalid
-        sub     rcx, 16
-        mov     rdx, [rbx + P_DATA]
-        add     rdx, rax
+        mov     rax, [rbp + r13 + 16]   ; the block: a 16-byte header, then the prefix
+        mov     edx, 16
+        call    cabin_at
+        jc      .invalid
+        mov     rdx, rax
         mov     rax, [rdx + 8]          ; prefix length
-        cmp     rax, rcx
-        ja      .invalid
         test    rax, rax
         jz      .invalid
+        push    rax rdx
+        lea     rdx, [rax + 16]         ; header and prefix, all inside one room
+        cmp     rdx, rax
+        jb      .too_long
+        mov     rax, [rbp + r13 + 16]
+        call    cabin_at
+.too_long:
+        pop     rdx rax
+        jc      .invalid
         mov     r9, [rdx]
         mov     [cede_rights], r9
         lea     rsi, [rdx + 16]
@@ -3069,14 +3043,9 @@ family_sign:
 family_pending:
         mov     rax, [rbp + r13 + 8]
         mov     rdx, [rbp + r13 + 16]
-        mov     rcx, [rbx + P_SIZE]
-        cmp     rax, rcx
-        ja      .invalid
-        sub     rcx, rax
-        cmp     rdx, rcx
-        ja      .invalid
-        mov     r10, [rbx + P_DATA]
-        add     r10, rax                ; where
+        call    cabin_at
+        jc      .invalid
+        mov     r10, rax                ; where
         mov     r11, rdx                ; room
         xor     eax, eax                ; how many
         xor     ecx, ecx
@@ -3230,6 +3199,7 @@ section '.idata' import data readable writeable
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
          CreateDirectoryA, 'CreateDirectoryA',\
+         GetSystemInfo, 'GetSystemInfo',\
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\

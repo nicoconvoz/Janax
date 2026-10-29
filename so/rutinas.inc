@@ -379,14 +379,14 @@ t_fusable t_shi_r, t_shi
 
 ; size, alignment check, load or store
 macro t_memop name, kind, size, align_check, is_load {
+  local translate, inside
   name:
           movsxd  rax, dword [rdx + 12]
           movzx   ecx, byte [rdx + 9]
           add     rax, [r14 + rcx]
-          mov     rcx, [rbx + P_SIZE]     ; this cabin's size: it grows and shrinks
-          sub     rcx, size
-          cmp     rax, rcx
-          ja      t_fail_mem
+          cmp     rax, [rbx + P_LIM#size]   ; room 0, below its end: nothing to translate
+          jae     translate
+  inside:
     if align_check
           test    al, 7
           jnz     t_fail_align
@@ -408,6 +408,9 @@ macro t_memop name, kind, size, align_check, is_load {
       end if
     end if
           t_end   kind
+  translate:
+          room_package size, t_fail_mem
+          jmp     inside
 }
 
 t_fusable t_memop, t_ld,  8, 1, 1
@@ -437,7 +440,7 @@ t_sys:
         movzx   ecx, byte [rdx + 9]
         mov     rax, [r14 + rcx]        ; queue address
         call    ventanilla
-        mov     r15, [rbx + P_DATA]     ; the cabin may have moved
+        mov     r15, [rbx + P_DATA]     ; a request may have built or moved a room
         cmp     rax, -1
         je      t_fail_mem
         cmp     rax, -2

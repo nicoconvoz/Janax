@@ -354,3 +354,21 @@ Reemplaza al gemelo nativo de arriba (que generaba código de máquina y lo guar
 - **Modo cero**: necesita **hardware real**, booteando desde un pendrive en una máquina. Sin emuladores, no
   hay otro camino; conviene una máquina o un disco de pruebas, nunca la partición con los datos del
   Capitán.
+
+## 2026-10-29 — Ambientes: el camarote crece sin mudarse (Capitán)
+
+> *"Que pese lo que ocupe, y si en el tiempo ocupa más se expanda; si ocupa menos se contraiga."*
+> *"Cada camarote tiene su ambiente; cuando se da la orden de agrandar se agrega un ambiente y se construye
+> en el mismo camarote; cuando ya no queremos el ambiente se destruye solo el ambiente."*
+> *"El camarote debe dar un flag para destruir el ambiente que desea no usar más."*
+> *"Sé simbiótico: pedí la página necesaria para que entren todos los ambientes de tamaños diversos. Es como
+> tener la página ajustable, solo que se entrega de a partes fijas."*
+> *"Si quedan huecos entre un ambiente y otro por quitar el del medio, unir los extremos y liberar si queda
+> libre página."*
+> *"Armá un paquete fijo para esa parte que traduzca el paquete entero, no instrucción por instrucción; así
+> contaría como una sola instrucción, además eso va a pasar siempre."*
+
+Devolución: es la segmentación de los sistemas clásicos (cada ambiente con su número y su tamaño) con
+ambientes que se construyen y se destruyen, y compactación como la de los recolectores de memoria: mover es
+invisible porque el programa habla en "ambiente + posición" y el núcleo traduce. Lo construido y medido:
+`janaxos.md`, sección "Ambientes".

@@ -90,3 +90,6 @@ sacada de contar parejas ejecutadas: ninguna domina, pero toda vuelta de while t
 64 procesos: 131 → 69 MB; 1.000 copias: ~440 → ~320 ms; mismas salidas. 88/88.
 2026-10-29 — Cada programa ocupa lo que pesa: un búfer de carga único y una copia a medida. 38 programas distintos:
 77,5 → 41,7 MB, mismas salidas. 88/88.
+2026-10-29 — Ambientes (Capitán): direcciones "ambiente + posición", agrandar construye en el lugar, destruir corre
+los de atrás sobre el hueco y devuelve las páginas (64 MB: 66,6 → 2,4 MB); paquete fijo de traducción. Ambiente 0 ~+5 %
+(sin explicar), ambiente construido ~+25 %. 96/96.
