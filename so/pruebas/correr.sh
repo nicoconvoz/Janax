@@ -26,7 +26,12 @@ ok=0; mal=0
 caso() {
   local nombre=$1 cambio=$2 cod=$3 esp=$4; shift 4
   local args=() p
-  for p in "$@"; do args+=("$(bin "$p")"); done
+  for p in "$@"; do
+    case "$p" in
+      *@*) args+=("$(bin "${p%@*}")@${p#*@}") ;;   # program@permissions
+      *)   args+=("$(bin "$p")") ;;
+    esac
+  done
   local got c
   if [ -n "$cambio" ]; then
     got=$(JANAX_CAMBIO=$cambio "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
@@ -138,6 +143,31 @@ ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo
 caso "archivo: manija que no se abrio" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=19
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_manija_mala
+
+# --- porters: a tree with wide branches; a process gets only the permissions it was launched with ---
+# (p screen, m memory, l read files, g write files; no @ = all). Nodes: root + 3 door porters + 3 per process.
+caso "porteros: sin pantalla" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=15
+ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=1
+porteros: nodos=7 negados=1" ventanilla_hola@m
+
+caso "porteros: sin archivos" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=56
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=3
+porteros: nodos=7 negados=2" archivo_guardar@p
+
+caso "porteros: rama revocada y privilegios bajados" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=*
+ventanilla: pantallas=1 resintonias=5 llamadas al anfitrion=0 pedidos=8
+porteros: nodos=10 negados=2" porteros_cascada
+
+# Three processes hang from the same door porters: a wide branch, not a longer chain.
+caso "porteros: ramas anchas" 0 0 "$fijo0
+P* codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+P* codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+P* codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=3
+porteros: nodos=13 negados=3" ventanilla_hola@m ventanilla_hola@m ventanilla_hola@m
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

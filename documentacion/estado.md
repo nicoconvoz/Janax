@@ -48,3 +48,6 @@ ronda sin reloj, camarote que crece y se achica. 14/14 OS + 141/141 escalón 0.
 2026-10-29 — Archivos en Janax OS: pedidos abrir/leer/escribir/cerrar por la ventanilla, etiquetas UTF-8 validadas (emojis),
 nombres en hexadecimal en una carpeta propia, manijas por proceso. Probado: guardar 🦎 notas.txt y leerlo en otra corrida.
 19/19. Pendiente: normalización Unicode.
+2026-10-29 — Porteros de Janax OS (Capitán: jerarquía sobre microporteros con ramas anchas): árbol raíz → puerta → micro
+por proceso, atenuación, verificar subiendo a la raíz, revocar = una marca con cascada gratis, permisos al lanzar
+(programa.bin@pmlg), pedidos ceder/usar/revocar/consultar. 23/23.

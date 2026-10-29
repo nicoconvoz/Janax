@@ -52,7 +52,21 @@ P_CODE   = 192
 P_SIZE   = 200                  ; bytes of data memory (the cabin grows and shrinks)
 P_FILES  = 208                  ; table of host file handles (0 = free slot)
 P_NFILES = 216                  ; slots in that table
-PROC_SIZE = 224
+P_GATES  = 224                  ; the process's porter for each door (3 nodes)
+PROC_SIZE = 248
+
+; porters: rights and tree nodes
+R_SCREEN = 1
+R_MEM    = 2
+R_READ   = 4
+R_WRITE  = 8
+R_ALL    = 15
+DOORS    = 3                    ; screen, memory, files
+N_PARENT = 0                    ; -1 for the root
+N_RIGHTS = 8
+N_ALIVE  = 16
+N_DOOR   = 24
+NODE_SIZE = 32
 
 section '.data' data readable writeable
 
@@ -72,7 +86,7 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 7                 ; write, grow, shrink, open, read, write to file, close
+  KINDS     = 11                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke, consult
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -91,6 +105,22 @@ section '.data' data readable writeable
   t_host    db ' llamadas al anfitrion=', 0
   t_reqs    db ' pedidos=', 0
   serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
+              dq serve_cede, serve_use, serve_revoke, serve_consult
+  ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0
+  kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0
+  ; porters
+  nodes     dq 0
+  nnodes    dq 0
+  capnodes  dq 0
+  denied    dq 0
+  launch_rights dq 0
+  nn_parent dq 0
+  nn_rights dq 0
+  nn_door   dq 0
+  nn_new    dq 0
+  t_nodes   db 'porteros: nodos=', 0
+  t_denied  db ' negados=', 0
 
   ; files: the system's own folder; on the host each label is stored in hexadecimal
   dir_env   db 'JANAX_ARCHIVOS', 0
@@ -203,6 +233,24 @@ start:
         mov     [dir_len], rax
         invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
 
+        ; --- porters: the root and one porter per door (nodes 0..3); processes hang from the doors ---
+        mov     rcx, -1
+        mov     edx, R_ALL
+        xor     r8d, r8d
+        call    new_node                ; 0: root
+        xor     ecx, ecx
+        mov     edx, R_SCREEN
+        mov     r8d, 1
+        call    new_node                ; 1: screen
+        xor     ecx, ecx
+        mov     edx, R_MEM
+        mov     r8d, 2
+        call    new_node                ; 2: memory
+        xor     ecx, ecx
+        mov     edx, R_READ + R_WRITE
+        mov     r8d, 3
+        call    new_node                ; 3: files
+
         ; --- arguments: a private copy of the command line, split in place ---
         invoke  GetCommandLineA
         mov     rsi, rax
@@ -290,11 +338,39 @@ start:
         jmp     .find
 .path:
         mov     r14, rsi                ; this path
+        mov     qword [launch_rights], R_ALL   ; no "@": every permission
 .path_end:
-        cmp     byte [rsi], 0
+        mov     al, [rsi]
+        test    al, al
         je      .open
+        cmp     al, '@'
+        je      .permissions
         inc     rsi
         jmp     .path_end
+.permissions:                           ; program.bin@pmlg: p screen, m memory, l read files, g write files
+        mov     byte [rsi], 0
+        inc     rsi
+        mov     qword [launch_rights], 0
+.letter:
+        mov     al, [rsi]
+        test    al, al
+        je      .open
+        inc     rsi
+        mov     edx, R_SCREEN
+        cmp     al, 'p'
+        je      .grant
+        mov     edx, R_MEM
+        cmp     al, 'm'
+        je      .grant
+        mov     edx, R_READ
+        cmp     al, 'l'
+        je      .grant
+        mov     edx, R_WRITE
+        cmp     al, 'g'
+        jne     .letter
+.grant:
+        or      [launch_rights], rdx
+        jmp     .letter
 .open:
         invoke  CreateFileA, r14, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
         cmp     rax, -1
@@ -321,6 +397,19 @@ start:
         mov     [rbx + P_RET], rax
         mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
         mov     qword [rbx + P_SIZE], DATA_SIZE
+        mov     r15d, 1                 ; one microporter per door, child of that door's porter
+.gate:
+        mov     rcx, r15                ; the door porter's node number is the door number
+        imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rdx, [rax + N_RIGHTS]
+        and     rdx, [launch_rights]    ; never more than its porter has
+        mov     r8, r15
+        call    new_node
+        mov     [rbx + P_GATES + r15*8 - 8], rax
+        inc     r15d
+        cmp     r15d, DOORS
+        jbe     .gate
         add     rbx, PROC_SIZE
         inc     r13
         jmp     .load
@@ -345,6 +434,22 @@ start:
         lea     rsi, [t_reqs]
         call    put_text
         mov     rax, [requests]
+        call    put_decimal
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+        cmp     qword [denied], 0
+        je      .quit
+        lea     rdi, [line]             ; "porteros: nodos=.. negados=.."
+        lea     rsi, [t_nodes]
+        call    put_text
+        mov     rax, [nnodes]
+        call    put_decimal
+        lea     rsi, [t_denied]
+        call    put_text
+        mov     rax, [denied]
         call    put_decimal
         mov     word [rdi], 0A0Dh
         add     rdi, 2
@@ -830,6 +935,17 @@ ventanilla:
         lea     r8, [rdx - 1]
         cmp     r8, KINDS - 1
         ja      .unknown
+        movzx   r9d, byte [kind_door + rdx]
+        test    r9d, r9d
+        jz      .allowed                ; the porters' own requests answer to the tree's rules
+        mov     r8, [rbx + P_GATES + r9*8 - 8]   ; the process's porter for this door
+        movzx   r9d, byte [kind_right + rdx]
+        call    gate_allows
+        test    r8d, r8d
+        jnz     .allowed
+        inc     qword [denied]
+        jmp     .unknown
+.allowed:
         mov     byte [present + rdx], 1
         jmp     .mark_next
 .unknown:
@@ -1405,6 +1521,201 @@ utf8_ok:
         ret
 .no:
         xor     eax, eax
+        ret
+
+; ---------------------------------------------------------------- porters
+; A tree: the root, one porter per door, and below them microporters with any number of children per
+; branch (Capitan: wide branches, so going through the tree stays cheap). A child never has more rights
+; than its parent. Checking climbs from the microporter to the root: a revoked porter on the way refuses,
+; so revoking one porter takes its whole branch with it at the cost of a single mark.
+
+; rcx = parent (-1 for the root), rdx = rights, r8 = door -> rax = new node. The table doubles when full.
+; Keeps rsi, rdi and the callee-saved registers.
+new_node:
+        push    rsi rdi
+        sub     rsp, 8
+        mov     [nn_parent], rcx
+        mov     [nn_rights], rdx
+        mov     [nn_door], r8
+        mov     rax, [nnodes]
+        cmp     rax, [capnodes]
+        jb      .room
+        lea     rax, [rax + rax]
+        test    rax, rax
+        jnz     @f
+        mov     eax, 1
+@@:     mov     [capnodes], rax
+        imul    rax, NODE_SIZE
+        invoke  VirtualAlloc, 0, rax, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [nn_new], rax
+        mov     rdi, rax
+        mov     rsi, [nodes]
+        mov     rcx, [nnodes]
+        imul    rcx, NODE_SIZE / 8
+        rep     movsq
+        cmp     qword [nodes], 0
+        je      @f
+        invoke  VirtualFree, [nodes], 0, MEM_RELEASE
+@@:     mov     rax, [nn_new]
+        mov     [nodes], rax
+.room:
+        mov     rax, [nnodes]
+        imul    rdx, rax, NODE_SIZE
+        add     rdx, [nodes]
+        mov     rcx, [nn_parent]
+        mov     [rdx + N_PARENT], rcx
+        mov     rcx, [nn_rights]
+        mov     [rdx + N_RIGHTS], rcx
+        mov     qword [rdx + N_ALIVE], 1
+        mov     rcx, [nn_door]
+        mov     [rdx + N_DOOR], rcx
+        inc     qword [nnodes]
+        add     rsp, 8
+        pop     rdi rsi
+        ret
+
+; r8 = node, r9 = rights (any of them is enough) -> r8 = 1 if every porter up to the root is alive and
+; has one of them, else 0. Uses r10.
+gate_allows:
+        cmp     r8, -1
+        je      .yes
+        cmp     r8, [nnodes]
+        jae     .no
+        imul    r10, r8, NODE_SIZE
+        add     r10, [nodes]
+        cmp     qword [r10 + N_ALIVE], 0
+        je      .no
+        test    [r10 + N_RIGHTS], r9
+        jz      .no
+        mov     r8, [r10 + N_PARENT]
+        jmp     gate_allows
+.yes:
+        mov     r8d, 1
+        ret
+.no:
+        xor     r8d, r8d
+        ret
+
+; r8 = node -> r9 = 1 if it belongs to the process in rbx: climbing from it, every porter is alive and
+; the climb reaches the process's own porter for that door (the node itself counts). Uses r10, r11.
+mine:
+        xor     r9d, r9d
+        cmp     r8, [nnodes]
+        jae     .done                   ; also catches negative numbers
+        imul    r10, r8, NODE_SIZE
+        add     r10, [nodes]
+        mov     r11, [r10 + N_DOOR]
+        test    r11, r11
+        jz      .done
+        mov     r11, [rbx + P_GATES + r11*8 - 8]
+.climb:
+        cmp     r8, -1
+        je      .done
+        imul    r10, r8, NODE_SIZE
+        add     r10, [nodes]
+        cmp     qword [r10 + N_ALIVE], 0
+        je      .done
+        cmp     r8, r11
+        je      .yes
+        mov     r8, [r10 + N_PARENT]
+        jmp     .climb
+.yes:
+        mov     r9d, 1
+.done:
+        ret
+
+; The four porter requests share one loop: r14 = kind, r15 = entries; the handler gets the entry in r13.
+macro serve_gate name, kind, handler {
+  name:
+          push    r12 r13 r14 r15
+          sub     rsp, 8
+          xor     r12d, r12d
+  .one:
+          cmp     r12, r15
+          jae     .done
+          mov     r13, r12
+          shl     r13, 5
+          cmp     dword [rbp + r13], kind
+          jne     .next
+          call    handler
+  .next:
+          inc     r12
+          jmp     .one
+  .done:
+          add     rsp, 8
+          pop     r15 r14 r13 r12
+          ret
+}
+
+serve_gate serve_cede,    8,  gate_cede
+serve_gate serve_use,     9,  gate_use
+serve_gate serve_revoke,  10, gate_revoke
+serve_gate serve_consult, 11, gate_consult
+
+; 8 cede: a = parent (mine), b = rights -> a new child with b, cut down to what the parent has.
+gate_cede:
+        mov     r8, [rbp + r13 + 8]
+        call    mine
+        test    r9d, r9d
+        jz      gate_refused
+        mov     rcx, [rbp + r13 + 8]
+        imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rdx, [rbp + r13 + 16]
+        and     rdx, [rax + N_RIGHTS]
+        mov     r8, [rax + N_DOOR]
+        call    new_node
+        mov     [rbp + r13 + 24], rax
+        ret
+
+; 9 use: a = node (mine) -> the process works through it from now on (it can only go down).
+gate_use:
+        mov     r8, [rbp + r13 + 8]
+        call    mine
+        test    r9d, r9d
+        jz      gate_refused
+        mov     rcx, [rbp + r13 + 8]
+        imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rax, [rax + N_DOOR]
+        mov     [rbx + P_GATES + rax*8 - 8], rcx
+        mov     qword [rbp + r13 + 24], 0
+        ret
+
+; 10 revoke: a = node below the process's own porter -> it and its whole branch stop working.
+gate_revoke:
+        mov     r8, [rbp + r13 + 8]
+        call    mine
+        test    r9d, r9d
+        jz      gate_refused
+        mov     rcx, [rbp + r13 + 8]
+        imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rdx, [rax + N_DOOR]
+        cmp     rcx, [rbx + P_GATES + rdx*8 - 8]
+        je      gate_refused            ; not its own porter: only what hangs below it
+        mov     qword [rax + N_ALIVE], 0
+        mov     qword [rbp + r13 + 24], 0
+        ret
+
+; 11 consult: a = door (1 screen, 2 memory, 3 files) -> the process's porter for it.
+gate_consult:
+        mov     rax, [rbp + r13 + 8]
+        lea     rcx, [rax - 1]
+        cmp     rcx, DOORS - 1
+        ja      .invalid
+        mov     rax, [rbx + P_GATES + rax*8 - 8]
+        mov     [rbp + r13 + 24], rax
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        ret
+
+gate_refused:
+        mov     qword [rbp + r13 + 24], -1
+        inc     qword [denied]
         ret
 
 ; ---------------------------------------------------------------- output

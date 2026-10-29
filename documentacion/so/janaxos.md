@@ -62,6 +62,23 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - **Manijas por proceso**: cada proceso tiene su propia tabla, que se duplica cuando se llena. Una manija
      de otro proceso o no abierta responde −1. Lo que un proceso deja abierto se cierra cuando termina.
 
+8. **Porteros en árbol de ramas anchas (ideas 9 y su jerarquía).**
+   - **Árbol**: raíz → un portero por puerta (1 pantalla, 2 memoria, 3 archivos) → microporteros, con
+     **cualquier cantidad de hijos por rama** (Capitán: "para que bajar no sea tan costoso"). Cada proceso
+     cuelga un microportero de cada puerta: los porteros de puerta tienen tantos hijos como procesos.
+   - **Atenuación**: un hijo nunca tiene más permisos que su padre (se recortan al crearlo).
+   - **Verificar = subir del microportero a la raíz**: si en el camino hay un portero revocado o sin el
+     permiso, se niega. **Revocar = una marca**, y toda la rama de abajo queda sin efecto sola. El costo
+     de verificar es la altura del árbol, que las ramas anchas mantienen chica.
+   - **Permisos al lanzar**: `programa.bin@pmlg` (p pantalla, m memoria, l leer archivos, g grabar
+     archivos). Sin `@`, todos.
+   - **Pedidos de porteros** (sin llamadas al anfitrión): **8 ceder** (`a` = padre propio, `b` = permisos →
+     un hijo nuevo), **9 usar** (`a` = un portero propio → el proceso pasa a trabajar con él: así baja sus
+     propios privilegios), **10 revocar** (`a` = un portero que cuelga del propio, nunca el propio),
+     **11 consultar** (`a` = puerta → mi portero). Un portero es "propio" si subiendo desde él se llega,
+     sin nada revocado en el camino, al portero del proceso para esa puerta.
+   - Un pedido negado responde −1. Si hubo negados: `porteros: nodos=N negados=M`.
+
 Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
 cuando termina:
 
@@ -78,7 +95,13 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-19/19. Archivos: **guardar** `🦎 notas.txt`; el archivo está en el anfitrión con su nombre en hexadecimal y
+23/23. Porteros: **sin pantalla** (la escritura se niega y no sale nada); **sin archivos** (abrir y grabar
+se niegan); **rama revocada y privilegios bajados** (revocar A deja inservible a su nieto B; el proceso se
+baja a un portero sin permisos y su escritura se niega); **ramas anchas** (tres procesos cuelgan de los
+mismos porteros de puerta: 13 nodos, no una cadena más larga). Verificado también al revés: con `@p` la
+misma escritura sale.
+
+Archivos: **guardar** `🦎 notas.txt`; el archivo está en el anfitrión con su nombre en hexadecimal y
 el contenido justo; **otra corrida del sistema lo lee**; etiqueta que no es UTF-8 (−1, sin tocar el
 anfitrión); manija nunca abierta (−1).
 
@@ -122,5 +145,7 @@ mejorar si hace falta.
   tablas de Unicode; nombres legibles desde Windows si el Capitán lo quiere; borrar, renombrar, listar.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
   desconocido.
-- La campana (0..1), los porteros y la cubierta.
+- Porteros: permisos por etiqueta o grupo de etiquetas (hoy son por puerta), y que dar un permiso
+  importante pida la firma de más de un portero, como las órdenes firmadas de Wenas.
+- La campana (0..1) y la cubierta.
 - Modo cero.
