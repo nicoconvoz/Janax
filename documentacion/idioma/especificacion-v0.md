@@ -54,6 +54,17 @@ campos es **criterio**, no medición: se revisa cuando el traductor muestre qué
 | 0C | `jjmp destino` | salto |
 | 0D–0E | `jjz`/`jjnz rd, destino` | salta si `rd` es / no es cero |
 | 0F | `jshi rd, imm` | `rd = (rd << 16) | imm`: arma constantes de 64 bits |
+| 10–11 | `jld`/`jst rd, ra, imm` | carga / guarda 64 bits en `ra + imm`; alineado a 8 |
+| 12–13 | `jldb`/`jstb rd, ra, imm` | carga (sin signo) / guarda un byte |
+| 14 | `jcall destino` | guarda la vuelta en la **pila de retorno separada** y salta |
+| 15 | `jret` | vuelve a la última llamada |
+
+Memoria de datos: 1 MiB que arranca en cero (criterio); `j15` arranca en el tope y se usa como puntero de
+pila de datos. La pila de retorno está aparte y el programa no la puede leer ni pisar: así ningún error
+de memoria puede desviar una vuelta. Profundidad máxima: 4096 llamadas (criterio). Errores: 5 fuera de
+memoria, 6 acceso desalineado, 7 demasiadas llamadas anidadas, 8 `jret` sin `jcall`.
+
+Equivalentes en cada procesador y el mecanismo de adaptación: `cambiaformas.md`.
 
 Opcode desconocido y salirse del programa son errores del intérprete (códigos 1 y 2), nunca comportamiento
 indefinido.
@@ -64,6 +75,5 @@ del idioma sigue abierto.
 ## Abierto para decidir con el Capitán
 
 - Nombre y forma de escribir las instrucciones (el "texto" del idioma).
-- Memoria: cargar/guardar, pila y llamadas (no existen todavía en v0).
 - Cómo se llama al sistema (ventana, GPU, red, disco): por un conjunto fijo de llamadas al arranque.
 - Si el idioma tiene flotantes para gráficos (donde el determinismo no importa) o solo punto fijo.

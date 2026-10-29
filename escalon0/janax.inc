@@ -37,3 +37,13 @@ macro jjmp target        { j_word 0Ch, 0, 0, ((target) - $ - 4) / 4 }
 macro jjz rd, target     { j_word 0Dh, rd, 0, ((target) - $ - 4) / 4 }
 macro jjnz rd, target    { j_word 0Eh, rd, 0, ((target) - $ - 4) / 4 }
 macro jshi rd, imm       { j_word 0Fh, rd, 0, imm }
+
+; Memory: 64-bit accesses must be 8-byte aligned; byte accesses zero-extend on load.
+macro jld rd, ra, imm    { j_word 10h, rd, ra, imm }
+macro jst rd, ra, imm    { j_word 11h, rd, ra, imm }
+macro jldb rd, ra, imm   { j_word 12h, rd, ra, imm }
+macro jstb rd, ra, imm   { j_word 13h, rd, ra, imm }
+
+; Calls use a separate return stack the program cannot read or overwrite.
+macro jcall target       { j_word 14h, 0, 0, ((target) - $ - 4) / 4 }
+macro jret               { j_word 15h, 0, 0, 0 }

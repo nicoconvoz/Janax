@@ -23,6 +23,9 @@ se diseña y se prueba con el mismo cuidado que el juego.
   Windows directo, sin linker). Un pedazo caliente puede tener assembler a
   mano para una familia y reemplaza al traducido.
   Detalle: `documentacion/decisiones/2026-10-28-idioma-janax.md`.
+- **El Cambiaformas** (idea del Capitán): el arranque elige, para cada mecanismo Janax, la secuencia del
+  procesador que da **idéntico al intérprete bit por bit** y corre más rápido; lo que no conoce lo busca y
+  verifica en ejecución. Mapa y diseño: `documentacion/idioma/cambiaformas.md`.
 - **Gráficos propios**: sin SDL ni motores; solo la API del driver (Vulkan/DirectX/OpenGL) y la ventana
   del sistema, declaradas por nosotros.
 - Todas las variantes de una función dan el mismo resultado bit por bit; simulación en punto fijo.
