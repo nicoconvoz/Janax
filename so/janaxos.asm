@@ -53,7 +53,10 @@ P_SIZE   = 200                  ; bytes of data memory (the cabin grows and shri
 P_FILES  = 208                  ; table of host file handles (0 = free slot)
 P_NFILES = 216                  ; slots in that table
 P_GATES  = 224                  ; the process's porter for each door (3 nodes)
-PROC_SIZE = 248
+P_ID     = 248                  ; process number (P0, P1...)
+P_PARENT = 256                  ; parent process, 0 = the kernel
+P_WAITING = 264                 ; important requests waiting for the parent's signature
+PROC_SIZE = 272
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -74,7 +77,16 @@ section '.data' data readable writeable
 
   entry_rcx dq 0
   cmdline   dq 0
-  procs     dq 0
+  procs     dq 0                ; list of pointers to the processes (it doubles; cabins never move)
+  capprocs  dq 0
+  nargs     dq 0
+  mp_prog   dq 0
+  mp_words  dq 0
+  mp_parent dq 0
+  mp_rights dq 0
+  mp_pfx_ptr dq 0
+  mp_pfx_len dq 0
+  mp_new    dq 0
   nprocs    dq 0
   clock     dq 0                ; instructions executed by the whole system
   budget0   dq 0
@@ -202,6 +214,7 @@ section '.data' data readable writeable
              dd 00h                                                        ; jhalt
   CALIB_WORDS = ($ - calib_prog) / 4
   calib_procs db 2 * PROC_SIZE dup 0
+  calib_list  dq calib_procs, calib_procs + PROC_SIZE
   real_procs  dq 0
   real_nprocs dq 0
   tsc_start   dq 0
@@ -374,19 +387,13 @@ start:
 .counted:
         test    rbx, rbx
         jz      no_programs
-        mov     [nprocs], rbx
-        imul    rdx, rbx, PROC_SIZE
-        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
-        test    rax, rax
-        jz      fail_file
-        mov     [procs], rax
+        mov     [nargs], rbx
 
-        ; --- one cabin per program ---
+        ; --- one cabin per program, all of them children of the kernel ---
         mov     rsi, r12
-        mov     rbx, [procs]
-        xor     r13, r13                ; process number
+        xor     r13, r13                ; argument number
 .load:
-        cmp     r13, [nprocs]
+        cmp     r13, [nargs]
         jae     .loaded
 .find:
         cmp     byte [rsi], 0
@@ -479,44 +486,22 @@ start:
         invoke  VirtualAlloc, 0, MAX_PROGRAM, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
         jz      fail_file
-        mov     [rbx + P_PROG], rax
-        invoke  ReadFile, [hfile], qword [rbx + P_PROG], MAX_PROGRAM, bytesread, 0
+        mov     [mp_prog], rax
+        invoke  ReadFile, [hfile], [mp_prog], MAX_PROGRAM, bytesread, 0
         test    eax, eax
         jz      fail_file
         invoke  CloseHandle, [hfile]
         mov     eax, [bytesread]
         shr     eax, 2
-        mov     [rbx + P_NWORDS], rax
-        invoke  VirtualAlloc, 0, DATA_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
-        test    rax, rax
-        jz      fail_file
-        mov     [rbx + P_DATA], rax
-        invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
-        test    rax, rax
-        jz      fail_file
-        mov     [rbx + P_RET], rax
-        mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
-        mov     qword [rbx + P_SIZE], DATA_SIZE
-        mov     r15d, 1                 ; one microporter per door, child of that door's porter
-.gate:
-        mov     rcx, r15                ; the door porter's node number is the door number
-        imul    rax, rcx, NODE_SIZE
-        add     rax, [nodes]
-        mov     rdx, [rax + N_RIGHTS]
-        and     rdx, [launch_rights]    ; never more than its porter has
-        mov     r8, r15
-        cmp     r15d, 3                 ; the files microporter carries the launch prefix, if any
-        jne     @f
+        mov     [mp_words], rax
+        mov     qword [mp_parent], 0
+        mov     rax, [launch_rights]
+        mov     [mp_rights], rax
         lea     rax, [launch_pfx]
-        mov     [nn_pptr], rax
+        mov     [mp_pfx_ptr], rax
         mov     rax, [launch_pfx_len]
-        mov     [nn_plen], rax
-@@:     call    new_node
-        mov     [rbx + P_GATES + r15*8 - 8], rax
-        inc     r15d
-        cmp     r15d, DOORS
-        jbe     .gate
-        add     rbx, PROC_SIZE
+        mov     [mp_pfx_len], rax
+        call    make_process
         inc     r13
         jmp     .load
 .loaded:
@@ -592,6 +577,89 @@ put_text:
         jmp     put_text
 @@:     ret
 
+; ---------------------------------------------------------------- processes
+; A cabin for the program at mp_prog (mp_words words), child of mp_parent (0 = the kernel, the mother of
+; all). Its porters hang from its parent's porters (from the door porters for the kernel's children), with
+; mp_rights cut down to what those have; the files porter carries the prefix mp_pfx_ptr / mp_pfx_len.
+; The table of processes is a list of pointers that doubles, so a cabin never moves while it runs.
+; -> rax = the new process. Keeps every callee-saved register.
+make_process:
+        push    rbx rsi rdi r12 r13 r14 r15
+        invoke  VirtualAlloc, 0, PROC_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     rbx, rax
+        mov     rax, [mp_prog]
+        mov     [rbx + P_PROG], rax
+        mov     rax, [mp_words]
+        mov     [rbx + P_NWORDS], rax
+        mov     rax, [mp_parent]
+        mov     [rbx + P_PARENT], rax
+        invoke  VirtualAlloc, 0, DATA_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [rbx + P_DATA], rax
+        invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [rbx + P_RET], rax
+        mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
+        mov     qword [rbx + P_SIZE], DATA_SIZE
+        mov     r15d, 1                 ; one microporter per door
+.gate:
+        mov     rcx, r15                ; the kernel's children hang from the door porters (node = door)
+        mov     rax, [mp_parent]
+        test    rax, rax
+        jz      @f
+        mov     rcx, [rax + P_GATES + r15*8 - 8]   ; a process's children hang from its own porters
+@@:     imul    rax, rcx, NODE_SIZE
+        add     rax, [nodes]
+        mov     rdx, [rax + N_RIGHTS]
+        and     rdx, [mp_rights]        ; never more than its parent has
+        mov     r8, r15
+        cmp     r15d, 3                 ; the files microporter carries the prefix, if any
+        jne     @f
+        mov     rax, [mp_pfx_ptr]
+        mov     [nn_pptr], rax
+        mov     rax, [mp_pfx_len]
+        mov     [nn_plen], rax
+@@:     call    new_node
+        mov     [rbx + P_GATES + r15*8 - 8], rax
+        inc     r15d
+        cmp     r15d, DOORS
+        jbe     .gate
+        mov     rax, [nprocs]           ; into the table, which doubles when full
+        cmp     rax, [capprocs]
+        jb      .room
+        lea     rax, [rax + rax]
+        test    rax, rax
+        jnz     @f
+        mov     eax, 1
+@@:     mov     [capprocs], rax
+        shl     rax, 3
+        invoke  VirtualAlloc, 0, rax, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [mp_new], rax
+        mov     rdi, rax
+        mov     rsi, [procs]
+        mov     rcx, [nprocs]
+        rep     movsq
+        cmp     qword [procs], 0
+        je      @f
+        invoke  VirtualFree, [procs], 0, MEM_RELEASE
+@@:     mov     rax, [mp_new]
+        mov     [procs], rax
+.room:
+        mov     rdx, [procs]
+        mov     rax, [nprocs]
+        mov     [rdx + rax*8], rbx
+        mov     [rbx + P_ID], rax
+        inc     qword [nprocs]
+        mov     rax, rbx
+        pop     r15 r14 r13 r12 rdi rsi rbx
+        ret
+
 ; ---------------------------------------------------------------- scheduler
 ; Runs every process in [procs] until all of them end. Least attained service; the turn comes from
 ; the priority gap and the switch cost (see the header).
@@ -600,11 +668,12 @@ schedule:
         mov     rbx, -1                 ; least served process
         mov     r8, FOREVER             ; its service
         mov     r9, FOREVER             ; service of the next least served
-        mov     rsi, [procs]
         xor     ecx, ecx
 .scan:
         cmp     rcx, [nprocs]
         jae     .chosen
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
         cmp     qword [rsi + P_DONE], 0
         jne     .next_proc
         mov     rax, [rsi + P_SERVED]
@@ -619,7 +688,6 @@ schedule:
         jae     .next_proc
         mov     r9, rax
 .next_proc:
-        add     rsi, PROC_SIZE
         inc     rcx
         jmp     .scan
 .chosen:
@@ -677,7 +745,7 @@ calibrate:
         mov     [real_procs], rax
         mov     rax, [nprocs]
         mov     [real_nprocs], rax
-        lea     rax, [calib_procs]
+        lea     rax, [calib_list]
         mov     [procs], rax
         mov     byte [quiet], 1
         mov     qword [swcost], 0
@@ -2442,11 +2510,7 @@ report:
         lea     rdi, [line]
         mov     al, 'P'
         stosb
-        mov     rax, rbx
-        sub     rax, [procs]
-        xor     edx, edx
-        mov     ecx, PROC_SIZE
-        div     rcx
+        mov     rax, [rbx + P_ID]
         call    put_decimal
         mov     rax, ' codigo='
         stosq
