@@ -61,6 +61,14 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      lee. Largo máximo: la ruta entera tiene que entrar en los 260 caracteres de Windows.
    - **Manijas por proceso**: cada proceso tiene su propia tabla, que se duplica cuando se llena. Una manija
      de otro proceso o no abierta responde −1. Lo que un proceso deja abierto se cierra cuando termina.
+   - **12 borrar** (`a` = etiqueta, `b` = bytes), **13 renombrar** (`a`/`b` = etiqueta vieja; la nueva va
+     pegada detrás y su largo viaja en la mitad alta del tipo; falla si la nueva ya existe), **14 listar**
+     (`a` = destino, `b` = espacio: cada etiqueta como un qword con su largo y sus bytes rellenados a 8,
+     mientras entren; responde cuántas). Los nombres de la carpeta que no son el hexadecimal de un UTF-8
+     válido no son del sistema y no se listan.
+   - **Normalización (forma C de Unicode)**: dos etiquetas que se ven iguales (`é` en una pieza y `e` +
+     acento) son **el mismo archivo**. En simbiosis la normalización la hace el anfitrión (`NormalizeString`
+     de Windows); en modo cero harán falta las tablas de Unicode propias.
 
 8. **Porteros en árbol de ramas anchas (ideas 9 y su jerarquía).**
    - **Árbol**: raíz → un portero por puerta (1 pantalla, 2 memoria, 3 archivos) → microporteros, con
@@ -95,7 +103,11 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-23/23. Porteros: **sin pantalla** (la escritura se niega y no sale nada); **sin archivos** (abrir y grabar
+26/26. Archivos (2): **listar, borrar y renombrar** en una carpeta limpia (2 etiquetas, borrar "a", "b" →
+"c", queda 1: "c"); **etiquetas que se ven iguales son el mismo archivo** (guardado por `é` de una pieza,
+leído por `e` + acento, y en Windows hay un solo archivo: `c3a9`).
+
+Porteros: **sin pantalla** (la escritura se niega y no sale nada); **sin archivos** (abrir y grabar
 se niegan); **rama revocada y privilegios bajados** (revocar A deja inservible a su nieto B; el proceso se
 baja a un portero sin permisos y su escritura se niega); **ramas anchas** (tres procesos cuelgan de los
 mismos porteros de puerta: 13 nodos, no una cadena más larga). Verificado también al revés: con `@p` la
@@ -141,8 +153,8 @@ mejorar si hace falta.
 - Medición de `c` más estable (hoy varía entre arranques).
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
 - Ventanilla: medir cuánto ahorra el lote con programas reales.
-- Archivos: **normalización Unicode** (que dos "é" armadas distinto sean la misma etiqueta) necesita las
-  tablas de Unicode; nombres legibles desde Windows si el Capitán lo quiere; borrar, renombrar, listar.
+- Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
+  Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
   desconocido.
 - Porteros: permisos por etiqueta o grupo de etiquetas (hoy son por puerta), y que dar un permiso

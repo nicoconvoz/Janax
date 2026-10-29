@@ -86,7 +86,8 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 11                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke, consult
+  KINDS     = 14                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
+                                ; consult, delete, rename, list
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -105,10 +106,12 @@ section '.data' data readable writeable
   t_host    db ' llamadas al anfitrion=', 0
   t_reqs    db ' pedidos=', 0
   serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
-              dq serve_cede, serve_use, serve_revoke, serve_consult
+              dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0
-  kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3
+  kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ
+  assert $ - kind_right = KINDS + 1
   ; porters
   nodes     dq 0
   nnodes    dq 0
@@ -129,6 +132,20 @@ section '.data' data readable writeable
   dir_path  db HOST_PATH dup 0
   dir_len   dq 0
   host_path db HOST_PATH + 8 dup 0
+  host_path_2 db HOST_PATH + 8 dup 0
+  WIDE_CAP  = 1024              ; UTF-16 units for a label on its way through the host normalization
+  NORM_CAP  = 4096              ; bytes of a normalized label (a UTF-16 unit is at most 3 UTF-8 bytes)
+  NORMALIZATION_C = 1
+  CP_UTF8   = 65001
+  wide_in   dw WIDE_CAP dup 0
+  wide_out  dw WIDE_CAP dup 0
+  wide_len  dq 0
+  norm_label db NORM_CAP dup 0
+  FIND_NAME = 44                ; cFileName inside WIN32_FIND_DATAA
+  find_data db 320 dup 0
+  list_pos  dq 0
+  list_end  dq 0
+  list_count dq 0
   hex_lower db '0123456789abcdef'
   fio_bytes dd 0
   lab_ptr   dq 0
@@ -1228,47 +1245,10 @@ serve_open:
         jne     .next
         mov     rsi, [rbp + r13 + 8]
         mov     rcx, [rbp + r13 + 16]
-        test    rcx, rcx
-        jz      .invalid
-        mov     rax, [rbx + P_SIZE]
-        cmp     rsi, rax
-        ja      .invalid
-        sub     rax, rsi
-        cmp     rcx, rax
-        ja      .invalid
-        mov     rax, rcx                ; folder + "\" + two characters per byte + 0 must fit
-        shl     rax, 1
-        add     rax, [dir_len]
-        add     rax, 2
-        cmp     rax, HOST_PATH
-        ja      .invalid
-        add     rsi, [rbx + P_DATA]
-        mov     [lab_ptr], rsi
-        mov     [lab_len], rcx
-        call    utf8_ok
+        lea     rdi, [host_path]
+        call    label_path
         test    eax, eax
         jz      .invalid
-        lea     rdi, [host_path]
-        lea     rsi, [dir_path]
-        mov     rcx, [dir_len]
-        rep     movsb
-        mov     al, '\'
-        stosb
-        mov     rsi, [lab_ptr]
-        mov     rcx, [lab_len]
-.hex:
-        lodsb
-        movzx   edx, al
-        shr     eax, 4
-        and     eax, 15
-        mov     al, [hex_lower + rax]
-        stosb
-        and     edx, 15
-        mov     al, [hex_lower + rdx]
-        stosb
-        dec     rcx
-        jnz     .hex
-        mov     byte [rdi], 0
         invoke  CreateFileA, host_path, GENERIC_READ + GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
         inc     qword [hostcalls]
         cmp     rax, -1
@@ -1291,6 +1271,294 @@ serve_open:
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
+        ret
+
+; rsi = label offset in the cabin, rcx = its bytes, rdi = where to write the host path.
+; -> eax = 1 and "folder\hex" written, where hex is the label in Unicode normal form C (the one-piece
+; form, so two labels that look the same are the same file); eax = 0 if the label is outside the
+; cabin, empty, not UTF-8, or too long for the host. In symbiosis the host does the normalization.
+label_path:
+        push    r12 r13 r14
+        mov     r12, rdi
+        test    rcx, rcx
+        jz      .no
+        mov     rax, [rbx + P_SIZE]
+        cmp     rsi, rax
+        ja      .no
+        sub     rax, rsi
+        cmp     rcx, rax
+        ja      .no
+        cmp     rcx, WIDE_CAP
+        ja      .no
+        add     rsi, [rbx + P_DATA]
+        mov     [lab_ptr], rsi
+        mov     [lab_len], rcx
+        call    utf8_ok
+        test    eax, eax
+        jz      .no
+        invoke  MultiByteToWideChar, CP_UTF8, 0, [lab_ptr], [lab_len], wide_in, WIDE_CAP
+        test    eax, eax
+        jz      .no
+        mov     [wide_len], rax
+        invoke  NormalizeString, NORMALIZATION_C, wide_in, [wide_len], wide_out, WIDE_CAP
+        test    eax, eax
+        jle     .no
+        mov     [wide_len], rax
+        invoke  WideCharToMultiByte, CP_UTF8, 0, wide_out, [wide_len], norm_label, NORM_CAP, 0, 0
+        test    eax, eax
+        jz      .no
+        mov     r13, rax
+        lea     rax, [r13*2]            ; folder + "\" + two characters per byte + 0 must fit
+        add     rax, [dir_len]
+        add     rax, 2
+        cmp     rax, HOST_PATH
+        ja      .no
+        mov     rdi, r12
+        lea     rsi, [dir_path]
+        mov     rcx, [dir_len]
+        rep     movsb
+        mov     al, '\'
+        stosb
+        lea     rsi, [norm_label]
+        mov     rcx, r13
+.hex:
+        lodsb
+        movzx   edx, al
+        shr     eax, 4
+        and     eax, 15
+        mov     al, [hex_lower + rax]
+        stosb
+        and     edx, 15
+        mov     al, [hex_lower + rdx]
+        stosb
+        dec     rcx
+        jnz     .hex
+        mov     byte [rdi], 0
+        mov     eax, 1
+        jmp     .out
+.no:
+        xor     eax, eax
+.out:
+        pop     r14 r13 r12
+        ret
+
+; Screen tuned to "delete" (kind 12): a = label, b = bytes. Answers 0, or -1.
+serve_delete:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 12
+        jne     .next
+        mov     rsi, [rbp + r13 + 8]
+        mov     rcx, [rbp + r13 + 16]
+        lea     rdi, [host_path]
+        call    label_path
+        test    eax, eax
+        jz      .invalid
+        invoke  DeleteFileA, host_path
+        inc     qword [hostcalls]
+        test    eax, eax
+        jz      .invalid
+        mov     qword [rbp + r13 + 24], 0
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "rename" (kind 13): a = old label, b = its bytes; the new label follows it right away
+; and its length travels in the high half of the type. Answers 0, or -1 (also if the new one exists).
+serve_rename:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 13
+        jne     .next
+        mov     rsi, [rbp + r13 + 8]
+        mov     rcx, [rbp + r13 + 16]
+        lea     rdi, [host_path]
+        call    label_path
+        test    eax, eax
+        jz      .invalid
+        mov     rsi, [rbp + r13 + 8]
+        add     rsi, [rbp + r13 + 16]
+        jc      .invalid
+        mov     ecx, [rbp + r13 + 4]
+        lea     rdi, [host_path_2]
+        call    label_path
+        test    eax, eax
+        jz      .invalid
+        invoke  MoveFileA, host_path, host_path_2
+        inc     qword [hostcalls]
+        test    eax, eax
+        jz      .invalid
+        mov     qword [rbp + r13 + 24], 0
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "list" (kind 14): a = where to write, b = room. Writes each label as a qword with
+; its length and then its bytes padded to 8, while they fit. Answers how many were written, or -1.
+; Names in the folder that are not the hexadecimal of a UTF-8 label are not the system's: skipped.
+serve_list:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 14
+        jne     .next
+        call    list_one
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; One "list" request, entry r13. Keeps r12, r13, r15.
+list_one:
+        push    r14 rsi rdi
+        mov     rax, [rbp + r13 + 8]    ; destination offset and room must be inside the cabin
+        mov     rdx, [rbp + r13 + 16]
+        mov     rcx, [rbx + P_SIZE]
+        cmp     rax, rcx
+        ja      .invalid
+        sub     rcx, rax
+        cmp     rdx, rcx
+        ja      .invalid
+        mov     [list_pos], rax
+        add     rax, rdx
+        mov     [list_end], rax
+        mov     qword [list_count], 0
+        lea     rdi, [host_path]        ; "folder\*"
+        lea     rsi, [dir_path]
+        mov     rcx, [dir_len]
+        rep     movsb
+        mov     eax, '\*'
+        stosw
+        mov     byte [rdi], 0
+        invoke  FindFirstFileA, host_path, find_data
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .answer                 ; nothing in the folder
+        mov     r14, rax
+.entry:
+        test    dword [find_data], FILE_ATTRIBUTE_DIRECTORY
+        jnz     .another
+        call    list_decode             ; eax = label bytes in norm_label, or -1
+        cmp     eax, -1
+        je      .another
+        mov     ecx, eax
+        lea     rdx, [rcx + 15]         ; qword length + bytes padded to 8
+        and     rdx, -8
+        mov     rax, [list_end]
+        sub     rax, [list_pos]
+        cmp     rdx, rax
+        ja      .full
+        mov     rdi, [rbx + P_DATA]
+        add     rdi, [list_pos]
+        add     [list_pos], rdx
+        mov     [rdi], rcx
+        add     rdi, 8
+        lea     rsi, [norm_label]
+        rep     movsb
+        inc     qword [list_count]
+.another:
+        invoke  FindNextFileA, r14, find_data
+        inc     qword [hostcalls]
+        test    eax, eax
+        jnz     .entry
+.full:
+        invoke  FindClose, r14
+        inc     qword [hostcalls]
+.answer:
+        mov     rax, [list_count]
+        mov     [rbp + r13 + 24], rax
+        pop     rdi rsi r14
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        pop     rdi rsi r14
+        ret
+
+; The file name in find_data back to its label in norm_label: eax = bytes, or -1 if the name is not
+; lowercase hexadecimal of valid UTF-8.
+list_decode:
+        lea     rsi, [find_data + FIND_NAME]
+        lea     rdi, [norm_label]
+        xor     ecx, ecx
+.pair:
+        movzx   eax, byte [rsi]
+        test    eax, eax
+        jz      .end
+        call    .nibble
+        js      .no
+        mov     edx, eax
+        movzx   eax, byte [rsi + 1]
+        call    .nibble
+        js      .no
+        shl     edx, 4
+        or      eax, edx
+        stosb
+        add     rsi, 2
+        inc     ecx
+        cmp     ecx, NORM_CAP
+        jae     .no
+        jmp     .pair
+.end:
+        test    ecx, ecx
+        jz      .no
+        mov     [lab_len], rcx
+        lea     rsi, [norm_label]
+        call    utf8_ok
+        test    eax, eax
+        jz      .no
+        mov     rax, [lab_len]
+        ret
+.no:
+        mov     eax, -1
+        ret
+.nibble:                                ; eax = character -> 0..15, or sign flag set
+        sub     eax, '0'
+        cmp     eax, 9
+        jbe     .ok
+        sub     eax, 'a' - '0'
+        cmp     eax, 5
+        ja      .bad
+        add     eax, 10
+.ok:
+        test    eax, eax                ; clears the sign flag
+        ret
+.bad:
+        mov     eax, -1
+        test    eax, eax
         ret
 
 ; Screens tuned to "read" (kind 5) and "write to file" (kind 6): a = address, b = bytes.
@@ -1790,7 +2058,8 @@ fail_file:
 
 section '.idata' import data readable writeable
 
-  library kernel32, 'KERNEL32.DLL'
+  library kernel32, 'KERNEL32.DLL',\
+          normaliz, 'NORMALIZ.DLL'
 
   import kernel32,\
          GetCommandLineA, 'GetCommandLineA',\
@@ -1804,4 +2073,14 @@ section '.idata' import data readable writeable
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
-         ExitProcess, 'ExitProcess'
+         ExitProcess, 'ExitProcess',\
+         DeleteFileA, 'DeleteFileA',\
+         MoveFileA, 'MoveFileA',\
+         FindFirstFileA, 'FindFirstFileA',\
+         FindNextFileA, 'FindNextFileA',\
+         FindClose, 'FindClose',\
+         MultiByteToWideChar, 'MultiByteToWideChar',\
+         WideCharToMultiByte, 'WideCharToMultiByte'
+
+  import normaliz,\
+         NormalizeString, 'NormalizeString'

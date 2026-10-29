@@ -34,7 +34,7 @@ caso() {
   done
   local got c
   if [ -n "$cambio" ]; then
-    got=$(JANAX_CAMBIO=$cambio "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
+    got=$(JANAX_CAMBIO=$cambio JANAX_ARCHIVOS="${carpeta:-$JANAX_ARCHIVOS}" "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
   else
     got=$(env -u JANAX_CAMBIO "$salida/janaxos.exe" "${args[@]}"); c=$?
   fi
@@ -168,6 +168,23 @@ P* codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 P* codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=3
 porteros: nodos=13 negados=3" ventanilla_hola@m ventanilla_hola@m ventanilla_hola@m
+
+# --- files: delete, rename, list; labels normalized so two look-alike labels are one file ---
+carpeta=$(cygpath -m "$salida/archivos_lista"); rm -rf "$salida/archivos_lista"
+caso "archivo: listar, borrar, renombrar" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000020163 t=*
+ventanilla: *" archivo_lista
+carpeta=$(cygpath -m "$salida/archivos_nfc"); rm -rf "$salida/archivos_nfc"
+caso "archivo: etiquetas que se ven iguales son el mismo archivo" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000031 t=*
+ventanilla: *" archivo_normalizacion
+unset carpeta
+nfc=$(ls "$salida/archivos_nfc" 2>&1 | tr '\n' ' ')
+if [ "$nfc" = "c3a9 " ]; then        # one file, named after the one-piece form (NFC)
+  ok=$((ok + 1))
+else
+  echo "MAL  archivo normalizado en el anfitrion: esperaba 'c3a9', hay '$nfc'"; mal=$((mal + 1))
+fi
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]
