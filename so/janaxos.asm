@@ -56,7 +56,8 @@ P_GATES  = 224                  ; the process's porter for each door (3 nodes)
 P_ID     = 248                  ; process number (P0, P1...)
 P_PARENT = 256                  ; parent process, 0 = the kernel
 P_WAITING = 264                 ; important requests waiting for the parent's signature
-PROC_SIZE = 272
+P_SHADOW = 272                  ; 1 = ended, its shadow decides for its line; 2 = shadow gone
+PROC_SIZE = 280
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -2580,6 +2581,12 @@ gate_cede_label:
 ; Keeps rax, rcx, rdx.
 signature:
         push    rax rcx rdx rsi
+        mov     r10, [rbx + P_PARENT]
+        cmp     qword [r10 + P_SHADOW], 1
+        jne     .search
+        call    shadow_decides          ; the parent is gone: its shadow decides at once
+        jmp     .out
+.search:
         xor     esi, esi
 .look:
         cmp     rsi, [nrecs]
@@ -2653,45 +2660,108 @@ new_record:
         inc     qword [nrecs]
         ret
 
-; rbx = a process that just ended: what waited for its signature goes to its parent (the kernel signs
-; at once, its porters already allowed it), and its children are adopted by its parent.
+; rbx = a process that just ended (Capitan: "the parent goes, not its shadow, which keeps its permissions
+; for the line below, and the shadow goes only when there is nobody below").
+;  - With living descendants it leaves its shadow: what waited for its signature is decided now with the
+;    parent's own permissions, and so is everything its line asks later. Nobody else decides for that
+;    line, neither the grandparent nor the kernel. Nobody is adopted.
+;  - Shadows above it that are left with nobody below disappear, and their porters with them.
 orphans:
-        push    rsi
-        mov     r10, [rbx + P_PARENT]
+        push    rsi r12
+        call    living_below
+        test    eax, eax
+        jz      .climb_start
+        mov     qword [rbx + P_SHADOW], 1
         xor     esi, esi
 .rec:
         cmp     rsi, [nrecs]
-        jae     .kids
-        imul    r9, rsi, REC_SIZE
-        add     r9, [recs]
-        cmp     [r9 + R_SIGNER], rbx
+        jae     .climb_start
+        imul    r12, rsi, REC_SIZE
+        add     r12, [recs]
+        cmp     [r12 + R_SIGNER], rbx
         jne     .rec_next
-        cmp     qword [r9 + R_STATE], 0
+        cmp     qword [r12 + R_STATE], 0
         jne     .rec_next
-        mov     [r9 + R_SIGNER], r10
-        test    r10, r10
-        jnz     .rec_next
-        mov     qword [r9 + R_STATE], 1
-        mov     r8, [r9 + R_CHILD]
+        mov     r10, rbx
+        mov     rdx, [r12 + R_KIND]
+        call    shadow_decides
+        mov     [r12 + R_STATE], r8
+        mov     r8, [r12 + R_CHILD]
         dec     qword [r8 + P_WAITING]
 .rec_next:
         inc     rsi
         jmp     .rec
-.kids:
-        xor     esi, esi
-.kid:
-        cmp     rsi, [nprocs]
-        jae     .done
-        mov     r8, [procs]
-        mov     r8, [r8 + rsi*8]
-        cmp     [r8 + P_PARENT], rbx
-        jne     .kid_next
-        mov     [r8 + P_PARENT], r10
-.kid_next:
-        inc     rsi
-        jmp     .kid
+.climb_start:
+        mov     r12, rbx                ; itself too: a shadow it may have left is checked from below
+.climb:
+        test    r12, r12
+        jz      .done
+        cmp     qword [r12 + P_SHADOW], 1
+        jne     .up
+        push    rbx
+        mov     rbx, r12
+        call    living_below
+        pop     rbx
+        test    eax, eax
+        jnz     .up
+        mov     qword [r12 + P_SHADOW], 2          ; gone
+        mov     ecx, 1
+.revoke:                                ; its porters go with it
+        mov     rax, [r12 + P_GATES + rcx*8 - 8]
+        imul    rax, NODE_SIZE
+        add     rax, [nodes]
+        mov     qword [rax + N_ALIVE], 0
+        inc     ecx
+        cmp     ecx, DOORS
+        jbe     .revoke
+.up:
+        mov     r12, [r12 + P_PARENT]
+        jmp     .climb
 .done:
-        pop     rsi
+        pop     r12 rsi
+        ret
+
+; eax = 1 if some process still running descends from rbx.
+living_below:
+        xor     ecx, ecx
+.one:
+        cmp     rcx, [nprocs]
+        jae     .none
+        mov     r8, [procs]
+        mov     r8, [r8 + rcx*8]
+        cmp     qword [r8 + P_DONE], 0
+        jne     .next
+.up:
+        mov     r8, [r8 + P_PARENT]
+        test    r8, r8
+        jz      .next
+        cmp     r8, rbx
+        jne     .up
+        mov     eax, 1
+        ret
+.next:
+        inc     rcx
+        jmp     .one
+.none:
+        xor     eax, eax
+        ret
+
+; r10 = a shadow, rdx = kind -> r8 = 1 signed if the parent's own permissions allow it, else 2 rejected.
+; (Requests on the porter tree itself answer to the tree's rules when they run.)
+shadow_decides:
+        movzx   r9d, byte [kind_door + rdx]
+        test    r9d, r9d
+        jz      .yes
+        mov     r8, [r10 + P_GATES + r9*8 - 8]
+        movzx   r9d, byte [kind_right + rdx]
+        call    gate_allows
+        test    r8d, r8d
+        jz      .no
+.yes:
+        mov     r8d, 1
+        ret
+.no:
+        mov     r8d, 2
         ret
 
 ; Everyone left is waiting for a signature that nobody running can give: rejected, so nobody waits forever.

@@ -64,3 +64,5 @@ anotada (el micro pide al macro); pesar bucles = contar vueltas reales.
 2026-10-29 — Familia de procesos: lanzar desde archivos, porteros que copian a la familia, pedidos importantes esperan la
 firma del padre (17 firmar, 18 pendientes, 19 estado), huérfanos adoptados, planificador que decide de nuevo por evento.
 37/37; corredor con límite de tiempo por corrida.
+2026-10-29 — Sombra del padre (Capitán): un padre que termina con descendientes vivos deja su sombra, que decide por su línea
+con los permisos del padre; se disuelve sin nadie debajo. 38/38.

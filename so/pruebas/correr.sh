@@ -244,7 +244,7 @@ ventanilla: *
 porteros: nodos=* negados=1" familia_rechazo
 
 familia familia_huerfano ventanilla_hola
-caso "familia: el huerfano lo adopta el kernel" 0 0 "$fijo0
+caso "familia: la sombra del padre firma por su linea" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000007 t=*
 hola
 P1 codigo=0 j0=0000000000000005 t=*
@@ -256,6 +256,17 @@ P1 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 P0 codigo=0 j0=0000000000000000 t=*
 ventanilla: *
 porteros: nodos=10 negados=1" familia_espera@pl
+
+# Three generations: "padre" launches "hijo" and ends; the grandchild's request is signed by the
+# parent's shadow with the parent's permissions, never by the grandparent (which signs only 1 request).
+familia familia_sombra ventanilla_hola
+cp "$salida/familia_padre_se_va.bin" "$salida/familia_sombra/7061647265"
+caso "familia: la sombra decide por su linea, no el abuelo" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000003 t=*
+hola
+P2 codigo=0 j0=0000000000000005 t=*
+P0 codigo=0 j0=0000000000000001 t=*
+ventanilla: *" familia_abuelo
 unset carpeta
 
 echo "$ok bien, $mal mal"

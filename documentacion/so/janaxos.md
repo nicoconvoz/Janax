@@ -117,9 +117,14 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - **17 firmar** (`a` = número del pedido, `b` = 1 firma / 0 rechaza), **18 pendientes** (lo que espera
      mi firma, como {número, hijo, tipo}), **19 estado** (`a` = un hijo mío → su código, −1 mientras corre,
      −2 si no es mío).
-   - **Huérfanos**: cuando un proceso termina, lo que esperaba su firma sube a su padre (si es el kernel,
-     firma en el acto) y sus hijos pasan a ser de su padre. Si todos los que quedan esperan una firma que
-     nadie puede dar, se rechaza: nadie espera para siempre.
+   - **La sombra del padre (Capitán)**: cuando un proceso termina con descendientes vivos queda su
+     **sombra**, que decide por esa línea **con los permisos del padre**: firma lo que sus porteros
+     permiten y rechaza el resto, en el acto. Nadie más decide por esa línea (ni el abuelo ni el kernel) y
+     nadie es adoptado. La sombra se disuelve, y sus porteros con ella, cuando no queda ningún proceso
+     debajo. Así la ausencia del padre nunca le pasa la decisión a alguien con otro criterio.
+   - Además (verificado en el código): los porteros se revisan **antes** de pedir una firma y **otra vez**
+     cuando el pedido se ejecuta, así que ninguna firma, ni del padre ni de su sombra, da permisos.
+   - Si todos los que quedan esperan una firma que nadie puede dar, se rechaza: nadie espera para siempre.
    - **El planificador decide de nuevo por evento**: cuando nace o despierta un proceso, el turno actual se
      corta ahí (contando solo lo que de verdad corrió).
 
@@ -139,9 +144,10 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-37/37 (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
+38/38 (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
-−1, un negado); **el huérfano lo adopta el kernel** (el padre termina sin firmar y el "hola" sale igual);
+−1, un negado); **la sombra del padre firma por su línea** (el padre termina sin firmar y el "hola" sale
+igual); **la sombra decide, no el abuelo** (tres generaciones: el abuelo firma solo 1 pedido, el suyo);
 **el hijo no tiene más que su padre** (un padre sin memoria lanza un hijo pidiendo todo, y el hijo igual no
 puede tocar memoria).
 
