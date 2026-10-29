@@ -307,6 +307,23 @@ así que la adopción no podía dar permisos; pero sí perdía el criterio del p
 - Antecedentes: Android ART (compila a nativo al instalar y guarda el resultado), Rosetta 2 (traduce al
   instalar, no al abrir).
 
+## 2026-10-29 — Cambio de estrategia: pasar a nativo sin compilar (Capitán)
+
+> "Vamos a cambiar de estrategia: va a ser un intérprete en tiempo de ejecución que pasa el original a
+> nativo sin compilar."
+
+Reemplaza al gemelo nativo de arriba (que generaba código de máquina y lo guardaba en disco).
+
+- Cada programa se **decodifica una sola vez** a una tabla: cada instrucción queda como la dirección de su
+  rutina nativa (que ya viene compilada dentro del núcleo) más sus operandos listos (registros ya
+  multiplicados por 8, inmediato ya extendido, destino de salto ya resuelto).
+- Correr es **saltar de rutina en rutina**: no se vuelve a decodificar nada y **no se genera ni una
+  instrucción de máquina**. No hay memoria escribible y ejecutable, ni código cargado desde disco.
+- Sigue siendo "una vez": el trabajo de entender el original se paga al lanzar, no en cada instrucción.
+- El intérprete queda como vara (`JANAX_MOTOR=interprete`) y las pruebas corren con los dos.
+- Nombre técnico: *direct-threaded code* con decodificación previa (lo usan Forth, el intérprete de Lua
+  y el "template interpreter" de Java).
+
 ## 2026-10-29 — Los bucles (Capitán)
 
 > "Me gusta más el while que el for."

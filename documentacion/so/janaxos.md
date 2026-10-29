@@ -138,13 +138,35 @@ P<n> codigo=<código> j0=<16 hex> t=<instrucciones ejecutadas por todo el sistem
 Códigos de proceso: los del intérprete (0, 1, 2, 5, 6, 7, 8). El núcleo sale con 0, 3 (no pudo leer un
 programa) o 4 (sin programas).
 
+## Motor de rutinas (Capitán: "pasa el original a nativo sin compilar")
+
+Código en `so/rutinas.inc`. La primera vez que un proceso corre, su programa se decodifica a una tabla
+de registros de 16 bytes, uno por palabra más uno final:
+
+| Bytes | Contenido |
+|---|---|
+| 0–7 | dirección de la rutina nativa de esa instrucción (compilada dentro del núcleo) |
+| 8, 9, 10 | rd·8, ra·8, rb·8 (desplazamientos listos dentro de los registros del proceso) |
+| 12–15 | inmediato ya extendido (sin signo para `jshi`), o destino de salto/`jcall` como desplazamiento en la tabla |
+
+- Correr = cada rutina termina descontando una instrucción del turno y saltando a la rutina del registro
+  siguiente. Nada se decodifica de nuevo; no se genera código de máquina.
+- Un destino fuera del programa apunta al registro final, que termina con código 2 igual que el chequeo
+  del intérprete (y devuelve esa instrucción, porque el intérprete falla antes de contarla). Un opcode
+  desconocido tiene la rutina que termina con código 1.
+- El tiempo se sigue contando en instrucciones Janax, así que el planificador ve exactamente lo mismo.
+- `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
+  y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
+
 ## Cómo se prueba
 
 ```bash
 bash so/pruebas/correr.sh
 ```
 
-38/38 (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
+76/76: **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
+instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
 −1, un negado); **la sombra del padre firma por su línea** (el padre termina sin firmar y el "hola" sale
 igual); **la sombra decide, no el abuelo** (tres generaciones: el abuelo firma solo 1 pedido, el suyo);
@@ -203,6 +225,20 @@ corridas 8 veces más largas, hilo fijo y mediana de nueve pares: mediana entre 
 arranques seguidos. Entre arranques sigue variando un poco (una corrida dentro de la suite de pruebas dio
 3,14): por eso se mide una vez y se recuerda.
 
+### Motor de rutinas contra intérprete
+
+Banco `so/bancos/calculo.jsm`: 67 millones de vueltas de 10 instrucciones (llamada, memoria, suma,
+desplazamiento, xor, retorno, bucle) = 671.088.646 instrucciones sin tocar la ventanilla. `c` fijado en 0,
+tres corridas cada uno, 2026-10-29.
+
+| Motor | Arranque solo (`02_ldi`) | Banco | Banco − arranque | Instrucciones/s |
+|---|---|---|---|---|
+| Intérprete | ~92 ms | ~2.915–3.126 ms | ~2,85 s | ~235 M |
+| **Rutinas** | ~76–126 ms | **~1.504–1.538 ms** | **~1,41 s** | **~475 M** |
+
+**El doble de rápido**, con el mismo `j0` y el mismo `t`. ⚠️ Una primera medición con un banco 16 veces
+más corto daba "1,6×": el arranque tapaba la diferencia. El banco largo es el que vale.
+
 ### Cuánto ahorra el lote de la ventanilla
 
 Bancos `so/bancos/lote_10000.jsm` y `uno_por_uno_10000.jsm`: las mismas 10.000 líneas, salida a un archivo
@@ -219,7 +255,9 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 ## Pendiente
 
-- Los procesos corren en el intérprete: llevarlos al traductor nativo.
+- Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
+  lanzamiento lee el archivo de nuevo). Medir qué rutinas pesan más y fundir las parejas frecuentes
+  (por ejemplo `jsub` + `jjnz`) en una sola rutina.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

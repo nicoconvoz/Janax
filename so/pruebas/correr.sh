@@ -18,10 +18,14 @@ for p in "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_in
 done
 bin() { cygpath -m "$salida/$1.bin"; }
 archivos="$salida/archivos"           # the system's own folder for files, empty at every run
-rm -rf "$archivos"
 export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"
 
 ok=0; mal=0
+# The whole suite runs once per engine: the routines (default) and the reference interpreter.
+# The expected outputs are exact, so both passing means both give the same results.
+for motor in rutinas interprete; do
+export JANAX_MOTOR=$motor
+rm -rf "$archivos" "$salida"/archivos_* "$salida"/familia_*/
 # caso <name> <switch cost, or "" to let the kernel measure it> <expected exit code> <expected output> <program>...
 caso() {
   local nombre=$1 cambio=$2 cod=$3 esp=$4; shift 4
@@ -42,7 +46,7 @@ caso() {
   if [ "$c" = "$cod" ] && [[ "$got" == $esp ]]; then
     ok=$((ok + 1))
   else
-    echo "MAL  $nombre: esperaba codigo $cod y"; echo "$esp"; echo "     dio codigo $c y"; echo "$got"
+    echo "MAL  [$motor] $nombre: esperaba codigo $cod y"; echo "$esp"; echo "     dio codigo $c y"; echo "$got"
     mal=$((mal + 1))
   fi
 }
@@ -268,6 +272,7 @@ P2 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=0000000000000001 t=*
 ventanilla: *" familia_abuelo
 unset carpeta
+done
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

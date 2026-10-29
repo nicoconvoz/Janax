@@ -66,3 +66,6 @@ firma del padre (17 firmar, 18 pendientes, 19 estado), huérfanos adoptados, pla
 37/37; corredor con límite de tiempo por corrida.
 2026-10-29 — Sombra del padre (Capitán): un padre que termina con descendientes vivos deja su sombra, que decide por su línea
 con los permisos del padre; se disuelve sin nadie debajo. 38/38.
+2026-10-29 — Cambio de estrategia (Capitán): en vez de generar código nativo, motor de rutinas: cada programa se
+decodifica una vez a una tabla de rutinas nativas ya compiladas en el núcleo. 671 M instrucciones: 1,41 s contra 2,85 s
+del intérprete (2×), mismos resultados. La suite corre con los dos motores: 76/76.

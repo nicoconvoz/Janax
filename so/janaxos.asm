@@ -57,7 +57,8 @@ P_ID     = 248                  ; process number (P0, P1...)
 P_PARENT = 256                  ; parent process, 0 = the kernel
 P_WAITING = 264                 ; important requests waiting for the parent's signature
 P_SHADOW = 272                  ; 1 = ended, its shadow decides for its line; 2 = shadow gone
-PROC_SIZE = 280
+P_TABLE  = 280                  ; its program decoded once into routines (rutinas.inc), 0 = not yet
+PROC_SIZE = 288
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -256,6 +257,17 @@ section '.data' data readable writeable
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
             dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys
+  ttable    dq t_halt, t_ldi, t_add, t_sub, t_mul, t_div, t_shl, t_shr
+            dq t_sar, t_and, t_or, t_xor, t_jmp, t_jz, t_jnz, t_shi
+            dq t_ld, t_st, t_ldb, t_stb, t_call, t_ret, t_sys
+  assert ($ - ttable) = OP_COUNT * 8
+
+  ; engine: 1 = routines (each program decoded once), 0 = the interpreter, kept as the reference
+  motor      db 1
+  motor_env  db 'JANAX_MOTOR', 0
+  motor_ref  db 'interprete', 0
+  MOTOR_REF_LEN = $ - motor_ref - 1
+  calib_table dq 0
 
 section '.text' code readable executable
 
@@ -288,6 +300,18 @@ start:
 .dir_named:
         mov     [dir_len], rax
         invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
+
+        ; --- engine: JANAX_MOTOR=interprete runs the reference interpreter ---
+        invoke  GetEnvironmentVariableA, motor_env, env_value, 31
+        cmp     eax, MOTOR_REF_LEN
+        jne     .motor_known
+        lea     rsi, [env_value]
+        lea     rdi, [motor_ref]
+        mov     ecx, MOTOR_REF_LEN
+        repe    cmpsb
+        jne     .motor_known
+        mov     byte [motor], 0
+.motor_known:
 
         ; --- cost of a switch: fixed by JANAX_CAMBIO, remembered from an earlier boot, or measured ---
         invoke  GetEnvironmentVariableA, env_name, env_value, 31
@@ -902,6 +926,9 @@ cost_key:
         inc     rsi
         jmp     .fnv
 .hashed:
+        movzx   ecx, byte [motor]       ; the cost is in instructions, and each engine runs them at its pace
+        xor     eax, ecx
+        imul    eax, eax, 01000193h
         mov     dword [cost_rec], eax
         lea     rdi, [cost_rec + 4]
         mov     eax, 80000000h          ; the processor name, if it has one
@@ -1011,6 +1038,18 @@ calib_reset:
         mov     qword [rdi + P_NWORDS], CALIB_WORDS
         mov     [rdi + PROC_SIZE + P_PROG], rax
         mov     qword [rdi + PROC_SIZE + P_NWORDS], CALIB_WORDS
+        mov     rax, [calib_table]      ; decoded once for every calibration run
+        test    rax, rax
+        jnz     @f
+        mov     ecx, CALIB_WORDS
+        lea     rdx, [calib_prog]
+        call    decode_program
+        test    rax, rax
+        jz      fail_file
+        mov     [calib_table], rax
+@@:     lea     rdi, [calib_procs]
+        mov     [rdi + P_TABLE], rax
+        mov     [rdi + PROC_SIZE + P_TABLE], rax
         mov     qword [clock], 0
         mov     qword [switches], 0
         ret
@@ -1058,6 +1097,8 @@ put_hundredths:
 ; ---------------------------------------------------------------- one process for up to rax instructions
 ; rbx = process. Returns rax = instructions executed; sets P_DONE and P_CODE if the process ended.
 run_process:
+        cmp     byte [motor], 0
+        jne     run_routines
         mov     [budget0], rax
         mov     rbp, rax                ; budget left
         mov     r14, rbx                ; registers
@@ -2997,6 +3038,8 @@ fail_args:                              ; also a launch argument that does not p
         invoke  ExitProcess, 4
 fail_file:
         invoke  ExitProcess, 3
+
+include 'rutinas.inc'
 
 code_end:
 
