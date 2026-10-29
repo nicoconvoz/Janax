@@ -223,6 +223,23 @@ Es la idea que ordena todas las anteriores:
 - Riesgo de escala: cada personalidad es un sistema entero para imitar. Se avanza **una personalidad y
   una familia de llamadas por vez**, cada una con sus pruebas.
 
+## 2026-10-29 — Porteros con jerarquía sobre microporteros (Capitán)
+
+> "Cada portero tiene jerarquías sobre microporteros."
+
+- **Un portero por puerta** (archivos, memoria, pantalla) y, debajo, **microporteros** que cuidan un pedazo
+  más chico: una etiqueta o un grupo de etiquetas, un proceso, un tipo de pedido.
+- **Regla que sale sola de la jerarquía**: un microportero solo puede dar **igual o menos** de lo que tiene
+  su portero, nunca más (se llama *atenuación*). Y si se le quita algo a un portero, se les cae a todos los
+  microporteros de abajo (**revocación en cascada**).
+- **Es la cadena de certificados de Wenas**: cada miembro firmado por quien lo invitó, hasta un fundador.
+  Acá cada microportero lleva la marca del portero que lo creó, hasta el portero raíz de su puerta, y se
+  verifica subiendo la cadena.
+- **Parientes**: las capacidades derivadas de seL4 (núcleo verificado matemáticamente, con su árbol de
+  derivación y revocación) y los *macaroons* de Google (permisos que se pueden achicar pero nunca agrandar).
+- Riesgo: una cadena larga cuesta en cada pedido. Se resuelve guardando el veredicto y descartándolo solo
+  cuando algo de la cadena cambia (por evento, como todo).
+
 ## Cómo se prueba cada modo (regla de la casa: cero emuladores)
 
 - **Simbiosis**: se prueba ya, en esta PC, como un programa más (igual que los traductores).
