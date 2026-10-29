@@ -17,6 +17,9 @@ for p in "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_in
   "$fasm" "$p" "$salida/$(basename "$p" .jsm).bin" > /dev/null || { echo "no ensambla: $p"; exit 1; }
 done
 bin() { cygpath -m "$salida/$1.bin"; }
+archivos="$salida/archivos"           # the system's own folder for files, empty at every run
+rm -rf "$archivos"
+export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"
 
 ok=0; mal=0
 # caso <name> <switch cost, or "" to let the kernel measure it> <expected exit code> <expected output> <program>...
@@ -109,6 +112,32 @@ P0 codigo=5 j0=0000000000000000 t=2" ventanilla_cola_afuera
 caso "ventanilla: achicar no pasa el fin de la cola" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000128 t=11
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" ventanilla_achicar
+
+# --- files: labels with any character, kept in the system's own folder ---
+caso "archivo: guardar" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000004 t=56
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=3 pedidos=3" archivo_guardar
+
+# On the host the label is stored in hexadecimal: valid on any file system, never two labels in one name.
+nombre="$archivos/f09fa68e206e6f7461732e747874"
+if [ -f "$nombre" ] && [ "$(cat "$nombre")" = "hola" ]; then
+  ok=$((ok + 1))
+else
+  echo "MAL  archivo en el anfitrion: no esta $nombre con 'hola'"; ls -la "$archivos" 2>&1; mal=$((mal + 1))
+fi
+
+# Another run of the system finds what the first one saved.
+caso "archivo: leer en otra corrida" 0 0 "$fijo0
+P0 codigo=0 j0=00000000616C6F68 t=41
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=2 pedidos=2" archivo_leer
+
+caso "archivo: etiqueta que no es UTF-8" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=18
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_etiqueta_invalida
+
+caso "archivo: manija que no se abrio" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=19
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_manija_mala
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

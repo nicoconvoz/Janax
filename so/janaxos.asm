@@ -50,7 +50,9 @@ P_SERVED = 176                  ; instructions executed so far (attained service
 P_DONE   = 184
 P_CODE   = 192
 P_SIZE   = 200                  ; bytes of data memory (the cabin grows and shrinks)
-PROC_SIZE = 208
+P_FILES  = 208                  ; table of host file handles (0 = free slot)
+P_NFILES = 216                  ; slots in that table
+PROC_SIZE = 224
 
 section '.data' data readable writeable
 
@@ -70,7 +72,7 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 3                 ; kinds of request: write, grow, shrink
+  KINDS     = 7                 ; write, grow, shrink, open, read, write to file, close
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -88,6 +90,22 @@ section '.data' data readable writeable
   t_retunes db ' resintonias=', 0
   t_host    db ' llamadas al anfitrion=', 0
   t_reqs    db ' pedidos=', 0
+  serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
+
+  ; files: the system's own folder; on the host each label is stored in hexadecimal
+  dir_env   db 'JANAX_ARCHIVOS', 0
+  dir_default db 'janax_archivos', 0
+  HOST_PATH = 260               ; MAX_PATH of the ANSI file functions of Windows
+  dir_path  db HOST_PATH dup 0
+  dir_len   dq 0
+  host_path db HOST_PATH + 8 dup 0
+  hex_lower db '0123456789abcdef'
+  fio_bytes dd 0
+  lab_ptr   dq 0
+  lab_len   dq 0
+  slot_free dq 0
+  slot_cap  dq 0
+  slot_new  dq 0
 
   swcost    dq 0.0              ; cost of a switch, in instructions (double)
   quiet     db 0                ; 1 while calibrating: no report lines
@@ -169,6 +187,21 @@ start:
         call    print_cost
         invoke  WriteFile, [hout], measured_text, MEASURED_LEN, written, 0
 .cost_known:
+
+        ; --- the system's own folder for files ---
+        invoke  GetEnvironmentVariableA, dir_env, dir_path, HOST_PATH - 1
+        test    eax, eax
+        jnz     .dir_named
+        lea     rsi, [dir_default]
+        lea     rdi, [dir_path]
+        call    put_text
+        mov     byte [rdi], 0
+        lea     rax, [dir_path]
+        sub     rdi, rax
+        mov     rax, rdi
+.dir_named:
+        mov     [dir_len], rax
+        invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
 
         ; --- arguments: a private copy of the command line, split in place ---
         invoke  GetCommandLineA
@@ -395,6 +428,7 @@ schedule:
         add     [clock], rax
         cmp     qword [rbx + P_DONE], 0
         je      schedule
+        call    close_files             ; whatever the process left open
         cmp     byte [quiet], 0
         jne     schedule
         call    report
@@ -792,7 +826,7 @@ ventanilla:
         jae     .marked
         mov     rax, rcx
         shl     rax, 5
-        mov     rdx, [rbp + rax]        ; kind
+        mov     edx, [rbp + rax]        ; kind (low half; the high half carries a file handle)
         lea     r8, [rdx - 1]
         cmp     r8, KINDS - 1
         ja      .unknown
@@ -866,15 +900,7 @@ ventanilla:
         cmp     byte [busy + r12], 0
         je      .serve_next
         mov     rax, [tune + r12*8]
-        cmp     rax, 1
-        jne     @f
-        call    serve_write
-        jmp     .serve_next
-@@:     cmp     rax, 2
-        jne     @f
-        call    serve_grow
-        jmp     .serve_next
-@@:     call    serve_shrink
+        call    qword [serve_table + rax*8 - 8]
 .serve_next:
         inc     r12
         jmp     .serve
@@ -914,7 +940,7 @@ serve_write:
         jae     .lengths
         mov     rax, rcx
         shl     rax, 5
-        cmp     qword [rbp + rax], 1
+        cmp     dword [rbp + rax], 1
         jne     .length_next
         mov     rdx, [rbp + rax + 8]    ; a
         mov     r9, [rbp + rax + 16]    ; b
@@ -948,7 +974,7 @@ serve_write:
         jae     .copied
         mov     rax, r12
         shl     rax, 5
-        cmp     qword [rbp + rax], 1
+        cmp     dword [rbp + rax], 1
         jne     .copy_next
         mov     rcx, [rbp + rax + 24]
         cmp     rcx, -1
@@ -978,7 +1004,7 @@ serve_grow:
         jae     .done
         mov     r13, r12
         shl     r13, 5
-        cmp     qword [rbp + r13], 2
+        cmp     dword [rbp + r13], 2
         jne     .next
         mov     rax, [rbp + r13 + 8]
         add     rax, 7
@@ -1013,7 +1039,7 @@ serve_shrink:
         jae     .done
         mov     r13, r12
         shl     r13, 5
-        cmp     qword [rbp + r13], 3
+        cmp     dword [rbp + r13], 3
         jne     .next
         mov     rax, [rbp + r13 + 8]
         add     rax, 7
@@ -1064,6 +1090,321 @@ move_cabin:
         mov     [rbx + P_SIZE], r14
 .done:
         add     rsp, 8
+        ret
+
+; ---------------------------------------------------------------- files
+; A label is any valid UTF-8 (emojis included). On the host it is stored in the system's own folder
+; under its bytes in lowercase hexadecimal: always a valid file name and never two labels in one name
+; (the host may forbid characters or ignore the difference between upper and lower case).
+; The handle a process gets is a slot number in its own table; it travels in the high half of the type.
+
+; Screen tuned to "open" (kind 4): a = label address, b = label bytes. Answers the handle, or -1.
+serve_open:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 4
+        jne     .next
+        mov     rsi, [rbp + r13 + 8]
+        mov     rcx, [rbp + r13 + 16]
+        test    rcx, rcx
+        jz      .invalid
+        mov     rax, [rbx + P_SIZE]
+        cmp     rsi, rax
+        ja      .invalid
+        sub     rax, rsi
+        cmp     rcx, rax
+        ja      .invalid
+        mov     rax, rcx                ; folder + "\" + two characters per byte + 0 must fit
+        shl     rax, 1
+        add     rax, [dir_len]
+        add     rax, 2
+        cmp     rax, HOST_PATH
+        ja      .invalid
+        add     rsi, [rbx + P_DATA]
+        mov     [lab_ptr], rsi
+        mov     [lab_len], rcx
+        call    utf8_ok
+        test    eax, eax
+        jz      .invalid
+        lea     rdi, [host_path]
+        lea     rsi, [dir_path]
+        mov     rcx, [dir_len]
+        rep     movsb
+        mov     al, '\'
+        stosb
+        mov     rsi, [lab_ptr]
+        mov     rcx, [lab_len]
+.hex:
+        lodsb
+        movzx   edx, al
+        shr     eax, 4
+        and     eax, 15
+        mov     al, [hex_lower + rax]
+        stosb
+        and     edx, 15
+        mov     al, [hex_lower + rdx]
+        stosb
+        dec     rcx
+        jnz     .hex
+        mov     byte [rdi], 0
+        invoke  CreateFileA, host_path, GENERIC_READ + GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .invalid
+        mov     r14, rax
+        call    file_slot
+        cmp     rax, -1
+        je      .no_slot
+        mov     rdx, [rbx + P_FILES]
+        mov     [rdx + rax*8], r14
+        mov     [rbp + r13 + 24], rax
+        jmp     .next
+.no_slot:
+        invoke  CloseHandle, r14
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screens tuned to "read" (kind 5) and "write to file" (kind 6): a = address, b = bytes.
+; Answers the bytes moved, or -1. Each file keeps its own position.
+macro serve_io name, kind, api {
+  name:
+          push    r12 r13 r14 r15
+          sub     rsp, 8
+          xor     r12d, r12d
+  .one:
+          cmp     r12, r15
+          jae     .done
+          mov     r13, r12
+          shl     r13, 5
+          cmp     dword [rbp + r13], kind
+          jne     .next
+          call    file_handle
+          test    rax, rax
+          jz      .invalid
+          mov     r14, rax
+          mov     rdx, [rbp + r13 + 8]
+          mov     r8, [rbp + r13 + 16]
+          mov     rax, [rbx + P_SIZE]
+          cmp     rdx, rax
+          ja      .invalid
+          sub     rax, rdx
+          cmp     r8, rax
+          ja      .invalid
+          add     rdx, [rbx + P_DATA]
+          mov     dword [fio_bytes], 0
+          invoke  api, r14, rdx, r8, fio_bytes, 0
+          inc     qword [hostcalls]
+          test    eax, eax
+          jz      .invalid
+          mov     eax, [fio_bytes]
+          mov     [rbp + r13 + 24], rax
+          jmp     .next
+  .invalid:
+          mov     qword [rbp + r13 + 24], -1
+  .next:
+          inc     r12
+          jmp     .one
+  .done:
+          add     rsp, 8
+          pop     r15 r14 r13 r12
+          ret
+}
+
+serve_io serve_fread,  5, ReadFile
+serve_io serve_fwrite, 6, WriteFile
+
+; Screen tuned to "close" (kind 7). Answers 0, or -1 for a handle that is not open.
+serve_close:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 7
+        jne     .next
+        call    file_handle
+        test    rax, rax
+        jz      .invalid
+        invoke  CloseHandle, rax
+        inc     qword [hostcalls]
+        mov     eax, [rbp + r13 + 4]
+        mov     rdx, [rbx + P_FILES]
+        mov     qword [rdx + rax*8], 0
+        mov     qword [rbp + r13 + 24], 0
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; rax = host handle of the slot in the high half of entry r13's type, or 0 if it is not open.
+file_handle:
+        mov     eax, [rbp + r13 + 4]
+        cmp     rax, [rbx + P_NFILES]
+        jae     .none
+        mov     rdx, [rbx + P_FILES]
+        mov     rax, [rdx + rax*8]
+        ret
+.none:
+        xor     eax, eax
+        ret
+
+; rax = a free slot in the process's table, doubling the table when it is full (-1 if no memory).
+file_slot:
+        sub     rsp, 8
+        mov     rdx, [rbx + P_FILES]
+        mov     rcx, [rbx + P_NFILES]
+        xor     eax, eax
+.look:
+        cmp     rax, rcx
+        jae     .grow
+        cmp     qword [rdx + rax*8], 0
+        je      .done
+        inc     rax
+        jmp     .look
+.grow:
+        mov     [slot_free], rcx        ; the first new slot
+        lea     rax, [rcx + rcx]
+        test    rax, rax
+        jnz     @f
+        mov     eax, 1
+@@:     mov     [slot_cap], rax
+        shl     rax, 3
+        invoke  VirtualAlloc, 0, rax, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .fail
+        mov     [slot_new], rax
+        mov     rdi, rax
+        mov     rsi, [rbx + P_FILES]
+        mov     rcx, [rbx + P_NFILES]
+        rep     movsq
+        cmp     qword [rbx + P_FILES], 0
+        je      @f
+        invoke  VirtualFree, qword [rbx + P_FILES], 0, MEM_RELEASE
+@@:     mov     rax, [slot_new]
+        mov     [rbx + P_FILES], rax
+        mov     rax, [slot_cap]
+        mov     [rbx + P_NFILES], rax
+        mov     rax, [slot_free]
+.done:
+        add     rsp, 8
+        ret
+.fail:
+        mov     rax, -1
+        jmp     .done
+
+; Closes every file the process in rbx left open.
+close_files:
+        push    r12
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, [rbx + P_NFILES]
+        jae     .done
+        mov     rax, [rbx + P_FILES]
+        mov     rax, [rax + r12*8]
+        test    rax, rax
+        jz      .next
+        invoke  CloseHandle, rax
+        mov     rax, [rbx + P_FILES]
+        mov     qword [rax + r12*8], 0
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r12
+        ret
+
+; eax = 1 if the rcx bytes at rsi are valid UTF-8 (the standard's rule: no overlong forms, no
+; surrogates, nothing above U+10FFFF), else 0.
+utf8_ok:
+.next:
+        test    rcx, rcx
+        jz      .yes
+        movzx   eax, byte [rsi]
+        inc     rsi
+        dec     rcx
+        cmp     al, 80h
+        jb      .next
+        cmp     al, 0C2h
+        jb      .no
+        mov     r8d, 80h                ; range of the second byte
+        mov     r9d, 0BFh
+        cmp     al, 0E0h
+        jae     .three
+        mov     edx, 1
+        jmp     .tail
+.three:
+        cmp     al, 0F0h
+        jae     .four
+        mov     edx, 2
+        cmp     al, 0E0h
+        jne     @f
+        mov     r8d, 0A0h
+@@:     cmp     al, 0EDh
+        jne     .tail
+        mov     r9d, 9Fh
+        jmp     .tail
+.four:
+        cmp     al, 0F5h
+        jae     .no
+        mov     edx, 3
+        cmp     al, 0F0h
+        jne     @f
+        mov     r8d, 90h
+@@:     cmp     al, 0F4h
+        jne     .tail
+        mov     r9d, 8Fh
+.tail:
+        cmp     rcx, rdx
+        jb      .no
+        movzx   eax, byte [rsi]
+        cmp     eax, r8d
+        jb      .no
+        cmp     eax, r9d
+        ja      .no
+        inc     rsi
+        dec     rcx
+        dec     edx
+.continuation:
+        test    edx, edx
+        jz      .next
+        movzx   eax, byte [rsi]
+        cmp     al, 80h
+        jb      .no
+        cmp     al, 0BFh
+        ja      .no
+        inc     rsi
+        dec     rcx
+        dec     edx
+        jmp     .continuation
+.yes:
+        mov     eax, 1
+        ret
+.no:
+        xor     eax, eax
         ret
 
 ; ---------------------------------------------------------------- output
@@ -1146,6 +1487,7 @@ section '.idata' import data readable writeable
          CreateFileA, 'CreateFileA',\
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
+         CreateDirectoryA, 'CreateDirectoryA',\
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\

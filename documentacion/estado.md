@@ -45,3 +45,6 @@ Dos procesos iguales: 4.570 → ~2.200–2.500 ms (igual que secuencial). 7/7.
 2026-10-29 — Ventanilla de Janax OS (Capitán: mínimas pantallas, sintonía cambiante): instrucción jsys (op 16h), cola de
 pedidos en el camarote, pantallas por sintonía atendidas en lote (3 escrituras = 1 llamada al anfitrión), resintonización por
 ronda sin reloj, camarote que crece y se achica. 14/14 OS + 141/141 escalón 0.
+2026-10-29 — Archivos en Janax OS: pedidos abrir/leer/escribir/cerrar por la ventanilla, etiquetas UTF-8 validadas (emojis),
+nombres en hexadecimal en una carpeta propia, manijas por proceso. Probado: guardar 🦎 notas.txt y leerlo en otra corrida.
+19/19. Pendiente: normalización Unicode.

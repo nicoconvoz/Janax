@@ -47,6 +47,21 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - Dentro de un tipo se respeta el orden de la cola.
    - Al terminar, si hubo pedidos: `ventanilla: pantallas=N resintonias=R llamadas al anfitrion=L pedidos=P`.
 
+7. **Archivos con etiquetas de cualquier carácter (idea 6).**
+   - Pedidos nuevos en la ventanilla: **4 abrir** (`a` = etiqueta, `b` = bytes; responde la manija),
+     **5 leer** y **6 escribir en el archivo** (`a` = dirección, `b` = bytes; responde los bytes movidos),
+     **7 cerrar**. La **manija viaja en la mitad alta del tipo** (`tipo = clase | manija << 32`), así la
+     entrada de la cola sigue midiendo 32 bytes. Cada archivo lleva su propia posición.
+   - **Etiqueta = cualquier UTF-8 válido**, emojis incluidos, verificado con la regla del estándar (sin
+     formas largas de más, sin sustitutos, nada por encima de U+10FFFF). Si no es UTF-8: −1.
+   - **En el anfitrión**: todo vive en una carpeta propia (`janax_archivos`, o la que diga
+     `JANAX_ARCHIVOS`), y cada etiqueta se guarda con **sus bytes en hexadecimal**: `🦎 notas.txt` →
+     `f09fa68e206e6f7461732e747874`. Es la regla que nunca falla: Windows prohíbe caracteres y no distingue
+     mayúsculas, así que "Hola" y "hola" chocarían con el nombre tal cual. La contra: desde Windows no se
+     lee. Largo máximo: la ruta entera tiene que entrar en los 260 caracteres de Windows.
+   - **Manijas por proceso**: cada proceso tiene su propia tabla, que se duplica cuando se llena. Una manija
+     de otro proceso o no abierta responde −1. Lo que un proceso deja abierto se cierra cuando termina.
+
 Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
 cuando termina:
 
@@ -63,7 +78,11 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-14/14. Ventanilla: escribir; **tres escrituras en una sola llamada**; **dos sintonías en la misma ronda →
+19/19. Archivos: **guardar** `🦎 notas.txt`; el archivo está en el anfitrión con su nombre en hexadecimal y
+el contenido justo; **otra corrida del sistema lo lee**; etiqueta que no es UTF-8 (−1, sin tocar el
+anfitrión); manija nunca abierta (−1).
+
+Ventanilla: escribir; **tres escrituras en una sola llamada**; **dos sintonías en la misma ronda →
 dos pantallas** (y una escritura en el viejo tope prueba que el camarote creció); **la pantalla cambia de
 sintonía** entre rondas (1 pantalla, 1 resintonización); tipo desconocido (−1, sin pantalla); cola fuera del
 camarote (código 5); achicar no pasa el fin de la cola.
@@ -98,7 +117,9 @@ mejorar si hace falta.
 
 - Medición de `c` más estable (hoy varía entre arranques).
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
-- Ventanilla: más tipos de pedido (archivos), y medir cuánto ahorra el lote con programas reales.
+- Ventanilla: medir cuánto ahorra el lote con programas reales.
+- Archivos: **normalización Unicode** (que dos "é" armadas distinto sean la misma etiqueta) necesita las
+  tablas de Unicode; nombres legibles desde Windows si el Capitán lo quiere; borrar, renombrar, listar.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
   desconocido.
 - La campana (0..1), los porteros y la cubierta.
