@@ -141,3 +141,20 @@ Cada idea, con la devolución del Doc: qué la sostiene, qué se parece en el mu
   memoria y los archivos del sistema invitado. Los porteros propios (idea 9) protegen del lado de adentro,
   pero **en simbiosis el sistema no puede ser más seguro que el anfitrión**. Si algo tiene que estar a
   salvo del anfitrión, va cifrado o se usa en modo cero.
+
+## 2026-10-28 — Dónde guarda sus archivos en modo cero (Capitán)
+
+> "Se adapta a la partición activa. Solo cuando se instala desde cero está la opción de particionar algo
+> nuevo."
+
+- Adaptarse a la partición activa significa **leer y escribir el formato que ya está ahí**: NTFS
+  (Windows), ext4 (Linux), FAT32/exFAT (pendrives), cada uno con su driver propio en modo cero.
+- ⚠️ **Riesgo para los datos del usuario, dicho de entrada**: escribir mal en NTFS rompe la partición de
+  Windows. Leer NTFS es abordable; escribir de forma segura le llevó años a ntfs-3g. Dos trampas
+  concretas: el **inicio rápido de Windows** deja NTFS a medio cerrar (escribir encima corrompe) y
+  **BitLocker** cifra la partición (sin la clave no se lee).
+- Precedente que esquiva el riesgo: **Wubi** instalaba Ubuntu **adentro de un archivo grande** en la
+  partición de Windows. El sistema escribe en su propio formato dentro de ese archivo y el NTFS de afuera
+  casi no se toca.
+- Camino que sale de esto: empezar **leyendo** los formatos ajenos y escribiendo en un **archivo
+  contenedor propio**; la escritura directa en NTFS, cuando esté probada contra particiones de prueba.
