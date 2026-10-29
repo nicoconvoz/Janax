@@ -124,3 +124,20 @@ Cada idea, con la devolución del Doc: qué la sostiene, qué se parece en el mu
 - Ventaja para un fondo: pesa muy poco, sirve para cualquier resolución y puede moverse.
 - Riesgo y regla de la casa (ningún bucle que gaste): animar **solo mientras se ve**, quieto cuando una
   ventana lo tapa, y medir su costo por cuadro. En Gotching una criatura costaba ~1 ms de CPU por cuadro.
+
+## 2026-10-28 — Cómo vive la simbiosis (Capitán)
+
+> "Se activa como sistema simbiótico y se une al sistema operativo, dejando un acceso que cambie entre los
+> dos, con todo compartido entre ambos."
+
+- **Un acceso para cambiar**: los dos sistemas a pantalla completa y un interruptor que pasa de uno al
+  otro, como cambiar de escritorio. Windows ya permite escritorios separados por sistema (`CreateDesktop`);
+  en Android, una app a pantalla completa.
+- **Todo compartido**: los archivos pasan por la capa que traduce nombres (idea 6), la red y los
+  dispositivos los pone el anfitrión, y el portapapeles se puede unir.
+- **Parientes**: coLinux (un núcleo Linux que corría en cooperación con Windows en la misma máquina), WSL
+  (Linux adentro de Windows compartiendo archivos) y el modo "Coherence" de Parallels.
+- ⚠️ **Seguridad, dicho de entrada**: en simbiosis, quien administra el anfitrión puede ver toda la
+  memoria y los archivos del sistema invitado. Los porteros propios (idea 9) protegen del lado de adentro,
+  pero **en simbiosis el sistema no puede ser más seguro que el anfitrión**. Si algo tiene que estar a
+  salvo del anfitrión, va cifrado o se usa en modo cero.
