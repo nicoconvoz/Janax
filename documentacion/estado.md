@@ -75,3 +75,6 @@ rutinas resuelve en el lugar el salto que cae sobre una condición. Escalón 0 1
 2026-10-29 — El núcleo x86 en while: 61 bucles + 2 del motor, todos while rotado; `bucles.pl` lo verifica en la suite
 (82/82). Misma salida que antes en seis escenarios; sin costo medible (una medición que decía lo contrario dependía del
 orden de las corridas). Falta el escalón 0: 27 bucles.
+2026-10-29 — Escalón 0 en while: 27 bucles (intérprete, traductores x86-64 y ARM64). Sin teléfono, verificado con una foto
+de lo que generan los traductores para las 36 pruebas: 216 archivos idénticos byte por byte. 116/116. Todo el diseño en
+while. Encontrado de paso: la huella del caché x86-64 no cubre el código del emisor.

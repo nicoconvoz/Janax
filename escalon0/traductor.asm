@@ -486,44 +486,51 @@ start:
         invoke  GetCommandLineA
         mov     rsi, rax
         cmp     byte [rsi], '"'
-        jne     .unquoted
+        jne     .unquoted_start
         inc     rsi
-.quoted:
-        mov     al, [rsi]
-        test    al, al
-        jz      fail_args
+        jmp     .quoted
+.quoted_lap:
         inc     rsi
         cmp     al, '"'
-        jne     .quoted
-        jmp     .spaces
-.unquoted:
+        je      .spaces
+.quoted:                                ; while the closing quote has not come
         mov     al, [rsi]
         test    al, al
-        jz      fail_args
+        jnz     .quoted_lap
+        jmp     fail_args
+.unquoted_start:
+        jmp     .unquoted
+.unquoted_lap:
         cmp     al, ' '
         je      .spaces
         inc     rsi
-        jmp     .unquoted
+.unquoted:                              ; while the name goes on
+        mov     al, [rsi]
+        test    al, al
+        jnz     .unquoted_lap
+        jmp     fail_args
+        jmp     .spaces
+.spaces_lap:
+        inc     rsi
 .spaces:
         cmp     byte [rsi], ' '
-        jne     .path
-        inc     rsi
-        jmp     .spaces
+        je      .spaces_lap
 .path:
         cmp     byte [rsi], 0
         je      fail_args
 
         ; cache path = program path + ".x64"
         xor     ecx, ecx
-.copy:
-        mov     al, [rsi + rcx]
-        test    al, al
-        jz      .copied
+        jmp     .copy
+.copy_lap:
         cmp     ecx, MAX_PATH_BYTES
         jae     fail_args
         mov     [cachepath + rcx], al
         inc     ecx
-        jmp     .copy
+.copy:
+        mov     al, [rsi + rcx]
+        test    al, al
+        jnz     .copy_lap
 .copied:
         mov     dword [cachepath + rcx], '.x64'
 
@@ -551,9 +558,8 @@ start:
 
         ; --- register map: the most used Janax registers get the native registers ---
         xor     r12, r12
-.count:
-        cmp     r12, [nwords]
-        jae     .pick
+        jmp     .count
+.count_lap:
         mov     rax, [program]
         mov     eax, [rax + r12*4]
         movzx   ecx, al
@@ -581,16 +587,18 @@ start:
 @@:
 .counted:
         inc     r12
-        jmp     .count
+.count:
+        cmp     r12, [nwords]
+        jb      .count_lap
 .pick:
         xor     r12d, r12d              ; native register number k
-.round:
-        cmp     r12d, NATIVE_COUNT
-        jae     .picked
+        jmp     .round
+.round_lap:
         mov     rbx, -1                 ; best count so far (every register beats it)
         mov     r8d, -1
         xor     ecx, ecx
-.scan:
+        jmp     .scan
+.scan_lap:
         cmp     byte [jmap + rcx], -1
         jne     .next_reg               ; already has a native register
         mov     rax, [usage + rcx*8]
@@ -600,12 +608,15 @@ start:
         mov     r8d, ecx
 .next_reg:
         inc     ecx
+.scan:                                  ; while registers are left to look at
         cmp     ecx, 16
-        jb      .scan
+        jb      .scan_lap
         mov     al, [natives + r12]
         mov     [jmap + r8], al
         inc     r12d
-        jmp     .round
+.round:
+        cmp     r12d, NATIVE_COUNT
+        jb      .round_lap
 .picked:
 
         ; translator fingerprint: FNV-1a over the templates, the emitter and its tables
@@ -673,14 +684,15 @@ start:
         xor     ecx, ecx                ; offsets = running sum of the lengths
         xor     edx, edx
         mov     rsi, [oldlens]
-.sum:
-        cmp     rcx, [oldwords]
-        jae     .summed
+        jmp     .sum
+.sum_lap:
         mov     [rax + rcx*8], rdx
         movzx   r8d, byte [rsi + rcx]
         add     rdx, r8
         inc     rcx
-        jmp     .sum
+.sum:
+        cmp     rcx, [oldwords]
+        jb      .sum_lap
 .summed:
         mov     rax, [oldcode]
         sub     rax, [cache]
@@ -718,9 +730,8 @@ start:
         ; --- translate, one word after the other ---
         mov     rdi, [work]
         xor     r12, r12                ; word index
-.word:
-        cmp     r12, [nwords]
-        jae     .last
+        jmp     .word
+.word_lap:
         mov     r13, rdi                ; this word's code starts here
         mov     rax, rdi
         sub     rax, [work]
@@ -783,7 +794,9 @@ start:
         mov     rdx, [joffs]
         mov     [rdx + r12], al
         inc     r12
-        jmp     .word
+.word:
+        cmp     r12, [nwords]
+        jb      .word_lap
 .last:
         ; the "outside the program" exit, then the entry stub
         mov     rax, rdi
@@ -823,9 +836,8 @@ start:
         mov     rcx, [total]
         rep     movsb
         xor     r12, r12
-.link:
-        cmp     r12, [nwords]
-        jae     .linked
+        jmp     .link
+.link_lap:
         mov     rax, [joffs]
         movzx   ecx, byte [rax + r12]
         cmp     ecx, NO_JUMP
@@ -852,7 +864,9 @@ start:
         mov     [rsi], eax
 .next_link:
         inc     r12
-        jmp     .link
+.link:
+        cmp     r12, [nwords]
+        jb      .link_lap
 .linked:
 
         ; --- keep this translation for the next run (a failure here only costs speed) ---
@@ -923,14 +937,18 @@ start:
         mov     rax, [context]
         lea     rdi, [hexbuf + 15]
         mov     ecx, 16
-.digit:
+        jmp     .digit
+.digit_lap:
         mov     edx, eax
         and     edx, 15
         mov     dl, [hexdigits + rdx]
         mov     [rdi], dl
         dec     rdi
         shr     rax, 4
-        loop    .digit
+        dec     ecx
+.digit:                                 ; while hex digits are left
+        test    ecx, ecx
+        jnz     .digit_lap
         invoke  GetStdHandle, STD_OUTPUT_HANDLE
         invoke  WriteFile, rax, hexbuf, 18, written, 0
         invoke  ExitProcess, 0
@@ -938,7 +956,8 @@ start:
 ; For every Janax register on a native register: r14d = 8Bh loads it from the context, 89h saves it.
 emit_all_registers:
         xor     r12d, r12d
-.one:
+        jmp     .one
+.one_lap:
         movsx   ecx, byte [jmap + r12]
         test    ecx, ecx
         js      .skip
@@ -946,40 +965,47 @@ emit_all_registers:
         call    emit_rm
 .skip:
         inc     r12d
+.one:                                   ; while registers are left
         cmp     r12d, 16
-        jb      .one
+        jb      .one_lap
         ret
 
 ; FNV-1a: eax = hash so far, bytes [rsi, rdx); returns the hash in eax.
 fnv:
-        cmp     rsi, rdx
-        jae     .done
+        jmp     .byte
+.byte_lap:
         movzx   ecx, byte [rsi]
         xor     eax, ecx
         imul    eax, eax, 01000193h
         inc     rsi
-        jmp     fnv
-.done:
+.byte:                                  ; while bytes are left
+        cmp     rsi, rdx
+        jb      .byte_lap
         ret
 
 ; Writes rax in decimal at rdi; leaves rdi just past the last digit.
 put_decimal:
         mov     ecx, 10
         xor     r8d, r8d
-.divide:
+        jmp     .divide
+.divide_lap:
+.divide:                                ; while digits are left after taking one (0 still has one)
         xor     edx, edx
         div     rcx
         add     dl, '0'
         push    rdx
         inc     r8d
         test    rax, rax
-        jnz     .divide
-.emit:
+        jnz     .divide_lap
+        jmp     .emit
+.emit_lap:
         pop     rax
         mov     [rdi], al
         inc     rdi
         dec     r8d
-        jnz     .emit
+.emit:                                  ; while digits are left to write
+        test    r8d, r8d
+        jnz     .emit_lap
         ret
 
 fail_code:

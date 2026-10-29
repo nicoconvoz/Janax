@@ -325,44 +325,51 @@ start:
         invoke  GetCommandLineA
         mov     rsi, rax
         cmp     byte [rsi], '"'
-        jne     .unquoted
+        jne     .unquoted_start
         inc     rsi
-.quoted:
-        mov     al, [rsi]
-        test    al, al
-        jz      fail_args
+        jmp     .quoted
+.quoted_lap:
         inc     rsi
         cmp     al, '"'
-        jne     .quoted
-        jmp     .spaces
-.unquoted:
+        je      .spaces
+.quoted:                                ; while the closing quote has not come
         mov     al, [rsi]
         test    al, al
-        jz      fail_args
+        jnz     .quoted_lap
+        jmp     fail_args
+.unquoted_start:
+        jmp     .unquoted
+.unquoted_lap:
         cmp     al, ' '
         je      .spaces
         inc     rsi
-        jmp     .unquoted
+.unquoted:                              ; while the name goes on
+        mov     al, [rsi]
+        test    al, al
+        jnz     .unquoted_lap
+        jmp     fail_args
+        jmp     .spaces
+.spaces_lap:
+        inc     rsi
 .spaces:
         cmp     byte [rsi], ' '
-        jne     .path
-        inc     rsi
-        jmp     .spaces
+        je      .spaces_lap
 .path:
         cmp     byte [rsi], 0
         je      fail_args
 
         ; output path = program path + ".arm64"
         xor     ecx, ecx
-.copy:
-        mov     al, [rsi + rcx]
-        test    al, al
-        jz      .copied
+        jmp     .copy
+.copy_lap:
         cmp     ecx, MAX_PATH_BYTES
         jae     fail_args
         mov     [outpath + rcx], al
         inc     ecx
-        jmp     .copy
+.copy:
+        mov     al, [rsi + rcx]
+        test    al, al
+        jnz     .copy_lap
 .copied:
         mov     dword [outpath + rcx], '.arm'
         mov     word [outpath + rcx + 4], '64'
@@ -411,15 +418,17 @@ start:
         jz      fail_file
         mov     [longcb], rax
 
-        ; --- translate, one word after the other ---
-.translate:
+        ; --- translate, one word after the other; again while some jump had to grow ---
+        mov     byte [relax], 1         ; the first pass always runs
+        jmp     .translate
+.translate_lap:
+        mov     byte [relax], 0
         mov     r13, [outbuf]
         lea     rdi, [r13 + CODE_OFF]
         mov     rbx, [fixups]
         xor     r12, r12
-.word:
-        cmp     r12, [nwords]
-        jae     .last
+        jmp     .word
+.word_lap:
         mov     r14, rdi                ; this word's code starts here
         mov     rax, rdi
         sub     rax, r13
@@ -452,7 +461,9 @@ start:
         cmp     rax, MAX_INSNS * 4
         ja      fail_block
         inc     r12
-        jmp     .word
+.word:
+        cmp     r12, [nwords]
+        jb      .word_lap
 .last:
         ; outside exit (word nwords), error exits, halt routine
         mov     rax, rdi
@@ -485,13 +496,15 @@ start:
         and     rax, -16
         mov     [bss_off], rax
         xor     ecx, ecx
-.zero:
+        jmp     .zero
+.zero_lap:
         mov     eax, 0D2800000h         ; movz xK, #0 for j0..j14
         or      eax, ecx
         stosd
         inc     ecx
+.zero:                                  ; while registers j0..j14 are left
         cmp     ecx, 15
-        jb      .zero
+        jb      .zero_lap
         mov     eax, 0D2A0020Fh         ; movz x15, #DATA_SIZE >> 16, lsl 16 (j15 = top of data memory)
         stosd
         mov     rax, [bss_off]
@@ -526,9 +539,8 @@ start:
 
         ; --- link every fixup ---
         mov     rsi, [fixups]
-.link:
-        cmp     rsi, rbx
-        jae     .linked
+        jmp     .link
+.link_lap:
         mov     r8, [rsi]               ; position
         mov     rcx, [rsi + 8]          ; kind
         mov     rdx, [rsi + 16]         ; target
@@ -563,12 +575,13 @@ start:
         mov     byte [relax], 1
 .next_fixup:
         add     rsi, FIXUP_SIZE
-        jmp     .link
+.link:
+        cmp     rsi, rbx
+        jb      .link_lap
 .linked:
+.translate:                             ; while some jump had to grow
         cmp     byte [relax], 0
-        je      .relaxed
-        mov     byte [relax], 0
-        jmp     .translate
+        jne     .translate_lap
 .relaxed:
 
         ; --- ELF header, program header, digits and output line ---

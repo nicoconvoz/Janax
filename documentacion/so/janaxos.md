@@ -300,8 +300,6 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 - Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
   lanzamiento lee el archivo de nuevo). Medir qué rutinas pesan más y fundir las parejas frecuentes
   (por ejemplo `jsub` + `jjnz`, el final de casi todo while) en una sola rutina.
-- El escalón 0 todavía tiene 27 bucles fuera de la forma del while rotado (intérprete 4, traductor
-  x86-64 15, traductor ARM64 8, contados con `bucles.pl`).
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

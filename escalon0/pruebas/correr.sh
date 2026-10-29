@@ -105,5 +105,14 @@ else
   echo "AVISO: no hay telefono conectado por adb; las pruebas ARM64 no corrieron"
 fi
 
+# The while is Janax's only loop, also in the escalon 0: every loop must be a rotated while.
+for f in janax.asm traductor.asm traductor_arm64.asm; do
+  if r=$(perl "$raiz/../so/herramientas/bucles.pl" "$raiz/$f"); then
+    ok=$((ok + 1))
+  else
+    echo "MAL  $f tiene bucles que no son while rotado:"; echo "$r" | grep -v ' while '; mal=$((mal + 1))
+  fi
+done
+
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

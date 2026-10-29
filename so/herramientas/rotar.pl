@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # Rotates every top-tested loop of a FASM source into a rotated while, in place:
-#   .L:  cmp/test ... / jcc .exit / body / jmp .L        (the body stays in its routine)
+#   .L:  [loads] cmp/test ... / jcc .exit / body / jmp .L        (the body stays in its routine)
 # becomes
 #   jmp .L / .L_lap: body / .L: cmp/test ... / j!cc .L_lap / [jmp .exit]
 # The check keeps the old label, so every other jump to .L still lands on the check.
@@ -14,7 +14,7 @@ my $total = 0;
 while (1) {
   my $n = $s =~ s{
       ^(\.(\w+)):([^\n]*)\n                                   # .L:  (maybe a comment)
-      (\s+(?:cmp|test)\s[^\n]*\n)                             # the check
+      ((?:[ \t]+(?!j)[a-z]\w*\s[^\n]*\n)*?[ \t]+(?:cmp|test)\s[^\n]*\n)   # the check: no jumps, ends in cmp/test
       \s+(j[a-z]+)\s+(\.\w+)[ \t]*(?:;[^\n]*)?\n              # jcc .exit
       ((?:(?![A-Za-z_]\w*:)(?!\s+jmp\s+\.\2\s*(?:;[^\n]*)?\n)[^\n]*\n)*?)   # body: same routine, no jmp .L
       \s+jmp\s+\.\2[ \t]*(?:;[^\n]*)?\n                       # jmp .L

@@ -41,29 +41,35 @@ start:
         invoke  GetCommandLineA
         mov     rsi, rax
         cmp     byte [rsi], '"'
-        jne     .unquoted
+        jne     .unquoted_start
         inc     rsi
-.quoted:
-        mov     al, [rsi]
-        test    al, al
-        jz      fail_args
+        jmp     .quoted
+.quoted_lap:
         inc     rsi
         cmp     al, '"'
-        jne     .quoted
-        jmp     .spaces
-.unquoted:
+        je      .spaces
+.quoted:                                ; while the closing quote has not come
         mov     al, [rsi]
         test    al, al
-        jz      fail_args
+        jnz     .quoted_lap
+        jmp     fail_args
+.unquoted_start:
+        jmp     .unquoted
+.unquoted_lap:
         cmp     al, ' '
         je      .spaces
         inc     rsi
-        jmp     .unquoted
+.unquoted:                              ; while the name goes on
+        mov     al, [rsi]
+        test    al, al
+        jnz     .unquoted_lap
+        jmp     fail_args
+        jmp     .spaces
+.spaces_lap:
+        inc     rsi
 .spaces:
         cmp     byte [rsi], ' '
-        jne     .path
-        inc     rsi
-        jmp     .spaces
+        je      .spaces_lap
 .path:
         cmp     byte [rsi], 0
         je      fail_args
@@ -291,14 +297,18 @@ finish:
         mov     rax, [regs]
         lea     rdi, [hexbuf + 15]
         mov     ecx, 16
-.digit:
+        jmp     .digit
+.digit_lap:
         mov     edx, eax
         and     edx, 15
         mov     dl, [hexdigits + rdx]
         mov     [rdi], dl
         dec     rdi
         shr     rax, 4
-        loop    .digit
+        dec     ecx
+.digit:                                 ; while hex digits are left
+        test    ecx, ecx
+        jnz     .digit_lap
         invoke  GetStdHandle, STD_OUTPUT_HANDLE
         invoke  WriteFile, rax, hexbuf, 18, written, 0
         invoke  ExitProcess, 0

@@ -30,6 +30,14 @@ Además prueba la traducción incremental (caché vacío, desde caché, una pala
 cambio del mapa de registros). Al 2026-10-28: **141/141**. Al 2026-10-29, con la prueba 36 (el while):
 **113/113 en la PC** (intérprete y x86-64; sin teléfono conectado, ARM64 sin correr).
 
+**Todo bucle es un while rotado, también acá** (2026-10-29): los 27 bucles del intérprete (4), el
+traductor x86-64 (15) y el ARM64 (8) tienen la forma única de Janax, y la suite lo verifica con
+`so/herramientas/bucles.pl` (116/116 = 113 + los 3 archivos). Como el teléfono no estaba conectado, el
+cambio se verificó con una foto: para las 36 pruebas se guardó, antes y después, el resultado del
+intérprete, la salida del traductor x86-64, el código x86-64 generado y el ELF de ARM64, todos generados
+de cero. Los 216 archivos dieron **idénticos byte por byte**: reescribir los bucles de los traductores
+no cambió ni un byte de lo que generan.
+
 **El instrumento se verifica**: una prueba trampa con una expectativa falsa tiene que salir MAL en los
 cuatro motores (verificado para intérprete, x86-64 y ARM64), y un caché corrupto tiene que descartarse
 solo.
@@ -144,5 +152,9 @@ PC y teléfono son procesadores distintos: comparar entre ellos no mide al tradu
 ## Pendiente
 
 - x86-64: el uso de registros se cuenta en el texto del programa, sin pesar los bucles.
+- ⚠️ Huella del caché x86-64 incompleta (encontrado el 2026-10-29): el comentario dice que cubre "las
+  plantillas, el emisor y sus tablas", pero solo cubre las plantillas (`templates_start..templates_end`)
+  y las tablas (`hashed_start..hashed_end`). El código del emisor (el bucle que traduce palabra por
+  palabra) está afuera: si el emisor cambia lo que genera, un caché viejo se seguiría usando.
 - Caché por procesador y elección de candidatos verificados (el Cambiaformas de `cambiaformas.md`).
 - Traductor y arranque escritos en Janax (escalón 1).
