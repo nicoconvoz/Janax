@@ -67,7 +67,9 @@ P_ROOMCAP = 304
 P_LIM8   = 312                  ; an 8-byte access to room 0 below this needs no translation (ambientes.inc)
 P_LIM1   = 320                  ; the same for a 1-byte access: room 0's size
 P_RETCAP = 328                  ; return stack entries committed: it grows with the calls (ambientes.inc)
-PROC_SIZE = 336
+P_INIT   = 336                  ; its initial data (the file X.datos next to X), copied into room 0 at the first order
+P_INITLEN = 344
+PROC_SIZE = 352
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -196,6 +198,10 @@ section '.data' data readable writeable
   dir_len   dq 0
   host_path db HOST_PATH + 8 dup 0
   host_path_2 db HOST_PATH + 8 dup 0
+  data_path db HOST_PATH + 8 dup 0  ; the host path of a program's data file
+  data_count db 0                  ; read_data: 1 = its host calls count in the window's report
+  DATA_LABEL = 512                 ; a label and its ".datos" (labels are checked against their own limits first)
+  data_label db DATA_LABEL dup 0
   WIDE_CAP  = 1024              ; UTF-16 units for a label on its way through the host normalization
   NORM_CAP  = 4096              ; bytes of a normalized label (a UTF-16 unit is at most 3 UTF-8 bytes)
   NORMALIZATION_C = 1
@@ -628,6 +634,29 @@ start:
         mov     rax, [launch_pfx_len]
         mov     [mp_pfx_len], rax
         call    make_process
+        push    rsi                     ; the command line walk goes on from here
+        sub     rsp, 8
+        mov     rbx, rax
+        mov     rsi, r14                ; its data: the file next to it
+        xor     ecx, ecx
+        jmp     .name_end
+.name_end_lap:
+        inc     rcx
+.name_end:                              ; while the path goes on
+        cmp     byte [rsi + rcx], 0
+        jne     .name_end_lap
+        lea     rdi, [data_path]
+        mov     edx, HOST_PATH
+        call    data_name
+        cmp     rcx, -1
+        je      .no_data
+        mov     byte [data_count], 0
+        call    read_data
+        mov     [rbx + P_INIT], rax
+        mov     [rbx + P_INITLEN], rcx
+.no_data:
+        add     rsp, 8
+        pop     rsi
         inc     r13
 .load:                                  ; while there are arguments left
         cmp     r13, [nargs]
@@ -1416,6 +1445,7 @@ op_shi:
         mov     [r14 + r11*8], rax
         jmp     next
 
+include 'datos.inc'
 include 'ambientes.inc'
 
 macro memop name, size, align_check, is_load, body {
@@ -1979,6 +2009,14 @@ files_prefix_ok:
 @@:     pop     rdi rsi
         ret
 
+; The same, from a label already in the kernel: rsi = its bytes.
+label_path_ptr:
+        push    r12 r13 r14
+        mov     r12, rdi
+        test    rcx, rcx
+        jz      label_path.no
+        jmp     label_path.normalize
+
 label_path:
         push    r12 r13 r14
         mov     r12, rdi
@@ -1991,6 +2029,7 @@ label_path:
         mov     rsi, rax
         pop     rdx rax
         jc      .no
+.normalize:
         call    normalize_bytes
         test    eax, eax
         jz      .no
@@ -3066,6 +3105,11 @@ family_launch:
         mov     [mp_rights], rax
         mov     qword [mp_pfx_len], 0
         call    make_process
+        push    rax
+        sub     rsp, 8
+        call    family_data
+        add     rsp, 8
+        pop     rax
         mov     rax, [rax + P_ID]
         mov     [rbp + r13 + 24], rax
         mov     byte [sched_dirty], 1

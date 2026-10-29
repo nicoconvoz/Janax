@@ -299,7 +299,8 @@ cabin_at:
 
 
 ; A process is born without memory. Its first order (a jsys with no room yet) builds room 0 of rax bytes,
-; with the size right in the register because there is nowhere to put a queue. j15 starts at its top.
+; with the size right in the register because there is nowhere to put a queue. j15 starts at its top, and
+; the program's initial data (datos.inc) is copied to its start.
 ; -> rax = 0 (room 0's address), or -1 if it cannot be built (nothing asked, too big, no memory).
 rooms_first:
         sub     rsp, 8
@@ -311,10 +312,18 @@ rooms_first:
         mov     rcx, HULL_SIZE
         cmp     rax, rcx
         ja      .invalid
+        cmp     [rbx + P_INITLEN], rax
+        ja      .invalid                ; its initial data does not fit
         mov     [rbx + P_SIZE], rax
         invoke  VirtualAlloc, qword [rbx + P_DATA], rax, MEM_COMMIT, PAGE_READWRITE
         test    rax, rax
         jz      .no_memory
+        push    rsi rdi
+        mov     rdi, [rbx + P_DATA]     ; its initial data at the start of the room
+        mov     rsi, [rbx + P_INIT]
+        mov     rcx, [rbx + P_INITLEN]
+        rep     movsb
+        pop     rdi rsi
         mov     rax, [rbx + P_SIZE]
         mov     [rbx + P_LIM1], rax
         mov     [rbx + P_REGS + 15*8], rax

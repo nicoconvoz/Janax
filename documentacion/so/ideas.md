@@ -375,3 +375,20 @@ invisible porque el programa habla en "ambiente + posición" y el núcleo traduc
 
 > *"Que sea la primer orden del proceso."* — el proceso nace sin memoria y su primera orden construye su
 > ambiente 0. Tocar memoria sin haberla dado es error 5 (*"exacto, construí"*).
+
+## 2026-10-29 — Un ensamblador propio, PDP y datos iniciales (Capitán)
+
+> *"La escritura del programa escrito se guarda como un archivo, y si ya se compiló se deja guardado y no se
+> carga innecesariamente. La primera carpeta del sistema para el prototipado de programas: PDP, ordenado
+> por carpetas, jerarquías y ramas."*
+> Los datos iniciales de un programa van como archivo al lado del programa: *"claro, porque cualquiera
+> quiero que lo pueda mejorar y personalizar su Janax sin partir de cero"*.
+> *"Construí un programa con todas las combinaciones posibles, así ya sabés que es igual byte a byte y no
+> tenés que probar combinaciones."*
+
+Devolución: las carpetas son la parte de la etiqueta antes de cada `/`, y los porteros por prefijo ya son
+permisos por rama. Lo compilado se guarda con la huella de la fuente, sus `include` y el ensamblador
+(la regla del caché del escalón 0). Los datos: `X.datos` al lado de `X`, copiado al ambiente 0 en la
+primera orden. Las combinaciones: como una palabra es la unión de campos independientes, alcanzan todas
+las combinaciones de registros por instrucción y los 65.536 inmediatos con todos los bits de registro en
+1; cubre cada bit de cada campo y cada cruce entre campos.

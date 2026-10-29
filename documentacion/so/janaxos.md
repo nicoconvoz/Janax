@@ -231,6 +231,20 @@ Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_h
   nunca por debajo de una página; un proceso que terminó la devuelve entera. El camino que agranda está
   fuera de la rutina de llamada (`postpone`). Pruebas: `llamadas_hondas`, `llamadas_demasiadas`.
 
+## Datos iniciales: `X.datos` al lado de `X` (Capitán, 2026-10-29)
+
+> *"Cualquiera quiero que lo pueda mejorar y personalizar su Janax sin partir de cero."*
+
+Código: `so/datos.inc`. En Janax el programa y los datos viven separados (un programa no puede leer sus
+propias palabras), así que los datos que un programa necesita ya cargados viajan en **un archivo al lado
+del programa**: el mismo nombre con la extensión `.datos` (se reemplaza la última extensión, o se agrega si
+no tiene): `X.bin` → `X.datos`, `hijo` → `hijo.datos`. El núcleo lo lee al lanzar (desde la línea de
+comandos, o desde la carpeta del sistema y con los mismos porteros cuando lo lanza un proceso) y **la
+primera orden lo copia al principio del ambiente 0**. Si no entra en el ambiente pedido, es código 5. Sin
+ese archivo, el ambiente 0 arranca en ceros como siempre. Cualquiera puede cambiar los datos de un
+programa (por ejemplo, la tabla de un ensamblador) sin tocar el programa. Pruebas: `datos_iniciales`,
+`datos_no_entran`, "datos iniciales de un hijo".
+
 ## Todo bucle del núcleo es un while rotado (Capitán: "todo en while")
 
 Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
@@ -269,7 +283,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-106/106 (104 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+112/112 (110 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,

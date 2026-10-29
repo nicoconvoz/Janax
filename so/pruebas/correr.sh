@@ -135,6 +135,15 @@ P1 codigo=7 j0=0000000000000000 t=37079
 P0 codigo=0 j0=0000000000002000 t=94073
 P2 codigo=0 j0=0000000000002000 t=94236" llamadas_hondas llamadas_demasiadas llamadas_hondas
 
+# Initial data: the file X.datos next to X is at the start of room 0 from the first order.
+printf 'ˆwfUD3"' > "$salida/datos_iniciales.datos"
+printf '16 bytes de datos' > "$salida/datos_no_entran.datos"
+caso "datos iniciales: X.datos en el ambiente 0" 0 0 "$fijo0
+P0 codigo=0 j0=1122334455667788 t=4" datos_iniciales
+
+caso "datos iniciales que no entran" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000007 t=3" datos_no_entran
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)
@@ -297,6 +306,14 @@ familia() {   # familia <folder> <child program>
   cp "$salida/$2.bin" "$salida/$1/68696a6f"
   carpeta=$(cygpath -m "$salida/$1")
 }
+
+# A child launched from the label "hijo" gets the file "hijo.datos" of the same folder.
+familia familia_datos datos_iniciales
+cp "$salida/datos_iniciales.datos" "$salida/familia_datos/68696a6f2e6461746f73"
+caso "datos iniciales de un hijo" 0 0 "$fijo0
+P1 codigo=0 j0=1122334455667788 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" familia_espera
 
 familia familia_espera 02_ldi
 caso "familia: el padre lanza y espera" 0 0 "$fijo0
