@@ -257,7 +257,13 @@ Es la idea que ordena todas las anteriores:
   (el padre), y es la jerarquía la que decide. Si el macro no lo tiene, lo pide a su vez al suyo.
 - Es la cadena de Wenas al revés: allá cada miembro llevaba la firma de quien lo invitó; acá el pedido sube
   juntando las firmas de cada nivel hasta uno que pueda darlo.
-- Falta definir qué cuenta como "permiso importante" antes de construirlo.
+- **Qué es importante** (Capitán): *"todo lo que altere un proceso, un archivo o algo propio del
+  sistema"*. Con esa regla: escribir en pantalla, crecer, achicar, abrir (puede crear), grabar, borrar,
+  renombrar, ceder, usar, revocar y ceder con etiqueta **son importantes**; leer, listar, consultar y
+  cerrar (solo miran, o sueltan lo propio) **no**.
+- Hoy cada pedido ya sube el árbol y cada nivel tiene que permitirlo (la jerarquía manda). Para que el
+  macro **firme como alguien distinto del que pide** hace falta que un proceso tenga a otro proceso arriba:
+  **procesos que lanzan procesos**, con el padre dueño del macroportero del hijo. Ese es el paso previo.
 
 ## 2026-10-29 — Los bucles (Capitán)
 
