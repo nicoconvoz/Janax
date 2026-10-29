@@ -101,6 +101,28 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      se verifica con la misma rutina.
    - Un pedido negado responde −1. Si hubo negados: `porteros: nodos=N negados=M`.
 
+9. **La familia de procesos y la multifirma (Capitán: "kernel madre, padre, hijos hermanos, nieto,
+   bisnieto"; "la jerarquía manda: el micro le pide al macro"; firma solo el padre).**
+   - **16 lanzar**: `a`/`b` = etiqueta del archivo con el programa; los permisos del hijo viajan en la
+     mitad alta del tipo y se recortan a los del padre. Responde el número del hijo. Los programas son
+     archivos del sistema; lanzar necesita permiso de leer archivos y que la etiqueta pase los prefijos.
+   - **El árbol de porteros copia a la familia**: los microporteros del hijo cuelgan de los del padre (los
+     de los hijos del kernel, de los porteros de puerta). Nadie tiene más que quien lo lanzó.
+   - **Importante = todo lo que altera un proceso, un archivo o el sistema**: escribir en pantalla, crecer,
+     achicar, abrir, grabar, borrar, renombrar, ceder, usar, revocar, ceder con etiqueta y lanzar. Un
+     pedido importante de un hijo de un proceso **espera la firma de su padre**: el toque entero de la
+     ventanilla queda en espera, el hijo duerme y su `jsys` se repite cuando todo está firmado o
+     rechazado. Lo rechazado responde −1 y cuenta como negado. Los hijos del kernel no esperan: el kernel
+     firma a través de los porteros.
+   - **17 firmar** (`a` = número del pedido, `b` = 1 firma / 0 rechaza), **18 pendientes** (lo que espera
+     mi firma, como {número, hijo, tipo}), **19 estado** (`a` = un hijo mío → su código, −1 mientras corre,
+     −2 si no es mío).
+   - **Huérfanos**: cuando un proceso termina, lo que esperaba su firma sube a su padre (si es el kernel,
+     firma en el acto) y sus hijos pasan a ser de su padre. Si todos los que quedan esperan una firma que
+     nadie puede dar, se rechaza: nadie espera para siempre.
+   - **El planificador decide de nuevo por evento**: cuando nace o despierta un proceso, el turno actual se
+     corta ahí (contando solo lo que de verdad corrió).
+
 Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
 cuando termina:
 
@@ -117,7 +139,13 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-31/31. Porteros por etiqueta: prefijo `🦎` permite guardar `🦎 notas.txt`; prefijo `a` lo niega; listar con
+37/37 (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
+lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
+−1, un negado); **el huérfano lo adopta el kernel** (el padre termina sin firmar y el "hola" sale igual);
+**el hijo no tiene más que su padre** (un padre sin memoria lanza un hijo pidiendo todo, y el hijo igual no
+puede tocar memoria).
+
+Porteros por etiqueta: prefijo `🦎` permite guardar `🦎 notas.txt`; prefijo `a` lo niega; listar con
 prefijo `c` ve 1 y con `d` ve 0; un hijo con prefijo `x` no puede ceder uno con `y`, y desde `x` no se abre
 `🦎 notas.txt`.
 
@@ -190,7 +218,7 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
   desconocido.
-- Porteros: que dar un permiso importante pida la firma de más de un portero, como las órdenes firmadas
-  de Wenas (falta decidir quién firma).
+- Familia: las firmas hoy son decisiones dentro del núcleo; firmarlas con claves (como las órdenes de
+  Wenas) cuando los procesos puedan vivir en máquinas distintas.
 - La campana (0..1) y la cubierta.
 - Modo cero.

@@ -100,8 +100,8 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 15                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
-                                ; consult, delete, rename, list, cede with label
+  KINDS     = 19                ; write, grow, shrink, open, read, write to file, close, cede, use, revoke,
+                                ; consult, delete, rename, list, cede with label, launch, sign, pending, state
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -121,12 +121,33 @@ section '.data' data readable writeable
   t_reqs    db ' pedidos=', 0
   serve_table dq serve_write, serve_grow, serve_shrink, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
-              dq serve_cede_label
+              dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
+             db R_READ, 0, 0, 0
   assert $ - kind_right = KINDS + 1
+  ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0
+  assert $ - kind_important = KINDS + 1
+  ; requests waiting for a signature
+  REC_SIZE  = 40
+  R_CHILD   = 0
+  R_INDEX   = 8
+  R_KIND    = 16
+  R_SIGNER  = 24                ; the parent process that has to sign (0 = the kernel)
+  R_STATE   = 32                ; 0 waiting, 1 signed, 2 rejected, 3 used
+  REC_USED  = 3
+  recs      dq 0
+  nrecs     dq 0
+  caprecs   dq 0
+  nr_index  dq 0
+  nr_kind   dq 0
+  nr_new    dq 0
+  must_wait dq 0
+  asleep    dq 0
+  sched_dirty db 0
   ; porters
   nodes     dq 0
   nnodes    dq 0
@@ -668,6 +689,7 @@ schedule:
         mov     rbx, -1                 ; least served process
         mov     r8, FOREVER             ; its service
         mov     r9, FOREVER             ; service of the next least served
+        mov     qword [asleep], 0
         xor     ecx, ecx
 .scan:
         cmp     rcx, [nprocs]
@@ -676,7 +698,11 @@ schedule:
         mov     rsi, [rsi + rcx*8]
         cmp     qword [rsi + P_DONE], 0
         jne     .next_proc
-        mov     rax, [rsi + P_SERVED]
+        cmp     qword [rsi + P_WAITING], 0
+        je      @f
+        inc     qword [asleep]          ; waiting for a signature: it does not run
+        jmp     .next_proc
+@@:     mov     rax, [rsi + P_SERVED]
         cmp     rax, r8
         jae     .not_least              ; ties keep the lower process number
         mov     r9, r8
@@ -692,7 +718,12 @@ schedule:
         jmp     .scan
 .chosen:
         cmp     rbx, -1
+        jne     .someone
+        cmp     qword [asleep], 0
         je      .all_done
+        call    nobody_signs            ; everyone left waits for a signature nobody can give
+        jmp     schedule
+.someone:
         mov     rax, FOREVER            ; alone: run to the end
         cmp     r9, rax
         je      .run
@@ -726,6 +757,7 @@ schedule:
         cmp     qword [rbx + P_DONE], 0
         je      schedule
         call    close_files             ; whatever the process left open
+        call    orphans                 ; its children and what waited for its signature go up
         cmp     byte [quiet], 0
         jne     schedule
         call    report
@@ -1217,8 +1249,20 @@ op_sys:
         mov     r15, [rbx + P_DATA]     ; the cabin may have moved
         cmp     rax, -1
         je      fail_mem
+        cmp     rax, -2
+        je      .asleep
         mov     r11, [sys_rd]
         mov     [r14 + r11*8], rax      ; requests attended
+        cmp     byte [sched_dirty], 0
+        je      next
+        mov     byte [sched_dirty], 0   ; someone was born or woke up: the scheduler decides again
+        sub     [budget0], rbp          ; end the turn here, counting only what really ran
+        xor     ebp, ebp
+        jmp     next
+.asleep:                                ; waiting for the parent's signature: this jsys runs again later
+        dec     r12
+        sub     [budget0], rbp
+        xor     ebp, ebp
         jmp     next
 
 ; ---------------------------------------------------------------- the window (ventanilla)
@@ -1304,6 +1348,21 @@ ventanilla:
         inc     qword [denied]
         jmp     .unknown
 .allowed:
+        cmp     byte [kind_important + rdx], 0
+        je      .go                     ; it only looks: no signature
+        cmp     qword [rbx + P_PARENT], 0
+        je      .go                     ; the kernel's children: the kernel signs through the porters
+        call    signature               ; r8 = 1 signed, 2 rejected, 0 now waiting for the parent
+        cmp     r8d, 1
+        je      .go
+        cmp     r8d, 2
+        jne     .waits
+        inc     qword [denied]
+        jmp     .unknown
+.waits:
+        inc     qword [must_wait]
+        jmp     .mark_next
+.go:
         mov     byte [present + rdx], 1
         jmp     .mark_next
 .unknown:
@@ -1312,6 +1371,16 @@ ventanilla:
         inc     rcx
         jmp     .mark
 .marked:
+        cmp     qword [must_wait], 0    ; something waits for the parent: the whole touch waits
+        je      .no_wait
+        mov     rax, [must_wait]
+        mov     [rbx + P_WAITING], rax
+        mov     qword [must_wait], 0
+        sub     [requests], r15         ; it will be counted when it runs
+        invoke  VirtualFree, rbp, 0, MEM_RELEASE
+        mov     rax, -2
+        jmp     .out
+.no_wait:
 
         ; pass 1: a kind that already has its screen keeps it
         mov     edx, 1
@@ -2497,6 +2566,294 @@ gate_cede_label:
         ret
 .invalid:
         mov     qword [rbp + r13 + 24], -1
+        ret
+
+; ---------------------------------------------------------------- the family
+; The kernel is the mother of all. A process launches children from files; each child's porters hang
+; from its parent's, so nobody has more than whoever launched it. An important request (anything that
+; changes a process, a file or the system) of a child waits for the signature of its parent only
+; (Capitan: "the hierarchy rules: the micro asks the macro"); while it waits, the child sleeps and its
+; jsys runs again once everything is signed or rejected. When a process ends, what waited for its
+; signature goes up to its own parent (the kernel signs at once) and its children are adopted.
+
+; In the window: rbx = child, rcx = entry, rdx = kind -> r8 = 1 signed, 2 rejected, 0 waiting (asked).
+; Keeps rax, rcx, rdx.
+signature:
+        push    rax rcx rdx rsi
+        xor     esi, esi
+.look:
+        cmp     rsi, [nrecs]
+        jae     .ask
+        imul    r9, rsi, REC_SIZE
+        add     r9, [recs]
+        cmp     [r9 + R_CHILD], rbx
+        jne     .next
+        cmp     [r9 + R_INDEX], rcx
+        jne     .next
+        cmp     [r9 + R_KIND], rdx
+        jne     .next
+        mov     r8, [r9 + R_STATE]
+        cmp     r8, REC_USED
+        je      .next
+        test    r8, r8
+        jz      .wait                   ; already asked, not answered yet
+        mov     qword [r9 + R_STATE], REC_USED   ; signed or rejected: used now
+        jmp     .out
+.next:
+        inc     rsi
+        jmp     .look
+.ask:
+        call    new_record
+.wait:
+        xor     r8d, r8d
+.out:
+        pop     rsi rdx rcx rax
+        ret
+
+; rbx = child, rcx = entry, rdx = kind: a request waiting for the signature of the child's parent.
+; The table doubles when full.
+new_record:
+        mov     [nr_index], rcx
+        mov     [nr_kind], rdx
+        mov     rax, [nrecs]
+        cmp     rax, [caprecs]
+        jb      .room
+        lea     rax, [rax + rax]
+        test    rax, rax
+        jnz     @f
+        mov     eax, 1
+@@:     mov     [caprecs], rax
+        imul    rax, REC_SIZE
+        invoke  VirtualAlloc, 0, rax, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [nr_new], rax
+        mov     rdi, rax
+        mov     rsi, [recs]
+        mov     rcx, [nrecs]
+        imul    rcx, REC_SIZE
+        rep     movsb
+        cmp     qword [recs], 0
+        je      @f
+        invoke  VirtualFree, [recs], 0, MEM_RELEASE
+@@:     mov     rax, [nr_new]
+        mov     [recs], rax
+        mov     rax, [nrecs]
+.room:
+        imul    r9, rax, REC_SIZE
+        add     r9, [recs]
+        mov     [r9 + R_CHILD], rbx
+        mov     rax, [nr_index]
+        mov     [r9 + R_INDEX], rax
+        mov     rax, [nr_kind]
+        mov     [r9 + R_KIND], rax
+        mov     rax, [rbx + P_PARENT]
+        mov     [r9 + R_SIGNER], rax
+        mov     qword [r9 + R_STATE], 0
+        inc     qword [nrecs]
+        ret
+
+; rbx = a process that just ended: what waited for its signature goes to its parent (the kernel signs
+; at once, its porters already allowed it), and its children are adopted by its parent.
+orphans:
+        push    rsi
+        mov     r10, [rbx + P_PARENT]
+        xor     esi, esi
+.rec:
+        cmp     rsi, [nrecs]
+        jae     .kids
+        imul    r9, rsi, REC_SIZE
+        add     r9, [recs]
+        cmp     [r9 + R_SIGNER], rbx
+        jne     .rec_next
+        cmp     qword [r9 + R_STATE], 0
+        jne     .rec_next
+        mov     [r9 + R_SIGNER], r10
+        test    r10, r10
+        jnz     .rec_next
+        mov     qword [r9 + R_STATE], 1
+        mov     r8, [r9 + R_CHILD]
+        dec     qword [r8 + P_WAITING]
+.rec_next:
+        inc     rsi
+        jmp     .rec
+.kids:
+        xor     esi, esi
+.kid:
+        cmp     rsi, [nprocs]
+        jae     .done
+        mov     r8, [procs]
+        mov     r8, [r8 + rsi*8]
+        cmp     [r8 + P_PARENT], rbx
+        jne     .kid_next
+        mov     [r8 + P_PARENT], r10
+.kid_next:
+        inc     rsi
+        jmp     .kid
+.done:
+        pop     rsi
+        ret
+
+; Everyone left is waiting for a signature that nobody running can give: rejected, so nobody waits forever.
+nobody_signs:
+        xor     ecx, ecx
+.one:
+        cmp     rcx, [nrecs]
+        jae     .done
+        imul    r9, rcx, REC_SIZE
+        add     r9, [recs]
+        cmp     qword [r9 + R_STATE], 0
+        jne     .next
+        mov     qword [r9 + R_STATE], 2
+        mov     r8, [r9 + R_CHILD]
+        dec     qword [r8 + P_WAITING]
+.next:
+        inc     rcx
+        jmp     .one
+.done:
+        ret
+
+serve_gate serve_launch,  16, family_launch
+serve_gate serve_sign,    17, family_sign
+serve_gate serve_pending, 18, family_pending
+serve_gate serve_state,   19, family_state
+
+; 16 launch: a = label of the program file, b = its bytes; the child's permissions travel in the high
+; half of the type (cut down to the parent's). Answers the child's number, or -1.
+family_launch:
+        sub     rsp, 8
+        mov     rsi, [rbp + r13 + 8]
+        mov     rcx, [rbp + r13 + 16]
+        lea     rdi, [host_path]
+        call    label_path
+        test    eax, eax
+        jz      .invalid
+        call    files_prefix_ok
+        test    eax, eax
+        jz      .invalid
+        invoke  CreateFileA, host_path, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .invalid
+        mov     [hfile], rax
+        invoke  VirtualAlloc, 0, MAX_PROGRAM, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .close
+        mov     [mp_prog], rax
+        mov     dword [bytesread], 0
+        invoke  ReadFile, [hfile], [mp_prog], MAX_PROGRAM, bytesread, 0
+        inc     qword [hostcalls]
+        invoke  CloseHandle, [hfile]
+        inc     qword [hostcalls]
+        mov     eax, [bytesread]
+        shr     eax, 2
+        mov     [mp_words], rax
+        mov     [mp_parent], rbx
+        mov     eax, [rbp + r13 + 4]
+        mov     [mp_rights], rax
+        mov     qword [mp_pfx_len], 0
+        call    make_process
+        mov     rax, [rax + P_ID]
+        mov     [rbp + r13 + 24], rax
+        mov     byte [sched_dirty], 1
+        add     rsp, 8
+        ret
+.close:
+        invoke  CloseHandle, [hfile]
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        add     rsp, 8
+        ret
+
+; 17 sign: a = number of a request waiting for my signature, b = 1 sign / 0 reject. Answers 0, or -1.
+family_sign:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [nrecs]
+        jae     .invalid
+        imul    r9, rax, REC_SIZE
+        add     r9, [recs]
+        cmp     [r9 + R_SIGNER], rbx
+        jne     .invalid
+        cmp     qword [r9 + R_STATE], 0
+        jne     .invalid
+        mov     eax, 1
+        cmp     qword [rbp + r13 + 16], 0
+        jne     @f
+        mov     eax, 2
+@@:     mov     [r9 + R_STATE], rax
+        mov     r8, [r9 + R_CHILD]
+        dec     qword [r8 + P_WAITING]
+        mov     byte [sched_dirty], 1
+        mov     qword [rbp + r13 + 24], 0
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        ret
+
+; 18 pending: a = where to write, b = room. Each request waiting for my signature as three qwords:
+; its number, the child's number, its kind. Answers how many, or -1.
+family_pending:
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        mov     rcx, [rbx + P_SIZE]
+        cmp     rax, rcx
+        ja      .invalid
+        sub     rcx, rax
+        cmp     rdx, rcx
+        ja      .invalid
+        mov     r10, [rbx + P_DATA]
+        add     r10, rax                ; where
+        mov     r11, rdx                ; room
+        xor     eax, eax                ; how many
+        xor     ecx, ecx
+.one:
+        cmp     rcx, [nrecs]
+        jae     .done
+        imul    r9, rcx, REC_SIZE
+        add     r9, [recs]
+        cmp     [r9 + R_SIGNER], rbx
+        jne     .next
+        cmp     qword [r9 + R_STATE], 0
+        jne     .next
+        cmp     r11, 24
+        jb      .done
+        mov     [r10], rcx
+        mov     r8, [r9 + R_CHILD]
+        mov     r8, [r8 + P_ID]
+        mov     [r10 + 8], r8
+        mov     r8, [r9 + R_KIND]
+        mov     [r10 + 16], r8
+        add     r10, 24
+        sub     r11, 24
+        inc     eax
+.next:
+        inc     rcx
+        jmp     .one
+.done:
+        mov     [rbp + r13 + 24], rax
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        ret
+
+; 19 state: a = number of one of my children -> its exit code once it ended, -1 while it runs,
+; -2 if it is not my child.
+family_state:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [nprocs]
+        jae     .not_mine
+        mov     r8, [procs]
+        mov     r8, [r8 + rax*8]
+        cmp     [r8 + P_PARENT], rbx
+        jne     .not_mine
+        mov     rax, -1
+        cmp     qword [r8 + P_DONE], 0
+        je      @f
+        mov     rax, [r8 + P_CODE]
+@@:     mov     [rbp + r13 + 24], rax
+        ret
+.not_mine:
+        mov     qword [rbp + r13 + 24], -2
         ret
 
 gate_refused:

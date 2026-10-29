@@ -61,3 +61,6 @@ Se recuerda por huella del núcleo + procesador (arranque ~1,35 s → ~150 ms). 
 llamadas, ~13 µs cada una).
 2026-10-29 — Teléfono conectado: escalón 0 145/145 en el Moto (salto lejano ARM64 verificado). Decisión de multifirma
 anotada (el micro pide al macro); pesar bucles = contar vueltas reales.
+2026-10-29 — Familia de procesos: lanzar desde archivos, porteros que copian a la familia, pedidos importantes esperan la
+firma del padre (17 firmar, 18 pendientes, 19 estado), huérfanos adoptados, planificador que decide de nuevo por evento.
+37/37; corredor con límite de tiempo por corrida.

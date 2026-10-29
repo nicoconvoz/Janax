@@ -34,9 +34,9 @@ caso() {
   done
   local got c
   if [ -n "$cambio" ]; then
-    got=$(JANAX_CAMBIO=$cambio JANAX_ARCHIVOS="${carpeta:-$JANAX_ARCHIVOS}" "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
+    got=$(JANAX_CAMBIO=$cambio JANAX_ARCHIVOS="${carpeta:-$JANAX_ARCHIVOS}" timeout 30 "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
   else
-    got=$(env -u JANAX_CAMBIO "$salida/janaxos.exe" "${args[@]}"); c=$?
+    got=$(env -u JANAX_CAMBIO timeout 30 "$salida/janaxos.exe" "${args[@]}"); c=$?
   fi
   got=${got//$'\r'/}
   if [ "$c" = "$cod" ] && [[ "$got" == $esp ]]; then
@@ -214,6 +214,49 @@ caso "porteros: un hijo no sale del prefijo del padre" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=*
 ventanilla: *
 porteros: nodos=8 negados=2" porteros_etiqueta
+
+# --- the family: the kernel is the mother; a process launches children from a file labelled "hijo"
+# (68696a6f on the host). An important request of a child waits for its parent's signature only. ---
+familia() {   # familia <folder> <child program>
+  rm -rf "$salida/$1"; mkdir -p "$salida/$1"
+  cp "$salida/$2.bin" "$salida/$1/68696a6f"
+  carpeta=$(cygpath -m "$salida/$1")
+}
+
+familia familia_espera 02_ldi
+caso "familia: el padre lanza y espera" 0 0 "$fijo0
+P1 codigo=0 j0=000000000000002A t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" familia_espera
+
+familia familia_firma ventanilla_hola
+caso "familia: el hijo pide, el padre firma" 0 0 "$fijo0
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" familia_firma
+
+familia familia_rechazo ventanilla_hola
+caso "familia: el padre rechaza" 0 0 "$fijo0
+P1 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *
+porteros: nodos=* negados=1" familia_rechazo
+
+familia familia_huerfano ventanilla_hola
+caso "familia: el huerfano lo adopta el kernel" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000007 t=*
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+ventanilla: *" familia_huerfano
+
+familia familia_permisos ventanilla_achicar
+caso "familia: el hijo no tiene mas que su padre" 0 0 "$fijo0
+P1 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *
+porteros: nodos=10 negados=1" familia_espera@pl
+unset carpeta
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]
