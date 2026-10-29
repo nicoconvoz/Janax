@@ -64,7 +64,10 @@ rm -f "$salida/diff.bin.x64"
 programa 10;            check "sin cache"      0000000000000037 "traducidas 7 de 7"
                         check "desde cache"    0000000000000037 "traducidas 0 de 7"
 programa 20;            check "una palabra"    00000000000000D2 "traducidas 1 de 7"
-programa 20 "jldi j3, 9"; check "cambia el largo" 00000000000000D2 "traducidas 3 de 8"
+programa 20 "jldi j3, 9"; check "cambia el largo" 00000000000000D2 "traducidas 2 de 8"   # jumps are relinked, not retranslated
+# j12 becomes the most used register: the register map changes and every word is translated again
+programa 20 "$(printf 'jadd j12, j12, j12\n%.0s' 1 2 3 4)"
+                        check "cambia el mapa" 00000000000000D2 "traducidas 11 de 11"
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]
