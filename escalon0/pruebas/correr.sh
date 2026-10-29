@@ -69,5 +69,41 @@ programa 20 "jldi j3, 9"; check "cambia el largo" 00000000000000D2 "traducidas 2
 programa 20 "$(printf 'jadd j12, j12, j12\n%.0s' 1 2 3 4)"
                         check "cambia el mapa" 00000000000000D2 "traducidas 11 de 11"
 
+# --- ARM64 on a real phone through adb (no emulators: house rule) ---
+adb=/c/Users/Nico/AppData/Local/Android/Sdk/platform-tools/adb.exe
+if ! "$fasm" "$raiz/traductor_arm64.asm" "$salida/traductor_arm64.exe" > "$salida/traductor_arm64.log" 2>&1; then
+  echo "traductor_arm64.asm no ensambla:"; cat "$salida/traductor_arm64.log"; exit 1
+fi
+if [ -x "$adb" ] && "$adb" get-state > /dev/null 2>&1; then
+  rm -rf "$salida/arm64"; mkdir -p "$salida/arm64"
+  for p in "$aqui"/*.jsm; do
+    n=$(basename "$p" .jsm)
+    "$salida/traductor_arm64.exe" "$(cygpath -m "$salida/$n.bin")" && mv "$salida/$n.bin.arm64" "$salida/arm64/$n"
+  done
+  MSYS_NO_PATHCONV=1 "$adb" shell 'rm -rf /data/local/tmp/janax' > /dev/null
+  MSYS_NO_PATHCONV=1 "$adb" push "$(cygpath -m "$salida/arm64")" /data/local/tmp/janax > /dev/null
+  resultados=$(MSYS_NO_PATHCONV=1 "$adb" shell 'cd /data/local/tmp/janax && for f in *; do chmod 755 $f; o=$(./$f); echo "$f|$o|$?"; done')
+  for p in "$aqui"/*.jsm; do
+    n=$(basename "$p" .jsm)
+    esp=''; cod=0
+    while IFS= read -r linea; do
+      linea=${linea%$'\r'}
+      case "$linea" in
+        '; espera: '*) esp=${linea#'; espera: '} ;;
+        '; codigo: '*) cod=${linea#'; codigo: '} ;;
+      esac
+    done < "$p"
+    fila=$(printf '%s\n' "$resultados" | tr -d '\r' | while IFS= read -r l; do case "$l" in "$n|"*) echo "$l";; esac; done)
+    got=$(echo "$fila" | cut -d'|' -f2); c=$(echo "$fila" | cut -d'|' -f3)
+    if [ "$c" = "$cod" ] && [ "$got" = "$esp" ]; then
+      ok=$((ok + 1))
+    else
+      echo "MAL  $n [arm64 en el telefono]: esperaba codigo $cod salida '$esp', dio codigo $c salida '$got'"; mal=$((mal + 1))
+    fi
+  done
+else
+  echo "AVISO: no hay telefono conectado por adb; las pruebas ARM64 no corrieron"
+fi
+
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]
