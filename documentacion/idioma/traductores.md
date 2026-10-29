@@ -32,7 +32,7 @@ cambio del mapa de registros). Al 2026-10-28: **141/141**. Al 2026-10-29, con la
 
 **Todo bucle es un while rotado, también acá** (2026-10-29): los 27 bucles del intérprete (4), el
 traductor x86-64 (15) y el ARM64 (8) tienen la forma única de Janax, y la suite lo verifica con
-`so/herramientas/bucles.pl` (116/116 = 113 + los 3 archivos). Como el teléfono no estaba conectado, el
+`so/herramientas/bucles.pl` (116/116 = 113 + los 3 archivos; 117/117 con la prueba de la huella). Como el teléfono no estaba conectado, el
 cambio se verificó con una foto: para las 36 pruebas se guardó, antes y después, el resultado del
 intérprete, la salida del traductor x86-64, el código x86-64 generado y el ELF de ARM64, todos generados
 de cero. Los 216 archivos dieron **idénticos byte por byte**: reescribir los bucles de los traductores
@@ -108,8 +108,10 @@ y al volver los guarda; el código generado nunca toca `rsp` y termina con `ret`
 - Caché en `<programa>.bin.x64`, formato `JX65`: encabezado de 32 bytes (magia, huella, cantidad de
   palabras, mapa de registros), las palabras, el largo de cada una, dónde está su campo de salto, y el
   código **sin enlazar**.
-- **Huella del traductor**: FNV-1a sobre sus plantillas, su emisor y sus tablas. Si cambia el traductor,
-  el caché viejo se descarta solo.
+- **Huella del traductor**: FNV-1a sobre **todo su código** (`code_begin..code_end`: plantillas, emisor y
+  todo lo demás) y sus tablas. Si cambia cualquier cosa del traductor, el caché viejo se descarta solo.
+  Probado: una copia del traductor con un `nop` agregado dentro del emisor (genera los mismos bytes)
+  traduce las 7 palabras de nuevo en vez de reusar el caché del original.
 - Una palabra igual a la guardada copia sus bytes; una distinta se traduce. Los saltos se reenlazan en
   cada arranque, así que cambiar el largo del programa no obliga a retraducirlos. Si cambia el **mapa de
   registros**, se retraduce todo.
@@ -152,9 +154,5 @@ PC y teléfono son procesadores distintos: comparar entre ellos no mide al tradu
 ## Pendiente
 
 - x86-64: el uso de registros se cuenta en el texto del programa, sin pesar los bucles.
-- ⚠️ Huella del caché x86-64 incompleta (encontrado el 2026-10-29): el comentario dice que cubre "las
-  plantillas, el emisor y sus tablas", pero solo cubre las plantillas (`templates_start..templates_end`)
-  y las tablas (`hashed_start..hashed_end`). El código del emisor (el bucle que traduce palabra por
-  palabra) está afuera: si el emisor cambia lo que genera, un caché viejo se seguiría usando.
 - Caché por procesador y elección de candidatos verificados (el Cambiaformas de `cambiaformas.md`).
 - Traductor y arranque escritos en Janax (escalón 1).

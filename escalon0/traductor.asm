@@ -105,7 +105,7 @@ STUB_BYTES = NATIVE_COUNT * 7 * 2 + 5 + 1   ; loads, call, saves, ret
 
 section '.text' code readable executable
 
-templates_start:                        ; templates_start..templates_end feeds the translator fingerprint
+code_begin:                             ; code_begin..code_end (all the code) feeds the translator fingerprint
 
 ; ---------------------------------------------------------------- templates
 ; Bodies for what x86 does differently. Inputs: rax = first operand, rcx = second (or the value to
@@ -476,8 +476,6 @@ e_ret:
         mov     ecx, t_ret.size
         jmp     copy_template
 
-templates_end:
-
 ; ---------------------------------------------------------------- translator
 
 start:
@@ -619,10 +617,11 @@ start:
         jb      .round_lap
 .picked:
 
-        ; translator fingerprint: FNV-1a over the templates, the emitter and its tables
+        ; translator fingerprint: FNV-1a over all its code (templates, emitter, everything) and its tables,
+        ; so any change to the translator makes it translate again instead of trusting an old cache
         mov     eax, 811C9DC5h
-        lea     rsi, [templates_start]
-        lea     rdx, [templates_end]
+        lea     rsi, [code_begin]
+        lea     rdx, [code_end]
         call    fnv
         lea     rsi, [hashed_start]
         lea     rdx, [hashed_end]
@@ -1016,6 +1015,8 @@ fail_args:
         invoke  ExitProcess, 4
 fail_block:
         invoke  ExitProcess, 9          ; translator bug: an instruction outgrew MAX_LEN
+
+code_end:
 
 section '.idata' import data readable writeable
 

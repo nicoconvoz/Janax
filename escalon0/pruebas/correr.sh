@@ -69,6 +69,25 @@ programa 20 "jldi j3, 9"; check "cambia el largo" 00000000000000D2 "traducidas 2
 programa 20 "$(printf 'jadd j12, j12, j12\n%.0s' 1 2 3 4)"
                         check "cambia el mapa" 00000000000000D2 "traducidas 11 de 11"
 
+# A translator whose code changed never reuses an old cache, even if it generates the same bytes: a copy
+# with one nop inside the emitter (the word-by-word loop) must translate every word again.
+perl -pe 's/^(\.word_lap:)\r?$/$1\n        nop/' "$raiz/traductor.asm" > "$salida/traductor_otro.asm"
+if [ "$(grep -c '^        nop$' "$salida/traductor_otro.asm")" != 1 ] \
+   || ! "$fasm" "$salida/traductor_otro.asm" "$salida/traductor_otro.exe" > /dev/null 2>&1; then
+  echo "MAL  diff otro traductor: no se pudo armar la copia con el emisor cambiado"; mal=$((mal + 1))
+else
+  programa 10; rm -f "$salida/diff.bin.x64"
+  "$salida/traductor.exe" "$(cygpath -m "$salida/diff.bin")" > /dev/null 2>&1   # leaves a cache
+  err=$("$salida/traductor_otro.exe" "$(cygpath -m "$salida/diff.bin")" 2>&1 > "$salida/diff.out")
+  out=$(< "$salida/diff.out"); out=${out%$'\r'}; err=${err%$'\r'}
+  if [ "$out" = 0000000000000037 ] && [ "$err" = "traducidas 7 de 7" ]; then
+    ok=$((ok + 1))
+  else
+    echo "MAL  diff otro traductor: esperaba '0000000000000037' / 'traducidas 7 de 7', dio '$out' / '$err'"
+    mal=$((mal + 1))
+  fi
+fi
+
 # --- ARM64 on a real phone through adb (no emulators: house rule) ---
 adb=/c/Users/Nico/AppData/Local/Android/Sdk/platform-tools/adb.exe
 if ! "$fasm" "$raiz/traductor_arm64.asm" "$salida/traductor_arm64.exe" > "$salida/traductor_arm64.log" 2>&1; then

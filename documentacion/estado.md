@@ -78,3 +78,5 @@ orden de las corridas). Falta el escalón 0: 27 bucles.
 2026-10-29 — Escalón 0 en while: 27 bucles (intérprete, traductores x86-64 y ARM64). Sin teléfono, verificado con una foto
 de lo que generan los traductores para las 36 pruebas: 216 archivos idénticos byte por byte. 116/116. Todo el diseño en
 while. Encontrado de paso: la huella del caché x86-64 no cubre el código del emisor.
+2026-10-29 — Huella del caché x86-64 arreglada: cubre todo el código del traductor (`code_begin..code_end`). Prueba nueva
+que fallaba antes: una copia con un `nop` en el emisor reusaba el caché ("0 de 7"); ahora traduce todo ("7 de 7"). 117/117.
