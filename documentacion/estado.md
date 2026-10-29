@@ -37,3 +37,6 @@ también en ARM). suma_1000m en el teléfono: ~1.450 ms, ejecutable de 420 bytes
 
 2026-10-28 — CAMBIO DE RUMBO (Capitán): el MMORPG queda para después. Antes se diseña un sistema operativo.
 Todo lo hecho (idioma Janax, intérprete, traductores x86-64 y ARM64, diseño P2P del MMORPG) queda como está.
+2026-10-28 — Janax OS S1 (`so/janaxos.asm`): simbiosis sobre Windows (detecta rcx = PEB), un camarote por programa, planificador
+LAS sin turno fijo. 5/5 (corredor arreglado: leía el código de `tr`). Medido: dos procesos iguales cuestan el doble por cambiar
+cada ~2 instrucciones (~7,5 ns por cambio). Detalle en documentacion/so/janaxos.md.

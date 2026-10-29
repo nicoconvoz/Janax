@@ -136,5 +136,7 @@ En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo 
 - `documentacion/idioma/traductores.md` — lo construido: intérprete, traductores x86-64 y ARM64, cómo se
   prueba, formatos y mediciones.
 - `documentacion/idioma/cambiaformas.md` — diseño del Cambiaformas, incluido lo que falta.
+- `documentacion/so/ideas.md` — sistema operativo: las ideas del Capitán y su devolución.
+- `documentacion/so/janaxos.md` — sistema operativo: lo construido, cómo se prueba, mediciones.
 - **Cada paso se documenta en el mismo commit que el código** (regla del Capitán: "nunca te olvides de
   documentar").
