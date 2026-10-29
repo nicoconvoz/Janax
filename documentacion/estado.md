@@ -88,3 +88,5 @@ sacada de contar parejas ejecutadas: ninguna domina, pero toda vuelta de while t
 ~4,7 → ~3,7 s (21 %), calculo ~8 %, mismos resultados. 86/86.
 2026-10-29 — Copias del mismo programa comparten palabras y tabla (comparación palabra por palabra, al nacer).
 64 procesos: 131 → 69 MB; 1.000 copias: ~440 → ~320 ms; mismas salidas. 88/88.
+2026-10-29 — Cada programa ocupa lo que pesa: un búfer de carga único y una copia a medida. 38 programas distintos:
+77,5 → 41,7 MB, mismas salidas. 88/88.

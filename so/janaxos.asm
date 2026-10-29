@@ -90,7 +90,7 @@ section '.data' data readable writeable
   mp_pfx_len dq 0
   mp_new    dq 0
   nprocs    dq 0
-  mp_shared dq 0                  ; share_program: the process whose program is reused
+  load_buf  dq 0                  ; every program is read here first (program_buffer)
   clock     dq 0                ; instructions executed by the whole system
   budget0   dq 0
   hfile     dq 0
@@ -558,7 +558,7 @@ start:
         cmp     rax, -1
         je      fail_file
         mov     [hfile], rax
-        invoke  VirtualAlloc, 0, MAX_PROGRAM, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        call    program_buffer
         test    rax, rax
         jz      fail_file
         mov     [mp_prog], rax
@@ -738,8 +738,20 @@ make_process:
         pop     r15 r14 r13 r12 rdi rsi rbx
         ret
 
-; Gives the process in rbx its program: the one of an earlier process with exactly the same words if there
-; is one (the new copy is freed), or mp_prog. The same words decode to the same table, which never changes
+; -> rax = the loading buffer every program is read into (MAX_PROGRAM, made once), 0 if there is no memory.
+program_buffer:
+        mov     rax, [load_buf]
+        test    rax, rax
+        jnz     .done
+        sub     rsp, 8
+        invoke  VirtualAlloc, 0, MAX_PROGRAM, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        add     rsp, 8
+        mov     [load_buf], rax
+.done:
+        ret
+
+; Gives the process in rbx its program, read into the loading buffer (mp_prog): the one of an earlier process
+; with exactly the same words if there is one, or a copy of exactly its size (what it weighs, not MAX_PROGRAM). The same words decode to the same table, which never changes
 ; while running, so copies share program and table: launching one more copy reads and decodes nothing new.
 ; With the routines the table is made here, at birth. Keeps rbx, r13-r15.
 share_program:
@@ -755,19 +767,11 @@ share_program:
         jne     .other
         mov     rsi, [mp_prog]
         mov     rdi, [rdx + P_PROG]
-        cmp     rsi, rdi
-        je      .found                  ; already its program (the calibration's)
         xor     eax, eax                ; ZF = 1: two empty programs are the same
         repe    cmpsd
         jne     .other
 .found:
         mov     rax, [rdx + P_PROG]
-        cmp     rax, [mp_prog]
-        je      @f
-        mov     [mp_shared], rdx
-        invoke  VirtualFree, [mp_prog], 0, MEM_RELEASE
-        mov     rdx, [mp_shared]
-@@:     mov     rax, [rdx + P_PROG]
         mov     [rbx + P_PROG], rax
         mov     rax, [rdx + P_NWORDS]
         mov     [rbx + P_NWORDS], rax
@@ -779,10 +783,21 @@ share_program:
         cmp     r12, [nprocs]
         jb      .other_lap
 .alone:
-        mov     rax, [mp_prog]
+        mov     rdx, [mp_words]
+        shl     rdx, 2
+        jnz     @f
+        mov     edx, 4                  ; an empty program still gets an address
+@@:     invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
         mov     [rbx + P_PROG], rax
+        mov     rdi, rax
+        mov     rsi, [mp_prog]
         mov     rcx, [mp_words]
         mov     [rbx + P_NWORDS], rcx
+        rep     movsd
+        mov     rax, [rbx + P_PROG]
+        mov     rcx, [mp_words]
         cmp     byte [motor], 0
         je      .done                   ; the interpreter reads the words as they are
         mov     rdx, rax
@@ -2995,7 +3010,7 @@ family_launch:
         cmp     rax, -1
         je      .invalid
         mov     [hfile], rax
-        invoke  VirtualAlloc, 0, MAX_PROGRAM, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        call    program_buffer
         test    rax, rax
         jz      .close
         mov     [mp_prog], rax

@@ -169,6 +169,9 @@ de registros de 16 bytes, uno por palabra más uno final:
   las diez parejas del bucle pesan 10 % cada una), pero toda vuelta de todo while termina en "algo →
   condición". Por eso no se funde `jsub`+`jjnz`: se funde cualquier instrucción con la condición que la
   sigue, y vale también para los `if`.
+- **Cada programa ocupa lo que pesa** (2026-10-29): todo programa se lee primero en un único búfer de
+  carga (`MAX_PROGRAM`, reservado una sola vez) y, si no es copia de otro, se guarda en un bloque de su
+  tamaño exacto (Windows lo redondea a páginas de 4 KB). Antes cada lanzamiento reservaba 1 MiB fijo.
 - **Copias del mismo programa comparten palabras y tabla** (2026-10-29): al nacer, cada proceso busca uno
   anterior con exactamente las mismas palabras (mismo largo y comparación palabra por palabra, nunca solo
   una huella). Si lo encuentra, libera su copia recién leída y usa el programa y la tabla de ese proceso.
@@ -326,6 +329,9 @@ Los 62 MB que se ahorran son 62 copias del búfer de programa (1 MiB cada una, `
 por proceso es casi todo su camarote (1 MiB de datos). Las salidas de las 1.000 copias son idénticas
 byte por byte. ⚠️ Cada lanzamiento todavía abre y lee el archivo: se comparte después de leerlo.
 
+38 programas distintos (`calculo` + las 37 pruebas del escalón 0), memoria privada máxima, contra e1c9ebe:
+**77,5 MB → 41,7 MB**, con salidas idénticas. Lo que queda por proceso es su camarote (1 MiB de datos).
+
 ### Compartir el procesador con el motor de rutinas
 
 Banco `calculo` (671 M instrucciones por copia), los dos motores **intercalados**, tres rondas, 2026-10-29.
@@ -362,8 +368,6 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 ## Pendiente
 
-- Programas: cada lanzamiento reserva 1 MiB para leer el archivo aunque el programa pese menos; reservar lo
-  que pesa.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
