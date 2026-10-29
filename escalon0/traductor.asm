@@ -3,9 +3,15 @@
 ; Translates the whole program to native x86-64 before running it, then runs the native code.
 ; Output and exit codes are identical to the reference interpreter (janax.asm); the tests check both.
 ;
-; Every Janax word becomes a fixed-size native block (BLOCK bytes, NOP-padded), so block i lives at
-; code + i*BLOCK and jumps need no address map. Block nwords is the "outside the program" exit.
-; Each instruction is a template assembled below; the translator copies it and patches its fields.
+; Every Janax word becomes a fixed-size native block (BLOCK bytes), so block i lives at code + i*BLOCK and
+; jumps need no address map. Block nwords is the "outside the program" exit. Each instruction is a template
+; assembled below; the translator copies it and patches its fields.
+;
+; Incremental: blocks only use relative addresses, so a block translated once is valid at any address.
+; The translation is kept in <program.bin>.x64 with the translator's own fingerprint; the next run copies
+; the blocks of unchanged words and translates only the words that differ (plus jumps, if the program
+; length changed, because jumps past the end point at the outside block). stderr reports
+; "traducidas N de M".
 ;
 ; Native register use while the program runs:
 ;   rbx = Janax registers (16 qwords)   r15 = data memory
@@ -30,8 +36,11 @@ P_RD   = 3                      ; dword = rd*8
 P_IMM  = 4                      ; dword = imm16 sign-extended
 P_IMMZ = 5                      ; dword = imm16 zero-extended
 P_JUMP = 6                      ; dword = rel32 to the target block (or the outside block)
-P_NEXT = 7                      ; qword = absolute address of the next block
 MAX_PATCHES = 4
+
+CACHE_MAGIC = 'JX64'
+MAX_PATH_BYTES = 1024
+HEADER_SIZE = 16                ; magic, fingerprint, nwords (qword)
 
 DISP = 7FFFFFF0h                ; placeholder that forces 32-bit fields in the templates
 
@@ -47,6 +56,14 @@ section '.data' data readable writeable
   hexdigits db '0123456789ABCDEF'
   hexbuf    db 16 dup '0', 13, 10
   retstack  dq RET_DEPTH dup 0
+
+  cachepath db MAX_PATH_BYTES + 8 dup 0
+  cache     dq 0                ; whole previous cache file, or 0
+  oldwords  dq 0                ; word count in the cache (valid only if cache <> 0)
+  fingerprint dd 0
+  translated dq 0
+  msg       db 'traducidas '
+  msgnum    db 40 dup 0
 
   ; per instruction: template address, size, then MAX_PATCHES pairs (offset, kind)
   macro desc name, [off, kind] {
@@ -88,8 +105,14 @@ section '.data' data readable writeable
     desc t_st,   t_st.a,   P_RA,  t_st.i,   P_IMM,  t_st.d,  P_RD
     desc t_ldb,  t_ldb.a,  P_RA,  t_ldb.i,  P_IMM,  t_ldb.d, P_RD
     desc t_stb,  t_stb.a,  P_RA,  t_stb.i,  P_IMM,  t_stb.d, P_RD
-    desc t_call, t_call.n, P_NEXT, t_call.j, P_JUMP
+    desc t_call, t_call.j, P_JUMP
     desc t_ret
+  descs_end:
+
+  header    dd CACHE_MAGIC, 0
+  hwords    dq 0
+  wbytes    dq 0
+  cachesize dq 0
 
 section '.text' code readable executable
 
@@ -104,6 +127,8 @@ macro template name {
 
   \}
 }
+
+templates_start:                        ; templates_start..templates_end feeds the translator fingerprint
 
 template t_halt
         xor     eax, eax
@@ -244,8 +269,8 @@ memop t_stb, 1, 0, 0, <mov [r15 + rax], cl>
 template t_call
         cmp     r13, RET_DEPTH
         jae     .overflow
-        mov     rax, 1122334455667788h  ; needs 64 bits, so FASM keeps the imm64 form
-        t_call.n = $ - 8 - t_call
+        db      48h, 8Dh, 05h           ; lea rax, [rip + disp32]: the next block, position-independent
+        dd      BLOCK - ($ + 4 - t_call)
         mov     [r14 + r13*8], rax
         inc     r13
         db      0E9h
@@ -276,6 +301,8 @@ template t_outside
         mov     eax, 2
         ret
 end_template
+
+templates_end:
 
 ; ---------------------------------------------------------------- translator
 
@@ -312,6 +339,20 @@ start:
         cmp     byte [rsi], 0
         je      fail_args
 
+        ; cache path = program path + ".x64"
+        xor     ecx, ecx
+.copy:
+        mov     al, [rsi + rcx]
+        test    al, al
+        jz      .copied
+        cmp     ecx, MAX_PATH_BYTES
+        jae     fail_args
+        mov     [cachepath + rcx], al
+        inc     ecx
+        jmp     .copy
+.copied:
+        mov     dword [cachepath + rcx], '.x64'
+
         invoke  CreateFileA, rsi, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
         cmp     rax, -1
         je      fail_file
@@ -335,6 +376,56 @@ start:
         mov     r15, rax
         mov     qword [regs + 15*8], DATA_SIZE
 
+        ; translator fingerprint: FNV-1a over the templates and their descriptors
+        mov     eax, 811C9DC5h
+        lea     rsi, [templates_start]
+        lea     rdx, [templates_end]
+        call    fnv
+        lea     rsi, [descs]
+        lea     rdx, [descs_end]
+        call    fnv
+        mov     [fingerprint], eax
+
+        ; previous translation, if any and made by this same translator
+        invoke  CreateFileA, cachepath, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+        cmp     rax, -1
+        je      .no_cache
+        mov     [hfile], rax
+        invoke  GetFileSize, [hfile], 0
+        mov     eax, eax
+        mov     [cachesize], rax
+        cmp     rax, HEADER_SIZE
+        jb      .close_cache
+        invoke  VirtualAlloc, 0, [cachesize], MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .close_cache
+        mov     [cache], rax
+        invoke  ReadFile, [hfile], [cache], [cachesize], bytesread, 0
+.close_cache:
+        invoke  CloseHandle, [hfile]
+        mov     rdx, [cache]
+        test    rdx, rdx
+        jz      .no_cache
+        cmp     dword [rdx], CACHE_MAGIC
+        jne     .bad_cache
+        mov     eax, [fingerprint]
+        cmp     eax, [rdx + 4]
+        jne     .bad_cache
+        mov     rcx, [rdx + 8]          ; words in the cache
+        cmp     rcx, MAX_PROGRAM / 4
+        ja      .bad_cache
+        lea     rax, [rcx + 1]
+        imul    rax, BLOCK
+        lea     rax, [rax + rcx*4 + HEADER_SIZE]
+        mov     r8d, [bytesread]
+        cmp     rax, r8
+        jne     .bad_cache
+        mov     [oldwords], rcx
+        jmp     .no_cache
+.bad_cache:
+        mov     qword [cache], 0
+.no_cache:
+
         ; native code: one block per word plus the outside block
         mov     rdx, [nwords]
         inc     rdx
@@ -353,6 +444,40 @@ start:
         imul    rdi, BLOCK
         add     rdi, [code]             ; block start
         mov     r13, rdi
+
+        ; reuse the cached block when the word did not change
+        mov     rdx, [cache]
+        test    rdx, rdx
+        jz      .fresh
+        cmp     r12, [oldwords]
+        jae     .fresh
+        mov     rax, [program]
+        mov     eax, [rax + r12*4]
+        cmp     eax, [rdx + HEADER_SIZE + r12*4]
+        jne     .fresh
+        mov     rcx, [oldwords]
+        cmp     rcx, [nwords]
+        je      .reuse
+        movzx   ecx, al                 ; length changed: jumps may point past the end, translate them again
+        cmp     ecx, 0Ch                ; jjmp, jjz, jjnz
+        jb      .reuse
+        cmp     ecx, 0Eh
+        jbe     .fresh
+        cmp     ecx, 14h                ; jcall
+        je      .fresh
+.reuse:
+        mov     rsi, [oldwords]
+        lea     rsi, [rdx + HEADER_SIZE + rsi*4]   ; cached code
+        mov     rax, r12
+        imul    rax, BLOCK
+        add     rsi, rax
+        mov     rdi, r13
+        mov     ecx, BLOCK
+        rep     movsb
+        jmp     .patched
+.fresh:
+        inc     qword [translated]
+        mov     rdi, r13
         mov     al, 0CCh                ; padding is never executed: int3 if it ever is
         mov     ecx, BLOCK
         rep     stosb
@@ -405,8 +530,6 @@ start:
         je      .immz
         cmp     eax, P_JUMP
         je      .jump
-        cmp     eax, P_NEXT
-        je      .next
         jmp     .patched                ; kind 0: no more patches
 .ra:    mov     [rdi], r8d
         jmp     .another
@@ -433,12 +556,6 @@ start:
         lea     rdx, [rdi + 4]
         sub     rax, rdx
         mov     [rdi], eax
-        jmp     .another
-.next:
-        lea     rax, [r12 + 1]
-        imul    rax, BLOCK
-        add     rax, [code]
-        mov     [rdi], rax
 .another:
         inc     ecx
         jmp     .patch
@@ -458,6 +575,52 @@ start:
         lea     rsi, [t_outside]
         mov     ecx, t_outside.size
         rep     movsb
+
+        ; --- keep this translation for the next run (a failure here only costs speed) ---
+        cmp     qword [cache], 0
+        je      .save
+        cmp     qword [translated], 0
+        jne     .save
+        mov     rax, [oldwords]
+        cmp     rax, [nwords]
+        je      .report                 ; nothing changed: the cache on disk is already this translation
+.save:
+        invoke  CreateFileA, cachepath, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+        cmp     rax, -1
+        je      .report
+        mov     [hfile], rax
+        mov     eax, [fingerprint]
+        mov     [header + 4], eax
+        mov     rax, [nwords]
+        mov     [hwords], rax
+        invoke  WriteFile, [hfile], header, HEADER_SIZE, written, 0
+        mov     rax, [nwords]
+        shl     rax, 2
+        mov     [wbytes], rax
+        invoke  WriteFile, [hfile], [program], [wbytes], written, 0
+        mov     rax, [nwords]
+        inc     rax
+        imul    rax, BLOCK
+        mov     [wbytes], rax
+        invoke  WriteFile, [hfile], [code], [wbytes], written, 0
+        invoke  CloseHandle, [hfile]
+
+        ; --- "traducidas N de M" on stderr ---
+.report:
+        lea     rdi, [msgnum]
+        mov     rax, [translated]
+        call    put_decimal
+        mov     dword [rdi], ' de '
+        add     rdi, 4
+        mov     rax, [nwords]
+        call    put_decimal
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [msg]
+        sub     rdi, rax
+        mov     [wbytes], rdi
+        invoke  GetStdHandle, STD_ERROR_HANDLE
+        invoke  WriteFile, rax, msg, [wbytes], written, 0
 
         ; --- run the native code ---
         lea     rbx, [regs]
@@ -492,6 +655,38 @@ jump_over_padding:
         mov     [rdi + 1], dl
         ret
 
+; FNV-1a: eax = hash so far, bytes [rsi, rdx); returns the hash in eax.
+fnv:
+        cmp     rsi, rdx
+        jae     .done
+        movzx   ecx, byte [rsi]
+        xor     eax, ecx
+        imul    eax, eax, 01000193h
+        inc     rsi
+        jmp     fnv
+.done:
+        ret
+
+; Writes rax in decimal at rdi; leaves rdi just past the last digit.
+put_decimal:
+        mov     ecx, 10
+        xor     r8d, r8d
+.divide:
+        xor     edx, edx
+        div     rcx
+        add     dl, '0'
+        push    rdx
+        inc     r8d
+        test    rax, rax
+        jnz     .divide
+.emit:
+        pop     rax
+        mov     [rdi], al
+        inc     rdi
+        dec     r8d
+        jnz     .emit
+        ret
+
 fail_code:
         invoke  ExitProcess, rax
 fail_file:
@@ -509,6 +704,7 @@ section '.idata' import data readable writeable
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
          VirtualAlloc, 'VirtualAlloc',\
+         GetFileSize, 'GetFileSize',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
          ExitProcess, 'ExitProcess'
