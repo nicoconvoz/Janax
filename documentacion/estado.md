@@ -59,3 +59,5 @@ listar filtra. 31/31.
 Se recuerda por huella del núcleo + procesador (arranque ~1,35 s → ~150 ms). 32/32.
 2026-10-29 — Lote medido: 10.000 escrituras en un toque ≈ piso del arranque (1 llamada); uno por uno +130 ms (10.000
 llamadas, ~13 µs cada una).
+2026-10-29 — Teléfono conectado: escalón 0 145/145 en el Moto (salto lejano ARM64 verificado). Decisión de multifirma
+anotada (el micro pide al macro); pesar bucles = contar vueltas reales.

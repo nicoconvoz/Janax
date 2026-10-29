@@ -249,6 +249,24 @@ Es la idea que ordena todas las anteriores:
 - Decisión que sale de acá: **verificar = subir del microportero a la raíz**; un portero revocado en el
   camino niega. Revocar cuesta una marca y la cascada sale gratis.
 
+## 2026-10-29 — Multifirma de porteros (Capitán)
+
+> "La jerarquía manda: el micro manda al macro."
+
+- Un microportero no se agranda solo: un permiso importante lo **pide hacia arriba**, a su macroportero
+  (el padre), y es la jerarquía la que decide. Si el macro no lo tiene, lo pide a su vez al suyo.
+- Es la cadena de Wenas al revés: allá cada miembro llevaba la firma de quien lo invitó; acá el pedido sube
+  juntando las firmas de cada nivel hasta uno que pueda darlo.
+- Falta definir qué cuenta como "permiso importante" antes de construirlo.
+
+## 2026-10-29 — Los bucles (Capitán)
+
+> "Me gusta más el while que el for."
+
+- Y tiene física adentro: un `while` es un bucle que **no sabe de antemano** cuántas vueltas da. Así que
+  ningún peso fijo por bucle puede ser cierto. El camino honesto es **contar las vueltas reales** mientras
+  el programa corre y que el Cambiaformas rearme los registros con esos números: medir, no suponer.
+
 ## Cómo se prueba cada modo (regla de la casa: cero emuladores)
 
 - **Simbiosis**: se prueba ya, en esta PC, como un programa más (igual que los traductores).

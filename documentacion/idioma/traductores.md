@@ -119,7 +119,7 @@ y al volver los guarda; el código generado nunca toca `rsp` y termina con `ret`
 - **Saltos**: `B` (±128 MiB) y `CBZ`/`CBNZ` (±1 MiB), enlazados al final con una lista de arreglos. Un
   `CBZ`/`CBNZ` que no alcanza se marca y la traducción se rehace con la **forma larga**: la condición
   contraria salta sobre un `B`. Los largos solo crecen, así que converge (prueba `35_salto_lejano`: un salto
-  de ~1,08 MB hacia atrás). ⚠️ Generado y revisado en la PC; **falta correrlo en el teléfono**.
+  de ~1,08 MB hacia atrás). Verificado en el teléfono el 2026-10-29: suite completa 145/145.
 - Al `jhalt` una rutina fija escribe `j0` en hexadecimal con la llamada `write` y sale con `exit`.
 - **En el teléfono**: Moto E7 Plus, Android 10, aarch64; se corre desde `/data/local/tmp` sin root. adb
   en `C:/Users/Nico/AppData/Local/Android/Sdk/platform-tools/adb.exe` (con `MSYS_NO_PATHCONV=1` desde Git
@@ -142,7 +142,6 @@ PC y teléfono son procesadores distintos: comparar entre ellos no mide al tradu
 
 ## Pendiente
 
-- ARM64: correr `35_salto_lejano` en el teléfono (la forma larga está generada y revisada en la PC).
 - x86-64: el uso de registros se cuenta en el texto del programa, sin pesar los bucles.
 - Caché por procesador y elección de candidatos verificados (el Cambiaformas de `cambiaformas.md`).
 - Traductor y arranque escritos en Janax (escalón 1).
