@@ -281,6 +281,26 @@ intérprete haya pasado de ~2,9 s a ~4 s **no es el while**: el núcleo viejo co
 intercalado en ese momento, también daba ~3,8–4,2 s. La máquina estaba más lenta y el intérprete lo
 sufre más que las rutinas. Por eso los motores se comparan siempre intercalados, en el mismo momento.
 
+### Compartir el procesador con el motor de rutinas
+
+Banco `calculo` (671 M instrucciones por copia), los dos motores **intercalados**, tres rondas, 2026-10-29.
+`c` medido por el núcleo y recordado: **7,96** instrucciones con rutinas, **2,32** con el intérprete.
+
+| Motor | Una copia | Dos copias, turno por prioridad | Dos copias, LAS puro (`c` = 0) |
+|---|---|---|---|
+| **Rutinas** | ~1.469–1.520 ms | **~2.875–2.937 ms** | ~14.392–14.792 ms |
+| Intérprete | ~2.972–3.207 ms | ~6.664–6.759 ms | ~15.752–18.204 ms |
+
+- **Rutinas: compartir cuesta lo mismo que correr uno detrás del otro.** Dos copias tardan apenas menos
+  que el doble de una (el arranque se paga una sola vez). Siguen siendo justos: terminan separados por
+  ~46.000 instrucciones sobre 1.342 millones.
+- **Sin el turno por prioridad, el motor rápido lo pierde todo**: con LAS puro (cambio cada ~2
+  instrucciones) las rutinas tardan 5 veces más que con el turno, y casi lo mismo que el intérprete. Cuanto
+  más barata es cada instrucción, más pesa el cambio y más importa el turno. El turno no se toca: se
+  ajustó solo con el `c` que midió.
+- ⚠️ El intérprete compartiendo paga ~8–10 % más que dos copias seguidas (~6,7 s contra ~6,2 s). Su `c`
+  medido (2,32) podría estar corto. No se investigó: el motor por defecto son las rutinas.
+
 ### Cuánto ahorra el lote de la ventanilla
 
 Bancos `so/bancos/lote_10000.jsm` y `uno_por_uno_10000.jsm`: las mismas 10.000 líneas, salida a un archivo
