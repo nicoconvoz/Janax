@@ -169,10 +169,23 @@ corridas 8 veces más largas, hilo fijo y mediana de nueve pares: mediana entre 
 arranques seguidos. Entre arranques sigue variando un poco (una corrida dentro de la suite de pruebas dio
 3,14): por eso se mide una vez y se recuerda.
 
+### Cuánto ahorra el lote de la ventanilla
+
+Bancos `so/bancos/lote_10000.jsm` y `uno_por_uno_10000.jsm`: las mismas 10.000 líneas, salida a un archivo
+(para medir el núcleo y no la consola), `c` fijado, tres corridas cada uno.
+
+| Programa | Tiempo total | Llamadas al anfitrión |
+|---|---|---|
+| Piso: arrancar el núcleo con un programa de 1 instrucción | ~150–180 ms | — |
+| **10.000 pedidos en un solo toque** (una pantalla en lote) | **~150–165 ms** | **1** |
+| 10.000 toques de un pedido cada uno (como una llamada al sistema clásica) | ~280–310 ms | 10.000 |
+
+En lote, escribir 10.000 líneas cuesta lo mismo que no escribir nada (queda dentro del ruido del
+arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
+
 ## Pendiente
 
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
-- Ventanilla: medir cuánto ahorra el lote con programas reales.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

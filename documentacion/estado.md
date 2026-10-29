@@ -57,3 +57,5 @@ de saltos condicionales (generada en PC, falta el teléfono).
 listar filtra. 31/31.
 2026-10-29 — Medición de c: el instrumento mentía (0 a 9,7). A-B-A + corridas largas + hilo fijo + mediana de 9: 1,17–1,64.
 Se recuerda por huella del núcleo + procesador (arranque ~1,35 s → ~150 ms). 32/32.
+2026-10-29 — Lote medido: 10.000 escrituras en un toque ≈ piso del arranque (1 llamada); uno por uno +130 ms (10.000
+llamadas, ~13 µs cada una).
