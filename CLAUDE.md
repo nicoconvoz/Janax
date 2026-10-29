@@ -131,4 +131,10 @@ En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo 
 ## Índice de documentación
 
 - `documentacion/decisiones/` — decisiones de arquitectura y stack, con fecha y porqué.
-- `documentacion/estado.md` — en qué está el proyecto hoy.
+- `documentacion/estado.md` — bitácora: en qué está el proyecto y qué se midió en cada paso.
+- `documentacion/idioma/especificacion-v0.md` — el idioma Janax: instrucciones, codificación, reglas.
+- `documentacion/idioma/traductores.md` — lo construido: intérprete, traductores x86-64 y ARM64, cómo se
+  prueba, formatos y mediciones.
+- `documentacion/idioma/cambiaformas.md` — diseño del Cambiaformas, incluido lo que falta.
+- **Cada paso se documenta en el mismo commit que el código** (regla del Capitán: "nunca te olvides de
+  documentar").

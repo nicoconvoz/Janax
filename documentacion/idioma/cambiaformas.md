@@ -6,6 +6,9 @@ El arranque de Janax se convierte en el procesador donde le toca vivir: conoce e
 instrucción Janax en cada familia, asocia las instrucciones nuevas del procesador con las que cumplen el
 mismo rol, y cuando no conoce un camino, lo busca, lo verifica y lo adopta en tiempo de ejecución.
 
+**Lo que ya está construido** (traductores x86-64 y ARM64, la idea x/y/a, el autoajuste, el caché y las
+mediciones): `traductores.md`. Este documento es el diseño completo, incluida la parte que todavía no existe.
+
 ## 1. Mapa de equivalencias (v0)
 
 Mecanismo de cada instrucción Janax y su equivalente base en cada familia. **Dif.** marca dónde el
