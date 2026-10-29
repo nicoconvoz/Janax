@@ -320,15 +320,16 @@ start:
         jz      .measure
         xor     eax, eax                ; decimal digits
         lea     rsi, [env_value]
-.digit:
-        movzx   ecx, byte [rsi]
-        sub     ecx, '0'
-        cmp     ecx, 9
-        ja      .parsed
+        jmp     .digit
+.digit_lap:
         imul    rax, 10
         add     rax, rcx
         inc     rsi
-        jmp     .digit
+.digit:                                 ; while the character is a digit
+        movzx   ecx, byte [rsi]
+        sub     ecx, '0'
+        cmp     ecx, 9
+        jbe     .digit_lap
 .parsed:
         cvtsi2sd xmm0, rax
         movsd   [swcost], xmm0
@@ -382,55 +383,67 @@ start:
         jz      fail_file
         mov     [cmdline], rax
         mov     rdi, rax
-.copy:
+        jmp     .copy
+.copy_lap:
+.copy:                                  ; while the copied byte is not the end
         lodsb
         stosb
         test    al, al
-        jnz     .copy
+        jnz     .copy_lap
 
         ; skip the program name (maybe quoted)
         mov     rsi, [cmdline]
         cmp     byte [rsi], '"'
-        jne     .unquoted
+        jne     .unquoted_start
         inc     rsi
-.quoted:
+        jmp     .quoted
+.quoted_lap:
+        cmp     al, '"'
+        je      .count
+.quoted:                                ; while the closing quote has not come
         lodsb
         test    al, al
-        jz      no_programs
-        cmp     al, '"'
-        jne     .quoted
-        jmp     .count
-.unquoted:
-        mov     al, [rsi]
-        test    al, al
-        jz      no_programs
+        jnz     .quoted_lap
+        jmp     no_programs
+.unquoted_start:
+        jmp     .unquoted
+.unquoted_lap:
         cmp     al, ' '
         je      .count
         inc     rsi
-        jmp     .unquoted
+.unquoted:                              ; while the name goes on
+        mov     al, [rsi]
+        test    al, al
+        jnz     .unquoted_lap
+        jmp     no_programs
 
-        ; count the programs and cut each path with a zero
+        ; count the programs and cut each path with a zero: while there is text, skip spaces (cutting)
+        ; or walk a token (counting it)
 .count:
         mov     r12, rsi                ; first argument area
         xor     ebx, ebx
-.skip_spaces:
-        cmp     byte [rsi], ' '
-        jne     .token
-        mov     byte [rsi], 0
+        jmp     .scan_args
+.scan_args_lap:
+        cmp     al, ' '
+        jne     .in_token
+        mov     byte [rsi], 0           ; a space: cut here
         inc     rsi
-        jmp     .skip_spaces
-.token:
-        cmp     byte [rsi], 0
-        je      .counted
-        inc     rbx
+        jmp     .scan_args
 .in_token:
+        inc     rbx                     ; a token: count it and walk to its end
+        jmp     .token_end
+.token_end_lap:
+        inc     rsi
+.token_end:                             ; while inside the token
+        mov     al, [rsi]
+        cmp     al, ' '
+        je      .scan_args
+        test    al, al
+        jnz     .token_end_lap
+.scan_args:                             ; while there is text
         mov     al, [rsi]
         test    al, al
-        jz      .counted
-        cmp     al, ' '
-        je      .skip_spaces
-        inc     rsi
-        jmp     .in_token
+        jnz     .scan_args_lap
 .counted:
         test    rbx, rbx
         jz      no_programs
@@ -439,34 +452,34 @@ start:
         ; --- one cabin per program, all of them children of the kernel ---
         mov     rsi, r12
         xor     r13, r13                ; argument number
-.load:
-        cmp     r13, [nargs]
-        jae     .loaded
-.find:
-        cmp     byte [rsi], 0
-        jne     .path
-        inc     rsi
+        jmp     .load
+.load_lap:
         jmp     .find
+.find_lap:
+        inc     rsi
+.find:                                  ; while between paths (the cuts)
+        cmp     byte [rsi], 0
+        je      .find_lap
 .path:
         mov     r14, rsi                ; this path
         mov     qword [launch_rights], R_ALL   ; no "@": every permission
         mov     qword [launch_pfx_len], 0      ; and no label prefix
-.path_end:
-        mov     al, [rsi]
-        test    al, al
-        je      .open
+        jmp     .path_end
+.path_end_lap:
         cmp     al, '@'
         je      .permissions
         inc     rsi
-        jmp     .path_end
+.path_end:                              ; while the path goes on
+        mov     al, [rsi]
+        test    al, al
+        jnz     .path_end_lap
+        jmp     .open
 .permissions:                           ; program.bin@pmlg: p screen, m memory, l read files, g write files
         mov     byte [rsi], 0
         inc     rsi
         mov     qword [launch_rights], 0
-.letter:
-        mov     al, [rsi]
-        test    al, al
-        je      .open
+        jmp     .letter
+.letter_lap:
         inc     rsi
         mov     edx, R_SCREEN
         cmp     al, 'p'
@@ -485,14 +498,16 @@ start:
         jmp     .letter
 .grant:
         or      [launch_rights], rdx
-        jmp     .letter
+.letter:                                ; while there are permission letters
+        mov     al, [rsi]
+        test    al, al
+        jnz     .letter_lap
+        jmp     .open
 .prefix:                                ; @...:hex = a label prefix for files (hex: the command line has no emojis)
         lea     rdi, [launch_raw]
         xor     ecx, ecx
-.prefix_pair:
-        movzx   eax, byte [rsi]
-        test    eax, eax
-        jz      .prefix_read
+        jmp     .prefix_pair
+.prefix_pair_lap:
         call    hex_digit
         js      fail_args
         mov     edx, eax
@@ -506,7 +521,10 @@ start:
         inc     ecx
         cmp     ecx, HOST_PATH
         jae     fail_args
-        jmp     .prefix_pair
+.prefix_pair:                           ; while there are hex pairs
+        movzx   eax, byte [rsi]
+        test    eax, eax
+        jnz     .prefix_pair_lap
 .prefix_read:
         test    ecx, ecx
         jz      fail_args
@@ -550,7 +568,9 @@ start:
         mov     [mp_pfx_len], rax
         call    make_process
         inc     r13
-        jmp     .load
+.load:                                  ; while there are arguments left
+        cmp     r13, [nargs]
+        jb      .load_lap
 .loaded:
 
         call    run_all
@@ -617,12 +637,14 @@ hex_digit:
 
 ; Copies the zero-terminated text at rsi to rdi; leaves rdi just past it.
 put_text:
+        jmp     .char
+.char_lap:
+        stosb
+.char:                                  ; while the character is not the end
         lodsb
         test    al, al
-        jz      @f
-        stosb
-        jmp     put_text
-@@:     ret
+        jnz     .char_lap
+        ret
 
 ; ---------------------------------------------------------------- processes
 ; A cabin for the program at mp_prog (mp_words words), child of mp_parent (0 = the kernel, the mother of
@@ -653,8 +675,9 @@ make_process:
         mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
         mov     qword [rbx + P_SIZE], DATA_SIZE
         mov     r15d, 1                 ; one microporter per door
-.gate:
-        mov     rcx, r15                ; the kernel's children hang from the door porters (node = door)
+        jmp     .gate
+.gate_lap:
+        mov     rcx, r15               ; the kernel's children hang from the door porters (node = door)
         mov     rax, [mp_parent]
         test    rax, rax
         jz      @f
@@ -673,8 +696,9 @@ make_process:
 @@:     call    new_node
         mov     [rbx + P_GATES + r15*8 - 8], rax
         inc     r15d
+.gate:                                  ; while there are doors left
         cmp     r15d, DOORS
-        jbe     .gate
+        jbe     .gate_lap
         mov     rax, [nprocs]           ; into the table, which doubles when full
         cmp     rax, [capprocs]
         jb      .room
@@ -710,45 +734,15 @@ make_process:
 ; ---------------------------------------------------------------- scheduler
 ; Runs every process in [procs] until all of them end. Least attained service; the turn comes from
 ; the priority gap and the switch cost (see the header).
+; While someone can run or waits for a signature: give a turn to the least served one, or, if all of
+; them wait for a signature nobody can give, answer those.
 run_all:
-schedule:
-        mov     rbx, -1                 ; least served process
-        mov     r8, FOREVER             ; its service
-        mov     r9, FOREVER             ; service of the next least served
-        mov     qword [asleep], 0
-        xor     ecx, ecx
-.scan:
-        cmp     rcx, [nprocs]
-        jae     .chosen
-        mov     rsi, [procs]
-        mov     rsi, [rsi + rcx*8]
-        cmp     qword [rsi + P_DONE], 0
-        jne     .next_proc
-        cmp     qword [rsi + P_WAITING], 0
-        je      @f
-        inc     qword [asleep]          ; waiting for a signature: it does not run
-        jmp     .next_proc
-@@:     mov     rax, [rsi + P_SERVED]
-        cmp     rax, r8
-        jae     .not_least              ; ties keep the lower process number
-        mov     r9, r8
-        mov     r8, rax
-        mov     rbx, rsi
-        jmp     .next_proc
-.not_least:
-        cmp     rax, r9
-        jae     .next_proc
-        mov     r9, rax
-.next_proc:
-        inc     rcx
-        jmp     .scan
-.chosen:
+        jmp     .schedule
+.turn:
         cmp     rbx, -1
         jne     .someone
-        cmp     qword [asleep], 0
-        je      .all_done
         call    nobody_signs            ; everyone left waits for a signature nobody can give
-        jmp     schedule
+        jmp     .schedule
 .someone:
         mov     rax, FOREVER            ; alone: run to the end
         cmp     r9, rax
@@ -781,14 +775,48 @@ schedule:
         add     [rbx + P_SERVED], rax
         add     [clock], rax
         cmp     qword [rbx + P_DONE], 0
-        je      schedule
+        je      .schedule
         call    close_files             ; whatever the process left open
         call    orphans                 ; its children and what waited for its signature go up
         cmp     byte [quiet], 0
-        jne     schedule
+        jne     .schedule
         call    report
-        jmp     schedule
-.all_done:
+.schedule:                              ; while someone can run or waits for a signature
+        mov     rbx, -1                 ; least served process
+        mov     r8, FOREVER             ; its service
+        mov     r9, FOREVER             ; service of the next least served
+        mov     qword [asleep], 0
+        xor     ecx, ecx
+        jmp     .scan
+.scan_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_DONE], 0
+        jne     .next_proc
+        cmp     qword [rsi + P_WAITING], 0
+        je      @f
+        inc     qword [asleep]          ; waiting for a signature: it does not run
+        jmp     .next_proc
+@@:     mov     rax, [rsi + P_SERVED]
+        cmp     rax, r8
+        jae     .not_least              ; ties keep the lower process number
+        mov     r9, r8
+        mov     r8, rax
+        mov     rbx, rsi
+        jmp     .next_proc
+.not_least:
+        cmp     rax, r9
+        jae     .next_proc
+        mov     r9, rax
+.next_proc:
+        inc     rcx
+.scan:                                  ; while there are processes to look at
+        cmp     rcx, [nprocs]
+        jb      .scan_lap
+        cmp     rbx, -1
+        jne     .turn
+        cmp     qword [asleep], 0
+        jne     .turn
         ret
 
 ; ---------------------------------------------------------------- calibration
@@ -817,7 +845,8 @@ calibrate:
         call    calib_one               ; warm-up
         call    calib_two
         mov     qword [rounds], 0       ; in memory: run_process uses every register
-.pair:
+        jmp     .pair
+.pair_lap:
         call    calib_one
         mov     [cycles_one], rax
         mov     rax, [clock]
@@ -846,28 +875,31 @@ calibrate:
         mov     rax, [rounds]
         movsd   [pair_c + rax*8], xmm2
         inc     qword [rounds]
+.pair:                                  ; while pairs are missing
         cmp     qword [rounds], CALIB_PAIRS
-        jb      .pair
+        jb      .pair_lap
         ; median: sort the pairs (insertion sort) and take the middle one
         mov     ecx, 1
-.sort:
-        cmp     ecx, CALIB_PAIRS
-        jae     .sorted
+        jmp     .sort
+.sort_lap:
         movsd   xmm0, [pair_c + rcx*8]
         mov     edx, ecx
-.shift:
+        jmp     .shift
+.shift_lap:
+        movsd   [pair_c + rdx*8], xmm1
+        dec     edx
+.shift:                                 ; while the one on the left is bigger
         test    edx, edx
         jz      .place
         movsd   xmm1, [pair_c + rdx*8 - 8]
         comisd  xmm1, xmm0
-        jbe     .place
-        movsd   [pair_c + rdx*8], xmm1
-        dec     edx
-        jmp     .shift
+        ja      .shift_lap
 .place:
         movsd   [pair_c + rdx*8], xmm0
         inc     ecx
-        jmp     .sort
+.sort:                                  ; while pairs are unsorted
+        cmp     ecx, CALIB_PAIRS
+        jb      .sort_lap
 .sorted:
         invoke  GetEnvironmentVariableA, calib_env, env_value, 31   ; JANAX_CALIBRACION: show every pair
         test    eax, eax
@@ -876,15 +908,17 @@ calibrate:
         lea     rsi, [calib_text]
         call    put_text
         mov     qword [rounds], 0
-.show:
+        jmp     .show
+.show_lap:
         mov     byte [rdi], ' '
         inc     rdi
         mov     rax, [rounds]
         movsd   xmm0, [pair_c + rax*8]
         call    put_hundredths
         inc     qword [rounds]
+.show:                                  ; while pairs are left to show
         cmp     qword [rounds], CALIB_PAIRS
-        jb      .show
+        jb      .show_lap
         mov     word [rdi], 0A0Dh
         add     rdi, 2
         lea     rax, [line]
@@ -918,15 +952,15 @@ cost_key:
         mov     eax, 811C9DC5h
         lea     rsi, [code_begin]
         lea     rdx, [code_end]
-.fnv:
-        cmp     rsi, rdx
-        jae     .hashed
+        jmp     .fnv
+.fnv_lap:
         movzx   ecx, byte [rsi]
         xor     eax, ecx
         imul    eax, eax, 01000193h
         inc     rsi
-        jmp     .fnv
-.hashed:
+.fnv:                                   ; while there is code left
+        cmp     rsi, rdx
+        jb      .fnv_lap
         movzx   ecx, byte [motor]       ; the cost is in instructions, and each engine runs them at its pace
         xor     eax, ecx
         imul    eax, eax, 01000193h
@@ -937,7 +971,8 @@ cost_key:
         cmp     eax, 80000004h
         jb      .done
         mov     esi, 80000002h
-.leaf:
+        jmp     .leaf
+.leaf_lap:
         mov     eax, esi
         cpuid
         mov     [rdi], eax
@@ -946,8 +981,9 @@ cost_key:
         mov     [rdi + 12], edx
         add     rdi, 16
         inc     esi
+.leaf:                                  ; while name leaves are left
         cmp     esi, 80000004h
-        jbe     .leaf
+        jbe     .leaf_lap
 .done:
         pop     rdi rbx
         ret
