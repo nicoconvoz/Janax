@@ -370,7 +370,8 @@ pdp="$salida/pdp_$motor"; rm -rf "$pdp" "$salida/pdp_fasm"; mkdir -p "$pdp" "$sa
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 entiende=(); no_entiende=0
 # PDP mirrors the repository, folders and all, so relative includes find their files.
-for f in "$proyecto"/so/pruebas/*.inc; do
+fd -e inc --exclude build . "$proyecto/escalon0" "$proyecto/so" | while IFS= read -r f; do
+  f=$(cd "$(dirname "$f")" && pwd)/$(basename "$f")
   cp "$f" "$pdp/$(etiqueta "PDP/${f#$proyecto/}")"
 done
 for f in "$proyecto"/escalon0/pruebas/*.jsm "$aqui"/*.jsm "$raiz"/bancos/*.jsm "$raiz"/pdp/ensamblador/ensamblador.jsm; do
