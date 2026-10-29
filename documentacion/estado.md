@@ -72,3 +72,6 @@ del intérprete (2×), mismos resultados. La suite corre con los dos motores: 76
 2026-10-29 — Todo en while (Capitán): `jwhile`/`jwhilez`/`jwend`, único bucle del idioma, armado como while rotado
 (cada vuelta cuesta lo mismo; +2 instrucciones por bucle). Programas, bancos y calibración convertidos; el motor de
 rutinas resuelve en el lugar el salto que cae sobre una condición. Escalón 0 113/113 (PC), Janax OS 80/80.
+2026-10-29 — El núcleo x86 en while: 61 bucles + 2 del motor, todos while rotado; `bucles.pl` lo verifica en la suite
+(82/82). Misma salida que antes en seis escenarios; sin costo medible (una medición que decía lo contrario dependía del
+orden de las corridas). Falta el escalón 0: 27 bucles.

@@ -1407,9 +1407,8 @@ ventanilla:
         lea     rdi, [busy]
         rep     stosb
         xor     ecx, ecx
-.mark:
-        cmp     rcx, r15
-        jae     .marked
+        jmp     .mark
+.mark_lap:
         mov     rax, rcx
         shl     rax, 5
         mov     edx, [rbp + rax]        ; kind (low half; the high half carries a file handle)
@@ -1448,7 +1447,9 @@ ventanilla:
         mov     qword [rbp + rax + 24], -1
 .mark_next:
         inc     rcx
-        jmp     .mark
+.mark:
+        cmp     rcx, r15
+        jb      .mark_lap
 .marked:
         cmp     qword [must_wait], 0    ; something waits for the parent: the whole touch waits
         je      .no_wait
@@ -1463,42 +1464,46 @@ ventanilla:
 
         ; pass 1: a kind that already has its screen keeps it
         mov     edx, 1
-.keep:
-        cmp     edx, KINDS
-        ja      .kept
+        jmp     .keep
+.keep_lap:
         cmp     byte [present + rdx], 0
         je      .keep_next
         xor     ecx, ecx
-.look:
-        cmp     rcx, [nscreens]
-        jae     .keep_next
+        jmp     .look
+.look_lap:
         cmp     [tune + rcx*8], rdx
         je      .found
         inc     ecx
-        jmp     .look
+.look:
+        cmp     rcx, [nscreens]
+        jb      .look_lap
+        jmp     .keep_next
 .found:
         mov     byte [busy + rcx], 1
         mov     byte [present + rdx], 2 ; placed
 .keep_next:
         inc     edx
-        jmp     .keep
+.keep:
+        cmp     edx, KINDS
+        jbe     .keep_lap
 .kept:
 
         ; pass 2: the rest take a screen that got nothing this round (it changes tuning) or open one
         mov     edx, 1
-.place:
-        cmp     edx, KINDS
-        ja      .placed
+        jmp     .place
+.place_lap:
         cmp     byte [present + rdx], 1
         jne     .place_next
         xor     ecx, ecx
-.free:
-        cmp     rcx, [nscreens]
-        jae     .open
+        jmp     .free
+.free_lap:
         cmp     byte [busy + rcx], 0
         je      .retune
         inc     ecx
-        jmp     .free
+.free:
+        cmp     rcx, [nscreens]
+        jb      .free_lap
+        jmp     .open
 .retune:
         mov     [tune + rcx*8], rdx
         mov     byte [busy + rcx], 1
@@ -1511,21 +1516,24 @@ ventanilla:
         inc     qword [nscreens]
 .place_next:
         inc     edx
-        jmp     .place
+.place:
+        cmp     edx, KINDS
+        jbe     .place_lap
 .placed:
 
         ; every screen used this round serves its whole batch
         xor     r12d, r12d
-.serve:
-        cmp     r12, [nscreens]
-        jae     .served
+        jmp     .serve
+.serve_lap:
         cmp     byte [busy + r12], 0
         je      .serve_next
         mov     rax, [tune + r12*8]
         call    qword [serve_table + rax*8 - 8]
 .serve_next:
         inc     r12
-        jmp     .serve
+.serve:
+        cmp     r12, [nscreens]
+        jb      .serve_lap
 .served:
 
         ; answers back into the queue (the cabin may have moved); the queue is left empty
@@ -1557,9 +1565,8 @@ serve_write:
         mov     r14, [rbx + P_SIZE]
         xor     r8, r8                  ; total bytes
         xor     ecx, ecx
-.length:
-        cmp     rcx, r15
-        jae     .lengths
+        jmp     .length
+.length_lap:
         mov     rax, rcx
         shl     rax, 5
         cmp     dword [rbp + rax], 1
@@ -1579,7 +1586,9 @@ serve_write:
         mov     qword [rbp + rax + 24], -1
 .length_next:
         inc     rcx
-        jmp     .length
+.length:
+        cmp     rcx, r15
+        jb      .length_lap
 .lengths:
         test    r8, r8
         jz      .done
@@ -1591,9 +1600,8 @@ serve_write:
         mov     rdi, rax
         mov     r13, [rbx + P_DATA]
         xor     r12d, r12d
-.copy:
-        cmp     r12, r15
-        jae     .copied
+        jmp     .copy
+.copy_lap:
         mov     rax, r12
         shl     rax, 5
         cmp     dword [rbp + rax], 1
@@ -1606,7 +1614,9 @@ serve_write:
         rep     movsb
 .copy_next:
         inc     r12
-        jmp     .copy
+.copy:
+        cmp     r12, r15
+        jb      .copy_lap
 .copied:
         invoke  WriteFile, [hout], [wbuf], [wtotal], written, 0
         inc     qword [hostcalls]
@@ -1621,9 +1631,8 @@ serve_grow:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 2
@@ -1644,7 +1653,9 @@ serve_grow:
         mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -1656,9 +1667,8 @@ serve_shrink:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 3
@@ -1685,7 +1695,9 @@ serve_shrink:
         mov     [rbp + r13 + 24], rax
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -1725,9 +1737,8 @@ serve_open:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 4
@@ -1759,7 +1770,9 @@ serve_open:
         mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -1803,8 +1816,8 @@ normalize_bytes:
 ; r8 = node -> r8 = 1 if norm_label (norm_len bytes) starts with the label prefix of every porter on the
 ; way up to the root (porters without a prefix allow any label), else 0. Uses r9, r10, r11, rsi, rdi, rcx.
 prefix_allows:
-        cmp     r8, -1
-        je      .yes
+        jmp     .climb
+.climb_lap:
         cmp     r8, [nnodes]
         jae     .no
         imul    r10, r8, NODE_SIZE
@@ -1821,7 +1834,9 @@ prefix_allows:
         jne     .no
 .up:
         mov     r8, [r10 + N_PARENT]
-        jmp     prefix_allows
+.climb:                                 ; while below the root
+        cmp     r8, -1
+        jne     .climb_lap
 .yes:
         mov     r8d, 1
         ret
@@ -1871,7 +1886,8 @@ label_path:
         stosb
         lea     rsi, [norm_label]
         mov     rcx, r13
-.hex:
+        jmp     .hex
+.hex_lap:
         lodsb
         movzx   edx, al
         shr     eax, 4
@@ -1882,7 +1898,9 @@ label_path:
         mov     al, [hex_lower + rdx]
         stosb
         dec     rcx
-        jnz     .hex
+.hex:                                   ; while label bytes are left
+        test    rcx, rcx
+        jnz     .hex_lap
         mov     byte [rdi], 0
         mov     eax, 1
         jmp     .out
@@ -1897,9 +1915,8 @@ serve_delete:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 12
@@ -1923,7 +1940,9 @@ serve_delete:
         mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -1935,9 +1954,8 @@ serve_rename:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 13
@@ -1972,7 +1990,9 @@ serve_rename:
         mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -1985,9 +2005,8 @@ serve_list:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 14
@@ -1995,7 +2014,9 @@ serve_list:
         call    list_one
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -2028,6 +2049,8 @@ list_one:
         cmp     rax, -1
         je      .answer                 ; nothing in the folder
         mov     r14, rax
+        mov     eax, 1                  ; the first entry came with FindFirstFileA
+        jmp     .entries
 .entry:
         test    dword [find_data], FILE_ATTRIBUTE_DIRECTORY
         jnz     .another
@@ -2059,6 +2082,7 @@ list_one:
 .another:
         invoke  FindNextFileA, r14, find_data
         inc     qword [hostcalls]
+.entries:                               ; while the host has another entry
         test    eax, eax
         jnz     .entry
 .full:
@@ -2080,10 +2104,8 @@ list_decode:
         lea     rsi, [find_data + FIND_NAME]
         lea     rdi, [norm_label]
         xor     ecx, ecx
-.pair:
-        movzx   eax, byte [rsi]
-        test    eax, eax
-        jz      .end
+        jmp     .pair
+.pair_lap:
         call    .nibble
         js      .no
         mov     edx, eax
@@ -2097,7 +2119,10 @@ list_decode:
         inc     ecx
         cmp     ecx, NORM_CAP
         jae     .no
-        jmp     .pair
+.pair:                                  ; while there are hex pairs
+        movzx   eax, byte [rsi]
+        test    eax, eax
+        jnz     .pair_lap
 .end:
         test    ecx, ecx
         jz      .no
@@ -2134,9 +2159,8 @@ macro serve_io name, kind, api {
           push    r12 r13 r14 r15
           sub     rsp, 8
           xor     r12d, r12d
-  .one:
-          cmp     r12, r15
-          jae     .done
+          jmp     .one
+  .one_lap:
           mov     r13, r12
           shl     r13, 5
           cmp     dword [rbp + r13], kind
@@ -2166,7 +2190,9 @@ macro serve_io name, kind, api {
           mov     qword [rbp + r13 + 24], -1
   .next:
           inc     r12
-          jmp     .one
+  .one:                                 ; while entries are left
+          cmp     r12, r15
+          jb      .one_lap
   .done:
           add     rsp, 8
           pop     r15 r14 r13 r12
@@ -2181,9 +2207,8 @@ serve_close:
         push    r12 r13 r14 r15
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, r15
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     r13, r12
         shl     r13, 5
         cmp     dword [rbp + r13], 7
@@ -2202,7 +2227,9 @@ serve_close:
         mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, r15
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
@@ -2226,13 +2253,14 @@ file_slot:
         mov     rdx, [rbx + P_FILES]
         mov     rcx, [rbx + P_NFILES]
         xor     eax, eax
-.look:
-        cmp     rax, rcx
-        jae     .grow
+        jmp     .look
+.look_lap:
         cmp     qword [rdx + rax*8], 0
         je      .done
         inc     rax
-        jmp     .look
+.look:
+        cmp     rax, rcx
+        jb      .look_lap
 .grow:
         mov     [slot_free], rcx        ; the first new slot
         lea     rax, [rcx + rcx]
@@ -2257,21 +2285,20 @@ file_slot:
         mov     rax, [slot_cap]
         mov     [rbx + P_NFILES], rax
         mov     rax, [slot_free]
+        jmp     .done
+.fail:
+        mov     rax, -1
 .done:
         add     rsp, 8
         ret
-.fail:
-        mov     rax, -1
-        jmp     .done
 
 ; Closes every file the process in rbx left open.
 close_files:
         push    r12
         sub     rsp, 8
         xor     r12d, r12d
-.one:
-        cmp     r12, [rbx + P_NFILES]
-        jae     .done
+        jmp     .one
+.one_lap:
         mov     rax, [rbx + P_FILES]
         mov     rax, [rax + r12*8]
         test    rax, rax
@@ -2281,7 +2308,9 @@ close_files:
         mov     qword [rax + r12*8], 0
 .next:
         inc     r12
-        jmp     .one
+.one:
+        cmp     r12, [rbx + P_NFILES]
+        jb      .one_lap
 .done:
         add     rsp, 8
         pop     r12
@@ -2290,9 +2319,8 @@ close_files:
 ; eax = 1 if the rcx bytes at rsi are valid UTF-8 (the standard's rule: no overlong forms, no
 ; surrogates, nothing above U+10FFFF), else 0.
 utf8_ok:
-.next:
-        test    rcx, rcx
-        jz      .yes
+        jmp     .next
+.next_lap:
         movzx   eax, byte [rsi]
         inc     rsi
         dec     rcx
@@ -2338,9 +2366,8 @@ utf8_ok:
         inc     rsi
         dec     rcx
         dec     edx
-.continuation:
-        test    edx, edx
-        jz      .next
+        jmp     .continuation
+.continuation_lap:
         movzx   eax, byte [rsi]
         cmp     al, 80h
         jb      .no
@@ -2349,7 +2376,12 @@ utf8_ok:
         inc     rsi
         dec     rcx
         dec     edx
-        jmp     .continuation
+.continuation:
+        test    edx, edx
+        jnz     .continuation_lap
+.next:
+        test    rcx, rcx
+        jnz     .next_lap
 .yes:
         mov     eax, 1
         ret
@@ -2456,8 +2488,8 @@ new_node:
 ; r8 = node, r9 = rights (any of them is enough) -> r8 = 1 if every porter up to the root is alive and
 ; has one of them, else 0. Uses r10.
 gate_allows:
-        cmp     r8, -1
-        je      .yes
+        jmp     .climb
+.climb_lap:
         cmp     r8, [nnodes]
         jae     .no
         imul    r10, r8, NODE_SIZE
@@ -2467,7 +2499,9 @@ gate_allows:
         test    [r10 + N_RIGHTS], r9
         jz      .no
         mov     r8, [r10 + N_PARENT]
-        jmp     gate_allows
+.climb:                                 ; while below the root
+        cmp     r8, -1
+        jne     .climb_lap
 .yes:
         mov     r8d, 1
         ret
@@ -2487,9 +2521,8 @@ mine:
         test    r11, r11
         jz      .done
         mov     r11, [rbx + P_GATES + r11*8 - 8]
-.climb:
-        cmp     r8, -1
-        je      .done
+        jmp     .climb
+.climb_lap:
         imul    r10, r8, NODE_SIZE
         add     r10, [nodes]
         cmp     qword [r10 + N_ALIVE], 0
@@ -2497,7 +2530,10 @@ mine:
         cmp     r8, r11
         je      .yes
         mov     r8, [r10 + N_PARENT]
-        jmp     .climb
+.climb:
+        cmp     r8, -1
+        jne     .climb_lap
+        jmp     .done
 .yes:
         mov     r9d, 1
 .done:
@@ -2509,9 +2545,8 @@ macro serve_gate name, kind, handler {
           push    r12 r13 r14 r15
           sub     rsp, 8
           xor     r12d, r12d
-  .one:
-          cmp     r12, r15
-          jae     .done
+          jmp     .one
+  .one_lap:
           mov     r13, r12
           shl     r13, 5
           cmp     dword [rbp + r13], kind
@@ -2519,7 +2554,9 @@ macro serve_gate name, kind, handler {
           call    handler
   .next:
           inc     r12
-          jmp     .one
+  .one:                                 ; while entries are left
+          cmp     r12, r15
+          jb      .one_lap
   .done:
           add     rsp, 8
           pop     r15 r14 r13 r12
@@ -2666,9 +2703,8 @@ signature:
         jmp     .out
 .search:
         xor     esi, esi
-.look:
-        cmp     rsi, [nrecs]
-        jae     .ask
+        jmp     .look
+.look_lap:
         imul    r9, rsi, REC_SIZE
         add     r9, [recs]
         cmp     [r9 + R_CHILD], rbx
@@ -2686,7 +2722,9 @@ signature:
         jmp     .out
 .next:
         inc     rsi
-        jmp     .look
+.look:
+        cmp     rsi, [nrecs]
+        jb      .look_lap
 .ask:
         call    new_record
 .wait:
@@ -2751,9 +2789,8 @@ orphans:
         jz      .climb_start
         mov     qword [rbx + P_SHADOW], 1
         xor     esi, esi
-.rec:
-        cmp     rsi, [nrecs]
-        jae     .climb_start
+        jmp     .rec
+.rec_lap:
         imul    r12, rsi, REC_SIZE
         add     r12, [recs]
         cmp     [r12 + R_SIGNER], rbx
@@ -2768,12 +2805,13 @@ orphans:
         dec     qword [r8 + P_WAITING]
 .rec_next:
         inc     rsi
-        jmp     .rec
+.rec:
+        cmp     rsi, [nrecs]
+        jb      .rec_lap
 .climb_start:
         mov     r12, rbx                ; itself too: a shadow it may have left is checked from below
-.climb:
-        test    r12, r12
-        jz      .done
+        jmp     .climb
+.climb_lap:
         cmp     qword [r12 + P_SHADOW], 1
         jne     .up
         push    rbx
@@ -2784,17 +2822,21 @@ orphans:
         jnz     .up
         mov     qword [r12 + P_SHADOW], 2          ; gone
         mov     ecx, 1
-.revoke:                                ; its porters go with it
+        jmp     .revoke
+.revoke_lap:                            ; its porters go with it
         mov     rax, [r12 + P_GATES + rcx*8 - 8]
         imul    rax, NODE_SIZE
         add     rax, [nodes]
         mov     qword [rax + N_ALIVE], 0
         inc     ecx
+.revoke:                                ; while doors are left
         cmp     ecx, DOORS
-        jbe     .revoke
+        jbe     .revoke_lap
 .up:
         mov     r12, [r12 + P_PARENT]
-        jmp     .climb
+.climb:
+        test    r12, r12
+        jnz     .climb_lap
 .done:
         pop     r12 rsi
         ret
@@ -2802,24 +2844,29 @@ orphans:
 ; eax = 1 if some process still running descends from rbx.
 living_below:
         xor     ecx, ecx
-.one:
-        cmp     rcx, [nprocs]
-        jae     .none
+        jmp     .one
+.one_lap:
         mov     r8, [procs]
         mov     r8, [r8 + rcx*8]
         cmp     qword [r8 + P_DONE], 0
         jne     .next
-.up:
+        jmp     .up
+.up_lap:
+        cmp     r8, rbx
+        je      .found
+.up:                                    ; while an ancestor is left
         mov     r8, [r8 + P_PARENT]
         test    r8, r8
-        jz      .next
-        cmp     r8, rbx
-        jne     .up
+        jnz     .up_lap
+        jmp     .next
+.found:
         mov     eax, 1
         ret
 .next:
         inc     rcx
-        jmp     .one
+.one:
+        cmp     rcx, [nprocs]
+        jb      .one_lap
 .none:
         xor     eax, eax
         ret
@@ -2845,9 +2892,8 @@ shadow_decides:
 ; Everyone left is waiting for a signature that nobody running can give: rejected, so nobody waits forever.
 nobody_signs:
         xor     ecx, ecx
-.one:
-        cmp     rcx, [nrecs]
-        jae     .done
+        jmp     .one
+.one_lap:
         imul    r9, rcx, REC_SIZE
         add     r9, [recs]
         cmp     qword [r9 + R_STATE], 0
@@ -2857,7 +2903,9 @@ nobody_signs:
         dec     qword [r8 + P_WAITING]
 .next:
         inc     rcx
-        jmp     .one
+.one:
+        cmp     rcx, [nrecs]
+        jb      .one_lap
 .done:
         ret
 
@@ -2954,9 +3002,8 @@ family_pending:
         mov     r11, rdx                ; room
         xor     eax, eax                ; how many
         xor     ecx, ecx
-.one:
-        cmp     rcx, [nrecs]
-        jae     .done
+        jmp     .one
+.one_lap:
         imul    r9, rcx, REC_SIZE
         add     r9, [recs]
         cmp     [r9 + R_SIGNER], rbx
@@ -2976,7 +3023,9 @@ family_pending:
         inc     eax
 .next:
         inc     rcx
-        jmp     .one
+.one:
+        cmp     rcx, [nrecs]
+        jb      .one_lap
 .done:
         mov     [rbp + r13 + 24], rax
         ret
@@ -3025,7 +3074,8 @@ report:
         stosd
         mov     rax, [rbx + P_REGS]
         mov     ecx, 16
-.digit:
+        jmp     .digit
+.digit_lap:
         rol     rax, 4
         mov     edx, eax
         and     edx, 15
@@ -3033,7 +3083,9 @@ report:
         mov     [rdi], dl
         inc     rdi
         dec     ecx
-        jnz     .digit
+.digit:                                 ; while hex digits are left
+        test    ecx, ecx
+        jnz     .digit_lap
         mov     eax, ' t='
         stosd
         dec     rdi                     ; ' t=' is three characters
@@ -3050,25 +3102,33 @@ report:
 put_decimal:
         mov     ecx, 10
         xor     r8d, r8d
-.divide:
+        jmp     .divide
+.divide_lap:
+.divide:                                ; while digits are left after taking one (0 still has one)
         xor     edx, edx
         div     rcx
         add     dl, '0'
         push    rdx
         inc     r8d
         test    rax, rax
-        jnz     .divide
-.emit:
+        jnz     .divide_lap
+        jmp     .emit
+.emit_lap:
         pop     rax
         mov     [rdi], al
         inc     rdi
         dec     r8d
-        jnz     .emit
+.emit:                                  ; while digits are left to write
+        test    r8d, r8d
+        jnz     .emit_lap
         ret
 
 zero_mode:                              ; started by the firmware: not built yet
+        jmp     .forever
+.forever_lap:
         hlt
-        jmp     zero_mode
+.forever:                               ; while (true)
+        jmp     .forever_lap
 
 no_programs:
 fail_args:                              ; also a launch argument that does not parse

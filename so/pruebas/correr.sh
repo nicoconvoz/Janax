@@ -286,5 +286,14 @@ ventanilla: *" familia_abuelo
 unset carpeta
 done
 
+# The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
+for f in janaxos.asm rutinas.inc; do
+  if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
+    ok=$((ok + 1))
+  else
+    echo "MAL  $f tiene bucles que no son while rotado:"; echo "$r" | grep -v ' while '; mal=$((mal + 1))
+  fi
+done
+
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

@@ -336,7 +336,8 @@ Reemplaza al gemelo nativo de arriba (que generaba código de máquina y lo guar
   lo gana cada motor: intérprete, traductores y rutinas.
 - Todos los programas, bancos y la calibración del núcleo pasaron a while. Las esperas ("hacé y después
   preguntá") se escriben poniendo la condición antes de entrar.
-- Falta llevar los bucles del propio núcleo x86 a la misma forma.
+- El núcleo x86 también: sus 61 bucles (y los 2 del motor de rutinas) son while rotados, y la suite lo
+  verifica con `so/herramientas/bucles.pl`. Falta el escalón 0 (27 bucles).
 
 ## 2026-10-29 — Los bucles (Capitán)
 

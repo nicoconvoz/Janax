@@ -39,7 +39,7 @@ for my $i (0 .. $#lines) {
   my $prev = $top - 1; $prev-- while $prev >= 0 && $lines[$prev] =~ /^\s*(;.*)?$/;
   my $entry = $prev >= 0 && ($lines[$prev] =~ s/;.*//r) =~ /^\s*jmp\s+([\w.@]+)\s*$/ ? $1 : undef;
   my $rotated = 0;
-  if ($entry && $op ne 'jmp') {
+  if ($entry) {                        # an unconditional jump back here is a while (true)
     my $en = $entry =~ /^\./ ? ($global // '') . $entry : $entry;
     $rotated = exists $where{$en} && $where{$en} > $top && $where{$en} <= $i;
   }

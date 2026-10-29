@@ -31,9 +31,8 @@ decode_program:
         jz      .done
         mov     rdi, rax
         xor     ebx, ebx                ; word index
-.word:
-        cmp     rbx, r12
-        jae     .final
+        jmp     .word
+.word_lap:
         mov     eax, [rsi + rbx*4]
         mov     rcx, rbx
         shl     rcx, 4
@@ -82,7 +81,9 @@ decode_program:
         mov     [rcx + 12], eax
 .next:
         inc     rbx
-        jmp     .word
+.word:
+        cmp     rbx, r12
+        jb      .word_lap
 .final:
         mov     rcx, r12
         shl     rcx, 4
@@ -91,9 +92,8 @@ decode_program:
         ; A jjmp that lands on a jjz/jjnz decides that condition in place. The entry jump of every
         ; (rotated) while lands on its condition, so entering a loop pays one routine less.
         xor     ebx, ebx
-.thread:
-        cmp     rbx, r12
-        jae     .threaded
+        jmp     .thread
+.thread_lap:
         mov     rcx, rbx
         shl     rcx, 4
         add     rcx, rdi
@@ -113,7 +113,9 @@ decode_program:
 @@:     mov     [rcx], r8
 .thread_next:
         inc     rbx
-        jmp     .thread
+.thread:
+        cmp     rbx, r12
+        jb      .thread_lap
 .threaded:
         mov     rax, rdi
 .done:

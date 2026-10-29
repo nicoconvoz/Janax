@@ -162,13 +162,45 @@ de registros de 16 bytes, uno por palabra más uno final:
 - `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
   y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
 
+## Todo bucle del núcleo es un while rotado (Capitán: "todo en while")
+
+Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
+
+```
+        jmp     .pregunta
+.pregunta_lap:
+        ...cuerpo...
+.pregunta:                    ; while <condición>
+        cmp/test ...
+        jcc     .pregunta_lap
+```
+
+- La pregunta conserva el nombre de la etiqueta vieja, así que todo "seguí con la próxima vuelta" de
+  adentro del cuerpo es ahora un salto hacia adelante a la pregunta.
+- Un bucle de "hacé y después preguntá" es un while cuya pregunta incluye el trabajo (como
+  `while (*d++ = *s++);` en C): su cuerpo queda vacío y el salto de entrada cae en la instrucción
+  siguiente. Cuesta un salto al entrar y nada por vuelta.
+- El modo cero (sin construir) es un `while (true)`: su regreso es incondicional.
+- **Se verifica, no se promete**: `so/herramientas/bucles.pl` lista cada bucle (un salto hacia atrás que
+  se queda en su rutina; uno que va a otra rutina, como el regreso de una rutina del intérprete a su
+  despachador, no es un bucle) y falla si alguno no tiene la forma. La suite lo corre sobre `janaxos.asm`
+  y `rutinas.inc`: 61 + 2 bucles, todos while rotado.
+- `so/herramientas/rotar.pl` es la regla mecánica que convirtió 28 de esos bucles (los que preguntaban
+  arriba con una sola comparación); los otros 35 se reescribieron a mano.
+- Verificado además: el núcleo da **exactamente la misma salida** que antes del cambio en seis
+  escenarios de planificación; nombre del programa entre comillas (carpeta con un espacio); calibración
+  visible con `JANAX_CALIBRACION`.
+- Costo: ninguno medible. Bancos de la ventanilla, núcleo viejo contra nuevo: lote ~82 contra ~80 ms,
+  uno por uno ~185 contra ~194 ms, dentro del ruido. ⚠️ Una primera medición daba el nuevo 15–40 ms
+  más lento: corría siempre primero el viejo. Con el orden alternado, la diferencia desapareció.
+
 ## Cómo se prueba
 
 ```bash
 bash so/pruebas/correr.sh
 ```
 
-80/80: **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+82/82 (80 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -268,8 +300,8 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 - Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
   lanzamiento lee el archivo de nuevo). Medir qué rutinas pesan más y fundir las parejas frecuentes
   (por ejemplo `jsub` + `jjnz`, el final de casi todo while) en una sola rutina.
-- El núcleo mismo (`janaxos.asm`, x86) todavía tiene bucles en las dos formas: llevarlos todos a la forma
-  del while rotado.
+- El escalón 0 todavía tiene 27 bucles fuera de la forma del while rotado (intérprete 4, traductor
+  x86-64 15, traductor ARM64 8, contados con `bucles.pl`).
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
