@@ -279,6 +279,19 @@ Es la idea que ordena todas las anteriores:
   mientras, el hijo duerme. Si el padre termina sin firmar, el pedido sube al abuelo (los huérfanos se
   adoptan, como en Unix), para que nadie quede esperando para siempre.
 
+## 2026-10-29 — La sombra del padre (Capitán)
+
+Pregunta de seguridad: si el kernel firma al adoptar un huérfano, ¿no se vuelve una vía para saltarse
+permisos y políticas? (Verificado: los porteros se revisan antes de pedir la firma y otra vez al ejecutar,
+así que la adopción no podía dar permisos; pero sí perdía el criterio del padre.)
+
+> "Queda el fantasma del primer padre después del kernel: desaparece el padre pero no su sombra, que solo
+> guarda los permisos para esa línea de abajo, y solo desaparece la sombra si no hay procesos debajo."
+
+- Un padre que termina con descendientes vivos deja su **sombra**: firma lo que sus permisos permiten y
+  rechaza el resto. Nadie más decide por esa línea: ni el abuelo ni el kernel.
+- La sombra se disuelve (y sus porteros con ella) cuando no queda ningún proceso debajo.
+
 ## 2026-10-29 — Los bucles (Capitán)
 
 > "Me gusta más el while que el for."
