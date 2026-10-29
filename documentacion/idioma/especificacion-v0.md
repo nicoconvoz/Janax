@@ -37,8 +37,33 @@ Si el idioma no los fija, cada procesador hace lo suyo y dos pares calculan dist
 | Desborde de suma/multiplicación | da la vuelta | da la vuelta | **da la vuelta** (complemento a dos) |
 | Orden de memoria entre hilos | estricto (TSO) | relajado | **relajado + barreras explícitas** en el idioma |
 
+## Codificación v0 (implementada en `escalon0/`)
+
+Palabra de 32 bits, little-endian: `op[0..7] rd[8..11] ra[12..15] imm16[16..31]`; `rb` = los 4 bits bajos de
+`imm16`. Los saltos son relativos a la instrucción siguiente, en palabras, con signo. La distribución de
+campos es **criterio**, no medición: se revisa cuando el traductor muestre qué conviene.
+
+| op | Instrucción | Efecto |
+|---|---|---|
+| 00 | `jhalt` | termina; el resultado es `j0` |
+| 01 | `jldi rd, imm` | `rd = imm` con signo (−32768…32767) |
+| 02–04 | `jadd`/`jsub`/`jmul rd, ra, rb` | da la vuelta en 64 bits |
+| 05 | `jdiv rd, ra, rb` | con signo, trunca a cero; `/0 = 0`; `MIN / −1 = MIN` |
+| 06–08 | `jshl`/`jshr`/`jsar rd, ra, rb` | usa los 6 bits bajos de `rb` |
+| 09–0B | `jand`/`jor`/`jxor rd, ra, rb` | bit a bit |
+| 0C | `jjmp destino` | salto |
+| 0D–0E | `jjz`/`jjnz rd, destino` | salta si `rd` es / no es cero |
+| 0F | `jshi rd, imm` | `rd = (rd << 16) | imm`: arma constantes de 64 bits |
+
+Opcode desconocido y salirse del programa son errores del intérprete (códigos 1 y 2), nunca comportamiento
+indefinido.
+
+La notación con prefijo `j` es la del escalón 0 (macros de FASM, para no chocar con x86); el texto propio
+del idioma sigue abierto.
+
 ## Abierto para decidir con el Capitán
 
 - Nombre y forma de escribir las instrucciones (el "texto" del idioma).
+- Memoria: cargar/guardar, pila y llamadas (no existen todavía en v0).
 - Cómo se llama al sistema (ventana, GPU, red, disco): por un conjunto fijo de llamadas al arranque.
 - Si el idioma tiene flotantes para gráficos (donde el determinismo no importa) o solo punto fijo.
