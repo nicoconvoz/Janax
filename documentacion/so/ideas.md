@@ -240,6 +240,15 @@ Es la idea que ordena todas las anteriores:
 - Riesgo: una cadena larga cuesta en cada pedido. Se resuelve guardando el veredicto y descartándolo solo
   cuando algo de la cadena cambia (por evento, como todo).
 
+> "Jerarquía, pero a la vez ramas del mismo nivel. Una rama puede tener 3, 2, 5 o un número indeterminado
+> de hijos en la misma línea, para que bajar no sea tan costoso." (Capitán, 2026-10-29)
+
+- Con muchos hijos por nivel el árbol queda **bajo**: su altura crece como el logaritmo de la cantidad de
+  porteros (el truco de los árboles B). El costo de recorrerlo es la altura, así que las ramas anchas lo
+  mantienen chico, y eso hace innecesario el veredicto guardado de arriba.
+- Decisión que sale de acá: **verificar = subir del microportero a la raíz**; un portero revocado en el
+  camino niega. Revocar cuesta una marca y la cascada sale gratis.
+
 ## Cómo se prueba cada modo (regla de la casa: cero emuladores)
 
 - **Simbiosis**: se prueba ya, en esta PC, como un programa más (igual que los traductores).
