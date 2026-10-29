@@ -29,6 +29,24 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    corre un bucle de calibración solo y de a dos con `c = 0`, el mínimo de tres corridas cada uno, y
    despeja cuántas instrucciones cuesta un cambio. La variable `JANAX_CAMBIO` lo fija (para pruebas).
 
+6. **La ventanilla (Capitán: "mínimas pantallas posibles, cada una cambia de sintonía; los pedidos se
+   sintonizan en una pantalla y con el tiempo pueden cambiar de pantalla y de sintonía").**
+   - El programa deja su **cola de pedidos** en su camarote y toca la ventanilla **una sola vez** con la
+     instrucción nueva `jsys rd, ra` (op `16h`): `ra` = dirección de la cola, `rd` = pedidos atendidos.
+     Cola: cantidad (8 bytes) y una entrada de 32 bytes por pedido: tipo, `a`, `b`, respuesta. Al volver,
+     cada entrada tiene su respuesta y la cantidad queda en 0.
+   - Tipos: **1 escribir** (`a` = dirección, `b` = bytes; responde `b`), **2 crecer** el camarote (`a` =
+     bytes; responde el tamaño nuevo), **3 achicarlo** (`a` = bytes; responde el tamaño nuevo, nunca por
+     debajo del fin de la cola, para que las respuestas tengan dónde ir). Otro tipo: responde −1.
+   - Una **pantalla** atiende una sola sintonía y la atiende **en lote**: todas las escrituras de la ronda
+     salen en **una sola llamada** al anfitrión.
+   - **Mínimas pantallas**: un tipo que ya tiene su pantalla la conserva; uno que no tiene toma una
+     pantalla que no recibió nada en esta ronda (la **resintoniza**), y solo si no hay ninguna se abre otra.
+     Nunca hay más pantallas que tipos distintos al mismo tiempo. Cada ronda es un toque de la ventanilla:
+     ningún reloj.
+   - Dentro de un tipo se respeta el orden de la cola.
+   - Al terminar, si hubo pedidos: `ventanilla: pantallas=N resintonias=R llamadas al anfitrion=L pedidos=P`.
+
 Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
 cuando termina:
 
@@ -45,7 +63,12 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-7/7. Los casos (con `c` fijado, salvo uno): un proceso; **lo corto primero** (un proceso largo puesto primero en la fila y dos cortos:
+14/14. Ventanilla: escribir; **tres escrituras en una sola llamada**; **dos sintonías en la misma ronda →
+dos pantallas** (y una escritura en el viejo tope prueba que el camarote creció); **la pantalla cambia de
+sintonía** entre rondas (1 pantalla, 1 resintonización); tipo desconocido (−1, sin pantalla); cola fuera del
+camarote (código 5); achicar no pasa el fin de la cola.
+
+Planificador (con `c` fijado, salvo uno): un proceso; **lo corto primero** (un proceso largo puesto primero en la fila y dos cortos:
 terminan los cortos en t=6 y t=9 y el largo en t=3010, exactamente lo que da la regla calculada a mano); un
 proceso que rompe solo lo suyo; **camarotes separados** (dos procesos escriben la misma dirección mientras
 se alternan y cada uno lee su propio valor); **la prioridad decide el turno** (con `c = 4` la fórmula da
@@ -75,5 +98,8 @@ mejorar si hace falta.
 
 - Medición de `c` más estable (hoy varía entre arranques).
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
-- La ventanilla (llamadas al sistema por colas), la campana (0..1), los porteros y la cubierta.
+- Ventanilla: más tipos de pedido (archivos), y medir cuánto ahorra el lote con programas reales.
+- `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode
+  desconocido.
+- La campana (0..1), los porteros y la cubierta.
 - Modo cero.

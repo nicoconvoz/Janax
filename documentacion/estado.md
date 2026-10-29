@@ -42,3 +42,6 @@ LAS sin turno fijo. 5/5 (corredor arreglado: leía el código de `tr`). Medido: 
 cada ~2 instrucciones (~7,5 ns por cambio). Detalle en documentacion/so/janaxos.md.
 2026-10-28 — Turno por prioridad real (Capitán): t = ((D+c)+sqrt((D+c)^2+4cs))/2, c medido al arrancar (5,8–9,7 instr).
 Dos procesos iguales: 4.570 → ~2.200–2.500 ms (igual que secuencial). 7/7.
+2026-10-29 — Ventanilla de Janax OS (Capitán: mínimas pantallas, sintonía cambiante): instrucción jsys (op 16h), cola de
+pedidos en el camarote, pantallas por sintonía atendidas en lote (3 escrituras = 1 llamada al anfitrión), resintonización por
+ronda sin reloj, camarote que crece y se achica. 14/14 OS + 141/141 escalón 0.

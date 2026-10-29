@@ -35,7 +35,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-OP_COUNT    = 16h
+OP_COUNT    = 17h
 FOREVER     = 7FFFFFFFFFFFFFFFh
 
 ; process (cabin) layout
@@ -49,7 +49,8 @@ P_DEPTH  = 168
 P_SERVED = 176                  ; instructions executed so far (attained service)
 P_DONE   = 184
 P_CODE   = 192
-PROC_SIZE = 200
+P_SIZE   = 200                  ; bytes of data memory (the cabin grows and shrinks)
+PROC_SIZE = 208
 
 section '.data' data readable writeable
 
@@ -67,6 +68,26 @@ section '.data' data readable writeable
   mode_line db 'modo: simbiosis', 13, 10
   MODE_LEN = $ - mode_line
   line      db 96 dup 0
+
+  ; the window
+  KINDS     = 3                 ; kinds of request: write, grow, shrink
+  requests  dq 0
+  hostcalls dq 0
+  retunes   dq 0
+  nscreens  dq 0
+  tune      dq KINDS dup 0      ; the kind each screen is tuned to
+  busy      db KINDS dup 0      ; screens that got requests this round
+  present   db KINDS + 1 dup 0  ; kinds present this round (index = kind)
+  sys_rd    dq 0
+  queue_addr dq 0
+  queue_end dq 0
+  wtotal    dq 0
+  wbuf      dq 0
+  move_new  dq 0
+  t_screens db 'ventanilla: pantallas=', 0
+  t_retunes db ' resintonias=', 0
+  t_host    db ' llamadas al anfitrion=', 0
+  t_reqs    db ' pedidos=', 0
 
   swcost    dq 0.0              ; cost of a switch, in instructions (double)
   quiet     db 0                ; 1 while calibrating: no report lines
@@ -105,7 +126,7 @@ section '.data' data readable writeable
 
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
-            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret
+            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys
 
 section '.text' code readable executable
 
@@ -266,13 +287,48 @@ start:
         jz      fail_file
         mov     [rbx + P_RET], rax
         mov     qword [rbx + P_REGS + 15*8], DATA_SIZE   ; j15 starts at the top of its data memory
+        mov     qword [rbx + P_SIZE], DATA_SIZE
         add     rbx, PROC_SIZE
         inc     r13
         jmp     .load
 .loaded:
 
         call    run_all
+        cmp     qword [requests], 0
+        je      .quit
+        lea     rdi, [line]             ; "ventanilla: pantallas=.. resintonias=.. llamadas al anfitrion=.. pedidos=.."
+        lea     rsi, [t_screens]
+        call    put_text
+        mov     rax, [nscreens]
+        call    put_decimal
+        lea     rsi, [t_retunes]
+        call    put_text
+        mov     rax, [retunes]
+        call    put_decimal
+        lea     rsi, [t_host]
+        call    put_text
+        mov     rax, [hostcalls]
+        call    put_decimal
+        lea     rsi, [t_reqs]
+        call    put_text
+        mov     rax, [requests]
+        call    put_decimal
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+.quit:
         invoke  ExitProcess, 0
+
+; Copies the zero-terminated text at rsi to rdi; leaves rdi just past it.
+put_text:
+        lodsb
+        test    al, al
+        jz      @f
+        stosb
+        jmp     put_text
+@@:     ret
 
 ; ---------------------------------------------------------------- scheduler
 ; Runs every process in [procs] until all of them end. Least attained service; the turn comes from
@@ -618,7 +674,9 @@ macro memop name, size, align_check, is_load, body {
   name:
           movsx   rax, r9w
           add     rax, [r14 + r8*8]
-          cmp     rax, DATA_SIZE - size
+          mov     rcx, [rbx + P_SIZE]     ; this cabin's size: it grows and shrinks
+          sub     rcx, size
+          cmp     rax, rcx
           ja      fail_mem
     if align_check
           test    al, 7
@@ -654,6 +712,359 @@ op_ret:
         dec     rdi
         mov     r12, [rsi + rdi*8]
         jmp     next
+
+op_sys:
+        mov     [sys_rd], r11
+        mov     rax, [r14 + r8*8]       ; queue address
+        call    ventanilla
+        mov     r15, [rbx + P_DATA]     ; the cabin may have moved
+        cmp     rax, -1
+        je      fail_mem
+        mov     r11, [sys_rd]
+        mov     [r14 + r11*8], rax      ; requests attended
+        jmp     next
+
+; ---------------------------------------------------------------- the window (ventanilla)
+; Capitan: "as few screens as possible; each screen changes its tuning; requests are tuned to a screen
+; and over time can change screen and tuning".
+;  - A screen serves requests of one kind (its tuning) and serves them as a batch: every "write" of the
+;    round leaves in a single call to the host.
+;  - A kind that already has its screen keeps it. A kind without one takes a screen that got nothing
+;    this round (the screen changes its tuning), and only if there is none a new screen opens. So there
+;    are never more screens than kinds present at the same time.
+;  - Rounds are touches of the window (events), never a clock.
+; Kinds: 1 write (a = address, b = bytes; answer b), 2 grow (a = bytes; answer the new size),
+; 3 shrink (a = bytes; answer the new size, never below the end of the queue). Others: answer -1.
+; Within a kind the order of the queue is kept.
+;
+; rbx = process, rax = queue address. Returns rax = requests attended, or -1 if the queue is outside
+; the cabin.
+ventanilla:
+        push    rsi rdi rbp r12 r13 r14 r15
+        mov     r12, rax
+        mov     [queue_addr], rax
+        mov     r14, [rbx + P_SIZE]
+        test    r12b, 7
+        jnz     .bad
+        mov     rax, r14
+        sub     rax, 8
+        cmp     r12, rax
+        ja      .bad
+        mov     r13, [rbx + P_DATA]
+        mov     r15, [r13 + r12]        ; how many requests
+        mov     rax, r14
+        sub     rax, r12
+        sub     rax, 8
+        shr     rax, 5
+        cmp     r15, rax
+        ja      .bad                    ; the entries would go past the cabin
+        test    r15, r15
+        jz      .none
+        add     [requests], r15
+        mov     rax, r15
+        shl     rax, 5
+        lea     rax, [rax + r12 + 8]
+        mov     [queue_end], rax
+        mov     rdx, r15
+        shl     rdx, 5
+        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .bad
+        mov     rbp, rax                ; private copy of the entries
+        mov     rdi, rbp
+        mov     rsi, [queue_addr]
+        lea     rsi, [r13 + rsi + 8]
+        mov     rcx, r15
+        shl     rcx, 5
+        rep     movsb
+
+        ; kinds present this round; unknown ones are answered -1 right away
+        xor     eax, eax
+        mov     ecx, KINDS + 1
+        lea     rdi, [present]
+        rep     stosb
+        mov     ecx, KINDS
+        lea     rdi, [busy]
+        rep     stosb
+        xor     ecx, ecx
+.mark:
+        cmp     rcx, r15
+        jae     .marked
+        mov     rax, rcx
+        shl     rax, 5
+        mov     rdx, [rbp + rax]        ; kind
+        lea     r8, [rdx - 1]
+        cmp     r8, KINDS - 1
+        ja      .unknown
+        mov     byte [present + rdx], 1
+        jmp     .mark_next
+.unknown:
+        mov     qword [rbp + rax + 24], -1
+.mark_next:
+        inc     rcx
+        jmp     .mark
+.marked:
+
+        ; pass 1: a kind that already has its screen keeps it
+        mov     edx, 1
+.keep:
+        cmp     edx, KINDS
+        ja      .kept
+        cmp     byte [present + rdx], 0
+        je      .keep_next
+        xor     ecx, ecx
+.look:
+        cmp     rcx, [nscreens]
+        jae     .keep_next
+        cmp     [tune + rcx*8], rdx
+        je      .found
+        inc     ecx
+        jmp     .look
+.found:
+        mov     byte [busy + rcx], 1
+        mov     byte [present + rdx], 2 ; placed
+.keep_next:
+        inc     edx
+        jmp     .keep
+.kept:
+
+        ; pass 2: the rest take a screen that got nothing this round (it changes tuning) or open one
+        mov     edx, 1
+.place:
+        cmp     edx, KINDS
+        ja      .placed
+        cmp     byte [present + rdx], 1
+        jne     .place_next
+        xor     ecx, ecx
+.free:
+        cmp     rcx, [nscreens]
+        jae     .open
+        cmp     byte [busy + rcx], 0
+        je      .retune
+        inc     ecx
+        jmp     .free
+.retune:
+        mov     [tune + rcx*8], rdx
+        mov     byte [busy + rcx], 1
+        inc     qword [retunes]
+        jmp     .place_next
+.open:
+        mov     rcx, [nscreens]
+        mov     [tune + rcx*8], rdx
+        mov     byte [busy + rcx], 1
+        inc     qword [nscreens]
+.place_next:
+        inc     edx
+        jmp     .place
+.placed:
+
+        ; every screen used this round serves its whole batch
+        xor     r12d, r12d
+.serve:
+        cmp     r12, [nscreens]
+        jae     .served
+        cmp     byte [busy + r12], 0
+        je      .serve_next
+        mov     rax, [tune + r12*8]
+        cmp     rax, 1
+        jne     @f
+        call    serve_write
+        jmp     .serve_next
+@@:     cmp     rax, 2
+        jne     @f
+        call    serve_grow
+        jmp     .serve_next
+@@:     call    serve_shrink
+.serve_next:
+        inc     r12
+        jmp     .serve
+.served:
+
+        ; answers back into the queue (the cabin may have moved); the queue is left empty
+        mov     r13, [rbx + P_DATA]
+        mov     rax, [queue_addr]
+        mov     qword [r13 + rax], 0
+        lea     rdi, [r13 + rax + 8]
+        mov     rsi, rbp
+        mov     rcx, r15
+        shl     rcx, 5
+        rep     movsb
+        invoke  VirtualFree, rbp, 0, MEM_RELEASE
+        mov     rax, r15
+        jmp     .out
+.none:
+        xor     eax, eax
+        jmp     .out
+.bad:
+        mov     rax, -1
+.out:
+        pop     r15 r14 r13 r12 rbp rdi rsi
+        ret
+
+; Screen tuned to "write": every valid write of the round in one call to the host.
+; rbp = entries, r15 = how many.
+serve_write:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        mov     r14, [rbx + P_SIZE]
+        xor     r8, r8                  ; total bytes
+        xor     ecx, ecx
+.length:
+        cmp     rcx, r15
+        jae     .lengths
+        mov     rax, rcx
+        shl     rax, 5
+        cmp     qword [rbp + rax], 1
+        jne     .length_next
+        mov     rdx, [rbp + rax + 8]    ; a
+        mov     r9, [rbp + rax + 16]    ; b
+        cmp     rdx, r14
+        ja      .invalid
+        mov     r10, r14
+        sub     r10, rdx
+        cmp     r9, r10
+        ja      .invalid
+        add     r8, r9
+        mov     [rbp + rax + 24], r9
+        jmp     .length_next
+.invalid:
+        mov     qword [rbp + rax + 24], -1
+.length_next:
+        inc     rcx
+        jmp     .length
+.lengths:
+        test    r8, r8
+        jz      .done
+        mov     [wtotal], r8
+        invoke  VirtualAlloc, 0, [wtotal], MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .done
+        mov     [wbuf], rax
+        mov     rdi, rax
+        mov     r13, [rbx + P_DATA]
+        xor     r12d, r12d
+.copy:
+        cmp     r12, r15
+        jae     .copied
+        mov     rax, r12
+        shl     rax, 5
+        cmp     qword [rbp + rax], 1
+        jne     .copy_next
+        mov     rcx, [rbp + rax + 24]
+        cmp     rcx, -1
+        je      .copy_next
+        mov     rsi, [rbp + rax + 8]
+        add     rsi, r13
+        rep     movsb
+.copy_next:
+        inc     r12
+        jmp     .copy
+.copied:
+        invoke  WriteFile, [hout], [wbuf], [wtotal], written, 0
+        inc     qword [hostcalls]
+        invoke  VirtualFree, [wbuf], 0, MEM_RELEASE
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "grow": each request adds a (rounded up to 8) bytes to the cabin.
+serve_grow:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     qword [rbp + r13], 2
+        jne     .next
+        mov     rax, [rbp + r13 + 8]
+        add     rax, 7
+        jc      .invalid
+        and     rax, -8
+        add     rax, [rbx + P_SIZE]
+        jc      .invalid
+        mov     r14, rax                ; new size
+        call    move_cabin
+        test    rax, rax
+        jz      .invalid
+        mov     [rbp + r13 + 24], r14
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "shrink": each request gives back a (rounded up to 8) bytes, never below the end of
+; the queue, so the answers still have somewhere to go.
+serve_shrink:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+.one:
+        cmp     r12, r15
+        jae     .done
+        mov     r13, r12
+        shl     r13, 5
+        cmp     qword [rbp + r13], 3
+        jne     .next
+        mov     rax, [rbp + r13 + 8]
+        add     rax, 7
+        jc      .floor
+        and     rax, -8
+        mov     r14, [rbx + P_SIZE]
+        sub     r14, rax
+        jc      .floor
+        cmp     r14, [queue_end]
+        jae     .size_ok
+.floor:
+        mov     r14, [queue_end]
+.size_ok:
+        cmp     r14, [rbx + P_SIZE]
+        jae     .unchanged
+        call    move_cabin
+        test    rax, rax
+        jz      .unchanged
+.unchanged:
+        mov     rax, [rbx + P_SIZE]
+        mov     [rbp + r13 + 24], rax
+.next:
+        inc     r12
+        jmp     .one
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; The cabin moves to fresh memory of r14 bytes (new part zeroed by the host). Returns rax = 0 if the
+; host has no memory for it (the cabin stays as it was).
+move_cabin:
+        sub     rsp, 8
+        invoke  VirtualAlloc, 0, r14, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .done
+        mov     rdi, rax
+        mov     rsi, [rbx + P_DATA]
+        mov     rcx, [rbx + P_SIZE]
+        cmp     rcx, r14
+        jbe     @f
+        mov     rcx, r14                ; shrinking: keep only what fits
+@@:     rep     movsb
+        mov     [move_new], rax
+        invoke  VirtualFree, qword [rbx + P_DATA], 0, MEM_RELEASE
+        mov     rax, [move_new]
+        mov     [rbx + P_DATA], rax
+        mov     [rbx + P_SIZE], r14
+.done:
+        add     rsp, 8
+        ret
 
 ; ---------------------------------------------------------------- output
 ; "P<n> codigo=<c> j0=<hex> t=<clock>" for the process in rbx
@@ -736,6 +1147,7 @@ section '.idata' import data readable writeable
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
          VirtualAlloc, 'VirtualAlloc',\
+         VirtualFree, 'VirtualFree',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\

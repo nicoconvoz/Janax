@@ -58,6 +58,7 @@ campos es **criterio**, no medición: se revisa cuando el traductor muestre qué
 | 12–13 | `jldb`/`jstb rd, ra, imm` | carga (sin signo) / guarda un byte |
 | 14 | `jcall destino` | guarda la vuelta en la **pila de retorno separada** y salta |
 | 15 | `jret` | vuelve a la última llamada |
+| 16 | `jsys rd, ra` | **solo dentro de Janax OS**: toca la ventanilla con la cola de pedidos en `ra`; `rd` = atendidos (ver `documentacion/so/janaxos.md`) |
 
 Memoria de datos: 1 MiB que arranca en cero (criterio); `j15` arranca en el tope y se usa como puntero de
 pila de datos. La pila de retorno está aparte y el programa no la puede leer ni pisar: así ningún error

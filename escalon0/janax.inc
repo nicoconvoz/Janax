@@ -47,3 +47,7 @@ macro jstb rd, ra, imm   { j_word 13h, rd, ra, imm }
 ; Calls use a separate return stack the program cannot read or overwrite.
 macro jcall target       { j_word 14h, 0, 0, ((target) - $ - 4) / 4 }
 macro jret               { j_word 15h, 0, 0, 0 }
+
+; Janax OS window: rd = requests attended; ra = address of the request queue in the cabin.
+; Queue: count (8 bytes), then count entries of 32 bytes: type, a, b, result. Only inside Janax OS.
+macro jsys rd, ra        { j_word 16h, rd, ra, 0 }
