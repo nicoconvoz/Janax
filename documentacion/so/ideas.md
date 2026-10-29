@@ -265,6 +265,20 @@ Es la idea que ordena todas las anteriores:
   macro **firme como alguien distinto del que pide** hace falta que un proceso tenga a otro proceso arriba:
   **procesos que lanzan procesos**, con el padre dueño del macroportero del hijo. Ese es el paso previo.
 
+## 2026-10-29 — La familia de procesos (Capitán)
+
+> "Proceso madre: kernel. Proceso padre, proceso hijo, proceso hijo (hermano), proceso nieto, proceso
+> bisnieto."
+
+- **El kernel es la madre** de todos; los procesos lanzados al arrancar son sus hijos directos (padres).
+- Un proceso **lanza** a otro desde un archivo del sistema (pedido nuevo de la ventanilla): los programas
+  pasan a ser archivos con etiqueta.
+- **El árbol de porteros copia al de la familia**: los microporteros del hijo cuelgan de los del padre, así
+  nadie tiene más permisos que quien lo lanzó.
+- **Multifirma**: un pedido importante del hijo queda en espera hasta que el padre lo firme o lo rechace;
+  mientras, el hijo duerme. Si el padre termina sin firmar, el pedido sube al abuelo (los huérfanos se
+  adoptan, como en Unix), para que nadie quede esperando para siempre.
+
 ## 2026-10-29 — Los bucles (Capitán)
 
 > "Me gusta más el while que el for."
