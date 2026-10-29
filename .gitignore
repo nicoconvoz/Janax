@@ -2,3 +2,4 @@ log_*.txt
 *.log
 .atl/.skill-registry.cache.json
 escalon0/build/
+escalon0/bancos/*.bin
