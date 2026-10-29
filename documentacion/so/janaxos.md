@@ -25,9 +25,16 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    **t = ((D + c) + √((D + c)² + 4·c·s)) / 2**, nunca menos que `D + 1`. Un recién llegado con poco
    servicio entra casi enseguida; dos iguales reciben turnos que crecen como `√(c·s)` y el desperdicio cae
    solo. Con `c = 0` es el LAS puro.
-5. **El núcleo mide `c` al arrancar** en la máquina donde le toca vivir (idea 2: aprender del entorno):
-   corre un bucle de calibración solo y de a dos con `c = 0`, el mínimo de tres corridas cada uno, y
-   despeja cuántas instrucciones cuesta un cambio. La variable `JANAX_CAMBIO` lo fija (para pruebas).
+5. **El núcleo mide `c` en la máquina donde le toca vivir y lo recuerda** (idea 2: aprender del entorno).
+   - Medición **A-B-A**: el bucle de calibración solo, de a dos con `c = 0`, y solo otra vez; la base es el
+     promedio de las dos corridas "solo", que encierran a la del medio y cancelan la deriva de frecuencia
+     del procesador. Nueve pares (criterio: impar, para la mediana), cada uno con su `c`, y se queda la
+     **mediana**. Durante la medición el hilo queda fijo en un núcleo y con prioridad máxima, tras una
+     corrida de calentamiento.
+   - Tarda ~1,3 s, así que se **recuerda**: el archivo `calibracion` de la carpeta del sistema guarda `c` con
+     la **huella del código del núcleo** y el **nombre del procesador**; mientras coincidan, el arranque lo
+     reusa y dice `(recordado)` (~150 ms). `JANAX_CAMBIO` lo fija (pruebas); `JANAX_CALIBRACION=ver` muestra
+     los nueve pares.
 
 6. **La ventanilla (Capitán: "mínimas pantallas posibles, cada una cambia de sintonía; los pedidos se
    sintonizan en una pantalla y con el tiempo pueden cambiar de pantalla y de sintonía").**
@@ -138,7 +145,7 @@ terminan los cortos en t=6 y t=9 y el largo en t=3010, exactamente lo que da la 
 proceso que rompe solo lo suyo; **camarotes separados** (dos procesos escriben la misma dirección mientras
 se alternan y cada uno lee su propio valor); **la prioridad decide el turno** (con `c = 4` la fórmula da
 turnos de 4 y 8, calculados a mano); **costo medido** (los resultados no cambian aunque `c` cambie de
-máquina en máquina); y sin programas.
+máquina en máquina); **costo recordado** (el arranque siguiente no vuelve a medir); y sin programas.
 
 ⚠️ El corredor tenía un error: leía el código de salida de `tr` y no del núcleo, así que los códigos no se
 verificaban. Lo destapó el caso "sin programas"; corregido.
@@ -156,12 +163,14 @@ Programa `suma_100m` (300 millones de instrucciones), intérprete del escalón 0
 
 Con el turno por prioridad, compartir el procesador cuesta lo mismo que correr uno detrás del otro, y
 siguen siendo justos: los dos terminan separados por menos de 40.000 instrucciones sobre 600 millones.
-El `c` medido varió entre **5,8 y 9,7 instrucciones** en tres arranques (ruido de Windows): anotado, a
-mejorar si hace falta.
+**El instrumento de `c` mentía** y se arregló midiendo: con el mínimo de tres corridas de ~2 ms dio entre
+**0,00 y 9,7** según el arranque, y dentro de un mismo arranque los pares iban de 0,05 a 6. Con A-B-A,
+corridas 8 veces más largas, hilo fijo y mediana de nueve pares: mediana entre **1,17 y 1,64** en cinco
+arranques seguidos. Entre arranques sigue variando un poco (una corrida dentro de la suite de pruebas dio
+3,14): por eso se mide una vez y se recuerda.
 
 ## Pendiente
 
-- Medición de `c` más estable (hoy varía entre arranques).
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
 - Ventanilla: medir cuánto ahorra el lote con programas reales.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el

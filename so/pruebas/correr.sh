@@ -82,6 +82,11 @@ costo de cambio: *.* instrucciones (medido)
 P* codigo=0 j0=000000000000000[79] t=*
 P* codigo=0 j0=000000000000000[79] t=34" camarote_7 camarote_9
 
+# The next boot on the same machine and kernel remembers it instead of measuring again.
+caso "costo recordado" "" 0 "modo: simbiosis
+costo de cambio: *.* instrucciones (recordado)
+P0 codigo=0 j0=000000000000002A t=2" 02_ldi
+
 caso "sin programas" 0 4 "$fijo0"
 
 # --- the window: requests tuned to the fewest screens possible, served in batches ---

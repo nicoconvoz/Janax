@@ -172,6 +172,8 @@ section '.data' data readable writeable
   quiet     db 0                ; 1 while calibrating: no report lines
   switches  dq 0                ; process switches made by the scheduler
   env_name  db 'JANAX_CAMBIO', 0
+  calib_env db 'JANAX_CALIBRACION', 0
+  calib_text db 'calibracion (c de cada par, ordenados):', 0
   env_value db 32 dup 0
   four      dq 4.0
   half      dq 0.5
@@ -180,11 +182,18 @@ section '.data' data readable writeable
   COST_TEXT_LEN = $ - cost_text
   measured_text db ' instrucciones (medido)', 13, 10
   MEASURED_LEN = $ - measured_text
+  recalled_text db ' instrucciones (recordado)', 13, 10
+  RECALLED_LEN = $ - recalled_text
+  calib_name db '\calibracion', 0
+  COST_KEY_LEN = 4 + 48         ; kernel fingerprint + processor name
+  COST_REC_LEN = COST_KEY_LEN + 8
+  cost_rec  db COST_REC_LEN dup 0
+  cost_read db COST_REC_LEN dup 0
   fixed_text db ' instrucciones (fijado)', 13, 10
   FIXED_LEN = $ - fixed_text
 
   ; calibration program: 2 * CALIB_LOOPS instructions of a tight loop (jsub / jjnz)
-  CALIB_LOOPS = 40000h          ; criterion: long enough (~0.5 M instructions) to dwarf timer noise
+  CALIB_LOOPS = 200000h         ; criterion: ~4 M instructions per run, so a clock speed change weighs little
   calib_prog dd 01h or (1 shl 8) or ((CALIB_LOOPS shr 16) shl 16)          ; jldi j1, high
              dd 0Fh or (1 shl 8) or ((CALIB_LOOPS and 0FFFFh) shl 16)      ; jshi j1, low
              dd 01h or (2 shl 8) or (1 shl 16)                             ; jldi j2, 1
@@ -202,12 +211,20 @@ section '.data' data readable writeable
   instr_two   dq 0
   switch_two  dq 0
   rounds      dq 0
+  CALIB_PAIRS = 9               ; criterion, not a measurement: an odd count for a median
+  pair_c      dq CALIB_PAIRS dup 0
+  thread      dq 0
+  old_affinity dq 0
+  old_priority dq 0
+  THREAD_PRIORITY_TIME_CRITICAL = 15
 
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
             dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys
 
 section '.text' code readable executable
+
+code_begin:                             ; code_begin..code_end feeds the kernel's fingerprint
 
 start:
         mov     [entry_rcx], rcx
@@ -222,7 +239,22 @@ start:
         mov     [hout], rax
         invoke  WriteFile, [hout], mode_line, MODE_LEN, written, 0
 
-        ; --- cost of a switch: fixed by JANAX_CAMBIO, or measured here ---
+        ; --- the system's own folder for files ---
+        invoke  GetEnvironmentVariableA, dir_env, dir_path, HOST_PATH - 1
+        test    eax, eax
+        jnz     .dir_named
+        lea     rsi, [dir_default]
+        lea     rdi, [dir_path]
+        call    put_text
+        mov     byte [rdi], 0
+        lea     rax, [dir_path]
+        sub     rdi, rax
+        mov     rax, rdi
+.dir_named:
+        mov     [dir_len], rax
+        invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
+
+        ; --- cost of a switch: fixed by JANAX_CAMBIO, remembered from an earlier boot, or measured ---
         invoke  GetEnvironmentVariableA, env_name, env_value, 31
         test    eax, eax
         jz      .measure
@@ -244,25 +276,19 @@ start:
         invoke  WriteFile, [hout], fixed_text, FIXED_LEN, written, 0
         jmp     .cost_known
 .measure:
+        call    cost_key
+        call    recall_cost
+        test    eax, eax
+        jz      .calibrate
+        call    print_cost
+        invoke  WriteFile, [hout], recalled_text, RECALLED_LEN, written, 0
+        jmp     .cost_known
+.calibrate:
         call    calibrate
+        call    save_cost
         call    print_cost
         invoke  WriteFile, [hout], measured_text, MEASURED_LEN, written, 0
 .cost_known:
-
-        ; --- the system's own folder for files ---
-        invoke  GetEnvironmentVariableA, dir_env, dir_path, HOST_PATH - 1
-        test    eax, eax
-        jnz     .dir_named
-        lea     rsi, [dir_default]
-        lea     rdi, [dir_path]
-        call    put_text
-        mov     byte [rdi], 0
-        lea     rax, [dir_path]
-        sub     rdi, rax
-        mov     rax, rdi
-.dir_named:
-        mov     [dir_len], rax
-        invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
 
         ; --- porters: the root and one porter per door (nodes 0..3); processes hang from the doors ---
         mov     rcx, -1
@@ -641,9 +667,12 @@ schedule:
 
 ; ---------------------------------------------------------------- calibration
 ; Measures the cost of a switch on this machine, in instructions: the same program once alone and
-; twice side by side with c = 0 (switching as often as possible). Each measurement is the minimum of
-; three runs, which filters out interruptions by the host.
+; twice side by side with c = 0 (switching as often as possible), as pairs measured back to back.
+; Each pair gives its own c and the median of the pairs is kept: one run interrupted by the host can
+; not drag it. During the measurement the thread stays on one core at top priority (the host would
+; otherwise move it or pause it in the middle), after a warm-up run that is not counted.
 calibrate:
+        sub     rsp, 8
         mov     rax, [procs]
         mov     [real_procs], rax
         mov     rax, [nprocs]
@@ -652,68 +681,221 @@ calibrate:
         mov     [procs], rax
         mov     byte [quiet], 1
         mov     qword [swcost], 0
-        mov     rax, FOREVER
+        invoke  GetCurrentThread
+        mov     [thread], rax
+        invoke  SetThreadAffinityMask, [thread], 1
+        mov     [old_affinity], rax
+        invoke  GetThreadPriority, [thread]
+        mov     [old_priority], rax
+        invoke  SetThreadPriority, [thread], THREAD_PRIORITY_TIME_CRITICAL
+        call    calib_one               ; warm-up
+        call    calib_two
+        mov     qword [rounds], 0       ; in memory: run_process uses every register
+.pair:
+        call    calib_one
         mov     [cycles_one], rax
-        mov     [cycles_two], rax
-        mov     qword [rounds], 3       ; in memory: run_process uses every register
-.round:
-        mov     qword [nprocs], 1
-        call    calib_reset
-        rdtsc
-        shl     rdx, 32
-        or      rax, rdx
-        mov     [tsc_start], rax
-        call    run_all
-        rdtsc
-        shl     rdx, 32
-        or      rax, rdx
-        sub     rax, [tsc_start]
-        cmp     rax, [cycles_one]
-        jae     @f
-        mov     [cycles_one], rax
-@@:     mov     rax, [clock]
+        mov     rax, [clock]
         mov     [instr_one], rax
-        mov     qword [nprocs], 2
-        call    calib_reset
-        rdtsc
-        shl     rdx, 32
-        or      rax, rdx
-        mov     [tsc_start], rax
-        call    run_all
-        rdtsc
-        shl     rdx, 32
-        or      rax, rdx
-        sub     rax, [tsc_start]
-        cmp     rax, [cycles_two]
-        jae     @f
+        call    calib_two
         mov     [cycles_two], rax
-@@:     mov     rax, [clock]
+        mov     rax, [clock]
         mov     [instr_two], rax
         mov     rax, [switches]
         mov     [switch_two], rax
-        dec     qword [rounds]
-        jnz     .round
-        ; per instruction a = cycles_one / instr_one; per switch = (cycles_two - instr_two * a) / switches
+        call    calib_one               ; alone again: A-B-A, the two "alone" runs bracket the middle one
+        add     rax, [cycles_one]
+        shr     rax, 1
+        mov     [cycles_one], rax       ; so a drift of the clock speed cancels out
+        ; a = cycles per instruction; this pair's c = ((cycles_two - instr_two * a) / switches) / a
         cvtsi2sd xmm0, [cycles_one]
         cvtsi2sd xmm1, [instr_one]
-        divsd   xmm0, xmm1              ; a
+        divsd   xmm0, xmm1
         cvtsi2sd xmm1, [instr_two]
         mulsd   xmm1, xmm0
         cvtsi2sd xmm2, [cycles_two]
         subsd   xmm2, xmm1
         cvtsi2sd xmm1, [switch_two]
-        divsd   xmm2, xmm1              ; cycles per switch
-        divsd   xmm2, xmm0              ; in instructions
+        divsd   xmm2, xmm1
+        divsd   xmm2, xmm0
+        mov     rax, [rounds]
+        movsd   [pair_c + rax*8], xmm2
+        inc     qword [rounds]
+        cmp     qword [rounds], CALIB_PAIRS
+        jb      .pair
+        ; median: sort the pairs (insertion sort) and take the middle one
+        mov     ecx, 1
+.sort:
+        cmp     ecx, CALIB_PAIRS
+        jae     .sorted
+        movsd   xmm0, [pair_c + rcx*8]
+        mov     edx, ecx
+.shift:
+        test    edx, edx
+        jz      .place
+        movsd   xmm1, [pair_c + rdx*8 - 8]
+        comisd  xmm1, xmm0
+        jbe     .place
+        movsd   [pair_c + rdx*8], xmm1
+        dec     edx
+        jmp     .shift
+.place:
+        movsd   [pair_c + rdx*8], xmm0
+        inc     ecx
+        jmp     .sort
+.sorted:
+        invoke  GetEnvironmentVariableA, calib_env, env_value, 31   ; JANAX_CALIBRACION: show every pair
+        test    eax, eax
+        jz      .median
+        lea     rdi, [line]
+        lea     rsi, [calib_text]
+        call    put_text
+        mov     qword [rounds], 0
+.show:
+        mov     byte [rdi], ' '
+        inc     rdi
+        mov     rax, [rounds]
+        movsd   xmm0, [pair_c + rax*8]
+        call    put_hundredths
+        inc     qword [rounds]
+        cmp     qword [rounds], CALIB_PAIRS
+        jb      .show
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+.median:
+        movsd   xmm2, [pair_c + (CALIB_PAIRS / 2) * 8]
         xorpd   xmm1, xmm1
         maxsd   xmm2, xmm1              ; noise can never make it negative
         movsd   [swcost], xmm2
-        mov     rax, [real_procs]
+        invoke  SetThreadPriority, [thread], [old_priority]
+        cmp     qword [old_affinity], 0
+        je      @f
+        invoke  SetThreadAffinityMask, [thread], [old_affinity]
+@@:     mov     rax, [real_procs]
         mov     [procs], rax
         mov     rax, [real_nprocs]
         mov     [nprocs], rax
         mov     byte [quiet], 0
         mov     qword [clock], 0
         mov     qword [switches], 0
+        add     rsp, 8
+        ret
+
+; The measured cost belongs to this kernel on this processor: key = fingerprint of the kernel's code
+; (FNV-1a) + the processor's name (CPUID). It is kept in the system's folder as "calibracion" (not a
+; label: labels are hexadecimal) and remembered while the key matches, so the measurement (about a
+; second) is paid once per machine and kernel.
+cost_key:
+        push    rbx rdi
+        mov     eax, 811C9DC5h
+        lea     rsi, [code_begin]
+        lea     rdx, [code_end]
+.fnv:
+        cmp     rsi, rdx
+        jae     .hashed
+        movzx   ecx, byte [rsi]
+        xor     eax, ecx
+        imul    eax, eax, 01000193h
+        inc     rsi
+        jmp     .fnv
+.hashed:
+        mov     dword [cost_rec], eax
+        lea     rdi, [cost_rec + 4]
+        mov     eax, 80000000h          ; the processor name, if it has one
+        cpuid
+        cmp     eax, 80000004h
+        jb      .done
+        mov     esi, 80000002h
+.leaf:
+        mov     eax, esi
+        cpuid
+        mov     [rdi], eax
+        mov     [rdi + 4], ebx
+        mov     [rdi + 8], ecx
+        mov     [rdi + 12], edx
+        add     rdi, 16
+        inc     esi
+        cmp     esi, 80000004h
+        jbe     .leaf
+.done:
+        pop     rdi rbx
+        ret
+
+; host_path = folder\calibracion
+calib_path:
+        lea     rdi, [host_path]
+        lea     rsi, [dir_path]
+        mov     rcx, [dir_len]
+        rep     movsb
+        lea     rsi, [calib_name]
+        call    put_text
+        mov     byte [rdi], 0
+        ret
+
+; eax = 1 and swcost set if a calibration with this key was kept, else 0.
+recall_cost:
+        sub     rsp, 8
+        call    calib_path
+        invoke  CreateFileA, host_path, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+        cmp     rax, -1
+        je      .no
+        mov     [hfile], rax
+        mov     dword [bytesread], 0
+        invoke  ReadFile, [hfile], cost_read, COST_REC_LEN, bytesread, 0
+        invoke  CloseHandle, [hfile]
+        cmp     dword [bytesread], COST_REC_LEN
+        jne     .no
+        lea     rsi, [cost_rec]
+        lea     rdi, [cost_read]
+        mov     ecx, COST_KEY_LEN
+        repe    cmpsb
+        jne     .no
+        mov     rax, qword [cost_read + COST_KEY_LEN]
+        mov     [swcost], rax
+        mov     eax, 1
+        add     rsp, 8
+        ret
+.no:
+        xor     eax, eax
+        add     rsp, 8
+        ret
+
+; Keeps the measured swcost with its key (a failure only means measuring again next time).
+save_cost:
+        sub     rsp, 8
+        mov     rax, [swcost]
+        mov     qword [cost_rec + COST_KEY_LEN], rax
+        call    calib_path
+        invoke  CreateFileA, host_path, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+        cmp     rax, -1
+        je      .done
+        mov     [hfile], rax
+        invoke  WriteFile, [hfile], cost_rec, COST_REC_LEN, written, 0
+        invoke  CloseHandle, [hfile]
+.done:
+        add     rsp, 8
+        ret
+
+; The calibration program alone (calib_one) or twice side by side (calib_two): rax = cycles taken,
+; clock = instructions, switches = switches.
+calib_one:
+        mov     qword [nprocs], 1
+        jmp     calib_run
+calib_two:
+        mov     qword [nprocs], 2
+calib_run:
+        call    calib_reset
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        mov     [tsc_start], rax
+        call    run_all
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        sub     rax, [tsc_start]
         ret
 
 ; Puts the calibration processes back at their start.
@@ -737,13 +919,27 @@ print_cost:
         sub     rsp, 8
         invoke  WriteFile, [hout], cost_text, COST_TEXT_LEN, written, 0
         movsd   xmm0, [swcost]
+        lea     rdi, [line]
+        call    put_hundredths
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+        add     rsp, 8
+        ret
+
+; Writes xmm0 at rdi with two decimals ("-" first if negative); leaves rdi just past it.
+put_hundredths:
         mulsd   xmm0, [hundred]
         cvtsd2si rax, xmm0              ; rounded to the nearest hundredth
-        xor     edx, edx
+        test    rax, rax
+        jns     @f
+        mov     byte [rdi], '-'
+        inc     rdi
+        neg     rax
+@@:     xor     edx, edx
         mov     ecx, 100
         div     rcx
         push    rdx
-        lea     rdi, [line]
         call    put_decimal
         mov     byte [rdi], '.'
         inc     rdi
@@ -756,10 +952,6 @@ print_cost:
         mov     [rdi], al
         mov     [rdi + 1], dl
         add     rdi, 2
-        lea     rax, [line]
-        sub     rdi, rax
-        invoke  WriteFile, [hout], line, rdi, written, 0
-        add     rsp, 8
         ret
 
 ; ---------------------------------------------------------------- one process for up to rax instructions
@@ -2315,6 +2507,8 @@ fail_args:                              ; also a launch argument that does not p
 fail_file:
         invoke  ExitProcess, 3
 
+code_end:
+
 section '.idata' import data readable writeable
 
   library kernel32, 'KERNEL32.DLL',\
@@ -2330,6 +2524,10 @@ section '.idata' import data readable writeable
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
+         GetCurrentThread, 'GetCurrentThread',\
+         SetThreadAffinityMask, 'SetThreadAffinityMask',\
+         GetThreadPriority, 'GetThreadPriority',\
+         SetThreadPriority, 'SetThreadPriority',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
          ExitProcess, 'ExitProcess',\

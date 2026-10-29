@@ -55,3 +55,5 @@ por proceso, atenuación, verificar subiendo a la raíz, revocar = una marca con
 de saltos condicionales (generada en PC, falta el teléfono).
 2026-10-29 — Porteros por etiqueta: prefijo por nodo (al lanzar @..:hex o pedido 15), verificado en toda la subida,
 listar filtra. 31/31.
+2026-10-29 — Medición de c: el instrumento mentía (0 a 9,7). A-B-A + corridas largas + hilo fijo + mediana de 9: 1,17–1,64.
+Se recuerda por huella del núcleo + procesador (arranque ~1,35 s → ~150 ms). 32/32.
