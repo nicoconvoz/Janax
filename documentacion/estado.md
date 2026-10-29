@@ -40,3 +40,5 @@ Todo lo hecho (idioma Janax, intérprete, traductores x86-64 y ARM64, diseño P2
 2026-10-28 — Janax OS S1 (`so/janaxos.asm`): simbiosis sobre Windows (detecta rcx = PEB), un camarote por programa, planificador
 LAS sin turno fijo. 5/5 (corredor arreglado: leía el código de `tr`). Medido: dos procesos iguales cuestan el doble por cambiar
 cada ~2 instrucciones (~7,5 ns por cambio). Detalle en documentacion/so/janaxos.md.
+2026-10-28 — Turno por prioridad real (Capitán): t = ((D+c)+sqrt((D+c)^2+4cs))/2, c medido al arrancar (5,8–9,7 instr).
+Dos procesos iguales: 4.570 → ~2.200–2.500 ms (igual que secuencial). 7/7.

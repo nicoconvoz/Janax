@@ -19,42 +19,62 @@ done
 bin() { cygpath -m "$salida/$1.bin"; }
 
 ok=0; mal=0
-# caso <name> <expected exit code> <expected output> <program>...
+# caso <name> <switch cost, or "" to let the kernel measure it> <expected exit code> <expected output> <program>...
 caso() {
-  local nombre=$1 cod=$2 esp=$3; shift 3
+  local nombre=$1 cambio=$2 cod=$3 esp=$4; shift 4
   local args=() p
   for p in "$@"; do args+=("$(bin "$p")"); done
   local got c
-  got=$("$salida/janaxos.exe" "${args[@]}"); c=$?     # the exit code must be the kernel's, not a pipe's
+  if [ -n "$cambio" ]; then
+    got=$(JANAX_CAMBIO=$cambio "$salida/janaxos.exe" "${args[@]}"); c=$?   # the kernel's code, not a pipe's
+  else
+    got=$(env -u JANAX_CAMBIO "$salida/janaxos.exe" "${args[@]}"); c=$?
+  fi
   got=${got//$'\r'/}
-  if [ "$c" = "$cod" ] && [ "$got" = "$esp" ]; then
+  if [ "$c" = "$cod" ] && [[ "$got" == $esp ]]; then
     ok=$((ok + 1))
   else
     echo "MAL  $nombre: esperaba codigo $cod y"; echo "$esp"; echo "     dio codigo $c y"; echo "$got"
     mal=$((mal + 1))
   fi
 }
+fijo0="modo: simbiosis
+costo de cambio: 0.00 instrucciones (fijado)"
 
-caso "un proceso" 0 "modo: simbiosis
+caso "un proceso" 0 0 "$fijo0
 P0 codigo=0 j0=000000000000002A t=2" 02_ldi
 
-# Least attained service: the long one is first in line, the short ones still finish first.
-caso "lo corto primero" 0 "modo: simbiosis
+# With switch cost 0 the scheduler is pure least attained service: the long one is first in line,
+# the short ones still finish first.
+caso "lo corto primero" 0 0 "$fijo0
 P1 codigo=0 j0=000000000000002A t=6
 P2 codigo=0 j0=000000000000002A t=9
 P0 codigo=0 j0=000000000007A314 t=3010" largo_1000 02_ldi 04_suma
 
+# Switch cost 4: the first turn is t = ((D + c) + sqrt((D + c)^2 + 4 c s)) / 2 = 4 for the long one
+# (D = 0, s = 0); then the short one (D = 4) gets 8 and ends after its 2 instructions.
+caso "la prioridad decide el turno" 4 0 "modo: simbiosis
+costo de cambio: 4.00 instrucciones (fijado)
+P1 codigo=0 j0=000000000000002A t=6
+P0 codigo=0 j0=000000000007A314 t=3006" largo_1000 02_ldi
+
 # A process that breaks only breaks its own cabin.
-caso "un pasajero rompe lo suyo" 0 "modo: simbiosis
+caso "un pasajero rompe lo suyo" 0 0 "$fijo0
 P0 codigo=1 j0=0000000000000000 t=1
 P1 codigo=0 j0=000000000000002A t=3" 19_opcode_invalido 02_ldi
 
 # Same address in two processes that keep switching: each one sees only its own value.
-caso "camarotes separados" 0 "modo: simbiosis
+caso "camarotes separados" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000007 t=33
 P1 codigo=0 j0=0000000000000009 t=34" camarote_7 camarote_9
 
-caso "sin programas" 4 "modo: simbiosis"
+# Measured on this machine: the cost changes from machine to machine, the results must not.
+caso "costo medido" "" 0 "modo: simbiosis
+costo de cambio: *.* instrucciones (medido)
+P* codigo=0 j0=000000000000000[79] t=*
+P* codigo=0 j0=000000000000000[79] t=34" camarote_7 camarote_9
+
+caso "sin programas" 0 4 "$fijo0"
 
 echo "$ok bien, $mal mal"
 [ "$mal" = 0 ]

@@ -10,10 +10,18 @@
 ;
 ; Scheduler (Capitan: "nothing short left waiting, little of the long"): least attained service. The
 ; process that has received the least time runs first, so short jobs finish early without knowing
-; anybody's length in advance. There is no fixed quantum: the running process goes on until it passes
-; the next least served one (or to the end, if it is alone). Time is counted in executed instructions.
+; anybody's length in advance. Time is counted in executed instructions.
 ;
-; Output: "modo: simbiosis", then one line per process as it ends:
+; Turn length (Capitan: "the priority gives the real percentage", nothing fixed): a switch costs c
+; instructions. The running process (service s) goes on while the advantage of the next least served
+; one (D less service) does not pay for the switch: (t - D) * t >= c * (s + t), so
+;   t = ((D + c) + sqrt((D + c)^2 + 4 c s)) / 2,   and never less than D + 1 (it must pass the other).
+; A newcomer with little service gets the processor almost at once; two equal processes get turns that
+; grow like sqrt(c s), so the waste shrinks by itself. With c = 0 it is pure least attained service.
+; c is measured at boot on this machine (the kernel learns its environment), or fixed by JANAX_CAMBIO.
+;
+; Output: "modo: simbiosis", "costo de cambio: <c> instrucciones (medido|fijado)", then one line per
+; process as it ends:
 ;   P<n> codigo=<exit code> j0=<16 hex digits> t=<instructions executed by the whole system so far>
 ; Exit codes per process are the interpreter's (0 jhalt, 1 invalid opcode, 2 outside the program,
 ; 5 memory out of range, 6 misaligned, 7 too many nested calls, 8 jret without jcall).
@@ -60,6 +68,41 @@ section '.data' data readable writeable
   MODE_LEN = $ - mode_line
   line      db 96 dup 0
 
+  swcost    dq 0.0              ; cost of a switch, in instructions (double)
+  quiet     db 0                ; 1 while calibrating: no report lines
+  switches  dq 0                ; process switches made by the scheduler
+  env_name  db 'JANAX_CAMBIO', 0
+  env_value db 32 dup 0
+  four      dq 4.0
+  half      dq 0.5
+  hundred   dq 100.0
+  cost_text db 'costo de cambio: '
+  COST_TEXT_LEN = $ - cost_text
+  measured_text db ' instrucciones (medido)', 13, 10
+  MEASURED_LEN = $ - measured_text
+  fixed_text db ' instrucciones (fijado)', 13, 10
+  FIXED_LEN = $ - fixed_text
+
+  ; calibration program: 2 * CALIB_LOOPS instructions of a tight loop (jsub / jjnz)
+  CALIB_LOOPS = 40000h          ; criterion: long enough (~0.5 M instructions) to dwarf timer noise
+  calib_prog dd 01h or (1 shl 8) or ((CALIB_LOOPS shr 16) shl 16)          ; jldi j1, high
+             dd 0Fh or (1 shl 8) or ((CALIB_LOOPS and 0FFFFh) shl 16)      ; jshi j1, low
+             dd 01h or (2 shl 8) or (1 shl 16)                             ; jldi j2, 1
+             dd 03h or (1 shl 8) or (1 shl 12) or (2 shl 16)               ; vuelta: jsub j1, j1, j2
+             dd 0Eh or (1 shl 8) or ((-2 and 0FFFFh) shl 16)               ; jjnz j1, vuelta
+             dd 00h                                                        ; jhalt
+  CALIB_WORDS = ($ - calib_prog) / 4
+  calib_procs db 2 * PROC_SIZE dup 0
+  real_procs  dq 0
+  real_nprocs dq 0
+  tsc_start   dq 0
+  cycles_one  dq 0
+  cycles_two  dq 0
+  instr_one   dq 0
+  instr_two   dq 0
+  switch_two  dq 0
+  rounds      dq 0
+
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
             dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret
@@ -78,6 +121,33 @@ start:
         invoke  GetStdHandle, STD_OUTPUT_HANDLE
         mov     [hout], rax
         invoke  WriteFile, [hout], mode_line, MODE_LEN, written, 0
+
+        ; --- cost of a switch: fixed by JANAX_CAMBIO, or measured here ---
+        invoke  GetEnvironmentVariableA, env_name, env_value, 31
+        test    eax, eax
+        jz      .measure
+        xor     eax, eax                ; decimal digits
+        lea     rsi, [env_value]
+.digit:
+        movzx   ecx, byte [rsi]
+        sub     ecx, '0'
+        cmp     ecx, 9
+        ja      .parsed
+        imul    rax, 10
+        add     rax, rcx
+        inc     rsi
+        jmp     .digit
+.parsed:
+        cvtsi2sd xmm0, rax
+        movsd   [swcost], xmm0
+        call    print_cost
+        invoke  WriteFile, [hout], fixed_text, FIXED_LEN, written, 0
+        jmp     .cost_known
+.measure:
+        call    calibrate
+        call    print_cost
+        invoke  WriteFile, [hout], measured_text, MEASURED_LEN, written, 0
+.cost_known:
 
         ; --- arguments: a private copy of the command line, split in place ---
         invoke  GetCommandLineA
@@ -201,7 +271,13 @@ start:
         jmp     .load
 .loaded:
 
-        ; --- scheduler: least attained service, no fixed quantum ---
+        call    run_all
+        invoke  ExitProcess, 0
+
+; ---------------------------------------------------------------- scheduler
+; Runs every process in [procs] until all of them end. Least attained service; the turn comes from
+; the priority gap and the switch cost (see the header).
+run_all:
 schedule:
         mov     rbx, -1                 ; least served process
         mov     r8, FOREVER             ; its service
@@ -230,24 +306,168 @@ schedule:
         jmp     .scan
 .chosen:
         cmp     rbx, -1
-        je      all_done
+        je      .all_done
         mov     rax, FOREVER            ; alone: run to the end
         cmp     r9, rax
         je      .run
-        mov     rax, r9                 ; otherwise until it passes the next least served
-        sub     rax, r8
-        inc     rax
+        mov     rax, r9
+        sub     rax, r8                 ; D: how much less service the one waiting has... the other way round
+        lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
+        cvtsi2sd xmm0, rax
+        addsd   xmm0, [swcost]          ; D + c
+        movapd  xmm1, xmm0
+        mulsd   xmm1, xmm1              ; (D + c)^2
+        cvtsi2sd xmm2, r8
+        mulsd   xmm2, [swcost]
+        mulsd   xmm2, [four]            ; 4 c s
+        addsd   xmm1, xmm2
+        sqrtsd  xmm1, xmm1
+        addsd   xmm0, xmm1
+        mulsd   xmm0, [half]            ; t
+        cvttsd2si rax, xmm0
+        cvtsi2sd xmm1, rax
+        ucomisd xmm0, xmm1
+        jbe     @f
+        inc     rax                     ; round up
+@@:     cmp     rax, r10
+        jge     .run
+        mov     rax, r10
 .run:
+        inc     qword [switches]
         call    run_process             ; rax = instructions executed
         add     [rbx + P_SERVED], rax
         add     [clock], rax
         cmp     qword [rbx + P_DONE], 0
         je      schedule
+        cmp     byte [quiet], 0
+        jne     schedule
         call    report
         jmp     schedule
+.all_done:
+        ret
 
-all_done:
-        invoke  ExitProcess, 0
+; ---------------------------------------------------------------- calibration
+; Measures the cost of a switch on this machine, in instructions: the same program once alone and
+; twice side by side with c = 0 (switching as often as possible). Each measurement is the minimum of
+; three runs, which filters out interruptions by the host.
+calibrate:
+        mov     rax, [procs]
+        mov     [real_procs], rax
+        mov     rax, [nprocs]
+        mov     [real_nprocs], rax
+        lea     rax, [calib_procs]
+        mov     [procs], rax
+        mov     byte [quiet], 1
+        mov     qword [swcost], 0
+        mov     rax, FOREVER
+        mov     [cycles_one], rax
+        mov     [cycles_two], rax
+        mov     qword [rounds], 3       ; in memory: run_process uses every register
+.round:
+        mov     qword [nprocs], 1
+        call    calib_reset
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        mov     [tsc_start], rax
+        call    run_all
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        sub     rax, [tsc_start]
+        cmp     rax, [cycles_one]
+        jae     @f
+        mov     [cycles_one], rax
+@@:     mov     rax, [clock]
+        mov     [instr_one], rax
+        mov     qword [nprocs], 2
+        call    calib_reset
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        mov     [tsc_start], rax
+        call    run_all
+        rdtsc
+        shl     rdx, 32
+        or      rax, rdx
+        sub     rax, [tsc_start]
+        cmp     rax, [cycles_two]
+        jae     @f
+        mov     [cycles_two], rax
+@@:     mov     rax, [clock]
+        mov     [instr_two], rax
+        mov     rax, [switches]
+        mov     [switch_two], rax
+        dec     qword [rounds]
+        jnz     .round
+        ; per instruction a = cycles_one / instr_one; per switch = (cycles_two - instr_two * a) / switches
+        cvtsi2sd xmm0, [cycles_one]
+        cvtsi2sd xmm1, [instr_one]
+        divsd   xmm0, xmm1              ; a
+        cvtsi2sd xmm1, [instr_two]
+        mulsd   xmm1, xmm0
+        cvtsi2sd xmm2, [cycles_two]
+        subsd   xmm2, xmm1
+        cvtsi2sd xmm1, [switch_two]
+        divsd   xmm2, xmm1              ; cycles per switch
+        divsd   xmm2, xmm0              ; in instructions
+        xorpd   xmm1, xmm1
+        maxsd   xmm2, xmm1              ; noise can never make it negative
+        movsd   [swcost], xmm2
+        mov     rax, [real_procs]
+        mov     [procs], rax
+        mov     rax, [real_nprocs]
+        mov     [nprocs], rax
+        mov     byte [quiet], 0
+        mov     qword [clock], 0
+        mov     qword [switches], 0
+        ret
+
+; Puts the calibration processes back at their start.
+calib_reset:
+        lea     rdi, [calib_procs]
+        xor     eax, eax
+        mov     ecx, 2 * PROC_SIZE
+        rep     stosb
+        lea     rdi, [calib_procs]
+        lea     rax, [calib_prog]
+        mov     [rdi + P_PROG], rax
+        mov     qword [rdi + P_NWORDS], CALIB_WORDS
+        mov     [rdi + PROC_SIZE + P_PROG], rax
+        mov     qword [rdi + PROC_SIZE + P_NWORDS], CALIB_WORDS
+        mov     qword [clock], 0
+        mov     qword [switches], 0
+        ret
+
+; "costo de cambio: <c with two decimals>"
+print_cost:
+        sub     rsp, 8
+        invoke  WriteFile, [hout], cost_text, COST_TEXT_LEN, written, 0
+        movsd   xmm0, [swcost]
+        mulsd   xmm0, [hundred]
+        cvtsd2si rax, xmm0              ; rounded to the nearest hundredth
+        xor     edx, edx
+        mov     ecx, 100
+        div     rcx
+        push    rdx
+        lea     rdi, [line]
+        call    put_decimal
+        mov     byte [rdi], '.'
+        inc     rdi
+        pop     rax
+        mov     ecx, 10
+        xor     edx, edx
+        div     rcx
+        add     al, '0'
+        add     dl, '0'
+        mov     [rdi], al
+        mov     [rdi + 1], dl
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+        add     rsp, 8
+        ret
 
 ; ---------------------------------------------------------------- one process for up to rax instructions
 ; rbx = process. Returns rax = instructions executed; sets P_DONE and P_CODE if the process ended.
@@ -516,6 +736,7 @@ section '.idata' import data readable writeable
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
          VirtualAlloc, 'VirtualAlloc',\
+         GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
          ExitProcess, 'ExitProcess'

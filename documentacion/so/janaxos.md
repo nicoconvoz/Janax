@@ -19,7 +19,18 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    sin saber de antemano cuánto dura cada uno. **No hay turno fijo**: el que corre sigue hasta pasar al
    siguiente menos atendido, o hasta el final si está solo. El tiempo se cuenta en instrucciones.
 
-Salida: `modo: simbiosis` y una línea por proceso cuando termina:
+4. **El turno lo da la prioridad real (Capitán: "que la prioridad le dé el % real", nada fijo).** Cambiar
+   de proceso cuesta `c` instrucciones. El que corre (servicio `s`) sigue mientras la ventaja del que
+   espera (`D` de servicio menos) no pague el cambio: `(t − D)·t ≥ c·(s + t)`, o sea
+   **t = ((D + c) + √((D + c)² + 4·c·s)) / 2**, nunca menos que `D + 1`. Un recién llegado con poco
+   servicio entra casi enseguida; dos iguales reciben turnos que crecen como `√(c·s)` y el desperdicio cae
+   solo. Con `c = 0` es el LAS puro.
+5. **El núcleo mide `c` al arrancar** en la máquina donde le toca vivir (idea 2: aprender del entorno):
+   corre un bucle de calibración solo y de a dos con `c = 0`, el mínimo de tres corridas cada uno, y
+   despeja cuántas instrucciones cuesta un cambio. La variable `JANAX_CAMBIO` lo fija (para pruebas).
+
+Salida: `modo: simbiosis`, `costo de cambio: <c> instrucciones (medido|fijado)` y una línea por proceso
+cuando termina:
 
 ```
 P<n> codigo=<código> j0=<16 hex> t=<instrucciones ejecutadas por todo el sistema hasta ese momento>
@@ -34,10 +45,12 @@ programa) o 4 (sin programas).
 bash so/pruebas/correr.sh
 ```
 
-5/5. Los casos: un proceso; **lo corto primero** (un proceso largo puesto primero en la fila y dos cortos:
+7/7. Los casos (con `c` fijado, salvo uno): un proceso; **lo corto primero** (un proceso largo puesto primero en la fila y dos cortos:
 terminan los cortos en t=6 y t=9 y el largo en t=3010, exactamente lo que da la regla calculada a mano); un
 proceso que rompe solo lo suyo; **camarotes separados** (dos procesos escriben la misma dirección mientras
-se alternan y cada uno lee su propio valor); y sin programas.
+se alternan y cada uno lee su propio valor); **la prioridad decide el turno** (con `c = 4` la fórmula da
+turnos de 4 y 8, calculados a mano); **costo medido** (los resultados no cambian aunque `c` cambie de
+máquina en máquina); y sin programas.
 
 ⚠️ El corredor tenía un error: leía el código de salida de `tr` y no del núcleo, así que los códigos no se
 verificaban. Lo destapó el caso "sin programas"; corregido.
@@ -50,15 +63,17 @@ Programa `suma_100m` (300 millones de instrucciones), intérprete del escalón 0
 |---|---|
 | Intérprete, dos copias una detrás de la otra | ~2.290 ms |
 | Janax OS, un proceso | ~1.430 ms (igual que el intérprete solo) |
-| Janax OS, **dos procesos iguales** | **~4.570 ms** |
+| Janax OS, dos procesos iguales, LAS puro (cambio cada ~2 instrucciones) | ~4.570 ms |
+| **Janax OS, dos procesos iguales, turno por prioridad real** | **~2.200–2.500 ms** |
 
-Con dos procesos de igual servicio, el planificador los alterna cada 1 o 2 instrucciones: ~300 millones de
-cambios a ~7,5 ns cada uno (lo mismo que ~2 instrucciones interpretadas). **Pendiente**: que el turno
-mínimo salga del costo medido de un cambio, sin número a ojo.
+Con el turno por prioridad, compartir el procesador cuesta lo mismo que correr uno detrás del otro, y
+siguen siendo justos: los dos terminan separados por menos de 40.000 instrucciones sobre 600 millones.
+El `c` medido varió entre **5,8 y 9,7 instrucciones** en tres arranques (ruido de Windows): anotado, a
+mejorar si hace falta.
 
 ## Pendiente
 
-- Turno mínimo derivado del costo de un cambio (arriba).
+- Medición de `c` más estable (hoy varía entre arranques).
 - Los procesos corren en el intérprete: llevarlos al traductor nativo.
 - La ventanilla (llamadas al sistema por colas), la campana (0..1), los porteros y la cubierta.
 - Modo cero.
