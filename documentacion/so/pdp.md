@@ -45,10 +45,21 @@ ensamblador**) bajo `PDP/`. Se exige:
 
 Primera corrida medida: 3 programas en 53.788 instrucciones Janax; la corrida que no arma nada, 8.590.
 
+## Todas las combinaciones (Capitán: "así ya sabés que es igual byte a byte")
+
+`so/herramientas/combinaciones.pl` genera 31 fuentes con ~700.000 instrucciones: todas las combinaciones de
+registros de cada instrucción (16 × 16 × 16 en las de tres registros) y los 65.536 valores del inmediato y
+de la distancia de salto con todos los bits de registro en 1 (si un negativo se derrama sobre los registros,
+se ve). La mitad de los inmediatos va en decimal y la otra en hexadecimal. También `jsys`, `jwhile`, `jfirst`
+con tamaños en los bordes y `dd`. Como una palabra es la unión de campos independientes, eso cubre cada bit
+de cada campo y cada cruce. **Las 31 salen idénticas a FASM.** El ensamblador las arma en ~6,6 s (2.758
+millones de instrucciones Janax, motor de rutinas). En la suite corre una vez, con el motor de rutinas.
+
+PDP copia las carpetas del repositorio (`PDP/escalon0/pruebas/...`, `PDP/so/pruebas/...`), así los
+`include` relativos encuentran sus archivos.
+
 ## Lo que sigue
 
 - Macros, `repeat` e `include` de otros archivos, para entender los 82.
-- La prueba de todas las combinaciones (idea del Capitán): todas las combinaciones de registros de cada
-  instrucción y los 65.536 inmediatos con todos los bits de registro en 1, comparadas con FASM.
 - La huella todavía no incluye el código del ensamblador (un programa no puede leer sus propias palabras):
   cambiar el ensamblador sin cambiar su tabla no rearma lo ya armado.

@@ -105,3 +105,5 @@ anotados en ideas.md). 112/112.
 2026-10-29 — Ensamblador PDP v0 (Capitán): Janax armado por Janax dentro de Janax OS; recorre PDP, rearma solo lo que
 cambió (huella), tabla en ensamblador.datos. Arma 73 de 82 programas idénticos a FASM byte por byte, incluido él mismo.
 Faltan macros, repeat e include de otros archivos. 124/124.
+2026-10-29 — Prueba de todas las combinaciones (Capitán): 31 fuentes generadas (~700.000 instrucciones: todas las combinaciones
+de registros y los 65.536 inmediatos y distancias de salto), idénticas a FASM byte por byte. PDP copia las carpetas del repo. 125/125.

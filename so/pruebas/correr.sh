@@ -362,18 +362,24 @@ hola
 P2 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=0000000000000001 t=*
 ventanilla: *" familia_abuelo
-# --- the PDP assembler: Janax assembled by Janax. Every source it understands must come out byte for byte
-# as FASM builds it, the assembler's own source included; a source that uses what v0 does not have yet
-# (macros, repeat, other includes) must be counted as an error and left unbuilt.
+# --- the PDP assembler: Janax assembled by Janax. Every source must come out byte for byte as FASM builds
+# it, the assembler's own source included. A source that uses what the assembler does not have yet is
+# counted as an error and left unbuilt (none left: 82 of 82 is the goal).
 pdp="$salida/pdp_$motor"; rm -rf "$pdp" "$salida/pdp_fasm"; mkdir -p "$pdp" "$salida/pdp_fasm"
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 entiende=(); no_entiende=0
+PDP_NO_ENTIENDE='^[[:space:]]*(macro|repeat)[[:space:]]|^[[:space:]]*include .*ambientes'   # not yet: v0
+# PDP mirrors the repository, folders and all, so relative includes find their files.
+for f in "$proyecto"/so/pruebas/*.inc; do
+  cp "$f" "$pdp/$(etiqueta "PDP/${f#$proyecto/}")"
+done
 for f in "$proyecto"/escalon0/pruebas/*.jsm "$aqui"/*.jsm "$raiz"/bancos/*.jsm "$raiz"/pdp/ensamblador/ensamblador.jsm; do
-  n=$(basename "$f" .jsm)
+  n=${f#$proyecto/}; n=${n%.jsm}
   cp "$f" "$pdp/$(etiqueta "PDP/$n.jsm")"
-  if grep -qE '^[[:space:]]*(macro|repeat)[[:space:]]' "$f" || grep -E '^[[:space:]]*include' "$f" | grep -qv "janax.inc'"; then
+  if [ -n "${PDP_NO_ENTIENDE:-}" ] && grep -qE "$PDP_NO_ENTIENDE" "$f"; then
     no_entiende=$((no_entiende + 1))
   else
+    mkdir -p "$salida/pdp_fasm/$(dirname "$n")"
     "$fasm" "$f" "$salida/pdp_fasm/$n.bin" > /dev/null || { echo "no ensambla con FASM: $f"; exit 1; }
     entiende+=("$n")
   fi
@@ -394,9 +400,28 @@ pdp_iguales() {   # every source it understands, byte for byte as FASM
 pdp_corrida "arma todo lo que entiende" "${#entiende[@]}"
 pdp_iguales "byte por byte"
 pdp_corrida "lo ya armado no se vuelve a armar" 0
-printf '\n; one more line\n' >> "$pdp/$(etiqueta "PDP/02_ldi.jsm")"
+printf '\n; one more line\n' >> "$pdp/$(etiqueta "PDP/escalon0/pruebas/02_ldi.jsm")"
 pdp_corrida "solo lo que cambio" 1
 pdp_iguales "byte por byte despues del cambio"
+
+# Every combination of every instruction (so/herramientas/combinaciones.pl), byte for byte as FASM. Once,
+# with the routines: the assembler itself is already tried with both engines above.
+if [ "$motor" = rutinas ]; then
+  comb="$salida/combinaciones"; rm -rf "$comb" "$salida/pdp_comb"; mkdir -p "$salida/pdp_comb"
+  perl "$raiz/herramientas/combinaciones.pl" "$comb" "$(cygpath -m "$proyecto/escalon0/janax.inc")"
+  distintos=0; total=0
+  for f in "$comb"/*.jsm; do
+    n=$(basename "$f" .jsm); total=$((total + 1))
+    "$fasm" "$f" "$comb/$n.bin" > /dev/null || { echo "combinacion $n no ensambla con FASM"; exit 1; }
+    cp "$f" "$salida/pdp_comb/$(etiqueta "PDP/combinaciones/$n.jsm")"
+  done
+  got=$(JANAX_ARCHIVOS="$(cygpath -m "$salida/pdp_comb")" JANAX_CAMBIO=0 timeout 300 "$salida/janaxos.exe" "$(cygpath -m "$salida/pdp/ensamblador.bin")" | tr -d '\r' | grep -o 'j0=[0-9A-F]*')
+  for f in "$comb"/*.jsm; do
+    n=$(basename "$f" .jsm)
+    cmp -s "$comb/$n.bin" "$salida/pdp_comb/$(etiqueta "PDP/combinaciones/$n.bin")" || { echo "MAL  pdp combinaciones: $n"; distintos=$((distintos + 1)); }
+  done
+  if [ "$got" = "$(printf 'j0=%016X' "$total")" ] && [ "$distintos" = 0 ]; then ok=$((ok + 1)); else echo "MAL  pdp combinaciones: $got, $distintos distintas de $total"; mal=$((mal + 1)); fi
+fi
 
 unset carpeta
 done
