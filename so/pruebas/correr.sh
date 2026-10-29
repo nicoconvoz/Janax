@@ -105,6 +105,14 @@ P2 codigo=5 j0=0000000000000000 t=8
 P0 codigo=0 j0=0000000000006625 t=123
 P1 codigo=0 j0=0000000000006625 t=126" fusion fusion fusion_falla
 
+# Copies of one program share its words and its table; a program with the same length and one different
+# word is another program.
+caso "mismo largo, otro programa: no comparte" 0 0 "$fijo0
+P1 codigo=0 j0=000000000000002D t=131
+P3 codigo=0 j0=000000000000002D t=132
+P0 codigo=0 j0=0000000000000037 t=137
+P2 codigo=0 j0=0000000000000037 t=138" while_suma while_suma_9 while_suma while_suma_9
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)

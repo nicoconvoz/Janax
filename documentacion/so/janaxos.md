@@ -169,6 +169,14 @@ de registros de 16 bytes, uno por palabra más uno final:
   las diez parejas del bucle pesan 10 % cada una), pero toda vuelta de todo while termina en "algo →
   condición". Por eso no se funde `jsub`+`jjnz`: se funde cualquier instrucción con la condición que la
   sigue, y vale también para los `if`.
+- **Copias del mismo programa comparten palabras y tabla** (2026-10-29): al nacer, cada proceso busca uno
+  anterior con exactamente las mismas palabras (mismo largo y comparación palabra por palabra, nunca solo
+  una huella). Si lo encuentra, libera su copia recién leída y usa el programa y la tabla de ese proceso.
+  La tabla no cambia mientras se corre (el estado de cada proceso vive en su estructura), así que
+  compartirla es seguro. Con el motor de rutinas la tabla se arma al nacer, no en el primer turno. Vale para
+  los programas de la línea de comandos y para los que lanza un proceso. ⚠️ Hoy ningún programa ni tabla se
+  libera cuando termina un proceso; si algún día se liberan, una tabla compartida va a necesitar contar
+  cuántos la usan.
 - `JANAX_MOTOR=interprete` corre el intérprete de siempre. El costo de cambio `c` está en instrucciones
   y cada motor las corre a su ritmo, por eso el motor entra en la huella de la calibración.
 
@@ -210,7 +218,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-86/86 (84 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+88/88 (86 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,
@@ -305,6 +313,19 @@ La ganancia sigue a las rutinas que se ahorran: un tercio menos de despachos da 
 Lo que queda es el trabajo de cada instrucción (los registros Janax viven en memoria). ⚠️ Una primera
 medición con `suma_100m` (0,4 s) daba entre 7 y 40 %: el arranque y el ruido la tapaban.
 
+### Compartir el programa entre copias
+
+Núcleo anterior (1080ef3) contra el nuevo, 2026-10-29.
+
+| Caso | Sin compartir | Compartido |
+|---|---|---|
+| 64 procesos (`calculo` + 63 copias de `02_ldi`): memoria privada máxima, 2 corridas | 131 MB | **69 MB** |
+| 1.000 copias de `02_ldi`: tiempo total, 3 corridas intercaladas | ~418–462 ms | **~293–352 ms** |
+
+Los 62 MB que se ahorran son 62 copias del búfer de programa (1 MiB cada una, `MAX_PROGRAM`). Lo que queda
+por proceso es casi todo su camarote (1 MiB de datos). Las salidas de las 1.000 copias son idénticas
+byte por byte. ⚠️ Cada lanzamiento todavía abre y lee el archivo: se comparte después de leerlo.
+
 ### Compartir el procesador con el motor de rutinas
 
 Banco `calculo` (671 M instrucciones por copia), los dos motores **intercalados**, tres rondas, 2026-10-29.
@@ -341,8 +362,8 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
 
 ## Pendiente
 
-- Motor de rutinas: la tabla es por proceso; compartirla entre procesos del mismo programa (hoy cada
-  lanzamiento lee el archivo de nuevo).
+- Programas: cada lanzamiento reserva 1 MiB para leer el archivo aunque el programa pese menos; reservar lo
+  que pesa.
 - Archivos: tablas de normalización propias para el modo cero; nombres legibles desde Windows si el
   Capitán lo quiere.
 - `jsys` existe solo dentro de Janax OS: el intérprete y los traductores del escalón 0 lo toman como opcode

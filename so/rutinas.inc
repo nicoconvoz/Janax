@@ -155,17 +155,8 @@ decode_program:
 run_routines:
         mov     [budget0], rax
         mov     rbp, rax
-        mov     r13, [rbx + P_TABLE]
-        test    r13, r13
-        jnz     @f
-        mov     rcx, [rbx + P_NWORDS]
-        mov     rdx, [rbx + P_PROG]
-        call    decode_program          ; once per process: from here on it lives in its routines
-        test    rax, rax
-        jz      fail_file
-        mov     [rbx + P_TABLE], rax
-        mov     r13, rax
-@@:     mov     r14, rbx
+        mov     r13, [rbx + P_TABLE]     ; made at birth (share_program)
+        mov     r14, rbx
         mov     r15, [rbx + P_DATA]
         mov     r12, [rbx + P_PC]
         shl     r12, 4

@@ -57,7 +57,7 @@ P_ID     = 248                  ; process number (P0, P1...)
 P_PARENT = 256                  ; parent process, 0 = the kernel
 P_WAITING = 264                 ; important requests waiting for the parent's signature
 P_SHADOW = 272                  ; 1 = ended, its shadow decides for its line; 2 = shadow gone
-P_TABLE  = 280                  ; its program decoded once into routines (rutinas.inc), 0 = not yet
+P_TABLE  = 280                  ; its program decoded once into routines (rutinas.inc), shared by every process with the same words
 PROC_SIZE = 288
 
 ; porters: rights and tree nodes
@@ -90,6 +90,7 @@ section '.data' data readable writeable
   mp_pfx_len dq 0
   mp_new    dq 0
   nprocs    dq 0
+  mp_shared dq 0                  ; share_program: the process whose program is reused
   clock     dq 0                ; instructions executed by the whole system
   budget0   dq 0
   hfile     dq 0
@@ -667,10 +668,7 @@ make_process:
         test    rax, rax
         jz      fail_file
         mov     rbx, rax
-        mov     rax, [mp_prog]
-        mov     [rbx + P_PROG], rax
-        mov     rax, [mp_words]
-        mov     [rbx + P_NWORDS], rax
+        call    share_program
         mov     rax, [mp_parent]
         mov     [rbx + P_PARENT], rax
         invoke  VirtualAlloc, 0, DATA_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
@@ -738,6 +736,62 @@ make_process:
         inc     qword [nprocs]
         mov     rax, rbx
         pop     r15 r14 r13 r12 rdi rsi rbx
+        ret
+
+; Gives the process in rbx its program: the one of an earlier process with exactly the same words if there
+; is one (the new copy is freed), or mp_prog. The same words decode to the same table, which never changes
+; while running, so copies share program and table: launching one more copy reads and decodes nothing new.
+; With the routines the table is made here, at birth. Keeps rbx, r13-r15.
+share_program:
+        sub     rsp, 8
+        xor     r12d, r12d              ; process index
+        jmp     .other
+.other_lap:
+        mov     rdx, [procs]
+        mov     rdx, [rdx + r12*8]
+        inc     r12
+        mov     rcx, [mp_words]
+        cmp     rcx, [rdx + P_NWORDS]
+        jne     .other
+        mov     rsi, [mp_prog]
+        mov     rdi, [rdx + P_PROG]
+        cmp     rsi, rdi
+        je      .found                  ; already its program (the calibration's)
+        xor     eax, eax                ; ZF = 1: two empty programs are the same
+        repe    cmpsd
+        jne     .other
+.found:
+        mov     rax, [rdx + P_PROG]
+        cmp     rax, [mp_prog]
+        je      @f
+        mov     [mp_shared], rdx
+        invoke  VirtualFree, [mp_prog], 0, MEM_RELEASE
+        mov     rdx, [mp_shared]
+@@:     mov     rax, [rdx + P_PROG]
+        mov     [rbx + P_PROG], rax
+        mov     rax, [rdx + P_NWORDS]
+        mov     [rbx + P_NWORDS], rax
+        mov     rax, [rdx + P_TABLE]
+        mov     [rbx + P_TABLE], rax
+        add     rsp, 8
+        ret
+.other:                                 ; while there are earlier processes to compare with
+        cmp     r12, [nprocs]
+        jb      .other_lap
+.alone:
+        mov     rax, [mp_prog]
+        mov     [rbx + P_PROG], rax
+        mov     rcx, [mp_words]
+        mov     [rbx + P_NWORDS], rcx
+        cmp     byte [motor], 0
+        je      .done                   ; the interpreter reads the words as they are
+        mov     rdx, rax
+        call    decode_program
+        test    rax, rax
+        jz      fail_file
+        mov     [rbx + P_TABLE], rax
+.done:
+        add     rsp, 8
         ret
 
 ; ---------------------------------------------------------------- scheduler

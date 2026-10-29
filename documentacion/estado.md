@@ -86,3 +86,5 @@ rápido pierde todo. El intérprete compartiendo paga ~8–10 % (su c de 2,32 po
 2026-10-29 — Fusión de parejas: toda instrucción que sigue de largo se funde con el jjz/jjnz que la sigue (regla
 sacada de contar parejas ejecutadas: ninguna domina, pero toda vuelta de while termina en "algo → condición"). suma_1000m
 ~4,7 → ~3,7 s (21 %), calculo ~8 %, mismos resultados. 86/86.
+2026-10-29 — Copias del mismo programa comparten palabras y tabla (comparación palabra por palabra, al nacer).
+64 procesos: 131 → 69 MB; 1.000 copias: ~440 → ~320 ms; mismas salidas. 88/88.
