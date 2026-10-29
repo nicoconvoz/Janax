@@ -121,6 +121,8 @@ En Janax esto se aplica a ítems, oro, botín, combate y progreso, con el mismo 
 ## Pruebas
 
 - **TDD estricto:** primero la prueba que falla, después el código.
+- **Cero emuladores.** ARM64 se prueba en el teléfono real del Capitán por adb (`bash escalon0/pruebas/correr.sh`
+  corre intérprete, traductor x86-64 y ARM64 en el teléfono si está conectado).
 - El dominio se prueba sin motor, sin red y sin ventana. Si una regla de juego necesita abrir una ventana
   para probarse, está mal ubicada.
 - Los bancos de rendimiento son instrumentos: antes de creerles, verificar que miden lo que dicen.
