@@ -38,7 +38,7 @@ RET_DEPTH   = 4096              ; must match the interpreter
 ; Address space each cabin reserves for its rooms. It takes no memory, only addresses. Criterion, not a
 ; measurement: it is a cabin's ceiling, and with 128 TiB of user addresses it leaves room for ~32.000 cabins.
 HULL_SIZE   = 1 shl 32
-OP_COUNT    = 17h
+OP_COUNT    = 18h
 FOREVER     = 7FFFFFFFFFFFFFFFh
 
 ; process (cabin) layout
@@ -278,19 +278,19 @@ section '.data' data readable writeable
 
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
-            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys
+            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys, op_jhost
   ttable    dq t_halt, t_ldi, t_add, t_sub, t_mul, t_div, t_shl, t_shr
             dq t_sar, t_and, t_or, t_xor, t_jmp, t_jz, t_jnz, t_shi
-            dq t_ld, t_st, t_ldb, t_stb, t_call, t_ret, t_sys
+            dq t_ld, t_st, t_ldb, t_stb, t_call, t_ret, t_sys, t_jhost
   assert ($ - ttable) = OP_COUNT * 8
   ; the same instruction fused with the jjz / jjnz after it (0: it cannot be fused)
   ftable_jz  dq 0, t_ldi_jz, t_add_jz, t_sub_jz, t_mul_jz, t_div_jz, t_shl_jz, t_shr_jz
              dq t_sar_jz, t_and_jz, t_or_jz, t_xor_jz, 0, 0, 0, t_shi_jz
-             dq t_ld_jz, t_st_jz, t_ldb_jz, t_stb_jz, 0, 0, 0
+             dq t_ld_jz, t_st_jz, t_ldb_jz, t_stb_jz, 0, 0, 0, 0
   assert ($ - ftable_jz) = OP_COUNT * 8
   ftable_jnz dq 0, t_ldi_jnz, t_add_jnz, t_sub_jnz, t_mul_jnz, t_div_jnz, t_shl_jnz, t_shr_jnz
              dq t_sar_jnz, t_and_jnz, t_or_jnz, t_xor_jnz, 0, 0, 0, t_shi_jnz
-             dq t_ld_jnz, t_st_jnz, t_ldb_jnz, t_stb_jnz, 0, 0, 0
+             dq t_ld_jnz, t_st_jnz, t_ldb_jnz, t_stb_jnz, 0, 0, 0, 0
   assert ($ - ftable_jnz) = OP_COUNT * 8
 
   ; engine: 1 = routines (each program decoded once), 0 = the interpreter, kept as the reference
@@ -1446,6 +1446,7 @@ op_shi:
         jmp     next
 
 include 'datos.inc'
+include 'anfitrion.inc'
 include 'ambientes.inc'
 
 macro memop name, size, align_check, is_load, body {
@@ -1507,6 +1508,15 @@ op_ret:
         jz      fail_ret
         dec     rdi
         mov     r12, [rsi + rdi*8]
+        jmp     next
+
+        align 16
+op_jhost:                                ; the window to the host (anfitrion.inc)
+        mov     rax, [r14 + r8*8]
+        call    host_window
+        test    ecx, ecx
+        jnz     ended
+        mov     [r14 + r11*8], rax
         jmp     next
 
         align 16

@@ -29,7 +29,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; bytes; criterion, not a measurement
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-OP_COUNT    = 16h
+OP_COUNT    = 18h
 MAX_LEN     = 255               ; bytes per translated instruction: the cache stores lengths in one byte
 
 CACHE_MAGIC = 'JX65'
@@ -43,6 +43,7 @@ DISP = 7FFFFFF0h                ; placeholder that forces 32-bit fields in the t
 C_MEM   = 16*8                  ; data memory base
 C_DEPTH = C_MEM + 8             ; return stack depth
 C_RET   = C_DEPTH + 8           ; return stack (native addresses)
+C_HOST  = C_RET + RET_DEPTH * 8 ; the window to the host (ventanita.inc)
 
 section '.data' data readable writeable
 
@@ -50,7 +51,9 @@ section '.data' data readable writeable
             dq 0                ; C_MEM
             dq 0                ; C_DEPTH
             dq RET_DEPTH dup 0  ; C_RET
+            dq 0                ; C_HOST
 
+  include 'ventanita_datos.inc'
   program   dq 0
   nwords    dq 0
   work      dq 0                ; translation, before linking
@@ -95,10 +98,10 @@ section '.data' data readable writeable
   natives   db 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15     ; rbx rsi rdi r8..r15
   NATIVE_COUNT = $ - natives
   ; which register fields each instruction reads or writes: 1 = rd, 2 = ra, 4 = rb
-  usage_masks db 0, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 1, 1, 1, 3, 3, 3, 3, 0, 0
+  usage_masks db 0, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 1, 1, 1, 3, 3, 3, 3, 0, 0, 0, 3
   emit_table dq e_halt, e_ldi, e_add, e_sub, e_mul, e_div, e_shl, e_shr
              dq e_sar, e_and, e_or, e_xor, e_jmp, e_jz, e_jnz, e_shi
-             dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret
+             dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret, e_bad, e_host   ; 16h jsys exists only in Janax OS
   hashed_end:
 
 STUB_BYTES = NATIVE_COUNT * 7 * 2 + 5 + 1   ; loads, call, saves, ret
@@ -195,6 +198,16 @@ template t_ret
 .empty:
         mov     eax, 8
         ret
+end_template
+
+template t_host                         ; rax = the block's Janax address -> rax = the answer
+        mov     rdx, [rbp + C_MEM]
+        call    qword [rbp + C_HOST]
+        test    edx, edx
+        jz      .ok
+        mov     eax, edx
+        ret
+.ok:
 end_template
 
 template t_bad
@@ -470,6 +483,20 @@ e_call:
         call    copy_template
         lea     rsi, [r15 + t_call.j]
         jmp     mark_jump
+
+e_host:
+        mov     edx, r8d
+        call    load_rax
+        lea     rsi, [t_host]
+        mov     ecx, t_host.size
+        call    copy_template
+        mov     edx, r11d
+        jmp     store_rax
+
+e_bad:
+        lea     rsi, [t_bad]
+        mov     ecx, t_bad.size
+        jmp     copy_template
 
 e_ret:
         lea     rsi, [t_ret]
@@ -923,6 +950,8 @@ start:
         invoke  WriteFile, rax, msg, [wbytes], written, 0
 
         ; --- run the native code ---
+        lea     rax, [host_service]
+        mov     [context + C_HOST], rax
         mov     rax, [datamem]
         mov     [context + C_MEM], rax
         mov     qword [context + 15*8], DATA_SIZE
@@ -1016,6 +1045,8 @@ fail_args:
 fail_block:
         invoke  ExitProcess, 9          ; translator bug: an instruction outgrew MAX_LEN
 
+include 'ventanita.inc'
+
 code_end:
 
 section '.idata' import data readable writeable
@@ -1031,4 +1062,5 @@ section '.idata' import data readable writeable
          GetFileSize, 'GetFileSize',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
+         GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          ExitProcess, 'ExitProcess'

@@ -28,7 +28,8 @@ corredor ensambla los tres programas y corre cada prueba en:
 
 Además prueba la traducción incremental (caché vacío, desde caché, una palabra distinta, cambio de largo,
 cambio del mapa de registros). Al 2026-10-28: **141/141**. Al 2026-10-29, con la prueba 36 (el while):
-**113/113 en la PC** (intérprete y x86-64; sin teléfono conectado, ARM64 sin correr).
+**113/113 en la PC** (intérprete y x86-64; sin teléfono conectado, ARM64 sin correr). Con `jhost` (pruebas 37 a 40, la
+ventana chica con `JANAX_SIN` y los programas armados por el ensamblador PDP): **174/174 con el teléfono**.
 
 **Todo bucle es un while rotado, también acá** (2026-10-29): los 27 bucles del intérprete (4), el
 traductor x86-64 (15) y el ARM64 (8) tienen la forma única de Janax, y la suite lo verifica con

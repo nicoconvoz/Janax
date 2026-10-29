@@ -13,7 +13,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; bytes; criterion, not a measurement
 DATA_SIZE   = 1 shl 20          ; bytes of data memory; criterion, not a measurement
 RET_DEPTH   = 4096              ; nested calls; criterion, not a measurement
-OP_COUNT    = 16h
+OP_COUNT    = 18h
 
 section '.data' data readable writeable
 
@@ -28,9 +28,10 @@ section '.data' data readable writeable
 
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
-            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret
+            dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, fail_op, op_host   ; 16h jsys exists only in Janax OS
 
   retstack  dq RET_DEPTH dup 0
+  include 'ventanita_datos.inc'
 
 section '.text' code readable executable
 
@@ -293,6 +294,19 @@ op_ret:
         mov     r12, [retstack + rbx*8]
         jmp     next
 
+op_host:                                ; the window to the host (ventanita.inc)
+        mov     rax, [r14 + r8*8]
+        mov     rdx, r15
+        call    host_service
+        test    edx, edx
+        jnz     .fail
+        mov     [r14 + r11*8], rax
+        jmp     next
+.fail:
+        invoke  ExitProcess, rdx
+
+include 'ventanita.inc'
+
 finish:
         mov     rax, [regs]
         lea     rdi, [hexbuf + 15]
@@ -342,4 +356,5 @@ section '.idata' import data readable writeable
          VirtualAlloc, 'VirtualAlloc',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
+         GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          ExitProcess, 'ExitProcess'

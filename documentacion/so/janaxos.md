@@ -231,6 +231,13 @@ Código: `so/ambientes.inc`. Pruebas: `ambientes`, `ambiente_hueco`, `ambiente_h
   nunca por debajo de una página; un proceso que terminó la devuelve entera. El camino que agranda está
   fuera de la rutina de llamada (`postpone`). Pruebas: `llamadas_hondas`, `llamadas_demasiadas`.
 
+## La ventanita al anfitrión: vacía para los procesos (2026-10-29)
+
+`jhost` (`so/anfitrion.inc`) es la ventanita de un programa a su anfitrión. Un proceso de Janax OS ya habla con
+el sistema por la ventanilla, bajo sus porteros, así que el anfitrión no le ofrece nada: **su catálogo está
+vacío** (la ventana más chica), el catálogo responde 0 y cualquier pedido responde −1. Los chequeos (bloque
+adentro de un ambiente, alineado) son los de todos los puertos. Prueba: `ventanita_vacia`.
+
 ## Datos iniciales: `X.datos` al lado de `X` (Capitán, 2026-10-29)
 
 > *"Cualquiera quiero que lo pueda mejorar y personalizar su Janax sin partir de cero."*
@@ -283,7 +290,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
 bash so/pruebas/correr.sh
 ```
 
-112/112 (110 casos + el chequeo de bucles de los dos archivos): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
+131/131 (las 127 pruebas, el ensamblador PDP y los chequeos de bucles): **la suite entera corre dos veces, una con el motor de rutinas y otra con el intérprete**, cada una
 con su carpeta limpia. Las salidas esperadas son exactas, así que pasar las dos es dar lo mismo,
 instrucción por instrucción (cada corrida con su límite de tiempo: un cuelgue es un MAL, no un silencio). Familia: **el padre
 lanza y espera** al hijo; **el hijo pide, el padre firma** (sale "hola"); **el padre rechaza** (no sale nada,

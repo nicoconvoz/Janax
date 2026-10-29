@@ -46,11 +46,12 @@ for my $op (qw(jjz jjnz)) {
   source("salto_${op}_a", (map "$op $_, \$", @r), map "$op j15, " . target($_), -32768 .. -1);
   source("salto_${op}_b", map "$op j15, " . target($_), 0 .. 32767);
 }
-# the rest: jsys, no operands, while, jfirst, dd
+# the rest: jsys, jhost, no operands, while, jfirst, dd
 my @sizes = (0, 1, 8, 32767, 32768, 32769, 65535, 65536, 0x123456, 0x7FFFFFFF, -1, -32768);
 my @words = (0, 1, -1, 0x7FFFFFFF, -0x80000000, 0x80000000, 0xFFFFFFFF, 0x12345678);
 source('otras',
   (map { my $d = $_; map "jsys $d, $_", @r } @r),
+  (map { my $d = $_; map "jhost $d, $_", @r } @r),
   'jhalt', 'jret',
   (map { ("jwhile $_", 'jldi j0, 1', 'jwend', "jwhilez $_", 'jwend') } @r),
   (map { my $d = $_; map "jfirst $d, $_", @sizes } @r),

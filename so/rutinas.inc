@@ -463,6 +463,17 @@ t_ret:
         t_next
 
         align 16
+t_jhost:                                 ; the window to the host (anfitrion.inc)
+        movzx   ecx, byte [rdx + 9]
+        mov     rax, [r14 + rcx]
+        call    host_window
+        test    ecx, ecx
+        jnz     t_ended
+        movzx   ecx, byte [rdx + 8]
+        mov     [r14 + rcx], rax
+        t_next
+
+        align 16
 t_sys:
         movzx   ecx, byte [rdx + 8]
         mov     [sys_rd], rcx           ; rd * 8

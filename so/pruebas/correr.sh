@@ -144,6 +144,10 @@ P0 codigo=0 j0=1122334455667788 t=4" datos_iniciales
 caso "datos iniciales que no entran" 0 0 "$fijo0
 P0 codigo=5 j0=0000000000000007 t=3" datos_no_entran
 
+# The window to the host: a Janax OS process gets the smallest one, an empty catalog.
+caso "ventanita: el catalogo de un proceso esta vacio" 0 0 "$fijo0
+P0 codigo=0 j0=00000000FFFFFFFF t=18" ventanita_vacia
+
 # Measured on this machine: the cost changes from machine to machine, the results must not.
 caso "costo medido" "" 0 "modo: simbiosis
 costo de cambio: *.* instrucciones (medido)

@@ -56,6 +56,7 @@ entry 'jstb',    13h, F_RRI
 entry 'jcall',   14h, F_T
 entry 'jret',    15h, F_NONE
 entry 'jsys',    16h, F_RR
+entry 'jhost',   17h, F_RR
 entry 'jwhile',  0Eh, F_WHILE
 entry 'jwhilez', 0Dh, F_WHILE
 entry 'jwend',   0,   F_WEND

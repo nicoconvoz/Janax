@@ -112,3 +112,6 @@ los incluidos. 82 de 82 idénticos a FASM, él mismo incluido (7.728 bytes). 82 
 2026-10-29 — Sin FASM para Janax: db/dq/dd en lista/times, la tabla como fuente Janax, semilla propia con punto fijo
 (so/pdp/semilla) y armar.sh; las dos suites arman sus programas con el ensamblador PDP. Escalón 0 153/153 (con el teléfono),
 Janax OS 129/129. FASM queda para lo x86 y como testigo.
+2026-10-29 — jhost, la ventanita al anfitrión (Capitán): catálogo por nombre, "escribir"; intérprete, traductor x86-64,
+ARM64 en el teléfono (rutina del ayudante codificada a mano, anduvo al primer intento) y Janax OS (ventana vacía para los
+procesos). JANAX_SIN achica la ventana. Escalón 0 174/174 con el teléfono, Janax OS 131/131.

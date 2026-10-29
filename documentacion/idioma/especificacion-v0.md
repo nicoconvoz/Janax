@@ -113,3 +113,23 @@ del idioma sigue abierto.
 - Nombre y forma de escribir las instrucciones (el "texto" del idioma).
 - Cómo se llama al sistema (ventana, GPU, red, disco): por un conjunto fijo de llamadas al arranque.
 - Si el idioma tiene flotantes para gráficos (donde el determinismo no importa) o solo punto fijo.
+
+## `jhost`: la ventanita al anfitrión (Capitán, 2026-10-29)
+
+> *"La ventanita expandible o comprimible: el ayudante da la lista de pedidos que puede dar y el capitán
+> aprende lo que puede pedir."*
+
+`jhost rd, ra` (op `17h`). `ra` apunta a un bloque de 32 bytes `{pedido, a, b, c}` (8 bytes cada uno, en la
+memoria de datos y alineado a 8); la respuesta queda en `rd`.
+
+- **Pedido 0, el catálogo**: `a` = dónde escribirlo (alineado a 8), `b` = lugar en bytes. Escribe una
+  entrada de 16 bytes por pedido que el anfitrión ofrece (su nombre en 8 bytes, rellenado con ceros, y su
+  número), las que entren, y responde **cuántos ofrece**.
+- Un pedido que el anfitrión no ofrece responde **−1**. El programa no supone nada: lee el catálogo, busca
+  por nombre y usa lo que hay. Si hay más, aprovecha; si hay menos, lo hace él mismo.
+- Fuera de la memoria de datos es el código 5; desalineado, el 6.
+- **Pedidos de hoy**: `escribir` (`a` = dirección, `b` = bytes; responde los bytes escritos en la salida).
+- **Cada puerto tiene su ayudante**: Windows (intérprete y traductor x86-64, `escalon0/ventanita.inc`),
+  Linux en el teléfono (traductor ARM64, con la llamada `write`) y Janax OS, que a sus procesos les da la
+  **ventana vacía** (hablan con el sistema por la ventanilla, con sus porteros). En la PC, `JANAX_SIN=nombre,...`
+  achica la ventana para probar que el programa se arregla con menos.

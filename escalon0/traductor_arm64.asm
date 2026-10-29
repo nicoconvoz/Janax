@@ -23,7 +23,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-OP_COUNT    = 16h
+OP_COUNT    = 18h
 MAX_INSNS   = 9                 ; most ARM64 instructions one Janax word becomes (jld/jst); checked per word
 MAX_PATH_BYTES = 1024
 
@@ -41,6 +41,7 @@ FIXUP_SIZE = 32                 ; position, kind, target, word
 ; stubs
 S_FINISH  = 0
 S_EXIT    = 3
+S_HOST    = 9                   ; the window to the host (ventanita)
 
 section '.data' data readable writeable
 
@@ -74,7 +75,7 @@ section '.data' data readable writeable
 
   emit_table dq e_halt, e_ldi, e_rrr, e_rrr, e_rrr, e_rrr, e_rrr, e_rrr
              dq e_rrr, e_rrr, e_rrr, e_rrr, e_jmp, e_jz, e_jnz, e_shi
-             dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret
+             dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret, e_bad, e_host   ; 16h jsys exists only in Janax OS
 
   ; halt routine: x0 (= j0) in hex on stdout, then exit(0)
   finish:
@@ -98,6 +99,70 @@ section '.data' data readable writeable
     dd 0D2800BA8h               ; movz x8, #93 (exit)
     dd 0D4000001h               ; svc #0
   finish_end:
+
+  ; The window to the host (Capitan): the helper of this port, Linux on the phone. It offers one request,
+  ; "escribir" (number 1), through the write system call. In: x16 = the block's Janax address. Out: x17 = the
+  ; answer. Keeps x0..x15 (the Janax registers) and x19..x23; uses x24..x29. Its branches to the error exits
+  ; are patched when they are placed (host_patches).
+  host_arm:
+    dd 0D10062D1h               ; sub x17, x22, #24 (DATA_SIZE - 32)
+    dd 0EB11021Fh               ; cmp x16, x17
+  h_e5a:
+    dd 54000008h                ; b.hi exit 5
+    dd 0F2400A1Fh               ; tst x16, #7
+  h_e6a:
+    dd 54000001h                ; b.ne exit 6
+    dd 8B100270h                ; add x16, x19, x16 (the block)
+    dd 0F9400211h               ; ldr x17, [x16] (the request)
+    dd 0B4000000h or ((((h_cat - $) / 4) and 7FFFFh) shl 5) or 17     ; cbz x17, catalog
+    dd 0F100063Fh               ; cmp x17, #1 (escribir)
+    dd 54000001h or ((((h_abs - $) / 4) and 7FFFFh) shl 5)            ; b.ne absent
+    dd 0F9400619h               ; ldr x25, [x16, #8] (a)
+    dd 0F9400A1Ah               ; ldr x26, [x16, #16] (b)
+    dd 910022D1h                ; add x17, x22, #8 (DATA_SIZE)
+    dd 0EB11033Fh               ; cmp x25, x17
+  h_e5b:
+    dd 54000008h                ; b.hi exit 5
+    dd 0CB190231h               ; sub x17, x17, x25
+    dd 0EB11035Fh               ; cmp x26, x17
+  h_e5c:
+    dd 54000008h                ; b.hi exit 5
+    dd 0AA0003F8h, 0AA0103FBh, 0AA0203FCh, 0AA0803FDh  ; keep x0, x1, x2, x8 in x24, x27, x28, x29
+    dd 0D2800020h               ; movz x0, #1 (stdout)
+    dd 8B190261h                ; add x1, x19, x25
+    dd 0AA1A03E2h               ; mov x2, x26
+    dd 0D2800808h               ; movz x8, #64 (write)
+    dd 0D4000001h               ; svc #0
+    dd 0AA0003F1h               ; mov x17, x0 (bytes written)
+    dd 0AA1803E0h, 0AA1B03E1h, 0AA1C03E2h, 0AA1D03E8h  ; back to x0, x1, x2, x8
+    dd 0D65F03C0h               ; ret
+  h_cat:
+    dd 0F9400619h               ; ldr x25, [x16, #8] (where)
+    dd 0F9400A1Ah               ; ldr x26, [x16, #16] (room)
+    dd 0F2400B3Fh               ; tst x25, #7
+  h_e6b:
+    dd 54000001h                ; b.ne exit 6
+    dd 0D2800031h               ; movz x17, #1 (one request offered)
+    dd 0F100435Fh               ; cmp x26, #16
+    dd 54000003h or ((((h_ret - $) / 4) and 7FFFFh) shl 5)            ; b.lo ret (no room: counted, not written)
+    dd 0D10022D8h               ; sub x24, x22, #8 (DATA_SIZE - 16)
+    dd 0EB18033Fh               ; cmp x25, x24
+  h_e5d:
+    dd 54000008h                ; b.hi exit 5
+    dd 8B190279h                ; add x25, x19, x25
+    dd 0D28E6CBAh, 0F2AE4C7Ah, 0F2CC4D3Ah, 0F2EE4D3Ah  ; x26 = "escribir"
+    dd 0F900033Ah               ; str x26, [x25]
+    dd 0D280003Ah               ; movz x26, #1 (its number)
+    dd 0F900073Ah               ; str x26, [x25, #8]
+  h_ret:
+    dd 0D65F03C0h               ; ret
+  h_abs:
+    dd 92800011h                ; movn x17, #0 (-1: not offered)
+    dd 0D65F03C0h               ; ret
+  host_arm_end:
+  host_patches dd h_e5a - host_arm, 5, h_e6a - host_arm, 6, h_e5b - host_arm, 5, h_e5c - host_arm, 5
+               dd h_e6b - host_arm, 6, h_e5d - host_arm, 5
+  HOST_PATCHES = ($ - host_patches) / 8
 
 section '.text' code readable executable
 
@@ -275,6 +340,25 @@ e_call:
         mov     eax, 910006B5h          ; add x21, x21, #1
         stosd
         jmp     e_jmp
+
+e_host:                                 ; mov x16, xA / bl host / mov xD, x17
+        mov     eax, r8d
+        shl     eax, 16
+        or      eax, 0AA0003F0h
+        stosd
+        mov     ecx, K_B_STUB
+        mov     edx, S_HOST
+        call    add_fixup
+        mov     eax, 94000000h          ; bl (linked like a b to a stub)
+        stosd
+        mov     eax, 0AA1103E0h
+        or      eax, r11d
+        stosd
+        ret
+
+e_bad:
+        mov     edx, 1                  ; b exit 1 (invalid opcode)
+        jmp     b_stub
 
 e_ret:
         mov     eax, 0B5000055h         ; cbnz x21, +8
@@ -485,6 +569,29 @@ start:
         lea     rsi, [finish]
         mov     ecx, finish_end - finish
         rep     movsb
+        mov     rax, rdi                ; the helper of the window, its exits patched
+        sub     rax, r13
+        mov     [stub_off + S_HOST*8], rax
+        mov     r8, rax
+        lea     rsi, [host_arm]
+        mov     ecx, host_arm_end - host_arm
+        rep     movsb
+        xor     ecx, ecx
+        jmp     .patch
+.patch_lap:
+        mov     eax, [host_patches + rcx*8]       ; offset in the helper
+        mov     edx, [host_patches + rcx*8 + 4]   ; exit code
+        lea     r9, [r8 + rax]                    ; the branch's place in the output
+        mov     rax, [stub_off + rdx*8]
+        sub     rax, r9
+        sar     rax, 2
+        and     eax, 7FFFFh
+        shl     eax, 5
+        or      [r13 + r9], eax
+        inc     ecx
+.patch:                                 ; while branches are left to patch
+        cmp     ecx, HOST_PATCHES
+        jb      .patch_lap
 
         ; --- entry prologue; memory for the return stack and data goes right after the file ---
         mov     rax, rdi

@@ -29,14 +29,16 @@ rm -f "$salida"/*.x64             # first translator run of each test starts wit
 ok=0; mal=0
 for p in "$aqui"/*.jsm; do
   n=$(basename "$p" .jsm)
-  esp=''; cod=0
+  esp=''; cod=0; sal=''
   while IFS= read -r linea; do
     linea=${linea%$'\r'}
     case "$linea" in
       '; espera: '*) esp=${linea#'; espera: '} ;;
       '; codigo: '*) cod=${linea#'; codigo: '} ;;
+      '; salida: '*) sal=${linea#'; salida: '} ;;   # what the program writes before j0
     esac
   done < "$p"
+  [ -n "$sal" ] && esp="$sal"$'\n'"$esp"
   if [ ! -f "$salida/$n.bin" ]; then
     echo "MAL  $n (no se armo)"; mal=$((mal + 1)); continue
   fi
@@ -81,7 +83,7 @@ programa 20 "$(printf 'jadd j12, j12, j12\n%.0s' 1 2 3 4)"
 # with one nop inside the emitter (the word-by-word loop) must translate every word again.
 perl -pe 's/^(\.word_lap:)\r?$/$1\n        nop/' "$raiz/traductor.asm" > "$salida/traductor_otro.asm"
 if [ "$(grep -c '^        nop$' "$salida/traductor_otro.asm")" != 1 ] \
-   || ! "$fasm" "$salida/traductor_otro.asm" "$salida/traductor_otro.exe" > /dev/null 2>&1; then
+   || ! INCLUDE="$INCLUDE;$(cygpath -m "$raiz")" "$fasm" "$salida/traductor_otro.asm" "$salida/traductor_otro.exe" > /dev/null 2>&1; then   # its includes are next to the original
   echo "MAL  diff otro traductor: no se pudo armar la copia con el emisor cambiado"; mal=$((mal + 1))
 else
   programa 10; rm -f "$salida/diff.bin.x64"
@@ -109,19 +111,21 @@ if [ -x "$adb" ] && "$adb" get-state > /dev/null 2>&1; then
   done
   MSYS_NO_PATHCONV=1 "$adb" shell 'rm -rf /data/local/tmp/janax' > /dev/null
   MSYS_NO_PATHCONV=1 "$adb" push "$(cygpath -m "$salida/arm64")" /data/local/tmp/janax > /dev/null
-  resultados=$(MSYS_NO_PATHCONV=1 "$adb" shell 'cd /data/local/tmp/janax && for f in *; do chmod 755 $f; o=$(./$f); echo "$f|$o|$?"; done')
+  resultados=$(MSYS_NO_PATHCONV=1 "$adb" shell 'cd /data/local/tmp/janax && for f in *; do chmod 755 $f; o=$(./$f); c=$?; echo "$f|$(echo "$o" | tr "\n" "~")|$c"; done')
   for p in "$aqui"/*.jsm; do
     n=$(basename "$p" .jsm)
-    esp=''; cod=0
+    esp=''; cod=0; sal=''
     while IFS= read -r linea; do
       linea=${linea%$'\r'}
       case "$linea" in
         '; espera: '*) esp=${linea#'; espera: '} ;;
         '; codigo: '*) cod=${linea#'; codigo: '} ;;
+        '; salida: '*) sal=${linea#'; salida: '} ;;   # what the program writes before j0
       esac
     done < "$p"
+    [ -n "$sal" ] && esp="$sal"$'\n'"$esp"
     fila=$(printf '%s\n' "$resultados" | tr -d '\r' | while IFS= read -r l; do case "$l" in "$n|"*) echo "$l";; esac; done)
-    got=$(echo "$fila" | cut -d'|' -f2); c=$(echo "$fila" | cut -d'|' -f3)
+    got=$(echo "$fila" | cut -d'|' -f2 | tr '~' '\n'); c=$(echo "$fila" | cut -d'|' -f3)
     if [ "$c" = "$cod" ] && [ "$got" = "$esp" ]; then
       ok=$((ok + 1))
     else
@@ -132,8 +136,19 @@ else
   echo "AVISO: no hay telefono conectado por adb; las pruebas ARM64 no corrieron"
 fi
 
+# A smaller window: with JANAX_SIN the host takes "escribir" out of its catalog, and the program makes the
+# best of what it has (it writes nothing). Only on the PC: the phone's helper has no such setting.
+for motor in janax traductor; do
+  for caso in "37_ventanita|0000000000000000" "38_ventanita_escribe|0000000000000000"; do
+    n=${caso%|*}; esp=${caso#*|}
+    got=$(JANAX_SIN=escribir "$salida/$motor.exe" "$(cygpath -m "$salida/$n.bin")" 2> /dev/null); c=$?
+    got=${got%$'\r'}
+    if [ "$c" = 0 ] && [ "$got" = "$esp" ]; then ok=$((ok + 1)); else echo "MAL  $n [$motor, ventana chica]: dio codigo $c salida '$got'"; mal=$((mal + 1)); fi
+  done
+done
+
 # The while is Janax's only loop, also in the escalon 0: every loop must be a rotated while.
-for f in janax.asm traductor.asm traductor_arm64.asm; do
+for f in janax.asm traductor.asm traductor_arm64.asm ventanita.inc; do
   if r=$(perl "$raiz/../so/herramientas/bucles.pl" "$raiz/$f"); then
     ok=$((ok + 1))
   else
