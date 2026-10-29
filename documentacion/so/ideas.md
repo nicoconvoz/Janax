@@ -392,3 +392,21 @@ permisos por rama. Lo compilado se guarda con la huella de la fuente, sus `inclu
 primera orden. Las combinaciones: como una palabra es la unión de campos independientes, alcanzan todas
 las combinaciones de registros por instrucción y los 65.536 inmediatos con todos los bits de registro en
 1; cubre cada bit de cada campo y cada cruce entre campos.
+
+## 2026-10-29 — La ventanita que crece y se achica (Capitán)
+
+Para el paso 4 (escribir en Janax lo que hoy es x86) hace falta que el núcleo hable con el mundo de afuera
+(Windows, el procesador, el teléfono). Contado como un barco: el capitán (el núcleo) pide por una sola
+ventanita, y un ayudante de afuera sabe cumplir cada pedido en ese puerto.
+
+> *"La ventanita expandible o comprimible: el ayudante da la lista de pedidos que puede dar y el capitán
+> aprende lo que puede pedir. A veces la ventana es grande porque hay más pedidos y el capitán aprovecha la
+> ventaja; a veces es más pequeña, se pueden hacer menos pedidos, y el capitán aprovecha lo que tiene y lo
+> optimiza."*
+
+Devolución: es la misma idea del Cambiaformas (el arranque detecta capacidades, nunca el modelo) llevada a
+los servicios del anfitrión. Una sola instrucción nueva, `jhost`; al nacer, el ayudante entrega su
+**catálogo** (cada pedido con su nombre, para que no dependa de un número fijo) y el núcleo arma su plan con
+lo que hay: si el puerto ofrece algo mejor (copiar memoria en bloque, un reloj fino), lo usa; si no, lo hace
+él mismo en Janax. Hay un mínimo sin el cual no se zarpa (pedir memoria, escribir), y todo lo demás es
+ventaja.
