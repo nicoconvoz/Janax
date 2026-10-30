@@ -118,3 +118,5 @@ procesos). JANAX_SIN achica la ventana. Escalón 0 174/174 con el teléfono, Jan
 2026-10-29 — Primera pieza del núcleo en Janax: el planificador (so/nucleo/planificador.inc), turno exacto en enteros;
 216 casos idénticos a la matemática exacta en intérprete, x86 y el teléfono. Cuesta ~300-890 instrucciones por turno;
 falta decidir cómo conectarlo. Escalón 0 178/178.
+2026-10-29 — Turno más barato: raíz entera + corrección exacta, ~150 instrucciones (antes 300-890); 226 casos idénticos
+en intérprete, x86 y el teléfono. Suites 178/178 y 131/131.

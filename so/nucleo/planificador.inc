@@ -5,10 +5,12 @@
 ; real root of that equation is the old formula ((D + c) + sqrt((D + c)^2 + 4 c s)) / 2, rounded up.
 ;   D = how much more service the next one in line has received, s = the service this one has received,
 ;   c = the cost of a switch, in instructions.
-; In integers and exact (the old formula used floating point): c comes in sixteenths of an instruction,
-; and the comparisons divide instead of multiplying, so nothing overflows while c * 16 * s < 2^63 (with a
-; switch cost of 8 instructions, until a process has received ~7 * 10^16 instructions). The same result on
-; every machine and in every engine.
+; In integers and exact (the old formula used floating point): c comes in sixteenths of an instruction.
+; An integer square root puts t next to the root, and the rule itself, comparing with a division instead
+; of multiplying, moves it to the exact turn (one or two steps). When the square would not fit in 64 bits
+; (D above ~1.3 * 10^8, or 16 c s above 2^56) the turn is found by doubling and halving steps instead.
+; Either way, nothing overflows while 16 c s < 2^63 (with a switch cost of 8 instructions, until a process
+; has received ~7 * 10^16 instructions). The same result on every machine and in every engine.
 ;
 ; turno: j1 = D, j2 = s, j3 = c in sixteenths -> j0 = t. Uses j1-j7.
 turno:
@@ -19,7 +21,7 @@ jmul j5, j3, j2                 ; q = 16 c s
 jldi j4, 4
 jshl j6, j1, j4
 jadd j6, j6, j3                 ; a = 16 (D + c)
-jjnz j5, tu_search
+jjnz j5, tu_estimate
 jldi j4, 15                     ; s = 0: t = D + c rounded up, at least D + 1
 jadd j7, j3, j4
 jldi j4, 4
@@ -30,6 +32,54 @@ jldi j3, 63
 jshr j4, j4, j3
 jjnz j4, tu_fin
 jor j0, j7, j7
+jjmp tu_fin
+tu_estimate:                    ; t near the root (a + sqrt(a^2 + 64 q)) / 32, then exact by the rule
+jldi j4, 31
+jshr j4, j6, j4
+jjnz j4, tu_search               ; a^2 would not fit in 64 bits: the search
+jldi j4, 56
+jshr j4, j5, j4
+jjnz j4, tu_search               ; neither would 64 q
+jmul j1, j6, j6
+jldi j4, 6
+jshl j2, j5, j4
+jadd j1, j1, j2                 ; a^2 + 64 q
+jcall raiz
+jadd j2, j6, j2
+jldi j4, 5
+jshr j2, j2, j4                 ; t = (a + root) / 32
+jsub j4, j2, j0
+jldi j3, 63
+jshr j4, j4, j3
+jjz j4, te_min
+jor j2, j0, j0                  ; at least D + 1
+te_min:
+jldi j4, 1
+jsub j5, j5, j4                 ; q - 1, what turno_ok compares with
+jor j7, j2, j2
+jcall turno_ok
+jldi j1, 1
+jsub j1, j1, j4
+jwhile j1                       ; up, while it is not long enough
+  jldi j4, 1
+  jadd j2, j2, j4
+  jor j7, j2, j2
+  jcall turno_ok
+  jldi j1, 1
+  jsub j1, j1, j4
+jwend
+jsub j1, j2, j0
+jwhile j1                       ; down, while the one before is also long enough (and at least D + 1)
+  jldi j4, 1
+  jsub j7, j2, j4
+  jcall turno_ok
+  jldi j1, 0
+  jjz j4, te_down_end
+  jor j2, j7, j7
+  jsub j1, j2, j0
+te_down_end:
+jwend
+jor j0, j2, j2
 jjmp tu_fin
 tu_search:
 jldi j4, 1
@@ -86,4 +136,62 @@ jldi j3, 0
 jsub j4, j3, j4
 jldi j3, 63
 jshr j4, j4, j3                 ; 1 if it was positive
+jret
+
+; j1 = B > 0 -> j2 = the integer square root of B (the largest r with r * r <= B). Newton from above, from a
+; power of two that is already above the root (5 steps find it). Uses j3, j4, j7.
+raiz:
+jldi j2, 1
+jor j3, j1, j1
+jldi j4, 32
+jshr j7, j3, j4
+jjz j7, ra_16
+jor j3, j7, j7
+jldi j4, 16
+jshl j2, j2, j4
+ra_16:
+jldi j4, 16
+jshr j7, j3, j4
+jjz j7, ra_8
+jor j3, j7, j7
+jldi j4, 8
+jshl j2, j2, j4
+ra_8:
+jldi j4, 8
+jshr j7, j3, j4
+jjz j7, ra_4
+jor j3, j7, j7
+jldi j4, 4
+jshl j2, j2, j4
+ra_4:
+jldi j4, 4
+jshr j7, j3, j4
+jjz j7, ra_2
+jor j3, j7, j7
+jldi j4, 2
+jshl j2, j2, j4
+ra_2:
+jldi j4, 2
+jshr j7, j3, j4
+jjz j7, ra_up
+jadd j2, j2, j2
+ra_up:
+jadd j2, j2, j2                 ; now above the root
+jdiv j3, j1, j2                 ; y = (x + B / x) / 2
+jadd j3, j3, j2
+jldi j4, 1
+jshr j3, j3, j4
+jsub j7, j3, j2
+jldi j4, 63
+jshr j7, j7, j4
+jwhile j7                       ; while it still goes down
+  jor j2, j3, j3
+  jdiv j3, j1, j2
+  jadd j3, j3, j2
+  jldi j4, 1
+  jshr j3, j3, j4
+  jsub j7, j3, j2
+  jldi j4, 63
+  jshr j7, j7, j4
+jwend
 jret
