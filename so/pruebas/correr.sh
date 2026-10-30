@@ -87,6 +87,28 @@ caso "while: el turno corta en cualquier punto" 0 0 "$fijo0
 P1 codigo=0 j0=0000000000000037 t=71
 P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 
+# The scheduler is a Janax program in PDP (PDP/so/nucleo/planificador.bin): anyone can change it. Without it
+# the kernel uses the factory one; a broken one sends it back to the factory one.
+plan_pdp() {   # plan_pdp <folder> <planner program>
+  rm -rf "${salida:?}/${1:?}"; mkdir -p "$salida/$1"
+  cp "$salida/$2.bin" "$salida/$1/5044502f736f2f6e75636c656f2f706c616e6966696361646f722e62696e"
+  carpeta=$(cygpath -m "$salida/$1")
+}
+plan_pdp plan_largo planificador_largo
+caso "planificador propio: turnos de 1 MiB, ya no se turnan" 0 0 "modo: simbiosis
+planificador: el de PDP
+costo de cambio: 0.00 instrucciones (fijado)
+P0 codigo=0 j0=0000000000000037 t=36
+P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
+plan_pdp plan_roto planificador_roto
+caso "planificador propio roto: vuelve el de fabrica" 0 0 "modo: simbiosis
+planificador: el de PDP
+costo de cambio: 0.00 instrucciones (fijado)
+planificador: el de PDP fallo, vuelve el de fabrica
+P1 codigo=0 j0=0000000000000037 t=71
+P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
+unset carpeta
+
 caso "while: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
 P0 codigo=0 j0=0000000000000037 t=65
@@ -435,7 +457,7 @@ unset carpeta
 done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
-for f in janaxos.asm rutinas.inc ambientes.inc datos.inc; do
+for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc; do
   if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
     ok=$((ok + 1))
   else

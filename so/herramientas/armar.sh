@@ -4,7 +4,8 @@
 # Each source becomes <out folder>/<its name>.bin (X.ext.jsm -> X.ext). The repository's *.inc files go with
 # them, each at its place, so includes find them.
 # The assembler comes from its seed (so/pdp/semilla): the seed builds the assembler and its table from their
-# sources, and that build must build itself again identically (its fixed point). If the build is not the
+# sources, and that build must build itself again identically (its fixed point). The kernel's factory
+# planner (so/nucleo/planificador) is built the same way and its seed must be up to date too. If the build is not the
 # seed any more, the seed must be refreshed (the message says how) and nothing is built.
 set -u
 janaxos=$1; salida=$2; shift 2
@@ -23,18 +24,20 @@ corrida() {
 propio() {
   local fuente
   rm -rf "${2:?}"; mkdir -p "$2"
-  for fuente in ensamblador ensamblador.datos; do
-    cp "$proyecto/so/pdp/ensamblador/$fuente.jsm" "$2/$(etiqueta "PDP/so/pdp/ensamblador/$fuente.jsm")"
+  for fuente in so/pdp/ensamblador/ensamblador so/pdp/ensamblador/ensamblador.datos so/nucleo/planificador; do
+    cp "$proyecto/$fuente.jsm" "$2/$(etiqueta "PDP/$fuente.jsm")"
   done
-  [ "$(corrida "$1" "$2")" = "j0=0000000000000002" ] || { echo "armar: el ensamblador no se pudo armar"; exit 1; }
+  cp "$proyecto/so/nucleo/planificador.inc" "$2/$(etiqueta "PDP/so/nucleo/planificador.inc")"
+  [ "$(corrida "$1" "$2")" = "j0=0000000000000003" ] || { echo "armar: el ensamblador no se pudo armar"; exit 1; }
 }
 propio "$semilla" "$salida/pdp/de_semilla"
-for f in ensamblador.bin ensamblador.datos; do
-  cp "$salida/pdp/de_semilla/$(etiqueta "PDP/so/pdp/ensamblador/${f%.bin}")$([ "$f" = ensamblador.bin ] && etiqueta ".bin")" "$salida/pdp/$f"
-done
+cp "$salida/pdp/de_semilla/$(etiqueta "PDP/so/pdp/ensamblador/ensamblador.bin")" "$salida/pdp/ensamblador.bin"
+cp "$salida/pdp/de_semilla/$(etiqueta "PDP/so/pdp/ensamblador/ensamblador.datos")" "$salida/pdp/ensamblador.datos"
+cp "$salida/pdp/de_semilla/$(etiqueta "PDP/so/nucleo/planificador.bin")" "$salida/pdp/planificador.bin"
 propio "$salida/pdp" "$salida/pdp/de_si_mismo"
-for f in ensamblador.bin ensamblador.datos; do
-  n="$(etiqueta "PDP/so/pdp/ensamblador/${f%.bin}")$([ "$f" = ensamblador.bin ] && etiqueta ".bin")"
+for f in ensamblador.bin ensamblador.datos planificador.bin; do
+  case "$f" in planificador.bin) n=$(etiqueta "PDP/so/nucleo/planificador.bin") ;;
+    *) n="$(etiqueta "PDP/so/pdp/ensamblador/${f%.bin}")$([ "$f" = ensamblador.bin ] && etiqueta ".bin")" ;; esac
   cmp -s "$salida/pdp/de_semilla/$n" "$salida/pdp/de_si_mismo/$n" \
     || { echo "armar: $f no es su propio punto fijo"; exit 1; }
   cmp -s "$salida/pdp/$f" "$semilla/$f" \

@@ -257,7 +257,24 @@ mientras `16·c·s < 2⁶³` (con un cambio de 8 instrucciones, hasta ~7·10¹�
   `s = 0`, ~300 con `s = 1.000`, ~690 con `s = 10⁹` y ~890 con `s = 10¹²`. Con la raíz entera (Capitán:
   "abaratar primero"): **~150 en todos** (153, 162, 164; 28 con `s = 0`). Sigue siendo más que un cambio de
   proceso (~8): conectado, el costo de cambio medido lo incluiría y los turnos se alargarían como `√(c·s)`.
-- **Todavía no está conectado**: el núcleo x86 sigue usando su versión de punto flotante.
+- **Conectado y personalizable desde PDP** (Capitán: *"de PDP, personalizable"*): `so/nucleo/planificador.jsm` es
+  el programa (D, s y c en registros → turno, `jhalt`). El núcleo lo busca al arrancar en
+  `PDP/so/nucleo/planificador.bin` de la carpeta del sistema; si no está, usa **el de fábrica**, que va adentro
+  del ejecutable (`so/pdp/semilla/planificador.bin`, armado por el ensamblador PDP y controlado por `armar.sh`
+  como la semilla del ensamblador). Lo corre en cada decisión con su propio motor, como un **ayudante**
+  (`so/ayudantes.inc`): un procesito sin memoria ni ventanilla que conserva su pila entre corridas. Uno
+  personalizado que falla o no termina en 100.000 instrucciones hace volver al de fábrica, con aviso. El
+  núcleo nunca da un turno menor a `D + 1`. **El punto flotante del turno desapareció del núcleo.** El costo
+  recordado también depende del planificador (entra en la huella de la calibración).
+- **El costo real de un cambio**: la calibración corre el planificador completo en cada decisión (con c = 1
+  instrucción, descartando el resultado), porque decidir el turno es parte de cambiar. Medido: **~300
+  instrucciones con rutinas** (295, 310, 343) y **~170 con el intérprete** (antes ~8 y ~2). Los turnos se
+  alargan como `√c`: dos `calculo` terminan separados por ~310.000 instrucciones (antes ~46.000), y **compartir
+  sigue costando lo mismo que correr seguidos** (~2,9 s contra 2 × ~1,5 s).
+- **La calibración apunta a una duración**: corría un largo fijo, y con un cambio 30 veces más caro tardaba
+  20 s (rutinas) y 50 s (intérprete). Ahora un sondeo corto del par decide sus vueltas para que dure como 10
+  corridas solas: el largo que daba medianas estables cuando un cambio costaba ~8. El error de `c` es el ruido
+  sobre esa duración, cueste lo que cueste un cambio. Vuelve a tardar ~1–2,6 s.
 
 ## Datos iniciales: `X.datos` al lado de `X` (Capitán, 2026-10-29)
 

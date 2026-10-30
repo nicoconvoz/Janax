@@ -69,7 +69,8 @@ P_LIM1   = 320                  ; the same for a 1-byte access: room 0's size
 P_RETCAP = 328                  ; return stack entries committed: it grows with the calls (ambientes.inc)
 P_INIT   = 336                  ; its initial data (the file X.datos next to X), copied into room 0 at the first order
 P_INITLEN = 344
-PROC_SIZE = 352
+P_HELPER = 352                  ; 1 = a kernel helper (ayudantes.inc): it runs again, so it keeps its return stack
+PROC_SIZE = 360
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -226,6 +227,25 @@ section '.data' data readable writeable
 
   swcost    dq 0.0              ; cost of a switch, in instructions (double)
   quiet     db 0                ; 1 while calibrating: no report lines
+  plan_default: file 'pdp/semilla/planificador.bin'   ; the factory planner (ayudantes.inc)
+  PLAN_DEFAULT_WORDS = ($ - plan_default) / 4
+  plan_label db 'PDP/so/nucleo/planificador.bin'
+  PLAN_LABEL_LEN = $ - plan_label
+  plan_text  db 'planificador: el de PDP', 13, 10
+  PLAN_TEXT_LEN = $ - plan_text
+  plan_fail_text db 'planificador: el de PDP fallo, vuelve el de fabrica', 13, 10
+  PLAN_FAIL_LEN = $ - plan_fail_text
+  align 8
+  plan_prog  dq 0
+  plan_words dq 0
+  plan_proc  dq 0
+  plan_c16   dq 0               ; the cost of a switch in sixteenths of an instruction, for the planner
+  plan_d     dq 0
+  plan_s     dq 0
+  plan_rsp   dq 0
+  plan_own   db 0               ; 1 = the planner came from PDP
+  align 8
+  sixteen    dq 16.0
   switches  dq 0                ; process switches made by the scheduler
   env_name  db 'JANAX_CAMBIO', 0
   calib_env db 'JANAX_CALIBRACION', 0
@@ -248,11 +268,15 @@ section '.data' data readable writeable
   fixed_text db ' instrucciones (fijado)', 13, 10
   FIXED_LEN = $ - fixed_text
 
-  ; calibration program: a while of CALIB_LOOPS laps of 2 instructions (jsub / its condition)
-  CALIB_LOOPS = 200000h         ; criterion: ~4 M instructions per run, so a clock speed change weighs little
-  calib_prog dd 01h or (1 shl 8) or ((CALIB_LOOPS shr 16) shl 16)          ; jldi j1, high
-             dd 0Fh or (1 shl 8) or ((CALIB_LOOPS and 0FFFFh) shl 16)      ; jshi j1, low
-             dd 01h or (2 shl 8) or (1 shl 16)                             ; jldi j2, 1
+  ; calibration program: a while of j1 laps of 2 instructions (jsub / its condition); the kernel sets j1
+  CALIB_LOOPS = 200000h         ; criterion: ~4 M instructions alone, so a clock speed change weighs little
+  CALIB_PROBE = CALIB_LOOPS / 64 ; a short run of the pair, to learn how long it takes
+  CALIB_TWO_SCALE = 10          ; the pair runs about as long as 10 runs alone: the length of the pair that
+                                ; gave steady medians (1.17-1.64) when a switch cost ~8 instructions. The
+                                ; error of c is the noise over that length, whatever a switch costs.
+  calib_loops dq CALIB_LOOPS
+  calib_loops_two dq CALIB_LOOPS
+  calib_prog dd 01h or (2 shl 8) or (1 shl 16)                             ; jldi j2, 1
              dd 0Ch or (1 shl 16)                                          ; jwhile j1: jjmp check
              dd 03h or (1 shl 8) or (1 shl 12) or (2 shl 16)               ; body: jsub j1, j1, j2
              dd 0Eh or (1 shl 8) or ((-2 and 0FFFFh) shl 16)               ; jwend: check: jjnz j1, body
@@ -380,6 +404,7 @@ start:
         jne     .motor_known
         mov     byte [motor], 0
 .motor_known:
+        call    plan_load               ; the scheduler, in Janax: from PDP or the factory one
 
         ; --- cost of a switch: fixed by JANAX_CAMBIO, remembered from an earlier boot, or measured ---
         invoke  GetEnvironmentVariableA, env_name, env_value, 31
@@ -417,6 +442,10 @@ start:
         call    print_cost
         invoke  WriteFile, [hout], measured_text, MEASURED_LEN, written, 0
 .cost_known:
+        movsd   xmm0, [swcost]
+        mulsd   xmm0, [sixteen]
+        cvtsd2si rax, xmm0              ; c in sixteenths of an instruction, rounded
+        mov     [plan_c16], rax
 
         ; --- porters: the root and one porter per door (nodes 0..3); processes hang from the doors ---
         mov     rcx, -1
@@ -907,22 +936,10 @@ run_all:
         mov     rax, r9
         sub     rax, r8                 ; D: how much less service the one waiting has... the other way round
         lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
-        cvtsi2sd xmm0, rax
-        addsd   xmm0, [swcost]          ; D + c
-        movapd  xmm1, xmm0
-        mulsd   xmm1, xmm1              ; (D + c)^2
-        cvtsi2sd xmm2, r8
-        mulsd   xmm2, [swcost]
-        mulsd   xmm2, [four]            ; 4 c s
-        addsd   xmm1, xmm2
-        sqrtsd  xmm1, xmm1
-        addsd   xmm0, xmm1
-        mulsd   xmm0, [half]            ; t
-        cvttsd2si rax, xmm0
-        cvtsi2sd xmm1, rax
-        ucomisd xmm0, xmm1
-        jbe     @f
-        inc     rax                     ; round up
+        call    plan_turn               ; the turn, from the planner in Janax (PDP or the factory one)
+        cmp     byte [quiet], 0
+        je      @f
+        mov     rax, r10                ; calibrating: D + 1; the planner ran so that its cost is measured
 @@:     cmp     rax, r10
         jge     .run
         mov     rax, r10
@@ -1000,7 +1017,25 @@ calibrate:
         mov     [old_priority], rax
         invoke  SetThreadPriority, [thread], THREAD_PRIORITY_TIME_CRITICAL
         call    calib_one               ; warm-up
+        call    calib_one
+        mov     [cycles_one], rax       ; how long a run alone takes
+        mov     qword [calib_loops_two], CALIB_PROBE
         call    calib_two
+        mov     rcx, rax                ; how long a short run of the pair takes
+        test    rcx, rcx
+        jnz     @f
+        inc     rcx
+@@:     mov     rax, [cycles_one]       ; laps of the pair = probe * (scale * alone) / probe time
+        imul    rax, rax, CALIB_TWO_SCALE * CALIB_PROBE
+        xor     edx, edx
+        div     rcx
+        cmp     rax, CALIB_PROBE
+        jae     @f
+        mov     eax, CALIB_PROBE
+@@:     cmp     rax, CALIB_LOOPS
+        jbe     @f
+        mov     eax, CALIB_LOOPS
+@@:     mov     [calib_loops_two], rax
         mov     qword [rounds], 0       ; in memory: run_process uses every register
         jmp     .pair
 .pair_lap:
@@ -1121,6 +1156,18 @@ cost_key:
         movzx   ecx, byte [motor]       ; the cost is in instructions, and each engine runs them at its pace
         xor     eax, ecx
         imul    eax, eax, 01000193h
+        mov     rsi, [plan_prog]        ; and the planner: deciding a turn is part of a switch
+        mov     rdx, [plan_words]
+        lea     rdx, [rsi + rdx*4]
+        jmp     .plan
+.plan_lap:
+        movzx   ecx, byte [rsi]
+        xor     eax, ecx
+        imul    eax, eax, 01000193h
+        inc     rsi
+.plan:                                  ; while planner bytes are left
+        cmp     rsi, rdx
+        jb      .plan_lap
         mov     dword [cost_rec], eax
         lea     rdi, [cost_rec + 4]
         mov     eax, 80000000h          ; the processor name, if it has one
@@ -1204,9 +1251,12 @@ save_cost:
 ; clock = instructions, switches = switches.
 calib_one:
         mov     qword [nprocs], 1
+        mov     qword [calib_loops], CALIB_LOOPS
         jmp     calib_run
 calib_two:
         mov     qword [nprocs], 2
+        mov     rax, [calib_loops_two]
+        mov     [calib_loops], rax
 calib_run:
         call    calib_reset
         rdtsc
@@ -1244,6 +1294,9 @@ calib_reset:
 @@:     lea     rdi, [calib_procs]
         mov     [rdi + P_TABLE], rax
         mov     [rdi + PROC_SIZE + P_TABLE], rax
+        mov     rax, [calib_loops]
+        mov     [rdi + P_REGS + 1*8], rax
+        mov     [rdi + PROC_SIZE + P_REGS + 1*8], rax
         mov     qword [clock], 0
         mov     qword [switches], 0
         ret
@@ -1447,6 +1500,7 @@ op_shi:
 
 include 'datos.inc'
 include 'anfitrion.inc'
+include 'ayudantes.inc'
 include 'ambientes.inc'
 
 macro memop name, size, align_check, is_load, body {
@@ -1560,6 +1614,8 @@ op_sys:
 ; the cabin.
 ventanilla:
         push    rsi rdi rbp r12 r13 r14 r15
+        cmp     qword [rbx + P_HELPER], 0
+        jne     .bad                    ; a kernel helper has no window
         cmp     qword [rbx + P_ROOMS], 0
         jne     .queue
         cmp     qword [rbx + P_LIM1], 0

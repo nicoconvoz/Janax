@@ -382,6 +382,8 @@ ret_trim:
         mov     rax, [rbx + P_RETCAP]
         test    rax, rax
         jz      .done                   ; nothing committed
+        cmp     qword [rbx + P_HELPER], 0
+        jne     .done                   ; a kernel helper runs again: it keeps its stack
         xor     edx, edx                ; ended: all of it
         cmp     qword [rbx + P_DONE], 0
         jne     .give_back

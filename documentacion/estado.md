@@ -120,3 +120,6 @@ procesos). JANAX_SIN achica la ventana. Escalón 0 174/174 con el teléfono, Jan
 falta decidir cómo conectarlo. Escalón 0 178/178.
 2026-10-29 — Turno más barato: raíz entera + corrección exacta, ~150 instrucciones (antes 300-890); 226 casos idénticos
 en intérprete, x86 y el teléfono. Suites 178/178 y 131/131.
+2026-10-29 — Planificador en Janax conectado (Capitán: de PDP, personalizable): PDP/so/nucleo/planificador.bin o el de
+fábrica dentro del núcleo; uno roto vuelve al de fábrica. Sin punto flotante en el turno. Un cambio cuesta ahora ~300
+instrucciones (rutinas); compartir sigue igual que seguidos. Calibración por duración (~1-2,6 s). SO 137/137, escalón 0 178/178.
