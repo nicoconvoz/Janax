@@ -75,7 +75,8 @@ P_SYSRD  = 368                  ; jsys: where its answer goes (rd * 8), kept per
 P_SYSQ   = 376                  ; jsys: its queue address
 P_SAVERSP = 384                 ; ret_grow / ret_trim: the stack they came with
 P_RUNNING = 392                 ; 1 = a rower is running it (remos.inc)
-PROC_SIZE = 400
+P_TURN   = 400                  ; the turn it was given (to know whether it used it to its end)
+PROC_SIZE = 408
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -252,8 +253,14 @@ section '.data' data readable writeable
   plan_words dq 0
   plan_proc  dq 0
   plan_c16   dq 0               ; the cost of a switch in sixteenths of an instruction, for the planner
-  plan_d     dq 0
-  plan_s     dq 0
+  plan_pick  dq 0
+  plan_r8    dq 0
+  plan_r9    dq 0
+  plan_cap   dq 0               ; the planner's room, in bytes
+  plan_need  dq 0
+  plan_sheet dq 0
+  sheet_pos  dq 0               ; the next line of the sheet of turns
+  sheet_left dq 0               ; lines left: 0 = no sheet
   plan_rsp   dq 0
   plan_own   db 0               ; 1 = the planner came from PDP
   align 8
@@ -3163,6 +3170,7 @@ family_launch:
         mov     rax, [rax + P_ID]
         mov     [rbp + r13 + 24], rax
         mov     byte [sched_dirty], 1
+        mov     qword [sheet_left], 0   ; the world changed: the sheet of turns is no longer the one
         add     rsp, 8
         ret
 .close:
@@ -3191,6 +3199,7 @@ family_sign:
         mov     r8, [r9 + R_CHILD]
         dec     qword [r8 + P_WAITING]
         mov     byte [sched_dirty], 1
+        mov     qword [sheet_left], 0   ; the world changed: the sheet of turns is no longer the one
         mov     qword [rbp + r13 + 24], 0
         ret
 .invalid:

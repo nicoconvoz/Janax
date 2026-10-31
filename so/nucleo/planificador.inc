@@ -195,3 +195,98 @@ jwhile j7                       ; while it still goes down
   jshr j7, j7, j4
 jwend
 jret
+
+; The sheet of turns (Capitan: "the captain sets the priorities of when each one rows, so that they do not
+; have to be told"): the next turns at once, for the kernel to follow while the world is the one imagined.
+; In: at 0 n (cabins), at 8 c (sixteenths of an instruction), at 16 K (turns wanted); at 32, n entries
+; {served, id} in id order, a cabin some rower is rowing with bit 63 of its id set (it cannot be chosen, it
+; only counts as the next in line). Out: at 32 + 16 n, the turns as {id, turn}; j0 = how many.
+; The factory rule, simulating one rower: the least served cabin nobody rows (ties: the lower id) rows the
+; turn of the rule, as if it used it to its end; a cabin alone rows until it ends (turn 2^62) and the
+; sheet stops there. Needs every register at 0 (the kernel clears them); uses all of them.
+hoja:
+jld j8, j14, 0                  ; n
+jld j9, j14, 8                  ; c
+jld j10, j14, 16                ; turns wanted
+jldi j4, 4
+jshl j11, j8, j4
+jldi j4, 32
+jadd j11, j11, j4               ; where the turns go
+jldi j12, 0                     ; turns written
+jldi j13, 1
+jwhile j10
+  jldi j15, 0                   ; the chosen cabin (its entry), 0 = none
+  jldi j6, -1
+  jshr j6, j6, j13              ; its service (the largest number while there is none)
+  jor j7, j6, j6                ; the least service among the others
+  jldi j1, 32
+  jor j2, j8, j8
+  jwhile j2                     ; every cabin
+    jld j3, j1, 0
+    jld j4, j1, 8
+    jldi j5, 63
+    jshr j4, j4, j5             ; rowed by someone
+    jjnz j4, ho_other
+    jsub j4, j3, j6
+    jshr j4, j4, j5             ; less served than the chosen one
+    jjz j4, ho_other
+    jsub j4, j6, j7             ; the chosen one so far becomes one of the others
+    jshr j4, j4, j5
+    jjz j4, ho_keep
+    jor j7, j6, j6
+ho_keep:
+    jor j6, j3, j3
+    jor j15, j1, j1
+    jjmp ho_next
+ho_other:
+    jsub j4, j3, j7
+    jldi j5, 63
+    jshr j4, j4, j5
+    jjz j4, ho_next
+    jor j7, j3, j3
+ho_next:
+    jldi j4, 16
+    jadd j1, j1, j4
+    jsub j2, j2, j13
+  jwend
+  jjz j15, ho_end               ; nobody can row
+  jld j4, j15, 8
+  jst j4, j11, 0                ; its id
+  jldi j4, -1
+  jshr j4, j4, j13
+  jsub j4, j7, j4
+  jjnz j4, ho_turn
+  jldi j0, 4000h                ; alone: until it ends, and the sheet stops here
+  jshi j0, 0
+  jshi j0, 0
+  jshi j0, 0
+  jst j0, j11, 8
+  jadd j12, j12, j13
+  jjmp ho_end
+ho_turn:
+  jsub j1, j7, j6               ; D: how much more service the next one in line has received
+  jldi j4, 63
+  jsar j4, j1, j4
+  jxor j4, j4, j13
+  jand j4, j4, j13
+  jjnz j4, ho_d
+  jldi j1, 0                    ; never below 0: a next one with less (rowed by someone) is already behind
+ho_d:
+  jor j2, j6, j6                ; s
+  jor j3, j9, j9
+  jcall turno
+  jst j0, j11, 8
+  jld j4, j15, 0                ; as if it used it to its end
+  jadd j4, j4, j0
+  jst j4, j15, 0
+  jldi j4, 16
+  jadd j11, j11, j4
+  jadd j12, j12, j13
+  jsub j10, j10, j13
+  jjmp ho_more
+ho_end:
+  jldi j10, 0
+ho_more:
+jwend
+jor j0, j12, j12
+jret

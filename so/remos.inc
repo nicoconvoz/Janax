@@ -70,23 +70,13 @@ run_all:
         call    kern_sleep              ; nothing for this rower while others row: wait for a change
         jmp     .schedule
 .nobody:
+        mov     qword [sheet_left], 0   ; signatures change who can row
         call    nobody_signs            ; everyone left waits for a signature nobody can give
         jmp     .schedule
 .someone:
-        mov     rax, FOREVER            ; alone: run to the end
-        cmp     r9, rax
-        je      .run
-        mov     rax, r9
-        sub     rax, r8                 ; D: how much more service the next one in line has received
-        lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
-        call    plan_turn               ; the turn, from the planner in Janax (PDP or the factory one)
-        cmp     byte [quiet], 0
-        je      @f
-        mov     rax, r10                ; calibrating: D + 1; the planner ran so that its cost is measured
-@@:     cmp     rax, r10
-        jge     .run
-        mov     rax, r10
+        call    plan_next               ; who rows now and for how long: the sheet of turns (ayudantes.inc)
 .run:
+        mov     [rbx + P_TURN], rax
         inc     qword [switches]
         mov     qword [rbx + P_RUNNING], 1
         inc     qword [rowing]
@@ -96,6 +86,13 @@ run_all:
         mov     qword [rbx + P_RUNNING], 0
         dec     qword [rowing]
         add     [rbx + P_SERVED], rax
+        cmp     rax, [rbx + P_TURN]
+        je      @f
+        mov     qword [sheet_left], 0   ; it did not use its turn to the end: the world is not the imagined one
+@@:     cmp     qword [rbx + P_DONE], 0
+        je      @f
+        mov     qword [sheet_left], 0   ; it ended
+@@:
         add     [clock], rax
         call    kern_wake               ; a cabin came back: the rowers asleep look again
         cmp     qword [rbx + P_DONE], 0
