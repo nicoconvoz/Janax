@@ -708,3 +708,19 @@ arranque). Uno por uno suma ~130 ms: ~13 µs por llamada al anfitrión.
   Wenas) cuando los procesos puedan vivir en máquinas distintas.
 - La campana (0..1) y la cubierta.
 - Modo cero.
+
+## Contra Windows, en la misma máquina (2026-10-31)
+
+Bancos escritos en FASM, sin nada externo, todos corridos en la misma tanda:
+
+| | Windows | Janax OS | |
+|---|---|---|---|
+| Cambiar de tarea | ~2 µs (dos hilos que se pasan el turno con eventos, un núcleo: 400.000 cambios en ~790 ms) | **~37 ns** (dos camarotes con turnos de una instrucción: 6 millones de cambios suman ~225 ms) | ~50 veces menos |
+| Crear y terminar una tarea | ~8 ms (`CreateProcess` del programa más chico, 100 veces: ~800 ms) | **~0,1–0,3 ms** (101 camarotes contra 1; incluye leer el programa del disco y escribir su línea) | ~25–80 veces menos |
+| Una tarea en memoria | (no medido) | 472 bytes de camarote, más la memoria que pida | |
+
+No es la misma cosa: un proceso de Windows tiene su propio espacio de memoria protegido por el procesador, y lo
+cambia el reloj del hardware; un camarote vive dentro del proceso de Janax OS, protegido por los límites que revisa
+cada acceso, y cambia en la instrucción exacta. Lo que se mide es lo que cuesta *a Janax* cambiar y crear tareas,
+contra lo que le cuesta a Windows con las suyas. ⚠️ El primer banco de cambios mintió: el programa no se había
+armado (el ensamblador PDP no toma rutas absolutas en `include`) y el SO corría sin nada.
