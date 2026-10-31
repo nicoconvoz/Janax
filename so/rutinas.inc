@@ -157,7 +157,7 @@ decode_program:
 
 ; Runs the process in rbx for up to rax instructions with its table. Same contract as run_process.
 run_routines:
-        mov     [budget0], rax
+        mov     [rbx + P_BUDGET0], rax
         mov     rbp, rax
         mov     r13, [rbx + P_TABLE]     ; made at birth (share_program)
         mov     r14, rbx
@@ -186,7 +186,7 @@ t_store:
         mov     [rbx + P_PC], r12
         mov     [rbx + P_DEPTH], rdi
         call    ret_trim
-        mov     rax, [budget0]
+        mov     rax, [rbx + P_BUDGET0]
         sub     rax, rbp
         ret
 
@@ -476,27 +476,36 @@ t_jhost:                                 ; the window to the host (anfitrion.inc
         align 16
 t_sys:
         movzx   ecx, byte [rdx + 8]
-        mov     [sys_rd], rcx           ; rd * 8
+        mov     [rbx + P_SYSRD], rcx    ; rd * 8
         movzx   ecx, byte [rdx + 9]
-        mov     rax, [r14 + rcx]        ; queue address
+        mov     rax, [r14 + rcx]
+        mov     [rbx + P_SYSQ], rax     ; queue address
+        call    kern_enter              ; the window is shared: one cabin at a time (remos.inc)
+        mov     rax, [rbx + P_SYSQ]
         call    ventanilla
         mov     r15, [rbx + P_DATA]     ; a request may have built or moved a room
         cmp     rax, -1
-        je      t_fail_mem
+        je      .fail
         cmp     rax, -2
         je      .asleep
-        mov     rcx, [sys_rd]
+        mov     rcx, [rbx + P_SYSRD]
         mov     [r14 + rcx], rax        ; requests attended
         cmp     byte [sched_dirty], 0
         je      @f
         mov     byte [sched_dirty], 0   ; someone was born or woke up: the scheduler decides again
-        sub     [budget0], rbp          ; end the turn here, counting only what really ran
+        sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
-@@:     t_next
+        call    kern_wake               ; and the rowers asleep look again
+@@:     call    kern_leave
+        t_next
+.fail:
+        call    kern_leave
+        jmp     t_fail_mem
 .asleep:                                ; waiting for the parent's signature: this jsys runs again later
         sub     r12, R_SIZE
-        sub     [budget0], rbp
+        sub     [rbx + P_BUDGET0], rbp
         xor     ebp, ebp
+        call    kern_leave
         jmp     t_store
 
 postpone {                              ; cold: after all the code, so t_call stays small

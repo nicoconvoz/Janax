@@ -123,3 +123,6 @@ en intérprete, x86 y el teléfono. Suites 178/178 y 131/131.
 2026-10-29 — Planificador en Janax conectado (Capitán: de PDP, personalizable): PDP/so/nucleo/planificador.bin o el de
 fábrica dentro del núcleo; uno roto vuelve al de fábrica. Sin punto flotante en el turno. Un cambio cuesta ahora ~300
 instrucciones (rutinas); compartir sigue igual que seguidos. Calibración por duración (~1-2,6 s). SO 137/137, escalón 0 178/178.
+2026-10-31 — Los remeros (Capitán): camarotes en paralelo, un remero por núcleo, candado solo para lo compartido,
+remeros que duermen sin trabajo. 4 calculo: 1 remero 6,7 s, 2 remeros 3,6 s (1,85×), 4 remeros ~2,8 s (2 núcleos con
+hiperhilación). 300 corridas de estrés sin fallas. SO 145/145, escalón 0 178/178 con el teléfono.

@@ -70,7 +70,12 @@ P_RETCAP = 328                  ; return stack entries committed: it grows with 
 P_INIT   = 336                  ; its initial data (the file X.datos next to X), copied into room 0 at the first order
 P_INITLEN = 344
 P_HELPER = 352                  ; 1 = a kernel helper (ayudantes.inc): it runs again, so it keeps its return stack
-PROC_SIZE = 360
+P_BUDGET0 = 360                 ; the turn it was given (the engines count down from it)
+P_SYSRD  = 368                  ; jsys: where its answer goes (rd * 8), kept per cabin
+P_SYSQ   = 376                  ; jsys: its queue address
+P_SAVERSP = 384                 ; ret_grow / ret_trim: the stack they came with
+P_RUNNING = 392                 ; 1 = a rower is running it (remos.inc)
+PROC_SIZE = 400
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -227,6 +232,13 @@ section '.data' data readable writeable
 
   swcost    dq 0.0              ; cost of a switch, in instructions (double)
   quiet     db 0                ; 1 while calibrating: no report lines
+  align 8
+  kern_lock   rb 40               ; the captain's lock (a CRITICAL_SECTION, remos.inc)
+  kern_change dq 0                ; rowers asleep wait on it (a CONDITION_VARIABLE)
+  rowing      dq 0                ; cabins being rowed right now
+  remos       dq 1                ; how many rowers
+  remos_env   db 'JANAX_REMOS', 0
+  STACK_SIZE_PARAM_IS_A_RESERVATION = 10000h
   plan_default: file 'pdp/semilla/planificador.bin'   ; the factory planner (ayudantes.inc)
   PLAN_DEFAULT_WORDS = ($ - plan_default) / 4
   plan_label db 'PDP/so/nucleo/planificador.bin'
@@ -336,6 +348,13 @@ section '.idata' import data readable writeable
          ReadFile, 'ReadFile',\
          CloseHandle, 'CloseHandle',\
          CreateDirectoryA, 'CreateDirectoryA',\
+         InitializeCriticalSection, 'InitializeCriticalSection',\
+         EnterCriticalSection, 'EnterCriticalSection',\
+         LeaveCriticalSection, 'LeaveCriticalSection',\
+         SleepConditionVariableCS, 'SleepConditionVariableCS',\
+         WakeAllConditionVariable, 'WakeAllConditionVariable',\
+         CreateThread, 'CreateThread',\
+         WaitForSingleObject, 'WaitForSingleObject',\
          GetSystemInfo, 'GetSystemInfo',\
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
@@ -392,6 +411,29 @@ start:
         invoke  GetSystemInfo, sysinfo
         mov     eax, dword [sysinfo + 4] ; dwPageSize
         mov     [page_size], rax
+        invoke  InitializeCriticalSection, kern_lock
+        mov     eax, dword [sysinfo + 32] ; dwNumberOfProcessors: one rower per core
+        mov     [remos], rax
+        invoke  GetEnvironmentVariableA, remos_env, env_value, 31   ; JANAX_REMOS: how many rowers
+        test    eax, eax
+        jz      .rowers_known
+        xor     eax, eax
+        lea     rsi, [env_value]
+        jmp     .rower_digit
+.rower_digit_lap:
+        imul    rax, 10
+        add     rax, rcx
+        inc     rsi
+.rower_digit:                           ; while the character is a digit
+        movzx   ecx, byte [rsi]
+        sub     ecx, '0'
+        cmp     ecx, 9
+        jbe     .rower_digit_lap
+        test    rax, rax
+        jnz     @f
+        inc     eax                     ; at least one rower
+@@:     mov     [remos], rax
+.rowers_known:
 
         ; --- engine: JANAX_MOTOR=interprete runs the reference interpreter ---
         invoke  GetEnvironmentVariableA, motor_env, env_value, 31
@@ -692,7 +734,7 @@ start:
         jb      .load_lap
 .loaded:
 
-        call    run_all
+        call    row                     ; the rowers: one per core, each rowing its cabins (remos.inc)
         cmp     qword [requests], 0
         je      .quit
         lea     rdi, [line]             ; "ventanilla: pantallas=.. resintonias=.. llamadas al anfitrion=.. pedidos=.."
@@ -922,76 +964,7 @@ share_program:
 ; the priority gap and the switch cost (see the header).
 ; While someone can run or waits for a signature: give a turn to the least served one, or, if all of
 ; them wait for a signature nobody can give, answer those.
-run_all:
-        jmp     .schedule
-.turn:
-        cmp     rbx, -1
-        jne     .someone
-        call    nobody_signs            ; everyone left waits for a signature nobody can give
-        jmp     .schedule
-.someone:
-        mov     rax, FOREVER            ; alone: run to the end
-        cmp     r9, rax
-        je      .run
-        mov     rax, r9
-        sub     rax, r8                 ; D: how much less service the one waiting has... the other way round
-        lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
-        call    plan_turn               ; the turn, from the planner in Janax (PDP or the factory one)
-        cmp     byte [quiet], 0
-        je      @f
-        mov     rax, r10                ; calibrating: D + 1; the planner ran so that its cost is measured
-@@:     cmp     rax, r10
-        jge     .run
-        mov     rax, r10
-.run:
-        inc     qword [switches]
-        call    run_process             ; rax = instructions executed
-        add     [rbx + P_SERVED], rax
-        add     [clock], rax
-        cmp     qword [rbx + P_DONE], 0
-        je      .schedule
-        call    close_files             ; whatever the process left open
-        call    orphans                 ; its children and what waited for its signature go up
-        cmp     byte [quiet], 0
-        jne     .schedule
-        call    report
-.schedule:                              ; while someone can run or waits for a signature
-        mov     rbx, -1                 ; least served process
-        mov     r8, FOREVER             ; its service
-        mov     r9, FOREVER             ; service of the next least served
-        mov     qword [asleep], 0
-        xor     ecx, ecx
-        jmp     .scan
-.scan_lap:
-        mov     rsi, [procs]
-        mov     rsi, [rsi + rcx*8]
-        cmp     qword [rsi + P_DONE], 0
-        jne     .next_proc
-        cmp     qword [rsi + P_WAITING], 0
-        je      @f
-        inc     qword [asleep]          ; waiting for a signature: it does not run
-        jmp     .next_proc
-@@:     mov     rax, [rsi + P_SERVED]
-        cmp     rax, r8
-        jae     .not_least              ; ties keep the lower process number
-        mov     r9, r8
-        mov     r8, rax
-        mov     rbx, rsi
-        jmp     .next_proc
-.not_least:
-        cmp     rax, r9
-        jae     .next_proc
-        mov     r9, rax
-.next_proc:
-        inc     rcx
-.scan:                                  ; while there are processes to look at
-        cmp     rcx, [nprocs]
-        jb      .scan_lap
-        cmp     rbx, -1
-        jne     .turn
-        cmp     qword [asleep], 0
-        jne     .turn
-        ret
+; The scheduler (the rowers that run the cabins): remos.inc.
 
 ; ---------------------------------------------------------------- calibration
 ; Measures the cost of a switch on this machine, in instructions: the same program once alone and
@@ -1346,7 +1319,7 @@ put_hundredths:
 run_process:
         cmp     byte [motor], 0
         jne     run_routines
-        mov     [budget0], rax
+        mov     [rbx + P_BUDGET0], rax
         mov     rbp, rax                ; budget left
         mov     r14, rbx                ; registers
         mov     r15, [rbx + P_DATA]
@@ -1381,7 +1354,7 @@ suspend:
         mov     [rbx + P_PC], r12
         mov     [rbx + P_DEPTH], rdi
         call    ret_trim
-        mov     rax, [budget0]
+        mov     rax, [rbx + P_BUDGET0]
         sub     rax, rbp
         ret
 
@@ -1501,6 +1474,7 @@ op_shi:
 include 'datos.inc'
 include 'anfitrion.inc'
 include 'ayudantes.inc'
+include 'remos.inc'
 include 'ambientes.inc'
 
 macro memop name, size, align_check, is_load, body {
@@ -1575,26 +1549,36 @@ op_jhost:                                ; the window to the host (anfitrion.inc
 
         align 16
 op_sys:
-        mov     [sys_rd], r11
-        mov     rax, [r14 + r8*8]       ; queue address
+        mov     [rbx + P_SYSRD], r11
+        mov     rax, [r14 + r8*8]
+        mov     [rbx + P_SYSQ], rax     ; queue address
+        call    kern_enter              ; the window is shared: one cabin at a time (remos.inc)
+        mov     rax, [rbx + P_SYSQ]
         call    ventanilla
-        mov     r15, [rbx + P_DATA]     ; the cabin may have moved
+        mov     r15, [rbx + P_DATA]     ; a request may have built or moved a room
         cmp     rax, -1
-        je      fail_mem
+        je      .fail
         cmp     rax, -2
         je      .asleep
-        mov     r11, [sys_rd]
+        mov     r11, [rbx + P_SYSRD]
         mov     [r14 + r11*8], rax      ; requests attended
         cmp     byte [sched_dirty], 0
-        je      next
+        je      .done
         mov     byte [sched_dirty], 0   ; someone was born or woke up: the scheduler decides again
-        sub     [budget0], rbp          ; end the turn here, counting only what really ran
+        sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
+        call    kern_wake               ; and the rowers asleep look again
+.done:
+        call    kern_leave
         jmp     next
+.fail:
+        call    kern_leave
+        jmp     fail_mem
 .asleep:                                ; waiting for the parent's signature: this jsys runs again later
         dec     r12
-        sub     [budget0], rbp
+        sub     [rbx + P_BUDGET0], rbp
         xor     ebp, ebp
+        call    kern_leave
         jmp     next
 
 ; ---------------------------------------------------------------- the window (ventanilla)

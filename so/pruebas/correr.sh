@@ -17,6 +17,9 @@ fi
 # fixed point, then every test program.
 bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
+# One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
+# have their own cases (each cabin's result, whatever the order).
+export JANAX_REMOS=1
 archivos="$salida/archivos"           # the system's own folder for files, empty at every run
 export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"
 
@@ -452,6 +455,32 @@ if [ "$motor" = rutinas ]; then
   done
   if [ "$got" = "$(printf 'j0=%016X' "$total")" ] && [ "$distintos" = 0 ]; then ok=$((ok + 1)); else echo "MAL  pdp combinaciones: $got, $distintos distintas de $total"; mal=$((mal + 1)); fi
 fi
+
+# The rowers in parallel (one per core and more): each cabin gives its result, whatever the order.
+paralelo() {   # paralelo <name> <rowers> <expected lines, sorted> <program>...
+  local nombre=$1 remos=$2 esp=$3 got; shift 3
+  local args=() p
+  for p in "$@"; do args+=("$(bin "$p")"); done
+  got=$(JANAX_REMOS=$remos JANAX_CAMBIO=0 JANAX_ARCHIVOS="${carpeta:-$JANAX_ARCHIVOS}" timeout 60 "$salida/janaxos.exe" "${args[@]}" \
+    | tr -d '\r' | grep -o 'P[0-9]* codigo=[0-9]* j0=[0-9A-F]*\|^hola$' | sort)
+  if [ "$got" = "$esp" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] remeros: $nombre: dio"; echo "$got"; mal=$((mal + 1)); fi
+}
+ocho="P0 codigo=0 j0=0000000000000037
+P1 codigo=0 j0=0000000000000037
+P2 codigo=0 j0=0000000000000037
+P3 codigo=0 j0=0000000000000037
+P4 codigo=0 j0=0000000000000007
+P5 codigo=0 j0=0000000000000009
+P6 codigo=0 j0=000000000007A314
+P7 codigo=0 j0=0000000000006625"
+for remos in 2 4 8; do
+  paralelo "ocho camarotes con $remos remeros" $remos "$ocho" while_suma while_suma while_suma while_suma camarote_7 camarote_9 largo_1000 fusion
+done
+familia familia_firma_par ventanilla_hola
+paralelo "el hijo pide y el padre firma, con 4 remeros" 4 "P0 codigo=0 j0=0000000000000000
+P1 codigo=0 j0=0000000000000005
+hola" familia_firma
+unset carpeta
 
 unset carpeta
 done

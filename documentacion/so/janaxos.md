@@ -238,6 +238,29 @@ el sistema por la ventanilla, bajo sus porteros, así que el anfitrión no le of
 vacío** (la ventana más chica), el catálogo responde 0 y cualquier pedido responde −1. Los chequeos (bloque
 adentro de un ambiente, alineado) son los de todos los puertos. Prueba: `ventanita_vacia`.
 
+## Los remeros: camarotes en paralelo (Capitán, 2026-10-31)
+
+> *"Fabricá el otro remo… que no se los tenga que decir sino que ellos se den cuenta, y el capitán piense en
+> cosas más importantes."* — *"Vamos a paralelizar los camarotes, y ocupar la mínima porción de cada núcleo
+> del procesador para ir más rápido."*
+
+Código: `so/remos.inc`. **Un remero por núcleo** (`dwNumberOfProcessors`; `JANAX_REMOS` fija cuántos). Cada
+remero toma el camarote menos servido que **nadie esté remando** (empates: el de número menor), le da su turno
+(el planificador en Janax) y lo corre **solo, sin candado**. Solo lo compartido pasa por **el candado del
+capitán**: elegir camarote y turno, la ventanilla (pantallas, archivos, ambientes, firmas) y lo que pasa
+cuando un camarote termina. **Un remero sin trabajo duerme** (variable de condición) hasta que algo cambia: un
+camarote vuelve, nace o se despierta. No gasta procesador, y su pila es chica (64 KB reservados).
+
+- Lo que era global y se tocaba mientras corre un camarote pasó al camarote: el presupuesto del turno, el
+  registro de respuesta de `jsys` y la pila guardada de la pila de retorno.
+- **Cada camarote da el mismo resultado de siempre**: no comparten nada. Lo que depende del ritmo de los
+  remeros es **el orden entre camarotes y el reloj**. Con un remero (`JANAX_REMOS=1`) todo pasa exactamente como
+  antes: la suite corre así sus casos de orden exacto, y tiene casos propios en paralelo (8 camarotes con 2, 4
+  y 8 remeros, y una familia que pide y firma con 4) que verifican el resultado de cada uno.
+- **Estrés**: 300 corridas con 8 remeros (los dos motores, camarotes mezclados y la familia): 0 fallas.
+- **Medido** (4 copias de `calculo`, Pentium Gold G5420: 2 núcleos con 2 hilos cada uno): 1 remero ~6,7 s;
+  **2 remeros ~3,6 s (1,85×)**; 4 remeros ~2,7–3,0 s (~2,3×: los hilos gemelos de un mismo núcleo agregan ~25 %).
+
 ## El núcleo en Janax: el planificador (2026-10-29)
 
 Primera pieza del núcleo escrita en Janax: `so/nucleo/planificador.inc`, rutina `turno` (j1 = D, j2 = s, j3 = c en

@@ -347,7 +347,7 @@ rooms_first:
 ; One more step for the return stack of rbx. CF = 1 if it is at the limit or there is no memory. Callable
 ; with any stack alignment; keeps rbx, rsi, rdi, rbp, r12-r15.
 ret_grow:
-        mov     [ret_rsp], rsp
+        mov     [rbx + P_SAVERSP], rsp
         and     rsp, -16
         mov     rax, [rbx + P_RETCAP]
         cmp     rax, RET_DEPTH
@@ -368,11 +368,11 @@ ret_grow:
         shr     rax, 1
         mov     [rbx + P_RETCAP], rax
 .no:
-        mov     rsp, [ret_rsp]
+        mov     rsp, [rbx + P_SAVERSP]
         stc
         ret
 .yes:
-        mov     rsp, [ret_rsp]
+        mov     rsp, [rbx + P_SAVERSP]
         clc
         ret
 
@@ -398,7 +398,7 @@ ret_trim:
         mov     rdx, rax
         shr     rdx, 1
 .give_back:                             ; keep rdx entries
-        mov     [ret_rsp], rsp
+        mov     [rbx + P_SAVERSP], rsp
         and     rsp, -16
         mov     [rbx + P_RETCAP], rdx
         sub     rax, rdx
@@ -406,6 +406,6 @@ ret_trim:
         shl     rdx, 3
         add     rdx, [rbx + P_RET]
         invoke  VirtualFree, rdx, rax, MEM_DECOMMIT
-        mov     rsp, [ret_rsp]
+        mov     rsp, [rbx + P_SAVERSP]
 .done:
         ret

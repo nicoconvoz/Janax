@@ -410,3 +410,16 @@ los servicios del anfitrión. Una sola instrucción nueva, `jhost`; al nacer, el
 lo que hay: si el puerto ofrece algo mejor (copiar memoria en bloque, un reloj fino), lo usa; si no, lo hace
 él mismo en Janax. Hay un mínimo sin el cual no se zarpa (pedir memoria, escribir), y todo lo demás es
 ventaja.
+
+## 2026-10-31 — El otro remo (Capitán)
+
+> *"Fabricá el otro remo, y en vez de 'cambio' el capitán establece prioridades de qué momento remar cada uno
+> para que no se los tenga que decir, sino que ellos se den cuenta y el capitán piense en cosas más
+> importantes."* — *"Vamos a paralelizar los camarotes, y ocupar la mínima porción de cada núcleo del
+> procesador para ir más rápido."*
+
+Devolución: un remero por núcleo, cada uno elige solo el próximo camarote por la prioridad (el menos servido) y
+lo rema sin molestar a nadie; el capitán (el candado) solo atiende lo compartido. Un remero sin trabajo duerme
+y no gasta nada. Cada camarote da su mismo resultado; el orden entre camarotes depende del ritmo. Queda para
+después la otra mitad de la idea: la hoja de turnos (el planificador calcula varios turnos de una vez y lo
+recalcula solo cuando pasa algo). Lo construido: `janaxos.md`, "Los remeros".
