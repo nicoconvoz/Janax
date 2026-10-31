@@ -250,6 +250,8 @@ section '.data' data readable writeable
   finished    db 0                ; 1 = every cabin has ended: the rowers go home
   align 8
   vain_wakes  dq 0                ; rowers woken that found nothing to do (the instrument)
+  asleep_line dq 0                ; line rowers asleep (a waker takes one off when it wakes one)
+  special_asleep dq 0             ; 1 = the special rower is asleep
   held        dq 0                ; requests waiting for a signature, in all
   t_rowers    db 'remeros: ', 0
   t_vain      db ', despertares en vano=', 0

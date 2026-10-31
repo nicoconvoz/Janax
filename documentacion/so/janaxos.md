@@ -320,28 +320,34 @@ Reemplaza a la regla anterior (el menos servido primero, con el turno calculado 
   suyas (`P_BLOCKS`): sube al anotarse el pedido y baja al firmarse, al rechazarse o al decidir la sombra; y
   `held` es el total, así nadie mira la tabla si nadie traba a nadie.
 - **El remero especial** toma al camarote que más traba, que nadie esté remando y que pueda remar; en empate, el
-  primero. Si nadie traba, duerme hasta que alguien trabe o hasta que vuelva un camarote que traba. Con varios
+  primero. **Si nadie traba, rema la fila como cualquiera** (Capitán: *"el especial solo se ocupa
+  de los casos especiales cuando los hay; si no, queda desocupado para el trabajo normal"*). El núcleo lleva la
+  cuenta de quién duerme: un trabajo nuevo de la fila despierta a un remero de fila dormido, y si no hay ninguno,
+  al especial; una traba nueva despierta al especial solo si está dormido. Con varios
   remeros, uno es el especial y el resto rema la fila; con uno solo, ese hace las dos cosas, un turno cada una.
 - **Instrumento**: con más de un remero el núcleo imprime `remeros: N, despertares en vano=V`, los que se
   despertaron y no encontraron nada.
 
 **Medido** (dos `calculo`, costo medido por el núcleo, 3 corridas por fila; antes = con la fila sola):
 
-| remeros | antes | ahora |
-|---|---|---|
-| 1 | ~2,7–2,8 s | ~2,8 s |
-| 2 | ~1,6–1,7 s | **~2,7 s** (uno es el especial y duerme) |
-| 3 | ~2,2 s | ~1,76 s |
-| 4 (los de fábrica en esta máquina) | ~3,0–3,5 s | **~1,6 s** |
+| remeros | fila sola | especial que duerme | especial libre |
+|---|---|---|---|
+| 1 | ~3,3 s | ~3,2 s | ~3,3 s |
+| 2 | ~1,8–2,0 s | ~2,8 s | **~1,7 s** |
+| 3 | ~2,35 s | ~1,9 s | ~1,8 s |
+| 4 (los de fábrica en esta máquina) | ~3,0 s | ~1,7–2,0 s | **~1,7–1,8 s** |
+
+(Última tanda, alternando las tres versiones; la máquina estaba más cargada que en la primera, por eso 1
+remero da ~3,3 s y no ~2,8.)
 
 - Con 4 remeros, cero despertares en vano. En 300 corridas de estrés (2, 3 y 4 remeros, un padre con tres hijos
   y dos largos), 0 fallas y 48 despertares en vano contra 1.800 despertares pedidos.
 - **Un padre que traba a tres hijos** entre tres `largo_1000`, costo 4, un remero: los hijos terminan en t=4528,
   5325 y 5328 (con la fila sola, 6066, 7285 y 8504); los largos terminan en el mismo reloj, sin trabajo perdido.
   Con un solo hijo el resultado es idéntico al de antes: el padre ya quedaba justo detrás del hijo en la fila.
-- ⚠️ **El costo del diseño**: con 2 remeros (una máquina de 2 núcleos) queda un solo remero de fila y el especial
-  duerme mientras nadie traba a nadie, así que dos camarotes que no traban van más lentos que antes (~2,7 contra
-  ~1,7 s). Está medido y queda a decisión del Capitán.
+- Con el especial que dormía, 2 remeros iban más lentos que con la fila sola (~2,8 contra ~1,8 s): quedaba un solo
+  remero de fila. Con el especial libre ese costo desapareció. Estrés: 300 corridas, 0 fallas, 101 despertares en
+  vano contra 1.800 pedidos (el especial ahora también se despierta por trabajo de la fila).
 - ⚠️ **Dos instrumentos mintieron**: `build/calculo.bin` era del 29 de octubre (de antes de la primera orden) y se
   rompía a las 9 instrucciones, así que los tiempos medían solo la calibración; se rearma con el ensamblador PDP.
   Y la primera versión pasaba el tipo de remero en `r8` a `CreateThread`, cuyo parámetro va en `r9`: todos los

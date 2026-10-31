@@ -444,3 +444,6 @@ mentirlo. Lo construido: `janaxos.md`.
 Devolución: un despertar por trabajo nuevo (nacimiento o firma), nunca a todos; y el especial atiende al
 camarote que más pedidos tiene esperando su firma. Con 4 remeros, dos `calculo` pasaron de ~3,5 s a ~1,6 s;
 con 2 remeros se pierde un remero de fila (medido, a decidir). Lo construido: `janaxos.md`.
+
+> *"El especial solo se ocupa en especial cuando hayan casos especiales, sino queda desocupado para el trabajo
+> normal."* (2026-10-31) — Devolución: con 2 remeros el especial dormido costaba ~1 s; libre, desapareció.

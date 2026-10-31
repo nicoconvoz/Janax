@@ -5,10 +5,13 @@
 ;
 ; Two kinds of rowers (Capitan: "as many rowers wake up as there is work, and one special rower works only
 ; with the processes that hold others, from the one that holds the most to the one that holds the least"):
-;  - The line rowers take the cabins in the order they arrived. Only new work wakes one of them up, one per
-;    cabin: a cabin born or woken up. A cabin that comes back is taken again by its own rower.
+;  - The line rowers take the cabins in the order they arrived. Only new work wakes a rower up, one per cabin:
+;    a cabin born or woken up wakes a line rower asleep, or the special one if none is. A cabin that comes back
+;    is taken again by its own rower.
 ;  - The special rower takes the cabin holding the most others (requests waiting for its signature) that
-;    nobody is rowing, so whoever waits for it waits the least. With nobody holding anybody it sleeps.
+;    nobody is rowing, so whoever waits for it waits the least. With nobody holding anybody it rows the line
+;    like everyone (Capitan: "the special one works on the special cases only when there are some; if not, it
+;    is free for the normal work").
 ; With several rowers one is special and the rest row the line; with only one, it does both, one turn
 ; each.
 ;
@@ -42,19 +45,24 @@ kern_leave:
         mov     rsp, rbp
         pop     rbp r11 r10 r9 r8 rdx rcx rax
         ret
-; Every cabin ended: every line rower asleep wakes up and goes home.
+; Every cabin ended: every rower asleep wakes up and goes home.
 kern_wake:
         push    rax rcx rdx r8 r9 r10 r11 rbp
         mov     rbp, rsp
         and     rsp, -16
         sub     rsp, 32
+        mov     qword [asleep_line], 0
         lea     rcx, [kern_change]
         call    [WakeAllConditionVariable]
         mov     rsp, rbp
         pop     rbp r11 r10 r9 r8 rdx rcx rax
         ret
-; New work for the line: one line rower asleep wakes up.
+; New work for the line: one rower asleep wakes up, a line rower if there is one asleep, else the special
+; rower (with no cabins that hold others it rows the line too). With the lock.
 kern_wake_one:
+        cmp     qword [asleep_line], 0
+        je      kern_wake_special
+        dec     qword [asleep_line]
         push    rax rcx rdx r8 r9 r10 r11 rbp
         mov     rbp, rsp
         and     rsp, -16
@@ -64,8 +72,11 @@ kern_wake_one:
         mov     rsp, rbp
         pop     rbp r11 r10 r9 r8 rdx rcx rax
         ret
-; Someone holds others now (or the cabins ended): the special rower asleep wakes up.
+; Work for the special rower: it wakes up if it is asleep. With the lock.
 kern_wake_special:
+        cmp     qword [special_asleep], 0
+        je      .awake
+        mov     qword [special_asleep], 0
         push    rax rcx rdx r8 r9 r10 r11 rbp
         mov     rbp, rsp
         and     rsp, -16
@@ -74,15 +85,18 @@ kern_wake_special:
         call    [WakeConditionVariable]
         mov     rsp, rbp
         pop     rbp r11 r10 r9 r8 rdx rcx rax
+.awake:
         ret
 ; With the lock: sleeps until it is woken up (a line rower on kern_change, the special one on kern_special),
 ; and has the lock again.
 kern_sleep:
         push    rax rcx rdx r8 r9 r10 r11 rbp
+        inc     qword [asleep_line]
         lea     rcx, [kern_change]
         jmp     kern_sleep_on
 kern_sleep_special:
         push    rax rcx rdx r8 r9 r10 r11 rbp
+        mov     qword [special_asleep], 1
         lea     rcx, [kern_special]
 kern_sleep_on:
         mov     rbp, rsp
@@ -117,11 +131,7 @@ run_all:
 .holders:
         call    most_holding
         test    rax, rax
-        jnz     .row
-        cmp     qword [rsp + 24], ROW_SPECIAL
-        jne     .line
-        call    kern_sleep_special      ; nobody holds anybody: wait until someone does
-        jmp     .turn
+        jnz     .row                    ; nobody holds anybody: the line, like everyone
 .line:
         call    q_pop
         test    rax, rax
@@ -132,7 +142,11 @@ run_all:
         je      @f
         inc     qword [vain_wakes]      ; it was woken up for nothing (the instrument)
 @@:     mov     qword [rsp + 8], 1
+        cmp     qword [rsp + 24], ROW_SPECIAL
+        je      @f
         call    kern_sleep              ; nothing in line while others row: wait for new work
+        jmp     .turn
+@@:     call    kern_sleep_special
         jmp     .turn
 .nobody_rows:                           ; nobody rows: is anyone waiting for a signature?
         xor     ecx, ecx
@@ -195,13 +209,6 @@ run_all:
         jne     .back
         call    report
 .back:
-        cmp     qword [rsp + 24], ROW_SPECIAL
-        jne     .turn
-        cmp     qword [q_head], 0       ; the special rower left work in the line, or nobody rows now:
-        jne     @f                      ; a line rower looks
-        cmp     qword [rowing], 0
-        jne     .turn
-@@:     call    kern_wake_one
 .turn:                                  ; while some cabin has not ended
         cmp     byte [finished], 0
         je      .turn_lap
