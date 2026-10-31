@@ -1,5 +1,5 @@
-; Destroying a room gives its number back: the next room is built with the same address, new and in
-; zeros: its number is reused. j0 = (1 << 32) + 0.
+; With every room destroyed the count starts again (Capitan): the next room is number 1 again, new and in
+; zeros. j0 = (1 << 32) + 0.
 include '../../escalon0/janax.inc'
 include 'ambientes.inc'
 jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)

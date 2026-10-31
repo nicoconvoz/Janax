@@ -280,12 +280,20 @@ caso "ambientes: la ventanilla no lee de un hueco" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=34
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" ambiente_hueco_ventanilla
 
-caso "ambientes: el numero se reusa, en ceros" 0 0 "$fijo0
+caso "ambientes: sin ninguno, la cuenta vuelve a empezar" 0 0 "$fijo0
 P0 codigo=0 j0=0000000100000000 t=30
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=3" ambiente_reconstruir
 
+caso "ambientes: un numero nunca se reusa mientras quede otro" 0 0 "$fijo0
+P0 codigo=0 j0=0000000300000077 t=37
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" ambiente_sin_reusar
+
+caso "ambientes: la direccion muere con su ambiente" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000000 t=33
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" ambiente_muerto
+
 caso "ambientes: destruir el del medio une los extremos" 0 0 "$fijo0
-P0 codigo=0 j0=0000000100000066 t=56
+P0 codigo=0 j0=0000000400000066 t=56
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=5" ambientes_unir
 
 # --- files: labels with any character, kept in the system's own folder ---

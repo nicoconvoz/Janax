@@ -1,5 +1,6 @@
 ; Destroying the room in the middle joins the ends: B and C move back over A and keep their data and their
-; addresses; the next room takes A's number and starts in zeros. j0 = 11h + 22h + 0 + 33h + (1 << 32).
+; addresses; the next room is a new number (4: A's is never given again while B and C stand) and starts in
+; zeros. j0 = 11h + 22h + 0 + 33h + (4 << 32).
 include '../../escalon0/janax.inc'
 include 'ambientes.inc'
 jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
@@ -15,7 +16,7 @@ jldi j9, 22h
 jst j9, j12, 8          ; the last qword of C
 pedido 3, j10, j7       ; destroy A
 jldi j8, 8
-pedido 2, j8, j13       ; D: A's number
+pedido 2, j8, j13       ; D: number 4
 jld j0, j13, 0          ; a new room is in zeros
 jldi j9, 33h
 jst j9, j13, 0

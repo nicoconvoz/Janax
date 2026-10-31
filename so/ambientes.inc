@@ -13,9 +13,16 @@
 ; room is destroyed the pages left over at the end go back to the host, and the bytes left over in the last
 ; page are zeroed, so a new room always starts in zeros.
 ;
-; Room table of a process (P_ROOMS): one entry {base in the hull, size} per room number, made at the first
-; grow with room 0 in it; size 0 = destroyed, and its number is reused by the next room built (never 0:
-; room 0 is always at base 0, which keeps its accesses at one comparison). No table = only room 0.
+; Room numbers are never reused (Capitan: "the holes are a count of the rooms that were and are no more,
+; they can not be replaced to confuse, only new ones added; and if every room of that sailor is destroyed
+; the count starts again"): a new room gets the next number (P_NEXTROOM), so the address of a destroyed
+; room dies with it. When every room but room 0 is gone the count starts again at 1, and from then on the
+; program must not use the addresses it kept from before: for the processor they are only numbers.
+;
+; Room table of a process (P_ROOMS): entry 0 is room 0 (always at base 0, which keeps its accesses at one
+; comparison); entry k (k >= 1) is room P_ROOMBASE + k, {base in the hull, size}, size 0 = destroyed. The
+; table spans from the lowest room standing to the highest (Capitan: "the count goes from the minimum"):
+; destroyed rooms at either end leave it. No table = only room 0.
 ; P_LIM1 = room 0's size, P_LIM8 = that - 7 (0 if less): an access to room 0 below them needs nothing else.
 
 ROOM_SHIFT = 32                         ; a room's number starts at this bit of an address
@@ -27,8 +34,10 @@ macro room_package width, fail {
           mov     rcx, rax
           shr     rcx, ROOM_SHIFT         ; the room
           jz      fail                    ; room 0 past its limit: outside
+          sub     rcx, [rbx + P_ROOMBASE] ; its entry
+          jbe     fail                    ; below the table: gone
           cmp     rcx, [rbx + P_NROOMS]
-          jae     fail                    ; also when there is no table
+          jae     fail                    ; past it, or there is no table
           shl     rcx, 4
           add     rcx, [rbx + P_ROOMS]
           mov     eax, eax                ; the position in it
@@ -69,34 +78,45 @@ rooms_grow:
         call    rooms_double            ; the table, with room 0 in it
         test    rax, rax
         jz      .invalid
-@@:     mov     rdx, 1                  ; the lowest free number (never 0)
-        mov     rcx, [rbx + P_ROOMS]
-        jmp     .free
-.free_lap:
-        mov     rax, rdx
-        shl     rax, 4
-        cmp     qword [rcx + rax + 8], 0
-        je      .number
-        inc     rdx
-.free:
-        cmp     rdx, [rbx + P_NROOMS]
-        jb      .free_lap
-        cmp     rdx, [rbx + P_ROOMCAP]  ; a new number at the end of the table
-        jb      @f
-        mov     [rooms_number], rdx
+@@:     mov     rdx, [rbx + P_NEXTROOM] ; its number: the next one, never one that was
+        test    rdx, rdx
+        jnz     @f
+        mov     edx, 1
+@@:     mov     [rooms_number], rdx
+        jmp     .room
+.room_lap:                              ; the table doubles until its entry fits
         call    rooms_double
         test    rax, rax
         jz      .invalid
+.room:
         mov     rdx, [rooms_number]
-@@:     inc     qword [rbx + P_NROOMS]
-.number:
+        sub     rdx, [rbx + P_ROOMBASE] ; its entry
+        cmp     rdx, [rbx + P_ROOMCAP]
+        jae     .room_lap
+        mov     rcx, [rbx + P_NROOMS]   ; entries between the last one and it: rooms destroyed
+        jmp     .gap
+.gap_lap:
+        mov     rax, rcx
+        shl     rax, 4
+        add     rax, [rbx + P_ROOMS]
+        mov     qword [rax], 0
+        mov     qword [rax + 8], 0
+        inc     rcx
+.gap:                                   ; while entries are missing before its own
+        cmp     rcx, rdx
+        jb      .gap_lap
+        lea     rax, [rdx + 1]
+        mov     [rbx + P_NROOMS], rax
+        mov     rax, [rooms_number]
+        inc     rax
+        mov     [rbx + P_NEXTROOM], rax
         mov     rax, rdx
         shl     rax, 4
         add     rax, [rbx + P_ROOMS]
         mov     [rax], rsi
         mov     [rax + 8], rdi
         add     [rbx + P_SIZE], rdi
-        mov     rax, rdx
+        mov     rax, [rooms_number]
         shl     rax, ROOM_SHIFT
         jmp     .done
 .invalid:
@@ -146,7 +166,7 @@ rooms_double:
         ret
 
 ; Destroys the room at address rax: the rooms after it move back over its place and the pages left over at
-; the end go back to the host. -> rax = 0, or -1 if no room is at that address or it holds the queue being
+; the end go back to the host. Its number is never given again (until every room but room 0 is gone). -> rax = 0, or -1 if no room is at that address or it holds the queue being
 ; served (its answers need somewhere to go). Keeps rbx, rbp, r12-r15.
 rooms_destroy:
         push    rsi rdi r12 r13
@@ -170,7 +190,12 @@ rooms_destroy:
         test    rax, rax
         jz      .invalid
         mov     rdx, [rooms_number]
-@@:     cmp     rdx, [rbx + P_NROOMS]
+@@:     test    rdx, rdx
+        jz      .entry                  ; room 0: entry 0
+        sub     rdx, [rbx + P_ROOMBASE] ; its entry
+        jbe     .invalid                ; below the table: already gone
+.entry:
+        cmp     rdx, [rbx + P_NROOMS]
         jae     .invalid
         mov     rsi, rdx
         shl     rsi, 4
@@ -246,6 +271,34 @@ rooms_destroy:
         cmp     qword [rsi + rax - 8], 0
         je      .last_lap
 .trimmed:
+        cmp     qword [rbx + P_NROOMS], 1
+        ja      .low
+        mov     qword [rbx + P_ROOMBASE], 0   ; no room left but room 0: the count starts again
+        mov     qword [rbx + P_NEXTROOM], 1
+        jmp     .slid
+.low:                                   ; destroyed rooms at the start of the table leave it too
+        mov     rsi, [rbx + P_ROOMS]
+        mov     ecx, 1
+        jmp     .lead
+.lead_lap:
+        inc     rcx
+.lead:                                  ; while the entry is a room destroyed (the last one stands)
+        mov     rax, rcx
+        shl     rax, 4
+        cmp     qword [rsi + rax + 8], 0
+        je      .lead_lap
+        dec     rcx                     ; how many leave
+        jz      .slid
+        add     [rbx + P_ROOMBASE], rcx
+        sub     [rbx + P_NROOMS], rcx
+        lea     rdi, [rsi + 16]         ; entries 1 + d... move to 1...
+        shl     rcx, 4
+        lea     rsi, [rdi + rcx]
+        mov     rcx, [rbx + P_NROOMS]
+        dec     rcx
+        shl     rcx, 1                  ; in qwords
+        rep     movsq
+.slid:
         xor     eax, eax
         jmp     .done
 .invalid:
@@ -271,8 +324,10 @@ room_at:
         mov     rax, rsi
         jmp     .yes
 .table:
+        sub     rcx, [rbx + P_ROOMBASE] ; its entry
+        jbe     .no                     ; below the table: gone
         cmp     rcx, [rbx + P_NROOMS]
-        jae     .no                     ; also when there is no table
+        jae     .no                     ; past it, or there is no table
         shl     rcx, 4
         add     rcx, [rbx + P_ROOMS]
         cmp     rdx, [rcx + 8]

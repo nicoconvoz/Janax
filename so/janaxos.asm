@@ -84,7 +84,9 @@ P_QUEUED = 440                  ; 1 = it is in the line
 P_PRIO_TOP = 448                ; the highest bolita it may ask for: the one it was launched with
 P_BLOCKS = 456                  ; requests of others waiting for its signature: how many it holds (remos.inc)
 P_PREV   = 464                  ; the one before it in the line of cabins (remos.inc)
-PROC_SIZE = 472
+P_ROOMBASE = 472                ; the number before its table's first room: entry k (k >= 1) is room base + k (ambientes.inc)
+P_NEXTROOM = 480                ; the number its next room gets (0 = 1: none built yet)
+PROC_SIZE = 488
 
 ; porters: rights and tree nodes
 R_SCREEN = 1

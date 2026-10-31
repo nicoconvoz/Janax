@@ -145,3 +145,5 @@ dormido eran ~2,8 s); 4 remeros ~1,7–1,8 s. SO 166/166, estrés 300/0.
 par ~1,75 → ~0,7 s. 247/247 con los tres motores, estrés traducido 300/0.
 2026-10-31 — Traductor: jcall/jret nativos (calculo ~1,0 → ~0,58 s) y 4 registros Janax en r8–r11 (~19 % más). Cobrar
 por tramo: medido sin ganancia, descartado. 248/248, estrés 300/0, escalón 0 182/182.
+2026-10-31 — Los números de ambiente no se reusan (Capitán): la dirección de un ambiente destruido falla; tabla desde
+el mínimo; con todos destruidos la cuenta vuelve a 1. 254/254, escalón 0 182/182.

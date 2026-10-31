@@ -724,3 +724,23 @@ cambia el reloj del hardware; un camarote vive dentro del proceso de Janax OS, p
 cada acceso, y cambia en la instrucción exacta. Lo que se mide es lo que cuesta *a Janax* cambiar y crear tareas,
 contra lo que le cuesta a Windows con las suyas. ⚠️ El primer banco de cambios mintió: el programa no se había
 armado (el ensamblador PDP no toma rutas absolutas en `include`) y el SO corría sin nada.
+
+## Los números de cofre no se reusan (Capitán, 2026-10-31)
+
+> *"Si tenemos cofre 1, 2 y 3 y se destruye el 1, el contador cuenta desde el mínimo, en este caso el 2, y si se
+> agrega un cofre nuevo se agrega a la fila como cofre 4: los huecos son una cuenta de los cofres que estuvieron y
+> que ya no existen, y no se pueden reemplazar para confundir, solo agregar nuevos. Y si se destruyen todos los
+> cofres de ese marinero, se reinicia el contador a 0."* — *"Si se destruye el cofre, se destruye la dirección."*
+
+- **El agujero que tapa**: antes, un ambiente nuevo tomaba el número libre más bajo, así que la dirección guardada
+  de un ambiente destruido **abría el ambiente nuevo** sin ningún error (la prueba nueva lo mostró en vivo: leyó el
+  cofre 1 nuevo con código 0).
+- **Ahora** (`so/ambientes.inc`): cada ambiente nuevo toma el número siguiente (`P_NEXTROOM`); la tabla abarca del
+  ambiente vivo más bajo al más alto (`P_ROOMBASE`: el renglón k es el ambiente base + k), así no crece con los
+  destruidos de las puntas; una dirección de un ambiente destruido falla con código 5. Cuando no queda ninguno
+  (salvo el 0), la cuenta vuelve a empezar en 1.
+- ⚠️ El SO hace fallar la dirección muerta, pero no puede borrar las copias de ese número que el programa se haya
+  guardado: después de vaciar todo, las direcciones de antes no valen, y usarlas es error del programa.
+- Costo: el ambiente 0 no cambia (una comparación); los demás, una resta más en el paquete de traducción.
+- Probado en los tres motores: `ambiente_sin_reusar` (1 y 2, se destruye el 1, el nuevo es el 3 y el 2 sigue
+  andando) y `ambiente_muerto` (la dirección del 1 falla con código 5). 254/254.

@@ -451,3 +451,7 @@ con 2 remeros se pierde un remero de fila (medido, a decidir). Lo construido: `j
 > *"Ok pero en un programa largo, ¿quién gana, el nativo o Janax?"* — *"Sí, conectalo."* (2026-10-31) —
 > Devolución: el SO pasó a correr código nativo traducido (`nativo.inc`), de ~10 a ~5 veces el nativo; lo
 > que falta medido y anotado en `janaxos.md`.
+
+> *"Los huecos son una cuenta de los cofres que estuvieron y que ya no existen, y no se pueden reemplazar para
+> confundir, solo agregar nuevos."* (2026-10-31) — Devolución: números que nunca se reusan y tabla desde el mínimo;
+> tapa el error de usar un ambiente después de destruirlo. Lo construido: `janaxos.md`.
