@@ -776,3 +776,11 @@ un `jret` que vuelve directo al código nativo); solo un salto al medio de un tr
 por bucle) pasa por la zona fría. Si el saldo no alcanza, se devuelve y se recorre de a una instrucción con las
 rutinas: frena en la misma instrucción que los otros motores. `calculo`: **~494 → ~370 ms (−25 %)**, A-B, siete
 rondas. La primera versión por tramo no ganaba porque cada `jret` volvía por la tabla y la zona fría en cada vuelta.
+
+**Cofres de colores, medido y descartado por ahora** (mismo día): juntar las dos preguntas de un acceso de 8 bytes
+(¿dentro del cofre 0?, ¿alineado?) en una sola comparación girando la dirección 3 bits dio **~420 contra ~372 ms**:
+más lento, porque el giro es un paso más que hay que esperar antes de comparar. Tener el límite en un registro en
+vez de en memoria, con las dos preguntas: ~400 contra ~382, sin ganancia (traer el límite es casi gratis). El ~6 %
+que cuestan las dos preguntas solo se recupera si las contesta el procesador mismo (páginas protegidas), y eso
+choca con lo exacto: un cofre mide en bytes y una página en miles, así que habría que acomodar cada cofre contra el
+final de su página; queda anotado como camino, no construido.
