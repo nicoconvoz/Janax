@@ -270,6 +270,34 @@ camarote vuelve, nace o se despierta. No gasta procesador, y su pila es chica (6
 - **Medido** (4 copias de `calculo`, Pentium Gold G5420: 2 núcleos con 2 hilos cada uno): 1 remero ~6,7 s;
   **2 remeros ~3,6 s (1,85×)**; 4 remeros ~2,7–3,0 s (~2,3×: los hilos gemelos de un mismo núcleo agregan ~25 %).
 
+## La fila por orden de llegada y la bolita (Capitán, 2026-10-31)
+
+> *"El remo disponible es el que se usa, y queda en una pila de usos o de libres: los libres se usan, los que se
+> usan se liberan, y así por orden de llegada sin consumos extras."* — *"El largo del turno se da por
+> prioridad: si es algo importante, entre el 0 y el 1; si tiende a 1 se trabaja más, si tiende a 0 se trabaja
+> menos."*
+
+Reemplaza a la regla anterior (el menos servido primero, con el turno calculado en cada cambio).
+
+- **La fila** (`so/remos.inc`): los camarotes esperan en una sola fila por orden de llegada. Un remo libre toma
+  el primero, rema su turno y lo pone al final; un camarote que nace o se despierta también entra al final.
+  **Cada cambio es sacar uno de adelante y poner uno atrás**: no se mira a nadie ni se calcula nada.
+- **El turno sale de la bolita** `p` (de 0 a 1, en 65.536avos): la fracción del tiempo que el camarote trabaja
+  de verdad es `t / (t + c)`, y haciéndola igual a `p` sale `t = c·p / (1 − p)`, redondeado hacia arriba,
+  mínimo 1; con `p = 1` rema hasta terminar. Lo calcula **el planificador en Janax** (rutina `cuanto`, desde
+  PDP o el de fábrica) **una sola vez**, cuando nace el camarote. Probado contra la matemática exacta:
+  `so/herramientas/cuantos.pl` → `escalon0/pruebas/43_cuantos.jsm` (75 casos, en los tres motores).
+- **Bolita de un camarote que no dice nada: 0,99** (64.881). Es criterio, no medición: pierde el 1 % de su
+  tiempo en cambiar. Todavía no hay forma de elegir otra bolita al lanzar.
+- **El costo de un cambio bajó a ~24 instrucciones** (rutinas; ~8–11 con el intérprete): antes, con el
+  planificador decidiendo en cada cambio, eran ~190–300. ⚠️ La primera medición dio 0: con `c = 0` el turno es de
+  1 instrucción y la corrida de un proceso **solo** también cambiaba en cada instrucción (se pasaba el remo a sí
+  mismo), así que la resta de la calibración no medía nada. Ahora la corrida sola rema sin cortes.
+- **Medido**: dos `calculo` tardan lo mismo que antes (~2,7–3,2 s) y terminan separados por **482 instrucciones**
+  sobre 1.342 millones (antes ~313.000): turnos cortos y parejos. Estrés en paralelo: 300 corridas, 0 fallas.
+- Las pruebas cuyo orden cambió se verificaron con un script: cada camarote da su mismo código y su mismo `j0`,
+  las demás líneas son idénticas, y los dos motores coinciden; solo se mueven el orden y el reloj.
+
 ## La última parte: terminar en vez de pasar el remo (Capitán, 2026-10-31)
 
 > *"Si al terminar le falta lo mismo o menos que lo que el remo tarda en cambiar, entonces termina de remar

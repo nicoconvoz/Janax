@@ -423,3 +423,15 @@ lo rema sin molestar a nadie; el capitán (el candado) solo atiende lo compartid
 y no gasta nada. Cada camarote da su mismo resultado; el orden entre camarotes depende del ritmo. Queda para
 después la otra mitad de la idea: la hoja de turnos (el planificador calcula varios turnos de una vez y lo
 recalcula solo cuando pasa algo). Lo construido: `janaxos.md`, "Los remeros".
+
+## 2026-10-31 — La fila por llegada, la bolita y la última parte (Capitán)
+
+> *"El remo disponible es el que se usa… por orden de llegada sin consumos extras."* — *"El largo del turno se
+> da por prioridad… si tiende a 1 se trabaja más, si tiende a 0 se trabaja menos."* — *"Si al terminar le falta
+> lo mismo o menos que lo que el remo tarda en cambiar, entonces termina de remar antes de pasar el remo."* —
+> *"El programa no guarda el tamaño final sino la combinación de instrucciones que marcan la última parte."*
+
+Devolución: una fila por orden de llegada (cada cambio es sacar de adelante y poner atrás); la bolita es la
+fracción del tiempo que se trabaja de verdad, de donde sale el turno `t = c·p/(1−p)`; y la última parte la
+encuentra el núcleo en el código (el camino derecho al `jhalt`), así nadie tiene que declarar su tamaño ni puede
+mentirlo. Lo construido: `janaxos.md`.

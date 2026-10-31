@@ -195,3 +195,35 @@ jwhile j7                       ; while it still goes down
   jshr j7, j7, j4
 jwend
 jret
+
+; The turn of a cabin by its priority (Capitan: "the length of the turn is given by priority, between 0 and
+; 1: towards 1 it works more, towards 0 it works less"). A turn t followed by a switch of cost c leaves the
+; fraction t / (t + c) of the time for real work; making that fraction the priority p gives
+; t = c * p / (1 - p), rounded up, at least 1 instruction. p = 1 rows until it ends (turn 2^62).
+; cuanto: j1 = p in 65536ths, j3 = c in sixteenths of an instruction -> j0 = t. Uses j4, j5.
+cuanto:
+jldi j4, 1
+jshi j4, 0                      ; 65536 = 1
+jsub j5, j4, j1                 ; 1 - p
+jldi j4, 1
+jsub j0, j5, j4
+jldi j4, 63
+jsar j0, j0, j4
+jjnz j0, cu_siempre             ; p = 1 (or more): until it ends
+jldi j4, 4
+jshl j5, j5, j4                 ; 16 (1 - p): c is in sixteenths
+jmul j0, j3, j1                 ; c p
+jadd j0, j0, j5
+jldi j4, 1
+jsub j0, j0, j4
+jdiv j0, j0, j5                 ; rounded up
+jjnz j0, cu_fin
+jldi j0, 1                      ; at least one instruction
+jjmp cu_fin
+cu_siempre:
+jldi j0, 4000h
+jshi j0, 0
+jshi j0, 0
+jshi j0, 0
+cu_fin:
+jret

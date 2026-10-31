@@ -57,39 +57,49 @@ kern_sleep:
         pop     rbp r11 r10 r9 r8 rdx rcx rax
         ret
 
-; One rower: while some cabin can run, it takes the least served one nobody is rowing (ties: the lower
-; number), gives it its turn and rows it outside the lock. Returns when every cabin has ended.
+
+; One rower (Capitan: "the free oar is the one used: free ones are used, used ones are freed, in the order
+; they arrive, with no extra cost"). The cabins wait in one line in the order they arrived; a free rower
+; takes the first one, rows its own turn (P_QUANTUM, from its priority) and puts it at the end of the line.
+; A cabin that is born or wakes up also goes to the end. Taking a cabin is taking the first of the line:
+; no cabin is looked at, nothing is computed. With nobody in line, a rower sleeps while others row; when
+; nobody rows either, the cabins left wait for signatures (or every cabin has ended).
 run_all:
         call    kern_enter
-        jmp     .schedule
-.turn:
-        cmp     rbx, -1
-        jne     .someone
+        jmp     .next
+.lap:                                   ; rax = the first in line, 0 = nobody
+        test    rax, rax
+        jnz     .row
         cmp     qword [rowing], 0
-        je      .nobody
-        call    kern_sleep              ; nothing for this rower while others row: wait for a change
-        jmp     .schedule
+        jne     .sleep
+        xor     ecx, ecx                ; nobody rows: is anyone waiting for a signature?
+        jmp     .waits
+.waits_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_DONE], 0
+        jne     .waits_next
+        cmp     qword [rsi + P_WAITING], 0
+        jne     .nobody
+.waits_next:
+        inc     rcx
+.waits:                                 ; while there are cabins to look at
+        cmp     rcx, [nprocs]
+        jb      .waits_lap
+        jmp     .end                    ; nobody waits: every cabin has ended
 .nobody:
         call    nobody_signs            ; everyone left waits for a signature nobody can give
-        jmp     .schedule
-.someone:
-        mov     rax, FOREVER            ; alone: run to the end
-        cmp     r9, rax
-        je      .run
-        mov     rax, r9
-        sub     rax, r8                 ; D: how much more service the next one in line has received
-        jns     @f
-        xor     eax, eax                ; never below 0: a next one with less (rowed by another rower) is already behind
-@@:
-        lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
-        call    plan_turn               ; the turn, from the planner in Janax (PDP or the factory one)
-        cmp     byte [quiet], 0
-        je      @f
-        mov     rax, r10                ; calibrating: D + 1; the planner ran so that its cost is measured
-@@:     cmp     rax, r10
-        jge     .run
-        mov     rax, r10
-.run:
+        jmp     .next
+.sleep:
+        call    kern_sleep              ; nothing in line while others row: wait for a change
+        jmp     .next
+.row:
+        mov     rbx, rax
+        cmp     qword [rbx + P_DONE], 0
+        jne     .next
+        cmp     qword [rbx + P_WAITING], 0
+        jne     .next
+        mov     rax, [rbx + P_QUANTUM]  ; its own turn, from its priority
         inc     qword [switches]
         mov     qword [rbx + P_RUNNING], 1
         inc     qword [rowing]
@@ -102,54 +112,76 @@ run_all:
         add     [clock], rax
         call    kern_wake               ; a cabin came back: the rowers asleep look again
         cmp     qword [rbx + P_DONE], 0
-        je      .schedule
+        jne     .ended
+        cmp     qword [rbx + P_WAITING], 0
+        jne     .next                   ; it waits for a signature: out of the line until it wakes up
+        mov     rax, rbx
+        call    q_push                  ; to the end of the line
+        jmp     .next
+.ended:
         call    close_files             ; whatever the process left open
         call    orphans                 ; its children and what waited for its signature go up
         cmp     byte [quiet], 0
-        jne     .schedule
+        jne     .next
         call    report
-.schedule:                              ; while someone can run, waits for a signature or is being rowed
-        mov     rbx, -1                 ; least served process nobody rows
-        mov     r8, FOREVER             ; its service
-        mov     r9, FOREVER             ; service of the next least served (rowed or not)
-        mov     qword [asleep], 0
-        xor     ecx, ecx
-        jmp     .scan
-.scan_lap:
-        mov     rsi, [procs]
-        mov     rsi, [rsi + rcx*8]
-        cmp     qword [rsi + P_DONE], 0
-        jne     .next_proc
-        cmp     qword [rsi + P_WAITING], 0
-        je      @f
-        inc     qword [asleep]          ; waiting for a signature: it does not run
-        jmp     .next_proc
-@@:     mov     rax, [rsi + P_SERVED]
-        cmp     qword [rsi + P_RUNNING], 0
-        jne     .not_least              ; another rower has it: it only counts as the next in line
-        cmp     rax, r8
-        jae     .not_least              ; ties keep the lower process number
-        mov     r9, r8
-        mov     r8, rax
-        mov     rbx, rsi
-        jmp     .next_proc
-.not_least:
-        cmp     rax, r9
-        jae     .next_proc
-        mov     r9, rax
-.next_proc:
-        inc     rcx
-.scan:                                  ; while there are processes to look at
-        cmp     rcx, [nprocs]
-        jb      .scan_lap
-        cmp     rbx, -1
-        jne     .turn
-        cmp     qword [asleep], 0
-        jne     .turn
-        cmp     qword [rowing], 0
-        jne     .turn
+.next:
+        call    q_pop
+        jmp     .lap
+.end:
         call    kern_wake               ; all ended: the rowers asleep wake up and see it
         call    kern_leave
+        ret
+
+; The line of cabins waiting for an oar, in the order they arrived (linked by P_NEXT). With the lock.
+; rax = a cabin: to the end of the line, if it is not in it. Keeps every register.
+q_push:
+        cmp     qword [rax + P_QUEUED], 0
+        jne     .done
+        mov     qword [rax + P_QUEUED], 1
+        mov     qword [rax + P_NEXT], 0
+        push    rcx
+        mov     rcx, [q_tail]
+        test    rcx, rcx
+        jz      .first
+        mov     [rcx + P_NEXT], rax
+        jmp     .last
+.first:
+        mov     [q_head], rax
+.last:
+        mov     [q_tail], rax
+        pop     rcx
+.done:
+        ret
+
+; -> rax = the first in line, out of it; 0 if nobody. Keeps every other register.
+q_pop:
+        mov     rax, [q_head]
+        test    rax, rax
+        jz      .done
+        push    rcx
+        mov     rcx, [rax + P_NEXT]
+        mov     [q_head], rcx
+        test    rcx, rcx
+        jnz     @f
+        mov     [q_tail], rcx
+@@:     mov     qword [rax + P_QUEUED], 0
+        pop     rcx
+.done:
+        ret
+
+; r8 = a cabin whose signature arrived: to the end of the line if it can row now. Keeps every register.
+q_wake:
+        cmp     qword [r8 + P_WAITING], 0
+        jne     .done
+        cmp     qword [r8 + P_DONE], 0
+        jne     .done
+        cmp     qword [r8 + P_RUNNING], 0
+        jne     .done                   ; its rower puts it in line when it comes back
+        push    rax
+        mov     rax, r8
+        call    q_push
+        pop     rax
+.done:
         ret
 
 ; A rower of its own thread.

@@ -10,8 +10,6 @@
 PLAN_BUDGET = 100000            ; instructions a planner may take for one turn. Criterion, not a measurement:
                                 ; the factory one takes ~150 (~900 in its slowest path); one that needs a
                                 ; hundred times that is treated as broken.
-CALIB_C16   = 16                ; while calibrating, the planner runs with c = 1 instruction (its full path),
-                                ; so the measured cost of a switch includes deciding a turn
 
 ; At boot: the planner from PDP, or the factory one. Needs the system's folder and the engine. Keeps rbx.
 plan_load:
@@ -93,22 +91,21 @@ plan_helper:
         add     rsp, 8
         ret
 
-; rax = D, r8 = s -> rax = the turn the planner gives, with c = plan_c16 (CALIB_C16 while calibrating).
-; Keeps every other register; callable with any stack alignment.
-plan_turn:
-        push    rbx rcx rdx rsi rdi rbp r8 r9 r10 r11 r12 r13 r14 r15
-        mov     [plan_d], rax
-        mov     [plan_s], r8
+; rbx = a cabin -> its turn, P_QUANTUM, from the planner: its priority and the cost of a switch, once (when
+; it is born or its priority changes), never at a switch. Keeps every register; any stack alignment.
+plan_quantum:
+        push    rax rbx rcx rdx rsi rdi rbp r8 r9 r10 r11 r12 r13 r14 r15
+        mov     [plan_cabin], rbx       ; the cabin (in memory: the engine uses every register)
+        mov     r12, [rbx + P_PRIO]
         mov     rbx, [plan_proc]
-        mov     rax, [plan_d]
+        lea     rdi, [rbx + P_REGS]     ; every register at 0, then its priority and c
+        xor     eax, eax
+        mov     ecx, 16
+        rep     stosq
+        mov     rax, r12
         mov     [rbx + P_REGS + 1*8], rax
-        mov     rax, [plan_s]
-        mov     [rbx + P_REGS + 2*8], rax
         mov     rax, [plan_c16]
-        cmp     byte [quiet], 0
-        je      @f
-        mov     eax, CALIB_C16
-@@:     mov     [rbx + P_REGS + 3*8], rax
+        mov     [rbx + P_REGS + 3*8], rax
         xor     eax, eax
         mov     [rbx + P_PC], rax
         mov     [rbx + P_DONE], rax
@@ -121,6 +118,11 @@ plan_turn:
         cmp     qword [rbx + P_CODE], 0
         jne     .broken
         mov     rax, [rbx + P_REGS]
+        test    rax, rax
+        jg      @f
+        mov     eax, 1                  ; a turn is at least one instruction
+@@:     mov     rcx, [plan_cabin]
+        mov     [rcx + P_QUANTUM], rax
         jmp     .out
 .broken:
         cmp     byte [plan_own], 0
@@ -134,13 +136,12 @@ plan_turn:
         call    plan_helper
         invoke  WriteFile, [hout], plan_fail_text, PLAN_FAIL_LEN, written, 0
         mov     rsp, [plan_rsp]
-        mov     rax, [plan_d]           ; and the turn again, from it
-        mov     r8, [plan_s]
-        call    plan_turn
+        mov     rbx, [plan_cabin]       ; and its turn again, from it
+        call    plan_quantum
         jmp     .out
-.factory_broken:                        ; the factory planner is tested: this is least attained service alone
-        mov     rax, [plan_d]
-        inc     rax
+.factory_broken:                        ; the factory planner is tested: the shortest turn
+        mov     rcx, [plan_cabin]
+        mov     qword [rcx + P_QUANTUM], 1
 .out:
-        pop     r15 r14 r13 r12 r11 r10 r9 r8 rbp rdi rsi rdx rcx rbx
+        pop     r15 r14 r13 r12 r11 r10 r9 r8 rbp rdi rsi rdx rcx rbx rax
         ret

@@ -59,18 +59,18 @@ costo de cambio: 0.00 instrucciones (fijado)"
 caso "un proceso" 0 0 "$fijo0
 P0 codigo=0 j0=000000000000002A t=2" 02_ldi
 
-# With switch cost 0 the scheduler is pure least attained service: the long one is first in line,
-# the short ones still finish first.
-caso "lo corto primero" 0 0 "$fijo0
-P1 codigo=0 j0=000000000000002A t=6
-P2 codigo=0 j0=000000000000002A t=9
+# The cabins row in the order they arrive, each its own turn (remos.inc). With switch cost 0 every turn is
+# 1 instruction (t = c p / (1 - p) rounds to 0, at least 1): a round, so the short ones finish soon.
+caso "en ronda por orden de llegada" 0 0 "$fijo0
+P1 codigo=0 j0=000000000000002A t=5
+P2 codigo=0 j0=000000000000002A t=10
 P0 codigo=0 j0=000000000007A314 t=3012" largo_1000 02_ldi 04_suma
 
-# Switch cost 4: the first turn is t = ((D + c) + sqrt((D + c)^2 + 4 c s)) / 2 = 4 for the long one
-# (D = 0, s = 0); then the short one (D = 4) gets 8 and ends after its 2 instructions.
-caso "la prioridad decide el turno" 4 0 "modo: simbiosis
+# Switch cost 4 and the priority of a cabin that says nothing (0.99): its turn is t = c p / (1 - p) =
+# 4 * 64881 / 655 = 396.2, so 397 instructions; the long one rows 397, then the short one ends.
+caso "el turno sale de la prioridad y del costo" 4 0 "modo: simbiosis
 costo de cambio: 4.00 instrucciones (fijado)
-P1 codigo=0 j0=000000000000002A t=6
+P1 codigo=0 j0=000000000000002A t=399
 P0 codigo=0 j0=000000000007A314 t=3008" largo_1000 02_ldi
 
 # A process that breaks only breaks its own cabin.
@@ -87,8 +87,8 @@ P1 codigo=0 j0=0000000000000009 t=42" camarote_7 camarote_9
 # loop (also between the entry jump and the condition, which the routine engine runs as one routine).
 # Per copy: 3 + entry jump + 10 laps * 3 + last check + jhalt = 36.
 caso "while: el turno corta en cualquier punto" 0 0 "$fijo0
-P1 codigo=0 j0=0000000000000037 t=71
-P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
+P0 codigo=0 j0=0000000000000037 t=71
+P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 
 # The scheduler is a Janax program in PDP (PDP/so/nucleo/planificador.bin): anyone can change it. Without it
 # the kernel uses the factory one; a broken one sends it back to the factory one.
@@ -108,38 +108,39 @@ caso "planificador propio roto: vuelve el de fabrica" 0 0 "modo: simbiosis
 planificador: el de PDP
 costo de cambio: 0.00 instrucciones (fijado)
 planificador: el de PDP fallo, vuelve el de fabrica
-P1 codigo=0 j0=0000000000000037 t=71
-P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
+P0 codigo=0 j0=0000000000000037 t=71
+P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 unset carpeta
 
-# The last part: a turn spent with no more left to its jhalt than a switch costs does not pass the oar.
+# The last part: a turn spent with no more left to its jhalt than a switch costs does not pass the oar
+# (without it, P0 would pass the oar with 4 left and end at t = 996).
 caso "ultima parte: termina en vez de pasar el remo" 5 0 "modo: simbiosis
 costo de cambio: 5.00 instrucciones (fijado)
-P0 codigo=0 j0=0000000000000014 t=32
-P1 codigo=0 j0=0000000000000014 t=44" final_derecho final_derecho
+P0 codigo=0 j0=00000000000001F2 t=500
+P1 codigo=0 j0=00000000000001F2 t=1000" final_derecho final_derecho
 
 caso "while: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
-P0 codigo=0 j0=0000000000000037 t=65
+P0 codigo=0 j0=0000000000000037 t=36
 P1 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 
 # An instruction and the condition after it run as one routine: the turn may end between them, and a
 # failure in the first one ends the process before the condition is counted.
 caso "pareja fundida: el turno corta en cualquier punto" 0 0 "$fijo0
-P2 codigo=5 j0=0000000000000000 t=10
+P2 codigo=5 j0=0000000000000000 t=12
 P0 codigo=0 j0=0000000000006625 t=131
 P1 codigo=0 j0=0000000000006625 t=132" fusion fusion fusion_falla
 
 caso "pareja fundida: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
-P2 codigo=5 j0=0000000000000000 t=10
-P0 codigo=0 j0=0000000000006625 t=127
-P1 codigo=0 j0=0000000000006625 t=132" fusion fusion fusion_falla
+P0 codigo=0 j0=0000000000006625 t=64
+P1 codigo=0 j0=0000000000006625 t=128
+P2 codigo=5 j0=0000000000000000 t=132" fusion fusion fusion_falla
 
 # Copies of one program share its words and its table; a program with the same length and one different
 # word is another program.
 caso "mismo largo, otro programa: no comparte" 0 0 "$fijo0
-P1 codigo=0 j0=000000000000002D t=131
+P1 codigo=0 j0=000000000000002D t=130
 P3 codigo=0 j0=000000000000002D t=132
 P0 codigo=0 j0=0000000000000037 t=137
 P2 codigo=0 j0=0000000000000037 t=138" while_suma while_suma_9 while_suma while_suma_9
@@ -156,14 +157,14 @@ P0 codigo=5 j0=0000000000000007 t=2" primera_orden_imposible
 
 # The return stack weighs what it holds: it grows with the calls and shrinks between turns. Same limit.
 caso "pila de retorno: honda, al limite y uno de mas" 0 0 "$fijo0
-P1 codigo=7 j0=0000000000000000 t=36882
+P1 codigo=7 j0=0000000000000000 t=36881
 P0 codigo=0 j0=0000000000002000 t=94235
 P2 codigo=0 j0=0000000000002000 t=94236" llamadas_hondas llamadas_demasiadas llamadas_hondas
 
 caso "pila de retorno: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
-P1 codigo=7 j0=0000000000000000 t=37079
-P0 codigo=0 j0=0000000000002000 t=94073
+P1 codigo=7 j0=0000000000000000 t=37028
+P0 codigo=0 j0=0000000000002000 t=94091
 P2 codigo=0 j0=0000000000002000 t=94236" llamadas_hondas llamadas_demasiadas llamadas_hondas
 
 # Initial data: the file X.datos next to X is at the start of room 0 from the first order.

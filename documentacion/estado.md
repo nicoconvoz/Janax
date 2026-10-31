@@ -131,3 +131,6 @@ elegir quién rema pasa de x86 nativo a Janax; guardada en la rama hoja-de-turno
 menor que 0 con remeros en paralelo. SO 145/145, escalón 0 178/178.
 2026-10-31 — La última parte (Capitán): el núcleo halla en el código el camino derecho a jhalt y, si al acabarse el turno
 falta lo mismo o menos que un cambio, el camarote termina en vez de pasar el remo. SO 148/148, escalón 0 178/178.
+2026-10-31 — La fila por orden de llegada (Capitán): remos libres y usados, sin pensar en cada cambio; turno = c·p/(1−p)
+por la bolita (0,99 por defecto), calculado una vez por el planificador en Janax. Un cambio cuesta ~24 instrucciones
+(antes ~190-300); dos calculo igual de rápido y parejos (482 instr de diferencia). SO 148/148, escalón 0 182/182.

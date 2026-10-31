@@ -77,7 +77,11 @@ P_SAVERSP = 384                 ; ret_grow / ret_trim: the stack they came with
 P_RUNNING = 392                 ; 1 = a rower is running it (remos.inc)
 P_TAIL   = 400                  ; per word, instructions to its jhalt by the straight way (remos.inc)
 P_CUT    = 408                  ; 1 = its turn was cut by an event (no stretching to the end)
-PROC_SIZE = 416
+P_NEXT   = 416                  ; the next one in the line of cabins (remos.inc)
+P_PRIO   = 424                  ; its priority, in 65536ths: the fraction of its time for real work
+P_QUANTUM = 432                 ; its turn, from its priority (ayudantes.inc)
+P_QUEUED = 440                  ; 1 = it is in the line
+PROC_SIZE = 448
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -257,7 +261,11 @@ section '.data' data readable writeable
   plan_d     dq 0
   plan_s     dq 0
   plan_rsp   dq 0
+  plan_cabin dq 0               ; plan_quantum: the cabin whose turn it computes
   tail_limit dq 0               ; the longest last part a cabin finishes instead of passing the oar
+  q_head     dq 0               ; the line of cabins waiting for an oar, in the order they arrived
+  q_tail     dq 0
+  PRIO_DEFAULT = 64881          ; 0.99 (of 65536): a cabin that says nothing loses 1 % of its time switching
   plan_own   db 0               ; 1 = the planner came from PDP
   align 8
   sixteen    dq 16.0
@@ -890,6 +898,10 @@ make_process:
         mov     [rdx + rax*8], rbx
         mov     [rbx + P_ID], rax
         inc     qword [nprocs]
+        mov     qword [rbx + P_PRIO], PRIO_DEFAULT
+        call    plan_quantum            ; its turn, once
+        mov     rax, rbx
+        call    q_push                  ; and it waits for an oar like everyone
         mov     rax, rbx
         pop     r15 r14 r13 r12 rdi rsi rbx
         ret
@@ -1279,6 +1291,21 @@ calib_reset:
         mov     rax, [calib_loops]
         mov     [rdi + P_REGS + 1*8], rax
         mov     [rdi + PROC_SIZE + P_REGS + 1*8], rax
+        mov     rax, FOREVER            ; alone: it rows without a single switch (what a switch costs is
+        cmp     qword [nprocs], 2       ; measured against that)
+        jb      @f
+        mov     eax, 1                  ; the pair: turns of one instruction, as many switches as there can be
+@@:     mov     [rdi + P_QUANTUM], rax
+        mov     [rdi + PROC_SIZE + P_QUANTUM], rax
+        mov     qword [q_head], 0       ; the line: the calibration cabins, in order
+        mov     qword [q_tail], 0
+        lea     rax, [calib_procs]
+        call    q_push
+        cmp     qword [nprocs], 2
+        jb      @f
+        lea     rax, [calib_procs + PROC_SIZE]
+        call    q_push
+@@:
         mov     qword [clock], 0
         mov     qword [switches], 0
         ret
@@ -3038,6 +3065,7 @@ orphans:
         mov     [r12 + R_STATE], r8
         mov     r8, [r12 + R_CHILD]
         dec     qword [r8 + P_WAITING]
+        call    q_wake                  ; its signature arrived: to the line
 .rec_next:
         inc     rsi
 .rec:
@@ -3136,6 +3164,7 @@ nobody_signs:
         mov     qword [r9 + R_STATE], 2
         mov     r8, [r9 + R_CHILD]
         dec     qword [r8 + P_WAITING]
+        call    q_wake                  ; its signature arrived: to the line
 .next:
         inc     rcx
 .one:
@@ -3219,6 +3248,7 @@ family_sign:
 @@:     mov     [r9 + R_STATE], rax
         mov     r8, [r9 + R_CHILD]
         dec     qword [r8 + P_WAITING]
+        call    q_wake                  ; its signature arrived: to the line
         mov     byte [sched_dirty], 1
         mov     qword [rbp + r13 + 24], 0
         ret
