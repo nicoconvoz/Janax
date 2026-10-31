@@ -769,3 +769,10 @@ mezclar, guardar el cofre, y la vuelta siguiente carga ese mismo cofre); el nati
 separa es cuántas instrucciones de máquina rodean cada paso, y anotar en memoria no pesa porque el procesador
 escribe sin esperar. Lo que sí vale: contar solo lo importante (hasta ~14 %, hecho sin saltos a la zona fría: la
 primera versión por tramo los tenía y por eso no ganó) y los cofres de colores (hasta ~6 %).
+
+**Contar solo lo importante, bien hecho** (mismo día): el turno se cobra una vez por tramo derecho y el cobro va
+**pegado al comienzo del tramo**, por donde pasan todas las entradas (un salto, caer desde la instrucción anterior,
+un `jret` que vuelve directo al código nativo); solo un salto al medio de un tramo (la entrada de un while, una vez
+por bucle) pasa por la zona fría. Si el saldo no alcanza, se devuelve y se recorre de a una instrucción con las
+rutinas: frena en la misma instrucción que los otros motores. `calculo`: **~494 → ~370 ms (−25 %)**, A-B, siete
+rondas. La primera versión por tramo no ganaba porque cada `jret` volvía por la tabla y la zona fría en cada vuelta.
