@@ -3,9 +3,10 @@
 ; at its routine. The code does what the routine does with the registers and operands already in it, and
 ; keeps every convention of the routine engine (r12 next record, r13 table, r14 Janax registers, r15 data,
 ; rsi return stack, rdi depth, rbp budget, rbx process), so it runs inside run_routines as it is:
-;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, and memory inside room 0 run in native code.
-;  - Anything else (jhalt, jdiv, jcall, jret, the windows, an unknown opcode, memory that needs the room
-;    package, a misaligned access) jumps to its own routine, which goes on through the table: back to native.
+;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory inside room 0
+;    run in native code.
+;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, memory that needs the room package, a
+;    misaligned access, a call that needs more return stack, a jret without jcall) jumps to its own routine, which goes on through the table: back to native.
 ;  - Each instruction charges its turn before it runs, as t_next does, so a turn ends at the same
 ;    instruction as with the routines and the interpreter, bit for bit.
 ;
@@ -185,12 +186,14 @@ NK_JZ    = 5
 NK_JNZ   = 6
 NK_SHI   = 7
 NK_MEM   = 8
+NK_CALL  = 9
+NK_RET   = 10
 native_kind db 0, NK_LDI, NK_BIN, NK_BIN, NK_BIN, 0, NK_SHIFT, NK_SHIFT
             db NK_SHIFT, NK_BIN, NK_BIN, NK_BIN, NK_JMP, NK_JZ, NK_JNZ, NK_SHI
-            db NK_MEM, NK_MEM, NK_MEM, NK_MEM, 0, 0, 0, 0
+            db NK_MEM, NK_MEM, NK_MEM, NK_MEM, NK_CALL, NK_RET, 0, 0
 assert $ - native_kind = OP_COUNT
 align 8
-native_emitters dq nb_ldi, nb_bin, nb_shift, nb_jmp, nb_jz, nb_jnz, nb_shi, nb_mem
+native_emitters dq nb_ldi, nb_bin, nb_shift, nb_jmp, nb_jz, nb_jnz, nb_shi, nb_mem, nb_call, nb_ret
 ; the opcode byte of "op rax, r/m64" per binary opcode (0 = imul, which takes two)
 nb_bin_op   db 0, 0, 03h, 2Bh, 0, 0, 0, 0, 0, 23h, 0Bh, 33h
 nb_shift_op db 0E0h, 0E8h, 0F8h         ; the ModRM of shl, shr, sar rax, cl
@@ -318,6 +321,36 @@ nb_mem:                                 ; the address, room 0's limit, the align
         stosb
         emit    41h, 88h, 0Ch, 07h
         jmp     nb_next
+
+nb_call:                                ; room in the return stack, the record after it there, then the jump
+        emit    48h, 3Bh, 0BBh          ; cmp rdi, [rbx + P_RETCAP] / jae F(i): one more page, or past the limit
+        mov     eax, P_RETCAP
+        stosd
+        emit    0Fh, 83h
+        call    nb_to_routine
+        emit    48h, 0B8h               ; mov rax, the record after it
+        lea     rax, [r8 + R_SIZE]
+        stosq
+        emit    48h, 89h, 04h, 0FEh     ; mov [rsi + rdi*8], rax
+        emit    48h, 0FFh, 0C7h         ; inc rdi
+        call    nb_taken
+        ret
+
+nb_ret:                                 ; the record it comes back to, charged, then its entry in the table
+        emit    48h, 85h, 0FFh          ; test rdi, rdi / jz F(i): jret without jcall
+        emit    0Fh, 84h
+        call    nb_to_routine
+        emit    48h, 0FFh, 0CFh         ; dec rdi
+        emit    48h, 8Bh, 14h, 0FEh     ; mov rdx, [rsi + rdi*8]
+        emit    48h, 83h, 0EDh, 01h     ; sub rbp, 1 / jc past the jump
+        emit    72h, 02h
+        emit    0FFh, 22h               ; jmp qword [rdx]
+        emit    49h, 89h, 0D4h          ; spent: mov r12, rdx / mov rax, t_suspend / jmp rax
+        emit    48h, 0B8h
+        lea     rax, [t_suspend]
+        stosq
+        emit    0FFh, 0E0h
+        ret
 
 ; Falling through: charge the next word, and jump to it unless its entry is the next block.
 nb_next:

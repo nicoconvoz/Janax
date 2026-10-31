@@ -62,10 +62,12 @@ caso "un proceso" 0 0 "$fijo0
 P0 codigo=0 j0=000000000000002A t=2" 02_ldi
 
 # The translated engine says how many instructions of the programs became native code (nativo.inc): all
-# but jhalt, jdiv, the calls and the windows, which keep their routine.
+# but jhalt, jdiv and the windows, which keep their routine.
 if [ "$motor" = traductor ]; then
   got=$(JANAX_CAMBIO=0 timeout 30 "$salida/janaxos.exe" "$(bin largo_1000)" "$(bin 02_ldi)" | tr -d '\r' | grep '^nativo: ')
   if [ "$got" = "nativo: 8 de 10 instrucciones" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] nativo: dio '$got'"; mal=$((mal + 1)); fi
+  got=$(JANAX_CAMBIO=0 timeout 30 "$salida/janaxos.exe" "$(bin llamadas_hondas)" | tr -d '\r' | grep '^nativo: ')
+  if [ "$got" = "nativo: 12 de 13 instrucciones" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] nativo con llamadas: dio '$got'"; mal=$((mal + 1)); fi
 fi
 
 # The cabins row in the order they arrive, each its own turn (remos.inc). With switch cost 0 every turn is

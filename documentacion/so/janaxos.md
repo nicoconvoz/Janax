@@ -330,8 +330,11 @@ nativo, y el traductor del escalón 0 (que el SO no usaba) ~2 veces. Respuesta: 
 | SO, rutinas | ~2,2 s | ~1,75 s |
 | **SO, traducido** | **~1,0 s** | **~0,7 s** |
 
-Lo que falta para acercarse al escalón 0: `jcall` y `jret` todavía usan su rutina (en `calculo` son 2 de cada 10
-instrucciones), los registros Janax viven en memoria y no en registros del procesador, y cada instrucción cobra su
+**`jcall` y `jret` en nativo** (mismo día): `calculo` pasa de ~1,0 s a **~0,58 s** (eran 2 de cada 10 instrucciones).
+La pila de retornos sigue siendo la de Janax (guarda renglones de la tabla): `jret` salta al renglón que vuelve,
+y lo que necesita más pila o un `jret` sin `jcall` sigue en su rutina.
+
+Lo que falta para acercarse al escalón 0: los registros Janax viven en memoria y no en registros del procesador, y cada instrucción cobra su
 turno con dos instrucciones más. El costo de un cambio medido sube a ~46–52 instrucciones: cada instrucción es más
 barata, así que el mismo cambio equivale a más de ellas.
 
