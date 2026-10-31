@@ -134,3 +134,5 @@ falta lo mismo o menos que un cambio, el camarote termina en vez de pasar el rem
 2026-10-31 — La fila por orden de llegada (Capitán): remos libres y usados, sin pensar en cada cambio; turno = c·p/(1−p)
 por la bolita (0,99 por defecto), calculado una vez por el planificador en Janax. Un cambio cuesta ~24 instrucciones
 (antes ~190-300); dos calculo igual de rápido y parejos (482 instr de diferencia). SO 148/148, escalón 0 182/182.
+2026-10-31 — La bolita de cada camarote: programa.bin!0.5 al lanzar, los hijos heredan la del padre como techo,
+y el pedido 20 la cambia en marcha (recortada al techo, turno recalculado una vez). SO 162/162.

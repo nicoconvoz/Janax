@@ -81,7 +81,8 @@ P_NEXT   = 416                  ; the next one in the line of cabins (remos.inc)
 P_PRIO   = 424                  ; its priority, in 65536ths: the fraction of its time for real work
 P_QUANTUM = 432                 ; its turn, from its priority (ayudantes.inc)
 P_QUEUED = 440                  ; 1 = it is in the line
-PROC_SIZE = 448
+P_PRIO_TOP = 448                ; the highest bolita it may ask for: the one it was launched with
+PROC_SIZE = 456
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -109,6 +110,7 @@ section '.data' data readable writeable
   mp_words  dq 0
   mp_parent dq 0
   mp_rights dq 0
+  mp_prio   dq 0                ; its bolita (it can never ask for more)
   mp_pfx_ptr dq 0
   mp_pfx_len dq 0
   mp_new    dq 0
@@ -126,8 +128,8 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 19                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
-                                ; consult, delete, rename, list, cede with label, launch, sign, pending, state
+  KINDS     = 20                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+                                ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -152,15 +154,15 @@ section '.data' data readable writeable
   t_reqs    db ' pedidos=', 0
   serve_table dq serve_write, serve_grow, serve_destroy, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
-              dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state
+              dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0
+             db R_READ, 0, 0, 0, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -185,6 +187,7 @@ section '.data' data readable writeable
   capnodes  dq 0
   denied    dq 0
   launch_rights dq 0
+  launch_prio dq 0              ; program!fraction: its bolita
   launch_raw db HOST_PATH dup 0
   launch_pfx db NORM_CAP dup 0
   launch_pfx_len dq 0
@@ -616,11 +619,22 @@ start:
         mov     r14, rsi                ; this path
         mov     qword [launch_rights], R_ALL   ; no "@": every permission
         mov     qword [launch_pfx_len], 0      ; and no label prefix
+        mov     qword [launch_prio], PRIO_DEFAULT   ; and no "!": the bolita of a cabin that says nothing
         jmp     .path_end
 .path_end_lap:
         cmp     al, '@'
         je      .permissions
         inc     rsi
+        cmp     al, '!'
+        jne     .path_end
+        mov     byte [rsi - 1], 0       ; program.bin!0.5: its bolita, from 0 to 1 (also after the permissions)
+        call    read_bolita
+        jc      fail_args
+        mov     [launch_prio], rax
+        cmp     byte [rsi], 0
+        je      .path_end
+        cmp     byte [rsi], '@'
+        jne     fail_args               ; nothing else may follow it but the permissions
 .path_end:                              ; while the path goes on
         mov     al, [rsi]
         test    al, al
@@ -645,7 +659,13 @@ start:
         mov     edx, R_WRITE
         cmp     al, 'g'
         je      .grant
-        cmp     al, ':'
+        cmp     al, '!'
+        jne     @f
+        call    read_bolita
+        jc      fail_args
+        mov     [launch_prio], rax
+        jmp     .letter
+@@:     cmp     al, ':'
         je      .prefix
         jmp     .letter
 .grant:
@@ -714,6 +734,8 @@ start:
         mov     qword [mp_parent], 0
         mov     rax, [launch_rights]
         mov     [mp_rights], rax
+        mov     rax, [launch_prio]
+        mov     [mp_prio], rax
         lea     rax, [launch_pfx]
         mov     [mp_pfx_ptr], rax
         mov     rax, [launch_pfx_len]
@@ -791,6 +813,55 @@ start:
         invoke  WriteFile, [hout], line, rdi, written, 0
 .quit:
         invoke  ExitProcess, 0
+
+; rsi = the text after "!": a fraction from 0 to 1 ("0.5", ".25", "1", up to 9 decimals) -> rax = it in
+; 65536ths, rounded to the nearest; rsi past it. CF = 1 if it is not one. Keeps every other register.
+read_bolita:
+        push    rcx rdx r8
+        xor     r8d, r8d                ; its digits, as a whole number
+        mov     ecx, 1                  ; 10 to the number of decimals
+        movzx   eax, byte [rsi]
+        cmp     al, '.'
+        je      .point
+        sub     eax, '0'
+        cmp     eax, 1
+        ja      .bad                    ; the whole part is 0 or 1
+        mov     r8, rax
+        inc     rsi
+        cmp     byte [rsi], '.'
+        jne     .whole
+.point:
+        inc     rsi
+        jmp     .decimal
+.decimal_lap:
+        imul    r8, r8, 10
+        add     r8, rax
+        imul    rcx, rcx, 10
+        cmp     rcx, 1000000000
+        ja      .bad
+        inc     rsi
+.decimal:                               ; while there are decimals
+        movzx   eax, byte [rsi]
+        sub     eax, '0'
+        cmp     eax, 9
+        jbe     .decimal_lap
+.whole:
+        mov     rax, r8                 ; (digits * 65536 + 10^n / 2) / 10^n
+        shl     rax, 16
+        mov     rdx, rcx
+        shr     rdx, 1
+        add     rax, rdx
+        xor     edx, edx
+        div     rcx
+        cmp     rax, 10000h
+        ja      .bad                    ; more than 1
+        pop     r8 rdx rcx
+        clc
+        ret
+.bad:
+        pop     r8 rdx rcx
+        stc
+        ret
 
 ; eax = character -> its value 0..15 for 0-9 a-f A-F, or -1 with the sign flag set.
 hex_digit:
@@ -898,7 +969,9 @@ make_process:
         mov     [rdx + rax*8], rbx
         mov     [rbx + P_ID], rax
         inc     qword [nprocs]
-        mov     qword [rbx + P_PRIO], PRIO_DEFAULT
+        mov     rax, [mp_prio]
+        mov     [rbx + P_PRIO], rax
+        mov     [rbx + P_PRIO_TOP], rax
         call    plan_quantum            ; its turn, once
         mov     rax, rbx
         call    q_push                  ; and it waits for an oar like everyone
@@ -3177,6 +3250,7 @@ serve_gate serve_launch,  16, family_launch
 serve_gate serve_sign,    17, family_sign
 serve_gate serve_pending, 18, family_pending
 serve_gate serve_state,   19, family_state
+serve_gate serve_bolita,  20, family_bolita
 
 ; 16 launch: a = label of the program file, b = its bytes; the child's permissions travel in the high
 ; half of the type (cut down to the parent's). Answers the child's number, or -1.
@@ -3211,6 +3285,8 @@ family_launch:
         mov     [mp_parent], rbx
         mov     eax, [rbp + r13 + 4]
         mov     [mp_rights], rax
+        mov     rax, [rbx + P_PRIO]     ; born with its parent's bolita
+        mov     [mp_prio], rax
         mov     qword [mp_pfx_len], 0
         call    make_process
         push    rax
@@ -3316,6 +3392,18 @@ family_state:
         ret
 .not_mine:
         mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 20 bolita: a = the bolita it wants, in 65536ths (1 = 10000h) -> it, cut down to the one it was launched
+; with (nobody gives itself more than it was given), and its turn again from it. Answers the bolita it got.
+family_bolita:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [rbx + P_PRIO_TOP]
+        jbe     @f
+        mov     rax, [rbx + P_PRIO_TOP]
+@@:     mov     [rbx + P_PRIO], rax
+        call    plan_quantum            ; its turn, once, from its new bolita
+        mov     [rbp + r13 + 24], rax
         ret
 
 gate_refused:

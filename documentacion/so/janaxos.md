@@ -117,6 +117,9 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - **17 firmar** (`a` = número del pedido, `b` = 1 firma / 0 rechaza), **18 pendientes** (lo que espera
      mi firma, como {número, hijo, tipo}), **19 estado** (`a` = un hijo mío → su código, −1 mientras corre,
      −2 si no es mío).
+   - **20 bolita** (`a` = la bolita que quiere, en 65.536avos; 10000h = 1): la recorta a la que le dieron al
+     lanzarlo (nadie se da más de lo que le dieron, igual que los permisos), recalcula su turno una vez y
+     contesta la que quedó. Ver "La bolita de cada camarote".
    - **La sombra del padre (Capitán)**: cuando un proceso termina con descendientes vivos queda su
      **sombra**, que decide por esa línea **con los permisos del padre**: firma lo que sus porteros
      permiten y rechaza el resto, en el acto. Nadie más decide por esa línea (ni el abuelo ni el kernel) y
@@ -288,7 +291,7 @@ Reemplaza a la regla anterior (el menos servido primero, con el turno calculado 
   PDP o el de fábrica) **una sola vez**, cuando nace el camarote. Probado contra la matemática exacta:
   `so/herramientas/cuantos.pl` → `escalon0/pruebas/43_cuantos.jsm` (75 casos, en los tres motores).
 - **Bolita de un camarote que no dice nada: 0,99** (64.881). Es criterio, no medición: pierde el 1 % de su
-  tiempo en cambiar. Todavía no hay forma de elegir otra bolita al lanzar.
+  tiempo en cambiar. Cada camarote puede elegir la suya: ver más abajo.
 - **El costo de un cambio bajó a ~24 instrucciones** (rutinas; ~8–11 con el intérprete): antes, con el
   planificador decidiendo en cada cambio, eran ~190–300. ⚠️ La primera medición dio 0: con `c = 0` el turno es de
   1 instrucción y la corrida de un proceso **solo** también cambiaba en cada instrucción (se pasaba el remo a sí
@@ -297,6 +300,20 @@ Reemplaza a la regla anterior (el menos servido primero, con el turno calculado 
   sobre 1.342 millones (antes ~313.000): turnos cortos y parejos. Estrés en paralelo: 300 corridas, 0 fallas.
 - Las pruebas cuyo orden cambió se verificaron con un script: cada camarote da su mismo código y su mismo `j0`,
   las demás líneas son idénticas, y los dos motores coinciden; solo se mueven el orden y el reloj.
+
+## La bolita de cada camarote (2026-10-31)
+
+- **Al lanzar**: `programa.bin!0.5` (también `programa.bin@pm!0.5` o `programa.bin!0.5@pm`). Una fracción de 0
+  a 1 con hasta 9 decimales, redondeada al 65.536avo más cercano. Si es más que 1, o le sigue algo que no son
+  los permisos, no arranca nada (código 4). Sin `!` queda 0,99.
+- **Los hijos nacen con la bolita del padre**, y esa es su techo.
+- **En marcha**: el pedido **20 bolita** de la ventanilla. La recorta al techo (la bolita con la que lo
+  lanzaron, `P_PRIO_TOP`) y recalcula el turno **una sola vez**, en ese momento: los cambios de remo siguen
+  sin calcular nada. Rige desde su próximo turno.
+- **Probado** (`so/pruebas/correr.sh`, en los dos motores): con costo 4, una copia de `largo_1000` con 0,5
+  (turno 4) contra otra con 0,99 (turno 397): la de 0,99 termina en t=3038, la otra en 6012, la cuenta hecha a
+  mano. Con bolita 1, rema entera de una vez (t=3403). Un camarote lanzado con 0,5 que pide 1 recibe 0,5
+  (`8000h`), y un hijo de un padre con 0,5 también.
 
 ## La última parte: terminar en vez de pasar el remo (Capitán, 2026-10-31)
 

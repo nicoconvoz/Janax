@@ -35,7 +35,7 @@ caso() {
   local args=() p
   for p in "$@"; do
     case "$p" in
-      *@*) args+=("$(bin "${p%@*}")@${p#*@}") ;;   # program@permissions
+      *[@!]*) args+=("$(bin "${p%%[@!]*}")${p#"${p%%[@!]*}"}") ;;   # program@permissions!bolita
       *)   args+=("$(bin "$p")") ;;
     esac
   done
@@ -72,6 +72,32 @@ caso "el turno sale de la prioridad y del costo" 4 0 "modo: simbiosis
 costo de cambio: 4.00 instrucciones (fijado)
 P1 codigo=0 j0=000000000000002A t=399
 P0 codigo=0 j0=000000000007A314 t=3008" largo_1000 02_ldi
+
+# The bolita from the command line (program!fraction): with p = 0.5 the turn is c p / (1 - p) = 4. The
+# copy with 0.99 rows 397 per lap and ends first: 7 laps of 401, then 4 + 227 more = 3038; the other one
+# rows alone what it has left, 3006 - 32, and ends at 6012.
+caso "la bolita de la linea de comandos" 4 0 "modo: simbiosis
+costo de cambio: 4.00 instrucciones (fijado)
+P1 codigo=0 j0=000000000007A314 t=3038
+P0 codigo=0 j0=000000000007A314 t=6012" 'largo_1000!0.5' largo_1000
+
+# With bolita 1 the cabin rows to its end: the first one rows its 397, the second one all its 3006.
+caso "bolita 1: rema hasta terminar" 4 0 "modo: simbiosis
+costo de cambio: 4.00 instrucciones (fijado)
+P1 codigo=0 j0=000000000007A314 t=3403
+P0 codigo=0 j0=000000000007A314 t=6012" largo_1000 'largo_1000!1'
+
+# Request 20: a cabin asks for a bolita and gets at most the one it was launched with (like permissions).
+caso "pedir bolita: nunca mas que la que le dieron" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000008000 t=*
+ventanilla: *" 'bolita!0.5'
+
+# A bolita that is not a fraction from 0 to 1 (or has something after it) does not start anything.
+caso "bolita mal escrita: mas que 1" 0 4 "$fijo0" '02_ldi!1.5'
+caso "bolita mal escrita: algo detras" 0 4 "$fijo0" '02_ldi!0.5x'
+caso "bolita y permisos, en cualquier orden" 0 0 "$fijo0
+P0 codigo=0 j0=000000000000002A t=3
+P1 codigo=0 j0=000000000000002A t=4" '02_ldi!0.5@pm' '02_ldi@pm!0.25'
 
 # A process that breaks only breaks its own cabin.
 caso "un pasajero rompe lo suyo" 0 0 "$fijo0
@@ -356,6 +382,13 @@ caso "familia: el padre lanza y espera" 0 0 "$fijo0
 P1 codigo=0 j0=000000000000002A t=*
 P0 codigo=0 j0=0000000000000000 t=*
 ventanilla: *" familia_espera
+
+# A child is born with its parent's bolita, and can not ask for more.
+familia familia_bolita bolita
+caso "familia: el hijo nace con la bolita del padre" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000008000 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" 'familia_espera!0.5'
 
 familia familia_firma ventanilla_hola
 caso "familia: el hijo pide, el padre firma" 0 0 "$fijo0
