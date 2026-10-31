@@ -195,3 +195,54 @@ row:
         add     rsp, 8
         pop     r13 r12
         ret
+
+; The last part of a program (Capitan: "the combination of instructions that marks the last part: when it
+; appears, it already knows that it ends"). Found in the code itself, so a program can not lie about it: for
+; each word, how many instructions are left to its jhalt by the straight way (instructions that only fall
+; through, then the jhalt), 0 if it is not on such a way. When a turn is spent and what is left of the last
+; part costs no more than passing the oar, the cabin finishes first. Computed once when a program is born,
+; shared by its copies. Keeps rbx, rbp, r12-r15.
+end_table:
+        push    rsi rdi
+        sub     rsp, 8
+        mov     rdx, [rbx + P_NWORDS]
+        lea     rdx, [rdx*4 + 4]
+        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [rbx + P_TAIL], rax
+        mov     rdi, rax
+        mov     rsi, [rbx + P_PROG]
+        mov     rcx, [rbx + P_NWORDS]
+        mov     dword [rdi + rcx*4], 0  ; past the end there is no way
+        jmp     .word
+.word_lap:
+        dec     rcx
+        movzx   eax, byte [rsi + rcx*4] ; its op
+        test    eax, eax
+        jnz     @f
+        mov     dword [rdi + rcx*4], 1  ; jhalt: one to go
+        jmp     .word
+@@:     cmp     eax, 0Ch
+        jb      .falls                  ; jldi and the arithmetic fall through
+        cmp     eax, 0Fh
+        je      .falls                  ; jshi
+        cmp     eax, 10h
+        jb      .none                   ; jumps
+        cmp     eax, 13h
+        jbe     .falls                  ; memory
+.none:                                  ; calls, returns, the windows, anything else: not a straight way
+        mov     dword [rdi + rcx*4], 0
+        jmp     .word
+.falls:                                 ; one more than the next word, if the next one is on a straight way
+        mov     edx, [rdi + rcx*4 + 4]
+        test    edx, edx
+        jz      @f
+        inc     edx
+@@:     mov     [rdi + rcx*4], edx
+.word:                                  ; while words are left, from the last one back
+        test    rcx, rcx
+        jnz     .word_lap
+        add     rsp, 8
+        pop     rdi rsi
+        ret

@@ -112,6 +112,12 @@ P1 codigo=0 j0=0000000000000037 t=71
 P0 codigo=0 j0=0000000000000037 t=72" while_suma while_suma
 unset carpeta
 
+# The last part: a turn spent with no more left to its jhalt than a switch costs does not pass the oar.
+caso "ultima parte: termina en vez de pasar el remo" 5 0 "modo: simbiosis
+costo de cambio: 5.00 instrucciones (fijado)
+P0 codigo=0 j0=0000000000000014 t=32
+P1 codigo=0 j0=0000000000000014 t=44" final_derecho final_derecho
+
 caso "while: con costo de cambio" 3 0 "modo: simbiosis
 costo de cambio: 3.00 instrucciones (fijado)
 P0 codigo=0 j0=0000000000000037 t=65
@@ -486,7 +492,7 @@ unset carpeta
 done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
-for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc; do
+for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc; do
   if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
     ok=$((ok + 1))
   else

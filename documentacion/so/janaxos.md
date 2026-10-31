@@ -270,6 +270,22 @@ camarote vuelve, nace o se despierta. No gasta procesador, y su pila es chica (6
 - **Medido** (4 copias de `calculo`, Pentium Gold G5420: 2 núcleos con 2 hilos cada uno): 1 remero ~6,7 s;
   **2 remeros ~3,6 s (1,85×)**; 4 remeros ~2,7–3,0 s (~2,3×: los hilos gemelos de un mismo núcleo agregan ~25 %).
 
+## La última parte: terminar en vez de pasar el remo (Capitán, 2026-10-31)
+
+> *"Si al terminar le falta lo mismo o menos que lo que el remo tarda en cambiar, entonces termina de remar
+> antes de pasar el remo."* — *"El programa no guarda el tamaño final sino la combinación de instrucciones que
+> marcan la última parte: cuando aparezcan, ya sabe que termina."*
+
+Código: `end_table` en `so/remos.inc`. El núcleo encuentra la última parte **en el código mismo** (un programa no
+puede mentir sobre ella): para cada palabra, cuántas instrucciones faltan hasta su `jhalt` por **camino derecho**
+(instrucciones que solo siguen de largo, y después el `jhalt`); 0 si no está en un camino así. Se calcula una vez
+cuando nace el programa y lo comparten sus copias. **Cuando a un camarote se le acaba el turno** y lo que le falta
+de su última parte cuesta lo mismo o menos que un cambio (`c` redondeado hacia arriba), sigue hasta terminar. Un
+turno cortado por un evento (alguien nació, se despertó o se durmió) no se estira. No cuesta nada mientras rema: es
+una consulta a la tabla, solo al final del turno. Prueba: `final_derecho` (dos copias de un programa todo derecho,
+`c = 5`): P0 recibe un turno de 13 y le quedarían 4, así que termina en `t = 32`; antes pasaba el remo y terminaba
+en `t = 44`.
+
 ## El núcleo en Janax: el planificador (2026-10-29)
 
 Primera pieza del núcleo escrita en Janax: `so/nucleo/planificador.inc`, rutina `turno` (j1 = D, j2 = s, j3 = c en

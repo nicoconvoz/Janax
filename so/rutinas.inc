@@ -180,6 +180,24 @@ macro t_next {
         align 16
 t_suspend:
         xor     ebp, ebp                ; the budget is spent (or the turn was cut)
+        cmp     qword [rbx + P_CUT], 0
+        jne     .cut
+        mov     rcx, [rbx + P_TAIL]     ; spent: if it is in its last part and what is left costs no more
+        test    rcx, rcx                ; than passing the oar, it finishes first (remos.inc)
+        jz      t_store
+        mov     rax, r12
+        sub     rax, r13
+        shr     rax, 4                  ; the next word
+        mov     eax, [rcx + rax*4]
+        test    eax, eax
+        jz      t_store
+        cmp     rax, [tail_limit]
+        ja      t_store
+        mov     rbp, rax
+        add     [rbx + P_BUDGET0], rax
+        t_next
+.cut:
+        mov     qword [rbx + P_CUT], 0
 t_store:
         sub     r12, r13
         shr     r12, 4
@@ -495,6 +513,7 @@ t_sys:
         mov     byte [sched_dirty], 0   ; someone was born or woke up: the scheduler decides again
         sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
+        mov     qword [rbx + P_CUT], 1  ; cut by an event: it does not stretch to its end
         call    kern_wake               ; and the rowers asleep look again
 @@:     call    kern_leave
         t_next

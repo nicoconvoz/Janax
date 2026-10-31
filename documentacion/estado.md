@@ -129,3 +129,5 @@ hiperhilación). 300 corridas de estrés sin fallas. SO 145/145, escalón 0 178/
 2026-10-31 — Hoja de turnos (Capitán) medida: decisiones idénticas pero más cara en cambios seguidos (2,7× con c=0), porque
 elegir quién rema pasa de x86 nativo a Janax; guardada en la rama hoja-de-turnos, no entra. Arreglado en master: D nunca
 menor que 0 con remeros en paralelo. SO 145/145, escalón 0 178/178.
+2026-10-31 — La última parte (Capitán): el núcleo halla en el código el camino derecho a jhalt y, si al acabarse el turno
+falta lo mismo o menos que un cambio, el camarote termina en vez de pasar el remo. SO 148/148, escalón 0 178/178.

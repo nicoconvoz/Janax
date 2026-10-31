@@ -75,7 +75,9 @@ P_SYSRD  = 368                  ; jsys: where its answer goes (rd * 8), kept per
 P_SYSQ   = 376                  ; jsys: its queue address
 P_SAVERSP = 384                 ; ret_grow / ret_trim: the stack they came with
 P_RUNNING = 392                 ; 1 = a rower is running it (remos.inc)
-PROC_SIZE = 400
+P_TAIL   = 400                  ; per word, instructions to its jhalt by the straight way (remos.inc)
+P_CUT    = 408                  ; 1 = its turn was cut by an event (no stretching to the end)
+PROC_SIZE = 416
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -255,6 +257,7 @@ section '.data' data readable writeable
   plan_d     dq 0
   plan_s     dq 0
   plan_rsp   dq 0
+  tail_limit dq 0               ; the longest last part a cabin finishes instead of passing the oar
   plan_own   db 0               ; 1 = the planner came from PDP
   align 8
   sixteen    dq 16.0
@@ -488,6 +491,9 @@ start:
         mulsd   xmm0, [sixteen]
         cvtsd2si rax, xmm0              ; c in sixteenths of an instruction, rounded
         mov     [plan_c16], rax
+        add     rax, 15
+        shr     rax, 4
+        mov     [tail_limit], rax       ; a switch, in whole instructions: a last part this short is finished
 
         ; --- porters: the root and one porter per door (nodes 0..3); processes hang from the doors ---
         mov     rcx, -1
@@ -927,6 +933,8 @@ share_program:
         mov     [rbx + P_NWORDS], rax
         mov     rax, [rdx + P_TABLE]
         mov     [rbx + P_TABLE], rax
+        mov     rax, [rdx + P_TAIL]
+        mov     [rbx + P_TAIL], rax
         add     rsp, 8
         ret
 .other:                                 ; while there are earlier processes to compare with
@@ -946,6 +954,7 @@ share_program:
         mov     rcx, [mp_words]
         mov     [rbx + P_NWORDS], rcx
         rep     movsd
+        call    end_table               ; its last part, once (remos.inc)
         mov     rax, [rbx + P_PROG]
         mov     rcx, [mp_words]
         cmp     byte [motor], 0
@@ -1351,6 +1360,24 @@ next:
         jmp     qword [optable + rcx*8]
 
 suspend:
+        test    rbp, rbp
+        jnz     .store
+        cmp     qword [rbx + P_CUT], 0
+        jne     .cut
+        mov     rcx, [rbx + P_TAIL]     ; spent: if it is in its last part and what is left costs no more
+        test    rcx, rcx                ; than passing the oar, it finishes first (remos.inc)
+        jz      .store
+        mov     eax, [rcx + r12*4]
+        test    eax, eax
+        jz      .store
+        cmp     rax, [tail_limit]
+        ja      .store
+        mov     rbp, rax
+        add     [rbx + P_BUDGET0], rax
+        jmp     next
+.cut:
+        mov     qword [rbx + P_CUT], 0
+.store:
         mov     [rbx + P_PC], r12
         mov     [rbx + P_DEPTH], rdi
         call    ret_trim
@@ -1567,6 +1594,7 @@ op_sys:
         mov     byte [sched_dirty], 0   ; someone was born or woke up: the scheduler decides again
         sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
+        mov     qword [rbx + P_CUT], 1  ; cut by an event: it does not stretch to its end
         call    kern_wake               ; and the rowers asleep look again
 .done:
         call    kern_leave
@@ -1578,6 +1606,7 @@ op_sys:
         dec     r12
         sub     [rbx + P_BUDGET0], rbp
         xor     ebp, ebp
+        mov     qword [rbx + P_CUT], 1
         call    kern_leave
         jmp     next
 
