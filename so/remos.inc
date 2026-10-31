@@ -78,6 +78,9 @@ run_all:
         je      .run
         mov     rax, r9
         sub     rax, r8                 ; D: how much more service the next one in line has received
+        jns     @f
+        xor     eax, eax                ; never below 0: a next one with less (rowed by another rower) is already behind
+@@:
         lea     r10, [rax + 1]          ; least attained service alone: just pass the other one
         call    plan_turn               ; the turn, from the planner in Janax (PDP or the factory one)
         cmp     byte [quiet], 0

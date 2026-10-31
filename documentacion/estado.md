@@ -126,3 +126,6 @@ instrucciones (rutinas); compartir sigue igual que seguidos. Calibración por du
 2026-10-31 — Los remeros (Capitán): camarotes en paralelo, un remero por núcleo, candado solo para lo compartido,
 remeros que duermen sin trabajo. 4 calculo: 1 remero 6,7 s, 2 remeros 3,6 s (1,85×), 4 remeros ~2,8 s (2 núcleos con
 hiperhilación). 300 corridas de estrés sin fallas. SO 145/145, escalón 0 178/178 con el teléfono.
+2026-10-31 — Hoja de turnos (Capitán) medida: decisiones idénticas pero más cara en cambios seguidos (2,7× con c=0), porque
+elegir quién rema pasa de x86 nativo a Janax; guardada en la rama hoja-de-turnos, no entra. Arreglado en master: D nunca
+menor que 0 con remeros en paralelo. SO 145/145, escalón 0 178/178.

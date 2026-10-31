@@ -257,6 +257,15 @@ camarote vuelve, nace o se despierta. No gasta procesador, y su pila es chica (6
   remeros es **el orden entre camarotes y el reloj**. Con un remero (`JANAX_REMOS=1`) todo pasa exactamente como
   antes: la suite corre así sus casos de orden exacto, y tiene casos propios en paralelo (8 camarotes con 2, 4
   y 8 remeros, y una familia que pide y firma con 4) que verifican el resultado de cada uno.
+- **`D` nunca es menor que 0**: con remeros en paralelo, el que sigue en la fila puede estar siendo remado por
+  otro y haber servido menos que el elegido. `D` daba negativo y el turno salía sin sentido (con un remero no
+  pasaba nunca). Si el que sigue ya está atrás, no hay que adelantarle nada: `D = 0`.
+- **La hoja de turnos, medida y guardada aparte** (rama `hoja-de-turnos`): el planificador escribía 16 turnos
+  de una vez (quién rema y cuánto) y el núcleo los seguía mientras el mundo fuera el imaginado. Las decisiones
+  dieron **idénticas** (los relojes coinciden al dígito), pero el costo empeoró: ~3 % mejor con procesos largos
+  y `c = 8`, **~25 % peor** con cambios seguidos (`c = 1`) y **2,7 veces peor** con `c = 0`. La causa: elegir quién
+  rema pasaba del recorrido nativo del núcleo a Janax, una vez por renglón (escribir una hoja de 16 turnos
+  cuesta ~3.600 instrucciones). No entró en `master`.
 - **Estrés**: 300 corridas con 8 remeros (los dos motores, camarotes mezclados y la familia): 0 fallas.
 - **Medido** (4 copias de `calculo`, Pentium Gold G5420: 2 núcleos con 2 hilos cada uno): 1 remero ~6,7 s;
   **2 remeros ~3,6 s (1,85×)**; 4 remeros ~2,7–3,0 s (~2,3×: los hilos gemelos de un mismo núcleo agregan ~25 %).
