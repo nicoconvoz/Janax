@@ -152,6 +152,12 @@ Banco `suma_1000m` (j0 = 1 + … + 1.000.000.000; 3.000 millones de instruccione
 
 PC y teléfono son procesadores distintos: comparar entre ellos no mide al traductor.
 
+**Contra x86-64 escrito a mano** (2026-10-31): el banco `calculo` (`so/bancos/calculo.jsm` sin la primera orden;
+671 millones de instrucciones Janax, j0 = `DB97CF2DBA000000` en los dos) escrito directo en FASM tarda **~185 ms**;
+traducido, **~350 ms** (desde el caché); en Janax OS con rutinas, ~1,9 s. Los costos fijos (arranque, traducir
+una vez) se diluyen en un programa largo, pero la proporción por instrucción queda: el traducido va ~2 veces el
+nativo. Lo que la achicaría: pesar los bucles al repartir registros (pendiente) y el Cambiaformas.
+
 ## Pendiente
 
 - x86-64: el uso de registros se cuenta en el texto del programa, sin pesar los bucles.
