@@ -301,6 +301,52 @@ Reemplaza a la regla anterior (el menos servido primero, con el turno calculado 
 - Las pruebas cuyo orden cambió se verificaron con un script: cada camarote da su mismo código y su mismo `j0`,
   las demás líneas son idénticas, y los dos motores coinciden; solo se mueven el orden y el reloj.
 
+## Remeros según el trabajo y el remero especial (Capitán, 2026-10-31)
+
+> *"Según la cantidad del trabajo son los remeros que se despiertan: si es menos, menos; si es más, más. Y
+> vamos a dividir el trabajo de los remeros en dos: 1 a 3 remeros con el mismo modo actual y 1 remero especial
+> que solo trabaje con los procesos que traban otros procesos, desde el que tiene más trabas hasta el que traba
+> menos."*
+
+- **Se despierta un remero por trabajo nuevo** (`so/remos.inc`): un camarote que nace o al que le llega su
+  firma despierta a **un** remero de fila, no a todos. Un camarote que vuelve de su turno lo toma otra vez su
+  propio remero, sin despertar a nadie. Antes cada vuelta despertaba a todos los dormidos, que se peleaban por
+  el candado para no encontrar nada.
+- **La fila tiene solo a los que nadie está remando**: quien toma un camarote lo saca de la fila (enlace doble,
+  `P_PREV`, para sacarlo del medio sin recorrerla) y al volver va al final. ⚠️ La primera versión lo dejaba en
+  la fila mientras lo remaba el especial: el padre remaba dos turnos seguidos y el hijo terminaba 397
+  instrucciones **más tarde**.
+- **Trabas**: hoy la única traba es un pedido de un hijo que espera la firma del padre. Cada camarote cuenta las
+  suyas (`P_BLOCKS`): sube al anotarse el pedido y baja al firmarse, al rechazarse o al decidir la sombra; y
+  `held` es el total, así nadie mira la tabla si nadie traba a nadie.
+- **El remero especial** toma al camarote que más traba, que nadie esté remando y que pueda remar; en empate, el
+  primero. Si nadie traba, duerme hasta que alguien trabe o hasta que vuelva un camarote que traba. Con varios
+  remeros, uno es el especial y el resto rema la fila; con uno solo, ese hace las dos cosas, un turno cada una.
+- **Instrumento**: con más de un remero el núcleo imprime `remeros: N, despertares en vano=V`, los que se
+  despertaron y no encontraron nada.
+
+**Medido** (dos `calculo`, costo medido por el núcleo, 3 corridas por fila; antes = con la fila sola):
+
+| remeros | antes | ahora |
+|---|---|---|
+| 1 | ~2,7–2,8 s | ~2,8 s |
+| 2 | ~1,6–1,7 s | **~2,7 s** (uno es el especial y duerme) |
+| 3 | ~2,2 s | ~1,76 s |
+| 4 (los de fábrica en esta máquina) | ~3,0–3,5 s | **~1,6 s** |
+
+- Con 4 remeros, cero despertares en vano. En 300 corridas de estrés (2, 3 y 4 remeros, un padre con tres hijos
+  y dos largos), 0 fallas y 48 despertares en vano contra 1.800 despertares pedidos.
+- **Un padre que traba a tres hijos** entre tres `largo_1000`, costo 4, un remero: los hijos terminan en t=4528,
+  5325 y 5328 (con la fila sola, 6066, 7285 y 8504); los largos terminan en el mismo reloj, sin trabajo perdido.
+  Con un solo hijo el resultado es idéntico al de antes: el padre ya quedaba justo detrás del hijo en la fila.
+- ⚠️ **El costo del diseño**: con 2 remeros (una máquina de 2 núcleos) queda un solo remero de fila y el especial
+  duerme mientras nadie traba a nadie, así que dos camarotes que no traban van más lentos que antes (~2,7 contra
+  ~1,7 s). Está medido y queda a decisión del Capitán.
+- ⚠️ **Dos instrumentos mintieron**: `build/calculo.bin` era del 29 de octubre (de antes de la primera orden) y se
+  rompía a las 9 instrucciones, así que los tiempos medían solo la calibración; se rearma con el ensamblador PDP.
+  Y la primera versión pasaba el tipo de remero en `r8` a `CreateThread`, cuyo parámetro va en `r9`: todos los
+  remeros eran de los dos tipos, y la tabla daba números que no correspondían al diseño.
+
 ## La bolita de cada camarote (2026-10-31)
 
 - **Al lanzar**: `programa.bin!0.5` (también `programa.bin@pm!0.5` o `programa.bin!0.5@pm`). Una fracción de 0

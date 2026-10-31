@@ -435,3 +435,12 @@ Devolución: una fila por orden de llegada (cada cambio es sacar de adelante y p
 fracción del tiempo que se trabaja de verdad, de donde sale el turno `t = c·p/(1−p)`; y la última parte la
 encuentra el núcleo en el código (el camino derecho al `jhalt`), así nadie tiene que declarar su tamaño ni puede
 mentirlo. Lo construido: `janaxos.md`.
+
+## 2026-10-31 — Remeros según el trabajo y el remero especial (Capitán)
+
+> *"Según la cantidad del trabajo son los remeros que se despiertan… y 1 remero especial que solo trabaje con
+> los procesos que traban otros procesos, desde el que tiene más trabas hasta el que traba menos."*
+
+Devolución: un despertar por trabajo nuevo (nacimiento o firma), nunca a todos; y el especial atiende al
+camarote que más pedidos tiene esperando su firma. Con 4 remeros, dos `calculo` pasaron de ~3,5 s a ~1,6 s;
+con 2 remeros se pierde un remero de fila (medido, a decidir). Lo construido: `janaxos.md`.

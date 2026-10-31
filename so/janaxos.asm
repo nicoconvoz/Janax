@@ -82,7 +82,9 @@ P_PRIO   = 424                  ; its priority, in 65536ths: the fraction of its
 P_QUANTUM = 432                 ; its turn, from its priority (ayudantes.inc)
 P_QUEUED = 440                  ; 1 = it is in the line
 P_PRIO_TOP = 448                ; the highest bolita it may ask for: the one it was launched with
-PROC_SIZE = 456
+P_BLOCKS = 456                  ; requests of others waiting for its signature: how many it holds (remos.inc)
+P_PREV   = 464                  ; the one before it in the line of cabins (remos.inc)
+PROC_SIZE = 472
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -244,6 +246,13 @@ section '.data' data readable writeable
   align 8
   kern_lock   rb 40               ; the captain's lock (a CRITICAL_SECTION, remos.inc)
   kern_change dq 0                ; rowers asleep wait on it (a CONDITION_VARIABLE)
+  kern_special dq 0               ; the special rower asleep waits on it (a CONDITION_VARIABLE)
+  finished    db 0                ; 1 = every cabin has ended: the rowers go home
+  align 8
+  vain_wakes  dq 0                ; rowers woken that found nothing to do (the instrument)
+  held        dq 0                ; requests waiting for a signature, in all
+  t_rowers    db 'remeros: ', 0
+  t_vain      db ', despertares en vano=', 0
   rowing      dq 0                ; cabins being rowed right now
   remos       dq 1                ; how many rowers
   remos_env   db 'JANAX_REMOS', 0
@@ -367,6 +376,7 @@ section '.idata' import data readable writeable
          LeaveCriticalSection, 'LeaveCriticalSection',\
          SleepConditionVariableCS, 'SleepConditionVariableCS',\
          WakeAllConditionVariable, 'WakeAllConditionVariable',\
+         WakeConditionVariable, 'WakeConditionVariable',\
          CreateThread, 'CreateThread',\
          WaitForSingleObject, 'WaitForSingleObject',\
          GetSystemInfo, 'GetSystemInfo',\
@@ -771,6 +781,23 @@ start:
 .loaded:
 
         call    row                     ; the rowers: one per core, each rowing its cabins (remos.inc)
+        cmp     qword [remos], 1
+        je      .rowers_said
+        lea     rdi, [line]             ; "remeros: .., despertares en vano=.."
+        lea     rsi, [t_rowers]
+        call    put_text
+        mov     rax, [remos]
+        call    put_decimal
+        lea     rsi, [t_vain]
+        call    put_text
+        mov     rax, [vain_wakes]
+        call    put_decimal
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+.rowers_said:
         cmp     qword [requests], 0
         je      .quit
         lea     rdi, [line]             ; "ventanilla: pantallas=.. resintonias=.. llamadas al anfitrion=.. pedidos=.."
@@ -974,7 +1001,7 @@ make_process:
         mov     [rbx + P_PRIO_TOP], rax
         call    plan_quantum            ; its turn, once
         mov     rax, rbx
-        call    q_push                  ; and it waits for an oar like everyone
+        call    q_push_wake                  ; and it waits for an oar like everyone
         mov     rax, rbx
         pop     r15 r14 r13 r12 rdi rsi rbx
         ret
@@ -1330,6 +1357,7 @@ calib_run:
         shl     rdx, 32
         or      rax, rdx
         mov     [tsc_start], rax
+        mov     ecx, ROW_LINE           ; one rower, the line alone
         call    run_all
         rdtsc
         shl     rdx, 32
@@ -1370,6 +1398,7 @@ calib_reset:
         mov     eax, 1                  ; the pair: turns of one instruction, as many switches as there can be
 @@:     mov     [rdi + P_QUANTUM], rax
         mov     [rdi + PROC_SIZE + P_QUANTUM], rax
+        mov     byte [finished], 0
         mov     qword [q_head], 0       ; the line: the calibration cabins, in order
         mov     qword [q_tail], 0
         lea     rax, [calib_procs]
@@ -1695,7 +1724,6 @@ op_sys:
         sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
         mov     qword [rbx + P_CUT], 1  ; cut by an event: it does not stretch to its end
-        call    kern_wake               ; and the rowers asleep look again
 .done:
         call    kern_leave
         jmp     next
@@ -3108,6 +3136,12 @@ new_record:
         mov     rax, [rbx + P_PARENT]
         mov     [r9 + R_SIGNER], rax
         mov     qword [r9 + R_STATE], 0
+        test    rax, rax
+        jz      @f
+        inc     qword [rax + P_BLOCKS]  ; its parent holds one more
+        inc     qword [held]
+        call    kern_wake_special       ; the special rower looks at it
+@@:
         inc     qword [nrecs]
         ret
 
@@ -3136,6 +3170,8 @@ orphans:
         mov     rdx, [r12 + R_KIND]
         call    shadow_decides
         mov     [r12 + R_STATE], r8
+        dec     qword [rbx + P_BLOCKS]
+        dec     qword [held]
         mov     r8, [r12 + R_CHILD]
         dec     qword [r8 + P_WAITING]
         call    q_wake                  ; its signature arrived: to the line
@@ -3235,6 +3271,12 @@ nobody_signs:
         cmp     qword [r9 + R_STATE], 0
         jne     .next
         mov     qword [r9 + R_STATE], 2
+        mov     rax, [r9 + R_SIGNER]    ; its signer holds one less
+        test    rax, rax
+        jz      @f
+        dec     qword [rax + P_BLOCKS]
+        dec     qword [held]
+@@:
         mov     r8, [r9 + R_CHILD]
         dec     qword [r8 + P_WAITING]
         call    q_wake                  ; its signature arrived: to the line
@@ -3322,6 +3364,8 @@ family_sign:
         jne     @f
         mov     eax, 2
 @@:     mov     [r9 + R_STATE], rax
+        dec     qword [rbx + P_BLOCKS]  ; I hold one less
+        dec     qword [held]
         mov     r8, [r9 + R_CHILD]
         dec     qword [r8 + P_WAITING]
         call    q_wake                  ; its signature arrived: to the line

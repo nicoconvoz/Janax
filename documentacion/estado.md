@@ -136,3 +136,6 @@ por la bolita (0,99 por defecto), calculado una vez por el planificador en Janax
 (antes ~190-300); dos calculo igual de rápido y parejos (482 instr de diferencia). SO 148/148, escalón 0 182/182.
 2026-10-31 — La bolita de cada camarote: programa.bin!0.5 al lanzar, los hijos heredan la del padre como techo,
 y el pedido 20 la cambia en marcha (recortada al techo, turno recalculado una vez). SO 162/162.
+2026-10-31 — Remeros según el trabajo (Capitán): un despertar por trabajo nuevo y un remero especial para el que
+más traba. 4 remeros: dos calculo de ~3,5 s a ~1,6 s; 2 remeros: de ~1,7 a ~2,7 s (el especial duerme). Un padre
+con tres hijos: hijos 37 % antes. SO 166/166, estrés 300/0.

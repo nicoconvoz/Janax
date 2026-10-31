@@ -87,6 +87,14 @@ costo de cambio: 4.00 instrucciones (fijado)
 P1 codigo=0 j0=000000000007A314 t=3403
 P0 codigo=0 j0=000000000007A314 t=6012" largo_1000 'largo_1000!1'
 
+# Only as many rowers wake up as there is new work: with 4 rowers and 2 cabins nobody is woken for nothing
+# (a cabin that comes back is taken again by its own rower; only a birth or a signature wakes one up).
+JANAX_REMOS=4 caso "remeros: se despiertan segun el trabajo" 4 0 "modo: simbiosis
+costo de cambio: 4.00 instrucciones (fijado)
+P? codigo=0 j0=000000000007A314 t=*
+P? codigo=0 j0=000000000007A314 t=*
+remeros: 4, despertares en vano=0" largo_1000 largo_1000
+
 # Request 20: a cabin asks for a bolita and gets at most the one it was launched with (like permissions).
 caso "pedir bolita: nunca mas que la que le dieron" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000008000 t=*
@@ -396,6 +404,24 @@ hola
 P1 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=0000000000000000 t=*
 ventanilla: *" familia_firma
+
+# The cabins that hold others go first (remos.inc): a parent holding its three children gets every other
+# turn while they wait, so it signs one per turn instead of one per round of the line. With the line alone
+# the children ended at t=6066, 7285 and 8504; the long ones end at the same clock (no work is lost).
+familia familia_tres ventanilla_hola
+caso "el que traba a otros va primero" 4 0 "modo: simbiosis
+costo de cambio: 4.00 instrucciones (fijado)
+hola
+P4 codigo=0 j0=0000000000000005 t=4528
+hola
+P5 codigo=0 j0=0000000000000005 t=5325
+hola
+P6 codigo=0 j0=0000000000000005 t=5328
+P3 codigo=0 j0=0000000000000000 t=5333
+P0 codigo=0 j0=000000000007A314 t=8736
+P1 codigo=0 j0=000000000007A314 t=8963
+P2 codigo=0 j0=000000000007A314 t=9190
+ventanilla: pantallas=1 resintonias=7 llamadas al anfitrion=15 pedidos=12" largo_1000 largo_1000 largo_1000 padre_tres
 
 familia familia_rechazo ventanilla_hola
 caso "familia: el padre rechaza" 0 0 "$fijo0

@@ -514,7 +514,6 @@ t_sys:
         sub     [rbx + P_BUDGET0], rbp  ; end the turn here, counting only what really ran
         xor     ebp, ebp
         mov     qword [rbx + P_CUT], 1  ; cut by an event: it does not stretch to its end
-        call    kern_wake               ; and the rowers asleep look again
 @@:     call    kern_leave
         t_next
 .fail:
