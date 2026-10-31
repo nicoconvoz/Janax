@@ -17,7 +17,8 @@
 ;
 ; Registers while running: r12 = next record, r13 = table, r14 = Janax registers, r15 = data memory,
 ; rsi = return stack (record addresses), rdi = depth, rbp = budget left, rbx = process, rdx = record
-; being run. The interpreter stays as the reference (JANAX_MOTOR=interprete); the tests compare both.
+; being run. The interpreter stays as the reference (JANAX_MOTOR=interprete); the translated engine (the
+; default, nativo.inc) points these records at native code; the tests compare the three.
 
 R_SIZE = 16
 

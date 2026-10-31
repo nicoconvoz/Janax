@@ -83,7 +83,7 @@ plan_helper:
         cmp     byte [motor], 0
         je      .done                   ; the interpreter reads the words as they are
         mov     rdx, rax
-        call    decode_program
+        call    prepare_program
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_TABLE], rax

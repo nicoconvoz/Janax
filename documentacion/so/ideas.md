@@ -447,3 +447,7 @@ con 2 remeros se pierde un remero de fila (medido, a decidir). Lo construido: `j
 
 > *"El especial solo se ocupa en especial cuando hayan casos especiales, sino queda desocupado para el trabajo
 > normal."* (2026-10-31) — Devolución: con 2 remeros el especial dormido costaba ~1 s; libre, desapareció.
+
+> *"Ok pero en un programa largo, ¿quién gana, el nativo o Janax?"* — *"Sí, conectalo."* (2026-10-31) —
+> Devolución: el SO pasó a correr código nativo traducido (`nativo.inc`), de ~10 a ~5 veces el nativo; lo
+> que falta medido y anotado en `janaxos.md`.

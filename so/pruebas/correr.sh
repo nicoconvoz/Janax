@@ -24,9 +24,10 @@ archivos="$salida/archivos"           # the system's own folder for files, empty
 export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"
 
 ok=0; mal=0
-# The whole suite runs once per engine: the routines (default) and the reference interpreter.
-# The expected outputs are exact, so both passing means both give the same results.
-for motor in rutinas interprete; do
+# The whole suite runs once per engine: the routines, the reference interpreter and the routines translated
+# to native code (the default). The expected outputs are exact, so all of them passing means all give the same
+# results, turn cuts included.
+for motor in rutinas interprete traductor; do
 export JANAX_MOTOR=$motor
 rm -rf "$archivos" "$salida"/archivos_* "$salida"/familia_*/
 # caso <name> <switch cost, or "" to let the kernel measure it> <expected exit code> <expected output> <program>...
@@ -46,6 +47,7 @@ caso() {
     got=$(env -u JANAX_CAMBIO timeout 30 "$salida/janaxos.exe" "${args[@]}"); c=$?
   fi
   got=${got//$'\r'/}
+  [ "$motor" = traductor ] && got=$(printf '%s\n' "$got" | grep -v '^nativo: ')   # its own count: tried by "nativo"
   if [ "$c" = "$cod" ] && [[ "$got" == $esp ]]; then
     ok=$((ok + 1))
   else
@@ -58,6 +60,13 @@ costo de cambio: 0.00 instrucciones (fijado)"
 
 caso "un proceso" 0 0 "$fijo0
 P0 codigo=0 j0=000000000000002A t=2" 02_ldi
+
+# The translated engine says how many instructions of the programs became native code (nativo.inc): all
+# but jhalt, jdiv, the calls and the windows, which keep their routine.
+if [ "$motor" = traductor ]; then
+  got=$(JANAX_CAMBIO=0 timeout 30 "$salida/janaxos.exe" "$(bin largo_1000)" "$(bin 02_ldi)" | tr -d '\r' | grep '^nativo: ')
+  if [ "$got" = "nativo: 8 de 10 instrucciones" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] nativo: dio '$got'"; mal=$((mal + 1)); fi
+fi
 
 # The cabins row in the order they arrive, each its own turn (remos.inc). With switch cost 0 every turn is
 # 1 instruction (t = c p / (1 - p) rounds to 0, at least 1): a round, so the short ones finish soon.
@@ -552,7 +561,7 @@ unset carpeta
 done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
-for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc; do
+for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc nativo.inc; do
   if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
     ok=$((ok + 1))
   else

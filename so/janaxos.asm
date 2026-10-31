@@ -250,6 +250,12 @@ section '.data' data readable writeable
   finished    db 0                ; 1 = every cabin has ended: the rowers go home
   align 8
   vain_wakes  dq 0                ; rowers woken that found nothing to do (the instrument)
+  nat_entries dq 0                ; the translated engine (nativo.inc): the entries while it translates,
+  nat_native  dq 0                ; and how many instructions of the programs became native code
+  nat_total   dq 0
+  t_native    db 'nativo: ', 0
+  t_native_of db ' de ', 0
+  t_native_end db ' instrucciones', 0
   asleep_line dq 0                ; line rowers asleep (a waker takes one off when it wakes one)
   special_asleep dq 0             ; 1 = the special rower is asleep
   held        dq 0                ; requests waiting for a signature, in all
@@ -354,11 +360,12 @@ section '.data' data readable writeable
              dq t_ld_jnz, t_st_jnz, t_ldb_jnz, t_stb_jnz, 0, 0, 0, 0
   assert ($ - ftable_jnz) = OP_COUNT * 8
 
-  ; engine: 1 = routines (each program decoded once), 0 = the interpreter, kept as the reference
-  motor      db 1
+  ; engine: 2 = the routines translated to native code (nativo.inc, the default), 1 = the routines (each
+  ; program decoded once), 0 = the interpreter, kept as the reference. JANAX_MOTOR names it; an unknown name
+  ; starts nothing.
+  motor      db 2
   motor_env  db 'JANAX_MOTOR', 0
-  motor_ref  db 'interprete', 0
-  MOTOR_REF_LEN = $ - motor_ref - 1
+  motor_names db 'interprete', 0, 'rutinas', 0, 'traductor', 0, 0
   calib_table dq 0
 
 section '.idata' import data readable writeable
@@ -384,6 +391,7 @@ section '.idata' import data readable writeable
          GetSystemInfo, 'GetSystemInfo',\
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
+         VirtualProtect, 'VirtualProtect',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          GetCurrentThread, 'GetCurrentThread',\
          SetThreadAffinityMask, 'SetThreadAffinityMask',\
@@ -461,16 +469,44 @@ start:
 @@:     mov     [remos], rax
 .rowers_known:
 
-        ; --- engine: JANAX_MOTOR=interprete runs the reference interpreter ---
+        ; --- engine: JANAX_MOTOR = interprete (0), rutinas (1) or traductor (2, without it) ---
         invoke  GetEnvironmentVariableA, motor_env, env_value, 31
-        cmp     eax, MOTOR_REF_LEN
-        jne     .motor_known
+        test    eax, eax
+        jz      .motor_known
+        cmp     eax, 31
+        jae     fail_args
+        mov     byte [env_value + rax], 0
+        lea     rdi, [motor_names]
+        xor     edx, edx                ; the engine number of the name at rdi
+        jmp     .motor_name
+.motor_name_lap:
         lea     rsi, [env_value]
-        lea     rdi, [motor_ref]
-        mov     ecx, MOTOR_REF_LEN
-        repe    cmpsb
-        jne     .motor_known
-        mov     byte [motor], 0
+        mov     rcx, rdi
+        jmp     .motor_char
+.motor_char_lap:
+        inc     rsi
+        inc     rcx
+.motor_char:                            ; while both names go on the same
+        mov     al, [rsi]
+        cmp     al, [rcx]
+        jne     .motor_other
+        test    al, al
+        jnz     .motor_char_lap
+        mov     [motor], dl             ; this one
+        jmp     .motor_known
+.motor_other:                           ; the next name: past the end of this one
+        jmp     .motor_skip
+.motor_skip_lap:
+        inc     rcx
+.motor_skip:                            ; while this name goes on
+        cmp     byte [rcx], 0
+        jne     .motor_skip_lap
+        lea     rdi, [rcx + 1]
+        inc     edx
+.motor_name:                            ; while there are names left
+        cmp     byte [rdi], 0
+        jne     .motor_name_lap
+        jmp     fail_args               ; a name it does not know
 .motor_known:
         call    plan_load               ; the scheduler, in Janax: from PDP or the factory one
 
@@ -800,6 +836,25 @@ start:
         sub     rdi, rax
         invoke  WriteFile, [hout], line, rdi, written, 0
 .rowers_said:
+        cmp     byte [motor], 2
+        jne     .native_said
+        lea     rdi, [line]             ; "nativo: N de M instrucciones"
+        lea     rsi, [t_native]
+        call    put_text
+        mov     rax, [nat_native]
+        call    put_decimal
+        lea     rsi, [t_native_of]
+        call    put_text
+        mov     rax, [nat_total]
+        call    put_decimal
+        lea     rsi, [t_native_end]
+        call    put_text
+        mov     word [rdi], 0A0Dh
+        add     rdi, 2
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+.native_said:
         cmp     qword [requests], 0
         je      .quit
         lea     rdi, [line]             ; "ventanilla: pantallas=.. resintonias=.. llamadas al anfitrion=.. pedidos=.."
@@ -1074,10 +1129,15 @@ share_program:
         cmp     byte [motor], 0
         je      .done                   ; the interpreter reads the words as they are
         mov     rdx, rax
-        call    decode_program
+        call    prepare_program
         test    rax, rax
         jz      fail_file
         mov     [rbx + P_TABLE], rax
+        cmp     byte [motor], 2
+        jne     .done
+        add     [nat_native], rcx       ; nativo: N de M
+        mov     rax, [mp_words]
+        add     [nat_total], rax
 .done:
         add     rsp, 8
         ret
@@ -1384,7 +1444,7 @@ calib_reset:
         jnz     @f
         mov     ecx, CALIB_WORDS
         lea     rdx, [calib_prog]
-        call    decode_program
+        call    prepare_program
         test    rax, rax
         jz      fail_file
         mov     [calib_table], rax
@@ -3536,6 +3596,7 @@ fail_file:
         invoke  ExitProcess, 3
 
 include 'rutinas.inc'
+include 'nativo.inc'
 
 ; the translation packages (postpone, ambientes.inc) are emitted after this point: code_end goes after them
 postpone {

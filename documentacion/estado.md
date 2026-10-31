@@ -141,3 +141,5 @@ más traba. 4 remeros: dos calculo de ~3,5 s a ~1,6 s; 2 remeros: de ~1,7 a ~2,7
 con tres hijos: hijos 37 % antes. SO 166/166, estrés 300/0.
 2026-10-31 — El especial rema la fila cuando nadie traba (Capitán): 2 remeros vuelven a ~1,7 s (con el especial
 dormido eran ~2,8 s); 4 remeros ~1,7–1,8 s. SO 166/166, estrés 300/0.
+2026-10-31 — El SO corre código nativo: motor traducido (nativo.inc) de fábrica. calculo ~2,2 s → ~1,0 s; dos a la
+par ~1,75 → ~0,7 s. 247/247 con los tres motores, estrés traducido 300/0.

@@ -301,6 +301,40 @@ Reemplaza a la regla anterior (el menos servido primero, con el turno calculado 
 - Las pruebas cuyo orden cambió se verificaron con un script: cada camarote da su mismo código y su mismo `j0`,
   las demás líneas son idénticas, y los dos motores coinciden; solo se mueven el orden y el reloj.
 
+## El motor traducido: el SO corre código nativo (2026-10-31)
+
+El Capitán preguntó si Janax gana en un programa largo contra el nativo; medido, el SO con rutinas iba ~10 veces el
+nativo, y el traductor del escalón 0 (que el SO no usaba) ~2 veces. Respuesta: *"Sí, conectalo"*.
+
+- **Tercer motor, el de fábrica** (`so/nativo.inc`, `JANAX_MOTOR=traductor`; `rutinas` e `interprete` siguen). Un
+  `JANAX_MOTOR` desconocido ya no cae callado en las rutinas: no arranca (código 4).
+- **Cómo**: la tabla de rutinas de cada programa, con código nativo escrito para cada instrucción; el renglón apunta a
+  ese código en vez de a la rutina. Lo simple va en nativo con los registros y operandos adentro (`jldi`, la
+  aritmética menos `jdiv`, los desplazamientos, `jshi`, los saltos, y la memoria del ambiente 0); lo demás (`jhalt`,
+  `jdiv`, `jcall`, `jret`, las ventanas, un acceso que necesita el paquete de ambientes o está desalineado) salta a
+  su rutina de siempre, que sigue por la tabla y vuelve al nativo. Como comparten exactamente los mismos registros,
+  el motor corre dentro de `run_routines` sin tocarlo.
+- **Cada instrucción cobra su turno** antes de correr, como las rutinas: los cortes caen en la misma instrucción,
+  bit por bit. Se traduce una vez por programa, al nacer, y las copias comparten el código (como la tabla).
+- **Memoria ejecutable**: se escribe con permiso de escritura y después se cierra a **solo ejecutar**
+  (`VirtualProtect`): nunca hay memoria que se pueda escribir y ejecutar a la vez.
+- **Instrumento**: `nativo: N de M instrucciones` al final (cuántas instrucciones de los programas quedaron en
+  nativo). La suite corre entera con los tres motores: 247/247; estrés en paralelo traducido, 300/0.
+
+**Medido** (`calculo`, 671 millones de instrucciones, el mismo `j0` en todos):
+
+| | uno solo | dos a la par (remeros de fábrica) |
+|---|---|---|
+| x86-64 escrito a mano | ~0,2 s | — |
+| traductor del escalón 0 (sin SO) | ~0,37 s | — |
+| SO, rutinas | ~2,2 s | ~1,75 s |
+| **SO, traducido** | **~1,0 s** | **~0,7 s** |
+
+Lo que falta para acercarse al escalón 0: `jcall` y `jret` todavía usan su rutina (en `calculo` son 2 de cada 10
+instrucciones), los registros Janax viven en memoria y no en registros del procesador, y cada instrucción cobra su
+turno con dos instrucciones más. El costo de un cambio medido sube a ~46–52 instrucciones: cada instrucción es más
+barata, así que el mismo cambio equivale a más de ellas.
+
 ## Remeros según el trabajo y el remero especial (Capitán, 2026-10-31)
 
 > *"Según la cantidad del trabajo son los remeros que se despiertan: si es menos, menos; si es más, más. Y
