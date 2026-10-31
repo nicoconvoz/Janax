@@ -744,3 +744,28 @@ armado (el ensamblador PDP no toma rutas absolutas en `include`) y el SO corría
 - Costo: el ambiente 0 no cambia (una comparación); los demás, una resta más en el paquete de traducción.
 - Probado en los tres motores: `ambiente_sin_reusar` (1 y 2, se destruye el 1, el nuevo es el 3 y el 2 sigue
   andando) y `ambiente_muerto` (la dirección del 1 falla con código 5). 254/254.
+
+## Qué cuesta el cálculo, medido pieza por pieza (2026-10-31)
+
+El Capitán pidió reducir el cálculo con cinco reglas (contar solo lo importante, memorizar sin anotar, cofres de
+colores, bolsillos autoajustables, volver sin preguntar). Antes de construirlas se midió cuánto vale cada una:
+versiones de laboratorio que sacan un costo de golpe (dan resultados incorrectos, solo sirven para el tiempo).
+`calculo` con el costo fijado, 7 rondas alternadas, medianas:
+
+| | tiempo |
+|---|---|
+| traducido (lo guardado) | ~470 ms |
+| sin contar los pasos (la piedrita) | ~404 ms: **contar cuesta ~14 %** |
+| sin medir el cofre 0 (la regla) | ~442 ms: **medir cuesta ~6 %** |
+| nativo | ~192 ms |
+
+Construidas de verdad y medidas A-B, **sin ganancia** (dentro del ruido o apenas peor), y por eso no entraron:
+- `jret` directo al código nativo, sin recargar los registros.
+- Anotar los registros en memoria solo al salir del código nativo (antes de una rutina o al terminar el turno), y
+  hasta 6 registros en el procesador (sumando `r12` y `r13`), elegidos por programa.
+
+Por qué: el freno de `calculo` es una cadena que nadie puede adelantar (cargar el cofre, sumar, desplazar,
+mezclar, guardar el cofre, y la vuelta siguiente carga ese mismo cofre); el nativo también la tiene. Lo que nos
+separa es cuántas instrucciones de máquina rodean cada paso, y anotar en memoria no pesa porque el procesador
+escribe sin esperar. Lo que sí vale: contar solo lo importante (hasta ~14 %, hecho sin saltos a la zona fría: la
+primera versión por tramo los tenía y por eso no ganó) y los cofres de colores (hasta ~6 %).
