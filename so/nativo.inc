@@ -19,7 +19,7 @@
 ; Translating happens with one rower only (at boot, or inside the window, under the captain's lock).
 
 NATIVE_BLOCK = 64               ; bytes a block may take: the largest (an 8-byte load) takes 54
-NATIVE_COLD  = 64               ; bytes per word in the cold area: S at +0 (22 bytes), F at +32 (26 bytes)
+NATIVE_COLD  = 128              ; bytes per word in the cold area: S at +0 (22), F at +32 (26), R at +64 (21)
 
 macro emit [b] {
   forward
@@ -47,7 +47,7 @@ translate_table:
         mov     rdx, r12                ; the code: the blocks, then the cold area
         shl     rdx, 6
         lea     rax, [r12 + 1]
-        shl     rax, 6
+        shl     rax, 7
         add     rdx, rax
         mov     [rsp + 40], rdx
         invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
@@ -58,8 +58,9 @@ translate_table:
         shl     r14, 6
         add     r14, r15                ; the cold area
         call    native_cold             ; S and F for every word, from the routines in the table
+        call    native_cache            ; the Janax registers that live in r8-r11
         mov     rcx, r12                ; the final record keeps its routine: W(n) = F(n)
-        shl     rcx, 6
+        shl     rcx, 7
         lea     rcx, [r14 + rcx + 32]
         mov     rax, [nat_entries]
         mov     [rax + r12*8], rcx
@@ -79,6 +80,7 @@ translate_table:
 .pass:                                  ; while passes are left
         cmp     qword [rsp + 32], 0
         jne     .pass_lap
+        call    native_reload           ; R for every native word, now that every block has its place
         xor     esi, esi                ; (the words are not needed now: rsi counts the native blocks)
         xor     ebx, ebx                ; every record points at its entry now
         mov     rdx, [nat_entries]
@@ -86,8 +88,11 @@ translate_table:
 .point_lap:
         mov     rax, [rdx + rbx*8]
         cmp     rax, r14
-        jae     @f                      ; a native block, not the cold area
+        jae     @f                      ; a native block: the table enters it through R(i)
         inc     rsi
+        mov     rax, rbx
+        shl     rax, 7
+        lea     rax, [r14 + rax + 64]
 @@:
         mov     rcx, rbx
         shl     rcx, 4
@@ -120,7 +125,7 @@ native_cold:
         jmp     .one
 .one_lap:
         mov     rdi, rbx
-        shl     rdi, 6
+        shl     rdi, 7
         add     rdi, r14
         mov     r8, rbx
         shl     r8, 4
@@ -172,7 +177,7 @@ native_block:
         ret
 .routine:
         mov     rcx, rbx
-        shl     rcx, 6
+        shl     rcx, 7
         lea     rcx, [r14 + rcx + 32]   ; F(i)
         mov     [rdx + rbx*8], rcx
         ret
@@ -200,15 +205,13 @@ nb_shift_op db 0E0h, 0E8h, 0F8h         ; the ModRM of shl, shr, sar rax, cl
 
 ; The emitters: r8 = the record, rbx = the word, rdi = where it goes.
 
-macro nb_load_rax k {                   ; mov rax, [r14 + the field k of the record]
-        emit    49h, 8Bh, 46h
-        mov     al, [r8 + k]
-        stosb
+macro nb_load_rax k {                   ; mov rax, the register in the field k of the record
+        mov     cl, [r8 + k]
+        call    nb_get_rax
 }
-macro nb_store_rax {                    ; mov [r14 + rd], rax
-        emit    49h, 89h, 46h
-        mov     al, [r8 + 8]
-        stosb
+macro nb_store_rax {                    ; mov [r14 + rd], rax (and into its cache register)
+        mov     cl, [r8 + 8]
+        call    nb_put_rax
 }
 
 nb_ldi:                                 ; mov rax, imm32 / mov [rd], rax
@@ -229,17 +232,15 @@ nb_bin:                                 ; mov rax, [ra] / op rax, [rb] / mov [rd
         jmp     .operand
 @@:     stosb
 .operand:
-        emit    46h
-        mov     al, [r8 + 10]
-        stosb
+        mov     cl, [r8 + 10]           ; its second operand: a cache register, or memory
+        call    nb_modrm
         nb_store_rax
         jmp     nb_next
 
 nb_shift:                               ; mov rax, [ra] / mov rcx, [rb] / shX rax, cl / mov [rd], rax
         nb_load_rax 9                   ; (a 64-bit shift by cl takes its low 6 bits, as Janax does)
-        emit    49h, 8Bh, 4Eh
-        mov     al, [r8 + 10]
-        stosb
+        mov     cl, [r8 + 10]
+        call    nb_get_rcx
         emit    48h, 0D3h
         movzx   eax, byte [rsi + rbx*4]
         mov     al, [nb_shift_op + rax - 6]
@@ -266,10 +267,20 @@ nb_jz:                                  ; cmp qword [rd], 0 / jne past the taken
 nb_jnz:                                 ; the same with je
         mov     dl, 74h
 nb_cond:
+        mov     cl, [r8 + 8]            ; test r, r / or cmp qword [r14 + rd], 0
+        call    nb_cached
+        js      .memory
+        emit    4Dh, 85h
+        imul    eax, eax, 9
+        add     al, 0C0h
+        stosb
+        jmp     .jump
+.memory:
         emit    49h, 83h, 7Eh
-        mov     al, [r8 + 8]
+        mov     al, cl
         stosb
         emit    0
+.jump:
         mov     [rdi], dl
         inc     rdi
         emit    15                      ; the taken way: a charge (10 bytes) and a jump (5)
@@ -310,15 +321,13 @@ nb_mem:                                 ; the address, room 0's limit, the align
         nb_store_rax
         jmp     nb_next
 .st:
-        emit    49h, 8Bh, 4Eh           ; mov rcx, [rd] / mov [r15 + rax], rcx
-        mov     al, [r8 + 8]
-        stosb
+        mov     cl, [r8 + 8]            ; mov rcx, rd / mov [r15 + rax], rcx
+        call    nb_get_rcx
         emit    49h, 89h, 0Ch, 07h
         jmp     nb_next
 .stb:
-        emit    49h, 8Bh, 4Eh           ; mov rcx, [rd] / mov [r15 + rax], cl
-        mov     al, [r8 + 8]
-        stosb
+        mov     cl, [r8 + 8]            ; mov rcx, rd / mov [r15 + rax], cl
+        call    nb_get_rcx
         emit    41h, 88h, 0Ch, 07h
         jmp     nb_next
 
@@ -381,7 +390,7 @@ nb_taken:
 ; eax = a word: sub rbp, 1 / jc S(word)
 nb_charge:
         emit    48h, 83h, 0EDh, 01h, 0Fh, 82h
-        shl     rax, 6
+        shl     rax, 7
         add     rax, r14
         lea     rcx, [rdi + 4]
         sub     rax, rcx
@@ -399,11 +408,186 @@ nb_jump:
 ; The rel32 of a jump to F(rbx), at rdi.
 nb_to_routine:
         mov     rax, rbx
-        shl     rax, 6
+        shl     rax, 7
         lea     rax, [r14 + rax + 32]
         lea     rcx, [rdi + 4]
         sub     rax, rcx
         stosd
+        ret
+
+; The registers that live in the processor: the 4 Janax registers the native blocks of the program use the
+; most (counted in its text, the earlier one on a tie), in r8-r11. Every write goes to memory too, so the
+; routines always find them there; whatever comes back from a routine or from the table reloads them (R).
+native_cache:
+        xor     eax, eax                ; the uses of each Janax register
+        lea     rdi, [nat_count]
+        mov     ecx, 16
+        rep     stosq
+        xor     ebx, ebx
+        jmp     .count
+.count_lap:
+        mov     r8, rbx
+        shl     r8, 4
+        add     r8, r13                 ; its record
+        movzx   eax, byte [rsi + rbx*4]
+        cmp     eax, OP_COUNT
+        jae     .counted
+        movzx   eax, byte [native_kind + rax]
+        movzx   eax, byte [native_uses + rax]   ; which fields it uses: 1 rd, 2 ra, 4 rb
+        test    al, 1
+        jz      @f
+        movzx   ecx, byte [r8 + 8]
+        inc     qword [nat_count + rcx]
+@@:     test    al, 2
+        jz      @f
+        movzx   ecx, byte [r8 + 9]
+        inc     qword [nat_count + rcx]
+@@:     test    al, 4
+        jz      .counted
+        movzx   ecx, byte [r8 + 10]
+        inc     qword [nat_count + rcx]
+.counted:
+        inc     rbx
+.count:                                 ; while there are words
+        cmp     rbx, r12
+        jb      .count_lap
+        mov     rdi, -1                 ; nobody lives in a cache register yet
+        mov     qword [nat_cache], rdi
+        mov     qword [nat_cache + 8], rdi
+        mov     dword [nat_creg], -1
+        xor     edx, edx                ; cache register k
+        jmp     .pick
+.pick_lap:
+        xor     eax, eax                ; the most used one left: rcx = its index, r9 = its uses
+        xor     r9d, r9d
+        mov     ecx, -1
+        jmp     .one
+.one_lap:
+        cmp     [nat_count + rax*8], r9
+        jbe     .one_next
+        mov     r9, [nat_count + rax*8]
+        mov     ecx, eax
+.one_next:
+        inc     eax
+.one:                                   ; while there are Janax registers
+        cmp     eax, 16
+        jb      .one_lap
+        test    ecx, ecx
+        js      .picked                 ; nobody else is used
+        mov     qword [nat_count + rcx*8], 0
+        mov     [nat_cache + rcx], dl
+        shl     ecx, 3
+        mov     [nat_creg + rdx], cl
+        inc     edx
+.pick:                                  ; while there are cache registers
+        cmp     edx, 4
+        jb      .pick_lap
+.picked:
+        ret
+; per native kind, the fields its block reads or writes: 1 rd, 2 ra, 4 rb
+native_uses db 0, 1, 7, 7, 0, 1, 1, 1, 3, 0, 0
+
+; R(i) at cold + i * 128 + 64 for every native word: mov rK, [r14 + its Janax register] for each cache
+; register in use, then jmp to its block.
+native_reload:
+        xor     ebx, ebx
+        jmp     .one
+.one_lap:
+        mov     rax, [nat_entries]
+        mov     r9, [rax + rbx*8]       ; its entry
+        cmp     r9, r14
+        jae     .next                   ; it keeps its routine
+        mov     rdi, rbx
+        shl     rdi, 7
+        lea     rdi, [r14 + rdi + 64]
+        xor     edx, edx
+        jmp     .reg
+.reg_lap:
+        movzx   ecx, byte [nat_creg + rdx]
+        cmp     cl, 0FFh
+        je      .reg_next
+        emit    4Dh, 8Bh                ; mov rK, [r14 + d8]
+        lea     eax, [rdx*8 + 46h]
+        stosb
+        mov     al, cl
+        stosb
+.reg_next:
+        inc     edx
+.reg:                                   ; while there are cache registers
+        cmp     edx, 4
+        jb      .reg_lap
+        emit    0E9h                    ; jmp to its block
+        mov     rax, r9
+        lea     rcx, [rdi + 4]
+        sub     rax, rcx
+        stosd
+.next:
+        inc     rbx
+.reg_done:
+.one:                                   ; while there are words
+        cmp     rbx, r12
+        jb      .one_lap
+        ret
+
+; cl = a field of the record (a Janax register * 8) -> eax = its cache register 0-3, or -1 (sign set) if it
+; lives only in memory. Keeps every other register.
+nb_cached:
+        movzx   eax, cl
+        shr     eax, 3
+        movsx   eax, byte [nat_cache + rax]
+        test    eax, eax
+        ret
+; cl = a field: mov rax, that register (4C 89 C0+k*8, or 49 8B 46 d8)
+nb_get_rax:
+        call    nb_cached
+        js      .memory
+        emit    4Ch, 89h
+        shl     eax, 3
+        add     al, 0C0h
+        stosb
+        ret
+.memory:
+        emit    49h, 8Bh, 46h
+        mov     al, cl
+        stosb
+        ret
+; cl = a field: mov rcx, that register (4C 89 C1+k*8, or 49 8B 4E d8)
+nb_get_rcx:
+        call    nb_cached
+        js      .memory
+        emit    4Ch, 89h
+        shl     eax, 3
+        add     al, 0C1h
+        stosb
+        ret
+.memory:
+        emit    49h, 8Bh, 4Eh
+        mov     al, cl
+        stosb
+        ret
+; cl = a field: mov [r14 + d8], rax, and mov rK, rax if it lives in rK (49 89 C0+k)
+nb_put_rax:
+        emit    49h, 89h, 46h
+        mov     al, cl
+        stosb
+        call    nb_cached
+        js      .done
+        emit    49h, 89h
+        add     al, 0C0h
+        stosb
+.done:
+        ret
+; cl = a field, after "49 op": the operand that register is (ModRM C0+k, or 46 d8)
+nb_modrm:
+        call    nb_cached
+        js      .memory
+        add     al, 0C0h
+        stosb
+        ret
+.memory:
+        emit    46h
+        mov     al, cl
+        stosb
         ret
 
 ; rcx words at rdx -> rax = their table for the engine in use (decoded; and translated, with the translated

@@ -253,6 +253,9 @@ section '.data' data readable writeable
   nat_entries dq 0                ; the translated engine (nativo.inc): the entries while it translates,
   nat_native  dq 0                ; and how many instructions of the programs became native code
   nat_total   dq 0
+  nat_count   dq 16 dup 0         ; (while translating) the uses of each Janax register,
+  nat_cache   db 16 dup 0         ; the cache register each one lives in (-1: memory only),
+  nat_creg    db 4 dup 0          ; and the Janax register * 8 in each cache register (-1: none)
   t_native    db 'nativo: ', 0
   t_native_of db ' de ', 0
   t_native_end db ' instrucciones', 0

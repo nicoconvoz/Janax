@@ -334,6 +334,16 @@ nativo, y el traductor del escalón 0 (que el SO no usaba) ~2 veces. Respuesta: 
 La pila de retornos sigue siendo la de Janax (guarda renglones de la tabla): `jret` salta al renglón que vuelve,
 y lo que necesita más pila o un `jret` sin `jcall` sigue en su rutina.
 
+**Registros en el procesador** (mismo día): los 4 registros Janax que más usan los bloques nativos de cada programa
+viven también en `r8`–`r11`; cada escritura va a los dos lados (registro y memoria), así las rutinas siempre los
+encuentran en memoria, y lo que vuelve de una rutina o de la tabla entra por un recargue `R(i)`. Comparado A-B
+(seis rondas alternadas): **~19 % más rápido** que sin ellos.
+
+⚠️ **Cobrar el turno por tramo, medido y descartado**: cobrar de una vez cada tramo derecho (y devolver lo cobrado si
+el turno no alcanza) dio idéntico pero **no ganó nada** (~0,6 s antes y después), ni con el cobro pegado al comienzo
+del tramo. La resta y el salto por instrucción el procesador los hace casi gratis; el freno eran los registros en
+memoria. Si complica y no gana, no entra: se volvió a la versión simple.
+
 Lo que falta para acercarse al escalón 0: los registros Janax viven en memoria y no en registros del procesador, y cada instrucción cobra su
 turno con dos instrucciones más. El costo de un cambio medido sube a ~46–52 instrucciones: cada instrucción es más
 barata, así que el mismo cambio equivale a más de ellas.
