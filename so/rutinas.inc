@@ -452,7 +452,7 @@ macro t_memop name, kind, size, align_check, is_load {
           t_end   kind
   postpone \{                     ; the package goes after all the code: the routine stays small
   translate:
-          room_package size, t_fail_mem
+          room_package size, 49 - is_load, t_fail_mem   ; a load needs read (48), a store write (49)
           jmp     inside
   \}
 }

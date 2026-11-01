@@ -35,9 +35,10 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-; Address space each cabin reserves for its rooms. It takes no memory, only addresses. Criterion, not a
-; measurement: it is a cabin's ceiling, and with 128 TiB of user addresses it leaves room for ~32.000 cabins.
-HULL_SIZE   = 1 shl 32
+; The largest room: its position is the low half of an address. Each room reserves these addresses for itself
+; (its drawer, ambientes.inc), which takes no memory, only addresses: with 128 TiB of user addresses it leaves
+; room for ~32.000 rooms standing at once, across every cabin (criterion, not a measurement).
+ROOM_MAX    = 1 shl 32
 OP_COUNT    = 18h
 FOREVER     = 7FFFFFFFFFFFFFFFh
 
@@ -132,8 +133,9 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 20                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
-                                ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita
+  KINDS     = 21                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+                                ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
+                                ; treat a box
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -144,6 +146,7 @@ section '.data' data readable writeable
   sys_rd    dq 0
   queue_addr dq 0
   page_size dq 0                  ; the part the host delivers memory in (GetSystemInfo)
+  dead_drawer dq 0                ; addresses reserved and never given: a destroyed room points here (ambientes.inc)
   sysinfo   rb 48
   rooms_new dq 0
   rooms_newcap dq 0
@@ -159,14 +162,15 @@ section '.data' data readable writeable
   serve_table dq serve_write, serve_grow, serve_destroy, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
+              dq serve_treat
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0
+             db R_READ, 0, 0, 0, 0, R_MEM
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -254,6 +258,8 @@ section '.data' data readable writeable
   vain_wakes  dq 0                ; rowers woken that found nothing to do (the instrument)
   nat_entries dq 0                ; the translated engine (nativo.inc): the entries while it translates,
   nat_native  dq 0                ; and how many instructions of the programs became native code
+  native_progs  dq 0              ; every translated program, for the fault handler (nativo.inc)
+  native_nprogs dq 0
   nat_total   dq 0
   nat_count   dq 16 dup 0         ; (while translating) the uses of each Janax register,
   nat_cache   db 16 dup 0         ; the cache register each one lives in (-1: memory only),
@@ -397,6 +403,7 @@ section '.idata' import data readable writeable
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
          VirtualProtect, 'VirtualProtect',\
+         AddVectoredExceptionHandler, 'AddVectoredExceptionHandler',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
          GetCurrentThread, 'GetCurrentThread',\
          SetThreadAffinityMask, 'SetThreadAffinityMask',\
@@ -450,6 +457,17 @@ start:
         invoke  GetSystemInfo, sysinfo
         mov     eax, dword [sysinfo + 4] ; dwPageSize
         mov     [page_size], rax
+        mov     rdx, ROOM_MAX           ; the dead drawer: every position of a room, refused
+        add     rdx, rax
+        invoke  VirtualAlloc, 0, rdx, MEM_RESERVE, PAGE_NOACCESS
+        test    rax, rax
+        jz      fail_file
+        mov     [dead_drawer], rax
+        invoke  VirtualAlloc, 0, NP_MAX * NP_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      fail_file
+        mov     [native_progs], rax
+        invoke  AddVectoredExceptionHandler, 1, native_fault   ; the wall of the rooms (nativo.inc)
         invoke  InitializeCriticalSection, kern_lock
         mov     eax, dword [sysinfo + 32] ; dwNumberOfProcessors: one rower per core
         mov     [remos], rax
@@ -996,9 +1014,7 @@ make_process:
         call    share_program
         mov     rax, [mp_parent]
         mov     [rbx + P_PARENT], rax
-        invoke  VirtualAlloc, 0, HULL_SIZE, MEM_RESERVE, PAGE_READWRITE   ; the hull: addresses, no memory
-        test    rax, rax
-        jz      fail_file
+        mov     rax, [dead_drawer]      ; no room yet: room 0 is built by its first order
         mov     [rbx + P_DATA], rax
         invoke  VirtualAlloc, 0, RET_DEPTH * 8, MEM_RESERVE, PAGE_READWRITE   ; addresses only: it grows with the calls
         test    rax, rax
@@ -1723,7 +1739,7 @@ macro memop name, size, align_check, is_load, body {
           jmp     next
   postpone \{                     ; the package goes after all the code: the routine stays small
   translate:
-          room_package size, fail_mem
+          room_package size, 49 - is_load, fail_mem   ; a load needs read (48), a store write (49)
           jmp     inside
   \}
 }
@@ -1843,7 +1859,7 @@ ventanilla:
         mov     r15, [rax]              ; how many requests
         mov     r13, rax
         sub     r13, r12                ; [r13 + queue address] = the queue (until a room moves)
-        mov     rax, HULL_SIZE / 32
+        mov     rax, ROOM_MAX / 32
         cmp     r15, rax
         ja      .bad                    ; more entries than any room can hold
         mov     rax, r12
@@ -3360,6 +3376,19 @@ serve_gate serve_sign,    17, family_sign
 serve_gate serve_pending, 18, family_pending
 serve_gate serve_state,   19, family_state
 serve_gate serve_bolita,  20, family_bolita
+
+; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
+; Answers 0, or -1.
+serve_gate serve_treat,   21, gate_treat
+
+gate_treat:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    rooms_treat
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
+        ret
 
 ; 16 launch: a = label of the program file, b = its bytes; the child's permissions travel in the high
 ; half of the type (cut down to the parent's). Answers the child's number, or -1.

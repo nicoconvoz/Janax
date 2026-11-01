@@ -784,3 +784,45 @@ vez de en memoria, con las dos preguntas: ~400 contra ~382, sin ganancia (traer 
 que cuestan las dos preguntas solo se recupera si las contesta el procesador mismo (páginas protegidas), y eso
 choca con lo exacto: un cofre mide en bytes y una página en miles, así que habría que acomodar cada cofre contra el
 final de su página; queda anotado como camino, no construido.
+
+## El cartel de los cofres: cada uno en su cajón, con pared (Capitán, 2026-11-01)
+
+Diseño en `ideas.md` (2026-11-01). Lo construido:
+
+- **Cada ambiente en su propio cajón** (`ambientes.inc`, `room_drawer`): se reservan las direcciones del ambiente
+  más grande (`ROOM_MAX`, 4 GiB) más una página, y se piden solo las páginas que lo contienen. El ambiente se
+  apoya contra el **final** de sus páginas: el byte siguiente ya es una dirección que el procesador rechaza.
+  Destruir no mueve a nadie: el cajón vuelve al anfitrión y su renglón apunta al **cajón muerto** (reservado una
+  vez, nunca entregado). Ya no hay casco.
+- **El renglón del cartel** son 16 bytes: los 8 del cartel (lugar en los 48 bits bajos, cómo tratar la caja en
+  los 16 altos, con las constantes `ROOM_*` del diseño) y el tamaño.
+- **El traducido no pregunta por el borde** (`nativo.inc`): el ambiente 0 va directo por `r15`; otro ambiente
+  sale del cartel en `O(i)`, en la zona fría. Si el procesador rechaza el acceso, `native_fault` (un manejador
+  vectorizado) busca la palabra por su dirección de código y la manda por su `T(i)`: la rutina da el código 5 en
+  la misma instrucción que el intérprete. Las rutinas y el intérprete siguen preguntando: son la referencia.
+- **Pedido 21, el trato de la caja**: bit 0 leer, bit 1 escribir. Las páginas se protegen igual, así el
+  procesador lo cumple gratis. Se rechaza (−1): escribir sin leer (el procesador no lo puede cuidar), quitarle la
+  escritura al ambiente donde está la cola, y todo trato no construido todavía (ejecutar, solo agregar, avisar,
+  firmada, compartida, se hereda, pieza, prioridad, familia). **Regla nueva: el núcleo solo toca una caja que su
+  dueño puede leer y escribir.**
+
+**Medido** contra 61020de, `JANAX_CAMBIO=24`, un remero, 15 rondas intercaladas en los dos órdenes, medianas:
+
+| | antes | ahora |
+|---|---|---|
+| `calculo` (ambiente 0) | ~456–459 ms | **~448–460 ms** (empate) |
+| `calculo_ambiente` (ambiente 1) | ~1.036–1.045 ms | **~661–671 ms** (~−37 %) |
+
+Lo que enseñó la medición:
+- ⚠️ **El instrumento**: el mismo núcleo contra sí mismo dio 451 contra 425 ms con 7 rondas. Por eso 15 rondas
+  y los dos órdenes; una diferencia menor a ~5 % no se cree.
+- **El orden de las instrucciones pesa más que cuántas son.** Separar el ambiente (`mov rdx, rax / shr rdx, 32
+  / jnz O`) *antes* de la alineación y del valor a guardar dejó al ambiente 0 empatado; después, ~7 % más lento.
+  Ni la alineación del ambiente, ni el manejador, ni la comparación con el límite lo explicaban (laboratorios
+  medidos uno por uno).
+- **La otra versión** (alineación antes, zona fría de 272 bytes) llevaba al ambiente 1 a **~575 ms** (~−45 %) pero
+  le costaba ~7 % al ambiente 0. Se eligió no castigar al ambiente 0, que usan casi todos los programas.
+- La zona fría pasó de 256 a 288 bytes por palabra (`O(i)` ocupa hasta 71).
+
+Pendiente: los tratos no construidos; liberar los cajones de un proceso que terminó (como el casco de antes,
+quedan reservados); el tope de ~32.000 ambientes vivos entre todos los camarotes.

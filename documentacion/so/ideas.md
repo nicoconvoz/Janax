@@ -496,3 +496,7 @@ tiene más permisos que su madre (se mira una vez, al nacer). Se parece a los se
 capacidades derivadas de seL4 (una derivada nunca suma derechos; revocar se lleva a las derivadas) y al page heap
 de Windows (bloque apoyado contra la página prohibida); lo propio de Janax son las firmas y los números que nunca
 se reusan.
+
+> *"No lo midas, construilo, y medí al final."* (2026-11-01) — Devolución: construido (cajones con pared, el traducido
+> sin pregunta de borde, pedido 21 de solo lectura); el resto de los tratos se rechaza hasta construirlo. Medido en
+> `janaxos.md`.

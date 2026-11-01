@@ -4,11 +4,13 @@
 ; already in it, and keeps every convention of the routine engine (r12 next record, r13 table, r14 Janax
 ; registers, r15 data, rsi return stack, rdi depth, rbp budget, rbx process), so it runs inside run_routines
 ; as it is:
-;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory inside
-;    room 0 run in native code.
-;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, memory that needs the room package, a
-;    misaligned access, a call that needs more return stack, a jret without jcall) jumps to its own routine,
-;    which goes on through the table: back to native.
+;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory in any
+;    room run in native code. Room 0 is r15; another room is found in the cartel (O(i)). Nobody asks
+;    whether an access is past a room's end: the room leans against addresses the processor refuses
+;    (ambientes.inc), and when it refuses, native_fault sends the word on by its T(i).
+;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, a misaligned access, a room not in the
+;    cartel, a call that needs more return stack, a jret without jcall) jumps to its own routine, which goes
+;    on through the table: back to native.
 ;  - The 4 Janax registers the native blocks use the most live also in r8-r11; every write goes to memory
 ;    too, so the routines always find them there, and whatever comes back from the table reads them (R).
 ;
@@ -22,7 +24,7 @@
 ; so the turn ends at the same instruction as with the routines and the interpreter, bit for bit. A memory
 ; access that leaves its run by the slow way gives back what it charged for the words after it.
 ;
-; Per word i, a cold area of 256 bytes:
+; Per word i, a cold area of NATIVE_COLD bytes:
 ;   S(i)      +0    r12 = record i / jmp t_suspend: the turn ends before word i
 ;   F(i)      +32   rdx = record i / r12 = rdx + 16 / jmp its routine (word i already charged)
 ;   R(i)      +64   read r8-r11 / sub rbp, r - 1 / jc T(i) / jmp to its code: from the table (one charged)
@@ -30,13 +32,15 @@
 ;   Wc(i)     +136  sub rbp, 1 / jc S(i) / jmp F(i): a jump to a word that keeps its routine
 ;   L(i)      +160  add rbp, r / sub rbp, 1 / jc S(i) / jmp F(i): the run's charge did not reach
 ;   T(i)      +192  add rbp, r - 1 / jmp F(i): the rest did not reach, or a memory access leaves its run
+;   O(i)      +208  a memory word into another room: its alignment, its value, its entry in the cartel, the
+;                   access, and back into its block (E_BACK)
 ; Jumps are rel32 always, so a block's size does not depend on where its targets are: a first pass places
 ; the blocks, a second one writes them with their targets. Written while the memory can be written, then it
 ; can only be run (never both). Translating happens with one rower only (at boot, or inside the window,
 ; under the captain's lock).
 
 NATIVE_BLOCK = 80               ; bytes a block may take: the largest (an 8-byte load heading a run) takes 60
-NATIVE_COLD  = 256              ; bytes per word in the cold area
+NATIVE_COLD  = 288              ; bytes per word in the cold area: O(i), the largest, takes 71 from C_O
 C_S     = 0
 C_F     = 32
 C_R     = 64
@@ -44,10 +48,13 @@ C_WM    = 112
 C_WC    = 136
 C_L     = 160
 C_T     = 192
-E_SIZE  = 32                    ; per word: its code (+0), r (+8), the entry for a jump to it (+16)
+C_O     = 208
+E_SIZE  = 32                    ; per word: its code (+0), r (+8), the entry for a jump to it (+16), and for
+                                ; a memory word where its block goes on after its access (+24, else 0)
 E_CODE  = 0
 E_R     = 8
 E_JUMP  = 16
+E_BACK  = 24
 
 macro emit [b] {
   forward
@@ -129,6 +136,20 @@ translate_table:
         invoke  VirtualProtect, r15, rdx, PAGE_EXECUTE_READ, r9
         test    eax, eax
         jz      .no_memory
+        mov     rax, [native_nprogs]    ; known to the fault handler
+        cmp     rax, NP_MAX
+        jae     .no_memory
+        imul    rax, rax, NP_SIZE
+        add     rax, [native_progs]
+        mov     [rax + NP_CODE], r15
+        mov     [rax + NP_COLD], r14
+        mov     rdx, [rsp + 40]
+        add     rdx, r15
+        mov     [rax + NP_END], rdx
+        mov     rdx, [nat_entries]
+        mov     [rax + NP_ENTRIES], rdx
+        mov     [rax + NP_WORDS], r12
+        inc     qword [native_nprogs]
         ; the entries stay: a native jret jumps through them (32 bytes per word, for as long as the program)
         mov     rcx, rsi
         mov     rax, r13
@@ -337,6 +358,67 @@ native_cold:
         call    nc_add
         lea     rax, [r9 + C_F]
         call    nc_jmp
+        cmp     qword [r10 + E_BACK], 0
+        je      .next                   ; the rest only for memory words
+        lea     rdi, [r9 + C_O]         ; O(i): another room, by the cartel; past its end the processor refuses
+        movzx   edx, byte [rsi + rbx*4]
+        sub     edx, 10h                ; 0 ld, 1 st, 2 ldb, 3 stb
+        cmp     edx, 2
+        jae     @f
+        emit    0A8h, 07h               ; test al, 7 / jnz T(i): misaligned
+        emit    0Fh, 85h
+        lea     rax, [r9 + C_T]
+        call    nc_rel
+@@:     test    edx, 1
+        jz      @f
+        mov     cl, [r8 + 8]            ; a store: rcx = rd
+        call    nb_get_rcx
+@@:
+        emit    48h, 2Bh, 93h           ; sub rdx, [rbx + P_ROOMBASE] / jbe T(i): below the cartel
+        mov     eax, P_ROOMBASE
+        stosd
+        emit    0Fh, 86h
+        lea     rax, [r9 + C_T]
+        call    nc_rel
+        emit    48h, 3Bh, 93h           ; cmp rdx, [rbx + P_NROOMS] / jae T(i): past it
+        mov     eax, P_NROOMS
+        stosd
+        emit    0Fh, 83h
+        lea     rax, [r9 + C_T]
+        call    nc_rel
+        emit    48h, 0C1h, 0E2h, 04h    ; shl rdx, 4 / add rdx, [rbx + P_ROOMS] / mov rdx, [rdx]: its entry
+        emit    48h, 03h, 93h
+        mov     eax, P_ROOMS
+        stosd
+        emit    48h, 8Bh, 12h
+        emit    48h, 0C1h, 0E2h, 10h    ; shl rdx, 16 / shr rdx, 16: its place, without how to treat it
+        emit    48h, 0C1h, 0EAh, 10h
+        emit    89h, 0C0h               ; mov eax, eax: the position in it
+        movzx   eax, byte [rsi + rbx*4]
+        sub     eax, 10h
+        cmp     eax, 1
+        je      .o_st
+        cmp     eax, 2
+        je      .o_ldb
+        cmp     eax, 3
+        je      .o_stb
+        emit    48h, 8Bh, 04h, 02h      ; mov rax, [rdx + rax]
+        jmp     .o_back
+.o_ldb:
+        emit    0Fh, 0B6h, 04h, 02h     ; movzx eax, byte [rdx + rax]
+        jmp     .o_back
+.o_st:
+        emit    48h, 89h, 0Ch, 02h      ; mov [rdx + rax], rcx
+        jmp     .o_back
+.o_stb:
+        emit    88h, 0Ch, 02h           ; mov [rdx + rax], cl
+.o_back:
+        mov     rax, [r10 + E_BACK]     ; jmp back into its block, after its access
+        call    nc_jmp
+        mov     rax, rdi
+        sub     rax, r9
+        cmp     rax, NATIVE_COLD
+        ja      fail_file               ; larger than its room: a bug here, never a wrong run
 .next:
         inc     rbx
 .one:                                   ; while there are words, the final record too
@@ -546,21 +628,17 @@ nb_cond:
         call    nb_to_target
         jmp     nb_on
 
-nb_mem:                                 ; the address, room 0's limit, the alignment, the access
+nb_mem:                                 ; the address, the alignment, the room, the access
         nb_load_rax 9                   ; rax = ra / add rax, imm32
         emit    48h, 05h
         mov     eax, [r8 + 12]
         stosd
         movzx   edx, byte [rsi + rbx*4]
         sub     edx, 10h                ; 0 ld, 1 st, 2 ldb, 3 stb
-        mov     eax, P_LIM8
-        cmp     edx, 2
-        jb      @f
-        mov     eax, P_LIM1
-@@:     emit    48h, 3Bh, 83h           ; cmp rax, [rbx + P_LIMx] / jae T(i): the room package
-        stosd
-        emit    0Fh, 83h
-        lea     rax, [r9 + C_T]
+        emit    48h, 89h, 0C2h          ; mov rdx, rax / shr rdx, 32 / jnz O(i): another room, by the cartel
+        emit    48h, 0C1h, 0EAh, 20h    ; (first: measured, the room 0 path is ~7 % faster with it before the
+        emit    0Fh, 85h                ; alignment and the value to store)
+        lea     rax, [r9 + C_O]
         call    nc_rel
         cmp     edx, 2
         jae     @f
@@ -568,7 +646,11 @@ nb_mem:                                 ; the address, room 0's limit, the align
         emit    0Fh, 85h
         lea     rax, [r9 + C_T]
         call    nc_rel
-@@:     cmp     edx, 1
+@@:     test    edx, 1
+        jz      @f
+        mov     cl, [r8 + 8]            ; a store: rcx = rd
+        call    nb_get_rcx
+@@:     cmp     edx, 1                  ; room 0: past its end the processor refuses (ambientes.inc)
         je      .st
         cmp     edx, 2
         je      .ldb
@@ -579,18 +661,24 @@ nb_mem:                                 ; the address, room 0's limit, the align
 .ldb:
         emit    41h, 0Fh, 0B6h, 04h, 07h   ; movzx eax, byte [r15 + rax]
 .loaded:
+        call    nb_back
         nb_store_rax
         jmp     nb_next
 .st:
-        mov     cl, [r8 + 8]            ; rcx = rd / mov [r15 + rax], rcx
-        call    nb_get_rcx
-        emit    49h, 89h, 0Ch, 07h
+        emit    49h, 89h, 0Ch, 07h      ; mov [r15 + rax], rcx
+        call    nb_back
         jmp     nb_next
 .stb:
-        mov     cl, [r8 + 8]            ; rcx = rd / mov [r15 + rax], cl
-        call    nb_get_rcx
-        emit    41h, 88h, 0Ch, 07h
+        emit    41h, 88h, 0Ch, 07h      ; mov [r15 + rax], cl
+        call    nb_back
         jmp     nb_next
+; The block of word rbx goes on at rdi after its access: O(i) comes back here.
+nb_back:
+        mov     rax, rbx
+        shl     rax, 5
+        add     rax, [nat_entries]
+        mov     [rax + E_BACK], rdi
+        ret
 
 nb_call:                                ; room in the return stack, the record after it there, then the jump
         emit    48h, 3Bh, 0BBh          ; cmp rdi, [rbx + P_RETCAP] / jae F(i): one more page, or past the limit
@@ -720,6 +808,85 @@ nb_modrm:
         emit    46h
         mov     al, cl
         stosb
+        ret
+
+; Every translated program, for the fault handler: NP_SIZE bytes each, written once (under the captain's
+; lock) and never moved, so the handler reads them without a lock. NP_MAX is criterion, not a measurement:
+; distinct programs translated in one run (2.5 MiB of addresses, its pages untouched until used).
+NP_MAX     = 65536
+NP_SIZE    = 40
+NP_CODE    = 0                  ; its blocks
+NP_COLD    = 8                  ; its cold area
+NP_END     = 16                 ; where its code ends
+NP_ENTRIES = 24
+NP_WORDS   = 32
+
+; The processor refused an access (Capitan: "the wall stops you by itself"). Inside a translated program it
+; is a memory word past a room's end, or through a destroyed room: the word goes on by its T(i), as when it
+; leaves its run by the slow way, and its routine gives the exact answer (code 5, at the same instruction as
+; the interpreter). Anything else is not ours. A vectored handler: rcx = EXCEPTION_POINTERS, -> eax = -1
+; (go on, at the new rip) or 0 (look further). Uses only rax, rcx, rdx, r8-r11 (and rsi, kept).
+native_fault:
+        mov     rax, [rcx]              ; the record
+        cmp     dword [rax], 0C0000005h
+        jne     .not_ours               ; not an access refused
+        mov     r8, [rcx + 8]           ; the context
+        mov     rdx, [r8 + 0F8h]        ; its rip
+        mov     r9, [native_progs]
+        mov     r10, [native_nprogs]
+        jmp     .prog
+.prog_lap:
+        dec     r10
+        imul    rax, r10, NP_SIZE
+        add     rax, r9
+        cmp     rdx, [rax + NP_CODE]
+        jb      .prog
+        cmp     rdx, [rax + NP_END]
+        jb      .found
+.prog:                                  ; while there are programs to look in
+        test    r10, r10
+        jnz     .prog_lap
+.not_ours:
+        xor     eax, eax
+        ret
+.found:
+        mov     r11, [rax + NP_COLD]
+        cmp     rdx, r11
+        jae     .cold
+        push    rsi
+        mov     r9, [rax + NP_ENTRIES]  ; in the blocks: the last native word whose block starts at rip or before
+        mov     r10, [rax + NP_WORDS]
+        xor     ecx, ecx                ; the word
+        xor     esi, esi                ; the one found
+        jmp     .word
+.word_lap:
+        mov     rax, rcx
+        shl     rax, 5
+        mov     rax, [r9 + rax + E_CODE]
+        cmp     rax, r11
+        jae     @f                      ; it keeps its routine: no block
+        cmp     rax, rdx
+        ja      .word_found             ; past rip: the blocks go in order
+        mov     rsi, rcx
+@@:     inc     rcx
+.word:                                  ; while there are words
+        cmp     rcx, r10
+        jb      .word_lap
+.word_found:
+        mov     rax, rsi
+        pop     rsi
+        jmp     .to_t
+.cold:                                  ; in the cold area: its word by its place
+        mov     rax, rdx
+        sub     rax, r11
+        xor     edx, edx
+        mov     ecx, NATIVE_COLD
+        div     rcx
+.to_t:
+        imul    rax, rax, NATIVE_COLD
+        lea     rax, [r11 + rax + C_T]
+        mov     [r8 + 0F8h], rax
+        mov     eax, -1
         ret
 
 ; rcx words at rdx -> rax = their table for the engine in use (decoded; and translated, with the translated

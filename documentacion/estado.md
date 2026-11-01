@@ -147,3 +147,6 @@ par ~1,75 → ~0,7 s. 247/247 con los tres motores, estrés traducido 300/0.
 por tramo: medido sin ganancia, descartado. 248/248, estrés 300/0, escalón 0 182/182.
 2026-10-31 — Los números de ambiente no se reusan (Capitán): la dirección de un ambiente destruido falla; tabla desde
 el mínimo; con todos destruidos la cuenta vuelve a 1. 254/254, escalón 0 182/182.
+2026-11-01 — El cartel de los cofres (Capitán): cada ambiente en su cajón contra una pared que el procesador cuida;
+el traducido ya no pregunta por el borde y un acceso rechazado vuelve por su rutina (código 5 exacto). Pedido 21:
+solo lectura. calculo empata, calculo_ambiente ~1.040 → ~665 ms. SO 269/269, escalón 0 140/140 (sin teléfono).

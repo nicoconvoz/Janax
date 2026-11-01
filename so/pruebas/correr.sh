@@ -296,6 +296,25 @@ caso "ambientes: destruir el del medio une los extremos" 0 0 "$fijo0
 P0 codigo=0 j0=0000000400000066 t=56
 ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=5" ambientes_unir
 
+caso "ambientes: el byte siguiente al ambiente ya es afuera" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000077 t=17
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" ambiente_borde
+
+caso "ambientes: el byte siguiente al ambiente 0 ya es afuera" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000055 t=9" ambiente_cero_borde
+
+caso "ambientes: una caja de solo lectura se lee y no se escribe" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000077 t=25
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" ambiente_trato
+
+caso "ambientes: el trato vuelve, y lo que no se construyo se rechaza" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000052 t=66
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=6" ambiente_trato_vuelve
+
+caso "ambientes: el ambiente 0 de solo lectura" 0 0 "$fijo0
+P0 codigo=5 j0=00000000000000CC t=32
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" ambiente_cero_trato
+
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000004 t=58
