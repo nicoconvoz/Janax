@@ -487,4 +487,12 @@ Devolución (diseño, sin construir; primero se mide cuánto cuesta hoy un acces
 | 55 | compartida con los hijos | núcleo, al crear un hijo |
 | 56 | se hereda (0 = muere con su dueño) | núcleo, al morir el marinero |
 | 57-58 | tamaño de pieza (1, 2, 4, 8) | traductor, solo cuando sabe a qué caja va un registro (a medir) |
-| 59-63 | libres | — |
+| 59-61 | prioridad de la caja (8 niveles; criterio, no medición) | núcleo, cuando falta memoria rápida |
+| 62 | tiene hijas | núcleo, al tocar o destruir la madre |
+| 63 | al morir se lleva a las hijas (0 = las adopta la abuela) | núcleo, al destruirla |
+
+La familia no ocupa bits: madre e hijas viven en el mismo cartelito de rama. Regla sin bits: una hija nunca
+tiene más permisos que su madre (se mira una vez, al nacer). Se parece a los segmentos de Multics, a las
+capacidades derivadas de seL4 (una derivada nunca suma derechos; revocar se lleva a las derivadas) y al page heap
+de Windows (bloque apoyado contra la página prohibida); lo propio de Janax son las firmas y los números que nunca
+se reusan.
