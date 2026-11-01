@@ -455,3 +455,36 @@ con 2 remeros se pierde un remero de fila (medido, a decidir). Lo construido: `j
 > *"Los huecos son una cuenta de los cofres que estuvieron y que ya no existen, y no se pueden reemplazar para
 > confundir, solo agregar nuevos."* (2026-10-31) — Devolución: números que nunca se reusan y tabla desde el mínimo;
 > tapa el error de usar un ambiente después de destruirlo. Lo construido: `janaxos.md`.
+
+## 2026-11-01 — El cartel de los cofres: dirección partida, ramas e instrucciones (Capitán)
+
+> *"¿No podés unir dos de 32 para hacer uno de 64?"* — *"¿Y si el tablero tiene el acceso a los primeros cajones
+> de cada rama y dentro de cada cajón el acceso al siguiente cajón de su rama?"* — *"El cartel puede ser al mismo
+> tiempo un señalador y una instrucción de cómo se debe tratar la caja."* — *"Si es gratis y tenemos bits
+> suficientes, hacé que entren todas las más necesarias e importantes."*
+
+Devolución (diseño, sin construir; primero se mide cuánto cuesta hoy un acceso a un ambiente que no es el 0):
+
+- La dirección ya es dos mitades (`ROOM_SHIFT = 32`): la alta elige el cofre, la baja el lugar. Cada cofre en su
+  propio cajón de 4 GB reservado, apoyado contra el **final** de su página: pasarse un byte cae en memoria
+  prohibida y el procesador frena solo, exacto como el intérprete. Cofre destruido = renglón que apunta a memoria
+  prohibida.
+- La cadena (cada cajón con la flecha al siguiente) obliga a abrir 49 cajones para llegar al 50; la variante que
+  conserva lo bueno es un cartelito por rama: siempre dos pasos.
+- Cada renglón del cartel es de 8 bytes: la dirección usa 48 bits y los 16 altos dicen cómo tratar la caja (hay que
+  borrarlos antes de usar la dirección: una instrucción más, a medir). **Regla: todo en cero es lo más seguro**, así
+  un renglón sin llenar no permite nada.
+
+| Bit | Instrucción | Quién la hace cumplir, y cuándo |
+|---|---|---|
+| 48 | se puede leer | procesador (protección de página), gratis |
+| 49 | se puede escribir | procesador, gratis |
+| 50 | se puede ejecutar | procesador, gratis |
+| 51 | viva (0 = rota, la dirección murió) | procesador (cajón cerrado), gratis |
+| 52 | solo agregar | procesador: la caja es de solo lectura y se agrega por un pedido |
+| 53 | avisar al cambiar | procesador: la primera escritura frena y despierta a quien espera; sin nadie esperando, cero |
+| 54 | firmada (cambiarla pide la firma del dueño) | núcleo, al traspasar |
+| 55 | compartida con los hijos | núcleo, al crear un hijo |
+| 56 | se hereda (0 = muere con su dueño) | núcleo, al morir el marinero |
+| 57-58 | tamaño de pieza (1, 2, 4, 8) | traductor, solo cuando sabe a qué caja va un registro (a medir) |
+| 59-63 | libres | — |
