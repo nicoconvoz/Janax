@@ -539,3 +539,23 @@ Devolución (charla en otro chat, resumida):
 centrales*. Un relé de Nostr es infraestructura de terceros que no controlamos. La idea del tablero vale igual si
 el tablero lo sostienen **los mismos pares** (como los cofres y estados de Wenas), y Nostr quedaría como un puente
 opcional.
+
+## 2026-11-03 — La programación tridimensional: la neurona de Razar (Capitán)
+
+> *"Es un programa que ocupa una forma tridimensional y se ejecuta en todas las direcciones según sus ejes, en
+> todos los sentidos, y tiene que dar el resultado según la señal que recibió y según cómo inició la cadena dominó
+> de ejecuciones internas, en qué direcciones y cómo se ramificó dentro de la estructura tridimensional
+> invisible."* — *"Es nuestra neurona para Razar dentro de Janax."*
+
+Devolución (sin construir):
+- Es un cubo de piezas invisibles: entra una señal, voltea una pieza, y la cadena se ramifica en cualquier dirección.
+  El resultado depende de la señal y del camino. Se parece a una neurona en 3D, y encaja con las reglas de Janax:
+  solo trabajan las piezas que caen (eventos, sin temporizador) y el costo es proporcional a la actividad.
+- Para que sea determinista, las ramas avanzan en **olas** (paso 1, paso 2…), con una regla fija cuando dos llegan a
+  la misma pieza en el mismo paso.
+- El desafío: diseñar a mano una forma que calcule algo es difícil; las ideas parecidas aprenden su forma.
+- Parientes: Trefunge (ejecución que camina por un cubo de instrucciones), los autómatas celulares 3D y Wireworld
+  (señales entre celdas vecinas), las redes neuronales de pulsos. Lo propio: la cadena **es** el cálculo, y el camino
+  también es parte de la respuesta.
+- Abierto: si la forma es fija o cambia con las señales que pasan (con la regla de la casa, *plástico*, apunta a
+  que cambie).
