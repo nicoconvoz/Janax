@@ -122,3 +122,13 @@ finales, `h = (h·31 + v) mod 2^48`.
   los remeros no cambia nada). ~20,8 millones de instrucciones, 2.135 pedidos.
 - El ensamblador PDP arma los dos programas igual que FASM.
 - En la suite (`razar: la voluntad y el cardumen conversan como en el modelo`), con la huella sacada del modelo.
+
+**Cuánto cuesta, Janax contra Perl** (medianas de 5, un remero, `JANAX_CAMBIO=24`; arranque: Janax ~76 ms, Perl ~67 ms).
+Con 200 vueltas el trabajo de Janax queda tapado por su propio arranque, así que se midió con 4.000 vueltas en los dos:
+
+| Lazo de 4.000 vueltas | total | sin el arranque |
+|---|---|---|
+| Perl (`lazo.pl ... rounds=4000`) | ~16.734 ms | ~16.670 ms |
+| Janax (la voluntad con 4.000 vueltas) | ~312 ms | **~236 ms: unas 70 veces más rápido** |
+
+Y las dos huellas siguen iguales en 4.000 vueltas (`000031B4C96DD326`, 435,6 millones de instrucciones Janax).

@@ -6,3 +6,6 @@ escalon0/bancos/*.bin
 escalon0/bancos/*.x64
 so/build/
 janax_archivos/
+
+# Razar: programs built from their .jsm
+razar/**/*.bin
