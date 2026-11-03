@@ -648,3 +648,14 @@ Para que eso no choque con la regla de la casa (ningún bucle que gaste por nada
 como los estados de Wenas: si la melodía de ahora tiene la misma huella que la anterior, la respuesta ya se conoce y no
 se recalcula; el lazo descansa (como dormir) y se despierta con lo primero nuevo, de adentro o de afuera. Siempre
 responde, pero solo trabaja cuando algo cambió.
+
+> *"Imaginate que yo quiero armar a Janax y te pregunto por ideas de estructura de sistema operativo; además te pido
+> un acertijo para niños. Vos me devolvés en lenguaje que yo pueda entender, y respondo de manera que me entiendas,
+> para diseñar esa estructura. Vos evolucionás y yo evoluciono: las neuronas aprenden y el kernel evoluciona."*
+> (2026-11-03)
+
+Devolución: la voluntad no "lee" la melodía con una regla fija: **conversa**. Pregunta en su idioma, el cardumen
+contesta en uno que ella entiende (como los acertijos), ella contesta de modo que el cardumen la entienda, y en cada
+vuelta **los dos ajustan el idioma**. El idioma entre las dos partes no se diseña: se aprende entre ellas. Parientes:
+los juegos de señales de Lewis (1969) y la comunicación que inventan agentes que aprenden juntos. La prueba de que
+funciona está en esta misma bitácora: los acertijos fueron el idioma que el Capitán y Doc armaron para diseñar Janax.
