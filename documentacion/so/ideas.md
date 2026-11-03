@@ -559,3 +559,14 @@ Devolución (sin construir):
   también es parte de la respuesta.
 - Abierto: si la forma es fija o cambia con las señales que pasan (con la regla de la casa, *plástico*, apunta a
   que cambie).
+
+> *"Al mismo tiempo la pieza tridimensional está en movimiento cambiando su forma, y la respuesta, aunque haya una
+> posibilidad de que sea la misma, generalmente es distinta."* — *"No necesitamos bucles: necesitamos coordenadas
+> de forma según la interacción; así nos ahorramos el reloj."* (2026-11-03)
+
+Devolución: la forma no se mueve con un reloj, la mueven las señales. Cada señal calcula **y además** corre las
+coordenadas de las piezas que atraviesa, así la próxima señal encuentra otra forma y casi siempre hace otro viaje.
+Sin bucles ni temporizadores (la regla de la casa): la neurona cuesta solo cuando la atraviesa algo. Y sigue siendo
+verificable: la forma es el resultado de la historia de señales, así que con la misma historia cualquiera repite cada
+viaje exacto. Pariente cercano: las máquinas de estado líquido (Maass, 2002); lo propio, la forma 3D, el dominó y
+que la forma la escribe la propia interacción.
