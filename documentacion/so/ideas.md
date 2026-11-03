@@ -659,3 +659,11 @@ contesta en uno que ella entiende (como los acertijos), ella contesta de modo qu
 vuelta **los dos ajustan el idioma**. El idioma entre las dos partes no se diseña: se aprende entre ellas. Parientes:
 los juegos de señales de Lewis (1969) y la comunicación que inventan agentes que aprenden juntos. La prueba de que
 funciona está en esta misma bitácora: los acertijos fueron el idioma que el Capitán y Doc armaron para diseñar Janax.
+
+> *"La relación, tanto de conexiones de neuronas, también es tridimensional con sus vecinas."* (2026-11-03)
+
+Devolución: el cardumen es **3D en dos escalas**. Adentro de cada neurona, las piezas se hablan con sus 6 vecinas; y
+las neuronas mismas están en el espacio y se tocan cara a cara con sus 6 vecinas: el pulso que sale por una cara de
+una neurona entra por la cara de la vecina. Una forma dentro de otra, con la misma regla en las dos escalas
+(profundidad 1 en cada una), como los fractales. El experimento del lazo ya usa una cara de entrada y otra de salida:
+es la conexión entre dos neuronas.
