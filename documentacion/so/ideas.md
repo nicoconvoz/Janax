@@ -667,3 +667,10 @@ las neuronas mismas están en el espacio y se tocan cara a cara con sus 6 vecina
 una neurona entra por la cara de la vecina. Una forma dentro de otra, con la misma regla en las dos escalas
 (profundidad 1 en cada una), como los fractales. El experimento del lazo ya usa una cara de entrada y otra de salida:
 es la conexión entre dos neuronas.
+
+> *"Se pueden crear más neuronas y cambiar algunas que ya no sirvan."* (2026-11-03)
+
+Devolución: el cardumen también es plástico en cantidad: nacen neuronas donde hace falta y se reemplazan las que ya no
+sirven. En el cerebro se llama neurogénesis y poda. En Janax ya está la base: cada neurona puede ser un camarote, que
+nace con su dote y que al terminar devuelve todo (`cabin_free`). Abierto: cómo se sabe que una neurona "ya no sirve"
+(por ejemplo, que hace mucho no despierta o que nunca cambia la melodía).
