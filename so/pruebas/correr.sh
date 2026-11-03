@@ -392,6 +392,19 @@ ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asoci
 
 carpeta=
 
+# Greetings (Capitan): one mark per family member that greets, kept until taken; -1 when nobody is left.
+familia familia_saludo saludo_hijo
+caso "saludo: la madre recibe a quien la saluda, en orden" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000000 t=45
+P2 codigo=0 j0=0000000000000000 t=73
+P0 codigo=0 j0=0000000000000011 t=98
+ventanilla: pantallas=1 resintonias=4 llamadas al anfitrion=8 pedidos=7" saludo
+carpeta=
+
+caso "saludo: solo en familia, y nadie despierto da -1" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=21
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" saludo_no
+
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000004 t=58

@@ -878,3 +878,23 @@ que solo leen, y liberar las cajas de un camarote que terminó.
 
 **La suite, más rápida** (Capitán): `JANAX_SOLO=<patrón>` corre solo las pruebas de la zona tocada (cajas: 41 en
 37 s); la completa, una vez antes de guardar.
+
+## El saludo: un bit por familiar, plástico (Capitán, 2026-11-03)
+
+> *"Con un solo bit mamá o el hijo envían un saludo… si es entre padre e hijo un solo bit; si se requiere más para
+> comunicación con otra parte de la familia se usa más, pero todo bien plástico: se usa lo que se necesita."*
+
+Reemplaza a la campanita sobre la memoria (que quedó en diseño): no toca páginas ni el procesador, es un pedido y un
+despertar.
+
+- **28 saludar** (`a` = un camarote de la familia): le deja una marca con quien saludó y, si esperaba un saludo, lo
+  despierta. Una marca por familiar, aunque salude varias veces; tantas marcas como familiares saluden (la lista
+  crece a medida, sin tope fijo). Fuera de la familia, −1.
+- **29 esperar un saludo**: el número del que saludó primero, y su marca se baja. Si nadie saludó, el camarote
+  **duerme sin gastar nada** (el mismo mecanismo que la espera de una firma). Si espera y ya no queda nadie
+  despierto que pueda saludarlo, el núcleo lo despierta con −1.
+- **El saludo no se pierde**: la marca queda hasta que se la toma, así que un saludo que llegó antes de la espera la
+  encuentra lista.
+
+Probado en los tres motores (`saludo`, `saludo_hijo`, `saludo_no`) y con 4 remeros en paralelo 30 veces sin un
+despertar perdido.

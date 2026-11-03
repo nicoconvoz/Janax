@@ -1392,3 +1392,113 @@ rooms_assoc:
 .done:
         pop     r15 r14 r13 rdi rsi
         ret
+
+; ---------------------------------------------------------------- greetings (Capitan)
+; "With a single bit the mother or the child send a greeting, and if more is needed with other parts of the
+; family more is used: everything plastic, what is needed is used." A cabin keeps who greeted it and was
+; not taken yet, one mark per family member however many times it greeted, and as many marks as members
+; greet. A greeting stays until it is taken, so one sent before the wait is never lost.
+
+; 28 greet: the family cabin number rax gets a greeting from rbx, and wakes if it was waiting for one.
+; -> rax = 0, or -1 if it is not family (or it ended). Keeps rbx, rbp, r12-r15.
+greet:
+        push    rsi
+        call    cabin_family
+        test    rax, rax
+        jz      .invalid
+        mov     rsi, rax                ; who is greeted
+        mov     rcx, [rsi + P_GREET]    ; already greeted by this one: one mark is enough
+        mov     rdx, [rsi + P_NGREET]
+        lea     rdx, [rcx + rdx*8]
+        jmp     .seen
+.seen_lap:
+        cmp     [rcx], rbx
+        je      .wake
+        add     rcx, 8
+.seen:                                  ; while marks are left
+        cmp     rcx, rdx
+        jb      .seen_lap
+        xchg    rbx, rsi
+        mov     ecx, P_GREET
+        mov     r8d, 8
+        call    list_slot
+        xchg    rbx, rsi
+        test    rax, rax
+        jz      .invalid
+        mov     [rax], rbx
+.wake:
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .done
+        mov     qword [rsi + P_GWAIT], 0
+        dec     qword [rsi + P_WAITING]
+        mov     r8, rsi
+        call    q_wake
+.done:
+        xor     eax, eax
+        pop     rsi
+        ret
+.invalid:
+        mov     rax, -1
+        pop     rsi
+        ret
+
+; 29 wait for a greeting: the number of the oldest cabin that greeted rbx, its mark taken; -1 if nobody is
+; left who could greet it. (The window made it sleep while nobody had greeted it: greet_must_wait.)
+; Keeps every register but rax, rcx, rdx.
+greeting:
+        cmp     qword [rbx + P_GWAIT], 2
+        je      .lost
+        mov     rcx, [rbx + P_NGREET]
+        test    rcx, rcx
+        jz      .none
+        mov     rdx, [rbx + P_GREET]
+        mov     rax, [rdx]              ; the oldest one
+        mov     rax, [rax + P_ID]
+        dec     rcx
+        mov     [rbx + P_NGREET], rcx
+        push    rsi rdi
+        mov     rdi, rdx
+        lea     rsi, [rdx + 8]
+        rep     movsq
+        pop     rdi rsi
+        ret
+.lost:
+        mov     qword [rbx + P_GWAIT], 0
+.none:
+        mov     rax, -1
+        ret
+
+; While the window marks a touch: r8d = 1 if rbx has to sleep until a greeting arrives (nobody greeted it
+; yet, and someone still could). Keeps every other register.
+greet_must_wait:
+        xor     r8d, r8d
+        cmp     qword [rbx + P_NGREET], 0
+        jne     .done
+        cmp     qword [rbx + P_GWAIT], 2
+        je      .done
+        mov     qword [rbx + P_GWAIT], 1
+        mov     r8d, 1
+.done:
+        ret
+
+; Nobody rows: every cabin waiting for a greeting wakes, and its wait answers -1. Keeps every register.
+greet_nobody:
+        push    rcx rsi r8
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .next
+        mov     qword [rsi + P_GWAIT], 2
+        dec     qword [rsi + P_WAITING]
+        mov     r8, rsi
+        call    q_wake
+.next:
+        inc     rcx
+.one:                                   ; while there are cabins
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        pop     r8 rsi rcx
+        ret

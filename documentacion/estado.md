@@ -153,3 +153,5 @@ solo lectura. calculo empata, calculo_ambiente ~1.040 → ~665 ms. SO 269/269, e
 2026-11-03 — Cajas entre camarotes (Capitán): cada caja una sección con vista y llave por dueño (trato propio, el
 anfitrión la libera con el último); nace (22), se muda (23), se enlaza (24), recibir (25), fusionar (26) y asociación
 por mutuo acuerdo con las cuatro zonas del Venn (27). Acceso empatado. SO 302/302, escalón 0 182/182.
+2026-11-03 — El saludo (Capitán): pedido 28 saludar a un familiar y 29 esperar un saludo (quién saludó, o −1 si no
+queda nadie); una marca por familiar, plástica, que no se pierde. Regla de la casa nueva: plástico. SO 308/308, escalón 0 182/182.

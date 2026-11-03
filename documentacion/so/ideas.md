@@ -506,3 +506,8 @@ se reusan.
 > cinco formas sobre una sola base, cada caja una sección y cada dueño su vista y su llave, con su propio trato.
 > Se parecen a `fork` sin copia, al *move* de Rust, a la memoria compartida con nombre y a los espacios de nombres
 > de Plan 9; lo propio es el álgebra de conjuntos caja por caja y el mutuo acuerdo. Construido en `janaxos.md`.
+
+> *"Con un solo bit mamá o el hijo envían un saludo… todo bien plástico, se usa lo que se necesita."*
+> (2026-11-03) — Devolución: reemplaza a la campanita sobre la memoria; resuelve el aviso perdido porque la marca
+> queda hasta que se toma. Se parece al timbre de las placas de red, a los eventos de Windows y a las señales de
+> Unix; lo propio es que crece por familiar. Construido en `janaxos.md`.
