@@ -149,4 +149,4 @@ por tramo: medido sin ganancia, descartado. 248/248, estrés 300/0, escalón 0 1
 el mínimo; con todos destruidos la cuenta vuelve a 1. 254/254, escalón 0 182/182.
 2026-11-01 — El cartel de los cofres (Capitán): cada ambiente en su cajón contra una pared que el procesador cuida;
 el traducido ya no pregunta por el borde y un acceso rechazado vuelve por su rutina (código 5 exacto). Pedido 21:
-solo lectura. calculo empata, calculo_ambiente ~1.040 → ~665 ms. SO 269/269, escalón 0 140/140 (sin teléfono).
+solo lectura. calculo empata, calculo_ambiente ~1.040 → ~665 ms. SO 269/269, escalón 0 182/182 (con el teléfono).
