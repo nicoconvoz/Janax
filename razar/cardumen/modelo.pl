@@ -23,7 +23,7 @@ sub new {
   my ($class, %o) = @_;
   my $n = $o{n} // $N; my $p = $n*$n*$n;
   my $s = bless { n => $n, p => $p, w0 => $o{w0} // 40, th => $o{th} // 100, rate0 => $o{rate} // 20,
-                  doors => $o{doors} // 0, sinks => { map { $_ => 1 } @{ $o{sinks} // [] } } }, $class;
+                  doors => $o{doors} // 0, harmony => $o{harmony} // 0, sinks => { map { $_ => 1 } @{ $o{sinks} // [] } } }, $class;
   my $seed = $o{seed} // 0;                    # born different (Capitan: relations are born each its own): a fixed seed,
   for my $i (0 .. $p-1) {                      # so every school with the same seed is the same school
     $s->{w}[$i] = [ map { $seed ? do { $seed = ($seed * 1103515245 + 12345) % 2147483648; ($seed >> 16) % 256 } : $s->{w0} } 0..5 ];
@@ -58,7 +58,7 @@ sub signal {
       for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $ft[$q] >= 0; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
     }
     $t++;
-    my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_tune($_, $mask{$_}) } keys %in;
+    my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) && $s->in_tune($_, $mask{$_}) } keys %in;
     $ft[$_] = $t for @next;
     @now = @next;
   }
@@ -76,6 +76,17 @@ sub signal {
     $s->{rate}[$i]-- if $s->{rate}[$i] > 1;
   }
   return \@melody;
+}
+# Harmony (Capitan: "harmony is the key: a harmonious brain does not convulse, it works... something that sounds
+# bad does not fit, and it is cut before the error spreads"): a note fits if it is not drowned out. With harmony,
+# piece q does not let the pulse pass when more than half of its own neighbors woke it at once: that is the crowd
+# of a convulsion, not a note. Half of its own: a corner has 3 neighbors, a piece inside 6.
+sub in_harmony {
+  my ($s, $q, $mask) = @_;
+  return 1 unless $s->{harmony};
+  my ($on, $all) = (0, 0);
+  for my $d (0..5) { next if $s->neighbor($q, $d) < 0; $all++; $on++ if $mask & (1 << $d); }
+  return 2 * $on <= $all;
 }
 # Whether piece q, woken by its neighbors in mask (bit d = the neighbor in direction d), lets the pulse pass
 # (Capitan: "when a melody goes out of tune the pulse of that branch ends"): with doors, a piece that remembers

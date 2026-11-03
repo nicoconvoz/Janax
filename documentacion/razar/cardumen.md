@@ -61,3 +61,31 @@ Medido: **no alcanza**. Con relaciones repartidas el primer pulso ya prende las 
 confirma esa melodía y 61 de 64 piezas quedan recordando "todo está en tono": la puerta nunca se cierra. Aciertos
 iguales al azar con tres semillas. Lo que falta: que **desentonar** se pueda reconocer **desde el principio**, antes de
 haber aprendido nada; si no, la primera convulsión se aprende como si fuera la melodía.
+
+## La armonía: el criterio innato (Capitán, 2026-11-03)
+
+> *"Cuando no hay armonía. La armonía es la clave: un cerebro armónico no convulsiona, funciona; un cerebro que no
+> es armónico generalmente tiene problemas. Cada neurona puede aportar algo a la canción, pero cuando deja de ser
+> armónico ahí se daña el sistema y hay que cortarlo antes de que se contagie el error: algo que suena mal no encaja."*
+
+Regla (`harmony` en `modelo.pl`, `armonia=1` en `lazo.pl`): **una nota encaja si no la tapan**. Una pieza no deja
+pasar el pulso si la despiertan a la vez más de la mitad de **sus propias** vecinas (una esquina tiene 3, una del medio
+6): eso es el amontonamiento de una convulsión, no una nota. No hace falta haber aprendido nada para notarlo.
+Pariente: la inhibición lateral.
+
+⚠️ El instrumento, otra vez: la voluntad de prueba anotaba qué significaba cada pieza solo cuando acertaba, y los
+primeros aciertos eran de suerte, así que no aprendía a leer, y todas las variantes daban exactamente los mismos
+números. Mirar las respuestas mostró que con armonía el cardumen sí contesta distinto (3 respuestas para 4 cosas; sin
+armonía, 1). La voluntad sabe qué quiso decir: ahora anota lo que escuchó en cada vuelta y compara como proporción.
+
+Medido (relaciones repartidas, 3 semillas, aciertos cada 50 vueltas):
+
+| | 4 cosas (azar 25 %) | 8 cosas (azar 12 %), 800 vueltas |
+|---|---|---|
+| Sin armonía | 24–26 %, siempre | — |
+| **Con armonía** | **56–88 % → 100 %** desde la vuelta 100–150 | **50–76 %** al final |
+| Con armonía y puertas | 58–88 % → 100 % | — |
+
+**La voluntad y el cardumen inventan un idioma**, y sin armonía no hay ninguno. Repetible: la misma semilla da el
+mismo resultado byte por byte. Límite medido: con 8 cosas no llega al 100 % (la cara de arriba tiene 16 piezas y el
+cubo es de 4×4×4).
