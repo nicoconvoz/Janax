@@ -589,3 +589,18 @@ que ya sonó por ella). Aprender por asociación es unir melodías entre sí o c
 a la otra. Parientes: la memoria asociativa de Hopfield (1982), donde un pedazo de un recuerdo trae el recuerdo
 entero, y la memoria distribuida de Kanerva. En Janax encaja así: la memoria de cada neurona vive en su cajón
 (plástico, crece con lo que guarda) y las asociaciones entre neuronas pueden ser cajas enlazadas o compartidas.
+
+> *"Trabajan a profundidad por ramas, pero siempre compartiendo nuestra filosofía de profundidad 1: se heredan
+> fragmentos de la melodía, aunque al ver todas las neuronas se tenga idea de la melodía completa."* — *"Como el
+> bicho ajedrecista: como unidad solo mira a su vecina; como red, la melodía se completa y evoluciona como si fuera
+> un cardumen de peces."* (2026-11-03)
+
+Devolución: **profundidad 1** = cada neurona habla solo con sus vecinas directas y nadie tiene el mapa entero. Cada
+una guarda un fragmento; la melodía completa no vive en ningún lugar, es de la red, y un pedazo la reconstruye entre
+todas. Parientes: la memoria distribuida del cerebro (Lashley no la encontró en ningún lugar porque estaba
+repartida), el holograma, y los cardúmenes de Reynolds (1987: tres reglas locales por pez y el cardumen entero
+aparece solo). Lo propio: neuronas 3D que se deforman por interacción, guardan fragmentos de melodía y se asocian,
+todo con reglas de vecindad. Por eso crece sin límite: ninguna neurona carga con el todo.
+
+**El diseño de la neurona hasta acá**: forma 3D + memoria de melodía; una señal arranca un dominó en olas; la forma
+la mueve la interacción (sin reloj); aprende por melodía y por asociación; profundidad 1; la melodía es de la red.
