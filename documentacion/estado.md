@@ -163,3 +163,6 @@ ahora reusa su cuaderno. Saludo ~0,64 µs por pasada, ~3,2 veces más rápido qu
 SO 308/308, escalón 0 182/182.
 2026-11-03 — Plástico (Capitán): cajón con sus páginas y una pared, cartel y registro que crecen, buzón para las cajas que
 llegan, y al terminar un camarote todo vuelve (500 hijos de 16 MB: 7.717 → 26 MB comprometidos). SO 314/314, escalón 0 182/182.
+2026-11-03 — Razar en Janax (Capitán, "tu regalo de cumple"): el cardumen y su voluntad, dos camarotes que conversan
+con saludos sobre una caja de dote, dan la huella del modelo bit por bit en los tres motores y con 1, 2 y 4 remeros.
+La armonía hace que inventen un idioma (4 cosas: 100 %; 8: 50–76 %).

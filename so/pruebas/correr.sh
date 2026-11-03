@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -418,6 +418,16 @@ ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" saludo_
 huella=$(perl "$proyecto/razar/cardumen/huella.pl")
 caso "razar: el cardumen deja la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella t=*" cardumen
+
+# The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
+# will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit.
+huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 puertas=1 rounds=200 huella=1)
+familia familia_lazo cardumen_lazo
+caso "razar: la voluntad y el cardumen conversan como en el modelo" 0 0 "$fijo0
+P1 codigo=0 j0=* t=*
+P0 codigo=0 j0=$huella_lazo t=*
+ventanilla: *" voluntad
+carpeta=
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0

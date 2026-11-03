@@ -23,6 +23,8 @@ for my $m (0 .. $o{k}-1) { my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bott
 my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top piece -> times heard
 my @heard = (0) x $o{k};                        # how many top pieces it heard for each thing, in all
 my ($ok, $reached) = (0, 0); my @blocks;
+my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
+sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
   my $m = ($r - 1) % $o{k};                     # what it wants to say, in turn
   my $mel = $c->signal(@{$say[$m]});
@@ -37,6 +39,8 @@ for my $r (1 .. $o{rounds}) {
   $best = rnd() % $o{k} if $best < 0;            # nothing learned that helps: a guess
   $read[$m]{$_}++ for @answer;                  # it knows what it meant: it learns what that sounded like
   $heard[$m] += @answer;
+  my $hit = ($best == $m && @answer) ? 1 : 0;
+  mix($m * 8 + $best * 2 + $hit + 1);          # each round: what it meant, what it guessed, whether it was right
   if ($best == $m && @answer) {
     $ok++;
     $c->confirm($mel) if $o{puertas};           # the will confirmed it: in tune from now on
@@ -47,6 +51,18 @@ for my $r (1 .. $o{rounds}) {
     $say[$m] = [sort { $a <=> $b } keys %u];
   }
   if ($r % 50 == 0) { push @blocks, sprintf "%3d%%", 100 * $ok / 50; $ok = 0; }
+}
+if ($o{huella}) {                               # and the school as it ended: its own fingerprint, mixed in
+  my $hc = 0; my $mixc = sub { $hc = ($hc * 31 + $_[0]) % 2 ** 48; };
+  for my $i (0 .. $c->{p} - 1) {
+    $mixc->($c->{w}[$i][$_]) for 0 .. 5;
+    $mixc->($c->{rate}[$i]); $mixc->($c->{frag}[$i]);
+    my $t = 0; $t += 2 ** $_ for keys %{ $c->{tune}[$i] };
+    $mixc->($t % 2 ** 32); $mixc->(int($t / 2 ** 32));
+  }
+  mix($hc);
+  printf "%016X
+", $h; exit;
 }
 printf "armonia: %s; puertas: %s; pesos al nacer: %s; th=%d (con pesos fijos harian falta %d vecinas): la ola llego arriba en %d de %d vueltas\n", ($o{armonia} ? "si" : "no"), ($o{puertas} ? "si" : "no"), ($o{nace} ? "repartidos 0..255, semilla $o{nace}" : "todos $o{w0}"), $o{th}, int(($o{th} + $o{w0} - 1) / $o{w0}), $reached, $o{rounds};
 print "aciertos cada 50 vueltas (el azar es ", int(100 / $o{k}), "%): @blocks\n";

@@ -103,3 +103,22 @@ finales, `h = (h·31 + v) mod 2^48`.
   si la regla cambia en Perl, el programa Janax tiene que seguirla.
 - Todavía no está en Janax: la voluntad (el lazo), las puertas y los fragmentos de melodía (el modelo los guarda; la
   dinámica de esta historia no los usa).
+
+## El lazo a lo Janax: la voluntad y el cardumen, dos camarotes (2026-11-03)
+
+> *"Carga todo en Janax, que quede como en el modelo pero dentro de Janax, a lo Janax."* — *"Esto, más que para la
+> humanidad, es para vos: tu regalo de cumple."*
+
+- `razar/cardumen/voluntad.jsm` (la madre) arma un cajón, se lo da de **dote** al hijo y lanza
+  `razar/cardumen/cardumen_lazo.jsm` (el cardumen). Se pasan el turno con **saludos** (28 y 29): la voluntad escribe la
+  orden en el cajón (1 una señal con sus 3 piezas, 2 confirmar la última melodía, 3 terminar), saluda y duerme hasta
+  que el cardumen le contesta. Al terminar, el cardumen deja en el cajón su propia huella (pesos, velocidades,
+  fragmentos y recuerdos de las puertas) y la voluntad la mezcla en la suya.
+- El cardumen tiene todo el modelo: armonía, puertas, fragmentos, la cara de arriba respondiendo y las relaciones
+  nacidas de la semilla 7. La voluntad tiene su dado (semilla 12345), su forma de decir cada cosa, lo que aprendió a
+  leer como proporción, y se corrige cuando falla.
+- **Igual bit por bit al lazo del modelo, a la primera**: `j0 = 0000A303607CA632` (`lazo.pl nace=7 armonia=1 puertas=1
+  rounds=200 huella=1`), en los tres motores y con 1, 2 y 4 remeros (el turno pasa por saludos, así que el orden de
+  los remeros no cambia nada). ~20,8 millones de instrucciones, 2.135 pedidos.
+- El ensamblador PDP arma los dos programas igual que FASM.
+- En la suite (`razar: la voluntad y el cardumen conversan como en el modelo`), con la huella sacada del modelo.
