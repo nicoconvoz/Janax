@@ -612,3 +612,20 @@ Devolución: "cerca" no es distancia en el espacio sino **cuánto y cómo se com
 refuerzan su forma de hablarse. Y la regla misma no es fija: puede evolucionar y cambiar. En el oficio eso se llama
 **metaplasticidad** (Abraham y Bear, 1996: la plasticidad de la plasticidad). Para el diseño: la regla de aprendizaje
 también es estado de la neurona, no una constante del código, y la puede mover la propia interacción.
+
+> *"Aprenden asociación y melodía, y según cómo responda su vecina y cómo razone ella es la respuesta, que puede
+> conservarse, evolucionar o cambiar."* — *"Barre de extremo a extremo: es como un pulso que viaja hasta que alguien
+> cierra la puerta y dice no pasarás."* — *"La voluntad es un kernel neuronal que mantiene la melodía trabajando: es
+> el pulso y el control, mientras que las neuronas son la computadora, la consciencia."* (2026-11-03, parte en otro chat)
+
+Devolución:
+- **El enlace es una relación con historia**: se conserva si la vecina sigue respondiendo, evoluciona si responde
+  distinto, cambia (se afloja y la pieza recupera velocidad) si deja de responder. Así el hábito se rompe solo cuando
+  el mundo cambia. Parientes: la señal en dos sentidos de las sinapsis, la codificación predictiva.
+- **La ola termina sola**: muere donde nadie la deja pasar. Riesgo de onda que vuelve (reentrante, la fibrilación):
+  en v0 imposible, cada pieza despierta una vez por señal. Abierto: una sordera de pocos pasos permite notas repetidas
+  pero hay que acotar la vuelta.
+- **La voluntad**: un kernel neuronal, aparte del cardumen, que pone el pulso y el control. Parientes: los sistemas que
+  modulan todo el cerebro a la vez (dopamina, el tronco), los generadores centrales de ritmo, y el propio núcleo de
+  Janax con sus remeros. Ojo con dos reglas: si el pulso es un ritmo fijo, es un reloj (la regla de la casa pide
+  eventos), y la voluntad no es profundidad 1, sino una señal para todos.
