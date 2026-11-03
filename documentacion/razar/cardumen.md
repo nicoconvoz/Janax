@@ -47,3 +47,17 @@ Lo que falta es lo que en el diseño ya existe y el modelo todavía no tiene: **
 dice no pasarás"*). Hoy las relaciones solo empujan; en el cerebro cerca de una de cada cinco neuronas frena, y ese
 equilibrio lo mantiene en el borde entre el silencio y la convulsión (criticalidad). Decisión del Capitán: cómo se
 cierra una puerta.
+
+## La puerta del Capitán, primera versión (2026-11-03)
+
+> *"Cuando una melodía desentona, o ya dio una respuesta confirmada, se termina el pulso de esa rama."*
+
+Modelo (`doors`, `sinks`, `confirm` en `modelo.pl`; `puertas=1` en `lazo.pl`): cada pieza guarda los fragmentos que la
+voluntad confirmó (qué vecinas la despertaron en una melodía acertada); una pieza con recuerdos solo deja pasar el
+pulso si la despiertan vecinas que se cruzan con alguno (criterio de arranque, no medición); una sin recuerdos deja
+pasar; la cara de arriba entrega la respuesta y su rama termina.
+
+Medido: **no alcanza**. Con relaciones repartidas el primer pulso ya prende las 64 piezas, la voluntad acierta por azar,
+confirma esa melodía y 61 de 64 piezas quedan recordando "todo está en tono": la puerta nunca se cierra. Aciertos
+iguales al azar con tres semillas. Lo que falta: que **desentonar** se pueda reconocer **desde el principio**, antes de
+haber aprendido nada; si no, la primera convulsión se aprende como si fuera la melodía.

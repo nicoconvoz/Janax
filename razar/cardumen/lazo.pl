@@ -16,6 +16,7 @@ my $c = Cardumen->new(w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{n
 my $n = $c->{n};
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
+if ($o{puertas}) { $c->{doors} = 1; $c->{sinks} = { %top }; }   # doors: out of tune it ends; the top face answers
 my @say;                                        # how the will says each thing: 3 bottom pieces
 for my $m (0 .. $o{k}-1) { my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 } $say[$m] = [sort { $a <=> $b } keys %u]; }
 my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top piece -> times
@@ -31,6 +32,7 @@ for my $r (1 .. $o{rounds}) {
   if ($best == $m && @answer) {
     $ok++;
     $read[$m]{$_}++ for @answer;
+    $c->confirm($mel) if $o{puertas};           # the will confirmed it: in tune from now on
     $c->signal(@{$say[$m]});                    # sounded once more: the school settles it
   } else {
     my $j = rnd() % 3; my %u = map { $_ => 1 } @{$say[$m]}; delete $u{$say[$m][$j]};
@@ -39,5 +41,5 @@ for my $r (1 .. $o{rounds}) {
   }
   if ($r % 50 == 0) { push @blocks, sprintf "%3d%%", 100 * $ok / 50; $ok = 0; }
 }
-printf "pesos al nacer: %s; th=%d (con pesos fijos harian falta %d vecinas): la ola llego arriba en %d de %d vueltas\n", ($o{nace} ? "repartidos 0..255, semilla $o{nace}" : "todos $o{w0}"), $o{th}, int(($o{th} + $o{w0} - 1) / $o{w0}), $reached, $o{rounds};
+printf "puertas: %s; pesos al nacer: %s; th=%d (con pesos fijos harian falta %d vecinas): la ola llego arriba en %d de %d vueltas\n", ($o{puertas} ? "si" : "no"), ($o{nace} ? "repartidos 0..255, semilla $o{nace}" : "todos $o{w0}"), $o{th}, int(($o{th} + $o{w0} - 1) / $o{w0}), $reached, $o{rounds};
 print "aciertos cada 50 vueltas (el azar es ", int(100 / $o{k}), "%): @blocks\n";

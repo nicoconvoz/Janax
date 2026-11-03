@@ -22,12 +22,14 @@ our @DIRS = ([1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]);
 sub new {
   my ($class, %o) = @_;
   my $n = $o{n} // $N; my $p = $n*$n*$n;
-  my $s = bless { n => $n, p => $p, w0 => $o{w0} // 40, th => $o{th} // 100, rate0 => $o{rate} // 20 }, $class;
+  my $s = bless { n => $n, p => $p, w0 => $o{w0} // 40, th => $o{th} // 100, rate0 => $o{rate} // 20,
+                  doors => $o{doors} // 0, sinks => { map { $_ => 1 } @{ $o{sinks} // [] } } }, $class;
   my $seed = $o{seed} // 0;                    # born different (Capitan: relations are born each its own): a fixed seed,
   for my $i (0 .. $p-1) {                      # so every school with the same seed is the same school
     $s->{w}[$i] = [ map { $seed ? do { $seed = ($seed * 1103515245 + 12345) % 2147483648; ($seed >> 16) % 256 } : $s->{w0} } 0..5 ];
     $s->{rate}[$i] = $s->{rate0};
     $s->{frag}[$i] = 0;
+    $s->{tune}[$i] = {};                        # the fragments the will confirmed: who woke it, in tune
   }
   return $s;
 }
@@ -50,9 +52,13 @@ sub signal {
   while (@now) {
     push @melody, [@now];
     my %in;
-    for my $i (@now) { for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $ft[$q] >= 0; $in{$q} += $s->{w}[$i][$d]; } }
+    my %mask;
+    for my $i (@now) {
+      next if $s->{sinks}{$i};                 # it answered already: its branch ends here
+      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $ft[$q] >= 0; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+    }
     $t++;
-    my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} } keys %in;
+    my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_tune($_, $mask{$_}) } keys %in;
     $ft[$_] = $t for @next;
     @now = @next;
   }
@@ -70,6 +76,27 @@ sub signal {
     $s->{rate}[$i]-- if $s->{rate}[$i] > 1;
   }
   return \@melody;
+}
+# Whether piece q, woken by its neighbors in mask (bit d = the neighbor in direction d), lets the pulse pass
+# (Capitan: "when a melody goes out of tune the pulse of that branch ends"): with doors, a piece that remembers
+# confirmed fragments passes only if mask shares a neighbor with one of them; one with no memory yet passes.
+sub in_tune {
+  my ($s, $q, $mask) = @_;
+  return 1 unless $s->{doors};
+  my @known = keys %{ $s->{tune}[$q] };
+  return 1 unless @known;
+  for my $f (@known) { return 1 if $f & $mask; }
+  return 0;
+}
+# The will confirmed this melody: each piece woken after the first step remembers who woke it, as in tune.
+sub confirm {
+  my ($s, $m) = @_;
+  my %ft; for my $t (0 .. $#$m) { $ft{$_} = $t for @{ $m->[$t] }; }
+  for my $t (1 .. $#$m) { for my $q (@{ $m->[$t] }) {
+    my $mask = 0;
+    for my $d (0..5) { my $p = $s->neighbor($q, $d); $mask |= 1 << $d if $p >= 0 && exists $ft{$p} && $ft{$p} == $t - 1; }
+    $s->{tune}[$q]{$mask} = 1 if $mask;
+  } }
 }
 sub woke { my ($m) = @_; my $c = 0; $c += @$_ for @$m; return $c; }
 sub text { my ($m) = @_; return join ' | ', map { join ',', @$_ } @$m; }
