@@ -638,3 +638,13 @@ Devolución: el pulso de la voluntad no lo despierta un reloj sino **la melodía
 la escucha y contesta, y esa respuesta vuelve a entrar al cardumen. Es un lazo, una conversación entre las dos partes.
 Parientes: el lazo entre el tálamo y la corteza, el control con realimentación. Abierto: cómo sabe la voluntad que ya
 está conforme y deja de contestar (si no, el lazo no termina nunca).
+
+> *"El kernel es imperfecto, por eso siempre se perfecciona, y además encuentra cosas en el camino en qué pensar:
+> situaciones, experiencias, entorno. Y siempre tiene que responder a la melodía, y la melodía evoluciona las
+> neuronas con cada paso."* (2026-11-03)
+
+Devolución: el lazo no termina, **vive**: la voluntad también aprende (se perfecciona) y el entorno trae cosas nuevas.
+Para que eso no choque con la regla de la casa (ningún bucle que gaste por nada), el lazo se mueve por **diferencias**,
+como los estados de Wenas: si la melodía de ahora tiene la misma huella que la anterior, la respuesta ya se conoce y no
+se recalcula; el lazo descansa (como dormir) y se despierta con lo primero nuevo, de adentro o de afuera. Siempre
+responde, pero solo trabaja cuando algo cambió.
