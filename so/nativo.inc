@@ -386,7 +386,7 @@ native_cold:
         emit    0Fh, 83h
         lea     rax, [r9 + C_T]
         call    nc_rel
-        emit    48h, 0C1h, 0E2h, 04h    ; shl rdx, 4 / add rdx, [rbx + P_ROOMS] / mov rdx, [rdx]: its entry
+        emit    48h, 0C1h, 0E2h, ROOM_ESHIFT   ; shl rdx, 5 / add rdx, [rbx + P_ROOMS] / mov rdx, [rdx]: its entry
         emit    48h, 03h, 93h
         mov     eax, P_ROOMS
         stosd

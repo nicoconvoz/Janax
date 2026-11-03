@@ -150,3 +150,6 @@ el mínimo; con todos destruidos la cuenta vuelve a 1. 254/254, escalón 0 182/1
 2026-11-01 — El cartel de los cofres (Capitán): cada ambiente en su cajón contra una pared que el procesador cuida;
 el traducido ya no pregunta por el borde y un acceso rechazado vuelve por su rutina (código 5 exacto). Pedido 21:
 solo lectura. calculo empata, calculo_ambiente ~1.040 → ~665 ms. SO 269/269, escalón 0 182/182 (con el teléfono).
+2026-11-03 — Cajas entre camarotes (Capitán): cada caja una sección con vista y llave por dueño (trato propio, el
+anfitrión la libera con el último); nace (22), se muda (23), se enlaza (24), recibir (25), fusionar (26) y asociación
+por mutuo acuerdo con las cuatro zonas del Venn (27). Acceso empatado. SO 302/302, escalón 0 182/182.

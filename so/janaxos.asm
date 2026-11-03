@@ -87,7 +87,15 @@ P_BLOCKS = 456                  ; requests of others waiting for its signature: 
 P_PREV   = 464                  ; the one before it in the line of cabins (remos.inc)
 P_ROOMBASE = 472                ; the number before its table's first room: entry k (k >= 1) is room base + k (ambientes.inc)
 P_NEXTROOM = 480                ; the number its next room gets (0 = 1: none built yet)
-PROC_SIZE = 488
+P_ROOM0  = 488                  ; 1 = its first order built room 0 (ambientes.inc)
+P_DOWRY  = 496                  ; boxes its next child is born with (ambientes.inc, DOWRY_SIZE each), 0 = none
+P_NDOWRY = 504
+P_ARRIVED = 512                 ; addresses of the boxes that moved or were linked to it, in order of arrival
+P_NARRIVED = 520
+P_TAKEN  = 528                  ; how many of them it has received
+P_PARTNER = 536                 ; the cabin it associates with for its next child (0 = none)
+P_ASSOC  = 544                  ; which part of the two cartels: 0 shared, 1 mine only, 2 its only, 3 both
+PROC_SIZE = 552
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -133,9 +141,9 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 21                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 27                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
-                                ; treat a box
+                                ; treat a box, dowry, move, link, receive, fuse, associate
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -151,6 +159,15 @@ section '.data' data readable writeable
   rooms_new dq 0
   rooms_newcap dq 0
   rooms_number dq 0
+  list_new  dq 0                  ; list_slot: the list made bigger (ambientes.inc)
+  pass_slot dq 4 dup 0            ; rooms_pass: the box as it travels
+  pass_addr dq 0
+  fuse_addr dq 0                  ; rooms_fuse: the new room
+  add_place dq 0                  ; room_add: the new room (ambientes.inc)
+  add_size  dq 0
+  add_key   dq 0
+  add_box   dq 0
+  box_count dq 0                  ; boxes made so far: a box's number is never given again
   ret_rsp   dq 0                  ; ret_grow / ret_trim: the stack they came with
   queue_end dq 0
   wtotal    dq 0
@@ -162,15 +179,15 @@ section '.data' data readable writeable
   serve_table dq serve_write, serve_grow, serve_destroy, serve_open, serve_fread, serve_fwrite, serve_close
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
-              dq serve_treat
+              dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -382,6 +399,7 @@ section '.data' data readable writeable
 section '.idata' import data readable writeable
 
   library kernel32, 'KERNEL32.DLL',\
+          kernelbase, 'KERNELBASE.DLL',\
           normaliz, 'NORMALIZ.DLL'
 
   import kernel32,\
@@ -389,6 +407,8 @@ section '.idata' import data readable writeable
          lstrlenA, 'lstrlenA',\
          CreateFileA, 'CreateFileA',\
          ReadFile, 'ReadFile',\
+         CreateFileMappingA, 'CreateFileMappingA',\
+         DuplicateHandle, 'DuplicateHandle',\
          CloseHandle, 'CloseHandle',\
          CreateDirectoryA, 'CreateDirectoryA',\
          InitializeCriticalSection, 'InitializeCriticalSection',\
@@ -419,6 +439,11 @@ section '.idata' import data readable writeable
          FindClose, 'FindClose',\
          MultiByteToWideChar, 'MultiByteToWideChar',\
          WideCharToMultiByte, 'WideCharToMultiByte'
+
+  import kernelbase,\
+         VirtualAlloc2, 'VirtualAlloc2',\
+         MapViewOfFile3, 'MapViewOfFile3',\
+         UnmapViewOfFile2, 'UnmapViewOfFile2'
 
   import normaliz,\
          NormalizeString, 'NormalizeString'
@@ -1078,6 +1103,7 @@ make_process:
         mov     [rbx + P_PRIO], rax
         mov     [rbx + P_PRIO_TOP], rax
         call    plan_quantum            ; its turn, once
+        call    rooms_born              ; born with its mother's dowry, before any rower can take it
         mov     rax, rbx
         call    q_push_wake                  ; and it waits for an oar like everyone
         mov     rax, rbx
@@ -1840,9 +1866,7 @@ ventanilla:
         push    rsi rdi rbp r12 r13 r14 r15
         cmp     qword [rbx + P_HELPER], 0
         jne     .bad                    ; a kernel helper has no window
-        cmp     qword [rbx + P_ROOMS], 0
-        jne     .queue
-        cmp     qword [rbx + P_LIM1], 0
+        cmp     qword [rbx + P_ROOM0], 0
         jne     .queue
         call    rooms_first             ; no room yet: this is the first order, rax = the size
         cmp     rax, -1
@@ -3388,6 +3412,67 @@ gate_treat:
         call    rooms_treat
         mov     [rbp + r13 + 24], rax
         add     rsp, 8
+        ret
+
+; 22 dowry: a = the room, b = how the child may treat it (ambientes.inc, rooms_dowry). Answers 0, or -1.
+serve_gate serve_dowry,   22, gate_dowry
+
+gate_dowry:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    rooms_dowry
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
+        ret
+
+; 23 move: a = the room, b = the cabin it moves to. 24 link: a = the room, b = the cabin, its treatment there
+; in the high half of the kind. 25 receive: the next box that arrived, or -1 (ambientes.inc, rooms_pass).
+serve_gate serve_move,    23, gate_move
+serve_gate serve_link,    24, gate_link
+serve_gate serve_receive, 25, gate_receive
+
+gate_move:
+        mov     r9d, 1
+        xor     r8d, r8d
+        jmp     gate_pass
+gate_link:
+        xor     r9d, r9d
+        mov     r8d, [rbp + r13 + 4]
+gate_pass:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    rooms_pass
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
+        ret
+gate_receive:
+        call    rooms_receive
+        mov     [rbp + r13 + 24], rax
+        ret
+
+; 26 fuse: a, b = the two rooms -> the new room's address, or -1 (ambientes.inc, rooms_fuse).
+serve_gate serve_fuse,    26, gate_fuse
+
+gate_fuse:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    rooms_fuse
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
+        ret
+
+; 27 associate: a = the family cabin, b = 0 shared, 1 mine only, 2 its only, 3 all (ambientes.inc,
+; rooms_associate). Answers 0, or -1.
+serve_gate serve_assoc,   27, gate_assoc
+
+gate_assoc:
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    rooms_associate
+        mov     [rbp + r13 + 24], rax
         ret
 
 ; 16 launch: a = label of the program file, b = its bytes; the child's permissions travel in the high

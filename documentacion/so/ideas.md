@@ -500,3 +500,9 @@ se reusan.
 > *"No lo midas, construilo, y medí al final."* (2026-11-01) — Devolución: construido (cajones con pared, el traducido
 > sin pregunta de borde, pedido 21 de solo lectura); el resto de los tratos se rechaza hasta construirlo. Medido en
 > `janaxos.md`.
+
+> *"Tiene tres formas distintas: el hijo nace, el hijo se muda, o el hijo se enlaza y se comparte… y agregá el
+> fusionar… por asociación… con los compartidos, con los que le sobran a A o a B."* (2026-11-03) — Devolución: las
+> cinco formas sobre una sola base, cada caja una sección y cada dueño su vista y su llave, con su propio trato.
+> Se parecen a `fork` sin copia, al *move* de Rust, a la memoria compartida con nombre y a los espacios de nombres
+> de Plan 9; lo propio es el álgebra de conjuntos caja por caja y el mutuo acuerdo. Construido en `janaxos.md`.

@@ -826,3 +826,55 @@ Lo que enseñó la medición:
 
 Pendiente: los tratos no construidos; liberar los cajones de un proceso que terminó (como el casco de antes,
 quedan reservados); el tope de ~32.000 ambientes vivos entre todos los camarotes.
+
+## Cajas entre camarotes: nace, se muda, se enlaza, se fusiona, se asocia (Capitán, 2026-11-03)
+
+> *"Tiene tres formas distintas: el hijo nace, el hijo se muda, o el hijo se enlaza y se comparte."* — *"Y agregá
+> el fusionar."* — *"Por asociación pueden mantener lo que comparten entre los dos y crear uno con los cajones
+> compartidos, con los que le sobran a A o con los que le sobran a B."* — *"Armalo completo con la vista incluida."*
+
+**Los cimientos: cada caja es una sección del anfitrión, y cada dueño la mira por su propia vista.**
+- `box_new` hace la sección; `box_view` reserva un cajón (`VirtualAlloc2`, como lugar reservado), mapea la vista al
+  principio (`MapViewOfFile3`) con la caja apoyada contra el final de sus páginas, y la deja a leer y escribir
+  para después achicarla a su trato. La pared del byte siguiente sigue igual.
+- **Cada dueño tiene su llave** (un *handle*, `DuplicateHandle`) y su vista, con **su propio trato**: el mismo cajón
+  puede ser de lectura y escritura para la madre y de solo lectura para el hijo, y el procesador cuida los dos.
+  La caja vive mientras alguien tenga una llave o una vista; **el anfitrión la libera solo** cuando se va el último.
+- **El renglón del cartel pasa a 32 bytes**: lugar y trato, tamaño, la llave de este camarote y el número de la caja
+  (el mismo en todos los que la tienen; arriba del bit 48, hasta dónde puede tratarla este dueño).
+- **El cartel ya no se mueve**: se reservan sus direcciones una vez (`CARTEL_MAX`, criterio) y se comprometen
+  páginas a medida. Así una caja puede llegar a un camarote **mientras rema**: se escribe el renglón y recién
+  después se cuenta.
+- El ambiente 0 también es una caja; el primer pedido se reconoce por `P_ROOM0`, no por la falta de cartel.
+
+**Las cinco formas** (puerta de memoria, `R_MEM`; las que cambian algo son importantes y un hijo necesita la firma
+de su padre):
+
+| Pedido | Forma | Qué hace |
+|---|---|---|
+| 22 dote | 🍼 nace | La caja `a` va al próximo hijo, con trato `b`; nace con su dote como ambientes 1, 2… (antes de entrar a la fila) |
+| 23 mudar | 🚚 se muda | La caja `a` pasa al camarote `b`; acá su dirección muere; allá puede tratarla hasta donde podía este |
+| 24 enlazar | 🔗 se enlaza | La caja `a` también la tiene `b`, con el trato de la mitad alta del tipo |
+| 25 recibir | 📬 | La próxima caja que llegó por 23 o 24, o −1 |
+| 26 fusionar | 🔀 | Las cajas `a` y `b` se vuelven una nueva, con lo de `a` y después lo de `b` (**se copia**); las dos direcciones mueren acá |
+| 27 asociar | 🧩 | El próximo hijo nace con parte de mis cajas y las de `b`: 0 las que comparten, 1 solo mías, 2 solo suyas, 3 todas; vale solo si `b` también me nombró |
+
+Reglas generales, sin casos especiales:
+- **Quien recibe nunca tiene más trato que quien da**; en la asociación, una caja de los dos va con el trato que
+  ambos permiten.
+- Mudar, enlazar y asociar, **solo en familia**: padre, hijo o hermano, y que siga navegando.
+- La cola no se muda ni se fusiona (sus respuestas necesitan dónde ir).
+
+Probado en los tres motores (`nace`, `nace_leer`, `nace_mas`, `muda`, `enlaza`, `cajas_no`, `fusiona`, `asocia_0..3`):
+el hijo lee lo que escribió la madre y ella ve lo que escribe él; el de solo lectura termina con código 5 al escribir;
+la madre que mudó su caja termina con código 5 al leerla; cada zona del Venn llega entera.
+
+Lo que todavía falta: avisar al cambiar (la campanita), que el núcleo toque cajas de solo lectura en los pedidos
+que solo leen, y liberar las cajas de un camarote que terminó.
+
+**Medido** contra 7a89201 (15 rondas, los dos órdenes, medianas): las secciones no cuestan nada en el acceso.
+`calculo` ~434–458 → ~436–448 ms; `calculo_ambiente` ~641–651 → ~635–636 ms. SO 302/302, escalón 0 182/182
+(con el teléfono).
+
+**La suite, más rápida** (Capitán): `JANAX_SOLO=<patrón>` corre solo las pruebas de la zona tocada (cajas: 41 en
+37 s); la completa, una vez antes de guardar.

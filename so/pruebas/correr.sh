@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Janax OS tests (symbiosis mode, on this PC).
 # Each case runs janaxos.exe with some Janax programs and compares its whole output and exit code.
+# JANAX_SOLO=<pattern> runs only the cases whose name matches it (Capitan: while building, only the area being
+# touched); the whole suite runs once, before saving.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 raiz=$(dirname "$aqui")
@@ -30,9 +32,12 @@ ok=0; mal=0
 for motor in rutinas interprete traductor; do
 export JANAX_MOTOR=$motor
 rm -rf "$archivos" "$salida"/archivos_* "$salida"/familia_*/
+# toca <name>: true when the check of that name runs (JANAX_SOLO matches it, or there is no JANAX_SOLO)
+toca() { [ -z "${JANAX_SOLO:-}" ] || [[ "$1" =~ $JANAX_SOLO ]]; }
 # caso <name> <switch cost, or "" to let the kernel measure it> <expected exit code> <expected output> <program>...
 caso() {
   local nombre=$1 cambio=$2 cod=$3 esp=$4; shift 4
+  toca "$nombre" || return 0
   local args=() p
   for p in "$@"; do
     case "$p" in
@@ -57,13 +62,18 @@ caso() {
 }
 fijo0="modo: simbiosis
 costo de cambio: 0.00 instrucciones (fijado)"
+familia() {   # familia <folder> <child program>
+  rm -rf "$salida/$1"; mkdir -p "$salida/$1"
+  cp "$salida/$2.bin" "$salida/$1/68696a6f"
+  carpeta=$(cygpath -m "$salida/$1")
+}
 
 caso "un proceso" 0 0 "$fijo0
 P0 codigo=0 j0=000000000000002A t=2" 02_ldi
 
 # The translated engine says how many instructions of the programs became native code (nativo.inc): all
 # but jhalt, jdiv and the windows, which keep their routine.
-if [ "$motor" = traductor ]; then
+if [ "$motor" = traductor ] && toca "nativo"; then
   got=$(JANAX_CAMBIO=0 timeout 30 "$salida/janaxos.exe" "$(bin largo_1000)" "$(bin 02_ldi)" | tr -d '\r' | grep '^nativo: ')
   if [ "$got" = "nativo: 8 de 10 instrucciones" ]; then ok=$((ok + 1)); else echo "MAL  [$motor] nativo: dio '$got'"; mal=$((mal + 1)); fi
   got=$(JANAX_CAMBIO=0 timeout 30 "$salida/janaxos.exe" "$(bin llamadas_hondas)" | tr -d '\r' | grep '^nativo: ')
@@ -315,6 +325,73 @@ caso "ambientes: el ambiente 0 de solo lectura" 0 0 "$fijo0
 P0 codigo=5 j0=00000000000000CC t=32
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" ambiente_cero_trato
 
+# Boxes between cabins (Capitan): the child is born with its mother's box, the same memory, each one with its
+# own view and its own treatment.
+familia familia_nace nace_hijo
+caso "cajas: el hijo nace con la caja de su madre" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000077 t=63
+P0 codigo=0 j0=0000000000000088 t=77
+ventanilla: pantallas=1 resintonias=3 llamadas al anfitrion=4 pedidos=4" nace
+
+caso "cajas: el hijo nace con la caja solo para leer" 0 0 "$fijo0
+P1 codigo=5 j0=0000000000000077 t=61
+P0 codigo=0 j0=0000000000000000 t=76
+ventanilla: pantallas=1 resintonias=3 llamadas al anfitrion=4 pedidos=4" nace_leer
+carpeta=
+
+caso "cajas: el hijo nunca recibe mas que su madre" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=40
+ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=0 pedidos=4" nace_mas
+
+familia familia_recibe hijo_recibe
+caso "cajas: la caja se muda y la madre la pierde" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000000 t=66
+P1 codigo=0 j0=0000000000000077 t=73
+ventanilla: pantallas=1 resintonias=3 llamadas al anfitrion=4 pedidos=4" muda
+
+caso "cajas: dos camarotes enlazados comparten la caja" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000077 t=103
+P0 codigo=0 j0=0000000000000088 t=119
+ventanilla: pantallas=1 resintonias=5 llamadas al anfitrion=4 pedidos=7" enlaza
+carpeta=
+
+caso "cajas: lo que no se puede" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFC t=62
+ventanilla: pantallas=1 resintonias=5 llamadas al anfitrion=0 pedidos=6" cajas_no
+
+caso "cajas: dos cajas se vuelven una" 0 0 "$fijo0
+P0 codigo=5 j0=0000000300000065 t=49
+ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=4" fusiona
+
+# Association (Capitan): the child is born with the shared boxes, the mother's only, the partner's only, or all.
+familia familia_asocia hijo_cuenta
+cp "$salida/socio.bin" "$salida/familia_asocia/736f63696f"
+caso "cajas: por asociacion, las que comparten" 0 0 "$fijo0
+P2 codigo=0 j0=0000000100000077 t=906
+P0 codigo=0 j0=0000000000000000 t=929
+P1 codigo=0 j0=0000000000000000 t=932
+ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asocia_0
+
+caso "cajas: por asociacion, solo las de la madre" 0 0 "$fijo0
+P2 codigo=0 j0=0000000200000011 t=910
+P0 codigo=0 j0=0000000000000000 t=933
+P1 codigo=0 j0=0000000000000000 t=935
+ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asocia_1
+
+caso "cajas: por asociacion, solo las del socio" 0 0 "$fijo0
+P2 codigo=0 j0=0000000200000055 t=910
+P0 codigo=0 j0=0000000000000000 t=933
+P1 codigo=0 j0=0000000000000000 t=935
+ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asocia_2
+
+caso "cajas: por asociacion, todas" 0 0 "$fijo0
+P2 codigo=0 j0=00000005000000DD t=922
+P0 codigo=0 j0=0000000000000000 t=945
+P1 codigo=0 j0=0000000000000000 t=948
+ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asocia_3
+
+carpeta=
+
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000004 t=58
@@ -322,7 +399,8 @@ ventanilla: pantallas=1 resintonias=2 llamadas al anfitrion=3 pedidos=3" archivo
 
 # On the host the label is stored in hexadecimal: valid on any file system, never two labels in one name.
 nombre="$archivos/f09fa68e206e6f7461732e747874"
-if [ -f "$nombre" ] && [ "$(cat "$nombre")" = "hola" ]; then
+if ! toca "archivo: en el anfitrion"; then :
+elif [ -f "$nombre" ] && [ "$(cat "$nombre")" = "hola" ]; then
   ok=$((ok + 1))
 else
   echo "MAL  archivo en el anfitrion: no esta $nombre con 'hola'"; ls -la "$archivos" 2>&1; mal=$((mal + 1))
@@ -377,7 +455,8 @@ P0 codigo=0 j0=0000000000000031 t=*
 ventanilla: *" archivo_normalizacion
 unset carpeta
 nfc=$(ls "$salida/archivos_nfc" 2>&1 | tr '\n' ' ')
-if [ "$nfc" = "c3a9 " ]; then        # one file, named after the one-piece form (NFC)
+if ! toca "archivo: normalizado"; then :
+elif [ "$nfc" = "c3a9 " ]; then        # one file, named after the one-piece form (NFC)
   ok=$((ok + 1))
 else
   echo "MAL  archivo normalizado en el anfitrion: esperaba 'c3a9', hay '$nfc'"; mal=$((mal + 1))
@@ -409,12 +488,6 @@ porteros: nodos=8 negados=2" porteros_etiqueta
 
 # --- the family: the kernel is the mother; a process launches children from a file labelled "hijo"
 # (68696a6f on the host). An important request of a child waits for its parent's signature only. ---
-familia() {   # familia <folder> <child program>
-  rm -rf "$salida/$1"; mkdir -p "$salida/$1"
-  cp "$salida/$2.bin" "$salida/$1/68696a6f"
-  carpeta=$(cygpath -m "$salida/$1")
-}
-
 # A child launched from the label "hijo" gets the file "hijo.datos" of the same folder.
 familia familia_datos datos_iniciales
 cp "$salida/datos_iniciales.datos" "$salida/familia_datos/68696a6f2e6461746f73"
@@ -492,6 +565,7 @@ hola
 P2 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=0000000000000001 t=*
 ventanilla: *" familia_abuelo
+if [ -z "${JANAX_SOLO:-}" ]; then   # (the assembler and the combinations: only in the whole suite)
 # --- the PDP assembler: Janax assembled by Janax. Every source must come out byte for byte as FASM builds
 # it, the assembler's own source included. A source that uses what the assembler does not have yet is
 # counted as an error and left unbuilt (none left: 82 of 82 is the goal).
@@ -560,9 +634,12 @@ if [ "$motor" = rutinas ]; then
   if [ "$got" = "$(printf 'j0=%016X' "$total")" ] && [ "$distintos" = 0 ]; then ok=$((ok + 1)); else echo "MAL  pdp combinaciones: $got, $distintos distintas de $total"; mal=$((mal + 1)); fi
 fi
 
+fi
+
 # The rowers in parallel (one per core and more): each cabin gives its result, whatever the order.
 paralelo() {   # paralelo <name> <rowers> <expected lines, sorted> <program>...
   local nombre=$1 remos=$2 esp=$3 got; shift 3
+  toca "remeros: $nombre" || return 0
   local args=() p
   for p in "$@"; do args+=("$(bin "$p")"); done
   got=$(JANAX_REMOS=$remos JANAX_CAMBIO=0 JANAX_ARCHIVOS="${carpeta:-$JANAX_ARCHIVOS}" timeout 60 "$salida/janaxos.exe" "${args[@]}" \
