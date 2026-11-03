@@ -158,3 +158,6 @@ queda nadie); una marca por familiar, plástica, que no se pierde. Regla de la c
 2026-11-03 — La ventanilla con cuaderno propio (Capitán: "todo internamente de Janax"): sin VirtualAlloc/VirtualFree por
 pedido; saludo ~24 → ~7,4 µs por pasada (Windows ~2). Enlazar una caja ~0,3 ms sin importar su tamaño. SO 308/308,
 escalón 0 182/182.
+2026-11-03 — El costo escondido del saludo (cronómetro rdtsc): la lista vacía pedía memoria a Windows en cada saludo;
+ahora reusa su cuaderno. Saludo ~0,64 µs por pasada, ~3,2 veces más rápido que los eventos de Windows (~2,05 µs).
+SO 308/308, escalón 0 182/182.

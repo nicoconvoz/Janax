@@ -918,3 +918,19 @@ salir (`VirtualFree`), dos llamadas al anfitrión por pedido. Ahora la ventanill
 (`window_book`) que reusa y que crece, duplicando, solo cuando llega una cola más grande que todas las anteriores.
 El saludo pasó a ser 3 veces más rápido. Todavía estamos ~3,7 veces detrás de los eventos de Windows: queda otro
 costo por pedido sin encontrar.
+
+**El costo que faltaba, encontrado con un cronómetro** (mismo día): una versión de laboratorio con `rdtsc` en cada
+tramo del remero mostró que el 97 % del ping-pong de saludos estaba **dentro de la ventanilla**, ~27.000 ciclos por
+saludo contra ~440 de un pedido común (200.000 pedidos de un camarote solo: ~70 ns cada uno). El culpable: la lista
+de saludos queda vacía cada vez que se toma uno, y `list_slot` trataba "vacía" como "no existe": pedía memoria
+nueva a Windows y devolvía la vieja en cada saludo. Regla general: una lista vacía que ya tiene cuaderno, lo reusa.
+
+| | por pasada de saludo |
+|---|---|
+| Al principio | ~24 µs |
+| Con el cuaderno de la ventanilla | ~7,4 µs |
+| **Con la lista que reusa su cuaderno** | **~0,64 µs** |
+| Windows, dos hilos con eventos | ~2,05 µs |
+
+El saludo de Janax queda **~3,2 veces más rápido que los eventos de Windows**, con las mismas instrucciones (t
+idéntico) y revisando la familia en cada uno.

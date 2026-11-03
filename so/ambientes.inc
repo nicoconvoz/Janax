@@ -849,14 +849,18 @@ DOWRY_MOVED = 4                         ; in its treatment: it moved, so it has 
 
 ; A new slot of r8 bytes at the end of the list at [rbx + rcx] (its count at [rbx + rcx + 8]): the list has
 ; room for 4, and doubles when its count reaches a power of two past that. -> rax = the slot, 0 if there is
-; no memory. Keeps rbx, rsi, rdi, rbp, r15.
+; no memory. An emptied list keeps its book and reuses it. Keeps rbx, rsi, rdi, rbp, r15.
 list_slot:
         push    r12 r13 r14
         mov     r12, rcx                ; the list
         mov     r13, r8                 ; a slot
         mov     r14, [rbx + r12 + 8]    ; how many
         test    r14, r14
-        jz      .grow
+        jnz     @f
+        cmp     qword [rbx + r12], 0
+        jne     .room                   ; empty, but its book is still here: reused
+        jmp     .grow
+@@:
         cmp     r14, 4
         jb      .room
         lea     rax, [r14 - 1]
