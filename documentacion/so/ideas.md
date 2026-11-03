@@ -604,3 +604,11 @@ todo con reglas de vecindad. Por eso crece sin límite: ninguna neurona carga co
 
 **El diseño de la neurona hasta acá**: forma 3D + memoria de melodía; una señal arranca un dominó en olas; la forma
 la mueve la interacción (sin reloj); aprende por melodía y por asociación; profundidad 1; la melodía es de la red.
+
+> *"Si por cerca te referís a que se comunican más, o de determinada forma, sí; aunque esa conducta pueda evolucionar
+> y hasta cambiar."* (2026-11-03)
+
+Devolución: "cerca" no es distancia en el espacio sino **cuánto y cómo se comunican** dos piezas: las que caen juntas
+refuerzan su forma de hablarse. Y la regla misma no es fija: puede evolucionar y cambiar. En el oficio eso se llama
+**metaplasticidad** (Abraham y Bear, 1996: la plasticidad de la plasticidad). Para el diseño: la regla de aprendizaje
+también es estado de la neurona, no una constante del código, y la puede mover la propia interacción.
