@@ -570,3 +570,13 @@ Sin bucles ni temporizadores (la regla de la casa): la neurona cuesta solo cuand
 verificable: la forma es el resultado de la historia de señales, así que con la misma historia cualquiera repite cada
 viaje exacto. Pariente cercano: las máquinas de estado líquido (Maass, 2002); lo propio, la forma 3D, el dominó y
 que la forma la escribe la propia interacción.
+
+> *"Aprende de las señales, porque pueden ser múltiples señales al mismo tiempo, y corresponde con un resultado,
+> aprendiendo una de otras y adaptando el camino. No va a tener un camino fijo, pero sí una especie de melodía que
+> aprende."* (2026-11-03)
+
+Devolución: lo que aprende no es un camino sino un **patrón en el tiempo**, qué piezas caen juntas y en qué orden:
+la melodía. En el oficio, lo más cercano es la regla de Hebb (*"las neuronas que se disparan juntas se conectan"*) y
+su versión con el tiempo, la plasticidad por orden de disparo (STDP): si una cae justo antes que otra, el camino entre
+ellas se refuerza. Propuesta para la regla de movimiento: **las piezas que caen juntas se acercan**, así las cadenas
+que suelen ir juntas quedan más a mano, sin que ningún camino quede fijo.
