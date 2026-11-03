@@ -580,3 +580,12 @@ la melodía. En el oficio, lo más cercano es la regla de Hebb (*"las neuronas q
 su versión con el tiempo, la plasticidad por orden de disparo (STDP): si una cae justo antes que otra, el camino entre
 ellas se refuerza. Propuesta para la regla de movimiento: **las piezas que caen juntas se acercan**, así las cadenas
 que suelen ir juntas quedan más a mano, sin que ningún camino quede fijo.
+
+> *"Aprenden por melodía y por asociación. No solo guarda instrucciones: cada neurona guarda memoria de la
+> melodía."* (2026-11-03)
+
+Devolución: cada neurona tiene **dos partes**, su forma (lo que hace con una señal) y su **memoria de melodías** (lo
+que ya sonó por ella). Aprender por asociación es unir melodías entre sí o con un resultado, de modo que una despierte
+a la otra. Parientes: la memoria asociativa de Hopfield (1982), donde un pedazo de un recuerdo trae el recuerdo
+entero, y la memoria distribuida de Kanerva. En Janax encaja así: la memoria de cada neurona vive en su cajón
+(plástico, crece con lo que guarda) y las asociaciones entre neuronas pueden ser cajas enlazadas o compartidas.
