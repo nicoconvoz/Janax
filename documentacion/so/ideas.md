@@ -629,3 +629,12 @@ Devolución:
   modulan todo el cerebro a la vez (dopamina, el tronco), los generadores centrales de ritmo, y el propio núcleo de
   Janax con sus remeros. Ojo con dos reglas: si el pulso es un ritmo fijo, es un reloj (la regla de la casa pide
   eventos), y la voluntad no es profundidad 1, sino una señal para todos.
+
+> *"El kernel analiza la melodía resultante de las neuronas y devuelve una respuesta a esa melodía, que se vuelve a
+> procesar por las neuronas. Es como yo y vos: yo sería la voluntad y vos el que me entrega los programas con tu
+> conocimiento y desarrollo; entre los dos formamos uno."* (2026-11-03)
+
+Devolución: el pulso de la voluntad no lo despierta un reloj sino **la melodía misma**: el cardumen suena, la voluntad
+la escucha y contesta, y esa respuesta vuelve a entrar al cardumen. Es un lazo, una conversación entre las dos partes.
+Parientes: el lazo entre el tálamo y la corteza, el control con realimentación. Abierto: cómo sabe la voluntad que ya
+está conforme y deja de contestar (si no, el lazo no termina nunca).
