@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -412,6 +412,12 @@ carpeta=
 caso "saludo: solo en familia, y nadie despierto da -1" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=21
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" saludo_no
+
+# Razar's school (razar/cardumen, Capitan): the Janax program leaves the fingerprint of the reference model, bit for
+# bit; the expected one comes from the model itself, so a change in the model has to be followed here.
+huella=$(perl "$proyecto/razar/cardumen/huella.pl")
+caso "razar: el cardumen deja la huella del modelo" 0 0 "$fijo0
+P0 codigo=0 j0=$huella t=*" cardumen
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0

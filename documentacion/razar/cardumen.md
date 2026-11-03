@@ -89,3 +89,17 @@ Medido (relaciones repartidas, 3 semillas, aciertos cada 50 vueltas):
 **La voluntad y el cardumen inventan un idioma**, y sin armonía no hay ninguno. Repetible: la misma semilla da el
 mismo resultado byte por byte. Límite medido: con 8 cosas no llega al 100 % (la cara de arriba tiene 16 piezas y el
 cubo es de 4×4×4).
+
+## El cardumen en Janax (2026-11-03)
+
+`razar/cardumen/cardumen.jsm`: el modelo con armonía, la cara de arriba respondiendo y las relaciones nacidas de la
+semilla 7, escrito en idioma Janax. Corre la misma historia que `huella.pl` (40 señales, por turno las 4 cosas de la
+voluntad) y deja la misma **huella** en `j0`: cada viaje (pieza a pieza, ola por ola) y los pesos y velocidades
+finales, `h = (h·31 + v) mod 2^48`.
+
+- **Igual bit por bit al modelo, a la primera, en los tres motores**: `j0 = 0000EE87C7E121A0`, 1.380.669 instrucciones.
+- **Janax armado por Janax**: el ensamblador PDP lo arma byte por byte igual que FASM.
+- En la suite (`razar: el cardumen deja la huella del modelo`): la huella esperada sale de correr el modelo, así que
+  si la regla cambia en Perl, el programa Janax tiene que seguirla.
+- Todavía no está en Janax: la voluntad (el lazo), las puertas y los fragmentos de melodía (el modelo los guarda; la
+  dinámica de esta historia no los usa).
