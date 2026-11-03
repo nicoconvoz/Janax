@@ -23,8 +23,9 @@ sub new {
   my ($class, %o) = @_;
   my $n = $o{n} // $N; my $p = $n*$n*$n;
   my $s = bless { n => $n, p => $p, w0 => $o{w0} // 40, th => $o{th} // 100, rate0 => $o{rate} // 20 }, $class;
-  for my $i (0 .. $p-1) {
-    $s->{w}[$i] = [ map { $s->{w0} } 0..5 ];
+  my $seed = $o{seed} // 0;                    # born different (Capitan: relations are born each its own): a fixed seed,
+  for my $i (0 .. $p-1) {                      # so every school with the same seed is the same school
+    $s->{w}[$i] = [ map { $seed ? do { $seed = ($seed * 1103515245 + 12345) % 2147483648; ($seed >> 16) % 256 } : $s->{w0} } 0..5 ];
     $s->{rate}[$i] = $s->{rate0};
     $s->{frag}[$i] = 0;
   }

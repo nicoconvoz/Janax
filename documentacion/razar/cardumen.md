@@ -26,3 +26,24 @@ la última melodía: qué vecinas la despertaron. Valores iniciales (40, 100, 20
 las piezas de una señal despiertan juntas; con *"las que caen juntas"* (frase del Capitán) aprende. Con v0 el cardumen
 **se asienta como un hábito**, porque los pesos llegan a 255 y la velocidad solo baja. Si tiene que seguir cambiando,
 como pide el diseño, la regla tiene que poder también aflojar: decisión del Capitán, sin tocar perillas a ojo.
+
+## El lazo: la voluntad y el cardumen tratando de entenderse (2026-11-03)
+
+`razar/cardumen/lazo.pl` (`perl razar/cardumen/lazo.pl [nace=semilla] [w0=..] [k=..] [rounds=..]`). La voluntad tiene K
+cosas para decir; dice una despertando 3 piezas de la cara de abajo; la respuesta es qué piezas de la cara de arriba
+despertaron; la voluntad adivina con lo que aprendió. Si acierta, repite la melodía (el cardumen la afianza) y anota;
+si falla, cambia una de las piezas con que lo dice. Determinista (dado con semilla fija).
+
+| Cómo nacen las relaciones | Qué pasa | Aciertos (azar 25 %) |
+|---|---|---|
+| Todas en 40 (o 50) | **Silencio**: la ola no llega arriba nunca (0 de 400) | 0 % |
+| Repartidas de 0 a 255, con semilla (`nace=`) | **Convulsión**: se prenden las 64 piezas en 9–10 olas | 24–26 % (todo responde igual) |
+
+Por qué: una pieza tiene una sola vecina en el piso de abajo, así que si hacen falta 2 o más para despertar, el pulso
+no sube de piso; si alcanza con una, se prende todo. ⚠️ El instrumento: tres semillas distintas daban exactamente los
+mismos aciertos; contar las piezas despiertas mostró la convulsión.
+
+Lo que falta es lo que en el diseño ya existe y el modelo todavía no tiene: **la puerta** (*"alguien cierra la puerta y
+dice no pasarás"*). Hoy las relaciones solo empujan; en el cerebro cerca de una de cada cinco neuronas frena, y ese
+equilibrio lo mantiene en el borde entre el silencio y la convulsión (criticalidad). Decisión del Capitán: cómo se
+cierra una puerta.
