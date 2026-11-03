@@ -511,3 +511,31 @@ se reusan.
 > (2026-11-03) — Devolución: reemplaza a la campanita sobre la memoria; resuelve el aviso perdido porque la marca
 > queda hasta que se toma. Se parece al timbre de las placas de red, a los eventos de Windows y a las señales de
 > Unix; lo propio es que crece por familiar. Construido en `janaxos.md`.
+
+## 2026-11-03 — El saludo entre lugares remotos: buzón, tablero y no esperar (Capitán)
+
+> *"Cada casa tiene un buzón y no se espera una respuesta: se espera que llegue la carta. Si se confirma que la
+> carta llegó, después se contesta la carta; se pasan parámetros de comunicación y retardo, y teniendo en cuenta
+> este principio se enlaza."* — *"Dejás el saludo en un tablero de Nostr, y cuando el buzón despierte lo recibe, y
+> ahí inicia la comunicación; mientras el otro no contesta, el otro no espera."*
+
+Devolución (charla en otro chat, resumida):
+- **Confirmar la llegada** quita de raíz el caso "¿llegó o no llegó?". **Medir el retardo y acordarlo al enlazarse**
+  saca al problema del modelo asincrónico, donde es imposible decidir si el otro calla o se cayó, y lo lleva a uno
+  parcialmente sincrónico: es la salida reconocida en el oficio (detectores de fallas adaptativos, como los de
+  Cassandra y Akka).
+- El filo: el plazo es una promesa, no una garantía. Por eso un −1 remoto tiene que significar *"creo que ya
+  nadie te va a saludar"* y permitir volver a esperar sin perder nada, no *"se acabó"*.
+- **El saludo dejado en un tablero, y nadie espera**: el abrazo mortal distribuido no se resuelve, **se borra**,
+  porque solo existe si alguien se queda esperando. El tablero guarda el saludo como el bit local guarda su marca
+  hasta que se mira: la misma idea, en otro lugar.
+- **Un bit sobrevive a la red sin código extra**: los relés entregan desordenado y repetido, y un bit prendido dos
+  veces sigue prendido (es idempotente); un contador se rompería.
+- **Son dos primitivas**: el saludo local duerme a quien espera, el remoto no bloquea. Conviene que se llamen
+  distinto, para que nadie escriba un programa creyendo que el remoto bloquea.
+- **Privacidad**: un relé público ve quién saluda a quién y cuándo, aunque el contenido vaya cifrado.
+
+⚠️ **A resolver con el Capitán antes de construir:** las reglas de Janax dicen *P2P puro, cero componentes
+centrales*. Un relé de Nostr es infraestructura de terceros que no controlamos. La idea del tablero vale igual si
+el tablero lo sostienen **los mismos pares** (como los cofres y estados de Wenas), y Nostr quedaría como un puente
+opcional.
