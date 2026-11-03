@@ -164,6 +164,8 @@ section '.data' data readable writeable
   rooms_newcap dq 0
   rooms_number dq 0
   list_new  dq 0                  ; list_slot: the list made bigger (ambientes.inc)
+  book      dq 0                  ; the window's own book for the entries of a touch (window_book)
+  book_size dq 0
   pass_slot dq 4 dup 0            ; rooms_pass: the box as it travels
   pass_addr dq 0
   fuse_addr dq 0                  ; rooms_fuse: the new room
@@ -1906,10 +1908,10 @@ ventanilla:
         mov     [queue_end], rax
         mov     rdx, r15
         shl     rdx, 5
-        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        call    window_book
         test    rax, rax
         jz      .bad
-        mov     rbp, rax                ; private copy of the entries
+        mov     rbp, rax                ; private copy of the entries, in the window's own book
         mov     rdi, rbp
         mov     rsi, [queue_addr]
         lea     rsi, [r13 + rsi + 8]
@@ -1982,7 +1984,6 @@ ventanilla:
         mov     [rbx + P_WAITING], rax
         mov     qword [must_wait], 0
         sub     [requests], r15         ; it will be counted when it runs
-        invoke  VirtualFree, rbp, 0, MEM_RELEASE
         mov     rax, -2
         jmp     .out
 .no_wait:
@@ -2071,7 +2072,6 @@ ventanilla:
         mov     rcx, r15
         shl     rcx, 5
         rep     movsb
-        invoke  VirtualFree, rbp, 0, MEM_RELEASE
         mov     rax, r15
         jmp     .out
 .none:

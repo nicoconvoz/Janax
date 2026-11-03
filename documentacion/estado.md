@@ -155,3 +155,6 @@ anfitrión la libera con el último); nace (22), se muda (23), se enlaza (24), r
 por mutuo acuerdo con las cuatro zonas del Venn (27). Acceso empatado. SO 302/302, escalón 0 182/182.
 2026-11-03 — El saludo (Capitán): pedido 28 saludar a un familiar y 29 esperar un saludo (quién saludó, o −1 si no
 queda nadie); una marca por familiar, plástica, que no se pierde. Regla de la casa nueva: plástico. SO 308/308, escalón 0 182/182.
+2026-11-03 — La ventanilla con cuaderno propio (Capitán: "todo internamente de Janax"): sin VirtualAlloc/VirtualFree por
+pedido; saludo ~24 → ~7,4 µs por pasada (Windows ~2). Enlazar una caja ~0,3 ms sin importar su tamaño. SO 308/308,
+escalón 0 182/182.

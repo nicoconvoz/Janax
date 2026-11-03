@@ -1502,3 +1502,37 @@ greet_nobody:
         jb      .one_lap
         pop     r8 rsi rcx
         ret
+
+; The window's own book, where it copies the entries of a touch: rdx bytes -> rax = the book, 0 if there is
+; no memory. It is kept and reused, so a request never goes out to the host for it (Capitan: "it can all be
+; done inside Janax"); it grows, doubling, only when a touch brings more than it ever held (plastic).
+; Keeps every register but rax, rcx, rdx, r8-r11.
+window_book:
+        cmp     rdx, [book_size]
+        jbe     .ready
+        push    rdx
+        mov     rax, [book_size]
+        add     rax, rax
+        cmp     rax, rdx
+        jae     @f
+        mov     rax, rdx
+@@:     add     rax, [page_size]        ; whole pages
+        dec     rax
+        mov     rcx, [page_size]
+        neg     rcx
+        and     rax, rcx
+        mov     [book_size], rax
+        mov     rcx, [book]
+        test    rcx, rcx
+        jz      @f
+        invoke  VirtualFree, rcx, 0, MEM_RELEASE
+@@:     invoke  VirtualAlloc, 0, [book_size], MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        mov     [book], rax
+        pop     rdx
+        test    rax, rax
+        jnz     .ready
+        mov     [book_size], rax        ; no memory: no book
+        ret
+.ready:
+        mov     rax, [book]
+        ret

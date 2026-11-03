@@ -898,3 +898,23 @@ despertar.
 
 Probado en los tres motores (`saludo`, `saludo_hijo`, `saludo_no`) y con 4 remeros en paralelo 30 veces sin un
 despertar perdido.
+
+## Lo nuevo, medido: cajas y saludos (2026-11-03)
+
+7 rondas, medianas, un remero, `JANAX_CAMBIO=24` (bancos en el scratchpad, no en el repo).
+
+| Caso | Resultado |
+|---|---|
+| Enlazar 1.000 veces una caja de 1 MB | ~0,29 ms cada enlace |
+| Enlazar 1.000 veces una caja de 64 MB | ~0,33 ms cada enlace: **no depende del tamaño, no copia** |
+| Copiar 64 MB con un bucle Janax | ~120 ms (enlazar es ~360 veces más barato) |
+| Saludo ida y vuelta (200.000 pasadas), antes | ~24 µs por pasada |
+| **El mismo, con el cuaderno propio de la ventanilla** | **~7,4 µs** por pasada (mismas instrucciones, t idéntico) |
+| Windows, dos hilos con eventos (400.000 pasadas) | ~2 µs por pasada |
+
+**El cuaderno de la ventanilla** (Capitán: *"no necesitamos que salga hacia fuera a Windows, lo podemos hacer todo
+internamente de Janax"*): cada pedido copiaba su cola en memoria pedida a Windows (`VirtualAlloc`) y la devolvía al
+salir (`VirtualFree`), dos llamadas al anfitrión por pedido. Ahora la ventanilla tiene un cuaderno propio
+(`window_book`) que reusa y que crece, duplicando, solo cuando llega una cola más grande que todas las anteriores.
+El saludo pasó a ser 3 veces más rápido. Todavía estamos ~3,7 veces detrás de los eventos de Windows: queda otro
+costo por pedido sin encontrar.
