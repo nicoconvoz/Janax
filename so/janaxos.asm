@@ -35,9 +35,8 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-; The largest room: its position is the low half of an address. Each room reserves these addresses for itself
-; (its drawer, ambientes.inc), which takes no memory, only addresses: with 128 TiB of user addresses it leaves
-; room for ~32.000 rooms standing at once, across every cabin (criterion, not a measurement).
+; The largest room: its position is the low half of an address (Capitan: "two of 32 make one of 64"). A room
+; reserves only its own pages and one page of wall (ambientes.inc): no other ceiling than the machine's memory.
 ROOM_MAX    = 1 shl 32
 OP_COUNT    = 18h
 FOREVER     = 7FFFFFFFFFFFFFFFh
@@ -284,6 +283,8 @@ section '.data' data readable writeable
   nat_native  dq 0                ; and how many instructions of the programs became native code
   native_progs  dq 0              ; every translated program, for the fault handler (nativo.inc)
   native_nprogs dq 0
+  native_cap    dq 0              ; entries the list has room for (plastic)
+  native_newcap dq 0
   nat_total   dq 0
   nat_count   dq 16 dup 0         ; (while translating) the uses of each Janax register,
   nat_cache   db 16 dup 0         ; the cache register each one lives in (-1: memory only),
@@ -489,16 +490,12 @@ start:
         invoke  GetSystemInfo, sysinfo
         mov     eax, dword [sysinfo + 4] ; dwPageSize
         mov     [page_size], rax
-        mov     rdx, ROOM_MAX           ; the dead drawer: every position of a room, refused
-        add     rdx, rax
+        mov     rdx, rax                ; the dead drawer: one page, refused (a destroyed room has size 0, so
+                                        ; nothing reads past it)
         invoke  VirtualAlloc, 0, rdx, MEM_RESERVE, PAGE_NOACCESS
         test    rax, rax
         jz      fail_file
         mov     [dead_drawer], rax
-        invoke  VirtualAlloc, 0, NP_MAX * NP_SIZE, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
-        test    rax, rax
-        jz      fail_file
-        mov     [native_progs], rax
         invoke  AddVectoredExceptionHandler, 1, native_fault   ; the wall of the rooms (nativo.inc)
         invoke  InitializeCriticalSection, kern_lock
         mov     eax, dword [sysinfo + 32] ; dwNumberOfProcessors: one rower per core
@@ -3460,8 +3457,10 @@ gate_pass:
         add     rsp, 8
         ret
 gate_receive:
+        sub     rsp, 8
         call    rooms_receive
         mov     [rbp + r13 + 24], rax
+        add     rsp, 8
         ret
 
 ; 26 fuse: a, b = the two rooms -> the new room's address, or -1 (ambientes.inc, rooms_fuse).

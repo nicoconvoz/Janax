@@ -205,6 +205,7 @@ run_all:
 .ended:
         call    close_files             ; whatever the process left open
         call    orphans                 ; its children and what waited for its signature go up
+        call    cabin_free              ; and everything it held goes back (ambientes.inc)
         cmp     byte [quiet], 0
         jne     .back
         call    report

@@ -313,6 +313,14 @@ ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" ambient
 caso "ambientes: el byte siguiente al ambiente 0 ya es afuera" 0 0 "$fijo0
 P0 codigo=5 j0=0000000000000055 t=9" ambiente_cero_borde
 
+caso "ambientes: muy lejos del final tambien es afuera" 0 0 "$fijo0
+P0 codigo=5 j0=0000000000000077 t=19
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" ambiente_lejos
+
+caso "ambientes: plasticos, 33.000 a la vez" 0 0 "$fijo0
+P0 codigo=0 j0=00000000000080E8 t=429010
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=33000" muchos_cajones
+
 caso "ambientes: una caja de solo lectura se lee y no se escribe" 0 0 "$fijo0
 P0 codigo=5 j0=0000000000000077 t=25
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" ambiente_trato

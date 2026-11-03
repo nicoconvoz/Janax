@@ -27,11 +27,11 @@
 ; The cartel of a process (P_ROOMS): entry 0 is room 0; entry k (k >= 1) is room P_ROOMBASE + k. An entry
 ; is ROOM_ENTRY bytes: the cartel's own 8 (the view's place in the low 48 bits, how to treat it in the high
 ; 16), its size (0 = destroyed), its key and the box's number (the same box has the same number in every
-; cabin that holds it). A destroyed room points at the dead drawer: addresses reserved once and never given,
-; so any access through it is refused by the processor. The cartel spans from the lowest room standing to the
-; highest (Capitan: "the count goes from the minimum"): destroyed rooms at either end leave it. Its addresses
-; are reserved once (CARTEL_MAX entries) and never move, so a box can arrive in a cabin while it rows: the
-; entry is written first, the count after. No cartel = only room 0.
+; cabin that holds it). A destroyed room has size 0 and points at the dead drawer (a page reserved once and
+; never given), so nothing reads through it. The cartel spans from the lowest room standing to the
+; highest (Capitan: "the count goes from the minimum"): destroyed rooms at either end leave it. It grows as it is
+; needed (plastic) and may move: only its own cabin changes it (or the kernel, while the cabin is being born);
+; a box for another cabin waits in that cabin's mailbox until it is received. No cartel = only room 0.
 ; P_DATA = room 0's place (the dead drawer while there is none), P_LIM1 = room 0's size, P_LIM8 = that - 7
 ; (0 if less): an access to room 0 below them needs nothing else.
 
@@ -42,9 +42,6 @@ RE_PLACE    = 0                         ; its place and how to treat it
 RE_SIZE     = 8
 RE_KEY      = 16                        ; this cabin's key to the box
 RE_BOX      = 24                        ; the box's number
-; Criterion, not a measurement: entries between a cabin's lowest and highest room standing (32 MiB of
-; addresses per cabin, its pages committed as it needs them).
-CARTEL_MAX  = 1 shl 20
 
 ; How to treat a box, in the high 16 bits of its cartel entry (Capitan). All zeros is the safest: an entry
 ; nobody filled allows nothing. The processor keeps the first four with no question per access.
@@ -137,8 +134,7 @@ box_view:
         mov     rcx, [page_size]
         neg     rcx
         and     rdi, rcx
-        mov     r8, ROOM_MAX            ; its addresses: every position, and one page for the widest access
-        add     r8, rdi
+        mov     r8, rdi                 ; its addresses: its pages and one page of wall, no more (plastic)
         add     r8, [page_size]
         xor     ecx, ecx                ; VirtualAlloc2(this process, anywhere, r8, a placeholder, refused)
         xor     edx, edx
@@ -267,14 +263,9 @@ box_close:
 ; -> rax = 0 if there is no memory. Keeps rsi, rdi.
 rooms_cartel:
         sub     rsp, 8
-        mov     rdx, CARTEL_MAX * ROOM_ENTRY
-        invoke  VirtualAlloc, 0, rdx, MEM_RESERVE, PAGE_READWRITE
+        invoke  VirtualAlloc, 0, [page_size], MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE   ; one page, to start
         test    rax, rax
         jz      .done
-        mov     [rooms_new], rax
-        invoke  VirtualAlloc, rax, [page_size], MEM_COMMIT, PAGE_READWRITE
-        test    rax, rax
-        jz      .free
         mov     rcx, [dead_drawer]      ; entry 0: room 0, until its first order builds it
         mov     [rax + RE_PLACE], rcx
         mov     rcx, [page_size]
@@ -282,45 +273,55 @@ rooms_cartel:
         mov     [rbx + P_ROOMCAP], rcx
         mov     qword [rbx + P_NROOMS], 1
         mov     [rbx + P_ROOMS], rax    ; last: from here on it is seen
-        jmp     .done
-.free:
-        invoke  VirtualFree, [rooms_new], 0, MEM_RELEASE
-        xor     eax, eax
 .done:
         add     rsp, 8
         ret
 
-; Entry rdx of the cartel of rbx, committed. -> rax = 0 if it does not fit. Keeps rdx, rsi, rdi.
+; Entry rdx of the cartel of rbx, there: when the cartel is too small it moves to one twice as big (or big
+; enough), its entries copied. -> rax = 0 if there is no memory. Keeps rdx, rsi, rdi.
 rooms_room:
         cmp     rdx, [rbx + P_ROOMCAP]
         jb      .yes
-        cmp     rdx, CARTEL_MAX
-        jae     .no
-        push    rdx
-        lea     rax, [rdx + 1]          ; the pages up to it
-        shl     rax, ROOM_ESHIFT
+        push    rsi rdi rdx
+        mov     rax, [rbx + P_ROOMCAP]
+        add     rax, rax
+        lea     rcx, [rdx + 1]
+        cmp     rax, rcx
+        jae     @f
+        mov     rax, rcx
+@@:     shl     rax, ROOM_ESHIFT        ; in whole pages
         add     rax, [page_size]
         dec     rax
         mov     rcx, [page_size]
         neg     rcx
         and     rax, rcx
         mov     [rooms_newcap], rax
-        invoke  VirtualAlloc, qword [rbx + P_ROOMS], rax, MEM_COMMIT, PAGE_READWRITE
-        pop     rdx
+        invoke  VirtualAlloc, 0, rax, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
-        jz      .no
+        jz      .none
+        mov     rdi, rax
+        mov     rsi, [rbx + P_ROOMS]
+        mov     rcx, [rbx + P_NROOMS]
+        shl     rcx, ROOM_ESHIFT - 3    ; in qwords
+        rep     movsq
+        mov     [rooms_new], rax
+        invoke  VirtualFree, qword [rbx + P_ROOMS], 0, MEM_RELEASE
+        mov     rax, [rooms_new]
+        mov     [rbx + P_ROOMS], rax
         mov     rax, [rooms_newcap]
         shr     rax, ROOM_ESHIFT
         mov     [rbx + P_ROOMCAP], rax
+        pop     rdx rdi rsi
 .yes:
         mov     eax, 1
         ret
-.no:
+.none:
+        pop     rdx rdi rsi
         xor     eax, eax
         ret
 
 ; A room for rbx with the view at [add_place] (and how to treat it), [add_size] bytes, key [add_key] and box
-; [add_box]: it gets the next number. The entry is written before it is counted, so the cabin may be rowing.
+; [add_box]: it gets the next number.
 ; -> rax = its address, -1 if the cartel has no room. Keeps rbx, rbp, rsi, rdi, r12-r15.
 room_add:
         push    rsi rdi
@@ -1115,20 +1116,21 @@ rooms_pass:
         and     rcx, rdx
         or      rax, rcx
 @@:     mov     [pass_slot + 24], rax
-        lea     rsi, [pass_slot]
-        xchg    rbx, r14
-        call    box_arrive              ; (it gives the key back if it can not arrive)
-        cmp     rax, -1
-        je      .back
-        mov     [pass_addr], rax
-        mov     ecx, P_ARRIVED          ; to its mailbox
-        mov     r8d, 8
+        xchg    rbx, r14                ; to its mailbox: it enters its cartel when it is received, so a
+        mov     ecx, P_ARRIVED          ; cabin's cartel is only ever changed by itself
+        mov     r8d, DOWRY_SIZE
         call    list_slot
+        xchg    rbx, r14
         test    rax, rax
-        jz      @f
-        mov     rcx, [pass_addr]
+        jz      .back
+        mov     rcx, [pass_slot]
         mov     [rax], rcx
-@@:     xchg    rbx, r14
+        mov     rcx, [pass_slot + 8]
+        mov     [rax + 8], rcx
+        mov     rcx, [pass_slot + 16]
+        mov     [rax + 16], rcx
+        mov     rcx, [pass_slot + 24]
+        mov     [rax + 24], rcx
         test    r15, r15
         jz      .shared
         mov     rax, r13                ; moved: it leaves this cabin, key and all
@@ -1143,7 +1145,8 @@ rooms_pass:
         xor     eax, eax
         jmp     .done
 .back:
-        xchg    rbx, r14
+        mov     rax, [pass_slot]        ; no mailbox: the key goes back
+        call    box_close
 .invalid:
         mov     rax, -1
 .done:
@@ -1151,18 +1154,29 @@ rooms_pass:
         pop     r15 r14 r13 r12 rdi rsi
         ret
 
-; 25 receive: the address of the oldest box that moved or was linked to this cabin and was not received
-; yet, or -1 if none. Keeps every register but rax, rcx.
+; 25 receive: the oldest box that moved or was linked to this cabin enters its cartel as its next room.
+; -> rax = its address, or -1 if none is waiting (or it can not enter). The mailbox keeps its book: emptied,
+; it starts again from its beginning. Keeps rbx, rbp, r12-r15.
 rooms_receive:
+        push    rsi
         mov     rcx, [rbx + P_TAKEN]
         cmp     rcx, [rbx + P_NARRIVED]
         jae     .none
-        inc     qword [rbx + P_TAKEN]
-        mov     rax, [rbx + P_ARRIVED]
-        mov     rax, [rax + rcx*8]
+        mov     rsi, rcx
+        shl     rsi, 5
+        add     rsi, [rbx + P_ARRIVED]  ; its slot (DOWRY_SIZE layout)
+        inc     rcx
+        mov     [rbx + P_TAKEN], rcx
+        cmp     rcx, [rbx + P_NARRIVED]
+        jb      @f
+        mov     qword [rbx + P_TAKEN], 0   ; all received: the mailbox starts again (its book stays)
+        mov     qword [rbx + P_NARRIVED], 0
+@@:     call    box_arrive
+        pop     rsi
         ret
 .none:
         mov     rax, -1
+        pop     rsi
         ret
 
 ; 26 fuse (Capitan: "two boxes become one box"): the rooms at addresses rax and rdx, both this cabin's and
@@ -1203,10 +1217,17 @@ rooms_fuse:
         mov     rcx, ROOM_MAX
         cmp     rax, rcx
         ja      .invalid
-        call    rooms_grow              ; (the cartel never moves: r12 and r13 still point at them)
+        call    rooms_grow
         cmp     rax, -1
         je      .done
         mov     [fuse_addr], rax
+        mov     rax, r14                ; the cartel may have moved: both found again
+        call    room_entry
+        mov     r12, rax
+        mov     rax, r15
+        call    room_entry
+        mov     r13, rax
+        mov     rax, [fuse_addr]
         call    room_entry
         mov     rdi, [rax + RE_PLACE]   ; the new one's place
         shl     rdi, 16
@@ -1539,4 +1560,92 @@ window_book:
         ret
 .ready:
         mov     rax, [book]
+        ret
+
+; Everything a cabin that ended held goes back to the host (Capitan: "only what is needed, not more"): the
+; views and keys of its rooms (a box another cabin holds stays: it has its own key), its cartel, the boxes
+; still waiting in its dowry and its mailbox, and its greetings. Under the captain's lock. Keeps rbx, rbp,
+; r12-r15.
+cabin_free:
+        push    rsi rdi r12
+        mov     rsi, [rbx + P_ROOMS]
+        test    rsi, rsi
+        jz      .lists
+        mov     rdi, [rbx + P_NROOMS]
+        shl     rdi, ROOM_ESHIFT
+        add     rdi, rsi                ; its end
+        jmp     .room
+.room_lap:
+        cmp     qword [rsi + RE_SIZE], 0
+        je      .room_next              ; destroyed already
+        mov     rax, [rsi + RE_PLACE]
+        shl     rax, 16
+        shr     rax, 16
+        mov     rcx, [rsi + RE_SIZE]
+        call    box_unview
+        mov     rax, [rsi + RE_KEY]
+        call    box_close
+.room_next:
+        add     rsi, ROOM_ENTRY
+.room:                                  ; while entries are left
+        cmp     rsi, rdi
+        jb      .room_lap
+        invoke  VirtualFree, qword [rbx + P_ROOMS], 0, MEM_RELEASE
+        xor     eax, eax
+        mov     [rbx + P_ROOMS], rax
+        mov     [rbx + P_NROOMS], rax
+        mov     [rbx + P_ROOMCAP], rax
+        mov     [rbx + P_LIM1], rax
+        mov     [rbx + P_LIM8], rax
+        mov     rax, [dead_drawer]
+        mov     [rbx + P_DATA], rax
+.lists:
+        mov     rsi, [rbx + P_DOWRY]    ; the dowry nobody was born with
+        mov     rdi, [rbx + P_NDOWRY]
+        shl     rdi, 5
+        add     rdi, rsi
+        call    keys_back
+        mov     rsi, [rbx + P_TAKEN]    ; the mailbox nobody received
+        shl     rsi, 5
+        add     rsi, [rbx + P_ARRIVED]
+        mov     rdi, [rbx + P_NARRIVED]
+        shl     rdi, 5
+        add     rdi, [rbx + P_ARRIVED]
+        call    keys_back
+        mov     r12d, P_DOWRY           ; and the three lists
+        call    list_back
+        mov     r12d, P_ARRIVED
+        call    list_back
+        mov     r12d, P_GREET
+        call    list_back
+        mov     qword [rbx + P_TAKEN], 0
+        pop     r12 rdi rsi
+        ret
+
+; The keys of the slots (DOWRY_SIZE layout) from rsi to rdi go back. Keeps rbx, rbp, r12-r15.
+keys_back:
+        sub     rsp, 8
+        jmp     .one
+.one_lap:
+        mov     rax, [rsi]
+        call    box_close
+        add     rsi, DOWRY_SIZE
+.one:                                   ; while slots are left
+        cmp     rsi, rdi
+        jb      .one_lap
+        add     rsp, 8
+        ret
+
+; The list at [rbx + r12] (its count at +8) goes back. Keeps rbx, rbp, rsi, rdi, r12-r15.
+list_back:
+        sub     rsp, 8
+        mov     rcx, [rbx + r12]
+        test    rcx, rcx
+        jz      .done
+        invoke  VirtualFree, rcx, 0, MEM_RELEASE
+        xor     eax, eax
+        mov     [rbx + r12], rax
+        mov     [rbx + r12 + 8], rax
+.done:
+        add     rsp, 8
         ret

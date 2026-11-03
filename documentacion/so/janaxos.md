@@ -934,3 +934,38 @@ nueva a Windows y devolvía la vieja en cada saludo. Regla general: una lista va
 
 El saludo de Janax queda **~3,2 veces más rápido que los eventos de Windows**, con las mismas instrucciones (t
 idéntico) y revisando la familia en cada uno.
+
+## Plástico: cada cajón usa solo lo que necesita, y todo vuelve (Capitán, 2026-11-03)
+
+> *"Lo quiero plástico, que mute, que cambie… que trabaje como la mente humana. No quiero nada rígido, ni
+> siquiera los 4 GB ni los 32.000: solo lo necesario, sin usar de menos ni de más."* — *"No te pido que mida más:
+> si ese es el techo, es el techo. Te pido que pueda medir menos."*
+
+- **El cajón reserva sus páginas y una de pared**, no 4 GB. Los 4 GB siguen siendo el techo de un cajón, porque la
+  posición tiene 32 bits en el formato de la dirección, pero ya no se reservan. El cajón muerto es una página.
+- **Vuelve la comparación de tamaño**: el cofre 0 contra su límite y los otros contra el tamaño del renglón (un
+  acceso alineado que empieza adentro termina adentro, porque los tamaños son múltiplos de 8). Lo que la pared ya
+  no cubre lo cubre la comparación (`ambiente_lejos`: 1 MiB más allá del final da código 5). El trato de la caja
+  (solo lectura) lo sigue cuidando el procesador.
+- **El cartel crece y se muda** cuando hace falta: solo lo cambia su propio camarote, porque una caja que se muda o
+  se enlaza **espera en el buzón** de quien la recibe y entra a su cartel recién con el pedido 25.
+- **El registro de programas crece a medida**, y el cazador lo lee sin candado: lee primero la cuenta y la lista
+  nueva se publica antes de que la cuenta crezca. Una lista vieja nunca se devuelve.
+- **Al terminar un camarote, todo vuelve** (`cabin_free`): las vistas y llaves de sus cajones (un cajón que tiene
+  otro sigue vivo, porque tiene su llave), su cartel, la dote y el buzón sin recibir, y sus saludos.
+
+Medido:
+
+| | antes | ahora |
+|---|---|---|
+| 33.000 cajones de 8 bytes a la vez (`muchos_cajones`) | no termina (cortado a los 120 s) | **649 ms** |
+| 500 hijos en fila, cada uno con un cajón de 16 MB y un byte escrito: memoria comprometida de más en todo el sistema, en el pico (sin devolver → devolviendo) | **7.717 MB** | **26 MB** |
+
+⚠️ El instrumento: la primera medición usó la memoria privada del proceso (`PrivateMemorySize`), que **no cuenta
+las secciones**, y daba 4 MB aunque no se devolviera nada. La medición válida es la memoria comprometida de todo
+el sistema (`Memory / Committed Bytes`), comparando el mismo núcleo con y sin `cabin_free`. Los 33.000 cajones solo
+se crean (miden que entren); los 500 hijos escriben un byte cada uno.
+
+Acceso, A/B contra ee5b067 (15 rondas, los dos órdenes): `calculo` ~431–446 contra ~432–433 ms, empate;
+`calculo_ambiente` ~680–682 contra ~642–672 ms, entre 1 % y 6 % más lento, en el borde del ruido: es la
+comparación de tamaño que volvió en `O(i)`. SO 314/314, escalón 0 182/182.

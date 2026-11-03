@@ -5,9 +5,9 @@
 ; registers, r15 data, rsi return stack, rdi depth, rbp budget, rbx process), so it runs inside run_routines
 ; as it is:
 ;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory in any
-;    room run in native code. Room 0 is r15; another room is found in the cartel (O(i)). Nobody asks
-;    whether an access is past a room's end: the room leans against addresses the processor refuses
-;    (ambientes.inc), and when it refuses, native_fault sends the word on by its T(i).
+;    room run in native code. Room 0 is r15, below its limit; another room is found in the cartel (O(i)),
+;    with its size. How a box is treated (read only) the processor keeps (ambientes.inc): when it refuses,
+;    native_fault sends the word on by its T(i).
 ;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, a misaligned access, a room not in the
 ;    cartel, a call that needs more return stack, a jret without jcall) jumps to its own routine, which goes
 ;    on through the table: back to native.
@@ -40,7 +40,7 @@
 ; under the captain's lock).
 
 NATIVE_BLOCK = 80               ; bytes a block may take: the largest (an 8-byte load heading a run) takes 60
-NATIVE_COLD  = 288              ; bytes per word in the cold area: O(i), the largest, takes 71 from C_O
+NATIVE_COLD  = 304              ; bytes per word in the cold area: O(i), the largest, takes up to 94 from C_O
 C_S     = 0
 C_F     = 32
 C_R     = 64
@@ -136,11 +136,9 @@ translate_table:
         invoke  VirtualProtect, r15, rdx, PAGE_EXECUTE_READ, r9
         test    eax, eax
         jz      .no_memory
-        mov     rax, [native_nprogs]    ; known to the fault handler
-        cmp     rax, NP_MAX
-        jae     .no_memory
-        imul    rax, rax, NP_SIZE
-        add     rax, [native_progs]
+        call    native_slot             ; known to the fault handler
+        test    rax, rax
+        jz      .no_memory
         mov     [rax + NP_CODE], r15
         mov     [rax + NP_COLD], r14
         mov     rdx, [rsp + 40]
@@ -374,6 +372,11 @@ native_cold:
         mov     cl, [r8 + 8]            ; a store: rcx = rd
         call    nb_get_rcx
 @@:
+        emit    48h, 89h, 0C2h          ; mov rdx, rax / shr rdx, 32 / jz T(i): room 0 past its limit
+        emit    48h, 0C1h, 0EAh, 20h
+        emit    0Fh, 84h
+        lea     rax, [r9 + C_T]
+        call    nc_rel
         emit    48h, 2Bh, 93h           ; sub rdx, [rbx + P_ROOMBASE] / jbe T(i): below the cartel
         mov     eax, P_ROOMBASE
         stosd
@@ -390,10 +393,14 @@ native_cold:
         emit    48h, 03h, 93h
         mov     eax, P_ROOMS
         stosd
-        emit    48h, 8Bh, 12h
-        emit    48h, 0C1h, 0E2h, 10h    ; shl rdx, 16 / shr rdx, 16: its place, without how to treat it
-        emit    48h, 0C1h, 0EAh, 10h
         emit    89h, 0C0h               ; mov eax, eax: the position in it
+        emit    48h, 3Bh, 42h, RE_SIZE  ; cmp rax, [rdx + RE_SIZE] / jae T(i): past its size (an aligned access
+        emit    0Fh, 83h                ;   that starts inside ends inside: sizes are multiples of 8)
+        lea     rax, [r9 + C_T]
+        call    nc_rel
+        emit    48h, 8Bh, 12h           ; mov rdx, [rdx]: its place
+        emit    48h, 0C1h, 0E2h, 10h    ; shl rdx, 16 / shr rdx, 16: without how to treat it
+        emit    48h, 0C1h, 0EAh, 10h
         movzx   eax, byte [rsi + rbx*4]
         sub     eax, 10h
         cmp     eax, 1
@@ -635,9 +642,13 @@ nb_mem:                                 ; the address, the alignment, the room, 
         stosd
         movzx   edx, byte [rsi + rbx*4]
         sub     edx, 10h                ; 0 ld, 1 st, 2 ldb, 3 stb
-        emit    48h, 89h, 0C2h          ; mov rdx, rax / shr rdx, 32 / jnz O(i): another room, by the cartel
-        emit    48h, 0C1h, 0EAh, 20h    ; (first: measured, the room 0 path is ~7 % faster with it before the
-        emit    0Fh, 85h                ; alignment and the value to store)
+        mov     eax, P_LIM8             ; cmp rax, [rbx + P_LIMx] / jae O(i): past room 0's fast limit (first:
+        cmp     edx, 2                  ; measured, the room 0 path is fastest with it before the alignment
+        jb      @f                      ; and the value to store)
+        mov     eax, P_LIM1
+@@:     emit    48h, 3Bh, 83h
+        stosd
+        emit    0Fh, 83h
         lea     rax, [r9 + C_O]
         call    nc_rel
         cmp     edx, 2
@@ -650,7 +661,7 @@ nb_mem:                                 ; the address, the alignment, the room, 
         jz      @f
         mov     cl, [r8 + 8]            ; a store: rcx = rd
         call    nb_get_rcx
-@@:     cmp     edx, 1                  ; room 0: past its end the processor refuses (ambientes.inc)
+@@:     cmp     edx, 1                  ; room 0, inside it
         je      .st
         cmp     edx, 2
         je      .ldb
@@ -810,16 +821,52 @@ nb_modrm:
         stosb
         ret
 
-; Every translated program, for the fault handler: NP_SIZE bytes each, written once (under the captain's
-; lock) and never moved, so the handler reads them without a lock. NP_MAX is criterion, not a measurement:
-; distinct programs translated in one run (2.5 MiB of addresses, its pages untouched until used).
-NP_MAX     = 65536
+; Every translated program, for the fault handler: NP_SIZE bytes each, written under the captain's lock and
+; read by the handler without one. The list grows as programs come (plastic): a bigger one gets the entries
+; copied and is published before the count grows, and an old one is never given back, so whatever list the
+; handler holds still has every entry it counted (it reads the count first).
 NP_SIZE    = 40
 NP_CODE    = 0                  ; its blocks
 NP_COLD    = 8                  ; its cold area
 NP_END     = 16                 ; where its code ends
 NP_ENTRIES = 24
 NP_WORDS   = 32
+
+; The slot of the next translated program. -> rax = it, 0 if there is no memory. Under the captain's lock.
+native_slot:
+        mov     rax, [native_nprogs]
+        cmp     rax, [native_cap]
+        jb      .room
+        push    rsi rdi
+        sub     rsp, 8
+        mov     rax, [native_cap]       ; twice as many, from 64
+        add     rax, rax
+        jnz     @f
+        mov     eax, 64
+@@:     mov     [native_newcap], rax
+        imul    rdx, rax, NP_SIZE
+        invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .no
+        mov     rdi, rax
+        mov     rsi, [native_progs]
+        imul    rcx, [native_nprogs], NP_SIZE
+        rep     movsb
+        mov     [native_progs], rax     ; published before the count grows; the old list stays
+        mov     rax, [native_newcap]
+        mov     [native_cap], rax
+        add     rsp, 8
+        pop     rdi rsi
+        mov     rax, [native_nprogs]
+.room:
+        imul    rax, rax, NP_SIZE
+        add     rax, [native_progs]
+        ret
+.no:
+        add     rsp, 8
+        pop     rdi rsi
+        xor     eax, eax
+        ret
 
 ; The processor refused an access (Capitan: "the wall stops you by itself"). Inside a translated program it
 ; is a memory word past a room's end, or through a destroyed room: the word goes on by its T(i), as when it
@@ -832,8 +879,8 @@ native_fault:
         jne     .not_ours               ; not an access refused
         mov     r8, [rcx + 8]           ; the context
         mov     rdx, [r8 + 0F8h]        ; its rip
+        mov     r10, [native_nprogs]    ; the count first, then the list (native_slot)
         mov     r9, [native_progs]
-        mov     r10, [native_nprogs]
         jmp     .prog
 .prog_lap:
         dec     r10

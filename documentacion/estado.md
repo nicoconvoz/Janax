@@ -161,3 +161,5 @@ escalón 0 182/182.
 2026-11-03 — El costo escondido del saludo (cronómetro rdtsc): la lista vacía pedía memoria a Windows en cada saludo;
 ahora reusa su cuaderno. Saludo ~0,64 µs por pasada, ~3,2 veces más rápido que los eventos de Windows (~2,05 µs).
 SO 308/308, escalón 0 182/182.
+2026-11-03 — Plástico (Capitán): cajón con sus páginas y una pared, cartel y registro que crecen, buzón para las cajas que
+llegan, y al terminar un camarote todo vuelve (500 hijos de 16 MB: 7.717 → 26 MB comprometidos). SO 314/314, escalón 0 182/182.
