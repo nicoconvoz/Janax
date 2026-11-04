@@ -43,10 +43,10 @@ Por qué: una pieza tiene una sola vecina en el piso de abajo, así que si hacen
 no sube de piso; si alcanza con una, se prende todo. ⚠️ El instrumento: tres semillas distintas daban exactamente los
 mismos aciertos; contar las piezas despiertas mostró la convulsión.
 
-Lo que falta es lo que en el diseño ya existe y el modelo todavía no tiene: **la puerta** (*"alguien cierra la puerta y
-dice no pasarás"*). Hoy las relaciones solo empujan; en el cerebro cerca de una de cada cinco neuronas frena, y ese
-equilibrio lo mantiene en el borde entre el silencio y la convulsión (criticalidad). Decisión del Capitán: cómo se
-cierra una puerta.
+Lo que faltaba era lo que el diseño ya tenía: **la puerta** (*"alguien cierra la puerta y dice no pasarás"*). Las
+relaciones solo empujaban; en el cerebro cerca de una de cada cinco neuronas frena, y ese equilibrio lo mantiene en
+el borde entre el silencio y la convulsión (criticalidad). Lo resolvieron la puerta y la armonía del Capitán, en las
+dos secciones siguientes.
 
 ## La puerta del Capitán, primera versión (2026-11-03)
 
@@ -101,8 +101,8 @@ finales, `h = (h·31 + v) mod 2^48`.
 - **Janax armado por Janax**: el ensamblador PDP lo arma byte por byte igual que FASM.
 - En la suite (`razar: el cardumen deja la huella del modelo`): la huella esperada sale de correr el modelo, así que
   si la regla cambia en Perl, el programa Janax tiene que seguirla.
-- Todavía no está en Janax: la voluntad (el lazo), las puertas y los fragmentos de melodía (el modelo los guarda; la
-  dinámica de esta historia no los usa).
+- Este programa es el cardumen solo. La voluntad, las puertas y los fragmentos de melodía están en Janax en el lazo
+  de dos camarotes (sección siguiente), también igual bit por bit al modelo.
 
 ## El lazo a lo Janax: la voluntad y el cardumen, dos camarotes (2026-11-03)
 
