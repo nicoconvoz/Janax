@@ -274,3 +274,11 @@ en 4³ y 12.000 en 7³. `bash razar/cardumen/ab.sh`, 4.573 s en 4 núcleos.
 En el oficio: es la diferencia entre **código de frecuencia** (qué neuronas disparan) y **código temporal** (cuándo
 disparan). Con el código de frecuencia, las cosas tenían gemelas en la cara de arriba y la voluntad no podía
 separarlas. Con el código temporal, el 95–98 % de los pares se separa, y el idioma emerge en 7³ casi siempre.
+
+**La voluntad de Janax ya escucha la melodía** (2026-11-04). Como ganó el A/B, la voluntad de Janax (`voluntad.jsm`) lee
+solo así; la lectura de piezas sigue en el modelo Perl (`lee=piezas`, el valor por defecto), para comparar. El cardumen
+(`cardumen_lazo.jsm`) deja en la caja, además de qué piezas de arriba despertaron (caja + 16), el paso en que despertó
+cada una (un byte por pieza, caja + 48). La voluntad lleva la cuenta por cosa, pieza y paso (4 × 16 × 64 contadores:
+un paso nunca llega a 64, porque en cada paso despierta alguien nuevo o la ola termina), y su camarote crece de 2000h
+a A000h bytes. Los dos camarotes dan la huella de `lazo.pl nace=7 armonia=1 puertas=1 rounds=200 huella=1 lee=ritmo`
+(`00003F692A4BBA23`) bit por bit, en los tres motores.

@@ -169,3 +169,5 @@ La armonía hace que inventen un idioma (4 cosas: 100 %; 8: 50–76 %).
 2026-11-04 — La voluntad que escucha la melodía (A/B, regla congelada, 20 semillas nuevas, 16 cosas): leyendo pieza y
 paso, 7³ converge 19 de 20 con mediana 62 vueltas (leyendo solo piezas: 6 de 20, mediana 5.752); el control revuelto
 da 0 de 20. Código temporal, no de frecuencia. En 4³ apenas 2 de 20: ahí el límite es del cubo.
+2026-11-04 — La voluntad de Janax escucha la melodía: el cardumen le pasa el paso de cada pieza de arriba y ella
+lee pieza y paso; los dos camarotes dan la huella de lazo.pl lee=ritmo bit por bit en los tres motores. SO 320/320.

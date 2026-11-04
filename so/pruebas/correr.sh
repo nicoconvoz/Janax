@@ -420,8 +420,9 @@ caso "razar: el cardumen deja la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella t=*" cardumen
 
 # The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
-# will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit.
-huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 puertas=1 rounds=200 huella=1)
+# will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit. The will listens to the melody:
+# which top pieces woke and at which step (lee=ritmo, the reading that won the A/B of 2026-11-04).
+huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 puertas=1 rounds=200 huella=1 lee=ritmo)
 familia familia_lazo cardumen_lazo
 caso "razar: la voluntad y el cardumen conversan como en el modelo" 0 0 "$fijo0
 P1 codigo=0 j0=* t=*

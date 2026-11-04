@@ -2,18 +2,20 @@
 ; It builds a box, gives it to its child "hijo" (the school, cardumen_lazo.jsm) as dowry, and the two take turns
 ; with greetings: the will writes an order in the box, greets the school, and sleeps until it greets back.
 ;
-; The will has 4 things to say; it says one waking 3 bottom pieces. It reads the answer (which top pieces woke) with
-; what it learned: for each thing, the share of times each top piece woke when it said it (it knows what it meant,
-; so it learns every round), and guesses. Right: it confirms the melody (the school remembers it in tune) and
-; sounds it once more (the school settles it). Wrong: it moves one of the pieces it says that thing with. Its dice
-; have a fixed seed (12345), so every run is the same run. 200 rounds, then the school's own fingerprint is mixed
-; in: j0 is the fingerprint of lazo.pl (nace=7 armonia=1 puertas=1 rounds=200 huella=1), bit for bit.
+; The will has 4 things to say; it says one waking 3 bottom pieces. It reads the answer as a melody (which top pieces
+; woke, and at which step) with what it learned: for each thing, the share of times each top piece woke at that step
+; when it said it (it knows what it meant, so it learns every round), and guesses. Right: it confirms the melody (the
+; school remembers it in tune) and sounds it once more (the school settles it). Wrong: it moves one of the pieces
+; it says that thing with. Its dice have a fixed seed (12345), so every run is the same run. 200 rounds, then the
+; school's own fingerprint is mixed in: j0 is the fingerprint of lazo.pl (nace=7 armonia=1 puertas=1 rounds=200
+; huella=1 lee=ritmo), bit for bit.
 ;
-; Room 0 (2000h bytes):
+; Room 0 (A000h bytes):
 QUEUE = 100h                    ; its window: one request
 HIJO = 200h                    ; "hijo"
 SAY   = 300h                    ; how it says thing m: 3 bottom pieces at SAY + m*4, in order
-READ  = 400h                    ; what it learned: thing g, top piece 48 + j heard READ + (g*16 + j)*8 times
+READ  = 2000h                   ; what it learned: thing g, top piece 48 + j heard at step t READ + ((g*16 + j)*64 + t)*8
+                                ; times (a step is below 64: each step wakes someone new, or the wave ends)
 HEARD = 600h                    ; top pieces heard for each thing, in all (a qword each)
 SEED  = 640h                    ; its dice
 M48   = 648h                    ; 2^48 - 1
@@ -27,7 +29,7 @@ BSUM    = 680h                    ; the best share so far: BSUM / BTOT
 BTOT    = 688h
 CNT   = 690h                    ; how many top pieces woke
 include '../../escalon0/janax.inc'
-jfirst j1, 2000h               ; first order: room 0
+jfirst j1, 0A000h              ; first order: room 0
 
 jldi j1, 1                      ; 2^48 - 1
 jldi j2, 48
@@ -117,21 +119,27 @@ jwhile j15
     jshl j3, j8, j3
     jld j10, j3, HEARD          ; what it heard for g
     jjz j10, g_next
-    jld j2, j1, ANS             ; s = what it heard of these pieces for g
+    jld j2, j1, ANS             ; s = what it heard of these pieces, at these steps, for g
+    jld j12, j1, BOX            ; the step of top piece j at box + 48 + j
     jldi j11, 0
-    jldi j3, 7
-    jshl j4, j8, j3             ; READ + g*16*8
+    jldi j3, 13
+    jshl j4, j8, j3             ; READ + g*16*64*8
     jldi j5, 16
     jwhile j5
       jldi j6, 1
       jand j7, j2, j6
       jjz j7, s_next
-      jld j7, j4, READ
+      jldb j7, j12, 48
+      jldi j6, 3
+      jshl j7, j7, j6
+      jadd j7, j7, j4
+      jld j7, j7, READ
       jadd j11, j11, j7
     s_next:
       jldi j6, 1
       jshr j2, j2, j6
-      jldi j6, 8
+      jadd j12, j12, j6
+      jldi j6, 512
       jadd j4, j4, j6
       jldi j6, 1
       jsub j5, j5, j6
@@ -166,20 +174,26 @@ guessed:
   jldi j1, 0                    ; it knows what it meant: it learns what that sounded like
   jld j8, j1, THING
   jld j2, j1, ANS
-  jldi j3, 7
+  jld j12, j1, BOX
+  jldi j3, 13
   jshl j4, j8, j3
   jldi j5, 16
   jwhile j5
     jldi j6, 1
     jand j7, j2, j6
     jjz j7, r_next
-    jld j7, j4, READ
-    jadd j7, j7, j6
-    jst j7, j4, READ
+    jldb j7, j12, 48
+    jldi j3, 3
+    jshl j7, j7, j3
+    jadd j7, j7, j4
+    jld j3, j7, READ
+    jadd j3, j3, j6
+    jst j3, j7, READ
   r_next:
     jldi j6, 1
     jshr j2, j2, j6
-    jldi j6, 8
+    jadd j12, j12, j6
+    jldi j6, 512
     jadd j4, j4, j6
     jldi j6, 1
     jsub j5, j5, j6

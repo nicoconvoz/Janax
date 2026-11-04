@@ -1,7 +1,8 @@
 ; Razar's school as a cabin that listens to its will (Capitan, 2026-11-03), a lo Janax: it is born with its
 ; mother's box as its room 1 (her dowry), and the two take turns with greetings. It waits for a greeting, reads the
 ; order in the box, does it, and greets its mother (P0) back:
-;   1 a signal: the 3 bottom pieces at box + 8 wake; the answer (bit j = top piece 48 + j woke) goes to box + 16
+;   1 a signal: the 3 bottom pieces at box + 8 wake; the answer (bit j = top piece 48 + j woke) goes to box + 16,
+;     and the step each top piece woke at (a byte each, 0FFh = not then) to box + 48
 ;   2 the will confirmed the last melody: its pieces remember who woke them, in tune (the doors)
 ;   3 the end: its own fingerprint (every weight, rate, fragment and tune memory) goes to box + 32, and it ends
 ; The school is the reference model (modelo.pl) with harmony, doors and the top face answering, born from seed 7:
@@ -356,6 +357,10 @@ signal:
   jldi j13, 0
   jld j4, j13, BOXA
   jst j3, j4, 16
+  jld j3, j13, FT + 48          ; and its rhythm: the step each top piece woke at (a byte each, 0FFh = not), box + 48
+  jst j3, j4, 48
+  jld j3, j13, FT + 56
+  jst j3, j4, 56
   jldi j1, 0                    ; the shape learns
   jldi j2, 64
   jwhile j2
