@@ -240,3 +240,37 @@ con el paso en que despertó cada pieza, o sea el ritmo). 16 cosas, 10.000 vuelt
 Cura candidata, del propio diseño: **que la voluntad lea la melodía completa** (pieza y paso), no solo las piezas. Se
 congela la regla antes de mirar ninguna semilla, y se prueba A/B contra 20 semillas nuevas en 4³ y 7³ con 16 cosas:
 fracción que converge y mediana de vueltas, con el control de que las que ya convergían no se vuelvan más lentas.
+Resultado más abajo: gana, 19 de 20 en 7³.
+
+## El A/B de la voluntad que escucha la melodía (2026-11-04)
+
+Regla congelada antes de mirar (commit `c405cb7`): `lee=ritmo` hace que la voluntad lea cada pieza de la cara de arriba
+junto con el paso en que despertó (`pieza:paso`). `lee=piezas` es la de siempre. `lee=revuelto` es el control: las mismas
+piezas con los mismos pasos, pero barajados entre sí (si gana por tener más rasgos y no por el ritmo, el revuelto
+también ganaría). 20 semillas nuevas (1001–1020), 16 cosas, se corta al acertar 4·k veces seguidas; tope 20.000 vueltas
+en 4³ y 12.000 en 7³. `bash razar/cardumen/ab.sh`, 4.573 s en 4 núcleos.
+
+| cubo | lectura | convergieron | mediana de vueltas |
+|------|---------|--------------|--------------------|
+| 4³   | piezas   | 0 de 20  | — |
+| 4³   | revuelto | 0 de 20  | — |
+| 4³   | ritmo    | 2 de 20  | 11.978 (llegadas 148 y 11.978) |
+| 7³   | piezas   | 6 de 20  | 5.752 |
+| 7³   | revuelto | 0 de 20  | — |
+| 7³   | ritmo    | **19 de 20** | **62** (de 35 a 163) |
+
+- **Control de las que ya convergían**: las 6 semillas que llegaban leyendo piezas llegan todas antes con el ritmo, entre
+  20 y 120 veces antes (5.971→99, 2.611→67, 2.587→51, 2.989→147, 8.271→67, 5.752→55). Ninguna se volvió más lenta.
+- **El control revuelto da peor que la base** (0 de 20 en los dos cubos): con los pasos barajados, la voluntad tiene los
+  mismos rasgos que con el ritmo pero sin el orden, y no aprende. **La ganancia está en el orden temporal, no en tener
+  más rasgos.**
+- **En 7³ el idioma de 16 cosas deja de ser un problema de tiempo**: lo que antes tardaba miles de vueltas o se trababa,
+  ahora sale en decenas. El cubo ya tenía la información (lo había mostrado el cubo congelado); faltaba quien la
+  escuchara.
+- **En 4³ casi no alcanza** (2 de 20): el cubo chico tiene poco ritmo para dar (la ola cruza 4 capas, y las melodías son
+  cortas). Ahí el límite sí parece del cubo, no de la lectura.
+- La única de 7³ que no llegó (1016) tampoco llegaba con piezas; queda para mirar.
+
+En el oficio: es la diferencia entre **código de frecuencia** (qué neuronas disparan) y **código temporal** (cuándo
+disparan). Con el código de frecuencia, las cosas tenían gemelas en la cara de arriba y la voluntad no podía
+separarlas. Con el código temporal, el 95–98 % de los pares se separa, y el idioma emerge en 7³ casi siempre.

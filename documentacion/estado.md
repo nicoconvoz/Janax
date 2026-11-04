@@ -166,3 +166,6 @@ llegan, y al terminar un camarote todo vuelve (500 hijos de 16 MB: 7.717 → 26 
 2026-11-03 — Razar en Janax (Capitán, "tu regalo de cumple"): el cardumen y su voluntad, dos camarotes que conversan
 con saludos sobre una caja de dote, dan la huella del modelo bit por bit en los tres motores y con 1, 2 y 4 remeros.
 La armonía hace que inventen un idioma (4 cosas: 100 %; 8: 50–76 %).
+2026-11-04 — La voluntad que escucha la melodía (A/B, regla congelada, 20 semillas nuevas, 16 cosas): leyendo pieza y
+paso, 7³ converge 19 de 20 con mediana 62 vueltas (leyendo solo piezas: 6 de 20, mediana 5.752); el control revuelto
+da 0 de 20. Código temporal, no de frecuencia. En 4³ apenas 2 de 20: ahí el límite es del cubo.
