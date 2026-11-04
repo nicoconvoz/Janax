@@ -16,6 +16,7 @@ my $seed2 = ($o{nace} // 0) * 7919 + 1;          # other dice, only for lee=revu
 sub rnd2 { $seed2 = ($seed2 * 1103515245 + 12345) % 2147483648; return $seed2 >> 16; }
 my $c = Cardumen->new(n => $o{n} // 4, w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{nace} // 0);
 my $n = $c->{n};
+sub sig { $o{viva} ? $c->signal_viva(@_) : $c->signal(@_) }   # viva=1: the living melody (modelo.pl signal_viva)
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
 if ($o{puertas}) { $c->{doors} = 1; $c->{sinks} = { %top }; }   # doors: out of tune it ends; the top face answers
@@ -36,8 +37,8 @@ my $h = 0;                                      # the fingerprint (huella=1): wh
 sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
   my $m = ($r - 1 + ($o{primero} // 0)) % $o{k};   # what it wants to say, in turn (primero=: the thing said first)
-  my $mel = $c->signal(@{$say[$m]});
-  my @answer = grep { $top{$_} } map { @$_ } @$mel;
+  my $mel = sig(@{$say[$m]});
+  my %once; my @answer = grep { $top{$_} && !$once{$_}++ } map { @$_ } @$mel;
   $reached++ if @answer;
   my @feat = @answer;                           # what the will listens to (lee=): piezas, which top pieces woke (the
   if (($o{lee} // 'piezas') ne 'piezas') {      # default); ritmo, which and when (the melody: piece and step); revuelto,
@@ -74,7 +75,7 @@ for my $r (1 .. $o{rounds}) {
   if ($best == $m && @answer) {
     $ok++;
     $c->confirm($mel) if $o{puertas};           # the will confirmed it: in tune from now on
-    $c->signal(@{$say[$m]});                    # sounded once more: the school settles it
+    sig(@{$say[$m]});                           # sounded once more: the school settles it
   } else {
     my $j = rnd() % 3; my %u = map { $_ => 1 } @{$say[$m]}; delete $u{$say[$m][$j]};
     while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 }
@@ -143,8 +144,8 @@ if ($o{estado}) {                               # the school as it ended: how mu
 ",
     100 * $w255 / $wall, 100 * $w0 / $wall, $r1, $c->{p}, $rsum / $c->{p};
 }
-if ($o{largo}) { printf "largo: pasos %.1f; piezas arriba %.1f; pasos distintos arriba %.1f (promedio de %d vueltas)
-", map({ $_ / $len[3] } @len[0 .. 2]), $len[3]; }
+if ($o{largo}) { printf "largo: pasos %.1f; piezas arriba %.1f; pasos distintos arriba %.1f (promedio de %d vueltas)\n", map({ $_ / $len[3] } @len[0 .. 2]), $len[3]; }
+if ($o{viva}) { printf "viva: descanso en %d de %d senales\n", $c->{rested} // 0, $c->{nsig} // 0; }
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }

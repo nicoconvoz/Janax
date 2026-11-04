@@ -311,3 +311,22 @@ En el modelo Perl las puertas quedan como opción apagada (`puertas=1`), para co
 solo cuando están puestas, así que las huellas viejas con puertas no cambian. Lo que falla es esta versión, que confirma
 demasiado temprano: la idea (*"una melodía que ya dio una respuesta confirmada termina su pulso"*) queda para cuando
 haya con qué medirla.
+
+## La melodía viva, primera versión (Capitán, 2026-11-04)
+
+> *"La puerta es la propia melodía que va sonando y cambiando."* — *"Un bucle es la misma tarea idéntica repetida."*
+
+Modelo (`signal_viva` en `modelo.pl`, `viva=1` en `lazo.pl`; apagada por defecto, las huellas viejas no cambian):
+- una pieza puede volver a despertar, nunca dos pasos seguidos (lo mínimo para que la ola tenga dirección);
+- lo que suena pasa a la señal siguiente, y la señal nueva se suma a eso; una pieza que está sonando no puede ser
+  despertada en el paso siguiente: esa es la puerta;
+- los pasos de una señal siguen mientras alguien despierta por primera vez desde la señal (hay novedad); después la
+  voluntad escucha y la melodía queda como está;
+- descansa (silencio, costo cero) si nadie despierta (murió) o si un paso repite exactamente un estado que ya tuvo
+  desde la señal (bucle: durante una señal los pesos no se mueven, así que se repetiría para siempre).
+
+Medido (4 cosas, 400 vueltas, la voluntad lee el ritmo, semillas 7, 11 y 23): **sin melodía viva, 100 % desde la
+vuelta 100; con melodía viva, 14–34 %: azar.** La melodía casi nunca descansa (5 a 7 de ~490 señales): sigue viva.
+Pero desde la segunda señal la cara de arriba ya está sonando en el paso 0 (4 o 5 piezas, lo que quedó de antes), y
+la voluntad escucha el fondo mezclado con la señal: la respuesta depende más de lo que venía sonando que de lo que
+ella dijo. La melodía vive; lo que falta es cómo la voluntad distingue lo que su señal cambió de lo que ya sonaba.

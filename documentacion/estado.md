@@ -175,3 +175,5 @@ lee pieza y paso; los dos camarotes dan la huella de lazo.pl lee=ritmo bit por b
 y el A/B fue sin puertas: con puertas, 2 de 3 semillas de 7³ se traban leyendo el ritmo. Falta el A/B con puertas.
 2026-11-04 — Sin puertas (Capitán): no compraban nada medido y trababan el ritmo. El lazo de Janax da la huella de
 lazo.pl sin puertas bit por bit (pruebas de razar 14/14). Idea nueva: la puerta es la melodía viva.
+2026-11-04 — La melodía viva (Capitán), primera versión en el modelo: vive (casi nunca descansa), pero la
+voluntad escucha el fondo junto con su señal y los aciertos caen al azar. Falta separar la señal del fondo.
