@@ -1,0 +1,65 @@
+# Janax y Razar
+
+**Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
+artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
+cada pieza tiene sus pruebas.
+
+> *English summary below.*
+
+## Qué hay adentro
+
+- **El idioma Janax** (`escalon0/`, `documentacion/idioma/`): un assembler propio diseñado para traducirse. Un
+  intérprete de referencia y traductores a x86-64 y ARM64 que dan el mismo resultado **bit por bit**.
+- **Janax OS** (`so/`, `documentacion/so/`): el sistema operativo. Camarotes (procesos) que reman en paralelo, una
+  ventanilla de pedidos con porteros (permisos), cajones de memoria con pared que cuida el procesador, cajas que se
+  comparten entre camarotes (nacen con el hijo, se mudan, se enlazan, se fusionan o se asocian por conjuntos), y
+  saludos para avisarse sin gastar nada. Un traductor convierte los programas a código nativo al vuelo.
+- **El ensamblador PDP** (`so/pdp/`): Janax armado por Janax, byte por byte igual que FASM.
+- **Razar** (`razar/`, `documentacion/razar/`): la neurona es un **cardumen** tridimensional. Una señal arranca una
+  cadena que se ramifica en todas las direcciones, las piezas que despiertan juntas aprenden a hablarse, y la
+  **armonía** corta lo que suena mal. Una **voluntad** escucha la melodía y le contesta. Arrancan sin idioma común e
+  inventan uno conversando. Está en un modelo de referencia (Perl) y en Janax, con la misma huella bit por bit.
+
+## Cómo se prueba
+
+Hace falta Windows, Git Bash y [FASM 1.73.35](https://flatassembler.net/). Las pruebas toman FASM de `FASM=` e
+`INCLUDE=` (la carpeta `INCLUDE` de FASM), y el teléfono ARM64, si hay uno, de `ADB=`.
+
+```bash
+FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh
+FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash escalon0/pruebas/correr.sh
+JANAX_SOLO='^razar' bash so/pruebas/correr.sh   # solo una zona
+perl razar/cardumen/lazo.pl nace=7 armonia=1    # el modelo: la voluntad y el cardumen inventando un idioma
+```
+
+## Por dónde empezar a leer
+
+- `documentacion/so/ideas.md`: las ideas, con las palabras de quien las tuvo y la devolución de cada una.
+- `documentacion/so/janaxos.md`: lo construido, cómo se prueba y todo lo medido (incluidos los instrumentos que
+  mintieron).
+- `documentacion/razar/cardumen.md`: el cardumen, la armonía y el idioma que nace.
+- `documentacion/estado.md`: la bitácora, paso a paso.
+
+La documentación está en castellano; los comentarios del código, en inglés.
+
+## Estado
+
+Es un **prototipo de investigación**, no un producto terminado. Corre en Windows (x86-64) y el idioma también en
+ARM64 (Android). Cada número de la documentación dice de qué medición salió.
+
+## English summary
+
+Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built
+to host **Razar**, an artificial reasoning system that thinks in melodies: a three-dimensional "school" of pieces
+where a signal starts a branching cascade, pieces that fire together learn to talk more, and **harmony** cuts what
+sounds wrong. A "will" listens to the melody and answers; starting with no shared language, the two invent one by
+talking. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native
+translator. Documentation is in Spanish.
+
+## Licencia
+
+[Apache 2.0](LICENSE). Copyright 2026 Nicolás Astorga y Resources Open Doors S.A.S. (ver [NOTICE](NOTICE)).
+
+## Contacto
+
+[ingenieriaaplicada@opendoors.com.ar](mailto:ingenieriaaplicada@opendoors.com.ar)

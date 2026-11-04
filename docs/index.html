@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar</title>
+<meta name="description" content="Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento artificial que piensa con melodías.">
+<style>
+  :root {
+    --bg: #f7f6f2; --fg: #1d2330; --muted: #5a6273; --card: #ffffff; --line: #e3e0d6;
+    --accent: #0f6e78; --accent-2: #b5562a; --code: #eef0f3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1419; --fg: #e6e8ec; --muted: #9aa3b2; --card: #171e26; --line: #27313d;
+            --accent: #4fc1c9; --accent-2: #f0925f; --code: #1f2731; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 64px 0 40px; border-bottom: 1px solid var(--line); }
+  .kicker { color: var(--accent-2); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 13px; }
+  h1 { font-size: clamp(34px, 6vw, 56px); line-height: 1.1; margin: 10px 0 16px; }
+  .lead { font-size: 20px; color: var(--muted); max-width: 720px; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn { display: inline-block; padding: 11px 18px; border-radius: 10px; text-decoration: none; font-weight: 600;
+         border: 1px solid var(--accent); }
+  .btn.solid { background: var(--accent); color: var(--bg); }
+  section { padding: 48px 0; border-bottom: 1px solid var(--line); }
+  h2 { font-size: 28px; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 28px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .card h3 { margin: 0 0 6px; font-size: 19px; }
+  .card p { margin: 0; color: var(--muted); }
+  .card .riddle { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); font-style: italic; color: var(--fg); }
+  .emoji { font-size: 26px; display: block; margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line);
+          border-radius: 14px; overflow: hidden; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 14px; }
+  tr:last-child td { border-bottom: 0; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto;
+        font: 14px/1.5 ui-monospace, Consolas, monospace; }
+  .links a { display: block; padding: 14px 16px; background: var(--card); border: 1px solid var(--line);
+             border-radius: 12px; text-decoration: none; color: var(--fg); }
+  .links a strong { color: var(--accent); }
+  .links a span { display: block; color: var(--muted); font-size: 15px; }
+  blockquote { margin: 0; padding: 18px 20px; border-left: 4px solid var(--accent-2); background: var(--card);
+               border-radius: 0 12px 12px 0; }
+  footer { padding: 36px 0 56px; color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="kicker">Código abierto · Apache 2.0</div>
+    <h1>Janax y Razar</h1>
+    <p class="lead">Un sistema operativo, un idioma y un ensamblador <strong>propios</strong>, escritos a mano en
+      assembler, hechos para alojar a <strong>Razar</strong>: un razonamiento artificial que piensa con melodías.</p>
+    <div class="buttons">
+      <a class="btn solid" href="https://github.com/nicoconvoz/Janax">Entrá al código</a>
+      <a class="btn" href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/ideas.md">Leé las ideas</a>
+      <a class="btn" href="#probalo">Probalo</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Qué es, en una frase</h2>
+    <p class="sub">Todo, desde el idioma hasta el sistema operativo, está hecho desde cero, y cada pieza tiene sus
+      pruebas y sus números. Sin motores ni bibliotecas de terceros.</p>
+    <div class="grid">
+      <div class="card"><span class="emoji">🔤</span><h3>El idioma Janax</h3>
+        <p>Un assembler propio, diseñado para traducirse. Un intérprete de referencia y traductores a x86-64 y
+          ARM64 que dan el mismo resultado bit por bit.</p></div>
+      <div class="card"><span class="emoji">🚢</span><h3>Janax OS</h3>
+        <p>Camarotes que reman en paralelo, una ventanilla con porteros, memoria con pared, cajas que se comparten y
+          saludos para avisarse. Los programas se traducen a código nativo al vuelo.</p></div>
+      <div class="card"><span class="emoji">🛠️</span><h3>El ensamblador PDP</h3>
+        <p>Janax armado por Janax: arma sus propios programas byte por byte igual que FASM.</p></div>
+      <div class="card"><span class="emoji">🐟</span><h3>Razar</h3>
+        <p>Una neurona tridimensional que aprende melodías, una armonía que corta lo que suena mal y una voluntad
+          que escucha y contesta. Juntas inventan un idioma.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Las ideas, como acertijos</h2>
+    <p class="sub">El proyecto se diseñó con metáforas y acertijos para chicos. Acá van algunos, cada uno con lo que
+      de verdad hace el código.</p>
+    <div class="grid">
+      <div class="card"><span class="emoji">🧱</span><h3>Cajones con pared</h3>
+        <p>Cada bloque de memoria se apoya contra una página que el procesador prohíbe: pasarse un byte frena solo,
+          sin preguntar. Reserva solo lo que necesita.</p>
+        <p class="riddle">Si metés la mano más allá del cajón, te chocás la pared. Nadie tiene que vigilarte.</p></div>
+      <div class="card"><span class="emoji">📦</span><h3>Cajas que se comparten</h3>
+        <p>Un hijo nace con la caja de su madre, una caja se muda, dos camarotes se enlazan, dos cajas se fusionan, y
+          un hijo nace con las cajas de dos padres según su diagrama de Venn. Sin copiar un byte.</p>
+        <p class="riddle">Mamá no le da una copia del dibujo: le da el mismo cajón. Lo que pone uno, lo ve el otro.</p></div>
+      <div class="card"><span class="emoji">👋</span><h3>El saludo</h3>
+        <p>Una marca por familiar que saluda, que queda hasta que se la mira. Quien espera duerme sin gastar nada.
+          Medido: unas 3 veces más rápido que los eventos de Windows.</p>
+        <p class="riddle">El timbre suena una vez y la marca queda. Si llegó antes de que mires, igual la encontrás.</p></div>
+      <div class="card"><span class="emoji">🎶</span><h3>La armonía</h3>
+        <p>Una pieza no pasa el pulso si la despiertan a la vez más de la mitad de sus vecinas: eso es convulsión, no
+          música. Sin armonía no hay idioma; con armonía, nace.</p>
+        <p class="riddle">Cada uno puede aportar su nota, pero cuando todos gritan a la vez ya no hay canción.</p></div>
+      <div class="card"><span class="emoji">💓</span><h3>La voluntad</h3>
+        <p>Escucha la melodía del cardumen y le contesta, y esa respuesta vuelve a entrar. En Janax son dos camarotes
+          que se pasan el turno con saludos sobre una caja compartida.</p>
+        <p class="riddle">Como dos amigos diseñando con acertijos: cada uno contesta en un idioma que el otro entiende.</p></div>
+      <div class="card"><span class="emoji">🐠</span><h3>El cardumen</h3>
+        <p>Cada pieza habla solo con sus vecinas, y la melodía completa es de la red. Las piezas que despiertan
+          juntas aprenden a hablarse, y la forma la mueve la interacción, nunca un reloj.</p>
+        <p class="riddle">Ningún pez sabe adónde va el cardumen, y aun así el cardumen gira como una sola mente.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Lo que está medido</h2>
+    <p class="sub">Ningún número entra porque parezca razonable: cada uno dice de qué medición salió. Detalle en la
+      documentación, incluidos los instrumentos que mintieron y cómo se descubrió.</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Qué</th><th>Resultado</th></tr>
+      <tr><td>La voluntad y el cardumen, sin idioma común, con armonía (4 cosas para decir; el azar es 25 %)</td><td class="num">→ 100 % de aciertos</td></tr>
+      <tr><td>Razar en Janax contra el modelo de referencia en Perl (4.000 vueltas, misma huella)</td><td class="num">~70 veces más rápido</td></tr>
+      <tr><td>El cardumen y su voluntad en Janax: huella del modelo en tres motores y con 1, 2 y 4 remeros</td><td class="num">igual bit por bit</td></tr>
+      <tr><td>Saludo ida y vuelta entre camarotes, contra eventos de Windows entre hilos</td><td class="num">~0,64 µs vs ~2,05 µs</td></tr>
+      <tr><td>500 hijos con 16 MB cada uno: memoria comprometida, sin devolver y devolviendo</td><td class="num">7.717 MB → 26 MB</td></tr>
+      <tr><td>33.000 cajones de memoria vivos a la vez</td><td class="num">649 ms</td></tr>
+      <tr><td>Cálculo traducido a nativo, contra x86 escrito a mano</td><td class="num">~1,8 veces</td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Entrá al código y a los documentos</h2>
+    <p class="sub">La documentación está en castellano; los comentarios del código, en inglés.</p>
+    <div class="grid links">
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/ideas.md"><strong>Las ideas</strong><span>Con las palabras de quien las tuvo y la devolución de cada una.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/cardumen.md"><strong>El cardumen de Razar</strong><span>La neurona, la armonía y el idioma que nace.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/janaxos.md"><strong>Janax OS</strong><span>Lo construido, cómo se prueba y todo lo medido.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/idioma/especificacion-v0.md"><strong>El idioma Janax</strong><span>Instrucciones, codificación y reglas.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/tree/master/razar/cardumen"><strong>razar/cardumen</strong><span>El modelo en Perl y el cardumen y la voluntad en Janax.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/tree/master/so"><strong>so/</strong><span>El sistema operativo, en assembler.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/estado.md"><strong>La bitácora</strong><span>El camino, paso a paso, con lo medido en cada uno.</span></a>
+    </div>
+  </div>
+</section>
+
+<section id="probalo">
+  <div class="wrap">
+    <h2>Probalo</h2>
+    <p class="sub">Hace falta Windows, Git Bash y <a href="https://flatassembler.net/">FASM 1.73.35</a>. Para ver nacer
+      un idioma alcanza con Perl.</p>
+    <pre>git clone https://github.com/nicoconvoz/Janax
+cd Janax
+perl razar/cardumen/lazo.pl nace=7 armonia=1          # la voluntad y el cardumen inventando un idioma
+FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh</pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <blockquote>Es un <strong>prototipo de investigación</strong>, no un producto terminado. Se comparte para que
+      cualquiera pueda leerlo, aprender de él, probarlo y mejorarlo.</blockquote>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Janax y Razar · Copyright 2026 Nicolás Astorga y Resources Open Doors S.A.S. ·
+    <a href="https://github.com/nicoconvoz/Janax/blob/master/LICENSE">Licencia Apache 2.0</a><br>
+    Contacto: <a href="mailto:ingenieriaaplicada@opendoors.com.ar">ingenieriaaplicada@opendoors.com.ar</a><br>
+    <em>English:</em> a hand-written operating system, language and assembler built to host Razar, an artificial
+    reasoning system that thinks in melodies. Documentation is in Spanish.
+  </div>
+</footer>
+</body>
+</html>

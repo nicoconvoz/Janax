@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "Si usás este trabajo, citalo así. / If you use this work, please cite it as below."
+title: "Janax y Razar"
+abstract: "Un sistema operativo, un idioma y un ensamblador propios, escritos a mano en assembler, hechos para alojar a Razar: un razonamiento artificial que piensa con melodías."
+type: software
+authors:
+  - family-names: "Astorga"
+    given-names: "Nicolás"
+    affiliation: "Resources Open Doors S.A.S."
+contact:
+  - name: "Resources Open Doors S.A.S."
+    email: "ingenieriaaplicada@opendoors.com.ar"
+license: Apache-2.0
+repository-code: "https://github.com/nicoconvoz/Janax"
+keywords:
+  - "operating system"
+  - "assembly"
+  - "artificial intelligence"
+  - "Razar"
+  - "Janax"

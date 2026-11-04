@@ -5,8 +5,8 @@
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 raiz=$(dirname "$aqui")
-fasm=/e/DevCache/fasm/FASM.EXE
-export INCLUDE="E:/DevCache/fasm/INCLUDE"
+fasm=${FASM:-/e/DevCache/fasm/FASM.EXE}            # FASM 1.73.35 (FASM=... to use another place)
+export INCLUDE="${INCLUDE:-E:/DevCache/fasm/INCLUDE}"
 salida="$raiz/build"
 mkdir -p "$salida"
 
@@ -99,7 +99,7 @@ else
 fi
 
 # --- ARM64 on a real phone through adb (no emulators: house rule) ---
-adb=/c/Users/Nico/AppData/Local/Android/Sdk/platform-tools/adb.exe
+adb=${ADB:-$(command -v adb || echo "$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe")}   # ADB=... to use another place
 if ! "$fasm" "$raiz/traductor_arm64.asm" "$salida/traductor_arm64.exe" > "$salida/traductor_arm64.log" 2>&1; then
   echo "traductor_arm64.asm no ensambla:"; cat "$salida/traductor_arm64.log"; exit 1
 fi

@@ -7,8 +7,8 @@ set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 raiz=$(dirname "$aqui")
 proyecto=$(dirname "$raiz")
-fasm=/e/DevCache/fasm/FASM.EXE
-export INCLUDE="E:/DevCache/fasm/INCLUDE"
+fasm=${FASM:-/e/DevCache/fasm/FASM.EXE}            # FASM 1.73.35 (FASM=... to use another place)
+export INCLUDE="${INCLUDE:-E:/DevCache/fasm/INCLUDE}"
 salida="$raiz/build"
 mkdir -p "$salida"
 
