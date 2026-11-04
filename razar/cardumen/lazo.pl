@@ -12,6 +12,8 @@ use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (w0 => 40, th => 100, rate => 20, k => 4, rounds => 400, @ARGV ? map { split /=/ } @ARGV : ());
 my $seed = 12345;
 sub rnd { $seed = ($seed * 1103515245 + 12345) % 2147483648; return $seed; }   # the will's dice
+my $seed2 = ($o{nace} // 0) * 7919 + 1;          # other dice, only for lee=revuelto, so the will's own throws stay the same
+sub rnd2 { $seed2 = ($seed2 * 1103515245 + 12345) % 2147483648; return $seed2 >> 16; }
 my $c = Cardumen->new(n => $o{n} // 4, w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{nace} // 0);
 my $n = $c->{n};
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
@@ -36,15 +38,26 @@ for my $r (1 .. $o{rounds}) {
   my $mel = $c->signal(@{$say[$m]});
   my @answer = grep { $top{$_} } map { @$_ } @$mel;
   $reached++ if @answer;
+  my @feat = @answer;                           # what the will listens to (lee=): piezas, which top pieces woke (the
+  if (($o{lee} // 'piezas') ne 'piezas') {      # default); ritmo, which and when (the melody: piece and step); revuelto,
+    my @at;                                     # the same pieces and the same steps, the steps shuffled among the pieces
+    for my $t (0 .. $#$mel) { push @at, map { [$_, $t] } grep { $top{$_} } @{ $mel->[$t] }; }   # by other dice (the
+    if ($o{lee} eq 'revuelto') {                # control: as big a will, no rhythm)
+      my @t = map { $_->[1] } @at;
+      for (my $i = $#t; $i > 0; $i--) { my $j = rnd2() % ($i + 1); @t[$i, $j] = @t[$j, $i]; }
+      $at[$_][1] = $t[$_] for 0 .. $#at;
+    }
+    @feat = map { "$_->[0]:$_->[1]" } @at;
+  }
   my ($best, $bs, $bt) = (-1, 0, 1);            # the thing whose pieces it heard most, as a share of all it heard
   for my $g (0 .. $o{k}-1) {
     next unless $heard[$g];
-    my $s = 0; $s += $read[$g]{$_} // 0 for @answer;
+    my $s = 0; $s += $read[$g]{$_} // 0 for @feat;
     ($best, $bs, $bt) = ($g, $s, $heard[$g]) if $s * $bt > $bs * $heard[$g];
   }
   $best = rnd() % $o{k} if $best < 0;            # nothing learned that helps: a guess
-  $read[$m]{$_}++ for @answer;                  # it knows what it meant: it learns what that sounded like
-  $heard[$m] += @answer;
+  $read[$m]{$_}++ for @feat;                    # it knows what it meant: it learns what that sounded like
+  $heard[$m] += @feat;
   my $hit = ($best == $m && @answer) ? 1 : 0;
   $lastwrong[$m] = $r unless $hit;
   if ($r > $tail) { $said[$m]++; $hits[$m] += $hit; $conf[$m][$best]++; }
@@ -96,6 +109,14 @@ if ($o{congelar}) {                             # the school frozen: each thing 
       $sum{$kind} += $dist->($v->[$a], $v->[$b]); $cnt{$kind}++;
     } }
     printf "distancias (%s): %s\n", $name, join("; ", map { sprintf "%s %.1f (%d pares)", $_, $sum{$_} / $cnt{$_}, $cnt{$_} } grep { $cnt{$_} } qw(aprendidas fallidas mixtas));
+  }
+  for my $what (['sin ritmo', \@topa], ['con ritmo', \@rhythm]) {   # does the distance predict the confusion? every pair
+    my ($name, $v) = @$what; my (%pairs, %conf);
+    for my $a (0 .. $o{k} - 1) { for my $b ($a + 1 .. $o{k} - 1) {
+      my $d = $dist->($v->[$a], $v->[$b]); my $g = $d <= 1 ? '0-1' : $d <= 3 ? '2-3' : $d <= 6 ? '4-6' : '7+';
+      $pairs{$g}++; $conf{$g} += ($conf[$a][$b] // 0) + ($conf[$b][$a] // 0);
+    } }
+    printf "confusion por distancia (%s): %s\n", $name, join("; ", map { sprintf "%s: %d pares, %.1f confusiones por par", $_, $pairs{$_}, $conf{$_} / $pairs{$_} } grep { $pairs{$_} } qw(0-1 2-3 4-6 7+));
   }
   for my $m (grep { !$learned[$_] } 0 .. $o{k} - 1) {
     my ($near, $nd) = (-1, 1e9);
