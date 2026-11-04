@@ -247,7 +247,8 @@ Resultado más abajo: gana, 19 de 20 en 7³.
 Regla congelada antes de mirar (commit `c405cb7`): `lee=ritmo` hace que la voluntad lea cada pieza de la cara de arriba
 junto con el paso en que despertó (`pieza:paso`). `lee=piezas` es la de siempre. `lee=revuelto` es el control: las mismas
 piezas con los mismos pasos, pero barajados entre sí (si gana por tener más rasgos y no por el ritmo, el revuelto
-también ganaría). 20 semillas nuevas (1001–1020), 16 cosas, se corta al acertar 4·k veces seguidas; tope 20.000 vueltas
+también ganaría). 20 semillas nuevas (1001–1020), 16 cosas, **con armonía y sin puertas** (como todos los barridos de esta página),
+se corta al acertar 4·k veces seguidas; tope 20.000 vueltas
 en 4³ y 12.000 en 7³. `bash razar/cardumen/ab.sh`, 4.573 s en 4 núcleos.
 
 | cubo | lectura | convergieron | mediana de vueltas |
@@ -282,3 +283,21 @@ cada una (un byte por pieza, caja + 48). La voluntad lleva la cuenta por cosa, p
 un paso nunca llega a 64, porque en cada paso despierta alguien nuevo o la ola termina), y su camarote crece de 2000h
 a A000h bytes. Los dos camarotes dan la huella de `lazo.pl nace=7 armonia=1 puertas=1 rounds=200 huella=1 lee=ritmo`
 (`00003F692A4BBA23`) bit por bit, en los tres motores.
+
+**Tres mediciones después del A/B** (2026-11-04):
+
+- **El largo de la melodía** (`largo=1`: promedio de 1.000 vueltas, leyendo el ritmo, semillas 1001–1005). 4³: ~7
+  pasos, ~9 piezas arriba, ~3,8 pasos distintos arriba. 7³: ~13,5 pasos, ~22 piezas arriba, ~7 pasos distintos arriba.
+  El 7³ le da a la voluntad más o menos el doble de ritmo. Pero dentro del 4³ el largo no separa: las dos semillas que
+  llegaron (1007: 3,5 pasos distintos; 1010: 4,0) no tienen melodías más largas que las que no (1006: 4,1; 1008: 3,5).
+  La sospecha "en 4³ falta ritmo" queda a medias: explica la diferencia entre cubos, no cuál semilla de 4³ llega.
+- **El reloj.** En Perl, una vuelta de 7³ cuesta ~21 ms. Una convergencia típica del A/B (llegada 55–102, y 64 vueltas
+  más de confirmación) tarda **3 a 4,3 segundos**. En Janax hoy solo se puede medir el 4³ de 4 cosas (el cardumen de
+  Janax está armado para 4³). Sus 200 vueltas tardan ~150 ms con el traductor y ~255 ms con el intérprete (con ~75 ms
+  de arranque), contra ~670 ms en Perl.
+  ⚠️ **Instrumento:** con `JANAX_CAMBIO=0` (el de la suite, donde el SO cambia de camarote a cada rato) los tres motores
+  tardan ~1 s y parecen iguales. Los relojes se miden con `JANAX_CAMBIO=24`, como la medición de Janax contra Perl.
+- ⚠️ **Con puertas no es lo mismo.** El A/B corrió sin puertas; la voluntad de Janax y su prueba corren con puertas.
+  En 7³ con puertas y leyendo el ritmo, la 1001 llega (vuelta 89), pero la 1018 y la 1011 no llegan en 12.000 vueltas,
+  y sin puertas llegaban en la 55 y la 147. Las puertas (las melodías confirmadas quedan afinadas para siempre) pueden
+  trabar lo que el ritmo destraba. Falta el A/B con puertas para saberlo.

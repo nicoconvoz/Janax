@@ -26,6 +26,7 @@ my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top 
 my @heard = (0) x $o{k};                        # how many top pieces it heard for each thing, in all
 my ($ok, $reached) = (0, 0); my @blocks;
 my @lastwrong = (0) x $o{k};                  # congelar=1: the round each thing was last missed
+my @len = (0, 0, 0, 0);                       # largo=1: steps, top pieces, distinct top steps, rounds
 my ($streak, $arrived) = (0, 0);                # hasta=1: it stops when it learned everything: 4 * k rounds in a row
                                                  # right (each thing about 4 times; a criterion, not a measurement);
                                                  # rounds is then the ceiling, and it reports the round it arrived at
@@ -48,6 +49,10 @@ for my $r (1 .. $o{rounds}) {
       $at[$_][1] = $t[$_] for 0 .. $#at;
     }
     @feat = map { "$_->[0]:$_->[1]" } @at;
+  }
+  if ($o{largo}) {                              # largo=1: how long the melody is, and how much rhythm reaches the top
+    my %st; $st{$_} = 1 for map { my $t = $_; (grep { $top{$_} } @{ $mel->[$t] }) ? ($t) : () } 0 .. $#$mel;
+    $len[0] += @$mel; $len[1] += @answer; $len[2] += keys %st; $len[3]++;
   }
   my ($best, $bs, $bt) = (-1, 0, 1);            # the thing whose pieces it heard most, as a share of all it heard
   for my $g (0 .. $o{k}-1) {
@@ -137,6 +142,8 @@ if ($o{estado}) {                               # the school as it ended: how mu
 ",
     100 * $w255 / $wall, 100 * $w0 / $wall, $r1, $c->{p}, $rsum / $c->{p};
 }
+if ($o{largo}) { printf "largo: pasos %.1f; piezas arriba %.1f; pasos distintos arriba %.1f (promedio de %d vueltas)
+", map({ $_ / $len[3] } @len[0 .. 2]), $len[3]; }
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }

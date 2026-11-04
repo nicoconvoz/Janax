@@ -171,3 +171,5 @@ paso, 7³ converge 19 de 20 con mediana 62 vueltas (leyendo solo piezas: 6 de 20
 da 0 de 20. Código temporal, no de frecuencia. En 4³ apenas 2 de 20: ahí el límite es del cubo.
 2026-11-04 — La voluntad de Janax escucha la melodía: el cardumen le pasa el paso de cada pieza de arriba y ella
 lee pieza y paso; los dos camarotes dan la huella de lazo.pl lee=ritmo bit por bit en los tres motores. SO 320/320.
+2026-11-04 — Después del A/B: el 7³ da el doble de ritmo que el 4³; una convergencia de 7³ tarda 3–4 s en Perl;
+y el A/B fue sin puertas: con puertas, 2 de 3 semillas de 7³ se traban leyendo el ritmo. Falta el A/B con puertas.
