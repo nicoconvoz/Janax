@@ -189,3 +189,4 @@ ola más que entrena al cardumen. Bucle de la charla corregido. La tabla de la v
 sin diálogo. El diálogo se archiva, como la melodía viva.
 2026-11-04 — La placa de video (Capitán): con el cardumen quieto la voluntad sola aprende 4 cosas al 100 %, pero
 en 7³ con 16 cosas llegan 2 de 5 contra 5 de 5 si el cardumen aprende.
+2026-11-04 — Decisión (Capitán): la memoria vive en la voluntad, el cardumen sigue aprendiendo su circuito.
