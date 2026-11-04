@@ -1,5 +1,7 @@
 # Janax y Razar
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
+
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
 cada pieza tiene sus pruebas.
@@ -55,6 +57,10 @@ where a signal starts a branching cascade, pieces that fire together learn to ta
 sounds wrong. A "will" listens to the melody and answers; starting with no shared language, the two invent one by
 talking. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native
 translator. Documentation is in Spanish.
+
+## Cómo citarlo
+
+Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
 
 ## Licencia
 
