@@ -183,3 +183,5 @@ son de una sola), pero la voluntad, que cuenta notas sueltas, no lo oye: acierto
 llega a 34–48 %. El fondo común tapa la parte que dijo la señal.
 2026-11-04 — La canción la sostiene la voluntad (Capitán): con el cardumen callado entre olas el idioma vuelve
 (100 % con 4 cosas); el diálogo, tal como está, resta un poco (8 cosas: 50–88 % contra 86–100 %).
+2026-11-04 — El diálogo no resta por leer la última vuelta (la primera adivina igual); resta porque cada eco es una
+ola más que entrena al cardumen. Bucle de la charla corregido. La tabla de la voluntad en 7³ pide crecer a la medida (L2).

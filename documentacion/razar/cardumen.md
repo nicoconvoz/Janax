@@ -384,3 +384,22 @@ ritmo, semillas 7, 11, 23, últimos 4 bloques de 50:
 - **El diálogo, tal como está, no suma todavía: resta un poco.** La voluntad contesta repitiendo lo que pertenece, y
   adivina con lo último que oyó. Lo que falta es que la conversación entera sea lo que se reconoce, no su última
   vuelta. La melodía viva del cardumen (`viva=1`) queda en el modelo como lo que se midió: una convulsión.
+
+**¿El diálogo resta porque la voluntad lee solo la última vuelta?** (2026-11-04). Se verificó antes de construir nada
+(`vueltas=1`: un lector aparte para cada vuelta de la charla, que solo mira). **No.**
+- La vuelta 0 (la frase de la voluntad) adivina igual o mejor que la última: con 8 cosas, semilla 11, la vuelta 0 da
+  84 % y la última 84 %. Leer la conversación entera no iba a sumar; no se construyó, ni su control barajado.
+- El instrumento destapó un error de Doc: la charla llegaba siempre al tope de 16 respuestas en un ping-pong A, B, A,
+  B, porque el bucle solo se buscaba contra la respuesta anterior. Ahora un bucle es repetir cualquier respuesta ya dada
+  en la charla (la misma corrección que la melodía viva).
+- Con el bucle bien detectado, la charla dura 3 a 4,5 respuestas y el diálogo resta más: con 8 cosas, 26–64 %, contra
+  86–100 % sin diálogo. Lo que daña no es qué vuelta se lee: cada respuesta es una ola más que el cardumen aprende, y
+  el eco lo entrena con lo que la voluntad repite, no con lo que quiso decir.
+
+**El camarote y el caché** (la máquina del Capitán: Intel Pentium Gold G5420, 2 núcleos; L1 de datos 32 KB por núcleo,
+L2 256 KB por núcleo, L3 4 MB compartido). La tabla de la voluntad que lee pieza y paso, con su tope de pasos (un paso
+nunca llega a la cantidad de piezas): 4³ con 4 cosas, 32 KB, justo el L1 de datos; 7³ con 16 cosas, ~2,1 MB, fuera del
+L2 y dentro del L3. El cardumen mismo es chico (4³ ~1,5 KB, 7³ ~8 KB). Pero el tope es el peor caso: una melodía de 7³
+dura ~13,5 pasos (medido), así que una tabla que crezca a la medida del uso (la regla del plástico) quedaría cerca de
+16 × 49 × ~30 × 8 ≈ 190 KB, dentro del L2. Agregarle la vuelta de la charla lo multiplicaría por las vueltas; como no
+suma, no hace falta.

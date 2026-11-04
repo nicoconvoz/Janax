@@ -44,6 +44,7 @@ sub melody_feats {
   for my $i (0 .. $#s) { for my $j ($i + 1 .. $#s) { push @f, "$s[$i][0]>$s[$j][0]:" . ($s[$j][1] - $s[$i][1]); } }
   return \@f;
 }
+my (%vr, %vh, %vn, %vok);                       # vueltas=1: per exchange, what was heard, and its hits over the last quarter
 my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
 sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
@@ -75,9 +76,10 @@ for my $r (1 .. $o{rounds}) {
       my @at; for my $t (0 .. $#$ml) { push @at, map { [$_, $t] } grep { $top{$_} } @{ $ml->[$t] }; }   # bottom piece
       my @f = $o{lee} =~ /^(relativo|intervalos)$/ ? @{ melody_feats(\@at) } : map { "$_->[0]:$_->[1]" } @at;
       return (\@an, \@f);                       # under it; the rest (the background) it does not repeat. It ends when
-    };                                          # nothing belongs, or the answer repeats the one before (a loop)
+    };                                          # nothing belongs, or the answer repeats any it gave (a loop)
     my $all = 0; $all += $_ for @heard;
-    my ($prev, $ex) = ('', 0);
+    my %said; my $ex = 0;                        # the answers it already gave in this talk: a loop is a repeat of any of them
+    my @hist = ([@feat]);                       # vueltas=1: what it heard in each exchange of the talk
     while ($heard[$m] && $ex < $n * $n) {       # at most one exchange per top piece (a criterion, not a measurement)
       my %tot; for my $g (0 .. $o{k} - 1) { $tot{$_} += $read[$g]{$_} // 0 for @feat; }
       my %echo; for my $f (@feat) {
@@ -85,12 +87,22 @@ for my $r (1 .. $o{rounds}) {
         my ($head) = split /:/, $f; $echo{$_ - $n * $n * ($n - 1)} = 1 for split />/, $head;
       }
       my $key = join ',', sort { $a <=> $b } keys %echo;
-      last if $key eq '' || $key eq $prev;
-      $prev = $key; $ex++;
+      last if $key eq '' || $said{$key}++;
+      $ex++;
       $mel = sig(sort { $a <=> $b } keys %echo);
       my ($an, $fe) = $hear->($mel); @answer = @$an; @feat = @$fe;
+      push @hist, [@feat];
     }
     $len[4] += $ex;
+    if ($o{vueltas}) {                         # a reader of its own for each exchange alone, and one for the last: does an
+      for my $e ((map { [$_, $hist[$_]] } 0 .. $#hist), ['ultima', $hist[-1]]) {   # earlier exchange carry the thing?
+        my ($id, $fs) = @$e; my ($bg, $bsum, $btot) = (-1, 0, 1);
+        for my $g (0 .. $o{k} - 1) { my $hh = $vh{$id}[$g] or next; my $s = 0; $s += $vr{$id}[$g]{$_} // 0 for @$fs;
+          ($bg, $bsum, $btot) = ($g, $s, $hh) if $s * $btot > $bsum * $hh; }
+        if ($r > $tail) { $vn{$id}++; $vok{$id}++ if $bg == $m; }
+        $vr{$id}[$m]{$_}++ for @$fs; $vh{$id}[$m] += @$fs;
+      }
+    }
   }
   my ($best, $bs, $bt) = (-1, 0, 1);            # the thing whose pieces it heard most, as a share of all it heard
   for my $g (0 .. $o{k}-1) {
@@ -184,6 +196,8 @@ if ($o{estado}) {                               # the school as it ended: how mu
 if ($o{largo}) { printf "largo: pasos %.1f; piezas arriba %.1f; pasos distintos arriba %.1f (promedio de %d vueltas)\n", map({ $_ / $len[3] } @len[0 .. 2]), $len[3]; }
 if ($o{viva}) { printf "viva: descanso en %d de %d senales\n", $c->{rested} // 0, $c->{nsig} // 0; }
 if ($o{dialogo}) { printf "dialogo: %.2f respuestas de la voluntad por vuelta\n", ($len[4] // 0) / $o{rounds}; }
+if ($o{vueltas}) { print "vueltas (aciertos de cada vuelta sola, ultimo cuarto):", join("", map { sprintf " %s=%d%% en %d", $_, 100 * ($vok{$_} // 0) / $vn{$_}, $vn{$_} } sort { ($a eq 'ultima') <=> ($b eq 'ultima') || $a <=> $b } grep { $vn{$_} } keys %vn), "
+"; }
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }
