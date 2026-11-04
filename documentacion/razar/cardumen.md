@@ -204,3 +204,20 @@ criterio y no medición, con tope de 50.000 vueltas), 16 cosas, 5 semillas:
   asentado, no se rompe más. Lo que falta es la regla del Capitán para **aflojar** (*"la relación se conserva,
   evoluciona o cambia según responda la vecina"*): que una relación que deja de funcionar se afloje y la pieza recupere
   velocidad.
+
+**El diagnóstico antes de la cura** (`estado=1` en `lazo.pl`: cuánto del cardumen quedó fijo), 16 cosas, a las 10.000
+vueltas:
+
+| Cubo | Aciertos al final | Pesos en 255 | Piezas con velocidad 1 | Velocidad media |
+|---|---|---|---|---|
+| 7³, semilla 99 (trabado) | 80–82 % | 89,9 % | 326 de 343 | 1,94 |
+| 7³, semilla 7 (llegó) | 100 % | 90,0 % | 323 de 343 | 2,11 |
+| 4³, semilla 7 (trabado) | 62–64 % | 76,7 % | 57 de 64 | 3,08 |
+
+**La hipótesis de la saturación queda refutada**: el que llegó y el que se trabó están igual de saturados (90 % de los
+pesos en el techo, 95 % de las piezas sin velocidad), y un 4³ ya está así a las 400 vueltas. La rigidez del cardumen es
+de todos y temprana; no es lo que separa a los que llegan. Por lo tanto **aflojar las relaciones del cardumen no tiene
+por qué destrabar nada**, y se habría construido una cura para una enfermedad que no es. Lo que queda por mirar: si las
+respuestas del cardumen para las cosas no aprendidas son de verdad distintas de las de otras cosas (y entonces la
+voluntad lee mal: su memoria de lectura solo crece y nunca olvida) o si son iguales (y entonces su búsqueda de cómo
+decirlas no encuentra salida).

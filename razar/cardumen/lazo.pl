@@ -74,6 +74,16 @@ if ($o{huella}) {                               # and the school as it ended: it
   printf "%016X
 ", $h; exit;
 }
+if ($o{estado}) {                               # the school as it ended: how much of it is fixed
+  my ($w255, $w0, $wall, $r1, $rsum) = (0, 0, 0, 0, 0);
+  for my $i (0 .. $c->{p} - 1) {
+    for my $d (0 .. 5) { next if $c->neighbor($i, $d) < 0; $wall++; my $w = $c->{w}[$i][$d]; $w255++ if $w == 255; $w0++ if $w == 0; }
+    $r1++ if $c->{rate}[$i] == 1; $rsum += $c->{rate}[$i];
+  }
+  printf "estado: pesos en 255 %.1f%%, en 0 %.1f%%; piezas con velocidad 1: %d de %d; velocidad media %.2f
+",
+    100 * $w255 / $wall, 100 * $w0 / $wall, $r1, $c->{p}, $rsum / $c->{p};
+}
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }
