@@ -472,3 +472,31 @@ Prueba de arranque: 16 cosas, vocabulario de 16, mensajes de 2 símbolos, redes 
 épocas de 100 tandas de 32 juegos: la prueba sube de 12,5 % a 25 % en tres épocas y queda ahí. Corre y aprende; la
 comparación de verdad todavía no se hizo. Falta igualar el presupuesto (cada juego de EGG contra cada vuelta de Razar),
 el tamaño de las redes y las semillas, antes de que el número compare algo.
+
+## Razar contra una red convencional (2026-11-04)
+
+`bash razar/cardumen/convencional.sh` (condiciones fijadas antes de correr, en la cabecera del script). El mismo juego
+de señales de Lewis, semillas 1001–1005, cosas igual de probables. Razar lee el ritmo, con armonía y sin puertas. EGG
+(`egg.zoo.channel`, REINFORCE) con lo de fábrica, salvo lo que se le dio de ventaja: mensajes de hasta 3 símbolos de 16
+(más de 4.000; Razar tiene 560 frases en 4³), redes de 64 y hasta 320.000 juegos. Juegos hasta aprender todas las cosas:
+
+| | semillas 1001–1005 | llegaron | tiempo por corrida |
+|---|---|---|---|
+| Razar, 4 cosas, 4³ | 13, 22, 11, 5, 58 | 5 de 5 | 0,4 s |
+| EGG, 4 cosas | 3.200, 49.600, 3.200, 1.600, 1.600 | 5 de 5 | 17 s |
+| Razar, 8 cosas, 4³ | 12.302, 410, 277, no, 306 | 4 de 5 | 37 s |
+| Razar, 8 cosas, 7³ | 17, 14, 14, 53, 20 | 5 de 5 | 2 s |
+| EGG, 8 cosas | no, 105.600, no, no, no | 1 de 5 (final: 87, 100, 87, 87, 75 %) | 134 s |
+| Razar, 16 cosas, 7³ | 102, 51, 99, 62, 35 | **5 de 5** | 4,7 s |
+| EGG, 16 cosas | no en 320.000 juegos | **0 de 5** (final: 87, 44, 62, 62, 69 %) | 152 s |
+
+- **Razar aprende todo el idioma con 16 cosas en 35 a 102 juegos, las 5 semillas. EGG, con 320.000 juegos y mensajes
+  más ricos, no llega en ninguna** (se queda entre 44 y 87 %: el idioma a medias, con cosas que comparten señal, que
+  la literatura describe para este juego con REINFORCE).
+- Con 4 cosas aprenden los dos; Razar en decenas de juegos, EGG en miles. Del orden de 100 a 1.000 veces menos juegos.
+- Salvedades del instrumento: EGG se mide por épocas de 1.600 juegos, así que su número puede ser hasta 1.600 menos.
+  La llegada de Razar es el comienzo de su racha de 4·k aciertos; confirmarla le cuesta 4·k juegos más (64 con 16
+  cosas). Ninguna de las dos cambia el orden de magnitud.
+- Lo que esto no dice: EGG es una red general (aprende de cualquier entrada, con descenso por gradiente), y acá juega
+  un juego chico de cosas sueltas; con otros ajustes (tasa de aprendizaje, Gumbel-Softmax en vez de REINFORCE, más
+  entrenamiento) puede llegar más lejos. Se usó lo de fábrica a propósito, para no afinarla a mano en contra ni a favor.
