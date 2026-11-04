@@ -448,3 +448,27 @@ aciertos cada 50 vueltas, con la misma línea que el modelo: `aciertos cada 50 v
 100%`. Cuenta los aciertos de cada bloque y arma el texto en su camarote (`TEXT`, de a 8 letras con `jldi`/`jshi`,
 porque un programa Janax no trae datos adentro). La prueba compara la línea letra por letra con la del modelo, además
 de la huella.
+
+## La red convencional de referencia: EGG en la máquina del Capitán (2026-11-04)
+
+Decisión del Capitán: comparar contra una implementación publicada y auditada del juego de señales de Lewis (dos redes,
+una que habla y otra que escucha, que aprenden por premio), no contra una escrita por Doc. Se eligió **EGG**
+(Facebook Research, `github.com/facebookresearch/EGG`), el juego `egg.zoo.channel` (Kharitonov y otros).
+
+Instalación, en un entorno aparte (`E:/DevCache/egg-venv`, Python 3.14.4; se borra la carpeta y no queda nada):
+- PyTorch 2.15.0, versión de solo procesador, del repositorio oficial de PyTorch. EGG 0.1.0 del GitHub oficial.
+- **Tres choques con el entorno, ninguno de lógica**, arreglados y anotados acá:
+  1. `editdistance` no trae versión armada para Python 3.14 en Windows y quiere compilarse en C. EGG la importa al
+     arrancar, pero solo la usa en métricas de análisis del idioma. Se reemplazó por un `editdistance.py` de 10 líneas en
+     Python puro, con la misma distancia de Levenshtein.
+  2. `egg/zoo/channel/features.py` pide `np.random.randint(0, 2 ** 32)`; en Windows el entero por defecto de numpy es
+     de 32 bits y falla. Se pidió el mismo rango con `dtype=np.int64` (lo que hace en Linux).
+  3. `egg/zoo/channel/train.py` guarda el resultado final en JSON con números `float32` que numpy 2.4 no deja
+     serializar. Se convierten a `float` al guardar.
+- EGG pide **wandb** (Weights & Biases, un servicio en línea de registro de experimentos). Instalarlo no manda nada;
+  igual, cada corrida va con `WANDB_MODE=disabled`, para que nada salga de la máquina.
+
+Prueba de arranque: 16 cosas, vocabulario de 16, mensajes de 2 símbolos, redes de 10 neuronas (lo de fábrica), 6 a 20
+épocas de 100 tandas de 32 juegos: la prueba sube de 12,5 % a 25 % en tres épocas y queda ahí. Corre y aprende; la
+comparación de verdad todavía no se hizo. Falta igualar el presupuesto (cada juego de EGG contra cada vuelta de Razar),
+el tamaño de las redes y las semillas, antes de que el número compare algo.
