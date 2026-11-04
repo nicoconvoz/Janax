@@ -9,7 +9,10 @@
 # whose test, without dice, gets every thing right). EGG gets the generous side: messages of up to 3 symbols out of 16
 # (over 4,000 messages; Razar's will has 560 phrases of 3 bottom pieces in a 4x4x4 cube), networks of 64, and up to
 # 320,000 games. Everything else is EGG's own default. Its online logger (wandb) is off: nothing leaves the machine.
-# Outputs go to $1; each line of the summary: system, things, cube, games to arrival per seed, how many arrived.
+# Messages count what crossed between the two parts, whatever a game holds: for Razar, every melody the will sounded
+# plus every answer of the school it read; for EGG, one message per game (the listener sends nothing back but the
+# reward). Outputs go to $1; each line of the summary: system, things, cube, games and messages to arrival per seed,
+# how many arrived.
 cd "$(dirname "$0")"
 out=${1:-convencional_salida}; mkdir -p "$out"
 EGG_PY=${EGG_PY:-E:/DevCache/egg-venv/Scripts/python.exe}
@@ -33,12 +36,14 @@ SEEDS="1001 1002 1003 1004 1005"
   echo "ms: $(( ($(date +%s%N) - t0) / 1000000 ))" >> "$f.tmp"; mv "$f.tmp" "$f"'
 for spec in "razar 4 4" "razar 8 4" "razar 8 7" "razar 16 7" "egg 4 -" "egg 8 -" "egg 16 -"; do
   set -- $spec
-  perl -e 'my ($dir, $sys, $k, $n, @seeds) = @ARGV; my (@g, $ok, $ms);
+  perl -e 'my ($dir, $sys, $k, $n, @seeds) = @ARGV; my (@g, @m, $ok, $ms);
     for my $s (@seeds) { open my $h, "<", "$dir/${sys}_k${k}_n${n}_s$s.txt" or do { push @g, "?"; next }; local $/; my $t = <$h>;
       $ms += $1 if $t =~ /^ms: (\d+)/m; my $a;
-      if ($sys eq "razar") { $a = $1 if $t =~ /^llegada: (\d+)/m; }
-      else { while ($t =~ /\{[^\n]*"acc": ([0-9.]+)[^\n]*"mode": "test", "epoch": (\d+)\}/g) { if ($1 >= 1) { $a = $2 * 50 * 32; last } } }
+      if ($sys eq "razar") { $a = $1 if $t =~ /^llegada: (\d+)/m;
+        push @m, $t =~ /^mensajes hasta la llegada: (\d+) de la voluntad, (\d+)/m ? $1 + $2 : "no"; }
+      else { while ($t =~ /\{[^\n]*"acc": ([0-9.]+)[^\n]*"mode": "test", "epoch": (\d+)\}/g) { if ($1 >= 1) { $a = $2 * 50 * 32; last } }
+        push @m, defined $a ? $a : "no"; }
       push @g, defined $a ? $a : "no"; $ok++ if defined $a; }
-    printf "%-5s %2d cosas %-3s juegos hasta aprender todo: %-40s llegaron %d de %d; %.1f s por corrida\n",
-      $sys, $k, $n eq "-" ? "" : "${n}^3", join(" ", @g), $ok // 0, scalar @seeds, $ms / 1000 / @seeds;' "$out" "$@" $SEEDS
+    printf "%-5s %2d cosas %-3s juegos: %-32s mensajes: %-32s llegaron %d de %d; %.1f s por corrida\n",
+      $sys, $k, $n eq "-" ? "" : "${n}^3", join(" ", @g), join(" ", @m), $ok // 0, scalar @seeds, $ms / 1000 / @seeds;' "$out" "$@" $SEEDS
 done

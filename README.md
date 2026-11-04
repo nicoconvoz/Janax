@@ -8,7 +8,35 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
-## El resultado, en una línea
+## El resultado (v0.2)
+
+**Con 16 cosas para decir, la red de referencia del campo no llega nunca. Razar llega siempre, en menos de 102
+juegos.**
+
+Es el juego de señales de Lewis: uno dice una cosa, el otro la adivina, y los dos aprenden solo de si se entendieron,
+sin que nadie les dé la respuesta correcta. El rival es [EGG](https://github.com/facebookresearch/EGG) (Facebook
+Research), la implementación publicada del juego, con las mismas cinco semillas:
+
+| Cosas | Razar: juegos hasta aprender todo | Razar: mensajes | EGG: juegos (= mensajes) |
+|---|---|---|---|
+| 4 | 5 – 58 · 5 de 5 | 11 – 156 | 1.600 – 49.600 · 5 de 5 |
+| 8 | 14 – 53 · 5 de 5 | 29 – 142 | 105.600 · 1 de 5 |
+| **16** | **35 – 102 · 5 de 5** | **81 – 278** | **no llega en 320.000 · 0 de 5** |
+
+- **El rival corrió bien:** falla en la forma que el campo tiene documentada, con un idioma a medias (44 a 87 %) en el
+  que algunas cosas comparten señal.
+- **Ventaja a favor del rival:** mensajes más ricos (más de 4.000 posibles, contra 560 frases de Razar), redes seis
+  veces más grandes que las de fábrica y hasta 320.000 juegos. Lo demás, como viene.
+- **Reglas fijadas antes de correr.** 5 de 5 contra 0 de 5 tiene una probabilidad de azar de ≈ 0,8 % (prueba exacta de
+  Fisher). El resultado es el mismo contado en juegos o en mensajes.
+- **Banco público:** `bash razar/cardumen/convencional.sh`.
+
+Lo hace posible que la voluntad escucha **el ritmo** de la melodía (qué pieza suena y cuándo), no solo qué piezas: con
+16 cosas en un cubo de 7, eso lleva de 6 a 19 semillas de 20 que aprenden todo, con un control barajado que da 0 de 20.
+**Lo que está probado es este juego**; que la ventaja viaje a otras tareas todavía no se midió. Todo el detalle está en
+[`documentacion/razar/cardumen.md`](documentacion/razar/cardumen.md).
+
+## El primer resultado (v0.1)
 
 Una neurona tridimensional y su **voluntad** arrancan sin ningún idioma en común y, conversando, inventan uno.
 Lo que lo hace posible es una sola regla innata, la **armonía**: una pieza no deja pasar el pulso si la despiertan
@@ -70,6 +98,12 @@ where a signal starts a branching cascade, pieces that fire together learn to ta
 sounds wrong. A "will" listens to the melody and answers; starting with no shared language, the two invent one by
 talking. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native
 translator. Documentation is in Spanish.
+
+**Result (v0.2):** on the Lewis signaling game with 16 things, Razar learns the whole language in 35–102 games
+(81–278 messages) on 5 of 5 seeds; EGG (Facebook Research), the field's reference implementation, given richer
+messages and larger networks, reaches it on 0 of 5 within 320,000 games, stalling at 44–87 % in the partial
+languages the literature describes. Conditions were fixed before running; the benchmark is public
+(`razar/cardumen/convencional.sh`). What is proven is this game; transfer to other tasks is not yet measured.
 
 ## Cómo citarlo
 

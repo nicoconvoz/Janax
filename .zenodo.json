@@ -1,12 +1,13 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system that thinks in melodies: a three-dimensional school of pieces where a signal starts a branching cascade, pieces that fire together learn to talk more, and harmony cuts what sounds wrong. A will listens to the melody and answers; starting with no shared language, the two invent one by talking. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native translator. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial que piensa con melodías. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system that thinks in melodies: a three-dimensional school of pieces where a signal starts a branching cascade, pieces that fire together learn to talk more, and harmony cuts what sounds wrong. A will listens to the melody and answers; starting with no shared language, the two invent one by talking. Version 0.2: on the Lewis signaling game with 16 things, Razar learns the whole language in 35-102 games on 5 of 5 seeds, while EGG (Facebook Research), the field's reference implementation, given richer messages and larger networks, reaches it on 0 of 5 within 320,000 games; the benchmark is public (razar/cardumen/convencional.sh). Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native translator. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial que piensa con melodías. Prototipo de investigación.</p>",
   "upload_type": "software",
+  "version": "0.2",
   "creators": [
     { "name": "Astorga, Nicolás", "affiliation": "Resources Open Doors S.A.S." }
   ],
   "license": "Apache-2.0",
-  "keywords": ["operating system", "assembly", "artificial intelligence", "neural model", "harmony", "emergent communication", "deterministic", "sistema operativo", "Razar", "Janax"],
+  "keywords": ["operating system", "assembly", "artificial intelligence", "neural model", "harmony", "emergent communication", "Lewis signaling game", "deterministic", "sistema operativo", "Razar", "Janax"],
   "language": "spa",
   "notes": "Contacto: ingenieriaaplicada@opendoors.com.ar"
 }

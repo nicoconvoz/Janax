@@ -500,3 +500,26 @@ de señales de Lewis, semillas 1001–1005, cosas igual de probables. Razar lee 
 - Lo que esto no dice: EGG es una red general (aprende de cualquier entrada, con descenso por gradiente), y acá juega
   un juego chico de cosas sueltas; con otros ajustes (tasa de aprendizaje, Gumbel-Softmax en vez de REINFORCE, más
   entrenamiento) puede llegar más lejos. Se usó lo de fábrica a propósito, para no afinarla a mano en contra ni a favor.
+
+**La misma comparación contada en mensajes** (la objeción: "¿un juego es la misma unidad en los dos?"). Un mensaje es
+lo que cruza entre las dos partes, contenga lo que contenga un juego: en Razar, cada melodía que la voluntad hizo sonar
+(su frase, y la que repite cuando acierta) más cada respuesta del cardumen que leyó (`lazo.pl hasta=1` ahora lo
+informa); en EGG, un mensaje por juego (el que escucha no manda nada, solo recibe el premio).
+
+| | mensajes hasta aprender todo (semillas 1001–1005) |
+|---|---|
+| Razar, 4 cosas, 4³ | 31, 56, 26, 11, 156 |
+| EGG, 4 cosas | 3.200, 49.600, 3.200, 1.600, 1.600 |
+| Razar, 8 cosas, 7³ | 39, 31, 29, 142, 47 |
+| EGG, 8 cosas | no, 105.600, no, no, no |
+| **Razar, 16 cosas, 7³** | **278, 129, 267, 158, 81** |
+| **EGG, 16 cosas** | **no llega en 320.000** |
+
+- Contado en mensajes, Razar usa unas 2,5 veces lo que en juegos, y el resultado no cambia: con 16 cosas, **Razar llega
+  siempre en menos de 300 mensajes; EGG no llega nunca en 320.000**.
+- 5 de 5 contra 0 de 5 tiene una probabilidad de azar de 2/252 ≈ 0,8 % (prueba exacta de Fisher, dos colas): con un
+  efecto así de categórico, cinco semillas alcanzan.
+- Por qué el rival corrió bien: falló en la forma que el campo tiene documentada (el idioma a medias, con cosas que
+  comparten señal). Con eso, las condiciones fijadas antes, la ventaja a su favor y el banco público, el resultado no
+  depende de cómo se armó la línea de base.
+- Lo que está probado es este juego. Que la ventaja viaje a otra tarea, y el cambio de cuerpo, todavía no se corrió.

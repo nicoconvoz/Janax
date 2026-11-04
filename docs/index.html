@@ -71,6 +71,42 @@
 
 <section>
   <div class="wrap">
+    <div class="kicker">El resultado · 2026-11-04</div>
+    <h2>Con 16 cosas, la red de referencia del campo no llega nunca. Razar llega siempre, en menos de 102 juegos.</h2>
+    <p class="sub">El juego de señales de Lewis: uno dice una cosa, el otro la adivina, y los dos aprenden solo de si se
+      entendieron. Nadie les da la respuesta correcta: el idioma lo inventan entre los dos. Contra
+      <a href="https://github.com/facebookresearch/EGG">EGG</a> (Facebook Research), la implementación publicada del
+      juego, con las mismas cinco semillas. Razar usa un cubo de 4×4×4 para 4 cosas y uno de 7×7×7 para 8 y 16.</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Cosas para decir</th><th>Razar: juegos hasta aprender todo</th><th>Razar: mensajes</th><th>EGG: juegos (= mensajes)</th></tr>
+      <tr><td>4</td><td class="num">5 – 58 · 5 de 5</td><td class="num">11 – 156</td><td class="num">1.600 – 49.600 · 5 de 5</td></tr>
+      <tr><td>8</td><td class="num">14 – 53 · 5 de 5</td><td class="num">29 – 142</td><td class="num">105.600 · 1 de 5</td></tr>
+      <tr><td><strong>16</strong></td><td class="num"><strong>35 – 102 · 5 de 5</strong></td><td class="num"><strong>81 – 278</strong></td><td class="num"><strong>no llega en 320.000 · 0 de 5</strong></td></tr>
+    </table>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>El rival corrió bien</h3>
+        <p>EGG falla en la forma que el campo tiene documentada: se queda en un idioma a medias (44 a 87 %), con cosas
+          que comparten señal. Un rival que se rompe por donde el manual dice que se rompe es un rival que funcionaba.</p></div>
+      <div class="card"><h3>Ventaja a favor del rival</h3>
+        <p>Mensajes más ricos (más de 4.000 posibles, contra 560 frases de Razar), redes seis veces más grandes que las
+          de fábrica y hasta 320.000 juegos. Lo demás, como viene: sin afinarla a mano ni en contra ni a favor.</p></div>
+      <div class="card"><h3>Reglas fijadas antes</h3>
+        <p>Las condiciones se escribieron antes de correr. 5 de 5 contra 0 de 5: probabilidad de azar ≈ 0,8 % (prueba
+          exacta de Fisher). Contado en juegos o en mensajes, el resultado es el mismo.</p></div>
+      <div class="card"><h3>Banco público</h3>
+        <p>Cualquiera lo repite: <code>bash razar/cardumen/convencional.sh</code>. En una PC de dos núcleos, una corrida
+          de Razar con 16 cosas tarda unos 5 segundos.</p></div>
+    </div>
+    <p class="sub" style="margin-top:20px">Sin gradiente, sin respuesta correcta y sin centro de datos: un cuerpo (el
+      cardumen) de unos 8 KB y una mente (la voluntad) de unos cientos de KB. <strong>Lo que está probado es este
+      juego.</strong> Que la ventaja viaje a otras tareas todavía no se midió.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <h2>Qué es, en una frase</h2>
     <p class="sub">Todo, desde el idioma hasta el sistema operativo, está hecho desde cero, y cada pieza tiene sus
       pruebas y sus números. Sin motores ni bibliotecas de terceros.</p>
@@ -113,7 +149,7 @@
           música. Sin armonía no hay idioma; con armonía, nace.</p>
         <p class="riddle">Cada uno puede aportar su nota, pero cuando todos gritan a la vez ya no hay canción.</p></div>
       <div class="card"><span class="emoji">💓</span><h3>La voluntad</h3>
-        <p>Escucha la melodía del cardumen y le contesta, y esa respuesta vuelve a entrar. En Janax son dos camarotes
+        <p>Escucha la melodía del cardumen, qué notas y cuándo, y es donde vive la memoria. En Janax son dos camarotes
           que se pasan el turno con saludos sobre una caja compartida.</p>
         <p class="riddle">Como dos amigos diseñando con acertijos: cada uno contesta en un idioma que el otro entiende.</p></div>
       <div class="card"><span class="emoji">🐠</span><h3>El cardumen</h3>
@@ -133,6 +169,7 @@
     <table>
       <tr><th>Qué</th><th>Resultado</th></tr>
       <tr><td>La voluntad y el cardumen, sin idioma común, con armonía (4 cosas para decir; el azar es 25 %)</td><td class="num">→ 100 % de aciertos</td></tr>
+      <tr><td>La voluntad que escucha el ritmo de la melodía (qué pieza y cuándo) contra la que solo mira qué piezas, 16 cosas en un cubo de 7, 20 semillas nuevas con la regla fijada antes; el control con el ritmo barajado da 0 de 20</td><td class="num">19 de 20 vs 6 de 20</td></tr>
       <tr><td>Razar en Janax contra el modelo de referencia en Perl (4.000 vueltas, misma huella)</td><td class="num">~70 veces más rápido</td></tr>
       <tr><td>El cardumen y su voluntad en Janax: huella del modelo en tres motores y con 1, 2 y 4 remeros</td><td class="num">igual bit por bit</td></tr>
       <tr><td>Saludo ida y vuelta entre camarotes, contra eventos de Windows entre hilos</td><td class="num">~0,64 µs vs ~2,05 µs</td></tr>
@@ -167,7 +204,8 @@
       un idioma alcanza con Perl.</p>
     <pre>git clone https://github.com/nicoconvoz/Janax
 cd Janax
-perl razar/cardumen/lazo.pl nace=7 armonia=1          # la voluntad y el cardumen inventando un idioma
+perl razar/cardumen/lazo.pl nace=7 armonia=1 lee=ritmo                       # inventando un idioma
+perl razar/cardumen/lazo.pl n=7 k=16 nace=1005 armonia=1 lee=ritmo hasta=1   # 16 cosas en un cubo de 7
 FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh</pre>
   </div>
 </section>
@@ -186,7 +224,9 @@ FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh</pre>
     Citar: Nicolás Astorga (2026). <em>Janax y Razar</em>. DOI <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a><br>
     Contacto: <a href="mailto:ingenieriaaplicada@opendoors.com.ar">ingenieriaaplicada@opendoors.com.ar</a><br>
     <em>English:</em> a hand-written operating system, language and assembler built to host Razar, an artificial
-    reasoning system that thinks in melodies. Documentation is in Spanish.
+    reasoning system that thinks in melodies. On the Lewis signaling game with 16 things, Razar learns the whole
+    language in 35–102 games on 5 of 5 seeds; EGG, the field's reference implementation, reaches it on 0 of 5 within
+    320,000 games. Documentation is in Spanish.
   </div>
 </footer>
 </body>

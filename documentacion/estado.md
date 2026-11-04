@@ -195,3 +195,4 @@ en 7³ con 16 cosas llegan 2 de 5 contra 5 de 5 si el cardumen aprende.
 arreglos de entorno anotados. La comparación de verdad todavía no se hizo.
 2026-11-04 — Razar contra EGG (la red de referencia del juego de señales): 16 cosas, Razar 5 de 5 en 35–102 juegos;
 EGG 0 de 5 en 320.000 juegos (44–87 %). Con 4 cosas, Razar en decenas de juegos y EGG en miles.
+2026-11-04 — Contado en mensajes: con 16 cosas Razar llega en 81–278 mensajes; EGG no llega en 320.000 (Fisher ≈ 0,8 %).

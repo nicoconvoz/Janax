@@ -18,7 +18,8 @@ my $c = Cardumen->new(n => $o{n} // 4, w0 => $o{w0}, th => $o{th}, rate => $o{ra
 $c->{whisper} = 1 if $o{quieto};                # quieto=1 (Capitan: the school is the video card, the will the computer; what
                                                  # is learned lives in the will): the school never learns, as it was born
 my $n = $c->{n};
-sub sig { $o{viva} ? $c->signal_viva(@_) : $c->signal(@_) }   # viva=1: the living melody (modelo.pl signal_viva)
+my $nsig = 0;                                   # hasta=1: every melody the will sounds, to count messages, not games
+sub sig { $nsig++; $o{viva} ? $c->signal_viva(@_) : $c->signal(@_) }   # viva=1: the living melody (modelo.pl signal_viva)
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
 if ($o{puertas}) { $c->{doors} = 1; $c->{sinks} = { %top }; }   # doors: out of tune it ends; the top face answers
@@ -30,6 +31,7 @@ my @heard = (0) x $o{k};                        # how many top pieces it heard f
 my ($ok, $reached) = (0, 0); my @blocks;
 my @lastwrong = (0) x $o{k};                  # congelar=1: the round each thing was last missed
 my @len = (0, 0, 0, 0);                       # largo=1: steps, top pieces, distinct top steps, rounds
+my @sigs;                                       # hasta=1: messages the will sent by the end of each round
 my ($streak, $arrived) = (0, 0);                # hasta=1: it stops when it learned everything: 4 * k rounds in a row
                                                  # right (each thing about 4 times; a criterion, not a measurement);
                                                  # rounds is then the ceiling, and it reports the round it arrived at
@@ -122,6 +124,7 @@ for my $r (1 .. $o{rounds}) {
   if ($r > $tail) { $said[$m]++; $hits[$m] += $hit; $conf[$m][$best]++; }
   if ($o{hasta}) {
     $streak = $hit ? $streak + 1 : 0;
+    push @sigs, $nsig;                          # messages the will sent up to this round
     if ($streak >= 4 * $o{k}) { $arrived = $r - 4 * $o{k} + 1; last; }
   }
   mix($m * 8 + $best * 2 + $hit + 1);          # each round: what it meant, what it guessed, whether it was right
@@ -202,6 +205,8 @@ if ($o{viva}) { printf "viva: descanso en %d de %d senales\n", $c->{rested} // 0
 if ($o{dialogo}) { printf "dialogo: %.2f respuestas de la voluntad por vuelta\n", ($len[4] // 0) / $o{rounds}; }
 if ($o{vueltas}) { print "vueltas (aciertos de cada vuelta sola, ultimo cuarto):", join("", map { sprintf " %s=%d%% en %d", $_, 100 * ($vok{$_} // 0) / $vn{$_}, $vn{$_} } sort { ($a eq 'ultima') <=> ($b eq 'ultima') || $a <=> $b } grep { $vn{$_} } keys %vn), "
 "; }
+if ($o{hasta} && $arrived) { printf "mensajes hasta la llegada: %d de la voluntad, %d del cardumen
+", $sigs[$arrived - 1], $arrived; }
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }
