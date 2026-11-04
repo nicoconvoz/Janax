@@ -349,3 +349,21 @@ cuerpo"*; y el guía no sabe de antemano qué quiere oír, lo descubre conversan
   alcanza es **el oído de la voluntad**, que cuenta notas sueltas (pieza y paso). Con una melodía que lleva el fondo,
   la misma cosa suena con el ritmo corrido cada vez, y las notas sueltas se desparraman. Un lóbulo tendría que
   reconocer la melodía entera.
+
+**El oído de melodías enteras** (2026-11-04). Dos oídos nuevos en `lazo.pl`, que no cambian si la melodía entra en otro
+paso: `lee=relativo` (cada nota con el paso contado desde la primera que llegó arriba) y `lee=intervalos` (cada nota
+sola, y cada par de notas como primera>segunda:pasos entre ellas, como se reconoce una canción empiece en el compás que
+empiece). 4 cosas, 400 vueltas, semillas 7, 11, 23, últimos tres bloques de 50:
+
+| oído | sin melodía viva | viva | viva + diálogo |
+|------|------------------|------|----------------|
+| ritmo      | 100 % | 14–36 % | 18–34 % |
+| relativo   | 100 % | 14–34 % | 14–34 % |
+| intervalos | 100 % | 16–38 % | 16–30 % |
+
+**El corrimiento en el tiempo no era el problema**: la hipótesis no se confirma. Diagnóstico (`fija=1`: la voluntad no
+mueve nunca sus frases, para ver si el problema es que cambia de frase en cada fallo): con melodía viva, ritmo sube a
+34–48 % (por encima del azar, lejos del 100 %); intervalos queda en 14–34 %. Cambiar de frase en cada fallo empeora,
+pero no explica todo. Lo que queda: las respuestas de cada cosa son distintas entre sí (27 de 31), pero comparten casi
+todas sus notas con el fondo, que suena igual para todas; la voluntad pesa igual cada nota, y la parte que dijo su
+señal es chica al lado del fondo. Ni contar notas sueltas ni contar pares las separa.

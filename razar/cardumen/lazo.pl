@@ -33,6 +33,17 @@ my ($streak, $arrived) = (0, 0);                # hasta=1: it stops when it lear
                                                  # rounds is then the ceiling, and it reports the round it arrived at
 my (@said, @hits, @conf);                        # detalle=1: per thing, over the last quarter of the rounds: how
 my $tail = $o{rounds} - int($o{rounds} / 4);     # many times it was said, how many right, and what it was taken for
+# The ear for whole melodies (lee=relativo, lee=intervalos): what does not move when the melody comes in at another
+# step. relativo: each note as piece:step counted from the first note that reached the top. intervalos: each note
+# alone, and every pair of notes as first>second:steps between them (as a tune is known in any bar it starts).
+sub melody_feats {
+  my ($at) = @_; return [] unless @$at;
+  my @s = sort { $a->[1] <=> $b->[1] || $a->[0] <=> $b->[0] } @$at;
+  if ($o{lee} eq 'relativo') { return [ map { "$_->[0]:" . ($_->[1] - $s[0][1]) } @s ]; }
+  my @f = map { $_->[0] } @s;
+  for my $i (0 .. $#s) { for my $j ($i + 1 .. $#s) { push @f, "$s[$i][0]>$s[$j][0]:" . ($s[$j][1] - $s[$i][1]); } }
+  return \@f;
+}
 my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
 sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
@@ -50,6 +61,7 @@ for my $r (1 .. $o{rounds}) {
       $at[$_][1] = $t[$_] for 0 .. $#at;
     }
     @feat = map { "$_->[0]:$_->[1]" } @at;
+    @feat = @{ melody_feats(\@at) } if $o{lee} =~ /^(relativo|intervalos)$/;
   }
   if ($o{largo}) {                              # largo=1: how long the melody is, and how much rhythm reaches the top
     my %st; $st{$_} = 1 for map { my $t = $_; (grep { $top{$_} } @{ $mel->[$t] }) ? ($t) : () } 0 .. $#$mel;
@@ -60,7 +72,8 @@ for my $r (1 .. $o{rounds}) {
       my ($ml) = @_; my %one;                   # the will sings back the part of what it heard that belongs to what it
       my @an = grep { $top{$_} && !$one{$_}++ } map { @$_ } @$ml;   # means (a note heard with that thing more than with
       return (\@an, [@an]) if ($o{lee} // 'piezas') eq 'piezas';    # all things on average), each top piece as the
-      my @f; for my $t (0 .. $#$ml) { push @f, map { "$_:$t" } grep { $top{$_} } @{ $ml->[$t] }; }   # bottom piece
+      my @at; for my $t (0 .. $#$ml) { push @at, map { [$_, $t] } grep { $top{$_} } @{ $ml->[$t] }; }   # bottom piece
+      my @f = $o{lee} =~ /^(relativo|intervalos)$/ ? @{ melody_feats(\@at) } : map { "$_->[0]:$_->[1]" } @at;
       return (\@an, \@f);                       # under it; the rest (the background) it does not repeat. It ends when
     };                                          # nothing belongs, or the answer repeats the one before (a loop)
     my $all = 0; $all += $_ for @heard;
@@ -69,7 +82,7 @@ for my $r (1 .. $o{rounds}) {
       my %tot; for my $g (0 .. $o{k} - 1) { $tot{$_} += $read[$g]{$_} // 0 for @feat; }
       my %echo; for my $f (@feat) {
         next unless ($read[$m]{$f} // 0) * $all > $tot{$f} * $heard[$m];
-        my ($piece) = split /:/, $f; $echo{$piece - $n * $n * ($n - 1)} = 1;
+        my ($head) = split /:/, $f; $echo{$_ - $n * $n * ($n - 1)} = 1 for split />/, $head;
       }
       my $key = join ',', sort { $a <=> $b } keys %echo;
       last if $key eq '' || $key eq $prev;
@@ -100,7 +113,7 @@ for my $r (1 .. $o{rounds}) {
     $ok++;
     $c->confirm($mel) if $o{puertas};           # the will confirmed it: in tune from now on
     sig(@{$say[$m]});                           # sounded once more: the school settles it
-  } else {
+  } elsif (!$o{fija}) {                         # fija=1 (a diagnosis): the will never moves its pieces
     my $j = rnd() % 3; my %u = map { $_ => 1 } @{$say[$m]}; delete $u{$say[$m][$j]};
     while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 }
     $say[$m] = [sort { $a <=> $b } keys %u];

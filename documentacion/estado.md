@@ -179,3 +179,5 @@ lazo.pl sin puertas bit por bit (pruebas de razar 14/14). Idea nueva: la puerta 
 voluntad escucha el fondo junto con su señal y los aciertos caen al azar. Falta separar la señal del fondo.
 2026-11-04 — El diálogo (Capitán): con melodía viva el cardumen contesta distinto a cada cosa (27 de 31 respuestas
 son de una sola), pero la voluntad, que cuenta notas sueltas, no lo oye: aciertos en azar. Falta un oído de melodías.
+2026-11-04 — Oídos de melodía entera (relativo, intervalos): con melodía viva siguen en azar. Con frases fijas, ritmo
+llega a 34–48 %. El fondo común tapa la parte que dijo la señal.
