@@ -8,6 +8,19 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## El resultado, en una línea
+
+Una neurona tridimensional y su **voluntad** arrancan sin ningún idioma en común y, conversando, inventan uno.
+Lo que lo hace posible es una sola regla innata, la **armonía**: una pieza no deja pasar el pulso si la despiertan
+a la vez más de la mitad de sus vecinas.
+
+> **El control es el resultado.** Sin armonía se quedan en el nivel de azar —24-26 % con 4 señales— indefinidamente.
+> Con armonía llegan al **100 %** en unas 150 vueltas. Tres semillas, repetible byte por byte.
+
+El modelo de referencia (Perl) y la versión que corre dentro de Janax dan **la misma huella, bit por bit**, y en
+Janax cuesta unas **70 veces menos**. El detalle y los límites medidos están en
+[`documentacion/razar/cardumen.md`](documentacion/razar/cardumen.md).
+
 ## Qué hay adentro
 
 - **El idioma Janax** (`escalon0/`, `documentacion/idioma/`): un assembler propio diseñado para traducirse. Un
