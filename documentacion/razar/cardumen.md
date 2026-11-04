@@ -330,3 +330,22 @@ vuelta 100; con melodía viva, 14–34 %: azar.** La melodía casi nunca descans
 Pero desde la segunda señal la cara de arriba ya está sonando en el paso 0 (4 o 5 piezas, lo que quedó de antes), y
 la voluntad escucha el fondo mezclado con la señal: la respuesta depende más de lo que venía sonando que de lo que
 ella dijo. La melodía vive; lo que falta es cómo la voluntad distingue lo que su señal cambió de lo que ya sonaba.
+
+**El diálogo y lo que está más abajo** (Capitán, 2026-11-04: *"la melodía la escucha el kernel como si fuera un lóbulo
+del cerebro, responde con una melodía, y la melodía del cardumen cambia con la respuesta: uno guía, el otro tripula el
+cuerpo"*; y el guía no sabe de antemano qué quiere oír, lo descubre conversando).
+
+- `dialogo=1` en `lazo.pl`: después de su frase, la voluntad contesta cantando de vuelta, por las piezas de abajo, solo
+  las notas que oyó que pertenecen a lo que quiere decir (oídas con esa cosa más que con todas en promedio). El fondo
+  no lo repite. Termina cuando nada pertenece o la respuesta repite la anterior (bucle).
+- **Corrección de la melodía viva**: el bucle se buscaba solo dentro de cada señal, y la cara de arriba quedó en una
+  oscilación de período 2, idéntica para las 4 cosas, que pasaba de señal en señal sin que nadie la viera repetirse.
+  Ahora la melodía recuerda sus estados desde la última vez que descansó (un bucle también lo es entre señales).
+- Medido (4 cosas, 400 vueltas, semillas 7, 11, 23): viva sola, 14–36 %; viva con diálogo (7 a 10 respuestas de la
+  voluntad por vuelta), 14–34 %. **Las dos en azar.**
+- **Pero el cardumen sí contesta distinto a cada cosa.** En las últimas 200 vueltas sin melodía viva, cada cosa tiene
+  una sola respuesta, siempre la misma. Con melodía viva, cada cosa tiene 8 a 10 respuestas distintas, y de las 31
+  que aparecen **solo 4 son compartidas** entre cosas: 27 pertenecen a una sola. La información está; lo que no
+  alcanza es **el oído de la voluntad**, que cuenta notas sueltas (pieza y paso). Con una melodía que lleva el fondo,
+  la misma cosa suena con el ritmo corrido cada vez, y las notas sueltas se desparraman. Un lóbulo tendría que
+  reconocer la melodía entera.

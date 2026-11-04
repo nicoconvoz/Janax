@@ -55,6 +55,30 @@ for my $r (1 .. $o{rounds}) {
     my %st; $st{$_} = 1 for map { my $t = $_; (grep { $top{$_} } @{ $mel->[$t] }) ? ($t) : () } 0 .. $#$mel;
     $len[0] += @$mel; $len[1] += @answer; $len[2] += keys %st; $len[3]++;
   }
+  if ($o{dialogo}) {                            # dialogo=1 (Capitan: the will is another lobe; it answers with a melody, the
+    my $hear = sub {                            # school's melody changes with the answer: one guides, the other crews):
+      my ($ml) = @_; my %one;                   # the will sings back the part of what it heard that belongs to what it
+      my @an = grep { $top{$_} && !$one{$_}++ } map { @$_ } @$ml;   # means (a note heard with that thing more than with
+      return (\@an, [@an]) if ($o{lee} // 'piezas') eq 'piezas';    # all things on average), each top piece as the
+      my @f; for my $t (0 .. $#$ml) { push @f, map { "$_:$t" } grep { $top{$_} } @{ $ml->[$t] }; }   # bottom piece
+      return (\@an, \@f);                       # under it; the rest (the background) it does not repeat. It ends when
+    };                                          # nothing belongs, or the answer repeats the one before (a loop)
+    my $all = 0; $all += $_ for @heard;
+    my ($prev, $ex) = ('', 0);
+    while ($heard[$m] && $ex < $n * $n) {       # at most one exchange per top piece (a criterion, not a measurement)
+      my %tot; for my $g (0 .. $o{k} - 1) { $tot{$_} += $read[$g]{$_} // 0 for @feat; }
+      my %echo; for my $f (@feat) {
+        next unless ($read[$m]{$f} // 0) * $all > $tot{$f} * $heard[$m];
+        my ($piece) = split /:/, $f; $echo{$piece - $n * $n * ($n - 1)} = 1;
+      }
+      my $key = join ',', sort { $a <=> $b } keys %echo;
+      last if $key eq '' || $key eq $prev;
+      $prev = $key; $ex++;
+      $mel = sig(sort { $a <=> $b } keys %echo);
+      my ($an, $fe) = $hear->($mel); @answer = @$an; @feat = @$fe;
+    }
+    $len[4] += $ex;
+  }
   my ($best, $bs, $bt) = (-1, 0, 1);            # the thing whose pieces it heard most, as a share of all it heard
   for my $g (0 .. $o{k}-1) {
     next unless $heard[$g];
@@ -146,6 +170,7 @@ if ($o{estado}) {                               # the school as it ended: how mu
 }
 if ($o{largo}) { printf "largo: pasos %.1f; piezas arriba %.1f; pasos distintos arriba %.1f (promedio de %d vueltas)\n", map({ $_ / $len[3] } @len[0 .. 2]), $len[3]; }
 if ($o{viva}) { printf "viva: descanso en %d de %d senales\n", $c->{rested} // 0, $c->{nsig} // 0; }
+if ($o{dialogo}) { printf "dialogo: %.2f respuestas de la voluntad por vuelta\n", ($len[4] // 0) / $o{rounds}; }
 if ($o{hasta}) { print $arrived ? "llegada: $arrived
 " : "llegada: no convergio (tope $o{rounds})
 "; }

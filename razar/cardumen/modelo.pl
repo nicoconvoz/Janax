@@ -115,13 +115,14 @@ sub confirm {
 # What is sounding is the door: a piece awake now cannot be woken in the next step. The steps of one signal go on
 # while someone wakes for the first time since the signal (news); then the will listens, and the melody stays as it
 # is. It rests (silence, costing nothing) when nobody wakes (it died) or when a step repeats exactly a state it
-# already had since the signal (a loop: the weights do not move during a signal, so it would repeat forever).
+# already had since it last rested (a loop, also across signals: the same task repeated identically).
 # -> the melody (each step: the sorted pieces awake in it); the shape learns from it, as with signal().
 sub signal_viva {
   my ($s, @seeds) = @_;
   my %start = map { $_ => 1 } @{ $s->{sounding} // [] }, @seeds;
   my @now = sort { $a <=> $b } keys %start;
-  my (@melody, %first, %seen);
+  my (@melody, %first);
+  my $seen = $s->{seen} //= {};               # the states it had since it last rested: a loop is a loop across signals too
   $first{$_} = 0 for @now;
   my $t = 0;
   while (1) {
@@ -134,8 +135,8 @@ sub signal_viva {
     $t++;
     my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
     my $key = join ',', @next;
-    if (!@next || $seen{$key}) { $s->{sounding} = []; last; }   # it died, or it became a loop: it rests
-    $seen{$key} = 1;
+    if (!@next || $seen->{$key}) { $s->{sounding} = []; $s->{seen} = {}; last; }   # it died, or it became a loop: it rests
+    $seen->{$key} = 1;
     my $news = grep { !exists $first{$_} } @next;
     $first{$_} //= $t for @next;
     @now = @next;
