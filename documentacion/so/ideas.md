@@ -674,3 +674,36 @@ Devolución: el cardumen también es plástico en cantidad: nacen neuronas donde
 sirven. En el cerebro se llama neurogénesis y poda. En Janax ya está la base: cada neurona puede ser un camarote, que
 nace con su dote y que al terminar devuelve todo (`cabin_free`). Abierto: cómo se sabe que una neurona "ya no sirve"
 (por ejemplo, que hace mucho no despierta o que nunca cambia la melodía).
+
+## 2026-11-04 — Un cardumen de Razares (Capitán)
+
+> *"Si el modo asíncrono-sincrónico funciona tridimensionalmente con profundidad 1, podríamos paralelizar y armar un
+> cardumen de Razares."* — *"Es lo único que nos va a faltar."*
+
+Devolución (charla en otro chat, resumida). Son **dos ideas**, no una:
+
+- **Partir un cubo entre núcleos** (ingeniería, la misma ciencia más rápido). Con profundidad 1 es correcto por
+  construcción: dos pedazos solo se pasan la cáscara que los separa (descomposición de dominio, como en clima y
+  fluidos). ⚠️ Asíncrono no es "lo mismo pero más rápido": es otro modelo (un autómata asíncrono puede comportarse
+  distinto), y el resultado ya depende de cómo arranca. Antes de medir nada con él: misma semilla, serial contra
+  paralelo, y tienen que dar lo mismo. En esta máquina probablemente no conviene: un 7³ entra entero en la caché y
+  partirlo agrega sincronización. **Lo que conviene ya y es gratis: correr semillas distintas en núcleos distintos.**
+- **Un cardumen de Razares** (ciencia nueva). Entre Razares no viaja una cara de celdas sino unas pocas señales, y el
+  protocolo de saludos (nadie espera, el que llega lee el buzón) calza sin paso compartido. Pariente directo: el
+  **modelo de islas** de la computación evolutiva, que cura la **convergencia prematura** partiendo una población en
+  grupos semi-aislados que de vez en cuando se pasan un individuo. Convergencia prematura es, con otro nombre, el
+  idioma a medias que se asienta: el atasco medido el 2026-11-04. Candidato a cura, después del A/B de la regla para
+  aflojar (dos curas a la vez no dicen cuál funcionó).
+
+Qué podría emerger, de lo más probable a lo más difícil:
+1. **Dialectos**: Razares criados aparte inventan vocabularios distintos; al encontrarse, gana uno, se mezclan o arman
+   uno nuevo. Se mide con una matriz de confusión entre los dos vocabularios.
+2. **Rescate**: un Razar trabado que escucha a uno sano sale del pozo.
+3. **Roles**: alguno habla más, otro escucha más, otro conecta.
+4. **Señales que se acortan solas**: si comunicarse es caro, lo que más se dice se dice más corto (como las palabras
+   más usadas de los idiomas humanos). Tabla de frecuencia contra largo.
+5. **Algo que el grupo distingue y ningún Razar solo**: lo más interesante y lo más difícil de medir (hay que descartar
+   que sea solo más memoria).
+
+⚠️ "Emergencia" es la palabra más fácil para engañarse. Cada una necesita el mismo control: **el cardumen con la
+comunicación apagada**. Si pasa igual sin hablarse, no era lo que parecía.
