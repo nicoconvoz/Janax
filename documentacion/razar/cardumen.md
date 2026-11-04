@@ -132,3 +132,45 @@ Con 200 vueltas el trabajo de Janax queda tapado por su propio arranque, así qu
 | Janax (la voluntad con 4.000 vueltas) | ~312 ms | **~236 ms: unas 70 veces más rápido** |
 
 Y las dos huellas siguen iguales en 4.000 vueltas (`000031B4C96DD326`, 435,6 millones de instrucciones Janax).
+
+## El techo del idioma, por tamaño de cubo (2026-11-04)
+
+`razar/cardumen/barrido.sh` (tamaños, tareas y semillas por `NS`, `KS`, `SEEDS`) guarda la salida completa de cada
+corrida con el detalle por cosa (`detalle=1`: cuántas veces se dijo, se acertó y con qué se confundió, en el último
+cuarto de las vueltas); `razar/cardumen/analiza.pl` da los números honestos. 100 vueltas por cosa. Una cosa cuenta como
+**aprendida** si se acertó todas las veces que se dijo en el último cuarto (criterio estricto, no medición).
+
+```
+cubo k    semillas que aprenden todo   cosas aprendidas       media (x azar)
+4^3  8     1 de 5                       6 6 4 8 5               74.5% (6.0)
+5^3  8     5 de 5                       8 8 8 8 8              100.0% (8.0)
+6^3  8     5 de 5                       8 8 8 8 8              100.0% (8.0)
+7^3  8     5 de 5                       8 8 8 8 8              100.0% (8.0)
+4^3  16    0 de 5                       9 9 7 9 5               48.8% (7.8)
+5^3  16    0 de 5                       12 10 12 14 11          74.5% (11.9)
+6^3  16    0 de 5                       14 11 14 14 9           78.5% (12.6)
+7^3  16    0 de 5                       13 11 11 11 15          79.5% (12.7)
+4^3  32    0 de 5                       11 10 8 11 7            29.5% (9.4)
+5^3  32    0 de 5                       13 13 11 10 14          38.4% (12.3)
+6^3  32    0 de 5                       16 14 15 15 12          45.5% (14.5)
+7^3  32    0 de 5                       21 15 16 12 16          50.7% (16.2)
+
+Primos (10 semillas):
+4^3  7     7 de 10                      7 7 7 7 7 6 6 7 7 5     95.7% (6.7)
+5^3  7     8 de 10                      7 7 7 7 7 7 6 7 6 7     98.1% (6.9)
+4^3  11    1 de 10                      9 7 6 7 10 9 7 11 8 4   71.8% (7.9)
+5^3  11    4 de 10                      10 11 10 11 9 9 6 11 11 10  89.9% (9.9)
+```
+
+Lo que se ve, sin llamarlo ley todavía:
+
+- **El promedio engaña**: en 4³ con 8 cosas una semilla aprende las 8 y otras 6, 5 o 4; el 74,5 % no le corresponde a
+  ningún cubo. La columna principal es la fracción de semillas que aprenden **todo**: con 8 cosas va de 1 de 5 (4³) a
+  5 de 5 (5³ en adelante). El tamaño no pone un techo: cambia qué tan seguido se alcanza.
+- **La rodilla se corre con la carga**: con 16 y 32 cosas ningún cubo de hasta 7³ aprende todo.
+- **Cosas aprendidas**: con 32 crecen con el cubo (9,4 · 12,2 · 14,4 · 16,0, cerca de 2,4 por unidad de lado); con 16
+  se quedan cerca de 12 desde 5³. Las dos cosas juntas no encajan en una regla simple todavía.
+- **Sin resonancias**: con cargas primas (7, 11) la fracción baja de forma pareja con la carga. La hipótesis de que las
+  cosas caen de a pares está refutada: con 8 hay corridas de 5, con 7 hay de 6.
+- ⚠️ Con 5 semillas se ve la forma; para afirmar una diferencia (como 5³ con 7 contra 5³ con 8) hacen falta más
+  semillas en esos puntos, y comprobar que 100 vueltas por cosa alcanzan para que el aprendizaje se asiente.
