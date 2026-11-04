@@ -23,6 +23,9 @@ for my $m (0 .. $o{k}-1) { my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bott
 my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top piece -> times heard
 my @heard = (0) x $o{k};                        # how many top pieces it heard for each thing, in all
 my ($ok, $reached) = (0, 0); my @blocks;
+my ($streak, $arrived) = (0, 0);                # hasta=1: it stops when it learned everything: 4 * k rounds in a row
+                                                 # right (each thing about 4 times; a criterion, not a measurement);
+                                                 # rounds is then the ceiling, and it reports the round it arrived at
 my (@said, @hits, @conf);                        # detalle=1: per thing, over the last quarter of the rounds: how
 my $tail = $o{rounds} - int($o{rounds} / 4);     # many times it was said, how many right, and what it was taken for
 my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
@@ -43,6 +46,10 @@ for my $r (1 .. $o{rounds}) {
   $heard[$m] += @answer;
   my $hit = ($best == $m && @answer) ? 1 : 0;
   if ($r > $tail) { $said[$m]++; $hits[$m] += $hit; $conf[$m][$best]++; }
+  if ($o{hasta}) {
+    $streak = $hit ? $streak + 1 : 0;
+    if ($streak >= 4 * $o{k}) { $arrived = $r - 4 * $o{k} + 1; last; }
+  }
   mix($m * 8 + $best * 2 + $hit + 1);          # each round: what it meant, what it guessed, whether it was right
   if ($best == $m && @answer) {
     $ok++;
@@ -67,6 +74,9 @@ if ($o{huella}) {                               # and the school as it ended: it
   printf "%016X
 ", $h; exit;
 }
+if ($o{hasta}) { print $arrived ? "llegada: $arrived
+" : "llegada: no convergio (tope $o{rounds})
+"; }
 if ($o{detalle}) {                              # one line: each thing as right/said, then what each was taken for
   print "detalle: ", join(" ", map { sprintf "%d=%d/%d", $_, $hits[$_] // 0, $said[$_] // 0 } 0 .. $o{k} - 1), " | confusion: ",
     join(" ", map { my $m = $_; "$m>" . join(",", map { $conf[$m][$_] // 0 } 0 .. $o{k} - 1) } 0 .. $o{k} - 1), "
