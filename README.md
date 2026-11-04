@@ -107,7 +107,7 @@ languages the literature describes. Conditions were fixed before running; the be
 
 ## Cómo citarlo
 
-Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
+Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
 
 ## Licencia
 
