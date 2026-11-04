@@ -12,7 +12,7 @@ use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (w0 => 40, th => 100, rate => 20, k => 4, rounds => 400, @ARGV ? map { split /=/ } @ARGV : ());
 my $seed = 12345;
 sub rnd { $seed = ($seed * 1103515245 + 12345) % 2147483648; return $seed; }   # the will's dice
-my $c = Cardumen->new(w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{nace} // 0);
+my $c = Cardumen->new(n => $o{n} // 4, w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{nace} // 0);
 my $n = $c->{n};
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
@@ -23,6 +23,8 @@ for my $m (0 .. $o{k}-1) { my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bott
 my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top piece -> times heard
 my @heard = (0) x $o{k};                        # how many top pieces it heard for each thing, in all
 my ($ok, $reached) = (0, 0); my @blocks;
+my (@said, @hits, @conf);                        # detalle=1: per thing, over the last quarter of the rounds: how
+my $tail = $o{rounds} - int($o{rounds} / 4);     # many times it was said, how many right, and what it was taken for
 my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
 sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
@@ -40,6 +42,7 @@ for my $r (1 .. $o{rounds}) {
   $read[$m]{$_}++ for @answer;                  # it knows what it meant: it learns what that sounded like
   $heard[$m] += @answer;
   my $hit = ($best == $m && @answer) ? 1 : 0;
+  if ($r > $tail) { $said[$m]++; $hits[$m] += $hit; $conf[$m][$best]++; }
   mix($m * 8 + $best * 2 + $hit + 1);          # each round: what it meant, what it guessed, whether it was right
   if ($best == $m && @answer) {
     $ok++;
@@ -63,6 +66,11 @@ if ($o{huella}) {                               # and the school as it ended: it
   mix($hc);
   printf "%016X
 ", $h; exit;
+}
+if ($o{detalle}) {                              # one line: each thing as right/said, then what each was taken for
+  print "detalle: ", join(" ", map { sprintf "%d=%d/%d", $_, $hits[$_] // 0, $said[$_] // 0 } 0 .. $o{k} - 1), " | confusion: ",
+    join(" ", map { my $m = $_; "$m>" . join(",", map { $conf[$m][$_] // 0 } 0 .. $o{k} - 1) } 0 .. $o{k} - 1), "
+";
 }
 printf "armonia: %s; puertas: %s; pesos al nacer: %s; th=%d (con pesos fijos harian falta %d vecinas): la ola llego arriba en %d de %d vueltas\n", ($o{armonia} ? "si" : "no"), ($o{puertas} ? "si" : "no"), ($o{nace} ? "repartidos 0..255, semilla $o{nace}" : "todos $o{w0}"), $o{th}, int(($o{th} + $o{w0} - 1) / $o{w0}), $reached, $o{rounds};
 print "aciertos cada 50 vueltas (el azar es ", int(100 / $o{k}), "%): @blocks\n";
