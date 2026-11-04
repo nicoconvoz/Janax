@@ -367,3 +367,20 @@ mueve nunca sus frases, para ver si el problema es que cambia de frase en cada f
 pero no explica todo. Lo que queda: las respuestas de cada cosa son distintas entre sí (27 de 31), pero comparten casi
 todas sus notas con el fondo, que suena igual para todas; la voluntad pesa igual cada nota, y la parte que dijo su
 señal es chica al lado del fondo. Ni contar notas sueltas ni contar pares las separa.
+
+**La canción la sostiene la voluntad, no el cardumen** (Capitán, 2026-11-04: *"el cardumen no tiene que mantener la
+canción, ésa es una convulsión; la única que mantiene la canción es el kernel, la voluntad, la que no se tiene que
+apagar"*). El cardumen que suena solo es lo que la armonía corta. Cada ola del cardumen nace y muere; la voluntad la
+vuelve a encender con su respuesta. Medido el diálogo con el cardumen callado entre olas (sin `viva`), leyendo el
+ritmo, semillas 7, 11, 23, últimos 4 bloques de 50:
+
+| | sin diálogo | con diálogo |
+|---|---|---|
+| 4 cosas, 400 vueltas | 100 %, 100 %, 100 % | 100 %, 100 %, 82–88 % |
+| 8 cosas, 800 vueltas | 100 %, 100 %, 86–88 % | 82–88 %, 82–88 %, 50–76 % |
+
+- **Con el cardumen callado, el idioma vuelve** (con el cardumen sonando solo, todo daba azar). La regla del Capitán se
+  confirma con los números.
+- **El diálogo, tal como está, no suma todavía: resta un poco.** La voluntad contesta repitiendo lo que pertenece, y
+  adivina con lo último que oyó. Lo que falta es que la conversación entera sea lo que se reconoce, no su última
+  vuelta. La melodía viva del cardumen (`viva=1`) queda en el modelo como lo que se midió: una convulsión.
