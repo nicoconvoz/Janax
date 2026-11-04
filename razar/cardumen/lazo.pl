@@ -23,6 +23,7 @@ for my $m (0 .. $o{k}-1) { my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bott
 my @read = map { {} } 0 .. $o{k}-1;             # what it learned: thing -> top piece -> times heard
 my @heard = (0) x $o{k};                        # how many top pieces it heard for each thing, in all
 my ($ok, $reached) = (0, 0); my @blocks;
+my @lastwrong = (0) x $o{k};                  # congelar=1: the round each thing was last missed
 my ($streak, $arrived) = (0, 0);                # hasta=1: it stops when it learned everything: 4 * k rounds in a row
                                                  # right (each thing about 4 times; a criterion, not a measurement);
                                                  # rounds is then the ceiling, and it reports the round it arrived at
@@ -45,6 +46,7 @@ for my $r (1 .. $o{rounds}) {
   $read[$m]{$_}++ for @answer;                  # it knows what it meant: it learns what that sounded like
   $heard[$m] += @answer;
   my $hit = ($best == $m && @answer) ? 1 : 0;
+  $lastwrong[$m] = $r unless $hit;
   if ($r > $tail) { $said[$m]++; $hits[$m] += $hit; $conf[$m][$best]++; }
   if ($o{hasta}) {
     $streak = $hit ? $streak + 1 : 0;
@@ -73,6 +75,34 @@ if ($o{huella}) {                               # and the school as it ended: it
   mix($hc);
   printf "%016X
 ", $h; exit;
+}
+if ($o{congelar}) {                             # the school frozen: each thing said once more on a copy (it learns
+  require Storable;                              # nothing), and the distance between the states it leaves, in the
+  my (@whole, @topa, @learned);                 # whole cube and on the top face (all the will reads)
+  for my $m (0 .. $o{k} - 1) {
+    my $copy = Storable::dclone($c);
+    my $mel = $copy->signal(@{ $say[$m] });
+    my %w = map { $_ => 1 } map { @$_ } @$mel;
+    $whole[$m] = \%w; $topa[$m] = { map { $_ => 1 } grep { $top{$_} } keys %w };
+    $learned[$m] = ($said[$m] && $hits[$m] == $said[$m]) ? 1 : 0;
+  }
+  my $dist = sub { my ($a, $b) = @_; my $d = 0; $d += !$b->{$_} for keys %$a; $d += !$a->{$_} for keys %$b; $d };
+  for my $what (['cubo entero', \@whole], ['cara de arriba', \@topa]) {
+    my ($name, $v) = @$what; my (%sum, %cnt);
+    for my $a (0 .. $o{k} - 1) { for my $b ($a + 1 .. $o{k} - 1) {
+      my $kind = $learned[$a] && $learned[$b] ? 'aprendidas' : (!$learned[$a] && !$learned[$b] ? 'fallidas' : 'mixtas');
+      $sum{$kind} += $dist->($v->[$a], $v->[$b]); $cnt{$kind}++;
+    } }
+    printf "distancias (%s): %s\n", $name, join("; ", map { sprintf "%s %.1f (%d pares)", $_, $sum{$_} / $cnt{$_}, $cnt{$_} } grep { $cnt{$_} } qw(aprendidas fallidas mixtas));
+  }
+  for my $m (grep { !$learned[$_] } 0 .. $o{k} - 1) {
+    my ($near, $nd) = (-1, 1e9);
+    for my $b (0 .. $o{k} - 1) { next if $b == $m; my $d = $dist->($topa[$m], $topa[$b]); ($near, $nd) = ($b, $d) if $d < $nd; }
+    my ($cf, $cn) = (-1, -1); for my $b (0 .. $o{k} - 1) { next if $b == $m; my $n = $conf[$m][$b] // 0; ($cf, $cn) = ($b, $n) if $n > $cn; }
+    printf "fallida %d: arriba %d piezas; la mas cercana arriba es %d (distancia %d, en el cubo %d); se confunde sobre todo con %d (%d veces), que se asento en la vuelta %s\n",
+      $m, scalar keys %{ $topa[$m] }, $near, $nd, $dist->($whole[$m], $whole[$near]), $cf, $cn, $learned[$cf] ? $lastwrong[$cf] + 1 : 'nunca';
+  }
+  printf "se asentaron (vuelta): %s\n", join(" ", map { $learned[$_] ? "$_:" . ($lastwrong[$_] + 1) : "$_:-" } 0 .. $o{k} - 1);
 }
 if ($o{estado}) {                               # the school as it ended: how much of it is fixed
   my ($w255, $w0, $wall, $r1, $rsum) = (0, 0, 0, 0, 0);
