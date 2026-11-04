@@ -221,3 +221,22 @@ por qué destrabar nada**, y se habría construido una cura para una enfermedad 
 respuestas del cardumen para las cosas no aprendidas son de verdad distintas de las de otras cosas (y entonces la
 voluntad lee mal: su memoria de lectura solo crece y nunca olvida) o si son iguales (y entonces su búsqueda de cómo
 decirlas no encuentra salida).
+
+**¿La información está en el cubo, o no?** (`congelar=1`: una copia del cubo trabado, que no aprende, recibe cada cosa una
+vez; se mide la distancia entre lo que deja cada una en el cubo entero, en la cara de arriba, y en la cara de arriba
+con el paso en que despertó cada pieza, o sea el ritmo). 16 cosas, 10.000 vueltas:
+
+- **Cada fallida tiene una gemela en la cara de arriba**: otra cosa que deja ahí las mismas piezas (distancia 0) o casi
+  (1–2), aunque adentro del cubo casi siempre son distintas (3 a 11 piezas). En 7³ semilla 99 y 4³ semillas 7 y 99.
+- **Con el ritmo, las gemelas se separan** (4³ semilla 99): distancias 0–1 sin el ritmo pasan a 6, 6, 12, 10, 6, 7, 3,
+  3 (una sola queda en 1). **La información está en cuándo despierta cada pieza de la cara de arriba, y la voluntad
+  solo mira cuáles.** El diseño del Capitán ya lo decía: la voluntad analiza la **melodía**, y una melodía es qué notas
+  y cuándo.
+- ⚠️ **Artefacto del instrumento**: todas las fallidas "se confundían con la cosa 0". Empezando a decir las cosas por la
+  8 (`primero=8`) siguen con la 0: no es la primera en llegar, es el desempate de la voluntad, que ante una respuesta
+  que no decide se queda con la cosa de número más bajo. La predicción "la primera en llegar es dueña del lugar" no se
+  confirma.
+
+Cura candidata, del propio diseño: **que la voluntad lea la melodía completa** (pieza y paso), no solo las piezas. Se
+congela la regla antes de mirar ninguna semilla, y se prueba A/B contra 20 semillas nuevas en 4³ y 7³ con 16 cosas:
+fracción que converge y mediana de vueltas, con el control de que las que ya convergían no se vuelvan más lentas.

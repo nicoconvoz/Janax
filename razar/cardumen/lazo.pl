@@ -32,7 +32,7 @@ my $tail = $o{rounds} - int($o{rounds} / 4);     # many times it was said, how m
 my $h = 0;                                      # the fingerprint (huella=1): what the Janax loop must give
 sub mix { $h = ($h * 31 + $_[0]) % 2 ** 48; }
 for my $r (1 .. $o{rounds}) {
-  my $m = ($r - 1) % $o{k};                     # what it wants to say, in turn
+  my $m = ($r - 1 + ($o{primero} // 0)) % $o{k};   # what it wants to say, in turn (primero=: the thing said first)
   my $mel = $c->signal(@{$say[$m]});
   my @answer = grep { $top{$_} } map { @$_ } @$mel;
   $reached++ if @answer;
@@ -78,12 +78,14 @@ if ($o{huella}) {                               # and the school as it ended: it
 }
 if ($o{congelar}) {                             # the school frozen: each thing said once more on a copy (it learns
   require Storable;                              # nothing), and the distance between the states it leaves, in the
-  my (@whole, @topa, @learned);                 # whole cube and on the top face (all the will reads)
+  my (@whole, @topa, @learned, @rhythm);        # whole cube and on the top face (all the will reads)
   for my $m (0 .. $o{k} - 1) {
     my $copy = Storable::dclone($c);
     my $mel = $copy->signal(@{ $say[$m] });
     my %w = map { $_ => 1 } map { @$_ } @$mel;
     $whole[$m] = \%w; $topa[$m] = { map { $_ => 1 } grep { $top{$_} } keys %w };
+    my %rh; for my $t (0 .. $#$mel) { $rh{"$_:$t"} = 1 for grep { $top{$_} } @{ $mel->[$t] }; }
+    $rhythm[$m] = \%rh;                          # the top face with WHEN each piece woke: the melody's rhythm
     $learned[$m] = ($said[$m] && $hits[$m] == $said[$m]) ? 1 : 0;
   }
   my $dist = sub { my ($a, $b) = @_; my $d = 0; $d += !$b->{$_} for keys %$a; $d += !$a->{$_} for keys %$b; $d };
@@ -99,8 +101,8 @@ if ($o{congelar}) {                             # the school frozen: each thing 
     my ($near, $nd) = (-1, 1e9);
     for my $b (0 .. $o{k} - 1) { next if $b == $m; my $d = $dist->($topa[$m], $topa[$b]); ($near, $nd) = ($b, $d) if $d < $nd; }
     my ($cf, $cn) = (-1, -1); for my $b (0 .. $o{k} - 1) { next if $b == $m; my $n = $conf[$m][$b] // 0; ($cf, $cn) = ($b, $n) if $n > $cn; }
-    printf "fallida %d: arriba %d piezas; la mas cercana arriba es %d (distancia %d, en el cubo %d); se confunde sobre todo con %d (%d veces), que se asento en la vuelta %s\n",
-      $m, scalar keys %{ $topa[$m] }, $near, $nd, $dist->($whole[$m], $whole[$near]), $cf, $cn, $learned[$cf] ? $lastwrong[$cf] + 1 : 'nunca';
+    printf "fallida %d: arriba %d piezas; la mas cercana arriba es %d (distancia %d, con el ritmo %d, en el cubo %d); se confunde sobre todo con %d (%d veces), que se asento en la vuelta %s\n",
+      $m, scalar keys %{ $topa[$m] }, $near, $nd, $dist->($rhythm[$m], $rhythm[$near]), $dist->($whole[$m], $whole[$near]), $cf, $cn, $learned[$cf] ? $lastwrong[$cf] + 1 : 'nunca';
   }
   printf "se asentaron (vuelta): %s\n", join(" ", map { $learned[$_] ? "$_:" . ($lastwrong[$_] + 1) : "$_:-" } 0 .. $o{k} - 1);
 }
