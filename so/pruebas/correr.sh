@@ -424,8 +424,11 @@ P0 codigo=0 j0=$huella t=*" cardumen
 # which top pieces woke and at which step (lee=ritmo, the reading that won the A/B of 2026-11-04). No doors
 # (Capitan, 2026-11-04: they bought nothing measured, and with them the rhythm got stuck).
 huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 rounds=200 huella=1 lee=ritmo)
+# and the will says how it went, the same line as the model: its hits every 50 rounds
+aciertos_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 rounds=200 lee=ritmo | tail -1 | tr -d '\r')
 familia familia_lazo cardumen_lazo
 caso "razar: la voluntad y el cardumen conversan como en el modelo" 0 0 "$fijo0
+$aciertos_lazo
 P1 codigo=0 j0=* t=*
 P0 codigo=0 j0=$huella_lazo t=*
 ventanilla: *" voluntad

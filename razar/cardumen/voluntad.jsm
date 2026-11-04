@@ -27,6 +27,9 @@ BEST  = 678h                    ; what it guessed (-1: nothing yet)
 BSUM    = 680h                    ; the best share so far: BSUM / BTOT
 BTOT    = 688h
 CNT   = 690h                    ; how many top pieces woke
+OKC   = 6A0h                    ; hits in this block of 50 rounds
+POS   = 6A8h                    ; how long the line of hits is so far
+TEXT  = 800h                    ; the line of hits it writes at the end
 include '../../escalon0/janax.inc'
 jfirst j1, 0A000h              ; first order: room 0
 
@@ -40,6 +43,41 @@ jst j1, j2, M48
 jldi j1, 3039h                  ; its dice: seed 12345
 jst j1, j2, SEED
 jldi j0, 0                      ; the fingerprint
+jldi j1, 0                      ; how it went: "aciertos cada 50 vueltas (el azar es 25%):" and a block every 50
+jldi j2, 736Fh
+jshi j2, 7472h
+jshi j2, 6569h
+jshi j2, 6361h
+jst j2, j1, TEXT + 0
+jldi j2, 3035h
+jshi j2, 2061h
+jshi j2, 6461h
+jshi j2, 6320h
+jst j2, j1, TEXT + 8
+jldi j2, 7361h
+jshi j2, 746Ch
+jshi j2, 6575h
+jshi j2, 7620h
+jst j2, j1, TEXT + 16
+jldi j2, 617Ah
+jshi j2, 6120h
+jshi j2, 6C65h
+jshi j2, 2820h
+jst j2, j1, TEXT + 24
+jldi j2, 2535h
+jshi j2, 3220h
+jshi j2, 7365h
+jshi j2, 2072h
+jst j2, j1, TEXT + 32
+jldi j2, 2020h
+jshi j2, 2020h
+jshi j2, 2020h
+jshi j2, 3A29h
+jst j2, j1, TEXT + 40
+jldi j2, 42                     ; rounds, as the model says it
+jst j2, j1, POS
+jldi j2, 0
+jst j2, j1, OKC
 
 jldi j10, 2                     ; the box: 64 bytes
 jldi j11, 64
@@ -219,7 +257,12 @@ judged:
   jadd j12, j12, j3
   jcall mix
   jjz j9, wrong
-  jldi j3, 1                    ; right: it sounds the melody once more (the school settles it)
+  jldi j1, 0                    ; right: one more hit in this block
+  jld j3, j1, OKC
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, OKC
+  jldi j3, 1                    ; and it sounds the melody once more (the school settles it)
   jcall order
   jjmp next_round
 wrong:                          ; wrong: it moves one of the pieces it says that thing with
@@ -253,7 +296,24 @@ next_round:
   jadd j2, j2, j3
   jst j2, j1, ROUND
   jsub j15, j15, j3
+  jldi j6, 50                   ; every 50 rounds, a block of hits
+  jdiv j7, j2, j6
+  jmul j7, j7, j6
+  jsub j7, j2, j7
+  jjnz j7, no_block
+  jcall block
+no_block:
 jwend
+
+jldi j1, 0                      ; the line of hits, written once at the end
+jld j4, j1, POS
+jldi j5, 0Ah
+jstb j5, j4, TEXT
+jldi j10, 1
+jldi j11, TEXT
+jldi j5, 1
+jadd j12, j4, j5
+jcall ask
 
 jldi j3, 3                      ; the end: the school's own fingerprint, mixed in
 jcall order
@@ -298,6 +358,48 @@ order:
   jcall ask
   jldi j10, 29                  ; and sleeps until it greets back
   jcall ask
+  jret
+
+; One block of hits added to the line: " %3d%%" of 100 * hits / 50 (= 2 * hits), as the model prints it; the block's
+; count starts again. Uses j1-j8.
+block:
+  jldi j1, 0
+  jld j2, j1, OKC
+  jadd j2, j2, j2               ; the percentage
+  jld j4, j1, POS
+  jldi j5, 20h
+  jstb j5, j4, TEXT
+  jldi j6, 100                  ; hundreds, or a space
+  jdiv j7, j2, j6
+  jldi j5, 20h
+  jjz j7, bk_h
+  jldi j5, 30h
+  jadd j5, j5, j7
+bk_h:
+  jstb j5, j4, TEXT + 1
+  jldi j6, 10                   ; tens, or a space below 10
+  jdiv j8, j2, j6
+  jdiv j3, j8, j6
+  jmul j3, j3, j6
+  jsub j3, j8, j3
+  jldi j5, 20h
+  jjz j8, bk_t
+  jldi j5, 30h
+  jadd j5, j5, j3
+bk_t:
+  jstb j5, j4, TEXT + 2
+  jmul j3, j8, j6               ; units
+  jsub j3, j2, j3
+  jldi j5, 30h
+  jadd j5, j5, j3
+  jstb j5, j4, TEXT + 3
+  jldi j5, 25h                  ; %
+  jstb j5, j4, TEXT + 4
+  jldi j5, 5
+  jadd j4, j4, j5
+  jst j4, j1, POS
+  jldi j2, 0
+  jst j2, j1, OKC
   jret
 
 ; Its dice: seed = (seed * 1103515245 + 12345) mod 2^31 -> j13 = it. Uses j14.

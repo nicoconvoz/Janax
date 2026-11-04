@@ -442,3 +442,9 @@ puertas:
   melodías para que no tengan gemelas; quieto, algunas cosas quedan con respuestas que la voluntad no puede separar.
 - Lectura en el lenguaje del Capitán: la memoria larga y lo que se recuerda viven en la voluntad (su tabla), pero la
   placa ajusta un poco su propio circuito a lo que más se usa, y eso es lo que hace caber 16 cosas.
+
+**La voluntad de Janax dice cómo le fue** (2026-11-04). Al terminar escribe en pantalla (pedido 1, una sola vez) sus
+aciertos cada 50 vueltas, con la misma línea que el modelo: `aciertos cada 50 vueltas (el azar es 25%):  84% 100% 100%
+100%`. Cuenta los aciertos de cada bloque y arma el texto en su camarote (`TEXT`, de a 8 letras con `jldi`/`jshi`,
+porque un programa Janax no trae datos adentro). La prueba compara la línea letra por letra con la del modelo, además
+de la huella.
