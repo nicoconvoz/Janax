@@ -15,6 +15,8 @@ sub rnd { $seed = ($seed * 1103515245 + 12345) % 2147483648; return $seed; }   #
 my $seed2 = ($o{nace} // 0) * 7919 + 1;          # other dice, only for lee=revuelto, so the will's own throws stay the same
 sub rnd2 { $seed2 = ($seed2 * 1103515245 + 12345) % 2147483648; return $seed2 >> 16; }
 my $c = Cardumen->new(n => $o{n} // 4, w0 => $o{w0}, th => $o{th}, rate => $o{rate}, seed => $o{nace} // 0);
+$c->{whisper} = 1 if $o{quieto};                # quieto=1 (Capitan: the school is the video card, the will the computer; what
+                                                 # is learned lives in the will): the school never learns, as it was born
 my $n = $c->{n};
 sub sig { $o{viva} ? $c->signal_viva(@_) : $c->signal(@_) }   # viva=1: the living melody (modelo.pl signal_viva)
 my @bottom = map { my $i = $_; $c->idx($i % $n, int($i / $n), 0) } 0 .. $n*$n-1;
@@ -91,7 +93,7 @@ for my $r (1 .. $o{rounds}) {
       $ex++;
       $c->{whisper} = $o{susurro} ? 1 : 0;       # susurro=1: the school hears the answer, and does not learn from it
       $mel = sig(sort { $a <=> $b } keys %echo);
-      $c->{whisper} = 0;
+      $c->{whisper} = $o{quieto} ? 1 : 0;
       my ($an, $fe) = $hear->($mel); @answer = @$an; @feat = @$fe;
       push @hist, [@feat];
     }

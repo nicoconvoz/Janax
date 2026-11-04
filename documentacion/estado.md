@@ -187,3 +187,5 @@ llega a 34–48 %. El fondo común tapa la parte que dijo la señal.
 ola más que entrena al cardumen. Bucle de la charla corregido. La tabla de la voluntad en 7³ pide crecer a la medida (L2).
 2026-11-04 — El susurro (el cardumen no aprende del eco) no salva al diálogo: 8 cosas, 26–64 % contra 86–100 %
 sin diálogo. El diálogo se archiva, como la melodía viva.
+2026-11-04 — La placa de video (Capitán): con el cardumen quieto la voluntad sola aprende 4 cosas al 100 %, pero
+en 7³ con 16 cosas llegan 2 de 5 contra 5 de 5 si el cardumen aprende.

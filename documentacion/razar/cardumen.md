@@ -419,3 +419,26 @@ bloques de 50:
 `vueltas`, `viva`), con lo que se midió. Lo que queda en pie del día: la canción no la sostiene el cardumen (con el
 cardumen callado entre olas el idioma está); la idea del Capitán de una voluntad que guía conversando no se descarta,
 pero esta forma de contestar (repetir lo que pertenece) no la realiza.
+
+## La placa de video y la computadora (Capitán, 2026-11-04)
+
+> *"El cardumen son como las placas de video, con su procesador y su RAM, y el kernel sería como la computadora con RAM
+> y disco duro: el kernel evoluciona, la memoria vive en él, lo que aprende vive en él."*
+
+Pariente directo: la computación de reservorio (Jaeger, redes de eco; Maass, máquinas de estado líquido): un reservorio
+fijo transforma la entrada y solo el lector aprende. Prueba: `quieto=1` en `lazo.pl`, el cardumen nace con sus pesos
+repartidos y no aprende nunca (toda ola es un susurro); toda la memoria queda en la voluntad. Leyendo el ritmo, sin
+puertas:
+
+| | cardumen que aprende | cardumen quieto |
+|---|---|---|
+| 4³, 4 cosas (semillas 7, 11, 23) | 100 %, 100 %, 100 % | 100 %, 100 %, 100 % |
+| 4³, 8 cosas | 100 %, 100 %, 88 % | 88 %, 100 %, 74–76 % |
+| 7³, 16 cosas, llegada (semillas 1001–1005, tope 3.000) | 102, 51, 99, 62, 35: **5 de 5** | no, no, 67, 65, no: **2 de 5** |
+
+- **Una placa fija ya alcanza para idiomas chicos**: con 4 cosas, la voluntad sola aprende todo, y las que llegan en
+  7³ llegan igual de rápido (65–67 vueltas).
+- **Para idiomas grandes, que el cardumen aprenda suma**: 5 de 5 contra 2 de 5. Lo que aprende el cardumen talla las
+  melodías para que no tengan gemelas; quieto, algunas cosas quedan con respuestas que la voluntad no puede separar.
+- Lectura en el lenguaje del Capitán: la memoria larga y lo que se recuerda viven en la voluntad (su tabla), pero la
+  placa ajusta un poco su propio circuito a lo que más se usa, y eso es lo que hace caber 16 cosas.
