@@ -87,6 +87,7 @@ if ($o{huella}) {                               # and the school as it ended: it
   for my $i (0 .. $c->{p} - 1) {
     $mixc->($c->{w}[$i][$_]) for 0 .. 5;
     $mixc->($c->{rate}[$i]); $mixc->($c->{frag}[$i]);
+    next unless $o{puertas};                   # the doors' memory, only when there are doors
     my $t = 0; $t += 2 ** $_ for keys %{ $c->{tune}[$i] };
     $mixc->($t % 2 ** 32); $mixc->(int($t / 2 ** 32));
   }

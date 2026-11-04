@@ -282,7 +282,7 @@ solo así; la lectura de piezas sigue en el modelo Perl (`lee=piezas`, el valor 
 cada una (un byte por pieza, caja + 48). La voluntad lleva la cuenta por cosa, pieza y paso (4 × 16 × 64 contadores:
 un paso nunca llega a 64, porque en cada paso despierta alguien nuevo o la ola termina), y su camarote crece de 2000h
 a A000h bytes. Los dos camarotes dan la huella de `lazo.pl nace=7 armonia=1 puertas=1 rounds=200 huella=1 lee=ritmo`
-(`00003F692A4BBA23`) bit por bit, en los tres motores.
+(`00003F692A4BBA23`) bit por bit, en los tres motores (después, sin puertas: ver más abajo).
 
 **Tres mediciones después del A/B** (2026-11-04):
 
@@ -301,3 +301,13 @@ a A000h bytes. Los dos camarotes dan la huella de `lazo.pl nace=7 armonia=1 puer
   En 7³ con puertas y leyendo el ritmo, la 1001 llega (vuelta 89), pero la 1018 y la 1011 no llegan en 12.000 vueltas,
   y sin puertas llegaban en la 55 y la 147. Las puertas (las melodías confirmadas quedan afinadas para siempre) pueden
   trabar lo que el ritmo destraba. Falta el A/B con puertas para saberlo.
+
+**Sin puertas** (Capitán, 2026-11-04: *"volá las puertas, dejalo sin puertas"*). Las puertas no compraban nada medido:
+solas daban aciertos de azar, con armonía daban lo mismo que la armonía sola (58–88 % contra 56–88 %), y con el ritmo
+en 7³ trababan 2 de 3 semillas. Costaban un recuerdo de 8 bytes por pieza y una comprobación por paso de ola. El
+cardumen de Janax ya no guarda recuerdos ni atiende la orden "confirmá", y la voluntad ya no la manda. Los dos
+camarotes dan la huella de `lazo.pl nace=7 armonia=1 rounds=200 huella=1 lee=ritmo` (`000094454451C2E4`), bit por bit.
+En el modelo Perl las puertas quedan como opción apagada (`puertas=1`), para comparar. La huella mezcla sus recuerdos
+solo cuando están puestas, así que las huellas viejas con puertas no cambian. Lo que falla es esta versión, que confirma
+demasiado temprano: la idea (*"una melodía que ya dio una respuesta confirmada termina su pulso"*) queda para cuando
+haya con qué medirla.

@@ -707,3 +707,37 @@ Qué podría emerger, de lo más probable a lo más difícil:
 
 ⚠️ "Emergencia" es la palabra más fácil para engañarse. Cada una necesita el mismo control: **el cardumen con la
 comunicación apagada**. Si pasa igual sin hablarse, no era lo que parecía.
+
+## 2026-11-04 — La puerta es la melodía viva (Capitán)
+
+> *"La puerta es la propia melodía que va sonando y cambiando. Es como una consciencia: mientras permanece vivo, el
+> cerebro evoluciona; cuando mueren las células, el cerebro pierde la melodía, y con ella la memoria."*
+> — *"No es un bucle: una melodía que suena tiene un ritmo que cambia. Un bucle es la misma tarea idéntica repetida."*
+
+Devolución:
+- **Por qué falló la puerta vieja**: era un recuerdo quieto, una lista que cada pieza guardaba para siempre, y
+  congelaba un momento (con el ritmo en 7³ trababa 2 de 3 semillas; se sacó el mismo día). En la idea del Capitán
+  no hay nada guardado aparte: **lo que está sonando decide qué pasa y qué no**. La memoria es la actividad que sigue
+  andando.
+- **Para eso el cubo tiene que seguir sonando entre señales.** Hoy cada señal es una ola que se apaga y el cubo queda
+  en silencio hasta la próxima.
+- **No choca con la regla de la casa** (ningún bucle que gaste por nada). Esa regla castiga el gasto cuando no hay nada
+  nuevo, y una melodía que cambia trae algo nuevo en cada paso: es trabajo, no desperdicio.
+- **La misma definición da la regla para frenarla, sin parches** (propuesta de Doc, sin medir). Mientras cambia, suena.
+  Si un paso deja el cubo exactamente igual a un paso anterior (se ve con una huella del estado, que ya se calcula bit
+  por bit), la melodía se volvió bucle: descansa a costo cero hasta que la voluntad diga algo nuevo. O sea, esa melodía
+  murió, y con ella su memoria.
+- **Una sola regla para el SO y para Razar**: no repetir trabajo idéntico. En el SO es ahorro; en Razar, la conciencia
+  que vive mientras cambia.
+- Lo que falta para "cuando mueren las células": piezas que mueran y nazcan (neurogénesis), que todavía no hay.
+
+En el oficio:
+- **Hebb (1949), las asambleas que reverberan**: la memoria de corto plazo como actividad que da vueltas antes de quedar
+  escrita en las conexiones. Lorente de Nó ya había visto esos lazos en 1938.
+- **Memoria de trabajo por disparo sostenido** (Goldman-Rakic): la corteza prefrontal sostiene un dato disparando
+  mientras dura la espera; si se corta la actividad, el dato se pierde.
+- **Redes de atractores y reservorios** (Hopfield; Maass, las máquinas de estado líquido): el estado que va sonando es
+  la memoria, y la entrada nueva se mezcla con lo que ya suena. El ciclo que se repite idéntico es un atractor.
+
+Lo propio: en esos modelos la actividad sostenida es memoria. En la del Capitán, además, **es la puerta** (lo que suena
+decide qué entra) y es la conciencia, no un registro.

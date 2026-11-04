@@ -3,10 +3,9 @@
 ; order in the box, does it, and greets its mother (P0) back:
 ;   1 a signal: the 3 bottom pieces at box + 8 wake; the answer (bit j = top piece 48 + j woke) goes to box + 16,
 ;     and the step each top piece woke at (a byte each, 0FFh = not then) to box + 48
-;   2 the will confirmed the last melody: its pieces remember who woke them, in tune (the doors)
-;   3 the end: its own fingerprint (every weight, rate, fragment and tune memory) goes to box + 32, and it ends
-; The school is the reference model (modelo.pl) with harmony, doors and the top face answering, born from seed 7:
-; the loop of both cabins gives the fingerprint of lazo.pl (huella=1), bit for bit.
+;   3 the end: its own fingerprint (every weight, rate and fragment) goes to box + 32, and it ends
+; The school is the reference model (modelo.pl) with harmony and the top face answering, no doors, born from
+; seed 7: the loop of both cabins gives the fingerprint of lazo.pl (huella=1), bit for bit.
 ;
 ; Room 0 (2000h bytes):
 QUEUE = 100h                    ; its window: one request
@@ -20,7 +19,6 @@ NCNT  = 0A40h                   ; how many neighbors each piece has
 FRAG  = 0A80h                   ; its fragment of the last melody: which neighbors woke it
 M48   = 0B00h                   ; 2^48 - 1
 BOXA  = 0B08h                   ; the box's address (room 1)
-TUNE  = 0C00h                   ; the fragments the will confirmed: bit f = fragment f (a qword per piece)
 include '../../escalon0/janax.inc'
 jfirst j1, 2000h               ; first order: room 0
 
@@ -135,12 +133,6 @@ jwhile j15
   jcall signal
   jjmp answered
 not_signal:
-  jldi j13, 2
-  jsub j3, j2, j13
-  jjnz j3, not_confirm
-  jcall confirm
-  jjmp answered
-not_confirm:
   jcall fingerprint             ; the end
   jldi j10, 28
   jldi j11, 0
@@ -194,7 +186,7 @@ mix:
   jand j0, j0, j14
   jret
 
-; One signal: the 3 pieces at box + 8 wake, the wave runs (harmony, doors, the top face answering), the answer
+; One signal: the 3 pieces at box + 8 wake, the wave runs (harmony, the top face answering), the answer
 ; goes to box + 16, and the shape learns from it. Uses j1-j14.
 signal:
   jldi j1, 0                    ; nobody woke yet
@@ -305,29 +297,6 @@ signal:
       jldi j13, 63
       jsar j5, j5, j13
       jjnz j5, wk_next          ; drowned out: it does not pass
-      jldi j13, 8               ; the door: a piece that remembers confirmed fragments passes only if what woke
-      jmul j14, j1, j13         ; it shares a neighbor with one of them
-      jld j14, j14, TUNE
-      jjz j14, in_tune          ; no memory yet: it passes
-      jldb j8, j1, MASK
-      jldi j9, 1                ; fragment f, from 1 to 63
-      jldi j10, 63
-      jldi j12, 0               ; one shared?
-      jwhile j10
-        jshr j11, j14, j9
-        jldi j13, 1
-        jand j11, j11, j13
-        jjz j11, tf_next        ; it does not remember f
-        jand j11, j9, j8
-        jjz j11, tf_next        ; f shares no neighbor with what woke it
-        jldi j12, 1
-      tf_next:
-        jldi j13, 1
-        jadd j9, j9, j13
-        jsub j10, j10, j13
-      jwend
-      jjz j12, wk_next          ; out of tune: the door closes
-    in_tune:
       jstb j6, j1, FT           ; it wakes
       jldi j7, 1
     wk_next:
@@ -436,58 +405,7 @@ signal:
   jwend
   jret
 
-; The will confirmed the last melody: each piece woken after step 0 remembers who woke it (the neighbors woken
-; one step before), as in tune. Uses j1-j14.
-confirm:
-  jldi j1, 0
-  jldi j2, 64
-  jwhile j2
-    jldb j5, j1, FT
-    jjz j5, cf_next             ; step 0
-    jldi j13, 0FFh
-    jsub j14, j5, j13
-    jjz j14, cf_next            ; it did not wake
-    jldi j3, 0
-    jldi j9, 0
-    jldi j10, 6
-    jwhile j10
-      jldi j14, 8
-      jmul j11, j1, j14
-      jadd j11, j11, j9
-      jldb j8, j11, NB
-      jldi j14, 0FFh
-      jsub j14, j8, j14
-      jjz j14, cd_next
-      jldb j12, j8, FT
-      jldi j13, 1
-      jadd j12, j12, j13
-      jsub j12, j12, j5
-      jjnz j12, cd_next         ; not one step before
-      jldi j13, 1
-      jshl j13, j13, j9
-      jor j3, j3, j13
-    cd_next:
-      jldi j13, 1
-      jadd j9, j9, j13
-      jsub j10, j10, j13
-    jwend
-    jjz j3, cf_next
-    jldi j13, 1                 ; tune |= 1 << fragment
-    jshl j13, j13, j3
-    jldi j14, 8
-    jmul j14, j1, j14
-    jld j12, j14, TUNE
-    jor j12, j12, j13
-    jst j12, j14, TUNE
-  cf_next:
-    jldi j13, 1
-    jadd j1, j1, j13
-    jsub j2, j2, j13
-  jwend
-  jret
-
-; Its own fingerprint to box + 32: for every piece its 6 weights, its rate, its fragment, and its tune memory
-; (low 32 bits, then high). Uses j0-j14.
+; Its own fingerprint to box + 32: for every piece its 6 weights, its rate and its fragment. Uses j0-j14.
 fingerprint:
   jldi j0, 0
   jldi j1, 0
@@ -506,15 +424,6 @@ fingerprint:
     jldb j12, j1, RATE
     jcall mix
     jldb j12, j1, FRAG
-    jcall mix
-    jldi j3, 8
-    jmul j4, j1, j3
-    jld j6, j4, TUNE
-    jldi j3, 32
-    jshl j12, j6, j3
-    jshr j12, j12, j3
-    jcall mix
-    jshr j12, j6, j3
     jcall mix
     jldi j3, 1
     jadd j1, j1, j3

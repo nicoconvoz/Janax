@@ -4,11 +4,10 @@
 ;
 ; The will has 4 things to say; it says one waking 3 bottom pieces. It reads the answer as a melody (which top pieces
 ; woke, and at which step) with what it learned: for each thing, the share of times each top piece woke at that step
-; when it said it (it knows what it meant, so it learns every round), and guesses. Right: it confirms the melody (the
-; school remembers it in tune) and sounds it once more (the school settles it). Wrong: it moves one of the pieces
-; it says that thing with. Its dice have a fixed seed (12345), so every run is the same run. 200 rounds, then the
-; school's own fingerprint is mixed in: j0 is the fingerprint of lazo.pl (nace=7 armonia=1 puertas=1 rounds=200
-; huella=1 lee=ritmo), bit for bit.
+; when it said it (it knows what it meant, so it learns every round), and guesses. Right: it sounds the melody once
+; more (the school settles it). Wrong: it moves one of the pieces it says that thing with. Its dice have a fixed
+; seed (12345), so every run is the same run. 200 rounds, then the school's own fingerprint is mixed in: j0 is the
+; fingerprint of lazo.pl (nace=7 armonia=1 rounds=200 huella=1 lee=ritmo), bit for bit.
 ;
 ; Room 0 (A000h bytes):
 QUEUE = 100h                    ; its window: one request
@@ -220,9 +219,7 @@ judged:
   jadd j12, j12, j3
   jcall mix
   jjz j9, wrong
-  jldi j3, 2                    ; right: it confirms the melody, and sounds it once more
-  jcall order
-  jldi j3, 1
+  jldi j3, 1                    ; right: it sounds the melody once more (the school settles it)
   jcall order
   jjmp next_round
 wrong:                          ; wrong: it moves one of the pieces it says that thing with
@@ -280,7 +277,7 @@ ask:
   jld j13, j13, QUEUE + 32
   jret
 
-; Order j3 to the school (1 a signal with the pieces of THING, 2 confirm, 3 the end): written in the box, then
+; Order j3 to the school (1 a signal with the pieces of THING, 3 the end): written in the box, then
 ; it greets the school and sleeps until the school greets back. Uses j1-j4, j10-j14.
 order:
   jldi j1, 0
