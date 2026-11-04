@@ -89,7 +89,9 @@ for my $r (1 .. $o{rounds}) {
       my $key = join ',', sort { $a <=> $b } keys %echo;
       last if $key eq '' || $said{$key}++;
       $ex++;
+      $c->{whisper} = $o{susurro} ? 1 : 0;       # susurro=1: the school hears the answer, and does not learn from it
       $mel = sig(sort { $a <=> $b } keys %echo);
+      $c->{whisper} = 0;
       my ($an, $fe) = $hear->($mel); @answer = @$an; @feat = @$fe;
       push @hist, [@feat];
     }

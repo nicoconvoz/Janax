@@ -403,3 +403,19 @@ L2 y dentro del L3. El cardumen mismo es chico (4³ ~1,5 KB, 7³ ~8 KB). Pero el
 dura ~13,5 pasos (medido), así que una tabla que crezca a la medida del uso (la regla del plástico) quedaría cerca de
 16 × 49 × ~30 × 8 ≈ 190 KB, dentro del L2. Agregarle la vuelta de la charla lo multiplicaría por las vueltas; como no
 suma, no hace falta.
+
+**El susurro real, y el diálogo se archiva** (2026-11-04). `susurro=1`: en el diálogo, el cardumen escucha la respuesta
+de la voluntad y su ola corre, pero no aprende de ella (`whisper` en `modelo.pl`). Era la prueba de la sospecha "el eco
+entrena al cardumen con lo que la voluntad repite". Una corrida, leyendo el ritmo, semillas 7, 11, 23, últimos 4
+bloques de 50:
+
+| | sin diálogo | diálogo | diálogo con susurro |
+|---|---|---|---|
+| 4 cosas | 100 % en las tres | 52–100 % | 40–100 % |
+| 8 cosas | 86–100 % | 16–64 % | 26–64 % |
+
+**El susurro no cambia nada: la sospecha no se confirma**, y el diálogo resta igual. Como se acordó antes de correr,
+**el diálogo se archiva**, como la melodía viva: quedan en el modelo como opciones apagadas (`dialogo`, `susurro`,
+`vueltas`, `viva`), con lo que se midió. Lo que queda en pie del día: la canción no la sostiene el cardumen (con el
+cardumen callado entre olas el idioma está); la idea del Capitán de una voluntad que guía conversando no se descarta,
+pero esta forma de contestar (repetir lo que pertenece) no la realiza.

@@ -62,6 +62,7 @@ sub signal {
     $ft[$_] = $t for @next;
     @now = @next;
   }
+  return \@melody if $s->{whisper};             # a whisper: the wave runs, the shape does not learn from it
   for my $i (0 .. $s->{p}-1) {                   # the shape moves by what happened
     next if $ft[$i] < 0;
     my $frag = 0;
