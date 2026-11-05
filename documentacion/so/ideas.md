@@ -512,7 +512,10 @@ se reusan.
 > queda hasta que se toma. Se parece al timbre de las placas de red, a los eventos de Windows y a las señales de
 > Unix; lo propio es que crece por familiar. Construido en `janaxos.md`.
 
-## 2026-11-03 — El saludo entre lugares remotos: buzón, tablero y no esperar (Capitán)
+## 2026-11-03 — El buzón asincrónico-sincrónico: el saludo entre lugares remotos, sin esperar (Capitán)
+
+> Es la solución del Capitán al problema asincrónico-sincrónico, y el protocolo de la **sociedad de Razares** (ver
+> "Un cardumen de Razares", 2026-11-04). Él pidió tenerla presente para armar una sociedad de IAs distribuidas.
 
 > *"Cada casa tiene un buzón y no se espera una respuesta: se espera que llegue la carta. Si se confirma que la
 > carta llegó, después se contesta la carta; se pasan parámetros de comunicación y retardo, y teniendo en cuenta
@@ -689,7 +692,10 @@ Devolución (charla en otro chat, resumida). Son **dos ideas**, no una:
   paralelo, y tienen que dar lo mismo. En esta máquina probablemente no conviene: un 7³ entra entero en la caché y
   partirlo agrega sincronización. **Lo que conviene ya y es gratis: correr semillas distintas en núcleos distintos.**
 - **Un cardumen de Razares** (ciencia nueva). Entre Razares no viaja una cara de celdas sino unas pocas señales, y el
-  protocolo de saludos (nadie espera, el que llega lee el buzón) calza sin paso compartido. Pariente directo: el
+  protocolo es **el buzón asincrónico-sincrónico del Capitán** (2026-11-03, más arriba en esta página): nadie espera
+  una respuesta, se espera que llegue la carta; se confirma la llegada, se miden y acuerdan los retardos al enlazarse,
+  y el saludo queda en un tablero que sostienen los mismos pares hasta que el buzón del otro despierte. Calza sin paso
+  compartido, y el abrazo mortal distribuido no se resuelve: se borra, porque nadie se queda esperando. Pariente directo: el
   **modelo de islas** de la computación evolutiva, que cura la **convergencia prematura** partiendo una población en
   grupos semi-aislados que de vez en cuando se pasan un individuo. Convergencia prematura es, con otro nombre, el
   idioma a medias que se asienta: el atasco medido el 2026-11-04. Candidato a cura, después del A/B de la regla para
