@@ -231,3 +231,5 @@ no acelera. Haría falta un freno según cuánta actividad hay y cuánto dura.
 por tiempos: cansa la entrada y se pierden las últimas marcas (20 de 26 letras distintas).
 2026-11-06 — El saludo que lleva una palabra (Capitán): pedidos 30 (decir) y 31 (leer); el bit sigue de timbre y las
 palabras van al buzón en orden, con la regla del buzón asincrónico-sincrónico.
+2026-11-06 — Razar en Janax se habla con palabras (sin caja ni dote): misma huella bit por bit en tres motores y 1, 2 y
+4 remeros; ~40 % más caro que la caja compartida.

@@ -1,6 +1,7 @@
 ; Razar's will (Capitan, 2026-11-03), a lo Janax: the kernel that listens to the school's melody and answers it.
-; It builds a box, gives it to its child "hijo" (the school, cardumen_lazo.jsm) as dowry, and the two take turns
-; with greetings: the will writes an order in the box, greets the school, and sleeps until it greets back.
+; It launches its child "hijo" (the school, cardumen_lazo.jsm), and the two talk in words (Capitan, 2026-11-06: the
+; greeting carries a word; requests 30 say and 31 read): the will says an order, the school answers in words. Each
+; keeps its own copy of "the box", which the words fill.
 ;
 ; The will has 4 things to say; it says one waking 3 bottom pieces. It reads the answer as a melody (which top pieces
 ; woke, and at which step) with what it learned: for each thing, the share of times each top piece woke at that step
@@ -18,7 +19,9 @@ READ  = 2000h                   ; what it learned: thing g, top piece 48 + j hea
 HEARD = 600h                    ; top pieces heard for each thing, in all (a qword each)
 SEED  = 640h                    ; its dice
 M48   = 648h                    ; 2^48 - 1
-BOX   = 650h                    ; the box's address
+BOX   = 650h                    ; the box's address: LBOX, its own copy
+LBOX  = 700h                    ; the box, as the words fill it (64 bytes)
+MAIL  = 740h                    ; a letter read from its mailbox: who said it, the word
 CHILD = 658h                    ; the school's number
 ROUND = 660h
 ANS   = 668h                    ; the answer: bit j = top piece 48 + j woke
@@ -79,15 +82,9 @@ jst j2, j1, POS
 jldi j2, 0
 jst j2, j1, OKC
 
-jldi j10, 2                     ; the box: 64 bytes
-jldi j11, 64
-jcall ask
-jldi j1, 0
-jst j13, j1, BOX
-jldi j10, 22                    ; to the school's dowry, to read and write
-jadd j11, j13, j1
-jldi j12, 3
-jcall ask
+jldi j1, 0                      ; its copy of the box, in its own room: the words fill it
+jldi j2, LBOX
+jst j2, j1, BOX
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
@@ -337,8 +334,8 @@ ask:
   jld j13, j13, QUEUE + 32
   jret
 
-; Order j3 to the school (1 a signal with the pieces of THING, 3 the end): written in the box, then
-; it greets the school and sleeps until the school greets back. Uses j1-j4, j10-j14.
+; Order j3 to the school (1 a signal with the pieces of THING, 3 the end), said as one word (request 30); then it
+; reads the school's answer from its mailbox into its box. Uses j1-j4, j6, j10-j14.
 order:
   jldi j1, 0
   jld j4, j1, BOX
@@ -352,12 +349,54 @@ order:
   jstb j1, j4, 9
   jldb j1, j2, SAY + 2
   jstb j1, j4, 10
-  jldi j10, 28                  ; it greets the school
+  jldb j12, j4, 10              ; the order as one word: the order in the low byte, the 3 pieces in the next three
+  jldi j1, 8
+  jshl j12, j12, j1
+  jldb j2, j4, 9
+  jor j12, j12, j2
+  jshl j12, j12, j1
+  jldb j2, j4, 8
+  jor j12, j12, j2
+  jshl j12, j12, j1
+  jor j12, j12, j3
+  jldi j10, 30                  ; said to the school (request 30)
   jldi j1, 0
   jld j11, j1, CHILD
   jcall ask
-  jldi j10, 29                  ; and sleeps until it greets back
+  jldi j1, 3                    ; and it reads its answer: the end, one word (its fingerprint) to box + 32; a
+  jsub j1, j3, j1               ; signal, three (which top pieces woke, and the step of each) to box + 16, 48, 56
+  jjnz j1, o_signal
+  jldi j6, 32
+  jcall hear
+  jret
+o_signal:
+  jldi j6, 16
+  jcall hear
+  jldi j6, 48
+  jcall hear
+  jldi j6, 56
+  jcall hear
+  jret
+
+; The next word from its mailbox (request 31) to box + j6; while it is empty it sleeps until the doorbell (29),
+; and looks again. Uses j1, j2, j10-j14.
+hear:
+  jldi j10, 31
+  jldi j11, MAIL
+  jldi j12, 16
   jcall ask
+  jldi j1, 1
+  jsub j1, j13, j1
+  jjz j1, h_got
+  jldi j10, 29
+  jcall ask
+  jjmp hear
+h_got:
+  jldi j1, 0
+  jld j2, j1, MAIL + 8
+  jld j1, j1, BOX
+  jadd j1, j1, j6
+  jst j2, j1, 0
   jret
 
 ; One block of hits added to the line: " %3d%%" of 100 * hits / 50 (= 2 * hits), as the model prints it; the block's

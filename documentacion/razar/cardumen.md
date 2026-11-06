@@ -871,3 +871,22 @@ disparo de las neuronas). Huellas viejas intactas; `prueba_signo.pl` 18 de 18.
   piezas de la entrada, que la tecla pulsa cada 2 pasos, y las últimas marcas ya no pasan. Para el cubo, un pulso que
   llega antes de D pasos es igual que un rebote. Con más silencio entre marcas no mejora de forma pareja: 9 a 21 de 26
   según la semilla y el silencio. Para el tiempo sigue siendo mejor cada pulso en su propia ola (26 de 26).
+
+## La voluntad y el cardumen de Janax se hablan con palabras (Capitán, 2026-11-06)
+
+Con el saludo que lleva una palabra (pedidos 30 y 31 de Janax, `documentacion/so/janaxos.md`), los dos camarotes de
+Razar dejan la caja compartida y la dote. La voluntad **dice** la orden en una palabra (el tipo de orden en el byte bajo
+y las 3 piezas en los tres siguientes); el cardumen la **oye** de su buzón (si está vacío, duerme hasta el timbre y
+vuelve a mirar) y **contesta con palabras**: qué piezas de arriba despertaron (una) y el paso de cada una (dos); al final,
+su huella (una). Se usa lo que se necesita: 1 palabra la orden, 3 la respuesta. Cada uno guarda su propia copia de "la
+caja" y las palabras la llenan, así la parte que piensa (la ola, la lectura, la huella) no se tocó.
+
+- **La misma huella del modelo, bit por bit** (`000094454451C2E4`) y la misma línea de aciertos (`84% 100% 100% 100%`),
+  en los tres motores y con 1, 2 y 4 remeros.
+- **La cantidad de pedidos cambia un poco según los remeros** (4.716 a 4.722) y el resultado no se mueve un bit: a
+  veces el que lee encuentra el buzón vacío, duerme y vuelve a mirar. El orden de llegada varía y lo que piensan no: la
+  regla del buzón asincrónico-sincrónico trabajando.
+- **Costo, medido** (un remero, `JANAX_CAMBIO=24`, medianas de 3): con palabras, ~142–168 ms; con la caja, ~119–134 ms.
+  Sin el arranque (~75 ms, igual en los dos), el trabajo pasa de ~50 a ~70 ms: **~40 % más caro**. Antes eran ~1.576
+  pedidos; ahora ~4.700 (cada respuesta son 3 palabras con sus lecturas). A cambio: sin memoria compartida, y nadie
+  depende de cuándo llega el otro.

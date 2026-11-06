@@ -1,6 +1,6 @@
-; Razar's school as a cabin that listens to its will (Capitan, 2026-11-03), a lo Janax: it is born with its
-; mother's box as its room 1 (her dowry), and the two take turns with greetings. It waits for a greeting, reads the
-; order in the box, does it, and greets its mother (P0) back:
+; Razar's school as a cabin that listens to its will (Capitan, 2026-11-03), a lo Janax. The two talk in words
+; (Capitan, 2026-11-06: the greeting carries a word; requests 30 say and 31 read): it hears its mother's order as a
+; word, does it, and answers with words. Each keeps its own copy of "the box", which the words fill:
 ;   1 a signal: the 3 bottom pieces at box + 8 wake; the answer (bit j = top piece 48 + j woke) goes to box + 16,
 ;     and the step each top piece woke at (a byte each, 0FFh = not then) to box + 48
 ;   3 the end: its own fingerprint (every weight, rate and fragment) goes to box + 32, and it ends
@@ -18,7 +18,9 @@ MASK  = 0A00h                   ; which neighbors woke it this step
 NCNT  = 0A40h                   ; how many neighbors each piece has
 FRAG  = 0A80h                   ; its fragment of the last melody: which neighbors woke it
 M48   = 0B00h                   ; 2^48 - 1
-BOXA  = 0B08h                   ; the box's address (room 1)
+BOXA  = 0B08h                   ; the box's address: LBOX, its own copy
+LBOX  = 0D00h                   ; the box, as the words fill it (64 bytes)
+MAIL  = 0D40h                   ; a letter read from its mailbox: who said it, the word
 include '../../escalon0/janax.inc'
 jfirst j1, 2000h               ; first order: room 0
 
@@ -29,9 +31,7 @@ jldi j2, 1
 jsub j1, j1, j2
 jldi j2, 0
 jst j1, j2, M48
-jldi j1, 1                      ; the box: room 1
-jldi j3, 32
-jshl j1, j1, j3
+jldi j1, LBOX                   ; its copy of the box, in its own room: the words fill it
 jst j1, j2, BOXA
 
 jldi j1, 0                      ; the neighbors of every piece
@@ -122,8 +122,7 @@ jwend
 
 jldi j15, 1                     ; it listens until the end
 jwhile j15
-  jldi j10, 29                  ; it waits for a greeting (sleeping, costing nothing)
-  jcall ask
+  jcall hear                    ; the order, as a word (sleeping until it comes, costing nothing)
   jldi j13, 0
   jld j1, j13, BOXA
   jld j2, j1, 0                 ; the order
@@ -133,29 +132,73 @@ jwhile j15
   jcall signal
   jjmp answered
 not_signal:
-  jcall fingerprint             ; the end
-  jldi j10, 28
-  jldi j11, 0
-  jcall ask
+  jcall fingerprint             ; the end: its fingerprint, as one word
+  jldi j6, 32
+  jcall say
   jhalt
 answered:
-  jldi j10, 28                  ; it greets its mother (P0) back
-  jldi j11, 0
-  jcall ask
+  jldi j6, 16                   ; it answers with three words: which top pieces woke, and the step of each
+  jcall say
+  jldi j6, 48
+  jcall say
+  jldi j6, 56
+  jcall say
 jwend
 jhalt
 
-; One request through the window: kind j10, a = j11 -> j13 = its answer. Uses j14.
+; One request through the window: kind j10, a = j11, b = j12 -> j13 = its answer. Uses j14.
 ask:
   jldi j14, 1
   jldi j13, 0
   jst j14, j13, QUEUE
   jst j10, j13, QUEUE + 8
   jst j11, j13, QUEUE + 16
+  jst j12, j13, QUEUE + 24
   jldi j14, QUEUE
   jsys j14, j14
   jldi j13, 0
   jld j13, j13, QUEUE + 32
+  jret
+
+; The next order from its mailbox (request 31); while it is empty it sleeps until the doorbell (29), and looks again.
+; The word is the order in its low byte and the 3 pieces in the next three: into its box, at 0 and at 8, 9, 10.
+; Uses j1, j2, j4, j10-j14.
+hear:
+  jldi j10, 31
+  jldi j11, MAIL
+  jldi j12, 16
+  jcall ask
+  jldi j1, 1
+  jsub j1, j13, j1
+  jjz j1, heard
+  jldi j10, 29
+  jcall ask
+  jjmp hear
+heard:
+  jldi j1, 0
+  jld j4, j1, BOXA
+  jld j2, j1, MAIL + 8
+  jldi j1, 0FFh
+  jand j13, j2, j1
+  jst j13, j4, 0
+  jldi j1, 8
+  jshr j2, j2, j1
+  jstb j2, j4, 8
+  jshr j2, j2, j1
+  jstb j2, j4, 9
+  jshr j2, j2, j1
+  jstb j2, j4, 10
+  jret
+
+; Says to its mother (P0, request 30) the word at box + j6. Uses j4, j10-j14.
+say:
+  jldi j13, 0
+  jld j4, j13, BOXA
+  jadd j4, j4, j6
+  jld j12, j4, 0
+  jldi j10, 30
+  jldi j11, 0
+  jcall ask
   jret
 
 ; Direction j9 of piece j1 (slot j4 + j9): none if j8 = 0, else the piece j1 + j12 (and one more neighbor in
