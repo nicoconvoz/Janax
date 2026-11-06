@@ -1145,3 +1145,45 @@ Con el campeón, la prueba de verdad (el décimo que nadie tocó):
 - **La firmeza nunca se movió de 1** en 12 generaciones.
 - Un instrumento mintió en el camino: el mismo genoma daba exámenes distintos (2.638 y 2.719) porque los conceptos
   conservaban el "mejor parecido" de la lectura anterior. Arreglado; ahora el mismo genoma da siempre lo mismo.
+
+## Precisión que se mide sola, identidad y autopsia (2026-11-06)
+
+El Capitán: *"agregale precisión, que determine su propia regla, no lo vuelvas rígido, precisión con su precisión, que
+se autoajuste… faltan dos cosas: que den identidad y sigan testeando… y agregá lo del bicho ajedrecista, la autopsia"*.
+
+**El examen, en bits de información sobre el azar.** Cada clase suma H · log2((H + ½) / (B + ½)), con H los aciertos y
+B los del ciego. Premia acertar mucho y acertar con ventaja; una pieza que acierta tanto como el azar suma cero, y un
+cociente de pocos casos se achica solo (la precisión pesa según su propia precisión). No hay ningún peso puesto a mano.
+
+**La identidad: el nido.** Como el nido del bicho, el archivo `nido` guarda {marca "RAZARNID", el campeón, el segundo,
+sus exámenes, la suerte, las generaciones vividas}. Si está, Razar se despierta con sus propios instintos y sigue
+evolucionando desde ahí; si no, nace con los de hoy. Al terminar lo vuelve a guardar.
+
+**El camino depende de lo vivido.** Después de cada examen, su resultado se mezcla con la suerte, así que el camino
+depende de la experiencia y nunca se repite entre corridas. Lo no repetible sale de la historia y no del reloj: con el
+mismo nido y el mismo libro, los tres motores hacen el mismo camino, bit por bit, y se puede auditar. (La melodía del
+cubo es así: casi nunca descansa y con la misma historia repite bit por bit; cuando el cubo viva dentro de Razar, su
+melodía puede ser esta suerte.)
+
+**La autopsia.** Como `--autopsia` del bicho: todo lo que Razar escribe desde que empieza a evolucionar también va al
+archivo `autopsia` (la evolución generación por generación, cada clase con sus piezas, los conceptos), para leerlo
+después sin volver a correr nada.
+
+Dos corridas seguidas de 6 generaciones, en una carpeta nueva (uno de cada diez renglones apartado):
+
+```
+corrida 1 (nace):      instinto 0: 4 1 1 = 5181  …  instinto 5: 3 1 1 = 5764 *
+corrida 2 (despierta): instinto 6: 3 1 1 = 5764 *  instinto 7: 2 1 1 = 7231 *  …  instinto 12: 2 2 1 = 6851
+```
+
+| en la prueba | hoy (4 1 1) | corrida 1 (3 1 1) | corrida 2 (2 1 1) | examen viejo (1 1 3) |
+|---|---|---|---|---|
+| asociados real / ciego | 14,9 / 3,5 (4,3×) | 16,7 / 4,0 (4,2×) | 20,3 / 5,1 (4,0×) | 30,2 / 8,1 (3,7×) |
+| puertas explica / ciego | 63 / 0 | 88 / 0 | 152 / 4 | 861 / 22 |
+| piezas asociados | 484 | 929 | 3.264 | 20.948 |
+
+Con la precisión en el examen la evolución baja la paciencia de a poco y cuida la ventaja sobre el azar; en la segunda
+vida probó firmeza 2 (6.851) y la descartó.
+
+Desde el mismo nido (12 generaciones vividas), una tercera vida de 2 generaciones da **el mismo camino y el mismo nido
+en los tres motores** (`0000C0563F6A2796`): elige paciencia 1 (examen 10.614 bits) y queda con 14 generaciones vividas.

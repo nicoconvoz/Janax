@@ -104,6 +104,11 @@ EVKEEP = 1D50h
 EVW   = 1D58h
 EVT   = 1D60h
 EVT2  = 1D68h
+EVGA  = 1D70h                   ; a log; the labels "nido" and "autopsia"; the nest: {its mark, the champion, the
+NIDL  = 1D78h                   ; second, their exams, the luck, the generations it lived} (56 bytes)
+AUTL  = 1D80h
+NEST  = 1D88h
+EVLIV = 1DC0h                   ; the generations it has lived, all its life
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -1842,6 +1847,20 @@ ev_lect:
   jldi j3, 4
   jor j2, j2, j3
   jst j2, j1, EVC
+  jcall autopsy_open            ; (its dissection, written as it goes)
+  jcall nest_load               ; it wakes with its own instincts, if it has lived before
+  jldi j1, 0
+  jjz j2, ev_born
+  jld j2, j1, EVLIV
+  jst j2, j1, EVI
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jld j2, j1, EVCS
+  jst j2, j1, EVS
+  jldi j2, 1
+  jcall ev_line
+  jjmp ev_gens
+ev_born:
   jcall ev_exam
   jldi j1, 0
   jld j2, j1, EVS
@@ -1853,6 +1872,7 @@ ev_lect:
   jst j1, j1, EVI
   jldi j2, 0
   jcall ev_line
+ev_gens:
   jldi j1, 0
   jld j2, j1, EVG
   jwhile j2
@@ -1933,12 +1953,170 @@ ev_lect:
     jsub j2, j2, j3
     jst j2, j1, EVG
   jwend
+  jldi j1, 0                    ; its identity kept for the next time, with what it lived
+  jld j2, j1, EVI
+  jst j2, j1, EVLIV
+  jcall nest_save
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
   jcall ev_set
   jldi j1, 0
   jst j1, j1, EXAMM
+  jret
+
+
+; Its identity, in the file "nido" (Capitan, from the chess creature: "they have identity and keep testing"): {its
+; mark, the champion, the second, their exams, the luck, the generations it lived}. If it is there, the evolution goes
+; on from it (it wakes with its own instincts and luck), else it is born with today's. Read -> j2 1 if it woke.
+; Uses j1-j14.
+nest_load:
+  jcall nest_labels
+  jldi j10, 4                   ; open (created if it is not there: then it reads nothing)
+  jldi j11, NIDL
+  jldi j12, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, nl_none
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, NEST
+  jldi j12, 56
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, EVT2
+  jld j10, j1, EVT              ; closed
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, EVT2
+  jldi j3, 56
+  jsub j2, j2, j3
+  jjnz j2, nl_none
+  jld j2, j1, NEST
+  jcall nest_mark
+  jsub j2, j2, j3
+  jjnz j2, nl_none
+  jld j2, j1, NEST + 8
+  jst j2, j1, EVC
+  jld j2, j1, NEST + 16
+  jst j2, j1, EVR
+  jld j2, j1, NEST + 24
+  jst j2, j1, EVCS
+  jld j2, j1, NEST + 32
+  jst j2, j1, EVRS
+  jld j2, j1, NEST + 40
+  jst j2, j1, RNG
+  jld j2, j1, NEST + 48
+  jst j2, j1, EVLIV
+  jldi j2, 1
+  jret
+nl_none:
+  jldi j1, 0
+  jst j1, j1, EVLIV
+  jldi j2, 0
+  jret
+
+; The identity written back to "nido", whole. Uses j1-j14.
+nest_save:
+  jcall nest_labels
+  jcall nest_mark
+  jst j3, j1, NEST
+  jld j2, j1, EVC
+  jst j2, j1, NEST + 8
+  jld j2, j1, EVR
+  jst j2, j1, NEST + 16
+  jld j2, j1, EVCS
+  jst j2, j1, NEST + 24
+  jld j2, j1, EVRS
+  jst j2, j1, NEST + 32
+  jld j2, j1, RNG
+  jst j2, j1, NEST + 40
+  jld j2, j1, EVLIV
+  jst j2, j1, NEST + 48
+  jldi j10, 12                  ; the old one out, a new one in
+  jldi j11, NIDL
+  jldi j12, 4
+  jcall ask
+  jldi j10, 4
+  jldi j11, NIDL
+  jldi j12, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ns_done
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jldi j11, NEST
+  jldi j12, 56
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ns_done:
+  jldi j1, 0
+  jret
+
+; The autopsy opened: "autopsia", new, and from here on everything written goes into it too (the chess creature's
+; dissection, readable: its instincts, its evolution, its concepts). Uses j1-j14.
+autopsy_open:
+  jcall nest_labels
+  jldi j10, 12
+  jldi j11, AUTL
+  jldi j12, 8
+  jcall ask
+  jldi j10, 4
+  jldi j11, AUTL
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ao_done
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, AUTH
+ao_done:
+  jret
+
+; The labels "nido" and "autopsia" at NIDL and AUTL. Uses j1, j2.
+nest_labels:
+  jldi j1, 0
+  jldi j2, 0
+  jshi j2, 6F64h
+  jshi j2, 696Eh
+  jst j2, j1, NIDL
+  jldi j2, 0
+  jshi j2, 6169h
+  jshi j2, 7370h
+  jshi j2, 6F74h
+  jshi j2, 7561h
+  jst j2, j1, AUTL
+  jret
+
+; The nest's mark -> j3 ("RAZARNID"). Uses j3.
+nest_mark:
+  jldi j3, 0
+  jshi j3, 4449h
+  jshi j3, 4E52h
+  jshi j3, 415Ah
+  jshi j3, 4152h
   jret
 
 ; One instinct of the child EVCH changed one step up or down (j2: the luck), inside its range: patience 1-8,
@@ -2030,7 +2208,7 @@ ev_set:
   jret
 
 ; The exam of the champion EVC: read with its instincts, the exam renglones apart, then knock with them -> EVS,
-; what the pieces and the concepts explain more than the blind. Uses j1-j14.
+; the bits the pieces and the concepts tell over the blind. Uses j1-j14.
 ev_exam:
   jldi j1, 0
   jld j2, j1, EVC
@@ -2048,23 +2226,58 @@ ev_exam:
   jcall all_floors
   jldi j1, 0
   jst j1, j1, TESTING
-  jld j2, j1, TCOC
-  jld j3, j1, TCOB
-  jsub j2, j2, j3
+  jldi j1, 0                    ; the exam, in bits: what the pieces and the concepts tell of the exam renglones more
+  jst j1, j1, EVS               ; than chance, each kind H log2((H + 1/2) / (B + 1/2)) (H its hits, B the blind's): many
+  jld j2, j1, TCOC              ; hits and a clear edge both count, and a ratio of few cases shrinks by itself (precision
+  jld j3, j1, TCOB              ; weighed by its own precision: no weight set by hand)
+  jcall ev_gain
   jldi j9, 1
   jldi j10, 4
   jwhile j10
+    jldi j1, 0
     jldi j3, 3
     jshl j3, j9, j3
-    jld j4, j3, TPCEC
-    jld j5, j3, TBLC
-    jsub j4, j4, j5
-    jadd j2, j2, j4
+    jld j2, j3, TPCEC
+    jld j3, j3, TBLC
+    jcall ev_gain
     jldi j4, 1
     jadd j9, j9, j4
     jsub j10, j10, j4
   jwend
-  jst j2, j1, EVS
+  jldi j1, 0                    ; and what it lived moves its luck: the path depends on its experience
+  jld j2, j1, RNG
+  jld j3, j1, EVS
+  jcall hw
+  jjnz j2, ex_luck
+  jldi j2, 1
+ex_luck:
+  jst j2, j1, RNG
+  jret
+
+; EVS plus the bits H j2 tells over the blind's B j3: H (log2(2H + 1) - log2(2B + 1)), whole bits. Uses j1-j8.
+ev_gain:
+  jldi j1, 0
+  jst j2, j1, EVT
+  jst j3, j1, EVT2
+  jadd j2, j2, j2
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jst j2, j1, EVGA
+  jld j2, j1, EVT2
+  jadd j2, j2, j2
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jld j3, j1, EVGA
+  jsub j3, j3, j2
+  jld j4, j1, EVT
+  jmul j3, j3, j4
+  jldi j4, 16
+  jsar j3, j3, j4
+  jld j4, j1, EVS
+  jadd j4, j4, j3
+  jst j4, j1, EVS
   jret
 
 ; A line of the evolution: the generation, the child's instincts, its exam, and "*" if it is the champion now (j2). Its

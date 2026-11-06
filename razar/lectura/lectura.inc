@@ -42,6 +42,7 @@ WCAP  = 1138h                   ; 1: the word being read began with a capital; a
 ROOMCP = 1140h
 ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
 LMI   = 1150h                   ; (walking)
+AUTH  = 1168h                   ; the autopsy being written: its handle plus one (0: none)
 EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
 LABEL = 1110h                   ; the file being read: its label and how long it is
@@ -746,7 +747,20 @@ flush:
   jldi j1, 0
   jld j12, j1, POS
   jcall ask
+  jldi j1, 0                    ; and into the autopsy, if one is being written (AUTH: its handle plus one)
+  jld j10, j1, AUTH
+  jjz j10, fl_out
+  jldi j11, 1
+  jsub j10, j10, j11
+  jldi j11, 32
+  jshl j10, j10, j11
+  jldi j11, 6
+  jor j10, j10, j11
+  jldi j11, TEXT
+  jld j12, j1, POS
+  jcall ask
   jldi j1, 0
+fl_out:
   jst j1, j1, POS
   jret
 
