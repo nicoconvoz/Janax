@@ -193,8 +193,14 @@ TWH   = 5C20h                   ; hits and misses explaining its own memory: the
 TWM   = 5C28h
 DRH   = 5C30h
 DRM   = 5C38h
-TWP   = 5C40h                   ; their pieces: properties adopted (twins); doors adopted and the switch (door)
-DRP   = 5C48h
+ECH   = 5C40h                   ; the echo (the distractor): hits, misses
+ECM   = 5C48h
+TWP   = 5C60h                   ; their pieces: properties adopted (twins); doors adopted and the switch (door)
+DRP   = 5C68h
+ECP   = 5C70h                   ; (pieces, as TWP + k*8)
+ECO   = 5C78h                   ; the echo's answer per operator (2 qwords)
+BESTA = 5C88h                   ; the best so far: (hits - misses), pieces
+BESTP = 5C90h
 MEM   = 6400h                   ; memory: (op, a, b, c) heard, as places: MEM + (((op*10 + a)*10 + b)*10 + c)*8
 TWADDR = 0A400h                 ; twins: TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8 (1444 qwords)
 FACTS = 0D400h                  ; the facts: operator, a, b, c (32 bytes each)
@@ -2166,8 +2172,15 @@ ut_door:
   jld j2, j1, CHOSEN
   jldi j3, 2
   jand j3, j2, j3
-  jjz j3, ut_count
+  jjz j3, ut_eco
   jcall door_vote
+ut_eco:
+  jldi j1, 0
+  jld j2, j1, CHOSEN
+  jldi j3, 4
+  jand j3, j2, j3
+  jjz j3, ut_count
+  jcall eco_vote
 ut_count:
   jcall s_answer
   jldi j1, 0
@@ -2192,6 +2205,8 @@ jst j1, j1, TWH
 jst j1, j1, TWM
 jst j1, j1, DRH
 jst j1, j1, DRM
+jst j1, j1, ECH
+jst j1, j1, ECM
 jst j1, j1, LOOI
 m6_lap:
   jldi j1, 0
@@ -2216,6 +2231,14 @@ m6_lap:
   jcall v_pick
   jldi j10, DRH
   jcall m6_score
+  jcall eco_make
+  jcall m6_fact
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall eco_vote
+  jcall v_pick
+  jldi j10, ECH
+  jcall m6_score
   jldi j1, 0
   jld j2, j1, LOOI
   jldi j3, 1
@@ -2223,8 +2246,8 @@ m6_lap:
   jst j2, j1, LOOI
   jjmp m6_lap
 m6_pick:
-jldi j1, 0                      ; nothing left out any more: both built from all of it, and their pieces (properties;
-jldi j2, 1                      ; doors and the switch)
+jldi j1, 0                      ; nothing left out any more: all built from all of it, and their pieces (properties;
+jldi j2, 1                      ; doors and the switch; the echo's answers)
 jsub j2, j1, j2
 jst j2, j1, EXCL
 jcall tw_make
@@ -2237,36 +2260,175 @@ jld j2, j1, ADOPT
 jld j3, j1, SWITCH
 jadd j2, j2, j3
 jst j2, j1, DRP
-jld j2, j1, TWH                 ; harmony (D39): describing the same with less, still accounting for all of it: what
-jld j3, j1, TWM                 ; each explains of its own memory (hits - misses) per piece; no pieces, nothing explained
-jsub j2, j2, j3
-jld j4, j1, TWP
-jjnz j4, m6_tw
-jldi j2, 0
-jldi j4, 1
-m6_tw:
-jld j3, j1, DRH
-jld j5, j1, DRM
-jsub j3, j3, j5
-jld j5, j1, DRP
-jjnz j5, m6_dr
-jldi j3, 0
-jldi j5, 1
-m6_dr:
-jmul j2, j2, j5                 ; twins: (hits - misses) * door pieces, against door: (hits - misses) * twin pieces
-jmul j3, j3, j4
-jsub j4, j2, j3
-jldi j5, 3
-jjz j4, m6_set
-jldi j5, 63
-jsar j4, j4, j5
-jldi j5, 1
-jjz j4, m6_set
-jldi j5, 2
-m6_set:
-jst j5, j1, CHOSEN
+jcall eco_make
+jldi j1, 0                      ; harmony (D39): describing the same with less, still accounting for all of it: what
+jst j1, j1, CHOSEN              ; each explains of its own memory (hits - misses) per piece; no pieces, nothing explained.
+jldi j9, 0                      ; The best, and every one tied with it
+m6_each:
+  jldi j1, 0
+  jldi j2, 3
+  jsub j2, j9, j2
+  jjz j2, m6_go
+  jldi j2, 4                    ; its hits and misses: TWH + k*16
+  jshl j2, j9, j2
+  jld j3, j2, TWH
+  jld j4, j2, TWM
+  jsub j3, j3, j4               ; A
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j4, j2, TWP               ; P
+  jjnz j4, m6_haspieces
+  jldi j3, 0
+  jldi j4, 1
+m6_haspieces:
+  jldi j5, 1                    ; its bit
+  jshl j5, j5, j9
+  jld j6, j1, CHOSEN
+  jjz j6, m6_new                ; the first
+  jld j6, j1, BESTA             ; A * BP against BA * P
+  jmul j6, j6, j4
+  jld j7, j1, BESTP
+  jmul j7, j3, j7
+  jsub j8, j7, j6
+  jjz j8, m6_tie
+  jldi j2, 63
+  jsar j8, j8, j2
+  jjnz j8, m6_next              ; worse
+m6_new:
+  jst j3, j1, BESTA
+  jst j4, j1, BESTP
+  jst j5, j1, CHOSEN
+  jjmp m6_next
+m6_tie:
+  jld j6, j1, CHOSEN
+  jor j6, j6, j5
+  jst j6, j1, CHOSEN
+m6_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp m6_each
 m6_go:
 jjmp u_test
+
+; The echo (the distractor, Capitan's other chat: "a third mechanism deliberately useless, and check it never wins"):
+; for each operator, the answer its memories give most (only one, else none), whatever the riddle. One piece per
+; operator that has one. Uses j1-j9.
+eco_make:
+  jldi j1, 0
+  jst j1, j1, ECP
+  jst j1, j1, OPI
+em_op:
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+  jjz j3, em_done
+  jldi j3, 10                   ; counts per answer: BLC is too small, the votes' room is free here
+  jldi j4, VOTE
+em_clear:
+  jst j1, j4, 0
+  jldi j5, 8
+  jadd j4, j4, j5
+  jldi j5, 1
+  jsub j3, j3, j5
+  jjnz j3, em_clear
+  jldi j9, 0
+em_fact:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, em_pick
+  jld j2, j1, EXCL
+  jsub j2, j9, j2
+  jjz j2, em_fnext
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jld j2, j3, 0
+  jld j4, j1, OPI
+  jsub j2, j2, j4
+  jjnz j2, em_fnext
+  jld j2, j3, 24                ; its answer (a place 1..9)
+  jldi j4, 3
+  jshl j2, j2, j4
+  jld j4, j2, VOTE
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j2, VOTE
+em_fnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp em_fact
+em_pick:
+  jldi j1, 0
+  jldi j2, 0                    ; the answer
+  jldi j3, 0                    ; its count
+  jldi j6, 0                    ; how many have it
+  jldi j9, 1
+em_c:
+  jldi j4, 10
+  jsub j4, j9, j4
+  jjz j4, em_set
+  jldi j4, 3
+  jshl j4, j9, j4
+  jld j4, j4, VOTE
+  jjz j4, em_cnext
+  jsub j5, j3, j4
+  jjz j5, em_tie
+  jldi j7, 63
+  jsar j5, j5, j7
+  jjz j5, em_cnext
+  jldi j3, 0
+  jadd j3, j3, j4
+  jldi j2, 0
+  jadd j2, j2, j9
+  jldi j6, 1
+  jjmp em_cnext
+em_tie:
+  jldi j7, 1
+  jadd j6, j6, j7
+em_cnext:
+  jldi j7, 1
+  jadd j9, j9, j7
+  jjmp em_c
+em_set:
+  jldi j7, 1
+  jsub j7, j6, j7
+  jjz j7, em_one
+  jldi j2, 0
+em_one:
+  jld j4, j1, OPI
+  jldi j5, 3
+  jshl j4, j4, j5
+  jst j2, j4, ECO
+  jjz j2, em_next
+  jld j4, j1, ECP
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, ECP
+em_next:
+  jld j2, j1, OPI
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, OPI
+  jjmp em_op
+em_done:
+  jldi j1, 0
+  jst j1, j1, NUMV              ; (the votes' room was borrowed)
+  jret
+
+; The echo votes: its operator's answer, whatever the riddle. Uses j1-j13.
+eco_vote:
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j7, j2, ECO
+  jjz j7, ev_done
+  jcall g_vote
+ev_done:
+  jret
 
 ; The memory left out (EXCL) as the riddle asked: OPI, PA, PB, and its answer in ANSW. Uses j1-j5.
 m6_fact:
@@ -3292,18 +3454,36 @@ jsub j2, j2, j3
 jjnz j2, o_elec
 jldi j1, S_ELEC
 jcall puts
-jld j2, j1, CHOSEN
+jld j9, j1, CHOSEN              ; the ones chosen, joined by "+": gemelos, puerta, eco
+jldi j10, 0                     ; written so far
+jldi j11, 1
+jand j2, j9, j11
+jjz j2, o_n2
 jldi j1, S_GEMS
-jldi j3, 1
-jsub j3, j2, j3
-jjz j3, o_ename
-jldi j1, S_PUER
-jldi j3, 2
-jsub j3, j2, j3
-jjz j3, o_ename
-jldi j1, S_DOS
-o_ename:
 jcall puts
+jldi j10, 1
+o_n2:
+jldi j11, 2
+jand j2, j9, j11
+jjz j2, o_n3
+jjz j10, o_n2w
+jldi j2, 43
+jcall putch
+o_n2w:
+jldi j1, S_PUER
+jcall puts
+jldi j10, 1
+o_n3:
+jldi j11, 4
+jand j2, j9, j11
+jjz j2, o_ename
+jjz j10, o_n3w
+jldi j2, 43
+jcall putch
+o_n3w:
+jldi j1, S_DOS
+jcall puts
+o_ename:
 jldi j1, S_ARM
 jcall puts
 jld j2, j1, TWH
@@ -3329,6 +3509,28 @@ jcall putnum
 jldi j1, S_EN
 jcall puts
 jld j2, j1, DRP
+jcall putnum
+jldi j1, S_PIEZ
+jcall puts
+jldi j2, 44                     ; ", eco +H -M en P piezas"
+jcall putch
+jldi j2, 32
+jcall putch
+jldi j1, S_DOS
+jcall puts
+jldi j2, 32
+jcall putch
+jldi j2, 43
+jcall putch
+jld j2, j1, ECH
+jcall putnum
+jldi j1, S_MENOS
+jcall puts
+jld j2, j1, ECM
+jcall putnum
+jldi j1, S_EN
+jcall puts
+jld j2, j1, ECP
 jcall putnum
 jldi j1, S_PIEZ
 jcall puts

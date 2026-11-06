@@ -1340,3 +1340,35 @@ ese contesta lo que nunca vio; si empatan, votan los dos. Nadie le dice qué mec
 - Lo honesto: los dos mecanismos los escribió Doc a partir de piezas de la AMMC (P44 los gemelos, P54 la puerta), y el
   significado en átomo (el lugar en la canción) es la definición del Capitán. Lo que hace el sistema sin que nadie se lo
   diga es **elegir cuál sirve para cada cosa**, con el criterio de armonía de Razar. El cardumen sigue poniendo el oído.
+
+**Revisión del otro chat del Capitán sobre la elección (2026-11-06), y lo que se midió:**
+- **Tiene nombre:** "describir lo mismo con menos, sin dejar de dar cuenta de todo" (D39) es **MDL**, *Minimum Description
+  Length* (Rissanen, 1978): la mejor hipótesis es la que más comprime los datos contando el costo de la hipótesis misma.
+  Y tapar cada recuerdo para que los demás lo adivinen es **validación cruzada dejando uno afuera**: MDL con LOO es la
+  respuesta que el campo da a "qué modelo elijo". Razar la tenía en su D39 sin haberla buscado.
+- **La fila de "solo vecinos" es la prueba más fuerte, no una advertencia:** elegir mal cuesta 11 % de error; entonces el
+  0 % de las otras filas **se gana eligiendo bien**. La elección tiene dientes. Y el criterio no se equivoca ahí: entre
+  vecinos los gemelos son la descripción más chica; falta evidencia, no criterio (la transferencia del P36).
+- **¿Se tocó el criterio mirando los resultados? Sí.** La primera versión era aciertos − errores; al ver que en los
+  hermanos con solo vecinos elegía gemelos se pasó a "por pieza" (D39), y siguió eligiendo gemelos; lo que cambió el
+  resultado fue agregar pares lejanos a la memoria, no el criterio. **Verificado:** con el criterio original las
+  elecciones de las filas principales son idénticas (gemelos en sumas 58 de 60, puerta en comparaciones 20 de 20, los
+  mismos aciertos); solo cambia la fila de solo vecinos (empata gemelos y puerta en 14 de 20). El resultado no depende
+  del ajuste.
+- **El distractor** (pedido por el otro chat): un tercer mecanismo inútil, **el eco**, que contesta siempre la respuesta
+  más común de su memoria con una pieza por relación.
+
+| 20 semillas | Elige | Bien | Mal |
+|---|---|---|---|
+| 10 sumas | gemelos 20 | 98 % | 0 % |
+| 8 sumas | gemelos 18, empate de los tres 2 | 81 % | 1 % |
+| hermanos, vecinos + lejanos | puerta 20 | 98 % | 0 % |
+| las otras filas reales | igual que sin eco | igual | igual |
+| control: sumas al azar | eco gana o empata en 10 | 1 % | **29 %** (sin eco, 1 %) |
+| control: hermanos al azar | eco empata en 5 | 0 % | 1 % |
+
+  **Con datos reales el eco no gana nunca** (solo empata cuando los tres explican cero). **Pero con datos al azar a veces
+  gana y afirma basura:** el error del control de sumas sube de 1 % a 29 %. El criterio rechaza lo inútil cuando hay
+  estructura; cuando no la hay, un mecanismo barato puede ganar por poco. En términos de MDL falta el **modelo nulo**: el
+  eco es justamente la frecuencia de las respuestas, y un mecanismo debería elegirse solo si le gana a ese nulo. Queda
+  dicho que esa corrección vendría **después de ver** este resultado.

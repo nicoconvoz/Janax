@@ -118,7 +118,7 @@ db 'gemelos', 0
 times 0F00h - $ db 0
 db 'puerta', 0
 times 0F20h - $ db 0
-db 'los dos', 0
+db 'eco', 0
 times 0F40h - $ db 0
 db ' (armonia: gemelos +', 0
 times 0F60h - $ db 0
