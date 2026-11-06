@@ -2266,7 +2266,7 @@ jst j1, j1, CHOSEN              ; each explains of its own memory (hits - misses
 jldi j9, 0                      ; The best, and every one tied with it
 m6_each:
   jldi j1, 0
-  jldi j2, 3
+  jldi j2, 2                    ; the twins and the door (the echo is the null model, below)
   jsub j2, j9, j2
   jjz j2, m6_go
   jldi j2, 4                    ; its hits and misses: TWH + k*16
@@ -2308,6 +2308,27 @@ m6_next:
   jadd j9, j9, j2
   jjmp m6_each
 m6_go:
+jldi j1, 0                      ; the null model of MDL: what is chosen has to explain more per piece than the echo, the
+jld j2, j1, CHOSEN              ; answers' own frequency; if it does not, nothing is chosen and it is silent (added after
+jjz j2, m6_test                 ; seeing the echo win on random answers, and said so)
+jld j3, j1, ECH
+jld j4, j1, ECM
+jsub j3, j3, j4                 ; echo: A, P
+jld j4, j1, ECP
+jjnz j4, m6_ecop
+jldi j3, 0
+jldi j4, 1
+m6_ecop:
+jld j5, j1, BESTA               ; best A * echo P > echo A * best P, else silence
+jmul j5, j5, j4
+jld j6, j1, BESTP
+jmul j6, j3, j6
+jsub j6, j6, j5
+jldi j7, 63
+jsar j6, j6, j7
+jjnz j6, m6_test
+jst j1, j1, CHOSEN
+m6_test:
 jjmp u_test
 
 ; The echo (the distractor, Capitan's other chat: "a third mechanism deliberately useless, and check it never wins"):

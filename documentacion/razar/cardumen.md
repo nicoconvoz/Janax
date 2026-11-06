@@ -1372,3 +1372,23 @@ ese contesta lo que nunca vio; si empatan, votan los dos. Nadie le dice qué mec
   estructura; cuando no la hay, un mecanismo barato puede ganar por poco. En términos de MDL falta el **modelo nulo**: el
   eco es justamente la frecuencia de las respuestas, y un mecanismo debería elegirse solo si le gana a ese nulo. Queda
   dicho que esa corrección vendría **después de ver** este resultado.
+
+**El modelo nulo de MDL, agregado después de ver el agujero** (Capitán: "sí, agregalo"). El eco deja de competir y pasa a
+ser **la vara**: lo que se elija (gemelos, puerta o los dos si empatan) tiene que explicar por pieza más que el eco, la
+frecuencia de las propias respuestas; si no le gana, no se elige nada y calla. 20 semillas:
+
+| Fila | Elige | Bien | Mal | No sé |
+|---|---|---|---|---|
+| 10 sumas | gemelos 20 | 98 % | 0 % | 2 % |
+| 8 sumas | gemelos 18, nada 2 | 76 % | 0 % | 23 % |
+| suma y resta | gemelos 20 | 85 % | 0 % | 15 % |
+| hermanos, vecinos + lejanos | puerta 20 | 98 % | 0 % | 1 % |
+| hermanos, solo vecinos | gemelos 19, puerta 1 | 2 % | 11 % | 86 % |
+| 10 sumas, 20 % de resbalones | gemelos 20 | 88 % | 4 % | 8 % |
+| hermanos, 20 % de resbalones | puerta 20 | 75 % | 0 % | 24 % |
+| control: sumas al azar | nada 10, puerta 7, los dos 3 | 0 % | **0 %** (con eco compitiendo, 29 %) | 100 % |
+| control: hermanos al azar | nada 5, puerta 13, gemelos 2 | 0 % | 1 % | 97 % |
+
+Con datos al azar vuelve a callar (0–1 % de error). Con datos reales nada cambia salvo dos semillas de 8 sumas, donde los
+tres explicaban cero y ahora no elige nada (76 % en vez de 81 %). La regla general, en palabras de MDL: **un mecanismo se
+adopta solo si comprime mejor que el código trivial de los datos**.
