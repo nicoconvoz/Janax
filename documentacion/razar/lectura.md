@@ -1362,13 +1362,17 @@ El genoma ya sobrevivía en su nido. Lo que se perdía al renacer eran las pieza
   evidencia. La mitad es criterio, no medición: una vida sin confirmar. Se queda solo mientras siga pagando su nombre,
   con la misma ley del juez (2·log2 U por la paciencia sobre 2). Si una pieza que traía apareció y no pagó, se cae:
   tuvo su oportunidad.
-- **Cuándo se guarda:**
+- **Cuándo se guarda.** La memoria guarda solo lo que se leyó sin ver el examen, y siempre los caminos del campeón:
   - al nacer, después del primer examen;
-  - cada vez que aparece un campeón mejor;
-  - después de la lectura que cuenta.
+  - al despertar con memoria, cuando el campeón se vuelve a examinar (y otra vez si el segundo lo supera);
+  - cada vez que aparece un campeón mejor.
+
+  La lectura que cuenta usa la memoria, pero **no la guarda**, porque aprende también del renglón de examen. En la
+  primera versión sí la guardaba (Capitán: *"sí, sacalo"*). Con eso, al releer el mismo libro, 312 piezas figuraban
+  "ayudadas por la memoria": era la evidencia del examen que se colaba. Ahora, releyendo lo mismo, dan 0.
 - **Notas de distinta memoria no se comparan.** Al despertar con memoria, el campeón y el segundo traen notas cobradas
   sin ella. Por eso los dos se vuelven a examinar antes de competir con hijos que sí la tienen; si el segundo sale
-  mejor, cambian de lugar. Sin esto, un campeón con nota vieja (−3554) le ganaba a hijos examinados con memoria (−5476).
+  mejor, cambian de lugar.
 - **La línea `memoria A B C` dice:**
 
   | número | qué es |
@@ -1382,20 +1386,18 @@ vez, B (300 KB) en lugar de A, y A de nuevo.
 
 | vida | memoria | archivo |
 |---|---|---|
-| A, la primera | 413 0 0 | 19.832 bytes |
-| A otra vez | 431 0 88 | 20.696 bytes |
-| B en lugar de A | 348 2 331 | 16.712 bytes |
-| A de nuevo | 318 0 64 | 15.272 bytes |
+| A, la primera | 343 0 0 | 16.472 bytes |
+| A otra vez | 343 0 0 | 16.472 bytes |
+| B en lugar de A | 308 3 280 | 14.792 bytes |
+| A de nuevo | 242 0 0 | 11.624 bytes |
 
 - Con un solo programa, sin generaciones, no se toca la memoria y la huella sigue igual (pulso `D3698F1AE83D`).
-- En el libro B, **331 de sus 348 piezas pagan con lo que aprendió en A**. Quedan además 2 piezas de A que B no tiene.
+- **Releer el mismo libro no cambia nada:** misma memoria, mismo archivo.
+- En el libro B, **280 de sus 308 piezas pagan con lo que aprendió en A**. Quedan además 3 piezas de A que B no tiene.
+- Al volver a A, un hijo `6 1 1` pasa a campeón y mejora la nota de −3554 a −1276.
 - El archivo sube y baja con lo que vale; no crece por acumular.
 
-**Lo que no está probado todavía:**
-- La lectura que cuenta incluye el renglón de examen. Por eso, desde la segunda vida, la memoria ya vio lo que se
-  examina. Dentro de una vida todos los hijos tienen la misma ventaja, así que la comparación es justa. Pero la nota
-  absoluta no mide lo mismo que en la primera vida.
-- Re-examinar al campeón y al segundo cuesta dos exámenes más por vida.
+**Lo que cuesta:** re-examinar al campeón y al segundo son dos exámenes más por vida.
 
-Los tres motores (traductor, intérprete y rutinas) dan las cuatro vidas idénticas bit por bit: huellas `70E6A7C773E4`,
-`E9540C8B7724`, `EAA9ACC42EEF` y `8296C15350E6`, y los mismos bytes de memoria.
+Los tres motores (traductor, intérprete y rutinas) dan las cuatro vidas idénticas bit por bit: huellas `3A5205E01885`,
+`71A2C787AAAD`, `577A10267858` y `6C5E153D55F5`, y los mismos bytes de memoria.

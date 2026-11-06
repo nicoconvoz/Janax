@@ -256,11 +256,6 @@ jcall reborn
 jjmp renace
 rn_no:
 jcall learn_pulses
-jldi j1, 0                      ; the reading that counts, kept in its memory (if it has one: only one that evolves)
-jld j2, j1, TMEM
-jjz j2, rn_nomem
-jcall mem_save
-rn_nomem:
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
@@ -1933,6 +1928,7 @@ ev_lect:
   jld j2, j1, TMEM + 16         ; it remembers: its exams were paid in a coin without this memory, and exams of different
   jjz j2, ev_same               ; memories are not set against each other; the champion and the second sit it again
   jcall ev_exam
+  jcall mem_save                ; (what the champion reads, kept: the memory is always the champion's paths)
   jldi j1, 0
   jld j2, j1, EVS
   jst j2, j1, EVCS
@@ -1958,6 +1954,7 @@ ev_lect:
   jld j3, j1, EVR
   jst j3, j1, EVC
   jst j2, j1, EVR
+  jcall mem_save                ; (the new champion's paths, just read)
 ev_same:
   jldi j1, 0
   jld j2, j1, EVC
