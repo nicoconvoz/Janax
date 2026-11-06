@@ -523,3 +523,37 @@ informa); en EGG, un mensaje por juego (el que escucha no manda nada, solo recib
   comparten señal). Con eso, las condiciones fijadas antes, la ventaja a su favor y el banco público, el resultado no
   depende de cómo se armó la línea de base.
 - Lo que está probado es este juego. Que la ventaja viaje a otra tarea, y el cambio de cuerpo, todavía no se corrió.
+
+## Segunda tarea: el traductor de Morse (Capitán, 2026-11-05)
+
+> *"Un traductor de código Morse al estilo máquina, código máquina, que entienda."* — *"A la velocidad mínima que
+> interpreta Razar, para ahorrar tiempos innecesarios."*
+
+Para que la ventaja deje de ser de un solo juego: ahora la entrada llega **en el tiempo**. `morse.pl`: una tecla (3
+piezas fijas de la cara de abajo) se aprieta 1 paso para el punto, `raya=` pasos para la raya, con `hueco=` pasos sin
+tecla entre marcas. El cardumen oye la letra mientras llega (`signal_timed` en `modelo.pl`); la voluntad escucha el ritmo
+de la cara de arriba y dice cuál de las 26 letras fue. Sabe qué letra se mandó, así que aprende con la respuesta (dicho
+con todas las letras). 26 × 40 letras; el azar es 3 %.
+
+- **Una pieza que despierta una sola vez por señal no puede oír una secuencia**: la primera marca despierta casi todo
+  el cubo, y las siguientes mueren contra piezas gastadas. Sin período refractario: **3 %, azar**, en las 6 corridas.
+- **Período refractario** (`refractario=2`): una pieza que despertó descansa 2 pasos y después puede volver a
+  despertar. Dos es el mínimo que no deja rebotar a la ola (con 1, la vecina que acaba de despertar la volvería a
+  despertar en el paso siguiente). Cada marca sube como un frente nuevo.
+- **La velocidad mínima** (semillas 7, 11, 23; último cuarto):
+
+| cubo | raya, hueco (pasos de tecla por letra) | aciertos |
+|---|---|---|
+| 4³ | 2, 1 (6,8) | 34, 46, 57 % |
+| 4³ | 3, 1 (8,2) | 26, 65, 41 % |
+| 4³ | 2, 2 (8,9) | 38, 65, 61 % |
+| 4³ | 3, 2 (10,4) | 57, 65, 53 % |
+| 7³ | 2, 1 (6,8) | 37, 35, 35 % |
+| 7³ | 3, 1 / 2, 2 / 3, 2 | 16–38 % |
+
+  Ir más lento no mejora de forma pareja: **la velocidad mínima (raya de 2, hueco de 1) rinde lo mismo que las más
+  lentas**, así que es la que queda. El cubo de 7 no ayuda.
+- **Diagnóstico** (cubo congelado, semilla 7, 4³, velocidad mínima): las 26 letras dan **18 respuestas distintas**;
+  gemelas C=G=K=O=Z, D=M=N, B=X, Q=Y. Después de una raya, la ola se pone a girar en redondo y sigue sonando, con el
+  mismo dibujo, hasta 30 pasos después de soltar la tecla: el resto de la letra ya no cambia nada. **Es la convulsión
+  otra vez**: el cardumen sosteniendo la canción solo, lo que el Capitán dijo que no tiene que pasar.

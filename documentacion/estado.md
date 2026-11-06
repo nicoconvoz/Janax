@@ -197,3 +197,5 @@ arreglos de entorno anotados. La comparación de verdad todavía no se hizo.
 EGG 0 de 5 en 320.000 juegos (44–87 %). Con 4 cosas, Razar en decenas de juegos y EGG en miles.
 2026-11-04 — Contado en mensajes: con 16 cosas Razar llega en 81–278 mensajes; EGG no llega en 320.000 (Fisher ≈ 0,8 %).
 2026-11-04 — Publicado: Pages con el resultado contra EGG, release v0.2, DOI de la versión 10.5281/zenodo.23962615.
+2026-11-05 — Morse (Capitán): con período refractario de 2 pasos llega a 34–65 % (azar 3 %; sin refractario, 3 %). La
+velocidad mínima rinde igual que las lentas. Diagnóstico: después de una raya la ola gira en redondo (convulsión) y hay gemelas.
