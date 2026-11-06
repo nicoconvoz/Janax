@@ -561,3 +561,30 @@ con los nombres, el esqueleto con los conectores.
 
 Nota de oficio: los textos de cada programa viven en el comienzo de su sala 0 y tienen que terminar antes de 1000h,
 donde empiezan las variables; los de este paso se pusieron en lugares que quedaron libres.
+
+## Las dos miradas juntas: sos lo que son tus hermanos (2026-11-06)
+
+`kin_report`: la estructura arranca con los cimientos de la casa; una palabra que todavía no lo es pasa a serlo cuando
+**la mayoría de sus hermanos** (los otros que llenan sus mismos lugares en los esqueletos) son estructura. Solo se agrega,
+nunca se saca: termina seguro (la regla anterior que oscilaba no tenía esa garantía).
+
+**Primera versión: se tragó todo.** Contando los hermanos por veces, en 13 vueltas 10.173 palabras eran estructura: en casi
+cualquier lugar los hermanos más frecuentes son cimientos ("de", "la"), y la mayoría por veces arrastró todo en cascada.
+**Corregido: los hermanos se cuentan por quiénes son, no por cuántas veces** (cada llenado distinto una vez, con una marca
+de la vuelta en su forma).
+
+Libro entero, idéntico en los tres motores (`0000BA3EBB3EEE29`): **4 vueltas, 699 palabras de estructura**. Las 50 más
+vistas: `, de . que y a la el los en : no se lo por « » su con al para del es un les las ¿ ? le pero sus una ; como me mi
+ha más ! qué había te sobre tu nos han sin ser he sido`.
+
+| | casa | esqueleto | juntas |
+|---|---|---|---|
+| jesús, dios, ustedes, él | mueble | estructura | **mueble** |
+| casa, padre, niño, hombre | mueble | mueble / estructura | **mueble** |
+| pero, con, por, para, su, se, como | estructura | estructura | **estructura** |
+| porque, cuando, sino | sin decidir / mueble | estructura | **mueble** |
+
+**Lo que no cierra:** "porque", "cuando" y "sino" **abren una frase**; ese lugar ("…, _ no…") lo comparten con muchas
+palabras distintas (una frase empieza con casi cualquier cosa). Las tres miradas ven dos o tres piezas de cada lado, y desde
+ahí un conector que abre una frase y un sustantivo que la empieza se ven iguales. Lo que los separa está a otra escala y ya
+está en Razar: **la puerta ancha** (propiedad 4 del "no"): muchos distintos delante y muchos actos detrás, en ese orden.

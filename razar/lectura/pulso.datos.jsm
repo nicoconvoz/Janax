@@ -52,7 +52,7 @@ db ' (la negacion)', 0
 times 600h - $ db 0
 db 'esqueletos (lo que llena un lugar de una estructura); corte', 0
 times 640h - $ db 0
-db 0
+db 'hermanos (sos lo que son tus hermanos): vueltas, estructura:', 0
 times 680h - $ db 0
 db 'preguntas que se hace (lo irregular):', 10, 0
 times 6C0h - $ db 0

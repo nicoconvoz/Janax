@@ -87,6 +87,7 @@ S_HRND  = 0F40h
 S_SKEL  = 600h
 S_SKC   = 540h
 S_SKO   = 580h
+S_KIN   = 640h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -172,6 +173,14 @@ KL    = 1B98h
 KKEY  = 1BA0h
 KENT  = 1BA8h
 KSIDE = 1BB0h
+ROOMPS = 1BB8h                  ; by place: its skeleton and its filling there; by word: structure, its siblings that are
+ROOMPF = 1BC0h                  ; structure, all its siblings; the rounds, words added in the last one
+ROOMST = 1BC8h
+ROOMSS = 1BD0h
+ROOMSA = 1BD8h
+NKR   = 1BE0h
+NKADD = 1BE8h
+KRSTAMP = 1BF0h                 ; the round's stamp
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -269,6 +278,7 @@ jldi j2, 10
 jcall putch
 jcall house_report
 jcall skel_report
+jcall kin_report
 jcall questions
 jjmp finish
 
@@ -2246,7 +2256,7 @@ skel_report:
   jldi j4, 1
   jsub j4, j3, j4
   jst j4, j1, KMASK
-  jldi j4, 24
+  jldi j4, 32
   jmul j11, j3, j4
   jcall room
   jldi j1, 0
@@ -2254,7 +2264,7 @@ skel_report:
   jld j3, j1, KMASK
   jldi j4, 1
   jadd j3, j3, j4
-  jldi j4, 3
+  jldi j4, 5
   jshl j11, j3, j4
   jcall room
   jldi j1, 0
@@ -2273,6 +2283,18 @@ skel_report:
   jadd j2, j2, j2
   jsub j2, j2, j13
   jst j2, j1, ROOMKT            ; (and the words already written)
+  jld j11, j1, NTOK              ; by place: its skeleton and its filling
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMPS
+  jld j11, j1, NTOK
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMPF
   jldi j2, 1                    ; first: every place into its skeleton
   jst j2, j1, KMODE
   jcall k_walk
@@ -2357,7 +2379,7 @@ k_walk:
     jadd j5, j2, j1
     jst j5, j1, KKEY
     jld j2, j1, ROOMK1
-    jldi j3, 24
+    jldi j3, 32
     jcall k_find
     jld j6, j4, 0
     jjnz j6, kw_old
@@ -2380,8 +2402,22 @@ k_walk:
   kw_k2:
     jadd j5, j2, j1
     jld j2, j1, ROOMK2
-    jldi j3, 8
+    jldi j3, 32
     jcall k_find
+    jld j6, j4, 8               ; this filling in this skeleton, once more
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j4, 8
+    jld j6, j1, KI              ; the place keeps its skeleton and its filling there
+    jldi j7, 3
+    jshl j6, j6, j7
+    jld j7, j1, ROOMPS
+    jadd j7, j7, j6
+    jld j8, j1, KENT
+    jst j8, j7, 0
+    jld j7, j1, ROOMPF
+    jadd j7, j7, j6
+    jst j4, j7, 0
     jld j6, j4, 0
     jjnz j6, kw_next
     jst j5, j4, 0
@@ -2566,6 +2602,282 @@ k_top:
     jst j2, j1, OL
   jwend
 kt_done:
+  jret
+
+
+; You are what your siblings are (Capitan, 2026-11-06: "join the two looks"). The structure starts as the house's
+; foundations; a word not yet structure becomes it when most of the others that fill its places (in the skeletons, by
+; who they are, not how often: kn_walk) are structure. Words are only added, never taken out, so it ends. Written:
+; how many rounds, how many words, and the fifty seen most. Uses j1-j14.
+kin_report:
+  jldi j1, 0                    ; by word: structure, its siblings that are structure, all its siblings
+  jld j11, j1, NV
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMST
+  jld j2, j1, NV
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j3, j13, j2
+  jst j3, j1, ROOMSS
+  jadd j3, j3, j2
+  jst j3, j1, ROOMSA
+  jldi j9, 1                    ; the seed: the house's foundations
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMSD
+    jadd j3, j3, j2
+    jld j3, j3, 0
+    jldi j4, 63
+    jsar j4, j3, j4
+    jjnz j4, ks_no
+    jjz j3, ks_no
+    jld j3, j1, ROOMST
+    jadd j3, j3, j2
+    jldi j4, 1
+    jst j4, j3, 0
+  ks_no:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jst j1, j1, NKR
+kn_round:
+  jldi j1, 0                    ; every skeleton: how many of its fillings are structure, this round
+  jld j9, j1, ROOMK1
+  jld j10, j1, KMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jst j1, j9, 24
+    jldi j2, 32
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 1
+  jst j2, j1, KMODE
+  jcall kn_walk
+  jldi j1, 0                    ; every word: its siblings, from nothing
+  jld j9, j1, ROOMSS
+  jld j10, j1, NV
+  jadd j10, j10, j10
+  jwhile j10
+    jst j1, j9, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 2
+  jst j2, j1, KMODE
+  jcall kn_walk
+  jldi j1, 0                    ; most of its siblings structure: it is structure too
+  jst j1, j1, NKADD
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMST
+    jadd j3, j3, j2
+    jld j4, j3, 0
+    jjnz j4, ka_next
+    jld j4, j1, ROOMSS
+    jadd j4, j4, j2
+    jld j4, j4, 0
+    jld j5, j1, ROOMSA
+    jadd j5, j5, j2
+    jld j5, j5, 0
+    jjz j5, ka_next
+    jadd j4, j4, j4
+    jsub j4, j5, j4
+    jldi j6, 63
+    jsar j4, j4, j6
+    jjz j4, ka_next
+    jldi j4, 1
+    jst j4, j3, 0
+    jld j4, j1, NKADD
+    jldi j6, 1
+    jadd j4, j4, j6
+    jst j4, j1, NKADD
+  ka_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, NKR
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, NKR
+  jld j2, j1, NKADD
+  jjnz j2, kn_round
+  jcall flush                   ; written: the rounds, how many, the fifty seen most
+  jldi j1, S_KIN
+  jcall puts
+  jld j2, j1, NKR
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jldi j9, 1
+  jldi j11, 0
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMST
+    jadd j3, j3, j2
+    jld j3, j3, 0
+    jadd j11, j11, j3
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jadd j2, j11, j1
+  jcall putmix
+  jldi j2, 10
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j2, 50
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, ROOMST
+      jadd j4, j4, j3
+      jld j4, j4, 0
+      jldi j5, 1
+      jsub j4, j4, j5
+      jjnz j4, kt2_next
+      jld j4, j1, ROOMOC
+      jadd j4, j4, j3
+      jld j5, j4, 0
+      jsub j4, j11, j5
+      jldi j6, 63
+      jsar j4, j4, j6
+      jjz j4, kt2_next
+      jadd j11, j5, j1
+      jadd j12, j9, j1
+    kt2_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, kt2_done
+    jldi j3, 3                  ; written: marked 2
+    jshl j3, j12, j3
+    jld j4, j1, ROOMST
+    jadd j4, j4, j3
+    jldi j5, 2
+    jst j5, j4, 0
+    jldi j2, 32
+    jcall putch
+    jadd j2, j12, j1
+    jadd j12, j2, j1
+    jcall mix
+    jcall putword
+    jldi j1, 0
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+kt2_done:
+  jldi j2, 10
+  jjmp putch
+
+; Every place of the row with its skeleton, the siblings counted by who they are, not how often (each different
+; filling once, by a stamp of the round in its form): KMODE 1 adds its filling, if structure, to the skeleton's
+; different structure fillings; 2 adds to its filling, if not structure, once per skeleton, its siblings there (the
+; different structure ones, and all the different ones but itself). Uses j1-j14.
+kn_walk:
+  jldi j1, 0
+  jld j2, j1, NKR
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, KRSTAMP
+  jldi j9, 2
+  jld j10, j1, NTOK
+  jldi j2, 4
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMPS
+    jadd j3, j3, j2
+    jld j3, j3, 0               ; its skeleton
+    jjz j3, kn_next
+    jld j4, j1, ROOMT
+    jadd j4, j4, j2
+    jld j4, j4, 0               ; its filling
+    jldi j5, 3
+    jshl j5, j4, j5
+    jld j6, j1, ROOMST
+    jadd j6, j6, j5
+    jld j6, j6, 0               ; structure?
+    jld j7, j1, KMODE
+    jldi j8, 1
+    jsub j7, j7, j8
+    jld j11, j1, ROOMPF         ; its form (this filling in this skeleton)
+    jadd j11, j11, j2
+    jld j11, j11, 0
+    jld j12, j1, KRSTAMP
+    jjnz j7, kn_sib
+    jjz j6, kn_next
+    jld j7, j11, 16             ; this structure filling, once in its skeleton
+    jsub j7, j7, j12
+    jjz j7, kn_next
+    jst j12, j11, 16
+    jld j7, j3, 24
+    jadd j7, j7, j8
+    jst j7, j3, 24
+    jjmp kn_next
+  kn_sib:
+    jjnz j6, kn_next
+    jld j7, j11, 24             ; once per skeleton for this word
+    jsub j7, j7, j12
+    jjz j7, kn_next
+    jst j12, j11, 24
+    jld j7, j3, 24              ; siblings structure (different)
+    jld j8, j1, ROOMSS
+    jadd j8, j8, j5
+    jld j11, j8, 0
+    jadd j11, j11, j7
+    jst j11, j8, 0
+    jld j7, j3, 16              ; all siblings (different), itself out
+    jldi j8, 1
+    jsub j7, j7, j8
+    jld j8, j1, ROOMSA
+    jadd j8, j8, j5
+    jld j11, j8, 0
+    jadd j11, j11, j7
+    jst j11, j8, 0
+  kn_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
   jret
 
 include 'pulso.inc'
