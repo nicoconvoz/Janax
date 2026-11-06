@@ -44,15 +44,15 @@ db ' bits (', 0
 times 500h - $ db 0
 db ' pares) ', 0
 times 540h - $ db 0
-db ' (lo que sigue, igual: ', 0
+db 10, '  cerrados (estructura):', 0
 times 580h - $ db 0
-db ' de ', 0
+db 10, '  abiertos (muebles):', 0
 times 5C0h - $ db 0
 db ' (la negacion)', 0
 times 600h - $ db 0
-db 'propiedad 2: dicho de nuevo, lo que sigue queda igual ', 0
+db 'esqueletos (lo que llena un lugar de una estructura); corte', 0
 times 640h - $ db 0
-db ' | dan vuelta:', 0
+db 0
 times 680h - $ db 0
 db 'preguntas que se hace (lo irregular):', 10, 0
 times 6C0h - $ db 0

@@ -524,3 +524,40 @@ Libro entero, idéntico en los tres motores (`0000B4542B066905`; la pregunta no 
 cambio: no se cambian por cimientos sino por palabras que no lo son. Abren una frase ("…, porque dijo" / "…, Jesús
 dijo"), y en ese lugar de la ventana de tres palabras entran también muebles. Para comprobarlo hay que mirar con qué se
 reemplaza cada uno.
+
+# El esqueleto de la oración (2026-11-06)
+
+El Capitán, con un ejemplo: *"el niño se cayó porque no miró / el hombre miró porque estaba arriba / la niña tembló
+porque tenía miedo: el + porque / el + porque / la + porque. Se reconoce en la estructura aunque hayan cambiado los
+muebles"*. Y: *"lo único que cambian son los muebles; se pueden repetir las estructuras, pero los muebles varían"*.
+
+Lo que fallaba: el pulso compara de a **una** diferencia en ventanas de tres o cuatro palabras, y en ese ejemplo cambian
+varias a la vez. "porque" nunca aparecía como lo que queda mientras todo lo demás cambia; y cuando se cambiaba por
+"cuando" lo contaba como mueble. (Un intento intermedio, "es mueble solo si cambia por un mueble", **no convergía**:
+oscilaba y la vuelta no paraba nunca; se descartó.)
+
+**El esqueleto** (`skel_report`): el de cada lugar son las dos piezas de antes y las dos de después, los cimientos (la
+casa) tal cual, los muebles como huecos y el fin de renglón como tal. El mismo esqueleto vuelve en todo el libro con otras
+cosas adentro. **Lo que llena un lugar es mueble si sigue siendo otra cosa cada vez (abierto), y estructura si son siempre
+los mismos pocos (cerrado: una puerta cambiada por otra puerta).** Cada esqueleto mide qué tan abierto es (llenados
+distintos sobre todos), cada palabra el promedio de los lugares que llena, y el corte lo pone la división óptima del libro
+(la de Razar), sin número a mano.
+
+Libro entero, idéntico en los tres motores (`0000730935070642`): corte en 69,7 % de apertura.
+
+| palabra | apertura | lado |
+|---|---|---|
+| porque | 39,9 % | estructura (en la casa: sin decidir) |
+| cuando | 41,3 % | estructura (en la casa: sin decidir) |
+| pero | 41,7 % | estructura |
+| sino | 48,2 % | estructura (en la casa: mueble) |
+| con, por, para, su, se, como | 35–49 % | estructura |
+| niño | 70,5 % | mueble |
+
+**Lo que no cierra todavía:** hombre (68,3 %), dios (60,1 %) y jesús (47,5 %) también caen como estructura, y quedan
+2.703 cerradas contra 3.746 abiertas, demasiadas para ser los cimientos. Un nombre muy frecuente **se adueña de su
+lugar** ("_ les dijo :" es casi siempre Jesús) y el lugar parece cerrado. Las dos miradas se complementan: la casa acierta
+con los nombres, el esqueleto con los conectores.
+
+Nota de oficio: los textos de cada programa viven en el comienzo de su sala 0 y tienen que terminar antes de 1000h,
+donde empiezan las variables; los de este paso se pusieron en lugares que quedaron libres.

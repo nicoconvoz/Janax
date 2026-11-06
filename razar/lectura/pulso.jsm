@@ -84,6 +84,9 @@ S_HFND  = 0E80h
 S_HFUR  = 0EC0h
 S_HCOL  = 0F00h
 S_HRND  = 0F40h
+S_SKEL  = 600h
+S_SKC   = 540h
+S_SKO   = 580h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -156,6 +159,19 @@ LHN   = 1B30h
 HSIDE = 1B38h
 NRND  = 1B40h                   ; the house: its rounds, the words that changed sides in this one
 NCHG  = 1B48h
+ROOMSD = 1B50h                  ; the side of each word, the house decided
+KMASK = 1B58h                   ; the skeletons: places minus 1, the skeletons {key, fillings, different}, the forms
+ROOMK1 = 1B60h                  ; seen; by word: openness summed, places, written; walking: what it does, the place,
+ROOMK2 = 1B68h                  ; places left, the key, the skeleton, the side listed
+ROOMOP2 = 1B70h
+ROOMOC = 1B78h
+ROOMKT = 1B80h
+KMODE = 1B88h
+KI    = 1B90h
+KL    = 1B98h
+KKEY  = 1BA0h
+KENT  = 1BA8h
+KSIDE = 1BB0h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -252,6 +268,7 @@ jwend
 jldi j2, 10
 jcall putch
 jcall house_report
+jcall skel_report
 jcall questions
 jjmp finish
 
@@ -1819,12 +1836,17 @@ putpct:
 ; that pay the most are written. Uses j1-j14.
 house_report:
   jldi j1, 0
-  jld j11, j1, NV               ; its bits by word (above 0 foundation, below furniture)
-  jldi j2, 3
+  jld j11, j1, NV               ; its bits by word (above 0 foundation, below furniture), and its side kept
+  jldi j2, 4
   jshl j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMGB
+  jld j2, j1, NV
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j13, j2
+  jst j2, j1, ROOMSD
   jst j1, j1, NRND
 hr_round:                       ; a round: counted again from the pulses, with the house of the round before
   jcall h_recount
@@ -1926,6 +1948,19 @@ hr_round:                       ; a round: counted again from the pulses, with t
   jst j2, j1, NRND
   jld j3, j1, NCHG
   jjnz j3, hr_round
+  jldi j1, 0                    ; the house decided: each side kept (the lists below take words out of the bits)
+  jld j9, j1, ROOMGB
+  jld j11, j1, ROOMSD
+  jld j10, j1, NV
+  jwhile j10
+    jld j2, j9, 0
+    jst j2, j11, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jadd j11, j11, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
   jcall flush
   jldi j1, S_HOUSE              ; the line: the book's share kept, the rounds, how many of each, the fifteen of each
   jcall puts
@@ -2193,6 +2228,344 @@ h_top:
     jst j2, j1, OL
   jwend
 ht_done:
+  jret
+
+
+; The skeleton (Capitan, 2026-11-06: "el nino se cayo porque no miro / el hombre miro porque estaba arriba / la nina
+; temblo porque tenia miedo: el _ porque _; it is recognised in the structure though the furniture changed"). The
+; skeleton of each place: the two pieces before it and the two after, the foundations as they are and the furniture as
+; holes (the house decided above). The same skeleton comes back all over the book with other things inside; what fills
+; a place of it is furniture if it keeps being something else (open), structure if it is always the same few (closed:
+; a door changed for another door). Each place weighs how open its skeleton is (different fillings over all of them);
+; each word, how open the places it fills are; where those values part in two, best (n_split), is the cut. Uses j1-j14.
+skel_report:
+  jldi j1, 0                    ; its rooms: the skeletons {key, fillings, different}, the forms seen, and by word the
+  jld j2, j1, NTOK              ; openness summed and its places
+  jadd j2, j2, j2
+  jcall pow2
+  jldi j4, 1
+  jsub j4, j3, j4
+  jst j4, j1, KMASK
+  jldi j4, 24
+  jmul j11, j3, j4
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMK1
+  jld j3, j1, KMASK
+  jldi j4, 1
+  jadd j3, j3, j4
+  jldi j4, 3
+  jshl j11, j3, j4
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMK2
+  jld j11, j1, NV
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMOP2
+  jld j2, j1, NV
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j13, j2
+  jst j2, j1, ROOMOC
+  jadd j2, j2, j2
+  jsub j2, j2, j13
+  jst j2, j1, ROOMKT            ; (and the words already written)
+  jldi j2, 1                    ; first: every place into its skeleton
+  jst j2, j1, KMODE
+  jcall k_walk
+  jldi j1, 0                    ; then: every word, how open its places are
+  jldi j2, 2
+  jst j2, j1, KMODE
+  jcall k_walk
+  jldi j1, 0                    ; where the words' openness parts in two (seen twice or more: the anecdote rule)
+  jst j1, j1, NVL
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jcall k_open
+    jjz j3, kr2_next
+    jcall n_vput
+  kr2_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jcall n_split
+  jcall flush
+  jldi j1, S_SKEL
+  jcall puts
+  jld j2, j1, CUT2
+  jldi j3, 1
+  jshr j2, j2, j3
+  jldi j3, 0                    ; (in 2^-16)
+  jshi j3, 1
+  jshi j3, 0
+  jcall putpct
+  jldi j1, S_SKC
+  jcall puts
+  jldi j2, 1
+  jcall k_top
+  jldi j1, S_SKO
+  jcall puts
+  jldi j2, 0
+  jcall k_top
+  jldi j2, 10
+  jjmp putch
+
+; Every place of the row (a word, not a renglon) with its skeleton: KMODE 1 counts it into its skeleton (its filling
+; once more, a different filling once more), 2 adds to its word how open its skeleton is (different over all, in
+; 2^-16). Uses j1-j14.
+k_walk:
+  jldi j1, 0
+  jldi j2, 2
+  jst j2, j1, KI
+  jld j2, j1, NTOK
+  jldi j3, 4
+  jsub j2, j2, j3
+  jst j2, j1, KL
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, KI
+    jldi j3, 3
+    jshl j9, j9, j3
+    jld j3, j1, ROOMT
+    jadd j9, j9, j3
+    jld j12, j9, 0              ; the filling
+    jjz j12, kw_next
+    jld j2, j1, FNVO            ; its skeleton: two before, two after, each a foundation, a hole or the renglon's end
+    jld j3, j9, -16
+    jcall k_elem
+    jcall hw
+    jld j3, j9, -8
+    jcall k_elem
+    jcall hw
+    jld j3, j9, 8
+    jcall k_elem
+    jcall hw
+    jld j3, j9, 16
+    jcall k_elem
+    jcall hw
+    jjnz j2, kw_key
+    jldi j2, 1
+  kw_key:
+    jadd j5, j2, j1
+    jst j5, j1, KKEY
+    jld j2, j1, ROOMK1
+    jldi j3, 24
+    jcall k_find
+    jld j6, j4, 0
+    jjnz j6, kw_old
+    jst j5, j4, 0
+  kw_old:
+    jld j2, j1, KMODE
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, kw_weigh
+    jld j6, j4, 8               ; one more filling
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j4, 8
+    jst j4, j1, KENT
+    jld j2, j1, KKEY            ; a different one?
+    jadd j3, j12, j1
+    jcall hw
+    jjnz j2, kw_k2
+    jldi j2, 1
+  kw_k2:
+    jadd j5, j2, j1
+    jld j2, j1, ROOMK2
+    jldi j3, 8
+    jcall k_find
+    jld j6, j4, 0
+    jjnz j6, kw_next
+    jst j5, j4, 0
+    jld j4, j1, KENT
+    jld j6, j4, 16
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j4, 16
+    jjmp kw_next
+  kw_weigh:
+    jld j2, j4, 16              ; how open: different over all
+    jldi j3, 16
+    jshl j2, j2, j3
+    jld j3, j4, 8
+    jdiv j2, j2, j3
+    jldi j3, 3
+    jshl j3, j12, j3
+    jld j4, j1, ROOMOP2
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jadd j5, j5, j2
+    jst j5, j4, 0
+    jld j4, j1, ROOMOC
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j4, 0
+  kw_next:
+    jldi j1, 0
+    jld j2, j1, KI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, KI
+    jld j2, j1, KL
+    jsub j2, j2, j3
+    jst j2, j1, KL
+  jwend
+  jret
+
+; A piece j3 as an element of a skeleton -> j3: itself if a foundation, the renglon's end as it is (0), else a hole
+; (-1). Uses j1, j3, j4, j6.
+k_elem:
+  jldi j1, 0
+  jjz j3, ke_done
+  jldi j4, 3
+  jshl j4, j3, j4
+  jld j6, j1, ROOMSD
+  jadd j4, j4, j6
+  jld j4, j4, 0
+  jldi j6, 63
+  jsar j6, j4, j6
+  jjnz j6, ke_hole
+  jjnz j4, ke_done
+ke_hole:
+  jldi j3, -1
+ke_done:
+  jret
+
+; The place of key j5 in the table at j2, j3 bytes a place (KMASK places) -> j4. Uses j1, j4, j6-j8.
+k_find:
+  jldi j1, 0
+  jldi j6, 32
+  jshr j6, j5, j6
+  jxor j6, j6, j5
+  jld j7, j1, KMASK
+  jand j6, j6, j7
+  jldi j8, 1
+  jwhile j8
+    jmul j4, j6, j3
+    jadd j4, j4, j2
+    jld j7, j4, 0
+    jsub j8, j7, j5
+    jjnz j7, kf_full
+    jldi j8, 0
+  kf_full:
+    jldi j7, 1
+    jadd j6, j6, j7
+    jld j7, j1, KMASK
+    jand j6, j6, j7
+  jwend
+  jret
+
+; How open the places of the word j9 are, in 2^-16 -> j2; j3 = 1 if it filled two places or more. Uses j1-j5.
+k_open:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j9, j3
+  jld j4, j1, ROOMOC
+  jadd j4, j4, j3
+  jld j5, j4, 0
+  jld j4, j1, ROOMOP2
+  jadd j4, j4, j3
+  jld j2, j4, 0
+  jldi j3, 0
+  jldi j4, 2
+  jsub j4, j5, j4
+  jldi j1, 63
+  jsar j4, j4, j1
+  jldi j1, 0
+  jjnz j4, ko_done
+  jdiv j2, j2, j5
+  jldi j3, 1
+ko_done:
+  jret
+
+; The twenty-five words seen most on one side of the cut, each "word (openness%)": j2 = 1 the closed (structure), 0
+; the open (furniture). Uses j1-j14.
+k_top:
+  jldi j1, 0
+  jst j2, j1, KSIDE
+  jldi j2, 25
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jcall k_open
+      jjz j3, kt_next
+      jadd j2, j2, j2           ; its side
+      jld j3, j1, CUT2
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4           ; -1: open
+      jldi j4, 1
+      jadd j3, j3, j4           ; 1 closed, 0 open
+      jld j4, j1, KSIDE
+      jsub j3, j3, j4
+      jjnz j3, kt_next
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, ROOMKT
+      jadd j4, j4, j3
+      jld j5, j4, 0
+      jldi j6, -7
+      jsub j5, j5, j6
+      jjz j5, kt_next           ; already written
+      jld j4, j1, ROOMOC
+      jadd j4, j4, j3
+      jld j5, j4, 0
+      jsub j4, j11, j5
+      jldi j6, 63
+      jsar j4, j4, j6
+      jjz j4, kt_next
+      jadd j11, j5, j1
+      jadd j12, j9, j1
+    kt_next:
+      jldi j1, 0
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, kt_done
+    jldi j3, 3
+    jshl j3, j12, j3
+    jld j4, j1, ROOMKT
+    jadd j4, j4, j3
+    jldi j5, -7
+    jst j5, j4, 0
+    jst j12, j1, KI
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, KI
+    jadd j12, j2, j1
+    jcall mix
+    jcall putword
+    jld j9, j1, KI
+    jcall k_open
+    jldi j3, 0
+    jshi j3, 1
+    jshi j3, 0
+    jcall putpct
+    jldi j1, 0
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+kt_done:
   jret
 
 include 'pulso.inc'
