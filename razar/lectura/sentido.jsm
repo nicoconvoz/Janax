@@ -11,9 +11,11 @@
 ;   it is the same:   another skeleton says the same pairs the same way;
 ;   it is denied:     the book says it with the switch too (the no of negacion.inc), and said and denied at once is a
 ;                     contradiction, shown.
-; The meaning of a core is the skeletons it fills and on which side ("isaac: padre de jacob, hijo de abraham"). The
-; sense is the skeleton's relation over its cores, and from the properties it deduces what the book does not say: a
-; skeleton that turns gives the turned fact, one that chains gives the chain (the grandfather), each with its why.
+; Silhouettes, not data (Capitan: "a human memory would fill up; keep silhouettes and recognize them on the fly"). What
+; is kept is the skeletons and what they prove, and between two cores only the last form they were seen in: every fact
+; is met with that form as it is read, proves what it proves, and is forgotten. The cores asked are answered in a
+; second reading, recognizing the silhouettes as the text goes by: the meaning of a core is the facts it is in, and a
+; skeleton that turns gives the turned fact the book does not say, with its why. The tables grow to what they hold.
 ; The cores asked about are the words of the file "q", one per line. Its counts go into j0.
 S_LIBRO = 0
 S_P     = 10h
@@ -32,21 +34,14 @@ S_CORE  = 2C0h
 S_DED   = 300h
 S_BEC   = 340h
 S_BTURN = 380h
-S_BCHAIN = 3C0h
 S_NOBOOK = 400h
 S_NOMEM = 440h
 S_SKTOP = 480h
-S_TURN  = 4C0h
+S_TURN  = 4C0h                  ; (the pulses write it too)
 S_FLIPS = 4C0h
-S_FULL  = 500h
+S_MEM   = 500h
 S_LIMS  = 540h
 
-SMASK = 1900h                   ; places of each table, minus 1
-ROOMPT = 1908h                  ; the facts: {key, skeleton, A, B, denied} (40 bytes)
-ROOMMI = 1910h                  ; the skeletons: {key, pairs, a place it is said, its length, chains, symmetric, denied,
-ROOMBP = 1918h                  ; contradictions} (64); by pair: {key of A B, skeleton} (24, a key may have many); by
-ROOMLF = 1920h                  ; skeleton and left core: {key} (8); between skeletons: {key, m, m', turned, pairs} (40)
-ROOMMM = 1928h
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
 NNG   = 1940h
@@ -58,9 +53,7 @@ WB    = 1968h
 WK    = 1970h
 WN    = 1978h
 WP    = 1980h
-FE    = 1988h                   ; a fact walked, an index, how many left
-FI    = 1990h
-FL    = 1998h
+FE    = 1988h                   ; a skeleton looked at
 TBEST = 19A0h                   ; the best partner of a skeleton: which, how many pairs
 TBN   = 19A8h
 QSI   = 19B0h                   ; the cores asked: where, the one asked
@@ -71,14 +64,37 @@ FI3   = 19D0h
 FI4   = 19D8h
 KPT   = 19E0h
 PMT   = 19E8h
-NMM   = 19F0h                   ; entries between skeletons, entries by pair, a table filled (1)
-NBP   = 19F8h
-FULL  = 1A00h
-FI5   = 1A08h
 BPT   = 1A10h                   ; best_partner: turned or not
 MB1   = 1A18h                   ; two middles, piece by piece (three each), and how many in the second
 MB2   = 1A30h
 MN2   = 1A48h
+TMI   = 1C10h                   ; the tables, each {its place, places minus 1, entries, bytes a place}: the skeletons
+TMIM  = 1C18h                   ; {key, pairs, a place it is said, its length, chains, symmetric, denied,
+TMIN  = 1C20h                   ; contradictions} (64)
+TPM   = 1C30h                   ; the last form of each two cores: {key of the two, skeleton, left core, denied} (32)
+TPMM  = 1C38h
+TPMN  = 1C40h
+TLF   = 1C50h                   ; where each skeleton starts and ends: {key of skeleton, core, side} (8)
+TLFM  = 1C58h
+TLFN  = 1C60h
+TMM   = 1C70h                   ; between skeletons: {key, m, m', turned, pairs} (40)
+TMMM  = 1C78h
+TMMN  = 1C80h
+TSN   = 1C90h                   ; what was said of the core asked: {key} (8), one table each
+TSNM  = 1C98h
+GMODE = 1CB0h                   ; what a window is for: 1 learn, 2 the meaning of the core asked, 3 its deductions
+FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
+FLP   = 1CC0h
+FLT   = 1CC8h
+KST   = 1CD0h                   ; a side
+MA1   = 1CD8h                   ; mm_add: m, m', turned
+MA2   = 1CE0h
+MA3   = 1CE8h
+WSK   = 1CF0h                   ; the skeleton of the window met
+PLD   = 1CF8h                   ; a growing table: which, a key, its old place, its old places
+PLK   = 1D00h
+PLO   = 1D08h
+PLN   = 1D10h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
@@ -96,54 +112,22 @@ jcall house_decide
 jcall distill_no
 jcall limits                    ; where each building ends, found in the book
 
-jldi j1, 0                      ; its tables: places for every window of the book (three per unit), twice over
-jld j2, j1, NTOK
-jldi j3, 4
-jmul j2, j2, j3
-jcall pow2
-jldi j4, 1
-jsub j4, j3, j4
-jst j4, j1, SMASK
-jldi j4, 40
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMPT
-jld j3, j1, SMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 64
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMMI
-jld j3, j1, SMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 24
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMBP
-jld j3, j1, SMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 3
-jshl j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMLF
-jld j3, j1, SMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 40
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMMM
-
-jcall gather                    ; the facts, each skeleton with its pairs
-jcall prove                     ; what each skeleton means, proved
+jldi j2, TMI                    ; its tables, empty: they grow to what they hold
+jldi j3, 64
+jcall pl_new
+jldi j2, TPM
+jldi j3, 32
+jcall pl_new
+jldi j2, TLF
+jldi j3, 8
+jcall pl_new
+jldi j2, TMM
+jldi j3, 40
+jcall pl_new
+jldi j1, 0                      ; the book read once: every fact proves what it proves, and is forgotten
+jldi j2, 1
+jst j2, j1, GMODE
+jcall gather
 
 jldi j1, S_HEAD
 jcall puts
@@ -157,11 +141,19 @@ jldi j1, S_NEGS
 jcall puts
 jld j2, j1, NNG
 jcall putmix
-jld j2, j1, FULL
-jjz j2, h_ok
-jldi j1, S_FULL
+jldi j1, S_MEM                  ; what the silhouettes take, in bytes
 jcall puts
-h_ok:
+jldi j11, 0
+jldi j2, TMI
+jcall pl_bytes
+jldi j2, TPM
+jcall pl_bytes
+jldi j2, TLF
+jcall pl_bytes
+jldi j2, TMM
+jcall pl_bytes
+jadd j2, j11, j1
+jcall putnum
 jldi j2, 10
 jcall putch
 jcall flush
@@ -195,6 +187,142 @@ jcall flush
 jcall sk_report
 jcall cores
 jjmp finish
+
+; j11 plus the bytes the table at j2 takes. Uses j1-j3.
+pl_bytes:
+  jldi j1, 0
+  jld j3, j2, 8
+  jldi j1, 1
+  jadd j3, j3, j1
+  jld j1, j2, 24
+  jmul j3, j3, j1
+  jadd j11, j11, j3
+  jldi j1, 0
+  jret
+
+; A table that grows to what it holds (Capitan's rule: what is needed is used, and nothing more): at j2 {its place,
+; places minus 1, entries, bytes a place}. It starts with two places and doubles before it would pass half full, so
+; a search always finds an empty place and ends. The table at j2 starts so, j3 bytes a place. Uses j1-j14.
+pl_new:
+  jldi j1, 0
+  jst j3, j2, 24
+  jst j1, j2, 16
+  jldi j4, 1
+  jst j4, j2, 8
+  jst j2, j1, PLD
+  jadd j11, j3, j3
+  jcall room
+  jldi j1, 0
+  jld j2, j1, PLD
+  jst j13, j2, 0
+  jret
+
+; The place of key j5 in the table at j2 -> j4 (empty if the key is not there). Uses j1, j3, j4, j6-j8.
+pl_find:
+  jldi j1, 0
+  jldi j6, 32
+  jshr j6, j5, j6
+  jxor j6, j6, j5
+  jld j7, j2, 8
+  jand j6, j6, j7
+  jldi j8, 1
+  jwhile j8
+    jld j3, j2, 24
+    jmul j4, j6, j3
+    jld j3, j2, 0
+    jadd j4, j4, j3
+    jld j7, j4, 0
+    jsub j8, j7, j5
+    jjnz j7, plf_full
+    jldi j8, 0
+  plf_full:
+    jldi j7, 1
+    jadd j6, j6, j7
+    jld j7, j2, 8
+    jand j6, j6, j7
+  jwend
+  jret
+
+; The place of key j5 in the table at j2 -> j4, the key put there if it was not (j6 = 1: new). Uses j1-j14.
+pl_take:
+  jcall pl_find
+  jld j7, j4, 0
+  jjz j7, plt_new
+  jldi j6, 0
+  jret
+plt_new:
+  jld j7, j2, 16                ; one more would pass half its places: it doubles first
+  jldi j8, 1
+  jadd j7, j7, j8
+  jadd j7, j7, j7
+  jld j8, j2, 8
+  jsub j7, j8, j7
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjz j7, plt_put
+  jst j5, j1, PLK
+  jcall pl_grow
+  jldi j1, 0
+  jld j2, j1, PLD
+  jld j5, j1, PLK
+  jcall pl_find
+plt_put:
+  jst j5, j4, 0
+  jld j7, j2, 16
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j2, 16
+  jldi j6, 1
+  jret
+
+; The table at j2 with twice its places: every entry moved to its place in the new one. Uses j1-j14.
+pl_grow:
+  jldi j1, 0
+  jst j2, j1, PLD
+  jld j3, j2, 0
+  jst j3, j1, PLO
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, PLN
+  jadd j4, j3, j3
+  jldi j5, 1
+  jsub j5, j4, j5
+  jst j5, j2, 8
+  jld j5, j2, 24
+  jmul j11, j4, j5
+  jcall room
+  jldi j1, 0
+  jld j2, j1, PLD
+  jst j13, j2, 0
+  jld j9, j1, PLO
+  jld j10, j1, PLN
+  jwhile j10
+    jldi j1, 0
+    jld j2, j1, PLD
+    jld j5, j9, 0
+    jjz j5, plg_next
+    jcall pl_find
+    jld j3, j2, 24              ; the place copied, eight bytes at a time
+    jldi j6, 0
+    jwhile j3
+      jadd j7, j9, j6
+      jld j8, j7, 0
+      jadd j7, j4, j6
+      jst j8, j7, 0
+      jldi j7, 8
+      jadd j6, j6, j7
+      jsub j3, j3, j7
+    jwend
+  plg_next:
+    jldi j1, 0
+    jld j2, j1, PLD
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jldi j3, 1
+    jsub j10, j10, j3
+  jwend
+  jret
 
 ; Every window of the book: two words at the ends, one to three pieces between, each window a fact of its skeleton.
 ; The switch in the middle is taken out and the fact is a denied one. Uses j1-j14.
@@ -319,7 +447,13 @@ gw_k:
   jst j2, j1, WK
   jld j2, j1, WJ
   jst j2, j1, WP
-  jcall f_add
+  jld j2, j1, GMODE             ; learned, or met by the core asked
+  jldi j3, 1
+  jsub j3, j2, j3
+  jjnz j3, gw_meet
+  jjmp f_learn
+gw_meet:
+  jjmp f_meet
 gw_none:
   jret
 
@@ -354,95 +488,183 @@ gc_yes:
 gc_no:
   jldi j3, 0
   jret
-
-; The fact WA WK WB (WN: denied) once: new in the facts, and its skeleton counts one pair (or one denied) more. Uses
-; j1-j8.
-f_add:
+; The fact WA WK WB (WN: denied) as it is read. Its skeleton counts it, and it is met with the last form its two cores
+; were seen in, the only thing kept of them: the same skeleton the other way is symmetric, the same said and denied a
+; contradiction, another skeleton one pair more between the two (turned or not). Said again the same way it is nothing
+; new. Then it is kept as their last form, and an affirmed one looks for its chain. Uses j1-j14.
+f_learn:
   jldi j1, 0
+  jld j5, j1, WK                ; its skeleton
+  jldi j2, TMI
+  jcall pl_take
+  jjz j6, fl_sk
+  jld j7, j1, WP
+  jst j7, j4, 16
+  jld j7, j1, WM
+  jst j7, j4, 24
+  jld j7, j1, NSK
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j1, NSK
+fl_sk:
+  jst j4, j1, FLS               ; (its place: no skeleton is put in before it is counted)
+  jld j2, j1, WA                ; the two cores, whichever way: their key
+  jld j3, j1, WB
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, fl_ord
+  jadd j4, j2, j1
+  jadd j2, j3, j1
+  jadd j3, j4, j1
+fl_ord:
+  jcall k_pair
+  jldi j2, TPM
+  jcall pl_take
+  jst j4, j1, FLP
+  jjnz j6, fl_keep
+  jld j7, j4, 8                 ; met with their last form
+  jld j8, j1, WK
+  jsub j7, j7, j8
+  jjnz j7, fl_other
+  jld j7, j4, 16
+  jld j8, j1, WA
+  jsub j7, j7, j8
+  jjnz j7, fl_sym
+  jld j7, j4, 24                ; the same, the same way: said again, or said and denied
+  jld j8, j1, WN
+  jsub j7, j7, j8
+  jjz j7, fl_done
+  jld j3, j1, FLS
+  jld j7, j3, 56
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j3, 56
+  jjmp fl_keep
+fl_sym:
+  jld j7, j4, 24                ; the same skeleton the other way, both affirmed
+  jld j8, j1, WN
+  jor j7, j7, j8
+  jjnz j7, fl_keep
+  jld j3, j1, FLS
+  jld j7, j3, 40
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j3, 40
+  jjmp fl_keep
+fl_other:
+  jld j7, j4, 24                ; another skeleton, both affirmed: one pair more between the two, both ways
+  jld j8, j1, WN
+  jor j7, j7, j8
+  jjnz j7, fl_keep
+  jld j7, j4, 16
+  jld j8, j1, WA
+  jsub j12, j7, j8
+  jjz j12, fl_t
+  jldi j12, 1
+fl_t:
+  jst j12, j1, FLT
+  jld j11, j1, WK
+  jld j10, j4, 8
+  jcall mm_add
+  jldi j1, 0
+  jld j4, j1, FLP
+  jld j11, j4, 8
+  jld j10, j1, WK
+  jld j12, j1, FLT
+  jcall mm_add
+fl_keep:
+  jldi j1, 0                    ; kept as their last form, and counted
+  jld j4, j1, FLP
+  jld j7, j1, WK
+  jst j7, j4, 8
+  jld j7, j1, WA
+  jst j7, j4, 16
+  jld j7, j1, WN
+  jst j7, j4, 24
+  jld j3, j1, FLS
+  jldi j8, 1
+  jjnz j7, fl_neg
+  jld j7, j3, 8
+  jadd j7, j7, j8
+  jst j7, j3, 8
+  jld j7, j1, NPR
+  jadd j7, j7, j8
+  jst j7, j1, NPR
+  jjmp fl_chain
+fl_neg:
+  jld j7, j3, 48
+  jadd j7, j7, j8
+  jst j7, j3, 48
+  jld j7, j1, NNG
+  jadd j7, j7, j8
+  jst j7, j1, NNG
+fl_done:
+  jret
+
+; It chains: a fact of the same skeleton starts where this one ends, or ends where it starts. Then this one's start
+; and end are kept. Uses j1-j14.
+fl_chain:
+  jld j2, j1, WK
+  jld j3, j1, WB
+  jldi j4, 1
+  jcall k_side
+  jldi j2, TLF
+  jcall pl_find
+  jld j7, j4, 0
+  jjz j7, fc_end
+  jcall fc_one
+fc_end:
   jld j2, j1, WK
   jld j3, j1, WA
-  jcall hw
+  jldi j4, 2
+  jcall k_side
+  jldi j2, TLF
+  jcall pl_find
+  jld j7, j4, 0
+  jjz j7, fc_keep
+  jcall fc_one
+fc_keep:
+  jld j2, j1, WK
+  jld j3, j1, WA
+  jldi j4, 1
+  jcall k_side
+  jldi j2, TLF
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, WK
   jld j3, j1, WB
-  jcall hw
-  jld j3, j1, WN
-  jcall hw
-  jjnz j2, fa_k
-  jldi j2, 1
-fa_k:
-  jadd j5, j2, j1
-  jld j2, j1, ROOMPT
-  jldi j3, 40
-  jcall s_find
-  jld j6, j4, 0
-  jjnz j6, fa_done              ; said before
-  jst j5, j4, 0
-  jld j6, j1, WK
-  jst j6, j4, 8
-  jld j6, j1, WA
-  jst j6, j4, 16
-  jld j6, j1, WB
-  jst j6, j4, 24
-  jld j6, j1, WN
-  jst j6, j4, 32
-  jld j5, j1, WK                ; its skeleton
-  jld j2, j1, ROOMMI
-  jldi j3, 64
-  jcall s_find
-  jld j6, j4, 0
-  jjnz j6, fa_old
-  jst j5, j4, 0
-  jld j6, j1, WP
-  jst j6, j4, 16
-  jld j6, j1, WM
-  jst j6, j4, 24
-  jld j6, j1, NSK
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NSK
-fa_old:
-  jld j6, j1, WN
-  jjnz j6, fa_neg
-  jld j6, j4, 8
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 8
-  jld j6, j1, NPR
-  jadd j6, j6, j7
-  jst j6, j1, NPR
-  jret
-fa_neg:
-  jld j6, j4, 48
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 48
-  jld j6, j1, NNG
-  jadd j6, j6, j7
-  jst j6, j1, NNG
-fa_done:
+  jldi j4, 2
+  jcall k_side
+  jldi j2, TLF
+  jjmp pl_take
+
+; One chain more for the skeleton learned. Uses j1, j3, j7, j8.
+fc_one:
+  jldi j1, 0
+  jld j3, j1, FLS
+  jld j7, j3, 32
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j3, 32
   jret
 
-; The place of key j5 in the table at j2, j3 bytes a place -> j4 (empty if the key is not there). Uses j1, j4, j6-j8.
-s_find:
+; The key of skeleton j2, core j3, side j4 -> j5. Uses j1-j4.
+k_side:
   jldi j1, 0
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, SMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jmul j4, j6, j3
-    jadd j4, j4, j2
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, sf_full
-    jldi j8, 0
-  sf_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, SMASK
-    jand j6, j6, j7
-  jwend
+  jst j3, j1, KPT
+  jst j4, j1, KST
+  jadd j3, j2, j1
+  jld j2, j1, FNVO
+  jcall hw
+  jld j3, j1, KPT
+  jcall hw
+  jld j3, j1, KST
+  jcall hw
+  jjnz j2, ks_k
+  jldi j2, 1
+ks_k:
+  jadd j5, j2, j1
   jret
 
 ; The key of the pair j2 j3 (in that order) -> j5. Uses j1-j4.
@@ -461,200 +683,6 @@ kp_k:
   jadd j5, j2, j1
   jret
 
-; What each skeleton means, proved over its affirmed facts: first every pair is filed (by pair, and by skeleton and
-; left core); then each fact looks for its turned pair in the same skeleton (symmetric), for a fact of the same
-; skeleton starting where it ends (it chains), for other skeletons with the same pair turned or the same (turns, the
-; same), and a denied fact for the same fact affirmed (a contradiction). Uses j1-j14.
-prove:
-  jldi j2, 1
-  jcall p_walk
-  jldi j2, 2
-  jcall p_walk
-  jret
-
-; Every fact of the table: mode j2 1 files it, 2 proves with it. Uses j1-j14.
-p_walk:
-  jldi j1, 0
-  jst j2, j1, TOPN2
-  jst j1, j1, FI
-  jld j2, j1, SMASK
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, FL
-  jwhile j2
-    jldi j1, 0
-    jld j3, j1, FI
-    jldi j4, 40
-    jmul j3, j3, j4
-    jld j4, j1, ROOMPT
-    jadd j3, j3, j4
-    jld j4, j3, 0
-    jjz j4, pw_next
-    jst j3, j1, FE
-    jld j2, j1, TOPN2
-    jldi j4, 1
-    jsub j2, j2, j4
-    jjnz j2, pw_prove
-    jld j4, j3, 32              ; filing: affirmed facts only
-    jjnz j4, pw_next
-    jld j2, j3, 16              ; by pair
-    jld j3, j3, 24
-    jcall k_pair
-    jld j2, j1, ROOMBP
-    jldi j3, 24
-    jcall bp_add
-    jld j3, j1, FE              ; by skeleton and left core
-    jld j2, j3, 8
-    jld j3, j3, 16
-    jcall k_pair
-    jld j2, j1, ROOMLF
-    jldi j3, 8
-    jcall s_find
-    jst j5, j4, 0
-    jjmp pw_next
-  pw_prove:
-    jcall p_fact
-  pw_next:
-    jldi j1, 0
-    jld j2, j1, FI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, FI
-    jld j2, j1, FL
-    jsub j2, j2, j3
-    jst j2, j1, FL
-  jwend
-  jret
-
-; The pair key j5 filed with the skeleton of the fact FE, in the table at j2 (a key may have many; a skeleton once).
-; Uses j1-j8.
-bp_add:
-  jldi j1, 0
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, SMASK
-  jand j6, j6, j7
-  jld j3, j1, FE
-  jld j3, j3, 8
-  jldi j8, 1
-  jwhile j8
-    jldi j7, 24
-    jmul j4, j6, j7
-    jadd j4, j4, j2
-    jld j7, j4, 0
-    jjz j7, ba_put
-    jsub j7, j7, j5
-    jjnz j7, ba_next
-    jld j7, j4, 8
-    jsub j7, j7, j3
-    jjz j7, ba_done
-  ba_next:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, SMASK
-    jand j6, j6, j7
-  jwend
-ba_put:
-  jld j6, j1, NBP               ; (full at half its places: said, and stopped)
-  jld j7, j1, SMASK
-  jldi j8, 1
-  jshr j7, j7, j8
-  jsub j7, j6, j7
-  jldi j8, 63
-  jsar j7, j7, j8
-  jjnz j7, ba_room
-  jldi j6, 1
-  jst j6, j1, FULL
-  jret
-ba_room:
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NBP
-  jst j5, j4, 0
-  jst j3, j4, 8
-ba_done:
-  jret
-
-; The proofs of the fact FE. Uses j1-j14.
-p_fact:
-  jldi j1, 0
-  jld j9, j1, FE
-  jld j2, j9, 32
-  jjnz j2, pf_denied
-  jld j5, j9, 8                 ; its skeleton
-  jld j2, j1, ROOMMI
-  jldi j3, 64
-  jcall s_find
-  jst j4, j1, WP                ; (its skeleton's place)
-  jldi j1, 0                    ; symmetric: B m A affirmed too
-  jld j9, j1, FE
-  jld j2, j9, 8
-  jld j3, j9, 24
-  jld j4, j9, 16
-  jcall f_key
-  jld j2, j1, ROOMPT
-  jldi j3, 40
-  jcall s_find
-  jld j6, j4, 0
-  jjz j6, pf_chain
-  jld j4, j1, WP
-  jld j6, j4, 40
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 40
-pf_chain:
-  jldi j1, 0                    ; it chains: a fact of the same skeleton starts at B
-  jld j9, j1, FE
-  jld j2, j9, 8
-  jld j3, j9, 24
-  jcall k_pair
-  jld j2, j1, ROOMLF
-  jldi j3, 8
-  jcall s_find
-  jld j6, j4, 0
-  jjz j6, pf_others
-  jld j4, j1, WP
-  jld j6, j4, 32
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 32
-pf_others:
-  jldi j1, 0                    ; turned: other skeletons with B A; the same: other skeletons with A B
-  jld j9, j1, FE
-  jld j2, j9, 24
-  jld j3, j9, 16
-  jldi j12, 1
-  jcall pf_partners
-  jldi j1, 0
-  jld j9, j1, FE
-  jld j2, j9, 16
-  jld j3, j9, 24
-  jldi j12, 0
-  jcall pf_partners
-  jret
-pf_denied:
-  jld j2, j9, 8                 ; denied: is the same fact affirmed? a contradiction
-  jld j3, j9, 16
-  jld j4, j9, 24
-  jcall f_key
-  jld j2, j1, ROOMPT
-  jldi j3, 40
-  jcall s_find
-  jld j6, j4, 0
-  jjz j6, pf_done
-  jld j9, j1, FE
-  jld j5, j9, 8
-  jld j2, j1, ROOMMI
-  jldi j3, 64
-  jcall s_find
-  jld j6, j4, 56
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 56
-pf_done:
-  jret
-
 ; The key of the affirmed fact j3 (skeleton key j2) j4 -> j5, as f_add makes it. Uses j1-j4.
 f_key:
   jldi j1, 0
@@ -670,50 +698,12 @@ fk_k:
   jadd j5, j2, j1
   jret
 
-; Every other skeleton filed with the pair j2 j3: one pair more between the fact FE's skeleton and it, turned j12.
-; Uses j1-j14.
-pf_partners:
-  jcall k_pair
-  jst j5, j1, FI2
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, SMASK
-  jand j6, j6, j7
-  jldi j13, 1
-  jwhile j13
-    jldi j1, 0
-    jldi j7, 24
-    jmul j4, j6, j7
-    jld j7, j1, ROOMBP
-    jadd j4, j4, j7
-    jld j7, j4, 0
-    jjz j7, pp_done
-    jld j8, j1, FI2
-    jsub j7, j7, j8
-    jjnz j7, pp_next
-    jld j10, j4, 8              ; the other skeleton
-    jld j9, j1, FE
-    jld j11, j9, 8
-    jsub j7, j10, j11
-    jjz j7, pp_next
-    jst j6, j1, FI3
-    jcall mm_add
-    jldi j1, 0
-    jld j6, j1, FI3
-  pp_next:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, SMASK
-    jand j6, j6, j7
-    jldi j13, 1
-  jwend
-pp_done:
-  jret
-
-; One pair more between skeletons j11 and j10, turned j12. Uses j1-j8.
+; One pair more between skeletons j11 and j10, turned j12. Uses j1-j14.
 mm_add:
   jldi j1, 0
+  jst j11, j1, MA1
+  jst j10, j1, MA2
+  jst j12, j1, MA3
   jld j2, j1, FNVO
   jadd j3, j11, j1
   jcall hw
@@ -725,30 +715,15 @@ mm_add:
   jldi j2, 1
 ma_k:
   jadd j5, j2, j1
-  jld j2, j1, ROOMMM
-  jldi j3, 40
-  jcall s_find
-  jld j6, j4, 0
-  jjnz j6, ma_old
-  jld j6, j1, NMM               ; a table full is said, never searched without end: at half its places it stops
-  jld j7, j1, SMASK
-  jldi j8, 1
-  jshr j7, j7, j8
-  jsub j7, j6, j7
-  jldi j8, 63
-  jsar j7, j7, j8
-  jjnz j7, ma_room
-  jldi j6, 1
-  jst j6, j1, FULL
-  jret
-ma_room:
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NMM
-  jst j5, j4, 0
-  jst j11, j4, 8
-  jst j10, j4, 16
-  jst j12, j4, 24
+  jldi j2, TMM
+  jcall pl_take
+  jjz j6, ma_old
+  jld j7, j1, MA1
+  jst j7, j4, 8
+  jld j7, j1, MA2
+  jst j7, j4, 16
+  jld j7, j1, MA3
+  jst j7, j4, 24
 ma_old:
   jld j6, j4, 32
   jldi j7, 1
@@ -768,13 +743,13 @@ sk_report:
     jldi j11, 1
     jldi j12, 0
     jldi j9, 0
-    jld j10, j1, SMASK
+    jld j10, j1, TMIM
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
       jldi j3, 64
       jmul j3, j9, j3
-      jld j2, j1, ROOMMI
+      jld j2, j1, TMI
       jadd j3, j3, j2
       jld j2, j3, 0
       jjz j2, sr_next
@@ -902,13 +877,13 @@ best_partner:
   jld j11, j1, FE
   jld j11, j11, 0               ; its key
   jldi j9, 0
-  jld j10, j1, SMASK
+  jld j10, j1, TMMM
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
     jldi j3, 40
     jmul j3, j9, j3
-    jld j2, j1, ROOMMM
+    jld j2, j1, TMM
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, bp2_next
@@ -941,9 +916,8 @@ best_partner:
     jldi j2, 1
   bp2_k:
     jadd j5, j2, j1
-    jld j2, j1, ROOMMM
-    jldi j3, 40
-    jcall s_find
+    jldi j2, TMM
+    jcall pl_find
     jld j6, j4, 0
     jld j3, j1, FI3
     jjnz j6, bp2_next
@@ -1047,9 +1021,8 @@ m_collect:
 ; The skeleton of key j2 -> j12 at its place. Uses j1-j8.
 find_mid:
   jadd j5, j2, j1
-  jld j2, j1, ROOMMI
-  jldi j3, 64
-  jcall s_find
+  jldi j2, TMI
+  jcall pl_find
   jadd j12, j4, j1
   jret
 
@@ -1135,9 +1108,9 @@ cores:
     jsub j2, j3, j2
   jwend
   jret
-
-; The core QCW: every affirmed fact it is in, of a skeleton with two pairs or more, and what follows from it. Uses
-; j1-j14.
+; The core QCW, read again as the text goes by: first its meaning (every affirmed fact it is in, once, written when its
+; skeleton has two pairs or more), then what follows from it (the turned fact of a skeleton that turns, when the
+; book never said it). What was said is kept only for the core asked. Uses j1-j14.
 core_one:
   jldi j1, S_CORE
   jcall puts
@@ -1145,122 +1118,96 @@ core_one:
   jcall putword
   jldi j2, 10
   jcall putch
+  jldi j2, TSN
+  jldi j3, 8
+  jcall pl_new
   jldi j1, 0
-  jst j1, j1, FI
-  jld j2, j1, SMASK
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, FL
-  jwhile j2
-    jldi j1, 0
-    jld j3, j1, FI
-    jldi j4, 40
-    jmul j3, j3, j4
-    jld j4, j1, ROOMPT
-    jadd j3, j3, j4
-    jld j4, j3, 0
-    jjz j4, cn_next
-    jld j4, j3, 32
-    jjnz j4, cn_next
-    jld j4, j1, QCW
-    jld j5, j3, 16
-    jsub j5, j5, j4
-    jjz j5, cn_in
-    jld j5, j3, 24
-    jsub j5, j5, j4
-    jjnz j5, cn_next
-  cn_in:
-    jst j3, j1, WA              ; (the fact)
-    jld j5, j3, 8               ; its skeleton: two pairs or more
-    jld j2, j1, ROOMMI
-    jldi j3, 64
-    jcall s_find
-    jld j6, j4, 8
-    jldi j7, 63
-    jsar j7, j6, j7             ; (written skeletons keep their pairs negative)
-    jjz j7, cn_pos
-    jldi j7, 0
-    jsub j6, j7, j6
-  cn_pos:
-    jldi j7, 2
-    jsub j6, j6, j7
-    jldi j7, 63
-    jsar j6, j6, j7
-    jjnz j6, cn_next
-    jst j4, j1, WB              ; (its skeleton)
-    jldi j2, 32
-    jcall putch
-    jldi j2, 32
-    jcall putch
-    jld j3, j1, WA
-    jld j2, j3, 16
-    jadd j12, j2, j1
-    jcall mix
-    jcall putword
-    jldi j2, 32
-    jcall putch
-    jld j12, j1, WB
-    jcall put_mid
-    jld j3, j1, WA
-    jld j2, j3, 24
-    jcall putword
-    jldi j2, 10
-    jcall putch
-    jcall c_deduce
-    jcall flush
-  cn_next:
-    jldi j1, 0
-    jld j2, j1, FI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, FI
-    jld j2, j1, FL
-    jsub j2, j2, j3
-    jst j2, j1, FL
-  jwend
-  jret
+  jldi j2, 2
+  jst j2, j1, GMODE
+  jcall gather
+  jldi j1, 0
+  jldi j2, 3
+  jst j2, j1, GMODE
+  jcall gather
+  jjmp flush
 
-; What follows from the fact WA (skeleton at WB): if its skeleton turns (a partner with two pairs or more, turned),
-; the turned fact, when the book does not say it; with its why. Uses j1-j14.
-c_deduce:
+; The window WA WK WB met by the core asked: its meaning (GMODE 2) or what it deduces (3). Uses j1-j14.
+f_meet:
   jldi j1, 0
+  jld j6, j1, WN                ; affirmed, and the core asked at one end
+  jjnz j6, fm_done
+  jld j6, j1, QCW
+  jld j7, j1, WA
+  jsub j7, j7, j6
+  jjz j7, fm_in
+  jld j7, j1, WB
+  jsub j7, j7, j6
+  jjnz j7, fm_done
+fm_in:
+  jld j5, j1, WK                ; its silhouette
+  jldi j2, TMI
+  jcall pl_find
+  jst j4, j1, WSK
+  jld j2, j1, GMODE
+  jldi j3, 2
+  jsub j3, j2, j3
+  jjnz j3, fm_deduce
+  jld j2, j1, WK                ; its meaning: said, once
+  jld j3, j1, WA
+  jld j4, j1, WB
+  jcall f_key
+  jldi j2, TSN
+  jcall pl_take
+  jjz j6, fm_done
+  jcall fm_two
+  jjz j6, fm_done
+  jldi j2, 32
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, WA
+  jadd j12, j2, j1
+  jcall mix
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, WSK
+  jcall put_mid
   jld j2, j1, WB
+  jcall putword
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+fm_deduce:
+  jcall fm_two
+  jjz j6, fm_done
+  jld j2, j1, WSK               ; a skeleton that turns
   jst j2, j1, FE
-  jld j2, j1, FI
-  jst j2, j1, FI5
   jldi j12, 1
   jcall best_partner
   jldi j1, 0
-  jld j2, j1, FI5
-  jst j2, j1, FI
   jld j2, j1, TBEST
-  jjz j2, cd_done
-  jld j2, j1, TBEST              ; said already? (the turned skeleton, B, A)
-  jld j3, j1, WA
-  jld j4, j3, 16
-  jld j3, j3, 24
+  jjz j2, fm_done
+  jld j3, j1, WB                ; the turned fact: not said in the book, and deduced once
+  jld j4, j1, WA
   jcall f_key
-  jld j2, j1, ROOMPT
-  jldi j3, 40
-  jcall s_find
-  jld j6, j4, 0
-  jjnz j6, cd_done
+  jldi j2, TSN
+  jcall pl_take
+  jjz j6, fm_done
   jldi j1, S_DED
   jcall puts
-  jld j3, j1, WA
-  jld j2, j3, 24
+  jld j2, j1, WB
   jcall putword
   jldi j2, 32
   jcall putch
   jld j2, j1, TBEST
   jcall find_mid
   jcall put_mid
-  jld j3, j1, WA
-  jld j2, j3, 16
+  jld j2, j1, WA
   jcall putword
   jldi j1, S_BEC
   jcall puts
-  jld j12, j1, WB
+  jld j12, j1, WSK
   jcall put_mid
   jldi j1, S_BTURN
   jcall puts
@@ -1271,7 +1218,27 @@ c_deduce:
   jcall putch
   jldi j2, 10
   jcall putch
-cd_done:
+  jjmp flush
+fm_done:
+  jret
+
+; j6 = 1 if the skeleton at WSK has two pairs or more (a written one keeps them negative). Uses j1, j6, j7.
+fm_two:
+  jldi j1, 0
+  jld j7, j1, WSK
+  jld j6, j7, 8
+  jldi j7, 63
+  jsar j7, j6, j7
+  jjz j7, ft_pos
+  jldi j7, 0
+  jsub j6, j7, j6
+ft_pos:
+  jldi j7, 2
+  jsub j6, j6, j7
+  jldi j7, 63
+  jsar j6, j6, j7
+  jldi j7, 1
+  jadd j6, j6, j7
   jret
 
 ; j2 written, and into j0. Uses j1-j4, j12-j14.

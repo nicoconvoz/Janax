@@ -44,7 +44,7 @@ db 'esqueletos (lo que significa cada estructura, probado):', 10, 0
 times 4C0h - $ db 0
 db ' la negacion', 0
 times 500h - $ db 0
-db ' | ATENCION: una tabla se lleno, lo que no entro no se cuenta', 0
+db ' | memoria de las siluetas (bytes)=', 0
 times 540h - $ db 0
 db 'limites (signos que cierran un edificio, segun el libro):', 0
 times 580h - $ db 0

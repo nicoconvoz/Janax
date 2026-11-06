@@ -637,3 +637,37 @@ es género o es la coma, no un vínculo. Y junta a los dos Jacob del libro (iden
 
 **Memoria:** con la tabla en `pow2(4·NTOK)` (1 M de lugares) sentido ocupa ~176 MB, ~350 MB con las del pulso. Las tablas
 se dejan de llenar a media capacidad y lo avisan ("ATENCION: una tabla se llenó").
+
+## Siluetas, no datos (2026-11-06)
+
+El Capitán: *"una memoria humana se saturaría; tenemos que guardar siluetas y reconocerlas al vuelo en el texto, y llegar
+a la misma conclusión cuando lo vemos"*.
+
+**Antes** sentido guardaba cada hecho del libro (quién, con qué esqueleto, con quién) en cinco tablas de un millón de
+lugares (176 MB reservados) y después los recorría para probar. **Ahora:**
+
+- **Lo que queda son siluetas**: cada esqueleto con lo que probó, y las relaciones entre esqueletos ("hijo de" dado
+  vuelta es "padre de"). De dos núcleos solo se recuerda **la última forma en que se los vio**.
+- **Se prueba al leer**: cada hecho se compara con esa última forma en el momento: el mismo esqueleto al revés es
+  simétrico, el mismo dicho y negado es contradicción, otro esqueleto suma un par entre los dos. Después el hecho se
+  olvida. Dicho otra vez igual, no es nada nuevo.
+- **Se reconoce al vuelo**: lo preguntado se contesta en una segunda lectura. Al pasar un hecho con el núcleo, su
+  esqueleto se reconoce y, si da vuelta, la conclusión sale ahí mismo con su porqué. Lo dicho se recuerda solo para el
+  núcleo preguntado (lo que importa, no el libro).
+- **Las tablas crecen a lo que guardan** (regla plástica): empiezan con dos lugares y se duplican antes de pasar la mitad.
+
+Libro entero, idéntico en los tres motores (`0000B3554BA37EF8`), 2,3 s:
+
+| | antes (hechos) | ahora (siluetas) |
+|---|---|---|
+| memoria de sentido | 176 MB reservados | **23,6 MB** (más hasta otro tanto en copias viejas de las tablas que crecieron) |
+| pico del programa | 494 MB | **364 MB** |
+| deducciones | abraham padre de isaac, jacob hijo de matán (+3 flojas) | **las mismas dos**, flojas 2 |
+
+Sale además ", que" ≈ ", porque" y ", el" ≈ ", nuestro".
+
+**Lo que se perdió, medido:** comparando solo con la última forma, la simetría baja (", _" de 72 a 15) y hay menos
+contraejemplos; por eso aparece "de la" dado vuelta es "de doble" (3 pares), basura que antes un contraejemplo frenaba.
+
+**Lo que pesa ahora es el pulso** (355 MB de los 364): cuelga un pedido por cada letra de cada palabra, el doble de
+lugares. Es la misma enfermedad y lleva la misma cura.
