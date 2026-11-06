@@ -765,3 +765,24 @@ Libro entero, idéntico en los tres motores (`0000A5C503620D8A`):
 | preguntas de lo irregular | — | **las mismas, línea por línea** (solo se cruzan dos que empatan en 7 bits) |
 
 La pregunta y sentido no cambian (no guardan formas): 302 y 244 MB, las mismas huellas.
+
+## Profundidad 1 contra el azar (2026-11-06)
+
+Con la carpeta que aparta uno de cada diez renglones (`p` = 10), cada pulso de lo no leído se prueba contra las piezas
+y contra uno ciego (el mismo llenado contra el que llegó justo antes en ese piso). Las dos versiones del pulso, la de
+antes (`c6dfb58`, armada aparte) y la de profundidad 1:
+
+| piso | antes: real / ciego | profundidad 1: real / ciego | veces sobre el azar |
+|---|---|---|---|
+| gemelos | 86,6 % / 22,0 % | 81,4 % / 19,1 % | 3,9× → **4,3×** |
+| interruptores | 58,2 % / 40,9 % | 61,4 % / 39,6 % | 1,4× → **1,6×** |
+| asociados | 14,7 % / 6,0 % | 15,6 % / 3,7 % | 2,5× → **4,2×** |
+| puertas | 70 / 0 pulsos | 113 / 0 pulsos | — (el azar nunca acierta) |
+
+**Profundidad 1 le gana al azar por más en los cuatro pisos**, y en asociados casi duplica la distancia. Los gemelos
+explican cinco puntos menos en absoluto, pero el azar baja más.
+
+**Lo que confirma la sospecha:** las puertas pasan de 44 a 387 piezas, pero lo no leído que explican sube solo de 70 a
+113 pulsos. Ocho veces más piezas para 1,6 veces más aciertos: muchas piezas nuevas no explican nada fuera de lo leído.
+Es la alternancia A, B, A, B que cuenta el mismo par varias veces y le infla los bits. Las piezas buenas están (el azar
+sigue en 0); sobran las que solo se repiten dentro de un mismo lugar.
