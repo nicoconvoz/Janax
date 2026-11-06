@@ -1319,3 +1319,28 @@ nuevo.
 - Despertar no es todavía **leer** lo nuevo: Razar sigue explorando con el libro que ya tenía. Comer el libro nuevo, en
   solo lectura y sin inflación, es el paso siguiente.
 - Un cambio que pasa mientras alguien rema no despierta a nadie: el núcleo solo mira la carpeta cuando todos duermen.
+
+## Al despertar, come los libros nuevos (2026-11-06)
+
+El Capitán: *"sí, que lo coman"*.
+
+- **La estantería** (`shelf_build`, `scan` en `lectura.inc`): el lector pide al sistema la lista de archivos (pedido 14)
+  y se queda con todos los que empiezan con "libro", en orden. El libro es la estantería entera, uno detrás del otro;
+  cada uno cierra su renglón. Con un solo libro, todos los programas dan sus mismas huellas.
+- **Renacer** (`reborn` en `pulso.jsm`): cada sala que pide queda anotada en una lista. Cuando lo despierta una novedad,
+  Razar termina su tramo (su nido ya quedó guardado), devuelve todas sus salas (pedido 3), olvida lo que sabía de los
+  libros y vuelve a leer la estantería entera. Lo que es queda: su identidad, su evolución, su autopsia y cuántas veces
+  renació. Se despierta desde su nido con su mismo genoma.
+- **De paso, una fuga vieja cerrada:** una tabla que crece devuelve su copia anterior al duplicarse.
+
+Medido con los dos Razares en vigilia: dormidos, se les deja un segundo libro (300 KB del mismo texto) y los dos dicen
+**"renace 2 273989"**: dos libros y 273.989 unidades, contra unas 208 mil de uno solo. Exploran, se cartean y se
+vuelven a dormir, en 0 ms de procesador.
+
+**Lo que cuesta y lo que falta, sin disimularlo:**
+- La memoria de los dos pasó de 489 a 930 MB. No es una fuga: las tablas del pulso se reservan en potencias de dos según
+  el tamaño del libro, y con un 30 % más de texto se pasó el escalón (de 2 a 4 millones de lugares).
+- Un libro nuevo los hizo renacer **dos veces**: Windows avisa por tandas (el archivo creado y después escrito), y la
+  segunda tanda llega cuando ya se habían vuelto a dormir.
+- Con la vigilia y el centinela ya no terminan solos, así que la prueba de los tres motores con los dos vivos quedó de
+  antes del centinela (idéntica); con el núcleo nuevo, cada programa por separado da su misma huella.

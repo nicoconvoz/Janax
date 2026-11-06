@@ -90,6 +90,7 @@ S_SKO   = 580h
 S_KIN   = 640h
 S_DEEP  = 0F80h
 S_CONC  = 0FC0h
+REBORN = 1CF8h                  ; news woke it: it is reborn (forgotten with what it read)
 EVC   = 1D00h                   ; evolving the instincts: the champion, the second, their exams, the child, the
 EVR   = 1D08h                   ; generations left, the luck, an exam, the generation, the child kept, the champion
 EVCS  = 1D10h                   ; kept, a line is the champion, two temporaries
@@ -123,6 +124,7 @@ EVG0  = 1E18h
 MAILV = 1E20h
 AUTN  = 1E30h
 WOKE  = 1E48h                   ; who woke it: its sibling, or itself (the sentinel: news in the files)                   ; the length of its autopsy label
+RBC   = 1E50h                   ; how many times it has been reborn (kept: it is part of who it is)
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -203,13 +205,47 @@ KRSTAMP = 1BF0h                 ; the round's stamp
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
+jldi j11, 4096                  ; the list of its rooms (4096 of them): to give them all back when it is reborn
+jldi j2, 3
+jshl j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, RLIST
+renace:
 jldi j0, 0                      ; the fingerprint
 jcall read_book
+jldi j1, 0                      ; (reborn: what it ate, the books and the words)
+jld j2, j1, RBC
+jjz j2, rn_first
+jldi j2, 0                      ; "renace"
+jshi j2, 0000h
+jshi j2, 6563h
+jshi j2, 616Eh
+jshi j2, 6572h
+jcall put8
+jldi j2, 32
+jcall putch
+jld j2, j1, SHN
+jcall putmix
+jldi j2, 32
+jcall putch
+jld j2, j1, NTOK
+jcall putmix
+jldi j2, 10
+jcall putch
+jcall flush
+rn_first:
 jcall distill_no                ; the switch first (it needs no pulse): the forms kept are of its kind
 jldi j1, 0                      ; the forms seen are kept: the irregular is studied over them
 jldi j2, 1
 jst j2, j1, FORMS
 jcall evolve                    ; the instincts, built and recombined, if "p" asks for generations
+jldi j1, 0                      ; news woke it: reborn, its identity and its evolution kept, everything it read given
+jld j2, j1, REBORN              ; back and read again, the new books with the old
+jjz j2, rn_no
+jcall reborn
+jjmp renace
+rn_no:
 jcall learn_pulses
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
@@ -2085,6 +2121,8 @@ vg_drain:
   jshi j2, 6164h
   jshi j2, 6576h
   jshi j2, 6F6Eh
+  jldi j3, 1                    ; (news: it is reborn, reading the whole shelf again, once this is said)
+  jst j3, j1, REBORN
   jjmp vg_said
 vg_sib:
   jldi j2, 0                    ; "vuelve"
@@ -2098,6 +2136,9 @@ vg_said:
   jcall putch
   jcall flush
 ev_again:
+  jldi j1, 0
+  jld j2, j1, REBORN
+  jjnz j2, ev_end
   jldi j1, 0
   jld j2, j1, EVG0
   jst j2, j1, EVG
@@ -2730,6 +2771,53 @@ put8:
     jsub j3, j3, j4
   jwend
 p8_done:
+  jret
+
+
+; Reborn (Capitan: "let them eat the new book"): every room it got is given back (request 3), and what it knew of the
+; books is forgotten, so reading the whole shelf again costs the same memory as the first time. What it is stays: its
+; identity and its evolution (1D00h-1E4Fh), its autopsy, the list of its rooms. Uses j1-j14.
+reborn:
+  jldi j1, 0                    ; (one more life lived)
+  jld j2, j1, RBC
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, RBC
+  jldi j1, 0
+  jld j9, j1, RLIST
+  jld j10, j1, RLN
+  jwhile j10
+    jldi j1, 0
+    jld j11, j9, 0
+    jldi j10, 3
+    jcall ask
+    jldi j1, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jld j10, j1, RLN
+    jldi j2, 1
+    jsub j10, j10, j2
+    jst j10, j1, RLN
+  jwend
+  jldi j2, 1008h                ; what it knew of the books: the reader's and the pulse's (its window's request,
+  jldi j3, 160h                 ; at 1000h, is rewritten by every request)
+  jcall rb_zero
+  jldi j2, 1180h
+  jldi j3, 0B80h                ; up to its evolution
+  jcall rb_zero
+  jldi j2, 1F00h                ; and the growing tables, past its identity
+  jldi j3, 100h
+  jjmp rb_zero
+
+; j3 bytes from j2 set to 0, eight at a time. Uses j1-j4.
+rb_zero:
+  jldi j1, 0
+  jldi j4, 8
+  jwhile j3
+    jst j1, j2, 0
+    jadd j2, j2, j4
+    jsub j3, j3, j4
+  jwend
   jret
 
 ; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so

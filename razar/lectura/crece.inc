@@ -148,6 +148,10 @@ pl_grow:
     jldi j3, 1
     jsub j10, j10, j3
   jwend
+  jldi j10, 3                   ; the old copy given back (request 3): a table that grew does not leave its past behind
+  jldi j1, 0
+  jld j11, j1, PLO
+  jcall ask
   jldi j1, 0
   jld j9, j1, PLS
   jld j10, j1, PLS + 8

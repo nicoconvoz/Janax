@@ -42,6 +42,12 @@ WCAP  = 1138h                   ; 1: the word being read began with a capital; a
 ROOMCP = 1140h
 ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
 LMI   = 1150h                   ; (walking)
+RLIST = 1170h                   ; the rooms it got (0: it keeps no list), how many; the shelf: where, how many books, the
+RLN   = 1178h                   ; books left, the next one
+SHELF = 1180h
+SHN   = 1188h
+SHI   = 1190h
+SHP   = 1198h
 AUTH  = 1168h                   ; the autopsy being written: its handle plus one (0: none)
 EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
@@ -109,6 +115,7 @@ jldi j2, 10
 jst j2, j1, PK
 pr_done:
 
+jcall shelf_build               ; the shelf: every book there is
 jldi j1, 0                      ; first reading: it counts
 jst j1, j1, PASS
 jldi j2, 1
@@ -200,7 +207,78 @@ putword:
   jst j4, j1, POS
   jret
 
-; Reads the book from its start, every byte through tok_byte, and ends its last word and renglon. Uses j1-j14.
+; The shelf (Capitan: "let it eat the new book"): every file whose label starts "libro", listed by the system
+; (request 14: {its length, its bytes padded to 8}, as many as fit) and kept in order at SHELF, SHN of them. The book
+; is all of them, one after the other. Uses j1-j14.
+shelf_build:
+  jldi j1, 0
+  jst j1, j1, SHN
+  jldi j11, 4096
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SHELF
+  jldi j10, 14
+  jadd j11, j13, j1
+  jldi j12, 4096
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jsar j2, j13, j2
+  jjnz j2, sb_done
+  jld j9, j1, SHELF             ; from, to
+  jadd j10, j9, j1
+  jadd j11, j13, j1
+  jwhile j11
+    jldi j1, 0
+    jld j2, j9, 0               ; its length, and its place: 8 + the length padded to 8
+    jldi j3, 7
+    jadd j3, j2, j3
+    jldi j4, -8
+    jand j3, j3, j4
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 5                  ; a book? five bytes or more, "libro" first
+    jsub j4, j2, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, sb_next
+    jld j4, j9, 8
+    jldi j5, 24
+    jshl j4, j4, j5
+    jshr j4, j4, j5
+    jldi j5, 0
+    jshi j5, 006Fh
+    jshi j5, 7262h
+    jshi j5, 696Ch
+    jsub j4, j4, j5
+    jjnz j4, sb_next
+    jldi j5, 0                  ; kept: copied down to its place in the shelf
+    jadd j6, j3, j1
+    jwhile j6
+      jadd j7, j9, j5
+      jld j8, j7, 0
+      jadd j7, j10, j5
+      jst j8, j7, 0
+      jldi j7, 8
+      jadd j5, j5, j7
+      jsub j6, j6, j7
+    jwend
+    jadd j10, j10, j3
+    jld j4, j1, SHN
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j1, SHN
+  sb_next:
+    jadd j9, j9, j3
+    jldi j4, 1
+    jsub j11, j11, j4
+  jwend
+sb_done:
+  jldi j1, 0
+  jret
+
+; Reads the book from its start, every byte through tok_byte, and ends its last word and renglon; the book is the
+; shelf, every "libro" one after the other (each ends its renglon), when one was built. Uses j1-j14.
 scan:
   jldi j1, 0
   jst j1, j1, NBYTES
@@ -208,6 +286,46 @@ scan:
   jst j1, j1, LEAD
   jldi j2, 1
   jst j2, j1, LASTL
+  jld j2, j1, LABEL             ; the book, and a shelf: every one of its books
+  jldi j3, S_LIBRO
+  jsub j2, j2, j3
+  jjnz j2, scan_file
+  jld j2, j1, SHN
+  jjz j2, scan_file
+  jld j2, j1, SHELF
+  jst j2, j1, SHP
+  jld j2, j1, SHN
+  jst j2, j1, SHI
+  jwhile j2
+    jldi j1, 0
+    jld j3, j1, SHP
+    jld j4, j3, 0
+    jst j4, j1, LABLEN
+    jldi j5, 8
+    jadd j5, j3, j5
+    jst j5, j1, LABEL
+    jldi j6, 7
+    jadd j4, j4, j6
+    jldi j6, -8
+    jand j4, j4, j6
+    jadd j3, j5, j4
+    jst j3, j1, SHP
+    jcall scan_file
+    jldi j1, 0
+    jld j2, j1, SHI
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, SHI
+  jwend
+  jldi j2, S_LIBRO
+  jst j2, j1, LABEL
+  jldi j2, 5
+  jst j2, j1, LABLEN
+  jret
+
+; One file of the book (LABEL, LABLEN), every byte through tok_byte. Uses j1-j14.
+scan_file:
+  jldi j1, 0
   jldi j10, 4
   jld j11, j1, LABEL
   jld j12, j1, LABLEN
@@ -659,6 +777,24 @@ room:
   jldi j1, 1
   jadd j1, j13, j1
   jjz j1, rm_none
+  jldi j1, 0                    ; (written in the list of its rooms, if it keeps one: to give them all back)
+  jld j10, j1, RLIST
+  jjz j10, rm_done
+  jld j12, j1, RLN
+  jldi j11, 4096
+  jsub j11, j12, j11
+  jldi j14, 63
+  jsar j11, j11, j14
+  jjz j11, rm_done
+  jldi j11, 3
+  jshl j11, j12, j11
+  jadd j11, j11, j10
+  jst j13, j11, 0
+  jldi j11, 1
+  jadd j12, j12, j11
+  jst j12, j1, RLN
+rm_done:
+  jldi j1, 1
   jret
 rm_none:
   jldi j1, S_NOMEM
