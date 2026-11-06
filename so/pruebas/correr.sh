@@ -644,6 +644,13 @@ P1 codigo=9 j0=* t=*
 P0 codigo=0 j0=00000000090909FE t=*
 ventanilla: *" familia_termina
 
+# A child with a budget (34) ends when it spends it: code 10, and its parent asleep on its doorbell wakes.
+familia familia_presupuesto eterno
+caso "familia: el hijo gasta su presupuesto y termina" 0 0 "$fijo0
+P1 codigo=10 j0=* t=*
+P0 codigo=0 j0=0000000000FF0AFE t=*
+ventanilla: *" familia_presupuesto
+
 # A child is born with its parent's bolita, and can not ask for more.
 familia familia_bolita bolita
 caso "familia: el hijo nace con la bolita del padre" 0 0 "$fijo0

@@ -118,6 +118,7 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      mi firma, como {número, hijo, tipo}), **19 estado** (`a` = un hijo mío → su código, −1 mientras corre,
      −2 si no es mío).
    - **33 terminar a un hijo** (`a` = un hijo mío): ver "El padre termina a un hijo colgado".
+   - **34 presupuesto** (`a` = un hijo mío, `b` = instrucciones más que puede remar): ver "El presupuesto".
    - **20 bolita** (`a` = la bolita que quiere, en 65.536avos; 10000h = 1): la recorta a la que le dieron al
      lanzarlo (nadie se da más de lo que le dieron, igual que los permisos), recalcula su turno una vez y
      contesta la que quedó. Ver "La bolita de cada camarote".
@@ -1039,3 +1040,22 @@ paso de esa idea.
   hijo remando justo en ese momento. Ese camino existe en el remero (`P_KILL`), pero ninguna prueba lo ejercita.
 - **De paso:** el chequeo de la casa ("todo bucle del núcleo es un while rotado") marcaba tres bucles del centinela
   (`watch_wait`, `watch_name`). Se me pasaron en su commit porque no corrimos la suite, y ahora quedaron en esa forma.
+
+## El presupuesto: pedido 34, un hijo que se pasa termina solo (2026-11-06)
+
+El pedido 33 necesita un padre despierto, y el padre que espera la nota del candidato duerme en su timbre (29). Si el
+candidato se cuelga, nunca dice su palabra y el padre duerme para siempre. Por eso la jaula necesita un límite que no
+dependa de nadie despierto.
+
+- **34 presupuesto** (`a` = un hijo propio, `b` = cuántas instrucciones más puede remar; 0 = sin límite). Cuando las
+  pasa, termina con **código 10** ("gastó su presupuesto"), con su línea entera, al terminar el turno en que las pasó.
+  - Responde 0; el código con que había terminado, si ya había terminado; −2 si no es hijo propio.
+  - Es importante, como lanzar y terminar.
+- **No es un reloj.** No mide segundos ni corre "por las dudas": mide el trabajo del propio hijo, que el núcleo ya
+  cuenta (`P_SERVED`). Quien lo fija decide el número relativo a algo medido. Para Razar será el costo del examen de su
+  campeón.
+- **El padre se entera sin dar vueltas.** Si el hijo termina y no queda nadie que pueda saludar al padre, el núcleo lo
+  despierta con −1, como siempre, y el estado (19) dice 10.
+- **La prueba** (`familia_presupuesto`, con el hijo `eterno`): el padre le da 10.000 instrucciones y se duerme en su
+  timbre. El hijo las gasta y termina; el padre despierta con −1 y lee el código 10. Pide además sobre un número que no
+  es hijo suyo (−2). Da `FF 0A FE` en los tres motores.

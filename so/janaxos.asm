@@ -102,7 +102,8 @@ P_NSAID  = 584
 P_WATCH  = 592                  ; the sentinel: the prefix of the labels it watches (up to 8 bytes), and how many (0: none)
 P_WATCHN = 600
 P_KILL   = 608                  ; 1 = its parent ended it while it rowed: it ends when its turn does
-PROC_SIZE = 616
+P_LIMIT  = 616                  ; the instructions it may row in all (34; 0 = no budget): past them, it ends
+PROC_SIZE = 624
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -148,10 +149,10 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 33                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 34                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting, say a word, read a word, watch, end a child
+                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -190,15 +191,15 @@ section '.data' data readable writeable
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
-              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end
+              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -3421,6 +3422,7 @@ serve_gate serve_pending, 18, family_pending
 serve_gate serve_state,   19, family_state
 serve_gate serve_bolita,  20, family_bolita
 serve_gate serve_end,     33, family_end
+serve_gate serve_budget,  34, family_budget
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -3692,6 +3694,7 @@ family_state:
 ; with if it had ended already; -1 if it rows right now on another oar (it ends when its turn does); -2 if it is
 ; not my child.
 CODE_ENDED = 9
+CODE_SPENT = 10
 
 family_end:
         mov     rax, [rbp + r13 + 8]
@@ -3719,6 +3722,35 @@ family_end:
 .rowing:
         mov     qword [r8 + P_KILL], 1
         mov     qword [rbp + r13 + 24], -1
+        ret
+.not_mine:
+        mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 34 budget (the cage of a mutant that hangs, while its parent sleeps: no clock, the child's own work): a = number
+; of one of my children, b = how many instructions more it may row (0: no budget). Past them it ends with code 10
+; (it spent its budget), with its line, when the turn that passes them ends. Answers 0; the code it ended with if
+; it had ended already; -2 if it is not my child.
+family_budget:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [nprocs]
+        jae     .not_mine
+        mov     r8, [procs]
+        mov     r8, [r8 + rax*8]
+        cmp     [r8 + P_PARENT], rbx
+        jne     .not_mine
+        cmp     qword [r8 + P_DONE], 0
+        jne     .code
+        mov     rax, [rbp + r13 + 16]
+        test    rax, rax
+        jz      @f
+        add     rax, [r8 + P_SERVED]
+@@:     mov     [r8 + P_LIMIT], rax
+        mov     qword [rbp + r13 + 24], 0
+        ret
+.code:
+        mov     rax, [r8 + P_CODE]
+        mov     [rbp + r13 + 24], rax
         ret
 .not_mine:
         mov     qword [rbp + r13 + 24], -2

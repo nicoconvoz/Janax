@@ -195,11 +195,19 @@ run_all:
         dec     qword [rowing]
         add     [rbx + P_SERVED], rax
         add     [clock], rax
-        cmp     qword [rbx + P_KILL], 0 ; its parent ended it while it rowed (33): it ends with its turn, its line too
-        je      .alive
-        cmp     qword [rbx + P_DONE], 0
-        jne     .alive
-        mov     qword [rbx + P_CODE], CODE_ENDED
+        cmp     qword [rbx + P_DONE], 0 ; its parent ended it while it rowed (33), or it spent its budget (34): it
+        jne     .alive                  ; ends with its turn, its line too
+        mov     ecx, CODE_ENDED
+        cmp     qword [rbx + P_KILL], 0
+        jne     .cut
+        mov     rax, [rbx + P_LIMIT]
+        test    rax, rax
+        jz      .alive
+        cmp     [rbx + P_SERVED], rax
+        jb      .alive
+        mov     ecx, CODE_SPENT
+.cut:
+        mov     [rbx + P_CODE], rcx
         mov     qword [rbx + P_DONE], 1
         call    end_records
         call    line_end
