@@ -254,3 +254,4 @@ Las huellas de los modelos quedan fijas (las mismas que dan los programas Janax,
 Perl); los archivos de parámetros, con printf; `bucles` y `combinaciones`, en awk (las 31 combinaciones, idénticas byte
 por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio como referencia, sin correrse.
 2026-11-06 — Palabras y estructura (Capitán): el núcleo por lo que es; enseñado en un orden y preguntado en otro, 100 % en los cuatro órdenes (20 semillas, suma y resta mezcladas). El orden libre está construido; lo aprendido es qué palabra es el núcleo.
+2026-11-06 — Sumar sin reglas, como en el lazo: no aprende ni las sumas que practica (~25 %, azar 17 %); cada número está en muchas sumas y moverlo para arreglar una rompe otras.

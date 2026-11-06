@@ -1120,3 +1120,26 @@ Suma y resta mezcladas, 3 ejemplos de cada una enseñados en el orden 0, 20 semi
   "el núcleo es una palabra que no es número" los escribió Doc; por eso el 100 % vale igual en los cuatro órdenes.
   **Lo que sí aprende de los ejemplos es cuál palabra es el núcleo** ("mas" o "menos", y no "es") y qué regla le
   corresponde a cada una. Las reglas siguen siendo las 27 candidatas de Doc, y el cardumen sigue poniendo solo el oído.
+
+### Sumar sin reglas, inventando sus palabras como en el lazo (Capitán, 2026-11-06)
+
+> *"Olvidate de las reglas: no quiero parches ni decirle cómo tiene que hacerlo, quiero que lo descubra, como cuando
+> funcionaba en el idioma que inventaba."*
+
+`voluntad_juego.jsm` con `cardumen_cubo.jsm`: el lazo que le ganó a EGG, con sumas. Cada palabra (uno…seis, más, menos)
+se dice con 3 piezas de la cara de abajo elegidas por sus dados: su palabra inventada. "a más b" es una canción de tres
+saludos (las piezas de a, de más, de b); el cardumen la canta con las olas que se cruzan y la voluntad lee la respuesta
+en la melodía, aprendiendo con la respuesta. Si acierta, la canta otra vez (el cardumen la asienta); si erra, mueve una
+pieza de una de las tres palabras. Practica 10 de las 15 sumas, sacadas por dados, y después se le preguntan las 5 que
+nunca practicó, sin aprender. 20 semillas:
+
+| Condición | Práctica, último cuarto | Practicadas, al final | Nunca vistas |
+|---|---|---|---|
+| 4³, 2.000 vueltas | 27 % | 27 % | 13 % |
+| 4³, 8.000 vueltas | 25 % | 21 % | 11 % |
+| 6³, 8.000 vueltas | 26 % | 25 % | 15 % |
+| 4³, 8.000 vueltas, quieto | 26 % | 31 % | 13 % |
+
+El azar es 17 %. **No aprende ni las que practica, y más vueltas no ayudan.** Diagnóstico: en el lazo cada cosa tenía su
+propia señal; acá cada número está en muchas sumas, y mover una pieza para arreglar una suma rompe las otras donde está
+esa palabra. Además, al errar mueve al azar sin recordar qué andaba. Es una medición, no una prueba de que no se puede.
