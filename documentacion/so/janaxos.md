@@ -969,3 +969,25 @@ se crean (miden que entren); los 500 hijos escriben un byte cada uno.
 Acceso, A/B contra ee5b067 (15 rondas, los dos órdenes): `calculo` ~431–446 contra ~432–433 ms, empate;
 `calculo_ambiente` ~680–682 contra ~642–672 ms, entre 1 % y 6 % más lento, en el borde del ruido: es la
 comparación de tamaño que volvió en `O(i)`. SO 314/314, escalón 0 182/182.
+
+## El saludo que lleva una palabra (Capitán, 2026-11-06)
+
+> *"Que el saludo no sea un pulso sino una palabra escrita, para la oración, como cuando decíamos hola porque algo se
+> encendió o algo se apagó; pero literal: antes era un bit, ahora son bits de palabras."* — *"Ahora sí aplica la regla de
+> lo asincrónico-sincrónico."*
+
+- **Pedido 30, decir una palabra:** a = un camarote de la familia, b = la palabra (hasta 8 letras, en un qword). La carta
+  queda en el buzón del otro (`P_SAID`: {quién la dijo, la palabra}, 16 bytes cada una, en orden de llegada, que crece a
+  la medida con `list_slot`) y suena el timbre: el saludo de un bit de siempre (pedido 28), así quien espera se despierta.
+- **Pedido 31, leer una palabra:** a = dónde escribir 16 bytes {quién, palabra}, la más vieja primero. Contesta 1, o 0 si
+  el buzón está vacío, o −1 si a no son 16 bytes de sus camarotes.
+- **El bit sigue siendo el timbre** y conserva su virtud: dos saludos antes de mirar quedan en una sola marca. Las
+  palabras, en cambio, no se funden: van a una cola, en orden, y no se pierde ninguna.
+- **La regla del buzón asincrónico-sincrónico, aplicada** (`documentacion/so/ideas.md`): decir no bloquea (nadie espera
+  la respuesta, se espera que llegue la carta); la respuesta del pedido 30 solo confirma que la carta llegó (0) o que no
+  hay a quién dejársela (−1); el otro lee cuando su timbre lo despierta. Nadie queda colgado del otro, así que no hay
+  abrazo mortal. Acordar retardos queda para cuando las cartas viajen por la red, entre Razares.
+- Al terminar un camarote, las palabras que nadie leyó vuelven (`cabin_free`).
+- Prueba: `palabra: la madre lee las palabras de su hijo, en orden`: el hijo dice "hola" y "sol"; la madre espera el
+  timbre, lee las dos en orden con quién las dijo, la tercera lectura da 0, y decirle una palabra a un camarote de afuera
+  da −1. En los tres motores.

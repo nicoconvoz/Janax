@@ -97,7 +97,9 @@ P_ASSOC  = 544                  ; which part of the two cartels: 0 shared, 1 min
 P_GREET  = 552                  ; who greeted it and was not taken yet: one per family member, as many as greet
 P_NGREET = 560
 P_GWAIT  = 568                  ; 1 = it waits for a greeting, 2 = nobody is left who could greet it
-PROC_SIZE = 576
+P_SAID   = 576                  ; words said to it and not read yet: {who said it, the word}, 16 bytes each, in order
+P_NSAID  = 584
+PROC_SIZE = 592
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -143,10 +145,10 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 29                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 31                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting
+                                ; greet, wait for a greeting, say a word, read a word
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -185,15 +187,15 @@ section '.data' data readable writeable
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
-              dq serve_greet, serve_greeting
+              dq serve_greet, serve_greeting, serve_say, serve_hear
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -3501,6 +3503,31 @@ gate_greet:
 gate_greeting:
         call    greeting
         mov     [rbp + r13 + 24], rax
+        ret
+
+; 30 say a word (Capitan: "the greeting is not a pulse but a written word"): a = a family cabin, b = the word (up to
+; 8 letters, in one qword). The letter stays in its mailbox and the doorbell rings (a greeting, request 28), so whoever
+; waits wakes. Nobody waits for an answer (the asynchronous-synchronous mailbox): the answer only confirms the letter
+; arrived, 0, or -1 if there is nobody to leave it with. 31 read a word: a = where to write 16 bytes, {who said it,
+; the word}, the oldest first -> 1, or 0 if the mailbox is empty, -1 if a is not 16 bytes of its rooms (ambientes.inc).
+serve_gate serve_say,  30, gate_say
+serve_gate serve_hear, 31, gate_hear
+
+gate_say:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    say_word
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
+        ret
+gate_hear:
+        sub     rsp, 8
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, 16
+        call    hear_word
+        mov     [rbp + r13 + 24], rax
+        add     rsp, 8
         ret
 
 ; 16 launch: a = label of the program file, b = its bytes; the child's permissions travel in the high

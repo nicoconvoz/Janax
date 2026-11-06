@@ -1506,6 +1506,69 @@ greet_must_wait:
 .done:
         ret
 
+; 30 say a word: the family cabin number rax gets the word rdx from rbx, in its mailbox (P_SAID), and the doorbell
+; rings (greet). Nobody waits for an answer: -> rax = 0, the letter arrived, or -1 if it is not family (or it ended).
+; Keeps rbx, rbp, r12-r15.
+say_word:
+        push    rsi rdi
+        mov     rdi, rdx                ; the word
+        push    rax
+        call    cabin_family
+        test    rax, rax
+        jz      .invalid
+        mov     rsi, rax                ; who hears it
+        xchg    rbx, rsi
+        mov     ecx, P_SAID
+        mov     r8d, 16
+        call    list_slot
+        xchg    rbx, rsi
+        test    rax, rax
+        jz      .invalid
+        mov     rcx, [rbx + P_ID]
+        mov     [rax], rcx              ; who said it
+        mov     [rax + 8], rdi          ; and the word
+        pop     rax
+        call    greet                   ; the doorbell
+        pop     rdi rsi
+        ret
+.invalid:
+        pop     rax
+        mov     rax, -1
+        pop     rdi rsi
+        ret
+
+; 31 read a word: the oldest letter in rbx's mailbox goes to its address rax (rdx = 16 bytes: who said it, the word)
+; -> rax = 1, 0 if the mailbox is empty, -1 if the address is not 16 bytes of its rooms. Keeps rbx, rbp, r12-r15.
+hear_word:
+        push    rsi rdi
+        call    cabin_at                ; all 16 bytes inside one of its rooms, or carry
+        jc      .invalid
+        mov     rcx, [rbx + P_NSAID]
+        test    rcx, rcx
+        jz      .empty
+        mov     rsi, [rbx + P_SAID]
+        mov     rdx, [rsi]
+        mov     [rax], rdx              ; who said it
+        mov     rdx, [rsi + 8]
+        mov     [rax + 8], rdx          ; the word
+        dec     rcx
+        mov     [rbx + P_NSAID], rcx
+        mov     rdi, rsi                ; the others move up one place
+        add     rsi, 16
+        shl     rcx, 1
+        rep     movsq
+        mov     eax, 1
+        pop     rdi rsi
+        ret
+.empty:
+        xor     eax, eax
+        pop     rdi rsi
+        ret
+.invalid:
+        mov     rax, -1
+        pop     rdi rsi
+        ret
+
 ; Nobody rows: every cabin waiting for a greeting wakes, and its wait answers -1. Keeps every register.
 greet_nobody:
         push    rcx rsi r8
@@ -1617,6 +1680,8 @@ cabin_free:
         mov     r12d, P_ARRIVED
         call    list_back
         mov     r12d, P_GREET
+        call    list_back
+        mov     r12d, P_SAID            ; and the words nobody read
         call    list_back
         mov     qword [rbx + P_TAKEN], 0
         pop     r12 rdi rsi

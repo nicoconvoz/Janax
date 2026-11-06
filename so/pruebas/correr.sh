@@ -413,6 +413,15 @@ caso "saludo: solo en familia, y nadie despierto da -1" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=21
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=0 pedidos=2" saludo_no
 
+# A greeting that carries a word (Capitan, 2026-11-06): the bit is still the doorbell, and the word waits in the
+# mailbox, in order, with who said it (requests 30 say, 31 read).
+familia familia_palabra palabra_hijo
+caso "palabra: la madre lee las palabras de su hijo, en orden" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000000 t=*
+P0 codigo=0 j0=006C6F73616C6F6A t=*
+ventanilla: *" palabra
+carpeta=
+
 # Razar's school (razar/cardumen, Capitan): the Janax program leaves the fingerprint of the reference model, bit for
 # bit; the expected one comes from the model itself, so a change in the model has to be followed here.
 huella=$(perl "$proyecto/razar/cardumen/huella.pl")
