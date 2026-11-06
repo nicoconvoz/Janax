@@ -116,3 +116,11 @@ db ' veces: lo regular se contesta solo', 0
 times 0E00h - $ db 0
 db '      lo que trae: ', 0
 times 0E40h - $ db 0
+db 'cimientos y muebles (lo fijo y lo que cambia); fijo en el libro', 0
+times 0E80h - $ db 0
+db 10, '  cimientos ', 0
+times 0EC0h - $ db 0
+db 10, '  muebles ', 0
+times 0F00h - $ db 0
+db ':', 0
+times 0F40h - $ db 0

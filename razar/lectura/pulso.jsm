@@ -79,6 +79,10 @@ S_RET4  = 0D40h
 S_RET5  = 0D80h
 S_RET6  = 0DC0h
 S_BRINGS = 0E00h
+S_HOUSE = 0E40h
+S_HFND  = 0E80h
+S_HFUR  = 0EC0h
+S_HCOL  = 0F00h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -135,6 +139,20 @@ CXW   = 1A98h
 QDIR  = 1AB8h                   ; 1: the question asks why the switch (its rule is plain); 0: why without it
 FPOS  = 1AC0h                   ; through the door: where it is, the exception being looked in
 FSTART = 1AC8h                  ; (walking the exceptions)
+ROOMGB = 1AD0h                  ; the house: the bits of each word (above 0 foundation, below furniture), the book's kept
+SFX   = 1AD8h                   ; and changed (and log2 of them and of both), how many of each, the word walked, the
+SVR   = 1AE0h                   ; words left, its kept and all, log2 of all, the side listed
+LSF   = 1AE8h
+LSV   = 1AF0h
+LST   = 1AF8h
+NFND  = 1B00h
+NFUR  = 1B08h
+HI    = 1B10h
+HL    = 1B18h
+HK    = 1B20h
+HN    = 1B28h
+LHN   = 1B30h
+HSIDE = 1B38h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -230,6 +248,7 @@ jwhile j10
 jwend
 jldi j2, 10
 jcall putch
+jcall house_report
 jcall questions
 jjmp finish
 
@@ -1786,6 +1805,273 @@ putpct:
   jcall putch
   jldi j2, 41
   jjmp putch
+
+
+; The foundation and the furniture (Capitan, 2026-11-06: "two cores that explain an object or an action, and glue,
+; the structure that gives the cores their sense; two meanings, the structural one and the one of sense: the
+; foundations and the furniture inside a house"). By the one rule: in every pulse "the same place, another word", what
+; was kept is foundation and what changed is furniture. Each word is judged against the book's own share of kept
+; (all kept over all): its k kept of n, coded with its own share against the book's, its share paying log2(n) / 2.
+; Above the book's share and paying: foundation; below and paying: furniture; else neither yet. The fifteen of each
+; that pay the most are written. Uses j1-j14.
+house_report:
+  jldi j1, 0
+  jld j11, j1, NV               ; its bits by word (above 0 foundation, below furniture)
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMGB
+  jst j1, j1, SFX               ; the book's: all kept, all changed
+  jst j1, j1, SVR
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMFX
+    jadd j3, j3, j2
+    jld j3, j3, 0
+    jld j4, j1, SFX
+    jadd j4, j4, j3
+    jst j4, j1, SFX
+    jld j3, j1, ROOMVR
+    jadd j3, j3, j2
+    jld j3, j3, 0
+    jld j4, j1, SVR
+    jadd j4, j4, j3
+    jst j4, j1, SVR
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, SFX
+  jjz j2, hr_none
+  jld j3, j1, SVR
+  jjz j3, hr_none
+  jcall lg16
+  jst j2, j1, LSF
+  jld j2, j1, SVR
+  jcall lg16
+  jst j2, j1, LSV
+  jld j2, j1, SFX
+  jld j3, j1, SVR
+  jadd j2, j2, j3
+  jcall lg16
+  jst j2, j1, LST
+  jldi j1, 0                    ; every word's bits
+  jst j1, j1, NFND
+  jst j1, j1, NFUR
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jst j9, j1, HI
+    jst j10, j1, HL
+    jcall h_bits
+    jldi j1, 0
+    jld j9, j1, HI
+    jld j10, j1, HL
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMGB
+    jadd j3, j3, j4
+    jst j2, j3, 0
+    jjz j2, hb_next
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, hb_fur
+    jld j3, j1, NFND
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, NFND
+    jjmp hb_next
+  hb_fur:
+    jld j3, j1, NFUR
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, NFUR
+  hb_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jcall flush
+  jldi j1, S_HOUSE              ; the line: the book's share kept, how many of each, and the fifteen of each
+  jcall puts
+  jld j2, j1, SFX
+  jld j3, j1, SVR
+  jadd j3, j3, j2
+  jcall putpct
+  jldi j1, S_HFND
+  jcall puts
+  jld j2, j1, NFND
+  jcall putmix
+  jldi j1, S_HCOL
+  jcall puts
+  jldi j2, 1
+  jcall h_top
+  jldi j1, S_HFUR
+  jcall puts
+  jld j2, j1, NFUR
+  jcall putmix
+  jldi j1, S_HCOL
+  jcall puts
+  jldi j2, -1
+  jcall h_top
+  jldi j2, 10
+  jjmp putch
+hr_none:
+  jret
+
+; The bits of the word HI: k kept of n (kept and changed), against the book's share kept. -> j2 (signed: above 0 a
+; foundation, below furniture, 0 neither). Uses j1-j8.
+h_bits:
+  jldi j1, 0
+  jld j9, j1, HI
+  jldi j3, 3
+  jshl j7, j9, j3
+  jld j3, j1, ROOMFX
+  jadd j3, j3, j7
+  jld j4, j3, 0
+  jld j3, j1, ROOMVR
+  jadd j3, j3, j7
+  jld j5, j3, 0
+  jadd j5, j5, j4
+  jjz j5, hb_zero
+  jst j4, j1, HK
+  jst j5, j1, HN
+  jld j2, j1, HN
+  jcall lg16
+  jst j2, j1, LHN
+  jst j1, j1, ACC2
+  jld j2, j1, HK                ; k * (log2 k - log2 n - log2 SFX + log2 ST)
+  jjz j2, hb_rest
+  jcall lg16
+  jld j3, j1, LHN
+  jsub j2, j2, j3
+  jld j3, j1, LSF
+  jsub j2, j2, j3
+  jld j3, j1, LST
+  jadd j2, j2, j3
+  jld j3, j1, HK
+  jmul j2, j2, j3
+  jst j2, j1, ACC2
+hb_rest:
+  jld j2, j1, HN                ; (n - k) * (log2(n - k) - log2 n - log2 SVR + log2 ST)
+  jld j3, j1, HK
+  jsub j2, j2, j3
+  jjz j2, hb_cost
+  jcall lg16
+  jld j3, j1, LHN
+  jsub j2, j2, j3
+  jld j3, j1, LSV
+  jsub j2, j2, j3
+  jld j3, j1, LST
+  jadd j2, j2, j3
+  jld j3, j1, HN
+  jld j4, j1, HK
+  jsub j3, j3, j4
+  jmul j2, j2, j3
+  jld j3, j1, ACC2
+  jadd j2, j2, j3
+  jst j2, j1, ACC2
+hb_cost:
+  jld j2, j1, ACC2              ; its share pays log2(n) / 2; what is left, with the side
+  jld j3, j1, LHN
+  jldi j4, 1
+  jsar j3, j3, j4
+  jsub j2, j2, j3
+  jldi j4, 63
+  jsar j4, j2, j4
+  jjnz j4, hb_zero
+  jjz j2, hb_zero
+  jld j3, j1, HK                ; its side: k * SVR against (n - k) * SFX
+  jld j4, j1, SVR
+  jmul j3, j3, j4
+  jld j4, j1, HN
+  jld j5, j1, HK
+  jsub j4, j4, j5
+  jld j5, j1, SFX
+  jmul j4, j4, j5
+  jsub j3, j3, j4
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, hb_done
+  jldi j3, 0
+  jsub j2, j3, j2
+hb_done:
+  jret
+hb_zero:
+  jldi j2, 0
+  jret
+
+; The fifteen words with the most bits on the side j2 (1 foundation, -1 furniture), each "word (bits)". Uses j1-j14.
+h_top:
+  jldi j1, 0
+  jst j2, j1, HSIDE
+  jldi j2, 15
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, ROOMGB
+      jadd j3, j3, j4
+      jld j2, j3, 0
+      jld j4, j1, HSIDE
+      jmul j2, j2, j4
+      jsub j4, j11, j2
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjz j4, ht_next
+      jadd j11, j2, j1
+      jadd j12, j9, j1
+    ht_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, ht_done
+    jldi j3, 3                  ; taken
+    jshl j3, j12, j3
+    jld j4, j1, ROOMGB
+    jadd j3, j3, j4
+    jst j1, j3, 0
+    jst j11, j1, HK
+    jldi j2, 32
+    jcall putch
+    jadd j2, j12, j1
+    jadd j12, j2, j1
+    jcall mix
+    jcall putword
+    jldi j2, 40
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HK
+    jldi j3, 16
+    jshr j2, j2, j3
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+ht_done:
+  jret
 
 include 'pulso.inc'
 include 'negacion.inc'

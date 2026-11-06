@@ -46,9 +46,26 @@ TBLC  = 14C0h
 PREVX = 1500h                   ; by floor: the filling that arrived last (knocking)
 PN    = 1568h                   ; the questions: the exceptions, and log2 of all
 ACC   = 1588h
+ROOMFX = 15A0h                  ; by word: how often it was the frame kept (foundation), how often what changed
+ROOMVR = 15A8h                  ; (furniture); the frame of the request being hung
+KW1   = 15B0h
+KW2   = 15B8h
+KW3   = 15C0h
 
 ; The requests of the renglones it learns from hung, the pulses woken and every difference judged. Uses j1-j14.
 learn_pulses:
+jldi j1, 0                      ; the foundation and the furniture: by word, how often it was kept, how often it changed
+jld j11, j1, NV
+jldi j2, 4
+jshl j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMFX
+jld j2, j1, NV
+jldi j3, 3
+jshl j2, j2, j3
+jadd j2, j13, j2
+jst j2, j1, ROOMVR
 jldi j1, 0                      ; the words read where it learns
 jld j11, j1, NUNITS
 jldi j2, 3
@@ -279,6 +296,12 @@ windows:
     jjz j3, wn_next
     jld j3, j9, 16
     jjz j3, wn_next
+    jld j3, j9, 0              ; the frame kept: three words
+    jst j3, j1, KW1
+    jld j3, j9, 8
+    jst j3, j1, KW2
+    jld j3, j9, 16
+    jst j3, j1, KW3
     jldi j2, 2                  ; three in a row, said: the hole empty
     jst j2, j1, FLOOR
     jld j2, j1, FNVO
@@ -296,6 +319,12 @@ windows:
     jld j9, j1, WAT
     jld j3, j9, 24
     jjz j3, wn_next
+    jld j3, j9, 0              ; the frame kept: three words
+    jst j3, j1, KW1
+    jld j3, j9, 16
+    jst j3, j1, KW2
+    jld j3, j9, 24
+    jst j3, j1, KW3
     jld j2, j1, FNVO            ; four in a row, the second taken out
     jldi j3, 2
     jcall hw
@@ -309,6 +338,12 @@ windows:
     jcall post
     jldi j1, 0
     jld j9, j1, WAT
+    jld j3, j9, 0              ; the frame kept: three words
+    jst j3, j1, KW1
+    jld j3, j9, 8
+    jst j3, j1, KW2
+    jld j3, j9, 24
+    jst j3, j1, KW3
     jld j2, j1, FNVO            ; the third taken out
     jldi j3, 2
     jcall hw
@@ -595,6 +630,22 @@ pl_count:
   jld j7, j6, NPULC
   jadd j7, j7, j8
   jst j7, j6, NPULC
+  jld j7, j1, CAT               ; the same place, another word: what was kept is foundation, what changed furniture
+  jldi j8, 3
+  jsub j7, j7, j8
+  jjnz j7, pl_fill
+  jld j2, j1, KW1
+  jcall fx_bump
+  jld j2, j1, KW2
+  jcall fx_bump
+  jld j2, j1, KW3
+  jcall fx_bump
+  jld j2, j1, DLO
+  jcall vr_bump
+  jld j2, j1, DHI
+  jcall vr_bump
+pl_fill:
+  jldi j1, 0
   jld j2, j1, DLO               ; its fillings, and its floor
   jcall f_bump
   jld j2, j1, DHI
@@ -901,3 +952,23 @@ putletter:
   jld j2, j1, RENT
   jjmp putch
 
+
+; The word j2 was in the frame kept once more (foundation). Uses j1-j4.
+fx_bump:
+  jldi j1, 0
+  jld j3, j1, ROOMFX
+  jjmp fv_bump
+
+; The word j2 was what changed once more (furniture). Uses j1-j4.
+vr_bump:
+  jldi j1, 0
+  jld j3, j1, ROOMVR
+fv_bump:
+  jldi j4, 3
+  jshl j2, j2, j4
+  jadd j3, j3, j2
+  jld j2, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 0
+  jret

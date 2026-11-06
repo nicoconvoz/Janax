@@ -472,3 +472,27 @@ Lo que todavía no es:
   corrección, "pero" el contraste, y todavía no distingue cuál de las tres pide la pregunta.
 - La cláusula puede estar en otra excepción del mismo lugar, no en la primera; se dice cuál con "lo que trae", pero no
   se muestra su renglón.
+
+# Cimientos y muebles (2026-11-06)
+
+Idea del Capitán: *"dos estructuras núcleos que expliquen un objeto o una acción, y pegamento, la estructura que le da
+sentido a los núcleos… dos significados, uno estructural y otro de sentido: los cimientos y los muebles dentro de una
+casa"*.
+
+Sale de la regla única, sin lista de palabras: en cada pulso "el mismo lugar, otra palabra" (asociados), **lo que quedó
+fijo es cimiento y lo que cambió es mueble**. Cada pieza junta sus veces fija y sus veces cambiada (`pulso.inc`: los tres
+del marco y los dos llenados), y el juez la pone de un lado contra la vara del propio libro (el 60 % de lo que entra en
+un pulso queda fijo): su parte fija codificada con su propia tasa contra la del libro, su tasa paga ½·log2 n. Si no
+paga, no es de ningún lado todavía. Las puertas no entran: ahí es al revés (los extremos son muebles, el medio cimiento).
+
+Libro entero, idéntico en los tres motores (`00009A7598008FC6`; la pregunta no cambia, `0000E78A9442B1C1`):
+
+```
+cimientos 170:  , de la a que el . los y en se : del las no
+muebles 7.597:  casa josé partida magos cielos tierra gente zará multitud madre transjordania barca hombres santiago
+```
+
+El "no" cae en los cimientos: es estructura, no mueble. La puntuación, también.
+
+Lo que sigue: que la lógica use la casa. La analogía solo entre muebles que llenan el mismo hueco del mismo cimiento;
+el cimiento nunca es prueba; una deducción conserva el cimiento y cambia un mueble, y el "no" la puede refutar.
