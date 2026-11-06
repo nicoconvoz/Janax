@@ -42,6 +42,7 @@ WCAP  = 1138h                   ; 1: the word being read began with a capital; a
 ROOMCP = 1140h
 ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
 LMI   = 1150h                   ; (walking)
+EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
 LABEL = 1110h                   ; the file being read: its label and how long it is
 LABLEN = 1118h
@@ -622,7 +623,8 @@ wi_add:
   jst j5, j1, NV
   jret
 
-; j2 = nonzero if the renglon LINE is one it learns from. Uses j1-j5.
+; j2 = nonzero if the renglon LINE is one it learns from (or, in an exam that knocks, if it is not the exam). Uses
+; j1-j6.
 is_train:
   jldi j1, 0
   jld j2, j1, LINE
@@ -633,6 +635,19 @@ is_train:
   jldi j5, 1
   jadd j4, j4, j5
   jsub j2, j4, j3
+  jld j5, j1, EXAMM             ; an exam: the renglon before the test one is kept apart too (EXAMM 1, learning), and
+  jjz j5, it_done               ; knocking knocks with it alone (EXAMM 2): the test stays untouched
+  jldi j6, 1
+  jadd j4, j2, j6               ; (0: the exam renglon)
+  jldi j6, 2
+  jsub j5, j5, j6
+  jjnz j5, it_learn
+  jadd j2, j4, j1
+  jret
+it_learn:
+  jjz j2, it_done
+  jadd j2, j4, j1
+it_done:
   jret
 
 ; A new room of j11 bytes (request 2) -> j13 its address; without one, it says so and ends. Uses j1, j10-j14.

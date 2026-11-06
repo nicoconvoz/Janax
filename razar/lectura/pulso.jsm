@@ -90,6 +90,20 @@ S_SKO   = 580h
 S_KIN   = 640h
 S_DEEP  = 0F80h
 S_CONC  = 0FC0h
+EVC   = 1D00h                   ; evolving the instincts: the champion, the second, their exams, the child, the
+EVR   = 1D08h                   ; generations left, the luck, an exam, the generation, the child kept, the champion
+EVCS  = 1D10h                   ; kept, a line is the champion, two temporaries
+EVRS  = 1D18h
+EVCH  = 1D20h
+EVG   = 1D28h
+RNG   = 1D30h
+EVS   = 1D38h
+EVI   = 1D40h
+EVC2  = 1D48h
+EVKEEP = 1D50h
+EVW   = 1D58h
+EVT   = 1D60h
+EVT2  = 1D68h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -176,6 +190,7 @@ jcall distill_no                ; the switch first (it needs no pulse): the form
 jldi j1, 0                      ; the forms seen are kept: the irregular is studied over them
 jldi j2, 1
 jst j2, j1, FORMS
+jcall evolve                    ; the instincts, built and recombined, if "p" asks for generations
 jcall learn_pulses
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
@@ -1786,6 +1801,356 @@ concept_report:
     jst j2, j1, TOPN
   jwend
 cr_done:
+  jret
+
+
+; The instincts, built and recombined (Capitan: "build and recombine instincts"): a genome {patience, firmness, how many
+; readings} (a byte each). The champion starts with the instincts of today; each generation a child is born crossing the
+; champion with the second best (each instinct from one of them) and changing one instinct one step, reads the book,
+; and sits an exam: what it explains of renglones kept apart for it (never the test ones), less what the blind
+; explains, on every floor and in its concepts. A child better than the champion takes its place, the champion goes
+; second. How many generations: the second byte after K in "p" (0: none). The champion's instincts stay. Uses j1-j14.
+evolve:
+  jldi j1, 0
+  jld j2, j1, NPAS
+  jldi j3, 8
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jjnz j2, ev_go
+  jret
+ev_go:
+  jst j2, j1, EVG
+  jldi j2, 0                    ; the luck, the same every time (deterministic: a seed, xorshift)
+  jshi j2, 9E37h
+  jshi j2, 79B9h
+  jshi j2, 7F4Ah
+  jshi j2, 7C15h
+  jst j2, j1, RNG
+  jld j2, j1, NPAS              ; the champion: today's instincts
+  jldi j3, 255
+  jand j2, j2, j3
+  jjnz j2, ev_lect
+  jldi j2, 1
+ev_lect:
+  jldi j3, 16
+  jshl j2, j2, j3
+  jldi j3, 1
+  jldi j4, 8
+  jshl j3, j3, j4
+  jor j2, j2, j3
+  jldi j3, 4
+  jor j2, j2, j3
+  jst j2, j1, EVC
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, EVS
+  jst j2, j1, EVCS
+  jld j2, j1, EVC
+  jst j2, j1, EVR
+  jld j2, j1, EVCS
+  jst j2, j1, EVRS
+  jst j1, j1, EVI
+  jldi j2, 0
+  jcall ev_line
+  jldi j1, 0
+  jld j2, j1, EVG
+  jwhile j2
+    jldi j1, 0                  ; a child: crossed, then one instinct changed
+    jldi j9, 0
+    jldi j10, 0
+    jldi j11, 3
+    jwhile j11
+      jcall ev_rand
+      jldi j1, 0
+      jldi j3, 1
+      jand j3, j2, j3
+      jld j4, j1, EVC
+      jjz j3, ev_from
+      jld j4, j1, EVR
+    ev_from:
+      jldi j3, 3
+      jshl j3, j10, j3
+      jshr j4, j4, j3
+      jldi j5, 255
+      jand j4, j4, j5
+      jshl j4, j4, j3
+      jor j9, j9, j4
+      jldi j3, 1
+      jadd j10, j10, j3
+      jsub j11, j11, j3
+    jwend
+    jst j9, j1, EVCH
+    jcall ev_rand
+    jcall ev_mutate
+    jldi j1, 0
+    jld j2, j1, EVI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, EVI
+    jld j2, j1, EVCH
+    jst j2, j1, EVC2
+    jld j2, j1, EVC             ; (the exam sits the child: it takes the champion's place for a while)
+    jst j2, j1, EVKEEP
+    jld j2, j1, EVCH
+    jst j2, j1, EVC
+    jcall ev_exam
+    jldi j1, 0
+    jld j2, j1, EVKEEP
+    jst j2, j1, EVC
+    jld j2, j1, EVS             ; better than the champion: it is the champion, the champion the second
+    jld j3, j1, EVCS
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ev_second
+    jld j3, j1, EVC
+    jst j3, j1, EVR
+    jld j3, j1, EVCS
+    jst j3, j1, EVRS
+    jld j3, j1, EVC2
+    jst j3, j1, EVC
+    jst j2, j1, EVCS
+    jldi j2, 1
+    jcall ev_line
+    jjmp ev_next
+  ev_second:
+    jld j3, j1, EVRS            ; better than the second: the second
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ev_lost
+    jld j3, j1, EVC2
+    jst j3, j1, EVR
+    jst j2, j1, EVRS
+  ev_lost:
+    jldi j2, 0
+    jcall ev_line
+  ev_next:
+    jldi j1, 0
+    jld j2, j1, EVG
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, EVG
+  jwend
+  jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jcall ev_set
+  jldi j1, 0
+  jst j1, j1, EXAMM
+  jret
+
+; One instinct of the child EVCH changed one step up or down (j2: the luck), inside its range: patience 1-8,
+; firmness 1-4, readings 1-3. Uses j1-j8.
+ev_mutate:
+  jldi j1, 0
+  jldi j3, 3
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j3, j2, j4               ; which (0, 1, 2; the luck is never negative here)
+  jldi j4, 1
+  jldi j5, 8
+  jshr j4, j2, j5
+  jldi j5, 1
+  jand j4, j4, j5               ; up or down
+  jadd j4, j4, j4
+  jsub j4, j4, j5
+  jldi j5, 3
+  jshl j5, j3, j5
+  jld j6, j1, EVCH
+  jshr j7, j6, j5
+  jldi j8, 255
+  jand j7, j7, j8
+  jadd j7, j7, j4
+  jldi j8, 8                    ; its top
+  jjz j3, em_top
+  jldi j8, 4
+  jldi j2, 1
+  jsub j2, j3, j2
+  jjz j2, em_top
+  jldi j8, 3
+em_top:
+  jsub j2, j7, j8               ; past the top: the top; below one: one
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjnz j2, em_low
+  jadd j7, j8, j1
+em_low:
+  jjnz j7, em_put
+  jldi j7, 1
+em_put:
+  jldi j8, 255                  ; put back in its byte
+  jshl j8, j8, j5
+  jldi j2, -1
+  jxor j8, j8, j2
+  jand j6, j6, j8
+  jshl j7, j7, j5
+  jor j6, j6, j7
+  jst j6, j1, EVCH
+  jret
+
+; The luck: xorshift (13, 7, 17) -> j2, never negative. Uses j1-j4.
+ev_rand:
+  jldi j1, 0
+  jld j2, j1, RNG
+  jldi j3, 13
+  jshl j4, j2, j3
+  jxor j2, j2, j4
+  jldi j3, 7
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j3, 17
+  jshl j4, j2, j3
+  jxor j2, j2, j4
+  jst j2, j1, RNG
+  jldi j3, 1
+  jshr j2, j2, j3
+  jret
+
+; The instincts of EVCH set. Uses j1-j4.
+ev_set:
+  jldi j1, 0
+  jld j2, j1, EVCH
+  jldi j3, 255
+  jand j4, j2, j3
+  jst j4, j1, GPAC
+  jldi j4, 8
+  jshr j4, j2, j4
+  jand j4, j4, j3
+  jst j4, j1, GFIRM
+  jldi j4, 16
+  jshr j4, j2, j4
+  jand j4, j4, j3
+  jld j2, j1, NPAS
+  jldi j3, -256
+  jand j2, j2, j3
+  jor j2, j2, j4
+  jst j2, j1, NPAS
+  jret
+
+; The exam of the champion EVC: read with its instincts, the exam renglones apart, then knock with them -> EVS,
+; what the pieces and the concepts explain more than the blind. Uses j1-j14.
+ev_exam:
+  jldi j1, 0
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jcall ev_set
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, EXAMM
+  jcall learn_pulses
+  jldi j1, 0
+  jldi j2, 2
+  jst j2, j1, EXAMM
+  jldi j2, 1
+  jst j2, j1, TESTING
+  jcall all_floors
+  jldi j1, 0
+  jst j1, j1, TESTING
+  jld j2, j1, TCOC
+  jld j3, j1, TCOB
+  jsub j2, j2, j3
+  jldi j9, 1
+  jldi j10, 4
+  jwhile j10
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j3, TPCEC
+    jld j5, j3, TBLC
+    jsub j4, j4, j5
+    jadd j2, j2, j4
+    jldi j4, 1
+    jadd j9, j9, j4
+    jsub j10, j10, j4
+  jwend
+  jst j2, j1, EVS
+  jret
+
+; A line of the evolution: the generation, the child's instincts, its exam, and "*" if it is the champion now (j2). Its
+; numbers go into j0. Uses j1-j14.
+ev_line:
+  jldi j1, 0
+  jst j2, j1, EVW
+  jldi j2, 0                    ; "instinto"
+  jshi j2, 6F74h
+  jshi j2, 6E69h
+  jshi j2, 7473h
+  jshi j2, 6E69h
+  jcall put8
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVI
+  jcall putmix
+  jldi j2, 58
+  jcall putch
+  jld j2, j1, EVCH
+  jldi j3, 255
+  jand j2, j2, j3
+  jldi j4, 32
+  jst j2, j1, EVT
+  jadd j2, j4, j1
+  jcall putch
+  jld j2, j1, EVT
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVCH
+  jldi j3, 8
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVCH
+  jldi j3, 16
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jldi j2, 61
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVS
+  jcall putmix
+  jld j2, j1, EVW
+  jjz j2, el_end
+  jldi j2, 32
+  jcall putch
+  jldi j2, 42
+  jcall putch
+el_end:
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; The eight letters j2 (the first in its low byte; a 0 ends them). Uses j1-j4.
+put8:
+  jldi j1, 0
+  jst j2, j1, EVT
+  jldi j3, 8
+  jwhile j3
+    jldi j1, 0
+    jld j2, j1, EVT
+    jldi j4, 255
+    jand j2, j2, j4
+    jjz j2, p8_done
+    jst j3, j1, EVT2
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, EVT
+    jldi j4, 8
+    jshr j2, j2, j4
+    jst j2, j1, EVT
+    jld j3, j1, EVT2
+    jldi j4, 1
+    jsub j3, j3, j4
+  jwend
+p8_done:
   jret
 
 ; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so

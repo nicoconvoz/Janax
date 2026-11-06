@@ -51,6 +51,9 @@ CPA   = 17A8h                   ; (two roots)
 CPB   = 17B0h
 TCOC  = 17B8h                   ; knocking: associates pulses in one concept, real and blind
 TCOB  = 17C0h
+LPDONE = 17C8h                  ; the rooms of a reading exist (1)
+GPAC  = 1F78h                   ; the instincts (0: unset, the default): patience (the name of a piece costs GPAC/2
+GFIRM = 1F80h                   ; log2 U), firmness (what the same move adds to a silhouette)
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
@@ -78,6 +81,12 @@ KW3   = 15C0h
 
 ; The requests of the renglones it learns from hung, the pulses woken and every difference judged. Uses j1-j14.
 learn_pulses:
+jldi j1, 0                      ; read again in the same program (the instincts' duels): every table emptied, its room
+jld j2, j1, LPDONE              ; reused, so a reading costs the same memory however many there are
+jjz j2, lp_first
+jcall lp_clear
+jjmp lp_count
+lp_first:
 jldi j1, 0                      ; the foundation and the furniture: by word, how often it was kept, how often it changed
 jld j11, j1, NV
 jldi j2, 4
@@ -104,6 +113,8 @@ jshl j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMC
+lp_count:
+jldi j1, 0
 jst j1, j1, LINE
 jst j1, j1, JJ
 jld j2, j1, NTOK
@@ -146,6 +157,9 @@ rc_next:
   jst j2, j1, JLEFT
 jwend
 
+jldi j1, 0                      ; (a reading after the first: its tables are there, emptied)
+jld j2, j1, LPDONE
+jjnz j2, lp_awake
 jldi j1, 0                      ; its three tables: places for every request it could ever hang (the letters of every
 jld j2, j1, ARPOS               ; word, and four per unit), twice over
 jld j3, j1, NTOK
@@ -195,9 +209,13 @@ jadd j3, j3, j4
 jldi j4, 48
 jmul j11, j3, j4
 jcall room
-
-jldi j1, 0                      ; awake: what it learns from hangs its requests, and the pulses are born
+jldi j1, 0
 jst j13, j1, ROOMD
+jldi j2, 1                      ; (its rooms exist: a reading after this one empties and reuses them)
+jst j2, j1, LPDONE
+
+lp_awake:
+jldi j1, 0                      ; awake: what it learns from hangs its requests, and the pulses are born
 jst j1, j1, TESTING
 jst j1, j1, PASN                ; read as many times as "p" tells after K (0: once); each pass meets the silhouettes the
 jld j2, j1, NPAS                ; ones before perfected (Capitan: "it will not widen: the majority has it digested")
@@ -222,6 +240,92 @@ jcall judge
 jcall concepts
 jret
 jret
+
+; Every table and count of a reading emptied, in the rooms it already has (a reading after the first). Uses j1-j8.
+lp_clear:
+  jldi j1, 0
+  jld j2, j1, ROOMFX            ; the foundation and the furniture
+  jld j3, j1, NV
+  jldi j4, 4
+  jshl j3, j3, j4
+  jcall zfill
+  jld j2, j1, ROOMHL            ; the pulses kept for the house
+  jld j3, j1, NHL
+  jldi j4, 40
+  jmul j3, j3, j4
+  jcall zfill
+  jst j1, j1, NHL
+  jld j2, j1, ROOMC             ; the words read where it learns
+  jld j3, j1, NUNITS
+  jldi j4, 3
+  jshl j3, j3, j4
+  jcall zfill
+  jld j5, j1, RMASK             ; the requests, the fillings, the differences
+  jldi j4, 1
+  jadd j5, j5, j4
+  jst j5, j1, PDK
+  jld j2, j1, ROOMR
+  jldi j4, 24
+  jmul j3, j5, j4
+  jcall zfill
+  jld j5, j1, PDK
+  jld j2, j1, ROOMF
+  jldi j4, 4
+  jshl j3, j5, j4
+  jcall zfill
+  jld j5, j1, PDK
+  jld j2, j1, ROOMD
+  jldi j4, 48
+  jmul j3, j5, j4
+  jcall zfill
+  jldi j2, TPT                  ; the growing ones, in the places they grew to
+  jcall pl_clear
+  jldi j2, TRD
+  jcall pl_clear
+  jldi j2, TFW
+  jcall pl_clear
+  jldi j2, TRC
+  jcall pl_clear
+  jld j2, j1, FORMS
+  jjz j2, lc_noforms
+  jldi j2, ROOMS
+  jcall pl_clear
+lc_noforms:
+  jldi j2, NPULC                ; the counts: by kind and floor, the blind, the bits
+  jldi j3, 248h
+  jcall zfill
+  jldi j2, NFLW
+  jldi j3, 32
+  jcall zfill
+  jst j1, j1, NREQ
+  jst j1, j1, TCOC
+  jst j1, j1, TCOB
+  jst j1, j1, CONOK
+  jst j1, j1, PASN
+  jret
+
+; j3 bytes from j2 set to 0 (eight at a time). Uses j1-j4.
+zfill:
+  jldi j1, 0
+  jldi j4, 8
+  jwhile j3
+    jst j1, j2, 0
+    jadd j2, j2, j4
+    jsub j3, j3, j4
+  jwend
+  jret
+
+; The growing table at j2 emptied, in the places it has. Uses j1-j6.
+pl_clear:
+  jldi j1, 0
+  jst j1, j2, 16
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jld j4, j2, 24
+  jmul j3, j3, j4
+  jld j2, j2, 0
+  jjmp zfill
 
 ; The three floors, awake (TESTING 0) or knocking (1). Uses j1-j12.
 all_floors:
@@ -581,7 +685,11 @@ po_old:
   jld j5, j4, 16
   jldi j6, 1
   jjnz j2, po_other
-  jadd j5, j5, j6
+  jld j7, j1, GFIRM             ; (the same move weighs it as much as the firmness instinct; unset: one)
+  jjnz j7, po_firm
+  jldi j7, 1
+po_firm:
+  jadd j5, j5, j7
   jst j5, j4, 16
   jret
 po_other:
@@ -1043,8 +1151,14 @@ jl_k:
     jshl j11, j11, j2
     jld j2, j11, UFL
     jcall lg16
+    jld j4, j1, GPAC            ; times the patience instinct over 2 (unset: 4, the two-part code, 2 log2 U)
+    jjnz j4, ju_pac
+    jldi j4, 4
+ju_pac:
+    jmul j2, j2, j4
+    jldi j4, 1
+    jsar j2, j2, j4
     jld j3, j1, GS
-    jsub j3, j3, j2
     jsub j3, j3, j2
     jld j4, j1, GE
     jst j3, j4, 40
@@ -1119,12 +1233,16 @@ ta_k:
 ; (24 bytes); CONOK 1 once they exist. Uses j1-j14.
 concepts:
   jldi j1, 0
+  jld j2, j1, ROOMUF             ; (its room once: a reading after reuses it)
+  jjnz j2, cp_room
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMUF
+cp_room:
+  jldi j1, 0
   jldi j9, 0                    ; every word its own root
   jld j10, j1, NV
   jwhile j10
@@ -1133,7 +1251,9 @@ concepts:
     jmul j3, j9, j3
     jld j4, j1, ROOMUF
     jadd j3, j3, j4
-    jst j9, j3, 0
+    jst j9, j3, 0               ; (and no best yet: a reading before leaves nothing)
+    jst j1, j3, 8
+    jst j1, j3, 16
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2

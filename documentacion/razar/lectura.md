@@ -1090,3 +1090,58 @@ Los ocho más grandes, nacidos solos:
 Los verbos de decir, los sustantivos abstractos, los títulos, los plurales de personas y los determinantes salen cada uno
 en su grupo, y el género vuelve a aparecer (sus las / el este un). Hay intrusos ("lágrimas", "tanto", "sabemos"): un lazo
 al más parecido no sabe todavía decir "no me parezco a nadie".
+
+# Instintos que se construyen y se recombinan (2026-11-06)
+
+El Capitán: *"quiero que construya y recombine instintos"* (y los conceptos, todo junto). Del bicho ajedrecista: sus
+instintos son su carácter escrito en un genoma, y mejoran en duelos contra su mejor versión.
+
+**Lo que hizo falta antes:**
+- **Un examen propio.** Con EXAMM, el renglón anterior al de la prueba también queda aparte. Se aprende sin él y se golpea
+  solo con él. **El décimo de la prueba no lo toca nadie** durante la evolución (`is_train`).
+- **Una lectura que se repite sin pedir memoria.** La primera reserva sus salas; las siguientes las vacían y las reusan
+  (`lp_clear`, `zfill`, `pl_clear`). Así diez lecturas cuestan lo mismo que una.
+
+**El genoma**, un byte por instinto, conectado a mecanismos que ya existían (con los valores de hoy, todo idéntico):
+
+| instinto | qué mueve | rango | hoy |
+|---|---|---|---|
+| paciencia | lo que cuesta nombrar una pieza: paciencia/2 · log2 U | 1–8 | 4 (el código en dos partes) |
+| firmeza | cuánto suma a una silueta la misma jugada | 1–4 | 1 |
+| lecturas | cuántas veces relee | 1–3 | 1 |
+
+**La evolución** (`evolve` en `pulso.jsm`): el campeón arranca con los instintos de hoy. Cada generación nace un hijo:
+**se cruza** con el segundo mejor (cada instinto de uno de los dos) y **muta** un instinto un paso. Rinde el examen: lo
+que explica de los renglones del examen, menos lo que explica el ciego, en los cuatro pisos y en los conceptos. Si le gana
+al campeón, ocupa su lugar y el campeón pasa a segundo. La suerte es determinista (xorshift con semilla fija). Cuántas
+generaciones: el segundo byte después de K en `p` (0: ninguna).
+
+12 generaciones, 16 s, 358 MB, idéntico en los tres motores (`0000BF7027EECF56`; sin generaciones, todo como antes):
+
+```
+instinto 0: 4 1 1 = 2042          (los de hoy)
+instinto 2: 2 1 1 = 2612 *
+instinto 6: 1 1 1 = 3437 *
+instinto 7: 1 1 3 = 3758 *        (campeón: paciencia 1, firmeza 1, 3 lecturas)
+```
+
+Con el campeón, la prueba de verdad (el décimo que nadie tocó):
+
+| | hoy (4 1 1) | evolucionado (1 1 3) |
+|---|---|---|
+| asociados: real / ciego | 14,9 / 3,5 (4,3×) | **30,2 / 8,1** (3,7×) |
+| lo explicado menos el ciego, asociados | 627 | **1.220** |
+| puertas: explica / ciego | 63 / 0 | **861 / 22** |
+| interruptores | 62,6 / 40,9 | 69,2 / 46,6 |
+| gemelos | 85,2 / 22,0 | 90,0 / 24,4 |
+| conceptos: en un mismo concepto / ciego | 824 / 216 | 1.158 / 315 |
+| piezas asociados / puertas | 484 / 64 | 20.948 / 89.389 |
+
+- **Aprendió de verdad, y en lo que nadie le mostró:** lo que explica de la prueba, descontado el azar, casi se duplica
+  en asociados y se multiplica por 13 en puertas.
+- **Lo que aprendió fue "creé más rápido":** bajó la paciencia al mínimo. El examen premia aciertos sobre el azar, no
+  precisión, así que la ventaja relativa baja (asociados 4,3× → 3,7×) y las piezas se multiplican. Se cumple lo que se
+  pide: la moneda del examen decide el carácter que sale.
+- **La firmeza nunca se movió de 1** en 12 generaciones.
+- Un instrumento mintió en el camino: el mismo genoma daba exámenes distintos (2.638 y 2.719) porque los conceptos
+  conservaban el "mejor parecido" de la lectura anterior. Arreglado; ahora el mismo genoma da siempre lo mismo.
