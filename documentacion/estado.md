@@ -253,3 +253,4 @@ siempre el primer número del acertijo (el oído lee desde el comienzo). Sin los
 Las huellas de los modelos quedan fijas (las mismas que dan los programas Janax, que la suite ya había verificado contra
 Perl); los archivos de parámetros, con printf; `bucles` y `combinaciones`, en awk (las 31 combinaciones, idénticas byte
 por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio como referencia, sin correrse.
+2026-11-06 — Palabras y estructura (Capitán): el núcleo por lo que es; enseñado en un orden y preguntado en otro, 100 % en los cuatro órdenes (20 semillas, suma y resta mezcladas). El orden libre está construido; lo aprendido es qué palabra es el núcleo.

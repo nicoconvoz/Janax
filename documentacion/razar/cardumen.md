@@ -1088,3 +1088,35 @@ preguntados, 20 semillas (140 preguntas):
 - Lo que haría falta, para pensarlo con el Capitán: que la voluntad oiga **la relación entre partes** de la melodía (qué
   cambia entre "a" y la respuesta), no la melodía entera pegada al comienzo; o que el cardumen transforme la canción de
   modo que "dos más tres" y "cinco" suenen parecido, que es justo lo que hoy no hace.
+
+### Palabras y estructura: el núcleo por lo que es, no por dónde está (Capitán, 2026-11-06)
+
+> *"Palabras y estructura: la palabra, el significado, y el hilo conductor, la relación entre palabras."* — *"Tenés
+> dos significados, el de la estructura y el de las palabras; entre todos forman un significado final."* — *"El orden
+> es importante pero no marca el núcleo: quizás lo importante esté al medio o al final."* — *"Usá la tecnología de lo
+> que sí entendió sumando."*
+
+`MODO` 2 en `voluntad_acertijos.jsm`: lo que funcionó con los números, llevado a la estructura. Cada palabra se oye como
+su propia canción; el significado de un número es su lugar en la cuenta, y el primer número que aparece es "a" y el
+segundo "b", estén donde estén. **El núcleo se encuentra por lo que es**: toda palabra que no es un número es candidata
+("mas", "menos", "es"), y una regla vale para una palabra según la parte de las veces que esa palabra apareció en que
+la regla se cumplió. "Es" aparece en sumas y restas y ninguna regla le vale siempre; "mas" y "menos" sí. Se enseña con
+un orden (`ENSENA`) y se pregunta con otro (`PREGUNTA`): 0 "a op b es", 1 "op a b es", 2 "a b op es", 3 "es a op b".
+
+Suma y resta mezcladas, 3 ejemplos de cada una enseñados en el orden 0, 20 semillas:
+
+| Preguntado en | Acierta | Sin respuesta | Semillas con todo bien |
+|---|---|---|---|
+| orden 0 (el mismo) | 100 % | 0 % | 20 |
+| orden 1 (núcleo adelante) | 100 % | 0 % | 20 |
+| orden 2 (núcleo al final) | 100 % | 0 % | 20 |
+| orden 3 ("es" adelante) | 100 % | 0 % | 20 |
+| orden 2, 10 % de resbalones | 92 % | 5 % | 10 |
+| orden 3, 20 % | 87 % | 9 % | 2 |
+| orden 2, 2 ejemplos de cada una | 95 % | 4 % | 18 |
+| control: respuestas al azar | 21 % | 26 % | 1 |
+
+- ⚠️ **Lo honesto: que no dependa del orden está construido, no aprendido.** "El primer número es a, el segundo b" y
+  "el núcleo es una palabra que no es número" los escribió Doc; por eso el 100 % vale igual en los cuatro órdenes.
+  **Lo que sí aprende de los ejemplos es cuál palabra es el núcleo** ("mas" o "menos", y no "es") y qué regla le
+  corresponde a cada una. Las reglas siguen siendo las 27 candidatas de Doc, y el cardumen sigue poniendo solo el oído.

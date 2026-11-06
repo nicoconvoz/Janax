@@ -48,6 +48,8 @@ S_COLON = 4C0h
 S_MELO = 740h
 S_BASE = 780h
 S_FIRST = 7C0h
+S_ESTR = 900h
+S_PREG = 940h
 WTXT  = 500h                    ; word w: its text at WTXT + w*40h (0 uno .. 5 seis, 6 mas, 7 menos, 8 es)
 MORSE = 800h                    ; letter l: its Morse at MORSE + l*8
 ; Room 0 (6000h bytes):
@@ -67,7 +69,9 @@ EJEM  = 10C8h
 LISTA = 10D0h
 REVU  = 10D8h
 ESCRITA = 10E0h                 ; 1: the counting song written by hand (the control), not learned
-MODO  = 10E8h                   ; 1: the riddle heard as one melody (numbers fed first), not searched
+MODO  = 10E8h                   ; 1: the riddle heard as one melody (numbers fed first); 2: structure, the core found by
+ENSENA = 10F0h                  ;    what it is (ENSENA, PREGUNTA: the word order taught and asked, 0..3)
+PREGUNTA = 10F8h
 M48   = 1100h                   ; 2^48 - 1
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
@@ -117,6 +121,18 @@ BASEK = 1380h                   ; the answer shown most often, and how many aske
 BASEN = 1388h
 SENTL = 1390h                   ; the sentence's words (8 qwords)
 GA    = 13D0h                   ; how many asked it answered with their first number
+SEEN  = 4500h                   ; structure: how many times each word was heard as a candidate core
+ORDT  = 4560h                   ; the four word orders (4 bytes each)
+GC    = 4570h                   ; the answer heard
+PNUM  = 4578h                   ; numbers heard in the riddle, and the places of the first two
+PA    = 4580h
+PB    = 4588h
+NCORE = 4590h                   ; candidate cores heard in the riddle
+CORES = 4598h                   ; (4 qwords)
+BNUM  = 45C0h                   ; the best share: BNUM / BDEN
+BDEN  = 45C8h
+SLOT  = 45D0h                   ; hearing the four words: the order, and the slot
+SLOTI = 45D8h
 BASEC = 1590h                   ; how often each answer (1..6) was shown
 KEYP  = 1300h                   ; the keys: key k (0 dot, 1 dash, 2 end of letter), piece j at KEYP + (k*3 + j)*8
 WCODE = 1400h                   ; word w's greetings: WCODE + w*32 + k (0 dot, 1 dash, 2 end of letter)
@@ -147,7 +163,7 @@ jst j2, j2, RBASE
 jst j2, j2, POS
 jldi j0, 0                      ; the fingerprint
 
-jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 112 bytes (request 5)
+jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 128 bytes (request 5)
 jldi j2, 70h
 jst j2, j1, PLAB
 jldi j10, 4
@@ -159,7 +175,7 @@ jshl j10, j13, j1               ; the handle travels in the high half of the kin
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 112
+jldi j12, 128
 jcall ask
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -232,7 +248,9 @@ jldi j1, 0                      ; no sentence yet; the words it learns; the long
 jst j1, j1, SENTN
 jldi j2, 9
 jld j3, j1, MODO
-jjz j3, w_nine
+jldi j4, 1
+jsub j3, j3, j4
+jjnz j3, w_nine
 jldi j2, 6
 w_nine:
 jst j2, j1, NWORDS
@@ -313,7 +331,9 @@ jcall mix
 jldi j1, 0                      ; heard as a melody (MODO): the numbers fed as one song, the count, CUENTAS times;
 jst j1, j1, COUNTOK             ; the school hears their order, the will remembers nothing of it
 jld j2, j1, MODO
-jjz j2, k_words
+jldi j3, 1
+jsub j2, j2, j3
+jjnz j2, k_words
 jld j15, j1, CUENTAS
 jwhile j15
   jldi j2, 0
@@ -594,7 +614,12 @@ r_drawn:
 
 jldi j1, 0                      ; heard as a melody: another way
 jld j2, j1, MODO
-jjnz j2, m_train
+jldi j3, 1
+jsub j3, j2, j3
+jjz j3, m_train
+jldi j3, 2
+jsub j3, j2, j3
+jjz j3, s_train
 jldi j1, 0                      ; shown: it hears the five words and counts what fits
 jld j15, j1, NTRAIN
 jldi j1, TRAIN
@@ -1110,6 +1135,499 @@ mm_none:
   jcall mix
   jret
 
+; Structure (MODO 2): the riddle's four words come in any order (ENSENA when shown, PREGUNTA when asked: 0 "a op b
+; es", 1 "op a b es", 2 "a b op es", 3 "es a op b"), each heard as its own song, as the numbers were. Each word's
+; meaning: a number has a place in the counting song; the first number heard is a, the second b. The core is found by
+; what it is, not where it is: every word that is not a number is a candidate core, and a rule counts for a word by the
+; share of the times the word was heard in which the rule held (SEEN). Asked, the rules with the best share vote, from
+; whatever core they belong to. The rules are the same 27 candidates as above (written by Doc).
+s_train:
+jldi j1, 0                      ; the orders: slot s of order k holds role ORDT + k*4 + s (0 a, 1 op, 2 b, 3 es)
+jldi j2, 0302h
+jshi j2, 0001h
+jshi j2, 0302h
+jshi j2, 0100h
+jst j2, j1, ORDT                ; orders 0 and 1: 0 1 2 3 / 1 0 2 3 (one byte each, the lowest first)
+jldi j2, 0201h
+jshi j2, 0003h
+jshi j2, 0301h
+jshi j2, 0200h
+jst j2, j1, ORDT + 8            ; orders 2 and 3: 0 2 1 3 / 3 0 1 2
+jldi j2, 10                     ; nothing seen yet
+jldi j3, 0
+jwhile j2
+  jst j1, j3, SEEN
+  jldi j4, 8
+  jadd j3, j3, j4
+  jldi j4, 1
+  jsub j2, j2, j4
+jwend
+jld j15, j1, NTRAIN
+jldi j2, TRAIN
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jld j3, j1, PREV
+  jld j2, j3, 24                ; c, or drawn at random (the control)
+  jld j4, j1, REVU
+  jjz j4, st_true
+  jcall rnd2
+  jldi j3, 6
+  jdiv j4, j13, j3
+  jmul j4, j4, j3
+  jsub j2, j13, j4
+  jldi j3, 1
+  jadd j2, j2, j3
+st_true:
+  jldi j1, 0
+  jst j2, j1, PC
+  jld j2, j1, ENSENA
+  jcall s_hear4
+  jldi j1, 0                    ; and the answer
+  jld j2, j1, PC
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, THING
+  jcall hear_w
+  jldi j1, 0
+  jld j2, j1, BEST
+  jst j2, j1, GC
+  jcall s_roles
+  jjz j2, st_next
+  jldi j1, 0
+  jld j1, j1, GC
+  jcall walk_to
+  jjz j2, st_next
+  jldi j1, 0
+  jst j2, j1, PC                ; (PC now: the place of c)
+  jldi j9, 0                    ; each core: seen once more, and the rules that held
+st_core:
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+  jjz j2, st_next
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j10, j2, CORES            ; the word
+  jldi j2, 3
+  jshl j2, j10, j2
+  jld j3, j2, SEEN
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j2, SEEN
+  jldi j8, 0
+st_cand:
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+  jjz j2, st_cnext
+  jldi j2, 5
+  jshl j4, j8, j2
+  jld j5, j4, CAND + 8
+  jld j6, j1, PA
+  jmul j5, j5, j6
+  jld j6, j4, CAND + 16
+  jld j7, j1, PB
+  jmul j6, j6, j7
+  jadd j5, j5, j6
+  jld j6, j4, CAND + 24
+  jld j7, j1, PC
+  jmul j6, j6, j7
+  jadd j5, j5, j6
+  jjnz j5, st_nofit
+  jldi j6, 64
+  jmul j6, j10, j6
+  jadd j6, j6, j8
+  jldi j7, 3
+  jshl j6, j6, j7
+  jld j7, j6, FIT
+  jldi j5, 1
+  jadd j7, j7, j5
+  jst j7, j6, FIT
+st_nofit:
+  jldi j2, 1
+  jadd j8, j8, j2
+  jjmp st_cand
+st_cnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp st_core
+st_next:
+  jldi j1, 0
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jldi j3, 1
+  jsub j15, j15, j3
+jwend
+
+jldi j1, 0                      ; asked, in the order PREGUNTA
+jst j1, j1, RIGHT
+jst j1, j1, ASKED
+jst j1, j1, NONE
+jld j15, j1, NTEST
+jldi j2, TEST
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jld j2, j1, PREGUNTA
+  jcall s_hear4
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall s_roles
+  jjz j2, sq_count
+  jldi j1, 0                    ; the best share of any core's rule that says where c is
+  jst j1, j1, BNUM
+  jldi j2, 1
+  jst j2, j1, BDEN
+  jcall s_best
+  jldi j1, 0
+  jld j2, j1, BNUM
+  jjz j2, sq_count
+  jcall s_vote
+sq_count:
+  jcall s_answer
+  jldi j1, 0
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jld j15, j1, NTEST            ; how many are left: NTEST - ASKED
+  jld j3, j1, ASKED
+  jsub j15, j15, j3
+jwend
+jjmp r_counts
+
+; The four words of the riddle at PREV, in order j2 (ORDT row), each heard (GW + slot*8). Uses j1-j14.
+s_hear4:
+  jldi j1, 0
+  jldi j3, 2
+  jshl j2, j2, j3
+  jst j2, j1, SLOT              ; ORDT offset of the order
+  jst j1, j1, SLOTI
+sh_lap:
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 4
+  jsub j3, j2, j3
+  jjz j3, sh_done
+  jld j3, j1, SLOT
+  jadd j3, j3, j2
+  jldb j4, j3, ORDT             ; the role in this slot
+  jld j5, j1, PREV
+  jldi j6, 8                    ; es
+  jldi j7, 3
+  jsub j7, j4, j7
+  jjz j7, sh_word
+  jldi j7, 3
+  jshl j7, j4, j7
+  jadd j7, j7, j5
+  jld j6, j7, 0                 ; a, op or b (roles 0, 1, 2 are the riddle's first three qwords)
+  jldi j7, 1
+  jsub j7, j4, j7
+  jjz j7, sh_word               ; the operator is a word already
+  jldi j7, 1
+  jsub j6, j6, j7               ; a number: its word
+sh_word:
+  jst j6, j1, THING
+  jcall hear_w
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, BEST
+  jst j4, j3, GW
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, SLOTI
+  jjmp sh_lap
+sh_done:
+  jret
+
+; The meaning of each heard word (GW, 4 slots): a number has a place (walk_to); the first is PA, the second PB; every
+; other known word, once, a candidate core (CORES, NCORE). -> j2 = 1 if two numbers were heard, else 0. Uses j1-j11.
+s_roles:
+  jldi j1, 0
+  jst j1, j1, PNUM
+  jst j1, j1, NCORE
+  jst j1, j1, SLOTI
+sr_lap:
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 4
+  jsub j3, j2, j3
+  jjz j3, sr_done
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j9, j3, GW                ; the word
+  jldi j3, 9
+  jsub j3, j9, j3
+  jjz j3, sr_next               ; not recognized
+  jldi j1, 0
+  jadd j1, j1, j9
+  jcall walk_to
+  jjz j2, sr_core
+  jldi j1, 0                    ; a number: a, then b
+  jld j3, j1, PNUM
+  jjnz j3, sr_b
+  jst j2, j1, PA
+  jjmp sr_counted
+sr_b:
+  jldi j4, 1
+  jsub j4, j3, j4
+  jjnz j4, sr_counted
+  jst j2, j1, PB
+sr_counted:
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, PNUM
+  jjmp sr_next
+sr_core:
+  jldi j1, 0                    ; a candidate core, if not one already
+  jld j10, j1, NCORE
+  jldi j11, CORES
+sr_seen:
+  jjz j10, sr_add
+  jld j3, j11, 0
+  jsub j3, j3, j9
+  jjz j3, sr_next
+  jldi j3, 8
+  jadd j11, j11, j3
+  jldi j3, 1
+  jsub j10, j10, j3
+  jjmp sr_seen
+sr_add:
+  jst j9, j11, 0
+  jld j3, j1, NCORE
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, NCORE
+sr_next:
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, SLOTI
+  jjmp sr_lap
+sr_done:
+  jldi j1, 0
+  jld j3, j1, PNUM
+  jldi j2, 1
+  jsub j3, j3, j2
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, sr_two
+  jldi j2, 0
+sr_two:
+  jret
+
+; For core k (j9) and candidate i (j8) that says where c is: j5 = its examples fit, j6 = the core's times seen
+; (0 if it does not say where c is). Uses j1-j7.
+s_share:
+  jldi j1, 0
+  jldi j5, 0
+  jldi j6, 0
+  jldi j2, 5
+  jshl j2, j8, j2
+  jld j3, j2, CAND + 24
+  jjz j3, ss_done
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j7, j2, CORES
+  jldi j2, 3
+  jshl j2, j7, j2
+  jld j6, j2, SEEN
+  jldi j2, 64
+  jmul j2, j7, j2
+  jadd j2, j2, j8
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j5, j2, FIT
+ss_done:
+  jret
+
+; The best share over every core and candidate: BNUM / BDEN. Uses j1-j9.
+s_best:
+  jldi j9, 0
+sb_core:
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+  jjz j2, sb_done
+  jldi j8, 0
+sb_cand:
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+  jjz j2, sb_cnext
+  jcall s_share
+  jjz j6, sb_not
+  jjz j5, sb_not
+  jldi j1, 0                    ; better if fit * BDEN > BNUM * seen
+  jld j2, j1, BDEN
+  jmul j2, j5, j2
+  jld j3, j1, BNUM
+  jmul j3, j3, j6
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, sb_not
+  jst j5, j1, BNUM
+  jst j6, j1, BDEN
+sb_not:
+  jldi j2, 1
+  jadd j8, j8, j2
+  jjmp sb_cand
+sb_cnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp sb_core
+sb_done:
+  jret
+
+; Every core's candidate with the best share votes: c = -(a*pa + b*pb) / c, when it divides. Uses j1-j14.
+s_vote:
+  jldi j9, 0
+sv_core:
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+  jjz j2, sv_done
+  jldi j8, 0
+sv_cand:
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+  jjz j2, sv_cnext
+  jcall s_share
+  jjz j6, sv_not
+  jjz j5, sv_not
+  jldi j1, 0                    ; the best: fit * BDEN = BNUM * seen
+  jld j2, j1, BDEN
+  jmul j2, j5, j2
+  jld j3, j1, BNUM
+  jmul j3, j3, j6
+  jsub j3, j3, j2
+  jjnz j3, sv_not
+  jldi j2, 5
+  jshl j4, j8, j2
+  jld j6, j4, CAND + 8
+  jld j7, j1, PA
+  jmul j6, j6, j7
+  jld j7, j4, CAND + 16
+  jld j11, j1, PB
+  jmul j7, j7, j11
+  jadd j6, j6, j7               ; rest
+  jld j5, j4, CAND + 24
+  jdiv j7, j6, j5
+  jmul j11, j7, j5
+  jsub j11, j11, j6
+  jjnz j11, sv_not              ; it does not divide
+  jsub j7, j1, j7               ; the value: -rest / c
+  jld j11, j1, NUMV             ; one more vote for it
+  jldi j12, VOTE
+sv_find:
+  jjz j11, sv_new
+  jld j13, j12, 0
+  jsub j13, j13, j7
+  jjz j13, sv_add
+  jldi j13, 16
+  jadd j12, j12, j13
+  jldi j13, 1
+  jsub j11, j11, j13
+  jjmp sv_find
+sv_new:
+  jst j7, j12, 0
+  jst j1, j12, 8
+  jld j11, j1, NUMV
+  jldi j13, 1
+  jadd j11, j11, j13
+  jst j11, j1, NUMV
+sv_add:
+  jld j13, j12, 8
+  jldi j11, 1
+  jadd j13, j13, j11
+  jst j13, j12, 8
+sv_not:
+  jldi j2, 1
+  jadd j8, j8, j2
+  jjmp sv_cand
+sv_cnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp sv_core
+sv_done:
+  jret
+
+; The answer from the votes (the one with most, if only one has that many; else ?), counted and into the fingerprint.
+; Uses j1-j14.
+s_answer:
+  jldi j3, 0
+  jldi j2, 9
+  jld j9, j3, NUMV
+  jjz j9, sa_said
+  jldi j10, 0
+  jldi j12, VOTE
+  jwhile j9
+    jld j13, j12, 8
+    jsub j14, j10, j13
+    jldi j11, 63
+    jsar j14, j14, j11
+    jjz j14, sa_mnext
+    jadd j10, j13, j3
+    jld j1, j12, 0
+  sa_mnext:
+    jldi j13, 16
+    jadd j12, j12, j13
+    jldi j13, 1
+    jsub j9, j9, j13
+  jwend
+  jld j9, j3, NUMV
+  jldi j12, VOTE
+  jldi j11, 0
+  jwhile j9
+    jld j13, j12, 8
+    jsub j13, j13, j10
+    jjnz j13, sa_tnext
+    jldi j13, 1
+    jadd j11, j11, j13
+  sa_tnext:
+    jldi j13, 16
+    jadd j12, j12, j13
+    jldi j13, 1
+    jsub j9, j9, j13
+  jwend
+  jldi j13, 1
+  jsub j11, j11, j13
+  jjnz j11, sa_said
+  jcall word_at
+sa_said:
+  jldi j3, 0
+  jld j4, j3, ASKED
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j3, ASKED
+  jld j1, j3, PREV
+  jld j4, j1, 24
+  jsub j4, j4, j5
+  jsub j4, j2, j4
+  jjnz j4, sa_wrong
+  jld j4, j3, RIGHT
+  jadd j4, j4, j5
+  jst j4, j3, RIGHT
+sa_wrong:
+  jldi j4, 9
+  jsub j4, j2, j4
+  jjnz j4, sa_some
+  jld j4, j3, NONE
+  jadd j4, j4, j5
+  jst j4, j3, NONE
+sa_some:
+  jcall mixsym
+  jret
+
 r_counts:
 jldi j1, 0                      ; the counts
 jld j12, j1, COUNTOK
@@ -1249,10 +1767,26 @@ jcall puts
 o_quiet:
 jldi j1, 0
 jld j2, j1, MODO
-jjz j2, o_melo
+jldi j3, 1
+jsub j2, j2, j3
+jjnz j2, o_melo
 jldi j1, S_MELO
 jcall puts
 o_melo:
+jldi j1, 0
+jld j2, j1, MODO
+jldi j3, 2
+jsub j2, j2, j3
+jjnz j2, o_estr
+jldi j1, S_ESTR
+jcall puts
+jld j2, j1, ENSENA
+jcall putnum
+jldi j1, S_PREG
+jcall puts
+jld j2, j1, PREGUNTA
+jcall putnum
+o_estr:
 jldi j1, S_CUBO
 jcall puts
 jld j2, j1, NN
@@ -1310,7 +1844,9 @@ jldi j1, S_SINR
 jcall puts
 jldi j1, 0                      ; heard as a melody: the baseline too
 jld j2, j1, MODO
-jjz j2, o_base
+jldi j3, 1
+jsub j2, j2, j3
+jjnz j2, o_base
 jldi j1, S_BASE
 jcall puts
 jld j2, j1, BASEN

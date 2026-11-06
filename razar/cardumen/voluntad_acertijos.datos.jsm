@@ -67,3 +67,7 @@ times 800h - $ db 0
 ; The Morse of a..z: its marks, 2 bits each from bit 0 (0 dot, 1 dash), then 2 (the end of the letter), then 3.
 dq 228, 3585, 3601, 897, 56, 3600, 901, 3584, 224, 3668, 913, 3588, 229
 dq 225, 917, 3604, 3653, 900, 896, 57, 912, 3648, 916, 3649, 3665, 3589
+times 900h - $ db 0
+db ' estructura: ensena en orden ', 0
+times 940h - $ db 0
+db ', pregunta en orden ', 0
