@@ -35,16 +35,26 @@ FNVP  = 10F0h
 M48   = 10F8h                   ; 2^48 - 1
 POS   = 1100h                   ; how long the text it writes is so far
 LINE  = 1108h                   ; the renglon being walked
+LABEL = 1110h                   ; the file being read: its label and how long it is
+LABLEN = 1118h
+QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
+                                ; book never had, 0 its end)
 TEXT  = 2000h                   ; the lines it writes
 WBUF  = 3000h                   ; (255 bytes)
 DIG   = 3200h                   ; digits of a number being written
+QBUF  = 4000h                   ; a question read (QMAX units: criterion, a question is short)
+QMAX  = 512
 BUF   = 8000h                   ; a piece of the book
 BUFLEN = 8000h
 
 ; The book read: its constants, K, the first reading, its rooms (the row, the letters, the words and their places by
 ; number) and the second reading. Uses j1-j14.
 read_book:
-jldi j1, 0                      ; constants
+jldi j1, 0                      ; the book, and constants
+jldi j2, S_LIBRO
+jst j2, j1, LABEL
+jldi j2, 5
+jst j2, j1, LABLEN
 jldi j2, 0
 jshi j2, 0FFFFh
 jshi j2, 0FFFFh
@@ -180,8 +190,8 @@ scan:
   jldi j2, 1
   jst j2, j1, LASTL
   jldi j10, 4
-  jldi j11, S_LIBRO
-  jldi j12, 5
+  jld j11, j1, LABEL
+  jld j12, j1, LABLEN
   jcall ask
   jldi j1, 0
   jst j13, j1, HAND
@@ -309,6 +319,17 @@ tb_small:
   jjz j4, tb_other
   jjmp w_put
 tb_other:
+  jld j3, j1, PASS              ; reading a question, "?" is a hole
+  jldi j4, 2
+  jsub j3, j3, j4
+  jjnz j3, tb_text
+  jldi j3, 3Fh
+  jsub j3, j2, j3
+  jjnz j3, tb_text
+  jcall w_end
+  jldi j2, -1
+  jjmp t_put
+tb_text:
   jldi j3, 10
   jsub j3, j2, j3
   jjnz j3, w_end
@@ -374,9 +395,27 @@ lu_count:
 lu_none:
   jret
 
-; The number j2 at the end of the row. Uses j1-j5.
+; The number j2 at the end of the row (reading a question: at the end of the question, QBUF; past QMAX units
+; they are not kept). Uses j1-j5.
 t_put:
   jldi j1, 0
+  jld j3, j1, PASS
+  jldi j4, 2
+  jsub j3, j3, j4
+  jjnz j3, tp_book
+  jld j3, j1, QN
+  jldi j4, QMAX
+  jsub j4, j3, j4
+  jjz j4, tp_full
+  jldi j4, 3
+  jshl j4, j3, j4
+  jst j2, j4, QBUF
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, QN
+tp_full:
+  jret
+tp_book:
   jld j3, j1, NTOK
   jldi j4, 3
   jshl j4, j3, j4
@@ -445,6 +484,13 @@ word_id:
     jand j3, j3, j5
   jwend
 wi_new:
+  jld j5, j1, PASS              ; a question names only words the book has (-2: one it never read)
+  jldi j6, 2
+  jsub j5, j5, j6
+  jjnz j5, wi_add
+  jldi j2, -2
+  jret
+wi_add:
   jst j2, j4, 0
   jld j5, j1, WLEN
   jst j5, j4, 16

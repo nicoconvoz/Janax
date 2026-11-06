@@ -141,3 +141,42 @@ Qué cambió con el juez:
   con sus genealogías largas, es la prueba que sigue.
 - En los cuatro pisos las piezas explican lo no leído más que las ciegas: 3,9× en gemelos, 1,4× en interruptores,
   2,8× en asociados.
+
+# Preguntarle con una melodía (2026-11-06)
+
+Pedido del Capitán: *"dale de comer todo el Nuevo Testamento y preguntale con una melodía algo sobre lo que está
+escrito; no una respuesta literal, una que tenga que inferir"*.
+
+Programa: `razar/lectura/pregunta.jsm`. Lee el libro entero y lo dicho queda como pedidos con un hueco, igual que en el
+pulso: cada dos palabras con una a tres en el medio ("isaac padre de jacob") cuelgan "? padre de jacob" (lo llena
+isaac) e "isaac padre de ?" (lo llena jacob): 728.996 hechos. La pregunta es una melodía con huecos, una por renglón
+del archivo `q`, y se corta en los mismos pedidos. **Pensar es caminar** (Razar, P47): un pedido con un extremo
+conocido se contesta con lo que lo llena, y eso llena el hueco siguiente. Cada respuesta guarda su camino; escribe la
+melodía llena y dice si el libro la dice así, palabra por palabra, o no (inferida: juntó cosas dichas por separado).
+Si un paso nunca se dijo en la forma preguntada, el hueco queda vacío y dice que no sabe: no inventa.
+
+Para leer lectura.inc aprendió a leer una pregunta (PASS 2: "?" es un hueco; una palabra que el libro no tiene es -2).
+El lector y el pulso siguen dando idéntico.
+
+## Lo que contestó (0,5 s, idéntico en los tres motores, huella `000083336D714680`)
+
+```
+? padre de ? padre de judá               -> isaac padre de jacob padre de judá      (inferido)
+                                         -> matán padre de jacob padre de judá      (inferido)
+? padre de ? padre de ? padre de salmón  -> aram padre de aminadab padre de naasón padre de salmón (inferido)
+roboam padre de ? padre de ? padre de ?  -> roboam padre de abías padre de asá padre de josafat   (inferido)
+jacob hijo de ? hijo de ?                -> jacob hijo de isaac hijo de abraham     (inferido)
+? padre de ? padre de isaac              -> no lo sabe
+? padre de marciano                      -> no conoce una de sus palabras
+```
+
+- **El abuelo, el bisabuelo, el bisnieto**: ninguno está escrito. El libro dice "Isaac, padre de Jacob; Jacob, padre
+  de Judá" (con Jacob repetido), y Razar encadena. Lucas dice "Jacob, hijo de Isaac; Isaac, hijo de Abraham": también
+  repite, así que "jacob hijo de isaac hijo de abraham" no está tal cual (verificado en el texto).
+- **Matán: un error honesto e interesante.** Hay **dos Jacob** en el libro: el hijo de Isaac y el padre de José
+  ("Matán, padre de Jacob"). Razar conoce a la gente por cómo se escribe su nombre, así que los junta. Es la
+  identidad del P37 que todavía no está: saber que un nombre puede ser dos personas.
+- **"? padre de ? padre de isaac" no lo sabe**, y es correcto que no lo sepa así: el libro dice "Abraham **fue**
+  padre de Isaac" (otra forma: tres palabras en el medio) y "Isaac, **hijo** de Abraham" (la puerta dada vuelta, que
+  con 3 pares no pagó en el juez). Contestaría si las piezas "fue" y "padre/hijo dado vuelta" pagaran: el paso que
+  sigue es que el camino use las piezas nacidas.
