@@ -975,3 +975,27 @@ Uno de cada diez renglones apartado; idéntico en los tres motores (10 lecturas:
   una pieza sigue costando lo mismo (2·log2 U), así que pasan piezas con muy poca evidencia: 36.691 puertas para 394
   aciertos. Las de arriba siguen siendo buenas (": « / : "", "del señor / de dios", "le dijo / les dijo").
 - La memoria crece con las lecturas (los testimonios son por lectura): de 291 a 374 MB.
+
+## Quemar la inflación, como Ethereum (2026-11-06)
+
+El Capitán: *"entonces quemá tokens, como hacen en las cripto: convertilo en una especie de Ethereum que conserve la
+silueta, no la inflación"*. Cada relectura emitía peso nuevo (diez lecturas, casi 3 veces el peso de una) y el costo de
+nombrar una pieza seguía igual: había más plata y el precio no cambiaba. Ahora **cada piso conserva el suministro de su
+primera lectura**: el juez cuenta los pares de cada pieza sobre lo emitido después (n / (emitido / suministro de la
+primera)). Lo que se emite de más se quema; una relectura no agrega peso, lo redistribuye. Con una lectura, todo
+idéntico (`0000FE4C754709C9`).
+
+Idéntico en los tres motores (10 lecturas: `000022DAD0DD51A4`):
+
+| lecturas | asociados: real / ciego (veces) | piezas asociados | puertas: explica / ciego, piezas |
+|---|---|---|---|
+| 1 | 14,9 / 3,5 (4,3×) | 484 | 63 / 0, 64 |
+| 10 sin quemar | 25,0 / 6,1 (4,1×) | 9.220 | 394 / 3, 36.691 |
+| 10 quemando | 13,7 / 2,8 (**4,9×**) | **324** | 48 / 0, **29** |
+
+- **Conserva la silueta:** las piezas vuelven a ser pocas (324 asociados, 29 puertas), y el azar acierta todavía menos
+  (asociados 4,9× sobre el azar, la mejor marca del día).
+- **El costo:** explica algo menos que con una sola lectura (asociados 13,7 % contra 14,9 %, puertas 48 contra 63).
+  Lo que apareció recién en las relecturas pesa 1, pero se divide por toda la inflación y queda chico: la quema se lleva
+  también lo novedoso.
+- Gemelos e interruptores casi no se mueven.

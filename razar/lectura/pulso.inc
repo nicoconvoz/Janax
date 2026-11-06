@@ -42,6 +42,7 @@ PASL  = 1F70h
 TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1)} (a growing table)
 TFW   = 1780h                   ; by filling: {key, its pulses weighed} (a growing table)
 NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pulses weighed
+NFL1  = 1798h                   ; by floor (from floor 0): what the first reading issued, the supply kept
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
@@ -198,6 +199,15 @@ jst j2, j1, PASL
 jwhile j2
   jcall all_floors
   jldi j1, 0
+  jld j2, j1, PASN              ; after the first reading, the supply it issued by floor: every reading after only
+  jjnz j2, lp_more               ; redistributes it (what is issued past it is burned)
+  jld j2, j1, NFLW + 8
+  jst j2, j1, NFL1 + 8
+  jld j2, j1, NFLW + 16
+  jst j2, j1, NFL1 + 16
+  jld j2, j1, NFLW + 24
+  jst j2, j1, NFL1 + 24
+lp_more:
   jld j2, j1, PASN
   jldi j3, 1
   jadd j2, j2, j3
@@ -959,8 +969,17 @@ judge:
     jcall lg16
     jld j3, j1, GS
     jsub j3, j3, j2
-    jld j4, j1, GE              ; times n (weighed, 2^16 a pulse)
-    jld j4, j4, 40
+    jld j4, j1, GE              ; times n, weighed (2^16 a pulse) and with the burn: the floor keeps the supply of its
+    jld j4, j4, 40              ; first reading, so n counts over what was issued past it (Capitan: "burn tokens, like
+    jld j5, j11, NFL1           ; ethereum: keep the silhouette, not the inflation")
+    jjz j5, ju_supply
+    jld j6, j11, NFLW
+    jldi j7, 16
+    jshl j6, j6, j7
+    jdiv j6, j6, j5
+    jshl j4, j4, j7
+    jdiv j4, j4, j6
+ju_supply:
     jmul j3, j3, j4
     jldi j4, 16
     jsar j3, j3, j4
