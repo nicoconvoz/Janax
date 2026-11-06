@@ -908,3 +908,17 @@ ola, los empujes sumados). A lo Janax: con 64 piezas un conjunto de piezas es un
 guarda tres: quién de ella está despierto, quién despertó alguna vez en ella, y a quién empujó en este paso. Cruzar
 olas es sumar empujes y un Y de bits. **Huella `00008FBA0F7F8D63` en los tres motores, igual al modelo.** Tiempo con
 arranque: intérprete 221 ms, rutinas 168 ms, traductor 153 ms; Perl 752 ms.
+
+**Piezas 2 y 3: la palabra como canción y el oído de palabras enteras, en Janax** (`cardumen_canto.jsm` y
+`voluntad_canto.jsm`, dos camarotes que se hablan con palabras; vara: `huella_oraciones.pl`, 3 pasadas por las 30
+palabras del vocabulario, aprendiendo, sin nada al azar). La voluntad le dice al cardumen la palabra entera en **una
+sola palabra de Janax**: cada saludo del Morse son 2 bits desde el bit 8 (0 punto, 1 raya, 2 fin de letra, 3 fin de la
+canción); la canción más larga son 25 saludos. El cardumen la canta con las olas que se cruzan y le contesta cuántos
+pasos duró (la más larga, 34) y la cara de arriba de cada paso, 16 bits por paso y 4 pasos por palabra. La voluntad
+reconoce la palabra entera con su tabla por palabra, pieza y paso, y aprende sabiendo qué dijo.
+- **Huella `0000B6A4176535A2` en los tres motores, igual al modelo**; en la tercera pasada reconoce las 30 de 30.
+  Tiempo: intérprete 448 ms, rutinas 284 ms, traductor 216 ms; Perl 1.913 ms (unas 9 veces).
+- Los pedidos cambian según el motor (1.969 a 2.005: cada uno llega al buzón en otro momento) y la huella no se mueve.
+- ⚠️ Dos errores que el ensamblador propio (PDP) atajó y FASM no habría dicho: un desplazamiento de carga más grande que
+  lo que entra (7FFFh; la tabla de la voluntad empieza en 10000h, así que su dirección va en un registro), y números
+  hexadecimales que empezaban con letra (`E560h` es un nombre; se escribe `0E560h`) en los datos generados.

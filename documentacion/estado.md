@@ -235,3 +235,5 @@ palabras van al buzón en orden, con la regla del buzón asincrónico-sincrónic
 4 remeros; ~40 % más caro que la caja compartida.
 2026-11-06 — Todo a Janax, Perl de vara (Capitán). Pieza 1: olas que se cruzan en Janax (un qword por ola), misma huella
 que el modelo en los tres motores; traductor 153 ms contra Perl 752 ms.
+2026-11-06 — Piezas 2 y 3 en Janax: la palabra como canción y el oído de palabras enteras, dos camarotes con palabras;
+misma huella que el modelo en los tres motores, 30 de 30 palabras en la tercera pasada, ~9 veces más rápido que Perl.

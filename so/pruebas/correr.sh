@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/cardumen_canto.jsm "$proyecto"/razar/cardumen/voluntad_canto.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -433,6 +433,17 @@ P0 codigo=0 j0=$huella t=*" cardumen
 huella_olas=$(perl "$proyecto/razar/cardumen/huella_olas.pl")
 caso "razar: las olas que se cruzan dejan la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella_olas t=*" cardumen_olas
+
+# A whole word is one song (Capitan, 2026-11-06): the will says the 30 words of its vocabulary as songs, the school
+# sings them with waves that cross and answers the top face of each step, and the will learns to know whole words;
+# they talk in words (requests 30, 31). The fingerprint of the model, bit for bit.
+huella_canto=$(perl "$proyecto/razar/cardumen/huella_oraciones.pl")
+familia familia_canto cardumen_canto
+caso "razar: la voluntad reconoce palabras enteras como en el modelo" 0 0 "$fijo0
+P1 codigo=0 j0=* t=*
+P0 codigo=0 j0=$huella_canto t=*
+ventanilla: *" voluntad_canto
+carpeta=
 
 # The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
 # will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit. The will listens to the melody:
