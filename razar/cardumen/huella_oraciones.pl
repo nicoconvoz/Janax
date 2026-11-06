@@ -5,8 +5,8 @@
 # word is a song (its Morse of greetings, one per step, with the three corner keys); the will hears the top face with
 # its rhythm (piece and step), guesses the word whose notes it heard most as a share of all it heard for it, and,
 # knowing what it said, learns. Each song goes into the fingerprint as said * 1024 + (guess + 1) * 2 + right; then
-# the school's own fingerprint (every weight and rate, as it says it at the end) as one value. h = (h * 31 + v) mod 2^48. Perl is the measuring stick only (Capitan,
-# 2026-11-06).
+# the school's own fingerprint (every weight and rate, as it says it at the end) as one value. h = (h * 31 + v)
+# mod 2^48. Perl is the measuring stick only (Capitan, 2026-11-06).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %morse = (a => '.-', b => '-...', c => '-.-.', d => '-..', e => '.', f => '..-.', g => '--.', h => '....',
   i => '..', j => '.---', k => '-.-', l => '.-..', m => '--', n => '-.', o => '---', p => '.--.', q => '--.-',
