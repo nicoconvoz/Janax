@@ -39,9 +39,12 @@ TPT   = 1F40h                   ; what each place testified: {key of place and d
 PDK   = 1F60h                   ; the key of the difference of a pulse
 PASN  = 1F68h                   ; the passes: this one (from 0), how many left
 PASL  = 1F70h
-TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1), what it weighed in its first} (growing)
+TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1), what it weighed in its first, the reading it was born in} (growing)
 TFW   = 1780h                   ; by filling: {key, its pulses weighed} (a growing table)
 NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pulses weighed
+TRC   = 17D0h                   ; by reading: {key of a filling or a floor and the reading, its pulses} (growing)
+GNE   = 17F0h                   ; judging: the pairs of the difference in its birth reading, that reading
+GBR   = 17F8h
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
@@ -163,9 +166,12 @@ jldi j2, TPT                    ; what each place already testified (it grows to
 jldi j3, 8
 jcall pl_new
 jldi j2, TRD                    ; in how many readings each difference was met, and each filling weighed
-jldi j3, 32
+jldi j3, 40
 jcall pl_new
 jldi j2, TFW
+jldi j3, 16
+jcall pl_new
+jldi j2, TRC                    ; what each filling and each floor pulsed in each reading
 jldi j3, 16
 jcall pl_new
 jldi j1, 0
@@ -656,6 +662,12 @@ pu_k:
   jldi j2, TRD                  ; new to this reading teaches the most, even if it is the obvious)
   jcall pl_take
   jldi j1, 0
+  jjz j6, pu_born               ; (a difference new: the reading it is born in)
+  jld j7, j1, PASN
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j4, 32
+pu_born:
   jld j7, j1, PASN
   jldi j8, 1
   jadd j7, j7, j8
@@ -812,6 +824,15 @@ pl_fill:
   jld j8, j1, PW
   jadd j7, j7, j8
   jst j7, j5, NFLW
+  jld j2, j1, FNVO              ; (and its floor, in this reading)
+  jld j3, j1, FLOOR
+  jldi j4, 1
+  jldi j5, 32
+  jshl j4, j4, j5
+  jor j3, j3, j4
+  jcall hw
+  jadd j5, j2, j1
+  jjmp tr_add
 pl_done:
   jret
 
@@ -895,6 +916,8 @@ f_bump:
   jld j7, j1, PW
   jadd j6, j6, j7
   jst j6, j4, 8
+  jcall tr_add                  ; (and in this reading)
+  jldi j1, 0
   jld j4, j1, FBP
   jld j6, j4, 8
   jjnz j6, fb_old
@@ -940,63 +963,51 @@ judge:
     jld j11, j1, FLOOR
     jldi j2, 3
     jshl j11, j11, j2
-    jld j2, j11, NFLW           ; log2(2N) + log2(n), weighed (each reading pulse 1/k: the same scale in all four)
+    jld j4, j1, GE              ; each difference is judged in the reading it was born in, all at that one scale
+    jld j5, j4, 0               ; (Capitan: "microscope, eyes, telescope": what is born late is seen at the size of its
+    jldi j2, TRD                ; own reading, what repeats is gathered into one point; counts of different readings are
+    jcall pl_find               ; never set against each other): its pairs there, the floor's pulses there, and its
+    jld j2, j4, 24              ; two fillings' there
+    jldi j3, 16
+    jsar j2, j2, j3
+    jst j2, j1, GNE
+    jld j2, j4, 32
+    jst j2, j1, GBR
+    jld j2, j1, FNVO            ; log2(2N) + log2(n)
+    jld j3, j1, FLOOR
+    jldi j4, 1
+    jldi j5, 32
+    jshl j4, j4, j5
+    jor j3, j3, j4
+    jcall hw
+    jld j3, j1, GBR
+    jcall hw
+    jjnz j2, jl_k
+    jldi j2, 1
+jl_k:
+    jadd j5, j2, j1
+    jldi j2, TRC
+    jcall pl_find
+    jld j2, j4, 8
     jadd j2, j2, j2
-    jcall lg16
+    jcall lc_lg
     jst j2, j1, GS
-    jld j3, j1, GE
-    jld j2, j3, 40
-    jcall lg16
+    jld j2, j1, GNE
+    jcall lc_lg
     jld j3, j1, GS
     jadd j3, j3, j2
     jst j3, j1, GS
     jld j2, j1, DLO             ; - log2(c(low)) - log2(c(high))
-    jcall f_find
-    jldi j2, TFW
-    jcall pl_find
-    jld j2, j4, 8
-    jcall lg16
+    jcall ju_fill
     jld j3, j1, GS
     jsub j3, j3, j2
     jst j3, j1, GS
     jld j2, j1, DHI
-    jcall f_find
-    jldi j2, TFW
-    jcall pl_find
-    jld j2, j4, 8
-    jcall lg16
+    jcall ju_fill
     jld j3, j1, GS
     jsub j3, j3, j2
-    jst j3, j1, GS              ; times its evidence, with the burn (Capitan: "burn tokens like ethereum, keep the
-    jld j4, j1, GE              ; silhouette, not the inflation; what grows more burns more, what grows less burns
-    jld j5, j4, 0               ; less"): its weight n1 in the reading it first appeared in, grown by g = n / n1, counts
-    jldi j2, TRD                ; as n1 (1 + log2 g): each doubling is one unit more, as information is. Its
-    jcall pl_find               ; specificity, the log above, keeps the whole counts.
-    jld j2, j4, 24
-    jjz j2, ju_raw
-    jst j2, j1, FBP
-    jld j4, j1, GE
-    jld j2, j4, 40
-    jcall lg16
-    jst j2, j1, PW
-    jld j2, j1, FBP
-    jcall lg16
-    jld j3, j1, PW
-    jsub j3, j3, j2
-    jld j2, j1, FBP
-    jmul j3, j3, j2
-    jldi j4, 16
-    jsar j3, j3, j4
-    jadd j4, j3, j2
-    jjmp ju_n
-ju_raw:
-    jld j4, j1, GE
-    jld j4, j4, 40
-ju_n:
-    jld j3, j1, GS
+    jld j4, j1, GNE             ; times n
     jmul j3, j3, j4
-    jldi j4, 16
-    jsar j3, j3, j4
     jst j3, j1, GS
     jld j11, j1, FLOOR          ; - 2 log2(U): its name
     jldi j2, 3
@@ -1029,6 +1040,47 @@ ju_n:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jret
+
+
+; log2 of the pulses of the filling j2 on the floor FLOOR in the reading GBR -> j2. Uses j1-j8.
+ju_fill:
+  jcall f_find
+  jadd j2, j5, j1
+  jld j3, j1, GBR
+  jcall hw
+  jjnz j2, jf_k
+  jldi j2, 1
+jf_k:
+  jadd j5, j2, j1
+  jldi j2, TRC
+  jcall pl_find
+  jld j2, j4, 8
+  jjmp lc_lg
+
+; log2 of j2 (0 counts as 1), in 2^-16 of a bit -> j2. Uses j1, j3-j6.
+lc_lg:
+  jjnz j2, lg16
+  jldi j2, 1
+  jjmp lg16
+
+; One pulse more in this reading for the key j5 (a filling, or a floor). Uses j1-j8.
+tr_add:
+  jadd j2, j5, j1
+  jld j3, j1, PASN
+  jldi j4, 1
+  jadd j3, j3, j4
+  jcall hw
+  jjnz j2, ta_k
+  jldi j2, 1
+ta_k:
+  jadd j5, j2, j1
+  jldi j2, TRC
+  jcall pl_take
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
   jret
 
 ; The kind of the difference DKT, DLO -> j5: 1 gemelos, 2 interruptores (one filling empty), 3 asociados, 4 puertas.

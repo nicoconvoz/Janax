@@ -1029,3 +1029,33 @@ inflación no es de cuánto se emite sino de **comparar cuentas de lecturas dist
 se mide contra palabras que juntaron peso en las diez. La única quema que dejó todo en la misma escala es la pareja
 (todo el piso dividido por lo mismo): por eso fue la que frenó las piezas (324 asociados, 4,9× sobre el azar). Se vuelve
 a la quema progresiva sobre la evidencia (`76662ba`).
+
+## Microscopio, ojos, telescopio: cada diferencia en la lectura en que nació (2026-11-06)
+
+El Capitán: *"la solución es microscopio, ojos, telescopio: notar lo chiquito más grande, lo normal más nítido y lo
+lejano más concentrado en un punto, para revelar sus secretos"*. Lo que inflaba era comparar cuentas de lecturas
+distintas. Ahora:
+
+- **Telescopio:** lo que se repite de lectura en lectura se concentra en un punto. Cada diferencia cuenta la evidencia
+  de la lectura en que nació, y sus repeticiones no la inflan.
+- **Microscopio:** lo que nace en una relectura se mira al tamaño de **su** lectura: el total del piso y lo frecuente de
+  sus palabras en esa lectura (cuentas por lectura, en una tabla que crece).
+- **Ojos:** lo que estaba desde la primera se mira con la nitidez de la primera.
+
+Nunca se comparan cuentas de lecturas distintas. Con una lectura, todo idéntico (`0000FE4C754709C9`). Idéntico en los
+tres motores (10 lecturas: `0000635B80FA2373`):
+
+| 10 lecturas | asociados: real / ciego | piezas asociados | puertas: explica / ciego, piezas | memoria |
+|---|---|---|---|---|
+| sin quemar | 25,0 / 6,1 | 9.220 | 394 / 3, 36.691 | 374 MB |
+| quema pareja | 13,7 / 2,8 | 324 | 48 / 0, 29 | 374 MB |
+| **lentes** | 14,6 / 3,3 (4,4×) | **492** | 63 / 0, **64** | 422 MB |
+
+- **La inflación desaparece de raíz:** con 10 lecturas las piezas son casi las mismas que con una (492 contra 484
+  asociados, 64 puertas). Ninguna quema la frenó así sin perder lo que explica.
+- **Lo que revela, y es honesto:** releer el mismo libro casi no agrega evidencia. Lo único nuevo que trae una relectura
+  son los pares que nacen porque las siluetas cambiaron, y en su propia lectura son pocos y débiles: 8 piezas más.
+  Lo que la quema sin control mostraba como "aprender repasando" era, en su mayor parte, inflación.
+- Las lecturas pares y las impares dan casi lo mismo entre sí (1 y 5: 14,9 %; 2 y 10: 14,6 % en asociados): las siluetas
+  de los lugares sin mayoría se alternan de una lectura a la otra.
+- La memoria crece con las lecturas, por las cuentas de cada una: 303 MB con una, 422 MB con diez.
