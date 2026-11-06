@@ -237,3 +237,5 @@ palabras van al buzón en orden, con la regla del buzón asincrónico-sincrónic
 que el modelo en los tres motores; traductor 153 ms contra Perl 752 ms.
 2026-11-06 — Piezas 2 y 3 en Janax: la palabra como canción y el oído de palabras enteras, dos camarotes con palabras;
 misma huella que el modelo en los tres motores, 30 de 30 palabras en la tercera pasada, ~9 veces más rápido que Perl.
+2026-11-06 — Pieza 5 en Janax: las oraciones con ruido, con parámetros desde un archivo; bit por bit con el modelo y la
+misma línea letra por letra; ~44 veces más rápido que Perl.

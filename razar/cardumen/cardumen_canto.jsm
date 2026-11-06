@@ -5,6 +5,9 @@
 ;     one per step, with the three corner keys; each pulse a wave of its own, their pushes adding up. It answers how
 ;     many steps the song lasted, then the top face of each step (16 bits, piece 48 + j at bit j), 4 steps per word;
 ;     and the shape learns from it.
+;   5 born again: from the seed in bits 16.., quiet (it never learns) if bit 8; no answer.
+;   6 a song with the exact pieces of each greeting (a finger may slip): how many in bits 8..15, then one word per
+;     greeting with its pieces; answered as a song.
 ;   3 the end: its own fingerprint (every weight and rate, h = (h * 31 + v) mod 2^48), as one word, and it ends.
 ; The loop of both cabins gives the fingerprint of huella_oraciones.pl, bit for bit.
 ;
@@ -26,6 +29,8 @@ TCUR  = 0C70h                   ; the step
 ORP   = 0C78h                   ; whom any wave pushed this step
 MAIL  = 0C80h                   ; a letter read from its mailbox: who said it, the word
 WORD  = 0C90h                   ; the word it is saying
+WHISP = 0C98h                   ; 1: quiet, it never learns (order 5)
+SONGM = 1600h                   ; this song: the pieces of each greeting (a qword each)
 TOPM  = 0E00h                   ; the top face at each step of the song (a qword each, 64 steps)
 NOWW  = 1000h                   ; wave w: who of it is awake now (a qword each)
 WOKEW = 1200h                   ; wave w: who of it ever woke
@@ -101,37 +106,8 @@ jwhile j2
   jsub j2, j2, j3
 jwend
 
-jldi j3, 7                      ; born different: seed 7, seed = (seed * 1103515245 + 12345) mod 2^31,
-jldi j4, 41C6h                  ; a weight = (seed >> 16) mod 256
-jshi j4, 4E6Dh                  ; 1103515245
-jldi j5, 7FFFh
-jshi j5, 0FFFFh                 ; 2^31 - 1
-jldi j1, 0
-jldi j2, 64
-jwhile j2
-  jldi j6, 8
-  jmul j7, j1, j6               ; i * 8
-  jldi j8, 6
-  jwhile j8
-    jmul j3, j3, j4
-    jldi j6, 3039h              ; 12345
-    jadd j3, j3, j6
-    jand j3, j3, j5
-    jldi j6, 16
-    jshr j9, j3, j6
-    jldi j6, 0FFh
-    jand j9, j9, j6
-    jstb j9, j7, W
-    jldi j6, 1
-    jadd j7, j7, j6
-    jsub j8, j8, j6
-  jwend
-  jldi j6, 20                   ; its rate
-  jstb j6, j1, RATE
-  jldi j6, 1
-  jadd j1, j1, j6
-  jsub j2, j2, j6
-jwend
+jldi j3, 7                      ; born from seed 7 (an order 5 can give it another)
+jcall born
 
 jldi j15, 1                     ; it listens until the end
 jwhile j15
@@ -140,6 +116,12 @@ jwhile j15
   jld j2, j13, MAIL + 8
   jldi j1, 0FFh
   jand j1, j2, j1
+  jldi j3, 5
+  jsub j3, j1, j3
+  jjz j3, c_born
+  jldi j3, 6
+  jsub j3, j1, j3
+  jjz j3, c_masks
   jldi j3, 4
   jsub j3, j1, j3
   jjnz j3, c_end
@@ -160,6 +142,50 @@ c_code:
 c_coded:
   jldi j13, 0
   jst j4, j13, SLEN
+  jldi j1, 0                    ; each greeting as its key's pieces
+  jwhile j4
+    jldb j2, j1, SEQ
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j2, j2, KEYM
+    jshl j3, j1, j3
+    jst j2, j3, SONGM
+    jldi j3, 1
+    jadd j1, j1, j3
+    jsub j4, j4, j3
+  jwend
+  jcall sing
+  jcall answer
+  jjmp c_next
+c_born:                         ; order 5: born again from the seed in bits 16.., quiet (it never learns) if bit 8
+  jldi j3, 8
+  jshr j1, j2, j3
+  jldi j3, 1
+  jand j1, j1, j3
+  jldi j13, 0
+  jst j1, j13, WHISP
+  jldi j3, 16
+  jshr j3, j2, j3
+  jcall born
+  jjmp c_next
+c_masks:                        ; order 6: a song with the exact pieces of each greeting (a finger may slip): how
+  jldi j3, 8                    ; many in bits 8..15, then one word per greeting, its pieces
+  jshr j4, j2, j3
+  jldi j3, 0FFh
+  jand j4, j4, j3
+  jldi j13, 0
+  jst j4, j13, SLEN
+  jldi j5, 0
+  jwhile j4
+    jcall hear
+    jldi j13, 0
+    jld j2, j13, MAIL + 8
+    jst j2, j5, SONGM
+    jldi j3, 8
+    jadd j5, j5, j3
+    jldi j3, 1
+    jsub j4, j4, j3
+  jwend
   jcall sing
   jcall answer
   jjmp c_next
@@ -230,6 +256,41 @@ fingerprint:
     jldi j3, 1
     jadd j1, j1, j3
     jsub j2, j2, j3
+  jwend
+  jret
+
+; Born from seed j3: every weight = (seed >> 16) mod 256, seed = (seed * 1103515245 + 12345) mod 2^31, in order;
+; every rate 20. Uses j1-j9.
+born:
+  jldi j4, 41C6h                  ; a weight = (seed >> 16) mod 256
+  jshi j4, 4E6Dh                  ; 1103515245
+  jldi j5, 7FFFh
+  jshi j5, 0FFFFh                 ; 2^31 - 1
+  jldi j1, 0
+  jldi j2, 64
+  jwhile j2
+    jldi j6, 8
+    jmul j7, j1, j6               ; i * 8
+    jldi j8, 6
+    jwhile j8
+      jmul j3, j3, j4
+      jldi j6, 3039h              ; 12345
+      jadd j3, j3, j6
+      jand j3, j3, j5
+      jldi j6, 16
+      jshr j9, j3, j6
+      jldi j6, 0FFh
+      jand j9, j9, j6
+      jstb j9, j7, W
+      jldi j6, 1
+      jadd j7, j7, j6
+      jsub j8, j8, j6
+    jwend
+    jldi j6, 20                   ; its rate
+    jstb j6, j1, RATE
+    jldi j6, 1
+    jadd j1, j1, j6
+    jsub j2, j2, j6
   jwend
   jret
 
@@ -310,13 +371,9 @@ press:
   jldi j8, 63
   jsar j7, j7, j8
   jjz j7, p_done                ; no greeting left
-  jld j7, j13, SBASE
-  jadd j7, j7, j6
-  jldb j7, j7, SEQ              ; which key
   jldi j8, 8
-  jmul j7, j7, j8
-  jld j7, j7, KEYM              ; its pieces
   jmul j8, j6, j8
+  jld j7, j8, SONGM             ; its pieces
   jst j7, j8, NOWW
   jst j7, j8, WOKEW
 p_done:
@@ -547,6 +604,9 @@ w_go:
   jcall press
   jjmp waves
 w_done:
+  jldi j13, 0                   ; unless it is quiet
+  jld j13, j13, WHISP
+  jjnz j13, l_skip
   jldi j1, 0                    ; the shape learns
   jldi j2, 64
   jwhile j2
@@ -610,4 +670,5 @@ w_done:
     jadd j1, j1, j13
     jsub j2, j2, j13
   jwend
+l_skip:
   jret

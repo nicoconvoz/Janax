@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/cardumen_canto.jsm "$proyecto"/razar/cardumen/voluntad_canto.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/cardumen_canto.jsm "$proyecto"/razar/cardumen/voluntad_canto.jsm "$proyecto"/razar/cardumen/voluntad_oraciones.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -444,6 +444,24 @@ P1 codigo=0 j0=* t=*
 P0 codigo=0 j0=$huella_canto t=*
 ventanilla: *" voluntad_canto
 carpeta=
+
+# The sentences with noise, run in Janax (Capitan, 2026-11-06): the will reads its parameters from the file "p" (the
+# school's seed, the percent of slipping fingers, 1 if quiet), learns, reads 40 sentences and hears 20 new words, with
+# the dice of the model: the fingerprint of oraciones.pl huella=1, bit for bit, and the same line it writes.
+for conf in "1001 10 0" "1003 20 1"; do
+  set -- $conf
+  q=""; [ $3 = 1 ] && q="quieto=1"
+  huella_or=$(perl "$proyecto/razar/cardumen/oraciones.pl" nace=$1 desliz=$2 $q huella=1)
+  linea_or=$(perl "$proyecto/razar/cardumen/oraciones.pl" nace=$1 desliz=$2 $q | sed -n 2p | tr -d '')
+  familia familia_oracion cardumen_canto
+  perl -e 'print pack("Q<3", @ARGV)' $1 $2 $3 > "$salida/familia_oracion/70"
+  caso "razar: las oraciones con ruido como en el modelo ($1, $2 %, quieto $3)" 0 0 "$fijo0
+P1 codigo=0 j0=* t=*
+$linea_or
+P0 codigo=0 j0=$huella_or t=*
+ventanilla: *" voluntad_oraciones
+  carpeta=
+done
 
 # The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
 # will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit. The will listens to the melody:

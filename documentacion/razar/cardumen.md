@@ -931,3 +931,17 @@ pesos en 0 son raros en historias cortas), pero en corridas largas con aprendiza
 aprendiendo. Ahora decide el signo: un empuje de 0 sigue contando. Verificado: el modelo da idéntico al de las 20
 semillas (dos configuraciones), y todas las huellas siguen iguales (las de las piezas 1 a 3 de Janax incluidas). El
 resultado de las 20 semillas sigue en pie. `oraciones.pl huella=1` mezcla cada adivinanza: la vara de la pieza 5.
+
+**Pieza 5: las oraciones con ruido, en Janax** (`voluntad_oraciones.jsm` con `cardumen_canto.jsm`; vara:
+`oraciones.pl huella=1`). La voluntad lee sus parámetros del archivo `p` (tres qwords: la semilla del cardumen, el
+porcentaje de dedos que resbalan, 1 si el cardumen está quieto), hace nacer al cardumen con esa semilla (orden 5), y
+hace el experimento entero: aprende las 30 palabras, 20 pasadas, cada una como canción con las piezas exactas de cada
+saludo (orden 6: un dedo resbalado aprieta piezas que no son ninguna de las 3 teclas); lee 40 oraciones de 3 a 5
+palabras sacadas con los dados del modelo; y oye las 20 palabras que nunca oyó. Escribe la misma línea que el modelo.
+- **Bit por bit en los tres motores**, con dos configuraciones: semilla 1001, 10 %, aprendiendo
+  (`0000A1A4AA959425`, "86 %; 93 %; 32 de 40") y semilla 1003, 20 %, quieto (`00003FC5AF9436F2`, "72 %; 78 %; 14 de
+  40"). La línea que escribe Janax es idéntica, letra por letra, a la del modelo.
+- **Tiempo: Janax 392 ms (traductor), Perl 17.269 ms: unas 44 veces más rápido.** El experimento de 20 semillas
+  (80 corridas) pasa de ~23 minutos a ~30 segundos.
+- Lo que atajó el ensamblador propio en el camino: una etiqueta que quedó en otra rutina al separarlas, y un
+  comentario con un salto de línea de verdad adentro (generado mal por Doc).
