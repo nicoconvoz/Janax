@@ -43,6 +43,17 @@ NADC  = 1440h                   ; by kind: pieces; blind pulses, and how many of
 TBLN  = 1480h
 TBLC  = 14C0h
 PREVX = 1500h                   ; by floor: the filling that arrived last (knocking)
+CONT  = 1540h                   ; the word right after the request being hung (property 2)
+CSAME = 1548h                   ; 1: in this switch pulse, what follows stayed the same
+BASEN = 1550h                   ; the bar: the same said again empty, and how often what follows stayed
+BASES = 1558h
+NTURN = 1560h                   ; switches that turn (what follows changes)
+PN    = 1568h                   ; property 2: the switch's pairs, how many stayed, log2 of n and of BN, the bits
+PS    = 1570h
+LGN   = 1578h
+LGB   = 1580h
+ACC   = 1588h
+GS2   = 1590h
 
 ; The requests of the renglones it learns from hung, the pulses woken and every difference judged. Uses j1-j14.
 learn_pulses:
@@ -106,7 +117,7 @@ jcall pow2
 jldi j4, 1
 jsub j4, j3, j4
 jst j4, j1, RMASK
-jldi j4, 24
+jldi j4, 40
 jmul j11, j3, j4
 jcall room
 jldi j1, 0
@@ -130,7 +141,7 @@ jst j13, j1, ROOMF
 jld j3, j1, RMASK
 jldi j4, 1
 jadd j3, j3, j4
-jldi j4, 48
+jldi j4, 64
 jmul j11, j3, j4
 jcall room
 
@@ -276,6 +287,8 @@ windows:
     jjz j3, wn_next
     jld j3, j9, 16
     jjz j3, wn_next
+    jld j3, j9, 24              ; what follows the three
+    jst j3, j1, CONT
     jldi j2, 2                  ; three in a row, said: the hole empty
     jst j2, j1, FLOOR
     jld j2, j1, FNVO
@@ -293,6 +306,8 @@ windows:
     jld j9, j1, WAT
     jld j3, j9, 24
     jjz j3, wn_next
+    jld j3, j9, 32              ; what follows the four
+    jst j3, j1, CONT
     jld j2, j1, FNVO            ; four in a row, the second taken out
     jldi j3, 2
     jcall hw
@@ -318,6 +333,7 @@ windows:
     jld j3, j9, 16
     jcall post
     jldi j1, 0                  ; the door: the pair of the ends without its order, filled by the two between
+    jst j1, j1, CONT
     jldi j2, 3
     jst j2, j1, FLOOR
     jld j9, j1, WAT
@@ -406,6 +422,29 @@ po_key:
   jst j3, j1, PAY
   jld j4, j1, TESTING
   jjnz j4, po_test
+  jld j3, j1, PAY               ; said empty again: does what follows stay as the first time? (the bar of property 2)
+  jjnz j3, po_form
+  jld j5, j1, KEY
+  jld j2, j1, ROOMR
+  jldi j3, 40
+  jcall t_find
+  jld j6, j4, 16
+  jjz j6, po_form
+  jld j6, j1, BASEN
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j1, BASEN
+  jld j6, j4, 24
+  jld j7, j1, CONT
+  jsub j6, j6, j7
+  jjnz j6, po_form
+  jld j6, j1, BASES
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j1, BASES
+po_form:
+  jld j2, j1, KEY
+  jld j3, j1, PAY
   jcall hw                      ; seen before?
   jjnz j2, po_seen
   jldi j2, 1
@@ -419,7 +458,7 @@ po_seen:
   jst j5, j4, 0
   jld j5, j1, KEY
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jldi j3, 40
   jcall t_find
   jld j6, j4, 0
   jjnz j6, po_old
@@ -431,9 +470,17 @@ po_seen:
 po_old:
   jld j3, j1, PAY
   jjz j3, po_said
-  jld j6, j4, 16                ; filled: against the empty, if it was said so
+  jld j6, j4, 16                ; filled: against the empty, if it was said so (and does what follows stay?)
   jjz j6, po_first
   jst j4, j1, RENT
+  jld j6, j4, 24
+  jld j7, j1, CONT
+  jsub j6, j6, j7
+  jldi j7, 1
+  jjz j6, po_same
+  jldi j7, 0
+po_same:
+  jst j7, j1, CSAME
   jldi j2, 0
   jcall pulse
   jldi j1, 0
@@ -443,6 +490,8 @@ po_first:
   jld j2, j4, 8                 ; and against the first that filled it
   jjnz j2, po_two
   jst j3, j4, 8
+  jld j7, j1, CONT
+  jst j7, j4, 32
   jret
 po_two:
   jsub j6, j2, j3
@@ -453,8 +502,17 @@ po_said:
   jjnz j6, po_done
   jldi j6, 1
   jst j6, j4, 16
+  jld j7, j1, CONT
+  jst j7, j4, 24
   jld j3, j4, 8
   jjz j3, po_done
+  jld j6, j4, 32                ; the first filling's next word, against this one's
+  jsub j6, j6, j7
+  jldi j7, 1
+  jjz j6, po_same2
+  jldi j7, 0
+po_same2:
+  jst j7, j1, CSAME
   jldi j2, 0
   jjmp pulse
 po_done:
@@ -462,7 +520,7 @@ po_done:
 po_test:
   jadd j5, j2, j1
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jldi j3, 40
   jcall t_find
   jld j6, j4, 0
   jjz j6, po_done               ; nothing asleep there
@@ -499,7 +557,7 @@ pulse:
   jst j3, j1, PB
   jcall d_make
   jld j2, j1, ROOMD
-  jldi j3, 48
+  jldi j3, 64
   jcall t_find
   jld j6, j1, CAT
   jst j6, j1, RC
@@ -538,7 +596,7 @@ pl_blind:                       ; the blind: the waiting filling against the one
   jld j2, j1, PA
   jcall d_make
   jld j2, j1, ROOMD
-  jldi j3, 48
+  jldi j3, 64
   jcall t_find
   jld j7, j4, 40
   jldi j8, 63
@@ -575,6 +633,15 @@ pl_count:
   jld j7, j6, NPULC
   jadd j7, j7, j8
   jst j7, j6, NPULC
+  jld j7, j1, CAT               ; a switch: did what follows stay?
+  jldi j8, 2
+  jsub j7, j7, j8
+  jjnz j7, pl_fill
+  jld j7, j4, 48
+  jld j8, j1, CSAME
+  jadd j7, j7, j8
+  jst j7, j4, 48
+pl_fill:
   jld j2, j1, DLO               ; its fillings, and its floor
   jcall f_bump
   jld j2, j1, DHI
@@ -686,7 +753,7 @@ judge:
   jadd j10, j10, j2
   jwhile j10
     jldi j1, 0
-    jldi j3, 48
+    jldi j3, 64
     jmul j3, j9, j3
     jld j2, j1, ROOMD
     jadd j3, j3, j2
@@ -753,11 +820,104 @@ judge:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j5, NADC
+    jldi j3, 16                 ; a switch: does it turn?
+    jsub j3, j5, j3
+    jjnz j3, ju_next
+    jcall p2_turns
   ju_next:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jret
+
+; Property 2 of the no (Razar, P54: "when it appears, what follows changes"), for the switch at GE: with it and
+; without it, what follows stays the same less often than when the same is said again empty (the bar BASES / BASEN),
+; by more than an own proportion costs to say: s and n its pairs that stayed and all, the bits n * KL(s/n, bar) must
+; pay log2(n) / 2. Then it turns ([GE + 56] = 1): taking it out changes what is said. Uses j1-j8.
+p2_turns:
+  jldi j1, 0
+  jld j2, j1, BASEN
+  jjz j2, p2_done
+  jld j3, j1, GE
+  jld j4, j3, 32
+  jst j4, j1, PN
+  jld j5, j3, 48
+  jst j5, j1, PS
+  jld j6, j1, BASES
+  jmul j7, j5, j2
+  jmul j8, j6, j4
+  jsub j7, j7, j8
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjz j7, p2_done               ; it stays as often as the bar, or more
+  jsub j7, j2, j6
+  jjz j7, p2_yes                ; the bar always stays: any change is news
+  jld j2, j1, PN
+  jcall lg16
+  jst j2, j1, LGN
+  jld j2, j1, BASEN
+  jcall lg16
+  jst j2, j1, LGB
+  jst j1, j1, ACC
+  jld j2, j1, PS                ; s * (log2 s + log2 BN - log2 n - log2 BS)
+  jjz j2, p2_rest
+  jcall lg16
+  jld j3, j1, LGB
+  jadd j2, j2, j3
+  jld j3, j1, LGN
+  jsub j2, j2, j3
+  jst j2, j1, ACC
+  jld j2, j1, BASES
+  jcall lg16
+  jld j3, j1, ACC
+  jsub j3, j3, j2
+  jld j4, j1, PS
+  jmul j3, j3, j4
+  jst j3, j1, ACC
+p2_rest:
+  jld j2, j1, PN                ; (n - s) * (log2(n - s) + log2 BN - log2 n - log2(BN - BS))
+  jld j3, j1, PS
+  jsub j2, j2, j3
+  jjz j2, p2_cost
+  jcall lg16
+  jld j3, j1, LGB
+  jadd j2, j2, j3
+  jld j3, j1, LGN
+  jsub j2, j2, j3
+  jst j2, j1, GS2
+  jld j2, j1, BASEN
+  jld j3, j1, BASES
+  jsub j2, j2, j3
+  jcall lg16
+  jld j3, j1, GS2
+  jsub j3, j3, j2
+  jld j4, j1, PN
+  jld j5, j1, PS
+  jsub j4, j4, j5
+  jmul j3, j3, j4
+  jld j4, j1, ACC
+  jadd j4, j4, j3
+  jst j4, j1, ACC
+p2_cost:
+  jld j2, j1, ACC               ; minus log2(n) / 2
+  jld j3, j1, LGN
+  jldi j4, 1
+  jsar j3, j3, j4
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, p2_done
+  jjz j2, p2_done
+p2_yes:
+  jld j3, j1, GE
+  jldi j2, 1
+  jst j2, j3, 56
+  jld j2, j1, NTURN
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, NTURN
+p2_done:
   jret
 
 ; log2 of j2 (1 or more) in 2^-16 of a bit -> j2: the highest bit, then sixteen bits of the rest by squaring.
@@ -843,8 +1003,22 @@ dp_switch:
   jldi j6, 2
   jsub j6, j5, j6
   jjnz j6, dp_mates
-  jld j2, j1, DHI               ; interruptores: the word taken out
-  jjmp putword
+  jld j2, j1, DHI               ; interruptores: the word taken out, how often what follows stayed, and if it turns
+  jcall putword
+  jldi j1, S_STAYS
+  jcall puts
+  jld j2, j12, 48
+  jcall putnum
+  jldi j1, S_OF
+  jcall puts
+  jld j2, j12, 32
+  jcall putnum
+  jldi j2, 41
+  jcall putch
+  jld j2, j12, 56
+  jjz j2, dp_done
+  jldi j1, S_FLIPS
+  jjmp puts
 dp_mates:
   jldi j6, 3
   jsub j6, j5, j6

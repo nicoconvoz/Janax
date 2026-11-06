@@ -44,3 +44,13 @@ db ' bits (', 0
 times 500h - $ db 0
 db ' pares) ', 0
 times 540h - $ db 0
+db ' (lo que sigue, igual: ', 0
+times 580h - $ db 0
+db ' de ', 0
+times 5C0h - $ db 0
+db ' DA VUELTA', 0
+times 600h - $ db 0
+db 'propiedad 2: dicho de nuevo, lo que sigue queda igual ', 0
+times 640h - $ db 0
+db ' | dan vuelta:', 0
+times 680h - $ db 0

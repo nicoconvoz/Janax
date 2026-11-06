@@ -31,6 +31,10 @@ S_TURN  = 300h
 S_PLACE = 340h
 S_NSW   = 380h
 S_NDR   = 3C0h
+S_STAYS = 400h
+S_OF    = 440h
+S_FLIPS = 480h
+S_NTURN = 4C0h
 
 ROOMX = 1600h                   ; the facts: {key, the word that fills it} per place (a key may have many)
 XMASK = 1608h
@@ -107,7 +111,7 @@ jldi j2, 1
 jadd j10, j10, j2
 jwhile j10
   jldi j1, 0
-  jldi j3, 48
+  jldi j3, 64
   jmul j3, j9, j3
   jld j2, j1, ROOMD
   jadd j3, j3, j2
@@ -135,6 +139,8 @@ jwhile j10
   jst j6, j4, 0
   jld j6, j3, 16
   jst j6, j4, 8
+  jld j6, j3, 56                ; and whether it turns
+  jst j6, j4, 24
   jld j6, j1, NSWP
   jldi j7, 1
   jadd j6, j6, j7
@@ -218,6 +224,12 @@ jldi j1, S_NDR
 jcall puts
 jld j2, j1, NDRP
 jcall putnum
+jldi j1, S_NTURN
+jcall puts
+jld j2, j1, NTURN
+jcall putnum
+jldi j2, 41
+jcall putch
 jldi j2, 10
 jcall putch
 
@@ -895,6 +907,8 @@ wf_ask:
     jldi j3, 1
     jsub j3, j2, j3
     jjnz j3, wa_door
+    jld j2, j9, 24              ; a switch that turns is never taken out
+    jjnz j2, wa_next
     jld j2, j1, CMN             ; a switch
     jldi j3, 3
     jsub j3, j2, j3

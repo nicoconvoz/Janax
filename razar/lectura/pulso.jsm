@@ -47,6 +47,11 @@ S_PCS   = 440h
 S_BLIND = 480h
 S_BITS  = 4C0h
 S_PAIRS = 500h
+S_STAYS = 540h
+S_OF    = 580h
+S_FLIPS = 5C0h
+S_P2    = 600h
+S_P2T   = 640h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -102,6 +107,44 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, JLEFT
 jwend
+jldi j1, S_P2                   ; property 2: the bar, and the switches that turn
+jcall puts
+jld j2, j1, BASES
+jcall putmix
+jldi j1, S_OF
+jcall puts
+jld j2, j1, BASEN
+jcall putmix
+jld j2, j1, BASES
+jld j3, j1, BASEN
+jcall putpct
+jldi j1, S_P2T
+jcall puts
+jldi j9, 0
+jld j10, j1, RMASK
+jldi j2, 1
+jadd j10, j10, j2
+jwhile j10
+  jldi j1, 0
+  jldi j11, 64
+  jmul j11, j9, j11
+  jld j2, j1, ROOMD
+  jadd j11, j11, j2
+  jld j2, j11, 0
+  jjz j2, tv_next
+  jld j2, j11, 56
+  jjz j2, tv_next
+  jldi j2, 32
+  jcall putch
+  jld j2, j11, 16
+  jcall putword
+tv_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
+jldi j2, 10
+jcall putch
 jjmp finish
 
 ; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so
@@ -166,7 +209,7 @@ kind_report:
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
-      jldi j3, 48
+      jldi j3, 64
       jmul j3, j9, j3
       jld j2, j1, ROOMD
       jadd j3, j3, j2
