@@ -45,6 +45,12 @@ NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pul
 TRC   = 17D0h                   ; by reading: {key of a filling or a floor and the reading, its pulses} (growing)
 GNE   = 17F0h                   ; judging: the pairs of the difference in its birth reading, that reading
 GBR   = 17F8h
+ROOMUF = 12F8h                  ; the concepts: by word {its root, its best bits, its best partner}; they exist (1)
+CONOK = 17A0h
+CPA   = 17A8h                   ; (two roots)
+CPB   = 17B0h
+TCOC  = 17B8h                   ; knocking: associates pulses in one concept, real and blind
+TCOB  = 17C0h
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
@@ -213,6 +219,7 @@ jwhile j2
   jst j2, j1, PASL
 jwend
 jcall judge
+jcall concepts
 jret
 jret
 
@@ -718,6 +725,16 @@ pu_any:
   jadd j7, j7, j8
   jst j7, j6, TPCEC
 pl_blind:                       ; the blind: the waiting filling against the one that arrived before, on this floor
+  jld j7, j1, RC                ; (first: two associates of one concept?)
+  jldi j8, 3
+  jsub j7, j7, j8
+  jjnz j7, pb_go
+  jcall cp_same
+  jldi j1, 0
+  jld j7, j1, TCOC
+  jadd j7, j7, j3
+  jst j7, j1, TCOC
+pb_go:
   jld j5, j1, FLOOR
   jldi j7, 3
   jshl j5, j5, j7
@@ -734,6 +751,18 @@ pl_blind:                       ; the blind: the waiting filling against the one
   jst j7, j6, TBLN
   jld j2, j1, PA
   jcall d_make
+  jld j7, j1, RC                ; (the blind pair: one concept?)
+  jldi j8, 3
+  jsub j7, j7, j8
+  jjnz j7, pb_key
+  jst j5, j1, PDK
+  jcall cp_same
+  jldi j1, 0
+  jld j7, j1, TCOB
+  jadd j7, j7, j3
+  jst j7, j1, TCOB
+  jld j5, j1, PDK
+pb_key:
   jld j2, j1, ROOMD
   jldi j3, 48
   jcall t_find
@@ -1081,6 +1110,192 @@ ta_k:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j4, 8
+  jret
+
+
+; The concepts, inside the silhouettes (Capitan: "generate concepts in silhouettes"): each word joins the one it is
+; most like, its associate piece that saves the most bits, and the groups those links make are the concepts. No
+; threshold: you are of the family of whom you most resemble. By word {its root, its best bits, its best partner}
+; (24 bytes); CONOK 1 once they exist. Uses j1-j14.
+concepts:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMUF
+  jldi j9, 0                    ; every word its own root
+  jld j10, j1, NV
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jst j9, j3, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j9, 0                    ; every associate piece: each of its two words keeps the strongest
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j2, j1, ROOMD
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, cp_next
+    jld j2, j3, 40
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, cp_next
+    jjz j2, cp_next
+    jst j3, j1, GE
+    jld j2, j3, 24
+    jst j2, j1, DKT
+    jld j2, j3, 8
+    jst j2, j1, DLO
+    jld j2, j3, 16
+    jst j2, j1, DHI
+    jcall d_cat_of
+    jldi j6, 3
+    jsub j6, j5, j6
+    jjnz j6, cp_next
+    jld j2, j1, DLO
+    jld j3, j1, DHI
+    jcall cp_best
+    jldi j1, 0
+    jld j2, j1, DHI
+    jld j3, j1, DLO
+    jcall cp_best
+  cp_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j9, 0                    ; each word with its best: one concept
+  jld j10, j1, NV
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jld j3, j3, 16
+    jjz j3, cu_next
+    jadd j2, j9, j1
+    jcall uf_union
+  cu_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, CONOK
+  jret
+
+; The word j2 keeps j3 as its best partner if the piece at GE saves more bits than its best so far. Uses j1-j6.
+cp_best:
+  jldi j1, 0
+  jldi j4, 24
+  jmul j4, j2, j4
+  jld j5, j1, ROOMUF
+  jadd j4, j4, j5
+  jld j5, j1, GE
+  jld j5, j5, 40
+  jld j6, j4, 8
+  jsub j6, j6, j5
+  jldi j1, 63
+  jsar j6, j6, j1
+  jldi j1, 0
+  jjz j6, cb_done
+  jst j5, j4, 8
+  jst j3, j4, 16
+cb_done:
+  jret
+
+; The root of the word j2 (each step halves the path) -> j2. Uses j1, j3, j4.
+uf_find:
+  jldi j1, 0
+uf_step:
+  jldi j3, 24
+  jmul j3, j2, j3
+  jld j4, j1, ROOMUF
+  jadd j3, j3, j4
+  jld j4, j3, 0
+  jsub j4, j4, j2
+  jjz j4, uf_done
+  jld j4, j3, 0                 ; its parent's parent becomes its parent
+  jldi j2, 24
+  jmul j2, j4, j2
+  jld j1, j1, ROOMUF
+  jadd j2, j2, j1
+  jldi j1, 0
+  jld j2, j2, 0
+  jst j2, j3, 0
+  jjmp uf_step
+uf_done:
+  jret
+
+; The words j2 and j3 in one concept (the smaller root stays). Uses j1-j6.
+uf_union:
+  jst j3, j1, CPB
+  jcall uf_find
+  jst j2, j1, CPA
+  jld j2, j1, CPB
+  jcall uf_find
+  jld j3, j1, CPA
+  jsub j4, j2, j3
+  jjz j4, un_done
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, un_put
+  jadd j4, j2, j1               ; (the smaller as the root)
+  jadd j2, j3, j1
+  jadd j3, j4, j1
+un_put:
+  jldi j4, 24                   ; the larger root under the smaller
+  jmul j4, j2, j4
+  jld j5, j1, ROOMUF
+  jadd j4, j4, j5
+  jst j3, j4, 0
+un_done:
+  jret
+
+; j3 = 1 if the words DLO and DHI are in one concept (other words), else 0. Uses j1-j6.
+cp_same:
+  jldi j1, 0
+  jldi j3, 0
+  jld j2, j1, CONOK
+  jjz j2, cs_done
+  jld j2, j1, DLO
+  jld j3, j1, DHI
+  jsub j3, j2, j3
+  jjz j3, cs_done
+  jjz j2, cs_no
+  jld j2, j1, DHI
+  jjz j2, cs_no
+  jld j2, j1, DLO
+  jcall uf_find
+  jst j2, j1, CPA
+  jld j2, j1, DHI
+  jcall uf_find
+  jld j3, j1, CPA
+  jsub j3, j2, j3
+  jjnz j3, cs_no
+  jldi j3, 1
+  jret
+cs_no:
+  jldi j3, 0
+cs_done:
   jret
 
 ; The kind of the difference DKT, DLO -> j5: 1 gemelos, 2 interruptores (one filling empty), 3 asociados, 4 puertas.

@@ -1059,3 +1059,34 @@ tres motores (10 lecturas: `0000635B80FA2373`):
 - Las lecturas pares y las impares dan casi lo mismo entre sí (1 y 5: 14,9 %; 2 y 10: 14,6 % en asociados): las siluetas
   de los lugares sin mayoría se alternan de una lectura a la otra.
 - La memoria crece con las lecturas, por las cuentas de cada una: 303 MB con una, 422 MB con diez.
+
+# Conceptos en las siluetas (2026-11-06)
+
+El Capitán: *"quiero que construya y recombine instintos y que genere conceptos en siluetas"*. Primero los conceptos:
+**cada palabra se une con aquella a la que más se parece**, su pieza de asociado que más bits ahorra, y los grupos que
+forman esos lazos son los conceptos. Sin umbral: sos de la familia de quien más te parecés (unión de conjuntos,
+`concepts` en `pulso.inc`). Al golpear con lo no leído, cada par de asociados se prueba: ¿cae en un mismo concepto?, y
+también el par ciego.
+
+Libro entero, uno de cada diez renglones apartado, idéntico en los tres motores (`0000D3698F1AE83D`): **202 conceptos**.
+
+| | pares de lo no leído en un mismo concepto | el ciego |
+|---|---|---|
+| conceptos | **824 de 5.520 (14,9 %)** | 216 de 5.519 (3,9 %): **3,8×** |
+
+Los ocho más grandes, nacidos solos:
+
+```
+20: hijo padre rey espíritu señor nombre pueblo mesías camino reino
+14: sus las lo se los aquel muchos estas tus nuestras
+13: dijo preguntaron respondieron respondió decía dice dicen ordenó dijeron preguntó
+12: , : ; y . que porque – como pero
+11: vida muerte palabra justicia ley fe carne iglesia escritura verdad
+10: hermanos lágrimas hijos fariseos discípulos ojos pies padres compañeros servidores
+ 9: tanto judíos niños cielos ángeles hombres paganos demás muertos
+ 8: el este un al otro ese nuestro sabemos
+```
+
+Los verbos de decir, los sustantivos abstractos, los títulos, los plurales de personas y los determinantes salen cada uno
+en su grupo, y el género vuelve a aparecer (sus las / el este un). Hay intrusos ("lágrimas", "tanto", "sabemos"): un lazo
+al más parecido no sabe todavía decir "no me parezco a nadie".

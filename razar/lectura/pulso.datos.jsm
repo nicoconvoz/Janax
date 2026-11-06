@@ -128,3 +128,5 @@ db ', vueltas hasta que no se mueve: ', 0
 times 0F80h - $ db 0
 db 'bits que ahorran las piezas, por clase:', 0
 times 0FC0h - $ db 0
+db 'conceptos (cada palabra con quien mas se parece):', 0
+times 1000h - $ db 0

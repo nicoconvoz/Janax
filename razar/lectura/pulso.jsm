@@ -89,6 +89,7 @@ S_SKC   = 540h
 S_SKO   = 580h
 S_KIN   = 640h
 S_DEEP  = 0F80h
+S_CONC  = 0FC0h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -224,6 +225,8 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, JLEFT
 jwend
+jcall flush
+jcall concept_report
 jcall flush                     ; the bits each kind's pieces save
 jldi j1, S_DEEP
 jcall puts
@@ -1604,6 +1607,186 @@ assoc_report:
 ar_done:
   jldi j2, 10
   jjmp putch
+
+
+; The concepts: how many (groups of two words or more), how often two associates of what it never read fall in one
+; (real, and blind), and the eight biggest, ten words each. Their sizes go into j0. Uses j1-j14.
+concept_report:
+  jldi j1, 0                    ; sizes, at each root's best bits (no longer needed)
+  jldi j9, 0
+  jld j10, j1, NV
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jst j1, j3, 8
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j9, 0
+  jld j10, j1, NV
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jld j3, j3, 16
+    jjz j3, cr_next
+    jadd j2, j9, j1
+    jcall uf_find
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jld j4, j3, 8
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 8
+  cr_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j11, 0                   ; how many
+  jldi j9, 0
+  jld j10, j1, NV
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jld j3, j3, 8
+    jjz j3, cn_next
+    jldi j3, 1
+    jadd j11, j11, j3
+  cn_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j1, S_CONC
+  jcall puts
+  jadd j2, j11, j1
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jldi j2, 124
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, TCOC
+  jcall putmix
+  jldi j2, 47
+  jcall putch
+  jld j2, j1, TPULC + 24
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jldi j2, 124
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, TCOB
+  jcall putmix
+  jldi j2, 47
+  jcall putch
+  jld j2, j1, TBLN + 24
+  jcall putmix
+  jldi j2, 10
+  jcall putch
+  jcall flush
+  jldi j2, 8                    ; the biggest
+  jst j2, j1, TOPN
+  jwhile j2
+    jldi j1, 0
+    jldi j11, 1
+    jldi j12, 0
+    jldi j9, 0
+    jld j10, j1, NV
+    jwhile j10
+      jldi j3, 24
+      jmul j3, j9, j3
+      jld j4, j1, ROOMUF
+      jadd j3, j3, j4
+      jld j2, j3, 8
+      jsub j4, j11, j2
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjz j4, cb2_next
+      jadd j11, j2, j1
+      jadd j12, j9, j1
+    cb2_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, cr_done
+    jst j12, j1, CPA              ; (its root; written: its size out)
+    jldi j3, 24
+    jmul j3, j12, j3
+    jld j4, j1, ROOMUF
+    jadd j3, j3, j4
+    jst j1, j3, 8
+    jadd j12, j11, j1
+    jcall mix
+    jldi j2, 32
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jadd j2, j11, j1
+    jcall putnum
+    jldi j2, 58
+    jcall putch
+    jldi j1, 0
+    jldi j2, 10
+    jst j2, j1, CPB
+    jldi j9, 0
+    jld j10, j1, NV
+    jwhile j10
+      jldi j1, 0
+      jldi j3, 24
+      jmul j3, j9, j3
+      jld j4, j1, ROOMUF
+      jadd j3, j3, j4
+      jld j3, j3, 16
+      jjz j3, cw_next
+      jadd j2, j9, j1
+      jcall uf_find
+      jld j3, j1, CPA
+      jsub j3, j2, j3
+      jjnz j3, cw_next
+      jld j3, j1, CPB
+      jjz j3, cw_next
+      jldi j4, 1
+      jsub j3, j3, j4
+      jst j3, j1, CPB
+      jldi j2, 32
+      jcall putch
+      jadd j2, j9, j1
+      jcall putword
+    cw_next:
+      jldi j1, 0
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jldi j2, 10
+    jcall putch
+    jcall flush
+    jldi j1, 0
+    jld j2, j1, TOPN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, TOPN
+  jwend
+cr_done:
+  jret
 
 ; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so
 ; the next round finds the next). Its counts go into j0. Uses j1-j14.
