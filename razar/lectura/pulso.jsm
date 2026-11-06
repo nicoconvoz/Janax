@@ -88,6 +88,7 @@ S_SKEL  = 600h
 S_SKC   = 540h
 S_SKO   = 580h
 S_KIN   = 640h
+S_DEEP  = 0F80h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -223,6 +224,41 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, JLEFT
 jwend
+jcall flush                     ; the depth of each floor, and the bits each kind's pieces save
+jldi j1, S_DEEP
+jcall puts
+jldi j9, 1
+jldi j10, 3
+jwhile j10
+  jldi j1, 0
+  jst j9, j1, FLOOR
+  jcall po_depth
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, PDP
+  jcall putmix
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
+jldi j2, 124
+jcall putch
+jldi j9, 1
+jldi j10, 4
+jwhile j10
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j9, j3
+  jld j2, j3, SAVC              ; (in all: per pulse, over the pulses its line says)
+  jcall putq16
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
+jldi j2, 10
+jcall putch
 jcall flush                     ; the switch, distilled by the five properties
 jldi j1, S_NEG
 jcall puts

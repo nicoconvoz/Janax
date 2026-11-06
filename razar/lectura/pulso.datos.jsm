@@ -126,3 +126,5 @@ db ':', 0
 times 0F40h - $ db 0
 db ', vueltas hasta que no se mueve: ', 0
 times 0F80h - $ db 0
+db 'profundidad por piso:', 0
+times 0FC0h - $ db 0

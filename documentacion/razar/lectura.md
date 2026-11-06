@@ -823,3 +823,34 @@ lugar ya testificaba una sola vez, porque cada forma se contaba una vez. Entonce
 
 **Lo que les cuesta a las puertas es profundidad 1, no el testimonio.** Comparar solo con la jugada anterior pierde
 puertas que salen de comparar con la primera. En los otros tres pisos profundidad 1 le gana al azar por igual o por más.
+
+# La profundidad de cada piso, hasta donde se aclara (2026-11-06)
+
+El Capitán: *"puede ser más profundo, pero que no malgaste profundidad: si es 3, no llegues a 4"*. Cada pedido recuerda
+sus últimas *d* jugadas distintas (8 bytes cada una, la más nueva primero) y la jugada nueva pulsa contra cada una que
+sea otra; el testimonio único sigue valiendo. *d* es propio de cada piso y viaja en el archivo `p`, después del renglón
+apartado (un byte por piso; 0 o nada es 1, así que los archivos de antes valen igual). Con profundidad 1 en los tres
+pisos todo sale idéntico a antes.
+
+**Quién decide:** el mismo juez. El informe da cuántos bits ahorran las piezas de cada clase; por pulso, es lo que
+comprime. `razar/lectura/hondura.sh` sube un piso de a un escalón y frena en el primero que **no comprime mejor**.
+El azar no entra en la decisión: se usa después, para verificar.
+
+| piso | profundidad 1 | profundidad 2 | se aclara en |
+|---|---|---|---|
+| gemelos | 1,464 bits por pulso | 1,416 | **1** |
+| palabras (interruptores y asociados) | 0,456 | 0,412 | **1** |
+| puertas | 0,0132 | 0,0113 | **1** |
+
+El azar lo confirma: con profundidad 2 en las puertas el ciego empieza a acertar (41 contra 0) y en asociados la
+distancia con el azar cae de 4,3× a 2,6×. Más profundidad ahorra más bits en total (puertas 971 → 1.469) pero con más
+pulsos, y por pulso comprime peor: es ruido que se suma.
+
+**Lo que la medición dice de las puertas:** lo que les faltaba con profundidad 1 (59 contra 70 de lo no leído) no es
+profundidad. Es **contra qué jugada** se compara: la versión de todas las formas comparaba contra la primera que llenó
+el lugar, no contra las últimas.
+
+Nota de oficio: la primera corrida de la calibración mintió. El archivo `p` llevaba el texto del comando en lugar de los
+números, y las cuatro pruebas corrieron con profundidades 36, 40 y 112. Se vio porque los números salían idénticos
+hasta el último decimal, y porque el informe ahora escribe la profundidad que leyó. Con dos decimales las puertas
+empataban en "0,01": el informe pasó a dar los bits totales y la cuenta se hace con todos los decimales.

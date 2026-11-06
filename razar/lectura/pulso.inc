@@ -3,7 +3,8 @@
 ; the pulses and judges every difference; all_floors with TESTING 1 then knocks with what it never read. The program
 ; that includes it keeps its own variables from 1600h on and includes it before lectura.inc.
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
-ROOMR = 1208h                   ; the requests: {key, what filled it first, said empty} per place (24 bytes)
+ROOMR = 1208h                   ; the requests: {key, its last moves, newest first: a filling, or the empty as 1 << 62}
+                                ; (8 bytes and 8 per move of the deepest floor)
 ROOMS = 1F20h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
                                 ; its question's bits} per place (56 bytes)
 ROOMD = 1218h                   ; the differences: {key, low, high, floor | turned << 8, pairs, bits saved (in 2^-16)}
@@ -36,6 +37,11 @@ GS    = 12E0h
 GN    = 12E8h
 TPT   = 1F40h                   ; what each place testified: {key of place and difference} (a growing table)
 PDK   = 1F60h                   ; the key of the difference of a pulse
+RSZ   = 1F68h                   ; the bytes of a request, the depth of the floor walked, the move walked, the deepest
+PDP   = 1F70h
+PIX   = 1F78h
+DMX   = 1F88h
+SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
 SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
 NPULC = 1300h                   ; by kind (8 bytes each, from kind 0): pulses, differences, pulses in what it never
@@ -128,6 +134,31 @@ rc_next:
   jst j2, j1, JLEFT
 jwend
 
+jldi j1, 0                      ; the deepest floor: a request keeps that many moves
+jldi j9, 1
+jldi j10, 3
+jldi j11, 1
+jwhile j10
+  jst j9, j1, FLOOR
+  jcall po_depth
+  jld j3, j1, PDP
+  jsub j4, j11, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, dx_no
+  jadd j11, j3, j1
+dx_no:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
+jst j11, j1, DMX
+jldi j2, 3
+jshl j11, j11, j2
+jldi j2, 8
+jadd j11, j11, j2
+jst j11, j1, RSZ
+
 jldi j1, 0                      ; its three tables: places for every request it could ever hang (the letters of every
 jld j2, j1, ARPOS               ; word, and four per unit), twice over
 jld j3, j1, NTOK
@@ -139,7 +170,7 @@ jcall pow2
 jldi j4, 1
 jsub j4, j3, j4
 jst j4, j1, RMASK
-jldi j4, 24
+jld j4, j1, RSZ
 jmul j11, j3, j4
 jcall room
 jldi j1, 0
@@ -448,12 +479,12 @@ t_find:
   jwend
   jret
 
-; A request: key j2, filled by j3 (0: said empty). Depth one (Capitan: "the move before and the next, never every
-; possible move"): a request keeps only its last move, and the next one, if it is another, wakes the pulse between
-; the two and becomes the last. Awake it hangs and wakes; knocking it only wakes. When FORMS asks for them, the forms
-; the irregular is studied over are kept, one of each kind (Capitan: "not every form, one of each kind; the rest is the
-; weights"): a place of the words' floor said plain, and said with the switch (distilled before), each with where it
-; was first and its weight, how often. Uses j1-j8.
+; A request: key j2, filled by j3 (0: said empty). Its floor's depth (Capitan: "it can be deeper, but no depth wasted: if
+; it is 3, do not reach 4"): a request keeps its last moves, as many as its floor's depth, and the next one wakes the
+; pulse with each that is another, and goes first. Awake it hangs and wakes; knocking it only wakes. When FORMS asks
+; for them, the forms the irregular is studied over are kept, one of each kind (Capitan: "not every form, one of each
+; kind; the rest is the weights"): a place of the words' floor said plain, and said with the switch (distilled before), each
+; with where it was first and its weight, how often. Uses j1-j8.
 post:
   jldi j1, 0
   jjnz j2, po_key
@@ -505,9 +536,10 @@ po_again:                       ; a form seen before: once more
   jst j6, j4, 24
 po_req:
   jldi j1, 0
+  jcall po_depth
   jld j5, j1, KEY
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jld j3, j1, RSZ
   jcall t_find
   jld j6, j4, 0
   jjnz j6, po_old
@@ -521,43 +553,118 @@ po_old:
   jcall po_meet
   jldi j1, 0
   jld j4, j1, RENT
-po_keep:
-  jld j3, j1, PAY               ; the last move now: {its filling, 1 if it was the empty}
-  jst j3, j4, 8
+po_keep:                        ; the move goes first: if it was among its moves it comes forward, else the oldest falls
+  jldi j1, 0
+  jst j4, j1, RENT
+  jld j3, j1, PAY
+  jjnz j3, pk_code
+  jldi j3, 1                    ; (the empty, as a move: a code no filling has)
+  jldi j5, 62
+  jshl j3, j3, j5
+pk_code:
+  jld j5, j1, PDP
   jldi j6, 1
-  jjz j3, po_mark
+  jsub j5, j5, j6
   jldi j6, 0
-po_mark:
-  jst j6, j4, 16
+  jld j7, j1, PDP
+  jwhile j7
+    jldi j8, 3
+    jshl j8, j6, j8
+    jadd j8, j8, j4
+    jld j2, j8, 8
+    jjz j2, pk_at
+    jsub j2, j2, j3
+    jjz j2, pk_at
+    jldi j2, 1
+    jadd j6, j6, j2
+    jsub j7, j7, j2
+  jwend
+  jjmp pk_shift
+pk_at:
+  jadd j5, j6, j1
+pk_shift:
+  jwhile j5
+    jldi j8, 3
+    jshl j8, j5, j8
+    jadd j8, j8, j4
+    jld j2, j8, 0
+    jst j2, j8, 8
+    jldi j2, 1
+    jsub j5, j5, j2
+  jwend
+  jst j3, j4, 8
 po_done:
   jret
 po_test:
   jadd j5, j2, j1
+  jcall po_depth
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jld j3, j1, RSZ
   jcall t_find
   jld j6, j4, 0
   jjz j6, po_done               ; nothing asleep there
   jjmp po_meet
 
-; The move PAY against the last move of the request at j4: if it is another, the pulse between the two (the empty, if
-; one of them is, waits: j2 = 0). Uses j1-j8.
+; The depth of the floor FLOOR (its byte of HOND; 0: one) -> PDP. Uses j1-j3.
+po_depth:
+  jldi j1, 0
+  jld j2, j1, FLOOR
+  jldi j3, 1
+  jsub j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, HOND
+  jshr j3, j3, j2
+  jldi j2, 255
+  jand j3, j3, j2
+  jjnz j3, pd_one
+  jldi j3, 1
+pd_one:
+  jst j3, j1, PDP
+  jret
+
+; The move PAY against every move the request at j4 keeps {key, its last PDP moves, newest first}: each other one
+; wakes the pulse between the two (the empty, if one of them is, waits: j2 = 0). Uses j1-j8.
 po_meet:
   jldi j1, 0
   jst j4, j1, RENT
-  jld j2, j4, 8
-  jld j6, j4, 16
+  jst j1, j1, PIX
+pm_next:
+  jldi j1, 0
+  jld j6, j1, PIX
+  jld j7, j1, PDP
+  jsub j7, j7, j6
+  jjz j7, po_done
+  jldi j7, 1
+  jadd j7, j6, j7
+  jst j7, j1, PIX
+  jld j4, j1, RENT
+  jldi j7, 3
+  jshl j7, j6, j7
+  jadd j7, j7, j4
+  jld j2, j7, 8
+  jjz j2, po_done
   jld j3, j1, PAY
-  jjz j6, pm_filled
+  jcall pm_pair
+  jjmp pm_next
+
+; The kept move j2 (a code) against the move j3 (0: the empty): the pulse, if it is another. Uses j1-j8.
+pm_pair:
+  jldi j1, 0
+  jldi j6, 1
+  jldi j7, 62
+  jshl j6, j6, j7
+  jsub j7, j2, j6
+  jjnz j7, mv_filled
   jjz j3, po_done               ; empty after empty: the same move
   jldi j2, 0
   jjmp pulse
-pm_filled:
-  jjnz j3, pm_both
+mv_filled:
+  jjnz j3, mv_both
   jadd j3, j2, j1               ; empty after a filling
   jldi j2, 0
   jjmp pulse
-pm_both:
+mv_both:
   jsub j6, j2, j3
   jjz j6, po_done               ; the same move
   jjmp pulse
@@ -865,6 +972,11 @@ judge:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j5, NADC
+    jld j4, j1, GE              ; and the bits its kind's pieces save
+    jld j4, j4, 40
+    jld j3, j5, SAVC
+    jadd j3, j3, j4
+    jst j3, j5, SAVC
   ju_next:
     jldi j2, 1
     jadd j9, j9, j2
