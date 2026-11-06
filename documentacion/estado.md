@@ -199,3 +199,5 @@ EGG 0 de 5 en 320.000 juegos (44–87 %). Con 4 cosas, Razar en decenas de juego
 2026-11-04 — Publicado: Pages con el resultado contra EGG, release v0.2, DOI de la versión 10.5281/zenodo.23962615.
 2026-11-05 — Morse (Capitán): con período refractario de 2 pasos llega a 34–65 % (azar 3 %; sin refractario, 3 %). La
 velocidad mínima rinde igual que las lentas. Diagnóstico: después de una raya la ola gira en redondo (convulsión) y hay gemelas.
+2026-11-05 — Morse con cada pulso en su ola: 26 de 26 letras distintas, cero giro en redondo; pero el cubo queda como un
+caño (olas que no se tocan) y el oído no distingue melodías anidadas (19 % igual en todo). Abierto.

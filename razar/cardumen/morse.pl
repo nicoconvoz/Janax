@@ -10,7 +10,7 @@
 # temblor (percent chance that each mark or gap comes one step longer or shorter, never under 1: a hand on the key),
 # lee (ritmo: which top pieces and when, the default; piezas: which only; revuelto: the steps shuffled, the control),
 # quieto (1: the school never learns), refractario (2: steps a piece rests before it may wake again; no: once per
-# letter, as in the signaling game).
+# letter, as in the signaling game; olas: each pulse of the key is a wave of its own, modelo.pl signal_waves).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, armonia => 1, raya => 2, hueco => 1, refractario => 2, rounds => 26 * 40, temblor => 0, lee => 'ritmo',
          @ARGV ? map { split /=/ } @ARGV : ());
@@ -29,7 +29,7 @@ my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $
 if ($o{armonia}) { $c->{harmony} = 1; }
 $c->{sinks} = { %top };                          # the top face answers
 $c->{whisper} = 1 if $o{quieto};
-$c->{refractory} = $o{refractario} unless $o{refractario} eq 'no';   # a piece rests R steps, then may wake again
+$c->{refractory} = $o{refractario} unless $o{refractario} =~ /^(no|olas)$/;   # a piece rests R steps, then may wake again
 my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 } my @key = sort { $a <=> $b } keys %u;
 sub shaky { my ($d) = @_; return $d unless $o{temblor} && rnd2() % 100 < $o{temblor};       # one step more or less
   my $e = $d + (rnd2() % 2 ? 1 : -1); return $e < 1 ? 1 : $e; }
@@ -48,7 +48,7 @@ for my $r (1 .. $o{rounds}) {
   my $l = $letters[($r - 1) % @letters];
   my $sch = schedule($morse{$l});
   $steps += @$sch;
-  my $mel = $c->signal_timed($sch);
+  my $mel = $o{refractario} eq 'olas' ? $c->signal_waves($sch) : $c->signal_timed($sch);
   my @at; for my $t (0 .. $#$mel) { push @at, map { [$_, $t] } grep { $top{$_} } @{ $mel->[$t] }; }
   if ($o{lee} eq 'revuelto') {                   # the control: the same notes and the same steps, shuffled between them
     my @t = map { $_->[1] } @at;

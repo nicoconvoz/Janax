@@ -557,3 +557,23 @@ con todas las letras). 26 × 40 letras; el azar es 3 %.
   gemelas C=G=K=O=Z, D=M=N, B=X, Q=Y. Después de una raya, la ola se pone a girar en redondo y sigue sonando, con el
   mismo dibujo, hasta 30 pasos después de soltar la tecla: el resto de la letra ya no cambia nada. **Es la convulsión
   otra vez**: el cardumen sosteniendo la canción solo, lo que el Capitán dijo que no tiene que pasar.
+
+**La cura primero: cada pulso, su propia ola** (2026-11-05, por el orden que se pidió: curar el giro en redondo antes de
+achicar el alfabeto, con la predicción "curado, el 7³ tiene que andar mejor que el 4³"). `refractario=olas`
+(`signal_waves` en `modelo.pl`): la primera regla del cardumen, "una pieza despierta una sola vez por señal", leída para
+una tecla: cada paso con la tecla apretada es una señal; dentro de cada ola cada pieza despierta una vez, y las olas no
+se suman. Reemplaza al período refractario.
+
+- Cubo congelado, semilla 7: **26 respuestas distintas para 26 letras, cero gemelas**, en 4³ y en 7³; la ola se apaga
+  sola 9 pasos (4³) y 17 (7³) después de la tecla. El giro en redondo desapareció.
+- Aprendiendo: **19 % exacto en las 6 corridas** (4³ y 7³, semillas 7, 11, 23), y también con el cardumen quieto.
+  Resultado idéntico entre semillas: el instrumento miente, y la predicción del 7³ **no se puede evaluar todavía**.
+- **Por qué**: cada pulso deja arriba exactamente las mismas 9 notas, corridas en el tiempo (E: 9 notas; I: 18; H: 36).
+  La melodía de la E está adentro de la de la A, la I, la S. La voluntad puntúa solo cuántas notas conocidas oye, no
+  las que sobran: varias letras empatan con puntaje perfecto y gana la primera del alfabeto (A a E salen bien, el resto
+  nunca). Artefacto del oído, del mismo tipo que "se confunde con la cosa 0".
+- **Lo de fondo**: con olas que no se tocan, la respuesta del cubo a cada pulso es siempre la misma, y la melodía de
+  arriba es el dibujo del Morse copiado con un retraso. **El cubo queda como un caño: transmite, no calcula.** Por eso
+  da igual con cualquier semilla y en cualquier cubo. La cura cumple "nace y muere limpio", pero al no dejar que las
+  olas se crucen le saca al cardumen la interacción. Queda abierto cómo se cruzan las olas sin volver a girar en
+  redondo.

@@ -100,6 +100,42 @@ sub signal_timed {
   $s->learn(\@ft) unless $s->{whisper};
   return \@melody;
 }
+# Each pulse of the key is a wave of its own (Capitan: the school does not hold the song; each wave is born and dies
+# clean). It is the school's first rule, a piece wakes at most once per signal, read right for a key: every step the
+# key is down sends a signal, and inside each wave every piece wakes once at most, so no wave can go round in circles
+# and all of it dies after the last pulse. Waves do not add up: a piece wakes for a wave when that wave's neighbors
+# that woke in the step before reach its threshold (and with harmony, not more than half of its own). The melody is
+# every piece awake at each step, in any wave. Replaces the refractory period, it is not added to it.
+sub signal_waves {
+  my ($s, $sched) = @_;
+  my @ft = (-1) x $s->{p};
+  my (@melody, %woke, %now);                     # %now: wave -> pieces of it awake this step
+  my $t = 0;
+  my $press = sub { my ($t) = @_; my @k = @{ $sched->[$t] // [] }; return unless @k; $now{$t} = { map { $_ => 1 } @k }; $woke{$t}{$_} = 1 for @k; };
+  $press->(0);
+  while (%now || $t < $#$sched) {
+    my %all; $all{$_} = 1 for map { keys %$_ } values %now;
+    my @step = sort { $a <=> $b } keys %all;
+    push @melody, \@step;
+    $ft[$_] = $t for grep { $ft[$_] < 0 } @step;
+    my %next;
+    for my $w (keys %now) {
+      my %in; my %mask;
+      for my $i (keys %{ $now{$w} }) {
+        next if $s->{sinks}{$i};
+        for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q}; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+      }
+      my @up = grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
+      next unless @up;
+      $next{$w} = { map { $_ => 1 } @up }; $woke{$w}{$_} = 1 for @up;
+    }
+    $t++;
+    %now = %next;
+    $press->($t);
+  }
+  $s->learn(\@ft) unless $s->{whisper};
+  return \@melody;
+}
 # The shape moves by what happened in one signal: $ftr is the step each piece first woke at (-1: not then).
 sub learn {
   my ($s, $ftr) = @_; my @ft = @$ftr;
