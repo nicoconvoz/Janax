@@ -78,6 +78,7 @@ S_RET3  = 0D00h
 S_RET4  = 0D40h
 S_RET5  = 0D80h
 S_RET6  = 0DC0h
+S_BRINGS = 0E00h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -132,6 +133,8 @@ B3W   = 1A88h
 B3G   = 1A90h
 CXW   = 1A98h
 QDIR  = 1AB8h                   ; 1: the question asks why the switch (its rule is plain); 0: why without it
+FPOS  = 1AC0h                   ; through the door: where it is, the exception being looked in
+FSTART = 1AC8h                  ; (walking the exceptions)
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -540,6 +543,7 @@ qw_answer:
   jld j3, j1, B3G
   jcall put_cand
 qw_said:
+  jcall q_follow                ; through the door: what it brings
   jldi j2, 10                   ; and the evident, asked too (rhetorical): its rule answers itself
   jcall putch
   jldi j1, S_RET1
@@ -566,6 +570,144 @@ qw_with2:
   jcall puts
   jldi j2, 10
   jjmp putch
+
+; Through the door of the answer (B1W, the piece the book repeats around the switch): in the renglon of the first
+; exception, that piece (after the exception, or else before it) and what it brings, to the first mark, where the book
+; itself cuts it: the answer the door carries. Written on a new line; nothing if there is no door. Uses j1-j14.
+q_follow:
+  jldi j1, 0
+  jld j2, j1, B1W
+  jjz j2, qf_done
+  jld j2, j1, XL                ; the exceptions, in order: the first renglon where the door is
+  jst j2, j1, FSTART
+  jld j2, j1, NXL
+  jst j2, j1, OL
+  qf_each:
+    jldi j1, 0
+    jld j2, j1, OL
+    jjz j2, qf_done
+    jld j9, j1, FSTART
+    jld j9, j9, 0
+    jst j9, j1, FPOS
+    jcall door_find             ; after the exception
+    jjnz j2, qf_found
+    jldi j1, 0
+    jld j9, j1, FPOS            ; or before it, in its renglon
+    jcall r_start
+    jcall door_find
+    jjnz j2, qf_found
+    jldi j1, 0
+    jld j2, j1, FSTART
+    jldi j3, 8
+    jadd j2, j2, j3
+    jst j2, j1, FSTART
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+    jjmp qf_each
+qf_found:
+  jst j9, j1, FPOS
+  jldi j2, 10
+  jcall putch
+  jldi j1, S_BRINGS
+  jcall puts
+  jld j9, j1, FPOS              ; the door, then its words to the first mark
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j3, j1, ROOMT
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jcall putword
+  qf_word:
+    jldi j1, 0
+    jld j9, j1, FPOS
+    jldi j2, 1
+    jadd j9, j9, j2
+    jst j9, j1, FPOS
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, qf_done
+    jst j2, j1, CXW
+    jcall w_mark
+    jjnz j3, qf_done
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, CXW
+    jadd j12, j2, j1
+    jcall mix
+    jcall putword
+    jjmp qf_word
+qf_done:
+  jret
+
+; From the unit j9 to its renglon's end, the first B1W -> j9 at it, j2 = 1 (0: none). Uses j1-j4.
+door_find:
+  jldi j1, 0
+  jld j4, j1, B1W
+  ff_look:
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, ff_none
+    jsub j3, j2, j4
+    jjz j3, ff_yes
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp ff_look
+ff_yes:
+  jldi j2, 1
+  jret
+ff_none:
+  jldi j2, 0
+  jret
+
+; j3 = 1 if the piece j2 is a mark (its first byte is no letter nor digit: a piece of one character the reader cut on
+; its own). Uses j1-j5.
+w_mark:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jldb j2, j3, 0                ; its first byte
+  jldi j5, 63
+  jldi j3, 0C3h                 ; a letter of U+00C0..U+00FF
+  jsub j3, j2, j3
+  jjz j3, wm_no
+  jldi j3, 61h                  ; a..z
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, wm_digit
+  jldi j4, 26
+  jsub j4, j3, j4
+  jsar j4, j4, j5
+  jjnz j4, wm_no
+wm_digit:
+  jldi j3, 30h                  ; 0..9
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, wm_yes
+  jldi j4, 10
+  jsub j4, j3, j4
+  jsar j4, j4, j5
+  jjnz j4, wm_no
+wm_yes:
+  jldi j3, 1
+  jret
+wm_no:
+  jldi j3, 0
+  jret
 
 ; The word j2 and its bits j3: "word (x,yz bits)". Uses j1-j5.
 put_cand:

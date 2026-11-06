@@ -114,3 +114,5 @@ db ' de ', 0
 times 0DC0h - $ db 0
 db ' veces: lo regular se contesta solo', 0
 times 0E00h - $ db 0
+db '      lo que trae: ', 0
+times 0E40h - $ db 0

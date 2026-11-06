@@ -445,3 +445,30 @@ Contesta con **los conectores que el libro repite alrededor de toda negación**:
 aquello), "porque" (la razón), "pero" (el contraste), "ni", "nada". Encontró solo **la forma lógica de la negación en este
 libro**. No es todavía la causa del caso, pero **señala la puerta donde vive la causa**: lo que viene después de ese
 "porque" o de ese "sino". El paso que sigue es seguir esa puerta: que la respuesta sea lo que el conector regular trae.
+
+# Seguir la puerta (2026-11-06)
+
+La respuesta regular era un conector ("sino", "porque", "pero", "ni"): la puerta donde vive la causa. Ahora la sigue
+(`q_follow`): en los renglones de las excepciones, en orden, busca ese conector (después de la excepción, o antes en su
+renglón) y la respuesta es **lo que trae, hasta el primer signo**, donde el propio libro corta la frase (como Razar,
+que cortaba "donde las marcas del libro lo parten"). Un signo es una pieza cuyo primer byte no es letra ni dígito: la
+misma regla con que el lector los cortó.
+
+## Lo que trae (libro entero, idéntico en los tres motores, `00003B471FF8590E`)
+
+```
+el que no cree                       -> porque no ha creído en el nombre del hijo único de dios
+yo no soy el mesías                  -> sino que dijo claramente
+los que no están sometidos a la ley  -> porque estoy sometido a la ley de cristo
+el que no tiene el espíritu          -> sino por el espíritu
+no te es lícito (el mismo lugar)     -> sino hasta setenta veces siete
+y no el hombre para el sábado        -> pero el jefe de la sinagoga
+```
+
+Lo que todavía no es:
+
+- A veces la puerta trae poco: "ni alforja", "ni siquiera uno", o nada ("porque" seguido de un signo).
+- El conector se elige por lo que el libro repite, no por lo que este caso necesita: "porque" trae la razón, "sino" la
+  corrección, "pero" el contraste, y todavía no distingue cuál de las tres pide la pregunta.
+- La cláusula puede estar en otra excepción del mismo lugar, no en la primera; se dice cuál con "lo que trae", pero no
+  se muestra su renglón.
