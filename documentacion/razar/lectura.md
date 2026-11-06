@@ -180,3 +180,29 @@ jacob hijo de ? hijo de ?                -> jacob hijo de isaac hijo de abraham 
   padre de Isaac" (otra forma: tres palabras en el medio) y "Isaac, **hijo** de Abraham" (la puerta dada vuelta, que
   con 3 pares no pagó en el juez). Contestaría si las piezas "fue" y "padre/hijo dado vuelta" pagaran: el paso que
   sigue es que el camino use las piezas nacidas.
+
+## El camino con las piezas (2026-11-06)
+
+La maquinaria del pulso pasó a `razar/lectura/pulso.inc` (el pulso sigue dando idéntico, `0000DCC8104E7343`) y la
+pregunta la usa: aprende las piezas del **libro entero** (ningún renglón apartado) y camina con ellas. Cuando un paso no
+está dicho en la forma preguntada prueba, en ese orden, cada **interruptor** que pagó metido en cada lugar del medio
+("padre de" oído como "fue padre de") y cada **puerta** que pagó con el medio de la pregunta de un lado (el otro medio
+en su lugar, y del otro lado si da vuelta). Lo que se contesta primero guarda su camino, y cada respuesta dice qué pieza
+usó.
+
+Nuevo Testamento entero: 68 interruptores y 23 puertas pagan. 1 s, idéntico en los tres motores (`0000E99DE4748558`).
+
+```
+pedro le respondió ?   -> pedro le respondió señor      (dicho así en el libro)
+                       -> pedro le respondió ananías    (inferido) | con le dijo (en su lugar)
+                       -> pedro le respondió tú         (inferido) | con le dijo (en su lugar)  ...
+```
+
+Las genealogías no cambian: entre los interruptores que pagan **no está "fue"**, y entre las puertas **no está
+padre/hijo**. Por eso "? padre de ? padre de isaac" sigue sin respuesta: el libro lo dice "Abraham fue padre de Isaac" e
+"Isaac, hijo de Abraham", y ninguna de las dos piezas pagó acá. Es el texto el que no alcanza, no el camino.
+
+⚠️ **"no" paga como interruptor** (es el primero de la lista). Sacarlo da vuelta el sentido, y el camino todavía no
+distingue "fue" (que se puede sacar sin cambiar nada) de "no" (que cambia todo). Es la propiedad 2 del "no" en Razar
+("cuando aparece, lo que sigue cambia"), que falta construir. Mientras tanto cada respuesta muestra la pieza que usó: si
+un camino pasa por "no (se saca)", se ve.

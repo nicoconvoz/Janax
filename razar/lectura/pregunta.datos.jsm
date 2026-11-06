@@ -24,3 +24,15 @@ db 'pregunta: sin memoria', 10, 0
 times 240h - $ db 0
 db 'pregunta: hechos=', 0
 times 280h - $ db 0
+db ' | con ', 0
+times 2C0h - $ db 0
+db ' (se saca)', 0
+times 300h - $ db 0
+db ' (dado vuelta)', 0
+times 340h - $ db 0
+db ' (en su lugar)', 0
+times 380h - $ db 0
+db ' piezas que pagan: interruptores=', 0
+times 3C0h - $ db 0
+db ' puertas=', 0
+times 400h - $ db 0

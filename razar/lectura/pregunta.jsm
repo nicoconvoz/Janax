@@ -24,36 +24,51 @@ S_UNK   = 180h
 S_NOBOOK = 1C0h
 S_NOMEM = 200h
 S_HEAD  = 240h
+S_WITH  = 280h
+S_OUT   = 2C0h
+S_TURNED = 300h
+S_TURN  = 300h
+S_PLACE = 340h
+S_NSW   = 380h
+S_NDR   = 3C0h
 
-ROOMX = 1200h                   ; the facts: {key, the word that fills it} per place (a key may have many)
-XMASK = 1208h
-NFACT = 1210h
-ROOMK = 1218h                   ; the answers of each hole: {word, the word it came from, from which hole} (NV each)
-ROOMN = 1220h                   ; the requests of the question: {left end, right end, where its middle is, how long}
-QS    = 1228h                   ; the question being answered: its first unit, past its last, its holes
-QE    = 1230h
-NH    = 1238h
-NC    = 1240h                   ; its requests
-MAXH  = 1248h                   ; the most holes a question has
-CHG   = 1250h                   ; something was answered this round
-LASTH = 1258h                   ; the hole answered last (what is asked)
-CI    = 1260h
-CL    = 1268h                   ; the request being walked: its ends, its middle
-CR    = 1270h
-CM    = 1278h
-CMN   = 1280h
-SRC   = 1288h                   ; walking it: the hole it comes from (-1 a word), the value, which one
-SV    = 1290h
-SK    = 1298h
-DST   = 12A0h
-SIDE  = 12A8h                   ; 0: the hole is on the left ("? padre de jacob"); 1: on the right
-KEYQ  = 12B0h
-AI    = 12B8h                   ; writing an answer
-AT2   = 12C0h
-FOUND = 12C8h
-JJ    = 12D0h
-JLEFT = 12D8h
-HPOS  = 5000h                   ; where each hole of the question is (HMAX holes: criterion, past them it says it
+ROOMX = 1600h                   ; the facts: {key, the word that fills it} per place (a key may have many)
+XMASK = 1608h
+NFACT = 1610h
+ROOMK = 1618h                   ; the answers of each hole: {word, the word it came from, from which hole} (NV each)
+ROOMN = 1620h                   ; the requests of the question: {left end, right end, where its middle is, how long}
+QS    = 1628h                   ; the question being answered: its first unit, past its last, its holes
+QE    = 1630h
+NH    = 1638h
+NC    = 1640h                   ; its requests
+MAXH  = 1648h                   ; the most holes a question has
+CHG   = 1650h                   ; something was answered this round
+LASTH = 1658h                   ; the hole answered last (what is asked)
+CI    = 1660h
+CL    = 1668h                   ; the request being walked: its ends, its middle
+CR    = 1670h
+CM    = 1678h
+CMN   = 1680h
+SRC   = 1688h                   ; walking it: the hole it comes from (-1 a word), the value, which one
+SV    = 1690h
+SK    = 1698h
+DST   = 16A0h
+SIDE  = 16A8h                   ; 0: the hole is on the left ("? padre de jacob"); 1: on the right
+KEYQ  = 16B0h
+AI    = 16B8h                   ; writing an answer
+AT2   = 16C0h
+FOUND = 16C8h
+VIA   = 16D0h                   ; the piece a lookup goes by (0: none; 1 << 56 | a switch's word; 2 << 56 | turned
+SIDEQ = 16D8h                   ; << 48 | the door's other middle), and the side it looks on
+ROOMP = 16E0h                   ; its pieces: {1 switch / 2 door, word / one middle, other middle, turned} (32 bytes)
+NPC   = 16E8h
+NSWP  = 16F0h
+NDRP  = 16F8h
+MPOS  = 1700h                   ; a switch put in the middle: where, places left
+MLEFT = 1708h
+VIAS  = 7000h                   ; an answer written: the piece of each hole's step
+MBUF  = 7800h                   ; a middle made with a piece
+HPOS  = 5000h                 ; where each hole of the question is (HMAX holes: criterion, past them it says it
 HCNT  = 5800h                   ; does not know); how many answers each hole has; 1: the hole was walked to; an
 HDONE = 6000h                   ; answer written: the word in each hole
 ASGN  = 6800h
@@ -63,6 +78,96 @@ jfirst j1, 10000h              ; first order: room 0
 
 jldi j0, 0
 jcall read_book
+jldi j1, 0                      ; the whole book, none kept apart (one renglon in more than any book has)
+jldi j2, 0
+jshi j2, 4000h
+jshi j2, 0
+jshi j2, 0
+jshi j2, 0
+jst j2, j1, PK
+jcall learn_pulses
+
+jldi j1, 0                      ; its pieces that pay: the switches and the doors
+jld j2, j1, NADC + 16
+jld j3, j1, NADC + 32
+jadd j11, j2, j3
+jldi j4, 1
+jadd j11, j11, j4
+jldi j4, 5
+jshl j11, j11, j4
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMP
+jst j1, j1, NPC
+jst j1, j1, NSWP
+jst j1, j1, NDRP
+jldi j9, 0
+jld j10, j1, RMASK
+jldi j2, 1
+jadd j10, j10, j2
+jwhile j10
+  jldi j1, 0
+  jldi j3, 48
+  jmul j3, j9, j3
+  jld j2, j1, ROOMD
+  jadd j3, j3, j2
+  jld j2, j3, 0
+  jjz j2, pc_next
+  jld j2, j3, 40
+  jldi j4, 63
+  jsar j4, j2, j4
+  jjnz j4, pc_next
+  jjz j2, pc_next
+  jld j2, j3, 24
+  jst j2, j1, DKT
+  jld j2, j3, 8
+  jst j2, j1, DLO
+  jcall d_cat_of
+  jld j4, j1, NPC
+  jldi j6, 5
+  jshl j4, j4, j6
+  jld j6, j1, ROOMP
+  jadd j4, j4, j6
+  jldi j6, 2
+  jsub j6, j5, j6
+  jjnz j6, pc_door
+  jldi j6, 1                    ; a switch: its word
+  jst j6, j4, 0
+  jld j6, j3, 16
+  jst j6, j4, 8
+  jld j6, j1, NSWP
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j1, NSWP
+  jjmp pc_add
+pc_door:
+  jldi j6, 4
+  jsub j6, j5, j6
+  jjnz j6, pc_next
+  jldi j6, 2                    ; a door: its two middles, and whether it turns
+  jst j6, j4, 0
+  jld j6, j3, 8
+  jst j6, j4, 8
+  jld j6, j3, 16
+  jst j6, j4, 16
+  jld j6, j3, 24
+  jldi j7, 8
+  jshr j6, j6, j7
+  jst j6, j4, 24
+  jld j6, j1, NDRP
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j1, NDRP
+pc_add:
+  jld j6, j1, NPC
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j1, NPC
+pc_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
 
 jldi j1, 0                      ; the facts: places for two per word for each of the three lengths, twice over
 jld j2, j1, NTOK
@@ -105,6 +210,14 @@ jldi j1, S_HEAD
 jcall puts
 jld j2, j1, NFACT
 jcall putnum
+jldi j1, S_NSW
+jcall puts
+jld j2, j1, NSWP
+jcall putnum
+jldi j1, S_NDR
+jcall puts
+jld j2, j1, NDRP
+jcall putnum
 jldi j2, 10
 jcall putch
 
@@ -140,7 +253,7 @@ jld j2, j1, MAXH
 jjz j2, q_none
 jld j3, j1, NV
 jmul j11, j2, j3
-jldi j3, 24
+jldi j3, 32
 jmul j11, j11, j3
 jcall room
 jldi j1, 0
@@ -193,6 +306,8 @@ q_next:
 q_more:
 jwend
 jjmp finish
+
+include 'pulso.inc'
 
 ; The facts that start at unit JJ: for one, two and three words between, if they are all words. Uses j1-j12.
 hang_at:
@@ -317,13 +432,6 @@ kr_key:
   jadd j5, j2, j1
   jret
 
-; j2 = (j2 xor j3) * the FNV prime. Uses j1, j4 (j1 = 0 after).
-hw:
-  jldi j1, 0
-  jld j4, j1, FNVP
-  jxor j2, j2, j3
-  jmul j2, j2, j4
-  jret
 
 ; The first place of key j5 among the facts -> j6. Uses j1, j6, j7.
 x_slot:
@@ -744,7 +852,7 @@ wf_hole:
   jld j4, j1, NV                ; its answer SK
   jmul j4, j2, j4
   jadd j4, j4, j5
-  jldi j5, 24
+  jldi j5, 32
   jmul j4, j4, j5
   jld j5, j1, ROOMK
   jadd j4, j4, j5
@@ -761,9 +869,14 @@ wf_done:
   jret
 
 ; The facts for the value SV on the side SIDE of the request CI: every word that fills them is an answer of DST.
-; Uses j1-j14.
+; First as the question says it; then by its pieces: each switch put in each place of a middle shorter than three
+; ("padre de" heard as "fue padre de"), and each door with the question's middle on one side (its other middle in its
+; place, on the other side if it turns). What is answered first keeps its way. Uses j1-j14.
 wf_ask:
   jldi j1, 0
+  jst j1, j1, VIA
+  jld j2, j1, SIDE
+  jst j2, j1, SIDEQ
   jld j10, j1, CM               ; the middle: QBUF + 8 * (CM - 1), as the row's facts are read (j10 + 8)
   jldi j2, 1
   jsub j10, j10, j2
@@ -772,14 +885,152 @@ wf_ask:
   jldi j2, QBUF
   jadd j10, j10, j2
   jld j11, j1, CMN
+  jcall wf_look
+  jldi j1, 0
+  jld j9, j1, ROOMP
+  jld j12, j1, NPC
+  jwhile j12
+    jldi j1, 0
+    jld j2, j9, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jjnz j3, wa_door
+    jld j2, j1, CMN             ; a switch
+    jldi j3, 3
+    jsub j3, j2, j3
+    jjz j3, wa_next
+    jld j2, j9, 8
+    jldi j3, 1
+    jldi j4, 56
+    jshl j3, j3, j4
+    jor j3, j3, j2
+    jst j3, j1, VIA
+    jld j2, j1, SIDE
+    jst j2, j1, SIDEQ
+    jst j1, j1, MPOS
+    jld j2, j1, CMN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MLEFT
+    jwhile j2
+      jcall m_insert
+      jldi j10, MBUF - 8
+      jld j11, j1, CMN
+      jldi j2, 1
+      jadd j11, j11, j2
+      jcall wf_look
+      jldi j1, 0
+      jld j2, j1, MPOS
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, MPOS
+      jld j2, j1, MLEFT
+      jsub j2, j2, j3
+      jst j2, j1, MLEFT
+    jwend
+    jjmp wa_next
+  wa_door:
+    jld j2, j1, CMN             ; a door: the question's middle, two words, as a door's filling
+    jldi j3, 2
+    jsub j3, j2, j3
+    jjnz j3, wa_next
+    jld j2, j1, CM
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j4, j2, QBUF
+    jld j5, j2, QBUF + 8
+    jldi j3, 24
+    jshl j5, j5, j3
+    jor j4, j4, j5
+    jld j2, j9, 8
+    jld j3, j9, 16
+    jsub j5, j2, j4
+    jjnz j5, wd_high
+    jadd j6, j3, j1
+    jjmp wd_go
+  wd_high:
+    jsub j5, j3, j4
+    jjnz j5, wa_next
+    jadd j6, j2, j1
+  wd_go:
+    jldi j2, 0                  ; its other middle
+    jshi j2, 0FFh
+    jshi j2, 0FFFFh
+    jand j3, j6, j2
+    jst j3, j1, MBUF
+    jldi j3, 24
+    jshr j3, j6, j3
+    jand j3, j3, j2
+    jst j3, j1, MBUF + 8
+    jld j4, j9, 24
+    jldi j3, 48
+    jshl j5, j4, j3
+    jor j5, j5, j6
+    jldi j3, 2
+    jldi j7, 56
+    jshl j3, j3, j7
+    jor j5, j5, j3
+    jst j5, j1, VIA
+    jld j2, j1, SIDE
+    jxor j2, j2, j4
+    jst j2, j1, SIDEQ
+    jldi j10, MBUF - 8
+    jldi j11, 2
+    jcall wf_look
+  wa_next:
+    jldi j1, 0
+    jldi j2, 32
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j12, j12, j2
+  jwend
+  jret
+
+; MBUF: the question's middle with the switch at j9 put at MPOS. Uses j1-j8.
+m_insert:
+  jldi j1, 0
+  jld j2, j1, CM
+  jldi j3, 3
+  jshl j2, j2, j3
+  jldi j3, QBUF
+  jadd j2, j2, j3
+  jldi j3, MBUF
+  jldi j5, 0
+  jld j6, j1, CMN
+  jldi j4, 1
+  jadd j6, j6, j4
+  jwhile j6
+    jld j7, j1, MPOS
+    jsub j7, j5, j7
+    jjnz j7, mi_copy
+    jld j7, j9, 8
+    jjmp mi_put
+  mi_copy:
+    jld j7, j2, 0
+    jldi j8, 8
+    jadd j2, j2, j8
+  mi_put:
+    jst j7, j3, 0
+    jldi j8, 8
+    jadd j3, j3, j8
+    jldi j8, 1
+    jadd j5, j5, j8
+    jsub j6, j6, j8
+  jwend
+  jret
+
+; The facts for the value SV on the side SIDEQ, the middle j11 units from j10 + 8, by the piece VIA: every word that
+; fills them is an answer of DST. Uses j1-j8.
+wf_look:
+  jldi j1, 0
   jld j3, j1, SV
-  jld j2, j1, SIDE
-  jjz j2, wa_right
+  jld j2, j1, SIDEQ
+  jjz j2, wl_right
   jcall key_left
-  jjmp wa_key
-wa_right:
+  jjmp wl_key
+wl_right:
   jcall key_right
-wa_key:
+wl_key:
   jst j5, j1, KEYQ
   jcall x_slot
   jldi j8, 1
@@ -789,23 +1040,23 @@ wa_key:
     jld j4, j1, ROOMX
     jadd j3, j3, j4
     jld j4, j3, 0
-    jjz j4, wa_done
+    jjz j4, wl_done
     jld j5, j1, KEYQ
     jsub j4, j4, j5
-    jjnz j4, wa_next
+    jjnz j4, wl_next
     jld j2, j3, 8
     jst j6, j1, AT2
     jcall k_add
     jldi j1, 0
     jld j6, j1, AT2
-  wa_next:
+  wl_next:
     jldi j7, 1
     jadd j6, j6, j7
     jld j7, j1, XMASK
     jand j6, j6, j7
     jldi j8, 1
   jwend
-wa_done:
+wl_done:
   jret
 
 ; The word j2 is an answer of the hole DST, come from SV of SRC (once). Uses j1-j7.
@@ -818,7 +1069,7 @@ k_add:
   jsub j3, j3, j4               ; the hole
   jld j4, j1, NV
   jmul j4, j3, j4
-  jldi j5, 24
+  jldi j5, 32
   jmul j4, j4, j5
   jld j5, j1, ROOMK
   jadd j4, j4, j5               ; its answers
@@ -829,7 +1080,7 @@ k_add:
     jld j7, j4, 0
     jsub j7, j7, j2
     jjz j7, ka_done
-    jldi j7, 24
+    jldi j7, 32
     jadd j4, j4, j7
     jldi j7, 1
     jsub j6, j6, j7
@@ -839,6 +1090,8 @@ k_add:
   jst j7, j4, 8
   jld j7, j1, SRC
   jst j7, j4, 16
+  jld j7, j1, VIA
+  jst j7, j4, 24
   jld j6, j5, HCNT
   jldi j7, 1
   jadd j6, j6, j7
@@ -856,6 +1109,7 @@ write_one:
     jldi j2, 3
     jshl j2, j10, j2
     jst j1, j2, ASGN
+    jst j1, j2, VIAS
     jldi j2, 1
     jadd j10, j10, j2
     jsub j9, j9, j2
@@ -866,7 +1120,7 @@ write_one:
     jld j4, j1, NV
     jmul j4, j9, j4
     jadd j4, j4, j10
-    jldi j5, 24
+    jldi j5, 32
     jmul j4, j4, j5
     jld j5, j1, ROOMK
     jadd j4, j4, j5
@@ -874,6 +1128,8 @@ write_one:
     jldi j3, 3
     jshl j3, j9, j3
     jst j2, j3, ASGN
+    jld j5, j4, 24
+    jst j5, j3, VIAS
     jadd j12, j2, j1
     jcall mix
     jldi j1, 0
@@ -892,7 +1148,7 @@ write_one:
     jldi j10, 0
     jld j4, j1, NV
     jmul j4, j9, j4
-    jldi j6, 24
+    jldi j6, 32
     jmul j4, j4, j6
     jld j6, j1, ROOMK
     jadd j4, j4, j6
@@ -901,7 +1157,7 @@ write_one:
       jld j6, j4, 0
       jsub j6, j6, j11
       jjz j6, wr_back
-      jldi j6, 24
+      jldi j6, 32
       jadd j4, j4, j6
       jldi j6, 1
       jadd j10, j10, j6
@@ -919,6 +1175,46 @@ wr_filled:
   jldi j1, S_INFER
 wr_say:
   jcall puts
+  jldi j1, 0                    ; the pieces its way used
+  jld j9, j1, NH
+  jldi j10, 0
+  jwhile j9
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j10, j2
+    jld j11, j2, VIAS
+    jjz j11, wv_next
+    jldi j1, S_WITH
+    jcall puts
+    jldi j2, 56
+    jshr j2, j11, j2
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, wv_door
+    jld j2, j1, M48             ; a switch: its word, taken out
+    jand j2, j11, j2
+    jcall putword
+    jldi j1, S_OUT
+    jcall puts
+    jjmp wv_next
+  wv_door:
+    jld j2, j1, M48             ; a door: the other middle, turned or in place
+    jand j2, j11, j2
+    jcall putpair
+    jldi j1, S_TURNED
+    jldi j2, 48
+    jshr j2, j11, j2
+    jldi j3, 1
+    jand j2, j2, j3
+    jjnz j2, wv_say
+    jldi j1, S_PLACE
+  wv_say:
+    jcall puts
+  wv_next:
+    jldi j2, 1
+    jadd j10, j10, j2
+    jsub j9, j9, j2
+  jwend
   jldi j2, 10
   jjmp putch
 
