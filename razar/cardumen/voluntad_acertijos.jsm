@@ -54,6 +54,7 @@ S_GEM = 980h
 S_MEMO = 9C0h
 S_PARES = 0A00h
 S_ADOP = 0A40h
+S_LOGICA = 0A80h
 WTXT  = 500h                    ; word w: its text at WTXT + w*40h (0 uno .. 5 seis, 6 mas, 7 menos, 8 es)
 MORSE = 800h                    ; letter l: its Morse at MORSE + l*8
 ; Room 0 (0F000h bytes):
@@ -101,6 +102,7 @@ ASKED = 11B0h
 NONE  = 11B8h
 MAXG  = 11C0h                   ; its longest word, in greetings
 SEED2 = 11C8h                   ; its dice
+WOFF  = 11D0h                   ; where its words are, past WTXT (600h for the siblings)
 NCAND = 11E0h                   ; how many candidates
 NTRAIN = 11E8h                  ; riddles shown, and asked
 NTEST = 11F0h
@@ -149,9 +151,9 @@ NEXT  = 16D0h                   ; how often word b followed word a: NEXT + (a*10
 CAND  = 1A80h                   ; candidate i: its 4 coefficients (start, a, b, c) at CAND + i*32
 FIT   = 2300h                   ; operator word o, candidate i: examples it fit at FIT + (o*64 + i)*8
 ALLP  = 3700h                   ; the riddles of one operator: a, operator, b, c (32 bytes each)
-TRAIN = 3900h                   ; the riddles shown
-TEST  = 3D00h                   ; the riddles asked
-VOTE  = 4100h                   ; answer, votes (16 bytes each)
+TRAIN = 3B00h                   ; the riddles shown
+TEST  = 3F00h                   ; the riddles asked
+VOTE  = 5800h                   ; answer, votes (16 bytes each)
 REPLEFT = 45E0h                 ; MODO 4: repetitions left; a moment's hold; the shown riddles remembered right
 HOLD  = 45E8h
 MEMOK = 45F0h
@@ -209,6 +211,15 @@ jcall ask
 jldi j1, 0
 jst j13, j1, CHILD
 
+jldi j1, 0                      ; its words: the numbers, or (TIPO 3, logic) six siblings, mayor, menor, es at 0B00h
+jldi j2, 0
+jld j3, j1, TIPO
+jldi j4, 3
+jsub j3, j3, j4
+jjnz j3, wc_set
+jldi j2, 600h
+wc_set:
+jst j2, j1, WOFF
 jldi j1, 0                      ; its words as greetings: each letter's Morse, from its text
 jst j1, j1, MAXG
 jldi j8, 0                      ; word w
@@ -216,6 +227,9 @@ jldi j9, 9
 jwhile j9
   jldi j1, 6                    ; its text: WTXT + w*40h
   jshl j2, j8, j1
+  jldi j1, 0
+  jld j1, j1, WOFF
+  jadd j2, j2, j1
   jldi j1, 5
   jshl j3, j8, j1               ; its greetings: WCODE + w*32
   jldi j4, 0                    ; how many
@@ -2303,6 +2317,13 @@ jldi j3, 6
 jshl j1, j2, j3
 jldi j3, S_SUMA
 jadd j1, j1, j3
+jldi j3, 0                      ; logic: its own name
+jld j3, j3, TIPO
+jldi j4, 3
+jsub j3, j3, j4
+jjnz j3, o_tname
+jldi j1, S_LOGICA
+o_tname:
 jcall puts
 jldi j1, S_EJEM
 jcall puts
@@ -2558,6 +2579,26 @@ ro_a:
   jldi j2, 1                    ; b
 ro_b:
   jld j3, j13, OPC
+  jld j4, j13, TIPO             ; logic (TIPO 3): who of a and b is older (mayor, 6) or younger (menor, 7); the
+  jldi j5, 3                    ; sibling with the smaller place is the older
+  jsub j4, j4, j5
+  jjnz j4, ro_arith
+  jsub j4, j1, j2
+  jjz j4, ro_bnext              ; the same sibling: no riddle
+  jldi j5, 63
+  jsar j4, j4, j5               ; -1: a is older
+  jldi j5, 1
+  jand j4, j4, j5
+  jldi j5, 6
+  jsub j6, j3, j5
+  jxor j4, j4, j6               ; 1: the answer is a
+  jldi j5, 0
+  jadd j5, j5, j2
+  jjz j4, ro_store
+  jldi j5, 0
+  jadd j5, j5, j1
+  jjmp ro_store
+ro_arith:
   jldi j4, 6
   jsub j4, j3, j4
   jadd j5, j1, j2
@@ -2573,6 +2614,7 @@ ro_op:
   jsub j6, j4, j5
   jsar j6, j6, j7
   jjnz j6, ro_bnext
+ro_store:
   jld j6, j13, NALL
   jldi j7, 5
   jshl j7, j6, j7
@@ -2594,6 +2636,34 @@ ro_bnext:
   jldi j4, 7
   jsub j4, j1, j4
   jjnz j4, ro_a
+  jld j1, j13, TIPO             ; logic: the riddles of neighbours (a and b one place apart) are practiced, the rest asked
+  jldi j2, 3
+  jsub j1, j1, j2
+  jjnz j1, ro_notlogic
+  jldi j9, 0
+  jld j10, j13, NALL
+  jwhile j10
+    jldi j1, 5
+    jshl j2, j9, j1
+    jld j3, j2, ALLP
+    jld j4, j2, ALLP + 16
+    jsub j3, j3, j4
+    jmul j3, j3, j3
+    jldi j1, 1
+    jsub j1, j3, j1
+    jldi j2, 1                  ; j1 = 1 if neighbours
+    jjz j1, ro_nb
+    jldi j2, 0
+  ro_nb:
+    jldi j1, 0
+    jadd j1, j1, j2
+    jcall ro_put
+    jldi j1, 1
+    jadd j9, j9, j1
+    jsub j10, j10, j1
+  jwend
+  jret
+ro_notlogic:
   jld j1, j13, LISTA
   jjnz j1, ro_list
   jld j9, j13, NALL             ; shuffled: i from the last down to 1, swapped with a throw mod (i + 1)

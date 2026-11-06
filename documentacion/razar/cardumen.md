@@ -1211,3 +1211,24 @@ oraciones, sin ninguna regla de sumar:
   29 % → 84 % → 98 % con 6, 8 y 10 sumas memorizadas es una curva ordenada, no un número suelto.
 - Sigue siendo un resultado del mecanismo de gemelos, no del cardumen (que pone el oído), y el vocabulario llega a
   "seis": el espacio de acertijos es chico.
+
+### Un acertijo lógico: quién es mayor (Capitán, 2026-11-06)
+
+> *"Dale de comer un acertijo lógico con palabras, enseñáselo de varias formas y fijate si aprendió."*
+
+`TIPO` 3 en `voluntad_acertijos.jsm`: seis hermanos (ana, beto, ceci, dani, eli, fede, de mayor a menor) y dos formas,
+"mayor" y "menor". La base es oír a los hermanos en orden, como la canción de contar (cada uno vale por su lugar). Practica
+solo los pares vecinos en las dos formas ("ana mayor beto es ana", "ana menor beto es beto": 20 acertijos) y se le
+preguntan los 40 pares que nunca vio (ana–ceci, beto–eli…), con el mecanismo de gemelos tal cual (`MODO` 4).
+
+20 semillas: memoria 100 %, 8 propiedades adoptadas, y en los pares nunca vistos **0 % bien, 29 % mal, 70 % no sé.**
+
+- **Falla, y era la predicción:** "quién es mayor" es una **comparación**: la respuesta salta de un hermano al otro según
+  el orden, no se mueve pareja con lo que cambia. Los gemelos solo capturan cambios parejos ("un paso más, un paso más");
+  de pares vecinos solo salen diferencias de 2 lugares, y aplicadas a pares lejanos dan respuestas equivocadas.
+- **Rompe el "nunca afirma algo falso" de las sumas:** acá se equivoca el 29 %. El 0 % de error no es una virtud general
+  del mecanismo; vale donde la relación es pareja.
+- Lo que faltaría: en la AMMC, el significado del todo para una comparación no es "cuánto cambió" sino **"quién va antes en
+  la canción"** — el orden de los lugares, no su diferencia.
+- (De paso: con 30 acertijos por relación, la tabla donde se arman pisaba la de los practicados, que tenía lugar para 16.
+  Se reacomodaron las tablas; los modos de antes dan la misma huella.)

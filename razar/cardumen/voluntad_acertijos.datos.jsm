@@ -79,3 +79,23 @@ times 0A00h - $ db 0
 db ' bien; pares gemelos: ', 0
 times 0A40h - $ db 0
 db '; propiedades adoptadas: ', 0
+times 0A80h - $ db 0
+db 'logica', 0
+times 0B00h - $ db 0
+db 'ana', 0
+times 0B40h - $ db 0
+db 'beto', 0
+times 0B80h - $ db 0
+db 'ceci', 0
+times 0BC0h - $ db 0
+db 'dani', 0
+times 0C00h - $ db 0
+db 'eli', 0
+times 0C40h - $ db 0
+db 'fede', 0
+times 0C80h - $ db 0
+db 'mayor', 0
+times 0CC0h - $ db 0
+db 'menor', 0
+times 0D00h - $ db 0
+db 'es', 0

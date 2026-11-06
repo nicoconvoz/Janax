@@ -257,3 +257,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-06 — Sumar sin reglas, como en el lazo: no aprende ni las sumas que practica (~25 %, azar 17 %); cada número está en muchas sumas y moverlo para arreglar una rompe otras.
 2026-11-06 — Gemelos (AMMC P44 llevado a oraciones): sin reglas de sumar, con 10 sumas memorizadas acierta el 98 % de las que nunca vio (0 % mal); con 6, 29 % y dice "no sé" el resto. Control al azar: 2 %.
 2026-11-06 — El ensamblador PDP ya rechaza las etiquetas repetidas (semilla nueva, 126 programas idénticos). Gemelos al azar (el portero del P36): 16–22 % bien y 25–35 % mal, contra 84–98 % bien y 0 % mal con gemelos de verdad.
+2026-11-06 — Acertijo lógico (quién es mayor, seis hermanos): los gemelos fallan, 0 % bien y 29 % mal en pares nunca vistos; una comparación no es un cambio parejo. El 0 % de error de las sumas no es general.
