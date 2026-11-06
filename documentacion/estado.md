@@ -207,3 +207,5 @@ oídas y 17 de 20 nuevas. Con temblor se rompen las palabras. El cardumen quieto
 más resistente al temblor que Sperner (10 %: unidades 94–98 % contra 88–90 %), aunque en el papel un pulso corrido empata.
 2026-11-05 — Control 7 contra 7: Fano le gana a 5 sorteos de 7 unidades de Sperner (temblor 10 %: mediana 15 de 20 contra
 4–10). Ganó la construcción, no tener menos opciones.
+2026-11-05 — Olas que se cruzan: el cubo deja de ser un caño (cada semilla da distinto), pero aprender no le gana al
+cardumen quieto (4 mejor, 2 peor, 1 igual). Falta el paso de asentar lo que sirvió.

@@ -119,15 +119,29 @@ sub signal_waves {
     push @melody, \@step;
     $ft[$_] = $t for grep { $ft[$_] < 0 } @step;
     my %next;
-    for my $w (keys %now) {
-      my %in; my %mask;
-      for my $i (keys %{ $now{$w} }) {
-        next if $s->{sinks}{$i};
-        for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q}; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+    if ($s->{cross}) {                           # waves that cross (Capitan: the school must compute, not only carry): the
+      my (%in, %mask, %by);                      # pushes of every wave add up, so a piece no single wave can wake wakes
+      for my $w (keys %now) {                    # where two meet; it then belongs to every wave that pushed it. Inside
+        for my $i (keys %{ $now{$w} }) {         # each wave a piece still wakes once at most: no going round in circles
+          next if $s->{sinks}{$i};
+          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};
+            $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); $by{$q}{$w} = 1; }
+        }
       }
-      my @up = grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
-      next unless @up;
-      $next{$w} = { map { $_ => 1 } @up }; $woke{$w}{$_} = 1 for @up;
+      for my $q (grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in) {
+        for my $w (keys %{ $by{$q} }) { $next{$w}{$q} = 1; $woke{$w}{$q} = 1; }
+      }
+    } else {
+      for my $w (keys %now) {
+        my %in; my %mask;
+        for my $i (keys %{ $now{$w} }) {
+          next if $s->{sinks}{$i};
+          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q}; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+        }
+        my @up = grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
+        next unless @up;
+        $next{$w} = { map { $_ => 1 } @up }; $woke{$w}{$_} = 1 for @up;
+      }
     }
     $t++;
     %now = %next;

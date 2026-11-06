@@ -654,3 +654,23 @@ Por unidad: con 10 % de temblor Fano reconoce 96–98 %; ningún sorteo pasa de 
 - Lo que sigue (idea del otro chat, con la regla del Capitán, no importar una métrica sino medir la que ya está): Fano es
   óptimo para la distancia de Hamming, pero el cubo desempata donde Hamming empata, así que mide con otra geometría.
   Medir la matriz de confusión del cubo con temblor y derivar el alfabeto de ahí puede dar más de 7, u otras 7.
+
+**Olas que se cruzan** (Capitán, 2026-11-05: primero que el cardumen calcule, después la red convencional). `olas=cruzan`
+(`cross` en `signal_waves`): los empujes de todas las olas se suman, así que una pieza que ninguna ola sola despierta
+despierta donde dos se cruzan, y pasa a ser de todas las que la empujaron; dentro de cada ola cada pieza sigue
+despertando una vez, así que no hay giro en redondo y todo se apaga solo (verificado: 13 pasos para 4 de tecla, igual
+que con olas separadas). Palabras con Fano, temblor 10 %, semillas 1001–1007, unidades reconocidas / palabras nuevas de
+20:
+
+| | 1001 | 1002 | 1003 | 1004 | 1005 | 1006 | 1007 |
+|---|---|---|---|---|---|---|---|
+| aprende | 88 % / 6 | 88 % / 6 | 91 % / 8 | 87 % / 3 | 95 % / 13 | 89 % / 7 | 98 % / 17 |
+| quieto | 87 % / 4 | 89 % / 7 | 92 % / 8 | 85 % / 2 | 92 % / 10 | 88 % / 6 | 98 % / 17 |
+
+- **El cubo ya no es un caño**: ahora cada semilla da distinto (87 a 98 % de unidades), así que la forma del cubo pesa.
+- **Pero aprender no gana**: el que aprende queda mejor en 4 semillas, peor en 2 y empata en 1, por 1 a 3 puntos. No es
+  una diferencia (prueba de signos, p ≈ 0,69).
+- Y en promedio queda peor que con olas separadas (Fano con olas separadas: 96–98 % de unidades, 12–17 palabras).
+- Candidato, sin construir: en el juego de señales, cuando la voluntad acierta hace sonar la melodía otra vez ("el
+  cardumen la asienta"), y eso es lo que talla al cardumen hacia lo que sirve. En `palabras.pl` no existe ese paso: el
+  cardumen aprende de todo lo que suena por igual, sin saber qué sirvió.

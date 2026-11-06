@@ -29,7 +29,7 @@ my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $
 if ($o{armonia}) { $c->{harmony} = 1; }
 $c->{sinks} = { %top };                          # the top face answers
 $c->{whisper} = 1 if $o{quieto};
-$c->{refractory} = $o{refractario} unless $o{refractario} =~ /^(no|olas)$/;   # a piece rests R steps, then may wake again
+$c->{refractory} = $o{refractario} unless $o{refractario} =~ /^(no|olas|cruzan)$/;   # a piece rests R steps, then may wake again
 my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 } my @key = sort { $a <=> $b } keys %u;
 sub shaky { my ($d) = @_; return $d unless $o{temblor} && rnd2() % 100 < $o{temblor};       # one step more or less
   my $e = $d + (rnd2() % 2 ? 1 : -1); return $e < 1 ? 1 : $e; }
@@ -48,7 +48,8 @@ for my $r (1 .. $o{rounds}) {
   my $l = $letters[($r - 1) % @letters];
   my $sch = schedule($morse{$l});
   $steps += @$sch;
-  my $mel = $o{refractario} eq 'olas' ? $c->signal_waves($sch) : $c->signal_timed($sch);
+  $c->{cross} = 1 if $o{refractario} eq 'cruzan';
+  my $mel = $o{refractario} =~ /^(olas|cruzan)$/ ? $c->signal_waves($sch) : $c->signal_timed($sch);
   my @at; for my $t (0 .. $#$mel) { push @at, map { [$_, $t] } grep { $top{$_} } @{ $mel->[$t] }; }
   if ($o{lee} eq 'revuelto') {                   # the control: the same notes and the same steps, shuffled between them
     my @t = map { $_->[1] } @at;

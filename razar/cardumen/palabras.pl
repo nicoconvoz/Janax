@@ -46,6 +46,7 @@ my $n = $c->{n};
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
 $c->{harmony} = 1; $c->{sinks} = { %top };
 $c->{whisper} = 1 if $o{quieto};
+$c->{cross} = 1 if ($o{olas} // '') eq 'cruzan';   # olas=cruzan: the waves add up (modelo.pl signal_waves)
 my @key = ($c->idx(0, 0, 0), $c->idx(1, 0, 0), $c->idx(0, 1, 0));
 sub send_unit {                                  # one unit through the school -> the notes it left on the top face
   my ($u) = @_; my @down = @{ $units[$u] };
