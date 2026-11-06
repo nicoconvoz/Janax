@@ -1392,3 +1392,19 @@ frecuencia de las propias respuestas; si no le gana, no se elige nada y calla. 2
 Con datos al azar vuelve a callar (0–1 % de error). Con datos reales nada cambia salvo dos semillas de 8 sumas, donde los
 tres explicaban cero y ahora no elige nada (76 % en vez de 81 %). La regla general, en palabras de MDL: **un mecanismo se
 adopta solo si comprime mejor que el código trivial de los datos**.
+
+### La memoria en el cubo, primer intento (Capitán, 2026-11-06)
+
+> *"Ahora hacé que el cubo no ponga solo el oído"* — y eligió que guarde la memoria (opción 2).
+
+`MODO` 7: la voluntad no anota las respuestas; cada suma practicada se canta entera al cardumen ("dos mas tres es
+cinco"), `REPS` veces, y el cardumen la asienta en sus pesos. Para recordar, la voluntad le canta **solo para oír** (orden 6,
+bit 16: el cardumen no aprende de esa canción) cada final posible, y se queda con el que más cambió desde antes de practicar.
+
+**No funciona, y se sabe por qué:** la respuesta del cubo a cada final es **idéntica, nota por nota, antes y después** de
+practicar (medido con un instrumento en la semilla 1001). Su aprendizaje refuerza los caminos que ya se despiertan y
+debilita los que nunca lo hacen; en una canción limpia eso no cambia **qué** piezas suenan. El cubo cambia sus pesos pero
+no deja una huella que se oiga en una canción limpia. (Una primera lectura, "más notas que la palabra sola", daba 0 de 10:
+la palabra sola tapaba todo.) Encaja con lo de las palabras-canción: aprender le ganaba al quieto **solo con ruido**,
+cuando un dedo resbalaba y el camino reforzado completaba la palabra. La memoria del cubo, tal como aprende hoy, es de
+**completar**, no de **distinguir**.

@@ -5,7 +5,8 @@
 ;   5 born: quiet (it never learns) if bit 8, the side n in bits 16..23, the seed in bits 24... It answers how many
 ;     bytes its tables need, or 0 if the room it has is enough: a child's request for memory would wait for its
 ;     mother's signature, so she builds the room and moves it here (request 23), says so, and it takes it (25).
-;   6 a song with the exact pieces of each greeting: how many in bits 8..15 (at most 255), then one word per greeting,
+;   6 a song with the exact pieces of each greeting: how many in bits 8..15 (at most 255), bit 16 if it is only heard
+;     (it does not learn from it), then one word per greeting,
 ;     its 3 pieces in bits 0..15, 16..31, 32..47. Each pulse a wave of its own, their pushes adding up. It answers how
 ;     many steps the song lasted, then the top face of every step as a stream of bits (step t, top piece j at bit
 ;     t * n^2 + j, 64 per word); and the shape learns from it.
@@ -31,6 +32,7 @@ ANYW  = 1E8h                    ; someone awake this step, in any wave
 HAVE  = 1F0h                    ; how big its room of tables is (0: none yet)
 NEED  = 1F8h                    ; how big it has to be for this side
 SEEDV = 270h                    ; the seed it is born from
+SQ    = 278h                    ; 1: this song is only heard (order 6, bit 16)
 ; Where each table is, in its room (addresses):
 AW    = 200h                    ; weights: piece i, direction d at AW + i*8 + d (one byte each)
 ARATE = 208h                    ; one byte per piece
@@ -72,7 +74,13 @@ jwhile j15
   jldi j3, 6
   jsub j3, j1, j3
   jjnz j3, c_end
-  jldi j3, 8                    ; order 6: how many greetings in bits 8..15, then one word per greeting
+  jldi j3, 16                   ; order 6: bit 16 = this song only heard, not learned (the will asks what it remembers)
+  jshr j4, j2, j3
+  jldi j3, 1
+  jand j4, j4, j3
+  jldi j13, 0
+  jst j4, j13, SQ
+  jldi j3, 8                    ; how many greetings in bits 8..15, then one word per greeting
   jshr j4, j2, j3
   jldi j3, 0FFh
   jand j4, j4, j3
@@ -673,6 +681,9 @@ w_done:
 s_done:
   jldi j13, 0                   ; unless it is quiet
   jld j13, j13, WHISP
+  jjnz j13, l_skip
+  jldi j13, 0                   ; nor if this song is only heard
+  jld j13, j13, SQ
   jjnz j13, l_skip
   jldi j1, 0                    ; the shape learns
   jldi j13, 0

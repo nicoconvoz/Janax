@@ -201,6 +201,13 @@ ECP   = 5C70h                   ; (pieces, as TWP + k*8)
 ECO   = 5C78h                   ; the echo's answer per operator (2 qwords)
 BESTA = 5C88h                   ; the best so far: (hits - misses), pieces
 BESTP = 5C90h
+SQUIET = 5CA0h                  ; MODO 7: 1 = the songs are only heard by the school (it does not learn from them)
+CBEST = 5CA8h                   ; asking the school: the best familiarity, its word, how many have it, the ending tried,
+CWORD = 5CB0h                   ; and the notes of the whole riddle
+CTIES = 5CB8h
+CX    = 5CC0h
+CNOTES = 5CC8h
+CBASE = 5D00h                   ; how each ending of each practiced riddle sounded before practice (up to 30 * 6)
 MEM   = 6400h                   ; memory: (op, a, b, c) heard, as places: MEM + (((op*10 + a)*10 + b)*10 + c)*8
 TWADDR = 0A400h                 ; twins: TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8 (1444 qwords)
 FACTS = 0D400h                  ; the facts: operator, a, b, c (32 bytes each)
@@ -710,6 +717,9 @@ jjz j3, g_train
 jldi j3, 6
 jsub j3, j2, j3
 jjz j3, g_train
+jldi j3, 7
+jsub j3, j2, j3
+jjz j3, c_train
 jldi j1, 0                      ; shown: it hears the five words and counts what fits
 jld j15, j1, NTRAIN
 jldi j1, TRAIN
@@ -1907,12 +1917,16 @@ gm_next:
   jsub j15, j15, j3
 jwend
 
+g_mech:
 jldi j1, 0                      ; no memory left out; then the mechanism: MODO 4 the twins, 5 the door, 6 the one P36
 jldi j2, 1                      ; chooses (CHOSEN: 1 twins, 2 door, 3 both)
 jsub j2, j1, j2
 jst j2, j1, EXCL
 jld j2, j1, MODO
 jldi j3, 6
+jsub j3, j2, j3
+jjz j3, m6_choose
+jldi j3, 7
 jsub j3, j2, j3
 jjz j3, m6_choose
 jldi j3, 5
@@ -2534,6 +2548,277 @@ ms_hit:
   jst j4, j10, 0
 ms_done:
   jret
+; The memory in the cube (MODO 7; Capitan, 2026-11-06: "now make the cube not only the ear", the memory). The will
+; does not keep the answers: each practiced riddle is sung whole to the school, "a op b es c", REPS times, and the
+; school settles it in its weights as it always learns. To remember, for each riddle it practiced the will sings to
+; the school, only heard (it does not learn from it), every ending "a op b es X", and keeps the one whose sound changed
+; the most since before practice (more top notes than then: recognition by the trace the practice left; how loud each
+; word is on its own cancels out). Those memories are the facts; the twins, the door and P36 go on as in MODO 6. A quiet school
+; (QUIET) keeps nothing: then everything should sound alike.
+c_train:
+jldi j1, 0                      ; first, how every ending of every riddle to practice sounds before any practice (only heard)
+jldi j2, 1
+jst j2, j1, SQUIET
+jld j15, j1, NTRAIN
+jldi j2, TRAIN
+jst j2, j1, PREV
+jldi j9, 0                      ; CBASE slot
+jwhile j15
+  jldi j1, 0
+  jst j1, j1, CX
+cb_x:
+  jldi j1, 0
+  jld j2, j1, CX
+  jldi j3, 6
+  jsub j3, j2, j3
+  jjz j3, cb_next
+  jst j2, j1, SENTL + 32
+  jcall c_cue
+  jldi j2, 5
+  jst j2, j1, SENTN
+  jcall song
+  jcall c_notes
+  jldi j1, 0
+  jst j1, j1, SENTN
+  jldi j3, 3
+  jshl j3, j9, j3
+  jst j2, j3, CBASE
+  jldi j3, 1
+  jadd j9, j9, j3
+  jld j2, j1, CX
+  jadd j2, j2, j3
+  jst j2, j1, CX
+  jjmp cb_x
+cb_next:
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jldi j3, 1
+  jsub j15, j15, j3
+jwend
+jldi j1, 0
+jst j1, j1, SQUIET
+jld j2, j1, REPS
+jst j2, j1, REPLEFT
+ct_rep:
+  jldi j1, 0
+  jld j2, j1, REPLEFT
+  jjz j2, ct_recall
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, REPLEFT
+  jld j15, j1, NTRAIN
+  jldi j2, TRAIN
+  jst j2, j1, PREV
+  jwhile j15
+    jldi j1, 0
+    jld j3, j1, PREV
+    jld j2, j3, 24              ; c, or drawn at random (the control)
+    jld j4, j1, REVU
+    jjz j4, ct_true
+    jcall rnd2
+    jldi j3, 6
+    jdiv j4, j13, j3
+    jmul j4, j4, j3
+    jsub j2, j13, j4
+    jldi j3, 1
+    jadd j2, j2, j3
+  ct_true:
+    jldi j1, 1
+    jsub j2, j2, j1
+    jldi j1, 0
+    jst j2, j1, SENTL + 32      ; the whole riddle, sung: a op b es c
+    jcall c_cue
+    jldi j2, 5
+    jst j2, j1, SENTN
+    jcall song
+    jldi j1, 0
+    jst j1, j1, SENTN
+    jld j2, j1, PREV
+    jldi j3, 32
+    jadd j2, j2, j3
+    jst j2, j1, PREV
+    jldi j3, 1
+    jsub j15, j15, j3
+  jwend
+  jjmp ct_rep
+ct_recall:
+jldi j1, 0                      ; what the school remembers: for each riddle practiced, the most familiar ending
+jst j1, j1, NFACT
+jst j1, j1, MEMOK
+jldi j2, 1
+jst j2, j1, SQUIET
+jld j15, j1, NTRAIN
+jldi j2, TRAIN
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jst j1, j1, CBEST             ; best familiarity so far, its word, how many have it
+  jldi j2, 9
+  jst j2, j1, CWORD
+  jst j1, j1, CTIES
+  jst j1, j1, CX
+cr_x:
+  jldi j1, 0
+  jld j2, j1, CX
+  jldi j3, 6
+  jsub j3, j2, j3
+  jjz j3, cr_chosen
+  jst j2, j1, SENTL + 32        ; a op b es X, heard
+  jcall c_cue
+  jldi j2, 5
+  jst j2, j1, SENTN
+  jcall song
+  jcall c_notes
+  jldi j1, 0
+  jst j2, j1, CNOTES
+  jld j2, j1, PREV              ; how it sounded before practice (CBASE): the change is the trace
+  jldi j3, TRAIN
+  jsub j2, j2, j3
+  jldi j3, 5
+  jshr j2, j2, j3               ; the riddle's index
+  jldi j3, 6
+  jmul j2, j2, j3
+  jld j3, j1, CX
+  jadd j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j2, j2, CBASE
+  jld j3, j1, CNOTES
+  jsub j3, j3, j2               ; familiarity: louder than before
+  jld j4, j1, CTIES
+  jjz j4, cr_new                ; the first
+  jld j4, j1, CBEST
+  jsub j5, j3, j4
+  jjz j5, cr_tie
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, cr_xnext
+cr_new:
+  jst j3, j1, CBEST
+  jld j2, j1, CX
+  jst j2, j1, CWORD
+  jldi j2, 1
+  jst j2, j1, CTIES
+  jjmp cr_xnext
+cr_tie:
+  jld j2, j1, CTIES
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, CTIES
+cr_xnext:
+  jld j2, j1, CX
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, CX
+  jjmp cr_x
+cr_chosen:
+  jld j2, j1, CTIES             ; one ending alone: a memory (as places), else nothing
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, cr_next
+  jld j3, j1, PREV
+  jld j2, j3, 24
+  jldi j4, 1
+  jsub j2, j2, j4
+  jld j4, j1, CWORD
+  jsub j2, j2, j4
+  jjnz j2, cr_wrong
+  jld j2, j1, MEMOK
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, MEMOK
+cr_wrong:
+  jld j3, j1, PREV              ; the fact: operator, a, b, c as places in the song
+  jld j2, j3, 8
+  jldi j4, 6
+  jsub j2, j2, j4
+  jst j2, j1, HOLD
+  jld j2, j3, 0
+  jldi j4, 1
+  jsub j1, j2, j4
+  jcall walk_to
+  jjz j2, cr_next
+  jldi j1, 0
+  jst j2, j1, PA
+  jld j3, j1, PREV
+  jld j2, j3, 16
+  jldi j4, 1
+  jsub j1, j2, j4
+  jcall walk_to
+  jjz j2, cr_next
+  jldi j1, 0
+  jst j2, j1, PB
+  jld j1, j1, CWORD
+  jcall walk_to
+  jjz j2, cr_next
+  jldi j1, 0
+  jld j3, j1, NFACT
+  jldi j4, 5
+  jshl j4, j3, j4
+  jcall g_facts
+  jadd j4, j4, j5
+  jst j2, j4, 24
+  jld j2, j1, HOLD
+  jst j2, j4, 0
+  jld j2, j1, PA
+  jst j2, j4, 8
+  jld j2, j1, PB
+  jst j2, j4, 16
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, NFACT
+cr_next:
+  jldi j1, 0
+  jst j1, j1, SQUIET            ; (off while it does the bookkeeping; on again for the next riddle)
+  jldi j2, 1
+  jst j2, j1, SQUIET
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jldi j3, 1
+  jsub j15, j15, j3
+jwend
+jldi j1, 0
+jst j1, j1, SQUIET
+jjmp g_mech
+
+; The riddle at PREV as the first four words of SENTL: a, op, b, es. Uses j1-j4 (j1 = 0 after).
+c_cue:
+  jldi j1, 0
+  jld j3, j1, PREV
+  jld j2, j3, 0
+  jldi j4, 1
+  jsub j2, j2, j4
+  jst j2, j1, SENTL
+  jld j2, j3, 8
+  jst j2, j1, SENTL + 8
+  jld j2, j3, 16
+  jsub j2, j2, j4
+  jst j2, j1, SENTL + 16
+  jldi j2, 8
+  jst j2, j1, SENTL + 24
+  jret
+
+; How many top notes the song heard woke, in all -> j2. Uses j1-j4.
+c_notes:
+  jldi j1, 0
+  jld j3, j1, STEPB
+  jld j4, j1, SLONG
+  jld j2, j1, N2
+  jmul j4, j4, j2
+  jldi j2, 0
+  jwhile j4
+    jldb j1, j3, 0
+    jadd j2, j2, j1
+    jldi j1, 1
+    jadd j3, j3, j1
+    jsub j4, j4, j1
+  jwend
+  jret
+
 ; The facts' address -> j5 (past what an offset reaches). Uses j5.
 g_facts:
   jldi j5, 0
@@ -3472,6 +3757,8 @@ jldi j1, 0
 jld j2, j1, MODO
 jldi j3, 6
 jsub j2, j2, j3
+jldi j3, 63                      ; MODO 6 and 7
+jsar j2, j2, j3
 jjnz j2, o_elec
 jldi j1, S_ELEC
 jcall puts
@@ -3696,6 +3983,22 @@ jcall putnum
 jldi j2, 10
 jcall putch
 o_door:
+jldi j1, 0                      ; MODO 7: what the school remembers
+jld j2, j1, MODO
+jldi j3, 7
+jsub j2, j2, j3
+jjnz j2, o_cmem
+jldi j1, S_MEMO
+jcall puts
+jld j2, j1, MEMOK
+jcall putnum
+jldi j1, S_DE
+jcall puts
+jld j2, j1, NTRAIN
+jcall putnum
+jldi j2, 10
+jcall putch
+o_cmem:
 jldi j10, 1
 jldi j11, TEXT
 jldi j1, 0
@@ -4356,6 +4659,10 @@ g_coded:
   jldi j3, 8
   jshl j2, j5, j3
   jldi j3, 6
+  jor j2, j2, j3
+  jld j3, j1, SQUIET            ; only heard (MODO 7 asks the school what it remembers)
+  jldi j4, 16
+  jshl j3, j3, j4
   jor j2, j2, j3
   jst j2, j1, WORD
   jcall say
