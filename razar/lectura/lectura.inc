@@ -42,7 +42,7 @@ WCAP  = 1138h                   ; 1: the word being read began with a capital; a
 ROOMCP = 1140h
 ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
 LMI   = 1150h                   ; (walking)
-HOND  = 1158h                   ; the depth of each floor of the pulse, read after K in "p" (a byte each, 0: one)
+NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
 LABEL = 1110h                   ; the file being read: its label and how long it is
 LABLEN = 1118h
 QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
@@ -94,12 +94,12 @@ jldi j2, 32
 jshl j10, j13, j2
 jldi j2, 5
 jor j10, j10, j2
-jldi j11, QBUF                  ; K, and after it the depth of each floor of the pulse (a byte each, 0: one)
+jldi j11, QBUF                  ; K, and after it how many passes
 jldi j12, 16
 jcall ask
 jldi j1, 0
 jld j2, j1, QBUF + 8
-jst j2, j1, HOND
+jst j2, j1, NPAS
 jld j2, j1, QBUF
 jst j2, j1, PK
 jjnz j2, pr_done

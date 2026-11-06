@@ -37,6 +37,8 @@ GS    = 12E0h
 GN    = 12E8h
 TPT   = 1F40h                   ; what each place testified: {key of place and difference} (a growing table)
 PDK   = 1F60h                   ; the key of the difference of a pulse
+PASN  = 1F68h                   ; the passes: this one (from 0), how many left
+PASL  = 1F70h
 PMODE = 1758h                   ; floor to widen the requests for
 PST   = 1760h
 HDA   = 1770h                   ; weighing a depth: the two distances, the gain and its cost, their counts, logs
@@ -187,8 +189,27 @@ jcall room
 jldi j1, 0                      ; awake: what it learns from hangs its requests, and the pulses are born
 jst j13, j1, ROOMD
 jst j1, j1, TESTING
-jcall all_floors
+jst j1, j1, PASN                ; read as many times as "p" tells after K (0: once); each pass meets the silhouettes the
+jld j2, j1, NPAS                ; ones before perfected (Capitan: "it will not widen: the majority has it digested")
+jldi j3, 255
+jand j2, j2, j3
+jjnz j2, lp_passes
+jldi j2, 1
+lp_passes:
+jst j2, j1, PASL
+jwhile j2
+  jcall all_floors
+  jldi j1, 0
+  jld j2, j1, PASN
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, PASN
+  jld j2, j1, PASL
+  jsub j2, j2, j3
+  jst j2, j1, PASL
+jwend
 jcall judge
+jret
 jret
 
 ; The three floors, awake (TESTING 0) or knocking (1). Uses j1-j12.
@@ -480,6 +501,8 @@ po_key:
   jjnz j4, po_test
   jld j4, j1, FORMS
   jjz j4, po_req
+  jld j4, j1, PASN              ; (counted on the first pass only: the others would only repeat their weight)
+  jjnz j4, po_req
   jld j4, j1, FLOOR             ; of a kind kept: the words' floor, plain or with the switch
   jldi j5, 2
   jsub j4, j4, j5
@@ -716,6 +739,14 @@ pl_count:
   jldi j8, 3
   jsub j7, j7, j8
   jjnz j7, pl_fill
+  jld j7, j1, NTOK              ; (its room holds three a unit: never past it)
+  jldi j8, 3
+  jmul j8, j7, j8
+  jld j7, j1, NHL
+  jsub j8, j7, j8
+  jldi j2, 63
+  jsar j8, j8, j2
+  jjz j8, pl_fill
   jld j7, j1, NHL
   jldi j8, 40
   jmul j8, j7, j8

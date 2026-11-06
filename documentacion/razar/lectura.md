@@ -921,3 +921,29 @@ Contra el azar (uno de cada diez renglones apartado), idéntico en los tres moto
 - Las puertas todavía no llegan a lo de todas las formas (70 con 44 piezas).
 - La pregunta conserva su huella (`0000E78A9442B1C1`); sentido da las mismas deducciones (`00001570B9C9E345`).
 - Memoria: pulso 275, pregunta 310, sentido 252 MB. El pulso perdió 460 líneas.
+
+## Diez pasadas seguidas (2026-11-06)
+
+El Capitán: *"hacele 10 pasadas: no se va a ensanchar porque la mayoría lo tiene digerido"*. El archivo `p` trae,
+después del renglón apartado, cuántas veces leer el libro (un byte; 0 o nada es una). Cada pasada encuentra las
+siluetas que dejó la anterior. Lo que ya testificó un lugar no vuelve a contar, y las formas de lo irregular se cuentan
+solo en la primera, para no multiplicar su peso. Los registros de la casa tienen ahora un freno: nunca más de los que
+caben.
+
+Uno de cada diez renglones apartado; 10 pasadas, idéntico en los tres motores (`00002731D415A566`):
+
+| pasadas | asociados (real / ciego) | interruptores | puertas: piezas / explica / azar | memoria | tiempo |
+|---|---|---|---|---|---|
+| 1 | 14,9 / 3,5 | 62,6 / 40,9 | 64 / 63 / 0 | 275 MB | 2,5 s |
+| 2 | 15,6 / 3,6 | 63,7 / 42,5 | 81 / 67 / 0 | 279 MB | 2,7 s |
+| 5 | 16,0 / 3,8 | 63,2 / 41,6 | 84 / 66 / 0 | 279 MB | 3,5 s |
+| 10 | 15,7 / 3,6 | 63,5 / 42,3 | 84 / 67 / 0 | 279 MB | 4,4 s |
+
+- **Tenía razón: no se ensancha.** La memoria queda en 279 MB, y el aprendizaje **se asienta entre la segunda y la
+  quinta pasada**: de la 5 a la 10 los pulsos, las diferencias, las piezas y los bits son idénticos (43.154 asociados,
+  84 puertas, 13.691,82 bits).
+- Lo que gana la relectura es poco: asociados de 14,9 % a 15,7 %, puertas de 63 a 67, gemelos igual. La ventaja sobre el
+  azar se mantiene (4,3× en asociados).
+- **Lo que no se queda quieto:** entre la 5 y la 10 cambia lo que explica de lo no leído (885 contra 870 en asociados),
+  aunque lo aprendido es igual. Son las siluetas de los lugares sin mayoría, que el voto sigue moviendo de un lado al
+  otro. No se aprende nada nuevo, pero la silueta de esos lugares no se decide.
