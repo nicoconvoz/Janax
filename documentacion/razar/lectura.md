@@ -715,3 +715,33 @@ salas), así que se paga más. **Se volvió atrás en el pulso**; queda en senti
 
 La cura de verdad no es el tamaño sino **olvidar**: qué pedido dormido se puede soltar sin perder lo que el pulso
 encuentra. Eso cambia el resultado y hay que medirlo contra lo de hoy.
+
+# El pulso de profundidad 1 (2026-11-06)
+
+El Capitán: *"la solución está en la profundidad 1: ver la jugada próxima y la anterior, nunca todas las jugadas
+posibles"*. Cada pedido dormido guarda **solo su última jugada** (lo que lo llenó la última vez, o que se dijo vacío).
+La siguiente, si es otra, despierta el pulso entre las dos y pasa a ser la última. Antes cada pedido comparaba contra
+el **primero** que lo llenó y guardaba **todas** las formas vistas (657 mil, con sus veces). Esa tabla ahora se arma solo
+para quien la pide (`FORMS`): `pulso.jsm`, que estudia lo irregular sobre ella.
+
+Libro entero, idéntico en los tres motores (pulso `00005EB6828DCB1C`, pregunta `0000C2489410474C`, sentido
+`0000155AB9F6F276`):
+
+| | antes | profundidad 1 |
+|---|---|---|
+| pico de la pregunta | 414 MB | **302 MB** |
+| pico de sentido | 364 MB | **244 MB** |
+| pico del pulso (guarda las formas) | 355 MB | 355 MB |
+
+Lo que encuentra:
+- **gemelos**: igual (a/o 690 pares, a/e, n/s, n/r).
+- **asociados**: "dijo/respondió" pasa a ser el primero (1.819 bits), y aparecen dijo/preguntó y dijo/dijeron.
+- **puertas**: de 53 a 459 piezas, y con sentido: "dijo : / respondió :", "le dijo / les dijo", "le dijo / le
+  respondió", ", el / , nuestro". Antes la segunda era "a sus / a los".
+- **la pregunta**: las mismas respuestas en casi el mismo orden (matán, isaac, aram, roboam), con menos margen en bits.
+  Isaac baja del segundo al tercer lugar en "? padre de ? padre de judá".
+- **sentido**: las mismas deducciones; "dios y la isaac" sigue esperando.
+
+**Lo que hay que mirar con desconfianza:** profundidad 1 cuenta un pulso cada vez que la jugada cambia, así que una
+alternancia A, B, A, B suma varias veces el mismo par. Eso puede inflar los bits. Este libro no tiene una parte sin leer
+para la línea de base ciega ("al azar 0/0"), así que todavía no se midió contra el azar.

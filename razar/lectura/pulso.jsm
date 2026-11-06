@@ -170,6 +170,9 @@ jfirst j1, 10000h              ; first order: room 0
 
 jldi j0, 0                      ; the fingerprint
 jcall read_book
+jldi j1, 0                      ; the forms seen are kept: the irregular is studied over them
+jldi j2, 1
+jst j2, j1, FORMS
 jcall learn_pulses
 jcall distill_no
 jldi j1, 0                      ; then what it never read knocks

@@ -34,6 +34,7 @@ RC    = 12D0h
 GE    = 12D8h                   ; the judge: the difference judged, and its bits
 GS    = 12E0h
 GN    = 12E8h
+FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
 NPULC = 1300h                   ; by kind (8 bytes each, from kind 0): pulses, differences, pulses in what it never
 NDIFC = 1340h                   ; read and how many of them a piece explains
 TPULC = 1380h
@@ -140,6 +141,8 @@ jmul j11, j3, j4
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMR
+jld j2, j1, FORMS               ; the forms, only if asked for
+jjz j2, lp_noforms
 jld j3, j1, RMASK
 jldi j4, 1
 jadd j3, j3, j4
@@ -148,6 +151,8 @@ jmul j11, j3, j4
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMS
+lp_noforms:
+jldi j1, 0
 jld j3, j1, RMASK
 jldi j4, 1
 jadd j3, j3, j4
@@ -442,8 +447,10 @@ t_find:
   jwend
   jret
 
-; A request: key j2, filled by j3 (0: said empty). Awake it hangs (a form only once) and wakes the pulses it meets;
-; knocking it only wakes them. Uses j1-j8.
+; A request: key j2, filled by j3 (0: said empty). Depth one (Capitan: "the move before and the next, never every
+; possible move"): a request keeps only its last move, and the next one, if it is another, wakes the pulse between
+; the two and becomes the last. Awake it hangs and wakes; knocking it only wakes. The forms seen, each with its times,
+; are kept only when FORMS asks for them (the irregular is studied over them). Uses j1-j8.
 post:
   jldi j1, 0
   jjnz j2, po_key
@@ -453,6 +460,8 @@ po_key:
   jst j3, j1, PAY
   jld j4, j1, TESTING
   jjnz j4, po_test
+  jld j4, j1, FORMS
+  jjz j4, po_req
   jld j3, j1, PAY
   jcall hw                      ; seen before?
   jjnz j2, po_seen
@@ -475,53 +484,39 @@ po_seen:
   jst j6, j4, 40
   jldi j6, 1
   jst j6, j4, 24
+  jjmp po_req
+po_again:                       ; a form seen before: once more
+  jld j6, j4, 24
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j4, 24
+po_req:
+  jldi j1, 0
   jld j5, j1, KEY
   jld j2, j1, ROOMR
   jldi j3, 24
   jcall t_find
   jld j6, j4, 0
   jjnz j6, po_old
-  jst j5, j4, 0                 ; a new request falls asleep
+  jst j5, j4, 0                 ; a new request falls asleep with its move
   jld j6, j1, NREQ
   jldi j7, 1
   jadd j6, j6, j7
   jst j6, j1, NREQ
+  jjmp po_keep
 po_old:
-  jld j3, j1, PAY
-  jjz j3, po_said
-  jld j6, j4, 16                ; filled: against the empty, if it was said so
-  jjz j6, po_first
-  jst j4, j1, RENT
-  jldi j2, 0
-  jcall pulse
+  jcall po_meet
   jldi j1, 0
   jld j4, j1, RENT
-  jld j3, j1, PAY
-po_first:
-  jld j2, j4, 8                 ; and against the first that filled it
-  jjnz j2, po_two
+po_keep:
+  jld j3, j1, PAY               ; the last move now: {its filling, 1 if it was the empty}
   jst j3, j4, 8
-  jret
-po_two:
-  jsub j6, j2, j3
-  jjz j6, po_done
-  jjmp pulse
-po_said:
-  jld j6, j4, 16
-  jjnz j6, po_done
   jldi j6, 1
+  jjz j3, po_mark
+  jldi j6, 0
+po_mark:
   jst j6, j4, 16
-  jld j3, j4, 8
-  jjz j3, po_done
-  jldi j2, 0
-  jjmp pulse
 po_done:
-  jret
-po_again:                       ; a form seen before: once more
-  jld j6, j4, 24
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j4, 24
   jret
 po_test:
   jadd j5, j2, j1
@@ -530,28 +525,28 @@ po_test:
   jcall t_find
   jld j6, j4, 0
   jjz j6, po_done               ; nothing asleep there
-  jld j3, j1, PAY
-  jjz j3, pt_said
-  jld j6, j4, 16
-  jjz j6, pt_first
-  jst j4, j1, RENT
-  jldi j2, 0
-  jcall pulse
+  jjmp po_meet
+
+; The move PAY against the last move of the request at j4: if it is another, the pulse between the two (the empty, if
+; one of them is, waits: j2 = 0). Uses j1-j8.
+po_meet:
   jldi j1, 0
-  jld j4, j1, RENT
-  jld j3, j1, PAY
-pt_first:
+  jst j4, j1, RENT
   jld j2, j4, 8
-  jjz j2, po_done
-  jsub j6, j2, j3
-  jjz j6, po_done
-  jjmp pulse
-pt_said:
   jld j6, j4, 16
-  jjnz j6, po_done
-  jld j3, j4, 8
-  jjz j3, po_done
+  jld j3, j1, PAY
+  jjz j6, pm_filled
+  jjz j3, po_done               ; empty after empty: the same move
   jldi j2, 0
+  jjmp pulse
+pm_filled:
+  jjnz j3, pm_both
+  jadd j3, j2, j1               ; empty after a filling
+  jldi j2, 0
+  jjmp pulse
+pm_both:
+  jsub j6, j2, j3
+  jjz j6, po_done               ; the same move
   jjmp pulse
 
 ; A pulse between fillings j2 (the one waiting) and j3 (the one that arrived) of the floor FLOOR: awake, its difference
