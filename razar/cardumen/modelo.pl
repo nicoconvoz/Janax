@@ -62,7 +62,47 @@ sub signal {
     $ft[$_] = $t for @next;
     @now = @next;
   }
-  return \@melody if $s->{whisper};             # a whisper: the wave runs, the shape does not learn from it
+  $s->learn(\@ft) unless $s->{whisper};         # a whisper: the wave runs, the shape does not learn from it
+  return \@melody;
+}
+# The key pressed in time (Capitan: a Morse translator at the least speed Razar reads): $sched->[t] is the pieces held
+# down at step t (an empty step: the key is up). They wake whenever they are held, as a key does; every other piece
+# still wakes at most once. The wave goes on while someone wakes or the key still has steps to come.
+# With $s->{refractory} = R, a piece may wake again once it has rested R steps (a neuron's refractory period): R = 2
+# is the least that keeps a wave from bouncing back (rested 1, the neighbor it just woke would wake it again in the
+# next step), so each press of the key sends a new front up the cube. Without it, a piece wakes once per signal. A
+# loop (the same state again once the key is done: the Capitan's rule) ends the wave.
+sub signal_timed {
+  my ($s, $sched) = @_;
+  my $R = $s->{refractory};
+  my @ft = (-1) x $s->{p}; my @lw = (-1) x $s->{p};   # first wake, and last wake
+  my @melody; my $t = 0; my %seen; my $prev = '';
+  my @now = sort { $a <=> $b } do { my %u = map { $_ => 1 } @{ $sched->[0] // [] }; keys %u };
+  $ft[$_] = $lw[$_] = 0 for @now;
+  while (@now || $t < $#$sched) {
+    push @melody, [@now];
+    my $state = join(',', @now) . '/' . $prev; $prev = join ',', @now;
+    last if $t >= $#$sched && $seen{$state}++;
+    my %in; my %mask;
+    for my $i (@now) {
+      next if $s->{sinks}{$i};
+      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0;
+        next if defined $R ? ($lw[$q] >= 0 && $t + 1 - $lw[$q] <= $R) : $ft[$q] >= 0;
+        $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+    }
+    $t++;
+    my %next = map { $_ => 1 } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
+    $next{$_} = 1 for @{ $sched->[$t] // [] };
+    @now = sort { $a <=> $b } keys %next;
+    $ft[$_] = $t for grep { $ft[$_] < 0 } @now;
+    $lw[$_] = $t for @now;
+  }
+  $s->learn(\@ft) unless $s->{whisper};
+  return \@melody;
+}
+# The shape moves by what happened in one signal: $ftr is the step each piece first woke at (-1: not then).
+sub learn {
+  my ($s, $ftr) = @_; my @ft = @$ftr;
   for my $i (0 .. $s->{p}-1) {                   # the shape moves by what happened
     next if $ft[$i] < 0;
     my $frag = 0;
@@ -76,7 +116,6 @@ sub signal {
     $s->{frag}[$i] = $frag;
     $s->{rate}[$i]-- if $s->{rate}[$i] > 1;
   }
-  return \@melody;
 }
 # Harmony (Capitan: "harmony is the key: a harmonious brain does not convulse, it works... something that sounds
 # bad does not fit, and it is cut before the error spreads"): a note fits if it is not drowned out. With harmony,
