@@ -842,3 +842,16 @@ sigue la aceleración, 170 pasos: la estira**. Por qué: la convulsión es una o
 dibujo, y ahí **no hay aceleración**; un freno que mira cuánto crece la actividad no ve nada que frenar (el término
 derivativo de un controlador corrige cambios, no un estado que se mantiene). Lo que puede frenar una oscilación sostenida
 tiene que mirar cuánta actividad hay y cuánto dura (proporcional e integral).
+
+**20 semillas, y la estadística bien hecha** (por consejo del otro chat: el test de signos tira el tamaño del salto, y
+las dos medidas de ruido de una misma semilla no son independientes). Ganancia por semilla en oraciones enteras de 40,
+promedio de 10 y 20 % de resbalones, aprende menos quieto, semillas 1001–1020: −2, 11, 14, 4, 3, 8, −6, 1,5, 4,5, 9, 6,
+7, 9,5, 6,5, 8, 0,5, 0,5, 8,5, 3, 6,5.
+- **Gana en 18 de 20, pierde en 2; mediana +6,2 oraciones. Wilcoxon por semilla: W+ = 196,5 de 210, z = 3,42 (p ≈
+  0,0006, dos colas).** Con 7 semillas era p ≈ 0,16 (el 0,06 que se dijo antes contaba como independientes las dos
+  medidas de una semilla). **Lo que aprende el cardumen sirve cuando hay ruido**, con la palabra entera como canción.
+- **Frenos al 30 %, sin resbalones** (la predicción del otro chat: si se cura la expansión, las confusiones dejan de ser
+  "empieza igual"): las palabras nuevas tomadas por una que empieza con la misma letra bajan del 40 % a **24 % (aprende) y
+  29 % (quieto)**, contra 5 % de azar. Se cumple a medias. Doc había dicho que el sesgo no era el zumbido (en estas olas
+  nadie despierta dos veces); que los frenos lo muevan dice que tiene que ver con cuánto se expande la ola. Costo:
+  aprendiendo con frenos, una semilla cae a 13 oraciones de 40 (los frenos que aprenden siguen siendo peligrosos).

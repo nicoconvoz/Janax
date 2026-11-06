@@ -225,3 +225,5 @@ paper de antieficiencia de EGG existe, pero con costo de largo EGG también cump
 (11 de 14 casos, p ≈ 0,06). Las palabras nuevas se confunden con las que empiezan igual (40 % contra 5 % de azar).
 2026-11-06 — Freno que sigue la aceleración: no apaga la convulsión (170 pasos contra 127), porque una oscilación sostenida
 no acelera. Haría falta un freno según cuánta actividad hay y cuánto dura.
+2026-11-06 — 20 semillas: con la palabra como canción y ruido, el cardumen que aprende le gana al quieto en 18 de 20
+(Wilcoxon z = 3,42, p ≈ 0,0006). Frenos al 30 % bajan el sesgo al comienzo de 40 % a 24–29 %.
