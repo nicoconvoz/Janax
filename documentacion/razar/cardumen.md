@@ -1232,3 +1232,40 @@ preguntan los 40 pares que nunca vio (ana–ceci, beto–eli…), con el mecanis
   la canción"** — el orden de los lugares, no su diferencia.
 - (De paso: con 30 acertijos por relación, la tabla donde se arman pisaba la de los practicados, que tenía lugar para 16.
   Se reacomodaron las tablas; los modos de antes dan la misma huella.)
+
+### La puerta y su interruptor: la negación de Razar llevada a la lógica (Capitán, 2026-11-06)
+
+> *"Leé la parte de Razar donde descubro la negación y tomá eso para armar la lógica."*
+
+Razar encontró el "no" en el Nuevo Testamento sin que nadie se lo nombrara, por cinco propiedades medibles; una de ellas:
+**cuando el interruptor aparece, lo que sigue cambia, y el resto es el mismo lugar**. Y guarda lo negado como **puerta
+cerrada**: el mismo lugar dicho al revés. `MODO` 5 en `voluntad_acertijos.jsm`, con la misma base que los gemelos:
+- **El significado del todo para comparar:** cuál de las dos palabras va antes en la canción (orden) y cuál respondió
+  (papel). La puerta de cada palabra de relación: para cada orden, el papel que dicen sus recuerdos (al menos dos, sin
+  empate).
+- **El interruptor, descubierto:** una palabra de relación es el interruptor de otra si, para los mismos dos hermanos, su
+  respuesta va al otro en la mayoría de los pares que recuerda de las dos (y al menos dos).
+- **Puerta cerrada:** lo que sabe de una lo sabe de la otra, dado vuelta.
+- `EJEM` (con `TIPO` 3) = cuántos pares vecinos de "menor" practica; los de "mayor" se practican todos.
+
+20 semillas, pares que nunca vio:
+
+| Condición | Interruptor hallado | Bien | Mal | No sé |
+|---|---|---|---|---|
+| "menor" practicado en los 10 pares | 20 de 20 | 97 % | 0 % | 2 % |
+| **"menor" practicado en solo 2 pares** | **20 de 20** | **98 %** | **0 %** | 1 % |
+| "menor" en 1 par | 0 de 20 | 39 % | 0 % | 60 % |
+| "menor" nunca | 0 de 20 | 39 % | 0 % | 60 % |
+| 2 pares, 20 % de resbalones | 18 de 20 | 87 % | 1 % | 10 % |
+| control: respuestas al azar | 20 de 20 | 31 % | 37 % | 31 % |
+
+- **Con dos pares de "menor" alcanza:** descubre que "menor" es el interruptor de "mayor" y contesta en esa forma todo lo
+  que nunca practicó, usando lo de "mayor" dado vuelta. Con uno solo no se anima (un caso es una anécdota): contesta lo de
+  "mayor" (el 39 %) y dice "no sé" en lo de "menor". Sin errores.
+- **Donde los gemelos fallaban (0 % bien, 29 % mal), la puerta acierta 97–98 % sin errores**: para comparar, el
+  significado del todo es el orden, no la diferencia.
+- ⚠️ **El control muestra un punto flojo:** con las respuestas al azar también "encuentra" un interruptor (los pares se dan
+  vuelta la mitad de las veces y alcanza con la mayoría); ahí sus puertas fallan y lo dice el error (37 %). El criterio
+  del interruptor debería compararse contra el azar, como el portero del P36; hoy es solo mayoría.
+- Lo honesto: que el significado de una comparación sea "quién va antes en la canción" lo pone Doc (es la definición del
+  significado en átomo del Capitán); lo que descubre es qué papel responde y que "menor" es el interruptor.

@@ -99,3 +99,15 @@ times 0CC0h - $ db 0
 db 'menor', 0
 times 0D00h - $ db 0
 db 'es', 0
+times 0D40h - $ db 0
+db ' puerta: repeticiones ', 0
+times 0D80h - $ db 0
+db ' bien; interruptor: ', 0
+times 0DC0h - $ db 0
+db 'si', 0
+times 0E00h - $ db 0
+db 'no', 0
+times 0E40h - $ db 0
+db ' (da vuelta ', 0
+times 0E80h - $ db 0
+db '); puertas adoptadas: ', 0

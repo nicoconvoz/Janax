@@ -55,6 +55,12 @@ S_MEMO = 9C0h
 S_PARES = 0A00h
 S_ADOP = 0A40h
 S_LOGICA = 0A80h
+S_PUERTA = 0D40h
+S_INTER = 0D80h
+S_SI  = 0DC0h
+S_NO  = 0E00h
+S_VUELTA = 0E40h
+S_PADOP = 0E80h
 WTXT  = 500h                    ; word w: its text at WTXT + w*40h (0 uno .. 5 seis, 6 mas, 7 menos, 8 es)
 MORSE = 800h                    ; letter l: its Morse at MORSE + l*8
 ; Room 0 (0F000h bytes):
@@ -160,6 +166,11 @@ MEMOK = 45F0h
 NFACT = 45F8h                   ; firm memories (facts), twin pairs, properties adopted
 NTWIN = 4600h
 ADOPT = 4608h
+DOOR  = 4620h                   ; MODO 5: the doors, then the doors after the closed ones (16 qwords)
+FLIPS = 46A0h                   ; pairs both operators remember: answer turned, or kept
+KEEPS = 46A8h
+SWITCH = 46B0h                  ; 1: one operator word is the switch of the other
+MCNT  = 46B8h                   ; logic: menor neighbours practiced so far
 OPI   = 4610h                   ; the operator being looked at (0 mas, 1 menos)
 MEM   = 6400h                   ; memory: (op, a, b, c) heard, as places: MEM + (((op*10 + a)*10 + b)*10 + c)*8
 TWADDR = 0A400h                 ; twins: TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8 (1444 qwords)
@@ -662,6 +673,9 @@ jldi j3, 2
 jsub j3, j2, j3
 jjz j3, s_train
 jldi j3, 4
+jsub j3, j2, j3
+jjz j3, g_train
+jldi j3, 5
 jsub j3, j2, j3
 jjz j3, g_train
 jldi j1, 0                      ; shown: it hears the five words and counts what fits
@@ -1861,6 +1875,11 @@ gm_next:
   jsub j15, j15, j3
 jwend
 
+jldi j1, 0                      ; MODO 5: the door and its switch instead of twins
+jld j2, j1, MODO
+jldi j3, 5
+jsub j2, j2, j3
+jjz j2, p_door
 jldi j1, 0                      ; twins: every two facts of an operator that differ in one number
 jcall g_tw                      ; j5 = TW
 jldi j2, 1444
@@ -2286,6 +2305,306 @@ gr_one:
 gr_firm:
   jret
 
+; The door and its switch (MODO 5; Capitan, 2026-11-06: "read the part of Razar where I discover negation and take it to
+; build the logic"). Razar found "no" in the New Testament by properties, nothing named; one of them: when the switch
+; appears, what follows changes, and the rest is still the same place. Here, from the firm memories (the same base as
+; MODO 4):
+;   - the meaning as an atom: each word its place in the song it heard; the meaning of a comparison as a whole: which
+;     of the two words of the riddle comes first in that song (ORDEN: 0 a, 1 b), and which of them answered (PAPEL: 0 the
+;     first word, 1 the second);
+;   - the door of each operator word: for each ORDEN, the PAPEL most of its memories say (adopted if at least two say it
+;     and no other ties it, as in P36);
+;   - the switch: an operator word is the switch of another if, for the same two words, its answer goes to the other one
+;     in most of the pairs both remember (and at least two). Then what is known of the other is known of it, turned
+;     around: a closed door, the same place said the other way;
+;   - asked a pair it never practiced: its ORDEN, the door of its operator, and the word that answers.
+p_door:
+jldi j1, 0                      ; the doors: DOOR + ((op*2 + orden)*2 + papel)*8
+jldi j2, 8
+jldi j3, DOOR
+jwhile j2
+  jst j1, j3, 0
+  jldi j4, 8
+  jadd j3, j3, j4
+  jldi j4, 1
+  jsub j2, j2, j4
+jwend
+jldi j9, 0
+pd_fact:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, pd_switch
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jcall p_rolerow               ; j6 = the door's row for this fact (or -1)
+  jldi j7, 63
+  jsar j7, j6, j7
+  jjnz j7, pd_next
+  jldi j7, 3
+  jshl j6, j6, j7
+  jld j7, j6, DOOR
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j6, DOOR
+pd_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pd_fact
+pd_switch:
+jldi j1, 0                      ; is one operator word the switch of the other? the pairs both remember: turned or kept
+jst j1, j1, FLIPS
+jst j1, j1, KEEPS
+jldi j9, 0
+ps_i:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, ps_done
+  jldi j10, 0
+ps_j:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j10, j2
+  jjz j2, ps_inext
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jshl j4, j10, j2
+  jadd j4, j4, j5
+  jld j6, j3, 0                 ; i of the first operator, j of the second
+  jjnz j6, ps_jnext
+  jld j6, j4, 0
+  jjz j6, ps_jnext
+  jld j6, j3, 8                 ; the same two words
+  jld j7, j4, 8
+  jsub j6, j6, j7
+  jjnz j6, ps_jnext
+  jld j6, j3, 16
+  jld j7, j4, 16
+  jsub j6, j6, j7
+  jjnz j6, ps_jnext
+  jld j6, j3, 24                ; the same answer, or the other word
+  jld j7, j4, 24
+  jsub j6, j6, j7
+  jldi j1, 0
+  jjz j6, ps_kept
+  jld j7, j1, FLIPS
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j1, FLIPS
+  jjmp ps_jnext
+ps_kept:
+  jld j7, j1, KEEPS
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j1, KEEPS
+ps_jnext:
+  jldi j2, 1
+  jadd j10, j10, j2
+  jjmp ps_j
+ps_inext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp ps_i
+ps_done:
+jldi j1, 0                      ; a switch: turned in most of them, and at least two
+jst j1, j1, SWITCH
+jld j2, j1, FLIPS
+jld j3, j1, KEEPS
+jsub j3, j3, j2
+jldi j4, 63
+jsar j3, j3, j4
+jjz j3, pw_none
+jldi j3, 2
+jsub j3, j2, j3
+jsar j3, j3, j4
+jjnz j3, pw_none
+jldi j2, 1
+jst j2, j1, SWITCH
+jldi j9, 0                      ; closed doors: each operator knows the other's doors, turned around
+pw_lap:
+  jldi j2, 4                    ; (orden, papel) of the first operator into the second, and back
+  jsub j2, j9, j2
+  jjz j2, pw_none
+  jldi j3, 3
+  jshl j3, j9, j3               ; first operator's cell
+  jldi j4, 1
+  jxor j5, j9, j4               ; the other papel
+  jldi j4, 4
+  jadd j5, j5, j4               ; in the second operator
+  jldi j4, 3
+  jshl j5, j5, j4
+  jld j6, j3, DOOR
+  jld j7, j5, DOOR
+  jst j6, j1, HOLD              ; (a moment)
+  jadd j8, j7, j6
+  jst j8, j5, DOOR + 64
+  jld j6, j1, HOLD
+  jadd j8, j6, j7
+  jst j8, j3, DOOR + 64
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pw_lap
+pw_none:
+jldi j1, 0                      ; no switch: each operator keeps its own doors
+jld j2, j1, SWITCH
+jjnz j2, pw_count
+jldi j9, 0
+pn_lap:
+  jldi j2, 8
+  jsub j2, j9, j2
+  jjz j2, pw_count
+  jldi j3, 3
+  jshl j3, j9, j3
+  jld j4, j3, DOOR
+  jst j4, j3, DOOR + 64
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pn_lap
+pw_count:
+jldi j1, 0                      ; the doors adopted: (op, orden) with a papel
+jst j1, j1, ADOPT
+jldi j9, 0
+pa_lap:
+  jldi j2, 4
+  jsub j2, j9, j2
+  jjz j2, pa_done
+  jcall p_doorof
+  jjz j2, pa_next
+  jldi j1, 0
+  jld j3, j1, ADOPT
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, ADOPT
+pa_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pa_lap
+pa_done:
+
+jldi j1, 0                      ; asked, in order 0: its orden, the door of its operator, the word that answers
+jst j1, j1, RIGHT
+jst j1, j1, ASKED
+jst j1, j1, NONE
+jld j15, j1, NTEST
+jldi j2, TEST
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jldi j2, 0
+  jcall s_hear4
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall s_roles
+  jjz j2, pq_count
+  jldi j1, 0
+  jld j7, j1, GW + 8            ; its operator, as heard
+  jldi j2, 6
+  jsub j7, j7, j2
+  jldi j2, 63
+  jsar j3, j7, j2
+  jjnz j3, pq_count
+  jldi j2, 2
+  jsub j3, j7, j2
+  jldi j2, 63
+  jsar j3, j3, j2
+  jjz j3, pq_count
+  jld j4, j1, PA                ; orden: 0 if a comes first in the song
+  jld j5, j1, PB
+  jsub j6, j5, j4
+  jjz j6, pq_count
+  jldi j2, 63
+  jsar j6, j6, j2
+  jldi j2, 1
+  jand j6, j6, j2               ; 1 if b comes first
+  jadd j9, j7, j7
+  jadd j9, j9, j6               ; (op*2 + orden)
+  jcall p_doorof
+  jjz j2, pq_count
+  jldi j1, 0
+  jld j7, j1, PA
+  jjz j3, pq_vote               ; papel 0: the first word
+  jld j7, j1, PB
+pq_vote:
+  jcall g_vote
+pq_count:
+  jcall s_answer
+  jldi j1, 0
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jld j15, j1, NTEST
+  jld j3, j1, ASKED
+  jsub j15, j15, j3
+jwend
+jjmp r_counts
+
+; The door's row of the fact at j3 (operator, a, b, c as places): ((op*2 + orden)*2 + papel), or -1 if c is neither
+; word or a and b are the same place. -> j6. Uses j6-j8.
+p_rolerow:
+  jld j6, j3, 8
+  jld j7, j3, 16
+  jsub j8, j7, j6
+  jjz j8, pr_no
+  jldi j6, 63
+  jsar j8, j8, j6
+  jldi j6, 1
+  jand j8, j8, j6               ; orden: 1 if b comes first
+  jld j6, j3, 0
+  jadd j6, j6, j6
+  jadd j6, j6, j8
+  jadd j6, j6, j6               ; (op*2 + orden)*2
+  jld j7, j3, 24                ; papel: 0 if c is a, 1 if c is b
+  jld j8, j3, 8
+  jsub j8, j7, j8
+  jjz j8, pr_done
+  jld j8, j3, 16
+  jsub j8, j7, j8
+  jjnz j8, pr_no
+  jldi j8, 1
+  jadd j6, j6, j8
+pr_done:
+  jret
+pr_no:
+  jldi j6, 0
+  jldi j7, 1
+  jsub j6, j6, j7
+  jret
+
+; The door of (op*2 + orden) = j9, after the closed doors: the papel most say, if at least two and alone -> j2 = 1 and
+; j3 = the papel, else j2 = 0. Uses j1-j6.
+p_doorof:
+  jldi j1, 0
+  jldi j2, 0
+  jldi j4, 4
+  jshl j4, j9, j4               ; (j9*2)*8
+  jld j5, j4, DOOR + 64         ; papel 0
+  jld j6, j4, DOOR + 72         ; papel 1
+  jsub j4, j5, j6
+  jjz j4, pdo_done              ; a tie
+  jldi j3, 0
+  jldi j1, 63
+  jsar j4, j4, j1
+  jjz j4, pdo_first
+  jldi j3, 1
+  jldi j5, 0
+  jadd j5, j5, j6
+pdo_first:
+  jldi j4, 2                    ; at least two
+  jsub j4, j5, j4
+  jldi j1, 63
+  jsar j4, j4, j1
+  jjnz j4, pdo_done
+  jldi j2, 1
+pdo_done:
+  jldi j1, 0
+  jret
+
 r_counts:
 jldi j1, 0                      ; the counts
 jld j12, j1, COUNTOK
@@ -2462,6 +2781,16 @@ jcall puts
 jld j2, j1, REPS
 jcall putnum
 o_gem:
+jldi j1, 0
+jld j2, j1, MODO
+jldi j3, 5
+jsub j2, j2, j3
+jjnz j2, o_pue
+jldi j1, S_PUERTA
+jcall puts
+jld j2, j1, REPS
+jcall putnum
+o_pue:
 jldi j1, S_CUBO
 jcall puts
 jld j2, j1, NN
@@ -2561,6 +2890,45 @@ jcall putnum
 jldi j2, 10
 jcall putch
 o_mem:
+jldi j1, 0                      ; the door: what the memory keeps, the switch, the doors
+jld j2, j1, MODO
+jldi j3, 5
+jsub j2, j2, j3
+jjnz j2, o_door
+jldi j1, S_MEMO
+jcall puts
+jld j2, j1, MEMOK
+jcall putnum
+jldi j1, S_DE
+jcall puts
+jld j2, j1, NTRAIN
+jcall putnum
+jldi j1, S_INTER
+jcall puts
+jldi j1, 0
+jld j2, j1, SWITCH
+jldi j1, S_NO
+jjz j2, o_sw
+jldi j1, S_SI
+o_sw:
+jcall puts
+jldi j1, S_VUELTA
+jcall puts
+jld j2, j1, FLIPS
+jcall putnum
+jldi j1, S_DE
+jcall puts
+jld j2, j1, FLIPS
+jld j3, j1, KEEPS
+jadd j2, j2, j3
+jcall putnum
+jldi j1, S_PADOP
+jcall puts
+jld j2, j1, ADOPT
+jcall putnum
+jldi j2, 10
+jcall putch
+o_door:
 jldi j10, 1
 jldi j11, TEXT
 jldi j1, 0
@@ -2636,7 +3004,8 @@ ro_bnext:
   jldi j4, 7
   jsub j4, j1, j4
   jjnz j4, ro_a
-  jld j1, j13, TIPO             ; logic: the riddles of neighbours (a and b one place apart) are practiced, the rest asked
+  jld j1, j13, TIPO             ; logic: the riddles of neighbours (a and b one place apart) are practiced, the rest asked;
+  jst j13, j13, MCNT            ; of menor, only the first EJEM neighbours (the form practiced little)
   jldi j2, 3
   jsub j1, j1, j2
   jjnz j1, ro_notlogic
@@ -2652,8 +3021,26 @@ ro_bnext:
     jldi j1, 1
     jsub j1, j3, j1
     jldi j2, 1                  ; j1 = 1 if neighbours
-    jjz j1, ro_nb
+    jjz j1, ro_menor
     jldi j2, 0
+  ro_menor:
+    jjz j2, ro_nb               ; menor: only EJEM of its neighbours
+    jld j1, j13, OPC
+    jldi j3, 7
+    jsub j1, j1, j3
+    jjnz j1, ro_nb
+    jld j1, j13, MCNT
+    jld j3, j13, EJEM
+    jsub j3, j1, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, ro_mcount
+    jldi j2, 0
+    jjmp ro_nb
+  ro_mcount:
+    jldi j3, 1
+    jadd j1, j1, j3
+    jst j1, j13, MCNT
   ro_nb:
     jldi j1, 0
     jadd j1, j1, j2
