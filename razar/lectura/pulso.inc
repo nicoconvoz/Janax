@@ -34,6 +34,8 @@ RC    = 12D0h
 GE    = 12D8h                   ; the judge: the difference judged, and its bits
 GS    = 12E0h
 GN    = 12E8h
+TPT   = 1F40h                   ; what each place testified: {key of place and difference} (a growing table)
+PDK   = 1F60h                   ; the key of the difference of a pulse
 SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
 NPULC = 1300h                   ; by kind (8 bytes each, from kind 0): pulses, differences, pulses in what it never
@@ -148,6 +150,9 @@ jldi j2, ROOMS                  ; (one of each kind: it grows to what it holds, 
 jldi j3, 56
 jcall pl_new
 lp_noforms:
+jldi j2, TPT                    ; what each place already testified (it grows to what it holds)
+jldi j3, 8
+jcall pl_new
 jldi j1, 0
 jld j3, j1, RMASK
 jldi j4, 1
@@ -559,12 +564,28 @@ pm_both:
 
 ; A pulse between fillings j2 (the one waiting) and j3 (the one that arrived) of the floor FLOOR: awake, its difference
 ; is born or counted once more, and so are its fillings; knocking, it is looked up among the pieces, and so is the
-; blind pulse beside it. Uses j1-j8.
+; blind pulse beside it. Awake, a place testifies once to each difference: a place that alternates (A, B, A, B) says
+; the same again, and the judge counts independent pairs. Uses j1-j8.
 pulse:
   jldi j1, 0
   jst j2, j1, PA
   jst j3, j1, PB
   jcall d_make
+  jld j6, j1, TESTING
+  jjnz j6, pu_any
+  jst j5, j1, PDK
+  jld j2, j1, KEY               ; this place and this difference: said before?
+  jadd j3, j5, j1
+  jcall hw
+  jjnz j2, pu_k
+  jldi j2, 1
+pu_k:
+  jadd j5, j2, j1
+  jldi j2, TPT
+  jcall pl_take
+  jjz j6, pl_done                ; said before: nothing new
+  jld j5, j1, PDK
+pu_any:
   jld j2, j1, ROOMD
   jldi j3, 48
   jcall t_find

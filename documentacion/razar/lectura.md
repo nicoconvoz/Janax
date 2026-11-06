@@ -786,3 +786,28 @@ explican cinco puntos menos en absoluto, pero el azar baja más.
 113 pulsos. Ocho veces más piezas para 1,6 veces más aciertos: muchas piezas nuevas no explican nada fuera de lo leído.
 Es la alternancia A, B, A, B que cuenta el mismo par varias veces y le infla los bits. Las piezas buenas están (el azar
 sigue en 0); sobran las que solo se repiten dentro de un mismo lugar.
+
+## Un lugar, un testimonio (2026-11-06)
+
+La alternancia inflaba las puertas. Regla general: **un lugar da testimonio una sola vez de cada diferencia.** Un lugar
+que alterna A, B, A, B dice lo mismo otra vez, y el juez cuenta pares independientes (su n es en cuántos lugares pulsó
+la diferencia, no cuántas veces cambió la jugada). Al pulsar, se mira si ese lugar ya dio testimonio de esa diferencia
+(una tabla que crece, una llave por par de lugar y diferencia); si ya lo dio, no es nada nuevo.
+
+Contra el azar (uno de cada diez renglones apartado), idéntico en los tres motores (`0000F36B555E2980`):
+
+| piso | todas las formas | profundidad 1 | profundidad 1 + un testimonio |
+|---|---|---|---|
+| gemelos (real / ciego) | 86,6 / 22,0 (3,9×) | 81,4 / 19,1 (4,3×) | 81,4 / 19,1 (**4,3×**) |
+| interruptores | 58,2 / 40,9 (1,4×) | 61,4 / 39,6 (1,6×) | 60,2 / 38,6 (**1,6×**) |
+| asociados | 14,7 / 6,0 (2,5×) | 15,6 / 3,7 (4,2×) | 13,6 / 3,2 (**4,3×**) |
+| puertas: piezas, lo no leído explicado | 44, 70 | 387, 113 | **65, 59** (azar 0) |
+
+- Las puertas infladas se van: de 387 a 65 piezas. Quedan ": « / : "", "del señor / de dios", "? » / ! »", "a sus /
+  a los", "los que / aquellos que", "dijo : / respondió :".
+- **La pregunta vuelve a la huella original** (`0000E78A9442B1C1`): las mismas respuestas e Isaac otra vez segundo.
+- Sentido: las mismas deducciones.
+- Memoria: la tabla de testimonios cuesta ~8 MB (pulso 279, pregunta 310, sentido 260 MB). Antes de hoy: 355, 414 y 494.
+
+Lo honesto: las puertas explican algo menos de lo no leído que con todas las formas (59 contra 70 pulsos), con 65
+piezas en lugar de 44.
