@@ -16,11 +16,18 @@
 ; it turned).
 ;
 ; It wakes requests only from the renglones it learns from (lectura.inc: one in K kept apart), and only from the words
-; read there for the twins. Then, without writing anything, the renglones kept apart (and the words only they have)
-; knock on the requests: every pulse there is checked against the pieces already born. A piece is a difference that
-; repeated in two pairs or more (the anecdote rule; whether each piece pays for itself is the next step). For each kind
-; it writes how many pulses and differences were born, how many pulses woke in what it never read and how many of them
-; a piece born before explains, and its ten most repeated differences. Its counts go into j0.
+; read there for the twins. Then the judge of harmony (D39: the same said with less): a difference is a piece when its
+; pairs, said as one piece, cost fewer bits than said apart, the piece's own name paid. On its floor, with N pulses, U
+; different fillings and c(f) the pulses filling f took part in, n pairs of the difference (a, b) save
+;   n * log2(2N * n / (c(a) * c(b)))   bits (what knowing a says of b, per pair),
+; and naming the piece costs 2 * log2(U) (two fillings out of U). It is a piece when the first is more. Nothing is set
+; by hand: a filling that does other work (in many pulses) is worth less as a piece, and one pair alone rarely pays.
+; Then, without writing anything, the renglones kept apart (and the words only they have) knock on the requests: every
+; pulse there is checked against the pieces, and so is a blind pulse beside it (the same waiting filling against the
+; filling that arrived just before on that floor): pieces that tell structure explain the real ones more than the blind.
+; For each kind it writes its pulses, differences and pieces, how many pulses woke in what it never read and how many
+; of them a piece explains, the same for the blind ones, and its ten pieces that save the most bits. Its counts go into
+; j0.
 S_LIBRO = 0
 S_P     = 10h
 S_HEAD  = 40h
@@ -36,11 +43,16 @@ S_TPCE  = 340h
 S_TURN  = 380h
 S_NOBOOK = 3C0h
 S_NOMEM = 400h
+S_PCS   = 440h
+S_BLIND = 480h
+S_BITS  = 4C0h
+S_PAIRS = 500h
 
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
 ROOMR = 1208h                   ; the requests: {key, what filled it first, said empty} per place (24 bytes)
 ROOMS = 1210h                   ; the forms already seen: {hash of key and filling} per place
-ROOMD = 1218h                   ; the differences: {key, low, high, kind | turned << 8, pairs} per place (40 bytes)
+ROOMD = 1218h                   ; the differences: {key, low, high, floor | turned << 8, pairs, bits saved (in 2^-16)}
+                                ; per place (48 bytes)
 RMASK = 1220h                   ; places of each of the three, minus 1
 TESTING = 1228h                 ; 1: knocking with what it never read (nothing is written)
 FLOOR = 1230h                   ; 1 gemelos, 2 interruptores and asociados, 3 puertas
@@ -60,10 +72,23 @@ WI    = 1298h
 WID   = 12A0h
 NREQ  = 12A8h                   ; requests hung
 TOPN  = 12B0h
+ROOMF = 12B8h                   ; the fillings: {key, pulses it took part in} per place
+PA    = 12C0h                   ; the pulse: its waiting filling and the one that arrived; its kind
+PB    = 12C8h
+RC    = 12D0h
+GE    = 12D8h                   ; the judge: the difference judged, and its bits
+GS    = 12E0h
+GN    = 12E8h
 NPULC = 1300h                   ; by kind (8 bytes each, from kind 0): pulses, differences, pulses in what it never
 NDIFC = 1340h                   ; read and how many of them a piece explains
 TPULC = 1380h
 TPCEC = 13C0h
+NFL   = 1400h                   ; by floor: pulses, and different fillings
+UFL   = 1420h
+NADC  = 1440h                   ; by kind: pieces; blind pulses, and how many of them a piece explains
+TBLN  = 1480h
+TBLC  = 14C0h
+PREVX = 1500h                   ; by floor: the filling that arrived last (knocking)
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
@@ -146,7 +171,15 @@ jst j13, j1, ROOMS
 jld j3, j1, RMASK
 jldi j4, 1
 jadd j3, j3, j4
-jldi j4, 40
+jldi j4, 4
+jshl j11, j3, j4
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMF
+jld j3, j1, RMASK
+jldi j4, 1
+jadd j3, j3, j4
+jldi j4, 48
 jmul j11, j3, j4
 jcall room
 
@@ -154,6 +187,7 @@ jldi j1, 0                      ; awake: what it learns from hangs its requests,
 jst j13, j1, ROOMD
 jst j1, j1, TESTING
 jcall all_floors
+jcall judge
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
@@ -553,57 +587,19 @@ pt_said:
   jldi j2, 0
   jjmp pulse
 
-; A pulse between fillings j2 and j3 of the floor FLOOR: its difference is born or counted once more (awake), or
-; looked up among those born (knocking). Uses j1-j8.
+; A pulse between fillings j2 (the one waiting) and j3 (the one that arrived) of the floor FLOOR: awake, its difference
+; is born or counted once more, and so are its fillings; knocking, it is looked up among the pieces, and so is the
+; blind pulse beside it. Uses j1-j8.
 pulse:
   jldi j1, 0
-  jld j4, j1, FLOOR
-  jldi j5, 0                    ; a door: did it turn? (the side bit), and the fillings without it
-  jldi j6, 3
-  jsub j6, j4, j6
-  jjnz j6, pl_order
-  jldi j6, 48
-  jshr j7, j2, j6
-  jshr j8, j3, j6
-  jxor j5, j7, j8
-  jldi j6, 1
-  jand j5, j5, j6
-  jld j6, j1, M48
-  jand j2, j2, j6
-  jand j3, j3, j6
-pl_order:
-  jsub j6, j3, j2               ; low and high
-  jldi j7, 63
-  jsar j6, j6, j7
-  jjz j6, pl_ordered
-  jadd j6, j2, j1
-  jadd j2, j3, j1
-  jadd j3, j6, j1
-pl_ordered:
-  jst j2, j1, DLO
-  jst j3, j1, DHI
-  jldi j6, 8
-  jshl j6, j5, j6
-  jor j6, j6, j4
-  jst j6, j1, DKT
-  jcall d_cat_of
-  jldi j1, 0
-  jst j5, j1, CAT
-  jld j2, j1, FNVO
-  jld j3, j1, DKT
-  jcall hw
-  jld j3, j1, DLO
-  jcall hw
-  jld j3, j1, DHI
-  jcall hw
-  jjnz j2, pl_key
-  jldi j2, 1
-pl_key:
-  jadd j5, j2, j1
+  jst j2, j1, PA
+  jst j3, j1, PB
+  jcall d_make
   jld j2, j1, ROOMD
-  jldi j3, 40
+  jldi j3, 48
   jcall t_find
   jld j6, j1, CAT
+  jst j6, j1, RC
   jldi j7, 3
   jshl j6, j6, j7
   jld j7, j1, TESTING
@@ -612,16 +608,47 @@ pl_key:
   jldi j8, 1
   jadd j7, j7, j8
   jst j7, j6, TPULC
-  jld j7, j4, 32                ; a piece: born in two pairs or more
-  jldi j8, 2
-  jsub j7, j7, j8
+  jld j7, j4, 40                ; a piece: it saves bits
   jldi j8, 63
-  jsar j7, j7, j8
-  jjnz j7, pl_done
+  jsar j8, j7, j8
+  jjnz j8, pl_blind
+  jjz j7, pl_blind
   jld j7, j6, TPCEC
   jldi j8, 1
   jadd j7, j7, j8
   jst j7, j6, TPCEC
+pl_blind:                       ; the blind: the waiting filling against the one that arrived before, on this floor
+  jld j5, j1, FLOOR
+  jldi j7, 3
+  jshl j5, j5, j7
+  jld j3, j5, PREVX
+  jld j7, j1, PB
+  jst j7, j5, PREVX
+  jjz j3, pl_done
+  jld j6, j1, RC
+  jldi j7, 3
+  jshl j6, j6, j7
+  jld j7, j6, TBLN
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j6, TBLN
+  jld j2, j1, PA
+  jcall d_make
+  jld j2, j1, ROOMD
+  jldi j3, 48
+  jcall t_find
+  jld j7, j4, 40
+  jldi j8, 63
+  jsar j8, j7, j8
+  jjnz j8, pl_done
+  jjz j7, pl_done
+  jld j6, j1, RC
+  jldi j7, 3
+  jshl j6, j6, j7
+  jld j7, j6, TBLC
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j6, TBLC
   jret
 pl_awake:
   jld j7, j4, 0
@@ -645,7 +672,227 @@ pl_count:
   jld j7, j6, NPULC
   jadd j7, j7, j8
   jst j7, j6, NPULC
+  jld j2, j1, DLO               ; its fillings, and its floor
+  jcall f_bump
+  jld j2, j1, DHI
+  jcall f_bump
+  jld j5, j1, FLOOR
+  jldi j7, 3
+  jshl j5, j5, j7
+  jld j7, j5, NFL
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j5, NFL
 pl_done:
+  jret
+
+; The difference of fillings j2 and j3 on the floor FLOOR: DLO, DHI (without their order; a door's side bit apart),
+; DKT (the floor, and whether it turned), CAT, and its key -> j5. Uses j1-j8.
+d_make:
+  jldi j1, 0
+  jld j4, j1, FLOOR
+  jldi j5, 0                    ; a door: did it turn? (the side bit), and the fillings without it
+  jldi j6, 3
+  jsub j6, j4, j6
+  jjnz j6, dm_order
+  jldi j6, 48
+  jshr j7, j2, j6
+  jshr j8, j3, j6
+  jxor j5, j7, j8
+  jldi j6, 1
+  jand j5, j5, j6
+  jld j6, j1, M48
+  jand j2, j2, j6
+  jand j3, j3, j6
+dm_order:
+  jsub j6, j3, j2               ; low and high
+  jldi j7, 63
+  jsar j6, j6, j7
+  jjz j6, dm_ordered
+  jadd j6, j2, j1
+  jadd j2, j3, j1
+  jadd j3, j6, j1
+dm_ordered:
+  jst j2, j1, DLO
+  jst j3, j1, DHI
+  jldi j6, 8
+  jshl j6, j5, j6
+  jor j6, j6, j4
+  jst j6, j1, DKT
+  jcall d_cat_of
+  jldi j1, 0
+  jst j5, j1, CAT
+  jld j2, j1, FNVO
+  jld j3, j1, DKT
+  jcall hw
+  jld j3, j1, DLO
+  jcall hw
+  jld j3, j1, DHI
+  jcall hw
+  jjnz j2, dm_key
+  jldi j2, 1
+dm_key:
+  jadd j5, j2, j1
+  jret
+
+; The place of the filling j2 of the floor FLOOR among the fillings -> j4. Uses j1-j8.
+f_find:
+  jldi j1, 0
+  jadd j3, j2, j1
+  jld j2, j1, FNVO
+  jst j3, j1, GN
+  jld j3, j1, FLOOR
+  jcall hw
+  jld j3, j1, GN
+  jcall hw
+  jjnz j2, ff_key
+  jldi j2, 1
+ff_key:
+  jadd j5, j2, j1
+  jld j2, j1, ROOMF
+  jldi j3, 16
+  jcall t_find
+  jst j5, j4, 0
+  jret
+
+; The filling j2 of the floor FLOOR took part in one more pulse. Uses j1-j8.
+f_bump:
+  jcall f_find
+  jld j6, j4, 8
+  jjnz j6, fb_old
+  jld j5, j1, FLOOR
+  jldi j7, 3
+  jshl j5, j5, j7
+  jld j7, j5, UFL
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j5, UFL
+fb_old:
+  jldi j8, 1
+  jadd j6, j6, j8
+  jst j6, j4, 8
+  jret
+
+; The judge of harmony: every difference born gets the bits it saves as a piece (in 2^-16 of a bit): n * (log2(2N) +
+; log2(n) - log2(c(low)) - log2(c(high))) - 2 * log2(U), on its floor. Uses j1-j12.
+judge:
+  jldi j9, 0
+  jldi j1, 0
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j2, j1, ROOMD
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, ju_next
+    jst j3, j1, GE
+    jld j2, j3, 24
+    jst j2, j1, DKT
+    jldi j4, 255
+    jand j2, j2, j4
+    jst j2, j1, FLOOR
+    jld j2, j3, 8
+    jst j2, j1, DLO
+    jld j2, j3, 16
+    jst j2, j1, DHI
+    jld j11, j1, FLOOR
+    jldi j2, 3
+    jshl j11, j11, j2
+    jld j2, j11, NFL            ; log2(2N) + log2(n)
+    jadd j2, j2, j2
+    jcall lg16
+    jst j2, j1, GS
+    jld j3, j1, GE
+    jld j2, j3, 32
+    jcall lg16
+    jld j3, j1, GS
+    jadd j3, j3, j2
+    jst j3, j1, GS
+    jld j2, j1, DLO             ; - log2(c(low)) - log2(c(high))
+    jcall f_find
+    jld j2, j4, 8
+    jcall lg16
+    jld j3, j1, GS
+    jsub j3, j3, j2
+    jst j3, j1, GS
+    jld j2, j1, DHI
+    jcall f_find
+    jld j2, j4, 8
+    jcall lg16
+    jld j3, j1, GS
+    jsub j3, j3, j2
+    jld j4, j1, GE              ; times n
+    jld j4, j4, 32
+    jmul j3, j3, j4
+    jst j3, j1, GS
+    jld j11, j1, FLOOR          ; - 2 log2(U): its name
+    jldi j2, 3
+    jshl j11, j11, j2
+    jld j2, j11, UFL
+    jcall lg16
+    jld j3, j1, GS
+    jsub j3, j3, j2
+    jsub j3, j3, j2
+    jld j4, j1, GE
+    jst j3, j4, 40
+    jldi j2, 63
+    jsar j2, j3, j2
+    jjnz j2, ju_next
+    jjz j3, ju_next
+    jcall d_cat_of
+    jldi j3, 3
+    jshl j5, j5, j3
+    jld j3, j5, NADC
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j5, NADC
+  ju_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; log2 of j2 (1 or more) in 2^-16 of a bit -> j2: the highest bit, then sixteen bits of the rest by squaring.
+; Uses j1, j3-j6 (j1 = 0 after).
+lg16:
+  jldi j1, 0
+  jldi j3, 0
+  jldi j5, 1
+  jshr j4, j2, j5
+  jwhile j4
+    jadd j3, j3, j5
+    jshr j4, j4, j5
+  jwend
+  jldi j4, 31                   ; the mantissa in [2^31, 2^32)
+  jsub j4, j4, j3
+  jldi j6, 63
+  jsar j6, j4, j6
+  jjnz j6, lg_down
+  jshl j2, j2, j4
+  jjmp lg_frac
+lg_down:
+  jsub j4, j1, j4
+  jshr j2, j2, j4
+lg_frac:
+  jldi j4, 16
+  jwhile j4
+    jmul j2, j2, j2
+    jldi j5, 31
+    jshr j2, j2, j5
+    jldi j5, 32
+    jshr j6, j2, j5
+    jshr j2, j2, j6
+    jadd j3, j3, j3
+    jadd j3, j3, j6
+    jldi j5, 1
+    jsub j4, j4, j5
+  jwend
+  jadd j2, j3, j1
   jret
 
 ; The kind of the difference DKT, DLO -> j5: 1 gemelos, 2 interruptores (one filling empty), 3 asociados, 4 puertas.
@@ -670,8 +917,8 @@ d_cat_of:
 dc_done:
   jret
 
-; The kind CAT: its line, and its ten differences born in the most pairs (each counted is turned negative, so the
-; next round finds the next). Its counts go into j0. Uses j1-j14.
+; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so
+; the next round finds the next). Its counts go into j0. Uses j1-j14.
 kind_report:
   jldi j1, 0
   jld j2, j1, CAT
@@ -688,58 +935,43 @@ kind_report:
   jldi j1, S_PUL
   jcall puts
   jld j2, j9, NPULC
-  jadd j12, j2, j1
-  jcall mix
-  jcall putnum
+  jcall putmix
   jldi j1, S_DIF
   jcall puts
   jld j2, j9, NDIFC
-  jadd j12, j2, j1
-  jcall mix
-  jcall putnum
+  jcall putmix
+  jldi j1, S_PCS
+  jcall puts
+  jld j2, j9, NADC
+  jcall putmix
   jldi j1, S_TPUL
   jcall puts
   jld j2, j9, TPULC
-  jadd j12, j2, j1
-  jcall mix
-  jcall putnum
+  jcall putmix
   jldi j1, S_TPCE
   jcall puts
   jld j2, j9, TPCEC
-  jadd j12, j2, j1
-  jcall mix
-  jcall putnum
-  jldi j2, 32
-  jcall putch
-  jldi j2, 40
-  jcall putch
+  jcall putmix
   jld j2, j9, TPCEC
-  jldi j3, 1000
-  jmul j2, j2, j3
   jld j3, j9, TPULC
-  jdiv j2, j2, j3
-  jst j2, j1, RENT
-  jldi j3, 10
-  jdiv j2, j2, j3
-  jcall putnum
-  jldi j2, 44
+  jcall putpct
+  jldi j1, S_BLIND
+  jcall puts
+  jld j2, j9, TBLC
+  jcall putmix
+  jldi j2, 47
   jcall putch
-  jld j2, j1, RENT
-  jldi j3, 10
-  jdiv j4, j2, j3
-  jmul j4, j4, j3
-  jsub j2, j2, j4
-  jcall putnum
-  jldi j2, 37
-  jcall putch
-  jldi j2, 41
-  jcall putch
+  jld j2, j9, TBLN
+  jcall putmix
+  jld j2, j9, TBLC
+  jld j3, j9, TBLN
+  jcall putpct
   jldi j2, 10
   jcall putch
   jldi j2, 10
   jst j2, j1, TOPN
   jwhile j2
-    jldi j1, 0                  ; the most pairs left in this kind
+    jldi j1, 0                  ; the piece that saves the most bits left in this kind
     jldi j11, 0
     jldi j12, 0
     jldi j9, 0
@@ -747,13 +979,13 @@ kind_report:
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
-      jldi j3, 40
+      jldi j3, 48
       jmul j3, j9, j3
       jld j2, j1, ROOMD
       jadd j3, j3, j2
       jld j2, j3, 0
       jjz j2, kr_next
-      jld j2, j3, 32
+      jld j2, j3, 40
       jsub j4, j11, j2
       jldi j5, 63
       jsar j4, j4, j5
@@ -766,7 +998,7 @@ kind_report:
       jld j6, j1, CAT
       jsub j6, j5, j6
       jjnz j6, kr_next
-      jld j11, j3, 32
+      jld j11, j3, 40
       jadd j12, j3, j1
     kr_next:
       jldi j2, 1
@@ -776,16 +1008,32 @@ kind_report:
     jjz j11, kr_done
     jldi j2, 0
     jsub j2, j2, j11
-    jst j2, j12, 32
+    jst j2, j12, 40
     jst j12, j1, RENT
     jldi j2, 32
     jcall putch
     jldi j2, 32
     jcall putch
-    jadd j2, j11, j1
+    jldi j2, 16                 ; its bits, to a tenth
+    jshr j2, j11, j2
     jcall putnum
-    jldi j2, 32
+    jldi j2, 44
     jcall putch
+    jldi j2, 0
+    jshi j2, 0FFFFh
+    jand j2, j11, j2
+    jldi j3, 10
+    jmul j2, j2, j3
+    jldi j3, 16
+    jshr j2, j2, j3
+    jcall putnum
+    jldi j1, S_BITS
+    jcall puts
+    jld j12, j1, RENT
+    jld j2, j12, 32
+    jcall putnum
+    jldi j1, S_PAIRS
+    jcall puts
     jld j12, j1, RENT
     jcall d_print
     jldi j2, 10
@@ -798,6 +1046,42 @@ kind_report:
   jwend
 kr_done:
   jret
+
+; j2 written, and into j0. Uses j1-j4, j12-j14.
+putmix:
+  jldi j1, 0
+  jadd j12, j2, j1
+  jcall mix
+  jjmp putnum
+
+; " (x,y%)" of j2 over j3. Uses j1-j4.
+putpct:
+  jldi j1, 1000
+  jmul j2, j2, j1
+  jdiv j2, j2, j3
+  jldi j1, 0
+  jst j2, j1, GN
+  jldi j2, 32
+  jcall putch
+  jldi j2, 40
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, GN
+  jldi j3, 10
+  jdiv j2, j2, j3
+  jcall putnum
+  jldi j2, 44
+  jcall putch
+  jld j2, j1, GN
+  jldi j3, 10
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j2, j2, j4
+  jcall putnum
+  jldi j2, 37
+  jcall putch
+  jldi j2, 41
+  jjmp putch
 
 ; The difference at j12, written. Uses j1-j12.
 d_print:

@@ -28,7 +28,7 @@ db ' diferencias=', 0
 times 300h - $ db 0
 db ' | en lo no leido: pulsos=', 0
 times 340h - $ db 0
-db ', con pieza nacida=', 0
+db ', explicados=', 0
 times 380h - $ db 0
 db ' (dado vuelta)', 0
 times 3C0h - $ db 0
@@ -36,3 +36,11 @@ db 'pulso: no encuentro el libro', 10, 0
 times 400h - $ db 0
 db 'pulso: sin memoria', 10, 0
 times 440h - $ db 0
+db ' piezas=', 0
+times 480h - $ db 0
+db ' | al azar: ', 0
+times 4C0h - $ db 0
+db ' bits (', 0
+times 500h - $ db 0
+db ' pares) ', 0
+times 540h - $ db 0

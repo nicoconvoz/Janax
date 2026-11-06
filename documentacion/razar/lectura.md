@@ -102,3 +102,42 @@ Lo que todavía no es:
 - **Sin el juez de la armonía.** La regla de la anécdota deja entrar el ruido: "no" no se separa de "y", y la puerta
   de padre/hijo empata con basura. El paso que sigue es que cada pieza entre solo si paga en bits lo que cuesta,
   comprobado en lo no leído.
+
+## El juez de la armonía y la línea de base (2026-11-06)
+
+**El juez (D39, decir lo mismo con menos), sin perillas:** en su piso, con N pulsos, U llenados distintos y c(f) los
+pulsos en que participó el llenado f, los n pares de la diferencia (a, b) ahorran `n · log2(2N·n / (c(a)·c(b)))` bits
+(lo que saber a dice de b, por par); nombrar la pieza cuesta `2 · log2(U)`. Es pieza si ahorra más de lo que cuesta.
+Un llenado que hace mucho otro trabajo (participa en muchos pulsos) vale menos como pieza: es la propiedad 4 del "no"
+en Razar ("sobre todo la puerta"), y no se escribió en ningún lado. log2 en punto fijo de 16 bits (`lg16`).
+
+**La línea de base:** cada pulso de los renglones apartados se prueba también contra uno ciego: el mismo llenado que
+espera, contra el que llegó justo antes en ese piso. Si las piezas explican lo real igual que lo ciego, no aprendieron.
+
+Nuevo Testamento, 1,2 s, idéntico en los tres motores (huella `0000DCC8104E7343`):
+
+| Clase | Diferencias | Piezas | Lo no leído explicado | Ciego |
+|---|---|---|---|---|
+| gemelos | 190 | 54 | **86,6 %** | 22,0 % |
+| interruptores | 2.903 | 62 | **43,7 %** | 30,4 % |
+| asociados | 16.485 | 247 | **9,1 %** | 3,2 % |
+| puertas | 48.259 | 21 | 0,2 % (17) | 0,0 % (0) |
+
+Las que más bits ahorran:
+
+- gemelos: **a/o** 1.416 bits, a/e, n/s, n/r, á/é, é/ó.
+- interruptores: y 641, **no 445** (sube al segundo lugar, por encima de "que"), que, todos, también.
+- asociados: **la/su**, sus/los, de/a, **dijo/respondió**, le/les, la/una, los/aquellos, su/mi.
+- puertas: **le dijo / le respondió**, a sus / a los, a la / a su, **cinco mil / cuatro mil**, **comenzó a / empezó a**.
+
+Qué cambió con el juez:
+
+- **El ruido se fue.** De 48.259 diferencias de puertas quedan 21 piezas, y ninguna es basura del tipo
+  "todos los / se acercaron". Las 21 explican 17 pulsos de lo no leído; las ciegas, 0.
+- **"no" se despega de "que"** y queda segundo; "y" sigue primero (la conjunción también se puede sacar en muchas
+  frases: el juez no la descarta, y está bien que no lo haga a mano).
+- **"hijo de / padre de (dado vuelta)" no pasa el juez**: 3 pares no pagan lo que cuesta nombrar la pieza entre ~48 mil
+  llenados. Es honesto: el Nuevo Testamento no tiene suficientes genealogías dichas de las dos formas. El Antiguo,
+  con sus genealogías largas, es la prueba que sigue.
+- En los cuatro pisos las piezas explican lo no leído más que las ciegas: 3,9× en gemelos, 1,4× en interruptores,
+  2,8× en asociados.
