@@ -127,11 +127,13 @@ sub signal_waves {
       for my $w (keys %now) {                    # where two meet; it then belongs to every wave that pushed it. Inside
         for my $i (keys %{ $now{$w} }) {         # each wave a piece still wakes once at most: no going round in circles
           next if $s->{sinks}{$i};
-          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};
+          my $brake = $s->{brake} && $s->{brake}[$i];   # a piece that brakes takes its push away instead of adding it,
+          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};   # and it did not wake it
+            if ($brake) { $in{$q} -= $s->{w}[$i][$d]; next; }
             $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); $by{$q}{$w} = 1; }
         }
       }
-      for my $q (grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in) {
+      for my $q (grep { $in{$_} >= $s->{th} && $by{$_} && $s->in_harmony($_, $mask{$_}) } keys %in) {
         for my $w (keys %{ $by{$q} }) { $next{$w}{$q} = 1; $woke{$w}{$q} = 1; }
       }
     } else {
@@ -152,6 +154,16 @@ sub signal_waves {
   }
   $s->learn(\@ft) unless $s->{whisper};
   return \@melody;
+}
+# The negative melody (Capitan, 2026-11-06: "a sign bit", one per piece): a piece is born pushing or braking, with
+# all its neighbors (Dale's law; in a cortex about 1 in 5 neurons brakes). $percent of the pieces brake, chosen by
+# dice of their own (seeded by $seed), so the weights are the same as without it. A braking piece that is awake takes
+# its weight away from what its neighbors are told (signal_waves with cross). It learns like the others: braking and
+# neighbor awake together, the brake grows (Vogels and others, 2011: it brings pushes and brakes into balance).
+sub set_brakes {
+  my ($s, $percent, $seed) = @_;
+  my $x = $seed * 104729 + 7;
+  for my $i (0 .. $s->{p}-1) { $x = ($x * 1103515245 + 12345) % 2147483648; $s->{brake}[$i] = (($x >> 16) % 100) < $percent ? 1 : 0; }
 }
 # The shape moves by what happened in one signal: $ftr is the step each piece first woke at (-1: not then).
 sub learn {

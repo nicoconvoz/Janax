@@ -50,6 +50,7 @@ $c->{whisper} = 1 if $o{quieto};
 $c->{cross} = 1 if ($o{olas} // '') eq 'cruzan';   # olas=cruzan: the waves add up (modelo.pl signal_waves)
 $c->{conserve} = 1 if $o{conserva};          # conserva=1: each piece keeps its total, the ceiling adjusts itself
 $c->{weaken_rate} = 1 if $o{simetrico};     # simetrico=1: it weakens by its rate, as it strengthens
+$c->set_brakes($o{frenan}, $o{nace}) if $o{frenan};   # frenan=P: P% of the pieces brake (the negative melody)
 my @key = ($c->idx(0, 0, 0), $c->idx(1, 0, 0), $c->idx(0, 1, 0));
 sub send_unit {                                  # one unit through the school -> the notes it left on the top face
   my ($u) = @_; my @down = @{ $units[$u] };
