@@ -83,6 +83,7 @@ S_HOUSE = 0E40h
 S_HFND  = 0E80h
 S_HFUR  = 0EC0h
 S_HCOL  = 0F00h
+S_HRND  = 0F40h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -153,6 +154,8 @@ HK    = 1B20h
 HN    = 1B28h
 LHN   = 1B30h
 HSIDE = 1B38h
+NRND  = 1B40h                   ; the house: its rounds, the words that changed sides in this one
+NCHG  = 1B48h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -1822,6 +1825,11 @@ house_report:
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMGB
+  jst j1, j1, NRND
+hr_round:                       ; a round: counted again from the pulses, with the house of the round before
+  jcall h_recount
+  jldi j1, 0
+  jst j1, j1, NCHG
   jst j1, j1, SFX               ; the book's: all kept, all changed
   jst j1, j1, SVR
   jldi j9, 1
@@ -1879,7 +1887,20 @@ house_report:
     jshl j3, j9, j3
     jld j4, j1, ROOMGB
     jadd j3, j3, j4
+    jld j4, j3, 0               ; did it change sides since the round before?
     jst j2, j3, 0
+    jcall h_sign
+    jadd j5, j6, j1
+    jadd j2, j4, j1
+    jcall h_sign
+    jsub j5, j5, j6
+    jjz j5, hb_same
+    jld j5, j1, NCHG
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, NCHG
+  hb_same:
+    jld j2, j3, 0
     jjz j2, hb_next
     jldi j4, 63
     jsar j4, j2, j4
@@ -1899,13 +1920,23 @@ house_report:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jld j2, j1, NRND              ; until no word changes sides: the floor has stopped moving
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, NRND
+  jld j3, j1, NCHG
+  jjnz j3, hr_round
   jcall flush
-  jldi j1, S_HOUSE              ; the line: the book's share kept, how many of each, and the fifteen of each
+  jldi j1, S_HOUSE              ; the line: the book's share kept, the rounds, how many of each, the fifteen of each
   jcall puts
   jld j2, j1, SFX
   jld j3, j1, SVR
   jadd j3, j3, j2
   jcall putpct
+  jldi j1, S_HRND
+  jcall puts
+  jld j2, j1, NRND
+  jcall putmix
   jldi j1, S_HFND
   jcall puts
   jld j2, j1, NFND
@@ -1925,6 +1956,97 @@ house_report:
   jldi j2, 10
   jjmp putch
 hr_none:
+  jret
+
+; j6 = the side of j2: 1 above 0, -1 below, 0 neither. Uses j6, j7.
+h_sign:
+  jldi j7, 63
+  jsar j6, j2, j7
+  jjnz j6, hs_done
+  jjz j2, hs_done
+  jldi j6, 1
+hs_done:
+  jret
+
+; The house counted again from the pulses of the same place with another word: the frame kept is foundation; the two
+; fillings that changed are furniture, unless both were foundation in the round before (the structure varying within
+; itself is still structure: a door changed for another door is no furniture). Uses j1-j10.
+h_recount:
+  jldi j1, 0
+  jld j9, j1, ROOMFX            ; both tables empty
+  jld j10, j1, NV
+  jadd j10, j10, j10
+  jwhile j10
+    jst j1, j9, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jld j9, j1, ROOMHL
+  jld j10, j1, NHL
+  jwhile j10
+    jldi j1, 0
+    jld j2, j9, 0
+    jld j3, j1, ROOMFX
+    jcall h_bump
+    jld j2, j9, 8
+    jld j3, j1, ROOMFX
+    jcall h_bump
+    jld j2, j9, 16
+    jld j3, j1, ROOMFX
+    jcall h_bump
+    jld j3, j1, ROOMVR            ; the fillings: furniture, or both foundation
+    jld j2, j9, 24
+    jcall h_found
+    jjz j4, hc_fur
+    jld j2, j9, 32
+    jcall h_found
+    jjz j4, hc_fur
+    jld j3, j1, ROOMFX
+  hc_fur:
+    jld j2, j9, 24
+    jst j3, j1, HL
+    jcall h_bump
+    jld j3, j1, HL
+    jld j2, j9, 32
+    jcall h_bump
+    jldi j2, 40
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; j4 = 1 if the word j2 was foundation in the round before. Uses j1, j4, j5 (keeps j3).
+h_found:
+  jldi j1, 0
+  jldi j4, 3
+  jshl j4, j2, j4
+  jld j5, j1, ROOMGB
+  jadd j4, j4, j5
+  jld j4, j4, 0
+  jldi j5, 63
+  jsar j5, j4, j5
+  jjnz j5, hf_no
+  jjz j4, hf_no
+  jldi j4, 1
+  jret
+hf_no:
+  jldi j4, 0
+  jret
+
+; The word j2 once more in the table at j3. Uses j1, j2, j4 (keeps j3).
+h_bump:
+  jldi j1, 0
+  jldi j4, 3
+  jshl j2, j2, j4
+  jadd j2, j2, j3
+  jld j4, j2, 0
+  jldi j1, 1
+  jadd j4, j4, j1
+  jst j4, j2, 0
+  jldi j1, 0
   jret
 
 ; The bits of the word HI: k kept of n (kept and changed), against the book's share kept. -> j2 (signed: above 0 a

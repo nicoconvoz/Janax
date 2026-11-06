@@ -496,3 +496,31 @@ El "no" cae en los cimientos: es estructura, no mueble. La puntuación, también
 
 Lo que sigue: que la lógica use la casa. La analogía solo entre muebles que llenan el mismo hueco del mismo cimiento;
 el cimiento nunca es prueba; una deducción conserva el cimiento y cambia un mueble, y el "no" la puede refutar.
+
+## El borde de la casa, chequeado y decidido en vueltas (2026-11-06)
+
+Chequeo del Capitán (validación, no supervisión: la lista no se la dimos): ¿están en los cimientos *pero, sino, porque,
+con, por, para, su, se, como, cuando*? En la primera versión, **con, por, para, su, se, como** sí; **pero** por un bit;
+**porque** y **cuando** sin decidir; **sino** del lado de los muebles (−2 bits). Causa: los conectores se reemplazan
+entre ellos en el mismo marco, y la regla contaba ese cambio como mueble.
+
+Regla general (no una lista): **la casa se decide de a vueltas, hasta que no se mueve** (Razar, "el piso sube cuando deja
+de moverse"). Cada pulso "mismo lugar, otra palabra" queda guardado con su marco y sus dos llenados (`pulso.inc`), y en
+cada vuelta se vuelve a contar: el marco es cimiento; los dos llenados son mueble, **salvo que los dos ya fueran
+cimiento en la vuelta anterior**: una puerta cambiada por otra puerta sigue siendo la casa. Termina cuando ninguna
+palabra cambia de lado.
+
+Libro entero, idéntico en los tres motores (`0000B4542B066905`; la pregunta no cambia): **3 vueltas**, fijo en el libro
+63,6 %, 169 cimientos y 7.756 muebles.
+
+| palabra | antes | en vueltas |
+|---|---|---|
+| pero | 1 bit | **57 bits, cimiento** |
+| con, por, para, su, se, como | cimientos | más firmes (su 270 → 791) |
+| porque, cuando | sin decidir | **siguen sin decidir** |
+| sino | mueble (−2) | **mueble (−12)** |
+
+**Lo que no se arregló, y la sospecha (sin verificar todavía):** "porque", "cuando" y "sino" no bajaron sus veces de
+cambio: no se cambian por cimientos sino por palabras que no lo son. Abren una frase ("…, porque dijo" / "…, Jesús
+dijo"), y en ese lugar de la ventana de tres palabras entran también muebles. Para comprobarlo hay que mirar con qué se
+reemplaza cada uno.

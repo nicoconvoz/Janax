@@ -47,7 +47,9 @@ PREVX = 1500h                   ; by floor: the filling that arrived last (knock
 PN    = 1568h                   ; the questions: the exceptions, and log2 of all
 ACC   = 1588h
 ROOMFX = 15A0h                  ; by word: how often it was the frame kept (foundation), how often what changed
-ROOMVR = 15A8h                  ; (furniture); the frame of the request being hung
+ROOMVR = 15A8h                  ; (furniture); the frame of the request being hung; the pulses of the same place with
+ROOMHL = 15C8h                  ; another word, and how many
+NHL   = 15D0h
 KW1   = 15B0h
 KW2   = 15B8h
 KW3   = 15C0h
@@ -66,6 +68,13 @@ jldi j3, 3
 jshl j2, j2, j3
 jadd j2, j13, j2
 jst j2, j1, ROOMVR
+jld j11, j1, NTOK                ; and every pulse of the same place with another word: its frame and its two fillings
+jldi j2, 120                     ; (at most three requests of the words floor per unit, one pulse each; 40 bytes)
+jmul j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMHL
+jst j1, j1, NHL
 jldi j1, 0                      ; the words read where it learns
 jld j11, j1, NUNITS
 jldi j2, 3
@@ -630,20 +639,28 @@ pl_count:
   jld j7, j6, NPULC
   jadd j7, j7, j8
   jst j7, j6, NPULC
-  jld j7, j1, CAT               ; the same place, another word: what was kept is foundation, what changed furniture
+  jld j7, j1, CAT               ; the same place, another word: kept for the house (frame and fillings)
   jldi j8, 3
   jsub j7, j7, j8
   jjnz j7, pl_fill
+  jld j7, j1, NHL
+  jldi j8, 40
+  jmul j8, j7, j8
+  jld j2, j1, ROOMHL
+  jadd j8, j8, j2
   jld j2, j1, KW1
-  jcall fx_bump
+  jst j2, j8, 0
   jld j2, j1, KW2
-  jcall fx_bump
+  jst j2, j8, 8
   jld j2, j1, KW3
-  jcall fx_bump
+  jst j2, j8, 16
   jld j2, j1, DLO
-  jcall vr_bump
+  jst j2, j8, 24
   jld j2, j1, DHI
-  jcall vr_bump
+  jst j2, j8, 32
+  jldi j2, 1
+  jadd j7, j7, j2
+  jst j7, j1, NHL
 pl_fill:
   jldi j1, 0
   jld j2, j1, DLO               ; its fillings, and its floor
@@ -952,23 +969,3 @@ putletter:
   jld j2, j1, RENT
   jjmp putch
 
-
-; The word j2 was in the frame kept once more (foundation). Uses j1-j4.
-fx_bump:
-  jldi j1, 0
-  jld j3, j1, ROOMFX
-  jjmp fv_bump
-
-; The word j2 was what changed once more (furniture). Uses j1-j4.
-vr_bump:
-  jldi j1, 0
-  jld j3, j1, ROOMVR
-fv_bump:
-  jldi j4, 3
-  jshl j2, j2, j4
-  jadd j3, j3, j2
-  jld j2, j3, 0
-  jldi j4, 1
-  jadd j2, j2, j4
-  jst j2, j3, 0
-  jret

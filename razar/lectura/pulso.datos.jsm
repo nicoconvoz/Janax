@@ -124,3 +124,5 @@ db 10, '  muebles ', 0
 times 0F00h - $ db 0
 db ':', 0
 times 0F40h - $ db 0
+db ', vueltas hasta que no se mueve: ', 0
+times 0F80h - $ db 0
