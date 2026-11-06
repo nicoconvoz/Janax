@@ -166,6 +166,8 @@ MEMOK = 45F0h
 NFACT = 45F8h                   ; firm memories (facts), twin pairs, properties adopted
 NTWIN = 4600h
 ADOPT = 4608h
+NOP1  = 4618h                   ; MODO 5: memories of the second operator, and their list (40 qwords at OP1L)
+OP1L  = 46C0h
 DOOR  = 4620h                   ; MODO 5: the doors, then the doors after the closed ones (16 qwords)
 FLIPS = 46A0h                   ; pairs both operators remember: answer turned, or kept
 KEEPS = 46A8h
@@ -2387,9 +2389,21 @@ ps_j:
   jld j7, j4, 16
   jsub j6, j6, j7
   jjnz j6, ps_jnext
-  jld j6, j3, 24                ; the same answer, or the other word
-  jld j7, j4, 24
-  jsub j6, j6, j7
+  jcall p_rolerow               ; the papel of each: turned if it went to the other word (an answer that is neither
+  jldi j7, 63                   ; word says nothing)
+  jsar j7, j6, j7
+  jjnz j7, ps_jnext
+  jldi j7, 1
+  jand j11, j6, j7
+  jldi j1, 0
+  jadd j3, j4, j1
+  jcall p_rolerow
+  jldi j7, 63
+  jsar j7, j6, j7
+  jjnz j7, ps_jnext
+  jldi j7, 1
+  jand j6, j6, j7
+  jsub j6, j6, j11
   jldi j1, 0
   jjz j6, ps_kept
   jld j7, j1, FLIPS
@@ -2411,18 +2425,111 @@ ps_inext:
   jadd j9, j9, j2
   jjmp ps_i
 ps_done:
-jldi j1, 0                      ; a switch: turned in most of them, and at least two
-jst j1, j1, SWITCH
-jld j2, j1, FLIPS
-jld j3, j1, KEEPS
-jsub j3, j3, j2
-jldi j4, 63
-jsar j3, j3, j4
-jjz j3, pw_none
+jldi j1, 0                      ; a switch: turned in at least two pairs, and in a larger share of the pairs both remember
+jst j1, j1, SWITCH              ; than in each of eight blind pairings (the gate of P36): each memory of the first
+jld j2, j1, FLIPS               ; operator with any memory of the second, drawn by its dice, turned or not by its papel
 jldi j3, 2
 jsub j3, j2, j3
+jldi j4, 63
 jsar j3, j3, j4
 jjnz j3, pw_none
+jst j1, j1, NOP1                ; the memories of the second operator
+jldi j9, 0
+pb_list:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, pb_listed
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jld j2, j3, 0
+  jjz j2, pb_lnext
+  jld j2, j1, NOP1
+  jldi j4, 3
+  jshl j4, j2, j4
+  jst j9, j4, OP1L
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, NOP1
+pb_lnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pb_list
+pb_listed:
+jldi j1, 0
+jld j2, j1, NOP1
+jjz j2, pw_none
+jldi j15, 8                     ; eight blind pairings
+pb_blind:
+  jjz j15, pb_passed
+  jldi j10, 0                   ; turned
+  jldi j11, 0                   ; looked at
+  jldi j9, 0
+pb_fact:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, pb_judge
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jld j2, j3, 0
+  jjnz j2, pb_fnext             ; only the first operator's
+  jcall p_rolerow
+  jldi j2, 63
+  jsar j2, j6, j2
+  jjnz j2, pb_fnext
+  jldi j2, 1
+  jand j12, j6, j2              ; its papel
+  jcall rnd2                    ; any memory of the second operator
+  jldi j1, 0
+  jld j2, j1, NOP1
+  jdiv j4, j13, j2
+  jmul j4, j4, j2
+  jsub j4, j13, j4
+  jldi j2, 3
+  jshl j4, j4, j2
+  jld j4, j4, OP1L
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j4, j2
+  jadd j3, j3, j5
+  jcall p_rolerow
+  jldi j2, 63
+  jsar j2, j6, j2
+  jjnz j2, pb_fnext
+  jldi j2, 1
+  jand j6, j6, j2
+  jadd j11, j11, j2
+  jsub j6, j6, j12
+  jjz j6, pb_fnext
+  jadd j10, j10, j2
+pb_fnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pb_fact
+pb_judge:                       ; FLIPS / (FLIPS + KEEPS) > turned / looked at, else no switch
+  jjz j11, pb_bnext
+  jldi j1, 0
+  jld j2, j1, FLIPS
+  jmul j2, j2, j11
+  jld j3, j1, KEEPS
+  jld j4, j1, FLIPS
+  jadd j3, j3, j4
+  jmul j3, j3, j10
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, pw_none
+pb_bnext:
+  jldi j2, 1
+  jsub j15, j15, j2
+  jjmp pb_blind
+pb_passed:
+jldi j1, 0
 jldi j2, 1
 jst j2, j1, SWITCH
 jldi j9, 0                      ; closed doors: each operator knows the other's doors, turned around

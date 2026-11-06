@@ -1269,3 +1269,21 @@ cerrada**: el mismo lugar dicho al revés. `MODO` 5 en `voluntad_acertijos.jsm`,
   del interruptor debería compararse contra el azar, como el portero del P36; hoy es solo mayoría.
 - Lo honesto: que el significado de una comparación sea "quién va antes en la canción" lo pone Doc (es la definición del
   significado en átomo del Capitán); lo que descubre es qué papel responde y que "menor" es el interruptor.
+
+**El interruptor, endurecido contra el azar** (Capitán: "sí, endurecelo"). Dos cambios: (1) "se dio vuelta" cuenta solo
+cuando la respuesta pasa **al otro hermano del par**; una respuesta que no es ninguno de los dos no dice nada (antes
+contaba cualquier respuesta distinta, y con respuestas al azar casi todas lo eran); (2) **el portero del P36**: el
+interruptor se adopta solo si se da vuelta en una parte mayor de los pares que recuerda de las dos formas que en cada
+uno de **ocho emparejamientos ciegos** (cada recuerdo de "mayor" con uno cualquiera de "menor", sacado por los dados), y
+en al menos dos pares. 20 semillas:
+
+| Condición | Interruptor hallado | Bien | Mal | No sé |
+|---|---|---|---|---|
+| "menor" en 2 pares | 20 de 20 | 98 % | 0 % | 1 % |
+| "menor" en los 10 | 20 de 20 | 97 % | 0 % | 2 % |
+| 2 pares, 20 % de resbalones | 17 de 20 | 83 % | 1 % | 14 % |
+| **control: respuestas al azar** | **0 de 20** (antes 20) | 13 % | **17 %** (antes 37 %) | 68 % |
+
+Con datos coherentes nada cambia; con respuestas al azar ya no encuentra interruptor. El 17 % de error que queda en el
+control viene de las puertas de "mayor" armadas sobre recuerdos al azar: su criterio (al menos dos, sin empate) tampoco
+se compara contra el azar todavía.
