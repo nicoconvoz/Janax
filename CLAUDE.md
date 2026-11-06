@@ -50,8 +50,8 @@ abierto. Ya no es un MMORPG (Capitán, 2026-11-03): lo que era del juego está e
   corre intérprete, traductor x86-64 y ARM64 en el teléfono si está conectado).
 - El dominio se prueba sin red y sin ventana. Si una regla necesita abrir una ventana para probarse, está mal
   ubicada.
-- Mientras se construye, solo las pruebas de la zona tocada (`JANAX_SOLO`); la suite completa, una vez antes de
-  guardar.
+- La suite NO se corre por rutina (Capitán, 2026-11-06: "solo la pasamos si nos encontramos con un problema"): tarda
+  ~15 minutos. Se verifica corriendo el programa tocado a mano; la suite, solo ante un problema.
 - Los bancos de rendimiento son instrumentos: antes de creerles, verificar que miden lo que dicen.
 - Las salidas de bancos y logs (`log_*.txt`, etc.) van al `.gitignore`.
 

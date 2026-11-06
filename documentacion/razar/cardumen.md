@@ -963,3 +963,128 @@ un desplazamiento de carga (7FFFh), y eso fija el lado en 7 como máximo; más g
 
 Con esto, **las cinco piezas del traslado están en Janax**: olas que se cruzan, palabra como canción, oído de palabras
 enteras, cubo de tamaño libre y oraciones con ruido. Perl queda de vara.
+
+## Un acertijo de palabras, resuelto por haber aprendido algo parecido antes (Capitán, 2026-11-06)
+
+> *"Más inteligente es que pueda resolver un acertijo de palabras aprendiendo algo parecido antes."* — Su ejemplo:
+> *"Si los números son uno dos tres cuatro cinco y seis, uno más uno es igual a dos, dos más dos es igual a cuatro:
+> ¿cuánto es dos más tres?"* — *"Que pueda aumentar el 7 a la 3: si con eso no le alcanza, que se modele su propio
+> tamaño."*
+
+**La devolución, antes de construir.** Con esos dos ejemplos solos, la respuesta no se puede saber: "el doble del
+primero" también cumple "uno más uno es dos" y "dos más dos es cuatro", y con esa regla "dos más tres" da cuatro. El Capitán sabe que es cinco porque **ya sabe contar**:
+"más tres" es avanzar tres lugares desde el dos. Eso es lo "parecido aprendido antes": primero el orden de los números,
+después la suma montada encima. Se parece a Copycat de Hofstadter (analogías de letras), a ARC de Chollet (cada
+acertijo trae su regla) y a *grokking* (Power y otros, 2022: sumas que se aprenden con una parte de la tabla y se
+prueban con las que nunca se vieron). Lo propio: en Razar contar es una melodía, y la voluntad recuerda melodías.
+
+**Cómo funciona** (`voluntad_acertijos.jsm` con `cardumen_cubo.jsm`, todo en Janax; vara: `acertijos.pl`). Las palabras
+son canciones, como en las oraciones (Morse de saludos, olas que se cruzan, el oído que cuenta notas). Tres escalones:
+1. **El oído y su propio tamaño.** El cardumen nace con lado 3 y la voluntad aprende sus 9 palabras (uno…seis, más,
+   menos, es). Mientras todavía confunde palabras que le enseñaron, el cardumen nace de nuevo una pieza más ancho y la
+   voluntad aprende otra vez; cuando uno más ancho ya no confunde menos, vuelve al mejor y se queda. Ningún número
+   elegido: la regla es "crecer mientras crecer sirve". `tope` solo termina una corrida, y se dice si se alcanzó.
+2. **Contar.** Oye "uno dos tres cuatro cinco seis" y recuerda, por las palabras que reconoció, cuál abre la canción y
+   cuál sigue a cuál. Nada se le da: si el oído se equivoca, la memoria de la canción queda mal.
+3. **Acertijos** ("a más b es c"). Lo único que sabe hacer con una canción conocida es **recorrerla y contar los
+   pasos**. Una regla es **dos recorridos del mismo largo** entre los lugares del acertijo (el comienzo de la canción,
+   a, b, c): todas esas igualdades son candidatas y ninguna tiene preferencia. Cada ejemplo mostrado suma para las
+   candidatas que cumple; para contestar votan las que cumplieron más ejemplos y dicen dónde está c, y la respuesta es
+   la palabra que queda esa cantidad de pasos adentro de la canción. **Un empate entre respuestas es "no lo puede
+   saber"** (?). "c está tan lejos de a como b del comienzo" (la suma) es una candidata entre otras ("c está tan lejos
+   de a como a del comienzo" es el doble). En el oficio es un **espacio de versiones** (eliminación de candidatos,
+   Mitchell, 1977), o síntesis de programas por enumeración: un método clásico.
+   ⚠️ **La plantilla la escribió Doc, no Razar**: "dos recorridos del mismo largo" ya tiene la forma de la suma y de la
+   resta. Razar no descubre la suma; elige cuál de las candidatas cumple los ejemplos. Y el espacio es chico: **27
+   candidatas, 18 que dicen dónde está c**. Con 3 ejemplos que descartan 17, el 100 % es sobre todo combinatoria.
+
+**El cardumen de cualquier tamaño** (`cardumen_cubo.jsm`): las mismas olas que se cruzan, con lado n, sin nada fijo a 64
+piezas; sus tablas van en una sala a la medida de n. Una canción dura a lo sumo 256 + n³ pasos (cada ola despierta cada
+pieza una vez como mucho), y ese es el tamaño de su tabla de caras de arriba. ⚠️ **En Janax, todo lo que un hijo cambia
+(por ejemplo pedir memoria) espera la firma de su madre**: el cardumen pedía su sala y la voluntad estaba esperando una
+palabra, así que el sistema rechazaba el pedido para que nadie esperara para siempre. La solución sin parches: el
+cardumen dice cuántos bytes necesita (0 si la sala que tiene alcanza), la voluntad la arma (ella no necesita firma), se la
+**muda** (pedido 23) y le avisa, y el cardumen la **recibe** (pedido 25, que no es importante). Lo que falta: el cardumen
+no puede soltar una sala vieja sin firma, así que cuando crece la anterior queda sin usar hasta que termina la corrida.
+
+**Verificado contra Perl sin volver a correrlo**: antes de pasar a Janax quedaron guardadas 243 corridas de
+`acertijos.pl`; Janax da **idéntico, letra por letra, en las 239 que terminaron** (las otras 4 quedaron vacías al cortar
+Perl a pedido del Capitán), incluidos los cubos que crecen a 4³ y 5³, con ruido, quieto, revuelto, resta y mezcla. Los
+tres motores dan la misma huella. Tiempo, semilla 1001: Janax 0,8 s (traductor) contra Perl 1,7 s; el barrido de 260
+corridas, 1 min 27 s.
+
+**Resultados, 20 semillas (1001–1020), acertijos nunca vistos:**
+
+| Condición | Acierta | Sin respuesta | Semillas con todo bien | Cubos |
+|---|---|---|---|---|
+| suma, 1 ejemplo, sin ruido | 73 % | 26 % | 14 | 3³: 19, 4³: 1 |
+| suma, 2 ejemplos, sin ruido | 90 % | 9 % | 18 | 3³: 19, 4³: 1 |
+| **suma, 3 ejemplos, sin ruido** | **100 %** | 0 % | **20** | 3³: 19, 4³: 1 |
+| suma, 3 ejemplos, 10 % de resbalones | 95 % | 2 % | 14 | 3³: 19, 4³: 1 |
+| suma, 3 ejemplos, 20 % | 95 % | 2 % | 12 | 3³: 15, 4³: 5 |
+| suma, 3 ejemplos, 20 %, sin crecer (3³ fijo) | 95 % | 2 % | 13 | 3³: 20 |
+| suma, 3 ejemplos, 20 %, cardumen quieto | 88 % | 7 % | 9 | 3³: 15, 4³: 3, 5³: 2 |
+| **control: respuestas al azar en los ejemplos** | **6 %** | 40 % | 0 | 3³: 19, 4³: 1 |
+| resta, 2 ejemplos | 100 % | 0 % | 20 | 3³: 19, 4³: 1 |
+| suma y resta mezcladas, 2 de cada una | 95 % | 4 % | 18 | 3³: 19, 4³: 1 |
+| mezcladas, 3 de cada una, 10 % | 91 % | 5 % | 8 | 3³: 19, 4³: 1 |
+
+- **Elige la regla, no memoriza la tabla.** Con 3 ejemplos acierta todas las sumas que nunca vio, en las 20 semillas;
+  un memorizador acertaría 0. Con la resta pasa lo mismo, y con las dos mezcladas separa una regla por palabra (más,
+  menos). Dentro de un espacio de 27 candidatas que escribió Doc.
+- **El control dice que la respuesta sale del contenido de los ejemplos**: con las respuestas sorteadas no hay regla
+  que cumpla, acierta 6 % (por debajo del azar de 1 en 6) y en 40 % dice que no sabe.
+- **Con los dos ejemplos del Capitán dice "no sé"** en 12 de 13 (acierta 3+3, donde todas las reglas coinciden). Con
+  "uno más dos" de más, 12 de 12. Es lo que haría alguien que no sabe si "más" es sumar o duplicar.
+- **El cardumen que aprende contra el quieto, con 20 % de ruido**: 95 % contra 88 %; por semilla gana 11, pierde 5,
+  empata 4. Es una señal, no una prueba (prueba de signos, p ≈ 0,2).
+- ⚠️ **Crecer no mejoró los acertijos**: con 20 % de ruido, el cubo que crece y el fijo en 3³ empatan en 19 de 20
+  semillas (pierde 1). Crecer arregla las confusiones de las palabras enseñadas, pero los errores que importan son los
+  del oído en el momento del acertijo. El mecanismo de tamaño propio funciona y es correcto, pero esta tarea no lo
+  necesitó.
+- **La prueba que decide de quién es el mérito** (la propuso el otro chat del Capitán, 2026-11-06): reemplazar la
+  canción de contar aprendida por una escrita a mano (parámetro 13 de `p`, `ESCRITA`) y volver a medir. **Da idéntico
+  en 99 de 100 corridas** (sin ruido, con 20 %, mezcla con 10 %, un ejemplo); la única distinta es una semilla con el
+  cardumen quieto y 20 % de ruido, donde la cadena aprendida había quedado mal y la escrita acierta 7 más. Conclusión:
+  **en esta tarea el cardumen casi no trabaja**. Pone el oído (qué palabra oyó) y la cadena de sucesores sale
+  perfecta; el resto lo hace la búsqueda. Lo de crecer y lo del quieto dicen lo mismo. **Esto no es todavía un
+  resultado de Razar**: es un sintetizador de reglas chico que lee de una tabla aprendida. El resultado de Razar de
+  esa noche sigue siendo el de las palabras-canción (aprender le gana al quieto en 18 de 20, z = 3,42), donde el cubo
+  sí trabaja.
+- Lo que sí vale: **se abstiene cuando los ejemplos no alcanzan** (dice "no sé" con "uno más uno" y "dos más dos") y el ejemplo que
+  desambigua lo arregla en el acto. Es eliminación de hipótesis de verdad, no parecido de patrones.
+- Límite: los números son seis y la canción de contar se aprende entera; con seis números el espacio de acertijos es
+  minúsculo, y un acertijo cuya respuesta pasa de "seis" no tiene palabra para contestarse.
+
+Pruebas en la suite (los tres motores, con las líneas de Perl como texto fijo): 3 ejemplos de suma; los del Capitán;
+con "uno más dos" de más; con ruido el cubo crece a 4³; quieto y con ruido crece a 5³.
+
+### El acertijo oído como una sola melodía (Capitán, 2026-11-06)
+
+> *"Es fácil pensar con palabras atómicas; ahora es el verdadero desafío."* — *"Dale de comer los números primero y
+> después dale el acertijo con palabras."*
+
+Sin cadena de sucesores y sin búsqueda de reglas (parámetro 14 de `p`, `MODO`): la voluntad aprende solo los seis
+números por su canción, el cardumen oye la cuenta entera como una sola canción (`CUENTAS` veces), y cada acertijo
+mostrado, "a más b es", se canta como **una sola canción**; el oído aprende esa melodía con su respuesta c, como aprendió
+cada número. Preguntado, la misma canción, y lo que el oído adivina es la respuesta. 8 acertijos mostrados, 7
+preguntados, 20 semillas (140 preguntas):
+
+| Condición | Acierta | Contestó el primer número del acertijo |
+|---|---|---|
+| números primero (3³, crece) | **0 %** | **100 %** |
+| números primero, cardumen quieto | 0 % | 100 % |
+| números primero, cubo 5³ fijo | 0 % | 100 % |
+| sin darle los números | 13 % | 8 % |
+| azar / la respuesta más común de los ejemplos | 17 % / 16 % | — |
+
+- **Falla, y se sabe por qué.** El oído lee notas por paso desde el comienzo de la canción, y la canción del acertijo
+  empieza con la del primer número: la melodía que más se le parece es esa. Contesta "a" en las 140 preguntas, y en
+  una suma la respuesta nunca es "a". Es el mismo sesgo del comienzo que tenían las palabras nuevas (40 % con la misma
+  primera letra), ahora llevado al extremo.
+- Sin los números, el oído solo conoce las melodías de los acertijos mostrados y queda en el azar (13 %).
+- Ni el tamaño del cubo ni aprender mueven nada: la lectura de la voluntad (por paso, desde el comienzo) es el cuello
+  de botella, no el cardumen.
+- Lo que haría falta, para pensarlo con el Capitán: que la voluntad oiga **la relación entre partes** de la melodía (qué
+  cambia entre "a" y la respuesta), no la melodía entera pegada al comienzo; o que el cardumen transforme la canción de
+  modo que "dos más tres" y "cinco" suenen parecido, que es justo lo que hoy no hace.

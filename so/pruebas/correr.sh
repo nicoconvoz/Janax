@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/cardumen_canto.jsm "$proyecto"/razar/cardumen/voluntad_canto.jsm "$proyecto"/razar/cardumen/voluntad_oraciones.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/cardumen_canto.jsm "$proyecto"/razar/cardumen/voluntad_canto.jsm "$proyecto"/razar/cardumen/voluntad_oraciones.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm "$proyecto"/razar/cardumen/cardumen_cubo.jsm "$proyecto"/razar/cardumen/voluntad_acertijos.jsm "$proyecto"/razar/cardumen/voluntad_acertijos.datos.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -482,6 +482,50 @@ P0 codigo=0 j0=$huella_lazo t=*
 ventanilla: *" voluntad
   carpeta=
 done
+
+# A riddle of words, solved by having learned something like it before (Capitan, 2026-11-06), all in Janax: the will
+# picks the school's size by itself (it grows while its ear still mistakes words it was taught), learns to count, and
+# answers "a mas b es ?" for riddles it was never shown, from candidate rules (walks of the same length along the
+# counting song) that fit the examples. The school has any side: it asks its mother for the room its tables need and
+# she moves it there (a child's request for memory would wait for her signature). The lines are the ones the Perl
+# measuring stick wrote for the same parameters (acertijos.pl, 239 of 239 identical, 2026-11-06); the fingerprints,
+# the same in the three engines. Its parameters (the file "p", 12 qwords): seed, slipping %, first side, it may grow,
+# top, passes, countings, quiet, kind, examples drawn, list, shuffled answers.
+qwords() { local v h i; for v in "$@"; do h=$(printf '%016x' "$v"); for i in 14 12 10 8 6 4 2 0; do printf "\x${h:$i:2}"; done; done; }
+fijo24="modo: simbiosis
+costo de cambio: 24.00 instrucciones (fijado)"
+acertijo() {   # acertijo <name> <school j0> <will j0> <line 1> <line 2> <parameters>...
+  local nombre=$1 h1=$2 h0=$3 l1=$4 l2=$5; shift 5
+  familia familia_acertijo cardumen_cubo
+  qwords "$@" > "$salida/familia_acertijo/70"
+  caso "razar: acertijos, $nombre" 24 0 "$fijo24
+P1 codigo=0 j0=$h1 t=*
+$l1
+$l2
+P0 codigo=0 j0=$h0 t=*
+ventanilla: *" voluntad_acertijos
+  carpeta=
+}
+acertijo "3 ejemplos de suma, sin ruido" 0000E8EC637D47E6 0000ACF880A76673 \
+  "acertijos: nace=1001 desliz=0% tipo=suma ejemplos=3; cubo 3^3 (probo 3:0)" \
+  "oido: 0 palabras confundidas al final; contar: 5 de 5; acertijos nunca vistos: 12 de 12 bien (0 sin respuesta)" \
+  1001 0 3 1 12 20 3 0 0 3 0 0
+acertijo "los del Capitan: uno mas uno y dos mas dos no alcanzan" 00007E06D8EE1612 0000CB5B9B87DB37 \
+  "acertijos: nace=7 desliz=0% tipo=suma ejemplos=uno mas uno, dos mas dos; cubo 3^3 (probo 3:0)" \
+  "oido: 0 palabras confundidas al final; contar: 5 de 5; acertijos nunca vistos: 1 de 13 bien (12 sin respuesta)" \
+  7 0 3 1 12 20 3 0 0 0 65 0
+acertijo "con uno mas dos de mas alcanzan" 000007A5300C06F1 00007BAF47B21B7F \
+  "acertijos: nace=7 desliz=0% tipo=suma ejemplos=uno mas uno, uno mas dos, dos mas dos; cubo 3^3 (probo 3:0)" \
+  "oido: 0 palabras confundidas al final; contar: 5 de 5; acertijos nunca vistos: 12 de 12 bien (0 sin respuesta)" \
+  7 0 3 1 12 20 3 0 0 0 67 0
+acertijo "con ruido el cubo crece a 4^3" 0000A510BA0F4373 0000FBF2822BD968 \
+  "acertijos: nace=1007 desliz=20% tipo=suma ejemplos=3; cubo 4^3 (probo 3:1 4:0)" \
+  "oido: 0 palabras confundidas al final; contar: 5 de 5; acertijos nunca vistos: 12 de 12 bien (0 sin respuesta)" \
+  1007 20 3 1 12 20 3 0 0 3 0 0
+acertijo "quieto y con ruido crece a 5^3" 00006CC976FEBE34 0000E48B2CA76997 \
+  "acertijos: nace=1004 desliz=20% tipo=suma ejemplos=3 quieto; cubo 5^3 (probo 3:2 4:1 5:0)" \
+  "oido: 0 palabras confundidas al final; contar: 4 de 5; acertijos nunca vistos: 4 de 12 bien (3 sin respuesta)" \
+  1004 20 3 1 12 20 3 1 0 3 0 0
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0

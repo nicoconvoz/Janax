@@ -241,3 +241,11 @@ misma huella que el modelo en los tres motores, 30 de 30 palabras en la tercera 
 misma línea letra por letra; ~44 veces más rápido que Perl.
 2026-11-06 — Pieza 4 en Janax: el cubo de tamaño libre (hasta 7); el resultado contra EGG (7³, 16 cosas) corre en Janax
 bit por bit, 243 ms contra ~4,7 s de Perl. Las cinco piezas del traslado están en Janax.
+2026-11-06 — Acertijos (Capitán): Razar aprende a contar y resuelve sumas que nunca vio comparando recorridos de la
+canción de contar; con 3 ejemplos, 100 % en 20 semillas (control con respuestas al azar: 6 %). Con "uno más uno" y "dos más dos" dice "no
+sé". El cardumen elige su tamaño solo (3³ a 5³), aunque crecer no mejoró los acertijos. Todo en Janax, idéntico a Perl.
+2026-11-06 — La prueba de la cadena escrita a mano (propuesta del otro chat): idéntico en 99 de 100 corridas. En los
+acertijos el cardumen casi no trabaja; el mérito es de la búsqueda (27 candidatas, plantilla de Doc). No es todavía un
+resultado de Razar; el de la noche sigue siendo el 18 de 20 de las palabras-canción.
+2026-11-06 — El acertijo como una sola melodía (Capitán: "dale de comer los números primero"): 0 de 140; contesta
+siempre el primer número del acertijo (el oído lee desde el comienzo). Sin los números, 13 % (azar 17 %).
