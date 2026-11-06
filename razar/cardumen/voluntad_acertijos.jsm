@@ -61,6 +61,16 @@ S_SI  = 0DC0h
 S_NO  = 0E00h
 S_VUELTA = 0E40h
 S_PADOP = 0E80h
+S_ELEC = 0EC0h
+S_GEMS = 0EE0h
+S_PUER = 0F00h
+S_DOS = 0F20h
+S_ARM = 0F40h
+S_MENOS = 0F60h
+S_ARM2 = 0F80h
+S_CIERRA = 0FA0h
+S_EN  = 0FC0h
+S_PIEZ = 0FE0h
 WTXT  = 500h                    ; word w: its text at WTXT + w*40h (0 uno .. 5 seis, 6 mas, 7 menos, 8 es)
 MORSE = 800h                    ; letter l: its Morse at MORSE + l*8
 ; Room 0 (0F000h bytes):
@@ -175,6 +185,16 @@ KEEPS = 46A8h
 SWITCH = 46B0h                  ; 1: one operator word is the switch of the other
 MCNT  = 46B8h                   ; logic: menor neighbours practiced so far
 OPI   = 4610h                   ; the operator being looked at (0 mas, 1 menos)
+EXCL  = 5C00h                   ; MODO 6: the memory left out (-1: none); the mechanism chosen; the one being left out
+CHOSEN = 5C08h
+LOOI  = 5C10h
+ANSW  = 5C18h                   ; its answer
+TWH   = 5C20h                   ; hits and misses explaining its own memory: the twins (TWH, TWM), the door (DRH, DRM)
+TWM   = 5C28h
+DRH   = 5C30h
+DRM   = 5C38h
+TWP   = 5C40h                   ; their pieces: properties adopted (twins); doors adopted and the switch (door)
+DRP   = 5C48h
 MEM   = 6400h                   ; memory: (op, a, b, c) heard, as places: MEM + (((op*10 + a)*10 + b)*10 + c)*8
 TWADDR = 0A400h                 ; twins: TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8 (1444 qwords)
 FACTS = 0D400h                  ; the facts: operator, a, b, c (32 bytes each)
@@ -679,6 +699,9 @@ jldi j3, 4
 jsub j3, j2, j3
 jjz j3, g_train
 jldi j3, 5
+jsub j3, j2, j3
+jjz j3, g_train
+jldi j3, 6
 jsub j3, j2, j3
 jjz j3, g_train
 jldi j1, 0                      ; shown: it hears the five words and counts what fits
@@ -1878,11 +1901,31 @@ gm_next:
   jsub j15, j15, j3
 jwend
 
-jldi j1, 0                      ; MODO 5: the door and its switch instead of twins
+jldi j1, 0                      ; no memory left out; then the mechanism: MODO 4 the twins, 5 the door, 6 the one P36
+jldi j2, 1                      ; chooses (CHOSEN: 1 twins, 2 door, 3 both)
+jsub j2, j1, j2
+jst j2, j1, EXCL
 jld j2, j1, MODO
+jldi j3, 6
+jsub j3, j2, j3
+jjz j3, m6_choose
 jldi j3, 5
-jsub j2, j2, j3
-jjz j2, p_door
+jsub j3, j2, j3
+jjz j3, d_only
+jcall tw_make
+jldi j1, 0
+jldi j2, 1
+jst j2, j1, CHOSEN
+jjmp u_test
+d_only:
+jcall door_make
+jldi j1, 0
+jldi j2, 2
+jst j2, j1, CHOSEN
+jjmp u_test
+
+; The twins (MODO 4): every two facts of an operator that differ in one number, then the properties adopted.
+tw_make:
 jldi j1, 0                      ; twins: every two facts of an operator that differ in one number
 jcall g_tw                      ; j5 = TW
 jldi j2, 1444
@@ -1900,12 +1943,18 @@ tw_i:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, tw_done
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, tw_inext
   jldi j10, 0                   ; fact j
 tw_j:
   jldi j1, 0
   jld j2, j1, NFACT
   jsub j2, j10, j2
   jjz j2, tw_inext
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j10, j2
+  jjz j2, tw_jnext
   jsub j2, j9, j10
   jjz j2, tw_jnext
   jcall g_facts
@@ -2016,41 +2065,20 @@ ga_next:
   jadd j9, j9, j2
   jjmp ga_lap
 ga_done:
+  jret
 
-jldi j1, 0                      ; asked, in order 0: every twin it remembers votes
-jst j1, j1, RIGHT
-jst j1, j1, ASKED
-jst j1, j1, NONE
-jld j15, j1, NTEST
-jldi j2, TEST
-jst j2, j1, PREV
-jwhile j15
-  jldi j1, 0
-  jldi j2, 0
-  jcall s_hear4
-  jldi j1, 0
-  jst j1, j1, NUMV
-  jcall s_roles
-  jjz j2, gq_count
-  jldi j1, 0                    ; its operator, as heard (mas or menos)
-  jld j7, j1, GW + 8
-  jldi j2, 6
-  jsub j7, j7, j2
-  jldi j2, 63
-  jsar j3, j7, j2
-  jjnz j3, gq_count
-  jldi j2, 2
-  jsub j3, j7, j2
-  jldi j2, 63
-  jsar j3, j3, j2
-  jjz j3, gq_count
-  jst j7, j1, OPI
+; The twins vote for the riddle heard (OPI = its operator, PA, PB its places): every remembered twin (not the one left
+; out), its answer moved by the property; the same riddle remembered votes its answer. Uses j1-j13.
+tw_vote:
   jldi j9, 0
 gq_fact:
   jldi j1, 0
   jld j2, j1, NFACT
   jsub j2, j9, j2
-  jjz j2, gq_count
+  jjz j2, tv_done
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, gq_fnext
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2095,7 +2123,52 @@ gq_fnext:
   jldi j2, 1
   jadd j9, j9, j2
   jjmp gq_fact
-gq_count:
+tv_done:
+  jret
+
+; Asked, in order 0: the riddle heard, then the votes of the mechanism chosen (CHOSEN: 1 the twins, 2 the door, 3 both).
+u_test:
+jldi j1, 0
+jst j1, j1, RIGHT
+jst j1, j1, ASKED
+jst j1, j1, NONE
+jld j15, j1, NTEST
+jldi j2, TEST
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jldi j2, 0
+  jcall s_hear4
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall s_roles
+  jjz j2, ut_count
+  jldi j1, 0                    ; its operator, as heard (0 or 1)
+  jld j7, j1, GW + 8
+  jldi j2, 6
+  jsub j7, j7, j2
+  jldi j2, 63
+  jsar j3, j7, j2
+  jjnz j3, ut_count
+  jldi j2, 2
+  jsub j3, j7, j2
+  jldi j2, 63
+  jsar j3, j3, j2
+  jjz j3, ut_count
+  jst j7, j1, OPI
+  jld j2, j1, CHOSEN
+  jldi j3, 1
+  jand j3, j2, j3
+  jjz j3, ut_door
+  jcall tw_vote
+ut_door:
+  jldi j1, 0
+  jld j2, j1, CHOSEN
+  jldi j3, 2
+  jand j3, j2, j3
+  jjz j3, ut_count
+  jcall door_vote
+ut_count:
   jcall s_answer
   jldi j1, 0
   jld j2, j1, PREV
@@ -2108,6 +2181,176 @@ gq_count:
 jwend
 jjmp r_counts
 
+
+; MODO 6: both mechanisms in the same run, and P36 chooses (Capitan, 2026-11-06): harmony, "the member left out may not
+; describe itself". Each firm memory is left out in turn; each mechanism is built from the others and asked it; a right
+; answer counts one, a wrong one takes one away, silence nothing. The mechanism that explains its own memory better
+; answers what it never practiced; a tie, both vote. Nobody says which one is for what.
+m6_choose:
+jldi j1, 0
+jst j1, j1, TWH
+jst j1, j1, TWM
+jst j1, j1, DRH
+jst j1, j1, DRM
+jst j1, j1, LOOI
+m6_lap:
+  jldi j1, 0
+  jld j2, j1, LOOI
+  jld j3, j1, NFACT
+  jsub j3, j2, j3
+  jjz j3, m6_pick
+  jst j2, j1, EXCL
+  jcall tw_make
+  jcall m6_fact
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall tw_vote
+  jcall v_pick
+  jldi j10, TWH
+  jcall m6_score
+  jcall door_make
+  jcall m6_fact
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall door_vote
+  jcall v_pick
+  jldi j10, DRH
+  jcall m6_score
+  jldi j1, 0
+  jld j2, j1, LOOI
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, LOOI
+  jjmp m6_lap
+m6_pick:
+jldi j1, 0                      ; nothing left out any more: both built from all of it, and their pieces (properties;
+jldi j2, 1                      ; doors and the switch)
+jsub j2, j1, j2
+jst j2, j1, EXCL
+jcall tw_make
+jldi j1, 0
+jld j2, j1, ADOPT
+jst j2, j1, TWP
+jcall door_make
+jldi j1, 0
+jld j2, j1, ADOPT
+jld j3, j1, SWITCH
+jadd j2, j2, j3
+jst j2, j1, DRP
+jld j2, j1, TWH                 ; harmony (D39): describing the same with less, still accounting for all of it: what
+jld j3, j1, TWM                 ; each explains of its own memory (hits - misses) per piece; no pieces, nothing explained
+jsub j2, j2, j3
+jld j4, j1, TWP
+jjnz j4, m6_tw
+jldi j2, 0
+jldi j4, 1
+m6_tw:
+jld j3, j1, DRH
+jld j5, j1, DRM
+jsub j3, j3, j5
+jld j5, j1, DRP
+jjnz j5, m6_dr
+jldi j3, 0
+jldi j5, 1
+m6_dr:
+jmul j2, j2, j5                 ; twins: (hits - misses) * door pieces, against door: (hits - misses) * twin pieces
+jmul j3, j3, j4
+jsub j4, j2, j3
+jldi j5, 3
+jjz j4, m6_set
+jldi j5, 63
+jsar j4, j4, j5
+jldi j5, 1
+jjz j4, m6_set
+jldi j5, 2
+m6_set:
+jst j5, j1, CHOSEN
+m6_go:
+jjmp u_test
+
+; The memory left out (EXCL) as the riddle asked: OPI, PA, PB, and its answer in ANSW. Uses j1-j5.
+m6_fact:
+  jldi j1, 0
+  jld j2, j1, EXCL
+  jcall g_facts
+  jldi j3, 5
+  jshl j2, j2, j3
+  jadd j2, j2, j5
+  jld j3, j2, 0
+  jst j3, j1, OPI
+  jld j3, j2, 8
+  jst j3, j1, PA
+  jld j3, j2, 16
+  jst j3, j1, PB
+  jld j3, j2, 24
+  jst j3, j1, ANSW
+  jret
+
+; The answer from the votes, without counting: j2 = 1 and j3 = the value with most votes if only one has that many,
+; else j2 = 0. Uses j2-j6, j10-j14.
+v_pick:
+  jldi j1, 0
+  jldi j2, 0
+  jld j9, j1, NUMV
+  jjz j9, vp_done
+  jldi j10, 0                   ; most votes
+  jldi j12, VOTE
+  jwhile j9
+    jld j13, j12, 8
+    jsub j14, j10, j13
+    jldi j11, 63
+    jsar j14, j14, j11
+    jjz j14, vp_mnext
+    jadd j10, j13, j1
+    jld j3, j12, 0
+  vp_mnext:
+    jldi j13, 16
+    jadd j12, j12, j13
+    jldi j13, 1
+    jsub j9, j9, j13
+  jwend
+  jld j9, j1, NUMV
+  jldi j12, VOTE
+  jldi j11, 0
+  jwhile j9
+    jld j13, j12, 8
+    jsub j13, j13, j10
+    jjnz j13, vp_tnext
+    jldi j13, 1
+    jadd j11, j11, j13
+  vp_tnext:
+    jldi j13, 16
+    jadd j12, j12, j13
+    jldi j13, 1
+    jsub j9, j9, j13
+  jwend
+  jldi j13, 1
+  jsub j11, j11, j13
+  jjnz j11, vp_done
+  jldi j2, 1
+vp_done:
+  jret
+
+; Scores the guess (j2 said, j3 value) against ANSW, in the hits (j10) and misses (j10 + 8) of a mechanism. Uses
+; j1-j4.
+m6_score:
+  jjz j2, ms_done
+  jldi j1, 0
+  jld j4, j1, ANSW
+  jsub j4, j3, j4
+  jjz j4, ms_hit
+  jld j4, j10, 8
+  jldi j2, 1
+  jadd j4, j4, j2
+  jst j4, j10, 8
+  jret
+ms_hit:
+  jld j4, j10, 0
+  jldi j2, 1
+  jadd j4, j4, j2
+  jst j4, j10, 0
+ms_done:
+  jret
 ; The facts' address -> j5 (past what an offset reaches). Uses j5.
 g_facts:
   jldi j5, 0
@@ -2321,7 +2564,7 @@ gr_firm:
 ;     in most of the pairs both remember (and at least two). Then what is known of the other is known of it, turned
 ;     around: a closed door, the same place said the other way;
 ;   - asked a pair it never practiced: its ORDEN, the door of its operator, and the word that answers.
-p_door:
+door_make:
 jldi j1, 0                      ; the doors: DOOR + ((op*2 + orden)*2 + papel)*8
 jldi j2, 8
 jldi j3, DOOR
@@ -2338,6 +2581,9 @@ pd_fact:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, pd_switch
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, pd_next
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2372,6 +2618,9 @@ pg_list:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, pg_listed
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, pg_lnext
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2506,12 +2755,18 @@ ps_i:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, ps_done
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, ps_inext
   jldi j10, 0
 ps_j:
   jldi j1, 0
   jld j2, j1, NFACT
   jsub j2, j10, j2
   jjz j2, ps_inext
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j10, j2
+  jjz j2, ps_jnext
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2581,6 +2836,9 @@ pb_list:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, pb_listed
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, pb_lnext
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2613,6 +2871,9 @@ pb_fact:
   jld j2, j1, NFACT
   jsub j2, j9, j2
   jjz j2, pb_judge
+  jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
+  jsub j2, j9, j2
+  jjz j2, pb_fnext
   jcall g_facts
   jldi j2, 5
   jshl j3, j9, j2
@@ -2733,38 +2994,17 @@ pa_next:
   jadd j9, j9, j2
   jjmp pa_lap
 pa_done:
+  jret
 
-jldi j1, 0                      ; asked, in order 0: its orden, the door of its operator, the word that answers
-jst j1, j1, RIGHT
-jst j1, j1, ASKED
-jst j1, j1, NONE
-jld j15, j1, NTEST
-jldi j2, TEST
-jst j2, j1, PREV
-jwhile j15
+; The door votes for the riddle heard (OPI = its operator, 0 or 1; PA, PB its places): its orden, the door of its
+; operator, and the word that answers. Uses j1-j13.
+door_vote:
   jldi j1, 0
-  jldi j2, 0
-  jcall s_hear4
-  jldi j1, 0
-  jst j1, j1, NUMV
-  jcall s_roles
-  jjz j2, pq_count
-  jldi j1, 0
-  jld j7, j1, GW + 8            ; its operator, as heard
-  jldi j2, 6
-  jsub j7, j7, j2
-  jldi j2, 63
-  jsar j3, j7, j2
-  jjnz j3, pq_count
-  jldi j2, 2
-  jsub j3, j7, j2
-  jldi j2, 63
-  jsar j3, j3, j2
-  jjz j3, pq_count
+  jld j7, j1, OPI
   jld j4, j1, PA                ; orden: 0 if a comes first in the song
   jld j5, j1, PB
   jsub j6, j5, j4
-  jjz j6, pq_count
+  jjz j6, dv_done
   jldi j2, 63
   jsar j6, j6, j2
   jldi j2, 1
@@ -2772,25 +3012,15 @@ jwhile j15
   jadd j9, j7, j7
   jadd j9, j9, j6               ; (op*2 + orden)
   jcall p_doorof
-  jjz j2, pq_count
+  jjz j2, dv_done
   jldi j1, 0
   jld j7, j1, PA
-  jjz j3, pq_vote               ; papel 0: the first word
+  jjz j3, dv_vote               ; papel 0: the first word
   jld j7, j1, PB
-pq_vote:
+dv_vote:
   jcall g_vote
-pq_count:
-  jcall s_answer
-  jldi j1, 0
-  jld j2, j1, PREV
-  jldi j3, 32
-  jadd j2, j2, j3
-  jst j2, j1, PREV
-  jld j15, j1, NTEST
-  jld j3, j1, ASKED
-  jsub j15, j15, j3
-jwend
-jjmp r_counts
+dv_done:
+  jret
 
 ; The door's row of the fact at j3 (operator, a, b, c as places): ((op*2 + orden)*2 + papel), or -1 if c is neither
 ; word or a and b are the same place. -> j6. Uses j6-j8.
@@ -2906,7 +3136,12 @@ jcall puts
 jldi j1, S_EJEM
 jcall puts
 jld j2, j1, LISTA
-jjnz j2, o_list
+jjz j2, o_nolist
+jld j3, j1, TIPO                ; logic: LISTA means the far pairs, not a list of sums
+jldi j4, 3
+jsub j3, j3, j4
+jjnz j3, o_list
+o_nolist:
 jld j2, j1, EJEM
 jcall putnum
 jjmp o_listed
@@ -3050,6 +3285,56 @@ jcall puts
 jld j2, j1, REPS
 jcall putnum
 o_pue:
+jldi j1, 0
+jld j2, j1, MODO
+jldi j3, 6
+jsub j2, j2, j3
+jjnz j2, o_elec
+jldi j1, S_ELEC
+jcall puts
+jld j2, j1, CHOSEN
+jldi j1, S_GEMS
+jldi j3, 1
+jsub j3, j2, j3
+jjz j3, o_ename
+jldi j1, S_PUER
+jldi j3, 2
+jsub j3, j2, j3
+jjz j3, o_ename
+jldi j1, S_DOS
+o_ename:
+jcall puts
+jldi j1, S_ARM
+jcall puts
+jld j2, j1, TWH
+jcall putnum
+jldi j1, S_MENOS
+jcall puts
+jld j2, j1, TWM
+jcall putnum
+jldi j1, S_EN
+jcall puts
+jld j2, j1, TWP
+jcall putnum
+jldi j1, S_PIEZ
+jcall puts
+jldi j1, S_ARM2
+jcall puts
+jld j2, j1, DRH
+jcall putnum
+jldi j1, S_MENOS
+jcall puts
+jld j2, j1, DRM
+jcall putnum
+jldi j1, S_EN
+jcall puts
+jld j2, j1, DRP
+jcall putnum
+jldi j1, S_PIEZ
+jcall puts
+jldi j1, S_CIERRA
+jcall puts
+o_elec:
 jldi j1, S_CUBO
 jcall puts
 jld j2, j1, NN
@@ -3280,8 +3565,19 @@ ro_bnext:
     jldi j1, 1
     jsub j1, j3, j1
     jldi j2, 1                  ; j1 = 1 if neighbours
-    jjz j1, ro_menor
-    jldi j2, 0
+    jjz j1, ro_menor            ; neighbours: practiced (menor, only EJEM of them)
+    jldi j2, 0                  ; with LISTA, mayor's pairs two places apart are practiced too (another way of teaching)
+    jld j4, j13, LISTA
+    jjz j4, ro_menor
+    jld j4, j13, OPC
+    jldi j5, 6
+    jsub j4, j4, j5
+    jjnz j4, ro_menor
+    jldi j4, 3
+    jsub j4, j1, j4             ; d^2 - 1 = 3: two places apart
+    jjnz j4, ro_menor
+    jldi j2, 1
+    jjmp ro_nb
   ro_menor:
     jjz j2, ro_nb               ; menor: only EJEM of its neighbours
     jld j1, j13, OPC

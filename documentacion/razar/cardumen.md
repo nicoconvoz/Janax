@@ -1303,3 +1303,40 @@ puertas no se adoptan. 20 semillas:
 Con respuestas al azar ya no adopta ninguna puerta ni interruptor: **calla siempre**. Con datos coherentes sigue sin
 errores. El portero es exigente con pocos casos (con dos recuerdos, una versión ciega puede empatar y "más" tiene que ser
 estricto): una semilla perdió el interruptor con 2 pares de "menor" (95 % en vez de 98 %).
+
+### Los dos mecanismos en la misma corrida, y el P36 elige (2026-11-06)
+
+> *"Poné los dos mecanismos disponibles en la misma corrida y dejá que P36 elija. Si en las sumas gana los gemelos y en
+> las comparaciones gana la puerta, sin que nadie le diga cuál es cuál, ése es el resultado grande de todo el proyecto."*
+> — el otro chat del Capitán, y el Capitán lo pegó como orden.
+
+`MODO` 6: el mismo programa arma los gemelos y la puerta como rutinas que pueden construirse **dejando afuera un
+recuerdo** (`EXCL`). Para elegir, **armonía del P36 y del D39** (*describir lo mismo con menos, sin dejar de dar cuenta de
+todo*): cada recuerdo firme se tapa por turno, cada mecanismo se arma con los demás y lo adivina (acierto +1, error −1,
+silencio 0); gana el que más explica **por pieza** (propiedades de los gemelos; puertas e interruptor de la puerta). Con
+ese contesta lo que nunca vio; si empatan, votan los dos. Nadie le dice qué mecanismo es para qué.
+
+20 semillas por fila, el mismo programa, sin cambiar nada más que lo que se le enseña:
+
+| Lo que se le enseña | Elige gemelos | Elige puerta | Los dos | Bien | Mal | No sé |
+|---|---|---|---|---|---|---|
+| 10 sumas | **20** | 0 | 0 | 98 % | 0 % | 2 % |
+| 8 sumas | 18 | 0 | 2 | 84 % | 0 % | 15 % |
+| suma y resta, 8 de cada una | **20** | 0 | 0 | 85 % | 0 % | 15 % |
+| **hermanos: vecinos + algunos a dos lugares** | 0 | **20** | 0 | **98 %** | **0 %** | 1 % |
+| 10 sumas, 20 % de resbalones | 20 | 0 | 0 | 88 % | 4 % | 8 % |
+| hermanos, 20 % de resbalones | 0 | 20 | 0 | 75 % | 0 % | 24 % |
+| hermanos: solo vecinos | 19 | 1 | 0 | 2 % | 11 % | 86 % |
+| control: sumas con respuestas al azar | 1 | 14 | 5 | 0 % | 1 % | 99 % |
+| control: hermanos con respuestas al azar | 2 | 17 | 1 | 0 % | 1 % | 97 % |
+
+- **Sin que nadie le diga cuál es cuál, elige gemelos en las sumas (58 de 60) y la puerta en las comparaciones (20 de
+  20)**, y con eso acierta 98 % de lo que nunca vio en las dos, sin errores.
+- ⚠️ **La condición, dicha de entrada:** en las comparaciones, la memoria tiene que tener **algún par que no sea vecino**
+  ("enseñado de varias formas"). Con solo vecinos, entre vecinos los gemelos son una descripción perfecta y más chica, y
+  el P36 los elige: la memoria no tiene la evidencia que los distingue. Es el segundo criterio del P36, la
+  **transferencia** ("un miembro hace algo que nunca se le vio hacer"): sin un caso distinto en la memoria no hay qué medir.
+- Con respuestas al azar nada explica nada; la elección queda casi al azar, pero **calla** (97–99 % "no sé").
+- Lo honesto: los dos mecanismos los escribió Doc a partir de piezas de la AMMC (P44 los gemelos, P54 la puerta), y el
+  significado en átomo (el lugar en la canción) es la definición del Capitán. Lo que hace el sistema sin que nadie se lo
+  diga es **elegir cuál sirve para cada cosa**, con el criterio de armonía de Razar. El cardumen sigue poniendo el oído.

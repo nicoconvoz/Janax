@@ -261,3 +261,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-06 — La puerta y su interruptor (la negación de Razar llevada a la lógica): con 2 pares de "menor" descubre que es el interruptor de "mayor" y acierta el 98 % de los pares nunca vistos, 0 % mal. El criterio del interruptor todavía no se compara contra el azar.
 2026-11-06 — Interruptor endurecido (portero del P36, ocho emparejamientos ciegos): con respuestas al azar ya no aparece (0 de 20, antes 20); con datos coherentes sigue en 98 % bien, 0 % mal.
 2026-11-06 — Las puertas también contra el azar: con respuestas al azar calla siempre (0 % mal, antes 17 %); con datos coherentes 95–97 % bien y 0 % mal.
+2026-11-06 — Los dos mecanismos en la misma corrida y el P36 elige por armonía (D39, dejando uno afuera): gemelos en sumas (58 de 60), puerta en comparaciones (20 de 20), 98 % bien y 0 % mal en las dos. Condición: en comparaciones, algún par no vecino en la memoria.
