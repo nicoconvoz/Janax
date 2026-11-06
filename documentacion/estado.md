@@ -205,3 +205,5 @@ caño (olas que no se tocan) y el oído no distingue melodías anidadas (19 % ig
 oídas y 17 de 20 nuevas. Con temblor se rompen las palabras. El cardumen quieto da igual: hoy el cubo es un caño.
 2026-11-05 — Alfabeto de Fano (bloque {1,2,4} mod 7, la órbita de duplicar): 20 de 20 palabras nuevas con pulso firme y
 más resistente al temblor que Sperner (10 %: unidades 94–98 % contra 88–90 %), aunque en el papel un pulso corrido empata.
+2026-11-05 — Control 7 contra 7: Fano le gana a 5 sorteos de 7 unidades de Sperner (temblor 10 %: mediana 15 de 20 contra
+4–10). Ganó la construcción, no tener menos opciones.

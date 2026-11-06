@@ -20,8 +20,16 @@ if (($o{alfabeto} // 'sperner') eq 'fano') {     # alfabeto=fano: the block {1, 
   }
 } else {
   for my $b (0 .. 63) { my @p = map { ($b >> $_) & 1 } 0 .. 5; next unless 3 == grep { $_ } @p; push @units, [1, @p]; }
+  if ($o{sorteo}) {                              # sorteo=K (the control for Fano): 7 of the 20, drawn by dice K, so the
+    my $s = $o{sorteo};                          # only difference with Fano is the geometry (same 7 choices per slot,
+    for (my $i = $#units; $i > 0; $i--) {        # every unit heard while learning)
+      $s = ($s * 1103515245 + 12345) % 2147483648; my $j = ($s >> 16) % ($i + 1); @units[$i, $j] = @units[$j, $i];
+    }
+    @units = @units[0 .. 6];
+  }
 }
 my $U = @units;
+my $first_fixed = ($o{alfabeto} // 'sperner') ne 'fano';   # sperner units keep their first pulse: it marks the start
 my @abc = ('a' .. 'z');
 my %code = map { $abc[$_] => ($U == 20 ? [$_ % 20, int($_ / 20) + ($_ % 20 < 6 ? 2 : 0)] : [$_ % $U, int($_ / $U)]) }
   0 .. 25;                                       # each letter, two units
@@ -42,7 +50,7 @@ my @key = ($c->idx(0, 0, 0), $c->idx(1, 0, 0), $c->idx(0, 1, 0));
 sub send_unit {                                  # one unit through the school -> the notes it left on the top face
   my ($u) = @_; my @down = @{ $units[$u] };
   if ($o{temblor}) {                             # a pulse after the first may come a step early or late, into a free step
-    my $from = $U == 20 ? 1 : 0;                 # (sperner keeps its first pulse: it marks where the unit starts)
+    my $from = $first_fixed ? 1 : 0;
     for my $i ($from .. $#down) { next unless $down[$i] && rnd2() % 100 < $o{temblor};
       my $j = $i + (rnd2() % 2 ? 1 : -1); next if $j < $from || $j > $#down || $down[$j]; @down[$i, $j] = (0, 1); }
   }
@@ -79,7 +87,7 @@ for my $w (@aprende) { $ok_seen++ if hear_word($w, 0, \@t_seen) eq $w; }
 for my $w (@nuevas)  { my $got = hear_word($w, 0, \@t_new); if ($got eq $w) { $ok_new++ } else { push @wrong, "$w>$got" } }
 my @never = grep { !$letters_learned{$_} } map { split // } @nuevas; my %nv; @never = grep { !$nv{$_}++ } @never;
 printf "palabras: n=%d nace=%d temblor=%d%%%s; %d unidades (%s) de 7 pasos, 2 por letra\n", $o{n}, $o{nace},
-  $o{temblor}, $o{quieto} ? ' quieto' : '', $U, $o{alfabeto} // 'sperner';
+  $o{temblor}, $o{quieto} ? ' quieto' : '', $U, ($o{alfabeto} // 'sperner') . ($o{sorteo} ? " sorteo $o{sorteo}" : '');
 printf "unidades reconocidas: aprendiendo %d%%; despues, en palabras oidas %d%%, en palabras nuevas %d%%\n",
   100 * $t_learn[1] / $t_learn[0], 100 * $t_seen[1] / $t_seen[0], 100 * $t_new[1] / $t_new[0];
 printf "palabras oidas leidas enteras: %d de %d; palabras nuevas: %d de %d%s\n", $ok_seen, scalar @aprende, $ok_new,

@@ -631,3 +631,26 @@ combinaciones para 26 letras).
 - Salvedades: con 7 clases es más fácil acertar que con 20, así que no todo es mérito de la distancia. Con pulso firme
   Fano lee las 20 nuevas porque sus 7 unidades aparecen todas al aprender (en Sperner faltaban las de la h y la k).
 - Sigue valiendo lo de antes: el cardumen quieto daría lo mismo; el cubo transmite, no calcula.
+
+**El control 7 contra 7** (2026-11-05). La comparación de arriba no era pareja: Fano elige entre 7 por lugar y Sperner
+entre 20 (el azar de una letra es 1/49 contra 1/400), y a Sperner le faltaron unidades por oír. Control: las 7 de Fano
+contra **7 de Sperner sacadas al azar** (`palabras.pl sorteo=K`, 5 sorteos), mismo azar y misma cobertura, 7 semillas
+nuevas (1001–1007). Palabras nuevas leídas enteras, de 20, mediana y rango:
+
+| temblor | Fano | sorteos de Sperner (mediana de cada uno, y su rango) |
+|---|---|---|
+| 10 % | **15** (12–17) | 4 (2–7), 10 (8–13), 9 (5–12), 9 (6–13), 10 (9–12) |
+| 20 % | **9** (6–14) | 1 (0–3), 3 (1–8), 4 (1–6), 6 (5–7), 6 (2–7) |
+
+Por unidad: con 10 % de temblor Fano reconoce 96–98 %; ningún sorteo pasa de 95 %. Con 20 %, Fano 90–97 %; los sorteos,
+71–89 %.
+
+- **Gana la construcción, no el tamaño**: con las mismas 7 opciones y todas oídas, Fano le gana a los 5 sorteos en la
+  mediana, en los dos temblores.
+- Salvedad que queda: las unidades de Sperner tienen 4 pulsos (el primero fijo) y las de Fano 3, todos móviles. A los
+  dos el temblor les mueve 3 pulsos, pero Sperner deja más notas arriba por unidad; si algo, eso lo favorece a Sperner.
+- ⚠️ Instrumento: el primer resumen de esta corrida daba rangos al revés ("17–14"). La variable del lazo se llamaba `$a`
+  y le pisaba la suya a la función que ordena; se recalculó con los mismos archivos.
+- Lo que sigue (idea del otro chat, con la regla del Capitán, no importar una métrica sino medir la que ya está): Fano es
+  óptimo para la distancia de Hamming, pero el cubo desempata donde Hamming empata, así que mide con otra geometría.
+  Medir la matriz de confusión del cubo con temblor y derivar el alfabeto de ahí puede dar más de 7, u otras 7.
