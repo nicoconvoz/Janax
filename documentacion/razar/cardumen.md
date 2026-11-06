@@ -608,3 +608,26 @@ voluntad reconoce una unidad por vez y arma letras y palabras con la tabla (la c
   da exactamente lo mismo que el que aprende. Con las olas separadas el cubo es un caño: el idioma lo arman la voluntad
   y la tabla. Queda abierto que las olas interactúen sin volver a girar en redondo, y el control de verdad para eso es
   este mismo: que el cardumen que aprende le gane al quieto.
+
+**El alfabeto de Fano, derivado de la regla del siete del Capitán** (2026-11-05, idea de otro chat sobre la regla de
+`cmd/elsiete`: duplicar recorre 1 → 2 → 4 → 8 ≡ 1 módulo 7). El bloque {1, 2, 4} módulo 7 es la órbita de duplicar, y
+con sus 7 corrimientos arma el plano de Fano: 7 unidades de 7 pasos y 3 pulsos, y cada dos comparten exactamente un
+pulso, así que están a distancia 4. (El 7 de la regla del Capitán es un resto módulo 9 y el de Fano es 2³ − 1: no son el
+mismo siete; lo que coincide es la operación, duplicar.) `palabras.pl alfabeto=fano`; letra = 2 unidades (49
+combinaciones para 26 letras).
+
+- **En el papel no alcanza**: correr un pulso un lugar cambia 2 posiciones, y en los 24 casos posibles la unidad corrida
+  queda **empatada** a distancia 2 entre la suya y otra (no cae en otra, pero no vuelve sola). Detectar está
+  garantizado; corregir, no.
+- **En el banco sí gana** (semillas 7, 11, 23; los dos alfabetos con 3 pulsos que se pueden correr):
+
+| temblor | Sperner, 20 unidades: unidades / palabras nuevas | Fano, 7 unidades: unidades / palabras nuevas |
+|---|---|---|
+| 0 % | 98 % / 17 de 20 | **100 % / 20 de 20** |
+| 10 % | 88–90 % / 5–8 de 20 | **94–98 % / 11–17 de 20** |
+| 20 % | 78–82 % / 1–4 de 20 | **89–92 % / 6–8 de 20** |
+
+  El oído escucha notas con su ritmo, no posiciones, y desempata buena parte de lo que el papel deja empatado.
+- Salvedades: con 7 clases es más fácil acertar que con 20, así que no todo es mérito de la distancia. Con pulso firme
+  Fano lee las 20 nuevas porque sus 7 unidades aparecen todas al aprender (en Sperner faltaban las de la h y la k).
+- Sigue valiendo lo de antes: el cardumen quieto daría lo mismo; el cubo transmite, no calcula.

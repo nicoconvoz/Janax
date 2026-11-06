@@ -12,10 +12,19 @@
 # step early or late: a hand on the key), quieto (1: the school never learns).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, rondas => 20, temblor => 0, @ARGV ? map { split /=/ } @ARGV : ());
-my @units;                                       # the 20 units: steps 1..6, three of them down, step 0 always down
-for my $b (0 .. 63) { my @p = map { ($b >> $_) & 1 } 0 .. 5; next unless 3 == grep { $_ } @p; push @units, [1, @p]; }
+my @units;                                       # alfabeto=sperner (default): the 20 units above
+if (($o{alfabeto} // 'sperner') eq 'fano') {     # alfabeto=fano: the block {1, 2, 4} mod 7 (doubling, the Capitan's rule:
+  for my $k (0 .. 6) {                           # 1, 2, 4, 8 = 1) and its 7 shifts; every two share one pulse (the
+    my %b = map { (($_ + $k) % 7) => 1 } 1, 2, 4;   # Fano plane), so any two are 4 steps apart
+    push @units, [map { $b{$_} ? 1 : 0 } 0 .. 6];
+  }
+} else {
+  for my $b (0 .. 63) { my @p = map { ($b >> $_) & 1 } 0 .. 5; next unless 3 == grep { $_ } @p; push @units, [1, @p]; }
+}
+my $U = @units;
 my @abc = ('a' .. 'z');
-my %code = map { $abc[$_] => [$_ % 20, int($_ / 20) + ($_ % 20 < 6 ? 2 : 0)] } 0 .. 25;   # each letter, two units
+my %code = map { $abc[$_] => ($U == 20 ? [$_ % 20, int($_ / 20) + ($_ % 20 < 6 ? 2 : 0)] : [$_ % $U, int($_ / $U)]) }
+  0 .. 25;                                       # each letter, two units
 { my %seen; for my $l (@abc) { my $k = "@{ $code{$l} }"; die "two letters share $k\n" if $seen{$k}++; } }
 my @aprende = qw(sol luna mar pez barco cielo agua fuego tierra viento casa perro gato arbol flor rio monte nube
                  lluvia piedra camino puerta mesa silla libro mano ojo voz canto risa);
@@ -33,8 +42,9 @@ my @key = ($c->idx(0, 0, 0), $c->idx(1, 0, 0), $c->idx(0, 1, 0));
 sub send_unit {                                  # one unit through the school -> the notes it left on the top face
   my ($u) = @_; my @down = @{ $units[$u] };
   if ($o{temblor}) {                             # a pulse after the first may come a step early or late, into a free step
-    for my $i (1 .. $#down) { next unless $down[$i] && rnd2() % 100 < $o{temblor};
-      my $j = $i + (rnd2() % 2 ? 1 : -1); next if $j < 1 || $j > $#down || $down[$j]; @down[$i, $j] = (0, 1); }
+    my $from = $U == 20 ? 1 : 0;                 # (sperner keeps its first pulse: it marks where the unit starts)
+    for my $i ($from .. $#down) { next unless $down[$i] && rnd2() % 100 < $o{temblor};
+      my $j = $i + (rnd2() % 2 ? 1 : -1); next if $j < $from || $j > $#down || $down[$j]; @down[$i, $j] = (0, 1); }
   }
   my $mel = $c->signal_waves([ map { $_ ? [@key] : [] } @down ]);
   my @f; for my $t (0 .. $#$mel) { push @f, map { "$_:$t" } grep { $top{$_} } @{ $mel->[$t] }; }
@@ -68,7 +78,8 @@ my ($ok_seen, $ok_new, @wrong) = (0, 0);
 for my $w (@aprende) { $ok_seen++ if hear_word($w, 0, \@t_seen) eq $w; }
 for my $w (@nuevas)  { my $got = hear_word($w, 0, \@t_new); if ($got eq $w) { $ok_new++ } else { push @wrong, "$w>$got" } }
 my @never = grep { !$letters_learned{$_} } map { split // } @nuevas; my %nv; @never = grep { !$nv{$_}++ } @never;
-printf "palabras: n=%d nace=%d temblor=%d%%%s; 20 unidades de 7 pasos, 2 por letra\n", $o{n}, $o{nace}, $o{temblor}, $o{quieto} ? ' quieto' : '';
+printf "palabras: n=%d nace=%d temblor=%d%%%s; %d unidades (%s) de 7 pasos, 2 por letra\n", $o{n}, $o{nace},
+  $o{temblor}, $o{quieto} ? ' quieto' : '', $U, $o{alfabeto} // 'sperner';
 printf "unidades reconocidas: aprendiendo %d%%; despues, en palabras oidas %d%%, en palabras nuevas %d%%\n",
   100 * $t_learn[1] / $t_learn[0], 100 * $t_seen[1] / $t_seen[0], 100 * $t_new[1] / $t_new[0];
 printf "palabras oidas leidas enteras: %d de %d; palabras nuevas: %d de %d%s\n", $ok_seen, scalar @aprende, $ok_new,

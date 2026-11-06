@@ -203,3 +203,5 @@ velocidad mínima rinde igual que las lentas. Diagnóstico: después de una raya
 caño (olas que no se tocan) y el oído no distingue melodías anidadas (19 % igual en todo). Abierto.
 2026-11-05 — Palabras (Capitán): 20 unidades sin confusión (Sperner, ventana de 7); con pulso firme 30 de 30 palabras
 oídas y 17 de 20 nuevas. Con temblor se rompen las palabras. El cardumen quieto da igual: hoy el cubo es un caño.
+2026-11-05 — Alfabeto de Fano (bloque {1,2,4} mod 7, la órbita de duplicar): 20 de 20 palabras nuevas con pulso firme y
+más resistente al temblor que Sperner (10 %: unidades 94–98 % contra 88–90 %), aunque en el papel un pulso corrido empata.
