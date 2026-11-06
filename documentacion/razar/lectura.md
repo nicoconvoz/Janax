@@ -811,3 +811,15 @@ Contra el azar (uno de cada diez renglones apartado), idéntico en los tres moto
 
 Lo honesto: las puertas explican algo menos de lo no leído que con todas las formas (59 contra 70 pulsos), con 65
 piezas en lugar de 44.
+
+**La celda que faltaba** (todas las formas + un testimonio, armada aparte sobre `c6dfb58`): da **exactamente lo mismo
+que sin testimonio** (puertas 44 piezas, 70 de lo no leído; 64.937 pulsos contra 64.939). Con todas las formas cada
+lugar ya testificaba una sola vez, porque cada forma se contaba una vez. Entonces:
+
+| puertas (piezas / lo no leído explicado) | todas las formas | profundidad 1 |
+|---|---|---|
+| sin testimonio | 44 / 70 (1,59 por pieza) | 387 / 113 (0,29) |
+| con testimonio | 44 / 70 (1,59) | 65 / 59 (0,91) |
+
+**Lo que les cuesta a las puertas es profundidad 1, no el testimonio.** Comparar solo con la jugada anterior pierde
+puertas que salen de comparar con la primera. En los otros tres pisos profundidad 1 le gana al azar por igual o por más.
