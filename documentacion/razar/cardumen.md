@@ -1184,3 +1184,30 @@ oraciones, sin ninguna regla de sumar:
 - El control lo confirma: con las respuestas sorteadas no hay recuerdos firmes ni propiedades que se repitan.
 - Lo honesto: comparar gemelos y medir la diferencia en pasos es un sesgo, pero es el mecanismo general de la AMMC (P44),
   no uno escrito para sumar; y el cardumen sigue poniendo sobre todo el oído.
+
+**Revisión del otro chat del Capitán, y lo que se hizo (2026-11-06):**
+- **¿Es la misma rutina que la del género?** No. El P44 de Razar es código C que compara **letras**; esto es una
+  reimplementación en Janax del mismo principio (pares que difieren en un lugar, la diferencia que más se repite), y
+  **la diferencia se mide en pasos de la canción de contar**: esa adaptación a los números es de Doc, así que la objeción
+  de "quién escribió el espacio" vuelve en parte.
+- **El instrumento primero:** el ensamblador PDP dejaba pasar en silencio una etiqueta definida dos veces (pasó dos veces
+  esta noche: el salto iba a la otra). Ahora es un error en la primera pasada, como en FASM (`so/pdp/pdp.md`). Con el
+  ensamblador arreglado, los programas de los acertijos salen **idénticos byte por byte**, y también los 126 del
+  repositorio que tenían binario de referencia: los números de arriba no cambian.
+- **El portero del P36, que faltaba: gemelos al azar** (`CIEGOS`, qword 18 de `p`): dos recuerdos cualesquiera del mismo
+  operador, con un número "movido" elegido por los dados, cuentan como si fueran gemelos.
+
+| 20 semillas, nunca vistas | Bien | Mal | No sé |
+|---|---|---|---|
+| gemelos, 8 sumas | 84 % | 0 % | 15 % |
+| gemelos al azar, 8 sumas | 22 % | 25 % | 52 % |
+| gemelos, 10 sumas | 98 % | 0 % | 2 % |
+| gemelos al azar, 10 sumas | 16 % | 28 % | 56 % |
+| gemelos al azar, suma y resta | 17 % | 35 % | 46 % |
+
+- **Lo más defendible de la noche no es el 98 %, es la columna "mal":** con gemelos de verdad nunca afirma algo falso
+  (0 %, 1 % con ruido); con gemelos al azar o respuestas al azar afirma basura (25–35 %). Cuando los datos son
+  coherentes saca propiedades buenas; cuando no, sus propiedades fallan y lo dice el error, no solo el acierto. Y
+  29 % → 84 % → 98 % con 6, 8 y 10 sumas memorizadas es una curva ordenada, no un número suelto.
+- Sigue siendo un resultado del mecanismo de gemelos, no del cardumen (que pone el oído), y el vocabulario llega a
+  "seis": el espacio de acertijos es chico.

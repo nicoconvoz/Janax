@@ -570,6 +570,14 @@ jldi j1, 3Ah                    ; "name:"
 jsub j1, j0, j1
 jjnz j1, st_not_label
 jcall advance
+jld j0, j14, V_PASS             ; in the first pass a label defined twice is an error (FASM says so too): a jump to
+jsub j0, j0, j13                ; it would land on one of the two without anyone knowing which
+jjnz j0, st_label
+jld j1, j14, V_TOK
+jld j2, j14, V_TOKLEN
+jcall find_symbol
+jjnz j1, st_error
+st_label:
 jld j1, j14, V_TOK
 jld j2, j14, V_TOKLEN
 jld j3, j14, V_PC

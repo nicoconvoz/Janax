@@ -77,7 +77,7 @@ MODO  = 10E8h                   ; 1: the riddle heard as one melody (numbers fed
 ENSENA = 10F0h                  ;    what it is (ENSENA, PREGUNTA: the word order taught and asked, 0..3)
 PREGUNTA = 10F8h
 REPS  = 1100h                   ; MODO 4: how many times the shown riddles are heard
-SEED2 = 1108h                   ; its dice
+CIEGOS = 1108h                  ; MODO 4: 1 = blind twins, any two facts (the control of P36)
 CHILD = 1110h                   ; the school's number
 THING = 1118h                   ; the word it says
 BEST  = 1120h                   ; what it guessed (9: nothing)
@@ -100,6 +100,7 @@ RIGHT = 11A8h                   ; riddles: right, asked, without an answer
 ASKED = 11B0h
 NONE  = 11B8h
 MAXG  = 11C0h                   ; its longest word, in greetings
+SEED2 = 11C8h                   ; its dice
 NCAND = 11E0h                   ; how many candidates
 NTRAIN = 11E8h                  ; riddles shown, and asked
 NTEST = 11F0h
@@ -178,7 +179,7 @@ jst j2, j2, RBASE
 jst j2, j2, POS
 jldi j0, 0                      ; the fingerprint
 
-jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 136 bytes (request 5)
+jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 144 bytes (request 5)
 jldi j2, 70h
 jst j2, j1, PLAB
 jldi j10, 4
@@ -190,7 +191,7 @@ jshl j10, j13, j1               ; the handle travels in the high half of the kin
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 136
+jldi j12, 144
 jcall ask
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -1881,6 +1882,22 @@ tw_j:
   jld j7, j4, 0
   jsub j6, j6, j7
   jjnz j6, tw_jnext             ; another operator
+  jldi j1, 0                    ; CIEGOS (the gate of P36): any two facts of the operator, not twins; a throw says
+  jld j6, j1, CIEGOS            ; which number "moved", and the pair counts as if it were a twin
+  jjz j6, tw_real
+  jcall rnd2
+  jldi j6, 1
+  jand j11, j13, j6             ; which number: 0 a, 1 b
+  jldi j6, 3
+  jshl j6, j11, j6
+  jadd j7, j3, j6
+  jld j7, j7, 8
+  jadd j8, j4, j6
+  jld j8, j8, 8
+  jsub j12, j8, j7              ; d
+  jjz j12, tw_jnext
+  jjmp tw_count
+tw_real:
   jld j6, j3, 8                 ; same a, another b: number 1 (b) moved
   jld j7, j4, 8
   jsub j6, j7, j6

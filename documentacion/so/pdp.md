@@ -97,3 +97,11 @@ PDP copia las carpetas del repositorio (`PDP/escalon0/pruebas/...`, `PDP/so/prue
   dos suites (escalón 0 y Janax OS) lo usan para todos sus programas de prueba. FASM sigue como **testigo**
   en la suite del SO (los 82 programas y las combinaciones se comparan con él) y como ensamblador de lo x86
   (el núcleo y el escalón 0).
+
+## Una etiqueta repetida es un error (2026-11-06)
+
+Una etiqueta definida dos veces (`nombre:` dos veces en una fuente) pasaba en silencio: la segunda pisaba a la
+primera y los saltos iban a una de las dos sin que nadie supiera cuál. Pasó dos veces armando los acertijos de Razar.
+Ahora, en la primera pasada, una etiqueta que ya existe es un error (FASM también lo marca); `nombre = valor` se puede
+seguir cambiando. La semilla se actualizó y llega a su punto fijo. Verificado: un programa con una etiqueta repetida
+se rechaza, y los 126 programas del repositorio que tenían binario de referencia salen idénticos byte por byte.
