@@ -463,20 +463,25 @@ ventanilla: *" voluntad_oraciones
   carpeta=
 done
 
-# The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
-# will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit. The will listens to the melody:
-# which top pieces woke and at which step (lee=ritmo, the reading that won the A/B of 2026-11-04). No doors
-# (Capitan, 2026-11-04: they bought nothing measured, and with them the rhythm got stuck).
-huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 rounds=200 huella=1 lee=ritmo)
-# and the will says how it went, the same line as the model: its hits every 50 rounds
-aciertos_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" nace=7 armonia=1 rounds=200 lee=ritmo | tail -1 | tr -d '\r')
-familia familia_lazo cardumen_lazo
-caso "razar: la voluntad y el cardumen conversan como en el modelo" 0 0 "$fijo0
+# The loop a lo Janax: the will and the school are two cabins that talk in words (requests 30, 31); the rounds give
+# the fingerprint of the model's loop, bit for bit. The will listens to the melody: which top pieces woke and at which
+# step (lee=ritmo, the reading that won the A/B of 2026-11-04). No doors (Capitan, 2026-11-04). It reads its
+# parameters from the file "p" (side, things, rounds, seed; a cube of any side up to 7, Capitan, 2026-11-06): the
+# classic 4x4x4 with 4 things, and the 7x7x7 with 16 things of the result against EGG. And it says how it went, the
+# same line as the model: its hits every 50 rounds.
+for conf in "4 4 200 7" "7 16 200 7"; do
+  set -- $conf
+  huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" n=$1 k=$2 rounds=$3 nace=$4 armonia=1 huella=1 lee=ritmo)
+  aciertos_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" n=$1 k=$2 rounds=$3 nace=$4 armonia=1 lee=ritmo | tail -1 | tr -d '\r')
+  familia familia_lazo cardumen_lazo
+  perl -e 'print pack("Q<4", @ARGV)' $1 $2 $3 $4 > "$salida/familia_lazo/70"
+  caso "razar: la voluntad y el cardumen conversan como en el modelo ($1^3, $2 cosas)" 0 0 "$fijo0
 $aciertos_lazo
 P1 codigo=0 j0=* t=*
 P0 codigo=0 j0=$huella_lazo t=*
 ventanilla: *" voluntad
-carpeta=
+  carpeta=
+done
 
 # --- files: labels with any character, kept in the system's own folder ---
 caso "archivo: guardar" 0 0 "$fijo0

@@ -239,3 +239,5 @@ que el modelo en los tres motores; traductor 153 ms contra Perl 752 ms.
 misma huella que el modelo en los tres motores, 30 de 30 palabras en la tercera pasada, ~9 veces más rápido que Perl.
 2026-11-06 — Pieza 5 en Janax: las oraciones con ruido, con parámetros desde un archivo; bit por bit con el modelo y la
 misma línea letra por letra; ~44 veces más rápido que Perl.
+2026-11-06 — Pieza 4 en Janax: el cubo de tamaño libre (hasta 7); el resultado contra EGG (7³, 16 cosas) corre en Janax
+bit por bit, 243 ms contra ~4,7 s de Perl. Las cinco piezas del traslado están en Janax.

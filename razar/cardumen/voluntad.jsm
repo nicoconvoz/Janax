@@ -1,40 +1,52 @@
-; Razar's will (Capitan, 2026-11-03), a lo Janax: the kernel that listens to the school's melody and answers it.
-; It launches its child "hijo" (the school, cardumen_lazo.jsm), and the two talk in words (Capitan, 2026-11-06: the
-; greeting carries a word; requests 30 say and 31 read): the will says an order, the school answers in words. Each
-; keeps its own copy of "the box", which the words fill.
+; Razar's will (Capitan, 2026-11-03), a lo Janax: the kernel that listens to the school's melody and answers it,
+; with a cube of any side up to 7 and any number of things (Capitan, 2026-11-06: everything in Janax). It reads its
+; parameters from the file "p" (four qwords: the cube's side n, how many things k, how many rounds, the school's
+; seed), launches its child "hijo" (the school, cardumen_lazo.jsm), has it born (order 2), and the two talk in words
+; (requests 30 say and 31 read).
 ;
-; The will has 4 things to say; it says one waking 3 bottom pieces. It reads the answer as a melody (which top pieces
-; woke, and at which step) with what it learned: for each thing, the share of times each top piece woke at that step
-; when it said it (it knows what it meant, so it learns every round), and guesses. Right: it sounds the melody once
-; more (the school settles it). Wrong: it moves one of the pieces it says that thing with. Its dice have a fixed
-; seed (12345), so every run is the same run. 200 rounds, then the school's own fingerprint is mixed in: j0 is the
-; fingerprint of lazo.pl (nace=7 armonia=1 rounds=200 huella=1 lee=ritmo), bit for bit.
+; It says each thing waking 3 bottom pieces. It reads the answer as a melody (which top pieces woke, and at which
+; step) with what it learned: for each thing, the share of times each top piece woke at that step when it said it
+; (it knows what it meant, so it learns every round), and guesses. Right: it sounds the melody once more (the school
+; settles it). Wrong: it moves one of the pieces it says that thing with. Its dice have a fixed seed (12345), so
+; every run is the same run. At the end the school's own fingerprint is mixed in: j0 is the fingerprint of lazo.pl
+; (armonia=1 huella=1 lee=ritmo, with the same n, k, rounds and seed), bit for bit; and it writes its hits every 50
+; rounds, the same line as the model.
 ;
-; Room 0 (A000h bytes):
+; Room 0 (2000h bytes); what it learned lives in a room of its own, as big as it needs (request 2).
 QUEUE = 100h                    ; its window: one request
-HIJO = 200h                    ; "hijo"
-SAY   = 300h                    ; how it says thing m: 3 bottom pieces at SAY + m*4, in order
-READ  = 2000h                   ; what it learned: thing g, top piece 48 + j heard at step t READ + ((g*16 + j)*64 + t)*8
-                                ; times (a step is below 64: each step wakes someone new, or the wave ends)
+HIJO  = 200h                    ; "hijo"
+PLAB  = 210h                    ; "p", the parameters file
+NSV   = 220h                    ; the parameters: the side n
+KV    = 228h                    ; how many things
+RNDS  = 230h                    ; how many rounds
+NACEV = 238h                    ; the school's seed
+M48   = 248h                    ; 2^48 - 1
+SEED  = 250h                    ; its dice
+CHILD = 258h                    ; the school's number
+ROUND = 260h
+ANS   = 268h                    ; the answer: bit j = top piece j woke
+THING = 270h                    ; what it means this round
+BEST  = 278h                    ; what it guessed (-1: nothing yet)
+BSUM  = 280h                    ; the best share so far: BSUM / BTOT
+BTOT  = 288h
+CNT   = 290h                    ; how many top pieces woke
+OKC   = 298h                    ; hits in this block of 50 rounds
+POS   = 2A0h                    ; how long the line of hits is so far
+WORD  = 2A8h                    ; the word it is saying
+NNV   = 2B0h                    ; a face: n^2
+PV    = 2B8h                    ; pieces: n^3 (a wave lasts fewer steps than there are pieces: each step wakes someone)
+PSZ   = 2C0h                    ; P * 8: the stride of a top piece in what it learned
+GSZ   = 2C8h                    ; n^2 * P * 8: the stride of a thing
+RBASE = 2D0h                    ; where what it learned lives: thing g, top piece j heard at step t at
+                                ; RBASE + g * GSZ + j * PSZ + t * 8 (times)
+FP    = 2D8h                    ; the school's fingerprint, said at the end
+MAIL  = 2E0h                    ; a letter read from its mailbox: who said it, the word
+SAY   = 300h                    ; how it says thing m: 3 bottom pieces at SAY + m*4, in order (up to 192 things)
 HEARD = 600h                    ; top pieces heard for each thing, in all (a qword each)
-SEED  = 640h                    ; its dice
-M48   = 648h                    ; 2^48 - 1
-BOX   = 650h                    ; the box's address: LBOX, its own copy
-LBOX  = 700h                    ; the box, as the words fill it (64 bytes)
-MAIL  = 740h                    ; a letter read from its mailbox: who said it, the word
-CHILD = 658h                    ; the school's number
-ROUND = 660h
-ANS   = 668h                    ; the answer: bit j = top piece 48 + j woke
-THING = 670h                    ; what it means this round
-BEST  = 678h                    ; what it guessed (-1: nothing yet)
-BSUM    = 680h                    ; the best share so far: BSUM / BTOT
-BTOT    = 688h
-CNT   = 690h                    ; how many top pieces woke
-OKC   = 6A0h                    ; hits in this block of 50 rounds
-POS   = 6A8h                    ; how long the line of hits is so far
-TEXT  = 800h                    ; the line of hits it writes at the end
+STB   = 0C00h                   ; the answer: the step each top piece woke at (a byte each)
+TEXT  = 1000h                   ; the line of hits it writes at the end
 include '../../escalon0/janax.inc'
-jfirst j1, 0A000h              ; first order: room 0
+jfirst j1, 2000h               ; first order: room 0
 
 jldi j1, 1                      ; 2^48 - 1
 jldi j2, 48
@@ -46,45 +58,38 @@ jst j1, j2, M48
 jldi j1, 3039h                  ; its dice: seed 12345
 jst j1, j2, SEED
 jldi j0, 0                      ; the fingerprint
-jldi j1, 0                      ; how it went: "aciertos cada 50 vueltas (el azar es 25%):" and a block every 50
-jldi j2, 736Fh
-jshi j2, 7472h
-jshi j2, 6569h
-jshi j2, 6361h
-jst j2, j1, TEXT + 0
-jldi j2, 3035h
-jshi j2, 2061h
-jshi j2, 6461h
-jshi j2, 6320h
-jst j2, j1, TEXT + 8
-jldi j2, 7361h
-jshi j2, 746Ch
-jshi j2, 6575h
-jshi j2, 7620h
-jst j2, j1, TEXT + 16
-jldi j2, 617Ah
-jshi j2, 6120h
-jshi j2, 6C65h
-jshi j2, 2820h
-jst j2, j1, TEXT + 24
-jldi j2, 2535h
-jshi j2, 3220h
-jshi j2, 7365h
-jshi j2, 2072h
-jst j2, j1, TEXT + 32
-jldi j2, 2020h
-jshi j2, 2020h
-jshi j2, 2020h
-jshi j2, 3A29h
-jst j2, j1, TEXT + 40
-jldi j2, 42                     ; rounds, as the model says it
-jst j2, j1, POS
-jldi j2, 0
-jst j2, j1, OKC
 
-jldi j1, 0                      ; its copy of the box, in its own room: the words fill it
-jldi j2, LBOX
-jst j2, j1, BOX
+jldi j1, 70h                    ; its parameters: open "p" (request 4) and read 32 bytes (request 5)
+jst j1, j2, PLAB
+jldi j10, 4
+jldi j11, PLAB
+jldi j12, 1
+jcall ask
+jldi j1, 32
+jshl j10, j13, j1
+jldi j1, 5
+jor j10, j10, j1
+jldi j11, NSV
+jldi j12, 32
+jcall ask
+jldi j13, 0                     ; its sizes
+jld j1, j13, NSV
+jmul j2, j1, j1
+jst j2, j13, NNV
+jmul j3, j2, j1
+jst j3, j13, PV
+jldi j4, 8
+jmul j4, j3, j4
+jst j4, j13, PSZ
+jmul j4, j4, j2
+jst j4, j13, GSZ
+jld j5, j13, KV                 ; what it learned: a room of k * GSZ bytes (request 2)
+jmul j11, j4, j5
+jldi j10, 2
+jcall ask
+jldi j1, 0
+jst j13, j1, RBASE
+
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
@@ -99,9 +104,32 @@ jldi j12, 4
 jcall ask
 jldi j1, 0
 jst j13, j1, CHILD
+jld j2, j1, NACEV               ; the school is born: order 2, side n, the seed
+jldi j3, 16
+jshl j2, j2, j3
+jld j3, j1, NSV
+jldi j4, 8
+jshl j3, j3, j4
+jor j2, j2, j3
+jldi j3, 2
+jor j2, j2, j3
+jst j2, j1, WORD
+jcall say
+
+jldi j7, 0                      ; the line of hits: "aciertos cada 50 vueltas (el azar es " 100 / k "%):"
+jcall f1
+jldi j1, 0
+jldi j2, 100
+jld j3, j1, KV
+jdiv j2, j2, j3
+jcall putnum
+jcall f2
+jldi j1, 0
+jst j7, j1, POS
+jst j1, j1, OKC
 
 jldi j1, 0                      ; how it says each thing: 3 different bottom pieces from its dice, in order
-jldi j2, 4
+jld j2, j1, KV
 jwhile j2
   jldi j3, 4
   jmul j4, j1, j3               ; SAY + m*4
@@ -112,23 +140,23 @@ jwhile j2
   jsub j2, j2, j3
 jwend
 
-jldi j1, 0                      ; 200 rounds
+jldi j1, 0                      ; the rounds
 jst j1, j1, ROUND
-jldi j15, 200
+jld j15, j1, RNDS
 jwhile j15
   jldi j1, 0
   jld j2, j1, ROUND
-  jldi j3, 3
-  jand j2, j2, j3
+  jld j3, j1, KV
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j2, j2, j4
   jst j2, j1, THING             ; what it means, in turn
   jldi j3, 1                    ; the order: a signal, with its 3 pieces
   jcall order
-  jldi j1, 0                    ; the answer and how many pieces it has
-  jld j4, j1, BOX
-  jld j2, j4, 16
-  jst j2, j1, ANS
+  jldi j1, 0                    ; how many pieces the answer has
+  jld j2, j1, ANS
   jldi j3, 0
-  jldi j5, 16
+  jld j5, j1, NNV
   jwhile j5
     jldi j6, 1
     jand j7, j2, j6
@@ -146,7 +174,7 @@ jwhile j15
   jldi j2, 1
   jst j2, j1, BTOT
   jldi j8, 0                    ; thing g
-  jldi j9, 4
+  jld j9, j1, KV
   jwhile j9
     jldi j1, 0
     jldi j3, 3
@@ -154,31 +182,34 @@ jwhile j15
     jld j10, j3, HEARD          ; what it heard for g
     jjz j10, g_next
     jld j2, j1, ANS             ; s = what it heard of these pieces, at these steps, for g
-    jld j12, j1, BOX            ; the step of top piece j at box + 48 + j
+    jldi j12, 0                 ; top piece j
     jldi j11, 0
-    jldi j3, 13
-    jshl j4, j8, j3             ; READ + g*16*64*8
-    jldi j5, 16
+    jld j4, j1, GSZ
+    jmul j4, j8, j4
+    jld j3, j1, RBASE
+    jadd j4, j4, j3             ; where thing g starts
+    jld j5, j1, NNV
     jwhile j5
       jldi j6, 1
       jand j7, j2, j6
       jjz j7, s_next
-      jldb j7, j12, 48
+      jldb j7, j12, STB         ; its step
       jldi j6, 3
       jshl j7, j7, j6
       jadd j7, j7, j4
-      jld j7, j7, READ
+      jld j7, j7, 0
       jadd j11, j11, j7
     s_next:
       jldi j6, 1
       jshr j2, j2, j6
       jadd j12, j12, j6
-      jldi j6, 512
+      jldi j6, 0
+      jld j6, j6, PSZ
       jadd j4, j4, j6
       jldi j6, 1
       jsub j5, j5, j6
     jwend
-    jld j3, j1, BTOT              ; better if s * BTOT > BSUM * heard
+    jld j3, j1, BTOT            ; better if s * BTOT > BSUM * heard
     jmul j3, j11, j3
     jld j4, j1, BSUM
     jmul j4, j4, j10
@@ -199,39 +230,45 @@ jwhile j15
   jldi j6, 63
   jsar j3, j2, j6
   jjz j3, guessed               ; something it learned helps
-  jcall rnd                     ; nothing yet: a guess
-  jldi j6, 3
-  jand j2, j13, j6
+  jcall rnd                     ; nothing yet: a guess, its dice mod k
   jldi j1, 0
+  jld j6, j1, KV
+  jdiv j2, j13, j6
+  jmul j2, j2, j6
+  jsub j2, j13, j2
   jst j2, j1, BEST
 guessed:
   jldi j1, 0                    ; it knows what it meant: it learns what that sounded like
   jld j8, j1, THING
   jld j2, j1, ANS
-  jld j12, j1, BOX
-  jldi j3, 13
-  jshl j4, j8, j3
-  jldi j5, 16
+  jldi j12, 0
+  jld j4, j1, GSZ
+  jmul j4, j8, j4
+  jld j3, j1, RBASE
+  jadd j4, j4, j3
+  jld j5, j1, NNV
   jwhile j5
     jldi j6, 1
     jand j7, j2, j6
     jjz j7, r_next
-    jldb j7, j12, 48
+    jldb j7, j12, STB
     jldi j3, 3
     jshl j7, j7, j3
     jadd j7, j7, j4
-    jld j3, j7, READ
+    jld j3, j7, 0
     jadd j3, j3, j6
-    jst j3, j7, READ
+    jst j3, j7, 0
   r_next:
     jldi j6, 1
     jshr j2, j2, j6
     jadd j12, j12, j6
-    jldi j6, 512
+    jldi j6, 0
+    jld j6, j6, PSZ
     jadd j4, j4, j6
     jldi j6, 1
     jsub j5, j5, j6
   jwend
+  jldi j1, 0
   jldi j3, 3
   jshl j3, j8, j3
   jld j7, j3, HEARD
@@ -315,88 +352,61 @@ jcall ask
 jldi j3, 3                      ; the end: the school's own fingerprint, mixed in
 jcall order
 jldi j1, 0
-jld j4, j1, BOX
-jld j12, j4, 32
+jld j12, j1, FP
 jcall mix
 jhalt
 
-; One request through the window: kind j10, a = j11, b = j12 -> j13 = its answer. Uses j14.
-ask:
-  jldi j14, 1
-  jldi j13, 0
-  jst j14, j13, QUEUE
-  jst j10, j13, QUEUE + 8
-  jst j11, j13, QUEUE + 16
-  jst j12, j13, QUEUE + 24
-  jldi j14, QUEUE
-  jsys j14, j14
-  jldi j13, 0
-  jld j13, j13, QUEUE + 32
-  jret
-
-; Order j3 to the school (1 a signal with the pieces of THING, 3 the end), said as one word (request 30); then it
-; reads the school's answer from its mailbox into its box. Uses j1-j4, j6, j10-j14.
+; Order j3 to the school (1 a signal with the pieces of THING, 3 the end), said as one word (request 30): the order in
+; the low byte, the 3 pieces in the next three. Then it reads the school's answer: the end, one word (its
+; fingerprint, to FP); a signal, which top pieces woke (to ANS) and then the step of each, 8 per word (to STB).
+; Uses j1-j8, j10-j14.
 order:
   jldi j1, 0
-  jld j4, j1, BOX
-  jst j3, j4, 0
   jld j2, j1, THING
   jldi j1, 4
   jmul j2, j2, j1
-  jldb j1, j2, SAY
-  jstb j1, j4, 8
-  jldb j1, j2, SAY + 1
-  jstb j1, j4, 9
-  jldb j1, j2, SAY + 2
-  jstb j1, j4, 10
-  jldb j12, j4, 10              ; the order as one word: the order in the low byte, the 3 pieces in the next three
+  jldb j12, j2, SAY + 2
   jldi j1, 8
   jshl j12, j12, j1
-  jldb j2, j4, 9
-  jor j12, j12, j2
+  jldb j4, j2, SAY + 1
+  jor j12, j12, j4
   jshl j12, j12, j1
-  jldb j2, j4, 8
-  jor j12, j12, j2
+  jldb j4, j2, SAY
+  jor j12, j12, j4
   jshl j12, j12, j1
   jor j12, j12, j3
-  jldi j10, 30                  ; said to the school (request 30)
   jldi j1, 0
-  jld j11, j1, CHILD
-  jcall ask
-  jldi j1, 3                    ; and it reads its answer: the end, one word (its fingerprint) to box + 32; a
-  jsub j1, j3, j1               ; signal, three (which top pieces woke, and the step of each) to box + 16, 48, 56
+  jst j12, j1, WORD
+  jcall say
+  jldi j1, 3
+  jsub j1, j3, j1
   jjnz j1, o_signal
-  jldi j6, 32
   jcall hear
-  jret
-o_signal:
-  jldi j6, 16
-  jcall hear
-  jldi j6, 48
-  jcall hear
-  jldi j6, 56
-  jcall hear
-  jret
-
-; The next word from its mailbox (request 31) to box + j6; while it is empty it sleeps until the doorbell (29),
-; and looks again. Uses j1, j2, j10-j14.
-hear:
-  jldi j10, 31
-  jldi j11, MAIL
-  jldi j12, 16
-  jcall ask
-  jldi j1, 1
-  jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jjmp hear
-h_got:
   jldi j1, 0
   jld j2, j1, MAIL + 8
-  jld j1, j1, BOX
-  jadd j1, j1, j6
-  jst j2, j1, 0
+  jst j2, j1, FP
+  jret
+o_signal:
+  jcall hear
+  jldi j1, 0
+  jld j2, j1, MAIL + 8
+  jst j2, j1, ANS
+  jld j5, j1, NNV               ; (n^2 + 7) / 8 words of steps
+  jldi j2, 7
+  jadd j5, j5, j2
+  jldi j2, 3
+  jshr j5, j5, j2
+  jldi j7, 0
+  jwhile j5
+    jcall hear
+    jldi j1, 0
+    jld j2, j1, MAIL + 8
+    jst j2, j7, STB
+    jldi j1, 8
+    jadd j7, j7, j1
+    jldi j1, 1
+    jsub j5, j5, j1
+  jwend
   jret
 
 ; One block of hits added to the line: " %3d%%" of 100 * hits / 50 (= 2 * hits), as the model prints it; the block's
@@ -441,6 +451,85 @@ bk_t:
   jst j2, j1, OKC
   jret
 
+; j2 (0..999) in decimal at TEXT + j7; j7 moves past it. Uses j1-j4.
+putnum:
+  jldi j3, 100
+  jdiv j4, j2, j3
+  jjz j4, pn_tens
+  jldi j1, 30h
+  jadd j1, j1, j4
+  jstb j1, j7, TEXT
+  jldi j1, 1
+  jadd j7, j7, j1
+  jmul j4, j4, j3
+  jsub j2, j2, j4
+  jldi j3, 10                   ; a middle zero is written
+  jdiv j4, j2, j3
+  jjmp pn_ten
+pn_tens:
+  jldi j3, 10
+  jdiv j4, j2, j3
+  jjz j4, pn_unit
+pn_ten:
+  jldi j1, 30h
+  jadd j1, j1, j4
+  jstb j1, j7, TEXT
+  jldi j1, 1
+  jadd j7, j7, j1
+  jmul j4, j4, j3
+  jsub j2, j2, j4
+pn_unit:
+  jldi j1, 30h
+  jadd j1, j1, j2
+  jstb j1, j7, TEXT
+  jldi j1, 1
+  jadd j7, j7, j1
+  jret
+
+; One request through the window: kind j10, a = j11, b = j12 -> j13 = its answer. Uses j14.
+ask:
+  jldi j14, 1
+  jldi j13, 0
+  jst j14, j13, QUEUE
+  jst j10, j13, QUEUE + 8
+  jst j11, j13, QUEUE + 16
+  jst j12, j13, QUEUE + 24
+  jldi j14, QUEUE
+  jsys j14, j14
+  jldi j13, 0
+  jld j13, j13, QUEUE + 32
+  jret
+
+; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
+; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+hear:
+  jldi j10, 31
+  jldi j11, MAIL
+  jldi j12, 16
+  jcall ask
+  jldi j1, 1
+  jsub j1, j13, j1
+  jjz j1, h_got
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+  jjmp hear
+h_got:
+  jret
+h_alone:
+  jhalt
+
+; Says WORD to the school (request 30). Uses j10-j14.
+say:
+  jldi j13, 0
+  jld j12, j13, WORD
+  jldi j10, 30
+  jld j11, j13, CHILD
+  jcall ask
+  jret
+
 ; Its dice: seed = (seed * 1103515245 + 12345) mod 2^31 -> j13 = it. Uses j14.
 rnd:
   jldi j13, 0
@@ -458,15 +547,18 @@ rnd:
   jadd j13, j14, j13
   jret
 
-; Thing at SAY + j4 has j5 pieces: new ones from its dice (mod 16, a bottom piece) until it has 3 different, then
+; Thing at SAY + j4 has j5 pieces: new ones from its dice (mod n^2, a bottom piece) until it has 3 different, then
 ; in order. Uses j5-j7, j13, j14.
 fill:
   jldi j6, 3
-  jsub j6, j6, j5                 ; how many are missing
+  jsub j6, j6, j5               ; how many are missing
   jwhile j6
     jcall rnd
-    jldi j7, 15
-    jand j13, j13, j7           ; the piece
+    jldi j7, 0
+    jld j7, j7, NNV
+    jdiv j14, j13, j7
+    jmul j14, j14, j7
+    jsub j13, j13, j14          ; the piece
     jjz j5, f_new               ; it has none yet
     jldb j14, j4, SAY           ; is it one it has?
     jsub j14, j14, j13
@@ -523,4 +615,96 @@ mix:
   jldi j13, 0
   jld j14, j13, M48
   jand j0, j0, j14
+  jret
+
+; A fixed piece of the line of hits at TEXT + j7; j7 moves past it. Uses j1.
+f1:
+  jldi j1, 97
+  jstb j1, j7, TEXT + 0
+  jldi j1, 99
+  jstb j1, j7, TEXT + 1
+  jldi j1, 105
+  jstb j1, j7, TEXT + 2
+  jldi j1, 101
+  jstb j1, j7, TEXT + 3
+  jldi j1, 114
+  jstb j1, j7, TEXT + 4
+  jldi j1, 116
+  jstb j1, j7, TEXT + 5
+  jldi j1, 111
+  jstb j1, j7, TEXT + 6
+  jldi j1, 115
+  jstb j1, j7, TEXT + 7
+  jldi j1, 32
+  jstb j1, j7, TEXT + 8
+  jldi j1, 99
+  jstb j1, j7, TEXT + 9
+  jldi j1, 97
+  jstb j1, j7, TEXT + 10
+  jldi j1, 100
+  jstb j1, j7, TEXT + 11
+  jldi j1, 97
+  jstb j1, j7, TEXT + 12
+  jldi j1, 32
+  jstb j1, j7, TEXT + 13
+  jldi j1, 53
+  jstb j1, j7, TEXT + 14
+  jldi j1, 48
+  jstb j1, j7, TEXT + 15
+  jldi j1, 32
+  jstb j1, j7, TEXT + 16
+  jldi j1, 118
+  jstb j1, j7, TEXT + 17
+  jldi j1, 117
+  jstb j1, j7, TEXT + 18
+  jldi j1, 101
+  jstb j1, j7, TEXT + 19
+  jldi j1, 108
+  jstb j1, j7, TEXT + 20
+  jldi j1, 116
+  jstb j1, j7, TEXT + 21
+  jldi j1, 97
+  jstb j1, j7, TEXT + 22
+  jldi j1, 115
+  jstb j1, j7, TEXT + 23
+  jldi j1, 32
+  jstb j1, j7, TEXT + 24
+  jldi j1, 40
+  jstb j1, j7, TEXT + 25
+  jldi j1, 101
+  jstb j1, j7, TEXT + 26
+  jldi j1, 108
+  jstb j1, j7, TEXT + 27
+  jldi j1, 32
+  jstb j1, j7, TEXT + 28
+  jldi j1, 97
+  jstb j1, j7, TEXT + 29
+  jldi j1, 122
+  jstb j1, j7, TEXT + 30
+  jldi j1, 97
+  jstb j1, j7, TEXT + 31
+  jldi j1, 114
+  jstb j1, j7, TEXT + 32
+  jldi j1, 32
+  jstb j1, j7, TEXT + 33
+  jldi j1, 101
+  jstb j1, j7, TEXT + 34
+  jldi j1, 115
+  jstb j1, j7, TEXT + 35
+  jldi j1, 32
+  jstb j1, j7, TEXT + 36
+  jldi j1, 37
+  jadd j7, j7, j1
+  jret
+
+; A fixed piece of the line of hits at TEXT + j7; j7 moves past it. Uses j1.
+f2:
+  jldi j1, 37
+  jstb j1, j7, TEXT + 0
+  jldi j1, 41
+  jstb j1, j7, TEXT + 1
+  jldi j1, 58
+  jstb j1, j7, TEXT + 2
+  jldi j1, 3
+  jadd j7, j7, j1
   jret

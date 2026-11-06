@@ -945,3 +945,21 @@ palabras sacadas con los dados del modelo; y oye las 20 palabras que nunca oyó.
   (80 corridas) pasa de ~23 minutos a ~30 segundos.
 - Lo que atajó el ensamblador propio en el camino: una etiqueta que quedó en otra rutina al separarlas, y un
   comentario con un salto de línea de verdad adentro (generado mal por Doc).
+
+**Pieza 4: el cubo de tamaño libre** (`cardumen_lazo.jsm` y `voluntad.jsm`, reescritos generales). La voluntad lee del
+archivo `p` el lado del cubo, la cantidad de cosas, las vueltas y la semilla, y hace nacer al cardumen (orden 2: lado y
+semilla). Todo lo que decía 64, 48 o 16 sale del lado: piezas = lado³, la cara de abajo (lado²) y la de arriba. Las
+vecinas y el paso en que despertó cada pieza pasan a un qword cada uno (−1 = no hay / no despertó), porque en 7³ hay 343
+piezas y un byte llega a 255. La tabla de lo aprendido se pide a medida al sistema (pedido 2): cosas × lado² × piezas ×
+8 bytes (32 KB en 4³ con 4 cosas; 2,1 MB en 7³ con 16). Límite: las tablas del cardumen quedan debajo de lo que alcanza
+un desplazamiento de carga (7FFFh), y eso fija el lado en 7 como máximo; más grande pondría sus direcciones en registros.
+- **Bit por bit con el modelo en los tres motores**: 4³ con 4 cosas (`000094454451C2E4`, la línea de siempre) y **7³ con
+  16 cosas, el resultado contra EGG** (`00009756E346EC1F`, "46 % 92 % 94 % 92 %"). Tiempo 7³: Janax 243 ms, Perl ~4,7 s.
+- ⚠️ Un error de Doc que costó buscar: las variables del cardumen quedaron pegadas a la cola de pedidos (110h–128h), y
+  cada pedido al sistema les escribía encima el tamaño del cubo. La cola son 40 bytes y ahí no puede vivir nada más.
+- ⚠️ Y otro que la búsqueda destapó: si el otro camarote muere, la rutina de oír reintentaba para siempre (el timbre
+  contesta −1, "ya no queda nadie que pueda saludarte", y se volvía a esperar). Era un bucle que gasta por nada; ahora
+  termina. En las cinco voluntades y cardúmenes de Janax.
+
+Con esto, **las cinco piezas del traslado están en Janax**: olas que se cruzan, palabra como canción, oído de palabras
+enteras, cubo de tamaño libre y oraciones con ruido. Perl queda de vara.
