@@ -48,7 +48,7 @@ db ' (lo que sigue, igual: ', 0
 times 580h - $ db 0
 db ' de ', 0
 times 5C0h - $ db 0
-db ' DA VUELTA', 0
+db ' (la negacion)', 0
 times 600h - $ db 0
 db 'propiedad 2: dicho de nuevo, lo que sigue queda igual ', 0
 times 640h - $ db 0
@@ -70,3 +70,13 @@ db '      donde: ', 0
 times 840h - $ db 0
 db ' bits | ', 0
 times 880h - $ db 0
+db 'negacion destilada (las cinco de Razar): pasan la 1: ', 0
+times 8C0h - $ db 0
+db ', la 2: ', 0
+times 900h - $ db 0
+db ', puerta ancha: ', 0
+times 940h - $ db 0
+db ', sobre todo la puerta: ', 0
+times 980h - $ db 0
+db ' | interruptores:', 0
+times 9C0h - $ db 0

@@ -274,3 +274,38 @@ preguntas son las de Razar:
 **Lo que falta, y es la causa:** el pulso encuentra "las palabras que se pueden sacar" (propiedad 1), no "la negación".
 Razar la destiló con cinco propiedades y encontró una sola: *no*. Hay que traer esas cinco a la regla global, para que
 el interruptor salga destilado y no declarado; entonces el estudio de lo irregular corre sobre él solo.
+
+# La negación destilada: las cinco de Razar en la regla global (2026-11-06)
+
+Pedido del Capitán: *"primero destilé la negación, eso lo tenés en el Razar antiguo, y te dije que lo metieras en la
+regla global"*. Módulo nuevo: `razar/lectura/negacion.inc` (`distill_no`), portado de `rz_lexicon_switches` tal como
+Razar lo mide, todo contra el propio libro: (1) se saca y lo que queda está dicho, más que para cualquier palabra; (2)
+cuando aparece, lo que sigue cambia, contra las que pasaron la 1; (3) no es cosa nombrada (Razar no la usa: acá
+tampoco); (4) la puerta más ancha, muchos delante y muchos actos detrás en ese orden, cortada donde los anchos se
+parten en dos; (5) sobre todo la puerta, cortada igual; y lo que está adentro de la puerta de otro ("no la envió") es
+lo que se da vuelta, no lo que da vuelta. Reemplaza a la propiedad 2 de una sola palabra, que se sacó.
+
+**La primera corrida dio "hermanos".** El "no" pasaba las cinco, pero quedaba "adentro" de "ya", "yo", "si", porque
+"ya, no" se leía "ya no": **nuestro lector tiraba la puntuación**, y Razar la lee como pieza. Medido con una variante
+de prueba (la puntuación como pieza): sale **"no", solo**. Arreglado en la raíz con una regla general, no una lista:
+en `lectura.inc` **todo carácter que no es letra, dígito ni espacio es una pieza propia** (coma, punto, «», ¿, ¡, raya;
+los de varios bytes de UTF-8 enteros), y los dígitos forman palabra con las letras.
+
+## Medición (todo idéntico en los tres motores)
+
+```
+negacion destilada (las cinco de Razar): pasan la 1: 906, la 2: 327, puerta ancha: 2, sobre todo la puerta: 1
+| interruptores: no
+```
+
+- **Estudio de lo irregular sobre el "no" destilado** (pulso, libro entero, `0000DBB0FB65420D`): "el que cree / el que
+  no cree, ya está condenado", "yo no soy el mesías", "el sábado ha sido hecho para el hombre, y no el hombre para el
+  sábado", "sea que ustedes coman, sea que beban" (¿por qué esta vez **sin** no?). Nadie nombró el "no".
+- **Pulso con 1 de cada 10 apartado** (`0000E0E1D4CE3C48`): gemelos 86,6 % contra 22,0 % ciego; interruptores 58,2 %
+  contra 40,9 %; asociados 14,7 % contra 6,0 %; puertas 70 contra 0. La coma es ahora el interruptor que más paga.
+- **Lector** (`000042AEB68DF6F2`): 200.133 piezas (antes 167.963 palabras); eco 7,0 %, izquierda 18,6 %, dos lados
+  34,1 %. **No se compara con el 28,4 % anterior**: ahora también se tapan y adivinan los signos.
+- **Pregunta** (`0000FE5D145CE193`): las respuestas buenas siguen (Isaac, Aram, Josafat, Abraham) y ahora dicen por qué:
+  "con , (se saca)" — "Isaac, padre de Jacob" leído como "Isaac padre de Jacob". **Pero aparece basura**: un signo
+  llena un hueco (", padre de jacob") y piezas como "ustedes" arman "el padre de , padre de judá". Falta saber qué
+  llena el hueco de un "¿quién?": una identidad (P37, tipos e identidades), no un signo.

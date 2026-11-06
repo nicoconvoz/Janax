@@ -47,11 +47,7 @@ S_PCS   = 440h
 S_BLIND = 480h
 S_BITS  = 4C0h
 S_PAIRS = 500h
-S_STAYS = 540h
-S_OF    = 580h
 S_FLIPS = 5C0h
-S_P2    = 600h
-S_P2T   = 640h
 S_QHEAD = 680h
 S_Q1    = 6C0h
 S_Q2    = 700h
@@ -60,6 +56,11 @@ S_Q4    = 780h
 S_Q5    = 7C0h
 S_Q6    = 800h
 S_QB    = 840h
+S_NEG   = 880h
+S_NEG2  = 8C0h
+S_NEG3  = 900h
+S_NEG4  = 940h
+S_NEG5  = 980h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -67,6 +68,7 @@ jfirst j1, 10000h              ; first order: room 0
 jldi j0, 0                      ; the fingerprint
 jcall read_book
 jcall learn_pulses
+jcall distill_no
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
@@ -115,38 +117,39 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, JLEFT
 jwend
-jldi j1, S_P2                   ; property 2: the bar, and the switches that turn
+jcall flush                     ; the switch, distilled by the five properties
+jldi j1, S_NEG
 jcall puts
-jld j2, j1, BASES
+jld j2, j1, NP1
 jcall putmix
-jldi j1, S_OF
+jldi j1, S_NEG2
 jcall puts
-jld j2, j1, BASEN
+jld j2, j1, NP2
 jcall putmix
-jld j2, j1, BASES
-jld j3, j1, BASEN
-jcall putpct
-jldi j1, S_P2T
+jldi j1, S_NEG3
+jcall puts
+jld j2, j1, NP4
+jcall putmix
+jldi j1, S_NEG4
+jcall puts
+jld j2, j1, NP5
+jcall putmix
+jldi j1, S_NEG5
 jcall puts
 jldi j9, 0
-jld j10, j1, RMASK
-jldi j2, 1
-jadd j10, j10, j2
+jld j10, j1, NNEG
 jwhile j10
-  jldi j1, 0
-  jldi j11, 64
-  jmul j11, j9, j11
-  jld j2, j1, ROOMD
-  jadd j11, j11, j2
-  jld j2, j11, 0
-  jjz j2, tv_next
-  jld j2, j11, 56
-  jjz j2, tv_next
   jldi j2, 32
   jcall putch
-  jld j2, j11, 16
+  jldi j1, 0
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j3, j1, NEGL
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jadd j12, j2, j1
+  jcall mix
   jcall putword
-tv_next:
   jldi j2, 1
   jadd j9, j9, j2
   jsub j10, j10, j2
@@ -157,9 +160,9 @@ jcall questions
 jjmp finish
 
 ; The questions it asks itself (Capitan, 2026-11-06: "study the irregular and stop chasing what repeats"). A place said
-; both ways, plain and with a switch that pays in front, has a rule (the way it was said most) and exceptions: an
-; exception asks "why this time the switch?" (where it is mostly said plain) or "why this time without it?" (plain where
-; it is mostly said with it). A tie has no rule and asks nothing. They are ordered by the bits the exception surprises
+; both ways, plain and with the switch distilled (negacion.inc) in front, has a rule (the way it was said most) and
+; exceptions: an exception asks "why this time the switch?" (where it is mostly said plain) or "why this time without
+; it?" (plain where it is mostly said with it). A tie has no rule and asks nothing. They are ordered by the bits the exception surprises
 ; with, n * log2(N / n) (n the exceptions, N all), and the strongest are written with the renglon where the exception
 ; was. Uses j1-j14.
 questions:
@@ -183,18 +186,11 @@ questions:
     jjnz j2, qs_next
     jld j3, j11, 16
     jjz j3, qs_next
-    jldi j2, 2                  ; the switch pays?
-    jst j2, j1, FLOOR
-    jldi j2, 0
-    jcall d_make
-    jld j2, j1, ROOMD
-    jldi j3, 64
-    jcall t_find
-    jld j2, j4, 40
-    jldi j3, 63
-    jsar j3, j2, j3
-    jjnz j3, qs_next
-    jjz j2, qs_next
+    jadd j2, j3, j1             ; the switch distilled (the five properties)?
+    jcall n_flags
+    jldi j4, 1
+    jand j3, j3, j4
+    jjz j3, qs_next
     jcall q_plain               ; and the place said plain
     jjz j4, qs_next
     jld j5, j4, 24              ; said plain, and with the switch
@@ -461,7 +457,7 @@ kind_report:
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
-      jldi j3, 64
+      jldi j3, 48
       jmul j3, j9, j3
       jld j2, j1, ROOMD
       jadd j3, j3, j2
@@ -586,4 +582,5 @@ putpct:
   jjmp putch
 
 include 'pulso.inc'
+include 'negacion.inc'
 include 'lectura.inc'

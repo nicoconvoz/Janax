@@ -31,8 +31,6 @@ S_TURN  = 300h
 S_PLACE = 340h
 S_NSW   = 380h
 S_NDR   = 3C0h
-S_STAYS = 400h
-S_OF    = 440h
 S_FLIPS = 480h
 S_NTURN = 4C0h
 
@@ -90,6 +88,7 @@ jshi j2, 0
 jshi j2, 0
 jst j2, j1, PK
 jcall learn_pulses
+jcall distill_no
 
 jldi j1, 0                      ; its pieces that pay: the switches and the doors
 jld j2, j1, NADC + 16
@@ -111,7 +110,7 @@ jldi j2, 1
 jadd j10, j10, j2
 jwhile j10
   jldi j1, 0
-  jldi j3, 64
+  jldi j3, 48
   jmul j3, j9, j3
   jld j2, j1, ROOMD
   jadd j3, j3, j2
@@ -139,7 +138,12 @@ jwhile j10
   jst j6, j4, 0
   jld j6, j3, 16
   jst j6, j4, 8
-  jld j6, j3, 56                ; and whether it turns
+  jst j4, j1, AT2                ; and whether it is the switch distilled (a negation is never taken out)
+  jadd j2, j6, j1
+  jcall n_flags
+  jldi j4, 1
+  jand j6, j3, j4
+  jld j4, j1, AT2
   jst j6, j4, 24
   jld j6, j1, NSWP
   jldi j7, 1
@@ -226,7 +230,7 @@ jld j2, j1, NDRP
 jcall putnum
 jldi j1, S_NTURN
 jcall puts
-jld j2, j1, NTURN
+jld j2, j1, NNEG
 jcall putnum
 jldi j2, 41
 jcall putch
@@ -320,6 +324,7 @@ jwend
 jjmp finish
 
 include 'pulso.inc'
+include 'negacion.inc'
 
 ; The facts that start at unit JJ: for one, two and three words between, if they are all words. Uses j1-j12.
 hang_at:

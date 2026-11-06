@@ -1,9 +1,10 @@
 ; Reading a book, shared by Razar's readers (lector, pulso). It reads the file "libro" twice. The first time it only
 ; counts, so every table is made to the size of this book (each hash table the least power of two with twice the places
 ; it could ever need). The second time every word gets a number in order of first sight (0 is the renglon, the line of
-; the file) and the book becomes a row of numbers. A word is a run of letters: a..z, A..Z made small, and the letters of
-; U+00C0..U+00FF (a tilde, the enie, the dieresis; capitals made small); anything else ends a word, and a line feed ends
-; the renglon too. One renglon in K (the K-th, the 2K-th, ...) is kept apart for the test (is_train). K comes from the
+; the file) and the book becomes a row of numbers. A word is a run of letters and digits: a..z, A..Z made small, 0..9,
+; and the letters of U+00C0..U+00FF (a tilde, the enie, the dieresis; capitals made small). A space ends a word, a line
+; feed ends the renglon too, and every other character (a comma, a period, the marks of speech, a dash...) is a piece
+; of its own, as Razar reads them: "ya, no" is not "ya no" (Capitan, 2026-11-06: without them the no was not found). One renglon in K (the K-th, the 2K-th, ...) is kept apart for the test (is_train). K comes from the
 ; file "p" (one qword; 10 if there is none).
 ;
 ; The program that includes it names its texts S_LIBRO ("libro"), S_P ("p"), S_NOBOOK and S_NOMEM, keeps its own
@@ -35,6 +36,7 @@ FNVP  = 10F0h
 M48   = 10F8h                   ; 2^48 - 1
 POS   = 1100h                   ; how long the text it writes is so far
 LINE  = 1108h                   ; the renglon being walked
+MLEFT = 1128h                   ; bytes left of the mark being read
 LABEL = 1110h                   ; the file being read: its label and how long it is
 LABLEN = 1118h
 QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
@@ -259,6 +261,15 @@ sc_open:
 ; One byte of the book (j2) into the word being read. Uses j1-j8, j10, j11.
 tok_byte:
   jldi j1, 0
+  jld j3, j1, MLEFT             ; the rest of a mark of more than one byte
+  jjz j3, tb_lead
+  jldi j4, 1
+  jsub j3, j3, j4
+  jst j3, j1, MLEFT
+  jjnz j3, w_put
+  jcall w_put
+  jjmp w_end
+tb_lead:
   jld j3, j1, LEAD
   jjz j3, tb_plain
   jst j1, j1, LEAD              ; the second byte of a letter of U+00C0..U+00FF
@@ -297,10 +308,41 @@ tb_plain:
   jret
 tb_ascii:
   jldi j5, 63
+  jldi j3, 80h                  ; past ASCII: a mark of two, three or four bytes (a lead), or a stray continuation
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, tb_seven
+  jldi j3, 0C0h
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, w_end
+  jst j2, j1, BYTE
+  jcall w_end
+  jldi j1, 0
+  jld j2, j1, BYTE
+  jcall w_put
+  jldi j1, 0
+  jld j2, j1, BYTE
+  jldi j5, 63
+  jldi j4, 1                    ; how many bytes are left of it
+  jldi j3, 0E0h
+  jsub j3, j2, j3
+  jsar j3, j3, j5
+  jjnz j3, tb_left
+  jldi j4, 2
+  jldi j3, 0F0h
+  jsub j3, j2, j3
+  jsar j3, j3, j5
+  jjnz j3, tb_left
+  jldi j4, 3
+tb_left:
+  jst j4, j1, MLEFT
+  jret
+tb_seven:
   jldi j3, 41h
   jsub j3, j2, j3
   jsar j4, j3, j5
-  jjnz j4, tb_other
+  jjnz j4, tb_digit
   jldi j4, 26
   jsub j4, j3, j4
   jsar j4, j4, j5
@@ -314,6 +356,16 @@ tb_small:
   jsar j4, j3, j5
   jjnz j4, tb_other
   jldi j4, 26
+  jsub j4, j3, j4
+  jsar j4, j4, j5
+  jjz j4, tb_other
+  jjmp w_put
+tb_digit:                       ; a digit is part of a word too
+  jldi j3, 30h
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, tb_other
+  jldi j4, 10
   jsub j4, j3, j4
   jsar j4, j4, j5
   jjz j4, tb_other
@@ -332,9 +384,21 @@ tb_other:
 tb_text:
   jldi j3, 10
   jsub j3, j2, j3
-  jjnz j3, w_end
+  jjnz j3, tb_space
   jcall w_end
   jjmp l_unit
+tb_space:
+  jldi j3, 21h                  ; a space, a tab, a carriage return: the word ends
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, w_end
+  jst j2, j1, BYTE              ; any other: a mark, a piece of its own
+  jcall w_end
+  jldi j1, 0
+  jld j2, j1, BYTE
+  jcall w_put
+  jjmp w_end
 
 ; The letter byte j2 at the end of the word being read (past 255 bytes they are not kept). Uses j1, j3, j4.
 w_put:

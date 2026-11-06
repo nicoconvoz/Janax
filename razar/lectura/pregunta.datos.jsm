@@ -40,7 +40,7 @@ db ' (lo que sigue, igual: ', 0
 times 440h - $ db 0
 db ' de ', 0
 times 480h - $ db 0
-db ' DA VUELTA', 0
+db ' (la negacion)', 0
 times 4C0h - $ db 0
-db ' (dan vuelta y no se sacan: ', 0
+db ' (negaciones, nunca se sacan: ', 0
 times 500h - $ db 0
