@@ -39,10 +39,9 @@ TPT   = 1F40h                   ; what each place testified: {key of place and d
 PDK   = 1F60h                   ; the key of the difference of a pulse
 PASN  = 1F68h                   ; the passes: this one (from 0), how many left
 PASL  = 1F70h
-TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1)} (a growing table)
+TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1), what it weighed in its first} (growing)
 TFW   = 1780h                   ; by filling: {key, its pulses weighed} (a growing table)
 NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pulses weighed
-NFL1  = 1798h                   ; by floor (from floor 0): what the first reading issued, the supply kept
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
@@ -164,7 +163,7 @@ jldi j2, TPT                    ; what each place already testified (it grows to
 jldi j3, 8
 jcall pl_new
 jldi j2, TRD                    ; in how many readings each difference was met, and each filling weighed
-jldi j3, 24
+jldi j3, 32
 jcall pl_new
 jldi j2, TFW
 jldi j3, 16
@@ -199,15 +198,6 @@ jst j2, j1, PASL
 jwhile j2
   jcall all_floors
   jldi j1, 0
-  jld j2, j1, PASN              ; after the first reading, the supply it issued by floor: every reading after only
-  jjnz j2, lp_more               ; redistributes it (what is issued past it is burned)
-  jld j2, j1, NFLW + 8
-  jst j2, j1, NFL1 + 8
-  jld j2, j1, NFLW + 16
-  jst j2, j1, NFL1 + 16
-  jld j2, j1, NFLW + 24
-  jst j2, j1, NFL1 + 24
-lp_more:
   jld j2, j1, PASN
   jldi j3, 1
   jadd j2, j2, j3
@@ -683,6 +673,14 @@ pu_kd:
   jshl j2, j2, j7
   jdiv j2, j2, j3
   jst j2, j1, PW
+  jld j3, j4, 8                 ; (in its first reading: what it gathers there, its n1)
+  jldi j7, 1
+  jsub j3, j3, j7
+  jjnz j3, pu_first
+  jld j3, j4, 24
+  jadd j3, j3, j2
+  jst j3, j4, 24
+pu_first:
   jld j5, j1, PDK
 pu_any:
   jld j2, j1, ROOMD
@@ -969,17 +967,33 @@ judge:
     jcall lg16
     jld j3, j1, GS
     jsub j3, j3, j2
-    jld j4, j1, GE              ; times n, weighed (2^16 a pulse) and with the burn: the floor keeps the supply of its
-    jld j4, j4, 40              ; first reading, so n counts over what was issued past it (Capitan: "burn tokens, like
-    jld j5, j11, NFL1           ; ethereum: keep the silhouette, not the inflation")
-    jjz j5, ju_supply
-    jld j6, j11, NFLW
-    jldi j7, 16
-    jshl j6, j6, j7
-    jdiv j6, j6, j5
-    jshl j4, j4, j7
-    jdiv j4, j4, j6
-ju_supply:
+    jst j3, j1, GS              ; times its evidence, with the burn (Capitan: "burn tokens like ethereum, keep the
+    jld j4, j1, GE              ; silhouette, not the inflation; what grows more burns more, what grows less burns
+    jld j5, j4, 0               ; less"): its weight n1 in the reading it first appeared in, grown by g = n / n1, counts
+    jldi j2, TRD                ; as n1 (1 + log2 g): each doubling is one unit more, as information is. Its
+    jcall pl_find               ; specificity, the log above, keeps the whole counts.
+    jld j2, j4, 24
+    jjz j2, ju_raw
+    jst j2, j1, FBP
+    jld j4, j1, GE
+    jld j2, j4, 40
+    jcall lg16
+    jst j2, j1, PW
+    jld j2, j1, FBP
+    jcall lg16
+    jld j3, j1, PW
+    jsub j3, j3, j2
+    jld j2, j1, FBP
+    jmul j3, j3, j2
+    jldi j4, 16
+    jsar j3, j3, j4
+    jadd j4, j3, j2
+    jjmp ju_n
+ju_raw:
+    jld j4, j1, GE
+    jld j4, j4, 40
+ju_n:
+    jld j3, j1, GS
     jmul j3, j3, j4
     jldi j4, 16
     jsar j3, j3, j4

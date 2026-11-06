@@ -999,3 +999,24 @@ Idéntico en los tres motores (10 lecturas: `000022DAD0DD51A4`):
   Lo que apareció recién en las relecturas pesa 1, pero se divide por toda la inflación y queda chico: la quema se lleva
   también lo novedoso.
 - Gemelos e interruptores casi no se mueven.
+
+## La quema progresiva: lo que más crece, más quema (2026-11-06)
+
+El Capitán, corrigiendo la quema pareja: *"lo que aumente más quema más, lo que aumente menos quema menos"*. Cada
+diferencia recuerda lo que pesó en la lectura en que apareció por primera vez (n1) y su crecimiento g = n / n1. Su
+evidencia cuenta como **n1 · (1 + log2 g)**: cada vez que se duplica, una unidad más, como la información (y como la ley
+de Weber–Fechner). Lo novedoso no se castiga: lo que aparece recién en la quinta lectura arranca entero. La
+especificidad (el logaritmo del juez) sigue con los conteos completos. Con una lectura, todo idéntico.
+
+Idéntico en los tres motores (10 lecturas: `000098B24A3DB29B`):
+
+| 10 lecturas | asociados real / ciego (veces) | piezas asociados | puertas explica / ciego, piezas |
+|---|---|---|---|
+| sin quemar | 25,0 / 6,1 (4,1×) | 9.220 | 394 / 3, 36.691 |
+| quema pareja | 13,7 / 2,8 (4,9×) | 324 | 48 / 0, 29 |
+| **quema progresiva** | 22,8 / 5,6 (4,1×) | 6.702 | 313 / 1, 21.281 |
+
+**Por qué casi no frena:** la inflación grande no viene del n que se quema, sino de N. Con cada relectura el total de
+pulsos del piso (N) crece casi tres veces, y un par raro que aparece recién en una relectura tiene su n chico pero un
+N inflado: log2(2N·n / (c·c)) le sube 1,5 bits sin haber hecho nada, y pasa el costo de nombrarse. La quema progresiva
+toca la evidencia, no la especificidad.
