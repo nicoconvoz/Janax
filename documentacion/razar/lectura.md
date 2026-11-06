@@ -696,3 +696,22 @@ queda esperando: otro "_ y la _" pedro   (…)   (hasta saber si pedro va con la
 
 Honesto: en este libro Isaac y Pedro nunca aparecen pegados a una pieza con género (no se dice "el Isaac"), así que no
 caen: esperan. Lo que separa a los nombres es la puerta del género, todavía no la del sentido.
+
+## El pulso con tablas que crecen: mismo resultado, más memoria (2026-11-06)
+
+Pedido del Capitán: aplicar al pulso lo de sentido y comparar si rinde igual. Las tablas que crecen quedaron en
+`crece.inc` (las usa sentido). Puestas también en el pulso y en la pregunta, **las tres huellas salen idénticas**
+(`BA3EBB3EEE29`, `E78A9442B1C1`, `B3554BA37EF8`), pero la memoria **sube**:
+
+| | tablas fijas | tablas que crecen |
+|---|---|---|
+| pulso | 355 MB | 422 MB |
+| pregunta | 414 MB | 481 MB |
+| sentido | 364 MB | 431 MB |
+
+Por qué, medido: el pulso no reserva de más, **de verdad guarda** 529.683 pedidos dormidos, 656.877 formas vistas,
+103.611 diferencias y 52.010 llenados. Crecer de a duplicaciones deja las copias viejas ocupadas (el sistema no devuelve
+salas), así que se paga más. **Se volvió atrás en el pulso**; queda en sentido, donde sí rinde.
+
+La cura de verdad no es el tamaño sino **olvidar**: qué pedido dormido se puede soltar sin perder lo que el pulso
+encuentra. Eso cambia el resultado y hay que medirlo contra lo de hoy.
