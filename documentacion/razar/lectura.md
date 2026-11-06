@@ -671,3 +671,28 @@ contraejemplos; por eso aparece "de la" dado vuelta es "de doble" (3 pares), bas
 
 **Lo que pesa ahora es el pulso** (355 MB de los 364): cuelga un pedido por cada letra de cada palabra, el doble de
 lugares. Es la misma enfermedad y lleva la misma cura.
+
+## La deducción espera a saber el género (2026-11-06)
+
+El Capitán: *"para eso le sirve navegar por el libro: cuando sepa de qué género es Isaac lo resuelve, y listo;
+asincrónico, sincrónico"*. Es el pedido dormido aplicado a la deducción.
+
+- **El género de una palabra** sale de los gemelos a/o (la diferencia más fuerte del pulso, 631 pares). Una palabra de
+  dos letras o más (algo igual, como en la ley de la puerta) que termina en a u o, y cuya gemela con la otra terminación
+  está en el libro, es de ese género: la/lo, hijo/hija. "a" y "o" solas no.
+- **Lo que el libro dice de cada núcleo**: al leer se anota en él el género de la pieza que tiene pegada, antes o
+  después. Es una silueta del núcleo (un byte), no un dato.
+- **La deducción pide**: si el esqueleto dado vuelta pone una pieza con género pegada a un núcleo, ese núcleo tiene que
+  haberse visto con ese género de ese lado. Si se vio, vale; si se vio solo con el otro, **cae**; si el libro nunca lo
+  dijo, **queda esperando** y lo dice.
+
+Libro entero, idéntico en los tres motores (`0000B3554BA37EF8`; el género no entra en la huella):
+
+```
+queda esperando: dios "_ y la _" isaac   (…)   (hasta saber si isaac va con la)
+deduce: abraham "_ , padre de _" isaac   (porque "_ , hijo de _"  dado vuelta es "_ , padre de _" )
+queda esperando: otro "_ y la _" pedro   (…)   (hasta saber si pedro va con la)
+```
+
+Honesto: en este libro Isaac y Pedro nunca aparecen pegados a una pieza con género (no se dice "el Isaac"), así que no
+caen: esperan. Lo que separa a los nombres es la puerta del género, todavía no la del sentido.

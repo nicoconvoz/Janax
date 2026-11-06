@@ -48,3 +48,15 @@ db ' | memoria de las siluetas (bytes)=', 0
 times 540h - $ db 0
 db 'limites (signos que cierran un edificio, segun el libro):', 0
 times 580h - $ db 0
+db '  queda esperando: ', 0
+times 5C0h - $ db 0
+db '  descartada: ', 0
+times 600h - $ db 0
+db '   (hasta saber si ', 0
+times 640h - $ db 0
+db '   (', 0
+times 680h - $ db 0
+db ' va con ', 0
+times 6C0h - $ db 0
+db ' va con el otro genero de ', 0
+times 700h - $ db 0

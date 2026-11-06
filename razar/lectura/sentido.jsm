@@ -41,6 +41,12 @@ S_TURN  = 4C0h                  ; (the pulses write it too)
 S_FLIPS = 4C0h
 S_MEM   = 500h
 S_LIMS  = 540h
+S_WAIT  = 580h
+S_NOT   = 5C0h
+S_TILL  = 600h
+S_OPEN  = 640h
+S_GOES  = 680h
+S_OTHER = 6C0h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -95,6 +101,13 @@ PLD   = 1CF8h                   ; a growing table: which, a key, its old place, 
 PLK   = 1D00h
 PLO   = 1D08h
 PLN   = 1D10h
+ROOMGN = 1D18h                  ; by word: its gender and the genders seen next to it (see genders)
+GNG   = 1D20h                   ; finding them: a gender, the word, the words left
+GNW   = 1D28h
+GNL   = 1D30h
+GST   = 1D38h                   ; a deduction by gender: 0 holds, 1 waits, 2 falls; the core and the piece that decided
+GFC   = 1D40h
+GFP   = 1D48h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
@@ -111,6 +124,7 @@ jcall learn_pulses
 jcall house_decide
 jcall distill_no
 jcall limits                    ; where each building ends, found in the book
+jcall genders                   ; the gender of each word, from its twins
 
 jldi j2, TMI                    ; its tables, empty: they grow to what they hold
 jldi j3, 64
@@ -1194,7 +1208,17 @@ fm_deduce:
   jldi j2, TSN
   jcall pl_take
   jjz j6, fm_done
+  jcall fm_gender               ; its two cores where it puts them: of the gender of what is next to them?
+  jldi j1, 0
+  jld j2, j1, GST
   jldi j1, S_DED
+  jjz j2, fm_say
+  jldi j3, 1
+  jsub j3, j2, j3
+  jldi j1, S_WAIT
+  jjz j3, fm_say
+  jldi j1, S_NOT
+fm_say:
   jcall puts
   jld j2, j1, WB
   jcall putword
@@ -1216,10 +1240,235 @@ fm_deduce:
   jcall put_mid
   jldi j2, 41
   jcall putch
+  jld j2, j1, GST               ; and what it waits for, or why it fell
+  jjz j2, fm_end
+  jldi j3, 1
+  jsub j3, j2, j3
+  jldi j1, S_TILL
+  jjz j3, fm_why
+  jldi j1, S_OPEN
+fm_why:
+  jcall puts
+  jld j2, j1, GFC
+  jcall putword
+  jld j2, j1, GST
+  jldi j3, 1
+  jsub j3, j2, j3
+  jldi j1, S_GOES
+  jjz j3, fm_piece
+  jldi j1, S_OTHER
+fm_piece:
+  jcall puts
+  jld j2, j1, GFP
+  jcall putword
+  jldi j2, 41
+  jcall putch
+fm_end:
   jldi j2, 10
   jcall putch
   jjmp flush
 fm_done:
+  jret
+
+; The turned fact WB «TBEST» WA puts WB before the first piece of TBEST and WA after its last: a piece with a gender
+; asks the core next to it to have been seen next to that gender (on that side). GST: 0 it is, 1 not known yet (the
+; request waits), 2 seen only with the other; GFC and GFP the core and the piece that decided. Uses j1-j14.
+fm_gender:
+  jldi j1, 0
+  jst j1, j1, GST
+  jld j2, j1, TBEST
+  jcall find_mid
+  jldi j13, MB1
+  jcall m_collect
+  jldi j1, 0
+  jjz j2, fg_done
+  jldi j3, 1
+  jsub j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j2, j2, MB1               ; the last piece, before WA
+  jld j3, j1, WA
+  jldi j4, 4
+  jcall fg_one
+  jldi j1, 0
+  jld j2, j1, MB1               ; the first, after WB
+  jld j3, j1, WB
+  jldi j4, 16
+  jjmp fg_one
+fg_done:
+  jret
+
+; The piece j2 next to the core j3 on the side j4 (4 before, 16 after): GST raised if it asks a gender the core was
+; not seen with. Uses j1-j8.
+fg_one:
+  jldi j1, 0
+  jldi j5, 3
+  jshl j5, j2, j5
+  jld j6, j1, ROOMGN
+  jadd j5, j5, j6
+  jld j5, j5, 0
+  jldi j6, 3
+  jand j5, j5, j6               ; its gender
+  jjz j5, fo_done
+  jldi j6, 3
+  jshl j6, j3, j6
+  jld j7, j1, ROOMGN
+  jadd j6, j6, j7
+  jld j6, j6, 0                 ; what the core was seen next to
+  jmul j7, j5, j4
+  jand j7, j6, j7
+  jjnz j7, fo_done
+  jldi j7, 3
+  jsub j7, j7, j5
+  jmul j7, j7, j4
+  jand j7, j6, j7
+  jldi j8, 1                    ; not known: it waits; seen only with the other: it falls
+  jjz j7, fo_raise
+  jldi j8, 2
+fo_raise:
+  jld j7, j1, GST
+  jsub j7, j7, j8
+  jldi j6, 63
+  jsar j7, j7, j6
+  jjz j7, fo_done
+  jst j8, j1, GST
+  jst j3, j1, GFC
+  jst j2, j1, GFP
+fo_done:
+  jret
+
+; The gender of every word (the twins' first difference, a/o): a word of two letters or more ending in a or o, whose
+; twin with the other ending is in the book, is of that gender (1 a, 2 o); else of none. By word {its gender, and the
+; genders seen next to it as a core: 4 before a, 8 before o, 16 after a, 32 after o} (8 bytes). Uses j1-j14.
+genders:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMGN
+  jldi j2, 2                    ; (a word looked up, never added)
+  jst j2, j1, PASS
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j5, j3, 16
+    jld j3, j3, 8
+    jld j4, j1, ROOMA
+    jadd j3, j3, j4
+    jst j5, j1, WLEN
+    jldi j6, 2                  ; two letters or more: something the same
+    jsub j6, j5, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, gn_next
+    jadd j6, j3, j5
+    jldi j7, 1
+    jsub j6, j6, j7
+    jldb j6, j6, 0
+    jldi j7, 97
+    jsub j7, j6, j7
+    jldi j8, 1
+    jjz j7, gn_end
+    jldi j7, 111
+    jsub j7, j6, j7
+    jldi j8, 2
+    jjnz j7, gn_next
+  gn_end:
+    jst j8, j1, GNG
+    jldi j4, 0                  ; its twin: the same, the other ending
+    jadd j7, j5, j1
+    jwhile j7
+      jldb j6, j3, 0
+      jstb j6, j4, WBUF
+      jldi j6, 1
+      jadd j3, j3, j6
+      jadd j4, j4, j6
+      jsub j7, j7, j6
+    jwend
+    jldi j6, 1
+    jsub j4, j4, j6
+    jldb j7, j4, WBUF
+    jldi j6, 208
+    jsub j6, j6, j7
+    jstb j6, j4, WBUF
+    jst j9, j1, GNW
+    jst j10, j1, GNL
+    jcall word_id
+    jldi j1, 0
+    jld j9, j1, GNW
+    jld j10, j1, GNL
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, gn_next
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMGN
+    jadd j3, j3, j4
+    jld j4, j1, GNG
+    jst j4, j3, 0
+  gn_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; What the fact WA … WB has next to its cores: the gender of the piece after WA and of the one before WB, marked on
+; them. Uses j1-j8.
+fl_gender:
+  jldi j1, 0
+  jld j2, j1, WJ
+  jldi j3, 1
+  jadd j2, j2, j3
+  jld j3, j1, WA
+  jldi j4, 16
+  jcall fg_mark
+  jldi j1, 0
+  jld j2, j1, WJ
+  jld j3, j1, WM
+  jadd j2, j2, j3
+  jld j3, j1, WB
+  jldi j4, 4
+  jjmp fg_mark
+
+; The piece at unit j2 next to the core j3 on side j4: its gender, if it has one, marked on the core. Uses j1-j8.
+fg_mark:
+  jldi j1, 0
+  jldi j5, 3
+  jshl j5, j2, j5
+  jld j6, j1, ROOMT
+  jadd j5, j5, j6
+  jld j5, j5, 0
+  jldi j6, 3
+  jshl j5, j5, j6
+  jld j6, j1, ROOMGN
+  jadd j5, j5, j6
+  jld j5, j5, 0
+  jldi j6, 3
+  jand j5, j5, j6
+  jjz j5, fk2_done
+  jmul j5, j5, j4
+  jldi j6, 3
+  jshl j6, j3, j6
+  jld j7, j1, ROOMGN
+  jadd j6, j6, j7
+  jld j7, j6, 0
+  jor j7, j7, j5
+  jst j7, j6, 0
+fk2_done:
   jret
 
 ; j6 = 1 if the skeleton at WSK has two pairs or more (a written one keeps them negative). Uses j1, j6, j7.
