@@ -17,7 +17,7 @@ if ! "$fasm" "$raiz/janaxos.asm" "$salida/janaxos.exe" > "$salida/janaxos.log" 2
 fi
 # The Janax programs, built by the PDP assembler on Janax OS (no FASM for Janax): from its seed, to its own
 # fixed point, then every test program.
-bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
+bash "$raiz/herramientas/armar.sh" "$salida/janaxos.exe" "$salida" "$aqui"/*.jsm "$proyecto"/escalon0/pruebas/{02_ldi,04_suma,19_opcode_invalido}.jsm "$proyecto"/razar/cardumen/cardumen.jsm "$proyecto"/razar/cardumen/cardumen_olas.jsm "$proyecto"/razar/cardumen/voluntad.jsm "$proyecto"/razar/cardumen/cardumen_lazo.jsm || exit 1
 bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
@@ -427,6 +427,12 @@ carpeta=
 huella=$(perl "$proyecto/razar/cardumen/huella.pl")
 caso "razar: el cardumen deja la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella t=*" cardumen
+
+# Waves that cross (Capitan, 2026-11-06: everything moves to Janax, Perl stays as the measuring stick): words go in as
+# songs, one greeting per step, each pulse a wave of its own, their pushes adding up; the same fingerprint as the model.
+huella_olas=$(perl "$proyecto/razar/cardumen/huella_olas.pl")
+caso "razar: las olas que se cruzan dejan la huella del modelo" 0 0 "$fijo0
+P0 codigo=0 j0=$huella_olas t=*" cardumen_olas
 
 # The loop a lo Janax: the will and the school are two cabins that take turns with greetings over the box the
 # will gave as dowry; 200 rounds give the fingerprint of the model's loop, bit for bit. The will listens to the melody:

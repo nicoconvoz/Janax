@@ -233,3 +233,5 @@ por tiempos: cansa la entrada y se pierden las últimas marcas (20 de 26 letras 
 palabras van al buzón en orden, con la regla del buzón asincrónico-sincrónico.
 2026-11-06 — Razar en Janax se habla con palabras (sin caja ni dote): misma huella bit por bit en tres motores y 1, 2 y
 4 remeros; ~40 % más caro que la caja compartida.
+2026-11-06 — Todo a Janax, Perl de vara (Capitán). Pieza 1: olas que se cruzan en Janax (un qword por ola), misma huella
+que el modelo en los tres motores; traductor 153 ms contra Perl 752 ms.

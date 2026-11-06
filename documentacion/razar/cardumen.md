@@ -890,3 +890,21 @@ caja" y las palabras la llenan, así la parte que piensa (la ola, la lectura, la
   Sin el arranque (~75 ms, igual en los dos), el trabajo pasa de ~50 a ~70 ms: **~40 % más caro**. Antes eran ~1.576
   pedidos; ahora ~4.700 (cada respuesta son 3 palabras con sus lecturas). A cambio: sin memoria compartida, y nadie
   depende de cuándo llega el otro.
+
+## Todo a Janax; Perl queda de vara (Capitán, 2026-11-06)
+
+> *"Pasá todo a Janax, no quiero seguir usando Perl."* — *"Sí, pero la usamos de medida: si probamos todo primero en
+> Perl vamos súper lento, en Janax vuela."*
+
+Regla desde acá: **el trabajo y los experimentos nuevos van directo a Janax**. El modelo Perl queda congelado como vara
+de medir: cada pieza que pasa a Janax se verifica contra una huella del modelo, bit por bit, y esa es la última vez que
+Perl trabaja para esa pieza. El orden del traslado: (1) las olas que se cruzan; (2) la palabra como canción; (3) el oído
+de palabras enteras en la voluntad; (4) el cubo de tamaño libre; (5) las oraciones con ruido, el quieto de control y
+las 20 semillas, corriendo en Janax.
+
+**Pieza 1: las olas que se cruzan** (`cardumen_olas.jsm`; vara: `huella_olas.pl`, 40 palabras en turno, sol, luna,
+mar, casa, como canciones de Morse de saludos con las tres teclas de las esquinas, un saludo por paso, cada pulso su
+ola, los empujes sumados). A lo Janax: con 64 piezas un conjunto de piezas es un qword, un bit por pieza; cada ola
+guarda tres: quién de ella está despierto, quién despertó alguna vez en ella, y a quién empujó en este paso. Cruzar
+olas es sumar empujes y un Y de bits. **Huella `00008FBA0F7F8D63` en los tres motores, igual al modelo.** Tiempo con
+arranque: intérprete 221 ms, rutinas 168 ms, traductor 153 ms; Perl 752 ms.
