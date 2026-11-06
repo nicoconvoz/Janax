@@ -71,6 +71,7 @@ S_ANS2  = 0B40h
 S_ANS3  = 0B80h
 S_ANS4  = 0BC0h
 S_DUNNO = 0C00h
+S_ALSO  = 0C40h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -103,6 +104,27 @@ CBN   = 19E0h
 CBQ   = 19E8h
 BESTW = 19F0h                   ; the answer: the why that saves the most bits, and its bits
 BESTG = 19F8h
+ROOMRC = 1A00h                  ; the silhouettes: by word, in how many of the rule's renglones it is (and the last one
+ROOMRS = 1A08h                  ; counted), in how many renglones with a switch (and the last one)
+ROOMNC = 1A10h
+ROOMSN = 1A18h
+NEGR  = 1A20h                   ; renglones with a switch; the renglon being counted; the rule's renglones; the stamp of
+RGID  = 1A28h                   ; the place's silhouette
+NRR   = 1A30h
+PSTAMP = 1A38h
+NCAND = 1A40h                   ; the answer: pieces it could name, naming one, log2(2 NRR + 2), log2(2 NEGR + 2), a
+CCOST = 1A48h                   ; surprise, the three best (word, bits), the piece weighed and its offset
+LRR   = 1A50h
+LNR   = 1A58h
+GS2X  = 1A60h
+B1W   = 1A68h
+B1G   = 1A70h
+B2W   = 1A78h
+B2G   = 1A80h
+B3W   = 1A88h
+B3G   = 1A90h
+CXW   = 1A98h
+CXO   = 1AA0h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -475,22 +497,14 @@ qw_start:
   jwend
   jldi j2, 10
   jcall putch
-  jldi j1, S_Q7                 ; and what it has that the rule never had (* an association)
-  jcall puts
-  jld j11, j1, GE
+  jld j11, j1, GE               ; its answer: what is irregular against the silhouette of all that is regular
   jcall q_load
   jcall q_occ
-  jldi j1, 0
-  jldi j2, 3
-  jst j2, j1, WMODE
-  jst j1, j1, BESTG
-  jst j1, j1, BESTW
-  jcall q_whys
-  jldi j2, 10                   ; its answer: the why that saves the most bits, or it does not know
-  jcall putch
+  jcall q_place
+  jcall q_answer
   jldi j1, S_ANS
   jcall puts
-  jld j2, j1, BESTW
+  jld j2, j1, B1W
   jjnz j2, qw_answer
   jldi j1, S_DUNNO
   jcall puts
@@ -499,20 +513,404 @@ qw_start:
 qw_answer:
   jldi j1, S_ANS2
   jcall puts
-  jld j2, j1, BESTW
+  jld j2, j1, B1W
   jadd j12, j2, j1
   jcall mix
-  jcall putword
-  jldi j1, S_ANS3
+  jld j3, j1, B1G
+  jcall put_cand
+  jld j2, j1, B2W
+  jjz j2, qw_said
+  jldi j1, S_ALSO
   jcall puts
-  jld j2, j1, BESTG
-  jcall putq16
-  jldi j1, S_ANS4
-  jcall puts
+  jld j2, j1, B2W
+  jld j3, j1, B2G
+  jcall put_cand
+  jld j2, j1, B3W
+  jjz j2, qw_said
+  jldi j2, 44
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, B3W
+  jld j3, j1, B3G
+  jcall put_cand
+qw_said:
   jldi j2, 10
   jjmp putch
 
-; The rooms of the whys (once): the lists of where a place is said, and the four tables by word. Uses j1-j14.
+; The word j2 and its bits j3: "word (x,yz bits)". Uses j1-j5.
+put_cand:
+  jldi j1, 0
+  jst j3, j1, GN
+  jcall putword
+  jldi j1, S_ANS3
+  jcall puts
+  jld j2, j1, GN
+  jcall putq16
+  jldi j1, S_ANS4
+  jjmp puts
+
+; The silhouette of the switch, once: in how many renglones a switch is (NEGR), and in how many of them each word is
+; (ROOMNC). Uses j1-j14.
+neg_sil:
+  jldi j1, 0
+  jst j1, j1, NEGR
+  jldi j9, 1                    ; a renglon's first unit
+  jld j10, j1, NTOK
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jadd j11, j9, j1            ; to its end, and is there a switch?
+    jldi j12, 0
+    ns_scan:
+      jldi j2, 3
+      jshl j2, j11, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jjz j2, ns_end
+      jcall n_flags
+      jldi j4, 1
+      jand j3, j3, j4
+      jor j12, j12, j3
+      jldi j2, 1
+      jadd j11, j11, j2
+      jjmp ns_scan
+  ns_end:
+    jjz j12, ns_next
+    jld j2, j1, NEGR
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, NEGR
+    jadd j13, j9, j1            ; each word once
+    ns_count:
+      jsub j2, j13, j11
+      jjz j2, ns_next
+      jldi j2, 3
+      jshl j2, j13, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jldi j3, 3
+      jshl j7, j2, j3
+      jld j3, j1, ROOMSN
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jsub j4, j4, j9
+      jjz j4, ns_seen
+      jst j9, j3, 0
+      jld j3, j1, ROOMNC
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jldi j5, 1
+      jadd j4, j4, j5
+      jst j4, j3, 0
+    ns_seen:
+      jldi j2, 1
+      jadd j13, j13, j2
+      jjmp ns_count
+  ns_next:
+    jldi j1, 0                  ; the next renglon
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j2, j11, j9
+    jsub j10, j10, j2
+    jadd j9, j11, j1
+    jldi j2, 63
+    jsar j2, j10, j2
+    jjz j2, ns_more
+    jldi j10, 0
+  ns_more:
+  jwend
+  jret
+
+; The silhouette of the place of the question loaded (q_occ done): in how many of the rule's renglones (NRR) each
+; word is (ROOMRC, valid where ROOMMK holds PSTAMP). Uses j1-j14.
+q_place:
+  jldi j1, 0
+  jld j2, j1, STAMP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, STAMP
+  jst j2, j1, PSTAMP
+  jst j1, j1, NRR
+  jldi j2, -1
+  jst j2, j1, RGID
+  jld j2, j1, RL
+  jst j2, j1, OI
+  jld j2, j1, NRL
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, OI
+    jld j9, j9, 0
+    jcall r_start
+    jld j2, j1, RGID            ; a renglon counts once
+    jsub j2, j2, j9
+    jjz j2, qp_next
+    jst j9, j1, RGID
+    jld j2, j1, NRR
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, NRR
+    jld j5, j1, PSTAMP
+    qp_word:
+      jldi j2, 3
+      jshl j2, j9, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jjz j2, qp_next
+      jldi j3, 3
+      jshl j7, j2, j3
+      jld j3, j1, ROOMMK
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jsub j4, j4, j5
+      jjz j4, qp_had
+      jst j5, j3, 0             ; first time in this question: no renglon yet
+      jld j3, j1, ROOMRC
+      jadd j3, j3, j7
+      jst j1, j3, 0
+      jld j3, j1, ROOMRS
+      jadd j3, j3, j7
+      jldi j4, -1
+      jst j4, j3, 0
+    qp_had:
+      jld j3, j1, ROOMRS
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jld j6, j1, RGID
+      jsub j4, j4, j6
+      jjz j4, qp_once
+      jst j6, j3, 0
+      jld j3, j1, ROOMRC
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jldi j6, 1
+      jadd j4, j4, j6
+      jst j4, j3, 0
+    qp_once:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp qp_word
+  qp_next:
+    jldi j1, 0
+    jld j2, j1, OI
+    jldi j3, 8
+    jadd j2, j2, j3
+    jst j2, j1, OI
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+  jret
+
+; The answer of the question loaded: every piece of its exceptions' renglones (once), and how much it surprises
+; against the silhouette of all that is regular: the more generous of the place's (in its rule's renglones) and the
+; switch's (in every renglon with a switch), -log2((k + 1/2) / (n + 1)); naming one of the NCAND pieces costs
+; log2(NCAND). The three that surprise more than they cost, most first (B1W..B3W, 0: none). Uses j1-j14.
+q_answer:
+  jldi j1, 0
+  jst j1, j1, B1W
+  jst j1, j1, B2W
+  jst j1, j1, B3W
+  jst j1, j1, B1G
+  jst j1, j1, B2G
+  jst j1, j1, B3G
+  jst j1, j1, NCAND
+  jldi j2, 1                    ; first: how many pieces it could name
+  jst j2, j1, WMODE
+  jcall q_xwalk
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jjz j2, qa_done
+  jcall lg16
+  jst j2, j1, CCOST
+  jld j2, j1, NRR               ; log2(2 NRR + 2) and log2(2 NEGR + 2)
+  jadd j2, j2, j2
+  jldi j3, 2
+  jadd j2, j2, j3
+  jcall lg16
+  jst j2, j1, LRR
+  jld j2, j1, NEGR
+  jadd j2, j2, j2
+  jldi j3, 2
+  jadd j2, j2, j3
+  jcall lg16
+  jst j2, j1, LNR
+  jldi j2, 2                    ; then: each one's bits
+  jst j2, j1, WMODE
+  jcall q_xwalk
+qa_done:
+  jret
+
+; Every piece of the exceptions' renglones, once (a new stamp): WMODE 1 counts them (NCAND), 2 weighs them. Uses
+; j1-j14.
+q_xwalk:
+  jldi j1, 0
+  jld j2, j1, STAMP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, STAMP
+  jld j2, j1, XL
+  jst j2, j1, OI
+  jld j2, j1, NXL
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, OI
+    jld j9, j9, 0
+    jcall r_start
+    xw_word:
+      jldi j1, 0
+      jldi j2, 3
+      jshl j2, j9, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jjz j2, xw_next
+      jldi j3, 3
+      jshl j7, j2, j3
+      jld j3, j1, ROOMON
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jld j5, j1, STAMP
+      jsub j4, j4, j5
+      jjz j4, xw_skip
+      jst j5, j3, 0
+      jld j3, j1, WMODE
+      jldi j4, 1
+      jsub j3, j3, j4
+      jjnz j3, xw_weigh
+      jld j3, j1, NCAND
+      jadd j3, j3, j4
+      jst j3, j1, NCAND
+      jjmp xw_skip
+    xw_weigh:
+      jst j9, j1, OI2
+      jst j2, j1, CXW
+      jcall c_surprise
+      jcall c_keep
+      jldi j1, 0
+      jld j9, j1, OI2
+    xw_skip:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp xw_word
+  xw_next:
+    jldi j1, 0
+    jld j2, j1, OI
+    jldi j3, 8
+    jadd j2, j2, j3
+    jst j2, j1, OI
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+  jret
+
+; The bits of the piece CXW: its surprise against the more generous silhouette, minus naming it -> j2. Uses j1-j7.
+c_surprise:
+  jldi j1, 0
+  jld j2, j1, CXW
+  jldi j3, 3
+  jshl j7, j2, j3
+  jldi j2, 0                    ; in the place's rule renglones (0 if it never was there)
+  jld j3, j1, ROOMMK
+  jadd j3, j3, j7
+  jld j3, j3, 0
+  jld j4, j1, PSTAMP
+  jsub j3, j3, j4
+  jjnz j3, cs_rc
+  jld j3, j1, ROOMRC
+  jadd j3, j3, j7
+  jld j2, j3, 0
+cs_rc:
+  jadd j2, j2, j2
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j7, j1, CXO
+  jcall lg16
+  jld j3, j1, LRR
+  jsub j3, j3, j2
+  jst j3, j1, GS2X              ; its surprise against the place
+  jld j7, j1, CXO
+  jld j3, j1, ROOMNC
+  jadd j3, j3, j7
+  jld j2, j3, 0
+  jadd j2, j2, j2
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jld j3, j1, LNR
+  jsub j3, j3, j2               ; against the switch
+  jld j4, j1, GS2X
+  jsub j5, j3, j4               ; the smaller of the two
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, cs_min
+  jadd j3, j4, j1
+cs_min:
+  jld j4, j1, CCOST
+  jsub j2, j3, j4
+  jret
+
+; The piece CXW with bits j2 among the three best (above 0). Uses j1-j6.
+c_keep:
+  jldi j1, 0
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, ck_done
+  jjz j2, ck_done
+  jld j3, j1, B1G
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ck_2
+  jld j3, j1, B2W               ; first: the others move down
+  jst j3, j1, B3W
+  jld j3, j1, B2G
+  jst j3, j1, B3G
+  jld j3, j1, B1W
+  jst j3, j1, B2W
+  jld j3, j1, B1G
+  jst j3, j1, B2G
+  jld j3, j1, CXW
+  jst j3, j1, B1W
+  jst j2, j1, B1G
+  jret
+ck_2:
+  jld j3, j1, B2G
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ck_3
+  jld j3, j1, B2W
+  jst j3, j1, B3W
+  jld j3, j1, B2G
+  jst j3, j1, B3G
+  jld j3, j1, CXW
+  jst j3, j1, B2W
+  jst j2, j1, B2G
+  jret
+ck_3:
+  jld j3, j1, B3G
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ck_done
+  jld j3, j1, CXW
+  jst j3, j1, B3W
+  jst j2, j1, B3G
+ck_done:
+  jret
+
+; The rooms of the whys (once): the lists of where a place is said, and the eight tables by word; then the silhouette
+; of the switch. Uses j1-j14.
 why_rooms:
   jldi j1, 0
   jld j2, j1, ROOMOP
@@ -530,7 +928,7 @@ why_rooms:
   jldi j1, 0
   jst j13, j1, ROOMOW
   jld j11, j1, NV
-  jldi j2, 5
+  jldi j2, 6
   jshl j11, j11, j2
   jcall room
   jldi j1, 0
@@ -544,6 +942,15 @@ why_rooms:
   jst j3, j1, ROOMWY
   jadd j3, j3, j2
   jst j3, j1, ROOMBL
+  jadd j3, j3, j2
+  jst j3, j1, ROOMRC
+  jadd j3, j3, j2
+  jst j3, j1, ROOMRS
+  jadd j3, j3, j2
+  jst j3, j1, ROOMNC
+  jadd j3, j3, j2
+  jst j3, j1, ROOMSN
+  jcall neg_sil
 wr_have:
   jret
 

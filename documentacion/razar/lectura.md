@@ -380,3 +380,37 @@ sin modelo 8,89 bits | contestando siempre (callado: el eco) 7,50 | callando cua
 ```
 
 Volver a la palabra más común recupera aciertos baratos; callar los tira.
+
+# Antes de lo irregular, la silueta de todo lo regular (2026-11-06)
+
+El Capitán: *"antes de notar lo irregular tenés que entender la silueta de todo lo regular"*. La respuesta anterior
+comparaba la excepción solo contra los renglones donde el lugar se dijo como siempre, y por eso contestaba "ni",
+"sino": compañeros de **cualquier** "no", parte de su silueta de siempre.
+
+Ahora la silueta de lo regular tiene dos pisos:
+
+1. **La del lugar**: en cuántos de los renglones de la regla está cada pieza.
+2. **La del interruptor**: en cuántos de los renglones con un "no" (en todo el libro) está cada pieza.
+
+Lo irregular es lo que el renglón de la excepción trae **por encima de las dos**: la sorpresa de cada pieza es
+`−log2((k + ½)/(n + 1))` contra la más generosa de las dos siluetas (estimador de Krichevsky–Trofimov), menos
+`log2(candidatas)` por nombrar una. Contesta con las tres que más sorprenden si pagan; si nada paga, "no sé".
+
+## Lo que contesta (libro entero, 3,3 s, idéntico en los tres motores, `0000539D89845BF6`)
+
+- "para que sus ojos **no** vean, y sus oídos no oigan…": **endurecido, tapados, cerrado**. "El corazón de este pueblo
+  se ha endurecido": es la causa.
+- "el sábado ha sido hecho para el hombre, y **no** el hombre para el sábado": **agregó, jefe, sinagoga** (el jefe de
+  la sinagoga, indignado, que provoca la respuesta).
+- "el que se casa hace bien; pero el que **no** se casa": ocupa, suyos, conviven.
+- De las 20 más fuertes contesta 6 y dice **"no sé" en 14**.
+
+Los compañeros del "no" desaparecieron de las respuestas: eran lo regular de cualquier negación.
+
+Lo que todavía no es:
+
+- **Empates**: todas las piezas que nunca estuvieron en ninguna silueta sorprenden igual, y gana la primera del renglón
+  ("endurecido, tapados, cerrado" valen lo mismo, 0,21 bits). No distingue entre lo igualmente irregular.
+- **Bits chicos**: la silueta del lugar tiene pocos renglones (la regla de un lugar es corta), así que la sorpresa
+  posible es chica y nombrar una candidata entre muchas cuesta casi lo mismo. Por eso calla tanto.
+- El "cerca" es solo el renglón; Razar miraba también el de cada lado.

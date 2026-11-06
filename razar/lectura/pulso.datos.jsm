@@ -98,5 +98,7 @@ db ' (', 0
 times 0BC0h - $ db 0
 db ' bits)', 0
 times 0C00h - $ db 0
-db 'no se: ningun porque paga lo que cuesta', 0
+db 'no se: nada sorprende mas que lo regular', 0
 times 0C40h - $ db 0
+db '; tambien: ', 0
+times 0C80h - $ db 0
