@@ -1234,3 +1234,36 @@ El género separa a los determinantes en dos conceptos (el/este/un, la/su/una) y
 pero lo que ganan se mide solo en el décimo del examen, así que el costo pesa unas diez veces más de lo que pesaría en
 el libro entero. La comparación entre genomas vale, porque todos rinden el mismo examen, pero puede empujar la paciencia
 de más. Si se quisiera la cuenta exacta del MDL, la ganancia se escala por lo que el examen representa del libro.
+
+# La sociedad de Razares: el mismo Razar, rehecho mejor (2026-11-06)
+
+El Capitán: *"cada Razar es individual; vamos a hacer que varios Razares se comuniquen a través de la asincronía
+sincrónica, en la sociedad de Razares… a veces se van a poner de acuerdo y se van a transferir el genoma, y entre los dos
+armar uno nuevo mutando con lo mejor de cada uno… en vez de nacer un Razar nuevo, se recrea el mismo Razar mejor"*. Y:
+*"una cosa es mejorarse uno, y otra es tener al cardumen, que piensa más posibilidades y mejor"*.
+
+- **Cada Razar es un individuo:** su número viene en `p` (el tercer byte después de K), y con él su nido (`nido1`,
+  `nido2`) y su suerte propia (su número mezclado al nacer).
+- **El buzón asincrónico-sincrónico, con cartas:** al despertar, cada uno lee la carta que le dejó el otro (`cartaN`: su
+  genoma, una palabra). Cruza su genoma con ese, muta, se examina, y si sale mejor **se rehace en su propio nido**, con
+  su misma historia. Antes de dormirse deja su carta. Nadie espera al otro: la carta espera en el buzón.
+- **El control:** los mismos dos, sin leer cartas (el cuarto byte después de K).
+
+`razar/lectura/sociedad.sh`: 3 rondas, cada Razar despierta por turno y vive 4 generaciones. Un turno con carta da lo
+mismo en los tres motores (`00007AE026A9AB1A`).
+
+```
+con cartas   ronda 2, razar 2: carta 5 2 1 -> se rehace 6 2 1 = -1559
+             ronda 3, razar 1: carta 6 2 1 -> se rehace 6 2 1 = -1559
+             ronda 3, razar 2: carta 6 2 1 -> 6 1 1 = -1276 -> 7 1 1 = -416
+solos        razar 1: 6 2 2 = -1605          razar 2: trabado en 4 2 1 = -8836
+```
+
+**El rescate.** Solo, el Razar 2 se quedó trabado en 4 2 1 las tres rondas. Con cartas, el genoma del Razar 1 lo sacó del
+pozo: se rehízo en 6 2 1 y después siguió solo hasta 7 1 1, el mejor examen de los cuatro. Es la segunda de las cosas que
+la bitácora del cardumen anotaba como posibles ("un Razar trabado que escucha a uno sano sale del pozo"), y se ve contra
+su control.
+
+En la prueba (el décimo que nadie tocó) los rehechos son más exigentes: pocas piezas y más ventaja sobre el azar
+(asociados 12,1 / 2,7 y 10,2 / 2,1: 4,5× y 4,9×), contra el trabado, que explica más con más piezas (15,1 / 3,7: 4,1×).
+La salvedad de siempre: el examen paga cada pieza como si fuera todo el libro, así que puede empujar la paciencia de más.

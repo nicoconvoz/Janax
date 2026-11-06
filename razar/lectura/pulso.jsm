@@ -109,6 +109,12 @@ NIDL  = 1D78h                   ; second, their exams, the luck, the generations
 AUTL  = 1D80h
 NEST  = 1D88h
 EVLIV = 1DC0h                   ; the generations it has lived, all its life
+QUIEN = 1DC8h                   ; who it is (0: alone); the length of its nest label; its letter, the other's, the genome
+NIDN  = 1DD0h                   ; that came in it, and whether one came
+CARL  = 1DD8h
+OTRL  = 1DE0h
+CARTA = 1DE8h
+PARTOK = 1DF0h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -1832,6 +1838,15 @@ ev_go:
   jshi j2, 7F4Ah
   jshi j2, 7C15h
   jst j2, j1, RNG
+  jcall nest_labels             ; (each one is born with its own luck: its number mixed in)
+  jldi j1, 0
+  jld j2, j1, RNG
+  jld j3, j1, QUIEN
+  jcall hw
+  jjnz j2, ev_seed
+  jldi j2, 1
+ev_seed:
+  jst j2, j1, RNG
   jld j2, j1, NPAS              ; the champion: today's instincts
   jldi j3, 255
   jand j2, j2, j3
@@ -1873,6 +1888,56 @@ ev_born:
   jldi j2, 0
   jcall ev_line
 ev_gens:
+  jcall letter_read             ; the other's letter: its genome is the one it crosses with (Capitan: "they agree, pass
+  jldi j1, 0                    ; each other the genome and build a new one with the best of each; the same Razar,
+  jld j2, j1, PARTOK            ; remade better")
+  jjz j2, ev_alone
+  jld j2, j1, CARTA
+  jst j2, j1, EVR
+  jldi j2, 0
+  jshi j2, 0C000h
+  jshi j2, 0
+  jshi j2, 0
+  jshi j2, 0
+  jst j2, j1, EVRS
+  jldi j2, 0                    ; written: "carta" and the genome that came
+  jshi j2, 0061h
+  jshi j2, 7472h
+  jshi j2, 6163h
+  jcall put8
+  jldi j1, 0
+  jldi j2, 58
+  jcall putch
+  jld j2, j1, CARTA
+  jst j2, j1, EVCH
+  jldi j2, 255
+  jld j3, j1, EVCH
+  jand j2, j3, j2
+  jst j2, j1, EVT
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVT
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVCH
+  jldi j3, 8
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, EVCH
+  jldi j3, 16
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jcall putmix
+  jldi j2, 10
+  jcall putch
+  jcall flush
+ev_alone:
   jldi j1, 0
   jld j2, j1, EVG
   jwhile j2
@@ -1957,6 +2022,7 @@ ev_gens:
   jld j2, j1, EVI
   jst j2, j1, EVLIV
   jcall nest_save
+  jcall letter_write            ; and its letter for the other, with what it is now
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
@@ -1974,7 +2040,7 @@ nest_load:
   jcall nest_labels
   jldi j10, 4                   ; open (created if it is not there: then it reads nothing)
   jldi j11, NIDL
-  jldi j12, 4
+  jld j12, j1, NIDN
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2044,11 +2110,11 @@ nest_save:
   jst j2, j1, NEST + 48
   jldi j10, 12                  ; the old one out, a new one in
   jldi j11, NIDL
-  jldi j12, 4
+  jld j12, j1, NIDN
   jcall ask
   jldi j10, 4
   jldi j11, NIDL
-  jldi j12, 4
+  jld j12, j1, NIDN
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2095,19 +2161,138 @@ autopsy_open:
 ao_done:
   jret
 
-; The labels "nido" and "autopsia" at NIDL and AUTL. Uses j1, j2.
+; The labels: its nest at NIDL (NIDN bytes), its letter and the other's at CARL and OTRL, "autopsia" at AUTL. Uses
+; j1-j5.
 nest_labels:
   jldi j1, 0
-  jldi j2, 0
+  jld j3, j1, NPAS              ; who it is: the third byte after K in "p" (0: alone, its nest is "nido")
+  jldi j4, 16
+  jshr j3, j3, j4
+  jldi j4, 255
+  jand j3, j3, j4
+  jst j3, j1, QUIEN
+  jldi j2, 0                    ; "nido", and its number after it
   jshi j2, 6F64h
   jshi j2, 696Eh
+  jldi j4, 4
+  jst j4, j1, NIDN
+  jjz j3, nl_alone
+  jldi j4, 48
+  jadd j4, j3, j4
+  jldi j5, 32
+  jshl j4, j4, j5
+  jor j2, j2, j4
+  jldi j4, 5
+  jst j4, j1, NIDN
+nl_alone:
   jst j2, j1, NIDL
+  jldi j2, 0                    ; its letter "cartaN", and the other's: two of them, N and 3 - N
+  jshi j2, 0061h
+  jshi j2, 7472h
+  jshi j2, 6163h
+  jldi j4, 48
+  jadd j4, j3, j4
+  jldi j5, 40
+  jshl j4, j4, j5
+  jor j4, j2, j4
+  jst j4, j1, CARL
+  jldi j4, 51
+  jsub j4, j4, j3
+  jldi j5, 40
+  jshl j4, j4, j5
+  jor j4, j2, j4
+  jst j4, j1, OTRL
   jldi j2, 0
   jshi j2, 6169h
   jshi j2, 7370h
   jshi j2, 6F74h
   jshi j2, 7561h
   jst j2, j1, AUTL
+  jret
+
+; The other's letter read (CARTA: its genome), if it left one and it is not mute (the fourth byte after K: 1
+; reads no letters, the control). PARTOK 1 if there is one. Uses j1-j14.
+letter_read:
+  jldi j1, 0
+  jst j1, j1, PARTOK
+  jld j2, j1, QUIEN
+  jjz j2, lr_done
+  jld j2, j1, NPAS
+  jldi j3, 24
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jjnz j2, lr_done
+  jldi j10, 4
+  jldi j11, OTRL
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, lr_done
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, CARTA
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, EVT2
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, EVT2
+  jldi j3, 8
+  jsub j2, j2, j3
+  jjnz j2, lr_done
+  jldi j2, 1
+  jst j2, j1, PARTOK
+lr_done:
+  jret
+
+; Its letter for the other: its champion's genome, in "cartaN". Uses j1-j14.
+letter_write:
+  jldi j1, 0
+  jld j2, j1, QUIEN
+  jjz j2, lw_done
+  jld j2, j1, EVC
+  jst j2, j1, CARTA
+  jldi j10, 12
+  jldi j11, CARL
+  jldi j12, 6
+  jcall ask
+  jldi j10, 4
+  jldi j11, CARL
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, lw_done
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jldi j11, CARTA
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+lw_done:
+  jldi j1, 0
   jret
 
 ; The nest's mark -> j3 ("RAZARNID"). Uses j3.
