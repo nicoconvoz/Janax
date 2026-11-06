@@ -31,6 +31,9 @@ sub new {
     $s->{frag}[$i] = 0;
     $s->{tune}[$i] = {};                        # the fragments the will confirmed: who woke it, in tune
   }
+  for my $i (0 .. $p-1) {                      # what each piece says to its neighbors in all, as it was born (conserve)
+    my $t = 0; $t += $s->{w}[$i][$_] for grep { $s->neighbor($i, $_) >= 0 } 0 .. 5; $s->{born}[$i] = $t;
+  }
   return $s;
 }
 sub idx { my ($s, $x, $y, $z) = @_; return $x + $s->{n}*($y + $s->{n}*$z); }
@@ -160,12 +163,30 @@ sub learn {
       my $q = $s->neighbor($i, $d); next if $q < 0;
       if ($ft[$q] >= 0 && abs($ft[$q] - $ft[$i]) <= 1) {   # woke together: this step or the next
         my $v = $s->{w}[$i][$d] + $s->{rate}[$i]; $s->{w}[$i][$d] = $v > 255 ? 255 : $v; }
-      elsif ($ft[$q] < 0)          { $s->{w}[$i][$d]-- if $s->{w}[$i][$d] > 0; }
+      elsif ($ft[$q] < 0)          { my $v = $s->{w}[$i][$d] - ($s->{weaken_rate} ? $s->{rate}[$i] : 1);   # weaken_rate:
+        $s->{w}[$i][$d] = $v < 0 ? 0 : $v; }    # it weakens as fast as it strengthens (symmetric), not by one
       $frag |= 1 << $d if $ft[$i] > 0 && $ft[$q] == $ft[$i] - 1;
     }
     $s->{frag}[$i] = $frag;
     $s->{rate}[$i]-- if $s->{rate}[$i] > 1;
+    $s->conserve_piece($i) if $s->{conserve};
   }
+}
+# The ceiling that adjusts itself (Capitan, 2026-11-05): with $s->{conserve}, each piece keeps the total it says to
+# its neighbors, the one it was born with. After it learns, its weights are scaled back to that total: to say more to
+# one it says less to the others, so nothing piles up against a fixed ceiling, and the links that serve take room
+# from the ones that do not (competition; Oja's normalization, Turrigiano's synaptic scaling). Integers only: each
+# weight is rounded, and what the rounding leaves goes, one by one, to the neighbors in direction order. A weight is
+# still one byte (at most 255), as Janax keeps it.
+sub conserve_piece {
+  my ($s, $i) = @_;
+  my @d = grep { $s->neighbor($i, $_) >= 0 } 0 .. 5;
+  my $now = 0; $now += $s->{w}[$i][$_] for @d;
+  my $born = $s->{born}[$i] //= $now;
+  return if $now == 0 || $now == $born;
+  my $left = $born;
+  for my $d (@d) { my $v = int(($s->{w}[$i][$d] * $born + int($now / 2)) / $now); $v = 255 if $v > 255; $s->{w}[$i][$d] = $v; $left -= $v; }
+  for my $d (@d) { last if $left == 0; my $v = $s->{w}[$i][$d] + ($left > 0 ? 1 : -1); next if $v < 0 || $v > 255; $s->{w}[$i][$d] = $v; $left += $left > 0 ? -1 : 1; }
 }
 # Harmony (Capitan: "harmony is the key: a harmonious brain does not convulse, it works... something that sounds
 # bad does not fit, and it is cut before the error spreads"): a note fits if it is not drowned out. With harmony,

@@ -9,7 +9,8 @@
 #
 # It learns the units from a set of words (it knows which word was sent), then hears words it never heard. Options:
 # n (4), nace (7), rondas (passes over the words it learns from, 20), temblor (percent chance that a pulse comes one
-# step early or late: a hand on the key), quieto (1: the school never learns).
+# step early or late: a hand on the key), quieto (1: the school never learns), olas (cruzan: the waves add up),
+# asienta (1: when the will gets a unit right while learning, it sounds it once more, clean, and the school settles it).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, rondas => 20, temblor => 0, @ARGV ? map { split /=/ } @ARGV : ());
 my @units;                                       # alfabeto=sperner (default): the 20 units above
@@ -47,6 +48,8 @@ my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $
 $c->{harmony} = 1; $c->{sinks} = { %top };
 $c->{whisper} = 1 if $o{quieto};
 $c->{cross} = 1 if ($o{olas} // '') eq 'cruzan';   # olas=cruzan: the waves add up (modelo.pl signal_waves)
+$c->{conserve} = 1 if $o{conserva};          # conserva=1: each piece keeps its total, the ceiling adjusts itself
+$c->{weaken_rate} = 1 if $o{simetrico};     # simetrico=1: it weakens by its rate, as it strengthens
 my @key = ($c->idx(0, 0, 0), $c->idx(1, 0, 0), $c->idx(0, 1, 0));
 sub send_unit {                                  # one unit through the school -> the notes it left on the top face
   my ($u) = @_; my @down = @{ $units[$u] };
@@ -73,7 +76,9 @@ sub hear_word {                                  # -> the word it read; and it l
     for my $u (@{ $code{$l} }) {
       my $f = send_unit($u); my $g = guess($f); push @got, $g;
       $tally->[0]++; $tally->[1]++ if $g == $u;
-      if ($learn) { $read{$u}{$_}++ for @$f; $heard{$u} += @$f; }
+      if ($learn) { $read{$u}{$_}++ for @$f; $heard{$u} += @$f;
+        $c->signal_waves([ map { $_ ? [@key] : [] } @{ $units[$u] } ]) if $o{asienta} && $g == $u; }   # asienta=1:
+        # right, the will sounds the unit once more, clean (as in the signaling game: the school settles what served)
     }
     my ($back) = grep { "@{ $code{$_} }" eq "@got" } @abc; $out .= $back // '?';
   }

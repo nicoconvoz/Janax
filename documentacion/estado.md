@@ -209,3 +209,5 @@ más resistente al temblor que Sperner (10 %: unidades 94–98 % contra 88–90 
 4–10). Ganó la construcción, no tener menos opciones.
 2026-11-05 — Olas que se cruzan: el cubo deja de ser un caño (cada semilla da distinto), pero aprender no le gana al
 cardumen quieto (4 mejor, 2 peor, 1 igual). Falta el paso de asentar lo que sirvió.
+2026-11-06 — Techo que se autoajusta: cada pieza conserva su total (4 % en 255 contra 60 %). El híbrido (simétrico +
+conserva + asienta) le gana al cardumen quieto en palabras nuevas en 5 semillas de 7, sin perder ninguna: primera señal, no prueba.

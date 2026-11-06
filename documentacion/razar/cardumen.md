@@ -674,3 +674,25 @@ que con olas separadas). Palabras con Fano, temblor 10 %, semillas 1001–1007, 
 - Candidato, sin construir: en el juego de señales, cuando la voluntad acierta hace sonar la melodía otra vez ("el
   cardumen la asienta"), y eso es lo que talla al cardumen hacia lo que sirve. En `palabras.pl` no existe ese paso: el
   cardumen aprende de todo lo que suena por igual, sin saber qué sirvió.
+
+**El techo que se autoajusta** (Capitán, 2026-11-05/06). Por qué asentar no cambiaba nada: después de **una sola
+pasada** por las palabras, el 60 % de los pesos del cardumen ya está en 255 (63–64 % después de 20); asentando o sin
+asentar da idéntico, número por número. El cardumen aprende lo que puede en los primeros minutos y se satura.
+- **Debilitar de a tasa en lugar de a uno** (`simetrico=1`, la prueba más barata): no alcanza, 61 % en 255 contra 63 %.
+  La causa no es cuánto se debilita sino cuándo: solo se debilita la conexión con una vecina que no despertó nunca, y
+  como la ola llena casi todo el cubo, casi no pasa.
+- **Cada pieza conserva su total** (`conserva=1`, `conserve_piece` en `modelo.pl`): la suma de lo que le dice a sus
+  vecinas queda fija desde que nace; si le habla más a una, le habla menos a las otras (competencia; normalización de
+  Oja, escala sináptica de Turrigiano). Verificado: después de 300 señales el total sigue exacto (37.691) y solo el 4 %
+  de los pesos toca 255.
+- **El híbrido** (simétrico + conserva + asienta; palabras con Fano, olas que se cruzan, temblor 10 %, semillas
+  1001–1007), unidades / palabras nuevas de 20:
+
+| | 1001 | 1002 | 1003 | 1004 | 1005 | 1006 | 1007 |
+|---|---|---|---|---|---|---|---|
+| híbrido | 86 % / 5 | 89 % / 7 | 93 % / 9 | 87 % / 4 | 93 % / 11 | 93 % / 8 | 98 % / 17 |
+| quieto | 87 % / 4 | 89 % / 7 | 92 % / 8 | 85 % / 2 | 92 % / 10 | 88 % / 6 | 98 % / 17 |
+
+  En palabras nuevas gana en 5 semillas, empata en 2 y no pierde en ninguna: **la primera señal de que aprender le
+  sirve al cardumen en esta tarea**. Todavía no es prueba (prueba de signos, dos colas, p ≈ 0,12; diferencias de 1 a 2
+  palabras). Falta medir conserva sola y asienta sola para saber qué pone cada una.
