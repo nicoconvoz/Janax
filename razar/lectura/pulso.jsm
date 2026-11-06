@@ -72,6 +72,12 @@ S_ANS3  = 0B80h
 S_ANS4  = 0BC0h
 S_DUNNO = 0C00h
 S_ALSO  = 0C40h
+S_RET1  = 0C80h
+S_RET2  = 0CC0h
+S_RET3  = 0D00h
+S_RET4  = 0D40h
+S_RET5  = 0D80h
+S_RET6  = 0DC0h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -104,19 +110,20 @@ CBN   = 19E0h
 CBQ   = 19E8h
 BESTW = 19F0h                   ; the answer: the why that saves the most bits, and its bits
 BESTG = 19F8h
-ROOMRC = 1A00h                  ; the silhouettes: by word, in how many of the rule's renglones it is (and the last one
-ROOMRS = 1A08h                  ; counted), in how many renglones with a switch (and the last one)
-ROOMNC = 1A10h
+ROOMRN = 1A00h                  ; the silhouettes of the book, by word: in how many renglones it is, in how many with a
+ROOMNC = 1A10h                  ; switch, the last renglon counted
 ROOMSN = 1A18h
-NEGR  = 1A20h                   ; renglones with a switch; the renglon being counted; the rule's renglones; the stamp of
-RGID  = 1A28h                   ; the place's silhouette
-NRR   = 1A30h
-PSTAMP = 1A38h
-NCAND = 1A40h                   ; the answer: pieces it could name, naming one, log2(2 NRR + 2), log2(2 NEGR + 2), a
-CCOST = 1A48h                   ; surprise, the three best (word, bits), the piece weighed and its offset
-LRR   = 1A50h
-LNR   = 1A58h
-GS2X  = 1A60h
+NEGR  = 1A20h                   ; renglones with a switch, all renglones, and log2 of them, of all, of those without
+NREN  = 1A28h
+LNEG  = 1A30h
+LNREN = 1A38h
+LNPOS = 1AA8h
+NCAND = 1A40h                   ; the answer: pieces it could name, naming one; the piece weighed: its renglones (this
+CCOST = 1A48h                   ; one out), those with a switch, log2 of the first, its bits; the three best (word,
+RNX   = 1A50h                   ; bits)
+RKX   = 1A58h
+LGNX  = 1A60h
+ACC2  = 1AB0h
 B1W   = 1A68h
 B1G   = 1A70h
 B2W   = 1A78h
@@ -124,7 +131,7 @@ B2G   = 1A80h
 B3W   = 1A88h
 B3G   = 1A90h
 CXW   = 1A98h
-CXO   = 1AA0h
+QDIR  = 1AB8h                   ; 1: the question asks why the switch (its rule is plain); 0: why without it
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -500,7 +507,6 @@ qw_start:
   jld j11, j1, GE               ; its answer: what is irregular against the silhouette of all that is regular
   jcall q_load
   jcall q_occ
-  jcall q_place
   jcall q_answer
   jldi j1, S_ANS
   jcall puts
@@ -508,8 +514,7 @@ qw_start:
   jjnz j2, qw_answer
   jldi j1, S_DUNNO
   jcall puts
-  jldi j2, 10
-  jjmp putch
+  jjmp qw_said
 qw_answer:
   jldi j1, S_ANS2
   jcall puts
@@ -535,6 +540,30 @@ qw_answer:
   jld j3, j1, B3G
   jcall put_cand
 qw_said:
+  jldi j2, 10                   ; and the evident, asked too (rhetorical): its rule answers itself
+  jcall putch
+  jldi j1, S_RET1
+  jcall puts
+  jldi j1, S_RET3
+  jld j2, j1, QDIR
+  jjz j2, qw_with2
+  jldi j1, S_RET2
+qw_with2:
+  jcall puts
+  jld j2, j1, QW
+  jcall putword
+  jldi j1, S_RET4
+  jcall puts
+  jld j2, j1, NRL
+  jcall putnum
+  jldi j1, S_RET5
+  jcall puts
+  jld j2, j1, NRL
+  jld j3, j1, NXL
+  jadd j2, j2, j3
+  jcall putnum
+  jldi j1, S_RET6
+  jcall puts
   jldi j2, 10
   jjmp putch
 
@@ -550,10 +579,11 @@ put_cand:
   jldi j1, S_ANS4
   jjmp puts
 
-; The silhouette of the switch, once: in how many renglones a switch is (NEGR), and in how many of them each word is
-; (ROOMNC). Uses j1-j14.
+; The silhouettes of the book, once: how many renglones (NREN) and in how many each word is (ROOMRN); how many have a
+; switch (NEGR) and in how many of those each word is (ROOMNC). Uses j1-j14.
 neg_sil:
   jldi j1, 0
+  jst j1, j1, NREN
   jst j1, j1, NEGR
   jldi j9, 1                    ; a renglon's first unit
   jld j10, j1, NTOK
@@ -578,10 +608,12 @@ neg_sil:
       jadd j11, j11, j2
       jjmp ns_scan
   ns_end:
-    jjz j12, ns_next
-    jld j2, j1, NEGR
+    jld j2, j1, NREN            ; every renglon counts; the ones with a switch, again
     jldi j3, 1
     jadd j2, j2, j3
+    jst j2, j1, NREN
+    jld j2, j1, NEGR
+    jadd j2, j2, j12
     jst j2, j1, NEGR
     jadd j13, j9, j1            ; each word once
     ns_count:
@@ -600,11 +632,16 @@ neg_sil:
       jsub j4, j4, j9
       jjz j4, ns_seen
       jst j9, j3, 0
-      jld j3, j1, ROOMNC
+      jld j3, j1, ROOMRN
       jadd j3, j3, j7
       jld j4, j3, 0
       jldi j5, 1
       jadd j4, j4, j5
+      jst j4, j3, 0
+      jld j3, j1, ROOMNC
+      jadd j3, j3, j7
+      jld j4, j3, 0
+      jadd j4, j4, j12
       jst j4, j3, 0
     ns_seen:
       jldi j2, 1
@@ -623,95 +660,22 @@ neg_sil:
     jldi j10, 0
   ns_more:
   jwend
+  jld j2, j1, NREN              ; log2 of the renglones, of those with a switch, of those without
+  jcall lg16
+  jst j2, j1, LNREN
+  jld j2, j1, NEGR
+  jcall lg16
+  jst j2, j1, LNEG
+  jld j2, j1, NREN
+  jld j3, j1, NEGR
+  jsub j2, j2, j3
+  jcall lg16
+  jst j2, j1, LNPOS
   jret
 
-; The silhouette of the place of the question loaded (q_occ done): in how many of the rule's renglones (NRR) each
-; word is (ROOMRC, valid where ROOMMK holds PSTAMP). Uses j1-j14.
-q_place:
-  jldi j1, 0
-  jld j2, j1, STAMP
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, STAMP
-  jst j2, j1, PSTAMP
-  jst j1, j1, NRR
-  jldi j2, -1
-  jst j2, j1, RGID
-  jld j2, j1, RL
-  jst j2, j1, OI
-  jld j2, j1, NRL
-  jst j2, j1, OL
-  jwhile j2
-    jldi j1, 0
-    jld j9, j1, OI
-    jld j9, j9, 0
-    jcall r_start
-    jld j2, j1, RGID            ; a renglon counts once
-    jsub j2, j2, j9
-    jjz j2, qp_next
-    jst j9, j1, RGID
-    jld j2, j1, NRR
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, NRR
-    jld j5, j1, PSTAMP
-    qp_word:
-      jldi j2, 3
-      jshl j2, j9, j2
-      jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
-      jjz j2, qp_next
-      jldi j3, 3
-      jshl j7, j2, j3
-      jld j3, j1, ROOMMK
-      jadd j3, j3, j7
-      jld j4, j3, 0
-      jsub j4, j4, j5
-      jjz j4, qp_had
-      jst j5, j3, 0             ; first time in this question: no renglon yet
-      jld j3, j1, ROOMRC
-      jadd j3, j3, j7
-      jst j1, j3, 0
-      jld j3, j1, ROOMRS
-      jadd j3, j3, j7
-      jldi j4, -1
-      jst j4, j3, 0
-    qp_had:
-      jld j3, j1, ROOMRS
-      jadd j3, j3, j7
-      jld j4, j3, 0
-      jld j6, j1, RGID
-      jsub j4, j4, j6
-      jjz j4, qp_once
-      jst j6, j3, 0
-      jld j3, j1, ROOMRC
-      jadd j3, j3, j7
-      jld j4, j3, 0
-      jldi j6, 1
-      jadd j4, j4, j6
-      jst j4, j3, 0
-    qp_once:
-      jldi j2, 1
-      jadd j9, j9, j2
-      jjmp qp_word
-  qp_next:
-    jldi j1, 0
-    jld j2, j1, OI
-    jldi j3, 8
-    jadd j2, j2, j3
-    jst j2, j1, OI
-    jld j2, j1, OL
-    jldi j3, 1
-    jsub j2, j2, j3
-    jst j2, j1, OL
-  jwend
-  jret
-
-; The answer of the question loaded: every piece of its exceptions' renglones (once), and how much it surprises
-; against the silhouette of all that is regular: the more generous of the place's (in its rule's renglones) and the
-; switch's (in every renglon with a switch), -log2((k + 1/2) / (n + 1)); naming one of the NCAND pieces costs
-; log2(NCAND). The three that surprise more than they cost, most first (B1W..B3W, 0: none). Uses j1-j14.
+; The answer of the question loaded: every piece of its exceptions' renglones (once), weighed by what the book repeats
+; outside this exception (c_regular): the question comes from the surprise, the answer from what is regular. Naming one
+; of the NCAND pieces costs log2(NCAND). The three that pay the most, most first (B1W..B3W, 0: none). Uses j1-j14.
 q_answer:
   jldi j1, 0
   jst j1, j1, B1W
@@ -729,18 +693,6 @@ q_answer:
   jjz j2, qa_done
   jcall lg16
   jst j2, j1, CCOST
-  jld j2, j1, NRR               ; log2(2 NRR + 2) and log2(2 NEGR + 2)
-  jadd j2, j2, j2
-  jldi j3, 2
-  jadd j2, j2, j3
-  jcall lg16
-  jst j2, j1, LRR
-  jld j2, j1, NEGR
-  jadd j2, j2, j2
-  jldi j3, 2
-  jadd j2, j2, j3
-  jcall lg16
-  jst j2, j1, LNR
   jldi j2, 2                    ; then: each one's bits
   jst j2, j1, WMODE
   jcall q_xwalk
@@ -792,7 +744,7 @@ q_xwalk:
     xw_weigh:
       jst j9, j1, OI2
       jst j2, j1, CXW
-      jcall c_surprise
+      jcall c_regular
       jcall c_keep
       jldi j1, 0
       jld j9, j1, OI2
@@ -813,50 +765,97 @@ q_xwalk:
   jwend
   jret
 
-; The bits of the piece CXW: its surprise against the more generous silhouette, minus naming it -> j2. Uses j1-j7.
-c_surprise:
+; The bits of the piece CXW as an answer, by what the book repeats outside this exception (the judge of harmony): in
+; the n renglones it is in (this one out), whether a switch is there (k of them), coded with its own rate against the
+; book's (NEGR / NREN), its rate paying log2(n) / 2, and naming it among NCAND paying log2(NCAND). It answers only in
+; the question's direction: for "why this time the switch?" it must come with a switch more than the book does, for
+; "why without it?", less. -> j2 (at or below 0: it is no answer). Uses j1-j7.
+c_regular:
   jldi j1, 0
+  jld j2, j1, CXW               ; the difference asked about is never its own answer
+  jcall n_flags
+  jldi j4, 1
+  jand j3, j3, j4
+  jjnz j3, cr_no
   jld j2, j1, CXW
   jldi j3, 3
   jshl j7, j2, j3
-  jldi j2, 0                    ; in the place's rule renglones (0 if it never was there)
-  jld j3, j1, ROOMMK
+  jld j3, j1, ROOMRN            ; n: its renglones, this one out
   jadd j3, j3, j7
-  jld j3, j3, 0
-  jld j4, j1, PSTAMP
-  jsub j3, j3, j4
-  jjnz j3, cs_rc
-  jld j3, j1, ROOMRC
+  jld j4, j3, 0
+  jldi j5, 1
+  jsub j4, j4, j5
+  jld j3, j1, ROOMNC            ; k: those with a switch (this one had it, if the question asks why the switch)
   jadd j3, j3, j7
-  jld j2, j3, 0
-cs_rc:
-  jadd j2, j2, j2
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j7, j1, CXO
-  jcall lg16
-  jld j3, j1, LRR
-  jsub j3, j3, j2
-  jst j3, j1, GS2X              ; its surprise against the place
-  jld j7, j1, CXO
-  jld j3, j1, ROOMNC
-  jadd j3, j3, j7
-  jld j2, j3, 0
-  jadd j2, j2, j2
-  jldi j3, 1
-  jadd j2, j2, j3
-  jcall lg16
-  jld j3, j1, LNR
-  jsub j3, j3, j2               ; against the switch
-  jld j4, j1, GS2X
-  jsub j5, j3, j4               ; the smaller of the two
+  jld j5, j3, 0
+  jld j6, j1, QDIR
+  jsub j5, j5, j6
+  jst j4, j1, RNX
+  jst j5, j1, RKX
   jldi j6, 63
-  jsar j5, j5, j6
-  jjnz j5, cs_min
-  jadd j3, j4, j1
-cs_min:
-  jld j4, j1, CCOST
-  jsub j2, j3, j4
+  jsar j6, j4, j6
+  jjnz j6, cr_no
+  jjz j4, cr_no
+  jld j6, j1, NREN              ; its direction: k * NREN against NEGR * n
+  jmul j6, j5, j6
+  jld j7, j1, NEGR
+  jmul j7, j7, j4
+  jsub j6, j6, j7
+  jld j7, j1, QDIR
+  jjnz j7, cr_more
+  jldi j7, 0
+  jsub j6, j7, j6
+cr_more:
+  jldi j7, 63
+  jsar j7, j6, j7
+  jjnz j7, cr_no
+  jjz j6, cr_no
+  jld j2, j1, RNX
+  jcall lg16
+  jst j2, j1, LGNX
+  jst j1, j1, ACC2
+  jld j2, j1, RKX               ; k * (log2 k - log2 n - log2 NEGR + log2 NREN)
+  jjz j2, cr_rest
+  jcall lg16
+  jld j3, j1, LGNX
+  jsub j2, j2, j3
+  jld j3, j1, LNEG
+  jsub j2, j2, j3
+  jld j3, j1, LNREN
+  jadd j2, j2, j3
+  jld j3, j1, RKX
+  jmul j2, j2, j3
+  jst j2, j1, ACC2
+cr_rest:
+  jld j2, j1, RNX               ; (n - k) * (log2(n - k) - log2 n - log2(NREN - NEGR) + log2 NREN)
+  jld j3, j1, RKX
+  jsub j2, j2, j3
+  jjz j2, cr_cost
+  jcall lg16
+  jld j3, j1, LGNX
+  jsub j2, j2, j3
+  jld j3, j1, LNPOS
+  jsub j2, j2, j3
+  jld j3, j1, LNREN
+  jadd j2, j2, j3
+  jld j3, j1, RNX
+  jld j4, j1, RKX
+  jsub j3, j3, j4
+  jmul j2, j2, j3
+  jld j3, j1, ACC2
+  jadd j2, j2, j3
+  jst j2, j1, ACC2
+cr_cost:
+  jld j2, j1, ACC2              ; its rate, and naming it
+  jld j3, j1, LGNX
+  jldi j4, 1
+  jsar j3, j3, j4
+  jsub j2, j2, j3
+  jld j3, j1, CCOST
+  jsub j2, j2, j3
+  jret
+cr_no:
+  jldi j2, -1
   jret
 
 ; The piece CXW with bits j2 among the three best (above 0). Uses j1-j6.
@@ -909,7 +908,7 @@ ck_3:
 ck_done:
   jret
 
-; The rooms of the whys (once): the lists of where a place is said, and the eight tables by word; then the silhouette
+; The rooms of the whys (once): the lists of where a place is said, and the seven tables by word; then the silhouettes
 ; of the switch. Uses j1-j14.
 why_rooms:
   jldi j1, 0
@@ -928,8 +927,8 @@ why_rooms:
   jldi j1, 0
   jst j13, j1, ROOMOW
   jld j11, j1, NV
-  jldi j2, 6
-  jshl j11, j11, j2
+  jldi j2, 56
+  jmul j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMMK
@@ -943,9 +942,7 @@ why_rooms:
   jadd j3, j3, j2
   jst j3, j1, ROOMBL
   jadd j3, j3, j2
-  jst j3, j1, ROOMRC
-  jadd j3, j3, j2
-  jst j3, j1, ROOMRS
+  jst j3, j1, ROOMRN
   jadd j3, j3, j2
   jst j3, j1, ROOMNC
   jadd j3, j3, j2
@@ -1048,12 +1045,15 @@ q_occ:
   jld j5, j1, ROOMOP
   jld j6, j1, ROOMOW
   jjnz j4, qo_plain
+  jst j1, j1, QDIR              ; the rule is said with the switch: the exceptions are plain (why without it?)
   jst j6, j1, RL
   jst j3, j1, NRL
   jst j5, j1, XL
   jst j2, j1, NXL
   jret
 qo_plain:
+  jldi j4, 1                    ; the rule is said plain: the exceptions have the switch (why this time it?)
+  jst j4, j1, QDIR
   jst j5, j1, RL
   jst j2, j1, NRL
   jst j6, j1, XL

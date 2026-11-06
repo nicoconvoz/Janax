@@ -414,3 +414,34 @@ Lo que todavía no es:
 - **Bits chicos**: la silueta del lugar tiene pocos renglones (la regla de un lugar es corta), así que la sorpresa
   posible es chica y nombrar una candidata entre muchas cuesta casi lo mismo. Por eso calla tanto.
 - El "cerca" es solo el renglón; Razar miraba también el de cada lado.
+
+# La pregunta nace de la sorpresa; la respuesta, de lo regular (2026-11-06)
+
+El Capitán: *"la respuesta no debe basarse en la sorpresa, pero la pregunta no puede faltar en la sorpresa"*; *"y
+quiero que pueda preguntarse hasta incluso algo evidente… retórica"*.
+
+- **La pregunta** sigue saliendo de lo irregular (las excepciones, ordenadas por los bits de su sorpresa).
+- **La pregunta retórica**: cada pregunta trae también la de lo evidente, y la contesta su propia regla: "(retórica) ¿y
+  por qué casi siempre sin no? porque así se dijo 39 de 47 veces: lo regular se contesta solo".
+- **La respuesta** sale de lo regular (`c_regular`): una pieza del renglón de la excepción responde si, **en el resto
+  del libro** (ese renglón afuera), anda con el interruptor más que el libro en general (para "¿por qué esta vez no?"),
+  o menos (para "¿por qué esta vez sin no?"). Lo mide el juez: su presencia junto al interruptor, codificada con su tasa
+  propia contra la del libro, su tasa paga ½·log2 n, y nombrarla entre las candidatas paga log2(candidatas). **La
+  diferencia por la que se pregunta nunca es su propia respuesta** (el interruptor queda afuera): la primera corrida
+  contestaba "por no", con 4.035 bits.
+
+Se sacó la silueta del lugar palabra por palabra (servía a la respuesta por sorpresa); quedan las siluetas del libro:
+en cuántos renglones está cada pieza, y en cuántos con un interruptor.
+
+## Lo que contesta (libro entero, idéntico en los tres motores, `00009DAEE2B7C681`)
+
+```
+para que se / para que no se produzca un tumulto: por sino (404 bits); también ni, nada
+el que cree / el que no cree:                      por porque (75 bits); también que, puede
+, y el / y no el hombre para el sábado:            por pero (84 bits); también porque, son
+```
+
+Contesta con **los conectores que el libro repite alrededor de toda negación**: "sino" (la corrección: no esto, sino
+aquello), "porque" (la razón), "pero" (el contraste), "ni", "nada". Encontró solo **la forma lógica de la negación en este
+libro**. No es todavía la causa del caso, pero **señala la puerta donde vive la causa**: lo que viene después de ese
+"porque" o de ese "sino". El paso que sigue es seguir esa puerta: que la respuesta sea lo que el conector regular trae.

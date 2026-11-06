@@ -98,7 +98,19 @@ db ' (', 0
 times 0BC0h - $ db 0
 db ' bits)', 0
 times 0C00h - $ db 0
-db 'no se: nada sorprende mas que lo regular', 0
+db 'no se: nada de lo que el libro repite la explica', 0
 times 0C40h - $ db 0
 db '; tambien: ', 0
 times 0C80h - $ db 0
+db '      (retorica) y por que casi siempre ', 0
+times 0CC0h - $ db 0
+db 'sin ', 0
+times 0D00h - $ db 0
+db 'con ', 0
+times 0D40h - $ db 0
+db '? porque asi se dijo ', 0
+times 0D80h - $ db 0
+db ' de ', 0
+times 0DC0h - $ db 0
+db ' veces: lo regular se contesta solo', 0
+times 0E00h - $ db 0
