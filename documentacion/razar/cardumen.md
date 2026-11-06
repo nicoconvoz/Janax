@@ -719,3 +719,10 @@ frenando** con todas sus vecinas (la ley de Dale; en una corteza, más o menos 1
   fallar: con una copia del modelo con el freno desconectado, caen 7 de 18, todas las que miden el freno.
 - Primera mirada: con 20 % que frenan la ola sigue llegando arriba pero más fina; con 50 % se apaga a los 5 pasos,
   antes de llegar.
+- **El barrido de cuántas piezas frenan** (híbrido + frenos, palabras con Fano, temblor 10 %, cada nivel contra su
+  quieto con los mismos frenos; parado por el Capitán a los 32 de 56). Palabras nuevas de 20, semillas 1001–1007:
+  10 %: aprende 5, 6, 7, 4, 14, 8, 10 contra quieto 4, 9, 6, 2, 12, 5, 11 (5 mejor, 2 peor: parecido al híbrido sin
+  frenos). 20 %: en la semilla 1005 el que aprende **se apaga: 0 %**. 30 %: el que aprende da **0 % en todas** las que
+  terminaron. **Aprendiendo, los frenos crecen hasta silenciar el cubo**: la regla de Vogels refuerza el freno cuando
+  cae junto con su vecina, y en un cubo que se llena eso pasa todo el tiempo. Es la saturación de antes, del lado del
+  freno. Abierto: qué regla general deja crecer al freno sin que se coma la ola.

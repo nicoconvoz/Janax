@@ -213,3 +213,5 @@ cardumen quieto (4 mejor, 2 peor, 1 igual). Falta el paso de asentar lo que sirv
 conserva + asienta) le gana al cardumen quieto en palabras nuevas en 5 semillas de 7, sin perder ninguna: primera señal, no prueba.
 2026-11-06 — La melodía negativa (Capitán): bit de signo por pieza, en las cinco formas de propagar; prueba_signo.pl
 18 de 18, y con el freno desconectado caen 7 (las pruebas saben fallar).
+2026-11-06 — Frenos aprendiendo: con 20–30 % que frenan, los frenos crecen hasta apagar el cubo (0 %). Saturación del
+lado del freno.
