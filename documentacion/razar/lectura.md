@@ -881,3 +881,17 @@ Memoria: 279, 310 y 260 MB.
    Un par raro visto una vez parece valioso si no paga su nombre.
 
 **Lo que no se probó todavía:** que un piso baje cuando hondo sí conviene. En este libro ninguno lo necesitó.
+
+**La moneda del juez, probada y descartada (2026-11-06).** Una revisión marcó que las puertas eligieron profundidad 1
+aunque con 2 explican más por pieza ((172 − 41) / 103 = 1,27 contra 0,91). Probé la vara del MDL "de libro": el largo
+de escribir **las mismas jugadas**, una mezcla pareja de *d* + 1 voces (lo frecuente de la palabra y lo que predice
+cada una de las últimas *d* jugadas). Resultado: profundidades 2, 10 y 2, 1.874 MB, y los asociados cayeron a 1,4×
+sobre el azar. Las puertas sí mejoraron (180 explicados, 44 el ciego, 120 piezas: 1,13 por pieza).
+
+Por qué miente en las palabras: es circular. Al bajar, los pulsos de esa distancia entran al modelo, sus pares suben, y
+la voz de esa distancia predice mejor porque ahora el modelo se entrenó con ella. Comprime la sucesión de jugadas, que
+no es lo mismo que encontrar piezas que generalicen. **Se volvió atrás** (queda `cf0a5b2`: 1, 1, 1).
+
+Lo que queda abierto: la moneda que coincide con lo no leído es "lo que una pieza explica de lo que viene, más que el
+azar". Se puede calcular **mientras lee, con lo ya leído** (cada pulso nuevo se prueba contra las piezas de hasta ese
+momento y contra su ciego), sin espiar la parte apartada.
