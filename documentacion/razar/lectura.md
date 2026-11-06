@@ -745,3 +745,23 @@ Lo que encuentra:
 **Lo que hay que mirar con desconfianza:** profundidad 1 cuenta un pulso cada vez que la jugada cambia, así que una
 alternancia A, B, A, B suma varias veces el mismo par. Eso puede inflar los bits. Este libro no tiene una parte sin leer
 para la línea de base ciega ("al azar 0/0"), así que todavía no se midió contra el azar.
+
+## Una forma de cada tipo, el resto es peso (2026-11-06)
+
+El Capitán: *"no necesitamos todas las formas, necesitamos una de cada tipo; el resto lo hace el cardumen con sus pesos
+y el kernel con su memoria"*. El estudio de lo irregular compara, para cada lugar del piso de las palabras, solo dos
+tipos: **dicho sin nada en el hueco** y **dicho con el "no"**. Las demás formas que se guardaban (hasta 657 mil) no las
+leía nadie.
+
+- La negación no depende del pulso, así que `pulso.jsm` la destila **antes** de leer: al guardar ya sabe cuál es el "no".
+- Cada lugar guarda un ejemplo de cada tipo, dónde se lo vio primero y su peso (cuántas veces), en una tabla que crece
+  a lo que guarda (`crece.inc`).
+
+Libro entero, idéntico en los tres motores (`0000A5C503620D8A`):
+
+| | todas las formas | una de cada tipo |
+|---|---|---|
+| pico del pulso | 355 MB | **271 MB** |
+| preguntas de lo irregular | — | **las mismas, línea por línea** (solo se cruzan dos que empatan en 7 bits) |
+
+La pregunta y sentido no cambian (no guardan formas): 302 y 244 MB, las mismas huellas.

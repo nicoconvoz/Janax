@@ -365,6 +365,7 @@ q_more:
 jwend
 jjmp finish
 
+include 'crece.inc'
 include 'pulso.inc'
 include 'negacion.inc'
 

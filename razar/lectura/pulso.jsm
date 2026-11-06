@@ -170,11 +170,11 @@ jfirst j1, 10000h              ; first order: room 0
 
 jldi j0, 0                      ; the fingerprint
 jcall read_book
+jcall distill_no                ; the switch first (it needs no pulse): the forms kept are of its kind
 jldi j1, 0                      ; the forms seen are kept: the irregular is studied over them
 jldi j2, 1
 jst j2, j1, FORMS
 jcall learn_pulses
-jcall distill_no
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
@@ -277,7 +277,7 @@ jjmp finish
 questions:
   jldi j1, 0
   jldi j9, 0
-  jld j10, j1, RMASK
+  jld j10, j1, SMSK
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -332,7 +332,7 @@ questions:
   jldi j1, 0
   jst j1, j1, NQ
   jst j1, j1, QI
-  jld j2, j1, RMASK
+  jld j2, j1, SMSK
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, QL
@@ -379,7 +379,7 @@ questions:
     jldi j11, 0
     jldi j12, 0
     jldi j9, 0
-    jld j10, j1, RMASK
+    jld j10, j1, SMSK
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
@@ -427,9 +427,8 @@ q_plain:
   jldi j2, 1
 qp_key:
   jadd j5, j2, j1
-  jld j2, j1, ROOMS
-  jldi j3, 56
-  jcall t_find
+  jldi j2, ROOMS
+  jcall pl_find
   jld j5, j4, 0
   jjnz j5, qp_done
   jldi j4, 0
@@ -2527,6 +2526,7 @@ kn_walk:
   jwend
   jret
 
+include 'crece.inc'
 include 'casa.inc'
 include 'pulso.inc'
 include 'negacion.inc'

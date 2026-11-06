@@ -4,7 +4,7 @@
 ; that includes it keeps its own variables from 1600h on and includes it before lectura.inc.
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
 ROOMR = 1208h                   ; the requests: {key, what filled it first, said empty} per place (24 bytes)
-ROOMS = 1210h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
+ROOMS = 1F20h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
                                 ; its question's bits} per place (56 bytes)
 ROOMD = 1218h                   ; the differences: {key, low, high, floor | turned << 8, pairs, bits saved (in 2^-16)}
                                 ; per place (48 bytes)
@@ -34,6 +34,7 @@ RC    = 12D0h
 GE    = 12D8h                   ; the judge: the difference judged, and its bits
 GS    = 12E0h
 GN    = 12E8h
+SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
 NPULC = 1300h                   ; by kind (8 bytes each, from kind 0): pulses, differences, pulses in what it never
 NDIFC = 1340h                   ; read and how many of them a piece explains
@@ -143,14 +144,9 @@ jldi j1, 0
 jst j13, j1, ROOMR
 jld j2, j1, FORMS               ; the forms, only if asked for
 jjz j2, lp_noforms
-jld j3, j1, RMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 56
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMS
+jldi j2, ROOMS                  ; (one of each kind: it grows to what it holds, crece.inc)
+jldi j3, 56
+jcall pl_new
 lp_noforms:
 jldi j1, 0
 jld j3, j1, RMASK
@@ -449,8 +445,10 @@ t_find:
 
 ; A request: key j2, filled by j3 (0: said empty). Depth one (Capitan: "the move before and the next, never every
 ; possible move"): a request keeps only its last move, and the next one, if it is another, wakes the pulse between
-; the two and becomes the last. Awake it hangs and wakes; knocking it only wakes. The forms seen, each with its times,
-; are kept only when FORMS asks for them (the irregular is studied over them). Uses j1-j8.
+; the two and becomes the last. Awake it hangs and wakes; knocking it only wakes. When FORMS asks for them, the forms
+; the irregular is studied over are kept, one of each kind (Capitan: "not every form, one of each kind; the rest is the
+; weights"): a place of the words' floor said plain, and said with the switch (distilled before), each with where it
+; was first and its weight, how often. Uses j1-j8.
 post:
   jldi j1, 0
   jjnz j2, po_key
@@ -462,18 +460,28 @@ po_key:
   jjnz j4, po_test
   jld j4, j1, FORMS
   jjz j4, po_req
+  jld j4, j1, FLOOR             ; of a kind kept: the words' floor, plain or with the switch
+  jldi j5, 2
+  jsub j4, j4, j5
+  jjnz j4, po_req
+  jld j2, j1, PAY
+  jjz j2, po_kind
+  jcall n_flags
+  jldi j4, 1
+  jand j3, j3, j4
+  jjz j3, po_req
+po_kind:
+  jldi j1, 0
+  jld j2, j1, KEY
   jld j3, j1, PAY
   jcall hw                      ; seen before?
   jjnz j2, po_seen
   jldi j2, 1
 po_seen:
   jadd j5, j2, j1
-  jld j2, j1, ROOMS
-  jldi j3, 56
-  jcall t_find
-  jld j6, j4, 0
-  jjnz j6, po_again
-  jst j5, j4, 0                 ; a new form: its key, filling, where it first was, its floor
+  jldi j2, ROOMS
+  jcall pl_take
+  jjz j6, po_again              ; a new form: its key, filling, where it first was, its floor
   jld j6, j1, KEY
   jst j6, j4, 8
   jld j6, j1, PAY
