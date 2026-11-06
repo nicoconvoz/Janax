@@ -780,44 +780,6 @@ judge:
   jwend
   jret
 
-; log2 of j2 (1 or more) in 2^-16 of a bit -> j2: the highest bit, then sixteen bits of the rest by squaring.
-; Uses j1, j3-j6 (j1 = 0 after).
-lg16:
-  jldi j1, 0
-  jldi j3, 0
-  jldi j5, 1
-  jshr j4, j2, j5
-  jwhile j4
-    jadd j3, j3, j5
-    jshr j4, j4, j5
-  jwend
-  jldi j4, 31                   ; the mantissa in [2^31, 2^32)
-  jsub j4, j4, j3
-  jldi j6, 63
-  jsar j6, j4, j6
-  jjnz j6, lg_down
-  jshl j2, j2, j4
-  jjmp lg_frac
-lg_down:
-  jsub j4, j1, j4
-  jshr j2, j2, j4
-lg_frac:
-  jldi j4, 16
-  jwhile j4
-    jmul j2, j2, j2
-    jldi j5, 31
-    jshr j2, j2, j5
-    jldi j5, 32
-    jshr j6, j2, j5
-    jshr j2, j2, j6
-    jadd j3, j3, j3
-    jadd j3, j3, j6
-    jldi j5, 1
-    jsub j4, j4, j5
-  jwend
-  jadd j2, j3, j1
-  jret
-
 ; The kind of the difference DKT, DLO -> j5: 1 gemelos, 2 interruptores (one filling empty), 3 asociados, 4 puertas.
 ; Uses j1, j5-j7.
 d_cat_of:

@@ -64,6 +64,13 @@ S_NEG5  = 980h
 S_Q7    = 9C0h
 S_ASSOC = 0A00h
 S_ASSOC2 = 0A40h
+S_PP1   = 0A80h
+S_PP2   = 0AC0h
+S_ANS   = 0B00h
+S_ANS2  = 0B40h
+S_ANS3  = 0B80h
+S_ANS4  = 0BC0h
+S_DUNNO = 0C00h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -88,6 +95,14 @@ OI2   = 19A0h
 NQ    = 19A8h                   ; exceptions looked at
 QI    = 19B0h                   ; walking the forms: the place, how many left
 QL    = 19B8h
+CBY   = 19C0h                   ; the judge of an association: its whys, its blind whys, a term, the total, log2 NQ,
+CBL   = 19C8h                   ; log2(2 NQ + 2)
+CBA   = 19D0h
+CBT   = 19D8h
+CBN   = 19E0h
+CBQ   = 19E8h
+BESTW = 19F0h                   ; the answer: the why that saves the most bits, and its bits
+BESTG = 19F8h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -468,7 +483,32 @@ qw_start:
   jldi j1, 0
   jldi j2, 3
   jst j2, j1, WMODE
+  jst j1, j1, BESTG
+  jst j1, j1, BESTW
   jcall q_whys
+  jldi j2, 10                   ; its answer: the why that saves the most bits, or it does not know
+  jcall putch
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, BESTW
+  jjnz j2, qw_answer
+  jldi j1, S_DUNNO
+  jcall puts
+  jldi j2, 10
+  jjmp putch
+qw_answer:
+  jldi j1, S_ANS2
+  jcall puts
+  jld j2, j1, BESTW
+  jadd j12, j2, j1
+  jcall mix
+  jcall putword
+  jldi j1, S_ANS3
+  jcall puts
+  jld j2, j1, BESTG
+  jcall putq16
+  jldi j1, S_ANS4
+  jcall puts
   jldi j2, 10
   jjmp putch
 
@@ -701,6 +741,15 @@ r_why:
     jadd j2, j8, j1
     jcall is_assoc
     jjz j3, rw_plain
+    jld j2, j1, CBT               ; the why that saves the most bits is its answer
+    jld j3, j1, BESTG
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, rw_star
+    jst j2, j1, BESTG
+    jst j8, j1, BESTW
+  rw_star:
     jldi j2, 42
     jcall putch
   rw_plain:
@@ -724,30 +773,101 @@ r_why:
   jwend
   jret
 
-; j3 = 1 if the word j2 is an association: a why of two exceptions or more, and of more than blind ones. Uses j1-j5.
+; j3 = 1 if the word j2 is an association: it saves bits as one (c_bits above 0; its bits stay in CBT). Uses j1-j7.
 is_assoc:
+  jcall c_bits
+  jldi j1, 0
+  jst j2, j1, CBT
+  jldi j3, 0
+  jldi j4, 63
+  jsar j4, j2, j4
+  jjnz j4, ia_no
+  jjz j2, ia_no
+  jldi j3, 1
+ia_no:
+  jret
+
+; The bits the word j2 saves as an association (in 2^-16; at or below 0 it does not pay), by the judge of harmony:
+; whether it is in each of the NQ exceptions, coded with its own rate against coded with the rate of the blind ones
+; (Krichevsky-Trofimov: (BL + 1/2) / (NQ + 1)), its own rate paying log2(NQ) / 2. Only if it is in more exceptions than
+; blind ones. Uses j1-j7 -> j2.
+c_bits:
   jldi j1, 0
   jldi j3, 3
-  jshl j5, j2, j3
-  jld j3, j1, ROOMWY
-  jadd j3, j3, j5
-  jld j3, j3, 0
-  jld j4, j1, ROOMBL
-  jadd j4, j4, j5
+  jshl j3, j2, j3
+  jld j4, j1, ROOMWY
+  jadd j4, j4, j3
   jld j4, j4, 0
-  jsub j4, j4, j3               ; blind < why
-  jldi j5, 63
-  jsar j4, j4, j5
-  jjz j4, ia_no
-  jldi j4, 2
-  jsub j4, j3, j4
-  jldi j5, 63
-  jsar j4, j4, j5
-  jjnz j4, ia_no
+  jst j4, j1, CBY
+  jld j5, j1, ROOMBL
+  jadd j5, j5, j3
+  jld j5, j5, 0
+  jst j5, j1, CBL
+  jsub j6, j5, j4
+  jldi j7, 63
+  jsar j6, j6, j7
+  jjz j6, cb_no
+  jld j2, j1, NQ                ; log2 NQ and log2(2 NQ + 2)
+  jcall lg16
+  jst j2, j1, CBN
+  jld j2, j1, NQ
+  jadd j2, j2, j2
+  jldi j3, 2
+  jadd j2, j2, j3
+  jcall lg16
+  jst j2, j1, CBQ
+  jld j2, j1, CBY               ; WY * (log2 WY - log2 NQ - log2(2 BL + 1) + log2(2 NQ + 2))
+  jcall lg16
+  jld j3, j1, CBN
+  jsub j2, j2, j3
+  jld j3, j1, CBQ
+  jadd j2, j2, j3
+  jst j2, j1, CBA
+  jld j2, j1, CBL
+  jadd j2, j2, j2
   jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jld j3, j1, CBA
+  jsub j3, j3, j2
+  jld j4, j1, CBY
+  jmul j3, j3, j4
+  jst j3, j1, CBT
+  jld j2, j1, NQ                ; (NQ - WY) * (log2(NQ - WY) - log2 NQ - log2(2 NQ - 2 BL + 1) + log2(2 NQ + 2))
+  jld j3, j1, CBY
+  jsub j2, j2, j3
+  jjz j2, cb_cost
+  jcall lg16
+  jld j3, j1, CBN
+  jsub j2, j2, j3
+  jld j3, j1, CBQ
+  jadd j2, j2, j3
+  jst j2, j1, CBA
+  jld j2, j1, NQ
+  jld j3, j1, CBL
+  jsub j2, j2, j3
+  jadd j2, j2, j2
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jld j3, j1, CBA
+  jsub j3, j3, j2
+  jld j4, j1, NQ
+  jld j5, j1, CBY
+  jsub j4, j4, j5
+  jmul j3, j3, j4
+  jld j4, j1, CBT
+  jadd j4, j4, j3
+  jst j4, j1, CBT
+cb_cost:
+  jld j2, j1, CBT               ; its own rate: log2(NQ) / 2
+  jld j3, j1, CBN
+  jldi j4, 1
+  jsar j3, j3, j4
+  jsub j2, j2, j3
   jret
-ia_no:
-  jldi j3, 0
+cb_no:
+  jldi j2, -1
   jret
 
 ; The whys of the question loaded (q_occ done): in its exceptions, never in its rule; counted (WMODE 1) or written
@@ -834,7 +954,7 @@ q_markall:
   jwend
   jret
 
-; The associations that came up: the words that were a why of the most exceptions, more than of blind ones (up to
+; The associations that came up: the words that save the most bits as one (c_bits: in more exceptions than blind, up to
 ; fifteen, each with its whys and blind whys). Uses j1-j14.
 assoc_report:
   jldi j1, S_ASSOC
@@ -846,7 +966,7 @@ assoc_report:
   jldi j2, 15
   jst j2, j1, OL
   jwhile j2
-    jldi j1, 0                  ; the most why - blind left
+    jldi j1, 0                  ; the most bits left
     jldi j11, 0
     jldi j12, 0
     jldi j9, 1
@@ -866,13 +986,7 @@ assoc_report:
       jldi j4, 1
       jadd j3, j3, j4
       jjz j3, ar_next
-      jld j3, j1, ROOMWY
-      jadd j3, j3, j5
-      jld j3, j3, 0
-      jld j4, j1, ROOMBL
-      jadd j4, j4, j5
-      jld j4, j4, 0
-      jsub j3, j3, j4
+      jld j3, j1, CBT
       jsub j4, j11, j3
       jldi j6, 63
       jsar j4, j4, j6
@@ -1053,7 +1167,14 @@ kind_report:
     jld j12, j1, RENT
     jld j2, j12, 32
     jcall putnum
-    jldi j1, S_PAIRS
+    jldi j1, S_PP1                ; and its bits per pair: does it win by what each pair says, or by how many?
+    jcall puts
+    jld j12, j1, RENT
+    jadd j2, j11, j1
+    jld j3, j12, 32
+    jdiv j2, j2, j3
+    jcall putq16
+    jldi j1, S_PP2
     jcall puts
     jld j12, j1, RENT
     jcall d_print

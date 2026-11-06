@@ -33,6 +33,8 @@ S_NSW   = 380h
 S_NDR   = 3C0h
 S_FLIPS = 480h
 S_NTURN = 4C0h
+S_KBITS = 500h
+S_KBITS2 = 540h
 
 ROOMX = 1600h                   ; the facts: {key, the word that fills it} per place (a key may have many)
 XMASK = 1608h
@@ -68,6 +70,14 @@ NSWP  = 16F0h
 NDRP  = 16F8h
 MPOS  = 1700h                   ; a switch put in the middle: where, places left
 MLEFT = 1708h
+SVB   = 1710h                   ; the judge: the bits of the value walked from, of the answer being added, how often the
+KB    = 1718h                   ; request was said (and its log2), where its places start, log2 of the book, the name of
+CKEY  = 1720h                   ; a piece, how often each word is in the book
+LCK   = 1728h
+XS0   = 1730h
+LGT   = 1738h
+PCOST = 1740h
+ROOMF2 = 1748h
 VIAS  = 7000h                   ; an answer written: the piece of each hole's step
 MBUF  = 7800h                   ; a middle made with a piece
 HPOS  = 5000h                 ; where each hole of the question is (HMAX holes: criterion, past them it says it
@@ -179,6 +189,38 @@ pc_next:
   jsub j10, j10, j2
 jwend
 
+jldi j1, 0                      ; the judge: how often each word is in the book, log2 of the book, and the name of a piece
+jld j11, j1, NV
+jldi j2, 3
+jshl j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMF2
+jld j9, j1, ROOMT
+jld j10, j1, NTOK
+jwhile j10
+  jld j2, j9, 0
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ROOMF2
+  jadd j2, j2, j3
+  jld j3, j2, 0
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j2, 0
+  jldi j2, 8
+  jadd j9, j9, j2
+  jsub j10, j10, j4
+jwend
+jld j2, j1, NTOK
+jcall lg16
+jst j2, j1, LGT
+jld j2, j1, NPC
+jldi j3, 1
+jadd j2, j2, j3
+jcall lg16
+jst j2, j1, PCOST
+
 jldi j1, 0                      ; the facts: places for two per word for each of the three lengths, twice over
 jld j2, j1, NTOK
 jldi j3, 12
@@ -187,8 +229,8 @@ jcall pow2
 jldi j4, 1
 jsub j4, j3, j4
 jst j4, j1, XMASK
-jldi j4, 4
-jshl j11, j3, j4
+jldi j4, 24
+jmul j11, j3, j4
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMX
@@ -269,7 +311,7 @@ jld j2, j1, MAXH
 jjz j2, q_none
 jld j3, j1, NV
 jmul j11, j2, j3
-jldi j3, 32
+jldi j3, 40
 jmul j11, j11, j3
 jcall room
 jldi j1, 0
@@ -467,14 +509,16 @@ x_add:
   jcall x_slot
   jldi j8, 1
   jwhile j8
-    jldi j3, 4
-    jshl j3, j6, j3
+    jldi j3, 24
+    jmul j3, j6, j3
     jld j4, j1, ROOMX
     jadd j3, j3, j4
     jld j4, j3, 0
     jjnz j4, xa_full
     jst j5, j3, 0
     jst j2, j3, 8
+    jldi j4, 1
+    jst j4, j3, 16
     jld j4, j1, NFACT
     jldi j7, 1
     jadd j4, j4, j7
@@ -485,14 +529,18 @@ x_add:
     jjnz j4, xa_next
     jld j4, j3, 8
     jsub j4, j4, j2
-    jjz j4, xa_done
+    jjz j4, xa_again
   xa_next:
     jldi j7, 1
     jadd j6, j6, j7
     jld j7, j1, XMASK
     jand j6, j6, j7
   jwend
-xa_done:
+xa_again:                       ; said again: once more
+  jld j4, j3, 16
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j3, 16
   jret
 
 ; The question from QS to QE: its holes, its requests, the walk, and what it answers. Uses j1-j14.
@@ -601,27 +649,63 @@ an_cut:
   jshl j3, j2, j3
   jld j4, j3, HCNT
   jjz j4, an_dunno
-  jst j1, j1, AI
+  jst j1, j1, FOUND             ; the answers whose way says bits (above 0), the most first; none: it does not know
   an_each:
     jldi j1, 0
     jld j2, j1, LASTH
+    jld j4, j1, NV
+    jmul j4, j2, j4
+    jldi j5, 40
+    jmul j4, j4, j5
+    jld j5, j1, ROOMK
+    jadd j4, j4, j5             ; its answers
     jldi j3, 3
     jshl j3, j2, j3
-    jld j4, j3, HCNT
-    jld j5, j1, AI
-    jsub j4, j5, j4
-    jjz j4, an_done
+    jld j6, j3, HCNT
+    jldi j7, 0                  ; the most bits, and which
+    jldi j8, -1
+    jldi j9, 0
+    jwhile j6
+      jld j5, j4, 32
+      jsub j10, j7, j5
+      jldi j11, 63
+      jsar j10, j10, j11
+      jjz j10, an_less
+      jadd j7, j5, j1
+      jadd j8, j9, j1
+    an_less:
+      jldi j5, 40
+      jadd j4, j4, j5
+      jldi j5, 1
+      jadd j9, j9, j5
+      jsub j6, j6, j5
+    jwend
+    jldi j5, 1
+    jadd j5, j8, j5
+    jjz j5, an_done
+    jst j8, j1, AI
+    jst j7, j1, KB
     jcall write_one
-    jldi j1, 0
-    jld j2, j1, AI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AI
+    jldi j1, 0                  ; written: out of the count
+    jld j2, j1, LASTH
+    jld j4, j1, NV
+    jmul j4, j2, j4
+    jld j5, j1, AI
+    jadd j4, j4, j5
+    jldi j5, 40
+    jmul j4, j4, j5
+    jld j5, j1, ROOMK
+    jadd j4, j4, j5
+    jst j1, j4, 32
+    jldi j2, 1
+    jst j2, j1, FOUND
     jjmp an_each
 an_dunno:
   jldi j1, S_NONE
   jjmp puts
 an_done:
+  jld j2, j1, FOUND
+  jjz j2, an_dunno
   jret
 
 ; The question's requests, cut where its holes are: before the first hole (its first word, the rest), between two
@@ -851,6 +935,7 @@ walk_from:
   jsar j3, j2, j3
   jjnz j3, wf_hole
   jst j2, j1, SV                ; a word: one value, from no hole
+  jst j1, j1, SVB
   jcall wf_ask
   jret
 wf_hole:
@@ -869,10 +954,12 @@ wf_hole:
   jld j4, j1, NV                ; its answer SK
   jmul j4, j2, j4
   jadd j4, j4, j5
-  jldi j5, 32
+  jldi j5, 40
   jmul j4, j4, j5
   jld j5, j1, ROOMK
   jadd j4, j4, j5
+  jld j5, j4, 32                ; the bits its way already says
+  jst j5, j1, SVB
   jld j4, j4, 0
   jst j4, j1, SV
   jcall wf_ask
@@ -1052,10 +1139,40 @@ wl_right:
 wl_key:
   jst j5, j1, KEYQ
   jcall x_slot
+  jst j6, j1, XS0
+  jst j1, j1, CKEY              ; first: how often the request was said, all its fillings together
   jldi j8, 1
   jwhile j8
-    jldi j3, 4
-    jshl j3, j6, j3
+    jldi j3, 24
+    jmul j3, j6, j3
+    jld j4, j1, ROOMX
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jjz j4, wl_counted
+    jld j5, j1, KEYQ
+    jsub j4, j4, j5
+    jjnz j4, wl_cnext
+    jld j4, j3, 16
+    jld j5, j1, CKEY
+    jadd j5, j5, j4
+    jst j5, j1, CKEY
+  wl_cnext:
+    jldi j7, 1
+    jadd j6, j6, j7
+    jld j7, j1, XMASK
+    jand j6, j6, j7
+    jldi j8, 1
+  jwend
+wl_counted:
+  jld j2, j1, CKEY
+  jjz j2, wl_done
+  jcall lg16
+  jst j2, j1, LCK
+  jld j6, j1, XS0
+  jldi j8, 1
+  jwhile j8
+    jldi j3, 24
+    jmul j3, j6, j3
     jld j4, j1, ROOMX
     jadd j3, j3, j4
     jld j4, j3, 0
@@ -1063,8 +1180,42 @@ wl_key:
     jld j5, j1, KEYQ
     jsub j4, j4, j5
     jjnz j4, wl_next
+    jst j6, j1, AT2             ; the bits of this step: what the filling says here beyond what it says anywhere,
+    jld j2, j3, 16              ; log2((said so / the request said) / (the filling / the book)); a piece pays its name
+    jcall lg16
+    jld j3, j1, LGT
+    jadd j2, j2, j3
+    jld j3, j1, LCK
+    jsub j2, j2, j3
+    jld j3, j1, SVB
+    jadd j2, j2, j3
+    jst j2, j1, KB
+    jld j6, j1, AT2
+    jldi j3, 24
+    jmul j3, j6, j3
+    jld j4, j1, ROOMX
+    jadd j3, j3, j4
     jld j2, j3, 8
-    jst j6, j1, AT2
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ROOMF2
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jcall lg16
+    jld j3, j1, KB
+    jsub j3, j3, j2
+    jld j4, j1, VIA
+    jjz j4, wl_free
+    jld j4, j1, PCOST
+    jsub j3, j3, j4
+  wl_free:
+    jst j3, j1, KB
+    jld j6, j1, AT2
+    jldi j3, 24
+    jmul j3, j6, j3
+    jld j4, j1, ROOMX
+    jadd j3, j3, j4
+    jld j2, j3, 8
     jcall k_add
     jldi j1, 0
     jld j6, j1, AT2
@@ -1088,7 +1239,7 @@ k_add:
   jsub j3, j3, j4               ; the hole
   jld j4, j1, NV
   jmul j4, j3, j4
-  jldi j5, 32
+  jldi j5, 40
   jmul j4, j4, j5
   jld j5, j1, ROOMK
   jadd j4, j4, j5               ; its answers
@@ -1098,24 +1249,34 @@ k_add:
   jwhile j6
     jld j7, j4, 0
     jsub j7, j7, j2
-    jjz j7, ka_done
-    jldi j7, 32
+    jjz j7, ka_seen
+    jldi j7, 40
     jadd j4, j4, j7
     jldi j7, 1
     jsub j6, j6, j7
   jwend
   jst j2, j4, 0
+  jld j6, j5, HCNT
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j5, HCNT
+ka_way:
   jld j7, j1, SV
   jst j7, j4, 8
   jld j7, j1, SRC
   jst j7, j4, 16
   jld j7, j1, VIA
   jst j7, j4, 24
-  jld j6, j5, HCNT
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j5, HCNT
-ka_done:
+  jld j7, j1, KB
+  jst j7, j4, 32
+  jret
+ka_seen:                        ; reached again: the way that says more bits stays
+  jld j7, j4, 32
+  jld j6, j1, KB
+  jsub j7, j7, j6
+  jldi j6, 63
+  jsar j7, j7, j6
+  jjnz j7, ka_way
   jret
 
 ; The answer AI of the hole LASTH: every hole filled by its way back, the melody written filled in, and whether the
@@ -1139,7 +1300,7 @@ write_one:
     jld j4, j1, NV
     jmul j4, j9, j4
     jadd j4, j4, j10
-    jldi j5, 32
+    jldi j5, 40
     jmul j4, j4, j5
     jld j5, j1, ROOMK
     jadd j4, j4, j5
@@ -1167,7 +1328,7 @@ write_one:
     jldi j10, 0
     jld j4, j1, NV
     jmul j4, j9, j4
-    jldi j6, 32
+    jldi j6, 40
     jmul j4, j4, j6
     jld j6, j1, ROOMK
     jadd j4, j4, j6
@@ -1176,7 +1337,7 @@ write_one:
       jld j6, j4, 0
       jsub j6, j6, j11
       jjz j6, wr_back
-      jldi j6, 32
+      jldi j6, 40
       jadd j4, j4, j6
       jldi j6, 1
       jadd j10, j10, j6
@@ -1234,6 +1395,12 @@ wr_say:
     jadd j10, j10, j2
     jsub j9, j9, j2
   jwend
+  jldi j1, S_KBITS              ; and the bits its way says
+  jcall puts
+  jld j2, j1, KB
+  jcall putq16
+  jldi j1, S_KBITS2
+  jcall puts
   jldi j2, 10
   jjmp putch
 

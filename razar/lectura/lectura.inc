@@ -37,6 +37,7 @@ M48   = 10F8h                   ; 2^48 - 1
 POS   = 1100h                   ; how long the text it writes is so far
 LINE  = 1108h                   ; the renglon being walked
 MLEFT = 1128h                   ; bytes left of the mark being read
+Q16V  = 1130h                   ; a number being written with two decimals
 LABEL = 1110h                   ; the file being read: its label and how long it is
 LABLEN = 1118h
 QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
@@ -619,6 +620,75 @@ finish:
   jld j12, j1, POS
   jcall ask
   jhalt
+
+; log2 of j2 (1 or more) in 2^-16 of a bit -> j2: the highest bit, then sixteen bits of the rest by squaring.
+; Uses j1, j3-j6 (j1 = 0 after).
+lg16:
+  jldi j1, 0
+  jldi j3, 0
+  jldi j5, 1
+  jshr j4, j2, j5
+  jwhile j4
+    jadd j3, j3, j5
+    jshr j4, j4, j5
+  jwend
+  jldi j4, 31                   ; the mantissa in [2^31, 2^32)
+  jsub j4, j4, j3
+  jldi j6, 63
+  jsar j6, j4, j6
+  jjnz j6, lg_down
+  jshl j2, j2, j4
+  jjmp lg_frac
+lg_down:
+  jsub j4, j1, j4
+  jshr j2, j2, j4
+lg_frac:
+  jldi j4, 16
+  jwhile j4
+    jmul j2, j2, j2
+    jldi j5, 31
+    jshr j2, j2, j5
+    jldi j5, 32
+    jshr j6, j2, j5
+    jshr j2, j2, j6
+    jadd j3, j3, j3
+    jadd j3, j3, j6
+    jldi j5, 1
+    jsub j4, j4, j5
+  jwend
+  jadd j2, j3, j1
+  jret
+
+; j2 (0 or more, in 2^-16) with two decimals at TEXT + POS. Uses j1-j5.
+putq16:
+  jldi j1, 0
+  jst j2, j1, Q16V
+  jldi j3, 16
+  jshr j2, j2, j3
+  jcall putnum
+  jldi j2, 44
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, Q16V
+  jldi j3, 0
+  jshi j3, 0FFFFh
+  jand j2, j2, j3
+  jldi j3, 100
+  jmul j2, j2, j3
+  jldi j3, 16
+  jshr j2, j2, j3
+  jldi j3, 10
+  jsub j4, j2, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, pq_two
+  jst j2, j1, Q16V
+  jldi j2, 48
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, Q16V
+pq_two:
+  jjmp putnum
 
 ; What it wrote so far, out (request 1), and TEXT empty again. Uses j1, j10-j14.
 flush:

@@ -345,3 +345,38 @@ produzca un tumulto": cerca *decían *hagamos *durante *fiesta *tumulto *pueblo�
 Lo que todavía no es: el "cerca" de una pregunta con muchas excepciones junta muchos renglones y se vuelve largo; la
 asociación se mide contra una sola vara ciega por pregunta; y todavía no **contesta** la pregunta: junta los candidatos
 a porqué y las asociaciones que se repiten, pero no elige uno.
+
+# El juez en bits, conectado a todo (2026-11-06)
+
+El Capitán: *"que conteste… y fijate: el juez en bits ya está hecho y medido desde el MODO 6, solo desconectado. Hay
+cuatro cosas colgando de él"*. Ahora todo lo decide la misma vara, D39 (describir lo mismo con menos), con el modelo
+nulo de MDL (si nada paga, calla). `lg16` pasó a `lectura.inc` (lo usan los tres programas). Idéntico en los tres
+motores: lector `00005225BB82FE6D`, pulso (libro entero) `000087EBFEB63633`, pregunta `0000E78A9442B1C1`.
+
+**1. ¿La coma ganó por categoría o por frecuencia? Por frecuencia.** Cada pieza muestra ahora sus bits por par. La coma
+dice 1,45 bits por par, como "no" (1,42), y menos que "»" (1,77) o "?" (1,56): gana solo porque tiene 1.237 pares. Las
+que dicen mucho por par son otras: á/é 5,8, la/su 5,4, «/" 6,4, ': « / : "' 6,8.
+
+**2. Que conteste su porqué.** La asociación ahora también la decide el juez (antes: "dos excepciones y más que lo
+ciego"): si una palabra está en cada una de las excepciones se codifica con su propia tasa contra la tasa de lo ciego
+(Krichevsky–Trofimov, (ciegas + ½)/(N + 1)), su tasa paga ½·log2 N. La respuesta de cada pregunta es el porqué que más
+bits ahorra; si ninguno paga, "no sé". En las 20 más fuertes contesta 17 y calla 3. **Lo que contesta, honesto:**
+casi siempre compañeros del "no" ("ni", 33 bits; "sino", "o", "puede", "acaso"), no causas: encontró que el "no" que
+sorprende viene con otras negaciones y posibilidades. Es cierto, y todavía no es "porque era Herodes".
+
+**3. ¿Padre/hijo le gana a la basura por goleada? No.** Cada paso de una respuesta vale lo que su llenado dice ahí más
+allá de lo que dice en todo el libro, `log2((dicho así / el pedido dicho) / (el llenado / el libro))`, y cada pieza
+usada paga su nombre entre todas (`log2(139)` = 7,1 bits). Ordenadas por bits, la buena va primero (Aram 26,6; Josafat
+28,0), pero **sin goleada**: Isaac 10,9 contra 9,6 de la basura con coma, que una vez adentro de la cadena trae hechos
+de verdad. Y Matán (14,3) le gana a Isaac: los dos Jacob siguen mezclados.
+**¿La puerta paga? Acá no:** las respuestas por "le dijo / le respondió" caen bajo cero al pagar el nombre de la pieza;
+queda solo lo dicho tal cual.
+
+**4. ¿La abstención sirve en el lector? No.** Código de dos partes (acertó o no, y si no, la palabra con el código sin
+modelo `log2((leídas + conocidas)/(veces + 1))`), por palabra tapada:
+
+```
+sin modelo 8,89 bits | contestando siempre (callado: el eco) 7,50 | callando cuando no sabe 7,95
+```
+
+Volver a la palabra más común recupera aciertos baratos; callar los tira.

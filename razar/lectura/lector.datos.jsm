@@ -28,3 +28,9 @@ db 'lector: no encuentro el libro', 10, 0
 times 300h - $ db 0
 db 'lector: sin memoria', 10, 0
 times 340h - $ db 0
+db 'bits por palabra tapada: sin modelo ', 0
+times 380h - $ db 0
+db ' | contestando siempre ', 0
+times 3C0h - $ db 0
+db ' | callando cuando no sabe ', 0
+times 400h - $ db 0

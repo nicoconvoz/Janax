@@ -34,6 +34,9 @@ S_BOTH  = 240h
 S_SIL   = 280h
 S_NOBOOK = 2C0h
 S_NOMEM = 300h
+S_BITS1 = 340h
+S_BITS2 = 380h
+S_BITS3 = 3C0h
 
 ROOMC = 1200h                   ; how often each word was read, by number
 ROOMB = 1208h                   ; the pairs: {p * NV + x + 1, how often} per place
@@ -64,6 +67,17 @@ GAT   = 12C8h                   ; the list being walked
 GLEFT = 12D0h
 GX    = 12D8h
 GC1   = 12E0h
+LGNV  = 12E8h                   ; the judge: log2(words read + words known), the bits of all without a model, of the ways
+SALL  = 12F0h                   ; that miss (silent or wrong; forced), the outcomes (dos lados: right, wrong, silent;
+SBM   = 12F8h                   ; forced: right, wrong), a total, log2 of the covered
+SFM   = 1300h
+BR    = 1308h
+BW    = 1310h
+BS    = 1318h
+FR    = 1320h
+FW    = 1328h
+TT    = 1330h
+LGN   = 1338h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
@@ -170,6 +184,28 @@ ec_next:
   jsub j8, j8, j2
 jwend
 jst j7, j1, ECOW
+
+jldi j1, 0                      ; the judge: words read where it learns, and log2 of them with the words it knows
+jldi j6, 0
+jldi j9, 1
+jld j8, j1, NV
+jldi j2, 1
+jsub j8, j8, j2
+jwhile j8
+  jldi j2, 3
+  jshl j2, j9, j2
+  jld j3, j1, ROOMC
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jadd j6, j6, j2
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j8, j8, j2
+jwend
+jld j2, j1, NV
+jadd j2, j2, j6
+jcall lg16
+jst j2, j1, LGNV
 
 jldi j1, 0                      ; the words after each word: a list per word, from the pairs
 jld j2, j1, NV
@@ -340,6 +376,9 @@ te_lsaid:
   jadd j3, j3, j4
   jst j3, j1, LHIT
 te_both:
+  jcall lb_count                ; the two-part code of the covered word
+  jldi j1, 0
+  jld j2, j1, CW
   jld j3, j1, BBEST
   jjnz j3, te_bsaid
   jld j3, j1, BSIL
@@ -421,6 +460,7 @@ jld j2, j1, BSIL
 jcall putnum
 jldi j2, 10
 jcall putch
+jcall lb_report
 jjmp finish
 
 ; The place of the pair (j2 = p, j3 = x) -> j4, its key -> j5 (the place is empty if it was never seen). Uses j1-j8.
@@ -621,5 +661,142 @@ puthits:
   jldi j2, 41
   jcall putch
   jret
+
+
+; The two-part code of the covered word CW (the judge of harmony on the reader): what naming it costs without a
+; model, log2((words read + words known) / (its count + 1)), added to all; to the ways that miss it (dos lados silent
+; or wrong; dos lados forced to the eco when silent, wrong); and the outcomes counted. Uses j1-j7.
+lb_count:
+  jldi j1, 0
+  jld j2, j1, CW
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMC
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall lg16
+  jld j3, j1, LGNV
+  jsub j3, j3, j2
+  jst j3, j1, TT                ; its cost without a model
+  jld j4, j1, SALL
+  jadd j4, j4, j3
+  jst j4, j1, SALL
+  jld j5, j1, BBEST
+  jld j6, j1, CW
+  jjnz j5, lb_said
+  jld j4, j1, BS                ; silent: it pays the word; forced, the eco says it
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j1, BS
+  jld j4, j1, SBM
+  jadd j4, j4, j3
+  jst j4, j1, SBM
+  jld j5, j1, ECOW
+  jsub j5, j5, j6
+  jjz j5, lb_fright
+  jjmp lb_fwrong
+lb_said:
+  jsub j5, j5, j6
+  jjnz j5, lb_wrong
+  jld j4, j1, BR
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j1, BR
+lb_fright:
+  jld j4, j1, FR
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j1, FR
+  jret
+lb_wrong:
+  jld j4, j1, BW
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j1, BW
+  jld j4, j1, SBM
+  jadd j4, j4, j3
+  jst j4, j1, SBM
+lb_fwrong:
+  jld j4, j1, FW
+  jldi j7, 1
+  jadd j4, j4, j7
+  jst j4, j1, FW
+  jld j4, j1, SFM
+  jadd j4, j4, j3
+  jst j4, j1, SFM
+  jret
+
+; k * log2(n / k), the bits of one outcome of n, k = j2 (0: none) -> added to TT. Uses j1-j7.
+lb_part:
+  jjz j2, lp_none
+  jldi j1, 0
+  jst j2, j1, GX
+  jcall lg16
+  jld j3, j1, LGN
+  jsub j3, j3, j2
+  jld j4, j1, GX
+  jmul j3, j3, j4
+  jld j4, j1, TT
+  jadd j4, j4, j3
+  jst j4, j1, TT
+lp_none:
+  jret
+
+; The bits per covered word of the three ways, written: without a model; dos lados always saying (silent: the eco);
+; dos lados silent when the place gives it nothing. A way costs its outcomes (k log2(n / k) each, and log2(n) / 2 for
+; each rate it keeps) and the words it misses. Uses j1-j14.
+lb_report:
+  jldi j1, 0
+  jld j2, j1, TESTS
+  jcall lg16
+  jst j2, j1, LGN
+  jldi j1, S_BITS1
+  jcall puts
+  jld j2, j1, SALL
+  jld j3, j1, TESTS
+  jdiv j2, j2, j3
+  jcall putq16
+  jldi j1, 0                    ; always saying: right or wrong
+  jld j2, j1, SFM
+  jld j3, j1, LGN
+  jldi j4, 1
+  jsar j3, j3, j4
+  jadd j2, j2, j3
+  jst j2, j1, TT
+  jld j2, j1, FR
+  jcall lb_part
+  jld j2, j1, FW
+  jcall lb_part
+  jldi j1, S_BITS2
+  jcall puts
+  jld j2, j1, TT
+  jadd j12, j2, j1
+  jcall mix
+  jld j3, j1, TESTS
+  jdiv j2, j2, j3
+  jcall putq16
+  jldi j1, 0                    ; silent when it has nothing: right, wrong or silent
+  jld j2, j1, SBM
+  jld j3, j1, LGN
+  jadd j2, j2, j3
+  jst j2, j1, TT
+  jld j2, j1, BR
+  jcall lb_part
+  jld j2, j1, BW
+  jcall lb_part
+  jld j2, j1, BS
+  jcall lb_part
+  jldi j1, S_BITS3
+  jcall puts
+  jld j2, j1, TT
+  jadd j12, j2, j1
+  jcall mix
+  jld j3, j1, TESTS
+  jdiv j2, j2, j3
+  jcall putq16
+  jldi j2, 10
+  jjmp putch
 
 include 'lectura.inc'

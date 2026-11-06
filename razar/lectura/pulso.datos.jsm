@@ -86,3 +86,17 @@ db 'asociaciones que surgieron (de ', 0
 times 0A40h - $ db 0
 db ' excepciones; en cuantas / en cuantas ciegas):', 0
 times 0A80h - $ db 0
+db ' pares, ', 0
+times 0AC0h - $ db 0
+db ' bits por par) ', 0
+times 0B00h - $ db 0
+db '      responde: ', 0
+times 0B40h - $ db 0
+db 'por ', 0
+times 0B80h - $ db 0
+db ' (', 0
+times 0BC0h - $ db 0
+db ' bits)', 0
+times 0C00h - $ db 0
+db 'no se: ningun porque paga lo que cuesta', 0
+times 0C40h - $ db 0
