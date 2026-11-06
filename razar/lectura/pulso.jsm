@@ -2208,7 +2208,7 @@ ev_set:
   jret
 
 ; The exam of the champion EVC: read with its instincts, the exam renglones apart, then knock with them -> EVS,
-; the bits the pieces and the concepts tell over the blind. Uses j1-j14.
+; the bits the pieces and the concepts tell over the blind, less what naming its pieces costs. Uses j1-j14.
 ev_exam:
   jldi j1, 0
   jld j2, j1, EVC
@@ -2240,6 +2240,40 @@ ev_exam:
     jld j2, j3, TPCEC
     jld j3, j3, TBLC
     jcall ev_gain
+    jldi j4, 1
+    jadd j9, j9, j4
+    jsub j10, j10, j4
+  jwend
+  jldi j9, 1                    ; less what its pieces cost, in the judge's own coin: each named, 2 log2 U bits of its
+  jldi j10, 4                   ; floor (the true price, not the one patience sets: else patience would lower its own)
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j2, j3, NADC
+    jst j2, j1, EVT
+    jldi j2, 1                  ; its floor: twins 1, switches and associates 2, doors 3
+    jldi j4, 1
+    jsub j4, j9, j4
+    jjz j4, ec_floor
+    jldi j2, 2
+    jldi j4, 4
+    jsub j4, j9, j4
+    jjnz j4, ec_floor
+    jldi j2, 3
+  ec_floor:
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, UFL
+    jcall lg16
+    jadd j2, j2, j2
+    jld j3, j1, EVT
+    jmul j2, j2, j3
+    jldi j3, 16
+    jsar j2, j2, j3
+    jld j3, j1, EVS
+    jsub j3, j3, j2
+    jst j3, j1, EVS
     jldi j4, 1
     jadd j9, j9, j4
     jsub j10, j10, j4
@@ -2328,7 +2362,19 @@ ev_line:
   jcall putch
   jldi j2, 32
   jcall putch
+  jld j2, j1, EVS               ; (with its sign: an exam can cost more than it tells)
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, el_pos
+  jldi j2, 45
+  jcall putch
   jld j2, j1, EVS
+  jldi j3, 0
+  jsub j2, j3, j2
+  jjmp el_num
+el_pos:
+  jld j2, j1, EVS
+el_num:
   jcall putmix
   jld j2, j1, EVW
   jjz j2, el_end

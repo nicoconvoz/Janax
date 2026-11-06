@@ -1187,3 +1187,50 @@ vida probó firmeza 2 (6.851) y la descartó.
 
 Desde el mismo nido (12 generaciones vividas), una tercera vida de 2 generaciones da **el mismo camino y el mismo nido
 en los tres motores** (`0000C0563F6A2796`): elige paciencia 1 (examen 10.614 bits) y queda con 14 generaciones vividas.
+
+## El examen paga sus piezas, en la moneda del juez (2026-11-06)
+
+Una revisión marcó el agujero, y la autopsia lo confirmaba: de la primera vida a la tercera, las puertas explicaban 9
+veces más pero tenían casi mil veces más piezas (64 → 61.729), y el ciego pasó de 0 a 19 aciertos. **El juez admite una
+pieza solo si comprime; el examen premiaba volumen.** La evolución aprendió a ganarle al examen generando piezas.
+
+Arreglo: el examen resta lo que cuesta nombrar cada pieza, 2·log2 U bits de su piso (el precio verdadero, no el que
+fija la paciencia: si no, la paciencia se bajaría su propio precio). Predicción escrita antes de correr: *la paciencia
+ganadora va a ser mayor que 1*.
+
+Nido nuevo, 12 generaciones, idéntico en los tres motores (`00004417A6A2C09C`):
+
+```
+instinto 0: 4 1 1 = -9218         (los de fábrica)
+instinto 1: 4 2 1 = -8836 *
+instinto 5: 3 2 1 = -22607        (menos paciencia: mucho peor)
+instinto 6: 5 2 1 = -3652 *       (campeón: paciencia 5, firmeza 2)
+instinto 11: 5 3 1 = -3721
+```
+
+**La predicción se cumplió:** la paciencia subió de 4 a 5, y la firmeza se movió por primera vez (2). En la prueba:
+
+| | fábrica | examen sin costo (1 1 1) | **examen con costo (5 2 1)** |
+|---|---|---|---|
+| asociados real / ciego | 14,9 / 3,5 (4,3×) | 28,3 / 7,7 (3,7×) | 13,6 / 3,2 (**4,3×**) |
+| puertas explica / ciego, piezas | 63 / 0, 64 | 584 / 19, 61.729 | 64 / 0, **30** |
+| gemelos, piezas | 85,2 / 22,0, 57 | 90,0 / 24,4, 99 | 84,7 / 21,5, **46** |
+| conceptos | 202 | 1.802 | **71** |
+
+Los conceptos salen limpios, y aparece uno nuevo, **las personas**:
+
+```
+14: hijo padre espíritu señor nombre pueblo cielo templo mundo hermano
+10: jesucristo david abraham cristo dios nosotros israel ellos ustedes moisés
+11: dijo preguntaron respondieron respondió decía dice dicen dijeron preguntó dirá
+10: vida tierra muerte ciudad ley fe carne iglesia escritura verdad
+ 8: el este lo un al otro ese nuestro
+ 8: la su tu mi una esta esa nuestra
+```
+
+El género separa a los determinantes en dos conceptos (el/este/un, la/su/una) y cafarnaúm desaparece de los abstractos.
+
+**Lo que hay que saber del número:** todos los exámenes dan negativo. Las piezas se nombran una vez para todo el libro,
+pero lo que ganan se mide solo en el décimo del examen, así que el costo pesa unas diez veces más de lo que pesaría en
+el libro entero. La comparación entre genomas vale, porque todos rinden el mismo examen, pero puede empujar la paciencia
+de más. Si se quisiera la cuenta exacta del MDL, la ganancia se escala por lo que el examen representa del libro.
