@@ -224,25 +224,9 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, JLEFT
 jwend
-jcall flush                     ; the depth of each floor, and the bits each kind's pieces save
+jcall flush                     ; the bits each kind's pieces save
 jldi j1, S_DEEP
 jcall puts
-jldi j9, 1
-jldi j10, 3
-jwhile j10
-  jldi j1, 0
-  jst j9, j1, FLOOR
-  jcall po_depth
-  jldi j2, 32
-  jcall putch
-  jld j2, j1, PDP
-  jcall putmix
-  jldi j2, 1
-  jadd j9, j9, j2
-  jsub j10, j10, j2
-jwend
-jldi j2, 124
-jcall putch
 jldi j9, 1
 jldi j10, 4
 jwhile j10

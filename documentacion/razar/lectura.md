@@ -895,3 +895,29 @@ no es lo mismo que encontrar piezas que generalicen. **Se volvió atrás** (qued
 Lo que queda abierto: la moneda que coincide con lo no leído es "lo que una pieza explica de lo que viene, más que el
 azar". Se puede calcular **mientras lee, con lo ya leído** (cada pulso nuevo se prueba contra las piezas de hasta ese
 momento y contra su ciego), sin espiar la parte apartada.
+
+# La silueta del lugar: con todas, sin guardar ningún caso (2026-11-06)
+
+El Capitán: *"con todas, y la silueta es la única que se perfecciona: no necesitamos el caso"*. Se va toda la
+maquinaria de profundidad (la sonda, la cuenta por distancia, el ensanche de los pedidos). Cada pedido es **{su
+silueta, su peso}**:
+
+- La jugada nueva se compara contra la **silueta**, que resume todas las anteriores; si es otra, pulsa.
+- Después la silueta se perfecciona con el voto de mayoría de Boyer y Moore (1981): la misma jugada le suma peso, otra
+  le resta, y cuando el peso se acaba la que llegó toma su lugar. Con dos números queda lo que más se dijo en ese
+  lugar, la silueta de lo regular, sin guardar ningún caso.
+- Nada que calibrar: no hay profundidad.
+
+Contra el azar (uno de cada diez renglones apartado), idéntico en los tres motores (`0000FE4C754709C9`):
+
+| piso | todas las formas | profundidad 1 + testimonio | **silueta** |
+|---|---|---|---|
+| gemelos (real / ciego) | 86,6 / 22,0 | 81,4 / 19,1 | **85,2 / 22,0** |
+| interruptores | 58,2 / 40,9 | 60,2 / 38,6 | **62,6 / 40,9** |
+| asociados | 14,7 / 6,0 (2,5×) | 13,6 / 3,2 (4,3×) | **14,9 / 3,5 (4,3×)**, 484 piezas |
+| puertas (piezas, explica, azar) | 44, 70, 0 | 65, 59, 0 | **64, 63, 0** |
+
+- Explica más que profundidad 1 en los cuatro pisos, con la misma ventaja sobre el azar y menos piezas en asociados.
+- Las puertas todavía no llegan a lo de todas las formas (70 con 44 piezas).
+- La pregunta conserva su huella (`0000E78A9442B1C1`); sentido da las mismas deducciones (`00001570B9C9E345`).
+- Memoria: pulso 275, pregunta 310, sentido 252 MB. El pulso perdió 460 líneas.
