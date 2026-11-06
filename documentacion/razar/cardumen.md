@@ -752,3 +752,33 @@ una de las 3 piezas cae en una vecina). Semillas 1001–1007, palabras nuevas de
 - **El cardumen todavía no pone lo suyo**: el que aprende le gana al quieto en 4 semillas y pierde en 3. Con tres
   saludos bien separados, el cubo los distingue aprenda o no. (Por eso el otro chat propuso las 7 teclas de Fano en el
   espacio, `saludos.pl`: con 3 símbolos lejanos el 100 % no enseña nada sobre el cubo.)
+
+**Fano en el espacio** (`saludos.pl`: las 7 líneas de Fano como teclas, qué piezas se aprietan y no cuándo; idea del
+otro chat: "¿la geometría del cubo es la misma en el espacio que en el tiempo?"). Control como en el tiempo: Fano contra
+5 sorteos de 7 teclas de 3 piezas sobre los mismos 7 lugares (`sorteo=K`), 10 % de resbalones, semillas 1001–1007.
+Palabras nuevas de 20: **Fano 12 (11–14); sorteos 12 (1–13), 13 (12–15), 12 (10–14), 13 (10–16), 14 (11–16).**
+**En el espacio Fano no gana**: empata con teclas al azar (solo suma estabilidad: ninguna semilla se le cae, un sorteo
+dio 1 de 20). La ventaja de Fano era del tiempo. Respuesta: la geometría del cubo no es la misma en el espacio que en el
+tiempo.
+
+## Señales que se acortan solas (Capitán, 2026-11-06)
+
+> *"El saludo ahora es una palabra entera, o una oración, jajaja."* — *"Eso quiero que hagas."*
+
+`zipf.pl`: palabras en Morse de saludos, unas dichas mucho más que otras (ley de Zipf: la de rango r pesa 1/r; qué
+palabra tiene qué rango lo decide un sorteo, no su largo). Las 7 piezas de abajo que no usan las esquinas del Morse,
+como líneas de Fano, son 7 teclas libres: cada una puede ser el nombre corto de una palabra entera, un saludo en lugar
+de muchos. Nadie le dice a la voluntad cuáles son frecuentes. La regla solo mira el costo: al decir una palabra entera
+le da una tecla libre; si no hay, le saca la tecla a la que menos ahorró hasta ahora (usos por saludos ahorrados), si la
+que está diciendo ya ahorraría más. Si el oído confunde un nombre corto después de haberlo oído, la palabra vuelve a
+decirse entera. Control (`azar=1`): las teclas van a palabras al azar.
+
+- Semilla 7, 600 palabras dichas: **las 7 teclas terminan en las 7 palabras más frecuentes, exactas** (fuego 1, árbol 2,
+  silla 3, puerta 4, viento 5, casa 6, sol 7). El costo baja de 18,1 saludos por palabra a 7,5.
+- Semillas 1001–1007: correlación entre frecuencia y largo (Spearman; positiva = las más dichas, más cortas): **regla
+  0,29–0,66 (mediana 0,39), azar 0,20–0,51 (mediana 0,28)**; saludos por palabra: **regla 6,7–8,3, azar 9,0–10,0**.
+- **El costo baja siempre con la regla** (7 de 7 semillas) y la correlación es mayor en 5 de 7. Pero el control también
+  da positivo: las palabras frecuentes aparecen antes y agarran primero las teclas libres aunque se repartan al azar. El
+  control no es neutro; uno mejor reparte las teclas al azar también al principio.
+- Lo que es diseño, dicho claro: la regla de sacar la tecla a la que menos ahorró es un criterio de costo puesto por
+  Doc; lo que no se le dice es cuáles palabras son frecuentes.

@@ -217,3 +217,5 @@ conserva + asienta) le gana al cardumen quieto en palabras nuevas en 5 semillas 
 lado del freno.
 2026-11-06 — Morse de saludos (Capitán): punto, raya y fin de letra como tres tipos de saludo, sin tiempos. 20 de 20
 palabras nuevas en las 7 semillas; con 20 % de resbalones, 96–100 % de saludos. El quieto da parecido.
+2026-11-06 — Fano en el espacio empata con teclas al azar: la ventaja era del tiempo. Señales que se acortan solas: las 7
+teclas libres van a las palabras más dichas y el costo baja de 18 a ~7 saludos; el control al azar también correlaciona algo.

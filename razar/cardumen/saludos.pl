@@ -8,7 +8,8 @@
 #
 # A shaky hand no longer moves anything in time; the noise that means something here is a slipping finger (desliz=P:
 # percent chance that one of the 3 pieces lands on a neighbor of it on the bottom face). Options as in palabras.pl:
-# n (4), nace (7), rondas (20), quieto, olas (cruzan), asienta, conserva, simetrico, frenan.
+# n (4), nace (7), rondas (20), quieto, olas (cruzan), asienta, conserva, simetrico, frenan, sorteo (K: 7 random keys).
+
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, rondas => 20, desliz => 0, @ARGV ? map { split /=/ } @ARGV : ());
 my $c = Cardumen->new(n => $o{n}, w0 => 40, th => 100, rate => 20, seed => $o{nace});
@@ -16,6 +17,13 @@ my $n = $c->{n};
 my @bottom = map { $c->idx($_ % $n, int($_ / $n), 0) } 0 .. $n*$n-1;
 my @spots = @bottom[0 .. 6];                     # the 7 places of the keyboard, in order
 my @units = map { my $k = $_; [ map { $spots[($_ + $k) % 7] } 1, 2, 4 ] } 0 .. 6;   # the lines {1,2,4} + k mod 7
+if ($o{sorteo}) {                                # sorteo=K (the control for Fano in space): 7 different keys of 3 pieces
+  my $s = $o{sorteo}; my %seen; @units = ();     # drawn by dice K from the same 7 places, so the only difference with
+  while (@units < 7) {                           # Fano is which pieces go together
+    my %k; while (keys %k < 3) { $s = ($s * 1103515245 + 12345) % 2147483648; $k{ $spots[($s >> 16) % 7] } = 1; }
+    my @key = sort { $a <=> $b } keys %k; next if $seen{"@key"}++; push @units, \@key;
+  }
+}
 my %top = map { my $i = $_; ($c->idx($i % $n, int($i / $n), $n-1) => 1) } 0 .. $n*$n-1;
 $c->{harmony} = 1; $c->{sinks} = { %top };
 $c->{whisper} = 1 if $o{quieto};
