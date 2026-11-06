@@ -1344,3 +1344,58 @@ vuelven a dormir, en 0 ms de procesador.
   segunda tanda llega cuando ya se habían vuelto a dormir.
 - Con la vigilia y el centinela ya no terminan solos, así que la prueba de los tres motores con los dos vivos quedó de
   antes del centinela (idéntica); con el núcleo nuevo, cada programa por separado da su misma huella.
+
+## La memoria: le quedan los mejores caminos (2026-11-06)
+
+El Capitán: *"pero los conceptos que aprendió y el genoma no se pierden??? quiero que evolucionen.. no digo que
+conserve todo pero algo les tienen que quedar"*, y *"no quiero un paste + paste + paste expandiendo el archivo, solo
+sacando o dejando los mejores caminos"*.
+
+El genoma ya sobrevivía en su nido. Lo que se perdía al renacer eran las piezas, que son de donde salen los conceptos.
+
+- **El archivo `memoria` (o `memoriaN`)** (`mem_save` / `mem_load` en `pulso.jsm`). Se reescribe entero cada vez; nunca
+  se le agrega nada atrás. Tiene la cantidad de piezas y, por cada una, 48 bytes: clave, evidencia, bits por par, los
+  dos rellenos y el piso. Se carga al nacer en la tabla `TMEM`.
+- **La evidencia se conserva, no se suma.** El juez cuenta cada diferencia con la mayor de dos evidencias: la que vio
+  en esta lectura o la que trae. Leer el mismo libro otra vez no es evidencia nueva.
+- **Lo que esta vida no confirma se desvanece.** Una pieza que esta lectura nunca encontró pierde la mitad de su
+  evidencia. La mitad es criterio, no medición: una vida sin confirmar. Se queda solo mientras siga pagando su nombre,
+  con la misma ley del juez (2·log2 U por la paciencia sobre 2). Si una pieza que traía apareció y no pagó, se cae:
+  tuvo su oportunidad.
+- **Cuándo se guarda:**
+  - al nacer, después del primer examen;
+  - cada vez que aparece un campeón mejor;
+  - después de la lectura que cuenta.
+- **Notas de distinta memoria no se comparan.** Al despertar con memoria, el campeón y el segundo traen notas cobradas
+  sin ella. Por eso los dos se vuelven a examinar antes de competir con hijos que sí la tienen; si el segundo sale
+  mejor, cambian de lugar. Sin esto, un campeón con nota vieja (−3554) le ganaba a hijos examinados con memoria (−5476).
+- **La línea `memoria A B C` dice:**
+
+  | número | qué es |
+  |---|---|
+  | A | cuántas piezas guarda |
+  | B | cuántas vienen de vidas anteriores sin haber vuelto a aparecer |
+  | C | cuántas pagan hoy gracias a lo que traían |
+
+Medido con cuatro vidas seguidas de un mismo Razar, con `p` en 1 lectura y 3 generaciones: libro A (973 KB), A otra
+vez, B (300 KB) en lugar de A, y A de nuevo.
+
+| vida | memoria | archivo |
+|---|---|---|
+| A, la primera | 413 0 0 | 19.832 bytes |
+| A otra vez | 431 0 88 | 20.696 bytes |
+| B en lugar de A | 348 2 331 | 16.712 bytes |
+| A de nuevo | 318 0 64 | 15.272 bytes |
+
+- Con un solo programa, sin generaciones, no se toca la memoria y la huella sigue igual (pulso `D3698F1AE83D`).
+- En el libro B, **331 de sus 348 piezas pagan con lo que aprendió en A**. Quedan además 2 piezas de A que B no tiene.
+- El archivo sube y baja con lo que vale; no crece por acumular.
+
+**Lo que no está probado todavía:**
+- La lectura que cuenta incluye el renglón de examen. Por eso, desde la segunda vida, la memoria ya vio lo que se
+  examina. Dentro de una vida todos los hijos tienen la misma ventaja, así que la comparación es justa. Pero la nota
+  absoluta no mide lo mismo que en la primera vida.
+- Re-examinar al campeón y al segundo cuesta dos exámenes más por vida.
+
+Los tres motores (traductor, intérprete y rutinas) dan las cuatro vidas idénticas bit por bit: huellas `70E6A7C773E4`,
+`E9540C8B7724`, `EAA9ACC42EEF` y `8296C15350E6`, y los mismos bytes de memoria.

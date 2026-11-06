@@ -125,6 +125,15 @@ MAILV = 1E20h
 AUTN  = 1E30h
 WOKE  = 1E48h                   ; who woke it: its sibling, or itself (the sentinel: news in the files)                   ; the length of its autopsy label
 RBC   = 1E50h                   ; how many times it has been reborn (kept: it is part of who it is)
+MEML  = 1E58h                   ; its memory: "memoria" and its number (MEMN bytes), its handle, how many in it, the
+MEMN  = 1E60h                   ; bytes read, the room it is written in, a name's price, how many came from this life
+MEMH  = 1E68h
+MCNT  = 1E70h
+MSZ   = 1E78h
+MBUFP = 1E80h
+MCOST = 1E88h
+MNOW  = 1E90h
+MHELP = 1E98h                   ; how many pieces now pay with what they carried (more than this reading saw)
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -247,6 +256,11 @@ jcall reborn
 jjmp renace
 rn_no:
 jcall learn_pulses
+jldi j1, 0                      ; the reading that counts, kept in its memory (if it has one: only one that evolves)
+jld j2, j1, TMEM
+jjz j2, rn_nomem
+jcall mem_save
+rn_nomem:
 jldi j1, 0                      ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
@@ -1910,11 +1924,42 @@ ev_lect:
   jor j2, j2, j3
   jst j2, j1, EVC
   jcall autopsy_open            ; (its dissection, written as it goes)
-  jcall nest_load               ; it wakes with its own instincts, if it has lived before
+  jcall mem_load                ; and what it learned in lives before: its best paths
+  jcall nest_load              ; it wakes with its own instincts, if it has lived before
   jldi j1, 0
   jjz j2, ev_born
   jld j2, j1, EVLIV
   jst j2, j1, EVI
+  jld j2, j1, TMEM + 16         ; it remembers: its exams were paid in a coin without this memory, and exams of different
+  jjz j2, ev_same               ; memories are not set against each other; the champion and the second sit it again
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, EVS
+  jst j2, j1, EVCS
+  jld j2, j1, EVC
+  jst j2, j1, EVKEEP
+  jld j2, j1, EVR
+  jst j2, j1, EVC
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, EVKEEP
+  jst j2, j1, EVC
+  jld j2, j1, EVS
+  jst j2, j1, EVRS
+  jld j3, j1, EVCS              ; (the second better now: they change places)
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ev_same
+  jld j3, j1, EVCS
+  jst j2, j1, EVCS
+  jst j3, j1, EVRS
+  jld j2, j1, EVC
+  jld j3, j1, EVR
+  jst j3, j1, EVC
+  jst j2, j1, EVR
+ev_same:
+  jldi j1, 0
   jld j2, j1, EVC
   jst j2, j1, EVCH
   jld j2, j1, EVCS
@@ -1924,6 +1969,7 @@ ev_lect:
   jjmp ev_gens
 ev_born:
   jcall ev_exam
+  jcall mem_save                ; (born: its first paths kept)
   jldi j1, 0
   jld j2, j1, EVS
   jst j2, j1, EVCS
@@ -2048,6 +2094,7 @@ ev_alone:
     jst j2, j1, EVCS
     jldi j2, 1
     jcall ev_line
+    jcall mem_save              ; (a better one: the paths it read kept)
     jjmp ev_next
   ev_second:
     jld j3, j1, EVRS            ; better than the second: the second
@@ -2192,6 +2239,380 @@ vw_set:
   jcall ask
   jldi j1, 0
 vw_done:
+  jret
+
+; Its memory (Capitan: "the concepts it learned and the genome cannot be lost: something has to remain… no paste +
+; paste + paste growing the file: only taking out or keeping the best paths"). The file "memoria" (its number after
+; it) is written whole every time, never appended to: {how many, then each piece: key, its evidence, its bits a pair,
+; low, high, floor} (48 bytes each). Read when it is born into TMEM: the judge counts each difference with the larger
+; of its evidence now and the one it carried (the same book read again is no new evidence). Uses j1-j14.
+mem_load:
+  jcall mem_label
+  jldi j2, TMEM
+  jldi j3, 48
+  jcall pl_new
+  jldi j10, 4                   ; open (created if it is not there: then it reads nothing)
+  jldi j11, MEML
+  jldi j1, 0
+  jld j12, j1, MEMN
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ml_done
+  jst j13, j1, MEMH
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, MCNT
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 8
+  jsub j2, j13, j2
+  jjnz j2, ml_close
+  jld j11, j1, MCNT
+  jjz j11, ml_close
+  jldi j2, 48
+  jmul j11, j11, j2
+  jst j11, j1, MSZ
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MBUFP
+  jld j10, j1, MEMH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jadd j11, j13, j1
+  jld j12, j1, MSZ
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, MSZ               ; (all of it, or nothing: a memory cut short is no memory)
+  jsub j2, j13, j2
+  jjnz j2, ml_close
+  jld j9, j1, MBUFP             ; every piece into TMEM
+  jld j10, j1, MCNT
+  jwhile j10
+    jldi j1, 0
+    jld j5, j9, 0
+    jldi j2, TMEM
+    jcall pl_take
+    jldi j6, 8
+    jldi j3, 5
+    jwhile j3
+      jadd j7, j9, j6
+      jld j8, j7, 0
+      jadd j7, j4, j6
+      jst j8, j7, 0
+      jldi j7, 8
+      jadd j6, j6, j7
+      jldi j7, 1
+      jsub j3, j3, j7
+    jwend
+    jldi j2, 48
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0                    ; (its room given back: what it read is in TMEM)
+  jldi j10, 3
+  jld j11, j1, MBUFP
+  jcall ask
+ml_close:
+  jldi j1, 0
+  jld j10, j1, MEMH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ml_done:
+  jldi j1, 0
+  jret
+
+; The memory written again, whole: every piece that pays now (its evidence and its bits a pair as the judge weighed
+; them, so a confirmed one keeps the larger of what it carried and what it has now), and every one it carried that
+; this reading never met, its evidence halved (one life without confirmation; the half is criterion, not measurement),
+; kept only while that evidence still pays its name by the judge's own law. One it carried that this reading met and
+; that did not pay falls out: it had its chance. Uses j1-j14.
+mem_save:
+  jcall mem_label
+  jldi j1, 0                    ; room for all of them: the pieces that pay now, and what it carried
+  jld j11, j1, TMEM + 16
+  jldi j9, 0
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j2, j1, ROOMD
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, mz_next
+    jld j2, j3, 40
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, mz_next
+    jjz j2, mz_next
+    jldi j2, 1
+    jadd j11, j11, j2
+  mz_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 48
+  jmul j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MBUFP
+  jst j1, j1, MCNT
+  jst j1, j1, MHELP
+  jldi j9, 0                    ; the pieces now
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j2, j1, ROOMD
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, ms_next
+    jld j2, j3, 40
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, ms_next
+    jjz j2, ms_next
+    jst j3, j1, GE
+    jld j5, j3, 0
+    jldi j2, TRD
+    jcall pl_find
+    jld j2, j4, 24              ; (its evidence carried, more than this reading saw: the memory made it)
+    jldi j3, 16
+    jsar j2, j2, j3
+    jld j6, j4, 40
+    jsub j2, j2, j6
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, ms_own
+    jld j2, j1, MHELP
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MHELP
+  ms_own:
+    jld j6, j4, 40
+    jld j7, j4, 48
+    jld j3, j1, GE
+    jcall ms_put
+  ms_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, MCNT
+  jst j2, j1, MNOW
+  jld j9, j1, TMEM              ; what it carried and this reading never met
+  jld j10, j1, TMEM + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jld j5, j9, 0
+    jjz j5, mc_next
+    jst j9, j1, GE
+    jld j2, j1, ROOMD
+    jldi j3, 48
+    jcall t_find
+    jld j2, j4, 0
+    jjnz j2, mc_next
+    jld j3, j1, GE              ; its evidence halved: does it still pay its name?
+    jld j6, j3, 8
+    jldi j2, 1
+    jsar j6, j6, j2
+    jjz j6, mc_next
+    jst j6, j1, MSZ
+    jld j2, j3, 40              ; its name: 2 log2 U of its floor, times the patience instinct over 2 (the judge's law)
+    jldi j4, 255
+    jand j2, j2, j4
+    jldi j4, 3
+    jshl j2, j2, j4
+    jld j2, j2, UFL
+    jcall lc_lg
+    jld j4, j1, GPAC
+    jjnz j4, mc_pac
+    jldi j4, 4
+  mc_pac:
+    jmul j2, j2, j4
+    jldi j4, 1
+    jsar j2, j2, j4
+    jst j2, j1, MCOST
+    jld j3, j1, GE
+    jld j7, j3, 16
+    jld j6, j1, MSZ
+    jmul j2, j6, j7
+    jld j4, j1, MCOST
+    jsub j2, j2, j4
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, mc_next
+    jjz j2, mc_next
+    jld j3, j1, GE              ; kept, as it was but halved
+    jld j6, j1, MSZ
+    jld j7, j3, 16
+    jcall mc_put
+  mc_next:
+    jldi j1, 0
+    jldi j2, 48
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j10, 12                  ; the file, whole: the old one out, the new one in
+  jldi j11, MEML
+  jld j12, j1, MEMN
+  jcall ask
+  jldi j10, 4
+  jldi j11, MEML
+  jldi j1, 0
+  jld j12, j1, MEMN
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ms_free
+  jst j13, j1, MEMH
+  jld j2, j1, MBUFP             ; how many, at its head
+  jld j3, j1, MCNT
+  jst j3, j2, 0
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, MBUFP
+  jld j12, j1, MCNT
+  jldi j2, 48
+  jmul j12, j12, j2
+  jldi j2, 8
+  jadd j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, MEMH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0                    ; said: "memoria", how many it keeps, and how many of them come from lives before
+  jldi j2, 0
+  jshi j2, 0061h
+  jshi j2, 6972h
+  jshi j2, 6F6Dh
+  jshi j2, 656Dh
+  jcall put8
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, MCNT
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, MCNT
+  jld j3, j1, MNOW
+  jsub j2, j2, j3
+  jcall putmix
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, MHELP
+  jcall putmix
+  jldi j2, 10
+  jcall putch
+  jcall flush
+ms_free:
+  jldi j1, 0                    ; its room given back
+  jldi j10, 3
+  jld j11, j1, MBUFP
+  jcall ask
+  jldi j1, 0
+  jret
+
+; A piece now into the memory being written: ROOMD entry j3 {key, low, high, floor, pairs, bits}, its evidence j6, its
+; bits a pair j7. Uses j1-j5.
+ms_put:
+  jldi j1, 0
+  jld j2, j1, MCNT
+  jldi j4, 48
+  jmul j4, j2, j4
+  jld j5, j1, MBUFP
+  jadd j4, j4, j5
+  jld j5, j3, 0
+  jst j5, j4, 8
+  jst j6, j4, 16
+  jst j7, j4, 24
+  jld j5, j3, 8
+  jst j5, j4, 32
+  jld j5, j3, 16
+  jst j5, j4, 40
+  jld j5, j3, 24
+  jst j5, j4, 48
+  jldi j5, 1
+  jadd j2, j2, j5
+  jst j2, j1, MCNT
+  jret
+
+; One it carried into the memory being written: TMEM entry j3 {key, evidence, bits a pair, low, high, floor}, its
+; evidence j6, its bits a pair j7. Uses j1-j5.
+mc_put:
+  jldi j1, 0
+  jld j2, j1, MCNT
+  jldi j4, 48
+  jmul j4, j2, j4
+  jld j5, j1, MBUFP
+  jadd j4, j4, j5
+  jld j5, j3, 0
+  jst j5, j4, 8
+  jst j6, j4, 16
+  jst j7, j4, 24
+  jld j5, j3, 24
+  jst j5, j4, 32
+  jld j5, j3, 32
+  jst j5, j4, 40
+  jld j5, j3, 40
+  jst j5, j4, 48
+  jldi j5, 1
+  jadd j2, j2, j5
+  jst j2, j1, MCNT
+  jret
+
+; The label "memoria", with its number after it if it has one, at MEML (MEMN bytes). Uses j1-j5.
+mem_label:
+  jcall nest_labels
+  jldi j1, 0
+  jldi j2, 0
+  jshi j2, 0061h
+  jshi j2, 6972h
+  jshi j2, 6F6Dh
+  jshi j2, 656Dh
+  jldi j4, 7
+  jst j4, j1, MEMN
+  jld j3, j1, QUIEN
+  jjz j3, mm_one
+  jldi j4, 48
+  jadd j4, j3, j4
+  jldi j5, 56
+  jshl j4, j4, j5
+  jor j2, j2, j4
+  jldi j4, 8
+  jst j4, j1, MEMN
+mm_one:
+  jst j2, j1, MEML
   jret
 
 ; Its identity, in the file "nido" (Capitan, from the chess creature: "they have identity and keep testing"): {its

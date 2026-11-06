@@ -39,7 +39,7 @@ TPT   = 1F40h                   ; what each place testified: {key of place and d
 PDK   = 1F60h                   ; the key of the difference of a pulse
 PASN  = 1F68h                   ; the passes: this one (from 0), how many left
 PASL  = 1F70h
-TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1), what it weighed in its first, the reading it was born in} (growing)
+TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1), what it weighed in its first, the reading it was born in, its evidence judged, its bits a pair} (growing)
 TFW   = 1780h                   ; by filling: {key, its pulses weighed} (a growing table)
 NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pulses weighed
 TRC   = 17D0h                   ; by reading: {key of a filling or a floor and the reading, its pulses} (growing)
@@ -56,6 +56,8 @@ GPAC  = 1F78h                   ; the instincts (0: unset, the default): patienc
 GFIRM = 1F80h                   ; log2 U), firmness (what the same move adds to a silhouette)
 PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
 FBP   = 1778h
+TMEM  = 1548h                   ; its memory: by difference {key, its evidence, its bits a pair, low, high, floor} (growing)
+GTRD  = 1F88h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
 SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
@@ -186,7 +188,7 @@ jldi j2, TPT                    ; what each place already testified (it grows to
 jldi j3, 8
 jcall pl_new
 jldi j2, TRD                    ; in how many readings each difference was met, and each filling weighed
-jldi j3, 40
+jldi j3, 56
 jcall pl_new
 jldi j2, TFW
 jldi j3, 16
@@ -1108,6 +1110,24 @@ judge:
     jldi j3, 16
     jsar j2, j2, j3
     jst j2, j1, GNE
+    jst j4, j1, GTRD            ; what it carries from lives before (its memory): its evidence is the larger of this
+    jld j5, j4, 0               ; reading and the past, never the two added (reading the same book again is no new
+    jldi j1, 0
+    jld j2, j1, TMEM            ; (no memory: nothing carried)
+    jjz j2, gm_none
+    jldi j2, TMEM               ; evidence)
+    jcall pl_find
+    jld j3, j4, 0
+    jjz j3, gm_none
+    jld j3, j4, 8
+    jld j2, j1, GNE
+    jsub j6, j2, j3
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjz j6, gm_none
+    jst j3, j1, GNE
+gm_none:
+    jld j4, j1, GTRD
     jld j2, j4, 32
     jst j2, j1, GBR
     jld j2, j1, FNVO            ; log2(2N) + log2(n)
@@ -1143,6 +1163,10 @@ jl_k:
     jcall ju_fill
     jld j3, j1, GS
     jsub j3, j3, j2
+    jld j6, j1, GTRD            ; (kept for its memory: the evidence and the bits a pair)
+    jst j3, j6, 48
+    jld j7, j1, GNE
+    jst j7, j6, 40
     jld j4, j1, GNE             ; times n
     jmul j3, j3, j4
     jst j3, j1, GS
