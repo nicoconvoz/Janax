@@ -168,6 +168,7 @@ NTWIN = 4600h
 ADOPT = 4608h
 NOP1  = 4618h                   ; MODO 5: memories of the second operator, and their list (40 qwords at OP1L)
 OP1L  = 46C0h
+BLC   = 12C0h                   ; MODO 5: blind counts of the doors' gate (4 qwords; the room of COV, free by then)
 DOOR  = 4620h                   ; MODO 5: the doors, then the doors after the closed ones (16 qwords)
 FLIPS = 46A0h                   ; pairs both operators remember: answer turned, or kept
 KEEPS = 46A8h
@@ -2356,6 +2357,146 @@ pd_next:
   jadd j9, j9, j2
   jjmp pd_fact
 pd_switch:
+jldi j1, 0                      ; the gate of P36 for the doors: for each operator, how much its orden tells its papel
+jst j1, j1, OPI                 ; (each orden's most said papel, summed) must be more than in each of eight blind
+pg_op:                          ; versions, where each memory gets the orden of any memory of that operator (its
+  jldi j1, 0                    ; dice); if not, its doors are not adopted (its counts are emptied)
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+  jjz j3, pd_switch2
+  jst j1, j1, NOP1              ; its memories with a papel: their list
+  jldi j9, 0
+pg_list:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, pg_listed
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jld j2, j3, 0
+  jld j4, j1, OPI
+  jsub j2, j2, j4
+  jjnz j2, pg_lnext
+  jcall p_rolerow
+  jldi j2, 63
+  jsar j2, j6, j2
+  jjnz j2, pg_lnext
+  jld j2, j1, NOP1
+  jldi j4, 3
+  jshl j4, j2, j4
+  jst j9, j4, OP1L
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, NOP1
+pg_lnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp pg_list
+pg_listed:
+  jldi j1, 0                    ; how much the orden tells: m of n
+  jld j2, j1, OPI
+  jldi j3, 5
+  jshl j2, j2, j3               ; DOOR offset of the operator (4 qwords)
+  jld j3, j2, DOOR
+  jld j4, j2, DOOR + 8
+  jcall p_max
+  jldi j10, 0
+  jadd j10, j10, j3
+  jld j3, j2, DOOR + 16
+  jld j4, j2, DOOR + 24
+  jcall p_max
+  jadd j10, j10, j3             ; m
+  jld j11, j1, NOP1             ; n
+  jjz j11, pg_fail
+  jldi j15, 8
+pg_blind:
+  jjz j15, pg_next              ; passed
+  jldi j1, 0                    ; blind counts: BLC + (orden*2 + papel)*8
+  jst j1, j1, BLC
+  jst j1, j1, BLC + 8
+  jst j1, j1, BLC + 16
+  jst j1, j1, BLC + 24
+  jldi j9, 0
+pg_fact:
+  jldi j1, 0
+  jld j2, j1, NOP1
+  jsub j2, j9, j2
+  jjz j2, pg_judge
+  jldi j2, 3                    ; its papel
+  jshl j2, j9, j2
+  jld j2, j2, OP1L
+  jcall g_facts
+  jldi j4, 5
+  jshl j3, j2, j4
+  jadd j3, j3, j5
+  jcall p_rolerow
+  jldi j2, 1
+  jand j12, j6, j2
+  jcall rnd2                    ; the orden of any memory of the operator
+  jldi j1, 0
+  jld j2, j1, NOP1
+  jdiv j4, j13, j2
+  jmul j4, j4, j2
+  jsub j4, j13, j4
+  jldi j2, 3
+  jshl j4, j4, j2
+  jld j4, j4, OP1L
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j4, j2
+  jadd j3, j3, j5
+  jcall p_rolerow
+  jldi j2, 1
+  jshr j6, j6, j2
+  jand j6, j6, j2               ; its orden
+  jadd j6, j6, j6
+  jadd j6, j6, j12
+  jldi j2, 3
+  jshl j6, j6, j2
+  jld j7, j6, BLC
+  jldi j2, 1
+  jadd j7, j7, j2
+  jst j7, j6, BLC
+  jadd j9, j9, j2
+  jjmp pg_fact
+pg_judge:                       ; m > blind m, else the gate is shut
+  jldi j1, 0
+  jld j3, j1, BLC
+  jld j4, j1, BLC + 8
+  jcall p_max
+  jldi j9, 0
+  jadd j9, j9, j3
+  jld j3, j1, BLC + 16
+  jld j4, j1, BLC + 24
+  jcall p_max
+  jadd j9, j9, j3
+  jsub j9, j9, j10
+  jldi j2, 63
+  jsar j9, j9, j2
+  jjz j9, pg_fail
+  jldi j2, 1
+  jsub j15, j15, j2
+  jjmp pg_blind
+pg_fail:
+  jldi j1, 0                    ; shut: its doors are emptied
+  jld j2, j1, OPI
+  jldi j3, 5
+  jshl j2, j2, j3
+  jst j1, j2, DOOR
+  jst j1, j2, DOOR + 8
+  jst j1, j2, DOOR + 16
+  jst j1, j2, DOOR + 24
+pg_next:
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, OPI
+  jjmp pg_op
+pd_switch2:
 jldi j1, 0                      ; is one operator word the switch of the other? the pairs both remember: turned or kept
 jst j1, j1, FLIPS
 jst j1, j1, KEEPS
@@ -2681,6 +2822,17 @@ pr_no:
   jldi j6, 0
   jldi j7, 1
   jsub j6, j6, j7
+  jret
+
+; j3 = the larger of j3 and j4. Uses j7, j8.
+p_max:
+  jsub j8, j3, j4
+  jldi j7, 63
+  jsar j8, j8, j7
+  jjz j8, pm_done
+  jldi j3, 0
+  jadd j3, j3, j4
+pm_done:
   jret
 
 ; The door of (op*2 + orden) = j9, after the closed doors: the papel most say, if at least two and alone -> j2 = 1 and

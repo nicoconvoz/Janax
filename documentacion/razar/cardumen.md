@@ -1287,3 +1287,19 @@ en al menos dos pares. 20 semillas:
 Con datos coherentes nada cambia; con respuestas al azar ya no encuentra interruptor. El 17 % de error que queda en el
 control viene de las puertas de "mayor" armadas sobre recuerdos al azar: su criterio (al menos dos, sin empate) tampoco
 se compara contra el azar todavía.
+
+**Las puertas, con el mismo portero** (Capitán: "sí, a las puertas"). Para cada palabra de relación se mide cuánto le dice
+el orden al papel en sus recuerdos (el papel más dicho de cada orden, sumado) y tiene que ser más que en cada una de
+**ocho versiones ciegas**, donde a cada recuerdo le toca el orden de otro recuerdo cualquiera de esa palabra; si no, sus
+puertas no se adoptan. 20 semillas:
+
+| Condición | Interruptor | Bien | Mal | No sé |
+|---|---|---|---|---|
+| "menor" en 2 pares | 19 de 20 | 95 % | 0 % | 4 % |
+| "menor" en los 10 | 20 de 20 | 97 % | 0 % | 2 % |
+| 2 pares, 20 % de resbalones | 17 de 20 | 80 % | 0 % | 18 % |
+| **control: respuestas al azar** | 0 de 20 | 0 % | **0 %** (antes 17 %) | **100 %** |
+
+Con respuestas al azar ya no adopta ninguna puerta ni interruptor: **calla siempre**. Con datos coherentes sigue sin
+errores. El portero es exigente con pocos casos (con dos recuerdos, una versión ciega puede empatar y "más" tiene que ser
+estricto): una semilla perdió el interruptor con 2 pares de "menor" (95 % en vez de 98 %).
