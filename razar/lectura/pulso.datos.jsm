@@ -54,3 +54,19 @@ db 'propiedad 2: dicho de nuevo, lo que sigue queda igual ', 0
 times 640h - $ db 0
 db ' | dan vuelta:', 0
 times 680h - $ db 0
+db 'preguntas que se hace (lo irregular):', 10, 0
+times 6C0h - $ db 0
+db '| dicho asi ', 0
+times 700h - $ db 0
+db ', con ', 0
+times 740h - $ db 0
+db ' delante ', 0
+times 780h - $ db 0
+db ': por que esta vez ', 0
+times 7C0h - $ db 0
+db 'sin ', 0
+times 800h - $ db 0
+db '      donde: ', 0
+times 840h - $ db 0
+db ' bits | ', 0
+times 880h - $ db 0

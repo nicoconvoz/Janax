@@ -4,7 +4,8 @@
 ; that includes it keeps its own variables from 1600h on and includes it before lectura.inc.
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
 ROOMR = 1208h                   ; the requests: {key, what filled it first, said empty} per place (24 bytes)
-ROOMS = 1210h                   ; the forms already seen: {hash of key and filling} per place
+ROOMS = 1210h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
+                                ; its question's bits} per place (56 bytes)
 ROOMD = 1218h                   ; the differences: {key, low, high, floor | turned << 8, pairs, bits saved (in 2^-16)}
                                 ; per place (48 bytes)
 RMASK = 1220h                   ; places of each of the three, minus 1
@@ -125,8 +126,8 @@ jst j13, j1, ROOMR
 jld j3, j1, RMASK
 jldi j4, 1
 jadd j3, j3, j4
-jldi j4, 3
-jshl j11, j3, j4
+jldi j4, 56
+jmul j11, j3, j4
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMS
@@ -451,11 +452,21 @@ po_form:
 po_seen:
   jadd j5, j2, j1
   jld j2, j1, ROOMS
-  jldi j3, 8
+  jldi j3, 56
   jcall t_find
   jld j6, j4, 0
-  jjnz j6, po_done
-  jst j5, j4, 0
+  jjnz j6, po_again
+  jst j5, j4, 0                 ; a new form: its key, filling, where it first was, its floor
+  jld j6, j1, KEY
+  jst j6, j4, 8
+  jld j6, j1, PAY
+  jst j6, j4, 16
+  jld j6, j1, JJ
+  jst j6, j4, 32
+  jld j6, j1, FLOOR
+  jst j6, j4, 40
+  jldi j6, 1
+  jst j6, j4, 24
   jld j5, j1, KEY
   jld j2, j1, ROOMR
   jldi j3, 40
@@ -516,6 +527,12 @@ po_same2:
   jldi j2, 0
   jjmp pulse
 po_done:
+  jret
+po_again:                       ; a form seen before: once more
+  jld j6, j4, 24
+  jldi j7, 1
+  jadd j6, j6, j7
+  jst j6, j4, 24
   jret
 po_test:
   jadd j5, j2, j1

@@ -556,6 +556,17 @@ finish:
   jcall ask
   jhalt
 
+; What it wrote so far, out (request 1), and TEXT empty again. Uses j1, j10-j14.
+flush:
+  jldi j10, 1
+  jldi j11, TEXT
+  jldi j1, 0
+  jld j12, j1, POS
+  jcall ask
+  jldi j1, 0
+  jst j1, j1, POS
+  jret
+
 ; The text at j1 (ended by a 0) at TEXT + POS. Uses j1-j3 (j1 = 0 after).
 puts:
   jldi j3, 0

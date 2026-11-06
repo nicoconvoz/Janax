@@ -52,6 +52,14 @@ S_OF    = 580h
 S_FLIPS = 5C0h
 S_P2    = 600h
 S_P2T   = 640h
+S_QHEAD = 680h
+S_Q1    = 6C0h
+S_Q2    = 700h
+S_Q3    = 740h
+S_Q4    = 780h
+S_Q5    = 7C0h
+S_Q6    = 800h
+S_QB    = 840h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -145,7 +153,249 @@ tv_next:
 jwend
 jldi j2, 10
 jcall putch
+jcall questions
 jjmp finish
+
+; The questions it asks itself (Capitan, 2026-11-06: "study the irregular and stop chasing what repeats"). A place said
+; both ways, plain and with a switch that pays in front, has a rule (the way it was said most) and exceptions: an
+; exception asks "why this time the switch?" (where it is mostly said plain) or "why this time without it?" (plain where
+; it is mostly said with it). A tie has no rule and asks nothing. They are ordered by the bits the exception surprises
+; with, n * log2(N / n) (n the exceptions, N all), and the strongest are written with the renglon where the exception
+; was. Uses j1-j14.
+questions:
+  jldi j1, 0
+  jldi j9, 0
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j11, 56
+    jmul j11, j9, j11
+    jld j2, j1, ROOMS
+    jadd j11, j11, j2
+    jst j1, j11, 48
+    jld j2, j11, 0
+    jjz j2, qs_next
+    jld j2, j11, 40             ; a form of the words' floor, with a switch in the hole
+    jldi j3, 2
+    jsub j2, j2, j3
+    jjnz j2, qs_next
+    jld j3, j11, 16
+    jjz j3, qs_next
+    jldi j2, 2                  ; the switch pays?
+    jst j2, j1, FLOOR
+    jldi j2, 0
+    jcall d_make
+    jld j2, j1, ROOMD
+    jldi j3, 64
+    jcall t_find
+    jld j2, j4, 40
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, qs_next
+    jjz j2, qs_next
+    jcall q_plain               ; and the place said plain
+    jjz j4, qs_next
+    jld j5, j4, 24              ; said plain, and with the switch
+    jld j6, j11, 24
+    jsub j7, j5, j6
+    jjz j7, qs_next             ; a tie: no rule
+    jldi j8, 63
+    jsar j7, j7, j8
+    jadd j8, j6, j1             ; the exceptions: the fewer
+    jjz j7, qs_min
+    jadd j8, j5, j1
+  qs_min:
+    jadd j2, j5, j6
+    jst j8, j1, PN
+    jcall lg16
+    jst j2, j1, ACC
+    jld j2, j1, PN
+    jcall lg16
+    jld j3, j1, ACC
+    jsub j3, j3, j2
+    jld j2, j1, PN
+    jmul j3, j3, j2
+    jst j3, j11, 48
+  qs_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jcall flush
+  jldi j1, S_QHEAD
+  jcall puts
+  jldi j2, 20
+  jst j2, j1, TOPN
+  jwhile j2
+    jldi j1, 0                  ; the strongest question left
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 0
+    jld j10, j1, RMASK
+    jldi j2, 1
+    jadd j10, j10, j2
+    jwhile j10
+      jldi j3, 56
+      jmul j3, j9, j3
+      jld j2, j1, ROOMS
+      jadd j3, j3, j2
+      jld j2, j3, 48
+      jsub j4, j11, j2
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjz j4, qb_next
+      jadd j11, j2, j1
+      jadd j12, j3, j1
+    qb_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j11, qs_done
+    jst j1, j12, 48
+    jst j12, j1, GE
+    jadd j2, j11, j1
+    jst j2, j1, GS
+    jadd j12, j2, j1
+    jcall mix
+    jcall q_write
+    jcall flush
+    jldi j1, 0
+    jld j2, j1, TOPN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, TOPN
+  jwend
+qs_done:
+  jret
+
+; The form of the same place said plain, for the form with a switch at j11 -> j4 (0: never said plain). Uses j1-j8.
+q_plain:
+  jldi j1, 0
+  jld j2, j11, 8
+  jldi j3, 0
+  jcall hw
+  jjnz j2, qp_key
+  jldi j2, 1
+qp_key:
+  jadd j5, j2, j1
+  jld j2, j1, ROOMS
+  jldi j3, 56
+  jcall t_find
+  jld j5, j4, 0
+  jjnz j5, qp_done
+  jldi j4, 0
+qp_done:
+  jret
+
+; The question of the form with a switch at GE (its bits GS): the place, how often each way, and the renglon of the
+; exception. Uses j1-j14.
+q_write:
+  jldi j1, 0
+  jld j11, j1, GE
+  jcall q_plain
+  jst j4, j1, GN
+  jldi j2, 32
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, GS                ; its bits
+  jldi j3, 16
+  jshr j2, j2, j3
+  jcall putnum
+  jldi j1, S_QB
+  jcall puts
+  jld j4, j1, GN                ; the place, as said plain
+  jld j9, j4, 32
+  jldi j10, 3
+  jwhile j10
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j1, S_Q1                 ; said plain n times, with the switch m
+  jcall puts
+  jld j4, j1, GN
+  jld j2, j4, 24
+  jcall putnum
+  jldi j1, S_Q2
+  jcall puts
+  jld j4, j1, GE
+  jld j2, j4, 16
+  jcall putword
+  jldi j1, S_Q3
+  jcall puts
+  jld j4, j1, GE
+  jld j2, j4, 24
+  jcall putnum
+  jldi j1, S_Q4                 ; why this time (without) the switch?
+  jcall puts
+  jld j4, j1, GE
+  jld j5, j1, GN
+  jld j6, j4, 24
+  jld j7, j5, 24
+  jsub j6, j6, j7
+  jldi j7, 63
+  jsar j6, j6, j7
+  jld j9, j4, 32                ; where the exception was
+  jjnz j6, qw_with
+  jld j9, j5, 32
+  jldi j1, S_Q5
+  jcall puts
+qw_with:
+  jldi j1, 0
+  jld j4, j1, GE
+  jld j2, j4, 16
+  jcall putword
+  jldi j2, 63
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jldi j1, S_Q6                 ; its renglon
+  jcall puts
+  jldi j1, 0
+  qw_back:
+    jjz j9, qw_start
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, -8
+    jjz j2, qw_start
+    jldi j2, 1
+    jsub j9, j9, j2
+    jjmp qw_back
+qw_start:
+  jldi j10, 1
+  jwhile j10
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jadd j10, j2, j1
+    jjz j2, qw_end
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jldi j2, 1
+    jadd j9, j9, j2
+  qw_end:
+  jwend
+  jldi j2, 10
+  jjmp putch
 
 ; The kind CAT: its line, and its ten pieces that save the most bits (each written has its bits turned negative, so
 ; the next round finds the next). Its counts go into j0. Uses j1-j14.
@@ -198,6 +448,8 @@ kind_report:
   jcall putpct
   jldi j2, 10
   jcall putch
+  jst j1, j1, GN                ; the pieces written, to give them back their bits after
+  jldi j2, 10
   jldi j2, 10
   jst j2, j1, TOPN
   jwhile j2
@@ -239,6 +491,13 @@ kind_report:
     jldi j2, 0
     jsub j2, j2, j11
     jst j2, j12, 40
+    jld j3, j1, GN
+    jldi j4, 3
+    jshl j4, j3, j4
+    jst j12, j4, QBUF
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, GN
     jst j12, j1, RENT
     jldi j2, 32
     jcall putch
@@ -275,6 +534,19 @@ kind_report:
     jst j2, j1, TOPN
   jwend
 kr_done:
+  jldi j1, 0                    ; the bits given back
+  jld j9, j1, GN
+  jldi j10, QBUF
+  jwhile j9
+    jld j3, j10, 0
+    jld j2, j3, 40
+    jsub j2, j1, j2
+    jst j2, j3, 40
+    jldi j2, 8
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j9, j9, j2
+  jwend
   jret
 
 ; j2 written, and into j0. Uses j1-j4, j12-j14.

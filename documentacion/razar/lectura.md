@@ -236,3 +236,41 @@ Efecto en el camino: queda **conservador** (no saca 50 interruptores, "no" entre
 la buena. Las respuestas de las preguntas no cambian. El paso honesto que sigue es medir el cambio en algo más ancho
 que una palabra (lo que sigue hasta el fin del renglón, o la puerta cerrada de Razar: lo dicho con "no" es la
 negación de lo que se dice casi siempre), y una vara que compare frases distintas, no repeticiones.
+
+# Estudiar lo irregular (2026-11-06)
+
+Regla del Capitán: *"cuando algo siempre es no y aparece un sí, el programa pregunta por qué en este caso sí; y si
+siempre da sí y aparece un no, por qué en este caso no. Si lo general es que un perro ladre, ¿por qué en ese caso el
+perro no ladró? Estudiá lo irregular y dejá de perseguir lo que se repite."* Es la puerta cerrada de Razar (P54) y su
+pregunta.
+
+Cada forma dicha cuenta ahora cuántas veces apareció y dónde (la tabla de formas vistas guarda clave, llenado, veces,
+primer lugar y piso). Un lugar dicho de las dos maneras, tal cual y con un interruptor que paga delante, tiene una regla
+(la manera que más se dijo) y excepciones: la excepción pregunta **"¿por qué esta vez el interruptor?"** o **"¿por qué
+esta vez sin él?"**. Un empate no tiene regla y no pregunta. Se ordenan por los bits con que sorprende la excepción,
+`n · log2(N / n)`, y se escriben con el renglón donde pasó.
+
+**Un error mío, encontrado en el camino:** el listado de las diez piezas más fuertes las marcaba poniendo sus bits en
+negativo y nunca los devolvía; después de listar, "no", "y", "que" ya no pagaban. Ahora los devuelve.
+
+## Lo que pregunta (Nuevo Testamento entero, 2 s, idéntico en los tres motores, `000065ACD081CBAF`)
+
+Con todos los interruptores que pagan, **manda el pegamento**: "a los que" dicho 117 veces, con "todos" delante 16:
+¿por qué esta vez todos? "para que se" / "para que **no** se produzca un tumulto" aparece cuarta. Es lo que anotó
+Razar: las preguntas más fuertes son de pegamento.
+
+Con **solo el "no"** de interruptor (una variante de prueba, no guardada: el filtro por la palabra sería declararla), las
+preguntas son las de Razar:
+
+```
+5 bits | jesús le respondió | dicho así 51, con no 1: ¿por qué esta vez no?
+     donde: le hizo muchas preguntas pero jesús no le respondió nada
+8 bits | el que cree | dicho así 17, con no 3: ¿por qué esta vez no?
+     donde: el que cree en él no es condenado el que no cree ya está condenado ...
+8 bits | yo soy el | dicho así 20, con no 3   donde: ... dijo claramente yo no soy el mesías
+5 bits | que lo son | dicho así 3, con no 8: ¿por qué esta vez SIN no?
+```
+
+**Lo que falta, y es la causa:** el pulso encuentra "las palabras que se pueden sacar" (propiedad 1), no "la negación".
+Razar la destiló con cinco propiedades y encontró una sola: *no*. Hay que traer esas cinco a la regla global, para que
+el interruptor salga destilado y no declarado; entonces el estudio de lo irregular corre sobre él solo.
