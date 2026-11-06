@@ -201,3 +201,5 @@ EGG 0 de 5 en 320.000 juegos (44–87 %). Con 4 cosas, Razar en decenas de juego
 velocidad mínima rinde igual que las lentas. Diagnóstico: después de una raya la ola gira en redondo (convulsión) y hay gemelas.
 2026-11-05 — Morse con cada pulso en su ola: 26 de 26 letras distintas, cero giro en redondo; pero el cubo queda como un
 caño (olas que no se tocan) y el oído no distingue melodías anidadas (19 % igual en todo). Abierto.
+2026-11-05 — Palabras (Capitán): 20 unidades sin confusión (Sperner, ventana de 7); con pulso firme 30 de 30 palabras
+oídas y 17 de 20 nuevas. Con temblor se rompen las palabras. El cardumen quieto da igual: hoy el cubo es un caño.

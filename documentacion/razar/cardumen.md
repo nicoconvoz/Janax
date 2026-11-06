@@ -577,3 +577,34 @@ se suman. Reemplaza al período refractario.
   da igual con cualquier semilla y en cualquier cubo. La cura cumple "nace y muere limpio", pero al no dejar que las
   olas se crucen le saca al cardumen la interacción. Queda abierto cómo se cruzan las olas sin volver a girar en
   redondo.
+
+## Palabras con unidades que se recombinan (Capitán, 2026-11-05)
+
+> *"Reducí el vocabulario a los que distingue y recombinalos para dar el resto."* — *"Tenemos que darle una palabra, no
+> una letra."* — *"Recombiná esos y armá el idioma."*
+
+**Cuántas unidades sin confusión.** Con cada pulso en su ola, cada pulso deja arriba las mismas notas corridas en el
+tiempo, y dos unidades se confunden solo si los pulsos de una están todos adentro de la otra. El máximo sin que ninguna
+quede adentro de otra es elegir todas las que tienen la misma cantidad de pulsos (teorema de Sperner). Con el primer
+paso siempre apretado: ventana de 5 pasos, 6 unidades; de 6, 10; **de 7, 20**; de 8, 35. Verificado en el cubo
+congelado (4³ y 7³, semilla 7): ninguna igual a otra, ninguna adentro de otra, en las cuatro ventanas.
+
+**El idioma** (`palabras.pl`): las 20 unidades de 7 pasos; cada letra son 2 unidades; cada unidad en su propia ola; la
+voluntad reconoce una unidad por vez y arma letras y palabras con la tabla (la composición es por diseño). Aprende con
+30 palabras (20 pasadas) y después oye 20 palabras que nunca oyó. Semillas 7, 11, 23:
+
+| temblor | unidades reconocidas (oídas / nuevas) | palabras oídas enteras | palabras nuevas enteras |
+|---|---|---|---|
+| 0 % | 100 % / 98 % | 30 de 30 | 17 de 20 |
+| 10 % | 90 % / 88–90 % | 11–14 de 30 | 5–8 de 20 |
+| 20 % | 74–81 % / 78–82 % | 2–5 de 30 | 1–4 de 20 |
+
+- **El idioma por partes funciona**: con pulso firme lee todas las palabras que aprendió y 17 de 20 nuevas. Las 3 que
+  fallan (hermano, noche, kiwi) fallan en la h y la k, cuyas unidades no aparecieron al aprender. Las unidades se
+  reconocen igual en palabras nuevas que en las oídas.
+- **El temblor rompe palabras, no unidades**: 90 % por unidad, pero una palabra de 5 letras son 10 unidades y una mal la
+  pierde entera.
+- ⚠️ **El cardumen no hace el trabajo**: con pulso firme las tres semillas dan exactamente lo mismo, y el cardumen quieto
+  da exactamente lo mismo que el que aprende. Con las olas separadas el cubo es un caño: el idioma lo arman la voluntad
+  y la tabla. Queda abierto que las olas interactúen sin volver a girar en redondo, y el control de verdad para eso es
+  este mismo: que el cardumen que aprende le gane al quieto.
