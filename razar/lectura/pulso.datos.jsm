@@ -80,3 +80,9 @@ db ', sobre todo la puerta: ', 0
 times 980h - $ db 0
 db ' | interruptores:', 0
 times 9C0h - $ db 0
+db '      cerca, y nunca cuando se dijo como siempre: ', 0
+times 0A00h - $ db 0
+db 'asociaciones que surgieron (de ', 0
+times 0A40h - $ db 0
+db ' excepciones; en cuantas / en cuantas ciegas):', 0
+times 0A80h - $ db 0

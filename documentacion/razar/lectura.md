@@ -309,3 +309,39 @@ negacion destilada (las cinco de Razar): pasan la 1: 906, la 2: 327, puerta anch
   "con , (se saca)" — "Isaac, padre de Jacob" leído como "Isaac padre de Jacob". **Pero aparece basura**: un signo
   llena un hueco (", padre de jacob") y piezas como "ustedes" arman "el padre de , padre de judá". Falta saber qué
   llena el hueco de un "¿quién?": una identidad (P37, tipos e identidades), no un signo.
+
+# Que la asociación de pensar surja sola (2026-11-06)
+
+Capitán: *"ya con el no, que es lo más valioso, que el resto se autocomplete con inferencia y lógica… que surja la
+asociación de pensar, por su cuenta, no por nosotros"*.
+
+Con la misma regla: la excepción ya es "lo mismo con una diferencia" (el lugar, con y sin "no"). **El porqué es otra
+diferencia que viaja con esa**: lo que está en el renglón de la excepción y **nunca** estuvo en los renglones donde se
+dijo como siempre. Nadie le dice qué buscar; el pegamento se cae solo, porque también está en los renglones de la regla.
+Y si una misma diferencia acompaña a muchas excepciones distintas, nace una **asociación**, encontrada por él: las
+preguntas pasan a ser material, y la regla las vuelve a mirar (el piso sube). **La vara**: lo mismo con un renglón de la
+regla en lugar de la excepción (ciego). Asociación = acompaña a dos excepciones o más, y a más que en lo ciego.
+
+Para cada pregunta busca todas las veces que el libro dice el lugar (tal cual, y con el "no" delante en cualquiera de los
+dos lugares del medio), la mayoría es la regla, y lo que tienen las excepciones que la regla nunca tuvo es su "cerca".
+
+## Lo que surgió (Nuevo Testamento entero, 2,6 s, idéntico en los tres motores, `00009AE13D084B10`)
+
+```
+asociaciones que surgieron (de 354 excepciones; en cuántas / en cuántas ciegas):
+no(85/0) ni(34/7) sino(36/17) dios(25/9) sus(29/17) porque(30/18) los(25/13) qué(17/5) son(20/8) ve(13/1)
+puede(13/2) más(18/7) o(14/3) por(30/20) ?(20/10)
+```
+
+- **"ni"** (34 contra 7): la hermana del "no", encontrada sola, partiendo solo del "no".
+- **"sino"** (36 contra 17): el "no ladra, **sino** que corre" de la propiedad 2 de Razar, que una palabra de distancia
+  no veía, aparece acá como asociación.
+- **"o"**, **"qué"**, **"puede"**: la disyunción, la pregunta, lo posible, junto al "no" que sorprende.
+- "no" mismo (85/0) es circular: el renglón de la excepción tiene el "no" por construcción. Se ve y se dice.
+
+Cada pregunta trae ahora su "cerca" (con `*` las palabras que son asociación). Ejemplo: "para que se / para que no se
+produzca un tumulto": cerca *decían *hagamos *durante *fiesta *tumulto *pueblo…
+
+Lo que todavía no es: el "cerca" de una pregunta con muchas excepciones junta muchos renglones y se vuelve largo; la
+asociación se mide contra una sola vara ciega por pregunta; y todavía no **contesta** la pregunta: junta los candidatos
+a porqué y las asociaciones que se repiten, pero no elige uno.

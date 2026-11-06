@@ -61,6 +61,33 @@ S_NEG2  = 8C0h
 S_NEG3  = 900h
 S_NEG4  = 940h
 S_NEG5  = 980h
+S_Q7    = 9C0h
+S_ASSOC = 0A00h
+S_ASSOC2 = 0A40h
+ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
+ROOMOW = 1908h
+ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
+ROOMON = 1918h                  ; its blind whys
+ROOMWY = 1920h
+ROOMBL = 1928h
+QA    = 1930h                   ; the place of the question: its three words, the switch
+QB    = 1938h
+QC    = 1940h
+QW    = 1948h
+NPL   = 1950h                   ; how often said plain, and with the switch
+NWI   = 1958h
+STAMP = 1960h
+WMODE = 1968h
+RL    = 1970h                   ; the rule: its list and how many; the exceptions: the same
+NRL   = 1978h
+XL    = 1980h
+NXL   = 1988h
+OI    = 1990h                   ; walking a list: where, how many left
+OL    = 1998h
+OI2   = 19A0h
+NQ    = 19A8h                   ; exceptions looked at
+QI    = 19B0h                   ; walking the forms: the place, how many left
+QL    = 19B8h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -219,6 +246,47 @@ questions:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jcall why_rooms               ; every exception: what it has that the rule never had, and a blind one beside it
+  jldi j1, 0
+  jst j1, j1, NQ
+  jst j1, j1, QI
+  jld j2, j1, RMASK
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QL
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, QI
+    jldi j11, 56
+    jmul j11, j9, j11
+    jld j2, j1, ROOMS
+    jadd j11, j11, j2
+    jld j2, j11, 48
+    jjz j2, qw_skip
+    jcall q_load
+    jcall q_occ
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, WMODE
+    jcall q_whys
+    jcall q_blind
+    jldi j1, 0
+    jld j2, j1, NQ
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, NQ
+  qw_skip:
+    jldi j1, 0
+    jld j2, j1, QI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QI
+    jld j2, j1, QL
+    jsub j2, j2, j3
+    jst j2, j1, QL
+  jwend
+  jcall flush
+  jcall assoc_report
   jcall flush
   jldi j1, S_QHEAD
   jcall puts
@@ -390,6 +458,474 @@ qw_start:
     jadd j9, j9, j2
   qw_end:
   jwend
+  jldi j2, 10
+  jcall putch
+  jldi j1, S_Q7                 ; and what it has that the rule never had (* an association)
+  jcall puts
+  jld j11, j1, GE
+  jcall q_load
+  jcall q_occ
+  jldi j1, 0
+  jldi j2, 3
+  jst j2, j1, WMODE
+  jcall q_whys
+  jldi j2, 10
+  jjmp putch
+
+; The rooms of the whys (once): the lists of where a place is said, and the four tables by word. Uses j1-j14.
+why_rooms:
+  jldi j1, 0
+  jld j2, j1, ROOMOP
+  jjnz j2, wr_have
+  jld j11, j1, NTOK
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMOP
+  jld j11, j1, NTOK
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMOW
+  jld j11, j1, NV
+  jldi j2, 5
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMMK
+  jld j2, j1, NV
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j3, j13, j2
+  jst j3, j1, ROOMON
+  jadd j3, j3, j2
+  jst j3, j1, ROOMWY
+  jadd j3, j3, j2
+  jst j3, j1, ROOMBL
+wr_have:
+  jret
+
+; The place of the question at j11 (a form with the switch): its three words QA QB QC (as said plain) and the switch
+; QW. Uses j1-j9.
+q_load:
+  jcall q_plain
+  jldi j1, 0
+  jld j9, j4, 32
+  jldi j3, 3
+  jshl j9, j9, j3
+  jld j3, j1, ROOMT
+  jadd j9, j9, j3
+  jld j2, j9, 0
+  jst j2, j1, QA
+  jld j2, j9, 8
+  jst j2, j1, QB
+  jld j2, j9, 16
+  jst j2, j1, QC
+  jld j2, j11, 16
+  jst j2, j1, QW
+  jret
+
+; Every time the book says the place: plain (QA QB QC) to the list at ROOMOP, with the switch (QA QW QB QC or QA QB
+; QW QC) to ROOMOW; then the rule (the way said most) is RL / NRL and the exceptions XL / NXL. Uses j1-j14.
+q_occ:
+  jldi j1, 0
+  jst j1, j1, NPL
+  jst j1, j1, NWI
+  jld j11, j1, QA
+  jld j12, j1, QB
+  jld j13, j1, QC
+  jld j14, j1, QW
+  jld j9, j1, ROOMT
+  jldi j8, 0
+  jld j10, j1, NTOK
+  jldi j2, 3
+  jsub j10, j10, j2
+  jwhile j10
+    jld j2, j9, 0
+    jsub j2, j2, j11
+    jjnz j2, qo_next
+    jld j3, j9, 8
+    jld j4, j9, 16
+    jld j5, j9, 24
+    jsub j2, j3, j12            ; plain
+    jjnz j2, qo_w1
+    jsub j2, j4, j13
+    jjnz j2, qo_w2
+    jld j2, j1, NPL
+    jldi j6, 3
+    jshl j6, j2, j6
+    jld j7, j1, ROOMOP
+    jadd j6, j6, j7
+    jst j8, j6, 0
+    jldi j6, 1
+    jadd j2, j2, j6
+    jst j2, j1, NPL
+    jjmp qo_next
+  qo_w2:
+    jsub j2, j4, j14            ; QA QB QW QC
+    jjnz j2, qo_next
+    jsub j2, j5, j13
+    jjnz j2, qo_next
+    jjmp qo_with
+  qo_w1:
+    jsub j2, j3, j14            ; QA QW QB QC
+    jjnz j2, qo_next
+    jsub j2, j4, j12
+    jjnz j2, qo_next
+    jsub j2, j5, j13
+    jjnz j2, qo_next
+  qo_with:
+    jld j2, j1, NWI
+    jldi j6, 3
+    jshl j6, j2, j6
+    jld j7, j1, ROOMOW
+    jadd j6, j6, j7
+    jst j8, j6, 0
+    jldi j6, 1
+    jadd j2, j2, j6
+    jst j2, j1, NWI
+  qo_next:
+    jldi j2, 8
+    jadd j9, j9, j2
+    jldi j2, 1
+    jadd j8, j8, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, NPL               ; the rule is the way said most
+  jld j3, j1, NWI
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jld j5, j1, ROOMOP
+  jld j6, j1, ROOMOW
+  jjnz j4, qo_plain
+  jst j6, j1, RL
+  jst j3, j1, NRL
+  jst j5, j1, XL
+  jst j2, j1, NXL
+  jret
+qo_plain:
+  jst j5, j1, RL
+  jst j2, j1, NRL
+  jst j6, j1, XL
+  jst j3, j1, NXL
+  jret
+
+; The first unit of the renglon of the unit j9 -> j9. Uses j1-j3.
+r_start:
+  jldi j1, 0
+  jwhile j9
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, -8
+    jjz j2, rs_done
+    jldi j2, 1
+    jsub j9, j9, j2
+  jwend
+rs_done:
+  jret
+
+; Every piece of the renglon of the unit j9 marked with STAMP. Uses j1-j6, j9.
+r_mark:
+  jcall r_start
+  jldi j1, 0
+  jld j5, j1, STAMP
+  jldi j6, 1
+  jwhile j6
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j6, j2, 0
+    jjz j6, rm_end
+    jldi j3, 3
+    jshl j3, j6, j3
+    jld j4, j1, ROOMMK
+    jadd j3, j3, j4
+    jst j5, j3, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+  rm_end:
+  jwend
+  jret
+
+; Every piece of the renglon of the unit j9 not marked with STAMP (once each): WMODE 1 counts it as a why, 2 as a
+; blind why, 3 writes it ("*" if it is an association). Uses j1-j9.
+r_why:
+  jcall r_start
+  jldi j8, 1
+  jwhile j8
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j8, j2, 0
+    jjz j8, rw_end
+    jldi j3, 3
+    jshl j7, j8, j3             ; its offset in the word tables
+    jld j4, j1, ROOMMK
+    jadd j4, j4, j7
+    jld j4, j4, 0
+    jld j5, j1, STAMP
+    jsub j4, j4, j5
+    jjz j4, rw_next             ; it was there too
+    jld j4, j1, ROOMON
+    jadd j4, j4, j7
+    jld j6, j4, 0
+    jsub j6, j6, j5
+    jjz j6, rw_next             ; already counted
+    jst j5, j4, 0
+    jld j2, j1, WMODE
+    jldi j3, 3
+    jsub j3, j2, j3
+    jjz j3, rw_write
+    jld j4, j1, ROOMWY
+    jldi j3, 1
+    jsub j3, j2, j3
+    jjz j3, rw_bump
+    jld j4, j1, ROOMBL
+  rw_bump:
+    jadd j4, j4, j7
+    jld j3, j4, 0
+    jldi j2, 1
+    jadd j3, j3, j2
+    jst j3, j4, 0
+    jjmp rw_next
+  rw_write:
+    jst j9, j1, OI2
+    jadd j2, j8, j1
+    jcall is_assoc
+    jjz j3, rw_plain
+    jldi j2, 42
+    jcall putch
+  rw_plain:
+    jldi j1, 0
+    jld j9, j1, OI2
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, OI2
+    jldi j8, 1
+  rw_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+  rw_end:
+  jwend
+  jret
+
+; j3 = 1 if the word j2 is an association: a why of two exceptions or more, and of more than blind ones. Uses j1-j5.
+is_assoc:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j5, j2, j3
+  jld j3, j1, ROOMWY
+  jadd j3, j3, j5
+  jld j3, j3, 0
+  jld j4, j1, ROOMBL
+  jadd j4, j4, j5
+  jld j4, j4, 0
+  jsub j4, j4, j3               ; blind < why
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, ia_no
+  jldi j4, 2
+  jsub j4, j3, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, ia_no
+  jldi j3, 1
+  jret
+ia_no:
+  jldi j3, 0
+  jret
+
+; The whys of the question loaded (q_occ done): in its exceptions, never in its rule; counted (WMODE 1) or written
+; (3). Uses j1-j14.
+q_whys:
+  jldi j1, 0
+  jld j2, j1, STAMP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, STAMP
+  jld j2, j1, RL                ; the rule's renglones, marked
+  jld j3, j1, NRL
+  jcall q_markall
+  jldi j1, 0                    ; what the exceptions have that the rule never had
+  jst j1, j1, OI
+  jld j2, j1, NXL
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, OI
+    jldi j3, 3
+    jshl j9, j9, j3
+    jld j3, j1, XL
+    jadd j9, j9, j3
+    jld j9, j9, 0
+    jcall r_why
+    jldi j1, 0
+    jld j2, j1, OI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, OI
+    jld j2, j1, OL
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+  jret
+
+; The blind whys of the question loaded: the same, with the rule's first renglon in place of the exceptions (against
+; the rule's other renglones and the exceptions'). Uses j1-j14.
+q_blind:
+  jldi j1, 0
+  jld j2, j1, STAMP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, STAMP
+  jld j2, j1, RL
+  jldi j3, 8
+  jadd j2, j2, j3
+  jld j3, j1, NRL
+  jldi j4, 1
+  jsub j3, j3, j4
+  jcall q_markall
+  jldi j1, 0
+  jld j2, j1, XL
+  jld j3, j1, NXL
+  jcall q_markall
+  jldi j1, 0
+  jldi j2, 2
+  jst j2, j1, WMODE
+  jld j9, j1, RL
+  jld j9, j9, 0
+  jcall r_why
+  jret
+
+; The renglones of the j3 units listed at j2, marked with STAMP. Uses j1-j9.
+q_markall:
+  jldi j1, 0
+  jst j2, j1, OI
+  jst j3, j1, OL
+  jwhile j3
+    jldi j1, 0
+    jld j9, j1, OI
+    jld j9, j9, 0
+    jcall r_mark
+    jldi j1, 0
+    jld j2, j1, OI
+    jldi j3, 8
+    jadd j2, j2, j3
+    jst j2, j1, OI
+    jld j3, j1, OL
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, OL
+  jwend
+  jret
+
+; The associations that came up: the words that were a why of the most exceptions, more than of blind ones (up to
+; fifteen, each with its whys and blind whys). Uses j1-j14.
+assoc_report:
+  jldi j1, S_ASSOC
+  jcall puts
+  jld j2, j1, NQ
+  jcall putmix
+  jldi j1, S_ASSOC2
+  jcall puts
+  jldi j2, 15
+  jst j2, j1, OL
+  jwhile j2
+    jldi j1, 0                  ; the most why - blind left
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jadd j2, j9, j1
+      jcall is_assoc
+      jjz j3, ar_next
+      jldi j1, 0
+      jldi j3, 3
+      jshl j5, j9, j3
+      jld j3, j1, ROOMON        ; (taken: -1)
+      jadd j3, j3, j5
+      jld j3, j3, 0
+      jldi j4, 1
+      jadd j3, j3, j4
+      jjz j3, ar_next
+      jld j3, j1, ROOMWY
+      jadd j3, j3, j5
+      jld j3, j3, 0
+      jld j4, j1, ROOMBL
+      jadd j4, j4, j5
+      jld j4, j4, 0
+      jsub j3, j3, j4
+      jsub j4, j11, j3
+      jldi j6, 63
+      jsar j4, j4, j6
+      jjz j4, ar_next
+      jadd j11, j3, j1
+      jadd j12, j9, j1
+    ar_next:
+      jldi j1, 0
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, ar_done
+    jldi j3, 3
+    jshl j5, j12, j3
+    jld j3, j1, ROOMON
+    jadd j3, j3, j5
+    jldi j4, -1
+    jst j4, j3, 0
+    jst j12, j1, OI
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, OI
+    jadd j12, j2, j1
+    jcall mix
+    jcall putword
+    jldi j2, 40
+    jcall putch
+    jld j2, j1, OI
+    jldi j3, 3
+    jshl j5, j2, j3
+    jld j3, j1, ROOMWY
+    jadd j3, j3, j5
+    jld j2, j3, 0
+    jcall putnum
+    jldi j2, 47
+    jcall putch
+    jld j2, j1, OI
+    jldi j3, 3
+    jshl j5, j2, j3
+    jld j3, j1, ROOMBL
+    jadd j3, j3, j5
+    jld j2, j3, 0
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, OL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OL
+  jwend
+ar_done:
   jldi j2, 10
   jjmp putch
 
