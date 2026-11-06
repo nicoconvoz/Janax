@@ -855,3 +855,19 @@ promedio de 10 y 20 % de resbalones, aprende menos quieto, semillas 1001–1020:
   29 % (quieto)**, contra 5 % de azar. Se cumple a medias. Doc había dicho que el sesgo no era el zumbido (en estas olas
   nadie despierta dos veces); que los frenos lo muevan dice que tiene que ver con cuánto se expande la ola. Costo:
   aprendiendo con frenos, una semilla cae a 13 oraciones de 40 (los frenos que aprenden siguen siendo peligrosos).
+
+**La fatiga por pieza** (otro chat, 2026-11-06: el freno según cuánta actividad hay y cuánto dura, en su versión más
+simple). `fatigue` en `signal_timed`: cada vez que una pieza despierta su umbral sube un umbral entero, y eso se le va
+en tantos pasos como tarda una ola en cruzar el cubo de punta a punta, D = 3 (n − 1) (9 en 4³): una pieza que vuelve a
+despertar antes de que una ola pudiera haber cruzado el cubo no oye algo nuevo, rebota. Profundidad cero (cada pieza
+mira su historia), solo crece con el uso y solo baja con el descanso: no puede oscilar (la adaptación de frecuencia de
+disparo de las neuronas). Huellas viejas intactas; `prueba_signo.pl` 18 de 18.
+
+- **Apaga la convulsión sin matar la señal** (reposo de 1 paso, 5 cubos): sin nada, sigue sonando 17–127 pasos con
+  94–521 notas arriba; con fatiga, **5–18 pasos con 15–30 notas arriba**. El freno fijo de 30 % la apagaba dejando 1–3
+  notas. Es la primera cura sin trampa.
+- **Pero no salva al Morse por tiempos**: con fatiga y reposo 1, el cubo congelado da 20 respuestas distintas para 26
+  letras (semilla 7); las gemelas ahora difieren en **la última marca** (P=W, L=R, B=D=X, O=Z): la fatiga cansa a las
+  piezas de la entrada, que la tecla pulsa cada 2 pasos, y las últimas marcas ya no pasan. Para el cubo, un pulso que
+  llega antes de D pasos es igual que un rebote. Con más silencio entre marcas no mejora de forma pareja: 9 a 21 de 26
+  según la semilla y el silencio. Para el tiempo sigue siendo mejor cada pulso en su propia ola (26 de 26).

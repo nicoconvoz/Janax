@@ -30,6 +30,7 @@ if ($o{armonia}) { $c->{harmony} = 1; }
 $c->{sinks} = { %top };                          # the top face answers
 $c->{whisper} = 1 if $o{quieto};
 $c->{refractory} = $o{refractario} unless $o{refractario} =~ /^(no|olas|cruzan)$/;   # a piece rests R steps, then may wake again
+$c->{fatigue} = 1 if $o{fatiga};             # fatiga=1: each piece tires with use and rests (modelo.pl signal_timed)
 my %u; while (keys %u < 3) { $u{$bottom[rnd() % @bottom]} = 1 } my @key = sort { $a <=> $b } keys %u;
 sub shaky { my ($d) = @_; return $d unless $o{temblor} && rnd2() % 100 < $o{temblor};       # one step more or less
   my $e = $d + (rnd2() % 2 ? 1 : -1); return $e < 1 ? 1 : $e; }

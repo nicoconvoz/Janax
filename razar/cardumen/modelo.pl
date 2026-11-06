@@ -83,6 +83,7 @@ sub signal_timed {
   my @now = sort { $a <=> $b } do { my %u = map { $_ => 1 } @{ $sched->[0] // [] }; keys %u };
   $ft[$_] = $lw[$_] = 0 for @now;
   my %before;                                    # who was awake the step before (for the brake that follows acceleration)
+  my $D = 3 * ($s->{n} - 1); my @tired = (0) x $s->{p};   # fatigue (Capitan and the other chat, 2026-11-06), see below
   while (@now || $t < $#$sched) {
     push @melody, [@now];
     my $state = join(',', @now) . '/' . $prev; $prev = join ',', @now;
@@ -98,7 +99,13 @@ sub signal_timed {
     }
     %before = %awake;
     $t++;
-    my %next = map { $_ => 1 } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
+    # Fatigue (fatigue): each time a piece wakes its threshold rises by one whole threshold, and that wears off in as
+    # many steps as a wave takes to cross the cube corner to corner, 3 (n - 1). A piece woken again before a wave could
+    # have crossed the cube is not hearing something new, it is bouncing. Depth zero: each piece looks at its own
+    # history only; it only grows with use and only falls with rest, so it cannot oscillate (spike-frequency adaptation).
+    if ($s->{fatigue}) { $tired[$_] += $D for @now; $_ = $_ > 0 ? $_ - 1 : 0 for @tired; }
+    my $th = sub { my $q = $_[0]; $s->{fatigue} ? $s->{th} + int($s->{th} * $tired[$q] / $D) : $s->{th} };
+    my %next = map { $_ => 1 } grep { $in{$_} >= $th->($_) && $s->in_harmony($_, $mask{$_}) } keys %in;
     $next{$_} = 1 for @{ $sched->[$t] // [] };
     @now = sort { $a <=> $b } keys %next;
     $ft[$_] = $t for grep { $ft[$_] < 0 } @now;

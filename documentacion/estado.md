@@ -227,3 +227,5 @@ paper de antieficiencia de EGG existe, pero con costo de largo EGG también cump
 no acelera. Haría falta un freno según cuánta actividad hay y cuánto dura.
 2026-11-06 — 20 semillas: con la palabra como canción y ruido, el cardumen que aprende le gana al quieto en 18 de 20
 (Wilcoxon z = 3,42, p ≈ 0,0006). Frenos al 30 % bajan el sesgo al comienzo de 40 % a 24–29 %.
+2026-11-06 — Fatiga por pieza: apaga la convulsión sin matar la señal (5–18 pasos, 15–30 notas arriba). No salva al Morse
+por tiempos: cansa la entrada y se pierden las últimas marcas (20 de 26 letras distintas).
