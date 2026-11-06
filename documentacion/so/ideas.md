@@ -747,3 +747,27 @@ En el oficio:
 
 Lo propio: en esos modelos la actividad sostenida es memoria. En la del Capitán, además, **es la puerta** (lo que suena
 decide qué entra) y es la conciencia, no un registro.
+
+## 2026-11-06 — La sociedad de Razares en red: tablero de llaves, siluetas como funciones (Capitán)
+
+> *"Nostr no es para mandar cartas: es el tablero para saber la dirección del buzón, o si se puede hacer de Razar a
+> Razar, mejor… entre Razares no se intercambian datos exactos: se intercambian siluetas, genoma, señales, nada que
+> comprometa la privacidad… y que nunca se apague."* — *"Una silueta no es un dato puro, es A + B = C: una función
+> lógica, prácticamente; que sea una llave, entonces."*
+
+Devolución:
+- **Nostr es la guía de teléfonos, no el correo.** El problema tiene nombre en el oficio (*rendezvous*, el encuentro), con
+  tres soluciones conocidas: un tablero público (Nostr, como el *tracker* de BitTorrent), una tabla repartida entre los
+  mismos pares (DHT, sin nadie central, más fiel a "P2P puro") y anunciarse en la red de la casa (mDNS). En el tablero
+  cada Razar deja **una llave** ("soy este Razar"), no su dirección; la dirección la arreglan entre los dos al
+  conectarse.
+- **El acuerdo** es el de las cartas (2026-11-06, `documentacion/razar/lectura.md`): cada uno publica qué ofrece (la
+  huella de su genoma y su examen) y el intercambio pasa cuando a los dos les conviene. Nadie espera a nadie.
+- **Qué viaja: la forma de la regla, sin las palabras.** Hoy la silueta de un lugar guarda la palabra que más lo llenó
+  y una pieza guarda sus dos palabras: eso sí sería dato del texto leído. Lo que viaja tiene que ser la función: "este
+  esqueleto se da vuelta", "estos dos llenados son gemelos a/o", "este lugar tiene silueta firme de tal peso". El otro
+  Razar la prueba **con sus propias palabras** y la adopta solo si vale también en lo que él lee: viaja sin datos y,
+  además, prueba que generaliza. El genoma y las señales ya son así.
+- **Que nunca se apague**, con la regla de la casa de ningún bucle que gaste: explora mientras mejora; cuando deja de
+  mejorar, elige descansar (dormido en el timbre no gasta procesador) y despierta cuando llega algo nuevo.
+- **Lo que falta antes:** Janax todavía no tiene red; hoy las cartas viajan entre procesos de la misma máquina.
