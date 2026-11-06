@@ -215,3 +215,5 @@ conserva + asienta) le gana al cardumen quieto en palabras nuevas en 5 semillas 
 18 de 18, y con el freno desconectado caen 7 (las pruebas saben fallar).
 2026-11-06 — Frenos aprendiendo: con 20–30 % que frenan, los frenos crecen hasta apagar el cubo (0 %). Saturación del
 lado del freno.
+2026-11-06 — Morse de saludos (Capitán): punto, raya y fin de letra como tres tipos de saludo, sin tiempos. 20 de 20
+palabras nuevas en las 7 semillas; con 20 % de resbalones, 96–100 % de saludos. El quieto da parecido.

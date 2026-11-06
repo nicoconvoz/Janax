@@ -726,3 +726,29 @@ frenando** con todas sus vecinas (la ley de Dale; en una corteza, más o menos 1
   terminaron. **Aprendiendo, los frenos crecen hasta silenciar el cubo**: la regla de Vogels refuerza el freno cuando
   cae junto con su vecina, y en un cubo que se llena eso pasa todo el tiempo. Es la saturación de antes, del lado del
   freno. Abierto: qué regla general deja crecer al freno sin que se coma la ola.
+
+## Morse de saludos, sin tiempos (Capitán, 2026-11-06)
+
+> *"En vez de tiempos, saludos: código Morse de saludos, sin tiempos que molesten."*
+
+`morse_saludos.pl`: la tabla del Morse de verdad, pero el punto y la raya son **dos tipos de saludo** (dos teclas), no
+dos duraciones; como sin tiempos no hay silencio que cierre una letra, un tercer tipo dice "fin de letra". Cada saludo
+es una tecla (3 piezas de abajo) apretada una vez, en su propia ola; nada depende de cuánto dura nada. Las tres teclas
+son tres esquinas de la cara de abajo, lo más lejos posible entre sí (criterio, no medición). La voluntad reconoce cada
+saludo y arma letras con la tabla del Morse y palabras con las letras. El ruido es el dedo que se resbala (`desliz=P`:
+una de las 3 piezas cae en una vecina). Semillas 1001–1007, palabras nuevas de 20:
+
+| resbalones | saludos reconocidos | palabras nuevas |
+|---|---|---|
+| 0 % | 100 % | 20 en las 7 semillas |
+| 10 % | 97–100 % | 14, 16, 20, 11, 20, 20, 12 |
+| 20 % | 96–100 % | 13, 12, 20, 12, 20, 12, 9 |
+| 10 %, cardumen quieto | 95–99 % | 6, 17, 19, 13, 19, 15, 17 |
+
+- **Todas las letras salen** (hermano, noche y kiwi incluidas): con el Morse, toda letra se arma con los mismos tres
+  saludos, así que no hay letra sin escuchar.
+- **Aguanta los resbalones**: con 20 %, el cubo sigue reconociendo 96–100 % de los saludos. Las palabras caen porque una
+  palabra en Morse son muchos saludos seguidos y uno mal la pierde.
+- **El cardumen todavía no pone lo suyo**: el que aprende le gana al quieto en 4 semillas y pierde en 3. Con tres
+  saludos bien separados, el cubo los distingue aprenda o no. (Por eso el otro chat propuso las 7 teclas de Fano en el
+  espacio, `saludos.pl`: con 3 símbolos lejanos el 100 % no enseña nada sobre el cubo.)
