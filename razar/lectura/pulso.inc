@@ -40,7 +40,24 @@ PDK   = 1F60h                   ; the key of the difference of a pulse
 RSZ   = 1F68h                   ; the bytes of a request, the depth of the floor walked, the move walked, the deepest
 PDP   = 1F70h
 PIX   = 1F78h
-DMX   = 1F88h
+CAP   = 1F88h                   ; the moves a request keeps (the deepest floor and its probe)
+DF    = 1548h                   ; by floor (8 bytes each, from floor 0): its depth now
+TLV   = 1F00h                   ; by floor and distance: {key, met, foreseen} (a growing table)
+PLIM  = 1750h                   ; meeting: how many moves, a probe (1), what it found (0 nothing, 1 new, 2 foreseen); a
+PMODE = 1758h                   ; floor to widen the requests for
+PST   = 1760h
+WIDEN = 1768h
+HDA   = 1770h                   ; weighing a depth: the two distances, the gain and its cost, their counts, logs
+HDB   = 1778h
+HDG   = 1780h
+HDC   = 1788h
+HNA   = 1790h
+HHA   = 1798h
+HNB   = 17A0h
+HHB   = 17A8h
+HL1   = 17B0h
+HL2   = 17B8h
+HT    = 17C0h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
 SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
@@ -134,14 +151,25 @@ rc_next:
   jst j2, j1, JLEFT
 jwend
 
-jldi j1, 0                      ; the deepest floor: a request keeps that many moves
-jldi j9, 1
+jldi j1, 0                      ; each floor starts at depth one (or the one "p" tells), and a request keeps one move more
+jldi j9, 1                      ; than the deepest: the probe
 jldi j10, 3
 jldi j11, 1
 jwhile j10
-  jst j9, j1, FLOOR
-  jcall po_depth
-  jld j3, j1, PDP
+  jldi j2, 1
+  jsub j2, j9, j2
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, HOND
+  jshr j3, j3, j2
+  jldi j2, 255
+  jand j3, j3, j2
+  jjnz j3, dx_one
+  jldi j3, 1
+dx_one:
+  jldi j2, 3
+  jshl j2, j9, j2
+  jst j3, j2, DF
   jsub j4, j11, j3
   jldi j5, 63
   jsar j4, j4, j5
@@ -152,12 +180,18 @@ dx_no:
   jadd j9, j9, j2
   jsub j10, j10, j2
 jwend
-jst j11, j1, DMX
+jldi j2, 1
+jadd j11, j11, j2
+jst j11, j1, CAP
+jst j1, j1, WIDEN
 jldi j2, 3
 jshl j11, j11, j2
 jldi j2, 8
 jadd j11, j11, j2
 jst j11, j1, RSZ
+jldi j2, TLV                    ; what each distance of each floor foresaw (it grows to what it holds)
+jldi j3, 24
+jcall pl_new
 
 jldi j1, 0                      ; its three tables: places for every request it could ever hang (the letters of every
 jld j2, j1, ARPOS               ; word, and four per unit), twice over
@@ -535,7 +569,7 @@ po_again:                       ; a form seen before: once more
   jadd j6, j6, j7
   jst j6, j4, 24
 po_req:
-  jldi j1, 0
+  jcall po_widen                ; (a floor went deeper than the requests hold: they widen first)
   jcall po_depth
   jld j5, j1, KEY
   jld j2, j1, ROOMR
@@ -562,11 +596,11 @@ po_keep:                        ; the move goes first: if it was among its moves
   jldi j5, 62
   jshl j3, j3, j5
 pk_code:
-  jld j5, j1, PDP
+  jld j5, j1, CAP
   jldi j6, 1
   jsub j5, j5, j6
   jldi j6, 0
-  jld j7, j1, PDP
+  jld j7, j1, CAP
   jwhile j7
     jldi j8, 3
     jshl j8, j6, j8
@@ -605,39 +639,56 @@ po_test:
   jjz j6, po_done               ; nothing asleep there
   jjmp po_meet
 
-; The depth of the floor FLOOR (its byte of HOND; 0: one) -> PDP. Uses j1-j3.
+; The depth of the floor FLOOR, as it stands now -> PDP. Uses j1-j3.
 po_depth:
   jldi j1, 0
   jld j2, j1, FLOOR
-  jldi j3, 1
-  jsub j2, j2, j3
   jldi j3, 3
   jshl j2, j2, j3
-  jld j3, j1, HOND
-  jshr j3, j3, j2
-  jldi j2, 255
-  jand j3, j3, j2
-  jjnz j3, pd_one
-  jldi j3, 1
-pd_one:
+  jld j3, j2, DF
   jst j3, j1, PDP
   jret
 
-; The move PAY against every move the request at j4 keeps {key, its last PDP moves, newest first}: each other one
-; wakes the pulse between the two (the empty, if one of them is, waits: j2 = 0). Uses j1-j8.
+; The move PAY against the moves the request at j4 keeps {key, its last CAP moves, newest first}: each of the first
+; PDP that is another wakes the pulse between the two (the empty, if one of them is, waits: j2 = 0). Awake, the next
+; one is a probe: it only looks whether that pulse would be foreseen, and every pulse and probe counts at its distance,
+; so the floor goes deeper or back as it reads (Capitan: "it adjusts while it runs: we never know what we will find").
+; Uses j1-j8.
 po_meet:
   jldi j1, 0
   jst j4, j1, RENT
   jst j1, j1, PIX
+  jld j2, j1, PDP               ; how many it meets: its depth, and awake one more
+  jld j3, j1, TESTING
+  jjnz j3, pm_lim
+  jldi j3, 1
+  jadd j2, j2, j3
+pm_lim:
+  jld j3, j1, CAP
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, pm_cap
+  jadd j2, j3, j1
+pm_cap:
+  jst j2, j1, PLIM
 pm_next:
   jldi j1, 0
   jld j6, j1, PIX
-  jld j7, j1, PDP
+  jld j7, j1, PLIM
   jsub j7, j7, j6
   jjz j7, po_done
   jldi j7, 1
   jadd j7, j6, j7
   jst j7, j1, PIX
+  jld j7, j1, PDP               ; past its depth: the probe
+  jsub j7, j7, j6
+  jldi j8, 1
+  jjz j7, pm_mode
+  jldi j8, 0
+pm_mode:
+  jst j8, j1, PMODE
+  jst j1, j1, PST
   jld j4, j1, RENT
   jldi j7, 3
   jshl j7, j6, j7
@@ -646,9 +697,13 @@ pm_next:
   jjz j2, po_done
   jld j3, j1, PAY
   jcall pm_pair
+  jldi j1, 0
+  jld j2, j1, TESTING
+  jjnz j2, pm_next
+  jcall lv_count
   jjmp pm_next
 
-; The kept move j2 (a code) against the move j3 (0: the empty): the pulse, if it is another. Uses j1-j8.
+; The kept move j2 (a code) against the move j3 (0: the empty): the pulse, or the probe, if it is another. Uses j1-j8.
 pm_pair:
   jldi j1, 0
   jldi j6, 1
@@ -658,16 +713,299 @@ pm_pair:
   jjnz j7, mv_filled
   jjz j3, po_done               ; empty after empty: the same move
   jldi j2, 0
-  jjmp pulse
+  jjmp pm_go
 mv_filled:
   jjnz j3, mv_both
   jadd j3, j2, j1               ; empty after a filling
   jldi j2, 0
-  jjmp pulse
+  jjmp pm_go
 mv_both:
   jsub j6, j2, j3
   jjz j6, po_done               ; the same move
-  jjmp pulse
+pm_go:
+  jld j6, j1, PMODE
+  jjz j6, pulse
+
+; The probe: the pulse between j2 and j3 is not made, only looked at. PST: 0 the place already testified to it, 1 its
+; difference is new, 2 it was there (foreseen). Uses j1-j8.
+probe:
+  jcall d_make
+  jst j5, j1, PDK
+  jld j2, j1, KEY
+  jadd j3, j5, j1
+  jcall hw
+  jjnz j2, pr_k
+  jldi j2, 1
+pr_k:
+  jadd j5, j2, j1
+  jldi j2, TPT
+  jcall pl_find
+  jld j6, j4, 0
+  jjnz j6, pr_none
+  jld j5, j1, PDK
+  jld j2, j1, ROOMD
+  jldi j3, 48
+  jcall t_find
+  jld j6, j4, 0
+  jldi j7, 1
+  jjz j6, pr_set
+  jldi j7, 2
+pr_set:
+  jst j7, j1, PST
+pr_none:
+  jret
+
+; The pulse or probe just met, at distance PIX of the floor FLOOR: counted there, with the bits the judge would give its
+; pair now, log2(2N n / (c(low) c(high))) (each count with this pair in, a probe as if it were made), and the floor
+; weighs its depth again; a difference new here also pays its name. What a pulse foresees is not what repeats but what is
+; specific. Uses j1-j8.
+lv_count:
+  jldi j1, 0
+  jld j2, j1, PST
+  jjz j2, lc_done
+  jld j2, j1, PMODE             ; a probe counts itself in (1), a pulse is in already (0)
+  jst j2, j1, HT
+  jld j7, j1, FLOOR             ; log2(2N)
+  jldi j2, 3
+  jshl j7, j7, j2
+  jld j2, j7, NFL
+  jld j3, j1, HT
+  jadd j2, j2, j3
+  jadd j2, j2, j2
+  jcall lc_lg
+  jst j2, j1, HL1
+  jld j5, j1, PDK               ; + log2(n)
+  jld j2, j1, ROOMD
+  jldi j3, 48
+  jcall t_find
+  jld j2, j4, 32
+  jld j3, j1, HT
+  jadd j2, j2, j3
+  jcall lc_lg
+  jld j3, j1, HL1
+  jadd j3, j3, j2
+  jst j3, j1, HL1
+  jld j2, j1, DLO               ; - log2(c(low)) - log2(c(high))
+  jcall f_find
+  jld j2, j4, 8
+  jld j3, j1, HT
+  jadd j2, j2, j3
+  jcall lc_lg
+  jld j3, j1, HL1
+  jsub j3, j3, j2
+  jst j3, j1, HL1
+  jld j2, j1, DHI
+  jcall f_find
+  jld j2, j4, 8
+  jld j3, j1, HT
+  jadd j2, j2, j3
+  jcall lc_lg
+  jld j3, j1, HL1
+  jsub j3, j3, j2
+  jst j3, j1, HL1
+  jld j2, j1, PST               ; a difference new here pays its name, 2 log2(U), as the judge charges a piece
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, lc_named
+  jld j7, j1, FLOOR
+  jldi j2, 3
+  jshl j7, j7, j2
+  jld j2, j7, UFL
+  jcall lc_lg
+  jld j3, j1, HL1
+  jsub j3, j3, j2
+  jsub j3, j3, j2
+  jst j3, j1, HL1
+lc_named:
+  jld j5, j1, PIX               ; counted at its distance
+  jcall lv_place
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jld j2, j4, 16
+  jld j3, j1, HL1
+  jadd j2, j2, j3
+  jst j2, j4, 16
+  jjmp hd_weigh
+lc_done:
+  jret
+
+; log2 of j2 (0 counts as 1), in 2^-16 of a bit -> j2. Uses j1, j3-j6.
+lc_lg:
+  jjnz j2, lg16
+  jldi j2, 1
+  jjmp lg16
+
+; The count of distance j5 on the floor FLOOR -> j4 {key, met, bits}, put in if new. Uses j1-j8.
+lv_place:
+  jldi j1, 0
+  jld j2, j1, FLOOR
+  jldi j3, 16
+  jshl j2, j2, j3
+  jadd j5, j5, j2
+  jldi j2, TLV
+  jjmp pl_take
+
+; The floor FLOOR weighs its depth d: one deeper when the probe (distance d + 1) brings more bits per pulse than distance
+; d, by more than naming the change costs (half log2 of the probe count); one back when distance d brings fewer than
+; d - 1 by as much. Uses j1-j8.
+hd_weigh:
+  jldi j1, 0
+  jld j5, j1, PDP
+  jst j5, j1, HDA
+  jldi j2, 1
+  jadd j5, j5, j2
+  jst j5, j1, HDB
+  jcall hd_gain
+  jldi j1, 0
+  jld j2, j1, HDG
+  jld j3, j1, HDC
+  jsub j2, j3, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, hw_back
+  jld j2, j1, FLOOR             ; deeper
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, HDB
+  jst j3, j2, DF
+  jst j3, j1, PDP
+  jld j4, j1, CAP               ; and the requests must hold its probe too
+  jsub j4, j3, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, hw_done
+  jldi j4, 1
+  jst j4, j1, WIDEN
+  jret
+hw_back:
+  jld j5, j1, PDP
+  jldi j2, 1
+  jsub j5, j5, j2
+  jjz j5, hw_done
+  jst j5, j1, HDA
+  jld j5, j1, PDP
+  jst j5, j1, HDB
+  jcall hd_gain
+  jldi j1, 0
+  jld j2, j1, HDG
+  jld j3, j1, HDC
+  jadd j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, hw_done
+  jld j2, j1, FLOOR             ; back
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, HDA
+  jst j3, j2, DF
+  jst j3, j1, PDP
+hw_done:
+  jret
+
+; What distance HDB brings over distance HDA on the floor FLOOR, in bits (2^-16): HDG = its bits - its pulses times the
+; bits per pulse of HDA; HDC = half log2 of its pulses (both 0 if either is unmet). Uses j1-j8.
+hd_gain:
+  jldi j1, 0
+  jst j1, j1, HDG
+  jst j1, j1, HDC
+  jld j5, j1, HDA
+  jcall lv_place
+  jld j2, j4, 8
+  jjz j2, hg_done
+  jst j2, j1, HNA
+  jld j2, j4, 16
+  jst j2, j1, HHA
+  jld j5, j1, HDB
+  jcall lv_place
+  jld j2, j4, 8
+  jjz j2, hg_done
+  jst j2, j1, HNB
+  jld j2, j4, 16
+  jst j2, j1, HHB
+  jld j2, j1, HHA               ; its pulses times the bits per pulse of HDA
+  jld j3, j1, HNB
+  jmul j2, j2, j3
+  jld j3, j1, HNA
+  jdiv j2, j2, j3
+  jld j3, j1, HHB
+  jsub j3, j3, j2
+  jst j3, j1, HDG
+  jld j2, j1, HNB               ; the cost of naming it
+  jcall lg16
+  jldi j3, 1
+  jsar j2, j2, j3
+  jst j2, j1, HDC
+hg_done:
+  jret
+
+po_widen:
+  jldi j1, 0
+  jld j2, j1, WIDEN
+  jjnz j2, pw_go
+  jret
+pw_go:
+  jst j1, j1, WIDEN
+  jst j9, j1, PLS
+  jst j10, j1, PLS + 8
+  jst j11, j1, PLS + 16
+  jst j12, j1, PLS + 24
+  jst j13, j1, PLS + 32
+  jst j14, j1, PLS + 40
+  jld j2, j1, RSZ
+  jst j2, j1, PLN               ; (the old size, the old place)
+  jld j2, j1, ROOMR
+  jst j2, j1, PLO
+  jld j2, j1, CAP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, CAP
+  jldi j3, 3
+  jshl j2, j2, j3
+  jldi j3, 8
+  jadd j2, j2, j3
+  jst j2, j1, RSZ
+  jld j3, j1, RMASK
+  jldi j4, 1
+  jadd j3, j3, j4
+  jmul j11, j3, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMR
+  jld j9, j1, PLO               ; every place, its bytes to the same place
+  jadd j11, j13, j1
+  jld j10, j1, RMASK
+  jldi j2, 1
+  jadd j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jld j3, j1, PLN
+    jldi j6, 0
+    jwhile j3
+      jadd j7, j9, j6
+      jld j8, j7, 0
+      jadd j7, j11, j6
+      jst j8, j7, 0
+      jldi j7, 8
+      jadd j6, j6, j7
+      jsub j3, j3, j7
+    jwend
+    jld j3, j1, PLN
+    jadd j9, j9, j3
+    jld j3, j1, RSZ
+    jadd j11, j11, j3
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0
+  jld j9, j1, PLS
+  jld j10, j1, PLS + 8
+  jld j11, j1, PLS + 16
+  jld j12, j1, PLS + 24
+  jld j13, j1, PLS + 32
+  jld j14, j1, PLS + 40
+  jret
 
 ; A pulse between fillings j2 (the one waiting) and j3 (the one that arrived) of the floor FLOOR: awake, its difference
 ; is born or counted once more, and so are its fillings; knocking, it is looked up among the pieces, and so is the
@@ -750,7 +1088,11 @@ pl_blind:                       ; the blind: the waiting filling against the one
   jret
 pl_awake:
   jld j7, j4, 0
+  jldi j8, 2                    ; (what the meeting finds: the difference was there, foreseen; or new)
+  jst j8, j1, PST
   jjnz j7, pl_count
+  jldi j8, 1
+  jst j8, j1, PST
   jst j5, j4, 0
   jld j7, j1, DLO
   jst j7, j4, 8

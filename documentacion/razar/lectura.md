@@ -854,3 +854,30 @@ Nota de oficio: la primera corrida de la calibración mintió. El archivo `p` ll
 números, y las cuatro pruebas corrieron con profundidades 36, 40 y 112. Se vio porque los números salían idénticos
 hasta el último decimal, y porque el informe ahora escribe la profundidad que leyó. Con dos decimales las puertas
 empataban en "0,01": el informe pasó a dar los bits totales y la cuenta se hace con todos los decimales.
+
+## La profundidad se ajusta mientras lee (2026-11-06)
+
+El Capitán: *"no calibres: que se ajuste en tiempo de ejecución, nunca sabemos lo que vamos a encontrar"*. La
+calibración de afuera (`hondura.sh`) se fue. Ahora:
+
+- **La sonda.** Cada pedido guarda una jugada más que la profundidad de su piso. Esa jugada de más no entra al modelo:
+  solo mira qué pulso habría salido.
+- **La cuenta por distancia.** Cada pulso y cada sonda suma, en su distancia, los bits que el juez le daría a ese par
+  con los conteos de ese momento: log2(2N·n / (c(a)·c(b))), y si la diferencia es nueva, menos lo que cuesta nombrarla,
+  2·log2 U. Es la misma cuenta del juez, hecha pulso por pulso.
+- **La decisión, en cada pulso y sin reloj.** El piso baja un escalón si la sonda trae más bits que su escalón más hondo
+  por más de ½·log2 n (lo que cuesta nombrar el cambio). Sube uno si su escalón más hondo trae menos que el de arriba por
+  lo mismo. Sin tope: si un piso baja más de lo que caben los pedidos, la tabla se ensancha (la misma tabla, una jugada
+  más por pedido; la vieja no se devuelve).
+
+Libro entero (uno de cada diez apartado), idéntico en los tres motores (`000014567A26759B`, el mismo que con
+profundidad 1 fija): **los tres pisos se quedan solos en 1, 1, 1.** La pregunta y sentido conservan sus huellas.
+Memoria: 279, 310 y 260 MB.
+
+**Dos varas que mintieron antes de esta, medidas:**
+1. *"¿Cayó en una diferencia ya vista?"* Bajó a 7, 9 y 6, con 1.250 MB y peor contra el azar en todos los pisos.
+   Cuanto más lejos compara, más cae en diferencias de palabras comunes: eso es repetir lo frecuente, no comprimir.
+2. *Los bits del par sin el costo de nombrarlo.* Bajó a 1, 4, 1 y los asociados cayeron de 4,3× a 1,7× sobre el azar.
+   Un par raro visto una vez parece valioso si no paga su nombre.
+
+**Lo que no se probó todavía:** que un piso baje cuando hondo sí conviene. En este libro ninguno lo necesitó.
