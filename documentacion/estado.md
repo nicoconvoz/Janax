@@ -221,3 +221,5 @@ palabras nuevas en las 7 semillas; con 20 % de resbalones, 96–100 % de saludos
 teclas libres van a las palabras más dichas y el costo baja de 18 a ~7 saludos; el control al azar también correlaciona algo.
 2026-11-06 — Inversión de Zipf: manda la frecuencia, con algo de "el primero se sirve" (0 a 3 raras conservan tecla). El
 paper de antieficiencia de EGG existe, pero con costo de largo EGG también cumple la ley: no es una ventaja de Razar.
+2026-11-06 — Palabra = canción (Capitán): con ruido, el cardumen que aprende le gana al quieto en oraciones enteras
+(11 de 14 casos, p ≈ 0,06). Las palabras nuevas se confunden con las que empiezan igual (40 % contra 5 % de azar).

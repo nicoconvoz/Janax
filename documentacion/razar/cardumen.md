@@ -797,3 +797,35 @@ decirse entera. Control (`azar=1`): las teclas van a palabras al azar.
   la ley donde EGG hace lo contrario".
 - La afirmación defendible: *dada una regla de reasignación por costo, el sistema descubre la distribución de
   frecuencias por puro uso, sin que nadie se la informe; queda una ventaja del que llegó primero.*
+
+## Una palabra, una canción; lo que se escribe son oraciones (Capitán, 2026-11-06)
+
+> *"El sistema es ciego: al leer una letra por vez, aunque encuentre un dominio, no ve lejos ni entiende. Necesitamos
+> que una palabra completa sea canción, un saludo debe ser una palabra; entonces lo que vamos a escribir son oraciones."*
+
+`oraciones.pl`: los saludos del Morse de una palabra (punto, raya, fin de letra) entran en **una sola ola**, uno por
+paso, con las olas cruzándose: las letras se encuentran adentro del cubo y sale **una melodía por palabra**. La voluntad
+aprende las 30 palabras por su canción (sabe cuál se mandó) y lee oraciones de 3 a 5 palabras. Semillas 1001–1007, 40
+oraciones; palabras reconocidas / oraciones enteras:
+
+| resbalones | aprende | quieto |
+|---|---|---|
+| 0 % | 94–100 % / 31–40 | 100 % / 40 en las 7 |
+| 10 % | 91–96 % / 32, 28, 31, 33, 33, 29, 35 | 86–98 % / 30, 19, 23, 29, 32, 25, 37 |
+| 20 % | 82–95 % / 19, 22, 34, 29, 29, 21, 17 | 67–92 % / 25, 9, 14, 25, 24, 9, 27 |
+
+- **Por primera vez el cardumen que aprende le gana al quieto, y es con ruido**: en oraciones enteras gana en 6 de 7
+  semillas con 10 % de resbalones y en 5 de 7 con 20 % (11 de 14 juntas; prueba de signos, dos colas, p ≈ 0,06). Hay
+  semillas con saltos grandes: de 9 a 22 oraciones, de 14 a 34. Sin ruido no hay qué ganar: el quieto ya lee todo.
+- El híbrido (conserva + simétrico + asienta) queda peor que el aprendizaje simple acá (10 %: 16 a 36 oraciones).
+- **Palabras que nunca oyó**: el 40 % (56 de 140) se toma por una palabra que **empieza con la misma letra**, contra 5 %
+  de azar (puerto→puerta, faro→flor, ola→ojo, melodía→mesa). La canción pesa sobre todo por el comienzo.
+
+**Frenos y saturación, medido** (idea del otro chat: "la convulsión y la saturación son un solo problema; la
+inhibición apaga la ola sola"):
+- Con reposo de 1 paso (el que deja rebotar la ola), lo que sigue sonando después de soltar la tecla, 5 sorteos de
+  frenos: 0 %: 127 pasos (lo corta la regla de bucle); 10 %: 37–95; 20 %: 25–**357**; 30 %: 2–33. **Los frenos apagan la
+  ola solos recién cerca del 30 %**; con 10–20 % no alcanza y a veces suena más.
+- Después de aprender (300 palabras, 20 % que frenan): sin conservar, en 255 quedan el 81 % de los pesos de las que
+  empujan y el **57 % de las que frenan**; conservando, 3 % y 9 %. La saturación es del aprendizaje entero, de los dos
+  lados.
