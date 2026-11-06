@@ -39,19 +39,11 @@ TPT   = 1F40h                   ; what each place testified: {key of place and d
 PDK   = 1F60h                   ; the key of the difference of a pulse
 PASN  = 1F68h                   ; the passes: this one (from 0), how many left
 PASL  = 1F70h
-PMODE = 1758h                   ; floor to widen the requests for
-PST   = 1760h
-HDA   = 1770h                   ; weighing a depth: the two distances, the gain and its cost, their counts, logs
-HDB   = 1778h
-HDG   = 1780h
-HDC   = 1788h
-HNA   = 1790h
-HHA   = 1798h
-HNB   = 17A0h
-HHB   = 17A8h
-HL1   = 17B0h
-HL2   = 17B8h
-HT    = 17C0h
+TRD   = 1F00h                   ; by difference: {key, in how many readings it was met, the last (from 1)} (a growing table)
+TFW   = 1780h                   ; by filling: {key, its pulses weighed} (a growing table)
+NFLW  = 1750h                   ; by floor (8 bytes each, from floor 0): its pulses weighed
+PW    = 1770h                   ; the weight of the pulse being counted (2^16 is one), a filling place
+FBP   = 1778h
 SAVC  = 1520h                   ; by kind (8 bytes each, from kind 0): the bits its pieces save
 SMSK  = 1F28h                   ; (the forms are a growing table: its places minus 1)
 FORMS = 12F0h                   ; 1: keep the forms seen (for the irregular), set before learn_pulses
@@ -169,6 +161,12 @@ jcall pl_new
 lp_noforms:
 jldi j2, TPT                    ; what each place already testified (it grows to what it holds)
 jldi j3, 8
+jcall pl_new
+jldi j2, TRD                    ; in how many readings each difference was met, and each filling weighed
+jldi j3, 24
+jcall pl_new
+jldi j2, TFW
+jldi j3, 16
 jcall pl_new
 jldi j1, 0
 jld j3, j1, RMASK
@@ -642,8 +640,10 @@ pulse:
   jld j6, j1, TESTING
   jjnz j6, pu_any
   jst j5, j1, PDK
-  jld j2, j1, KEY               ; this place and this difference: said before?
+  jld j2, j1, KEY               ; this place and this difference, in this reading: said before?
   jadd j3, j5, j1
+  jcall hw
+  jld j3, j1, PASN
   jcall hw
   jjnz j2, pu_k
   jldi j2, 1
@@ -652,6 +652,27 @@ pu_k:
   jldi j2, TPT
   jcall pl_take
   jjz j6, pl_done                ; said before: nothing new
+  jld j5, j1, PDK               ; in how many readings this difference was met, k: the pulse weighs 1/k (what is
+  jldi j2, TRD                  ; new to this reading teaches the most, even if it is the obvious)
+  jcall pl_take
+  jldi j1, 0
+  jld j7, j1, PASN
+  jldi j8, 1
+  jadd j7, j7, j8
+  jld j3, j4, 16
+  jsub j3, j3, j7
+  jjz j3, pu_kd
+  jst j7, j4, 16
+  jld j3, j4, 8
+  jadd j3, j3, j8
+  jst j3, j4, 8
+pu_kd:
+  jld j3, j4, 8
+  jldi j2, 1
+  jldi j7, 16
+  jshl j2, j2, j7
+  jdiv j2, j2, j3
+  jst j2, j1, PW
   jld j5, j1, PDK
 pu_any:
   jld j2, j1, ROOMD
@@ -711,11 +732,7 @@ pl_blind:                       ; the blind: the waiting filling against the one
   jret
 pl_awake:
   jld j7, j4, 0
-  jldi j8, 2                    ; (what the meeting finds: the difference was there, foreseen; or new)
-  jst j8, j1, PST
   jjnz j7, pl_count
-  jldi j8, 1
-  jst j8, j1, PST
   jst j5, j4, 0
   jld j7, j1, DLO
   jst j7, j4, 8
@@ -732,6 +749,11 @@ pl_count:
   jldi j8, 1
   jadd j7, j7, j8
   jst j7, j4, 32
+  jld j7, j4, 40                ; (and weighed: until the judge, its bits' place holds its pairs weighed)
+  jld j8, j1, PW
+  jadd j7, j7, j8
+  jst j7, j4, 40
+  jldi j8, 1
   jld j7, j6, NPULC
   jadd j7, j7, j8
   jst j7, j6, NPULC
@@ -778,6 +800,10 @@ pl_fill:
   jldi j8, 1
   jadd j7, j7, j8
   jst j7, j5, NFL
+  jld j7, j5, NFLW
+  jld j8, j1, PW
+  jadd j7, j7, j8
+  jst j7, j5, NFLW
 pl_done:
   jret
 
@@ -853,6 +879,15 @@ ff_key:
 ; The filling j2 of the floor FLOOR took part in one more pulse. Uses j1-j8.
 f_bump:
   jcall f_find
+  jldi j1, 0                    ; (and weighed)
+  jst j4, j1, FBP
+  jldi j2, TFW
+  jcall pl_take
+  jld j6, j4, 8
+  jld j7, j1, PW
+  jadd j6, j6, j7
+  jst j6, j4, 8
+  jld j4, j1, FBP
   jld j6, j4, 8
   jjnz j6, fb_old
   jld j5, j1, FLOOR
@@ -897,18 +932,20 @@ judge:
     jld j11, j1, FLOOR
     jldi j2, 3
     jshl j11, j11, j2
-    jld j2, j11, NFL            ; log2(2N) + log2(n)
+    jld j2, j11, NFLW           ; log2(2N) + log2(n), weighed (each reading pulse 1/k: the same scale in all four)
     jadd j2, j2, j2
     jcall lg16
     jst j2, j1, GS
     jld j3, j1, GE
-    jld j2, j3, 32
+    jld j2, j3, 40
     jcall lg16
     jld j3, j1, GS
     jadd j3, j3, j2
     jst j3, j1, GS
     jld j2, j1, DLO             ; - log2(c(low)) - log2(c(high))
     jcall f_find
+    jldi j2, TFW
+    jcall pl_find
     jld j2, j4, 8
     jcall lg16
     jld j3, j1, GS
@@ -916,13 +953,17 @@ judge:
     jst j3, j1, GS
     jld j2, j1, DHI
     jcall f_find
+    jldi j2, TFW
+    jcall pl_find
     jld j2, j4, 8
     jcall lg16
     jld j3, j1, GS
     jsub j3, j3, j2
-    jld j4, j1, GE              ; times n
-    jld j4, j4, 32
+    jld j4, j1, GE              ; times n (weighed, 2^16 a pulse)
+    jld j4, j4, 40
     jmul j3, j3, j4
+    jldi j4, 16
+    jsar j3, j3, j4
     jst j3, j1, GS
     jld j11, j1, FLOOR          ; - 2 log2(U): its name
     jldi j2, 3

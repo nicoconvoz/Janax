@@ -947,3 +947,31 @@ Uno de cada diez renglones apartado; 10 pasadas, idéntico en los tres motores (
 - **Lo que no se queda quieto:** entre la 5 y la 10 cambia lo que explica de lo no leído (885 contra 870 en asociados),
   aunque lo aprendido es igual. Son las siluetas de los lugares sin mayoría, que el voto sigue moviendo de un lado al
   otro. No se aprende nada nuevo, pero la silueta de esos lugares no se decide.
+
+## Repasar enseña: cada lectura testifica de nuevo, lo nuevo pesa más (2026-11-06)
+
+El Capitán: *"una nueva lectura de todo tendría que variar el entrenamiento, como los humanos que mejoramos cada vez que
+estudiamos algo y lo repasamos; sacá las restricciones para una lectura nueva, aunque premiá lo novedoso, aunque se trate
+de lo obvio"*.
+
+- **Cada lectura testifica de nuevo:** el testimonio único vale dentro de una lectura, no entre lecturas.
+- **Cada pulso pesa 1/k**, con k las lecturas en que ya apareció su diferencia: lo que es nuevo para esa lectura cuenta
+  entero, aunque sea obvio, y el repaso refuerza cada vez menos (repetición espaciada, sorpresa).
+- **El juez cuenta con los pesos** en las cuatro cosas que mira (N, n y los dos llenados), con la misma escala en todas.
+  Los conteos de siempre quedan para los informes. Con una lectura, todo idéntico (`0000FE4C754709C9`).
+
+Uno de cada diez renglones apartado; idéntico en los tres motores (10 lecturas: `000051D94BA94D47`):
+
+| lecturas | gemelos (real / ciego) | interruptores | asociados | puertas (explica / ciego) | piezas asociados / puertas | memoria |
+|---|---|---|---|---|---|---|
+| 1 | 85,2 / 22,0 | 62,6 / 40,9 | 14,9 / 3,5 | 63 / 0 | 484 / 64 | 291 MB |
+| 2 | 87,6 / 23,4 | 64,8 / 43,1 | 17,1 / 3,8 | 99 / 0 | 1.017 / 214 | 308 MB |
+| 5 | 89,5 / 24,4 | 66,4 / 44,3 | 21,3 / 5,4 | 213 / 4 | 4.318 / 12.343 | 336 MB |
+| 10 | **90,4** / 23,9 | **68,2** / 46,0 | **25,0** / 6,1 | **394** / 3 | 9.220 / 36.691 | 374 MB |
+
+- **Repasar enseña, y es real:** lo explicado menos el ciego sube en todos los pisos. En asociados pasa de 627 a 1.050
+  pulsos; en puertas, de 63 a 391. La ventaja relativa sobre el azar se mantiene (asociados 4,3× → 4,1×).
+- **Lo que se infla:** las piezas. Diez lecturas suman un peso de 1 + ½ + … + 1/10 ≈ 2,9 por pulso, pero el nombre de
+  una pieza sigue costando lo mismo (2·log2 U), así que pasan piezas con muy poca evidencia: 36.691 puertas para 394
+  aciertos. Las de arriba siguen siendo buenas (": « / : "", "del señor / de dios", "le dijo / les dijo").
+- La memoria crece con las lecturas (los testimonios son por lectura): de 291 a 374 MB.
