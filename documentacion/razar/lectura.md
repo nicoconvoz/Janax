@@ -1267,3 +1267,55 @@ su control.
 En la prueba (el décimo que nadie tocó) los rehechos son más exigentes: pocas piezas y más ventaja sobre el azar
 (asociados 12,1 / 2,7 y 10,2 / 2,1: 4,5× y 4,9×), contra el trabado, que explica más con más piezas (15,1 / 3,7: 4,1×).
 La salvedad de siempre: el examen paga cada pieza como si fuera todo el libro, así que puede empujar la paciencia de más.
+
+# Razares que nunca se apagan, viviendo a la vez (2026-11-06)
+
+El Capitán: *"que un Razar nunca se apague, que su voluntad quede activa siempre explorando, aunque puede optar por
+quedarse descansando un tiempo"*.
+
+- **Dos Razares vivos a la vez**, arrancados juntos (`janaxos.exe pulso.bin pulso.bin`): son hermanos del sistema, así
+  que ninguno le firma nada al otro.
+- **Quién es cada uno, sin preguntarle a nadie:** una palabra dicha a uno mismo no sale (−1) y al hermano le llega. El
+  que no puede decirle nada al camarote 0 es el camarote 0. Con eso sabe su número, su nido y su autopsia (`nido1`,
+  `autopsia1`), y el camarote del otro (`vg_who`).
+- **La vigilia** (el quinto byte después de K en `p`): explora sus generaciones, se guarda y deja su carta. Si se rehízo
+  mejor, le dice una palabra al otro (eso le suena el timbre) y sigue explorando. Si no, **elige descansar**: duerme en el
+  timbre sin gastar procesador, que es la regla de la casa de ningún bucle que gaste, y vuelve cuando el otro tiene
+  algo nuevo. Cuando los dos descansan y ya nadie puede despertarlos, el sistema se lo dice y recién ahí cierran.
+
+**Lo que hubo que arreglar en el sistema:** el pedido "abrir" abría para leer y escribir pero solo compartía la lectura,
+así que mientras un Razar leía el libro el otro no podía abrirlo ("no encuentro el libro"). Nunca antes dos programas
+habían abierto el mismo archivo a la vez. Ahora comparte las dos cosas (`janaxos.asm`, pedido 4); cada uno sigue con su
+propia posición.
+
+Libro entero, uno de cada diez renglones apartado, 3 generaciones por tramo, un remero: 45 s, 645 MB los dos; la salida
+completa de los dos juntos es idéntica en los tres motores (427 líneas, 10 descansos). Se mandan
+cartas, se rehacen con la del otro, descansan y vuelven siete veces, y terminan los dos en 6 2 1 y 6 3 1 (exámenes −1.559
+y −1.629), de donde ninguno pudo salir solo.
+
+## El centinela: duermen sin apagarse y los despierta la novedad (2026-11-06)
+
+El Capitán: *"no quiero que se queden dormidos para siempre sin poder despertar"* — *"podrías dejar a Razar dormido y
+un programa que revise archivos o procesos que, cuando haya alguna novedad, lo despierte"*.
+
+Un programa que revisa cada tanto sería un bucle que gasta. **El centinela es el sistema mismo**, y nadie revisa nada:
+- **Pedido 32, "avisame"** (`janaxos.asm`, `ambientes.inc`): un camarote pide aviso por los archivos cuya etiqueta
+  empiece con un prefijo (hasta 8 bytes). Cada Razar en vigilia pide aviso por "libro": sus nidos y sus cartas no lo
+  despiertan, así no se arma un ir y venir entre ellos.
+- **Cuando nadie rema** y alguien que pidió aviso espera el timbre, el núcleo, en lugar de decirle "nadie te puede
+  saludar", le pide a Windows que le avise cuando cambie su carpeta (`ReadDirectoryChangesW`) y duerme ahí, sin gastar.
+  Cubre lo de adentro y lo de afuera de una vez: todo archivo de Janax vive en esa carpeta.
+- **Cuando Windows avisa**, el núcleo mira qué archivo cambió (su nombre es la etiqueta en hexadecimal) y despierta solo
+  a quien pidió aviso por esa etiqueta, con un saludo de sí mismo; Razar sabe así que fue una novedad ("novedad") y no
+  su hermano ("vuelve").
+
+Medido con los dos Razares en vigilia: al dormirse ya **no se apagan**; dormidos gastan **0 ms de procesador en 5 s**;
+al dejar un archivo nuevo de libro desde afuera, **los dos despiertan** ("novedad"), exploran, se mandan sus cartas y se
+vuelven a dormir solos, otra vez en 0 ms. Pregunta, sentido, el lector y el pulso dan sus mismas huellas con el núcleo
+nuevo.
+
+**Lo que falta, sin disimularlo:**
+- El libro nuevo los despierta dos veces: Windows avisa por separado que se creó y que se escribió.
+- Despertar no es todavía **leer** lo nuevo: Razar sigue explorando con el libro que ya tenía. Comer el libro nuevo, en
+  solo lectura y sin inflación, es el paso siguiente.
+- Un cambio que pasa mientras alguien rema no despierta a nadie: el núcleo solo mira la carpeta cuando todos duermen.

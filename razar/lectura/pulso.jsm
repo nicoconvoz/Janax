@@ -106,7 +106,7 @@ EVT   = 1D60h
 EVT2  = 1D68h
 EVGA  = 1D70h                   ; a log; the labels "nido" and "autopsia"; the nest: {its mark, the champion, the
 NIDL  = 1D78h                   ; second, their exams, the luck, the generations it lived} (56 bytes)
-AUTL  = 1D80h
+AUTL  = 1E38h                   ; (16 bytes: "autopsia" and its number)
 NEST  = 1D88h
 EVLIV = 1DC0h                   ; the generations it has lived, all its life
 QUIEN = 1DC8h                   ; who it is (0: alone); the length of its nest label; its letter, the other's, the genome
@@ -115,6 +115,14 @@ CARL  = 1DD8h
 OTRL  = 1DE0h
 CARTA = 1DE8h
 PARTOK = 1DF0h
+VIGIL = 1DF8h                   ; awake for good (1); it knows who it is; its sibling's cabin; the champion as the
+VQ    = 1E00h                   ; stretch began; the generations of a stretch; a word read
+PARTNER = 1E08h
+EVJC  = 1E10h
+EVG0  = 1E18h
+MAILV = 1E20h
+AUTN  = 1E30h
+WOKE  = 1E48h                   ; who woke it: its sibling, or itself (the sentinel: news in the files)                   ; the length of its autopsy label
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -1832,6 +1840,9 @@ evolve:
   jret
 ev_go:
   jst j2, j1, EVG
+  jst j2, j1, EVG0
+  jcall vg_who                  ; (awake for good: who it is among its siblings)
+  jldi j1, 0
   jldi j2, 0                    ; the luck, the same every time (deterministic: a seed, xorshift)
   jshi j2, 9E37h
   jshi j2, 79B9h
@@ -1888,7 +1899,10 @@ ev_born:
   jldi j2, 0
   jcall ev_line
 ev_gens:
-  jcall letter_read             ; the other's letter: its genome is the one it crosses with (Capitan: "they agree, pass
+  jldi j1, 0                    ; (who it is as this stretch begins: to know whether it made itself better)
+  jld j2, j1, EVC
+  jst j2, j1, EVJC
+  jcall letter_read            ; the other's letter: its genome is the one it crosses with (Capitan: "they agree, pass
   jldi j1, 0                    ; each other the genome and build a new one with the best of each; the same Razar,
   jld j2, j1, PARTOK            ; remade better")
   jjz j2, ev_alone
@@ -2023,6 +2037,72 @@ ev_alone:
   jst j2, j1, EVLIV
   jcall nest_save
   jcall letter_write            ; and its letter for the other, with what it is now
+  jldi j1, 0                    ; awake for good (Capitan: "that a Razar never turns off: its will always active,
+  jld j2, j1, VIGIL             ; exploring, though it may choose to rest for a while"): it made itself better, it
+  jjz j2, ev_end                ; tells the other and explores again; it did not, it rests on its doorbell (nothing
+  jld j2, j1, EVC               ; spent) until the other has something new; nobody left who could wake it, it ends
+  jld j3, j1, EVJC
+  jsub j2, j2, j3
+  jjz j2, ev_rest
+  jld j11, j1, PARTNER
+  jldi j12, 0                   ; "carta"
+  jshi j12, 0061h
+  jshi j12, 7472h
+  jshi j12, 6163h
+  jldi j10, 30
+  jcall ask
+  jjmp ev_again
+ev_rest:
+  jldi j2, 0                    ; "descansa"
+  jshi j2, 6173h
+  jshi j2, 6E61h
+  jshi j2, 6373h
+  jshi j2, 6564h
+  jcall put8
+  jldi j2, 10
+  jcall putch
+  jcall flush
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1
+  jadd j1, j13, j1
+  jjz j1, ev_end
+  jldi j1, 0                    ; (who woke it: itself is the sentinel, news in the files; else its sibling)
+  jst j13, j1, WOKE
+vg_drain:
+  jldi j10, 31                  ; (the words that woke it: read, so the mailbox is empty)
+  jldi j11, MAILV
+  jldi j12, 16
+  jcall ask
+  jjnz j13, vg_drain
+  jldi j1, 0
+  jld j2, j1, WOKE
+  jld j3, j1, PARTNER
+  jsub j2, j2, j3
+  jjz j2, vg_sib
+  jldi j2, 0                    ; "novedad"
+  jshi j2, 0064h
+  jshi j2, 6164h
+  jshi j2, 6576h
+  jshi j2, 6F6Eh
+  jjmp vg_said
+vg_sib:
+  jldi j2, 0                    ; "vuelve"
+  jshi j2, 0000h
+  jshi j2, 6576h
+  jshi j2, 6C65h
+  jshi j2, 7576h
+vg_said:
+  jcall put8
+  jldi j2, 10
+  jcall putch
+  jcall flush
+ev_again:
+  jldi j1, 0
+  jld j2, j1, EVG0
+  jst j2, j1, EVG
+  jjmp ev_gens
+ev_end:
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
@@ -2031,6 +2111,47 @@ ev_alone:
   jst j1, j1, EXAMM
   jret
 
+
+; Awake for good (VIGIL: the fifth byte after K in "p"): who it is among the siblings started with it. A word said to
+; oneself does not go (-1), to a sibling it does: so the one whose word to cabin 0 does not go is cabin 0, and the
+; other is cabin 1. QUIEN is its cabin plus one, PARTNER the other's cabin. Uses j1-j14.
+vg_who:
+  jldi j1, 0
+  jst j1, j1, VQ
+  jld j2, j1, NPAS
+  jldi j3, 32
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jst j2, j1, VIGIL
+  jjz j2, vw_done
+  jldi j10, 30
+  jldi j11, 0
+  jldi j12, 6F68h               ; "ho"
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1                    ; to cabin 0 it did not go: it is cabin 0
+  jldi j3, 1
+  jadd j4, j13, j3
+  jjz j4, vw_set
+  jldi j2, 2
+vw_set:
+  jst j2, j1, QUIEN
+  jldi j3, 2
+  jsub j3, j3, j2
+  jst j3, j1, PARTNER
+  jldi j2, 1
+  jst j2, j1, VQ
+  jldi j10, 32                  ; and the sentinel told: news in the files whose label starts "libro" wakes it
+  jldi j11, 5
+  jldi j12, 0
+  jshi j12, 006Fh
+  jshi j12, 7262h
+  jshi j12, 696Ch
+  jcall ask
+  jldi j1, 0
+vw_done:
+  jret
 
 ; Its identity, in the file "nido" (Capitan, from the chess creature: "they have identity and keep testing"): {its
 ; mark, the champion, the second, their exams, the luck, the generations it lived}. If it is there, the evolution goes
@@ -2145,11 +2266,11 @@ autopsy_open:
   jcall nest_labels
   jldi j10, 12
   jldi j11, AUTL
-  jldi j12, 8
+  jld j12, j1, AUTN
   jcall ask
   jldi j10, 4
   jldi j11, AUTL
-  jldi j12, 8
+  jld j12, j1, AUTN
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2165,12 +2286,16 @@ ao_done:
 ; j1-j5.
 nest_labels:
   jldi j1, 0
+  jld j3, j1, QUIEN             ; (awake for good it already knows who it is)
+  jld j4, j1, VQ
+  jjnz j4, nl_who
   jld j3, j1, NPAS              ; who it is: the third byte after K in "p" (0: alone, its nest is "nido")
   jldi j4, 16
   jshr j3, j3, j4
   jldi j4, 255
   jand j3, j3, j4
   jst j3, j1, QUIEN
+nl_who:
   jldi j2, 0                    ; "nido", and its number after it
   jshi j2, 6F64h
   jshi j2, 696Eh
@@ -2208,6 +2333,16 @@ nl_alone:
   jshi j2, 6F74h
   jshi j2, 7561h
   jst j2, j1, AUTL
+  jldi j4, 8                    ; (with its number after it, if it has one: each its own)
+  jst j4, j1, AUTN
+  jst j1, j1, AUTL + 8
+  jjz j3, nl_aut
+  jldi j4, 48
+  jadd j4, j3, j4
+  jst j4, j1, AUTL + 8
+  jldi j4, 9
+  jst j4, j1, AUTN
+nl_aut:
   jret
 
 ; The other's letter read (CARTA: its genome), if it left one and it is not mute (the fourth byte after K: 1

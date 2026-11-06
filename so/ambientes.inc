@@ -1591,6 +1591,182 @@ greet_nobody:
         pop     r8 rsi rcx
         ret
 
+; ---------------------------------------------------------------- the sentinel (Capitan)
+; "Leave Razar asleep, and a program that looks at the files or processes wakes it when there is news." Nobody
+; looks in a loop: the system itself is the sentinel. A cabin asks to be told (32) about the files whose label
+; starts with a prefix; when nobody rows and such a cabin waits for a greeting, instead of telling it that nobody
+; is left, the kernel asks the host to tell it when its folder changes, and sleeps on it (nothing spent). A change
+; to a file of that prefix, made inside Janax or dropped in from outside, wakes whoever asked, with a greeting from
+; itself.
+
+; 32 watch: a = how many bytes of the prefix (0: stop, up to 8), b = the prefix (in one qword). -> 0, or -1.
+gate_watch:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, 8
+        ja      .invalid
+        mov     [rbx + P_WATCHN], rax
+        mov     rax, [rbp + r13 + 16]
+        mov     [rbx + P_WATCH], rax
+        mov     qword [rbp + r13 + 24], 0
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        ret
+
+; Nobody rows: while a cabin that watches waits for a greeting, the kernel sleeps on its folder until a file of a
+; prefix someone watches changes, and wakes them. -> eax = 1 if it woke someone, 0 if nobody watches (or the host
+; cannot tell it). Called with the kernel's lock; it leaves it while it sleeps. Keeps every register but rax, rcx, rdx, r8-r11.
+watch_wait:
+        push    rbx rsi rdi rbp r12 r13 r14 r15
+        mov     rbp, rsp                ; (the host is called with the stack aligned, as kern_sleep does)
+        and     rsp, -16
+        call    watch_any
+        test    eax, eax
+        jz      .none
+        cmp     qword [watch_dir], 0
+        jne     .again
+        invoke  CreateFileA, dir_path, 1, 7, 0, OPEN_EXISTING, 02000000h, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .none
+        mov     [watch_dir], rax
+.again:
+        call    kern_leave
+        invoke  ReadDirectoryChangesW, [watch_dir], watch_buf, WATCH_BUF, 0, 11h, watch_got, 0, 0
+        mov     r12, rax
+        call    kern_enter
+        inc     qword [hostcalls]
+        test    r12, r12
+        jz      .none
+        xor     r15d, r15d              ; woke someone?
+        lea     r13, [watch_buf]
+.entry:
+        call    watch_name
+        mov     eax, [r13]              ; the next change
+        test    eax, eax
+        jz      .read
+        add     r13, rax
+        jmp     .entry
+.read:
+        test    r15d, r15d
+        jz      .again                  ; nothing anyone watches: back to sleep on the folder
+        mov     eax, 1
+        jmp     .out
+.none:
+        xor     eax, eax
+.out:
+        mov     rsp, rbp
+        pop     r15 r14 r13 r12 rbp rdi rsi rbx
+        ret
+
+; eax = 1 if some cabin that has not ended waits for a greeting and watches. Keeps every register but rax, rcx, rsi.
+watch_any:
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_DONE], 0
+        jne     .next
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .next
+        cmp     qword [rsi + P_WATCHN], 0
+        je      .next
+        mov     eax, 1
+        ret
+.next:
+        inc     rcx
+.one:
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        xor     eax, eax
+        ret
+
+; The change at r13 (FILE_NOTIFY_INFORMATION: next, action, bytes of the name, the name in UTF-16, its letters the
+; label in hexadecimal): every waiting cabin whose prefix starts that name wakes (r15d = 1). Keeps rbx, r12-r14.
+watch_name:
+        push    rbx
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_DONE], 0
+        jne     .next
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .next
+        mov     r8, [rsi + P_WATCHN]
+        test    r8, r8
+        jz      .next
+        mov     eax, [r13 + 8]          ; the name has room for the prefix in hexadecimal?
+        shr     eax, 1
+        lea     rdx, [r8*2]
+        cmp     rax, rdx
+        jb      .next
+        xor     r9d, r9d                ; each byte of the prefix: its two letters
+        lea     r10, [rsi + P_WATCH]
+.byte:
+        movzx   edx, byte [r10 + r9]
+        mov     r11, rdx
+        shr     edx, 4
+        movzx   edx, byte [hex_lower + rdx]
+        movzx   eax, word [r13 + 12 + r9*4]
+        or      eax, 20h                ; (a capital letter of the host is the same letter)
+        cmp     eax, edx
+        jne     .next
+        and     r11d, 15
+        movzx   edx, byte [hex_lower + r11]
+        movzx   eax, word [r13 + 14 + r9*4]
+        or      eax, 20h
+        cmp     eax, edx
+        jne     .next
+        inc     r9
+        cmp     r9, r8
+        jb      .byte
+        push    rcx r13                 ; it is its: a greeting from itself, and it wakes
+        mov     rbx, rsi
+        call    watch_wake
+        pop     r13 rcx
+        mov     r15d, 1
+.next:
+        inc     rcx
+.one:
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        pop     rbx
+        ret
+
+; The cabin rbx gets a greeting from itself (one mark is enough) and wakes. Keeps rbx, rcx, rsi.
+watch_wake:
+        push    rcx rsi
+        mov     rcx, [rbx + P_GREET]
+        mov     rdx, [rbx + P_NGREET]
+        lea     rdx, [rcx + rdx*8]
+        jmp     .seen
+.seen_lap:
+        cmp     [rcx], rbx
+        je      .wake
+        add     rcx, 8
+.seen:
+        cmp     rcx, rdx
+        jb      .seen_lap
+        mov     ecx, P_GREET
+        mov     r8d, 8
+        call    list_slot
+        test    rax, rax
+        jz      .done
+        mov     [rax], rbx
+.wake:
+        cmp     qword [rbx + P_GWAIT], 1
+        jne     .done
+        mov     qword [rbx + P_GWAIT], 0
+        dec     qword [rbx + P_WAITING]
+        mov     r8, rbx
+        call    q_wake
+.done:
+        pop     rsi rcx
+        ret
+
 ; The window's own book, where it copies the entries of a touch: rdx bytes -> rax = the book, 0 if there is
 ; no memory. It is kept and reused, so a request never goes out to the host for it (Capitan: "it can all be
 ; done inside Janax"); it grows, doubling, only when a touch brings more than it ever held (plastic).

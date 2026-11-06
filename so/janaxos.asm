@@ -99,7 +99,9 @@ P_NGREET = 560
 P_GWAIT  = 568                  ; 1 = it waits for a greeting, 2 = nobody is left who could greet it
 P_SAID   = 576                  ; words said to it and not read yet: {who said it, the word}, 16 bytes each, in order
 P_NSAID  = 584
-PROC_SIZE = 592
+P_WATCH  = 592                  ; the sentinel: the prefix of the labels it watches (up to 8 bytes), and how many (0: none)
+P_WATCHN = 600
+PROC_SIZE = 608
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -145,10 +147,10 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 31                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 32                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting, say a word, read a word
+                                ; greet, wait for a greeting, say a word, read a word, watch
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -187,15 +189,15 @@ section '.data' data readable writeable
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
-              dq serve_greet, serve_greeting, serve_say, serve_hear
+              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -244,6 +246,11 @@ section '.data' data readable writeable
   HOST_PATH = 260               ; MAX_PATH of the ANSI file functions of Windows
   dir_path  db HOST_PATH dup 0
   dir_len   dq 0
+  WATCH_BUF = 4096              ; the sentinel: the folder watched (0: not yet), what the host told, its bytes
+  watch_dir dq 0
+  watch_got dd 0
+  align 4
+  watch_buf rb WATCH_BUF
   host_path db HOST_PATH + 8 dup 0
   host_path_2 db HOST_PATH + 8 dup 0
   data_path db HOST_PATH + 8 dup 0  ; the host path of a program's data file
@@ -448,7 +455,8 @@ section '.idata' import data readable writeable
          FindNextFileA, 'FindNextFileA',\
          FindClose, 'FindClose',\
          MultiByteToWideChar, 'MultiByteToWideChar',\
-         WideCharToMultiByte, 'WideCharToMultiByte'
+         WideCharToMultiByte, 'WideCharToMultiByte',\
+         ReadDirectoryChangesW, 'ReadDirectoryChangesW'
 
   import kernelbase,\
          VirtualAlloc2, 'VirtualAlloc2',\
@@ -2228,7 +2236,7 @@ serve_open:
         call    files_prefix_ok
         test    eax, eax
         jz      .invalid
-        invoke  CreateFileA, host_path, GENERIC_READ + GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+        invoke  CreateFileA, host_path, GENERIC_READ + GENERIC_WRITE, FILE_SHARE_READ + FILE_SHARE_WRITE, 0, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
         inc     qword [hostcalls]
         cmp     rax, -1
         je      .invalid
@@ -3512,6 +3520,7 @@ gate_greeting:
 ; the word}, the oldest first -> 1, or 0 if the mailbox is empty, -1 if a is not 16 bytes of its rooms (ambientes.inc).
 serve_gate serve_say,  30, gate_say
 serve_gate serve_hear, 31, gate_hear
+serve_gate serve_watch, 32, gate_watch
 
 gate_say:
         sub     rsp, 8

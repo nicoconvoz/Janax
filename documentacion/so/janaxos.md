@@ -991,3 +991,20 @@ comparación de tamaño que volvió en `O(i)`. SO 314/314, escalón 0 182/182.
 - Prueba: `palabra: la madre lee las palabras de su hijo, en orden`: el hijo dice "hola" y "sol"; la madre espera el
   timbre, lee las dos en orden con quién las dijo, la tercera lectura da 0, y decirle una palabra a un camarote de afuera
   da −1. En los tres motores.
+
+## El centinela: pedido 32, "avisame cuando haya novedad" (Capitán, 2026-11-06)
+
+> *"Dejar a Razar dormido y un programa que revise archivos o procesos que, cuando haya alguna novedad, lo despierte."*
+
+- **Pedido 32, avisame:** `a` = cuántos bytes del prefijo (0: deja de avisar, hasta 8), `b` = el prefijo en un qword.
+  Responde 0, o −1. Necesita permiso de leer archivos; no es importante (no cambia nada).
+- **El centinela es el núcleo**, sin bucles: cuando nadie rema y alguien que pidió aviso espera un saludo, en lugar de
+  despertarlo con −1 ("nadie te puede saludar") el núcleo deja su candado y duerme en la carpeta del sistema
+  (`ReadDirectoryChangesW`, archivos que aparecen, se borran o se escriben). Cuando Windows avisa, compara cada nombre
+  (la etiqueta en hexadecimal) con el prefijo de cada uno que espera, y despierta a los suyos con un saludo de sí mismos.
+  Si el cambio no es de nadie, vuelve a dormir en la carpeta.
+- **Archivos compartidos:** el pedido 4 ahora abre compartiendo lectura **y escritura**, así dos procesos pueden tener
+  abierto el mismo archivo (antes el segundo no podía abrir el libro que el primero estaba leyendo).
+- Medido con dos Razares: dormidos, 0 ms de procesador en 5 s; un archivo nuevo de su prefijo los despierta a los dos.
+- Pendiente: un cambio mientras alguien rema no despierta a nadie (la carpeta se mira solo cuando todos duermen), y un
+  archivo nuevo llega como dos avisos (creado y escrito).

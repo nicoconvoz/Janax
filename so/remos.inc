@@ -168,6 +168,9 @@ run_all:
         call    kern_wake_special
         jmp     .turn
 .nobody:
+        call    watch_wait              ; someone waits and watches: the kernel sleeps on its folder until there is news
+        test    eax, eax
+        jnz     .turn
         call    nobody_signs            ; everyone left waits for a signature nobody can give
         jmp     .turn
 .row:
