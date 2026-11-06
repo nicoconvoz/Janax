@@ -922,3 +922,12 @@ reconoce la palabra entera con su tabla por palabra, pieza y paso, y aprende sab
 - ⚠️ Dos errores que el ensamblador propio (PDP) atajó y FASM no habría dicho: un desplazamiento de carga más grande que
   lo que entra (7FFFh; la tabla de la voluntad empieza en 10000h, así que su dirección va en un registro), y números
   hexadecimales que empezaban con letra (`E560h` es un nombre; se escribe `0E560h`) en los datos generados.
+
+⚠️ **Un error de Doc, encontrado y corregido** (2026-11-06): al agregar el freno que sigue la aceleración (`speedup`),
+una vecina que empuja con **peso 0** dejó de contar como "la despertó" (para la armonía y para saber qué olas la
+empujaron), porque el código decidía por el valor del empuje y no por su signo. Las huellas de prueba no lo vieron (los
+pesos en 0 son raros en historias cortas), pero en corridas largas con aprendizaje cambiaba los resultados: comparando
+`oraciones.pl` con una copia del modelo de antes, semilla 1001 con 10 % de resbalones, daba 85 % en lugar de 86 %
+aprendiendo. Ahora decide el signo: un empuje de 0 sigue contando. Verificado: el modelo da idéntico al de las 20
+semillas (dos configuraciones), y todas las huellas siguen iguales (las de las piezas 1 a 3 de Janax incluidas). El
+resultado de las 20 semillas sigue en pie. `oraciones.pl huella=1` mezcla cada adivinanza: la vara de la pieza 5.

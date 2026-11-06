@@ -45,6 +45,9 @@ sub schedule {                                   # the word as one song: one gre
 sub song { my ($w, $clean) = @_; my $mel = $c->signal_waves(schedule($w, $clean));
   my @f; for my $t (0 .. $#$mel) { push @f, map { "$_:$t" } grep { $top{$_} } @{ $mel->[$t] }; } return \@f; }
 my (%read, %heard);
+my %ix = map { $vocab[$_] => $_ } 0 .. $#vocab;       # huella=1: every guess mixed in (the measuring stick for Janax)
+my $hf = 0; sub hmix { $hf = ($hf * 31 + $_[0]) % 2 ** 48; }
+sub hg { my ($w, $g) = @_; hmix($ix{$w} * 1024 + ($g eq '?' ? 0 : $ix{$g} + 1) * 2 + ($g eq $w ? 1 : 0)); }
 sub guess {
   my ($f) = @_; my ($best, $bs, $bt) = ('?', 0, 1);
   for my $w (@vocab) { next unless $heard{$w}; my $s = 0; $s += $read{$w}{$_} // 0 for @$f;
@@ -55,6 +58,7 @@ my ($ok, $all) = (0, 0);
 for my $r (1 .. $o{rondas}) {
   for my $w (@vocab) {
     my $f = song($w); my $g = guess($f); $all++; $ok++ if $g eq $w;
+    hg($w, $g);
     $read{$w}{$_}++ for @$f; $heard{$w} += @$f;
     song($w, 1) if $o{asienta} && $g eq $w;     # right: the will sings it once more, clean, and the school settles it
   }
@@ -63,10 +67,13 @@ my ($sw, $sa, $wok, $wall) = (0, 0, 0, 0);
 for my $i (1 .. $o{oraciones}) {
   my @sent = map { $vocab[rnd2() % @vocab] } 1 .. 3 + rnd2() % 3;
   my $right = 1;
-  for my $w (@sent) { my $g = guess(song($w)); $wall++; if ($g eq $w) { $wok++ } else { $right = 0 } }
+  for my $w (@sent) { my $g = guess(song($w)); hg($w, $g); $wall++; if ($g eq $w) { $wok++ } else { $right = 0 } }
   $sa++; $sw++ if $right;
 }
-my @taken = map { "$_>" . guess(song($_, 1)) } @nuevas;
+my @taken = map { my $g = guess(song($_, 1)); hmix($g eq '?' ? 0 : $ix{$g} + 1); "$_>$g" } @nuevas;
+hmix($_) for $ok, $all, $wok, $wall, $sw;
+if ($o{huella}) { printf "%016X
+", $hf; exit; }
 printf "oraciones: n=%d nace=%d desliz=%d%%%s%s%s%s; cada palabra es una cancion (una ola)\n", $o{n}, $o{nace}, $o{desliz},
   $o{quieto} ? ' quieto' : '', $o{conserva} ? ' conserva' : '', $o{simetrico} ? ' simetrico' : '', $o{asienta} ? ' asienta' : '';
 printf "palabras reconocidas aprendiendo: %d%%; en oraciones: %d%% de las palabras, %d de %d oraciones enteras\n",

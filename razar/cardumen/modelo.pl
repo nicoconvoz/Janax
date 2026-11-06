@@ -94,8 +94,8 @@ sub signal_timed {
       my ($num, $den) = $s->speedup($i, \%awake, \%before);
       for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0;
         next if defined $R ? ($lw[$q] >= 0 && $t + 1 - $lw[$q] <= $R) : $ft[$q] >= 0;
-        my $v = int($s->{w}[$i][$d] * $num / $den);
-        if ($v <= 0) { $in{$q} += $v; next; } $in{$q} += $v; $mask{$q} |= 1 << ($d ^ 1); }
+        my $v = int($s->{w}[$i][$d] * $num / $den);   # the sign decides, not the value: a push of 0 still woke it
+        if ($num <= 0) { $in{$q} += $v; next; } $in{$q} += $v; $mask{$q} |= 1 << ($d ^ 1); }
     }
     %before = %awake;
     $t++;
@@ -142,7 +142,7 @@ sub signal_waves {
           my ($num, $den) = $s->speedup($i, \%all, \%before);   # a braking piece (or one that sees its neighbors catch
           for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};   # fire) takes its push
             my $v = int($s->{w}[$i][$d] * $num / $den);                                     # away, and did not wake it
-            if ($v <= 0) { $in{$q} += $v; next; }
+            if ($num <= 0) { $in{$q} += $v; next; }       # (the sign decides, not the value: a push of 0 still woke it)
             $in{$q} += $v; $mask{$q} |= 1 << ($d ^ 1); $by{$q}{$w} = 1; }
         }
       }
