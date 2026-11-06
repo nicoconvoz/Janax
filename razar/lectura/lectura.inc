@@ -38,6 +38,10 @@ POS   = 1100h                   ; how long the text it writes is so far
 LINE  = 1108h                   ; the renglon being walked
 MLEFT = 1128h                   ; bytes left of the mark being read
 Q16V  = 1130h                   ; a number being written with two decimals
+WCAP  = 1138h                   ; 1: the word being read began with a capital; and by unit, a byte each
+ROOMCP = 1140h
+ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
+LMI   = 1150h                   ; (walking)
 LABEL = 1110h                   ; the file being read: its label and how long it is
 LABLEN = 1118h
 QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
@@ -118,6 +122,12 @@ jshl j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMI
+jld j11, j1, NUNITS              ; and which unit began with a capital (a byte each)
+jldi j2, 8
+jadd j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMCP
 jld j11, j1, NBYTES
 jldi j2, 8
 jadd j11, j11, j2
@@ -287,6 +297,12 @@ tb_lead:
   jsub j4, j2, j4
   jsar j4, j4, j5
   jldi j6, 20h
+  jjz j4, tb_lowc               ; a capital, the first letter of its word: the word began with a capital
+  jld j7, j1, WLEN
+  jjnz j7, tb_lowc
+  jldi j7, 1
+  jst j7, j1, WCAP
+tb_lowc:
   jand j4, j4, j6
   jadd j2, j2, j4
   jst j2, j1, BYTE
@@ -348,6 +364,11 @@ tb_seven:
   jsub j4, j3, j4
   jsar j4, j4, j5
   jjz j4, tb_small
+  jld j4, j1, WLEN              ; a capital, the first letter of its word: the word began with a capital
+  jjnz j4, tb_up
+  jldi j4, 1
+  jst j4, j1, WCAP
+tb_up:
   jldi j3, 20h
   jadd j2, j2, j3
   jjmp w_put
@@ -433,6 +454,8 @@ we_count:
   jst j3, j1, NUNITS
 we_clear:
   jldi j1, 0
+  jst j1, j1, WCAP
+  jldi j1, 0
   jst j1, j1, WLEN
 we_none:
   jret
@@ -489,6 +512,13 @@ tp_book:
   jst j2, j4, 0
   jldi j4, 1
   jadd j3, j3, j4
+  jld j5, j1, ROOMCP            ; and whether it began with a capital (at the unit just put)
+  jadd j5, j5, j3
+  jldi j6, 1
+  jsub j5, j5, j6
+  jld j6, j1, WCAP
+  jstb j6, j5, 0
+  jst j1, j1, WCAP
   jst j3, j1, NTOK
   jret
 
@@ -780,4 +810,133 @@ mix:
   jldi j13, 0
   jld j14, j13, M48
   jand j0, j0, j14
+  jret
+
+; j3 = 1 if the piece j2 is a mark (its first byte is no letter nor digit: a piece of one character the reader cut on
+; its own). Uses j1-j5.
+w_mark:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jldb j2, j3, 0                ; its first byte
+  jldi j5, 63
+  jldi j3, 0C3h                 ; a letter of U+00C0..U+00FF
+  jsub j3, j2, j3
+  jjz j3, wm_no
+  jldi j3, 61h                  ; a..z
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, wm_digit
+  jldi j4, 26
+  jsub j4, j3, j4
+  jsar j4, j4, j5
+  jjnz j4, wm_no
+wm_digit:
+  jldi j3, 30h                  ; 0..9
+  jsub j3, j2, j3
+  jsar j4, j3, j5
+  jjnz j4, wm_yes
+  jldi j4, 10
+  jsub j4, j3, j4
+  jsar j4, j4, j5
+  jjnz j4, wm_no
+wm_yes:
+  jldi j3, 1
+  jret
+wm_no:
+  jldi j3, 0
+  jret
+
+; The limits of the buildings (Capitan, 2026-11-06: "a sentence begins with a capital and ends with a period; a new
+; building is born only after a punctuation"), found in the book, not given: a mark closes a building when most of the
+; times it is followed by a word, that word began with a capital (a run of marks: each of them). The end of a renglon
+; always closes. ROOMCL gets, by word, 1 for a mark that closes. Uses j1-j14.
+limits:
+  jldi j1, 0
+  jld j11, j1, NV               ; by word: closes, followed by a capital, followed by a word
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMCL
+  jldi j9, 1
+  jld j10, j1, NTOK
+  jldi j2, 2
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jst j9, j1, LMI
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, lm_next
+    jst j2, j1, BYTE
+    jcall w_mark
+    jjz j3, lm_next
+    jldi j1, 0                  ; a mark: the first word after it (past other marks), in its renglon
+    jld j11, j1, LMI
+    lm_after:
+      jldi j2, 1
+      jadd j11, j11, j2
+      jldi j2, 3
+      jshl j2, j11, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jjz j2, lm_next
+      jcall w_mark
+      jldi j1, 0
+      jjnz j3, lm_after
+    jld j2, j1, BYTE            ; followed by a word: once more; by a capital: once more
+    jldi j3, 24
+    jmul j2, j2, j3
+    jld j3, j1, ROOMCL
+    jadd j3, j3, j2
+    jld j4, j3, 16
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 16
+    jld j4, j1, ROOMCP
+    jadd j4, j4, j11
+    jldb j4, j4, 0
+    jld j5, j3, 8
+    jadd j5, j5, j4
+    jst j5, j3, 8
+  lm_next:
+    jldi j1, 0
+    jld j9, j1, LMI
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j9, 1                    ; most of the times a capital: it closes
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j2, 24
+    jmul j2, j9, j2
+    jld j3, j1, ROOMCL
+    jadd j3, j3, j2
+    jld j4, j3, 8
+    jadd j4, j4, j4
+    jld j5, j3, 16
+    jsub j4, j5, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jldi j5, 1
+    jand j4, j4, j5
+    jst j4, j3, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
   jret

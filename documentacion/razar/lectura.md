@@ -525,7 +525,7 @@ cambio: no se cambian por cimientos sino por palabras que no lo son. Abren una f
 dijo"), y en ese lugar de la ventana de tres palabras entran también muebles. Para comprobarlo hay que mirar con qué se
 reemplaza cada uno.
 
-# El esqueleto de la oración (2026-11-06)
+# El esqueleto de la oración (2026-11-06) — reemplazado: clasificación por votos, ver "El significado por lógica"
 
 El Capitán, con un ejemplo: *"el niño se cayó porque no miró / el hombre miró porque estaba arriba / la niña tembló
 porque tenía miedo: el + porque / el + porque / la + porque. Se reconoce en la estructura aunque hayan cambiado los
@@ -562,7 +562,7 @@ con los nombres, el esqueleto con los conectores.
 Nota de oficio: los textos de cada programa viven en el comienzo de su sala 0 y tienen que terminar antes de 1000h,
 donde empiezan las variables; los de este paso se pusieron en lugares que quedaron libres.
 
-## Las dos miradas juntas: sos lo que son tus hermanos (2026-11-06)
+## Las dos miradas juntas: sos lo que son tus hermanos (2026-11-06) — reemplazado: clasificación por votos, ver "El significado por lógica"
 
 `kin_report`: la estructura arranca con los cimientos de la casa; una palabra que todavía no lo es pasa a serlo cuando
 **la mayoría de sus hermanos** (los otros que llenan sus mismos lugares en los esqueletos) son estructura. Solo se agrega,
@@ -588,3 +588,52 @@ ha más ! qué había te sobre tu nos han sin ser he sido`.
 palabras distintas (una frase empieza con casi cualquier cosa). Las tres miradas ven dos o tres piezas de cada lado, y desde
 ahí un conector que abre una frase y un sustantivo que la empieza se ven iguales. Lo que los separa está a otra escala y ya
 está en Razar: **la puerta ancha** (propiedad 4 del "no"): muchos distintos delante y muchos actos detrás, en ese orden.
+
+# El significado por lógica, no por votos (2026-11-06)
+
+El Capitán, después de ver que las tres miradas anteriores no separaban "porque" de un sustantivo: *"primero separás el
+esqueleto y le das un significado, y al o los núcleos les das un significado, y luego ves cuál es el significado
+estructural que le da sentido al significado nuclear"*. Y: *"razonamiento artificial, no estadístico"*.
+
+**Corrección de rumbo.** La casa en vueltas, la apertura del esqueleto y "sos lo que son tus hermanos" clasificaban cada
+palabra **por mayoría de votos** (cuántas veces fija, qué tan abierto su lugar, qué son sus hermanos). Eso es estadística
+con otro nombre, y por eso no cerraba. Quedan como historia y como insumo (la casa sigue diciendo qué es cimiento para
+encontrar los núcleos), pero **la clasificación por votos queda reemplazada** por lo de abajo.
+
+## Los límites del edificio (ley general, sin lista de signos)
+
+*"Una oración comienza con una mayúscula y termina con un punto… un nuevo edificio solo nace después de una
+puntuación."* El lector anota, para cada unidad, si empezaba con mayúscula (`ROOMCP`, en `lectura.inc`). Un signo
+**cierra un edificio si la mayoría de las veces la palabra que sigue empieza con mayúscula** (`limits`); el libro lo
+decide, no nosotros. Sale: `: . « » " ¿ ? ¡ ! [ (`. La coma **no** cierra, aunque es el signo más común. Los que abren
+(«, ¿, ¡) también son límite: marcan dónde empieza el edificio nuevo. Ningún esqueleto cruza un límite.
+
+## Esqueleto, núcleos y el sentido entre ellos (`sentido.jsm`)
+
+- **Núcleo**: lo que no es signo, ni interruptor, ni cimiento de la casa. **Esqueleto**: lo que queda en el medio
+  entre dos núcleos dentro del mismo edificio ("_ , hijo de _").
+- **El significado del esqueleto se prueba, no se cuenta**: cada propiedad necesita al menos dos casos del libro.
+  - *se encadena*: A–B y B–C con el mismo esqueleto;
+  - *simétrica*: A–B y B–A;
+  - *se niega*: el mismo par con el "no" destilado adentro; *dicho y negado a la vez*: las dos cosas;
+  - *dado vuelta es*: el par aparece al revés en otro esqueleto **sin un solo contraejemplo**, y los dos esqueletos
+    cumplen la **ley de la puerta**: el mismo esqueleto con exactamente una pieza distinta, de dos piezas o más
+    ("hijo de" / "padre de"). Esto barrió las conversas basura que venían por pegamentos de una pieza;
+  - *es lo mismo que*: los mismos pares en los dos ("a la" ≈ "a su", "a los" ≈ "a sus", "en la" ≈ "en su").
+- **El significado del núcleo** son los hechos en los que está. **La deducción** es el hecho dado vuelta que el libro no
+  dice, con su porqué.
+
+Libro entero, idéntico en los tres motores (`0000CEFFCA00FDBB`; pregunta y lector no cambian: `0000E78A9442B1C1`,
+`00005225BB82FE6D`): 34.218 esqueletos, 91.853 pares, 2.380 negados.
+
+```
+deduce: abraham "_ , padre de _" isaac   (porque "_ , hijo de _"  dado vuelta es "_ , padre de _" )
+deduce: jacob "_ , hijo de _" matán     (porque "_ , padre de _"  dado vuelta es "_ , hijo de _" )
+```
+
+**Lo que no cierra:** pasan la ley de la puerta "y el / y la" y "de nuestro / , nuestro", y salen deducciones flojas
+("dios y la isaac", "padre de nuestro isaac", "otro y la pedro"): la puerta tiene una sola pieza distinta, pero esa pieza
+es género o es la coma, no un vínculo. Y junta a los dos Jacob del libro (identidad por nombre).
+
+**Memoria:** con la tabla en `pow2(4·NTOK)` (1 M de lugares) sentido ocupa ~176 MB, ~350 MB con las del pulso. Las tablas
+se dejan de llenar a media capacidad y lo avisan ("ATENCION: una tabla se llenó").
