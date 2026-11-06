@@ -33,7 +33,7 @@ ventana chica con `JANAX_SIN` y los programas armados por el ensamblador PDP): *
 
 **Todo bucle es un while rotado, también acá** (2026-10-29): los 27 bucles del intérprete (4), el
 traductor x86-64 (15) y el ARM64 (8) tienen la forma única de Janax, y la suite lo verifica con
-`so/herramientas/bucles.pl` (116/116 = 113 + los 3 archivos; 117/117 con la prueba de la huella). Como el teléfono no estaba conectado, el
+`so/herramientas/bucles.awk` (antes en Perl) (116/116 = 113 + los 3 archivos; 117/117 con la prueba de la huella). Como el teléfono no estaba conectado, el
 cambio se verificó con una foto: para las 36 pruebas se guardó, antes y después, el resultado del
 intérprete, la salida del traductor x86-64, el código x86-64 generado y el ELF de ARM64, todos generados
 de cero. Los 216 archivos dieron **idénticos byte por byte**: reescribir los bucles de los traductores

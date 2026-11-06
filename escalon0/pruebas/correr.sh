@@ -81,7 +81,7 @@ programa 20 "$(printf 'jadd j12, j12, j12\n%.0s' 1 2 3 4)"
 
 # A translator whose code changed never reuses an old cache, even if it generates the same bytes: a copy
 # with one nop inside the emitter (the word-by-word loop) must translate every word again.
-perl -pe 's/^(\.word_lap:)\r?$/$1\n        nop/' "$raiz/traductor.asm" > "$salida/traductor_otro.asm"
+sed 's/^\(\.word_lap:\)\r\?$/\1\n        nop/' "$raiz/traductor.asm" > "$salida/traductor_otro.asm"
 if [ "$(grep -c '^        nop$' "$salida/traductor_otro.asm")" != 1 ] \
    || ! INCLUDE="$INCLUDE;$(cygpath -m "$raiz")" "$fasm" "$salida/traductor_otro.asm" "$salida/traductor_otro.exe" > /dev/null 2>&1; then   # its includes are next to the original
   echo "MAL  diff otro traductor: no se pudo armar la copia con el emisor cambiado"; mal=$((mal + 1))
@@ -149,7 +149,7 @@ done
 
 # The while is Janax's only loop, also in the escalon 0: every loop must be a rotated while.
 for f in janax.asm traductor.asm traductor_arm64.asm ventanita.inc; do
-  if r=$(perl "$raiz/../so/herramientas/bucles.pl" "$raiz/$f"); then
+  if r=$(awk -f "$raiz/../so/herramientas/bucles.awk" "$raiz/$f"); then
     ok=$((ok + 1))
   else
     echo "MAL  $f tiene bucles que no son while rotado:"; echo "$r" | grep -v ' while '; mal=$((mal + 1))

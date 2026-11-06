@@ -501,7 +501,7 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
   `while (*d++ = *s++);` en C): su cuerpo queda vacío y el salto de entrada cae en la instrucción
   siguiente. Cuesta un salto al entrar y nada por vuelta.
 - El modo cero (sin construir) es un `while (true)`: su regreso es incondicional.
-- **Se verifica, no se promete**: `so/herramientas/bucles.pl` lista cada bucle (un salto hacia atrás que
+- **Se verifica, no se promete**: `so/herramientas/bucles.awk` (antes en Perl) lista cada bucle (un salto hacia atrás que
   se queda en su rutina; uno que va a otra rutina, como el regreso de una rutina del intérprete a su
   despachador, no es un bucle) y falla si alguno no tiene la forma. La suite lo corre sobre `janaxos.asm`
   y `rutinas.inc`: 61 + 2 bucles, todos while rotado.

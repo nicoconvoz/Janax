@@ -249,3 +249,7 @@ acertijos el cardumen casi no trabaja; el mérito es de la búsqueda (27 candida
 resultado de Razar; el de la noche sigue siendo el 18 de 20 de las palabras-canción.
 2026-11-06 — El acertijo como una sola melodía (Capitán: "dale de comer los números primero"): 0 de 140; contesta
 siempre el primer número del acertijo (el oído lee desde el comienzo). Sin los números, 13 % (azar 17 %).
+2026-11-06 — Sin Perl (Capitán: "no uses más Perl, que se me va a quemar la PC; sólo Janax"): las suites ya no lo llaman.
+Las huellas de los modelos quedan fijas (las mismas que dan los programas Janax, que la suite ya había verificado contra
+Perl); los archivos de parámetros, con printf; `bucles` y `combinaciones`, en awk (las 31 combinaciones, idénticas byte
+por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio como referencia, sin correrse.

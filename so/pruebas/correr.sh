@@ -62,6 +62,8 @@ caso() {
 }
 fijo0="modo: simbiosis
 costo de cambio: 0.00 instrucciones (fijado)"
+# A little-endian qword per value: the parameter files of the Razar programs (printf, no Perl).
+qwords() { local v h i; for v in "$@"; do h=$(printf '%016x' "$v"); for i in 14 12 10 8 6 4 2 0; do printf "\x${h:$i:2}"; done; done; }
 familia() {   # familia <folder> <child program>
   rm -rf "$salida/$1"; mkdir -p "$salida/$1"
   cp "$salida/$2.bin" "$salida/$1/68696a6f"
@@ -424,20 +426,20 @@ carpeta=
 
 # Razar's school (razar/cardumen, Capitan): the Janax program leaves the fingerprint of the reference model, bit for
 # bit; the expected one comes from the model itself, so a change in the model has to be followed here.
-huella=$(perl "$proyecto/razar/cardumen/huella.pl")
+huella=0000EE87C7E121A0              # huella.pl (Perl is no longer run: Capitan, 2026-11-06)
 caso "razar: el cardumen deja la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella t=*" cardumen
 
 # Waves that cross (Capitan, 2026-11-06: everything moves to Janax, Perl stays as the measuring stick): words go in as
 # songs, one greeting per step, each pulse a wave of its own, their pushes adding up; the same fingerprint as the model.
-huella_olas=$(perl "$proyecto/razar/cardumen/huella_olas.pl")
+huella_olas=00008FBA0F7F8D63         # huella_olas.pl
 caso "razar: las olas que se cruzan dejan la huella del modelo" 0 0 "$fijo0
 P0 codigo=0 j0=$huella_olas t=*" cardumen_olas
 
 # A whole word is one song (Capitan, 2026-11-06): the will says the 30 words of its vocabulary as songs, the school
 # sings them with waves that cross and answers the top face of each step, and the will learns to know whole words;
 # they talk in words (requests 30, 31). The fingerprint of the model, bit for bit.
-huella_canto=$(perl "$proyecto/razar/cardumen/huella_oraciones.pl")
+huella_canto=0000B6A4176535A2        # huella_oraciones.pl
 familia familia_canto cardumen_canto
 caso "razar: la voluntad reconoce palabras enteras como en el modelo" 0 0 "$fijo0
 P1 codigo=0 j0=* t=*
@@ -448,13 +450,12 @@ carpeta=
 # The sentences with noise, run in Janax (Capitan, 2026-11-06): the will reads its parameters from the file "p" (the
 # school's seed, the percent of slipping fingers, 1 if quiet), learns, reads 40 sentences and hears 20 new words, with
 # the dice of the model: the fingerprint of oraciones.pl huella=1, bit for bit, and the same line it writes.
-for conf in "1001 10 0" "1003 20 1"; do
+for conf in "1001 10 0 0000A1A4AA959425 86 93 32" "1003 20 1 00003FC5AF9436F2 72 78 14"; do   # oraciones.pl: huella=1, and its line
   set -- $conf
-  q=""; [ $3 = 1 ] && q="quieto=1"
-  huella_or=$(perl "$proyecto/razar/cardumen/oraciones.pl" nace=$1 desliz=$2 $q huella=1)
-  linea_or=$(perl "$proyecto/razar/cardumen/oraciones.pl" nace=$1 desliz=$2 $q | sed -n 2p | tr -d '')
+  huella_or=$4
+  linea_or="palabras reconocidas aprendiendo: $5%; en oraciones: $6% de las palabras, $7 de 40 oraciones enteras"
   familia familia_oracion cardumen_canto
-  perl -e 'print pack("Q<3", @ARGV)' $1 $2 $3 > "$salida/familia_oracion/70"
+  qwords $1 $2 $3 > "$salida/familia_oracion/70"
   caso "razar: las oraciones con ruido como en el modelo ($1, $2 %, quieto $3)" 0 0 "$fijo0
 P1 codigo=0 j0=* t=*
 $linea_or
@@ -469,12 +470,12 @@ done
 # parameters from the file "p" (side, things, rounds, seed; a cube of any side up to 7, Capitan, 2026-11-06): the
 # classic 4x4x4 with 4 things, and the 7x7x7 with 16 things of the result against EGG. And it says how it went, the
 # same line as the model: its hits every 50 rounds.
-for conf in "4 4 200 7" "7 16 200 7"; do
+for conf in "4 4 200 7 000094454451C2E4 25 84_100_100_100" "7 16 200 7 00009756E346EC1F 6 46_92_94_92"; do   # lazo.pl: huella=1, and its hits line
   set -- $conf
-  huella_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" n=$1 k=$2 rounds=$3 nace=$4 armonia=1 huella=1 lee=ritmo)
-  aciertos_lazo=$(perl "$proyecto/razar/cardumen/lazo.pl" n=$1 k=$2 rounds=$3 nace=$4 armonia=1 lee=ritmo | tail -1 | tr -d '\r')
+  huella_lazo=$5
+  aciertos_lazo="aciertos cada 50 vueltas (el azar es $6%):$(printf ' %3d%%' ${7//_/ })"
   familia familia_lazo cardumen_lazo
-  perl -e 'print pack("Q<4", @ARGV)' $1 $2 $3 $4 > "$salida/familia_lazo/70"
+  qwords $1 $2 $3 $4 > "$salida/familia_lazo/70"
   caso "razar: la voluntad y el cardumen conversan como en el modelo ($1^3, $2 cosas)" 0 0 "$fijo0
 $aciertos_lazo
 P1 codigo=0 j0=* t=*
@@ -491,7 +492,6 @@ done
 # measuring stick wrote for the same parameters (acertijos.pl, 239 of 239 identical, 2026-11-06); the fingerprints,
 # the same in the three engines. Its parameters (the file "p", 12 qwords): seed, slipping %, first side, it may grow,
 # top, passes, countings, quiet, kind, examples drawn, list, shuffled answers.
-qwords() { local v h i; for v in "$@"; do h=$(printf '%016x' "$v"); for i in 14 12 10 8 6 4 2 0; do printf "\x${h:$i:2}"; done; done; }
 fijo24="modo: simbiosis
 costo de cambio: 24.00 instrucciones (fijado)"
 acertijo() {   # acertijo <name> <school j0> <will j0> <line 1> <line 2> <parameters>...
@@ -750,11 +750,11 @@ printf '
 pdp_corrida "un include cambiado rearma a quienes lo usan" "$usan"
 pdp_iguales "byte por byte despues del include"
 
-# Every combination of every instruction (so/herramientas/combinaciones.pl), byte for byte as FASM. Once,
+# Every combination of every instruction (so/herramientas/combinaciones.awk), byte for byte as FASM. Once,
 # with the routines: the assembler itself is already tried with both engines above.
 if [ "$motor" = rutinas ]; then
   comb="$salida/combinaciones"; rm -rf "$comb" "$salida/pdp_comb"; mkdir -p "$salida/pdp_comb"
-  perl "$raiz/herramientas/combinaciones.pl" "$comb" "$(cygpath -m "$proyecto/escalon0/janax.inc")"
+  awk -f "$raiz/herramientas/combinaciones.awk" -v dir="$comb" -v inc="$(cygpath -m "$proyecto/escalon0/janax.inc")"
   distintos=0; total=0
   for f in "$comb"/*.jsm; do
     n=$(basename "$f" .jsm); total=$((total + 1))
@@ -803,7 +803,7 @@ done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
 for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc nativo.inc; do
-  if r=$(perl "$raiz/herramientas/bucles.pl" "$raiz/$f"); then
+  if r=$(awk -f "$raiz/herramientas/bucles.awk" "$raiz/$f"); then
     ok=$((ok + 1))
   else
     echo "MAL  $f tiene bucles que no son while rotado:"; echo "$r" | grep -v ' while '; mal=$((mal + 1))

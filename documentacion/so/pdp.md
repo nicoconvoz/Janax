@@ -59,7 +59,7 @@ sin nada nuevo, 74 millones, ~385 ms.
 
 ## Todas las combinaciones (Capitán: "así ya sabés que es igual byte a byte")
 
-`so/herramientas/combinaciones.pl` genera 31 fuentes con ~700.000 instrucciones: todas las combinaciones de
+`so/herramientas/combinaciones.awk` (antes en Perl) genera 31 fuentes con ~700.000 instrucciones: todas las combinaciones de
 registros de cada instrucción (16 × 16 × 16 en las de tres registros) y los 65.536 valores del inmediato y
 de la distancia de salto con todos los bits de registro en 1 (si un negativo se derrama sobre los registros,
 se ve). La mitad de los inmediatos va en decimal y la otra en hexadecimal. También `jsys`, `jwhile`, `jfirst`
