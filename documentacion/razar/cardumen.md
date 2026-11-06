@@ -829,3 +829,16 @@ inhibición apaga la ola sola"):
 - Después de aprender (300 palabras, 20 % que frenan): sin conservar, en 255 quedan el 81 % de los pesos de las que
   empujan y el **57 % de las que frenan**; conservando, 3 % y 9 %. La saturación es del aprendizaje entero, de los dos
   lados.
+
+**El freno que sigue la aceleración** (Capitán, 2026-11-06: *"el 30 % es a ojo, tiene que variar según la aceleración de
+la convulsión"*). `follow` en `modelo.pl` (`speedup`): cada pieza despierta mira a sus vecinas; si g de sus N vecinas
+despertaron desde el paso anterior, empuja con (N − 2g)/N de su peso: entero si nada crece, nada si se le encendió la
+mitad de golpe, freno total si se le encendieron todas. Sin porcentaje elegido; profundidad 1. Vale en `signal_timed` y
+en las olas cruzadas. Huellas viejas intactas; `prueba_signo.pl` 18 de 18.
+
+Medido con reposo de 1 paso (el que convulsiona), 5 sorteos: sin freno, sigue sonando 127 pasos (521 notas arriba);
+freno fijo 30 %, 2 a 33 pasos, pero en 3 de 5 llegan arriba 1 a 3 notas (apaga la ola y también la señal); **freno que
+sigue la aceleración, 170 pasos: la estira**. Por qué: la convulsión es una oscilación sostenida, siempre el mismo
+dibujo, y ahí **no hay aceleración**; un freno que mira cuánto crece la actividad no ve nada que frenar (el término
+derivativo de un controlador corrige cambios, no un estado que se mantiene). Lo que puede frenar una oscilación sostenida
+tiene que mirar cuánta actividad hay y cuánto dura (proporcional e integral).

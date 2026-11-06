@@ -82,17 +82,21 @@ sub signal_timed {
   my @melody; my $t = 0; my %seen; my $prev = '';
   my @now = sort { $a <=> $b } do { my %u = map { $_ => 1 } @{ $sched->[0] // [] }; keys %u };
   $ft[$_] = $lw[$_] = 0 for @now;
+  my %before;                                    # who was awake the step before (for the brake that follows acceleration)
   while (@now || $t < $#$sched) {
     push @melody, [@now];
     my $state = join(',', @now) . '/' . $prev; $prev = join ',', @now;
     last if $t >= $#$sched && $seen{$state}++;
-    my %in; my %mask;
+    my %in; my %mask; my %awake = map { $_ => 1 } @now;
     for my $i (@now) {
       next if $s->{sinks}{$i};
+      my ($num, $den) = $s->speedup($i, \%awake, \%before);
       for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0;
         next if defined $R ? ($lw[$q] >= 0 && $t + 1 - $lw[$q] <= $R) : $ft[$q] >= 0;
-        if ($s->{brake} && $s->{brake}[$i]) { $in{$q} -= $s->{w}[$i][$d]; next; } $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+        my $v = int($s->{w}[$i][$d] * $num / $den);
+        if ($v <= 0) { $in{$q} += $v; next; } $in{$q} += $v; $mask{$q} |= 1 << ($d ^ 1); }
     }
+    %before = %awake;
     $t++;
     my %next = map { $_ => 1 } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
     $next{$_} = 1 for @{ $sched->[$t] // [] };
@@ -116,6 +120,7 @@ sub signal_waves {
   my $t = 0;
   my $press = sub { my ($t) = @_; my @k = @{ $sched->[$t] // [] }; return unless @k; $now{$t} = { map { $_ => 1 } @k }; $woke{$t}{$_} = 1 for @k; };
   $press->(0);
+  my %before;
   while (%now || $t < $#$sched) {
     my %all; $all{$_} = 1 for map { keys %$_ } values %now;
     my @step = sort { $a <=> $b } keys %all;
@@ -127,10 +132,11 @@ sub signal_waves {
       for my $w (keys %now) {                    # where two meet; it then belongs to every wave that pushed it. Inside
         for my $i (keys %{ $now{$w} }) {         # each wave a piece still wakes once at most: no going round in circles
           next if $s->{sinks}{$i};
-          my $brake = $s->{brake} && $s->{brake}[$i];   # a piece that brakes takes its push away instead of adding it,
-          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};   # and it did not wake it
-            if ($brake) { $in{$q} -= $s->{w}[$i][$d]; next; }
-            $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); $by{$q}{$w} = 1; }
+          my ($num, $den) = $s->speedup($i, \%all, \%before);   # a braking piece (or one that sees its neighbors catch
+          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q};   # fire) takes its push
+            my $v = int($s->{w}[$i][$d] * $num / $den);                                     # away, and did not wake it
+            if ($v <= 0) { $in{$q} += $v; next; }
+            $in{$q} += $v; $mask{$q} |= 1 << ($d ^ 1); $by{$q}{$w} = 1; }
         }
       }
       for my $q (grep { $in{$_} >= $s->{th} && $by{$_} && $s->in_harmony($_, $mask{$_}) } keys %in) {
@@ -148,6 +154,7 @@ sub signal_waves {
         $next{$w} = { map { $_ => 1 } @up }; $woke{$w}{$_} = 1 for @up;
       }
     }
+    %before = %all;
     $t++;
     %now = %next;
     $press->($t);
@@ -166,6 +173,20 @@ sub set_brakes {
   for my $i (0 .. $s->{p}-1) { $x = ($x * 1103515245 + 12345) % 2147483648; $s->{brake}[$i] = (($x >> 16) % 100) < $percent ? 1 : 0; }
 }
 # The shape moves by what happened in one signal: $ftr is the step each piece first woke at (-1: not then).
+# How an awake piece i pushes its neighbors, as a fraction num/den of its weight. A braking piece (set_brakes) pushes
+# -1. With $s->{follow} (Capitan, 2026-11-06: the brake has to follow the acceleration of the convulsion, not a fixed
+# share), a piece looks at its own neighbors: if g of its N neighbors woke since the step before, it pushes
+# (N - 2g)/N: all of it when nothing grows around it, nothing when half its neighbors caught fire at once, and it
+# brakes with all its weight when all of them did. No share is chosen: the brake is the acceleration itself, seen
+# from each piece (depth 1).
+sub speedup {
+  my ($s, $i, $awake, $before) = @_;
+  my $sign = ($s->{brake} && $s->{brake}[$i]) ? -1 : 1;
+  return ($sign, 1) unless $s->{follow};
+  my ($N, $g) = (0, 0);
+  for my $d (0 .. 5) { my $q = $s->neighbor($i, $d); next if $q < 0; $N++; $g++ if $awake->{$q} && !$before->{$q}; }
+  return ($sign * ($N - 2 * $g), $N);
+}
 sub learn {
   my ($s, $ftr) = @_; my @ft = @$ftr;
   for my $i (0 .. $s->{p}-1) {                   # the shape moves by what happened

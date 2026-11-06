@@ -223,3 +223,5 @@ teclas libres van a las palabras más dichas y el costo baja de 18 a ~7 saludos;
 paper de antieficiencia de EGG existe, pero con costo de largo EGG también cumple la ley: no es una ventaja de Razar.
 2026-11-06 — Palabra = canción (Capitán): con ruido, el cardumen que aprende le gana al quieto en oraciones enteras
 (11 de 14 casos, p ≈ 0,06). Las palabras nuevas se confunden con las que empiezan igual (40 % contra 5 % de azar).
+2026-11-06 — Freno que sigue la aceleración: no apaga la convulsión (170 pasos contra 127), porque una oscilación sostenida
+no acelera. Haría falta un freno según cuánta actividad hay y cuánto dura.

@@ -8,7 +8,7 @@
 #
 # It learns 30 words (rondas passes), then reads sentences of 3 to 5 of them (drawn by dice), and hears words it never
 # heard, to see what it takes them for. Options: n (4), nace (7), rondas (20), oraciones (40), desliz (P: percent
-# chance that one piece of a key slips to a neighbor), quieto, conserva, simetrico, asienta.
+# chance that one piece of a key slips to a neighbor), quieto, conserva, simetrico, asienta, frenan (P%).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, rondas => 20, oraciones => 40, desliz => 0, @ARGV ? map { split /=/ } @ARGV : ());
 my %morse = (a => '.-', b => '-...', c => '-.-.', d => '-..', e => '.', f => '..-.', g => '--.', h => '....',
@@ -24,6 +24,7 @@ $c->{harmony} = 1; $c->{sinks} = { %top }; $c->{cross} = 1;
 $c->{whisper} = 1 if $o{quieto};
 $c->{conserve} = 1 if $o{conserva};
 $c->{weaken_rate} = 1 if $o{simetrico};
+$c->set_brakes($o{frenan}, $o{nace}) if $o{frenan};   # frenan=P: P% of the pieces brake (the negative melody)
 my @vocab = qw(sol luna mar pez barco cielo agua fuego tierra viento casa perro gato arbol flor rio monte nube
                lluvia piedra camino puerta mesa silla libro mano ojo voz canto risa);
 my @nuevas = qw(hermano capitan janax razar melodia cardumen ola faro brujula timon vela ancla isla puerto bote
