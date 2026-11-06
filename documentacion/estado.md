@@ -219,3 +219,5 @@ lado del freno.
 palabras nuevas en las 7 semillas; con 20 % de resbalones, 96–100 % de saludos. El quieto da parecido.
 2026-11-06 — Fano en el espacio empata con teclas al azar: la ventaja era del tiempo. Señales que se acortan solas: las 7
 teclas libres van a las palabras más dichas y el costo baja de 18 a ~7 saludos; el control al azar también correlaciona algo.
+2026-11-06 — Inversión de Zipf: manda la frecuencia, con algo de "el primero se sirve" (0 a 3 raras conservan tecla). El
+paper de antieficiencia de EGG existe, pero con costo de largo EGG también cumple la ley: no es una ventaja de Razar.

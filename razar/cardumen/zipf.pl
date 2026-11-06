@@ -12,7 +12,8 @@
 # end up the shortest (the law of abbreviation, Zipf 1935)? Control (azar=1): keys go to words at random, without
 # looking at what each saves.
 #
-# Options: n (4), nace (7), vueltas (3000 words said), azar (0), desliz (0).
+# Options: n (4), nace (7), vueltas (3000 words said), azar (0), desliz (0), raras (K: the K rarest words are said
+# first: if the short names still end with the frequent words, frequency decides and not who came first).
 use strict; use warnings; use FindBin; require "$FindBin::Bin/modelo.pl";
 my %o = (n => 4, nace => 7, vueltas => 3000, azar => 0, desliz => 0, @ARGV ? map { split /=/ } @ARGV : ());
 my %morse = (a => '.-', b => '-...', c => '-.-.', d => '-..', e => '.', f => '..-.', g => '--.', h => '....',
@@ -61,7 +62,8 @@ sub guess {
 }
 my ($sent_greetings, $wrong_words) = (0, 0);
 for my $v (1 .. $o{vueltas}) {
-  my $w = pick(); $uses{$w}++;
+  my $w = ($o{raras} && $v <= $o{raras}) ? $rank[-$v] : pick(); $uses{$w}++;   # raras=K (the inversion): the K rarest
+                                                 # words are said first, so they take the free keys before any other
   my @say = $name{$w} ? ($name{$w}) : full($w);
   my $miss = 0;
   for my $k (@say) { my $f = greet($k); $miss++ if guess($f) ne $k; $read{$k}{$_}++ for @$f; $heard{$k} += @$f; }

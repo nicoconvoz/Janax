@@ -782,3 +782,18 @@ decirse entera. Control (`azar=1`): las teclas van a palabras al azar.
   control no es neutro; uno mejor reparte las teclas al azar también al principio.
 - Lo que es diseño, dicho claro: la regla de sacar la tecla a la que menos ahorró es un criterio de costo puesto por
   Doc; lo que no se le dice es cuáles palabras son frecuentes.
+- **La inversión** (`raras=7`: las 7 palabras más raras se dicen primero y agarran las 7 teclas libres; después,
+  frecuencia normal). Después de las primeras 7, las teclas están en los rangos 24 a 30, como se buscaba. Al final:
+  con 600 palabras, semillas 7, 1001 y 1004 sin ninguna rara con tecla (la 7 termina exacta en las 7 más frecuentes,
+  igual que sin inversión); con 3.000, de las 7 raras que arrancaron con tecla quedan 0 (1003), 3 (1002) y 1 (1005,
+  1006, 1007). Las que quedan **no** están en el reparto ideal por ahorro (frecuencia × saludos ahorrados): se quedaron
+  por llegar primero. **Manda la frecuencia, pero no del todo**: la regla compara lo ahorrado por quien tiene la tecla
+  con lo que ahorraría quien la pide, y eso favorece al que llegó antes.
+- **El paper de la antieficiencia, verificado**: Chaabouni, Kharitonov, Dupoux y Baroni, *Anti-efficient encoding in
+  emergent communication*, NeurIPS 2019 (arXiv 1905.12561), del grupo de EGG: en el juego de señales las entradas más
+  frecuentes reciben los mensajes más largos. Pero el mismo paper muestra que **con un costo por largo del mensaje sus
+  redes también cumplen la ley de abreviación**, y la regla de Razar tiene un criterio de costo puesto por Doc. La
+  comparación justa es EGG con costo contra Razar con costo: los dos cumplen la ley. **No** se puede decir "Razar hace
+  la ley donde EGG hace lo contrario".
+- La afirmación defendible: *dada una regla de reasignación por costo, el sistema descubre la distribución de
+  frecuencias por puro uso, sin que nadie se la informe; queda una ventaja del que llegó primero.*
