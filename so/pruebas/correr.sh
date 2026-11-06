@@ -637,6 +637,13 @@ P1 codigo=0 j0=000000000000002A t=*
 P0 codigo=0 j0=0000000000000000 t=*
 ventanilla: *" familia_espera
 
+# A child that never ends on its own is ended by its parent (33): code 9, at once, and only its own children.
+familia familia_termina eterno
+caso "familia: el padre termina a un hijo colgado" 0 0 "$fijo0
+P1 codigo=9 j0=* t=*
+P0 codigo=0 j0=00000000090909FE t=*
+ventanilla: *" familia_termina
+
 # A child is born with its parent's bolita, and can not ask for more.
 familia familia_bolita bolita
 caso "familia: el hijo nace con la bolita del padre" 0 0 "$fijo0

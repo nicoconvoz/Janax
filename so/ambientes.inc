@@ -1624,12 +1624,15 @@ watch_wait:
         test    eax, eax
         jz      .none
         cmp     qword [watch_dir], 0
-        jne     .again
+        jne     .slept
         invoke  CreateFileA, dir_path, 1, 7, 0, OPEN_EXISTING, 02000000h, 0
         inc     qword [hostcalls]
         cmp     rax, -1
         je      .none
         mov     [watch_dir], rax
+.slept:
+        xor     r15d, r15d              ; woke someone? (while nobody: back to sleep on the folder)
+        jmp     .woke
 .again:
         call    kern_leave
         invoke  ReadDirectoryChangesW, [watch_dir], watch_buf, WATCH_BUF, 0, 11h, watch_got, 0, 0
@@ -1638,18 +1641,19 @@ watch_wait:
         inc     qword [hostcalls]
         test    r12, r12
         jz      .none
-        xor     r15d, r15d              ; woke someone?
-        lea     r13, [watch_buf]
+        lea     r13, [watch_buf]        ; every change it told, one after the other (there is one at least)
+        mov     r14d, 1
+        jmp     .entries
 .entry:
         call    watch_name
-        mov     eax, [r13]              ; the next change
-        test    eax, eax
-        jz      .read
-        add     r13, rax
-        jmp     .entry
-.read:
+        mov     r14d, [r13]             ; the next change
+        add     r13, r14
+.entries:
+        test    r14d, r14d
+        jnz     .entry
+.woke:
         test    r15d, r15d
-        jz      .again                  ; nothing anyone watches: back to sleep on the folder
+        jz      .again
         mov     eax, 1
         jmp     .out
 .none:
@@ -1705,6 +1709,7 @@ watch_name:
         jb      .next
         xor     r9d, r9d                ; each byte of the prefix: its two letters
         lea     r10, [rsi + P_WATCH]
+        jmp     .bytes
 .byte:
         movzx   edx, byte [r10 + r9]
         mov     r11, rdx
@@ -1721,6 +1726,7 @@ watch_name:
         cmp     eax, edx
         jne     .next
         inc     r9
+.bytes:
         cmp     r9, r8
         jb      .byte
         push    rcx r13                 ; it is its: a greeting from itself, and it wakes

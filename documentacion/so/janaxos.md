@@ -117,6 +117,7 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - **17 firmar** (`a` = número del pedido, `b` = 1 firma / 0 rechaza), **18 pendientes** (lo que espera
      mi firma, como {número, hijo, tipo}), **19 estado** (`a` = un hijo mío → su código, −1 mientras corre,
      −2 si no es mío).
+   - **33 terminar a un hijo** (`a` = un hijo mío): ver "El padre termina a un hijo colgado".
    - **20 bolita** (`a` = la bolita que quiere, en 65.536avos; 10000h = 1): la recorta a la que le dieron al
      lanzarlo (nadie se da más de lo que le dieron, igual que los permisos), recalcula su turno una vez y
      contesta la que quedó. Ver "La bolita de cada camarote".
@@ -1008,3 +1009,33 @@ comparación de tamaño que volvió en `O(i)`. SO 314/314, escalón 0 182/182.
 - Medido con dos Razares: dormidos, 0 ms de procesador en 5 s; un archivo nuevo de su prefijo los despierta a los dos.
 - Pendiente: un cambio mientras alguien rema no despierta a nadie (la carpeta se mira solo cuando todos duermen), y un
   archivo nuevo llega como dos avisos (creado y escrito).
+
+## El padre termina a un hijo colgado: pedido 33 (Capitán, 2026-11-06)
+
+El Capitán quiere que Razar se mejore compilando órganos nuevos, con *"legos, pero dentro de los legos mutación libre
+de código"*. Un mutante puede quedar en un bucle sin fin, y hasta hoy nadie podía pararlo: revocarle los archivos lo
+dejaba remando igual, y eso choca con la regla de ningún bucle que gaste por nada. Este pedido es la jaula, el primer
+paso de esa idea.
+
+- **33 terminar** (`a` = el número de un hijo propio). El hijo termina ya, con **código 9** ("lo terminó su padre"),
+  por el mismo camino que cuando termina solo: cierra lo que dejó abierto, devuelve sus salas y sale su línea `P<n>`.
+  Lo que él esperaba firmar se rechaza.
+  - **Termina la línea entera.** También termina todo lo que el hijo lanzó, porque si no un nieto colgado sería un
+    agujero en la jaula. Esto es distinto de cuando un padre se va solo: ahí su línea sigue con la sombra.
+  - **Respuestas:**
+
+    | responde | cuándo |
+    |---|---|
+    | 9 | lo terminó ahora |
+    | el código con que había terminado | si ya había terminado |
+    | −1 | si en ese momento lo está remando otro remero: termina cuando termina su turno |
+    | −2 | si no es hijo propio |
+
+  - Es **importante**: si lo pide el hijo de un proceso, espera la firma de su padre, como lanzar.
+- **La prueba** (`familia_termina`, con el hijo `eterno`): el padre lanza un hijo que no termina nunca y lo termina.
+  Pide otra vez sobre el mismo hijo, mira su estado (19) y pide sobre un número que no es hijo suyo. Da `09 09 09 FE`
+  en los tres motores. Antes del pedido, el núcleo moría por tiempo con el hijo remando para siempre.
+- **Lo que la prueba no cubre todavía:** que termine la línea entera (un nieto), y el caso −1, con varios remeros y el
+  hijo remando justo en ese momento. Ese camino existe en el remero (`P_KILL`), pero ninguna prueba lo ejercita.
+- **De paso:** el chequeo de la casa ("todo bucle del núcleo es un while rotado") marcaba tres bucles del centinela
+  (`watch_wait`, `watch_name`). Se me pasaron en su commit porque no corrimos la suite, y ahora quedaron en esa forma.

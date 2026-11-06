@@ -195,6 +195,15 @@ run_all:
         dec     qword [rowing]
         add     [rbx + P_SERVED], rax
         add     [clock], rax
+        cmp     qword [rbx + P_KILL], 0 ; its parent ended it while it rowed (33): it ends with its turn, its line too
+        je      .alive
+        cmp     qword [rbx + P_DONE], 0
+        jne     .alive
+        mov     qword [rbx + P_CODE], CODE_ENDED
+        mov     qword [rbx + P_DONE], 1
+        call    end_records
+        call    line_end
+.alive:
         cmp     qword [rbx + P_DONE], 0
         jne     .ended
         cmp     qword [rbx + P_WAITING], 0
