@@ -1020,3 +1020,12 @@ Idéntico en los tres motores (10 lecturas: `000098B24A3DB29B`):
 pulsos del piso (N) crece casi tres veces, y un par raro que aparece recién en una relectura tiene su n chico pero un
 N inflado: log2(2N·n / (c·c)) le sube 1,5 bits sin haber hecho nada, y pasa el costo de nombrarse. La quema progresiva
 toca la evidencia, no la especificidad.
+
+**Quemar las cuatro cuentas, probado y descartado (2026-11-06).** Con la misma quema progresiva en N, en el par y en lo
+frecuente de cada palabra, las piezas se inflan **más** (10 lecturas: 29.943 puertas, 7.319 asociados; asociados 23,1 / 5,6).
+Ahí está la causa de fondo: un par raro que aparece recién en una relectura tiene n pequeño y sin crecer (g = 1, no
+quema), mientras que sus palabras sí crecieron y queman. Al quemarlas, su c baja y el par parece **más** específico. La
+inflación no es de cuánto se emite sino de **comparar cuentas de lecturas distintas**: un par nuevo de la décima lectura
+se mide contra palabras que juntaron peso en las diez. La única quema que dejó todo en la misma escala es la pareja
+(todo el piso dividido por lo mismo): por eso fue la que frenó las piezas (324 asociados, 4,9× sobre el azar). Se vuelve
+a la quema progresiva sobre la evidencia (`76662ba`).
