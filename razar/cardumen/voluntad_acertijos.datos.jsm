@@ -71,3 +71,11 @@ times 900h - $ db 0
 db ' estructura: ensena en orden ', 0
 times 940h - $ db 0
 db ', pregunta en orden ', 0
+times 980h - $ db 0
+db ' gemelos: repeticiones ', 0
+times 9C0h - $ db 0
+db 'memoria: ', 0
+times 0A00h - $ db 0
+db ' bien; pares gemelos: ', 0
+times 0A40h - $ db 0
+db '; propiedades adoptadas: ', 0

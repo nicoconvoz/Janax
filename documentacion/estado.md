@@ -255,3 +255,4 @@ Perl); los archivos de parámetros, con printf; `bucles` y `combinaciones`, en a
 por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio como referencia, sin correrse.
 2026-11-06 — Palabras y estructura (Capitán): el núcleo por lo que es; enseñado en un orden y preguntado en otro, 100 % en los cuatro órdenes (20 semillas, suma y resta mezcladas). El orden libre está construido; lo aprendido es qué palabra es el núcleo.
 2026-11-06 — Sumar sin reglas, como en el lazo: no aprende ni las sumas que practica (~25 %, azar 17 %); cada número está en muchas sumas y moverlo para arreglar una rompe otras.
+2026-11-06 — Gemelos (AMMC P44 llevado a oraciones): sin reglas de sumar, con 10 sumas memorizadas acierta el 98 % de las que nunca vio (0 % mal); con 6, 29 % y dice "no sé" el resto. Control al azar: 2 %.

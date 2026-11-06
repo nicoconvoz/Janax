@@ -1143,3 +1143,44 @@ nunca practicó, sin aprender. 20 semillas:
 El azar es 17 %. **No aprende ni las que practica, y más vueltas no ayudan.** Diagnóstico: en el lazo cada cosa tenía su
 propia señal; acá cada número está en muchas sumas, y mover una pieza para arreglar una suma rompe las otras donde está
 esa palabra. Además, al errar mueve al azar sin recordar qué andaba. Es una medición, no una prueba de que no se puede.
+
+### Gemelos: el significado en átomo y el significado del todo (Capitán, 2026-11-06)
+
+> *"Necesitamos una composición de la AMMC: la relación entre palabras y el significado final, el significado en átomo y
+> el significado en un todo."* — y la orden de estudiar Razar (`E:/proyectos/razar`).
+
+Lo que dice la AMMC, leída entera: el átomo es un tipo fijo y los conceptos se arman en el momento (§7.1); un concepto es
+lo que se repite entre muchos casos y se adopta solo si se paga solo (P36: "un grupo de uno es una anécdota"); y **la
+misma canción en otro tono (P44)**: Razar encontró solo el género en el Nuevo Testamento comparando **gemelos**
+(uno/una, hijo/hija) y quedándose con la diferencia que más se repite. `MODO` 4 lleva ese mismo mecanismo a las
+oraciones, sin ninguna regla de sumar:
+- **La base, por repetición:** las sumas mostradas se oyen `REPS` veces, palabra por palabra, y se guardan como lugares
+  en la canción de contar; un recuerdo es firme si una respuesta se oyó en la mayoría de las repeticiones.
+- **El significado en átomo:** un número es su lugar en la canción de contar, aprendida oyéndola.
+- **Gemelos:** dos recuerdos firmes del mismo operador que difieren en un solo número. Cada par dice: "ese número se
+  movió d pasos y la respuesta se movió e".
+- **El significado del todo, una propiedad:** para un operador, un número y un d, la e en que más pares coinciden; se
+  adopta solo si la dicen al menos dos pares y ninguna otra empata.
+- **Transferencia:** preguntado algo que nunca practicó, vota cada recuerdo que es su gemelo, moviendo su respuesta por
+  la propiedad. Empate o nada: "no sé".
+
+20 semillas, sumas que nunca practicó:
+
+| Condición | Memoria | Propiedades | Bien | Mal | No sé |
+|---|---|---|---|---|---|
+| 6 practicadas | 100 % | 2,7 | 29 % | 0 % | 70 % |
+| 8 practicadas | 100 % | 6,3 | 84 % | 0 % | 15 % |
+| **10 practicadas** | 100 % | 9,1 | **98 %** | **0 %** | 2 % |
+| 8, 20 % de resbalones, 1 repetición | 93 % | 5,7 | 71 % | 1 % | 27 % |
+| 8, 20 %, 5 repeticiones | 96 % | 5,8 | 75 % | 1 % | 23 % |
+| suma y resta, 8 de cada una | 100 % | 12,1 | 85 % | 0 % | 15 % |
+| control: respuestas al azar | 15 % | 2,0 | 2 % | 25 % | 71 % |
+
+- **Entiende más cuanto más sabe de memoria**, como un chico: con 6 sumas memorizadas casi no generaliza (dice "no sé"),
+  con 10 acierta el 98 % de las que nunca vio. **Casi nunca se equivoca**: cuando no tiene gemelos que alcancen, no
+  contesta.
+- **Nadie le dijo qué es sumar.** Lo que encuentra es "un paso más en un número, un paso más en la respuesta" para la
+  suma y "un paso menos" para la resta, separado por operador, porque es lo que más se repite entre sus gemelos.
+- El control lo confirma: con las respuestas sorteadas no hay recuerdos firmes ni propiedades que se repitan.
+- Lo honesto: comparar gemelos y medir la diferencia en pasos es un sesgo, pero es el mecanismo general de la AMMC (P44),
+  no uno escrito para sumar; y el cardumen sigue poniendo sobre todo el oído.

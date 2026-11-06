@@ -50,9 +50,13 @@ S_BASE = 780h
 S_FIRST = 7C0h
 S_ESTR = 900h
 S_PREG = 940h
+S_GEM = 980h
+S_MEMO = 9C0h
+S_PARES = 0A00h
+S_ADOP = 0A40h
 WTXT  = 500h                    ; word w: its text at WTXT + w*40h (0 uno .. 5 seis, 6 mas, 7 menos, 8 es)
 MORSE = 800h                    ; letter l: its Morse at MORSE + l*8
-; Room 0 (6000h bytes):
+; Room 0 (0F000h bytes):
 QUEUE = 1000h                   ; its window: one request
 PLAB  = 1040h                   ; "p", the parameters file
 HIJO  = 1048h                   ; "hijo"
@@ -72,7 +76,7 @@ ESCRITA = 10E0h                 ; 1: the counting song written by hand (the cont
 MODO  = 10E8h                   ; 1: the riddle heard as one melody (numbers fed first); 2: structure, the core found by
 ENSENA = 10F0h                  ;    what it is (ENSENA, PREGUNTA: the word order taught and asked, 0..3)
 PREGUNTA = 10F8h
-M48   = 1100h                   ; 2^48 - 1
+REPS  = 1100h                   ; MODO 4: how many times the shown riddles are heard
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
 THING = 1118h                   ; the word it says
@@ -134,6 +138,7 @@ BDEN  = 45C8h
 SLOT  = 45D0h                   ; hearing the four words: the order, and the slot
 SLOTI = 45D8h
 BASEC = 1590h                   ; how often each answer (1..6) was shown
+M48   = 12F8h                   ; 2^48 - 1
 KEYP  = 1300h                   ; the keys: key k (0 dot, 1 dash, 2 end of letter), piece j at KEYP + (k*3 + j)*8
 WCODE = 1400h                   ; word w's greetings: WCODE + w*32 + k (0 dot, 1 dash, 2 end of letter)
 WLEN  = 1540h                   ; how many greetings each word has
@@ -146,11 +151,21 @@ ALLP  = 3700h                   ; the riddles of one operator: a, operator, b, c
 TRAIN = 3900h                   ; the riddles shown
 TEST  = 3D00h                   ; the riddles asked
 VOTE  = 4100h                   ; answer, votes (16 bytes each)
+REPLEFT = 45E0h                 ; MODO 4: repetitions left; a moment's hold; the shown riddles remembered right
+HOLD  = 45E8h
+MEMOK = 45F0h
+NFACT = 45F8h                   ; firm memories (facts), twin pairs, properties adopted
+NTWIN = 4600h
+ADOPT = 4608h
+OPI   = 4610h                   ; the operator being looked at (0 mas, 1 menos)
+MEM   = 6400h                   ; memory: (op, a, b, c) heard, as places: MEM + (((op*10 + a)*10 + b)*10 + c)*8
+TWADDR = 0A400h                 ; twins: TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8 (1444 qwords)
+FACTS = 0D400h                  ; the facts: operator, a, b, c (32 bytes each)
 SONGM = 5000h                   ; the song being said: the pieces of each greeting (up to 255)
 TRIED = 4800h                   ; sizes tried: side, words mistaken (16 bytes each)
 TEXT  = 4C00h                   ; the lines it writes
 include '../../escalon0/janax.inc'
-jfirst j1, 6000h               ; first order: room 0
+jfirst j1, 0F000h              ; first order: room 0
 
 jldi j1, 1                      ; 2^48 - 1
 jldi j2, 48
@@ -163,7 +178,7 @@ jst j2, j2, RBASE
 jst j2, j2, POS
 jldi j0, 0                      ; the fingerprint
 
-jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 128 bytes (request 5)
+jldi j1, 0                      ; its parameters: open "p" (request 4) and read up to 136 bytes (request 5)
 jldi j2, 70h
 jst j2, j1, PLAB
 jldi j10, 4
@@ -175,7 +190,7 @@ jshl j10, j13, j1               ; the handle travels in the high half of the kin
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 128
+jldi j12, 136
 jcall ask
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -244,6 +259,17 @@ wc_kept:
   jsub j9, j9, j1
 jwend
 
+jldi j1, 0                      ; the orders: slot s of order k holds role ORDT + k*4 + s (0 a, 1 op, 2 b, 3 es)
+jldi j2, 0302h
+jshi j2, 0001h
+jshi j2, 0302h
+jshi j2, 0100h
+jst j2, j1, ORDT                ; orders 0 and 1: 0 1 2 3 / 1 0 2 3 (one byte each, the lowest first)
+jldi j2, 0201h
+jshi j2, 0003h
+jshi j2, 0301h
+jshi j2, 0200h
+jst j2, j1, ORDT + 8            ; orders 2 and 3: 0 2 1 3 / 3 0 1 2
 jldi j1, 0                      ; no sentence yet; the words it learns; the longest song it can say
 jst j1, j1, SENTN
 jldi j2, 9
@@ -620,6 +646,9 @@ jjz j3, m_train
 jldi j3, 2
 jsub j3, j2, j3
 jjz j3, s_train
+jldi j3, 4
+jsub j3, j2, j3
+jjz j3, g_train
 jldi j1, 0                      ; shown: it hears the five words and counts what fits
 jld j15, j1, NTRAIN
 jldi j1, TRAIN
@@ -1142,17 +1171,6 @@ mm_none:
 ; share of the times the word was heard in which the rule held (SEEN). Asked, the rules with the best share vote, from
 ; whatever core they belong to. The rules are the same 27 candidates as above (written by Doc).
 s_train:
-jldi j1, 0                      ; the orders: slot s of order k holds role ORDT + k*4 + s (0 a, 1 op, 2 b, 3 es)
-jldi j2, 0302h
-jshi j2, 0001h
-jshi j2, 0302h
-jshi j2, 0100h
-jst j2, j1, ORDT                ; orders 0 and 1: 0 1 2 3 / 1 0 2 3 (one byte each, the lowest first)
-jldi j2, 0201h
-jshi j2, 0003h
-jshi j2, 0301h
-jshi j2, 0200h
-jst j2, j1, ORDT + 8            ; orders 2 and 3: 0 2 1 3 / 3 0 1 2
 jldi j2, 10                     ; nothing seen yet
 jldi j3, 0
 jwhile j2
@@ -1628,6 +1646,615 @@ sa_some:
   jcall mixsym
   jret
 
+; Twins (MODO 4; Capitan, 2026-11-06: "the relation between words and the final meaning: the meaning as an atom and the
+; meaning as a whole"; the mechanism of Razar's P44, "the same song in another key", carried to sentences). Nothing says
+; what adding is:
+;   - the base, by repetition: the shown riddles are heard REPS times, word by word (order 0), and each is kept in
+;     memory as places (a, b, c in the counting song): MEM counts what was heard. A memory is firm when one c was heard
+;     in most of the repetitions (what was heard once, misheard, is forgotten);
+;   - the meaning as an atom: a number is its place in the counting song, learned by hearing it;
+;   - twins: two firm memories of the same operator that differ in one number only (a, or b). Each pair says: that
+;     number moved d steps in the song, and the answer moved e steps (TW counts (operator, which number, d) -> e);
+;   - the meaning as a whole, a property: for an operator, a number and a d, the e that most twins agree on, adopted
+;     only if at least two pairs say it ("a group of one is an anecdote and never forms", P36) and no other e ties it;
+;   - transfer: asked a riddle it never practiced, every firm memory that is its twin (same operator, one number the
+;     same) votes: its answer moved by the property. A tie, or nothing, is "I do not know".
+g_train:
+jldi j1, 0                      ; nothing remembered yet
+jldi j2, 2000
+jldi j3, MEM
+jwhile j2
+  jst j1, j3, 0
+  jldi j4, 8
+  jadd j3, j3, j4
+  jldi j4, 1
+  jsub j2, j2, j4
+jwend
+jld j2, j1, REPS
+jst j2, j1, REPLEFT
+gt_rep:
+  jldi j1, 0
+  jld j2, j1, REPLEFT
+  jjz j2, gt_mem
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, REPLEFT
+  jld j15, j1, NTRAIN
+  jldi j2, TRAIN
+  jst j2, j1, PREV
+  jwhile j15
+    jldi j1, 0
+    jld j3, j1, PREV
+    jld j2, j3, 24              ; c, or drawn at random (the control)
+    jld j4, j1, REVU
+    jjz j4, gt_true
+    jcall rnd2
+    jldi j3, 6
+    jdiv j4, j13, j3
+    jmul j4, j4, j3
+    jsub j2, j13, j4
+    jldi j3, 1
+    jadd j2, j2, j3
+  gt_true:
+    jldi j1, 0
+    jst j2, j1, PC
+    jldi j2, 0                  ; heard in order 0, then the answer
+    jcall s_hear4
+    jldi j1, 0
+    jld j2, j1, PC
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, THING
+    jcall hear_w
+    jldi j1, 0
+    jld j2, j1, BEST
+    jst j2, j1, GC
+    jcall g_index               ; j2 = where (op, a, b) is remembered, or -1
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, gt_next
+    jldi j1, 0
+    jst j2, j1, HOLD
+    jld j1, j1, GC
+    jcall walk_to
+    jjz j2, gt_next
+    jldi j1, 0
+    jld j3, j1, HOLD
+    jadd j3, j3, j2
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j3, MEM
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, MEM
+  gt_next:
+    jldi j1, 0
+    jld j2, j1, PREV
+    jldi j3, 32
+    jadd j2, j2, j3
+    jst j2, j1, PREV
+    jldi j3, 1
+    jsub j15, j15, j3
+  jwend
+  jjmp gt_rep
+gt_mem:
+jldi j1, 0                      ; the firm memories, as facts (operator, a, b, c)
+jst j1, j1, NFACT
+jst j1, j1, OPI
+gf_op:
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+  jjz j3, gf_done
+  jldi j3, 1
+  jst j3, j1, PA
+gf_a:
+  jldi j3, 1
+  jst j3, j1, PB
+gf_b:
+  jldi j1, 0
+  jld j4, j1, OPI
+  jldi j5, 10
+  jmul j4, j4, j5
+  jld j5, j1, PA
+  jadd j4, j4, j5
+  jldi j5, 10
+  jmul j4, j4, j5
+  jld j5, j1, PB
+  jadd j4, j4, j5
+  jldi j5, 10
+  jmul j4, j4, j5
+  jcall g_recall
+  jjz j2, gf_bnext
+  jldi j1, 0
+  jld j3, j1, NFACT
+  jldi j4, 5
+  jshl j4, j3, j4
+  jcall g_facts                 ; j5 = the facts' address
+  jadd j4, j4, j5
+  jld j5, j1, OPI
+  jst j5, j4, 0
+  jld j5, j1, PA
+  jst j5, j4, 8
+  jld j5, j1, PB
+  jst j5, j4, 16
+  jst j2, j4, 24
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, NFACT
+gf_bnext:
+  jldi j1, 0
+  jld j3, j1, PB
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, PB
+  jldi j4, 10
+  jsub j4, j3, j4
+  jjnz j4, gf_b
+  jld j3, j1, PA
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, PA
+  jldi j4, 10
+  jsub j4, j3, j4
+  jjnz j4, gf_a
+  jld j3, j1, OPI
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, OPI
+  jjmp gf_op
+gf_done:
+
+jldi j1, 0                      ; the shown riddles its memory keeps right
+jst j1, j1, MEMOK
+jld j15, j1, NTRAIN
+jldi j2, TRAIN
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jld j3, j1, PREV
+  jld j4, j3, 8
+  jldi j5, 6
+  jsub j4, j4, j5
+  jldi j5, 10
+  jmul j4, j4, j5
+  jld j5, j3, 0
+  jadd j4, j4, j5
+  jldi j5, 10
+  jmul j4, j4, j5
+  jld j5, j3, 16
+  jadd j4, j4, j5
+  jldi j5, 10
+  jmul j4, j4, j5
+  jcall g_recall
+  jldi j1, 0
+  jld j3, j1, PREV
+  jld j3, j3, 24
+  jsub j3, j2, j3
+  jjnz j3, gm_next
+  jld j3, j1, MEMOK
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, MEMOK
+gm_next:
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jldi j3, 1
+  jsub j15, j15, j3
+jwend
+
+jldi j1, 0                      ; twins: every two facts of an operator that differ in one number
+jcall g_tw                      ; j5 = TW
+jldi j2, 1444
+jwhile j2
+  jst j1, j5, 0
+  jldi j4, 8
+  jadd j5, j5, j4
+  jldi j4, 1
+  jsub j2, j2, j4
+jwend
+jst j1, j1, NTWIN
+jldi j9, 0                      ; fact i
+tw_i:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, tw_done
+  jldi j10, 0                   ; fact j
+tw_j:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j10, j2
+  jjz j2, tw_inext
+  jsub j2, j9, j10
+  jjz j2, tw_jnext
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5               ; fact i
+  jshl j4, j10, j2
+  jadd j4, j4, j5               ; fact j
+  jld j6, j3, 0
+  jld j7, j4, 0
+  jsub j6, j6, j7
+  jjnz j6, tw_jnext             ; another operator
+  jld j6, j3, 8                 ; same a, another b: number 1 (b) moved
+  jld j7, j4, 8
+  jsub j6, j7, j6
+  jld j7, j3, 16
+  jld j8, j4, 16
+  jsub j7, j8, j7
+  jjnz j6, tw_amoved
+  jjz j7, tw_jnext              ; the same fact
+  jldi j11, 1                   ; which number: b
+  jldi j12, 0
+  jadd j12, j12, j7             ; d
+  jjmp tw_count
+tw_amoved:
+  jjnz j7, tw_jnext             ; both moved: not twins
+  jldi j11, 0                   ; which number: a
+  jldi j12, 0
+  jadd j12, j12, j6
+tw_count:
+  jld j6, j3, 24                ; e: how far the answer moved
+  jld j7, j4, 24
+  jsub j13, j7, j6
+  jld j6, j3, 0                 ; TW + (((op*2 + number)*19 + d + 9)*19 + e + 9)*8
+  jadd j6, j6, j6
+  jadd j6, j6, j11
+  jldi j7, 19
+  jmul j6, j6, j7
+  jadd j6, j6, j12
+  jldi j8, 9
+  jadd j6, j6, j8
+  jmul j6, j6, j7
+  jadd j6, j6, j13
+  jadd j6, j6, j8
+  jldi j8, 3
+  jshl j6, j6, j8
+  jcall g_tw
+  jadd j6, j6, j5
+  jld j7, j6, 0
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j6, 0
+  jldi j1, 0
+  jld j7, j1, NTWIN
+  jadd j7, j7, j8
+  jst j7, j1, NTWIN
+tw_jnext:
+  jldi j2, 1
+  jadd j10, j10, j2
+  jjmp tw_j
+tw_inext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp tw_i
+tw_done:
+jldi j1, 0                      ; how many properties were adopted (operator, number, d with an e)
+jst j1, j1, ADOPT
+jldi j9, 0
+ga_lap:
+  jldi j2, 76                   ; 2 operators * 2 numbers * 19 d
+  jsub j2, j9, j2
+  jjz j2, ga_done
+  jldi j2, 19
+  jdiv j3, j9, j2
+  jmul j4, j3, j2
+  jsub j12, j9, j4
+  jldi j4, 9
+  jsub j12, j12, j4             ; d
+  jldi j2, 2
+  jdiv j7, j3, j2               ; operator
+  jmul j4, j7, j2
+  jsub j11, j3, j4              ; number
+  jcall g_prop
+  jjz j2, ga_next
+  jldi j1, 0
+  jld j3, j1, ADOPT
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, ADOPT
+ga_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp ga_lap
+ga_done:
+
+jldi j1, 0                      ; asked, in order 0: every twin it remembers votes
+jst j1, j1, RIGHT
+jst j1, j1, ASKED
+jst j1, j1, NONE
+jld j15, j1, NTEST
+jldi j2, TEST
+jst j2, j1, PREV
+jwhile j15
+  jldi j1, 0
+  jldi j2, 0
+  jcall s_hear4
+  jldi j1, 0
+  jst j1, j1, NUMV
+  jcall s_roles
+  jjz j2, gq_count
+  jldi j1, 0                    ; its operator, as heard (mas or menos)
+  jld j7, j1, GW + 8
+  jldi j2, 6
+  jsub j7, j7, j2
+  jldi j2, 63
+  jsar j3, j7, j2
+  jjnz j3, gq_count
+  jldi j2, 2
+  jsub j3, j7, j2
+  jldi j2, 63
+  jsar j3, j3, j2
+  jjz j3, gq_count
+  jst j7, j1, OPI
+  jldi j9, 0
+gq_fact:
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+  jjz j2, gq_count
+  jcall g_facts
+  jldi j2, 5
+  jshl j3, j9, j2
+  jadd j3, j3, j5
+  jst j3, j1, HOLD              ; (the fact)
+  jld j2, j3, 0
+  jld j4, j1, OPI
+  jsub j2, j2, j4
+  jjnz j2, gq_fnext
+  jld j2, j3, 8                 ; same a?
+  jld j4, j1, PA
+  jsub j6, j4, j2
+  jld j2, j3, 16                ; same b?
+  jld j4, j1, PB
+  jsub j8, j4, j2
+  jjnz j6, gq_amoved
+  jjnz j8, gq_bmoved
+  jld j7, j3, 24                ; the same riddle, remembered: its answer
+  jcall g_vote
+  jjmp gq_fnext
+gq_bmoved:
+  jldi j11, 1
+  jldi j12, 0
+  jadd j12, j12, j8
+  jjmp gq_use
+gq_amoved:
+  jjnz j8, gq_fnext             ; both differ: not a twin
+  jldi j11, 0
+  jldi j12, 0
+  jadd j12, j12, j6
+gq_use:
+  jldi j1, 0
+  jld j7, j1, OPI
+  jcall g_prop
+  jjz j2, gq_fnext
+  jldi j1, 0
+  jld j3, j1, HOLD
+  jld j7, j3, 24
+  jadd j7, j7, j13              ; its answer, moved by the property
+  jcall g_vote
+gq_fnext:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jjmp gq_fact
+gq_count:
+  jcall s_answer
+  jldi j1, 0
+  jld j2, j1, PREV
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, PREV
+  jld j15, j1, NTEST
+  jld j3, j1, ASKED
+  jsub j15, j15, j3
+jwend
+jjmp r_counts
+
+; The facts' address -> j5 (past what an offset reaches). Uses j5.
+g_facts:
+  jldi j5, 0
+  jshi j5, FACTS
+  jret
+
+; The twins' address -> j5. Uses j5.
+g_tw:
+  jldi j5, 0
+  jshi j5, TWADDR
+  jret
+
+; One vote for the value j7 (a place in the counting song). Uses j11-j13 (and j1 = 0 after).
+g_vote:
+  jldi j1, 0
+  jld j11, j1, NUMV
+  jldi j12, VOTE
+gv_find:
+  jjz j11, gv_new
+  jld j13, j12, 0
+  jsub j13, j13, j7
+  jjz j13, gv_add
+  jldi j13, 16
+  jadd j12, j12, j13
+  jldi j13, 1
+  jsub j11, j11, j13
+  jjmp gv_find
+gv_new:
+  jst j7, j12, 0
+  jst j1, j12, 8
+  jld j11, j1, NUMV
+  jldi j13, 1
+  jadd j11, j11, j13
+  jst j11, j1, NUMV
+gv_add:
+  jld j13, j12, 8
+  jldi j11, 1
+  jadd j13, j13, j11
+  jst j13, j12, 8
+  jret
+
+; The property of operator j7, number j11 (0 a, 1 b), d = j12: the e most twins agree on, if at least two say it and
+; no other e ties it -> j2 = 1 and j13 = e, else j2 = 0. Uses j1-j6, j8, j13.
+g_prop:
+  jldi j2, 0
+  jldi j1, 9                    ; d in -9..9
+  jadd j3, j12, j1
+  jldi j4, 63
+  jsar j4, j3, j4
+  jjnz j4, gp_done
+  jldi j4, 19
+  jsub j4, j3, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, gp_done
+  jadd j4, j7, j7               ; the row: TW + (((op*2 + number)*19 + d + 9)*19)*8
+  jadd j4, j4, j11
+  jldi j5, 19
+  jmul j4, j4, j5
+  jadd j4, j4, j3
+  jmul j4, j4, j5
+  jldi j5, 3
+  jshl j4, j4, j5
+  jcall g_tw
+  jadd j4, j4, j5
+  jldi j3, 0                    ; the most, and how many e have it
+  jldi j6, 0
+  jldi j1, 0                    ; e + 9
+gp_e:
+  jldi j5, 19
+  jsub j5, j1, j5
+  jjz j5, gp_end
+  jld j5, j4, 0
+  jjz j5, gp_next
+  jsub j8, j3, j5
+  jjz j8, gp_tie
+  jldi j2, 63
+  jsar j8, j8, j2
+  jldi j2, 0
+  jjz j8, gp_next
+  jldi j3, 0
+  jadd j3, j3, j5
+  jldi j13, 9
+  jsub j13, j1, j13
+  jldi j6, 1
+  jjmp gp_next
+gp_tie:
+  jldi j8, 1
+  jadd j6, j6, j8
+gp_next:
+  jldi j8, 8
+  jadd j4, j4, j8
+  jldi j8, 1
+  jadd j1, j1, j8
+  jjmp gp_e
+gp_end:
+  jldi j2, 0                    ; at least two pairs, and alone
+  jldi j8, 2
+  jsub j8, j3, j8
+  jldi j5, 63
+  jsar j8, j8, j5
+  jjnz j8, gp_done
+  jldi j8, 1
+  jsub j8, j6, j8
+  jjnz j8, gp_done
+  jldi j2, 1
+gp_done:
+  jret
+
+; Where the riddle heard (GW: a, op, b in slots 0, 1, 2) is remembered: MEM row (((op - 6)*10 + pa)*10 + pb)*10, or
+; -1 if the operator is not mas or menos, or a or b has no place. -> j2. Uses j1-j8, j11.
+g_index:
+  jldi j1, 0
+  jld j2, j1, GW + 8
+  jldi j3, 6
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j4, j2, j3
+  jjnz j4, gi_no
+  jldi j4, 2
+  jsub j4, j2, j4
+  jsar j4, j4, j3
+  jjz j4, gi_no                 ; 0 or 1 only
+  jst j2, j1, HOLD
+  jld j1, j1, GW
+  jcall walk_to
+  jjz j2, gi_no
+  jldi j1, 0
+  jld j3, j1, HOLD
+  jldi j4, 10
+  jmul j3, j3, j4
+  jadd j3, j3, j2
+  jst j3, j1, HOLD
+  jld j1, j1, GW + 16
+  jcall walk_to
+  jjz j2, gi_no
+  jldi j1, 0
+  jld j3, j1, HOLD
+  jldi j4, 10
+  jmul j3, j3, j4
+  jadd j3, j3, j2
+  jmul j2, j3, j4
+  jret
+gi_no:
+  jldi j2, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jret
+
+; What the memory says at row j4 (places c = 1..9): the c heard most, if only one and heard in most of the
+; repetitions (2 * count > REPS); else 0. -> j2. Uses j1-j8.
+g_recall:
+  jldi j2, 0
+  jldi j5, 0                    ; the most heard
+  jldi j6, 0                    ; how many c have that many
+  jldi j1, 1                    ; c
+gr_c:
+  jldi j3, 10
+  jsub j3, j1, j3
+  jjz j3, gr_end
+  jadd j3, j4, j1
+  jldi j7, 3
+  jshl j3, j3, j7
+  jld j3, j3, MEM
+  jjz j3, gr_next
+  jsub j7, j5, j3
+  jjz j7, gr_tie
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjz j7, gr_next               ; fewer
+  jldi j5, 0
+  jadd j5, j5, j3
+  jldi j2, 0
+  jadd j2, j2, j1
+  jldi j6, 1
+  jjmp gr_next
+gr_tie:
+  jldi j7, 1
+  jadd j6, j6, j7
+gr_next:
+  jldi j7, 1
+  jadd j1, j1, j7
+  jjmp gr_c
+gr_end:
+  jldi j7, 1
+  jsub j7, j6, j7
+  jjz j7, gr_one
+  jldi j2, 0
+gr_one:
+  jadd j7, j5, j5               ; firm: 2 * count > REPS
+  jldi j8, 0
+  jld j8, j8, REPS
+  jsub j7, j8, j7
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjnz j7, gr_firm
+  jldi j2, 0
+gr_firm:
+  jret
+
 r_counts:
 jldi j1, 0                      ; the counts
 jld j12, j1, COUNTOK
@@ -1787,6 +2414,16 @@ jcall puts
 jld j2, j1, PREGUNTA
 jcall putnum
 o_estr:
+jldi j1, 0
+jld j2, j1, MODO
+jldi j3, 4
+jsub j2, j2, j3
+jjnz j2, o_gem
+jldi j1, S_GEM
+jcall puts
+jld j2, j1, REPS
+jcall putnum
+o_gem:
 jldi j1, S_CUBO
 jcall puts
 jld j2, j1, NN
@@ -1862,6 +2499,30 @@ jcall putnum
 jldi j2, 10
 jcall putch
 o_base:
+jldi j1, 0                      ; twins: what the memory keeps, the pairs, the properties
+jld j2, j1, MODO
+jldi j3, 4
+jsub j2, j2, j3
+jjnz j2, o_mem
+jldi j1, S_MEMO
+jcall puts
+jld j2, j1, MEMOK
+jcall putnum
+jldi j1, S_DE
+jcall puts
+jld j2, j1, NTRAIN
+jcall putnum
+jldi j1, S_PARES
+jcall puts
+jld j2, j1, NTWIN
+jcall putnum
+jldi j1, S_ADOP
+jcall puts
+jld j2, j1, ADOPT
+jcall putnum
+jldi j2, 10
+jcall putch
+o_mem:
 jldi j10, 1
 jldi j11, TEXT
 jldi j1, 0
