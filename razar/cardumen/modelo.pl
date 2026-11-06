@@ -58,7 +58,7 @@ sub signal {
     my %mask;
     for my $i (@now) {
       next if $s->{sinks}{$i};                 # it answered already: its branch ends here
-      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $ft[$q] >= 0; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $ft[$q] >= 0; if ($s->{brake} && $s->{brake}[$i]) { $in{$q} -= $s->{w}[$i][$d]; next; } $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
     }
     $t++;
     my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) && $s->in_tune($_, $mask{$_}) } keys %in;
@@ -91,7 +91,7 @@ sub signal_timed {
       next if $s->{sinks}{$i};
       for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0;
         next if defined $R ? ($lw[$q] >= 0 && $t + 1 - $lw[$q] <= $R) : $ft[$q] >= 0;
-        $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+        if ($s->{brake} && $s->{brake}[$i]) { $in{$q} -= $s->{w}[$i][$d]; next; } $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
     }
     $t++;
     my %next = map { $_ => 1 } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
@@ -141,7 +141,7 @@ sub signal_waves {
         my %in; my %mask;
         for my $i (keys %{ $now{$w} }) {
           next if $s->{sinks}{$i};
-          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q}; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+          for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $woke{$w}{$q}; if ($s->{brake} && $s->{brake}[$i]) { $in{$q} -= $s->{w}[$i][$d]; next; } $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
         }
         my @up = grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;
         next unless @up;
@@ -253,7 +253,7 @@ sub signal_viva {
     my %in; my %mask; my %awake = map { $_ => 1 } @now;
     for my $i (@now) {
       next if $s->{sinks}{$i};
-      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $awake{$q}; $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
+      for my $d (0..5) { my $q = $s->neighbor($i, $d); next if $q < 0 || $awake{$q}; if ($s->{brake} && $s->{brake}[$i]) { $in{$q} -= $s->{w}[$i][$d]; next; } $in{$q} += $s->{w}[$i][$d]; $mask{$q} |= 1 << ($d ^ 1); }
     }
     $t++;
     my @next = sort { $a <=> $b } grep { $in{$_} >= $s->{th} && $s->in_harmony($_, $mask{$_}) } keys %in;

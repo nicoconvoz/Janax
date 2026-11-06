@@ -211,3 +211,5 @@ más resistente al temblor que Sperner (10 %: unidades 94–98 % contra 88–90 
 cardumen quieto (4 mejor, 2 peor, 1 igual). Falta el paso de asentar lo que sirvió.
 2026-11-06 — Techo que se autoajusta: cada pieza conserva su total (4 % en 255 contra 60 %). El híbrido (simétrico +
 conserva + asienta) le gana al cardumen quieto en palabras nuevas en 5 semillas de 7, sin perder ninguna: primera señal, no prueba.
+2026-11-06 — La melodía negativa (Capitán): bit de signo por pieza, en las cinco formas de propagar; prueba_signo.pl
+18 de 18, y con el freno desconectado caen 7 (las pruebas saben fallar).

@@ -696,3 +696,26 @@ asentar da idéntico, número por número. El cardumen aprende lo que puede en l
   En palabras nuevas gana en 5 semillas, empata en 2 y no pierde en ninguna: **la primera señal de que aprender le
   sirve al cardumen en esta tarea**. Todavía no es prueba (prueba de signos, dos colas, p ≈ 0,12; diferencias de 1 a 2
   palabras). Falta medir conserva sola y asienta sola para saber qué pone cada una.
+
+## La melodía negativa: un bit de signo por pieza (Capitán, 2026-11-06)
+
+> *"Nos falta algo: la melodía negativa. Agregá un bit de signo."* — Por pieza.
+
+Hasta acá todas las conexiones empujaban y ninguna frenaba: por eso la ola llenaba casi todo el cubo, casi todo caía
+junto y el aprendizaje se saturaba; la armonía era el único freno, y grueso. Ahora cada pieza nace **empujando o
+frenando** con todas sus vecinas (la ley de Dale; en una corteza, más o menos 1 de cada 5 neuronas frena).
+`set_brakes($porcentaje, $semilla)` elige cuáles con dados propios (los pesos no cambian); `frenan=P` en `palabras.pl`.
+
+- Una pieza que frena y está despierta **resta** su peso de lo que le dice a su vecina, en lugar de sumarlo, y no
+  cuenta como "la despertó" para la armonía. Vale en las cinco formas de propagar del cubo (`signal`, `signal_timed`
+  con y sin reposo, `signal_waves` separadas y cruzadas, `signal_viva`): una pieza que frena frena siempre.
+- Aprende como las otras: si la que frena y su vecina caen juntas, el freno crece (Vogels y otros, 2011: lleva el
+  empuje y el freno al equilibrio). Con `conserva=1`, cada pieza conserva su total igual que antes.
+- **`prueba_signo.pl`**, 18 casos chicos armados a mano, con respuesta exacta: en cada forma de propagar, la vecina que
+  empuja despierta a la pieza del centro y la misma vecina frenando no; la que frena despierta como cualquiera; la
+  armonía no cuenta al que frena (en una esquina, donde contarlo la cortaría); el freno crece; con frenos se conserva el
+  total; los frenos salen iguales con la misma semilla. **18 de 18.**
+- ⚠️ Las pruebas se escribieron después del código (al revés de la regla). Para compensar, se verificó que sepan
+  fallar: con una copia del modelo con el freno desconectado, caen 7 de 18, todas las que miden el freno.
+- Primera mirada: con 20 % que frenan la ola sigue llegando arriba pero más fina; con 50 % se apaga a los 5 pasos,
+  antes de llegar.
