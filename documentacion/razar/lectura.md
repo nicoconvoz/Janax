@@ -2872,3 +2872,17 @@ El Capitán: *"sí, sacalos"* (los tres topes que recortaban).
   - `organos.sh` con 2 intentos: Razar escribe su `organo.inc` por el destino nuevo (1.468 bytes, bien formado), se
     arma a sí mismo y lanza 4 candidatos, todos con código 0.
   - Controles idénticos.
+
+## El barrido también devuelve las piezas huérfanas (2026-11-07)
+
+- `lib_sweep` devolvía sólo lo que deja `sentido`. Las piezas de un libro (`tablero/pieza<huella>-<n>`) se devolvían
+  sólo cuando ese mismo libro cambiaba: si se sacaba un índice, sus piezas quedaban para siempre.
+- **Regla general:** cada índice nombra sus piezas con la huella de los bytes de su libro (byte 152 del índice). Una
+  pieza cuya huella no nombra ningún índice se devuelve, igual que los derivados.
+- **Causa que tapaba todo:** al devolver, el barrido le pasaba al sistema un nombre de 34 bytes fijos. Las piezas miden
+  de 31 a 34. Ahora usa el largo que dice la lista.
+- **Probado en una copia de la biblioteca real:** de 1.332 archivos quedan 1.021 (311 piezas huérfanas de 14 libros
+  sacados). Quedan 33 huellas de piezas, las mismas 33 de los índices vivos, y a ningún índice le falta una pieza.
+- **Sin terminar** (el Capitán lo dejó así): la biblioteca real todavía no se barrió con esta versión, y una
+  comparación de respuestas entre la copia y la real dio distinto sin que se viera la causa. Puede ser que el vigía
+  haya comido archivos nuevos entre las dos corridas.

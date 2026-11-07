@@ -1875,6 +1875,14 @@ lib_sweep:
     jcall swp_name
     jldi j2, 11
     jcall swp_name
+    jldi j1, 0                  ; and its pieces' name: the print of the book's bytes, as the index keeps it
+    jld j9, j1, PZFR
+    jld j5, j9, 152
+    jjnz j5, swp_pk
+    jldi j5, 1
+  swp_pk:
+    jldi j2, DERT
+    jcall pl_take
   swp_ixnext:
     jldi j1, 0
     jld j9, j1, SWI
@@ -1902,7 +1910,7 @@ swp_named:
     jld j2, j9, 0
     jldi j3, 34
     jsub j2, j2, j3
-    jjnz j2, swp_fnext
+    jjnz j2, swp_fpiece
     jldi j4, S_DESQ
     jcall swp_is
     jjnz j2, swp_kind
@@ -1917,10 +1925,25 @@ swp_named:
     jjnz j2, swp_kind
     jldi j4, S_DORT
     jcall swp_is
+    jjz j2, swp_fpiece          ; (none of those: a piece, maybe)
+    jjmp swp_kind
+  swp_fpiece:                   ; a piece: "tablero/pieza", its book's print, "-" and its number
+    jld j9, j1, SWI
+    jld j2, j9, 0
+    jldi j3, 31
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, swp_fnext
+    jldi j4, S_TABP
+    jcall swp_is13
     jjz j2, swp_fnext
+    jldi j3, 21
+    jjmp swp_hexat
   swp_kind:
-    jld j9, j1, SWI             ; its sixteen hex digits
     jldi j3, 26
+  swp_hexat:
+    jld j9, j1, SWI             ; its sixteen hex digits
     jadd j3, j9, j3
     jldi j5, 0
     jldi j6, 16
@@ -1951,7 +1974,7 @@ swp_named:
     jldi j10, 12
     jldi j11, 8
     jadd j11, j9, j11
-    jldi j12, 34
+    jld j12, j9, 0              ; (its label as long as the list says: a piece's is not a derived file's)
     jcall ask
   swp_fnext:
     jldi j1, 0
@@ -1970,6 +1993,13 @@ swp_named:
 swp_done:
   jldi j1, 0
   jret
+
+; j2 = 1 if the label listed at SWI starts with the 13 bytes at j4 ("tablero/pieza"). Uses j1-j7.
+swp_is13:
+  jldi j1, 0
+  jld j3, j1, SWI
+  jldi j5, 13
+  jjmp swi_lap
 
 ; The name of the bytes SWK salted j2, (SWK ^ j2) * FNV's prime, noted as one an index gives (DERT). Uses j1-j8.
 swp_name:
