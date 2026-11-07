@@ -52,6 +52,7 @@ S_ANS   = 740h
 S_SAIDQ = 780h
 S_DEDQ  = 7C0h
 S_NOFIT = 800h
+S_ARROW = 840h                  ; the arrows found
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -105,6 +106,11 @@ QU    = 1A80h                   ; a piece of the question being matched
 QCV   = 1A88h                   ; how much of the question a fit explains (its core and the middle's words), the pass
 QPASS = 1A90h                   ; (0 finds the most any relation explains, 1 says the ones that explain that much), and
 QBEST = 1A98h                   ; the most
+ROOMAR = 1AA0h                  ; by word {buildings it is in, the limit most of them close with (voted), how many}
+ROOMCN = 1AA8h                  ; by limit: how many buildings close with it; and all the buildings
+NBLD  = 1AB0h
+AST   = 1AB8h                   ; walking the buildings: where the one walked starts, and the pass (1 vote, 2 count)
+AMODE = 1AC0h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -210,6 +216,7 @@ jwend
 jldi j2, 10
 jcall putch
 jcall flush
+jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
 jcall sk_report
 jcall cores
 jjmp finish
@@ -1409,6 +1416,306 @@ putmix:
   jcall mix
   jjmp putnum
 
+; The arrows (Capitan, 2026-11-07: the logical silhouette "quién" = "=>"; and "let it discover it"). Every word is
+; looked at in the buildings it is in (the text between two limits, the limits the book showed): the limit most of its
+; buildings close with is voted (Boyer-Moore: one pass), then counted. A word is an arrow of that limit when the limit
+; closes most of the word's buildings, two at least (the anecdote rule), and does not close most of the book's: the
+; word lives where the book rarely is. No limit and no word is named: the question words come out of the book. Uses
+; j1-j14.
+arrows:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMAR
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMCN
+  jst j1, j1, NBLD
+  jldi j2, 1
+  jst j2, j1, AMODE
+  jcall ar_walk
+  jldi j1, 0                    ; the voted limit, now counted
+  jld j10, j1, NV
+  jld j9, j1, ROOMAR
+  jwhile j10
+    jst j1, j9, 16
+    jldi j2, 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 2
+  jst j2, j1, AMODE
+  jcall ar_walk
+  jldi j1, S_ARROW              ; written, the most said first
+  jcall puts
+  jldi j2, 0
+  jst j2, j1, FI2
+  ar_print:
+    jldi j1, 0
+    jldi j11, 0                 ; the arrow not written yet that is said the most
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jldi j1, 0
+      jadd j2, j9, j1
+      jst j9, j1, FI3
+      jst j10, j1, FI4
+      jcall is_arrow
+      jldi j1, 0
+      jld j9, j1, FI3
+      jld j10, j1, FI4
+      jjz j2, arp_next
+      jldi j3, 24
+      jmul j3, j9, j3
+      jld j4, j1, ROOMAR
+      jadd j3, j3, j4
+      jld j4, j3, 16
+      jsub j5, j11, j4
+      jldi j6, 63
+      jsar j5, j5, j6
+      jjz j5, arp_next
+      jadd j11, j4, j1
+      jadd j12, j9, j1
+    arp_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, arp_done
+    jldi j3, 24                 ; written: the word, its limit, how many of its buildings
+    jmul j3, j12, j3
+    jld j4, j1, ROOMAR
+    jadd j3, j3, j4
+    jst j3, j1, FI4
+    jldi j2, 32
+    jcall putch
+    jadd j2, j12, j1
+    jcall putword
+    jldi j2, 40
+    jcall putch
+    jld j3, j1, FI4
+    jld j2, j3, 8
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jld j3, j1, FI4
+    jld j2, j3, 16
+    jcall putnum
+    jldi j2, 47
+    jcall putch
+    jld j3, j1, FI4
+    jld j2, j3, 0
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j1, 0
+    jld j3, j1, FI4             ; (not again: its count goes negative, it is no arrow while it is written)
+    jld j2, j3, 16
+    jldi j4, 0
+    jsub j2, j4, j2
+    jst j2, j3, 16
+    jld j2, j1, FI2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FI2
+    jldi j3, 20                 ; (twenty written: criterion, the report's size; the rest stay arrows)
+    jsub j2, j2, j3
+    jjnz j2, ar_print
+arp_done:
+  jldi j1, 0                    ; the written ones back to their count
+  jld j10, j1, NV
+  jld j9, j1, ROOMAR
+  jwhile j10
+    jld j2, j9, 16
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjz j3, arb_next
+    jldi j3, 0
+    jsub j2, j3, j2
+    jst j2, j9, 16
+  arb_next:
+    jldi j2, 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; Every building of the book (its units from a limit to the next one; a renglon's end is no limit), each word in it
+; with the limit that closes it: voted (AMODE 1, and the buildings and each limit's counted), or counted when it is
+; the word's voted limit (2). Uses j1-j14.
+ar_walk:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, AST
+  jldi j9, 1
+  jld j10, j1, NTOK
+  jldi j2, 1
+  jsub j10, j10, j2
+  jldi j3, 63                   ; (fewer units than one: nothing to walk)
+  jsar j3, j10, j3
+  jldi j4, -1
+  jxor j3, j3, j4
+  jand j10, j10, j3
+  jwhile j10
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, aw_next
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, aw_next
+    jst j9, j1, FI3             ; a limit: the building before it closes with it
+    jst j10, j1, FI4
+    jst j2, j1, KPT
+    jld j5, j1, AST
+    jsub j6, j9, j5
+    jjz j6, aw_closed
+    jld j6, j1, AMODE
+    jldi j7, 1
+    jsub j6, j6, j7
+    jjnz j6, aw_words
+    jld j6, j1, NBLD
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, NBLD
+    jldi j6, 3
+    jshl j6, j2, j6
+    jld j7, j1, ROOMCN
+    jadd j6, j6, j7
+    jld j7, j6, 0
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j6, 0
+  aw_words:
+    jldi j1, 0
+    jld j5, j1, AST
+    jld j9, j1, FI3
+    jsub j6, j9, j5
+    jjz j6, aw_closed
+    jldi j2, 3
+    jshl j2, j5, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jldi j3, 1
+    jadd j5, j5, j3
+    jst j5, j1, AST
+    jjz j2, aw_words
+    jst j2, j1, PMT
+    jcall w_mark                ; (a word: the marks are no arrows)
+    jjnz j3, aw_words
+    jldi j1, 0
+    jld j2, j1, PMT
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMAR
+    jadd j3, j3, j4
+    jld j4, j1, KPT
+    jld j5, j1, AMODE
+    jldi j6, 1
+    jsub j5, j5, j6
+    jjnz j5, aw_count
+    jld j6, j3, 0               ; voted: one building more, and the vote
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j3, 0
+    jld j6, j3, 16
+    jjnz j6, aw_vote
+    jst j4, j3, 8
+    jst j7, j3, 16
+    jjmp aw_words
+  aw_vote:
+    jld j8, j3, 8
+    jsub j8, j8, j4
+    jjnz j8, aw_against
+    jadd j6, j6, j7
+    jst j6, j3, 16
+    jjmp aw_words
+  aw_against:
+    jsub j6, j6, j7
+    jst j6, j3, 16
+    jjmp aw_words
+  aw_count:
+    jld j6, j3, 8
+    jsub j6, j6, j4
+    jjnz j6, aw_words
+    jld j6, j3, 16
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j3, 16
+    jjmp aw_words
+  aw_closed:
+    jldi j1, 0
+    jld j9, j1, FI3
+    jld j10, j1, FI4
+    jldi j2, 1
+    jadd j2, j9, j2
+    jst j2, j1, AST
+  aw_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; j2 = 1 if word j2 is an arrow: its voted limit closes most of its buildings, two at least, and not most of the book's.
+; Uses j1-j6.
+is_arrow:
+  jldi j1, 0
+  jld j3, j1, ROOMAR
+  jjz j3, ia_no
+  jldi j4, 24
+  jmul j4, j2, j4
+  jadd j3, j3, j4
+  jld j4, j3, 16                ; how many of its buildings close with it
+  jldi j5, 2
+  jsub j5, j4, j5
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, ia_no
+  jadd j5, j4, j4
+  jld j6, j3, 0
+  jsub j5, j6, j5
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjz j5, ia_no
+  jld j4, j3, 8                 ; and the limit closes fewer than half the book's buildings
+  jldi j5, 3
+  jshl j4, j4, j5
+  jld j5, j1, ROOMCN
+  jadd j4, j4, j5
+  jld j4, j4, 0
+  jadd j4, j4, j4
+  jld j5, j1, NBLD
+  jsub j4, j4, j5
+  jldi j6, 63
+  jsar j4, j4, j6
+  jjz j4, ia_no
+  jldi j2, 1
+  jret
+ia_no:
+  jldi j2, 0
+  jret
+
 ; A question (QQS to QQE in QBUF): every core in it (a word the house left as furniture, as the cores of the facts)
 ; asked the facts it is in, and of those only the ones whose relation fits the question: the middle of the fact's
 ; skeleton is said in the question right next to the core, on the side the fact has it (its marks aside). The answer
@@ -1472,6 +1779,10 @@ qo_pass:
     jst j2, j1, QCW
     jcall g_core
     jjz j3, qo_ncore
+    jldi j1, 0                  ; an arrow is no furniture: it points at what is asked
+    jld j2, j1, QCW
+    jcall is_arrow
+    jjnz j2, qo_ncore
     jldi j1, 0
     jldi j2, 4
     jst j2, j1, GMODE
@@ -1616,6 +1927,23 @@ q_fit:
   jldi j3, 1                    ; (the core: one explained)
   jst j3, j1, QCV
   jst j2, j1, FI2               ; the middle's pieces, and the one being matched
+  jst j2, j1, FI3               ; a fact with an arrow in it answers nothing: it says the question again instead of
+  qf_arrow:                     ; filling the place the arrow points at
+    jldi j1, 0
+    jld j2, j1, FI3
+    jjz j2, qf_arrows
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, FI3
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, MB1
+    jcall is_arrow
+    jjnz j2, qf_no
+    jjmp qf_arrow
+  qf_arrows:
+  jldi j1, 0
+  jld j2, j1, FI2
   jld j9, j1, QP
   jld j10, j1, QSIDE
   jjz j10, qf_left

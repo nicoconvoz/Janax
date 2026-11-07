@@ -2038,3 +2038,52 @@ bien en traductor e intérprete (la de la letra rota dice "no conoce una de sus 
 sin libros también. Con libros sanos nada cambia: las seis preguntas de control dan idénticas, y comer el Nuevo
 Testamento da el tablero idéntico byte a byte al modelo.
 
+## Razar entiende preguntas por el mueble, la relación y las flechas que descubre (2026-11-07)
+
+El Capitán, después de verme meterle a mano qué es una pregunta (los bytes de `¿`, las mayúsculas, "la mayoría"):
+*"regla general, no le digas nada que lo descubra... es razonamiento artificial"*. Lo hecho a mano se deshizo. Después:
+*"solo hay que buscar el mueble y la relación lógica que se adapta a la pregunta"*, y *"necesitamos la silueta lógica
+'quién' = '⇒'"*, con la condición de que Razar la descubra.
+
+**Lo que Razar ya había descubierto sola** (`pulso` sobre el Nuevo Testamento, imprimiendo todas sus piezas):
+- el `?` es un **interruptor** (165 pares): la misma frase dicha como afirmación y como pregunta;
+- entre las asociaciones que surgen, `¿` y `?` van con **no, ni, acaso, sino**;
+- los asociados **qué/quién, dónde/qué, quién/cómo, qué/cómo, quién/cuál, acaso/cómo** forman una familia, y además
+  aparecen **¿/¡**, **?/!**, **¿/dinos** y **cuando/cuándo**;
+- `sentido` descubre los **límites**, los signos que cierran un edificio: `: . « » " ¿ ? ¡ ! [ (`.
+
+**Lo nuevo, en `sentido.jsm`:**
+- **Una línea de varias piezas en `q` es una pregunta.** Cada mueble de la pregunta trae los hechos donde está, y
+  **encaja** el hecho cuyo esqueleto tiene su medio dicho en la pregunta pegado al mueble, del lado que el hecho lo
+  tiene (las marcas aparte, como las decide el lector). La respuesta es el otro núcleo, si la pregunta no lo dice ya. Puede
+  venir dicha por el libro o deducida de un esqueleto que se da vuelta, con su porqué.
+- **Gana la relación que explica más de la pregunta**: el mueble más las palabras del medio que encajan. Dos pasadas:
+  la primera mide cuánto explica la mejor, la segunda dice las que explican eso. Si empatan, quedan todas.
+- **Las flechas, descubiertas:** a cada palabra se le vota (Boyer-Moore) el límite que cierra la mayoría de sus
+  edificios, y se cuenta. Es **flecha** si ese límite cierra la mayoría de sus edificios, al menos dos (la regla de la
+  anécdota, la misma que usa todo Razar), y **no** cierra la mayoría de los del libro. Ningún límite ni ninguna palabra
+  se nombra. En el Nuevo Testamento salen dos familias:
+  - **flechas de `?`**: qué (271/386), quién (113/145), acaso (89/92), dónde (40/69);
+  - **flechas de `:`**: dijo, respondió, dijeron, diciendo, preguntó, decían, voz, escritura, ángel;
+  - y "ay", flecha de `!`.
+
+  Son palabras que apuntan a lo que viene después de su límite: "quién" a lo que se pregunta, "dijo" a lo que se dice.
+- **Una flecha no es un mueble**, y un hecho que tiene una flecha en su medio **no contesta nada**, porque repite la
+  pregunta en vez de llenar el lugar al que apunta. Sin esta regla, "¿quién es el padre de jacob?" contestaba "sabe",
+  por "sabe quién es el padre".
+
+**Medido:**
+
+| pregunta | respuesta | el libro dice |
+|---|---|---|
+| ¿quién es el padre de jacob? | isaac, matán | "isaac, padre de jacob" (las dos genealogías) |
+| el padre de jacob | isaac, matán | lo mismo, con o sin "quién" |
+| ¿quién fue padre de josé? | jacob | "jacob fue padre de josé" |
+| ¿qué es la verdad? | espíritu | "el espíritu es la verdad" (1 Juan 5:6) |
+| ¿de quién es hijo jacob? | mesías ❌ | el orden dado vuelta ("hijo jacob" contra "jacob, hijo de isaac") todavía no encaja |
+
+**Lo que falta:**
+- que la relación que se adapta dé vuelta el orden, como ya da vuelta "padre de" en "hijo de";
+- pasar esto a la charla, que usa la biblioteca de pistas. `sentido` lee el libro entero en cada consulta: unos 10.000
+  millones de instrucciones y 12 s con estas cinco preguntas.
+
