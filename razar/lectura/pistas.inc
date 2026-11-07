@@ -215,7 +215,7 @@ clue_round:
   jjmp cr_close
 cr_walk:
   jldi j2, PZOCC                ; (the counts of every word, from the nests: {print, times, the house's verdict weighed,
-  jldi j3, 32                   ; buildings})
+  jldi j3, 40                   ; buildings, times the book took it for its switch of the no})
   jcall pl_new
   jldi j2, PZWL
   jldi j3, 16
@@ -816,7 +816,15 @@ pz_count:
   jld j2, j4, 8
   jadd j2, j2, j3
   jst j2, j4, 8
-  jld j5, j1, PZEV              ; its silhouettes: the verdict weighed by its times (-1 furniture, 0, 1 foundation)
+  jld j5, j1, PZEV              ; its silhouettes: the verdict weighed by its times (-1 furniture, 0, 1 foundation; 3 a
+  jldi j6, 3                    ; foundation the book took for its switch: its times as switch too)
+  jsub j6, j5, j6
+  jjnz j6, pzk_noswitch
+  jld j6, j4, 32
+  jadd j6, j6, j3
+  jst j6, j4, 32
+  jldi j5, 2
+pzk_noswitch:
   jldi j6, 1
   jsub j5, j5, j6
   jmul j5, j5, j3
@@ -1745,7 +1753,8 @@ zr_rice:
 ; The silhouettes of every word read, summed over the library, decided as the meaning (sentido.jsm) decides them, into
 ; the file "siluetas" (S_SIL) for it: each {its bytes, its letters padded, the house (1 foundation, -1 furniture, 0 not
 ; decided: the sign of its verdicts weighed by its times), 1 if it is an arrow (the limit that closes the most of its
-; buildings closes most of them, two at least, and not most of the library's)}. Uses j1-j14.
+; buildings closes most of them, two at least, and not most of the library's), 1 if it is the switch of the no (most
+; of its times the books took it for one)}. Uses j1-j14.
 pz_silwrite:
   jldi j1, 0
   jldi j2, 0
@@ -1765,7 +1774,7 @@ pz_silwrite:
     jadd j2, j2, j3
     jldi j3, -8
     jand j2, j2, j3
-    jldi j3, 24
+    jldi j3, 32
     jadd j2, j2, j3
     jld j3, j1, PZT6
     jadd j3, j3, j2
@@ -1834,7 +1843,15 @@ psw_sized:
     jldi j1, 0
     jld j9, j1, PZT3
     jst j2, j9, 8
-    jldi j3, 16
+    jld j4, j1, PZT2              ; its switch of the no: most of its times, the books took it for one
+    jld j2, j4, 32
+    jadd j2, j2, j2
+    jld j3, j4, 8
+    jsub j2, j3, j2
+    jldi j3, 63
+    jshr j2, j2, j3
+    jst j2, j9, 16
+    jldi j3, 24
     jadd j9, j9, j3
     jst j9, j1, PZT3
   psw_wnext:

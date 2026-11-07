@@ -2576,3 +2576,31 @@ igual pregunta por su mueble.
   hecho los tiene en una punta, así que no hay qué decir. Los nombres muy frecuentes terminan clasificados como
   estructura. Es un problema de la casa.
 
+## Las reglas de lectura vienen de los libros enteros: el interruptor (2026-11-07)
+
+"¿quién es jesús?" (Nuevo Testamento) y "¿quién es jacob?" (biblioteca real) no contestaban. Medido con un instrumento
+provisorio: en esas lecturas, el detector de negación tomaba a "jesús" y a "jacob" por el **interruptor** (el "no"),
+y la casa los tenía por cimiento.
+
+**La causa es general:** en la charla, el pedazo se arma con los renglones de la palabra preguntada, así que esa
+palabra está en todos los renglones por construcción, y cualquier regla de lectura aprendida del pedazo sobre ella sale
+torcida. Antes de esto se probó un parche ("un mueble no es el no") y el Capitán lo frenó: *"no es regla general, es un
+caso específico"*. La regla general ya era de la casa: *"las reglas de lectura no se pierden, se enriquecen: son
+siluetas"*. Un pedazo releído sirve para buscar hechos, no para aprender a leer.
+
+- **`comer`** corre el detector de negación sobre el libro entero (`distill_no`). En la silueta de cada palabra, el
+  veredicto de la casa ocupa 2 bits y usaba tres valores. El cuarto, el 3, queda para "cimiento que es el interruptor
+  del libro". El formato no cambia.
+- **`pistas`** suma, por palabra y entre libros, las veces que la tomaron por interruptor (`PZOCC`, quinto campo), y
+  escribe en `siluetas` un campo más: 1 si la mayoría de sus veces los libros la tomaron por interruptor.
+- **`sentido`** toma ese campo de la biblioteca para cada palabra que conoce (`sil_load`), en vez del que aprendió del
+  pedazo.
+- **Medido** (NT + Asimov + génesis, vueltos a comer):
+  - "¿quién es jesús?" → "jesús es realmente", y "¿quién nació en belén?" → "belén de judea". Antes: ninguna
+    relación;
+  - ninguna respuesta de control de antes se perdió;
+  - aparecen respuestas nuevas, porque "jesús" ahora tiene hechos: "eres el mesías, el hijo de dios de abraham, de
+    isaac y de jacob", y otras flojas, como "dicen que nació";
+  - las de dos pasos siguen en 3 de 3, más "abraham era hijo de tera (lo pense)".
+- Hay que volver a comer los libros para que dejen su interruptor.
+

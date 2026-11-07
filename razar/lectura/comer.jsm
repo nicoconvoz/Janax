@@ -219,6 +219,7 @@ jshi j2, 0
 jst j2, j1, PK
 jcall learn_pulses
 jcall house_decide
+jcall distill_no                ; its switch of yes and no, found in the whole book (a reading rule: it travels)
 jcall limits                    ; the limits of its buildings, found in the book
 jcall zs_buildings              ; and the buildings each word is in, with the limit that closes each
 jldi j1, 0                      ; the subjects: no foundation, no mark
@@ -2272,6 +2273,12 @@ zs_entry_sil:
   jsar j4, j3, j4
   jjnz j4, zse_v
   jldi j2, 2
+  jld j2, j1, ZID               ; a foundation that is the book's switch of the no: 3 (the reading rule travels)
+  jcall n_flags
+  jldi j4, 1
+  jand j3, j3, j4
+  jldi j2, 2
+  jadd j2, j2, j3
 zse_v:
   jldi j3, 2
   jcall zb_put

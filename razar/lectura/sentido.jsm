@@ -288,6 +288,7 @@ QSX   = 5078h
 QSY   = 5080h
 QSA   = 5088h
 QSZ   = 5090h
+SILSW = 5130h                   ; a silhouette's switch of the no (1: the books took the word for one)
 LINEO = 50A0h                   ; 1 while a sentence is being woven (its last word the one thought from)
 DKIND = 5098h                   ; what the bits hold: 0 the turns, 1 the compositions ({times, pieces} an entry)
 TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
@@ -5065,10 +5066,12 @@ sl_some:
     jand j4, j4, j5
     jldi j5, 8
     jadd j4, j4, j5
-    jadd j9, j9, j4             ; its house and its arrow
+    jadd j9, j9, j4             ; its house, its arrow, its switch of the no
     jld j5, j9, 0
     jld j6, j9, 8
-    jldi j7, 16
+    jld j7, j9, 16
+    jst j7, j1, SILSW
+    jldi j7, 24
     jadd j7, j9, j7
     jst j7, j1, SILP
     jldi j7, 1
@@ -5091,6 +5094,18 @@ sl_some:
     jst j8, j1, SILNA
   sl_mark:
     jst j7, j4, 0
+    jld j8, j1, ROOMW           ; the switch of the no, as the books decided it (a piece read again around a word
+    jjz j8, sl_count            ; would take that word for one: it is in every renglon)
+    jldi j7, 6
+    jshl j7, j2, j7
+    jadd j8, j8, j7
+    jld j7, j8, 56
+    jldi j6, -2
+    jand j7, j7, j6
+    jld j6, j1, SILSW
+    jor j7, j7, j6
+    jst j7, j8, 56
+  sl_count:
     jld j8, j1, SILNW
     jldi j7, 1
     jadd j8, j8, j7
