@@ -2176,6 +2176,23 @@ la charla no.
   ninguna, la del pedazo.
 - **Medido en la charla:** "¿de quién es hijo jacob?" da isaac (el libro lo dice) y **matán, deducido**: "porque
   'padre de' dado vuelta es 'hijo de', pares probados en la biblioteca: 4". Con el libro entero todo sigue idéntico.
-- **Pendiente:** el archivo de vueltas pesa 235 KB en cajas de 8 bytes, más que el nido entero. Hay que pasarlo a bits.
-  Y cuando un libro cambia, su archivo de vueltas viejo queda: falta devolverlo como se devuelven los pedazos.
+- **En bits** (formato 2, el mismo día). Antes pesaba 235 KB en cajas de 8 bytes, más que el nido entero. Ahora el
+  archivo es así:
+  - una cabecera `{2, relaciones, piezas, bits de un índice}`;
+  - un **diccionario**: cada pieza distinta una sola vez, con gamma(bytes + 1) y sus letras de 8 bits;
+  - las relaciones: 1 bit de si se da vuelta, gamma de sus pares y de las piezas de cada medio, y cada pieza como
+    índice del diccionario. Los bits de un índice son los menos que cuentan todas las piezas.
+
+  En memoria todo sigue igual. `eb_encode` traduce al guardar y `ed_decode` traduce al leer, así que el que deduce no
+  cambia.
+  - Nuevo Testamento: **235.648 → 18.608 bytes (12,7 veces menos)**, con 2.646 relaciones, 580 piezas distintas e
+    índices de 10 bits.
+  - Las dos preguntas de jacob dan idéntico, con el mismo número de control. Contestar tarda un 6 % más, por leer los
+    bits.
+  - El lector no confía en el archivo. Rechaza un índice fuera del diccionario, una letra o un número más allá del
+    final, y cualquier formato que no sea el 1 o el 2.
+  - Al comer, se borra el archivo del formato 1 del mismo libro (su nombre lleva la sal 1, el nuevo la 2), así nada se
+    cuenta dos veces. Un formato 1 que nadie vuelva a comer se sigue leyendo.
+- **Pendiente:** cuando un libro cambia, su archivo de vueltas viejo queda. Falta devolverlo como se devuelven los
+  pedazos.
 

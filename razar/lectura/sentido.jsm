@@ -171,6 +171,29 @@ LNR   = 0BB0h
 LPB   = 0BB8h
 LPC   = 0BC0h                   ; (three pieces)
 LPP   = 0BD8h                   ; the turn's pairs
+SBB   = 0BE0h                   ; the turns in bits: the stream's first byte, the bit it is at, its bytes (reading)
+SBP   = 0BE8h
+SBL   = 0CA8h
+DTAB  = 0BF0h                   ; the pieces' dictionary: by letters {key, its index + 1} (a growing table), each
+DLST  = 0C10h                   ; index's piece, how many, the bits of an index; walking; the relations, the room
+DNP   = 0C18h                   ; written and its bytes, where it writes, the bit where the relations start; gamma's
+DAB   = 0C20h                   ; number and its bits; the book's print unsalted; a relation {turned, pairs, the
+DT1   = 0C28h                   ; pieces of each middle}
+DT2   = 0C30h
+DT3   = 0C38h
+DT4   = 0C40h
+DNR   = 0C78h
+DOUT  = 0C48h
+DSZ   = 0C50h
+DPOS  = 0CA0h
+DSV   = 0C58h
+SGV   = 0C60h
+SGN   = 0C68h
+EATB  = 0C70h
+DR0   = 0C80h
+DR1   = 0C88h
+DR2   = 0C90h
+DR3   = 0C98h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -2059,9 +2082,10 @@ em_done:
 
 ; What the book proved between its skeletons (TMM: two of them said of the same pairs, turned or not), each with two
 ; pairs or more (the anecdote rule), into the library: "tablero/esqueletos" + the print of the book's bytes (written
-; once, as its pieces: the same book anywhere is one file). Qwords {1, how many}, then each {turned, pairs, the pieces
-; of one middle, of the other}, then their pieces, each {its bytes, its letters padded}. They are counts: they add up
-; over every book. Uses j1-j14.
+; once, as its pieces: the same book anywhere is one file). Built as qwords {1, how many}, then each {turned, pairs,
+; the pieces of one middle, of the other}, then their pieces, each {its bytes, its letters padded}, and written in
+; bits (eb_encode); the first format's file of the same book goes. They are counts: they add up over every book.
+; Uses j1-j14.
 eat_write:
   jldi j1, 0                    ; the print of the book's bytes
   jld j2, j1, FNVO
@@ -2117,8 +2141,9 @@ ew_read_end:
   jor j10, j10, j2
   jcall ask
   jldi j1, 0
-  jld j2, j1, EATH              ; (and the format, folded in)
-  jldi j3, 1
+  jld j2, j1, EATH              ; (and the format, folded in: 2, in bits)
+  jst j2, j1, EATB
+  jldi j3, 2
   jxor j2, j2, j3
   jld j3, j1, FNVP
   jmul j2, j2, j3
@@ -2144,46 +2169,25 @@ ew_read_end:
   jst j2, j1, EPOS
   jst j1, j1, ECNT
   jcall ew_walk                 ; and written
+  jcall eb_encode               ; in bits
   jldi j1, 0
   jldi j11, 64                  ; its label: "tablero/esqueletos" and sixteen hex digits
   jcall room
   jldi j1, 0
   jst j13, j1, ELAB
-  jadd j2, j13, j1
-  jldi j3, S_ESQ
-  jldi j4, 18
-  ew_lab:
-    jldb j5, j3, 0
-    jstb j5, j2, 0
-    jldi j5, 1
-    jadd j2, j2, j5
-    jadd j3, j3, j5
-    jsub j4, j4, j5
-    jjnz j4, ew_lab
+  jld j5, j1, EATB              ; the first format's file of this book goes: the bits say the same
+  jldi j3, 1
+  jxor j5, j5, j3
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jcall ew_label
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
   jld j5, j1, EATH
-  jld j3, j1, ELAB
-  jldi j4, 33
-  jadd j3, j3, j4
-  jldi j4, 16
-  ew_hex:
-    jldi j6, 15
-    jand j6, j5, j6
-    jldi j7, 10
-    jsub j7, j6, j7
-    jldi j8, 63
-    jsar j7, j7, j8
-    jldi j8, 48
-    jjnz j7, ew_digit
-    jldi j8, 87
-  ew_digit:
-    jadd j6, j6, j8
-    jstb j6, j3, 0
-    jldi j6, 4
-    jshr j5, j5, j6
-    jldi j6, 1
-    jsub j3, j3, j6
-    jsub j4, j4, j6
-    jjnz j4, ew_hex
+  jcall ew_label
   jldi j10, 12
   jld j11, j1, ELAB
   jldi j12, 34
@@ -2371,6 +2375,668 @@ ee_pieces:
     jjmp ee_lap
 ee_done:
   jldi j1, 0
+  jret
+
+; The label of print j5 at ELAB: "tablero/esqueletos" and sixteen hex digits. Uses j1-j8.
+ew_label:
+  jldi j1, 0
+  jst j5, j1, DT4
+  jld j2, j1, ELAB
+  jldi j3, S_ESQ
+  jldi j4, 18
+  ew_lab:
+    jldb j5, j3, 0
+    jstb j5, j2, 0
+    jldi j5, 1
+    jadd j2, j2, j5
+    jadd j3, j3, j5
+    jsub j4, j4, j5
+    jjnz j4, ew_lab
+  jld j5, j1, DT4
+  jld j3, j1, ELAB
+  jldi j4, 33
+  jadd j3, j3, j4
+  jldi j4, 16
+  ew_hex:
+    jldi j6, 15
+    jand j6, j5, j6
+    jldi j7, 10
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jldi j8, 48
+    jjnz j7, ew_digit
+    jldi j8, 87
+  ew_digit:
+    jadd j6, j6, j8
+    jstb j6, j3, 0
+    jldi j6, 4
+    jshr j5, j5, j6
+    jldi j6, 1
+    jsub j3, j3, j6
+    jsub j4, j4, j6
+    jjnz j4, ew_hex
+  jret
+
+; The relations written (EOUT, EOSZ bytes: {1, how many}, then each {turned, pairs, how many pieces each} and its
+; pieces {bytes, letters padded}) said again in bits: qwords {2, how many, pieces, the bits of an index}, then each
+; different piece once (gamma of its bytes + 1, its letters 8 bits each), then each relation: turned (1 bit), gamma
+; of its pairs and of each middle's pieces, and its pieces as indexes. A piece the book says a hundred times is
+; written once. EOUT and EOSZ are then the bits. Uses j1-j14.
+eb_encode:
+  jldi j1, 0
+  jldi j2, DTAB
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, EOSZ             ; (a piece takes 16 bytes at least: an index of 8 for each fits)
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DLST
+  jst j1, j1, DNP
+  jld j9, j1, EOUT              ; each piece, once in the dictionary
+  jldi j2, 16
+  jadd j9, j9, j2
+  jld j2, j1, ECNT
+  jst j2, j1, DT2
+  ebd_rel:
+    jldi j1, 0
+    jld j2, j1, DT2
+    jjz j2, ebd_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, DT2
+    jld j2, j9, 16
+    jld j3, j9, 24
+    jadd j2, j2, j3
+    jst j2, j1, DT3
+    jldi j2, 32
+    jadd j9, j9, j2
+    ebd_piece:
+      jldi j1, 0
+      jld j2, j1, DT3
+      jjz j2, ebd_rel
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, DT3
+      jcall ed_key
+      jldi j2, DTAB
+      jcall pl_take
+      jldi j1, 0
+      jjz j6, ebd_old
+      jld j2, j1, DNP
+      jldi j3, 1
+      jadd j3, j2, j3
+      jst j3, j4, 8
+      jst j3, j1, DNP
+      jldi j3, 3
+      jshl j2, j2, j3
+      jld j3, j1, DLST
+      jadd j2, j2, j3
+      jst j9, j2, 0
+    ebd_old:
+      jcall ed_next
+      jjmp ebd_piece
+ebd_done:
+  jldi j3, 1                    ; the bits of an index: the fewest that count every piece
+  jld j4, j1, DNP
+  ebd_ab:
+    jldi j5, 1
+    jshl j5, j5, j3
+    jsub j5, j5, j4
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, ebd_abok
+    jldi j5, 1
+    jadd j3, j3, j5
+    jjmp ebd_ab
+ebd_abok:
+  jst j3, j1, DAB
+  jld j11, j1, EOSZ             ; the bits never take more than the qwords did
+  jldi j2, 64
+  jadd j11, j11, j2
+  jst j11, j1, DSZ
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DOUT
+  jld j2, j1, DSZ
+  jadd j3, j13, j1
+  jwhile j2
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jsub j2, j2, j4
+  jwend
+  jldi j2, 2
+  jst j2, j13, 0
+  jld j2, j1, ECNT
+  jst j2, j13, 8
+  jld j2, j1, DNP
+  jst j2, j13, 16
+  jld j2, j1, DAB
+  jst j2, j13, 24
+  jldi j2, 32
+  jadd j2, j13, j2
+  jst j2, j1, SBB
+  jst j1, j1, SBP
+  jst j1, j1, DT2               ; the dictionary
+  ebw_dict:
+    jldi j1, 0
+    jld j2, j1, DT2
+    jld j3, j1, DNP
+    jsub j3, j2, j3
+    jjz j3, ebw_rels
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, DLST
+    jadd j2, j2, j3
+    jld j9, j2, 0
+    jld j2, j9, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jcall sb_gamma
+    jld j2, j9, 0
+    jst j2, j1, DT3
+    jldi j2, 8
+    jadd j2, j9, j2
+    jst j2, j1, DT1
+    ebw_letter:
+      jldi j1, 0
+      jld j2, j1, DT3
+      jjz j2, ebw_lettered
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, DT3
+      jld j4, j1, DT1
+      jldb j2, j4, 0
+      jadd j4, j4, j3
+      jst j4, j1, DT1
+      jldi j3, 8
+      jcall sb_bits
+      jjmp ebw_letter
+    ebw_lettered:
+    jld j2, j1, DT2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, DT2
+    jjmp ebw_dict
+ebw_rels:
+  jld j9, j1, EOUT              ; the relations
+  jldi j2, 16
+  jadd j9, j9, j2
+  jld j2, j1, ECNT
+  jst j2, j1, DT2
+  ebw_rel:
+    jldi j1, 0
+    jld j2, j1, DT2
+    jjz j2, ebw_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, DT2
+    jld j2, j9, 0
+    jjz j2, ebw_t
+    jldi j2, 1
+  ebw_t:
+    jldi j3, 1
+    jcall sb_bits
+    jld j2, j9, 8
+    jcall sb_gamma
+    jld j2, j9, 16
+    jcall sb_gamma
+    jld j2, j9, 24
+    jcall sb_gamma
+    jld j2, j9, 16
+    jld j3, j9, 24
+    jadd j2, j2, j3
+    jst j2, j1, DT3
+    jldi j2, 32
+    jadd j9, j9, j2
+    ebw_piece:
+      jldi j1, 0
+      jld j2, j1, DT3
+      jjz j2, ebw_rel
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, DT3
+      jcall ed_key
+      jldi j2, DTAB
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 8
+      jldi j3, 1
+      jsub j2, j2, j3
+      jld j3, j1, DAB
+      jcall sb_bits
+      jcall ed_next
+      jjmp ebw_piece
+ebw_done:
+  jld j2, j1, SBP
+  jldi j3, 7
+  jadd j2, j2, j3
+  jldi j3, 3
+  jshr j2, j2, j3
+  jldi j3, 32
+  jadd j2, j2, j3
+  jst j2, j1, EOSZ
+  jld j2, j1, DOUT
+  jst j2, j1, EOUT
+  jret
+
+; The key of the piece at j9 ({its bytes, its letters}): the print of its letters and its bytes, never 0 -> j5. Uses
+; j1, j3-j8.
+ed_key:
+  jldi j1, 0
+  jld j4, j9, 0
+  jld j5, j1, FNVO
+  jld j6, j1, FNVP
+  jldi j3, 8
+  jadd j3, j9, j3
+  jadd j7, j4, j1
+  jwhile j7
+    jldb j8, j3, 0
+    jxor j5, j5, j8
+    jmul j5, j5, j6
+    jldi j8, 1
+    jadd j3, j3, j8
+    jsub j7, j7, j8
+  jwend
+  jxor j5, j5, j4
+  jmul j5, j5, j6
+  jjnz j5, edk_done
+  jldi j5, 1
+edk_done:
+  jret
+
+; j9 past the piece at it ({its bytes, its letters padded}). Uses j2, j3.
+ed_next:
+  jld j2, j9, 0
+  jldi j3, 7
+  jadd j2, j2, j3
+  jldi j3, -8
+  jand j2, j2, j3
+  jldi j3, 8
+  jadd j2, j2, j3
+  jadd j9, j9, j2
+  jret
+
+; The j3 low bits of j2, the lowest first, onto the stream (SBB, SBP; its bytes start at 0). Uses j1-j8.
+sb_bits:
+  jldi j1, 0
+  sbb_lap:
+    jjz j3, sbb_done
+    jld j4, j1, SBP
+    jldi j5, 3
+    jshr j5, j4, j5
+    jld j6, j1, SBB
+    jadd j5, j5, j6
+    jldi j6, 7
+    jand j6, j4, j6
+    jldi j7, 1
+    jand j7, j2, j7
+    jshl j7, j7, j6
+    jldb j8, j5, 0
+    jor j8, j8, j7
+    jstb j8, j5, 0
+    jldi j7, 1
+    jadd j4, j4, j7
+    jst j4, j1, SBP
+    jshr j2, j2, j7
+    jsub j3, j3, j7
+    jjmp sbb_lap
+sbb_done:
+  jret
+
+; j2 (1 or more) in Elias gamma onto the stream: as many 0 as its bits after the first, a 1, those bits. Uses j1-j8.
+sb_gamma:
+  jldi j1, 0
+  jst j2, j1, SGV
+  jldi j3, 0
+  jldi j4, 1
+  sbg_n:
+    jadd j5, j3, j4
+    jshr j5, j2, j5
+    jjz j5, sbg_have
+    jadd j3, j3, j4
+    jjmp sbg_n
+sbg_have:
+  jst j3, j1, SGN
+  jldi j2, 0
+  jcall sb_bits
+  jldi j2, 1
+  jldi j3, 1
+  jcall sb_bits
+  jld j2, j1, SGV
+  jld j3, j1, SGN
+  jjmp sb_bits
+
+; j3 bits of the stream (SBB, SBP; SBL bytes), the lowest first -> j2. Past its end every bit is a 1, so a gamma
+; ends there. Uses j1-j8.
+sr_bits:
+  jldi j1, 0
+  jldi j2, 0
+  jldi j7, 0
+  srb_lap:
+    jjz j3, srb_done
+    jld j4, j1, SBP
+    jldi j5, 3
+    jshr j5, j4, j5
+    jld j6, j1, SBL
+    jsub j6, j5, j6
+    jldi j8, 63
+    jsar j6, j6, j8
+    jldi j8, 1
+    jjz j6, srb_bit
+    jld j6, j1, SBB
+    jadd j5, j5, j6
+    jldb j8, j5, 0
+    jldi j6, 7
+    jand j6, j4, j6
+    jshr j8, j8, j6
+    jldi j6, 1
+    jand j8, j8, j6
+  srb_bit:
+    jshl j8, j8, j7
+    jor j2, j2, j8
+    jldi j6, 1
+    jadd j7, j7, j6
+    jadd j4, j4, j6
+    jst j4, j1, SBP
+    jsub j3, j3, j6
+    jjmp srb_lap
+srb_done:
+  jret
+
+; An Elias gamma of the stream -> j2. Uses j1-j8.
+sr_gamma:
+  jldi j1, 0
+  jst j1, j1, SGN
+  srg_zero:
+    jldi j3, 1
+    jcall sr_bits
+    jjnz j2, srg_one
+    jld j3, j1, SGN
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, SGN
+    jjmp srg_zero
+srg_one:
+  jld j3, j1, SGN
+  jcall sr_bits
+  jld j3, j1, SGN
+  jldi j4, 1
+  jshl j4, j4, j3
+  jor j2, j2, j4
+  jret
+
+; j2 = 1 if the stream was read past its end (a file cut or not ours). Uses j1-j3.
+edd_past:
+  jldi j1, 0
+  jld j2, j1, SBL
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, SBP
+  jsub j2, j2, j3
+  jldi j3, 63
+  jshr j2, j2, j3
+  jret
+
+; The file read (SXR, SXN) as ll_file reads it: the first format as it is; the bits ({2, ...}, eb_encode) said again
+; as qwords in a room of their own, SXR and SXN then that room. j2 = 1, 0 if it is neither or does not hold together
+; (an index past the dictionary, a letter past its end). Uses j1-j14.
+ed_decode:
+  jldi j1, 0
+  jld j9, j1, SXR
+  jld j2, j9, 0
+  jldi j3, 1
+  jsub j3, j2, j3
+  jjz j3, edd_yes
+  jldi j3, 2
+  jsub j3, j2, j3
+  jjnz j3, edd_bad
+  jld j2, j1, SXN
+  jldi j3, 32
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, edd_bad
+  jst j2, j1, SBL
+  jld j2, j9, 8
+  jst j2, j1, DNR
+  jld j2, j9, 16
+  jst j2, j1, DNP
+  jld j2, j9, 24
+  jst j2, j1, DAB
+  jldi j2, 32
+  jadd j2, j9, j2
+  jst j2, j1, SBB
+  jst j1, j1, SBP
+  jld j2, j1, SBL               ; every piece takes a bit at least, an index 63 bits at most
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, DNP
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, edd_bad
+  jld j2, j1, DAB
+  jldi j3, 64
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, edd_bad
+  jld j11, j1, DNP              ; the dictionary: each piece {its bytes, its letters padded}, and where each is
+  jldi j2, 4
+  jshl j11, j11, j2
+  jld j2, j1, SXN
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DT1
+  jld j11, j1, DNP
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DLST
+  jst j1, j1, DT2
+  edd_dict:
+    jldi j1, 0
+    jld j2, j1, DT2
+    jld j3, j1, DNP
+    jsub j3, j2, j3
+    jjz j3, edd_dicted
+    jcall sr_gamma
+    jldi j3, 1
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, edd_bad
+    jld j9, j1, DT1
+    jst j2, j9, 0
+    jst j2, j1, DT3
+    jld j3, j1, DT2
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, DLST
+    jadd j3, j3, j4
+    jst j9, j3, 0
+    jldi j3, 3                  ; its letters, inside the stream
+    jshl j3, j2, j3
+    jld j4, j1, SBP
+    jadd j3, j3, j4
+    jld j4, j1, SBL
+    jldi j5, 3
+    jshl j4, j4, j5
+    jsub j3, j4, j3
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjnz j3, edd_bad
+    jldi j3, 8
+    jadd j3, j9, j3
+    jst j3, j1, DT4
+    edd_letter:
+      jldi j1, 0
+      jld j2, j1, DT3
+      jjz j2, edd_lettered
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, DT3
+      jldi j3, 8
+      jcall sr_bits
+      jld j4, j1, DT4
+      jstb j2, j4, 0
+      jldi j3, 1
+      jadd j4, j4, j3
+      jst j4, j1, DT4
+      jjmp edd_letter
+    edd_lettered:
+    jld j9, j1, DT1
+    jcall ed_next
+    jst j9, j1, DT1
+    jld j2, j1, DT2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, DT2
+    jjmp edd_dict
+edd_dicted:
+  jld j2, j1, SBP               ; the relations: walked once for their bytes, then written
+  jst j2, j1, DSV
+  jldi j2, 16
+  jst j2, j1, DSZ
+  jst j1, j1, DOUT
+  jcall edd_walk
+  jjz j2, edd_bad
+  jld j11, j1, DSZ
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DOUT
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, DNR
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j2, j13, j2
+  jst j2, j1, DPOS
+  jcall edd_walk
+  jld j2, j1, DOUT
+  jst j2, j1, SXR
+  jld j2, j1, DSZ
+  jst j2, j1, SXN
+edd_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+edd_bad:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; The relations of the stream (from DSV, DNR of them): their bytes added to DSZ (DOUT 0), or written at DPOS, each
+; {turned, pairs, how many pieces each} and its pieces copied from the dictionary. j2 = 1, 0 if one does not hold
+; together. Uses j1-j9.
+edd_walk:
+  jldi j1, 0
+  jld j2, j1, DSV
+  jst j2, j1, SBP
+  jld j2, j1, DNR
+  jst j2, j1, DT2
+  edw_rel:
+    jldi j1, 0
+    jld j2, j1, DT2
+    jjz j2, edw_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, DT2
+    jldi j3, 1
+    jcall sr_bits
+    jst j2, j1, DR0
+    jcall sr_gamma
+    jst j2, j1, DR1
+    jcall sr_gamma
+    jst j2, j1, DR2
+    jcall sr_gamma
+    jst j2, j1, DR3
+    jcall edd_past
+    jjnz j2, edw_bad
+    jld j2, j1, DR2
+    jld j3, j1, DR3
+    jadd j2, j2, j3
+    jst j2, j1, DT3
+    jld j2, j1, DOUT
+    jjz j2, edw_count
+    jld j4, j1, DPOS
+    jld j2, j1, DR0
+    jst j2, j4, 0
+    jld j2, j1, DR1
+    jst j2, j4, 8
+    jld j2, j1, DR2
+    jst j2, j4, 16
+    jld j2, j1, DR3
+    jst j2, j4, 24
+    jldi j2, 32
+    jadd j4, j4, j2
+    jst j4, j1, DPOS
+    jjmp edw_piece
+  edw_count:
+    jld j2, j1, DSZ
+    jldi j3, 32
+    jadd j2, j2, j3
+    jst j2, j1, DSZ
+    edw_piece:
+      jldi j1, 0
+      jld j2, j1, DT3
+      jjz j2, edw_rel
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, DT3
+      jld j3, j1, DAB
+      jcall sr_bits
+      jld j4, j1, DNP
+      jsub j3, j2, j4
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, edw_bad
+      jldi j3, 3
+      jshl j2, j2, j3
+      jld j3, j1, DLST
+      jadd j2, j2, j3
+      jld j9, j2, 0
+      jcall edd_past
+      jjnz j2, edw_bad
+      jld j2, j9, 0
+      jldi j3, 7
+      jadd j2, j2, j3
+      jldi j3, -8
+      jand j2, j2, j3
+      jldi j3, 8
+      jadd j2, j2, j3
+      jld j3, j1, DOUT
+      jjz j3, edw_add
+      jld j4, j1, DPOS
+      jwhile j2
+        jld j5, j9, 0
+        jst j5, j4, 0
+        jldi j5, 8
+        jadd j9, j9, j5
+        jadd j4, j4, j5
+        jsub j2, j2, j5
+      jwend
+      jst j4, j1, DPOS
+      jjmp edw_piece
+    edw_add:
+      jld j3, j1, DSZ
+      jadd j3, j3, j2
+      jst j3, j1, DSZ
+      jjmp edw_piece
+edw_done:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+edw_bad:
+  jldi j1, 0
+  jldi j2, 0
   jret
 ; The library's turn of the fact's skeleton (WSK): deduced as with TBEST, over the pairs every book proved. The core's
 ; side and the answer as qm_turned finds them; the fit over the turn's pieces (MB1, from lib_turn). Uses j1-j14.
@@ -2705,6 +3371,8 @@ ll_listed:
     jldi j3, 63
     jsar j2, j2, j3
     jjnz j2, ll_next
+    jcall ed_decode
+    jjz j2, ll_next
     jcall ll_file
   ll_next:
     jldi j1, 0
