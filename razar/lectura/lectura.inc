@@ -51,7 +51,8 @@ WCAP  = 1138h                   ; 1: the word being read began with a capital; a
 ROOMCP = 1140h
 ROOMCL = 1148h                  ; the limits: by word, 1 if it closes a building
 LMI   = 1150h                   ; (walking)
-RLIST = 1170h                   ; the rooms it got (0: it keeps no list), how many; the shelf: where, how many books, the
+RLIST = 1170h                   ; the rooms it got (0: it keeps no list; at its first qword how many it can hold, then
+                                ; the rooms), how many; the shelf: where, how many books, the
 RLN   = 1178h                   ; books left, the next one
 SHELF = 1180h
 SHN   = 1188h
@@ -69,6 +70,7 @@ QN    = 1120h                   ; reading a question (PASS 2): its units so far,
                                 ; book never had, 0 its end)
 TEXT  = 2000h                   ; the lines it writes (TEXTN bytes: full, they go out, to the console or to SINK)
 TEXTN = 1000h
+RLT   = 11B8h                   ; (the room just got, while the list of rooms grows)
 SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
 PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
 PCS   = 3240h
@@ -1222,13 +1224,54 @@ room:
   jld j10, j1, RLIST
   jjz j10, rm_done
   jld j12, j1, RLN
-  jldi j11, 4096
+  jld j11, j10, 0               ; full: a list twice as long, what it had moved to it (Capitan: "no ceilings")
   jsub j11, j12, j11
-  jldi j14, 63
-  jsar j11, j11, j14
-  jjz j11, rm_done
-  jldi j11, 3
-  jshl j11, j12, j11
+  jjnz j11, rm_list
+  jst j13, j1, RLT
+  jld j11, j10, 0
+  jadd j11, j11, j11
+  jldi j12, 1
+  jadd j11, j11, j12
+  jldi j12, 3
+  jshl j11, j11, j12
+  jldi j10, 2
+  jldi j12, 0
+  jcall ask
+  jldi j1, 1
+  jadd j1, j13, j1
+  jjz j1, rm_none
+  jldi j1, 0
+  jld j10, j1, RLIST
+  jld j11, j10, 0
+  jadd j11, j11, j11
+  jst j11, j13, 0
+  jst j13, j1, RLT + 8
+  jld j11, j1, RLN
+  jldi j12, 3
+  jshl j11, j11, j12
+  jldi j14, 8
+  rm_move:
+    jjz j11, rm_moved
+    jadd j10, j10, j14
+    jadd j13, j13, j14
+    jld j12, j10, 0
+    jst j12, j13, 0
+    jsub j11, j11, j14
+    jjmp rm_move
+  rm_moved:
+  jld j11, j1, RLIST            ; the old one given back
+  jldi j10, 3
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, RLT + 8
+  jst j10, j1, RLIST
+  jld j13, j1, RLT
+  jld j12, j1, RLN
+rm_list:
+  jldi j11, 1
+  jadd j11, j12, j11
+  jldi j14, 3
+  jshl j11, j11, j14
   jadd j11, j11, j10
   jst j13, j11, 0
   jldi j11, 1

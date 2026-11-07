@@ -73,7 +73,7 @@ NPC   = 16E8h
 NSWP  = 16F0h
 NDRP  = 16F8h
 MPOS  = 1700h                   ; a switch put in the middle: where, places left
-MLEFT = 1708h
+DLEFT = 1708h
 SVB   = 1710h                   ; the judge: the bits of the value walked from, of the answer being added, how often the
 KB    = 1718h                   ; request was said (and its log2), where its places start, log2 of the book, the name of
 CKEY  = 1720h                   ; a piece, how often each word is in the book
@@ -1056,7 +1056,7 @@ wf_ask:
     jld j2, j1, CMN
     jldi j3, 1
     jadd j2, j2, j3
-    jst j2, j1, MLEFT
+    jst j2, j1, DLEFT
     jwhile j2
       jcall m_insert
       jldi j10, MBUF - 8
@@ -1069,9 +1069,9 @@ wf_ask:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, MPOS
-      jld j2, j1, MLEFT
+      jld j2, j1, DLEFT
       jsub j2, j2, j3
-      jst j2, j1, MLEFT
+      jst j2, j1, DLEFT
     jwend
     jjmp wa_next
   wa_door:

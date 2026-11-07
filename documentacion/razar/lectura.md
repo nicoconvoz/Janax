@@ -2856,3 +2856,19 @@ El Capitán: *"sí, sacalos"* (los tres topes que recortaban).
 - **Pendientes que aparecieron:** `MLEFT` está definido dos veces, en `pregunta.jsm` (`1708h`) y en `lectura.inc`
   (`1128h`), desde antes de este cambio. `pulso.jsm` anota sus habitaciones en una lista de 4.096 para devolverlas:
   las que pasan de ahí no se devuelven.
+
+## Los dos pendientes: MLEFT separado y la lista de habitaciones sin techo (2026-11-07)
+
+- **`MLEFT` estaba definido dos veces** con valores distintos: en `lectura.inc` (`1128h`, lo que falta de una marca
+  que se está leyendo) y en `pregunta.jsm` (`1708h`, lo que queda del medio de una puerta). Son dos cosas distintas
+  con el mismo nombre. La de `pregunta.jsm` pasa a llamarse `DLEFT`. Los controles dan idénticos.
+- **La lista de habitaciones de `pulso`** (`RLIST`, para devolverlas todas cuando renace) tenía lugar para 4.096: las
+  que pasaban de ahí no se anotaban y nunca se devolvían. Ahora arranca con 64 y, cuando se llena, `room` pide una del
+  doble, muda lo anotado y devuelve la vieja. La capacidad viaja **en la lista misma** (su primer casillero), porque
+  el renacer pone en cero las variables de `lectura.inc` y sólo respeta `AUTH`, `RLIST` y `RLN`.
+- **Pruebas:**
+  - `razar/lectura/pruebas/habitaciones.jsm`: 300 habitaciones con una lista de 64. Las 300 quedan anotadas, cada
+    una la que se dio, y la lista termina con lugar para 512. Da bien en el intérprete y en el traductor.
+  - `organos.sh` con 2 intentos: Razar escribe su `organo.inc` por el destino nuevo (1.468 bytes, bien formado), se
+    arma a sí mismo y lanza 4 candidatos, todos con código 0.
+  - Controles idénticos.

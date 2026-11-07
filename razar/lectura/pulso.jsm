@@ -255,11 +255,11 @@ KRSTAMP = 1BF0h                 ; the round's stamp
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
-jldi j11, 4096                  ; the list of its rooms (4096 of them): to give them all back when it is reborn
-jldi j2, 3
-jshl j11, j11, j2
-jcall room
+jldi j11, 520                   ; the list of its rooms, to give them all back when it is reborn: 64 to start, and it
+jcall room                      ; doubles when it is full (room)
 jldi j1, 0
+jldi j2, 64
+jst j2, j13, 0
 jst j13, j1, RLIST
 renace:
 jldi j0, 0                      ; the fingerprint
@@ -5928,6 +5928,8 @@ rb_noaut:
   jst j2, j1, RBC
   jldi j1, 0
   jld j9, j1, RLIST
+  jldi j2, 8                    ; (past how many it can hold)
+  jadd j9, j9, j2
   jld j10, j1, RLN
   jwhile j10
     jldi j1, 0
