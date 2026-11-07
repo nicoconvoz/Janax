@@ -402,6 +402,9 @@ SKX2  = 57D8h
 SKX3  = 57E0h
 SKV   = 57E8h
 SKX4  = 57F0h
+QPAS  = 5800h                   ; a fact walked against the question: where, its end, a word
+QPAE  = 5808h
+QPAW  = 5810h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -6235,6 +6238,8 @@ qp_takes:
   jadd j12, j4, j1
   jcall sk_word
   jjz j2, qpt_no
+  jcall qp_adds                 ; (what the question says already is no answer)
+  jjz j2, qpt_no
   jld j12, j1, QPRA             ; guided by the question's instruction?
   jcall qp_guided
   jst j2, j1, QPGU
@@ -6251,6 +6256,63 @@ qpt_yes:
   jldi j2, 1
   jret
 qpt_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the fact of QST's entry at QPA says something the question does not (Capitan, 2026-11-07: "nobody answers
+; who is pedro with who is pedro: it is the same question, without its marks"): a word of it (marks aside) that is no
+; word of the question. Uses j1-j8.
+qp_adds:
+  jldi j1, 0
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jld j2, j9, 0
+  jst j2, j1, QPAS
+  jld j2, j9, 8
+  jst j2, j1, QPAE
+  qad_lap:
+    jldi j1, 0
+    jld j2, j1, QPAS
+    jld j3, j1, QPAE
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qad_no             ; (past its end: all of it the question's)
+    jcall tok_at
+    jjz j2, qad_next
+    jst j2, j1, QPAW
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, qad_next
+    jld j8, j1, QQS             ; in the question?
+    qad_q:
+      jld j2, j1, QQE
+      jsub j2, j8, j2
+      jjz j2, qad_yes           ; (no: it adds)
+      jldi j2, 3
+      jshl j2, j8, j2
+      jld j3, j1, QBP
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jld j3, j1, QPAW
+      jsub j2, j2, j3
+      jjz j2, qad_next
+      jldi j2, 1
+      jadd j8, j8, j2
+      jjmp qad_q
+  qad_next:
+    jldi j1, 0
+    jld j2, j1, QPAS
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QPAS
+    jjmp qad_lap
+qad_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qad_no:
   jldi j1, 0
   jldi j2, 0
   jret

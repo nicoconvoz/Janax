@@ -2992,3 +2992,16 @@ raro"*.
     castellano: la documentación, que mezcla castellano y términos en inglés, hace de puente;
   - "¿quién es pedro?": 368 flechas, y el párrafo habla de Pedro;
   - controles idénticos.
+
+## Lo que la pregunta ya dice no es respuesta (2026-11-07)
+
+El Capitán: *"nadie responde quién es pedro con quién es pedro: es una misma pregunta, sin signos pero pregunta"*.
+
+- **Regla de información:** un hecho entra en el párrafo sólo si trae al menos una palabra (los signos aparte) que la
+  pregunta no tiene (`qp_adds`). Vale para cualquier pregunta y cualquier libro, sin mirar signos.
+- **Medido en la biblioteca real:** con "¿quién es pedro?" el párrafo ya no repite la pregunta; controles idénticos.
+- **Lo que sigue a la vista:**
+  - "quien" sin tilde y "quién" son dos palabras distintas para Razar: escrita sin tilde, la pregunta no reconoce a
+    "quién es pedro" como la misma pregunta;
+  - la primera línea ("quién es hijo de melquí") sale de otro camino de respuesta, que toma "quién" como el sujeto:
+    en esta biblioteca Razar todavía no reconoce "quién" como la palabra que pregunta.
