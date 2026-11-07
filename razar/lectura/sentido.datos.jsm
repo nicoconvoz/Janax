@@ -15,6 +15,8 @@ times 0A0h - $ db 0
 db 'tablero/ortografia', 0
 times 0C0h - $ db 0
 db ' negados=', 0
+times 0D0h - $ db 0
+db 10, 'estructuras parientes:', 0
 times 100h - $ db 0
 db ' pares', 0
 times 110h - $ db 0
@@ -23,10 +25,16 @@ times 128h - $ db 0
 db 'instrucciones:', 0
 times 140h - $ db 0
 db ' | se encadena (', 0
+times 158h - $ db 0
+db ' (hacen lo mismo en ', 0
 times 180h - $ db 0
 db ' | simetrica (', 0
+times 190h - $ db 0
+db '; sola la primera en ', 0
 times 1C0h - $ db 0
 db ' | se niega (', 0
+times 1D0h - $ db 0
+db ', sola la otra en ', 0
 times 200h - $ db 0
 db ' | dado vuelta es: ', 0
 times 240h - $ db 0

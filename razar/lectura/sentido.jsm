@@ -75,6 +75,10 @@ S_INS   = 128h                  ; "instrucciones:"
 S_ORT   = 0A0h                  ; "tablero/ortografia": the spelling the books proved
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
+S_SKH   = 0D0h                  ; the structures with their kin, what they do alike and alone (in the gaps)
+S_SKI   = 158h
+S_SKJ   = 190h
+S_SKK   = 1D0h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -377,6 +381,23 @@ SKBF  = 5740h
 SKFR  = 5748h
 SKT   = 5750h
 SKQ   = 5758h
+SKMP  = 5760h                   ; variants in the library: by number the keys (or what is written), the file's end, a
+SKEN  = 5768h                   ; count walked, a piece walked, how many more pairs in common
+SKCN  = 5770h
+SKLP  = 5778h
+SKCC  = 5780h
+SKRS  = 5788h                   ; the kin reported: the best share, its key, the last said, its key, how many, the
+SKRK  = 5790h                   ; best's entry; a share's entry, each one's pairs; a structure said; the dictionary's
+SKRP  = 5798h                   ; version
+SKRQ  = 57A0h
+SKRN  = 57A8h
+SKRE  = 57B0h
+SKX0  = 57C8h
+SKX1  = 57D0h
+SKX2  = 57D8h
+SKX3  = 57E0h
+SKV   = 57E8h
+SKX4  = 57F0h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -453,6 +474,8 @@ jcall qa_eat
 jcall eng_eat
 jcall ins_scan                  ; and how it uses each instruction: the dictionary
 jcall fam_scan                  ; with what each one joins: its families
+jcall sk_init                   ; and its structures, instructions of several words, with their kin
+jcall sk_scan
 jcall ins_eat
 jcall ort_eat                   ; and its spelling
 jjmp finish
@@ -517,10 +540,12 @@ jcall arrows                    ; the words that live in a limit most buildings 
 jcall qa_scan                   ; the book's own questions, and the answers next to them
 jcall glue_count                ; how the book joins its constructions
 jcall ins_room                  ; (the dictionary of instructions, filled by the library's books)
+jcall sk_init                   ; (the equivalent structures, filled by the library's books)
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
 jcall fam_build                 ; its families, from what the books share
 jcall ins_report                ; the dictionary of instructions, as the books proved it
+jcall sk_kinrep                 ; and its structures with their kin
 jcall sk_report
 jcall cores
 jjmp finish
@@ -4390,7 +4415,8 @@ is_swaps:
   jret
 
 ; This book's dictionary into the library: "tablero/funciones-" and the print of its bytes (salted 9: written once).
-; Qwords {1, how many}, each {its counts (11 qwords), its bytes} and its letters padded. Uses j1-j14.
+; Qwords {3, how many}, each {its counts (12 qwords), its bytes} and its letters padded; then the pairs of contexts
+; (ie_pairs) and the structures (sk_sect). Uses j1-j14.
 ins_eat:
   jldi j1, 0
   jld j2, j1, EATB
@@ -4401,12 +4427,13 @@ ins_eat:
   jst j1, j1, QLS
   jcall ie_walk
   jcall ie_pairs
+  jcall sk_sect
   jldi j1, 0
   jld j11, j1, QLW
   jcall room
   jldi j1, 0
   jst j13, j1, QLC
-  jldi j2, 2
+  jldi j2, 3
   jst j2, j13, 0
   jld j2, j1, QLN
   jst j2, j13, 8
@@ -4417,6 +4444,7 @@ ins_eat:
   jst j2, j1, QLS
   jcall ie_walk
   jcall ie_pairs
+  jcall sk_sect
   jldi j1, 0
   jldi j11, 64
   jcall room
@@ -4664,10 +4692,15 @@ pf_file:
   jld j2, j1, INS
   jjz j2, pff_done
   jld j9, j1, SXR
-  jld j2, j9, 0
+  jld j2, j9, 0                 ; (2: no structures yet; 3: with them)
+  jst j2, j1, SKV
   jldi j3, 2
-  jsub j2, j2, j3
-  jjnz j2, pff_done
+  jsub j3, j2, j3
+  jjz j3, pff_v
+  jldi j3, 3
+  jsub j3, j2, j3
+  jjnz j3, pff_done
+pff_v:
   jld j2, j9, 8
   jst j2, j1, QLW
   jld j2, j1, SXN
@@ -4760,7 +4793,7 @@ pff_pairs:                      ; then the pairs: {shared, a's bytes, its letter
   ppr_lap:
     jldi j1, 0
     jld j2, j1, QLW
-    jjz j2, pff_done
+    jjz j2, pff_sk
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, QLW
@@ -4781,6 +4814,16 @@ pff_pairs:                      ; then the pairs: {shared, a's bytes, its letter
     jld j4, j1, QLP
     jcall fam_addn
     jjmp ppr_lap
+pff_sk:                         ; and its structures
+  jld j2, j1, SKV
+  jldi j3, 3
+  jsub j2, j2, j3
+  jjnz j2, pff_done
+  jld j2, j1, QLK
+  jst j2, j1, SKU
+  jld j2, j1, QLH
+  jst j2, j1, SKEN
+  jcall sk_sread
 pff_done:
   jldi j1, 0
   jret
@@ -6538,12 +6581,6 @@ sk_scan:
   jldi j2, SKG
   jldi j3, 16
   jcall pl_new
-  jldi j2, SKN
-  jldi j3, 16
-  jcall pl_new
-  jldi j2, SKP
-  jldi j3, 32
-  jcall pl_new
   jldi j2, SKD
   jldi j3, 8
   jcall pl_new
@@ -6689,9 +6726,12 @@ skp_done:
   jldi j1, 0
   jret
 
-; Skeletons j2 and j3 join one more pair in common. Uses j1-j8.
+; Skeletons j2 and j3 join one more pair in common (or j4 more: sk_sharen). Uses j1-j8.
 sk_share:
+  jldi j4, 1
+sk_sharen:
   jldi j1, 0
+  jst j4, j1, SKCC
   jsub j5, j2, j3               ; (the smaller first)
   jjz j5, skh_done
   jldi j6, 63
@@ -6712,7 +6752,7 @@ skh_ord:
   jld j2, j1, SKO
   jst j2, j4, 16
   jld j2, j4, 24
-  jldi j3, 1
+  jld j3, j1, SKCC
   jadd j2, j2, j3
   jst j2, j4, 24
 skh_done:
@@ -6925,8 +6965,19 @@ sky_mid:
   jldi j2, TMI
   jcall pl_find
   jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, sky_lib
   jadd j12, j4, j1
   jcall put_plain
+  jjmp sky_end
+sky_lib:                        ; (a way the reading never saw: by the letters a book kept)
+  jld j5, j1, SKS
+  jldi j2, SKN
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 16
+  jcall sk_lit
+sky_end:
   jldi j1, 0
   jld j2, j1, SK4
   jcall put_glue
@@ -7011,6 +7062,785 @@ skn_left:
   jst j2, j1, SKFR
   jjmp sk_span
 skn_done:
+  jret
+
+; The tables of equivalent structures, empty (before the library fills them): SKN by skeleton {key, its pairs, its
+; record in the library (0: the reading's own), needed}, SKP by two {key, a, b, shared}. Uses j1-j14.
+sk_init:
+  jldi j2, SKN
+  jldi j3, 32
+  jcall pl_new
+  jldi j2, SKP
+  jldi j3, 32
+  jjmp pl_new
+
+; The structures this book proved, into its dictionary (Capitan, 2026-11-07: "the dictionary grows: each variation is
+; an instruction that does the same, with a subtlety: one may be the if and another the improved if"; "words have a
+; limit I am willing to take, because each word is a valuable instruction"). A structure ("le respondió a") is an
+; instruction of several words: what it does is the pairs of furniture it joins. Each structure of two that share two
+; pairs or more (the anecdote rule), by its pieces' letters, with how many pairs it joins; then those two with how many
+; they share. What they share is what they do alike; what each joins alone is its subtlety. Counted with their bytes
+; (QLS 0: QLW) or written at QLP (QLS 1): {how many structures, how many pairs}, each structure {its pairs, how many
+; pieces, each piece {its bytes, its letters padded}}, each pair {shared, the first, the other} by their order. Uses
+; j1-j14.
+sk_sect:
+  jldi j1, 0
+  jld j2, j1, QLS
+  jjnz j2, sks2_write
+  jst j1, j1, SK9
+  jld j9, j1, SKP               ; the structures needed: those of a pair kept
+  jld j10, j1, SKP + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  sks2_mark:
+    jldi j1, 0
+    jjz j10, sks2_marked
+    jld j2, j9, 0
+    jjz j2, sks2_mnext
+    jld j2, j9, 24
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, sks2_mnext
+    jst j9, j1, SK5
+    jst j10, j1, SK6
+    jld j5, j9, 8
+    jldi j2, SKN
+    jcall pl_find
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j4, 24
+    jld j9, j1, SK5
+    jld j5, j9, 16
+    jldi j2, SKN
+    jcall pl_find
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j4, 24
+    jld j2, j1, SK9
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SK9
+    jld j9, j1, SK5
+    jld j10, j1, SK6
+  sks2_mnext:
+    jld j2, j1, SKP + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp sks2_mark
+sks2_marked:
+  jst j1, j1, SKW               ; numbered, and their bytes
+  jst j1, j1, SKM
+  jst j1, j1, SKO
+  jcall ske_walk
+  jldi j1, 0
+  jld j2, j1, SK9
+  jldi j3, 24
+  jmul j2, j2, j3
+  jld j3, j1, SKW
+  jadd j2, j2, j3
+  jldi j3, 16
+  jadd j2, j2, j3
+  jld j3, j1, QLW
+  jadd j2, j2, j3
+  jst j2, j1, QLW
+  jret
+sks2_write:
+  jld j3, j1, QLP
+  jld j2, j1, SKO
+  jst j2, j3, 0
+  jld j2, j1, SK9
+  jst j2, j3, 8
+  jldi j2, 16
+  jadd j2, j3, j2
+  jst j2, j1, SKU
+  jldi j2, 1
+  jst j2, j1, SKM
+  jcall ske_walk                ; the structures written
+  jldi j1, 0
+  jld j9, j1, SKP               ; and the pairs
+  jld j10, j1, SKP + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  sks2_pair:
+    jldi j1, 0
+    jjz j10, sks2_done
+    jld j2, j9, 0
+    jjz j2, sks2_pnext
+    jld j2, j9, 24
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, sks2_pnext
+    jst j9, j1, SK5
+    jst j10, j1, SK6
+    jld j3, j1, SKU
+    jst j2, j3, 0
+    jld j5, j9, 8
+    jldi j2, SKN
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 16
+    jldi j3, 1
+    jsub j2, j2, j3
+    jld j3, j1, SKU
+    jst j2, j3, 8
+    jld j9, j1, SK5
+    jld j5, j9, 16
+    jldi j2, SKN
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 16
+    jldi j3, 1
+    jsub j2, j2, j3
+    jld j3, j1, SKU
+    jst j2, j3, 16
+    jldi j2, 24
+    jadd j3, j3, j2
+    jst j3, j1, SKU
+    jld j9, j1, SK5
+    jld j10, j1, SK6
+  sks2_pnext:
+    jld j2, j1, SKP + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp sks2_pair
+sks2_done:
+  jld j2, j1, SKU
+  jst j2, j1, QLP
+  jret
+
+; The structures of the dictionary with their kin (the reading's report), the closest first: each two by the share of
+; their pairs in common, with what they do alike (the pairs they share) and each one's subtlety (the pairs it joins
+; alone: the one that joins more alone is the wider, as an if improved is to an if). Twelve: criterion, the report's
+; size, as the instructions'. Uses j1-j14.
+sk_kinrep:
+  jldi j1, 0
+  jld j2, j1, SKP + 16
+  jjz j2, skr_done
+  jldi j1, S_SKH
+  jcall puts
+  jldi j1, 0
+  jldi j2, 1001
+  jst j2, j1, SKRP
+  jst j1, j1, SKRQ
+  jst j1, j1, SKRN
+  skr_round:
+    jldi j1, 0
+    jld j2, j1, SKRN
+    jldi j3, 12
+    jsub j3, j2, j3
+    jjz j3, skr_out
+    jst j1, j1, SKRE
+    jldi j2, -1
+    jst j2, j1, SKRS
+    jld j9, j1, SKP
+    jld j10, j1, SKP + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    skr_lap:
+      jldi j1, 0
+      jjz j10, skr_have
+      jld j2, j9, 0
+      jjz j2, skr_next
+      jld j2, j9, 24
+      jldi j3, 2
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, skr_next
+      jcall skr_share
+      jldi j1, 0
+      jld j3, j1, SKRP            ; below the last said (by share, then by key)
+      jsub j4, j2, j3
+      jjz j4, skr_tie
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjz j4, skr_next
+      jjmp skr_cand
+    skr_tie:
+      jst j2, j1, SKX4
+      jld j2, j9, 0
+      jld j3, j1, SKRQ
+      jcall sk_lt
+      jld j2, j1, SKX4
+      jjz j4, skr_next
+    skr_cand:
+      jld j3, j1, SKRS            ; the most of those
+      jsub j4, j2, j3
+      jjz j4, skr_ctie
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjnz j4, skr_next
+      jjmp skr_best
+    skr_ctie:
+      jst j2, j1, SKX4
+      jld j2, j1, SKRK
+      jld j3, j9, 0
+      jcall sk_lt
+      jld j2, j1, SKX4
+      jjz j4, skr_next
+    skr_best:
+      jst j2, j1, SKRS
+      jld j3, j9, 0
+      jst j3, j1, SKRK
+      jst j9, j1, SKRE
+    skr_next:
+      jld j2, j1, SKP + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp skr_lap
+  skr_have:
+    jld j9, j1, SKRE
+    jjz j9, skr_out
+    jld j2, j1, SKRS
+    jst j2, j1, SKRP
+    jld j2, j1, SKRK
+    jst j2, j1, SKRQ
+    jcall skr_share
+    jldi j2, 10
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, SKRE
+    jld j5, j9, 8
+    jcall sk_put
+    jldi j2, 126
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, SKRE
+    jld j5, j9, 16
+    jcall sk_put
+    jldi j1, S_SKI
+    jcall puts
+    jld j9, j1, SKRE
+    jld j2, j9, 24
+    jcall putnum
+    jldi j1, S_SKJ
+    jcall puts
+    jld j9, j1, SKRE
+    jld j2, j1, SKX1
+    jld j3, j9, 24
+    jsub j2, j2, j3
+    jcall putnum
+    jldi j1, S_SKK
+    jcall puts
+    jld j9, j1, SKRE
+    jld j2, j1, SKX2
+    jld j3, j9, 24
+    jsub j2, j2, j3
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, SKRN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SKRN
+    jjmp skr_round
+skr_out:
+  jldi j2, 10
+  jcall putch
+  jcall flush
+skr_done:
+  jldi j1, 0
+  jret
+
+; j4 = 1 if j2 < j3 as unsigned numbers (keys: the difference of two can pass 64 bits, so by halves). Uses j4-j6.
+sk_lt:
+  jldi j4, 1
+  jshr j5, j2, j4
+  jshr j6, j3, j4
+  jsub j5, j5, j6
+  jjnz j5, sklt_sign
+  jand j5, j2, j4
+  jand j6, j3, j4
+  jsub j5, j5, j6
+sklt_sign:
+  jldi j6, 63
+  jsar j5, j5, j6
+  jldi j4, 0
+  jsub j4, j4, j5
+  jret
+
+; The share of the two structures of SKP's entry j9 -> j2 (1000 a whole), SKX1 and SKX2 the pairs each joins. Uses
+; j1-j8 (j9, j10 kept).
+skr_share:
+  jldi j1, 0
+  jst j9, j1, SKX0
+  jld j5, j9, 8
+  jldi j2, SKN
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 8
+  jst j2, j1, SKX1
+  jld j9, j1, SKX0
+  jld j5, j9, 16
+  jldi j2, SKN
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 8
+  jst j2, j1, SKX2
+  jld j9, j1, SKX0
+  jld j3, j1, SKX1
+  jld j4, j1, SKX2
+  jadd j3, j3, j4
+  jld j2, j9, 24
+  jsub j3, j3, j2
+  jldi j4, 1000
+  jmul j2, j2, j4
+  jjz j3, skrs_zero
+  jdiv j2, j2, j3
+  jret
+skrs_zero:
+  jldi j2, 0
+  jret
+
+; Structure j5 said: the reading's own way when it has it, else by the letters a book kept. Uses j1-j14.
+sk_put:
+  jldi j1, 0
+  jst j5, j1, SKX3
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, skpt_lib
+  jadd j12, j4, j1
+  jjmp put_plain
+skpt_lib:
+  jld j5, j1, SKX3
+  jldi j2, SKN
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 16
+  jjmp sk_lit
+
+; Every skeleton needed (SKN + 24): numbered (SKO, at + 16 its number plus one) and its bytes counted (SKM 0: SKW), or
+; written at SKU (SKM 1). Uses j1-j14.
+ske_walk:
+  jldi j1, 0
+  jld j9, j1, SKN
+  jld j10, j1, SKN + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  skw2_lap:
+    jldi j1, 0
+    jjz j10, skw2_done
+    jld j2, j9, 0
+    jjz j2, skw2_next
+    jld j2, j9, 24
+    jjz j2, skw2_next
+    jst j9, j1, SK5
+    jst j10, j1, SK6
+    jld j2, j9, 0
+    jcall find_mid
+    jldi j1, 0
+    jld j2, j12, 0
+    jjz j2, skw2_back
+    jldi j13, EBUF
+    jcall m_collect
+    jldi j1, 0
+    jst j2, j1, SK2
+    jld j3, j1, SKM
+    jjnz j3, skw2_head
+    jld j9, j1, SK5             ; numbered
+    jld j3, j1, SKO
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, SKO
+    jst j3, j9, 16
+    jld j3, j1, SKW
+    jldi j4, 16
+    jadd j3, j3, j4
+    jst j3, j1, SKW
+    jjmp skw2_pieces
+  skw2_head:
+    jld j4, j1, SKU             ; {its pairs, its pieces}
+    jld j9, j1, SK5
+    jld j3, j9, 8
+    jst j3, j4, 0
+    jst j2, j4, 8
+    jldi j3, 16
+    jadd j4, j4, j3
+    jst j4, j1, SKU
+  skw2_pieces:
+    jst j1, j1, SK3
+    skw2_piece:
+      jldi j1, 0
+      jld j2, j1, SK3
+      jld j3, j1, SK2
+      jsub j3, j2, j3
+      jjz j3, skw2_back
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j2, j3, EBUF
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, ROOMI
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jld j5, j3, 16            ; its bytes, its letters
+      jld j6, j3, 8
+      jld j4, j1, ROOMA
+      jadd j6, j6, j4
+      jldi j7, 7
+      jadd j8, j5, j7
+      jldi j7, -8
+      jand j8, j8, j7
+      jldi j7, 8
+      jadd j8, j8, j7
+      jld j3, j1, SKM
+      jjnz j3, skw2_put
+      jld j3, j1, SKW
+      jadd j3, j3, j8
+      jst j3, j1, SKW
+      jjmp skw2_pnext
+    skw2_put:
+      jld j4, j1, SKU
+      jst j5, j4, 0
+      jadd j3, j4, j8
+      jst j3, j1, SKU
+      jldi j3, 8
+      jadd j4, j4, j3
+      jldi j3, 1
+      jwhile j5
+        jldb j7, j6, 0
+        jstb j7, j4, 0
+        jadd j6, j6, j3
+        jadd j4, j4, j3
+        jsub j5, j5, j3
+      jwend
+    skw2_pnext:
+      jld j2, j1, SK3
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, SK3
+      jjmp skw2_piece
+  skw2_back:
+    jldi j1, 0
+    jld j9, j1, SK5
+    jld j10, j1, SK6
+  skw2_next:
+    jld j2, j1, SKN + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp skw2_lap
+skw2_done:
+  jldi j1, 0
+  jret
+
+; The structures of a dictionary's file (from SKU to SKEN), summed into SKN and SKP: each structure by the key this
+; reading gives it when all its pieces are words it read (as gather makes it), or by its letters when not (one the
+; reading never saw: then it is said by the letters the book kept, SKN + 16). Something that does not hold together
+; (past the file, a piece longer than a word can be, a number past the structures) ends it. Uses j1-j14.
+sk_sread:
+  jldi j1, 0
+  jld j9, j1, SKU
+  jldi j2, 16
+  jadd j2, j9, j2
+  jld j3, j1, SKEN
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, skf_done
+  jld j2, j9, 0
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, skf_done
+  jst j2, j1, SK2
+  jst j2, j1, SK8
+  jld j2, j9, 8
+  jst j2, j1, SK7
+  jld j11, j1, SK2              ; by number: {key}
+  jldi j3, 3
+  jshl j11, j11, j3
+  jldi j3, 8
+  jadd j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SKMP
+  jld j9, j1, SKU
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j9, j1, SKU
+  jst j1, j1, SK3
+  skf_sk:
+    jldi j1, 0
+    jld j2, j1, SK3
+    jld j3, j1, SK2
+    jsub j3, j2, j3
+    jjz j3, skf_pairs
+    jld j9, j1, SKU
+    jst j9, j1, SKF             ; (its record)
+    jldi j2, 16
+    jadd j2, j9, j2
+    jld j3, j1, SKEN
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, skf_done
+    jld j2, j9, 8
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, skf_done
+    jst j2, j1, SK4
+    jst j2, j1, SKCN
+    jldi j2, 16
+    jadd j9, j9, j2
+    jst j9, j1, SKU
+    jld j2, j1, FNVO
+    jst j2, j1, SKO             ; (the reading's key, the letters' key, 0 if a piece is a word it never read)
+    jldi j3, 13
+    jxor j2, j2, j3
+    jst j2, j1, SKR
+    jldi j2, 1
+    jst j2, j1, SKH
+    skf_piece:
+      jldi j1, 0
+      jld j2, j1, SKCN
+      jjz j2, skf_key
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, SKCN
+      jld j9, j1, SKU
+      jldi j2, 8
+      jadd j2, j9, j2
+      jld j3, j1, SKEN
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, skf_done
+      jld j4, j9, 0
+      jldi j3, 63
+      jsar j3, j4, j3
+      jjnz j3, skf_done
+      jldi j3, 255
+      jsub j3, j3, j4
+      jldi j5, 63
+      jsar j3, j3, j5
+      jjnz j3, skf_done
+      jldi j3, 7
+      jadd j5, j4, j3
+      jldi j3, -8
+      jand j5, j5, j3
+      jadd j5, j2, j5
+      jld j3, j1, SKEN
+      jsub j3, j3, j5
+      jldi j6, 63
+      jsar j3, j3, j6
+      jjnz j3, skf_done
+      jst j5, j1, SKU
+      jst j4, j1, WLEN
+      jld j7, j1, SKR             ; its letters, into WBUF and the letters' key
+      jld j8, j1, FNVP
+      jxor j7, j7, j4
+      jmul j7, j7, j8
+      jldi j6, 0
+      skf_letter:
+        jsub j3, j6, j4
+        jjz j3, skf_letters
+        jadd j3, j2, j6
+        jldb j3, j3, 0
+        jstb j3, j6, WBUF
+        jxor j7, j7, j3
+        jmul j7, j7, j8
+        jldi j3, 1
+        jadd j6, j6, j3
+        jjmp skf_letter
+    skf_letters:
+      jst j7, j1, SKR
+      jcall word_id
+      jldi j1, 0
+      jldi j3, 1
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, skf_known
+      jst j1, j1, SKH
+      jjmp skf_piece
+    skf_known:
+      jadd j3, j2, j1
+      jld j2, j1, SKO
+      jcall hw
+      jst j2, j1, SKO
+      jjmp skf_piece
+  skf_key:
+    jld j5, j1, SKR
+    jld j2, j1, SKH
+    jjz j2, skf_k
+    jld j2, j1, SKO
+    jld j3, j1, SK4
+    jcall hw
+    jadd j5, j2, j1
+  skf_k:
+    jjnz j5, skf_k2
+    jldi j5, 1
+  skf_k2:
+    jld j2, j1, SK3
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, SKMP
+    jadd j2, j2, j3
+    jst j5, j2, 0
+    jld j9, j1, SKF             ; its pairs summed, and its record if the reading has no way to say it
+    jld j2, j9, 0
+    jst j2, j1, SKCN
+    jldi j2, SKN
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jld j3, j1, SKCN
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j4, 16
+    jjnz j2, skf_snext
+    jld j2, j1, SKF
+    jst j2, j4, 16
+  skf_snext:
+    jld j2, j1, SK3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SK3
+    jjmp skf_sk
+skf_pairs:
+  jld j2, j1, SK7
+  jjz j2, skf_done
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, SK7
+  jld j9, j1, SKU
+  jldi j2, 24
+  jadd j2, j9, j2
+  jld j3, j1, SKEN
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, skf_done
+  jst j2, j1, SKU
+  jld j2, j9, 0
+  jst j2, j1, SKCN
+  jld j2, j9, 8                 ; (each a number of a skeleton of the file)
+  jcall skf_num
+  jjz j3, skf_done
+  jst j2, j1, SK9
+  jld j9, j1, SKU
+  jldi j3, 8
+  jsub j9, j9, j3
+  jld j2, j9, 0
+  jcall skf_num
+  jjz j3, skf_done
+  jadd j3, j2, j1
+  jld j2, j1, SK9
+  jld j4, j1, SKCN
+  jcall sk_sharen
+  jldi j1, 0
+  jjmp skf_pairs
+skf_done:
+  jldi j1, 0
+  jret
+
+; The key of the file's skeleton numbered j2 -> j2 (j3 = 0: no such number). Uses j1-j4.
+skf_num:
+  jldi j1, 0
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, skn2_no
+  jld j3, j1, SK8
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, skn2_no
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, SKMP
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jldi j3, 1
+  jret
+skn2_no:
+  jldi j3, 0
+  jret
+
+; The skeleton of the library's record j2 said by its letters: each piece a word of the reading when it is one (a
+; mark against the word before), its letters when not, a space after. Uses j1-j14.
+sk_lit:
+  jldi j1, 0
+  jjz j2, skl_done
+  jld j3, j2, 8
+  jst j3, j1, SKCN
+  jldi j3, 16
+  jadd j2, j2, j3
+  jst j2, j1, SKLP
+  skl_lap:
+    jldi j1, 0
+    jld j2, j1, SKCN
+    jjz j2, skl_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, SKCN
+    jld j9, j1, SKLP
+    jld j4, j9, 0
+    jst j4, j1, WLEN
+    jldi j3, 7
+    jadd j5, j4, j3
+    jldi j3, -8
+    jand j5, j5, j3
+    jldi j3, 8
+    jadd j5, j5, j3
+    jadd j5, j9, j5
+    jst j5, j1, SKLP
+    jldi j6, 0
+    skl_letter:
+      jsub j3, j6, j4
+      jjz j3, skl_letters
+      jadd j3, j9, j6
+      jldb j3, j3, 8
+      jstb j3, j6, WBUF
+      jldi j3, 1
+      jadd j6, j6, j3
+      jjmp skl_letter
+  skl_letters:
+    jcall word_id
+    jldi j1, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, skl_raw
+    jcall put_glue
+    jjmp skl_lap
+  skl_raw:
+    jld j4, j1, WLEN
+    jldi j6, 0
+    skl_put:
+      jsub j3, j6, j4
+      jjz j3, skl_sp
+      jst j6, j1, SKO
+      jldb j2, j6, WBUF
+      jcall putch
+      jldi j1, 0
+      jld j6, j1, SKO
+      jld j4, j1, WLEN
+      jldi j3, 1
+      jadd j6, j6, j3
+      jjmp skl_put
+  skl_sp:
+    jldi j2, 32
+    jcall putch
+    jjmp skl_lap
+skl_done:
+  jldi j1, 0
   jret
 
 ; The joiners it chains with (what joins is what turns: "pan y vino" is "vino y pan"): of the units whose "_ u _" (one

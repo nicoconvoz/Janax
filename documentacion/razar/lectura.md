@@ -2784,3 +2784,29 @@ o distinga si va o no, o le quiera agregar o quitar algo"*.
 - **Controles:** de 12, 10 respuestas idénticas. Los otros 2 párrafos cambian porque ahora quitan lo no comprobado.
 - **Lo que falta:** los parientes de estructura en la biblioteca, sumados entre libros como las familias, para que la
   variación crezca con lo leído; y agregar (traer lo que se sabe del mueble con que termina un hecho).
+
+## Las estructuras entran al diccionario, con su sutileza (2026-11-07)
+
+El Capitán: *"que el diccionario crezca: cada variación es una instrucción que hace lo mismo, pero tiene una sutileza;
+una puede ser equivalente al if y otra el if mejorado o distinto"*; *"las palabras tienen un límite que estoy dispuesto
+a tomar, porque cada palabra es una valiosa instrucción"*.
+
+- **Una estructura es una instrucción de varias palabras** ("le respondió a", "piedad de"). Lo que hace son los pares
+  de muebles que une.
+- **El diccionario `tablero/funciones-` pasa al formato 3.** Después de las palabras y sus pares de contextos, trae
+  las estructuras (`sk_sect`):
+  - cada estructura de un par que comparte dos pares de muebles o más (la regla de la anécdota), por las letras de
+    sus piezas, con cuántos pares une;
+  - y cada dos de ellas, con cuántos comparten.
+  - Al contestar, la biblioteca suma todos los libros (`pf_file` → `sk_sread`). El formato 2 se sigue leyendo.
+- **La sutileza:** lo que comparten es lo que hacen igual; lo que une cada una sola es lo que la distingue. La que va
+  sola en más pares es la más ancha, como un if mejorado lo es de un if. El informe la muestra (`sk_kinrep`):
+  - "bueno ~ malo": el if y el if not, que se usan en los mismos lugares;
+  - "piedad de ~ compasión de", "poseído de un ~ poseído por un", "jesús permanezca con ~ jesucristo esté con";
+  - "dijo a sus ~ mandó a sus": hacen lo mismo en 2, y "dijo" va solo en 4. Es el más ancho.
+- **Una forma que la lectura nunca vio se dice con las letras que guardó el libro** (`sk_lit`, `sk_put`).
+- **Medido (NT):** el diccionario pasa de 96 KB a 136 KB. En las respuestas cambian unas cuatro formas por párrafo.
+  Algunas salen bien ("tomó a otro niño" → "tomó a un niño") y otras mal ("se detuvo y mandó" → "se detuvo y del
+  mandó"): parientes que comparten apenas 2 pares de 2 pesan como la forma original. Con más libros ese peso baja solo.
+- **Controles** con la biblioteca de formato 2: idénticos.
+- **Corrección:** las claves de 64 bits se comparan sin signo, por mitades (`sk_lt`). Restarlas desborda.
