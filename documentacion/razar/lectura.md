@@ -2011,4 +2011,4 @@ pistas"*, y *"me sirven todos los de texto o código, lo que sí entiende"*.
 - **Si no pasa nada, no corre nada.**
 
 
-**Por defecto en la PC del Capitán** (2026-11-07): el vigía arranca escondido con Windows, desde `razar_vigia.vbs` en la carpeta de Inicio, con su propia casa (`~/razar_vigia`, para no pisarse con la charla en el archivo `come`) y la biblioteca compartida. Lo que hace queda en `~/razar_vigia/vigia.log`. Para que no arranque más, se borra ese `.vbs`. La charla se abre con el comando `razar` (`C:\Users\Nicoinazar.cmd`).
+**Por defecto en la PC del Capitán** (2026-11-07): el vigía arranca escondido con Windows, desde `razar_vigia.vbs` en la carpeta de Inicio, con su propia casa (`~/razar_vigia`, para no pisarse con la charla en el archivo `come`) y la biblioteca compartida. Lo que hace queda en `~/razar_vigia/vigia.log`. Para que no arranque más, se borra ese `.vbs`. La charla se abre con el comando `razar` (`C:\Users\Nico\bin\razar.cmd`).
