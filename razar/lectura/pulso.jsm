@@ -2421,6 +2421,13 @@ vw_done:
 ; Both exams without memory (the same coin). If one won, it is built again as Razar itself: the same Razar, with one
 ; organ more. Uses j1-j14.
 organ_trials:
+  jldi j1, 0                    ; the whole landscape, if "p" asks for it (the eighth byte after K: every organ of up
+  jld j2, j1, NPAS              ; to that many letters), instead of its trials
+  jldi j3, 56
+  jshr j2, j2, j3
+  jjz j2, ot_audit
+  jjmp organ_enum
+ot_audit:
   jldi j1, 0                    ; an audit, if "p" asks for one (the seventh byte after K): instead of its trials
   jld j2, j1, NPAS
   jldi j3, 48
@@ -2562,6 +2569,107 @@ og_label:
   ol_on:
   jwend
   jadd j12, j7, j1
+  jret
+
+; The landscape of its organs (Capitan: "first study what ours does, to see if it applies: we may be wrong"): every
+; organ of one letter, then of two, up to what "p" asks, sits the champion's exam (as a candidate, in its cage, without
+; memory) and is said as its trials are, against the exam without organ. Whether the best can be reached from no organ
+; by steps of one letter that always improve (what its trials do) is read from the list. Uses j1-j14.
+organ_enum:
+  jldi j1, 0
+  jst j2, j1, AUDN
+  jcall og_init
+  jldi j1, 0
+  jld j2, j1, OGML
+  jjnz j2, oen_have
+  jret
+oen_have:
+  jcall og_base
+  jldi j1, 0
+  jld j2, j1, EVS
+  jst j2, j1, OGBASE
+  jldi j10, 35                  ; the cage, as for its organs
+  jldi j11, -1
+  jcall ask
+  jldi j1, 0
+  jadd j2, j13, j13
+  jst j2, j1, OGBUD
+  jst j1, j1, OGFILL
+  jldi j2, 1
+  jst j2, j1, AUDI              ; how many letters now
+  jld j3, j1, AUDN
+  jwhile j3
+    jldi j1, 0                  ; the first of this many: all of them 1
+    jldi j2, 0
+    jld j3, j1, AUDI
+    jwhile j3
+      jldi j4, 4
+      jshl j2, j2, j4
+      jldi j4, 1
+      jor j2, j2, j4
+      jsub j3, j3, j4
+    jwend
+    jst j2, j1, AUDC
+    jldi j2, 1
+    jst j2, j1, AUDOK1          ; (more of this many)
+    jwhile j2
+      jldi j1, 0
+      jld j2, j1, AUDC
+      jcall oa_exam
+      jcall og_line
+      jldi j1, 0                ; the next: its lowest letter one more, a 9 back to 1 carrying to the next
+      jst j1, j1, AUDOK2
+      jldi j6, 1
+      jwhile j6
+        jldi j1, 0
+        jld j5, j1, AUDOK2
+        jldi j2, 2
+        jshl j5, j5, j2
+        jld j2, j1, AUDC
+        jshr j3, j2, j5
+        jldi j4, 15
+        jand j3, j3, j4
+        jldi j4, 9
+        jsub j4, j3, j4
+        jjz j4, oen_carry
+        jldi j4, 1
+        jshl j4, j4, j5
+        jadd j2, j2, j4
+        jst j2, j1, AUDC
+        jldi j6, 0
+        jjmp oen_step
+      oen_carry:
+        jldi j4, 8
+        jshl j4, j4, j5
+        jsub j2, j2, j4
+        jst j2, j1, AUDC
+        jld j3, j1, AUDOK2
+        jldi j4, 1
+        jadd j3, j3, j4
+        jst j3, j1, AUDOK2
+        jld j4, j1, AUDI
+        jsub j4, j3, j4
+        jjnz j4, oen_step
+        jst j1, j1, AUDOK1      ; every one of this many: done
+        jldi j6, 0
+      oen_step:
+      jwend
+      jld j2, j1, AUDOK1
+    jwend
+    jld j2, j1, AUDI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDI
+    jld j3, j1, AUDN
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j4, j3, j4
+    jldi j3, 1
+    jjz j4, oen_more
+    jldi j3, 0
+  oen_more:
+  jwend
+  jldi j1, 0
   jret
 
 ; The audit of its organs (a reviewer the Capitan brought: "not hunting channels: demanding invariants, that cover

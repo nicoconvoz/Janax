@@ -1781,3 +1781,36 @@ nada que se transmitan"*.
 
 **Lo que queda:** después de rehacerse, Razar vuelve a probar las mismas siluetas, porque la huella de lo ya probado
 vive en la memoria del proceso. Son dos exámenes por vida.
+
+## El paisaje de los órganos: ¿se aplica el "paisaje engañoso"? (2026-11-07)
+
+Un texto que trajo el Capitán advertía que premiar la compresión puede hacer perder cosas pesadas que harían un mejor
+trabajo (*deceptive fitness*: para llegar a lo mejor hay que empeorar primero, y una selección que mira solo la nota de
+hoy nunca cruza el valle; Lehman y Stanley, búsqueda por novedad). Proponía un archivo por clase de peso. El Capitán:
+*"primero estudiá lo que hace lo nuestro para ver si se aplica, porque podemos estar equivocados"*.
+
+- **Lo nuestro, leído:** la nota del órgano **no** cuenta instrucciones. Cuenta los bits de aciertos menos el costo de
+  nombrar cada pieza, y un órgano con más marcos hace más caro nombrar las piezas de su piso. La jaula (el doble de lo
+  que costó la vida) no muerde: cada letra suma alrededor de 0,2 % de un examen. La búsqueda es un **escalador**:
+  cambia una letra y la acepta solo si gana.
+- **Lo nuestro, medido:** el modo paisaje (`organos.sh … 0 0 <letras>`, el octavo byte de `p`) le hace rendir el examen a
+  **todos** los órganos de hasta tantas letras. `paisaje.py` analiza la lista. Con una y dos letras (90 órganos):
+
+  | | órgano | nota |
+  |---|---|---|
+  | sin órgano | | −3554 |
+  | el mejor de una letra | `5` (el hueco es la primera palabra) | 208 |
+  | **el mejor de dos** | **`16`** (mezcla la primera palabra, el hueco es la segunda) | **2649** |
+  | otras cimas | `38`, `25` | 2193, 1314 |
+
+- **Lo que dice:**
+  - El mejor de todos se alcanza desde "sin órgano" subiendo siempre: `''` → `6` (−1586) → `16`.
+  - Pero el paisaje tiene **9 cimas**. Nuestras corridas, por la suerte de la primera mutación, fueron por `''` → `8` →
+    `5` (208). Desde `5` no se llega a `16` sin bajar primero (`6` da −1586, `15` da −3554): **para el escalador es un
+    valle, y ahí queda atrapado.**
+  - Lo más pesado le ganó a lo liviano por 2441 bits. No lo tiró el examen por pesado: lo tiró la forma de buscar.
+- **La corrección al texto:** un archivo por **peso** no lo habría salvado, porque `5` y `6` pesan lo mismo (una letra) y
+  en esa clase `5` borra a `6`. Lo que lo salva es separar por **lo que hace** el órgano (dónde pone el hueco, qué
+  mezcla). Guardando el mejor de cada comportamiento, `6` sobrevive aunque hoy rinda menos, y desde ahí se llega a
+  `16`. La idea de fondo vale: el mejor de cada clase, no un solo campeón. Lo que cambia es el eje: el comportamiento, no
+  el peso.

@@ -3,7 +3,8 @@
 # "p" (K 10, one reading, one generation, awake for good if vigil is 1, the trials asked, an audit of that many organs instead if audit is more than 0), the PDP assembler and
 # Razar's own sources under PDP/, so it can write organo.inc, build itself and launch the candidates as its children. Then Razar runs there.
 set -u
-carpeta=$1; libro=$2; intentos=$3; motor=${4:-traductor}; vigilia=${5:-0}; auditoria=${6:-0}
+carpeta=$1; libro=$2; intentos=$3; motor=${4:-traductor}; vigilia=${5:-0}; auditoria=${6:-0}; paisaje=${7:-0}
+# [landscape]: every organ of up to that many letters sits the exam instead (the whole landscape, to study it)
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
@@ -15,7 +16,7 @@ cp "$libro" "$carpeta/$(etiqueta libro)"
 if [ -n "${LLAVE:-}" ]; then   # its key for the board (16 hex digits, LLAVE=...): Razar has nothing unique of its own
   printf '%s' "$LLAVE" | xxd -r -p > "$carpeta/$(etiqueta llave)"
 fi
-printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x\\x%02x' "$vigilia" "$intentos" "$auditoria")"'\x00' \
+printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x\\x%02x\\x%02x' "$vigilia" "$intentos" "$auditoria" "$paisaje")" \
   > "$carpeta/$(etiqueta p)"
 cp "$armado/pdp/ensamblador.bin" "$carpeta/$(etiqueta ensamblador.bin)"
 cp "$armado/pdp/ensamblador.datos" "$carpeta/$(etiqueta ensamblador.datos)"
