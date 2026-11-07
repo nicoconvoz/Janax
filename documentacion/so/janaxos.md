@@ -1173,3 +1173,56 @@ estén en la PC.
   anfitrión rechaza la escritura) y el mismo programa con prefijo (no abre). Idénticas en los tres motores.
 - **Pendiente:** que se entere sola de un libro nuevo en cualquier lugar (vigilar por evento). Hoy se le dice la
   dirección.
+
+## El vigía del anfitrión: pedido 39, "lo nuevo del anfitrión" (Capitán, 2026-11-07)
+
+> *"Cuando detecte el proceso de nuevo libro escrito, vaya hasta ahí, lo coma y vuelva con las pistas."* Los libros
+> del Capitán viven en C: y en E:, no en una carpeta; copiarlos sería duplicarlos.
+
+- **`JANAX_VIGIA`** nombra carpetas del anfitrión separadas por `;` (por ejemplo `C:\;E:\`), cada una con todo lo que
+  tiene adentro. Hasta 62: `WaitForMultipleObjects` espera 64 avisos como mucho, y dos son la carpeta propia y el tablero.
+- **39 lo nuevo del anfitrión** (`a` = dónde escribir, `b` = lugar): el archivo más viejo que quedó nuevo y tranquilo,
+  su dirección en UTF-8, fuera de la fila → sus bytes; 0 si todavía no hay (y desde ahí cuenta como que pregunta: si
+  espera un saludo (29), uno nuevo lo despierta); −1 si no puede salir al anfitrión (un prefijo en el camino, como la
+  37), si no se vigila nada o si no entra. No es importante: solo lee.
+- **Es el centinela de siempre**, sin bucles: cuando nadie rema y alguien que pidió la 39 espera un saludo, el núcleo
+  duerme también en las carpetas del anfitrión (`ReadDirectoryChangesW` con todo lo que tienen adentro, en
+  `vigia.inc`). Lo avisado se guarda hasta que queda **tranquilo**: `HW_QUIET` = 67.803 ms sin otro aviso. El núcleo
+  duerme hasta que el primero se tranquiliza, y para siempre si no hay ninguno.
+- **Las reglas del anfitrión**, todas con señales que el sistema ya tiene, ninguna con una lista de nombres:
+  - es un archivo, ni oculto ni de sistema;
+  - ninguna carpeta en su camino es oculta o de sistema, y ningún nombre en su camino empieza con un punto;
+  - su dueño es el usuario o un grupo al que el usuario pertenece (`CheckTokenMembership`);
+  - no está en la carpeta propia ni en el tablero, que son donde escribe Janax: si no, se vigilaría a sí mismo.
+
+  Si es texto lo decide el programa: el núcleo no lo lee.
+
+**De dónde salió cada número** (scripts de medición de solo lectura, fuera del repo; muestran cuentas, no nombres):
+- **El costo:** 5 minutos de uso normal en C: y E: dieron 537 avisos, 1,8 por segundo y sin desbordes. De 169
+  archivos tocados, 118 ya no existían o estaban vacíos un rato después, 19 eran binarios, y de los 32 de texto, 24
+  estaban en carpetas ocultas o de sistema (`AppData` dio el 85 % de todo).
+- **El silencio:** los intervalos entre dos avisos del mismo archivo forman dos montañas. El 75 % está por debajo de
+  1 s (un mismo guardado avisado varias veces) y el resto entre 10 y 160 s (programas que reescriben su archivo).
+  `HW_QUIET` es el percentil 99, 67,8 s: lo que se escribe más seguido que eso está vivo, como un log, y no se come
+  mientras vive. La medición fue de 3 minutos, así que no ve lo que se reescribe cada 5 minutos o más.
+- **El dueño:** "el dueño es el usuario" no alcanzaba. Un texto del Capitán en la raíz de C: es de
+  `BUILTIN\Administradores`, mientras que los logs de Windows son de `SYSTEM`. Por eso la regla es "el usuario o un grupo
+  suyo".
+- `HW_BUF` = 64 KB por carpeta entre dos lecturas: el mayor que acepta el anfitrión para una carpeta de red. Si se
+  desborda (una instalación que escribe miles de archivos a la vez), lo perdido no se sabe y no se come.
+
+**Probado** con `vigia.sh` sobre `E:igia_prueba`:
+- dormido: 0 ms de procesador en 20 s;
+- un libro de texto se come 68 s después de guardarlo;
+- un binario dice "no es texto";
+- un texto en una carpeta con punto y otro en una carpeta oculta no aparecen;
+- los `.tmp` que nacen y mueren al guardar tampoco;
+- con la casa y el tablero adentro de la carpeta vigilada, Razar no se come a sí mismo.
+
+  La primera vez sí se comía su archivo `come`, y cada vez que comía lo volvía a escribir: un bucle cada 68 s. La
+  carpeta propia llega como `E:/vigia_prueba/casa` y Windows avisa `E:\vigia_prueba\casa`. Ahora `/` y `\` son la misma
+  marca, la marca del final no cuenta y A-Z vale en cualquier caso, como en los nombres del anfitrión. El tablero, que
+  llegó con `\`, ya quedaba afuera.
+
+Las seis preguntas de control dan idénticas con el núcleo nuevo. La suite no se corrió.
+

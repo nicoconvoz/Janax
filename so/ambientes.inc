@@ -1660,6 +1660,9 @@ watch_wait:
         test    eax, eax
         jz      .none
         xor     r15d, r15d              ; woke someone? (while nobody: back to sleep on the folders)
+        cmp     qword [hw_readyn], 0    ; something new in the host already: whoever asked for it wakes now
+        je      .woke
+        call    hw_wake
         jmp     .woke
 .again:
         xor     ebx, ebx                ; its own folder, and the board's if there is one: each one read for its next
@@ -1668,18 +1671,43 @@ watch_wait:
         jz      .none
         mov     r12d, 1
         cmp     qword [board_len], 0
-        je      .wait
+        je      .host
         mov     ebx, 1
         call    watch_read
         test    eax, eax
-        jz      .wait
+        jz      .host
         mov     r12d, 2
+.host:
+        call    hw_watched              ; someone asked for what is new in the host: its folders too (from bell 2 on;
+        test    eax, eax                ; the board's bell, if there is none, never rings)
+        jz      .wait
+        mov     ebx, 2
+        jmp     .hosts
+.host_lap:
+        call    hw_read
+        inc     rbx
+.hosts:
+        mov     rax, [hw_n]
+        add     rax, 2
+        cmp     rbx, rax
+        jb      .host_lap
+        mov     r12, rbx
 .wait:
+        call    hw_wait_ms              ; (forever while nothing told waits to be quiet)
+        mov     r14, rax
         call    kern_leave
-        invoke  WaitForMultipleObjects, r12, watch_event, 0, -1
+        invoke  WaitForMultipleObjects, r12, watch_event, 0, r14
         mov     rbx, rax
         call    kern_enter
         inc     qword [hostcalls]
+        cmp     rbx, 102h               ; WAIT_TIMEOUT: what was told is quiet now
+        jne     .rang
+        call    hw_mature
+        test    eax, eax
+        jz      .woke
+        call    hw_wake
+        jmp     .woke
+.rang:
         cmp     rbx, r12
         jae     .none                   ; (the host failed)
         mov     qword [watch_pend + rbx*8], 0
@@ -1692,10 +1720,14 @@ watch_wait:
         jz      .woke                   ; (it told nothing: nobody woke, it waits again)
         cmp     dword [watch_got + rbx*4], 0
         jne     .told
+        cmp     rbx, 2
+        jae     .woke                   ; (a host's folder that told too much at once: what it lost is not known)
         call    watch_all               ; it lost what changed (too much at once): every one watching wakes, and
         mov     r15d, 1                 ; each one's fingerprint tells whether it is news
         jmp     .woke
 .told:
+        cmp     rbx, 2
+        jae     .host_told
         mov     rax, rbx
         shl     rax, 12
         lea     r13, [watch_buf + rax]  ; every change it told, one after the other (there is one at least)
@@ -1708,6 +1740,18 @@ watch_wait:
 .entries:
         test    r14d, r14d
         jnz     .entry
+        jmp     .woke
+.host_told:
+        mov     r13, [hw_bufs + rbx*8 - 16]
+        mov     r14d, 1
+        jmp     .host_entries
+.host_entry:
+        call    hw_told
+        mov     r14d, [r13]
+        add     r13, r14
+.host_entries:
+        test    r14d, r14d
+        jnz     .host_entry
 .woke:
         test    r15d, r15d
         jz      .again
@@ -1794,7 +1838,12 @@ watch_any:
         cmp     qword [rsi + P_GWAIT], 1
         jne     .next
         cmp     qword [rsi + P_WATCHN], 0
+        jne     .yes
+        cmp     qword [rsi + P_HOSTW], 0
         je      .next
+        cmp     qword [hw_n], 0
+        je      .next
+.yes:
         mov     eax, 1
         ret
 .next:

@@ -1997,3 +1997,16 @@ preguntas de control dan idénticas al nido viejo, con el traductor y con el int
 repetirse entre dos libros distintos con probabilidad del orden de n²/2⁶⁵ (para diez mil libros, 10⁻¹¹): es criterio,
 no medición, y si pasara, comer vería bytes distintos y reescribiría el pedazo.
 
+## El vigía: come solo lo que se escribe en la PC (2026-11-07)
+
+Pedido del Capitán: *"cuando detecte el proceso de nuevo libro escrito, vaya hasta ahí, lo coma y vuelva con las
+pistas"*, y *"me sirven todos los de texto o código, lo que sí entiende"*.
+
+- **`vigia.sh [carpetas]`** (`JANAX_VIGIA`, `C:\;E:\` si no se le dice otra cosa) arranca `vigia.jsm`. El programa duerme
+  hasta que el núcleo le da un archivo nuevo y tranquilo (39, ver `documentacion/so/janaxos.md`), mira si es texto y,
+  si lo es, escribe su dirección en `come` y lanza `comer` como hijo, firmándole lo que pide. Después vuelve a dormir.
+  El libro no se mueve: `comer` lo lee donde está y la biblioteca guarda solo sus pistas.
+- **Qué es un libro:** lo que Razar entiende, que es texto. UTF-8 válido y ningún byte cero, mirando el archivo entero,
+  sin listas de extensiones. Vale para `.txt`, `.md`, cualquier código, `.json`. Un archivo vacío no es nada para comer.
+- **Si no pasa nada, no corre nada.**
+

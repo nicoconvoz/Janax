@@ -106,7 +106,8 @@ P_KILL   = 608                  ; 1 = its parent ended it while it rowed: it end
 P_LIMIT  = 616                  ; the instructions it may row in all (34; 0 = no budget): past them, it ends
 P_REMAKE = 624                  ; 36: the program it asked to be remade with (its own copy), and its words; 0 = none
 P_REMAKEN = 632
-PROC_SIZE = 640
+P_HOSTW  = 640                  ; 1 = it asked for what is new in the host (39): a new one wakes it while it waits
+PROC_SIZE = 648
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -152,11 +153,11 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 38                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 39                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
-                                ; open on the host, go to
+                                ; open on the host, go to, what is new in the host
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -196,17 +197,18 @@ section '.data' data readable writeable
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
-              dq serve_host_open, serve_seek
+              dq serve_host_open, serve_seek, serve_hostnew
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
+             db 3
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
-             db R_READ, R_READ
+             db R_READ, R_READ, R_READ
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
-                 db 0, 0                ; (the host door only reads: it changes nothing)
+                 db 0, 0, 0             ; (the host door only reads: it changes nothing)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -262,13 +264,45 @@ section '.data' data readable writeable
   board_len dq 0
   board_label db 'tablero/'
   WATCH_BUF = 4096              ; the sentinel: per folder (0 its own, 1 the board) its handle (0: not yet), whether a
-  watch_dir dq 2 dup 0          ; reading is pending, what the host told and its bytes, the event it rings and the
-  watch_pend dq 2 dup 0         ; reading itself (OVERLAPPED)
-  watch_event dq 2 dup 0
-  watch_ov  dq 8 dup 0
-  watch_got dd 2 dup 0
+  watch_dir dq 2 + HW_MAX dup 0 ; reading is pending, what the host told and its bytes, the event it rings and the
+  watch_pend dq 2 + HW_MAX dup 0 ; reading itself (OVERLAPPED); from 2 on, the host's folders (vigia.inc)
+  watch_event dq 2 + HW_MAX dup 0
+  watch_ov  dq 4 * (2 + HW_MAX) dup 0
+  watch_got dd 2 + HW_MAX dup 0
   align 8
   watch_buf rb 2 * WATCH_BUF
+  ; the host's watch (vigia.inc): the folders named in JANAX_VIGIA, each with all it holds
+  vigia_env du 'JANAX_VIGIA', 0
+  HW_MAX    = 62                ; WaitForMultipleObjects waits on 64 at most (the host's bound): its own folder, the
+                                ; board and these
+  HW_RAW    = 32768             ; JANAX_VIGIA, and a path, in UTF-16: the longest the host has (UNICODE_STRING)
+  HW_PATH   = 32768
+  HW_U8     = 3 * HW_PATH       ; (a UTF-16 unit is at most 3 bytes of UTF-8)
+  HW_BUF    = 65536             ; what a folder tells between two readings: the host's largest for one of the network
+  HW_QUIET  = 67803             ; ms with no other notice for a file to be quiet: 99% of the gaps between two notices
+                                ; of the same file, measured on C: and E: for 3 minutes (documentacion/so/janaxos.md)
+  hw_n      dq 0
+  hw_root   dq HW_MAX dup 0     ; each folder: where it starts in hw_raw (ended by a 0), its characters, its room
+  hw_rlen   dq HW_MAX dup 0
+  hw_bufs   dq HW_MAX dup 0
+  dir_wn    dq 0                ; its own folder and the board in UTF-16 (never watched as the host's)
+  board_wn  dq 0
+  hw_pend   dq 0                ; told and not quiet yet: {when it was last told (ms), its characters, its path padded
+  hw_pendn  dq 0                ; to 8}; its room, bytes used, the room's bytes
+  hw_pendc  dq 0
+  hw_ready  dq 0                ; quiet and passing the rules, not asked for yet: {its bytes, its path in UTF-8 padded}
+  hw_readyn dq 0
+  hw_readyc dq 0
+  hw_pathn  dq 0
+  hw_sid    dq 0                ; its owner (GetNamedSecurityInfoW), and whether the user is it or in it
+  hw_sd     dq 0
+  hw_member dd 0
+  align 8
+  dir_w     rw HOST_PATH
+  board_w   rw HOST_PATH
+  hw_raw    rw HW_RAW
+  hw_path   rw HW_PATH
+  hw_u8     rb HW_U8
   host_path db HOST_PATH + 8 dup 0
   host_path_2 db HOST_PATH + 8 dup 0
   data_path db HOST_PATH + 8 dup 0  ; the host path of a program's data file
@@ -453,7 +487,8 @@ section '.idata' import data readable writeable
 
   library kernel32, 'KERNEL32.DLL',\
           kernelbase, 'KERNELBASE.DLL',\
-          normaliz, 'NORMALIZ.DLL'
+          normaliz, 'NORMALIZ.DLL',\
+          advapi32, 'ADVAPI32.DLL'
 
   import kernel32,\
          GetCommandLineA, 'GetCommandLineA',\
@@ -495,7 +530,15 @@ section '.idata' import data readable writeable
          ReadDirectoryChangesW, 'ReadDirectoryChangesW',\
          CreateEventA, 'CreateEventA',\
          WaitForMultipleObjects, 'WaitForMultipleObjects',\
-         GetOverlappedResult, 'GetOverlappedResult'
+         GetOverlappedResult, 'GetOverlappedResult',\
+         GetEnvironmentVariableW, 'GetEnvironmentVariableW',\
+         GetTickCount64, 'GetTickCount64',\
+         GetFileAttributesW, 'GetFileAttributesW',\
+         LocalFree, 'LocalFree'
+
+  import advapi32,\
+         GetNamedSecurityInfoW, 'GetNamedSecurityInfoW',\
+         CheckTokenMembership, 'CheckTokenMembership'
 
   import kernelbase,\
          VirtualAlloc2, 'VirtualAlloc2',\
@@ -541,6 +584,7 @@ start:
         mov     [watch_event], rax
         invoke  CreateEventA, 0, 0, 0, 0
         mov     [watch_event + 8], rax
+        call    hw_start                ; the host's folders it watches, if any (vigia.inc)
         invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
         invoke  GetSystemInfo, sysinfo
         mov     eax, dword [sysinfo + 4] ; dwPageSize
@@ -1804,6 +1848,7 @@ include 'anfitrion.inc'
 include 'ayudantes.inc'
 include 'remos.inc'
 include 'ambientes.inc'
+include 'vigia.inc'
 
 macro memop name, size, align_check, is_load, body {
   local translate, inside
@@ -3712,6 +3757,7 @@ gate_greeting:
 serve_gate serve_say,  30, gate_say
 serve_gate serve_hear, 31, gate_hear
 serve_gate serve_watch, 32, gate_watch
+serve_gate serve_hostnew, 39, gate_hostnew
 
 gate_say:
         sub     rsp, 8
