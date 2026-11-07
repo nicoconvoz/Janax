@@ -40,7 +40,8 @@ while IFS= read -r -e -p "vos> " linea; do
       razar comer
       rm -f "$casa/$(etiqueta come)" ;;
     *)
-      printf '%s\n' "$linea" > "$casa/$(etiqueta q)"
+      rm -f "$casa/$(etiqueta camino)" "$casa/$(etiqueta libro)"   # a new question walks from nothing: a round
+      printf '%s\n' "$linea" > "$casa/$(etiqueta q)"                  # that fell must not leave it its walk
       razar pregunta ;;
   esac
 done
