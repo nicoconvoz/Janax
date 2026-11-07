@@ -115,7 +115,8 @@ jst j1, j1, NPC
 jst j1, j1, NSWP
 jst j1, j1, NDRP
 jldi j9, 0
-jld j10, j1, RMASK
+jld j10, j1, ROOMD             ; (every place of the differences' table)
+jld j10, j10, 8
 jldi j2, 1
 jadd j10, j10, j2
 jwhile j10
@@ -123,6 +124,7 @@ jwhile j10
   jldi j3, 48
   jmul j3, j9, j3
   jld j2, j1, ROOMD
+  jld j2, j2, 0
   jadd j3, j3, j2
   jld j2, j3, 0
   jjz j2, pc_next

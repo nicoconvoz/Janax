@@ -3669,7 +3669,8 @@ mem_save:
   jldi j1, 0                    ; room for all of them: the pieces that pay now, and what it carried
   jld j11, j1, TMEM + 16
   jldi j9, 0
-  jld j10, j1, RMASK
+  jld j10, j1, ROOMD             ; (every place of the differences' table)
+  jld j10, j10, 8
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -3677,6 +3678,7 @@ mem_save:
     jldi j3, 48
     jmul j3, j9, j3
     jld j2, j1, ROOMD
+    jld j2, j2, 0
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, mz_next
@@ -3702,7 +3704,8 @@ mem_save:
   jst j1, j1, MCNT
   jst j1, j1, MHELP
   jldi j9, 0                    ; the pieces now
-  jld j10, j1, RMASK
+  jld j10, j1, ROOMD             ; (every place of the differences' table)
+  jld j10, j10, 8
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -3710,6 +3713,7 @@ mem_save:
     jldi j3, 48
     jmul j3, j9, j3
     jld j2, j1, ROOMD
+    jld j2, j2, 0
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, ms_next
@@ -3757,8 +3761,7 @@ mem_save:
     jjz j5, mc_next
     jst j9, j1, GE
     jld j2, j1, ROOMD
-    jldi j3, 48
-    jcall t_find
+    jcall pl_find
     jld j2, j4, 0
     jjnz j2, mc_next
     jld j3, j1, GE              ; its evidence halved: does it still pay its name?
@@ -4749,13 +4752,15 @@ kind_report:
     jldi j11, 0
     jldi j12, 0
     jldi j9, 0
-    jld j10, j1, RMASK
+    jld j10, j1, ROOMD             ; (every place of the differences' table)
+    jld j10, j10, 8
     jldi j2, 1
     jadd j10, j10, j2
     jwhile j10
       jldi j3, 48
       jmul j3, j9, j3
       jld j2, j1, ROOMD
+      jld j2, j2, 0
       jadd j3, j3, j2
       jld j2, j3, 0
       jjz j2, kr_next

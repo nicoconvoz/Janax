@@ -1615,3 +1615,38 @@ veces y su forma canónica una sola. No cambia ningún marco, solo le da otro no
 nota se mueve. La sospecha, **no verificada**, es que algún desempate se resuelve por el orden de los casilleros de una
 tabla, que depende de las claves. Entonces la nota dependería de cómo se llaman las cosas. Los otros 23 renombres
 pasaron.
+
+**La fuga por el nombre, encontrada** (Capitán: *"por lo otro sí, buscalo"*). Con el mismo órgano `17`, cambiar solo la
+constante de su molde (102h por 103h, un renombre puro de todas sus claves) movía los pulsos (139.268 → 139.257), las
+piezas y los aciertos. Así quedó probado que el nombre importaba. Durante la lectura no se recorre ninguna tabla, así
+que el canal tenía que estar en cómo se combinan las claves. Y estaba en el **testimonio**: "¿este marco ya dijo esta
+diferencia en esta lectura?" se armaba con `hw(marco, diferencia)`, es decir `(marco ^ diferencia)·P`. `hw` es un paso de
+FNV pensado para bytes, y acá combinaba dos hashes de 64 bits: dos pares distintos con el mismo XOR chocaban, y un
+testimonio verdadero se perdía como "dicho antes". Cuál se perdía dependía de los nombres.
+
+- **La ley:** dos hashes no se combinan con un XOR desnudo. Uno se mezcla fuerte antes (`hmix`, el final de splitmix64).
+  Donde se combina un hash con algo chico (una letra, una palabra), FNV sirve. No se salió a buscar los demás uno por uno:
+  el instrumento es la auditoría.
+- **Medido:** con la mezcla, `17` y su renombre dan idénticos, el reporte entero y la huella. `17` da 139.291 pulsos, lo
+  mismo que daba `1117`: el nombre de `17` le hacía perder 23 testimonios. En la lectura de fábrica aparecen 2
+  testimonios de puertas que se perdían (72.811 → 72.813). La huella de pulso pasa a `ABF36C6B076E`; `pregunta` y
+  `sentido` no cambian. Cuesta +0,25 % de instrucciones.
+- **La auditoría, completa:** `auditoria 50: orden y basura 50, escritura 50 (24), base -3554 -3554`.
+
+**Las tres tablas crecen a la medida del uso** (Capitán: *"no quiero desperdiciar nada"*). Pedidos, rellenos y
+diferencias se reservaban para todo lo que podría llegar a hacer falta, el doble y redondeado a una potencia de dos: 2²¹
+lugares cada una, 192 MB en total, con tres de cada cuatro lugares vacíos. Ahora son tablas que crecen (`crece.inc`):
+empiezan chicas, se duplican antes de pasar la mitad, y cada una tiene su descriptor en una sala. Las búsquedas usan
+`pl_find`, las altas `pl_take`, y los recorridos el tamaño de cada tabla. Ningún puntero a una entrada sobrevive a un
+alta en su misma tabla: se revisó lugar por lugar.
+
+| | tablas fijas | tablas que crecen |
+|---|---|---|
+| huella de pulso | `ABF36C6B076E` | **`ABF36C6B076E`, idéntica** |
+| `pregunta`, `sentido` | `E78A9442B1C1`, `1570B9C9E345` | idénticas |
+| pico de memoria (Nuevo Testamento) | 294,1 MB | **155,1 MB (−47 %)** |
+| instrucciones | 2.640 millones | **1.966 millones (−25 %)** |
+
+Que las huellas den idénticas es una prueba más: ningún resultado depende de la capacidad de las tablas ni del orden de
+sus casilleros. Es más rápido porque cada lectura vaciaba y recorría 2 millones de casilleros por tabla, y ahora recorre
+solo los que usa.

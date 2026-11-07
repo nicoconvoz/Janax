@@ -3,14 +3,14 @@
 ; the pulses and judges every difference; all_floors with TESTING 1 then knocks with what it never read. The program
 ; that includes it keeps its own variables from 1600h on and includes it before lectura.inc.
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
-ROOMR = 1208h                   ; the requests: {key, its silhouette (a filling, or the empty as 1 << 62), its weight,
-                                ; the occurrence it was last met in}
+ROOMR = 1208h                   ; the requests (a growing table, crece.inc; this holds where it is): {key, its silhouette
+                                ; (a filling, or the empty as 1 << 62), its weight, the occurrence it was last met in}
                                 ; (24 bytes)
 ROOMS = 1F20h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
                                 ; its question's bits} per place (56 bytes)
-ROOMD = 1218h                   ; the differences: {key, low, high, floor | turned << 8, pairs, bits saved (in 2^-16)}
+ROOMD = 1218h                   ; the differences (growing, the same): {key, low, high, floor | turned << 8, pairs, bits
+                                ; saved (in 2^-16)}
                                 ; per place (48 bytes)
-RMASK = 1220h                   ; places of each of the three, minus 1
 TESTING = 1228h                 ; 1: knocking with what it never read (nothing is written)
 FLOOR = 1230h                   ; 1 gemelos, 2 interruptores and asociados, 3 puertas
 JJ    = 1238h                   ; the unit being walked, how many are left, its place
@@ -29,7 +29,7 @@ WI    = 1298h
 WID   = 12A0h
 NREQ  = 12A8h                   ; requests hung
 TOPN  = 12B0h
-ROOMF = 12B8h                   ; the fillings: {key, pulses it took part in} per place
+ROOMF = 12B8h                   ; the fillings (growing, the same): {key, pulses it took part in}
 PA    = 12C0h                   ; the pulse: its waiting filling and the one that arrived; its kind
 PB    = 12C8h
 RC    = 12D0h
@@ -78,7 +78,8 @@ ROOMFX = 15A0h                  ; by word: how often it was the frame kept (foun
 ROOMVR = 15A8h                  ; (furniture); the frame of the request being hung; the pulses of the same place with
 ROOMHL = 15C8h                  ; another word, and how many
 NHL   = 15D0h
-OCCUR = 15D8h                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
+OCCUR = 15D8h
+DNEW  = 15E0h                   ; the difference just met was born now                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
 KW1   = 15B0h
 KW2   = 15B8h
 KW3   = 15C0h
@@ -164,22 +165,28 @@ jwend
 jldi j1, 0                      ; (a reading after the first: its tables are there, emptied)
 jld j2, j1, LPDONE
 jjnz j2, lp_awake
-jldi j1, 0                      ; its three tables: places for every request it could ever hang (the letters of every
-jld j2, j1, ARPOS               ; word, and four per unit), twice over
-jld j3, j1, NTOK
-jldi j4, 2
-jshl j3, j3, j4
-jadd j2, j2, j3
-jadd j2, j2, j2
-jcall pow2
-jldi j4, 1
-jsub j4, j3, j4
-jst j4, j1, RMASK
-jldi j4, 32
-jmul j11, j3, j4
-jcall room
+jldi j1, 0                      ; its three tables, each one growing to what it holds (Capitan: "nothing wasted"; they
+jldi j11, 96                    ; were reserved for every request it could ever hang, twice over: three in four places
+jcall room                      ; empty): where each one is, in a room of their own
 jldi j1, 0
 jst j13, j1, ROOMR
+jldi j2, 32
+jadd j2, j13, j2
+jst j2, j1, ROOMF
+jldi j2, 64
+jadd j2, j13, j2
+jst j2, j1, ROOMD
+jld j2, j1, ROOMR
+jldi j3, 32
+jcall pl_new
+jldi j1, 0
+jld j2, j1, ROOMF
+jldi j3, 16
+jcall pl_new
+jldi j1, 0
+jld j2, j1, ROOMD
+jldi j3, 48
+jcall pl_new
 jld j2, j1, FORMS               ; the forms, only if asked for
 jjz j2, lp_noforms
 jldi j2, ROOMS                  ; (one of each kind: it grows to what it holds, crece.inc)
@@ -198,23 +205,6 @@ jcall pl_new
 jldi j2, TRC                    ; what each filling and each floor pulsed in each reading
 jldi j3, 16
 jcall pl_new
-jldi j1, 0
-jld j3, j1, RMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 4
-jshl j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMF
-jld j3, j1, RMASK
-jldi j4, 1
-jadd j3, j3, j4
-jldi j4, 48
-jmul j11, j3, j4
-jcall room
-jldi j1, 0
-jst j13, j1, ROOMD
 jldi j2, 1                      ; (its rooms exist: a reading after this one empties and reuses them)
 jst j2, j1, LPDONE
 
@@ -264,24 +254,12 @@ lp_clear:
   jldi j4, 3
   jshl j3, j3, j4
   jcall zfill
-  jld j5, j1, RMASK             ; the requests, the fillings, the differences
-  jldi j4, 1
-  jadd j5, j5, j4
-  jst j5, j1, PDK
-  jld j2, j1, ROOMR
-  jldi j4, 32
-  jmul j3, j5, j4
-  jcall zfill
-  jld j5, j1, PDK
+  jld j2, j1, ROOMR             ; the requests, the fillings, the differences
+  jcall pl_clear
   jld j2, j1, ROOMF
-  jldi j4, 4
-  jshl j3, j5, j4
-  jcall zfill
-  jld j5, j1, PDK
+  jcall pl_clear
   jld j2, j1, ROOMD
-  jldi j4, 48
-  jmul j3, j5, j4
-  jcall zfill
+  jcall pl_clear
   jldi j2, TPT                  ; the growing ones, in the places they grew to
   jcall pl_clear
   jldi j2, TRD
@@ -600,30 +578,6 @@ hw:
   jmul j2, j2, j4
   jret
 
-; The place of key j5 in the table at j2, j3 bytes a place -> j4 (empty if the key is not there). Uses j1, j4, j6-j8.
-t_find:
-  jldi j1, 0
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, RMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jmul j4, j6, j3
-    jadd j4, j4, j2
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, tf_full
-    jldi j8, 0
-  tf_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, RMASK
-    jand j6, j6, j7
-  jwend
-  jret
-
 ; A request: key j2, filled by j3 (0: said empty). Its floor's depth (Capitan: "it can be deeper, but no depth wasted: if
 ; it is 3, do not reach 4"): a request keeps its last moves, as many as its floor's depth, and the next one wakes the
 ; pulse with each that is another, and goes first. Awake it hangs and wakes; knocking it only wakes. When FORMS asks
@@ -641,8 +595,7 @@ po_key:
   jjz j6, po_go                 ; everything a post counts: the forms, the silhouette's vote, the exam's hit): met
   jadd j5, j2, j1               ; again in the same occurrence of the text, the same evidence is not counted twice
   jld j2, j1, ROOMR             ; (the audit found it: a frame posted twice at one place counted twice)
-  jldi j3, 32
-  jcall t_find
+  jcall pl_find
   jld j6, j4, 0
   jjz j6, po_go                 ; (not asleep yet: it is stamped when it is)
   jld j6, j1, OCCUR
@@ -701,10 +654,8 @@ po_req:
   jldi j1, 0
   jld j5, j1, KEY
   jld j2, j1, ROOMR
-  jldi j3, 32
-  jcall t_find
-  jld j6, j4, 0
-  jjnz j6, po_old
+  jcall pl_take
+  jjz j6, po_old
   jld j6, j1, OCCUR
   jst j6, j4, 24
   jst j5, j4, 0                 ; a new request falls asleep: its silhouette is its first move, weight one
@@ -748,8 +699,7 @@ po_done:
 po_test:
   jadd j5, j2, j1
   jld j2, j1, ROOMR
-  jldi j3, 32
-  jcall t_find
+  jcall pl_find
   jld j6, j4, 0
   jjz j6, po_done               ; nothing asleep there
   jjmp po_meet
@@ -805,8 +755,10 @@ pulse:
   jjnz j6, pu_any
   jst j5, j1, PDK
   jld j2, j1, KEY               ; this place and this difference, in this reading: said before?
-  jadd j3, j5, j1
+  jcall hmix
+  jld j3, j1, PDK
   jcall hw
+  jcall hmix
   jld j3, j1, PASN
   jcall hw
   jjnz j2, pu_k
@@ -853,9 +805,18 @@ pu_kd:
 pu_first:
   jld j5, j1, PDK
 pu_any:
+  jst j1, j1, DNEW              ; awake it is born if it is new (its table grows to hold it); knocking, only looked up
   jld j2, j1, ROOMD
-  jldi j3, 48
-  jcall t_find
+  jld j7, j1, TESTING
+  jjnz j7, pu_look
+  jcall pl_take
+  jldi j1, 0
+  jst j6, j1, DNEW
+  jjmp pu_got
+pu_look:
+  jcall pl_find
+pu_got:
+  jldi j1, 0
   jld j6, j1, CAT
   jst j6, j1, RC
   jldi j7, 3
@@ -915,8 +876,7 @@ pb_go:
   jld j5, j1, PDK
 pb_key:
   jld j2, j1, ROOMD
-  jldi j3, 48
-  jcall t_find
+  jcall pl_find
   jld j7, j4, 40
   jldi j8, 63
   jsar j8, j7, j8
@@ -931,9 +891,8 @@ pb_key:
   jst j7, j6, TBLC
   jret
 pl_awake:
-  jld j7, j4, 0
-  jjnz j7, pl_count
-  jst j5, j4, 0
+  jld j7, j1, DNEW
+  jjz j7, pl_count
   jld j7, j1, DLO
   jst j7, j4, 8
   jld j7, j1, DHI
@@ -1080,10 +1039,7 @@ f_find:
 ff_key:
   jadd j5, j2, j1
   jld j2, j1, ROOMF
-  jldi j3, 16
-  jcall t_find
-  jst j5, j4, 0
-  jret
+  jjmp pl_take
 
 ; The filling j2 of the floor FLOOR took part in one more pulse. Uses j1-j8.
 f_bump:
@@ -1119,7 +1075,8 @@ fb_old:
 judge:
   jldi j9, 0
   jldi j1, 0
-  jld j10, j1, RMASK
+  jld j10, j1, ROOMD            ; (every place of the differences' table)
+  jld j10, j10, 8
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -1127,6 +1084,7 @@ judge:
     jldi j3, 48
     jmul j3, j9, j3
     jld j2, j1, ROOMD
+    jld j2, j2, 0
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, ju_next
@@ -1324,7 +1282,8 @@ cp_room:
     jsub j10, j10, j2
   jwend
   jldi j9, 0                    ; every associate piece: each of its two words keeps the strongest
-  jld j10, j1, RMASK
+  jld j10, j1, ROOMD            ; (every place of the differences' table)
+  jld j10, j10, 8
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -1332,6 +1291,7 @@ cp_room:
     jldi j3, 48
     jmul j3, j9, j3
     jld j2, j1, ROOMD
+    jld j2, j2, 0
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, cp_next
@@ -1604,3 +1564,31 @@ putletter:
   jld j2, j1, RENT
   jjmp putch
 
+
+; j2 mixed well (splitmix64's end): every bit of it moves every bit, so two keys combined after it never collide by
+; their structure (FNV's step, xor and multiply, takes bytes: two 64-bit keys whose xor is the same would). Uses j1, j3,
+; j4.
+hmix:
+  jldi j3, 30
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j4, 0
+  jshi j4, 0BF58h
+  jshi j4, 476Dh
+  jshi j4, 1CE4h
+  jshi j4, 0E5B9h
+  jmul j2, j2, j4
+  jldi j3, 27
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j4, 0
+  jshi j4, 94D0h
+  jshi j4, 49BBh
+  jshi j4, 1331h
+  jshi j4, 11EBh
+  jmul j2, j2, j4
+  jldi j3, 31
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j1, 0
+  jret
