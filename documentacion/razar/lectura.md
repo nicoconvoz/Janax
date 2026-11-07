@@ -2678,3 +2678,27 @@ mucho más"*.
 - **Lo que queda abierto:** con un sujeto muy dicho es una catarata. "¿quién es jesús?" da 134 hechos y "¿qué es la
   ley?" da 38. Tiene que elegir qué decir, como un organismo, y no volcar todo.
 
+## El hilo del sujeto como párrafo (2026-11-07)
+
+El Capitán: *"que elija con su semilla, pero que encadene todo con instrucciones (palabras) que me den un párrafo rico
+en vez de ideas sueltas"*.
+
+- **Cuántas cláusulas:** tantas como hechos mete el libro en un edificio, en promedio (sus hechos sobre sus edificios,
+  redondeado para arriba), y como mucho tantas como clases de relación tenga el sujeto. Lo dice el libro, no un número
+  fijo.
+- **Cuáles (`q_paragraph`):** la semilla del organismo sortea primero una clase de relación (su esqueleto: "hijo de",
+  "le dijo", "tomó a"...), pesada por los votos de sus hechos, y después un hecho de esa clase. Solo entran los hechos
+  donde el sujeto va primero. Lo que ya dijo no lo repite.
+- **Cómo se encadenan:** el sujeto se dice una vez. Las cláusulas se pegan con lo que une, y lo que une es lo que se da
+  vuelta: de las unidades cuyo "_ u _" es simétrico en esa lectura, la más simétrica va antes de la última cláusula y
+  la siguiente entre las demás (en el NT, "y" y ","). Una marca se pega a la palabra de antes.
+- **Medido** (NT):
+  - "¿quién es jesús?" → "jesús le respondió y les respondió y tomó a pedro y se estremeció, dijo a sus discípulos";
+  - "¿quién es pedro?" → "pedro le dijo, juan y santiago, tomando la palabra";
+  - ninguna respuesta de control se perdió, y las de dos pasos siguen.
+- **Lo flojo:**
+  - en la biblioteca real, la documentación da párrafos pobres ("jacob, hijo de matán; jacob, padre hijo de isaac
+    ..."), porque su texto tiene la estructura del código y de las tablas;
+  - los hechos donde el sujeto va al final ("isaac, padre de jacob") todavía no entran: hay que darlos vuelta;
+  - como el diario cambia la semilla, el párrafo cambia de una vez a la otra.
+

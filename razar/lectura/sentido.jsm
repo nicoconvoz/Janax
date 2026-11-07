@@ -309,6 +309,16 @@ ORFX  = 5398h
 ORA   = 53A0h
 ORB   = 53A8h
 ORL   = 53B0h
+QPK   = 5400h                   ; the subject's paragraph: by kind of relation {key, votes} (a table that grows); walking;
+QPA   = 5420h                   ; the clauses, the one said; a kind, its votes, the seed's place; the glue, the
+QPB   = 5428h                   ; instruction that joins
+QPN   = 5430h
+QPI   = 5438h
+QPE   = 5440h
+QPV   = 5448h
+QPP   = 5450h
+QPG   = 5458h
+QPJ   = 5460h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -5491,7 +5501,7 @@ oe_pair:                        ; (a pair of a word: one more word has it)
 ; A question about a subject as a whole (Capitan, 2026-11-07: "the path of jacob's subjects surely knew much more"):
 ; when its only furniture (no arrow) is one core, it asks for the subject, not one relation of it. The answer is its
 ; thread: every fact of it the reading proves (said twice at least, a skeleton with a word in its middle, the core at
-; one end), the most said first, each said as a sentence; one already given is not said again. Uses j1-j14.
+; one end), said as one paragraph the organism chooses and chains (q_paragraph). Uses j1-j14.
 q_subject:
   jldi j1, 0
   jst j1, j1, QSW               ; its one core (0: none or more than one)
@@ -5592,86 +5602,377 @@ qsu_one:
     jadd j2, j2, j3
     jst j2, j1, QSN
     jjmp qsu_fact
-qsu_said:                       ; said: the most said first, proven ones only
+qsu_said:                       ; said as one paragraph, chosen and chained
+  jjmp q_paragraph
+qsu_done:
   jldi j1, 0
-  jldi j11, 1
-  jldi j12, 0
-  jld j9, j1, QST
+  jret
+
+; The subject's paragraph (Capitan, 2026-11-07: "let it choose with its seed, but chain everything with instructions,
+; words, into a rich paragraph instead of loose ideas"). Of the subject's proven facts where it comes first, one for
+; each kind of relation (its skeleton: diversity), chosen by its seed's lottery among that kind, each fact voting its
+; times. The subject is said once, and each relation follows it, joined by the glue the books put between facts the
+; most (GLT: one unit between) and, before the last, by the instruction that joins the most (the dictionary: the one
+; whose "_ w _" turns on itself the most). The kinds said the most first. Uses j1-j14.
+q_paragraph:
+  jldi j1, 0
+  jld j2, j1, GEN               ; (its genome and seed, if no thought loaded them yet)
+  jjnz j2, qp_seeded
+  jcall th_genome
+  jcall dia_load
+qp_seeded:
+  jldi j1, 0
+  jld j2, j1, QCW
+  jst j2, j1, THX
+  jcall th_seed
+  jldi j2, QPK                  ; by kind (skeleton) {key, votes}
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, QST               ; the kinds of its proven facts where it comes first
   jld j10, j1, QST + 8
   jldi j2, 1
   jadd j10, j10, j2
-  qss_find:
-    jjz j10, qss_found
-    jld j2, j9, 0
-    jjz j2, qss_fnext
-    jld j2, j9, 8
-    jsub j3, j11, j2
-    jldi j4, 63
-    jsar j3, j3, j4
-    jjz j3, qss_fnext
-    jadd j11, j2, j1
-    jadd j12, j9, j1
-  qss_fnext:
+  qpk_lap:
+    jldi j1, 0
+    jjz j10, qpk_done
+    jst j9, j1, QPA
+    jst j10, j1, QPB
+    jcall qp_takes
+    jjz j2, qpk_next
+    jld j9, j1, QPA
+    jld j5, j9, 16
+    jld j5, j5, 16
+    jldi j2, QPK
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, QPA
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+  qpk_next:
+    jldi j1, 0
+    jld j9, j1, QPA
+    jld j10, j1, QPB
     jld j2, j1, QST + 24
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp qss_find
-qss_found:
-  jjz j12, qsu_done
-  jld j2, j12, 8                ; (taken: its times go negative)
-  jldi j3, 0
-  jsub j2, j3, j2
-  jst j2, j12, 8
-  jld j9, j12, 16
-  jst j9, j1, QSE
-  jld j5, j9, 16                ; a skeleton with a word in its middle
+    jjmp qpk_lap
+qpk_done:
+  jld j2, j1, QPK + 16          ; the clauses: as many facts as the book puts in a building (its facts by its
+  jjz j2, qp_none               ; buildings, rounded up), the kinds at most
+  jld j3, j1, GFN
+  jld j4, j1, NBLD
+  jjz j4, qpn_kinds
+  jadd j3, j3, j4
+  jldi j5, 1
+  jsub j3, j3, j5
+  jdiv j3, j3, j4
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, qpn_kinds
+  jadd j2, j3, j1
+qpn_kinds:
+  jst j2, j1, QPN
+  jst j1, j1, QPI
+  jcall qp_glues
+  qpc_lap:                      ; each clause: a kind not said yet, by the seed's lottery over their votes
+    jldi j1, 0
+    jld j2, j1, QPI
+    jld j3, j1, QPN
+    jsub j2, j2, j3
+    jjz j2, qp_end
+    jldi j11, 0                 ; (the votes left)
+    jld j9, j1, QPK
+    jld j10, j1, QPK + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    qpc_sum:
+      jjz j10, qpc_summed
+      jld j2, j9, 0
+      jjz j2, qpc_snext
+      jld j2, j9, 8
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, qpc_snext
+      jadd j11, j11, j2
+    qpc_snext:
+      jld j2, j1, QPK + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp qpc_sum
+  qpc_summed:
+    jjz j11, qp_end
+    jst j11, j1, QPV
+    jcall th_rand
+    jldi j1, 0
+    jldi j3, 1
+    jshr j2, j2, j3
+    jld j3, j1, QPV
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jldi j12, 0
+    jld j9, j1, QPK
+    jld j10, j1, QPK + 8
+    jldi j3, 1
+    jadd j10, j10, j3
+    qpc_pick:
+      jjz j10, qpc_found
+      jld j3, j9, 0
+      jjz j3, qpc_pnext
+      jld j3, j9, 8
+      jldi j4, 63
+      jsar j4, j3, j4
+      jjnz j4, qpc_pnext
+      jsub j2, j2, j3
+      jldi j4, 63
+      jsar j4, j2, j4
+      jjz j4, qpc_pnext
+      jadd j12, j9, j1
+      jjmp qpc_found
+    qpc_pnext:
+      jld j3, j1, QPK + 24
+      jadd j9, j9, j3
+      jldi j3, 1
+      jsub j10, j10, j3
+      jjmp qpc_pick
+  qpc_found:
+    jjz j12, qp_end
+    jst j12, j1, QPE
+    jld j2, j12, 8
+    jst j2, j1, QPV
+    jldi j3, 0                  ; (taken)
+    jsub j2, j3, j2
+    jst j2, j12, 8
+    jcall th_rand               ; its fact: the seed's place among the kind's votes
+    jldi j1, 0
+    jldi j3, 1
+    jshr j2, j2, j3
+    jld j3, j1, QPV
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jst j2, j1, QPP
+    jld j9, j1, QST
+    jld j10, j1, QST + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    qpf_lap:
+      jldi j1, 0
+      jjz j10, qpc_lap
+      jst j9, j1, QPA
+      jst j10, j1, QPB
+      jcall qp_takes
+      jjz j2, qpf_next
+      jld j9, j1, QPA
+      jld j2, j9, 16
+      jld j2, j2, 16
+      jld j3, j1, QPE
+      jld j3, j3, 0
+      jsub j2, j2, j3
+      jjnz j2, qpf_next
+      jld j2, j1, QPP
+      jld j3, j9, 8
+      jsub j2, j2, j3
+      jst j2, j1, QPP
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjz j2, qpf_next
+      jcall qp_clause           ; chosen: said
+      jjmp qpc_lap
+    qpf_next:
+      jldi j1, 0
+      jld j9, j1, QPA
+      jld j10, j1, QPB
+      jld j2, j1, QST + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp qpf_lap
+qp_end:
+  jldi j2, 10
+  jcall putch
+  jcall flush
+qp_none:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the entry of QST at QPA is a proven fact where the subject comes first, with a word in its middle. Uses
+; j1-j11.
+qp_takes:
+  jldi j1, 0
+  jld j9, j1, QPA
+  jld j2, j9, 0
+  jjz j2, qpt_no
+  jld j2, j9, 8
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, qpt_no
+  jld j9, j9, 16                ; the fact: the subject first
+  jld j2, j9, 0
+  jcall tok_at
+  jld j3, j1, QCW
+  jsub j2, j2, j3
+  jjnz j2, qpt_no
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jld j5, j9, 16
   jldi j2, TMI
   jcall pl_find
   jldi j1, 0
   jld j2, j4, 0
-  jjz j2, qsu_said
-  jst j4, j1, QSZ
+  jjz j2, qpt_no
   jadd j12, j4, j1
-  jcall sk_word
-  jjz j2, qsu_said
-  jld j9, j1, QSE
-  jld j2, j9, 0
-  jcall tok_at
-  jst j2, j1, QSX
-  jld j9, j1, QSE
+  jjmp sk_word
+qpt_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; The fact of QST's entry at QPA said as the next clause: the first with its subject, the next ones after the glue,
+; the last after the instruction that joins. Uses j1-j14.
+qp_clause:
+  jldi j1, 0                    ; (what it already said, it does not say again)
+  jld j9, j1, QPA
+  jld j9, j9, 16
   jld j2, j9, 8
   jcall tok_at
-  jst j2, j1, QSY
-  jld j5, j1, QSX               ; its other end not given already
-  jld j3, j1, QCW
-  jsub j3, j5, j3
-  jjnz j3, qss_other
-  jld j5, j1, QSY
-qss_other:
+  jadd j5, j2, j1
   jldi j2, TSN
   jcall pl_take
   jldi j1, 0
-  jjz j6, qsu_said
-  jld j2, j1, QNA
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, QNA
+  jjnz j6, qpcl_new
+  jret
+qpcl_new:
+  jld j2, j1, QPI
+  jjnz j2, qpcl_glue
   jldi j1, S_ANS
   jcall puts
-  jld j2, j1, QSX
+  jld j2, j1, QCW
+  jcall putword
+  jjmp qpcl_mid
+qpcl_glue:
+  jld j2, j1, QPI               ; the last one: the joiner that turns the most; the rest: the next one
+  jld j3, j1, QPN
+  jldi j4, 1
+  jsub j3, j3, j4
+  jsub j3, j2, j3
+  jld j2, j1, QPJ
+  jjz j3, qpcl_put
+  jld j2, j1, QPG
+qpcl_put:
+  jjz j2, qpcl_mid
+  jst j2, j1, QPB
+  jcall w_mark                  ; a mark goes against the word before; a word, after a space
+  jldi j1, 0
+  jjnz j3, qpcl_mark
+  jldi j2, 32
+  jcall putch
+qpcl_mark:
+  jldi j1, 0
+  jld j2, j1, QPB
   jcall putword
   jldi j2, 32
   jcall putch
-  jld j12, j1, QSZ
-  jcall put_plain
-  jld j2, j1, QSY
-  jcall putword
-  jldi j2, 10
+  jjmp qpcl_mid2
+qpcl_mid:
+  jldi j1, 0
+  jldi j2, 32
   jcall putch
-  jcall flush
-  jjmp qsu_said
-qsu_done:
+qpcl_mid2:
+  jldi j1, 0
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jld j5, j9, 16
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jadd j12, j4, j1
+  jcall put_plain
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jld j2, j9, 8
+  jcall tok_at
+  jcall putword
+  jldi j1, 0
+  jld j2, j1, QPI
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QPI
+  jld j2, j1, QNA
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jjmp flush
+
+; The joiners it chains with (what joins is what turns: "pan y vino" is "vino y pan"): of the units whose "_ u _" (one
+; piece between) turns on itself twice at least in this reading, the one that turns the most (QPJ, before the last
+; clause) and the next (QPG, between the others; the first if there is no second). Uses j1-j14.
+qp_glues:
+  jldi j1, 0
+  jst j1, j1, QPG
+  jst j1, j1, QPJ
+  jldi j11, 1                   ; (the most, the next)
+  jldi j12, 1
+  jld j9, j1, TMI
+  jld j10, j1, TMI + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  qpg_lap:
+    jldi j1, 0
+    jjz j10, qpg_fill
+    jld j2, j9, 0
+    jjz j2, qpg_next
+    jld j2, j9, 24              ; one piece between
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, qpg_next
+    jld j2, j9, 40
+    jsub j3, j12, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qpg_next
+    jst j2, j1, QPB             ; its unit
+    jld j3, j9, 16
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j9, j1, QPA
+    jadd j2, j3, j1
+    jcall tok_at
+    jld j9, j1, QPA
+    jld j3, j1, QPB
+    jsub j4, j11, j3            ; the most so far moves to next
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, qpg_second
+    jld j4, j1, QPJ
+    jst j4, j1, QPG
+    jadd j12, j11, j1
+    jst j2, j1, QPJ
+    jadd j11, j3, j1
+    jjmp qpg_next
+  qpg_second:
+    jst j2, j1, QPG
+    jadd j12, j3, j1
+  qpg_next:
+    jldi j1, 0
+    jld j2, j1, TMI + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp qpg_lap
+qpg_fill:
+  jld j2, j1, QPG
+  jjnz j2, qpg_done
+  jld j2, j1, QPJ
+  jst j2, j1, QPG
+qpg_done:
   jldi j1, 0
   jret
 
