@@ -2221,3 +2221,15 @@ su contenido"*. Hasta acá los pedazos guardaban las letras de todas las palabra
 - Un índice de formato 6 ya no se lee: cada libro se vuelve a comer, y sus pedazos viejos con letras se devuelven al
   comerlo (su huella de bytes cambió de sal, de 6 a 7).
 
+## La charla contesta con la oración que pensó (2026-11-07)
+
+El Capitán: *"que no me conteste con siluetas, que me conteste la respuesta que pensó"*. Antes, la respuesta salía
+como `-> determinista (el libro dice: janax "_ es _" determinista)`, y el esqueleto entre comillas parecía la
+respuesta. Ahora sale la oración armada con el hecho:
+
+- **Lo que dice el libro:** "janax es determinista".
+- **Lo deducido:** el hecho dado vuelta, con su marca: "jacob, hijo de matán (lo deduje)".
+
+Las marcas se pegan a la palabra de antes (`put_glue`). El porqué ya no se escribe en la charla. El modo del libro
+entero no cambia.
+

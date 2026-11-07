@@ -3064,28 +3064,15 @@ qtl_oth2:
   jjz j2, qtl_done
   jcall q_new
   jjz j2, qtl_done
-  jldi j1, S_DEDQ
-  jcall puts
-  jld j2, j1, WB
+  jld j2, j1, WB                ; the sentence it deduced: the fact turned by the library's turn
   jcall putword
   jldi j2, 32
   jcall putch
-  jcall put_lpc
+  jcall put_lpcp
   jld j2, j1, WA
   jcall putword
-  jldi j1, S_BEC
+  jldi j1, S_DEDQ
   jcall puts
-  jld j12, j1, WSK
-  jcall put_mid
-  jldi j1, S_BTURN
-  jcall puts
-  jcall put_lpc
-  jldi j1, S_LIBP
-  jcall puts
-  jld j2, j1, LPP
-  jcall putnum
-  jldi j2, 41
-  jcall putch
   jldi j2, 10
   jcall putch
   jjmp flush
@@ -3093,44 +3080,80 @@ qtl_done:
   jldi j1, 0
   jret
 
-; The turn's pieces (LPC, LPB of them), written between quotes as put_mid writes a middle. Uses j1-j9.
-put_lpc:
+; The middle of skeleton j12 as words of a sentence, each followed by a space. Uses j1-j11.
+put_plain:
   jldi j1, 0
-  jldi j2, 34
-  jcall putch
-  jldi j2, 95
-  jcall putch
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jldi j11, 1
+  jwhile j10
+    jldi j1, 0
+    jadd j2, j9, j11
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jst j2, j1, PMT
+    jcall n_flags
+    jldi j4, 1
+    jand j3, j3, j4
+    jjnz j3, pp_skip
+    jld j2, j1, PMT
+    jcall put_glue
+  pp_skip:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; Word j2 in a sentence, a space after it; a mark goes against the word before it ("jacob, hijo de"). Uses j1-j8.
+put_glue:
+  jldi j1, 0
+  jst j2, j1, QWL
+  jcall w_mark
+  jldi j1, 0
+  jjz j3, pg_put
+  jld j3, j1, POS
+  jjz j3, pg_put
+  jldi j4, 1
+  jsub j3, j3, j4
+  jldb j4, j3, TEXT
+  jldi j5, 32
+  jsub j4, j4, j5
+  jjnz j4, pg_put
+  jst j3, j1, POS
+pg_put:
+  jld j2, j1, QWL
+  jcall putword
+  jldi j2, 32
+  jjmp putch
+
+; The turn's pieces (LPC, LPB of them) as words of a sentence, each followed by a space. Uses j1-j9.
+put_lpcp:
   jldi j1, 0
   jst j1, j1, LT4
-  plc_lap:
+  plp_lap:
     jldi j1, 0
     jld j2, j1, LT4
     jld j3, j1, LPB
     jsub j3, j2, j3
-    jjz j3, plc_done
-    jldi j2, 32
-    jcall putch
-    jldi j1, 0
-    jld j2, j1, LT4
+    jjz j3, plp_done
     jldi j3, 3
     jshl j3, j2, j3
     jld j2, j3, LPC
-    jcall putword
+    jcall put_glue
+  plp_next:
     jldi j1, 0
     jld j2, j1, LT4
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, LT4
-    jjmp plc_lap
-plc_done:
-  jldi j2, 32
-  jcall putch
-  jldi j2, 95
-  jcall putch
-  jldi j2, 34
-  jcall putch
-  jldi j2, 32
-  jjmp putch
+    jjmp plp_lap
+plp_done:
+  jret
 
 ; j2 = 1 if the library proved a turn of the skeleton WSK: its pieces (as this reading's words) at MB1 and LPC, LPB of
 ; them, its pairs at LPP. Uses j1-j14.
@@ -3763,18 +3786,14 @@ qm_oth2:
   jjz j2, qm_done
   jcall q_new
   jjz j2, qm_done
-  jldi j1, S_SAIDQ
-  jcall puts
-  jld j2, j1, WA
+  jld j2, j1, WA                ; the answer it thought, said as a sentence: the fact
   jcall putword
   jldi j2, 32
   jcall putch
   jld j12, j1, WSK
-  jcall put_mid
+  jcall put_plain
   jld j2, j1, WB
   jcall putword
-  jldi j2, 41
-  jcall putch
   jldi j2, 10
   jcall putch
   jjmp flush
@@ -3812,28 +3831,17 @@ qt_oth2:
   jjz j2, qm_done
   jcall q_new
   jjz j2, qm_done
-  jldi j1, S_DEDQ
-  jcall puts
-  jld j2, j1, WB
+  jld j2, j1, WB                ; the sentence it deduced: the fact turned
   jcall putword
   jldi j2, 32
   jcall putch
   jld j2, j1, TBEST
   jcall find_mid
-  jcall put_mid
+  jcall put_plain
   jld j2, j1, WA
   jcall putword
-  jldi j1, S_BEC
+  jldi j1, S_DEDQ
   jcall puts
-  jld j12, j1, WSK
-  jcall put_mid
-  jldi j1, S_BTURN
-  jcall puts
-  jld j2, j1, TBEST
-  jcall find_mid
-  jcall put_mid
-  jldi j2, 41
-  jcall putch
   jldi j2, 10
   jcall putch
   jjmp flush
@@ -4106,7 +4114,7 @@ qb_yes:
   jadd j2, j3, j1
   jret
 
-; j2 = 1 if QOTH is a new answer: not a word of the question, and not given yet (written then: "  -> " and it). Uses
+; j2 = 1 if QOTH is a new answer: not a word of the question, and not given yet (its line begun then). Uses
 ; j1-j14.
 q_new:
   jldi j1, 0
@@ -4137,8 +4145,6 @@ qn_new:
   jst j2, j1, QNA
   jldi j1, S_ANS
   jcall puts
-  jld j2, j1, QOTH
-  jcall putword
   jldi j1, 0
   jldi j2, 1
   jret
