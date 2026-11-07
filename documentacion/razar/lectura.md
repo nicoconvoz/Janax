@@ -1834,3 +1834,15 @@ hoy nunca cruza el valle; Lehman y Stanley, búsqueda por novedad). Proponía un
   - Los nichos llegaron a lo mismo con el doble de intentos.
 - **Sin veredicto:** con un sorteo por lado no se concluye. Haría falta varias semillas de cada uno (unos 7 minutos por
   par). El Capitán decidió quedarse con la duda, y con los nichos andando.
+
+## Charlar con Razar desde una consola (2026-11-07)
+
+Pedido del Capitán: poder comunicarse con Razar. `bash razar/lectura/charla.sh <libro> [motor]` arma `pregunta` una vez
+y escucha: cada renglón tipeado es una melodía con huecos y Razar la contesta como siempre (dicho así, inferido, o no
+sabe). Entre preguntas no corre nada: trabaja solo al apretar Enter. El libro se copia a una carpeta temporal, nunca al
+repositorio. Enter vacío o `chau` termina.
+
+- **Medido** (Nuevo Testamento entero, traductor): unos **7 s por respuesta**, porque relee el libro en cada pregunta.
+  `jacob hijo de ? hijo de ?` → `jacob hijo de isaac hijo de abraham` (inferido).
+- **Lo que no es todavía:** una charla libre. Hoy entiende melodías con huecos. Es el principio: el idioma y las
+  preguntas propias están preparados para emerger.
