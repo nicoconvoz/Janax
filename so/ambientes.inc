@@ -1031,6 +1031,13 @@ rooms_born:
 ; rax = a cabin's number -> rax = that cabin if it is family of rbx (its parent, one of its children or a
 ; sibling) and still runs, else 0. Keeps every other register but rcx.
 cabin_family:
+        cmp     rax, -1                 ; -1: my parent, whose number a child need not know (the one who launched it)
+        jne     .number
+        mov     rax, [rbx + P_PARENT]
+        test    rax, rax
+        jz      .no                     ; the kernel's children have none
+        mov     rax, [rax + P_ID]
+.number:
         cmp     rax, [nprocs]
         jae     .no                     ; also catches negative numbers
         mov     rcx, [procs]

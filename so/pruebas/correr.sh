@@ -659,6 +659,13 @@ P1 codigo=0 j0=0000000000000005 t=*
 P0 codigo=0 j0=00000000000001FF t=*
 ventanilla: *" familia_timbre
 
+# -1 is "my parent" in every family request, and 35 tells how much a cabin rowed (itself, or a child).
+familia familia_padre_palabra dice_al_padre
+caso "familia: el hijo le habla al padre por -1, y cuanto remo cada uno" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000000 t=*
+P0 codigo=0 j0=0000000000002A11 t=*
+ventanilla: *" familia_padre_palabra
+
 # A child is born with its parent's bolita, and can not ask for more.
 familia familia_bolita bolita
 caso "familia: el hijo nace con la bolita del padre" 0 0 "$fijo0

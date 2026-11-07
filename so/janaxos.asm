@@ -149,10 +149,10 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 34                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 35                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget
+                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -191,15 +191,15 @@ section '.data' data readable writeable
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
-              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget
+              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -3429,6 +3429,7 @@ serve_gate serve_state,   19, family_state
 serve_gate serve_bolita,  20, family_bolita
 serve_gate serve_end,     33, family_end
 serve_gate serve_budget,  34, family_budget
+serve_gate serve_rowed,   35, family_rowed
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -3756,6 +3757,28 @@ family_budget:
         ret
 .code:
         mov     rax, [r8 + P_CODE]
+        mov     [rbp + r13 + 24], rax
+        ret
+.not_mine:
+        mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 35 rowed: a = -1 (itself) or the number of one of my children -> the instructions it has rowed (attained service;
+; its own counts up to the turn before this one). -2 if it is neither. So a budget is set from work measured, never by
+; eye: a parent knows what its own work cost.
+family_rowed:
+        mov     rax, [rbp + r13 + 8]
+        mov     r8, rbx
+        cmp     rax, -1
+        je      .count
+        cmp     rax, [nprocs]
+        jae     .not_mine
+        mov     r8, [procs]
+        mov     r8, [r8 + rax*8]
+        cmp     [r8 + P_PARENT], rbx
+        jne     .not_mine
+.count:
+        mov     rax, [r8 + P_SERVED]
         mov     [rbp + r13 + 24], rax
         ret
 .not_mine:

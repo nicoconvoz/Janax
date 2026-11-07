@@ -1072,3 +1072,15 @@ la casa: ningún bucle que gaste por nada. El ensamblador y los candidatos de Ra
 - **La prueba** (`familia_timbre`, con el hijo `ventanilla_hola`): el padre duerme, despierta con el hijo 1, firma, el
   hijo escribe "hola" y termina, y el padre despierta con −1 (`01 FF`) en los tres motores. Antes, el padre despertaba
   con −1 y la firma se rechazaba.
+
+## −1 es "mi padre", y el pedido 35: cuánto remé (Capitán, 2026-11-06)
+
+Dos leyes chicas que el ciclo de órganos de Razar necesitaba:
+
+- **En todo pedido de familia, −1 quiere decir "mi padre"** (`cabin_family`): quien te lanzó siempre se puede alcanzar
+  sin saber su número. Con dos Razares en vigilia, el candidato no sabe cuál lo lanzó, y no le hace falta.
+- **35 cuánto remó** (`a` = −1 para uno mismo, o el número de un hijo propio): devuelve las instrucciones remadas, o −2
+  si no es ninguno de los dos. Lo propio cuenta hasta el turno anterior. Sirve para fijar un presupuesto con trabajo
+  medido, nunca a ojo.
+- **La prueba** (`familia_padre_palabra`, con el hijo `dice_al_padre`): el hijo le dice 2Ah al padre por −1. El padre
+  despierta en su timbre, lee la palabra y ve que los dos remaron algo: `2A 1 1` en los tres motores.
