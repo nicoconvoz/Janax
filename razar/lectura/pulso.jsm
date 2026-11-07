@@ -164,6 +164,8 @@ OGT   = 1EF0h
 OGLET = 1EF8h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
+OPCAP = 1C90h                   ; the places of the two lists (they grow with what they hold)
+OWCAP = 1C98h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
 ROOMON = 1918h                  ; its blind whys
 ROOMWY = 1920h
@@ -218,7 +220,7 @@ CXW   = 1A98h
 QDIR  = 1AB8h                   ; 1: the question asks why the switch (its rule is plain); 0: why without it
 FPOS  = 1AC0h                   ; through the door: where it is, the exception being looked in
 FSTART = 1AC8h                  ; (walking the exceptions)
-KMASK = 1B58h                   ; the skeletons: places minus 1, the skeletons {key, fillings, different}, the forms
+KNEW  = 1B58h                   ; the skeletons: a form born now, the skeletons {key, fillings, different}, the forms
 ROOMK1 = 1B60h                  ; seen; by word: openness summed, places, written; walking: what it does, the place,
 ROOMK2 = 1B68h                  ; places left, the key, the skeleton, the side listed
 ROOMOP2 = 1B70h
@@ -1194,18 +1196,17 @@ why_rooms:
   jldi j1, 0
   jld j2, j1, ROOMOP
   jjnz j2, wr_have
-  jld j11, j1, NTOK
-  jldi j2, 3
-  jshl j11, j11, j2
-  jcall room
+  jldi j11, 128                 ; (each a list that grows with what it holds, from 16: they were made for every place
+  jcall room                    ; of the book, and hold the times one place is said)
   jldi j1, 0
   jst j13, j1, ROOMOP
-  jld j11, j1, NTOK
-  jldi j2, 3
-  jshl j11, j11, j2
+  jldi j11, 128
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMOW
+  jldi j2, 16
+  jst j2, j1, OPCAP
+  jst j2, j1, OWCAP
   jld j11, j1, NV
   jldi j2, 56
   jmul j11, j11, j2
@@ -1251,6 +1252,58 @@ q_load:
   jst j2, j1, QW
   jret
 
+; The list whose room is at j2 and its places at j3, full, with twice its places: what it holds copied, the old room
+; given back. Uses j1-j7 (j8-j14 kept, at crece.inc's PLS and PLK: never in use at once).
+ql_grow:
+  jldi j1, 0
+  jst j8, j1, PLK
+  jst j9, j1, PLS
+  jst j10, j1, PLS + 8
+  jst j11, j1, PLS + 16
+  jst j12, j1, PLS + 24
+  jst j13, j1, PLS + 32
+  jst j14, j1, PLS + 40
+  jst j2, j1, PLD
+  jst j3, j1, PLO
+  jld j11, j3, 0
+  jldi j4, 4
+  jshl j11, j11, j4
+  jcall room
+  jldi j1, 0
+  jld j2, j1, PLD
+  jld j3, j1, PLO
+  jld j5, j2, 0                 ; the old room
+  jst j13, j2, 0
+  jld j4, j3, 0
+  jst j5, j1, PLN
+  jldi j6, 0
+  jwhile j4
+    jadd j7, j5, j6
+    jld j7, j7, 0
+    jadd j2, j13, j6
+    jst j7, j2, 0
+    jldi j2, 8
+    jadd j6, j6, j2
+    jldi j2, 1
+    jsub j4, j4, j2
+  jwend
+  jld j3, j1, PLO
+  jld j4, j3, 0
+  jadd j4, j4, j4
+  jst j4, j3, 0
+  jldi j10, 3
+  jld j11, j1, PLN
+  jcall ask
+  jldi j1, 0
+  jld j8, j1, PLK
+  jld j9, j1, PLS
+  jld j10, j1, PLS + 8
+  jld j11, j1, PLS + 16
+  jld j12, j1, PLS + 24
+  jld j13, j1, PLS + 32
+  jld j14, j1, PLS + 40
+  jret
+
 ; Every time the book says the place: plain (QA QB QC) to the list at ROOMOP, with the switch (QA QW QB QC or QA QB
 ; QW QC) to ROOMOW; then the rule (the way said most) is RL / NRL and the exceptions XL / NXL. Uses j1-j14.
 q_occ:
@@ -1278,6 +1331,15 @@ q_occ:
     jsub j2, j4, j13
     jjnz j2, qo_w2
     jld j2, j1, NPL
+    jld j6, j1, OPCAP           ; (full: it doubles first)
+    jsub j6, j2, j6
+    jjnz j6, qo_room
+    jldi j2, ROOMOP
+    jldi j3, OPCAP
+    jcall ql_grow
+    jldi j1, 0
+    jld j2, j1, NPL
+  qo_room:
     jldi j6, 3
     jshl j6, j2, j6
     jld j7, j1, ROOMOP
@@ -1302,6 +1364,15 @@ q_occ:
     jjnz j2, qo_next
   qo_with:
     jld j2, j1, NWI
+    jld j6, j1, OWCAP           ; (full: it doubles first)
+    jsub j6, j2, j6
+    jjnz j6, qo_room2
+    jldi j2, ROOMOW
+    jldi j3, OWCAP
+    jcall ql_grow
+    jldi j1, 0
+    jld j2, j1, NWI
+  qo_room2:
     jldi j6, 3
     jshl j6, j2, j6
     jld j7, j1, ROOMOW
@@ -5004,26 +5075,22 @@ ht_done:
 ; a door changed for another door). Each place weighs how open its skeleton is (different fillings over all of them);
 ; each word, how open the places it fills are; where those values part in two, best (n_split), is the cut. Uses j1-j14.
 skel_report:
-  jldi j1, 0                    ; its rooms: the skeletons {key, fillings, different}, the forms seen, and by word the
-  jld j2, j1, NTOK              ; openness summed and its places
-  jadd j2, j2, j2
-  jcall pow2
-  jldi j4, 1
-  jsub j4, j3, j4
-  jst j4, j1, KMASK
-  jldi j4, 32
-  jmul j11, j3, j4
-  jcall room
+  jldi j1, 0                    ; its rooms: the skeletons {key, fillings, different} and the forms seen, each a table
+  jldi j11, 64                  ; that grows to what it holds (Capitan: "nothing wasted"; they were made for twice the
+  jcall room                    ; units, and held one in sixteen), and by word the openness summed and its places
   jldi j1, 0
   jst j13, j1, ROOMK1
-  jld j3, j1, KMASK
-  jldi j4, 1
-  jadd j3, j3, j4
-  jldi j4, 5
-  jshl j11, j3, j4
-  jcall room
+  jldi j2, 32
+  jadd j2, j13, j2
+  jst j2, j1, ROOMK2
+  jld j2, j1, ROOMK1
+  jldi j3, 32
+  jcall pl_new
   jldi j1, 0
-  jst j13, j1, ROOMK2
+  jld j2, j1, ROOMK2
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
@@ -5053,6 +5120,7 @@ skel_report:
   jldi j2, 1                    ; first: every place into its skeleton
   jst j2, j1, KMODE
   jcall k_walk
+  jcall k_point                 ; (what each place keeps, now that the tables stopped growing)
   jldi j1, 0                    ; then: every word, how open its places are
   jldi j2, 2
   jst j2, j1, KMODE
@@ -5134,11 +5202,8 @@ k_walk:
     jadd j5, j2, j1
     jst j5, j1, KKEY
     jld j2, j1, ROOMK1
-    jldi j3, 32
-    jcall k_find
-    jld j6, j4, 0
-    jjnz j6, kw_old
-    jst j5, j4, 0
+    jcall pl_take
+    jldi j1, 0
   kw_old:
     jld j2, j1, KMODE
     jldi j3, 1
@@ -5157,8 +5222,9 @@ k_walk:
   kw_k2:
     jadd j5, j2, j1
     jld j2, j1, ROOMK2
-    jldi j3, 32
-    jcall k_find
+    jcall pl_take
+    jldi j1, 0
+    jst j6, j1, KNEW
     jld j6, j4, 8               ; this filling in this skeleton, once more
     jldi j7, 1
     jadd j6, j6, j7
@@ -5166,16 +5232,15 @@ k_walk:
     jld j6, j1, KI              ; the place keeps its skeleton and its filling there
     jldi j7, 3
     jshl j6, j6, j7
-    jld j7, j1, ROOMPS
+    jld j7, j1, ROOMPS          ; (their keys while the tables grow: k_point makes them places once they stop)
     jadd j7, j7, j6
-    jld j8, j1, KENT
+    jld j8, j1, KKEY
     jst j8, j7, 0
     jld j7, j1, ROOMPF
     jadd j7, j7, j6
-    jst j4, j7, 0
-    jld j6, j4, 0
-    jjnz j6, kw_next
-    jst j5, j4, 0
+    jst j5, j7, 0
+    jld j6, j1, KNEW            ; a form never seen: one different more
+    jjz j6, kw_next
     jld j4, j1, KENT
     jld j6, j4, 16
     jldi j7, 1
@@ -5232,27 +5297,34 @@ ke_hole:
 ke_done:
   jret
 
-; The place of key j5 in the table at j2, j3 bytes a place (KMASK places) -> j4. Uses j1, j4, j6-j8.
-k_find:
+; What each place keeps, its skeleton and its form, made places from their keys: the tables grow while they are filled
+; (an entry moves when they double), so a place is taken only once they stopped. Uses j1-j14.
+k_point:
   jldi j1, 0
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, KMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jmul j4, j6, j3
-    jadd j4, j4, j2
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, kf_full
-    jldi j8, 0
-  kf_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, KMASK
-    jand j6, j6, j7
+  jld j9, j1, ROOMPS
+  jld j10, j1, ROOMPF
+  jld j11, j1, NTOK
+  jwhile j11
+    jldi j1, 0
+    jld j5, j9, 0
+    jjz j5, kp_form
+    jld j2, j1, ROOMK1
+    jcall pl_find
+    jst j4, j9, 0
+  kp_form:
+    jldi j1, 0
+    jld j5, j10, 0
+    jjz j5, kp_next
+    jld j2, j1, ROOMK2
+    jcall pl_find
+    jst j4, j10, 0
+  kp_next:
+    jldi j1, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j11, j11, j2
   jwend
   jret
 
@@ -5405,8 +5477,9 @@ kin_report:
   jst j1, j1, NKR
 kn_round:
   jldi j1, 0                    ; every skeleton: how many of its fillings are structure, this round
-  jld j9, j1, ROOMK1
-  jld j10, j1, KMASK
+  jld j9, j1, ROOMK1            ; (every place of its table)
+  jld j10, j9, 8
+  jld j9, j9, 0
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10

@@ -1650,3 +1650,52 @@ alta en su misma tabla: se revisó lugar por lugar.
 Que las huellas den idénticas es una prueba más: ningún resultado depende de la capacidad de las tablas ni del orden de
 sus casilleros. Es más rápido porque cada lectura vaciaba y recorría 2 millones de casilleros por tabla, y ahora recorre
 solo los que usa.
+
+## La memoria se ajusta sola, en todas partes (2026-11-06)
+
+El Capitán: *"no hagas un parche, que la memoria sea autoajustable en cualquier parte de Janax y Razar"*. La ley es una
+sola: **ninguna estructura se reserva para el peor caso; todas crecen con el uso**, o se reservan justo cuando se
+conoce lo que van a tener.
+
+**El instrumento, no la creencia.** No se buscó a ojo qué sobraba. El núcleo mide cada sala de una cabina cuando ésta
+termina (`JANAX_SALAS=1`, en el núcleo: sirve para cualquier programa). Informa cuánto pidió, cuántos de sus lugares de
+8 bytes tienen algo distinto de cero, y las diez que más sobran.
+- El primer instrumento contaba hasta el último byte distinto de cero, y era ciego a las tablas ralas, que tienen
+  datos desparramados hasta el final. Se cambió por contar los lugares con datos.
+- Sigue siendo una cota por abajo: un cero puede ser un dato, como un contador en cero. Lo que muestra sobrante es una
+  pista, y se confirma al arreglarlo.
+
+**Lo que encontró, y una sola cura para cada causa:**
+
+| qué era | cómo se reservaba | cómo queda |
+|---|---|---|
+| pedidos, rellenos, diferencias | 2²¹ lugares cada una | crecen (`crece.inc`) |
+| palabras (`ROOMV`) | 2 × unidades, potencia de dos: 2 % ocupada | crece; dos palabras con el mismo hash se distinguen por sus letras, así que crece sin comparar claves, y el índice por número (`ROOMI`) sigue a cada palabra |
+| índice por número (`ROOMI`) y letras (`ROOMA`) | por unidad y por byte del libro | crecen con las palabras |
+| marcos de la casa (`ROOMHL`) | tope de tres por unidad: 24 MB, 1,3 usados | lista que crece; ya no tira marcos en silencio si un órgano postea más |
+| esqueletos y formas (`ROOMK1`, `ROOMK2`) | 2 × unidades, potencia de dos: 16 MB cada una | crecen; cada lugar del libro guarda la clave mientras se llenan, y un puntero recién cuando dejan de crecer (`k_point`) |
+| tres y dos de la negación | lo mismo | crecen |
+| pares de `lector` | lo mismo | crecen (`lector` ahora incluye `crece.inc`) |
+| palabras leídas (`ROOMC`) | por unidad | por palabra: el número de palabras ya se conoce al reservarla |
+| las listas de las preguntas (`ROOMOP`, `ROOMOW`) | por unidad | listas que crecen |
+
+**Medido**, el Nuevo Testamento leído por `pulso`, motor traductor:
+
+| | antes de la tanda | después |
+|---|---|---|
+| pico de memoria del proceso | 294,1 MB | **113,1 MB (−62 %)** |
+| salas pedidas | 183 MB (ya con las tres primeras tablas creciendo) | **110 MB** |
+| instrucciones | 2.640 millones | **2.069 millones (−22 %)** |
+| huellas: `pulso`, `pregunta`, `sentido`, `lector` | `ABF36C6B076E`, `E78A9442B1C1`, `1570B9C9E345`, `5225BB82FE6D` | **las cuatro idénticas** |
+
+Que las huellas no se muevan con ninguno de estos cambios es una prueba en sí: ningún resultado depende del tamaño de
+una tabla ni del orden de sus casilleros.
+
+**Lo que queda, dicho:**
+- Las tablas que crecen tienen la holgura de su diseño: se duplican antes de pasar la mitad, así que están entre 25 y
+  50 % ocupadas. No es un error, es lo que necesita el direccionamiento abierto para buscar rápido. Llevar el tope a
+  75 % ahorraría más, a cambio de búsquedas más largas: es una decisión aparte.
+- En el núcleo, la única reserva fija es el búfer donde se carga cada programa: 1 MB, uno solo para todo el núcleo,
+  atado al límite de tamaño de programa del idioma. Solo se le da memoria física a lo que se toca.
+- Me equivoqué dos veces en esta tanda, y lo dejo anotado. Primero dije que la tabla de formas no guardaba sus claves,
+  y sí las guardaba (después de contar). Después estimé 32 MB donde eran 16, por no medir.

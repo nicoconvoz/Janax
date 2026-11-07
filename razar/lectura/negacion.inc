@@ -15,9 +15,8 @@
 ; The only count is the anecdote rule. It reads the row of lectura.inc and uses pulso.inc's hw. distill_no leaves in
 ; NEGF (by word number) bit 1 for a switch, and the list at NEGL (NNEG of them). The program keeps its variables away
 ; from 1800h-18FFh.
-ROOMTRI = 1800h                 ; every three said: {hash} per place
-ROOMBG = 1808h                  ; every two said: {a * NV + b + 1, how often} per place
-NMASK = 1810h                   ; places of each, minus 1
+ROOMTRI = 1800h                 ; every three said: {hash} (a table that grows to what it holds, crece.inc)
+ROOMBG = 1808h                  ; every two said: {a * NV + b + 1, how often} (the same)
 ROOMW = 1818h                   ; by word, 8 qwords each: seen, rem, tot, same, front, behind, at the door, flags
 NEGF  = 1820h                   ; (the flags' room: 1 the switch, 2 passed 1-2, 4 wide, 8 inside)
 ROOMVL = 1828h                  ; values to split
@@ -44,26 +43,22 @@ NC2   = 18C8h
 
 ; The switches of the book. Uses j1-j14.
 distill_no:
-  jldi j1, 0                    ; its rooms
-  jld j2, j1, NTOK
-  jadd j2, j2, j2
-  jcall pow2
-  jldi j4, 1
-  jsub j4, j3, j4
-  jst j4, j1, NMASK
-  jldi j4, 3
-  jshl j11, j3, j4
+  jldi j1, 0                    ; its rooms: the threes and the twos, each a table that grows to what it holds (Capitan:
+  jldi j11, 64                  ; "nothing wasted"; they were made for twice the units, and held one in eight)
   jcall room
   jldi j1, 0
   jst j13, j1, ROOMTRI
-  jld j3, j1, NMASK
-  jldi j4, 1
-  jadd j3, j3, j4
-  jldi j4, 4
-  jshl j11, j3, j4
-  jcall room
+  jldi j2, 32
+  jadd j2, j13, j2
+  jst j2, j1, ROOMBG
+  jld j2, j1, ROOMTRI
+  jldi j3, 8
+  jcall pl_new
   jldi j1, 0
-  jst j13, j1, ROOMBG
+  jld j2, j1, ROOMBG
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
   jld j11, j1, NV
   jldi j4, 6
   jshl j11, j11, j4
@@ -95,10 +90,7 @@ distill_no:
     jjz j2, nb_next
     jld j3, j1, NB
     jjz j3, nb_next
-    jcall n_bgslot
-    jld j6, j4, 0
-    jjnz j6, nb_old
-    jst j5, j4, 0
+    jcall n_bgtake
   nb_old:
     jld j6, j4, 8
     jldi j7, 1
@@ -107,8 +99,9 @@ distill_no:
     jld j2, j1, NC2
     jjz j2, nb_next
     jcall n_trikey
-    jcall n_trislot
-    jst j5, j4, 0
+    jld j2, j1, ROOMTRI         ; (said: into the threes)
+    jcall pl_take
+    jldi j1, 0
   nb_next:
     jcall n_step
   jwend
@@ -272,7 +265,8 @@ distill_no:
   jwend
 
   jldi j9, 0                    ; 4: the door's width, from every two said twice or more, both of them candidates
-  jld j10, j1, NMASK
+  jld j10, j1, ROOMBG           ; (every place of its table)
+  jld j10, j10, 8
   jldi j2, 1
   jadd j10, j10, j2
   jwhile j10
@@ -280,6 +274,7 @@ distill_no:
     jldi j3, 4
     jshl j3, j9, j3
     jld j2, j1, ROOMBG
+    jld j2, j2, 0
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, d4_next
@@ -618,64 +613,32 @@ nt_key:
   jadd j5, j2, j1
   jret
 
-; The place of the key j5 among the threes -> j4. Uses j1, j4, j6-j8.
+; The place of the key j5 among the threes -> j4. Uses j1-j4, j6-j8.
 n_trislot:
   jldi j1, 0
-  jldi j6, 32
-  jshr j6, j5, j6
-  jxor j6, j6, j5
-  jld j7, j1, NMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jldi j7, 3
-    jshl j4, j6, j7
-    jld j7, j1, ROOMTRI
-    jadd j4, j4, j7
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, ts_full
-    jldi j8, 0
-  ts_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, NMASK
-    jand j6, j6, j7
-  jwend
-  jret
+  jld j2, j1, ROOMTRI
+  jjmp pl_find
 
 ; The place of the two j2 then j3 among the twos -> j4, its key -> j5. Uses j1-j8.
 n_bgslot:
+  jcall n_bgkey
+  jld j2, j1, ROOMBG
+  jjmp pl_find
+
+; The place of the two j2 then j3 among the twos -> j4, its key -> j5, put there if it was not. Uses j1-j8.
+n_bgtake:
+  jcall n_bgkey
+  jld j2, j1, ROOMBG
+  jjmp pl_take
+
+; The key of the two j2 then j3 -> j5. Uses j1, j5, j6.
+n_bgkey:
   jldi j1, 0
   jld j6, j1, NV
   jmul j5, j2, j6
   jadd j5, j5, j3
   jldi j6, 1
   jadd j5, j5, j6
-  jld j2, j1, FNVO
-  jadd j3, j5, j1
-  jcall hw
-  jldi j6, 32
-  jshr j6, j2, j6
-  jxor j6, j6, j2
-  jld j7, j1, NMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jldi j7, 4
-    jshl j4, j6, j7
-    jld j7, j1, ROOMBG
-    jadd j4, j4, j7
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, bs2_full
-    jldi j8, 0
-  bs2_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, NMASK
-    jand j6, j6, j7
-  jwend
   jret
 
 ; How often j2 came right before j3 -> j6. Uses j1-j8.

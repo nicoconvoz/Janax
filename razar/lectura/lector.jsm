@@ -39,12 +39,11 @@ S_BITS2 = 380h
 S_BITS3 = 3C0h
 
 ROOMC = 1200h                   ; how often each word was read, by number
-ROOMB = 1208h                   ; the pairs: {p * NV + x + 1, how often} per place
+ROOMB = 1208h                   ; the pairs: {p * NV + x + 1, how often} (a table that grows to what it holds)
 ROOMS = 1210h                   ; the words after p: SLIST from ROOMS[p] to ROOMS[p + 1]
 ROOMU = 1218h
 ROOML = 1220h                   ; {x, how often} each
 NB    = 1228h                   ; pairs seen
-GOLD  = 1230h                   ; 2^64 / the golden ratio: spreads a pair over its table
 ECOW  = 1238h                   ; the word read most often
 TESTS = 1240h                   ; covered words, and how many of them it never read
 OOV   = 1248h
@@ -84,26 +83,20 @@ jfirst j1, 10000h              ; first order: room 0
 jldi j0, 0                      ; the fingerprint
 jcall read_book
 jldi j1, 0
-jldi j2, 0
-jshi j2, 9E37h
-jshi j2, 79B9h
-jshi j2, 7F4Ah
-jshi j2, 7C15h
-jst j2, j1, GOLD
-jld j11, j1, NUNITS             ; its rooms: the words read, the pairs
+jld j11, j1, NV                 ; its rooms: the words read (one place each word, by number), the pairs
 jldi j2, 3
 jshl j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMC
-jld j11, j1, VMASK
-jldi j2, 1
-jadd j11, j11, j2
-jldi j2, 4
-jshl j11, j11, j2
-jcall room
+jldi j11, 32                    ; (the pairs grow to what they hold: Capitan, "nothing wasted"; they were made for
+jcall room                      ; twice the units, and held one in nine)
 jldi j1, 0
 jst j13, j1, ROOMB
+jadd j2, j13, j1
+jldi j3, 16
+jcall pl_new
+jldi j1, 0
 
 jldi j1, 0                      ; what it learns, from the renglones not kept apart: the pairs and the words read
 jst j1, j1, LINE
@@ -231,7 +224,8 @@ jcall room
 jldi j1, 0
 jst j13, j1, ROOML
 jldi j9, 0                      ; how many after each p, at ROOMS[p + 1]
-jld j8, j1, VMASK
+jld j8, j1, ROOMB              ; (every place of its table)
+jld j8, j8, 8
 jldi j2, 1
 jadd j8, j8, j2
 jwhile j8
@@ -272,7 +266,8 @@ jwhile j8
   jsub j8, j8, j2
 jwend
 jldi j9, 0                      ; each pair in its list
-jld j8, j1, VMASK
+jld j8, j1, ROOMB              ; (every place of its table)
+jld j8, j8, 8
 jldi j2, 1
 jadd j8, j8, j2
 jwhile j8
@@ -465,42 +460,27 @@ jjmp finish
 
 ; The place of the pair (j2 = p, j3 = x) -> j4, its key -> j5 (the place is empty if it was never seen). Uses j1-j8.
 bg_slot:
+  jcall bg_key
+  jld j2, j1, ROOMB
+  jjmp pl_find
+
+; The key of the pair (j2 = p, j3 = x) -> j5. Uses j1, j5, j6.
+bg_key:
   jldi j1, 0
   jld j6, j1, NV
   jmul j5, j2, j6
   jadd j5, j5, j3
   jldi j6, 1
   jadd j5, j5, j6
-  jld j6, j1, GOLD
-  jmul j6, j5, j6
-  jldi j7, 32
-  jshr j6, j6, j7
-  jld j7, j1, VMASK
-  jand j6, j6, j7
-  jldi j8, 1
-  jwhile j8
-    jldi j7, 4
-    jshl j4, j6, j7
-    jld j7, j1, ROOMB
-    jadd j4, j4, j7
-    jld j7, j4, 0
-    jsub j8, j7, j5
-    jjnz j7, bs_full
-    jldi j8, 0
-  bs_full:
-    jldi j7, 1
-    jadd j6, j6, j7
-    jld j7, j1, VMASK
-    jand j6, j6, j7
-  jwend
   jret
 
 ; The pair (j2 = p, j3 = x) seen once more. Uses j1-j8.
 bg_add:
-  jcall bg_slot
-  jld j6, j4, 0
-  jjnz j6, ba_old
-  jst j5, j4, 0
+  jcall bg_key
+  jld j2, j1, ROOMB
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, ba_old
   jld j6, j1, NB
   jldi j7, 1
   jadd j6, j6, j7
@@ -524,6 +504,7 @@ bg_at:
   jldi j2, 4
   jshl j2, j9, j2
   jld j3, j1, ROOMB
+  jld j3, j3, 0
   jadd j3, j3, j2
   jld j7, j3, 8
   jld j2, j3, 0
@@ -799,4 +780,5 @@ lb_report:
   jldi j2, 10
   jjmp putch
 
+include 'crece.inc'
 include 'lectura.inc'

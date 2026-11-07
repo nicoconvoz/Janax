@@ -79,7 +79,8 @@ ROOMVR = 15A8h                  ; (furniture); the frame of the request being hu
 ROOMHL = 15C8h                  ; another word, and how many
 NHL   = 15D0h
 OCCUR = 15D8h
-DNEW  = 15E0h                   ; the difference just met was born now                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
+DNEW  = 15E0h
+HLCAP = 15E8h                   ; the places of the house's list (it grows with what it holds)                   ; the difference just met was born now                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
 KW1   = 15B0h
 KW2   = 15B8h
 KW3   = 15C0h
@@ -104,15 +105,15 @@ jldi j3, 3
 jshl j2, j2, j3
 jadd j2, j13, j2
 jst j2, j1, ROOMVR
-jld j11, j1, NTOK                ; and every pulse of the same place with another word: its frame and its two fillings
-jldi j2, 120                     ; (at most three requests of the words floor per unit, one pulse each; 40 bytes)
-jmul j11, j11, j2
-jcall room
-jldi j1, 0
+jldi j11, 640                    ; and every pulse of the same place with another word: its frame and its two fillings
+jcall room                       ; (40 bytes each; a list that grows with what it holds, from 16: it was made for three
+jldi j1, 0                       ; a unit, and held one in twenty)
 jst j13, j1, ROOMHL
 jst j1, j1, NHL
-jldi j1, 0                      ; the words read where it learns
-jld j11, j1, NUNITS
+jldi j2, 16
+jst j2, j1, HLCAP
+jldi j1, 0                      ; the words read where it learns, by number: one place each word (it was made for
+jld j11, j1, NV                  ; every unit, and held one in eighteen)
 jldi j2, 3
 jshl j11, j11, j2
 jcall room
@@ -250,7 +251,7 @@ lp_clear:
   jcall zfill
   jst j1, j1, NHL
   jld j2, j1, ROOMC             ; the words read where it learns
-  jld j3, j1, NUNITS
+  jld j3, j1, NV
   jldi j4, 3
   jshl j3, j3, j4
   jcall zfill
@@ -308,6 +309,51 @@ pl_clear:
   jmul j3, j3, j4
   jld j2, j2, 0
   jjmp zfill
+
+; The house's list with twice its places: what it holds copied, the old one given back. Uses j1-j8 (j9-j14 kept, at
+; PLS: crece.inc's, never in use at once).
+hl_grow:
+  jldi j1, 0
+  jst j9, j1, PLS
+  jst j10, j1, PLS + 8
+  jst j11, j1, PLS + 16
+  jst j12, j1, PLS + 24
+  jst j13, j1, PLS + 32
+  jst j14, j1, PLS + 40
+  jld j11, j1, HLCAP
+  jldi j2, 80
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jld j9, j1, ROOMHL
+  jst j13, j1, ROOMHL
+  jld j3, j1, NHL
+  jldi j2, 40
+  jmul j3, j3, j2
+  jldi j6, 0
+  jwhile j3
+    jadd j5, j9, j6
+    jld j8, j5, 0
+    jadd j5, j13, j6
+    jst j8, j5, 0
+    jldi j5, 8
+    jadd j6, j6, j5
+    jsub j3, j3, j5
+  jwend
+  jld j2, j1, HLCAP
+  jadd j2, j2, j2
+  jst j2, j1, HLCAP
+  jldi j10, 3
+  jadd j11, j9, j1
+  jcall ask
+  jldi j1, 0
+  jld j9, j1, PLS
+  jld j10, j1, PLS + 8
+  jld j11, j1, PLS + 16
+  jld j12, j1, PLS + 24
+  jld j13, j1, PLS + 32
+  jld j14, j1, PLS + 40
+  jret
 
 ; The three floors, awake (TESTING 0) or knocking (1). Uses j1-j12.
 all_floors:
@@ -920,14 +966,13 @@ pl_count:
   jldi j8, 3
   jsub j7, j7, j8
   jjnz j7, pl_fill
-  jld j7, j1, NTOK              ; (its room holds three a unit: never past it)
-  jldi j8, 3
-  jmul j8, j7, j8
-  jld j7, j1, NHL
+  jld j7, j1, NHL               ; (full: it doubles first)
+  jld j8, j1, HLCAP
   jsub j8, j7, j8
-  jldi j2, 63
-  jsar j8, j8, j2
-  jjz j8, pl_fill
+  jjnz j8, pl_house
+  jcall hl_grow
+pl_house:
+  jldi j1, 0
   jld j7, j1, NHL
   jldi j8, 40
   jmul j8, j7, j8

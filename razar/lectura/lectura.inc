@@ -30,7 +30,16 @@ ROOMT = 10C0h                   ; the row: unit i at ROOMT + 8i
 ROOMA = 10C8h                   ; the words' letters, one after another
 ARPOS = 10D0h
 ROOMV = 10D8h                   ; the words: {hash, where its letters are, how many, its number} per place
-ROOMI = 10E0h                   ; each word's place in ROOMV, by number
+ROOMI = 10E0h                   ; each word's place in ROOMV, by number (it grows with them: ICAP places)
+VCNT  = 11D8h                   ; the words in ROOMV, its places minus 1 (it grows to hold them), and ROOMI's places
+WMASK = 11F0h
+ICAP  = 11F8h
+ACAP  = 11E0h                   ; the bytes ROOMA has room for (it grows with the words' letters)
+WGD   = 1F90h                   ; the words' table growing: j2, the place, its old room and places, j9-j14 (crece.inc's
+WGK   = 1F98h                   ; places: free in every program, never used by both at once)
+WGO   = 1FA0h
+WGN   = 1FA8h
+WGS   = 1FB0h
 FNVO  = 10E8h                   ; FNV-1a: offset and prime
 FNVP  = 10F0h
 M48   = 10F8h                   ; 2^48 - 1
@@ -129,35 +138,37 @@ jshl j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMT
-jld j11, j1, NUNITS
-jldi j2, 3
-jshl j11, j11, j2
+jldi j11, 128                   ; (each word's place, by number: it grows with the words, from 16)
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMI
+jldi j2, 16
+jst j2, j1, ICAP
 jld j11, j1, NUNITS              ; and which unit began with a capital (a byte each)
 jldi j2, 8
 jadd j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMCP
-jld j11, j1, NBYTES
-jldi j2, 8
-jadd j11, j11, j2
-jcall room
+jldi j11, 264                   ; the words' letters, one after the other: they grow with them, from 256 bytes (it
+jcall room                      ; was made for every byte of the book, and held one in ten)
 jldi j1, 0
 jst j13, j1, ROOMA
+jldi j2, 256
+jst j2, j1, ACAP
 jld j2, j1, NUNITS              ; places: the least power of two with twice the units (no table holds more)
 jadd j2, j2, j2
 jcall pow2
 jldi j4, 1
 jsub j4, j3, j4
 jst j4, j1, VMASK
-jldi j2, 5
-jshl j11, j3, j2
-jcall room
+jldi j11, 64                    ; the words: a table that grows to hold them (Capitan: "nothing wasted"; it was made
+jcall room                      ; for every unit, twice over: 2 % of it held a word), from two places
 jldi j1, 0
 jst j13, j1, ROOMV
+jldi j2, 1
+jst j2, j1, WMASK
+jst j1, j1, VCNT
 
 jldi j1, 0                      ; second reading: the row of numbers (unit 0 is a renglon: the room starts in zeros)
 jldi j2, 1
@@ -664,7 +675,7 @@ word_id:
   jldi j3, 32
   jshr j3, j2, j3
   jxor j3, j3, j2
-  jld j4, j1, VMASK
+  jld j4, j1, WMASK
   jand j3, j3, j4
   jldi j8, 1
   jwhile j8
@@ -699,7 +710,7 @@ word_id:
   wi_next:
     jldi j5, 1
     jadd j3, j3, j5
-    jld j5, j1, VMASK
+    jld j5, j1, WMASK
     jand j3, j3, j5
   jwend
 wi_new:
@@ -710,6 +721,46 @@ wi_new:
   jldi j2, -2
   jret
 wi_add:
+  jld j5, j1, VCNT              ; one more would pass half its places: it doubles first, and the word is looked for
+  jldi j6, 1                    ; again in the new one
+  jadd j5, j5, j6
+  jadd j5, j5, j5
+  jld j6, j1, WMASK
+  jsub j5, j6, j5
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjz j5, wi_room
+  jcall wv_grow
+  jjmp word_id
+wi_room:
+  jld j5, j1, NV                ; and its place by number has room
+  jld j6, j1, ICAP
+  jsub j5, j5, j6
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, wi_put
+  jst j4, j1, WGK
+  jcall wi_grow
+  jldi j1, 0
+  jld j4, j1, WGK
+wi_put:
+  jld j5, j1, ARPOS             ; and its letters have room
+  jld j6, j1, WLEN
+  jadd j5, j5, j6
+  jld j6, j1, ACAP
+  jsub j5, j6, j5
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjz j5, wi_letters
+  jst j4, j1, WGK
+  jcall ra_grow
+  jldi j1, 0
+  jld j4, j1, WGK
+wi_letters:
+  jld j5, j1, VCNT
+  jldi j6, 1
+  jadd j5, j5, j6
+  jst j5, j1, VCNT
   jst j2, j4, 0
   jld j5, j1, WLEN
   jst j5, j4, 16
@@ -740,6 +791,203 @@ wi_add:
   jldi j5, 1
   jadd j5, j2, j5
   jst j5, j1, NV
+  jret
+
+; The words' table with twice its places: every word moved to the first free place from its hash (two words can share
+; a hash: they are told apart by their letters, so no key is compared here), and its place by number (ROOMI) follows
+; it; the old one given back. Uses j1-j8 (j9-j14 kept, at WGS: crece.inc's, never in use at once).
+wv_grow:
+  jldi j1, 0
+  jst j9, j1, WGS
+  jst j10, j1, WGS + 8
+  jst j11, j1, WGS + 16
+  jst j12, j1, WGS + 24
+  jst j13, j1, WGS + 32
+  jst j14, j1, WGS + 40
+  jld j11, j1, WMASK
+  jldi j2, 1
+  jadd j11, j11, j2
+  jst j11, j1, WGN              ; its old places
+  jldi j2, 6
+  jshl j11, j11, j2             ; twice, 32 bytes each
+  jcall room
+  jldi j1, 0
+  jld j2, j1, ROOMV
+  jst j2, j1, WGO
+  jst j13, j1, ROOMV
+  jld j2, j1, WGN
+  jadd j2, j2, j2
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, WMASK
+  jld j9, j1, WGO
+  jld j10, j1, WGN
+  jwhile j10
+    jldi j1, 0
+    jld j2, j9, 16
+    jjz j2, wg_next
+    jld j2, j9, 0               ; its first free place from its hash
+    jldi j3, 32
+    jshr j3, j2, j3
+    jxor j3, j3, j2
+    jld j4, j1, WMASK
+    jand j3, j3, j4
+    jldi j8, 1
+    jwhile j8
+      jldi j4, 5
+      jshl j4, j3, j4
+      jld j5, j1, ROOMV
+      jadd j4, j4, j5
+      jld j8, j4, 16
+      jjz j8, wg_free
+      jldi j5, 1
+      jadd j3, j3, j5
+      jld j5, j1, WMASK
+      jand j3, j3, j5
+    wg_free:
+    jwend
+    jldi j6, 0                  ; moved, 32 bytes
+    jldi j7, 4
+    jwhile j7
+      jadd j5, j9, j6
+      jld j8, j5, 0
+      jadd j5, j4, j6
+      jst j8, j5, 0
+      jldi j5, 8
+      jadd j6, j6, j5
+      jldi j5, 1
+      jsub j7, j7, j5
+    jwend
+    jld j5, j4, 24              ; and its place by number follows it
+    jldi j6, 3
+    jshl j5, j5, j6
+    jld j6, j1, ROOMI
+    jadd j5, j5, j6
+    jst j4, j5, 0
+  wg_next:
+    jldi j1, 0
+    jldi j2, 32
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j10, 3                   ; the old one given back
+  jld j11, j1, WGO
+  jcall ask
+  jldi j1, 0
+  jld j9, j1, WGS
+  jld j10, j1, WGS + 8
+  jld j11, j1, WGS + 16
+  jld j12, j1, WGS + 24
+  jld j13, j1, WGS + 32
+  jld j14, j1, WGS + 40
+  jret
+
+; The words' letters with room for twice as many (or more, until the word coming fits): copied, the old room given
+; back (a word keeps where its letters are from the start, so nothing that points into it moves). Uses j1-j8 (j2
+; kept; j9-j14 kept, at WGS).
+ra_grow:
+  jldi j1, 0
+  jst j9, j1, WGS
+  jst j10, j1, WGS + 8
+  jst j11, j1, WGS + 16
+  jst j12, j1, WGS + 24
+  jst j13, j1, WGS + 32
+  jst j14, j1, WGS + 40
+  jst j2, j1, WGD
+  jld j3, j1, ARPOS             ; what it needs
+  jld j4, j1, WLEN
+  jadd j3, j3, j4
+  jld j2, j1, ACAP
+  jldi j5, 1
+  jwhile j5
+    jadd j2, j2, j2
+    jsub j5, j2, j3
+    jldi j6, 63
+    jsar j5, j5, j6
+  jwend
+  jst j2, j1, ACAP
+  jldi j3, 8
+  jadd j11, j2, j3
+  jcall room
+  jldi j1, 0
+  jld j9, j1, ROOMA
+  jst j9, j1, WGO
+  jst j13, j1, ROOMA
+  jld j3, j1, ARPOS             ; what it holds, eight bytes at a time
+  jldi j6, 0
+  jwhile j3
+    jadd j5, j9, j6
+    jld j8, j5, 0
+    jadd j5, j13, j6
+    jst j8, j5, 0
+    jldi j5, 8
+    jadd j6, j6, j5
+    jsub j3, j3, j5
+    jldi j5, 63
+    jsar j5, j3, j5
+    jjz j5, ra_more
+    jldi j3, 0
+  ra_more:
+  jwend
+  jldi j10, 3
+  jld j11, j1, WGO
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, WGD
+  jld j9, j1, WGS
+  jld j10, j1, WGS + 8
+  jld j11, j1, WGS + 16
+  jld j12, j1, WGS + 24
+  jld j13, j1, WGS + 32
+  jld j14, j1, WGS + 40
+  jret
+
+; The places of words by number with twice their places: copied, the old ones given back. Uses j1-j8 (j2 kept;
+; j9-j14 kept, at WGS).
+wi_grow:
+  jldi j1, 0
+  jst j9, j1, WGS
+  jst j10, j1, WGS + 8
+  jst j11, j1, WGS + 16
+  jst j12, j1, WGS + 24
+  jst j13, j1, WGS + 32
+  jst j14, j1, WGS + 40
+  jst j2, j1, WGD
+  jld j11, j1, ICAP
+  jldi j3, 4
+  jshl j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jld j9, j1, ROOMI
+  jst j9, j1, WGO
+  jst j13, j1, ROOMI
+  jld j10, j1, ICAP
+  jldi j6, 0
+  jwhile j10
+    jadd j5, j9, j6
+    jld j8, j5, 0
+    jadd j5, j13, j6
+    jst j8, j5, 0
+    jldi j5, 8
+    jadd j6, j6, j5
+    jldi j5, 1
+    jsub j10, j10, j5
+  jwend
+  jld j2, j1, ICAP
+  jadd j2, j2, j2
+  jst j2, j1, ICAP
+  jldi j10, 3
+  jld j11, j1, WGO
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, WGD
+  jld j9, j1, WGS
+  jld j10, j1, WGS + 8
+  jld j11, j1, WGS + 16
+  jld j12, j1, WGS + 24
+  jld j13, j1, WGS + 32
+  jld j14, j1, WGS + 40
   jret
 
 ; j2 = nonzero if the renglon LINE is one it learns from (or, in an exam that knocks, if it is not the exam). Uses

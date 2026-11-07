@@ -1119,3 +1119,19 @@ siempre esperando a su ensamblador.
   si el padre vive (`ring_parent`). El padre despierta con el número del hijo y mira su estado (19).
 - Cambiaron dos pruebas, justo por esto: en `familia_presupuesto` y `familia_timbre` el padre ahora despierta con el
   número del hijo (`01`) en vez de con "nadie" (`FF`). Esperan `01 0A FE` y `01 01`.
+
+## El instrumento de las salas: JANAX_SALAS (2026-11-06)
+
+Para que la memoria se ajuste sola "en cualquier parte" (Capitán), primero hay que ver dónde sobra, y verlo midiendo.
+Con `JANAX_SALAS=1`, cuando una cabina termina, el núcleo mira cada una de sus salas antes de devolverla
+(`sala_measure`, desde `cabin_free`). Cuenta cuántos de sus lugares de 8 bytes tienen algo distinto de cero y escribe:
+
+```
+salas P0: pedidas 110182 KB, usadas 46063 KB, salas 38
+  sala 229: 32768 KB, usada 15058 KB
+  ...
+```
+
+Las diez que más sobran van ordenadas. Solo mide las cabinas que terminan, no las que se rehacen. Lo usado es una cota
+por abajo, porque un cero puede ser un dato. Sin la variable no cuesta nada. Con él se encontraron todas las
+estructuras de Razar reservadas para el peor caso (ver `documentacion/razar/lectura.md`).
