@@ -523,6 +523,7 @@ windows:
     jcall hw
     jld j3, j9, 16
     jcall post
+    jcall organ                 ; and the mold it grew itself, if it has one (organo.inc)
     jldi j1, 0                  ; the door: the pair of the ends without its order, filled by the two between
     jldi j2, 3
     jst j2, j1, FLOOR

@@ -1059,3 +1059,16 @@ dependa de nadie despierto.
 - **La prueba** (`familia_presupuesto`, con el hijo `eterno`): el padre le da 10.000 instrucciones y se duerme en su
   timbre. El hijo las gasta y termina; el padre despierta con −1 y lee el código 10. Pide además sobre un número que no
   es hijo suyo (−2). Da `FF 0A FE` en los tres motores.
+
+## Un pedido que espera tu firma te toca el timbre (Capitán, 2026-11-06)
+
+Un padre se enteraba de que un hijo le pedía firma solamente preguntando (18) en un bucle, y eso choca con la regla de
+la casa: ningún bucle que gaste por nada. El ensamblador y los candidatos de Razar piden firma cientos de veces.
+
+- **Ahora un pedido importante que queda esperando la firma del padre le toca el timbre (28).** Un padre dormido en su
+  timbre (29) despierta con el número del hijo, mira lo pendiente (18), firma (17) y vuelve a dormir. Se despierta por
+  una de tres cosas: una firma pendiente, una palabra (30) o que ya no quede nadie (−1). No da ninguna vuelta.
+- Una marca alcanza: varios pedidos del mismo hijo dejan una sola.
+- **La prueba** (`familia_timbre`, con el hijo `ventanilla_hola`): el padre duerme, despierta con el hijo 1, firma, el
+  hijo escribe "hola" y termina, y el padre despierta con −1 (`01 FF`) en los tres motores. Antes, el padre despertaba
+  con −1 y la firma se rechazaba.

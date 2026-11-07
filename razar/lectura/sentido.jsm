@@ -1361,5 +1361,6 @@ putmix:
 include 'crece.inc'
 include 'casa.inc'
 include 'pulso.inc'
+include 'organo.inc'
 include 'negacion.inc'
 include 'lectura.inc'

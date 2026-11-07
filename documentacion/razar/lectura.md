@@ -1401,3 +1401,37 @@ vez, B (300 KB) en lugar de A, y A de nuevo.
 
 Los tres motores (traductor, intérprete y rutinas) dan las cuatro vidas idénticas bit por bit: huellas `3A5205E01885`,
 `71A2C787AAAD`, `577A10267858` y `6C5E153D55F5`, y los mismos bytes de memoria.
+
+## Los órganos: el hueco y el primero, hecho a mano (2026-11-06)
+
+El Capitán: *"que se automejore con lo aprendido compilando una solución mejor, así tiene nuevos miembros, quizás ojos,
+oídos y vaya a saber qué órgano invente"*, y después *"los legos, pero dentro de los legos puede hacer mutación libre de
+código"*.
+
+- **El Lego es un molde de hueco.** Todos los sentidos del pulso son la misma máquina: agarrar un pedazo de texto,
+  sacarle un hueco, resumir lo que queda (el marco) y anotar qué llenaba el hueco.
+  - Gemelos: el pedazo es una palabra y el hueco, una letra.
+  - Piso de palabras: una ventana de cuatro palabras con tres moldes (sin hueco, la segunda afuera, la tercera afuera).
+
+  Un **órgano** es un molde más de ese piso. La mutación libre, que viene en el próximo paso, toca adentro sus
+  instrucciones: qué palabras mezcla en el marco y cuál es su hueco. Así, si un mutante sale mal, solo se rompe ese
+  órgano.
+- **El hueco** (`organo.inc`, llamado desde `windows` después de los tres moldes). Es el archivo que Razar va a escribir
+  y recompilar con el ensamblador PDP dentro de Janax. El de hoy está vacío y no mira nada: las huellas siguen idénticas
+  (pulso `D3698F1AE83D`).
+- **El primer órgano, hecho a mano para medir antes de automatizar: "la palabra que sigue".** El marco son tres palabras
+  seguidas y el hueco es la cuarta, con su propio molde. Sobre el Nuevo Testamento, motor traductor:
+
+  | | sin órgano | con el órgano |
+  |---|---|---|
+  | bits ahorrados en total | 27.545 | 37.982 (+38 %) |
+  | interruptores (bits) | 10.698 | 6.919 |
+  | asociados (bits) | 11.347 | 25.563 |
+  | piezas de interruptores | 86 | 74 |
+  | piezas de asociados | 48 | 82 |
+  | aciertos en lo no leído por encima del azar (interruptores + asociados) | 1.287 | 2.128 |
+  | instrucciones | 2.602 millones | 2.659 millones (+2 %) |
+
+  El órgano paga, pero no gratis. Mete más palabras en el mismo piso, así que nombrar una pieza ahí cuesta más
+  (2·log2 U) y las piezas flojas de los interruptores dejan de pagar. Esa es justamente la cuenta que tiene que hacer el
+  examen: si lo que el órgano gana supera lo que le quita al resto.
