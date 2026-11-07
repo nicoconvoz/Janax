@@ -11,7 +11,7 @@
 ;
 ; The program that includes it calls clue_round before read_book, clue_gather after each answer and clue_end before
 ; finish, and clue_counts once it knows how often each word is in what it read, names the labels S_CAMINO ("camino",
-; 6 bytes) and S_SELF (its own program, S_SELFN bytes), includes carpeta.inc, and keeps away from 1900h-1ACFh.
+; 6 bytes) and S_SELF (its own program, S_SELFN bytes), includes carpeta.inc, and keeps away from 1900h-1ACFh and 3100h-3117h.
 ;
 ; The judge weighs a filling against the book ("what the filling says here beyond what it says anywhere"): reading
 ; again only a part, a word of those renglones would look common there and be rare in the book. So the counts come from
@@ -62,6 +62,9 @@ PZV2  = 1AB0h
 PZLO  = 1AB8h
 PZHI2 = 1AC0h
 PZX   = 1AC8h
+PZEV  = 3100h                   ; the silhouettes of the word just read: its house verdict, its buildings, its limits
+PZEB  = 3108h
+PZEK  = 3110h
 
 ; j2 = 1 if the word at PZHP (PZHN bytes) is a line of the text at PZTB (PZTN bytes). Uses j1-j8.
 pz_has:
@@ -851,7 +854,7 @@ cc_done:
   jldi j1, 0
   jret
 
-; The index just read (PZFR, PZFRN): if it is one (version 5), PZIX, a pointer to each piece in its list (PZPP) and
+; The index just read (PZFR, PZFRN): if it is one (version 6), PZIX, a pointer to each piece in its list (PZPP) and
 ; a byte by piece, 0, for the pieces it needs (PZNEED) -> j2 = 1; j2 = 0 if it is not. Uses j1-j14.
 pz_index:
   jldi j1, 0
@@ -863,7 +866,7 @@ pz_index:
   jjnz j2, pzi_no
   jld j9, j1, PZFR
   jld j2, j9, 0
-  jldi j3, 5
+  jldi j3, 6
   jsub j2, j2, j3
   jjnz j2, pzi_no
   jst j9, j1, PZIX
@@ -1226,6 +1229,31 @@ pze_said:
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEO
+  jldi j3, 2                    ; its silhouettes (comer.jsm): the house's verdict, its buildings, and each limit that
+  jcall zr_get                  ; closes some of them with how many (each passed by here)
+  jldi j1, 0
+  jst j2, j1, PZEV
+  jcall zr_gamma
+  jldi j1, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, PZEB
+  jcall zr_gamma
+  jldi j1, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, PZEK
+  pze_lims:
+    jldi j1, 0
+    jld j2, j1, PZEK
+    jjz j2, pze_limd
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, PZEK
+    jcall zr_gamma
+    jcall zr_gamma
+    jjmp pze_lims
+  pze_limd:
   jcall zr_gamma
   jldi j1, 0
   jldi j3, 1

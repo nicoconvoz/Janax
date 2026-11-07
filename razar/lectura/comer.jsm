@@ -115,6 +115,19 @@ ZNEW  = 17E8h                   ; pieces written, and pieces already there
 ZSAME = 17F0h
 ZLAB  = 6600h                   ; a piece's label: "tablero/pieza", the print of the book's bytes, "-", its number
 ZDIG  = 6680h                   ; its digits, the last first
+ZLIX  = 6740h                   ; the silhouettes: by word, its limit's number + 1 (0: no limit); the limits, by number;
+ZNLIM = 6748h                   ; how many; by word, the buildings it is in, and by word and limit how many of them that
+ZLW   = 6750h                   ; limit closes; by limit, the buildings it closes, and every building
+ZAN   = 6758h
+ZACN  = 6760h
+ZLC   = 6768h
+ZNBD  = 6770h
+ZAST  = 6778h                   ; walking the buildings: where the one walked starts, its limit
+ZALI  = 6780h
+ZOQ   = 6788h                   ; where the limits start in the index, and their bytes
+ZQL   = 6790h
+ZKL   = 6798h                   ; a word's limits written: how many, the one walked
+ZLI   = 67A0h
 ZBT   = 6700h                   ; writing bits: the bit, the value and its bits left, unary, gamma, the Rice parameter
 ZV    = 6708h                   ; and the fewest bits found
 ZW    = 6710h
@@ -195,6 +208,8 @@ jshi j2, 0
 jst j2, j1, PK
 jcall learn_pulses
 jcall house_decide
+jcall limits                    ; the limits of its buildings, found in the book
+jcall zs_buildings              ; and the buildings each word is in, with the limit that closes each
 jldi j1, 0                      ; the subjects: no foundation, no mark
 jld j11, j1, NV
 jldi j2, 3
@@ -320,7 +335,13 @@ jldi j1, 0
 jld j11, j1, ZW1
 jldi j10, 3
 jcall ask
-jldi j1, 0
+jldi j1, 0                      ; (and the format, folded into the print: pieces of another format never share a name)
+jld j2, j1, CHASH
+jldi j3, 6
+jxor j2, j2, j3
+jld j3, j1, FNVP
+jmul j2, j2, j3
+jst j2, j1, CHASH
 
 jldi j1, 0                      ; in how many renglones each word is
 jld j11, j1, NV
@@ -758,6 +779,7 @@ pw_shared:
   jldi j3, 1
   jadd j2, j2, j3
   jcall zb_gamma
+  jcall zs_entry_sil
   jldi j1, 0
   jld j2, j1, ZID
   jldi j3, 3
@@ -886,6 +908,8 @@ jld j2, j1, PZFR
 jld j3, j2, 0
 jldi j4, 5
 jsub j3, j3, j4
+jldi j4, 63
+jsar j3, j3, j4
 jjnz j3, old_none
 jst j2, j1, ZOLD
 old_none:
@@ -944,13 +968,21 @@ jld j3, j3, 0
 jld j4, j1, ZMST
 jld j4, j4, 0
 jsub j3, j3, j4
-jadd j11, j2, j3
+jadd j2, j2, j3
+jcall zs_pad                    ; (then the book's limits, from a qword on: where they start, and the index's bytes)
+jadd j11, j2, j1
+jst j11, j1, ZOQ
+jcall zs_limsize
+jldi j1, 0
+jld j11, j1, ZOQ
+jld j2, j1, ZQL
+jadd j11, j11, j2
 jst j11, j1, ZTOT
 jcall room
 jldi j1, 0
 jst j13, j1, OUTR
 
-jldi j2, 5                      ; its head
+jldi j2, 6                      ; its head
 jst j2, j13, 0
 jld j2, j1, NBYTES
 jst j2, j13, 8
@@ -988,7 +1020,7 @@ jld j2, j1, ZOM
 jst j2, j13, 128
 jld j2, j1, ZOK
 jst j2, j13, 136
-jld j2, j1, ZTOT
+jld j2, j1, ZOQ
 jst j2, j13, 144
 jld j2, j1, CHASH
 jst j2, j13, 152
@@ -1076,10 +1108,11 @@ jld j3, j1, ZMST
 jld j3, j3, 0
 jld j4, j1, ZBB
 jadd j3, j3, j4
-jld j4, j1, ZTOT
+jld j4, j1, ZOQ
 jld j5, j1, ZOK
 jsub j4, j4, j5
 jcall zs_copy
+jcall zs_limwrite               ; and the book's limits
 
 jldi j1, 0                      ; the pieces: one already there with the same bytes is left; only what is new is
 jst j1, j1, ZP                  ; written
@@ -1203,6 +1236,8 @@ og_label:
   jld j3, j2, 0
   jldi j4, 5
   jsub j3, j3, j4
+  jldi j4, 63
+  jsar j3, j3, j4
   jjnz j3, og_next
   jld j3, j2, 152
   jld j4, j1, OHASH
@@ -1842,6 +1877,365 @@ zw_write:
   jcall ask
 zww_done:
   jldi j1, 0
+  jret
+
+; The silhouettes of reading (Capitan, 2026-11-07: "the reading rules must not be lost, they must be enriched: they are
+; logical silhouettes"): what the whole book teaches about reading it, kept as counts that add up over every book eaten.
+; Each word's house verdict (its pieces), and the buildings it is in with the limit that closes each (the arrows,
+; sentido.jsm); each limit, the buildings it closes. Buildings are counted as sentido counts them: the units between two
+; limits, a renglon's end no limit, each word once per time it is said. Uses j1-j14.
+zs_buildings:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ZLIX
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ZLW
+  jst j1, j1, ZNLIM
+  jld j10, j1, NV                 ; the limits, numbered in the order of their word
+  jldi j9, 1
+  jsub j10, j10, j9
+  jwhile j10
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, zbl_next
+    jld j2, j1, ZNLIM
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ZLW
+    jadd j3, j3, j4
+    jst j9, j3, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ZNLIM
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ZLIX
+    jadd j3, j3, j4
+    jst j2, j3, 0
+  zbl_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j11, j1, NV                 ; the counts
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ZAN
+  jld j11, j1, NV
+  jld j2, j1, ZNLIM
+  jmul j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ZACN
+  jld j11, j1, ZNLIM
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ZLC
+  jst j1, j1, ZNBD
+  jldi j2, 1
+  jst j2, j1, ZAST
+  jldi j9, 1
+  jld j10, j1, NTOK
+  jldi j2, 1
+  jsub j10, j10, j2
+  jldi j3, 63                     ; (fewer units than one: nothing to walk)
+  jsar j3, j10, j3
+  jldi j4, -1
+  jxor j3, j3, j4
+  jand j10, j10, j3
+  jwhile j10
+    jldi j1, 0
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, zbw_next
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ZLIX
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, zbw_next
+    jldi j4, 1                    ; a limit: the building before it closes with it
+    jsub j3, j3, j4
+    jst j3, j1, ZALI
+    jld j5, j1, ZAST
+    jsub j6, j9, j5
+    jjz j6, zbw_closed
+    jld j6, j1, ZNBD
+    jadd j6, j6, j4
+    jst j6, j1, ZNBD
+    jldi j6, 3
+    jshl j6, j3, j6
+    jld j7, j1, ZLC
+    jadd j6, j6, j7
+    jld j7, j6, 0
+    jadd j7, j7, j4
+    jst j7, j6, 0
+    jst j9, j1, ZW1
+    jst j10, j1, ZW2
+    zbw_word:
+      jldi j1, 0
+      jld j5, j1, ZAST
+      jld j9, j1, ZW1
+      jsub j6, j9, j5
+      jjz j6, zbw_done
+      jldi j2, 3
+      jshl j2, j5, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jldi j3, 1
+      jadd j5, j5, j3
+      jst j5, j1, ZAST
+      jjz j2, zbw_word
+      jst j2, j1, ZKL
+      jcall w_mark
+      jjnz j3, zbw_word
+      jldi j1, 0
+      jld j2, j1, ZKL
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, ZAN
+      jadd j4, j4, j3
+      jld j5, j4, 0
+      jldi j6, 1
+      jadd j5, j5, j6
+      jst j5, j4, 0
+      jld j4, j1, ZNLIM
+      jmul j4, j2, j4
+      jld j5, j1, ZALI
+      jadd j4, j4, j5
+      jldi j5, 3
+      jshl j4, j4, j5
+      jld j5, j1, ZACN
+      jadd j4, j4, j5
+      jld j5, j4, 0
+      jadd j5, j5, j6
+      jst j5, j4, 0
+      jjmp zbw_word
+    zbw_done:
+    jld j10, j1, ZW2
+  zbw_closed:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j2, j9, j2
+    jst j2, j1, ZAST
+  zbw_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; The silhouettes of word ZID, in its piece's bits: the house's verdict in two bits (0 furniture, 1 not decided, 2
+; foundation); the buildings it is in + 1, in gamma; how many limits close some of them + 1; and each such limit, its
+; number + 1 and how many it closes, in gamma. Uses j1-j14.
+zs_entry_sil:
+  jldi j1, 0
+  jld j2, j1, ZID
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ROOMSD
+  jadd j3, j3, j2
+  jld j3, j3, 0
+  jldi j2, 1
+  jjz j3, zse_v
+  jldi j2, 0
+  jldi j4, 63
+  jsar j4, j3, j4
+  jjnz j4, zse_v
+  jldi j2, 2
+zse_v:
+  jldi j3, 2
+  jcall zb_put
+  jldi j1, 0
+  jld j2, j1, ZID
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ZAN
+  jadd j3, j3, j2
+  jld j2, j3, 0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall zb_gamma
+  jldi j1, 0                      ; how many limits close some of its buildings
+  jst j1, j1, ZKL
+  jst j1, j1, ZLI
+  zse_count:
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+    jjz j3, zse_counted
+    jcall zs_cell
+    jjz j2, zse_cnext
+    jld j2, j1, ZKL
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ZKL
+  zse_cnext:
+    jld j2, j1, ZLI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ZLI
+    jjmp zse_count
+zse_counted:
+  jld j2, j1, ZKL
+  jldi j3, 1
+  jadd j2, j2, j3
+  jcall zb_gamma
+  jldi j1, 0
+  jst j1, j1, ZLI
+  zse_each:
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+    jjz j3, zse_done
+    jcall zs_cell
+    jjz j2, zse_enext
+    jst j2, j1, ZKL
+    jld j2, j1, ZLI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jcall zb_gamma
+    jldi j1, 0
+    jld j2, j1, ZKL
+    jcall zb_gamma
+  zse_enext:
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ZLI
+    jjmp zse_each
+zse_done:
+  jldi j1, 0
+  jret
+
+; j2 = how many of word ZID's buildings limit ZLI closes. Uses j1-j4.
+zs_cell:
+  jldi j1, 0
+  jld j2, j1, ZID
+  jld j3, j1, ZNLIM
+  jmul j2, j2, j3
+  jld j3, j1, ZLI
+  jadd j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ZACN
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jret
+
+; The bytes of the book's limits in the index -> ZQL: {how many, all the buildings}, then each {the buildings it closes,
+; its bytes, its letters padded}. Uses j1-j14.
+zs_limsize:
+  jldi j1, 0
+  jldi j2, 16
+  jst j2, j1, ZQL
+  jld j10, j1, ZNLIM
+  jld j9, j1, ZLW
+  jwhile j10
+    jld j3, j9, 0
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j2, j3, 16
+    jcall zs_pad
+    jldi j3, 16
+    jadd j2, j2, j3
+    jld j3, j1, ZQL
+    jadd j3, j3, j2
+    jst j3, j1, ZQL
+    jldi j2, 8
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; The book's limits, at OUTR + ZOQ. Uses j1-j14.
+zs_limwrite:
+  jldi j1, 0
+  jld j9, j1, OUTR
+  jld j2, j1, ZOQ
+  jadd j9, j9, j2
+  jld j2, j1, ZNLIM
+  jst j2, j9, 0
+  jld j2, j1, ZNBD
+  jst j2, j9, 8
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j1, j1, ZLI
+  zlw_lap:
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+    jjz j3, zlw_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ZLC
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jst j4, j9, 0
+    jld j4, j1, ZLW
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jldi j5, 3
+    jshl j4, j4, j5
+    jld j5, j1, ROOMI
+    jadd j4, j4, j5
+    jld j4, j4, 0
+    jld j5, j4, 16
+    jst j5, j9, 8
+    jld j3, j4, 8
+    jld j6, j1, ROOMA
+    jadd j3, j3, j6
+    jst j9, j1, ZW1
+    jldi j2, 16
+    jadd j2, j9, j2
+    jadd j4, j5, j1
+    jcall zs_copy
+    jldi j1, 0
+    jld j9, j1, ZW1
+    jld j2, j9, 8
+    jcall zs_pad
+    jldi j3, 16
+    jadd j9, j9, j2
+    jadd j9, j9, j3
+    jld j2, j1, ZLI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ZLI
+    jjmp zlw_lap
+zlw_done:
   jret
 
 include 'crece.inc'

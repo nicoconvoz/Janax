@@ -2116,3 +2116,29 @@ padre de jacob" está entre los 50 renglones de jacob), pero **la lógica no sal
 que se dan vuelta se aprenden del libro entero, y el paso que sigue es guardarlos en la biblioteca al comer. De paso:
 la primera pasada del encaje ya no cuenta como mejor una respuesta que la pregunta ya dice.
 
+## Las siluetas de lectura: lo que el libro entero enseña a leer, sumado entre libros (2026-11-07)
+
+Medido antes: sobre un pedazo releído (los 50 renglones de "jacob") ni "el padre de jacob" contesta, aunque "isaac,
+padre de jacob" está ahí. En 50 renglones la casa no sabe que "el" es relleno, y "quién" ni aparece. Releer más
+alrededor de cada pista tampoco ayudó (2, 1 y 2 de 7 con ventanas de 0, 1 y 2 renglones), y se deshizo. El Capitán:
+*"las reglas de lectura no se tienen que perder, es más, se tienen que enriquecer: son siluetas lógicas"*.
+
+**Paso 1, hecho: cada libro deja sus siluetas al comer** (formato 6). En cada entrada de sus pedazos, junto a sus
+cuentas, cada palabra lleva:
+- el veredicto de la casa en 2 bits: mueble, sin decidir o relleno;
+- en cuántos edificios está;
+- cada límite que cierra alguno de esos edificios, con cuántos cierra.
+
+Los edificios se cuentan como los cuenta `sentido` (de límite a límite; el fin de renglón no cierra). Al final del
+índice va la lista de límites del libro, con cuántos edificios cierra cada uno y el total. Son cuentas: se suman entre
+libros. El formato entra en la huella de los pedazos, así que uno viejo nunca se lee como nuevo.
+
+**Medido:** el nido del Nuevo Testamento pasa de 169.587 a 200.243 bytes (+18 %). Las seis preguntas de control dan
+idénticas: el lector salta las siluetas sin correrse un bit.
+
+**Falta:**
+- que `sentido` sume las siluetas de toda la biblioteca y lea el pedazo con ellas;
+- que la pregunta mire desde el mueble y amplíe hasta encontrar la respuesta.
+
+Las casas con índices de versión 5 tienen que volver a comer sus libros (el vigía lo hace solo cuando cambian).
+
