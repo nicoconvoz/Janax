@@ -1912,3 +1912,39 @@ vuelta no llega a nada nuevo, dice esa respuesta; antes, una vuelta no dice nada
 `come <dirección>` le da un libro de cualquier lugar de la PC; cualquier otro renglón es una pregunta con huecos.
 Nada corre entre renglones. Probado de punta a punta con una casa vacía: come dos libros de dos lugares, contesta
 desde las pistas, y una dirección que no existe dice que no la encuentra.
+
+## El nido en bits y por piezas en secuencia (2026-11-07)
+
+El Capitán vio que el nido pesaba demasiado (*"guarda todo como bits"*) y que no tenía que levantarse entero (*"así
+levanta solo el módulo que necesita"*), y después lo ajustó: *"no reescribas, ponelos todos en la misma carpeta con un
+nombre en secuencia"*.
+
+**Qué pesaba de verdad**, medido sobre el nido del Nuevo Testamento (703.440 bytes, el libro tiene 972.802): nada
+estaba repetido; ni el nombre de Jesús ni la dirección del libro. Pesaban las cajas fijas de 8 bytes: los nombres y
+sus cuentas, el 58 %; las pistas en 2 bytes con su relleno, el 32 %; las marcas de renglón, el 9 %.
+
+**El formato (versión 4)**, descrito entero en la cabecera de `comer.jsm`:
+- Todas las palabras del libro (sujetos, cimiento y marcas), ordenadas byte a byte, en **piezas de √palabras palabras**.
+  Lo que se tiene en memoria para responder es el índice y una pieza: con √N, la suma de los dos es la menor.
+- En una pieza, cada palabra dice lo que comparte con la anterior y sus letras restantes, cada letra en los bits que
+  nombran las que el libro usa (55 letras: 6 bits); sus cuentas y sus renglones van en Elias gamma; los renglones van
+  como el salto desde el anterior, en Rice con el parámetro que da menos bits (se prueban los 16).
+- Las marcas de renglón van en páginas de √marcas, cada largo en Rice; el índice dice dónde empieza cada página.
+- Cada pieza es un archivo `pieza<n>`, numerado después de la última que haya en la carpeta, y **se escribe una sola
+  vez**. El índice `pistas<huella>` se escribe al final: es el que firma que el libro quedó comido. Volver a comer el
+  mismo libro escribe piezas nuevas y el índice, y recién después devuelve las piezas del índice viejo.
+
+**Medido:** 169.587 bytes (13.161 de índice; 109 piezas, la mayor de 2.836) contra 703.440: **cuatro veces más chico,
+el 17 % del libro**. Comer tarda 1,3 s.
+
+**Verificado:** un modelo en Python (fuera del repo) fija el formato y se lee de vuelta exacto al nido viejo (11.790
+palabras, 86.230 pistas, 7.976 renglones, las cuentas). Los archivos que escribe `comer` son idénticos byte a byte a
+los del modelo, con el traductor y con el intérprete; volver a comer da las piezas 110 a 218 idénticas al modelo y la
+carpeta sin las viejas.
+
+**Una trampa del núcleo que apareció:** la lista de la carpeta (pedido 14) escribe las etiquetas mientras entran y
+calla las demás. Con cien piezas por libro, una lista de 4 KB dejaba afuera los índices. `carpeta.inc` lista de nuevo
+con el doble de lugar mientras quede menos lugar libre que el que podría ocupar una etiqueta más (8 + NORM_CAP bytes).
+
+**Lo que falta:** que `pregunta` lea este formato. Hasta entonces, los nidos nuevos no le dan pistas; pregunta sin ellos
+y no se rompe.
