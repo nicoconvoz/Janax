@@ -1846,3 +1846,32 @@ repositorio. Enter vacío o `chau` termina.
   `jacob hijo de ? hijo de ?` → `jacob hijo de isaac hijo de abraham` (inferido).
 - **Lo que no es todavía:** una charla libre. Hoy entiende melodías con huecos. Es el principio: el idioma y las
   preguntas propias están preparados para emerger.
+
+## El nido de las pistas: comer un libro de cualquier lugar (2026-11-07)
+
+Idea del Capitán: *"no quiero que recuerde: quiero que tenga la pista de dónde lo leyó y lo busque para responderme,
+algo más parecido a nuestra mente"*. Los libros viven donde estén en la PC; en la carpeta de Razar van solo las pistas
+y la dirección del libro.
+
+- **`comer.jsm`:** lee la dirección del archivo `come`, abre el libro en el anfitrión (pedido 37, solo lectura) y lo
+  lee como siempre, anotando dónde empieza cada renglón (`lectura.inc`, `HOSTB`/`ROFF`). Escribe su nido
+  `pistas` + la huella FNV de la dirección: el mismo libro comido otra vez cae en el mismo nido, y listar los nidos
+  encuentra todos los libros. No guarda ni un hecho: palabras, renglones y bytes.
+- **Pistas solo de los sujetos, deducidos** (Capitán: *"que el sistema deduzca los sujetos"*, no por mayúsculas): se
+  queda con lo que la casa no puso en los cimientos (los muebles, y lo que nunca juzgó), sin signos. Los cimientos
+  vuelven al releer el renglón.
+- **Cada pista usa los bytes que el libro necesita** para nombrar su último renglón: 1 hasta 256 renglones, 2 para
+  los 7.976 del Nuevo Testamento (antes eran 8: el nido pesaba más que el libro).
+- **Medido** (Nuevo Testamento, 972.802 bytes, 1,8 s):
+
+  | | todas las palabras, 8 bytes | todas, 2 bytes | **solo sujetos, 2 bytes** |
+  |---|---|---|---|
+  | palabras con pista | 11.790 | 11.790 | **11.594** |
+  | pistas | 168.483 | 168.483 | **86.230** |
+  | nido | 1,74 MB | 776 KB | **606 KB** |
+
+  Verificado afuera (un lector en Python del nido): cada pista cae en un renglón que tiene su palabra, 0 fallas, y el
+  archivo se lee hasta el último byte.
+- **Lo que no es todavía:** la casa separa pegamento de contenido, no sujetos de lo demás (`casa`, `tierra` y `dijo`
+  son muebles como `pedro`). Deducir los sujetos dentro de los muebles es el paso que sigue.
+- **Falta:** preguntar siguiendo las pistas (ir a esos bytes con 38 y releer solo esos renglones).

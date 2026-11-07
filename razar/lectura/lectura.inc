@@ -57,6 +57,9 @@ SHELF = 1180h
 SHN   = 1188h
 SHI   = 1190h
 SHP   = 1198h
+HOSTB = 11A0h                   ; 1: the book is a file anywhere on the host, LABEL its address (opened with 37, no
+ROFF  = 11A8h                   ; shelf), and where each renglon starts is kept: at ROFF, ROFFN of them (the first at
+ROFFN = 11B0h                   ; 0, the last the end of the book: renglon k is from ROFF[k] to ROFF[k + 1])
 AUTH  = 1168h                   ; the autopsy being written: its handle plus one (0: none)
 EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
@@ -75,11 +78,14 @@ BUFLEN = 8000h
 ; The book read: its constants, K, the first reading, its rooms (the row, the letters, the words and their places by
 ; number) and the second reading. Uses j1-j14.
 read_book:
-jldi j1, 0                      ; the book, and constants
+jldi j1, 0                      ; the book (a book of the host keeps its address), and constants
+jld j2, j1, HOSTB
+jjnz j2, rb_host
 jldi j2, S_LIBRO
 jst j2, j1, LABEL
 jldi j2, 5
 jst j2, j1, LABLEN
+rb_host:
 jldi j2, 0
 jshi j2, 0FFFFh
 jshi j2, 0FFFFh
@@ -124,7 +130,11 @@ jldi j2, 10
 jst j2, j1, PK
 pr_done:
 
-jcall shelf_build               ; the shelf: every book there is
+jldi j1, 0                      ; the shelf: every book there is (a book of the host is one)
+jld j2, j1, HOSTB
+jjnz j2, rb_one
+jcall shelf_build
+rb_one:
 jldi j1, 0                      ; first reading: it counts
 jst j1, j1, PASS
 jldi j2, 1
@@ -170,6 +180,20 @@ jldi j2, 1
 jst j2, j1, WMASK
 jst j1, j1, VCNT
 
+jldi j1, 0                      ; a book of the host: where each renglon starts, to the renglones counted
+jld j2, j1, HOSTB
+jjz j2, rb_marks
+jld j11, j1, NLINES
+jldi j2, 2
+jadd j11, j11, j2
+jldi j2, 3
+jshl j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROFF
+jldi j2, 1
+jst j2, j1, ROFFN
+rb_marks:
 jldi j1, 0                      ; second reading: the row of numbers (unit 0 is a renglon: the room starts in zeros)
 jldi j2, 1
 jst j2, j1, PASS
@@ -338,6 +362,10 @@ scan:
 scan_file:
   jldi j1, 0
   jldi j10, 4
+  jld j2, j1, HOSTB             ; (a book of the host: open on the host, read only)
+  jjz j2, sf_label
+  jldi j10, 37
+sf_label:
   jld j11, j1, LABEL
   jld j12, j1, LABLEN
   jcall ask
@@ -608,6 +636,15 @@ l_unit:
   jst j3, j1, NLINES
   jld j3, j1, PASS
   jjz j3, lu_count
+  jld j3, j1, ROFF              ; (a book of the host, numbering: the next renglon starts at the next byte)
+  jjz j3, lu_put
+  jld j3, j1, PASS
+  jldi j4, 1
+  jsub j3, j3, j4
+  jjnz j3, lu_put
+  jcall r_mark
+lu_put:
+  jldi j1, 0
   jldi j2, 0
   jjmp t_put
 lu_count:
@@ -616,6 +653,33 @@ lu_count:
   jadd j3, j3, j4
   jst j3, j1, NUNITS
 lu_none:
+  jret
+
+; Where the next renglon starts: the byte after the one being read (the end of the book, past it), at ROFF. Uses
+; j1-j5.
+r_mark:
+  jldi j1, 0
+  jld j3, j1, NBYTES
+  jld j4, j1, LEFT
+  jsub j3, j3, j4
+  jldi j4, 1
+  jadd j3, j3, j4
+  jld j4, j1, NBYTES
+  jsub j4, j4, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, rk_in
+  jld j3, j1, NBYTES
+rk_in:
+  jld j4, j1, ROFFN
+  jldi j5, 3
+  jshl j5, j4, j5
+  jld j2, j1, ROFF
+  jadd j5, j5, j2
+  jst j3, j5, 0
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, ROFFN
   jret
 
 ; The number j2 at the end of the row (reading a question: at the end of the question, QBUF; past QMAX units
