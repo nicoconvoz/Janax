@@ -164,6 +164,10 @@ OGT   = 1EF0h
 OGLET = 1EF8h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
+LLAVE = 1C08h                   ; the board (on the host, a folder several Janax share): its key (from the file "llave"),
+BLAB  = 1C10h                   ; the label of its letter there, "tablero/razar-" and its key in hexadecimal (BLEN
+BLEN  = 1C30h                   ; bytes, 30), and the room a listing of it is read into
+BROOM = 1C38h
 LETB  = 1CA0h                   ; a letter as it travels: {genome, organ} (what it has, never what it read), the
 PORG  = 1CB0h                   ; other's organ to try first, and the last letter of the other it read
 LSEEN = 1CB8h
@@ -2394,6 +2398,7 @@ vw_set:
   jldi j11, 6
   jld j12, j1, OTRL
   jcall ask
+  jcall board_init              ; and the board, if it has a key: where it finds other Razares of the same host
   jldi j1, 0
 vw_done:
   jret
@@ -4252,6 +4257,9 @@ letter_read:
   jldi j3, 255
   jand j2, j2, j3
   jjnz j2, lr_done
+  jcall board_find              ; on the board first (another Razar of this host), else the other's letter file
+  jldi j1, 0
+  jjnz j2, lr_have
   jldi j10, 4
   jldi j11, OTRL
   jldi j12, 6
@@ -4284,6 +4292,7 @@ letter_read:
   jldi j3, 63
   jsar j2, j2, j3
   jjnz j2, lr_done
+lr_have:
   jld j2, j1, LETB
   jst j2, j1, CARTA
   jst j2, j1, LSEEN
@@ -4300,11 +4309,270 @@ lr_organ:
 lr_done:
   jret
 
+; The board (Capitan: "that it can find another Razar on the same host"): a folder of the host that several Janax
+; share (JANAX_TABLERO; its labels start "tablero/"). Each Razar leaves there one thing, its letter, under
+; "tablero/razar-" and its key in hexadecimal: {its genome, its organ}, nothing of what it read. It finds the others
+; listing the board, and the sentinel wakes it when one of them changes. Its key comes from the file "llave" (8 bytes,
+; written by whoever sets it up: Razar is deterministic and has nothing unique of its own). No key: no board. Uses
+; j1-j14.
+board_init:
+  jldi j1, 0
+  jst j1, j1, LLAVE
+  jldi j10, 4                   ; "llave"
+  jldi j11, BLAB
+  jldi j2, 0
+  jshi j2, 0000h
+  jshi j2, 0065h
+  jshi j2, 7661h
+  jshi j2, 6C6Ch
+  jst j2, j1, BLAB
+  jldi j12, 5
+  jcall ask
+  jldi j1, 0
+  jst j1, j1, BLAB
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, bi_done
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, LLAVE
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, EVT2
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, EVT2
+  jldi j3, 8
+  jsub j2, j2, j3
+  jjz j2, bi_key
+  jst j1, j1, LLAVE
+  jjmp bi_done
+bi_key:
+  jldi j2, 0
+  jshi j2, 2F6Fh
+  jshi j2, 7265h
+  jshi j2, 6C62h
+  jshi j2, 6174h
+  jst j2, j1, BLAB
+  jldi j2, 0
+  jshi j2, 0000h
+  jshi j2, 2D72h
+  jshi j2, 617Ah
+  jshi j2, 6172h
+  jst j2, j1, BLAB + 8
+  jst j1, j1, BLAB + 16
+  jst j1, j1, BLAB + 24
+  jldi j5, 0                    ; its key in hexadecimal, its highest digit first
+  jld j6, j1, LLAVE
+  jldi j7, 16
+  jwhile j7
+    jldi j3, 60
+    jshr j3, j6, j3
+    jldi j4, 10
+    jsub j4, j3, j4
+    jldi j8, 63
+    jsar j4, j4, j8
+    jldi j8, 48
+    jjnz j4, bi_digit
+    jldi j8, 87
+  bi_digit:
+    jadd j3, j3, j8
+    jldi j4, 14
+    jadd j4, j4, j5
+    jldi j8, BLAB
+    jadd j4, j4, j8
+    jstb j3, j4, 0
+    jldi j3, 4
+    jshl j6, j6, j3
+    jldi j3, 1
+    jadd j5, j5, j3
+    jsub j7, j7, j3
+  jwend
+  jldi j2, 30
+  jst j2, j1, BLEN
+  jldi j10, 32                  ; the board watched: a letter there that changes wakes it
+  jldi j11, 8
+  jld j12, j1, BLAB
+  jcall ask
+bi_done:
+  jldi j1, 0
+  jret
+
+; Its letter on the board, written whole: {its genome, its organ} (LETB). Uses j1-j14.
+board_write:
+  jldi j1, 0
+  jld j2, j1, LLAVE
+  jjz j2, bw_done
+  jldi j10, 12
+  jldi j11, BLAB
+  jld j12, j1, BLEN
+  jcall ask
+  jldi j1, 0
+  jldi j10, 4
+  jldi j11, BLAB
+  jld j12, j1, BLEN
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, bw_done
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jldi j11, LETB
+  jldi j12, 16
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+bw_done:
+  jldi j1, 0
+  jret
+
+; The first letter on the board that is not its own (in the order the host lists them: always the same) -> LETB, j2 1;
+; j2 0 if there is none (or no board). Uses j1-j14.
+board_find:
+  jldi j1, 0
+  jld j2, j1, LLAVE
+  jjz j2, bf_none
+  jldi j11, 8192                ; (a listing of the folder and the board: its labels, criterion for a board of a
+  jcall room                    ; few Razares)
+  jldi j1, 0
+  jst j13, j1, BROOM
+  jldi j10, 14
+  jadd j11, j13, j1
+  jldi j12, 8192
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jsar j2, j13, j2
+  jjnz j2, bf_fail
+  jld j9, j1, BROOM
+  jadd j10, j13, j1
+  jwhile j10
+    jldi j1, 0
+    jld j2, j9, 0               ; thirty bytes, "tablero/razar-", and not its own
+    jldi j3, 30
+    jsub j3, j2, j3
+    jjnz j3, bf_next
+    jld j2, j9, 8
+    jld j3, j1, BLAB
+    jsub j2, j2, j3
+    jjnz j2, bf_next
+    jld j2, j9, 16
+    jldi j3, 16
+    jshl j2, j2, j3
+    jld j4, j1, BLAB + 8
+    jshl j4, j4, j3
+    jsub j2, j2, j4
+    jjnz j2, bf_next
+    jld j2, j9, 16
+    jld j3, j1, BLAB + 8
+    jsub j2, j2, j3
+    jld j3, j9, 24
+    jld j4, j1, BLAB + 16
+    jsub j3, j3, j4
+    jor j2, j2, j3
+    jld j3, j9, 32
+    jld j4, j1, BLAB + 24
+    jsub j3, j3, j4
+    jor j2, j2, j3
+    jjz j2, bf_next
+    jst j9, j1, EVT2            ; another's: its letter read
+    jst j1, j1, LETB
+    jst j1, j1, LETB + 8
+    jldi j10, 4
+    jldi j2, 8
+    jadd j11, j9, j2
+    jldi j12, 30
+    jcall ask
+    jldi j1, 0
+    jldi j2, 63
+    jshr j2, j13, j2
+    jjnz j2, bf_fail
+    jst j13, j1, EVT
+    jldi j2, 32
+    jshl j10, j13, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jldi j11, LETB
+    jldi j12, 16
+    jcall ask
+    jldi j1, 0
+    jadd j9, j13, j1            ; (the bytes read, in a register a request keeps: ask overwrites j13 and j14)
+    jld j10, j1, EVT
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 7
+    jor j10, j10, j2
+    jcall ask
+    jldi j1, 0
+    jldi j2, 16                 ; (what comes from outside is checked before it is believed: a letter is sixteen
+    jsub j2, j9, j2             ; bytes, and its genome a genome, its three instincts more than 0)
+    jjnz j2, bf_fail
+    jld j2, j1, LETB
+    jldi j3, 3
+    jwhile j3
+      jldi j4, 255
+      jand j4, j2, j4
+      jjz j4, bf_fail
+      jldi j4, 8
+      jshr j2, j2, j4
+      jldi j4, 1
+      jsub j3, j3, j4
+    jwend
+    jldi j9, 1                  ; a letter: found
+    jjmp bf_free
+  bf_next:
+    jld j2, j9, 0               ; the next entry: its length, its bytes padded to 8
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+bf_fail:
+  jldi j9, 0                    ; none (or one that is not a letter)
+bf_free:
+  jldi j1, 0                    ; its listing's room given back (j9 kept: found or not)
+  jldi j10, 3
+  jld j11, j1, BROOM
+  jcall ask
+  jldi j1, 0
+  jadd j2, j9, j1
+  jret
+bf_none:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
 ; j2 = 1 if the other's letter is not the last one it read (it came while it slept). Uses j1-j14.
 letter_new:
   jldi j1, 0
   jld j2, j1, QUIEN
   jjz j2, ln_none
+  jcall board_find              ; (the board's first)
+  jldi j1, 0
+  jjnz j2, ln_have
   jldi j10, 4
   jldi j11, OTRL
   jldi j12, 6
@@ -4331,6 +4599,7 @@ letter_new:
   jor j10, j10, j2
   jcall ask
   jldi j1, 0
+ln_have:
   jld j2, j1, LETB
   jjz j2, ln_none
   jld j3, j1, LSEEN
@@ -4384,6 +4653,7 @@ letter_write:
   jldi j2, 7
   jor j10, j10, j2
   jcall ask
+  jcall board_write             ; and on the board, for the Razares of this host
 lw_done:
   jldi j1, 0
   jret

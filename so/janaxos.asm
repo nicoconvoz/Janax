@@ -251,11 +251,20 @@ section '.data' data readable writeable
   HOST_PATH = 260               ; MAX_PATH of the ANSI file functions of Windows
   dir_path  db HOST_PATH dup 0
   dir_len   dq 0
-  WATCH_BUF = 4096              ; the sentinel: the folder watched (0: not yet), what the host told, its bytes
-  watch_dir dq 0
-  watch_got dd 0
-  align 4
-  watch_buf rb WATCH_BUF
+  ; the board (Capitan: "that it can find another Razar on the same host"): a folder of the host that several Janax
+  ; share (JANAX_TABLERO); every label that starts "tablero/" lives there, not in the system's own folder
+  board_env db 'JANAX_TABLERO', 0
+  board_path db HOST_PATH dup 0
+  board_len dq 0
+  board_label db 'tablero/'
+  WATCH_BUF = 4096              ; the sentinel: per folder (0 its own, 1 the board) its handle (0: not yet), whether a
+  watch_dir dq 2 dup 0          ; reading is pending, what the host told and its bytes, the event it rings and the
+  watch_pend dq 2 dup 0         ; reading itself (OVERLAPPED)
+  watch_event dq 2 dup 0
+  watch_ov  dq 8 dup 0
+  watch_got dd 2 dup 0
+  align 8
+  watch_buf rb 2 * WATCH_BUF
   host_path db HOST_PATH + 8 dup 0
   host_path_2 db HOST_PATH + 8 dup 0
   data_path db HOST_PATH + 8 dup 0  ; the host path of a program's data file
@@ -478,7 +487,10 @@ section '.idata' import data readable writeable
          FindClose, 'FindClose',\
          MultiByteToWideChar, 'MultiByteToWideChar',\
          WideCharToMultiByte, 'WideCharToMultiByte',\
-         ReadDirectoryChangesW, 'ReadDirectoryChangesW'
+         ReadDirectoryChangesW, 'ReadDirectoryChangesW',\
+         CreateEventA, 'CreateEventA',\
+         WaitForMultipleObjects, 'WaitForMultipleObjects',\
+         GetOverlappedResult, 'GetOverlappedResult'
 
   import kernelbase,\
          VirtualAlloc2, 'VirtualAlloc2',\
@@ -518,6 +530,12 @@ start:
         mov     rax, rdi
 .dir_named:
         mov     [dir_len], rax
+        invoke  GetEnvironmentVariableA, board_env, board_path, HOST_PATH - 1   ; JANAX_TABLERO: the board, if any
+        mov     [board_len], rax
+        invoke  CreateEventA, 0, 0, 0, 0       ; the sentinel's two bells: its folder and the board
+        mov     [watch_event], rax
+        invoke  CreateEventA, 0, 0, 0, 0
+        mov     [watch_event + 8], rax
         invoke  CreateDirectoryA, dir_path, 0   ; it may already exist: that is fine
         invoke  GetSystemInfo, sysinfo
         mov     eax, dword [sysinfo + 4] ; dwPageSize
@@ -2404,8 +2422,23 @@ label_path:
         cmp     rax, HOST_PATH
         ja      .no
         mov     rdi, r12
-        lea     rsi, [dir_path]
+        lea     rsi, [dir_path]         ; (a label of the board, "tablero/...", lives in the board's folder)
         mov     rcx, [dir_len]
+        cmp     qword [board_len], 0
+        je      .folder
+        cmp     r13, 8
+        jb      .folder
+        mov     rax, qword [norm_label]
+        cmp     rax, qword [board_label]
+        jne     .folder
+        lea     rsi, [board_path]
+        mov     rcx, [board_len]
+        lea     rax, [r13*2]
+        add     rax, rcx
+        add     rax, 2
+        cmp     rax, HOST_PATH
+        ja      .no
+.folder:
         rep     movsb
         mov     al, '\'
         stosb
@@ -2558,9 +2591,29 @@ list_one:
         add     rax, rdx
         mov     [list_end], rax
         mov     qword [list_count], 0
-        lea     rdi, [host_path]        ; "folder\*"
-        lea     rsi, [dir_path]
+        lea     rsi, [dir_path]         ; its own folder, then the board's (if there is one)
         mov     rcx, [dir_len]
+        call    list_folder
+        mov     rcx, [board_len]
+        test    rcx, rcx
+        jz      .answer
+        lea     rsi, [board_path]
+        call    list_folder
+.answer:
+        mov     rax, [list_count]
+        mov     [rbp + r13 + 24], rax
+        pop     rdi rsi r14
+        ret
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        pop     rdi rsi r14
+        ret
+
+; The folder at rsi (rcx bytes): its files whose labels the process may see, into the list at list_pos. Uses r14,
+; rsi, rdi (kept by list_one). Keeps r12, r13, r15.
+list_folder:
+        sub     rsp, 8
+        lea     rdi, [host_path]        ; "folder\*"
         rep     movsb
         mov     eax, '\*'
         stosw
@@ -2568,7 +2621,7 @@ list_one:
         invoke  FindFirstFileA, host_path, find_data
         inc     qword [hostcalls]
         cmp     rax, -1
-        je      .answer                 ; nothing in the folder
+        je      .done                   ; nothing in the folder
         mov     r14, rax
         mov     eax, 1                  ; the first entry came with FindFirstFileA
         jmp     .entries
@@ -2608,14 +2661,8 @@ list_one:
 .full:
         invoke  FindClose, r14
         inc     qword [hostcalls]
-.answer:
-        mov     rax, [list_count]
-        mov     [rbp + r13 + 24], rax
-        pop     rdi rsi r14
-        ret
-.invalid:
-        mov     qword [rbp + r13 + 24], -1
-        pop     rdi rsi r14
+.done:
+        add     rsp, 8
         ret
 
 ; The file name in find_data back to its label in norm_label: eax = bytes, or -1 if the name is not

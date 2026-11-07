@@ -12,6 +12,9 @@ rm -rf "$carpeta" "$armado"; mkdir -p "$carpeta" "$armado"
 bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$armado" \
   "$aqui/pulso.jsm" "$aqui/pulso.datos.jsm" || exit 1
 cp "$libro" "$carpeta/$(etiqueta libro)"
+if [ -n "${LLAVE:-}" ]; then   # its key for the board (16 hex digits, LLAVE=...): Razar has nothing unique of its own
+  printf '%s' "$LLAVE" | xxd -r -p > "$carpeta/$(etiqueta llave)"
+fi
 printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x\\x%02x' "$vigilia" "$intentos" "$auditoria")"'\x00' \
   > "$carpeta/$(etiqueta p)"
 cp "$armado/pdp/ensamblador.bin" "$carpeta/$(etiqueta ensamblador.bin)"

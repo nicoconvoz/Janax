@@ -1723,3 +1723,33 @@ descansan):
 - Se cruzan las cartas. A despierta con "carta", prueba primero el órgano `5` de B **con sus propios libros**: −2575
   contra −8836, **gana**, y A se rehace con él.
 - B recibe la carta de A, que no trae órgano, sigue con sus mutaciones (`1` no gana) y vuelve a descansar.
+
+## El tablero: dos Razares del mismo anfitrión se encuentran solos (2026-11-07)
+
+El Capitán: *"dejalo listo, pero por lo menos que pueda encontrar a otro Razar en el mismo SO anfitrión"*. Sin red: una
+**carpeta del anfitrión que comparten** varios Janax (`JANAX_TABLERO`). Todo archivo que Janax nombra `tablero/...` vive
+ahí (núcleo).
+
+- **Cada Razar deja una sola cosa en el tablero:** su carta, `tablero/razar-<su llave en hexadecimal>`, con 16 bytes
+  (genoma y órgano), ninguna palabra. La llave sale del archivo `llave` (8 bytes), que escribe quien lo arma
+  (`organos.sh` con `LLAVE=…`): Razar es determinista y no tiene nada único propio. Sin llave no hay tablero.
+- **Encuentra a los otros listando el tablero** (`board_find`): toma la primera carta que no es la suya, en el orden en
+  que el anfitrión las lista (siempre el mismo). El centinela vigila `tablero/`, así que la carta nueva de otro lo
+  despierta.
+- **Lo que llega de afuera se verifica antes de creerle:** una carta tiene que tener 16 bytes y un genoma de verdad
+  (sus tres instintos mayores que 0).
+- **Queda listo para un puente:** el tablero es una carpeta aparte, sin libros, con un formato documentado. Un puente
+  (por ejemplo, lo de Nostr de Wenas) puede leerlo y escribirlo sin tocar a Razar.
+
+**Un bug mío, encontrado midiendo.** Las primeras corridas leían "cartas de ceros", y cruzar con un genoma 0 rompía
+hijos (`4 1 0`, `4 255 255`). `board_find` guardaba el "encontré" en `j14`, y `ask` empieza con `jldi j14, 1`
+(`lectura.inc`): cada pedido lo dejaba en 1, así que una carta vacía o a medio escribir contaba como encontrada. Ahora
+la decisión vive en `j9`, que los pedidos respetan, y todo camino que no sea una carta válida pasa por `bf_fail`.
+
+**Medido** (`tablero.sh`: dos Janax autónomos, libros distintos, llaves distintas, un tablero, sin cartero):
+- B gana `7` y después `5` (−3532 → −1916), y deja su carta.
+- A encuentra la carta de B: prueba primero `7` y gana (−8836 → −7179). B cambió su carta, A lo ve, prueba `5` y gana
+  (−2575). Sacarle el órgano no gana, y descansa.
+- A B lo despiertan las cartas nuevas de A. El órgano de A ya es el suyo, así que sigue con sus mutaciones, que no
+  ganan, y descansa.
+- Los dos terminan con el mismo órgano, `5`: lo inventó B, y A lo adoptó porque también le paga en sus libros.

@@ -1659,25 +1659,46 @@ watch_wait:
         call    watch_any
         test    eax, eax
         jz      .none
-        cmp     qword [watch_dir], 0
-        jne     .slept
-        invoke  CreateFileA, dir_path, 1, 7, 0, OPEN_EXISTING, 02000000h, 0
-        inc     qword [hostcalls]
-        cmp     rax, -1
-        je      .none
-        mov     [watch_dir], rax
-.slept:
-        xor     r15d, r15d              ; woke someone? (while nobody: back to sleep on the folder)
+        xor     r15d, r15d              ; woke someone? (while nobody: back to sleep on the folders)
         jmp     .woke
 .again:
+        xor     ebx, ebx                ; its own folder, and the board's if there is one: each one read for its next
+        call    watch_read              ; change, both waited on at once
+        test    eax, eax
+        jz      .none
+        mov     r12d, 1
+        cmp     qword [board_len], 0
+        je      .wait
+        mov     ebx, 1
+        call    watch_read
+        test    eax, eax
+        jz      .wait
+        mov     r12d, 2
+.wait:
         call    kern_leave
-        invoke  ReadDirectoryChangesW, [watch_dir], watch_buf, WATCH_BUF, 0, 11h, watch_got, 0, 0
-        mov     r12, rax
+        invoke  WaitForMultipleObjects, r12, watch_event, 0, -1
+        mov     rbx, rax
         call    kern_enter
         inc     qword [hostcalls]
-        test    r12, r12
-        jz      .none
-        lea     r13, [watch_buf]        ; every change it told, one after the other (there is one at least)
+        cmp     rbx, r12
+        jae     .none                   ; (the host failed)
+        mov     qword [watch_pend + rbx*8], 0
+        lea     rdi, [watch_got + rbx*4]
+        mov     rax, rbx
+        shl     rax, 5
+        lea     rsi, [watch_ov + rax]
+        invoke  GetOverlappedResult, [watch_dir + rbx*8], rsi, rdi, 0
+        test    eax, eax
+        jz      .woke                   ; (it told nothing: nobody woke, it waits again)
+        cmp     dword [watch_got + rbx*4], 0
+        jne     .told
+        call    watch_all               ; it lost what changed (too much at once): every one watching wakes, and
+        mov     r15d, 1                 ; each one's fingerprint tells whether it is news
+        jmp     .woke
+.told:
+        mov     rax, rbx
+        shl     rax, 12
+        lea     r13, [watch_buf + rax]  ; every change it told, one after the other (there is one at least)
         mov     r14d, 1
         jmp     .entries
 .entry:
@@ -1697,6 +1718,68 @@ watch_wait:
 .out:
         mov     rsp, rbp
         pop     r15 r14 r13 r12 rbp rdi rsi rbx
+        ret
+
+; The folder rbx (0 its own, 1 the board) read for its next change, if it is not already: opened the first time, to be
+; told without waiting (its event rings). -> eax = 1 if it is being read, 0 if it can not be. Uses rax, rcx, rdx,
+; r8-r11.
+watch_read:
+        cmp     qword [watch_pend + rbx*8], 0
+        jne     .yes
+        cmp     qword [watch_dir + rbx*8], 0
+        jne     .read
+        lea     rax, [dir_path]
+        test    rbx, rbx
+        jz      @f
+        lea     rax, [board_path]
+@@:     invoke  CreateFileA, rax, 1, 7, 0, OPEN_EXISTING, 42000000h, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .no
+        mov     [watch_dir + rbx*8], rax
+.read:
+        mov     rax, rbx                ; (not in the registers invoke fills: it would overwrite them)
+        shl     rax, 5
+        lea     r10, [watch_ov + rax]
+        mov     rcx, [watch_event + rbx*8]
+        mov     [r10 + 24], rcx
+        mov     rax, rbx
+        shl     rax, 12
+        lea     r11, [watch_buf + rax]
+        invoke  ReadDirectoryChangesW, [watch_dir + rbx*8], r11, WATCH_BUF, 0, 11h, 0, r10, 0
+        inc     qword [hostcalls]
+        test    eax, eax
+        jz      .no
+        mov     qword [watch_pend + rbx*8], 1
+.yes:
+        mov     eax, 1
+        ret
+.no:
+        xor     eax, eax
+        ret
+
+; Every cabin that has not ended, waits for a greeting and watches, wakes (r15d = 1). Keeps rbx, r12-r14.
+watch_all:
+        push    rbx
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     rsi, [rsi + rcx*8]
+        cmp     qword [rsi + P_DONE], 0
+        jne     .next
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .next
+        cmp     qword [rsi + P_WATCHN], 0
+        je      .next
+        mov     rbx, rsi
+        call    watch_wake
+.next:
+        inc     rcx
+.one:                                   ; while there are cabins to look at
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        pop     rbx
         ret
 
 ; eax = 1 if some cabin that has not ended waits for a greeting and watches. Keeps every register but rax, rcx, rsi.

@@ -1142,3 +1142,16 @@ El pedido 32 ahora **agrega** un prefijo a una lista que crece (`P_WATCH` / `P_W
 reemplazar el único que había. El mismo prefijo dos veces cuenta una sola. Con `a = 0` deja de vigilar. El centinela
 despierta a una cabina si el nombre del archivo que cambió empieza con **cualquiera** de sus prefijos, y la lista vuelve
 con todo lo demás cuando la cabina termina. Razar vigila "libro" y la carta del otro.
+
+## El tablero: una carpeta que comparten varios Janax del mismo anfitrión (2026-11-07)
+
+Para que dos Razares del mismo Windows se encuentren sin red (Capitán).
+
+- **`JANAX_TABLERO`** nombra una carpeta del anfitrión. Toda etiqueta que empieza con `tablero/` vive ahí, en vez de en
+  la carpeta propia del sistema (`label_path`), y listar (14) recorre las dos (`list_folder`). Varios Janax que apuntan
+  al mismo tablero ven los mismos archivos `tablero/...` y nada más del otro.
+- **El centinela vigila las dos carpetas a la vez.** Cada una se lee con `ReadDirectoryChangesW` sin esperar (con su
+  evento), y el núcleo dormido espera con `WaitForMultipleObjects` la que avise primero. Si el anfitrión avisa que
+  perdió la lista de cambios (se le llenó el búfer), despierta a todos los que vigilan: cada uno mira su huella y decide
+  si es novedad. Así no se pierde nada.
+- Es solo archivos: nada sale de la máquina.
