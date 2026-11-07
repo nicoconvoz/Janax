@@ -70,6 +70,9 @@ QN    = 1120h                   ; reading a question (PASS 2): its units so far,
                                 ; book never had, 0 its end)
 TEXT  = 2000h                   ; the lines it writes (TEXTN bytes: full, they go out, to the console or to SINK)
 TEXTN = 1000h
+BKP   = 3300h                   ; where each book starts in the row (a page break ends one): {where, bytes, bytes it
+                                ; must hold, one kept, the registers kept}, a room that grows; how many
+BKN   = 3390h
 RLT   = 11B8h                   ; (the room just got, while the list of rooms grows)
 SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
 PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
@@ -591,6 +594,13 @@ tb_other:
   jldi j2, -1
   jjmp t_put
 tb_text:
+  jldi j3, 12                   ; a page break: a book ends (what is read again comes from many, each its own world)
+  jsub j3, j2, j3
+  jjnz j3, tb_lf
+  jcall w_end
+  jcall bk_mark
+  jjmp l_unit
+tb_lf:
   jldi j3, 10
   jsub j3, j2, j3
   jjnz j3, tb_space
@@ -699,6 +709,34 @@ wb_need:
 qb_need:
   jldi j1, QBP
   jjmp buf_need
+
+; A book ends: the next one starts at the row's next unit (numbering, PASS 1), noted in BKP. Uses j1-j4.
+bk_mark:
+  jldi j1, 0
+  jld j2, j1, PASS
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, bkm_done
+  jld j2, j1, BKN
+  jldi j3, 1
+  jadd j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jst j2, j1, BKP + 16
+  jldi j1, BKP
+  jcall buf_need
+  jld j2, j1, BKN
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, BKP
+  jadd j3, j3, j4
+  jld j4, j1, NTOK
+  jst j4, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, BKN
+bkm_done:
+  jret
 
 ; The letter byte j2 at the end of the word being read (as long as it is: the room grows). Uses j1, j3, j4.
 w_put:

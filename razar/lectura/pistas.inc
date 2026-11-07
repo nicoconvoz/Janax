@@ -65,6 +65,7 @@ PZX   = 1AC8h
 PZEV  = 3100h                   ; the silhouettes of the word just read: its house verdict, its buildings, its limits
 PZEB  = 3108h
 PZEK  = 3110h
+PZRD  = 3400h                   ; the books this round read again (by their bytes' print {key}): their rules read it
 PZWL  = 3120h                   ; the silhouettes summed over the library: by word and limit how many of its buildings
 PZLG  = 3140h                   ; that limit closes {key, count}; by limit {its print, the buildings it closes, -}; all
 PZNBL = 3160h                   ; the buildings; this book's limits by number (their prints), how many; a word's limits
@@ -214,6 +215,9 @@ clue_round:
   jcall pz_out
   jjmp cr_close
 cr_walk:
+  jldi j2, PZRD
+  jldi j3, 8
+  jcall pl_new
   jldi j2, PZOCC                ; (the counts of every word, from the nests: {print, times, the house's verdict weighed,
   jldi j3, 40                   ; buildings, times the book took it for its switch of the no})
   jcall pl_new
@@ -269,6 +273,29 @@ cr_close:
   jcall ask
 cr_none:
   jldi j1, 0
+  jret
+
+; j2 = 1 if the index just read (PZIX) is of a book this round reads again (PZRD), or if the round reads none by the
+; clues (the first, the question only: then every book counts). Uses j1-j8.
+pz_read_it:
+  jldi j1, 0
+  jld j2, j1, PZRD
+  jjz j2, pri_yes
+  jld j9, j1, PZIX
+  jld j5, j9, 152
+  jjnz j5, pri_key
+  jldi j5, 1
+pri_key:
+  jldi j2, PZRD
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, pri_no
+pri_yes:
+  jldi j2, 1
+  jret
+pri_no:
+  jldi j2, 0
   jret
 
 ; j2 = 1 if the label listed at j9 ({its bytes, its bytes padded}) is an index of the library: "tablero/pistas" and
@@ -418,6 +445,8 @@ pt_next:
 pt_done:
   jld j11, j1, PZTOT
   jjz j11, prd_done
+  jldi j2, 1                    ; (and a page break when the book ends)
+  jadd j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, PZBUF
@@ -519,10 +548,25 @@ pt_done:
   jldi j2, 7
   jor j10, j10, j2
   jcall ask
-  jldi j1, 0
-  jld j2, j1, PZOFF
+  jldi j1, 0                    ; the book ends: a page break, so the reading knows where each book starts (each one a
+  jld j2, j1, PZOFF             ; world of its own: Capitan, "it choked on the project's data")
+  jld j3, j1, PZBUF
+  jadd j3, j3, j2
+  jldi j4, 12
+  jstb j4, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, PZOFF
   jld j3, j1, PZBUF
   jcall pz_out
+  jldi j1, 0                    ; (a book this round reads: its silhouettes are this reading's rules)
+  jld j9, j1, PZIX
+  jld j5, j9, 152
+  jjnz j5, prd_key
+  jldi j5, 1
+prd_key:
+  jldi j2, PZRD
+  jcall pl_take
 prd_done:
   jldi j1, 0
   jret
@@ -1029,6 +1073,8 @@ clue_counts:
     jld j12, j9, 0
     jcall pz_file
     jcall pz_index
+    jjz j2, cct_skip
+    jcall pz_read_it              ; (only the books it reads again: each reading with its own books' rules)
     jjz j2, cct_skip
     jcall pz_lsum
     jldi j1, 0

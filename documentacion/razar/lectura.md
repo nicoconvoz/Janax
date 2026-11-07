@@ -2886,3 +2886,25 @@ El Capitán: *"sí, sacalos"* (los tres topes que recortaban).
 - **Sin terminar** (el Capitán lo dejó así): la biblioteca real todavía no se barrió con esta versión, y una
   comparación de respuestas entre la copia y la real dio distinto sin que se viera la causa. Puede ser que el vigía
   haya comido archivos nuevos entre las dos corridas.
+
+## Cohesión: cada libro un mundo (2026-11-07, primer intento)
+
+El Capitán, mirando "¿quién es pedro?" en la charla: *"me cuesta entender su explicación… tiene que tener cohesión"*;
+*"eso nos pasa porque come de todo: se atragantó con datos del proyecto"*.
+
+- **Lo que se ve:** el párrafo mezcla el Evangelio con la documentación del proyecto ("quién es pedro" sale de
+  `lectura.md`, "j11" del código), salta de escena en escena y deja comillas abiertas. Además contesta sobre "quién" y
+  no sobre Pedro.
+- **Queda (infraestructura, controles idénticos):**
+  - `pz_read` deja un salto de página (`0Ch`) al terminar cada libro en `libro`, y el lector anota dónde empieza cada
+    uno (`bk_mark`, `BKP`/`BKN`, una habitación que crece). La lectura ya sabe de qué libro viene cada unidad.
+  - **Cada lectura con las reglas de sus libros:** `clue_counts` sumaba las siluetas de todos los índices de la
+    biblioteca; ahora sólo las de los libros que esta ronda lee de nuevo (`PZRD`, `pz_read_it`). En la primera ronda,
+    que sólo lee la pregunta, cuentan todos.
+- **Probado y sacado** (empeoró los controles): quedarse en el libro que más hechos tiene del sujeto y decir las
+  cláusulas en el orden del libro. "¿Quién es jesús?" pasó a empezar por "le dijo:«" y "¿qué es la ley?" quedó en
+  "coma de la ley". Poner primero lo que contesta la pregunta tampoco alcanzó.
+- **La causa de fondo, encontrada:** el vigía come todo lo que cambia en `C:\` y `E:\`, también logs. Comió
+  `E:\Program Files (x86)\Steam\logs\webhelper.txt` (186 KB). Las flechas de la biblioteca real salen de ahí ("type",
+  "x86", "program", "files", "user", "enable": 2.433 de 3.002 palabras son flechas), y "quién" no es flecha. Por eso
+  contesta sobre "quién". Es además un dato privado del Capitán dentro de la biblioteca.
