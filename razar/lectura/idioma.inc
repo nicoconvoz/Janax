@@ -22,6 +22,11 @@ LNQ   = 3570h                   ; the question's language (0: none)
 LNU   = 3578h                   ; by word its units in the reading
 EDG   = 3580h                   ; the pairs side by side {key, a, b, times} (a table that grows)
 LNX   = 35A0h                   ; (a count kept)
+LNL   = 35A8h                   ; the library's rules in the question's language (pistas.inc): a limit kept, the
+LTN   = 35B0h                   ; buildings its words have, a print kept; by print its language {key, language}; by
+LNY   = 35B8h                   ; limit the buildings it closes {key, buildings}
+PLB   = 35C0h
+LTB   = 35E0h
 
 ; Each word of the reading its language (LNG). Uses j1-j14.
 ln_scan:
@@ -387,3 +392,181 @@ ln_units:
   jwend
   jldi j1, 0
   jret
+
+; The question's language (Capitan, 2026-11-07: "a dictionary manual for each language, its punctuation included"):
+; its words read here already (as cores reads them), each one's language counted; the most is its language (LNQ).
+; The renglones of another language are left out of the reading: it is read with its own language's manual. A renglon
+; is of the language most of its units are. Uses j1-j14.
+ln_ask:
+  jldi j1, 0
+  jst j1, j1, LNQ
+  jld j2, j1, PASS
+  jst j2, j1, LN4
+  jld j2, j1, LABEL
+  jst j2, j1, LN5
+  jld j2, j1, LABLEN
+  jst j2, j1, LN6
+  jldi j2, S_Q
+  jst j2, j1, LABEL
+  jldi j2, 1
+  jst j2, j1, LABLEN
+  jldi j2, 2
+  jst j2, j1, PASS
+  jst j1, j1, QN
+  jcall scan
+  jldi j1, 0
+  jst j1, j1, LNTN
+  jldi j9, 0
+  lna_unit:
+    jldi j1, 0
+    jld j2, j1, QN
+    jsub j2, j9, j2
+    jjz j2, lna_counted
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, lna_next           ; (a hole, a word the reading never had)
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, LNG
+    jadd j3, j3, j4
+    jld j8, j3, 0
+    jldi j3, 3
+    jshl j3, j8, j3
+    jld j4, j1, LNW
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjnz j2, lna_add
+    jld j5, j1, LNTN
+    jldi j6, 3
+    jshl j6, j5, j6
+    jld j7, j1, LNT
+    jadd j6, j6, j7
+    jst j8, j6, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, LNTN
+  lna_add:
+    jldi j4, 1
+    jadd j2, j2, j4
+    jst j2, j3, 0
+  lna_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp lna_unit
+lna_counted:
+  jldi j5, 0                    ; the most (the smaller of equals)
+  jldi j6, 0
+  jld j3, j1, LNTN
+  jld j4, j1, LNT
+  lna_b:
+    jjz j3, lna_have
+    jld j8, j4, 0
+    jldi j7, 3
+    jshl j7, j8, j7
+    jld j2, j1, LNW
+    jadd j7, j7, j2
+    jld j2, j7, 0
+    jst j1, j7, 0
+    jsub j7, j2, j5
+    jjz j7, lna_tie
+    jldi j10, 63
+    jsar j7, j7, j10
+    jjnz j7, lna_bnext
+    jadd j5, j2, j1
+    jadd j6, j8, j1
+    jjmp lna_bnext
+  lna_tie:
+    jsub j7, j8, j6
+    jldi j10, 63
+    jsar j7, j7, j10
+    jjz j7, lna_bnext
+    jadd j6, j8, j1
+  lna_bnext:
+    jldi j7, 8
+    jadd j4, j4, j7
+    jldi j7, 1
+    jsub j3, j3, j7
+    jjmp lna_b
+lna_have:
+  jst j6, j1, LNQ
+  jld j2, j1, LN4               ; (the reading as it was)
+  jst j2, j1, PASS
+  jld j2, j1, LN5
+  jst j2, j1, LABEL
+  jld j2, j1, LN6
+  jst j2, j1, LABLEN
+  jst j1, j1, QN
+  jjz j6, lna_done
+  jldi j9, 1                    ; each renglon: of its language, or out
+  lnk_ren:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, lna_done
+    jst j9, j1, LN1
+    jldi j10, 0                 ; (its units, and those of the question's language)
+    jldi j11, 0
+    lnk_unit:
+      jld j2, j1, NTOK
+      jsub j2, j9, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjz j2, lnk_end
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, ROOMT
+      jadd j3, j3, j4
+      jld j2, j3, 0
+      jjz j2, lnk_end
+      jldi j3, 1
+      jadd j10, j10, j3
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, LNG
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jld j4, j1, LNQ
+      jsub j3, j3, j4
+      jjnz j3, lnk_other
+      jldi j3, 1
+      jadd j11, j11, j3
+    lnk_other:
+      jldi j3, 1
+      jadd j9, j9, j3
+      jjmp lnk_unit
+  lnk_end:
+    jjz j10, lnk_next
+    jadd j3, j11, j11           ; most of it its language: kept
+    jsub j3, j10, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, lnk_next
+    jld j5, j1, LN1             ; else out
+    lnk_out:
+      jsub j3, j5, j9
+      jjz j3, lnk_next
+      jldi j3, 3
+      jshl j3, j5, j3
+      jld j4, j1, ROOMT
+      jadd j3, j3, j4
+      jst j1, j3, 0
+      jldi j3, 1
+      jadd j5, j5, j3
+      jjmp lnk_out
+  lnk_next:
+    jldi j3, 1
+    jadd j9, j9, j3
+    jjmp lnk_ren
+lna_done:
+  jldi j1, 0
+  jret
+

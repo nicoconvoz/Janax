@@ -221,8 +221,8 @@ cr_walk:
   jldi j2, PZOCC                ; (the counts of every word, from the nests: {print, times, the house's verdict weighed,
   jldi j3, 40                   ; buildings, times the book took it for its switch of the no})
   jcall pl_new
-  jldi j2, PZWL
-  jldi j3, 16
+  jldi j2, PZWL                 ; ({key, buildings, the word's print, the limit's})
+  jldi j3, 32
   jcall pl_new
   jldi j2, PZLG
   jldi j3, 24
@@ -272,6 +272,118 @@ cr_close:
   jor j10, j10, j2
   jcall ask
 cr_none:
+  jldi j1, 0
+  jret
+
+; The library's rules counted in the question's language (Capitan: "a dictionary manual for each language, its
+; punctuation included"): of the words of that language (LNG, by their prints: PLB), the buildings each limit closes
+; (LTB) and all their buildings (LTN). Weighed by words (a building counts once for each word of it the reading has),
+; not by buildings as the library's own count: the library keeps no language of its buildings. Uses j1-j14.
+lg_tot:
+  jldi j1, 0
+  jst j1, j1, LTN
+  jld j2, j1, LNQ
+  jjz j2, lgt_done
+  jld j2, j1, PZWL              ; (no walk: no silhouettes of the library)
+  jjz j2, lgt_done
+  jldi j2, LTB
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, PZWL
+  jld j10, j1, PZWL + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  lgt_lap:
+    jldi j1, 0
+    jjz j10, lgt_done
+    jld j2, j9, 0
+    jjz j2, lgt_next
+    jst j9, j1, LN1
+    jst j10, j1, LN2
+    jld j5, j9, 16              ; its word's language
+    jldi j2, PLB
+    jcall pl_find
+    jldi j1, 0
+    jld j9, j1, LN1
+    jld j10, j1, LN2
+    jld j2, j4, 0
+    jjz j2, lgt_next
+    jld j2, j4, 8
+    jld j3, j1, LNQ
+    jsub j2, j2, j3
+    jjnz j2, lgt_next
+    jld j2, j9, 8
+    jld j3, j1, LTN
+    jadd j3, j3, j2
+    jst j3, j1, LTN
+    jld j5, j9, 24
+    jldi j2, LTB
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, LN1
+    jld j10, j1, LN2
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+  lgt_next:
+    jld j2, j1, PZWL + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp lgt_lap
+lgt_done:
+  jldi j1, 0
+  jret
+
+; The buildings limit entry j9 of PZLG closes -> j2: in the question's language when it has one (LTB), else over the
+; library. Uses j1-j8 (j9, j10 kept).
+lg_closes:
+  jldi j1, 0
+  jld j2, j1, LTN
+  jjz j2, lgc_lib
+  jld j5, j9, 0
+  jldi j2, LTB
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, lgc_none
+  jld j2, j4, 8
+  jret
+lgc_none:
+  jldi j2, 0
+  jret
+lgc_lib:
+  jld j2, j9, 8
+  jret
+
+; The word of print j5 (number PZK) noted with its language (PLB), when the question has one. Uses j1-j8 (j5 kept).
+lg_print:
+  jldi j1, 0
+  jld j2, j1, LNQ
+  jjz j2, lgp_done
+  jst j5, j1, LNY
+  jld j2, j1, PLB
+  jjnz j2, lgp_have
+  jldi j2, PLB
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j5, j1, LNY
+lgp_have:
+  jldi j2, PLB
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, PZK
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, LNG
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jst j2, j4, 8
+  jld j5, j1, LNY
+lgp_done:
   jldi j1, 0
   jret
 
@@ -902,11 +1014,16 @@ pzk_noswitch:
     jld j3, j1, PZBLM
     jadd j4, j4, j3
     jld j3, j4, 0
+    jst j3, j1, LNL
     jld j2, j1, PZT1
     jcall pz_wlkey
     jldi j2, PZWL
     jcall pl_take
     jldi j1, 0
+    jld j2, j1, PZT1
+    jst j2, j4, 16
+    jld j2, j1, LNL
+    jst j2, j4, 24
     jld j2, j4, 8
     jld j3, j1, PZT3
     jadd j2, j2, j3
@@ -1146,6 +1263,7 @@ clue_counts:
     jadd j3, j3, j4
     jst j3, j1, PZHP
     jcall pz_hprint
+    jcall lg_print              ; (its language, by its print)
     jldi j2, PZOCC
     jcall pl_find
     jldi j1, 0
@@ -1170,6 +1288,7 @@ clue_counts:
   jcall lg16
   jldi j1, 0
   jst j2, j1, LGT
+  jcall lg_tot                  ; (the rules counted in the question's language)
   jcall pz_silwrite             ; and the reading's silhouettes, decided over the library, for the meaning
 cc_done:
   jldi j1, 0
@@ -2007,7 +2126,7 @@ pz_warrow:
     jsar j3, j3, j4
     jjz j3, pwa_next
     jst j2, j1, PZT6 + 8
-    jld j2, j9, 8
+    jcall lg_closes
     jst j2, j1, PZT6 + 16
   pwa_next:
     jld j2, j1, PZLG + 24
@@ -2029,9 +2148,12 @@ pwa_decide:
   jldi j5, 63
   jsar j3, j3, j5
   jjz j3, pwa_no
-  jld j2, j1, PZT6 + 16         ; and not most of the library's
+  jld j2, j1, PZT6 + 16         ; and not most of the library's (of its language's, when asked in one)
   jadd j2, j2, j2
+  jld j3, j1, LTN
+  jjnz j3, pwa_lang
   jld j3, j1, PZNBL
+pwa_lang:
   jsub j2, j2, j3
   jldi j4, 63
   jsar j2, j2, j4

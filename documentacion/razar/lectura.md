@@ -2935,3 +2935,22 @@ diccionario por cada idioma, con su puntuación incluida"*.
   separar idiomas: en el mundo del castellano "." cierra la mayoría de los edificios, pero sumado con logs y código
   deja de ser la mayoría, y entonces "pedro" parece vivir en un límite raro. Hace falta que la biblioteca guarde las
   cuentas de límites por idioma.
+
+## Idiomas por contexto, paso 3: las reglas de la biblioteca en el idioma de la pregunta (2026-11-07)
+
+- **`pregunta` separa sus idiomas igual que `sentido`** (`ln_scan`, `ln_ask`, ahora en `idioma.inc`): la caminata y
+  sus cuentas se hacen sólo con los renglones del idioma de la pregunta.
+- **Cada cuenta "palabra × límite" (`PZWL`) guarda de qué palabra y de qué límite es**, y cada palabra leída anota su
+  idioma por su huella (`lg_print`, `PLB`).
+- **La regla de la flecha** ("el límite que cierra la mayoría de sus edificios no cierra la mayoría de los
+  edificios") **cuenta esa mayoría sólo con las palabras del idioma de la pregunta** (`lg_tot`, `lg_closes`). Ojo: es
+  una mayoría pesada por palabras (cada edificio cuenta una vez por cada palabra que tiene), no por edificios, porque
+  la biblioteca no guarda de qué idioma es cada edificio. Está dicho en el código.
+- **Medido en una copia de la biblioteca real (con logs de Steam), "¿quién es pedro?":**
+  - flechas: de 2.439 a 359. Las que quedan tienen sentido: "dijo", "respondió", "preguntó" y "dijeron" anuncian
+    una cita (`«`), y "qué" pregunta (`.`);
+  - "pedro" ya no es flecha, y el párrafo habla de él: "pedro le dijo, respondió y tomó a pedro, juan y santiago…".
+    Todavía arrastra hechos de otro ("hijo de isaac, padre de josé");
+  - controles: mismas respuestas (cambia sólo una cuenta interna de hechos, 4.458 → 3.714); dos pasos: 3/3.
+- **Pendiente:** guardar en la biblioteca los manuales por idioma (que sus cuentas de límites ya vengan por idioma, sin
+  el peso por palabras), y el tope de 4.095 bytes con que `sentido` lee `come`.

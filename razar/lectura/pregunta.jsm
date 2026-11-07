@@ -95,6 +95,8 @@ jfirst j1, 10000h              ; first order: room 0
 jldi j0, 0
 jcall clue_round                ; (with nests: what this round reads again, as its book)
 jcall read_book
+jcall ln_scan                   ; its languages, by context, and the question read with its own
+jcall ln_ask
 jldi j1, 0                      ; the whole book, none kept apart (one renglon in more than any book has)
 jldi j2, 0
 jshi j2, 4000h
@@ -1562,3 +1564,4 @@ ss_no:
   jret
 
 include 'lectura.inc'
+include 'idioma.inc'
