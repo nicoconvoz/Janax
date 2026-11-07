@@ -72,6 +72,7 @@ S_PNSE  = 9D8h                  ; " (lo pense)": an answer it thought
 S_USA   = 20h                   ; " (asi se usa)": how a structure asked about is used
 S_FUN   = 110h                  ; "tablero/funciones-": the dictionary of instructions
 S_INS   = 128h                  ; "instrucciones:"
+S_ORT   = 0A0h                  ; "tablero/ortografia": the spelling the books proved
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
@@ -291,6 +292,23 @@ QSY   = 5080h
 QSA   = 5088h
 QSZ   = 5090h
 SILSW = 5130h                   ; a silhouette's switch of the no (1: the books took the word for one)
+ORT   = 5300h                   ; the spelling: by pair of letters {key, words} (the library's), this book's; walking:
+ORE   = 5320h                   ; letters, how many left, the routine for each pair (0 judge, 1 count), it keeps the rule,
+ORP   = 5340h                   ; spelling seen; by word its times; a word, a candidate, its times, the best and its
+ORN   = 5348h                   ; times, words fixed, kept
+ORF   = 5350h
+ORK   = 5358h
+ORS   = 5360h
+ORC   = 5368h
+ORW   = 5370h
+ORV   = 5378h
+ORVN  = 5380h
+ORBEST = 5388h
+ORBN  = 5390h
+ORFX  = 5398h
+ORA   = 53A0h
+ORB   = 53A8h
+ORL   = 53B0h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -323,6 +341,8 @@ jfirst j1, 10000h              ; first order: room 0
 jcall eat_mode                  ; a book to eat, if "come" names one: read there, and its skeletons kept for every Razar
 jldi j0, 0
 jcall read_book
+jcall ort_load                  ; the spelling the books proved: a word that keeps no rule is read as its well written one
+jcall ort_fix
 jldi j1, 0                      ; the whole book, none kept apart; the house (which are cores), the switch
 jldi j2, 0
 jshi j2, 4000h
@@ -365,6 +385,7 @@ jcall qa_eat
 jcall eng_eat
 jcall ins_scan                  ; and how it uses each instruction: the dictionary
 jcall ins_eat
+jcall ort_eat                   ; and its spelling
 jjmp finish
 not_eating:
 
@@ -4720,6 +4741,752 @@ irp_kind:
 irk_put:
   jadd j2, j3, j1
   jjmp putch
+
+; The spelling of the language (Capitan, 2026-11-07: "an instruction may be badly written: infer it by what it is
+; like at its core"; "the ones that do not keep the rule: there is no rule for yyyy, nor for dle ('dl'), nor for porqe
+; ('qe')"). The rule is the books': which two letters follow each other inside a word. A pair is proven when two
+; different words of a book have it (the anecdote rule); every book adds its own, so the spelling is perfected with
+; each one. A word with a pair the books never proved keeps no rule: it is badly written, and it is read as the word
+; that keeps every rule and is the same with its repeats squeezed or one letter apart, the one this reading says the
+; most (twice at least). "madre" and "padre" both keep every rule: neither is touched. ORT: by pair {key, words}.
+
+; The pairs of letters of word j2, each judged against the rule (ORF 0: ok_pair) or counted for the book (ORF 1:
+; oe_pair), j2 the pair's key. Uses j1-j8, keeps j9-j14.
+ort_pairs:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j7, j3, 16
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jst j3, j1, ORP
+  jst j3, j1, ORL
+  jldi j4, 1
+  jsub j7, j7, j4
+  jst j7, j1, ORN
+  op_lap:
+    jldi j1, 0
+    jld j7, j1, ORN
+    jldi j4, 63
+    jsar j4, j7, j4
+    jjnz j4, op_done
+    jjz j7, op_done
+    jld j3, j1, ORP
+    jldb j2, j3, 0
+    jldb j4, j3, 1
+    jldi j5, 8
+    jshl j2, j2, j5
+    jor j2, j2, j4
+    jldi j4, 1
+    jadd j2, j2, j4
+    jadd j3, j3, j4
+    jst j3, j1, ORP
+    jsub j7, j7, j4
+    jst j7, j1, ORN
+    jld j4, j1, ORF
+    jjz j4, op_judge
+    jcall op_seen               ; (counting: a pair once a word)
+    jjnz j4, op_lap
+    jld j4, j1, ORF
+  op_judge:
+    jjnz j4, op_eat
+    jcall ok_pair
+    jjmp op_lap
+  op_eat:
+    jldi j5, 1
+    jsub j4, j4, j5
+    jjnz j4, op_own
+    jcall oe_pair
+    jjmp op_lap
+  op_own:
+    jcall ot_pair
+    jjmp op_lap
+op_done:
+  jldi j1, 0
+  jret
+
+; j4 = 1 if the pair j2 (its key) stands earlier in the word walked (its letters from ORL to ORP - 1). Uses j3-j8.
+op_seen:
+  jld j3, j1, ORL
+  jld j8, j1, ORP
+  jldi j4, 1
+  jsub j8, j8, j4
+  ops_lap:
+    jsub j4, j3, j8
+    jjz j4, ops_no
+    jldb j5, j3, 0
+    jldb j6, j3, 1
+    jldi j7, 8
+    jshl j5, j5, j7
+    jor j5, j5, j6
+    jldi j7, 1
+    jadd j5, j5, j7
+    jsub j5, j5, j2
+    jjz j5, ops_yes
+    jadd j3, j3, j7
+    jjmp ops_lap
+ops_no:
+  jldi j4, 0
+  jret
+ops_yes:
+  jldi j4, 1
+  jret
+
+; The library's spelling summed (every "tablero/ortografia" file: qwords {1, how many}, each {pair's key, words}) into
+; ORT. None: ORT stays 0. Uses j1-j14.
+ort_load:
+  jldi j2, ORT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, ORS
+  jcall pz_listx
+  jldi j1, 0
+  jld j10, j1, LSTN
+  jldi j2, 63
+  jsar j2, j10, j2
+  jjnz j2, ol_done
+  jld j9, j1, LSTR
+  ol_lab:
+    jldi j1, 0
+    jjz j10, ol_done
+    jst j9, j1, ORP
+    jst j10, j1, ORN
+    jld j2, j9, 0
+    jldi j3, 34
+    jsub j2, j2, j3
+    jjnz j2, ol_next
+    jldi j3, 8
+    jadd j3, j9, j3
+    jldi j4, S_ORT
+    jldi j5, 18
+    ol_cmp:
+      jldb j6, j3, 0
+      jldb j7, j4, 0
+      jsub j6, j6, j7
+      jjnz j6, ol_next
+      jldi j6, 1
+      jadd j3, j3, j6
+      jadd j4, j4, j6
+      jsub j5, j5, j6
+      jjnz j5, ol_cmp
+    jldi j11, 8
+    jadd j11, j9, j11
+    jld j12, j9, 0
+    jcall sx_read
+    jldi j1, 0
+    jld j2, j1, SXN
+    jldi j3, 16
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, ol_next
+    jld j9, j1, SXR
+    jld j2, j9, 0
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, ol_next
+    jld j10, j9, 8              ; (as many as the file holds)
+    jld j2, j1, SXN
+    jldi j3, 4
+    jshr j2, j2, j3
+    jldi j3, 1
+    jsub j2, j2, j3
+    jsub j3, j2, j10
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ol_n
+    jadd j10, j2, j1
+  ol_n:
+    jldi j2, 16
+    jadd j9, j9, j2
+    ol_pair:
+      jldi j1, 0
+      jjz j10, ol_next
+      jld j5, j9, 0
+      jjz j5, ol_pnext
+      jst j9, j1, ORA
+      jst j10, j1, ORB
+      jldi j2, ORT
+      jcall pl_take
+      jldi j1, 0
+      jld j9, j1, ORA
+      jld j10, j1, ORB
+      jld j2, j4, 8
+      jld j3, j9, 8
+      jadd j2, j2, j3
+      jst j2, j4, 8
+      jldi j2, 1
+      jst j2, j1, ORS
+    ol_pnext:
+      jldi j2, 16
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp ol_pair
+  ol_next:
+    jldi j1, 0
+    jld j9, j1, ORP
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jld j10, j1, ORN
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp ol_lab
+ol_done:
+  jldi j1, 0
+  jret
+
+; The library's labels listed into LSTR (LSTN of them), the room doubling while one more could be cut. Uses j1-j14.
+pz_listx:
+  jldi j1, 0
+  jldi j2, 4096
+  jst j2, j1, LSTC
+  plx_list:
+    jld j11, j1, LSTC
+    jcall room
+    jldi j1, 0
+    jst j13, j1, LSTR
+    jldi j10, 14
+    jadd j11, j13, j1
+    jld j12, j1, LSTC
+    jcall ask
+    jldi j1, 0
+    jst j13, j1, LSTN
+    jldi j2, 63
+    jsar j2, j13, j2
+    jjnz j2, plx_done
+    jld j9, j1, LSTR
+    jadd j10, j13, j1
+    jwhile j10
+      jld j2, j9, 0
+      jldi j3, 7
+      jadd j2, j2, j3
+      jldi j3, -8
+      jand j2, j2, j3
+      jldi j3, 8
+      jadd j2, j2, j3
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+    jwend
+    jld j3, j1, LSTR
+    jsub j9, j9, j3
+    jld j3, j1, LSTC
+    jsub j3, j3, j9
+    jldi j4, 4104
+    jsub j3, j3, j4
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, plx_done
+    jld j2, j1, LSTC
+    jadd j2, j2, j2
+    jst j2, j1, LSTC
+    jjmp plx_list
+plx_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if word j2 keeps every rule: each of its pairs proven by two words of the library. Uses j1-j8.
+ort_keeps:
+  jldi j1, 0
+  jldi j3, 1
+  jst j3, j1, ORK
+  jst j1, j1, ORF
+  jcall ort_pairs
+  jldi j1, 0
+  jld j2, j1, ORK
+  jret
+ok_pair:
+  jldi j3, 1                    ; (a pair with a digit is no pair of letters: numbers keep no spelling)
+  jsub j7, j2, j3
+  jldi j3, 8
+  jshr j3, j7, j3
+  jcall ok_digit
+  jjnz j4, okp_yes
+  jldi j3, 255
+  jand j3, j7, j3
+  jcall ok_digit
+  jjnz j4, okp_yes
+  jadd j5, j2, j1
+  jldi j2, ORT
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, okp_no
+  jld j2, j4, 8
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, okp_yes
+okp_no:
+  jst j1, j1, ORK
+okp_yes:
+  jret
+
+; j4 = 1 if byte j3 is a digit. Uses j4-j6.
+ok_digit:
+  jldi j4, 48
+  jsub j5, j3, j4
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, okd_no
+  jldi j4, 58
+  jsub j5, j3, j4
+  jsar j5, j5, j6
+  jjz j5, okd_no
+  jldi j4, 1
+  jret
+okd_no:
+  jldi j4, 0
+  jret
+
+; A pair of a word of the reading itself, added to ORT (the book read is evidence of its own spelling too). Uses j1-j8.
+ot_pair:
+  jadd j5, j2, j1
+  jldi j2, ORT
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jret
+
+; Every word of the reading that keeps no rule, read as its well written one (ROOMT and the question's units). Uses
+; j1-j14.
+ort_fix:
+  jldi j1, 0
+  jld j2, j1, ORS
+  jjz j2, of_done               ; (no spelling in the library: nothing is judged)
+  jldi j2, 2                    ; the reading's own words add their pairs: what the book read proves is its spelling too
+  jst j2, j1, ORF
+  jldi j9, 1
+  of_own:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, of_owned
+    jst j9, j1, ORW
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, of_onext
+    jld j2, j1, ORW
+    jcall ort_pairs
+  of_onext:
+    jldi j1, 0
+    jld j9, j1, ORW
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp of_own
+of_owned:
+  jld j11, j1, NV               ; how many times each word is in the reading
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ORC
+  jld j2, j1, NV
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j3, j13, j1
+  of_z:
+    jjz j2, of_zd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jsub j2, j2, j4
+    jjmp of_z
+of_zd:
+  jld j9, j1, ROOMT
+  jld j10, j1, NTOK
+  jwhile j10
+    jld j2, j9, 0
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ORC
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jsub j10, j10, j5
+  jwend
+  jst j1, j1, ORFX
+  jldi j9, 1
+  of_w:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, of_done
+    jst j9, j1, ORW
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, of_wnext
+    jld j2, j1, ORW             ; (said twice or more it is meant: a term, not a slip)
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ORC
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jldi j4, 2
+    jsub j3, j3, j4
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, of_wnext
+    jld j2, j1, ORW
+    jcall ort_keeps
+    jjnz j2, of_wnext
+    jst j1, j1, ORBEST          ; badly written: its well written one, said the most
+    jst j1, j1, ORBN
+    jldi j10, 1
+    of_c:
+      jldi j1, 0
+      jld j2, j1, NV
+      jsub j2, j10, j2
+      jjz j2, of_cdone
+      jst j10, j1, ORV
+      jldi j3, 3
+      jshl j3, j10, j3
+      jld j4, j1, ORC
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jst j3, j1, ORVN
+      jldi j4, 2
+      jsub j4, j3, j4
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjnz j4, of_cnext
+      jld j4, j1, ORBN
+      jsub j4, j4, j3
+      jsar j4, j4, j5
+      jjz j4, of_cnext
+      jcall ort_near
+      jjz j2, of_cnext
+      jld j2, j1, ORV
+      jcall ort_keeps
+      jjz j2, of_cnext
+      jld j2, j1, ORV
+      jst j2, j1, ORBEST
+      jld j2, j1, ORVN
+      jst j2, j1, ORBN
+    of_cnext:
+      jldi j1, 0
+      jld j10, j1, ORV
+      jldi j2, 1
+      jadd j10, j10, j2
+      jjmp of_c
+  of_cdone:
+    jld j2, j1, ORBEST
+    jjz j2, of_wnext
+    jld j3, j1, ORW             ; read as it, everywhere
+    jld j9, j1, ROOMT
+    jld j10, j1, NTOK
+    jwhile j10
+      jld j4, j9, 0
+      jsub j4, j4, j3
+      jjnz j4, of_t
+      jst j2, j9, 0
+    of_t:
+      jldi j4, 8
+      jadd j9, j9, j4
+      jldi j4, 1
+      jsub j10, j10, j4
+    jwend
+    jldi j9, QBUF
+    jld j10, j1, QN
+    jwhile j10
+      jld j4, j9, 0
+      jsub j4, j4, j3
+      jjnz j4, of_q
+      jst j2, j9, 0
+    of_q:
+      jldi j4, 8
+      jadd j9, j9, j4
+      jldi j4, 1
+      jsub j10, j10, j4
+    jwend
+    jld j2, j1, ORFX
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ORFX
+  of_wnext:
+    jldi j1, 0
+    jld j9, j1, ORW
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp of_w
+of_done:
+  jldi j1, 0
+  jret
+
+; The letters of word j2 -> j3 where, j4 how many. Uses j1, j3, j4.
+ort_lt:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j4, j3, 16
+  jld j3, j3, 8
+  jld j1, j1, ROOMA
+  jadd j3, j3, j1
+  jldi j1, 0
+  jret
+
+; j2 = 1 if word ORW is word ORV with repeats squeezed, or one letter apart. Uses j1-j14 (j9, j10 kept).
+ort_near:
+  jst j9, j1, ORA
+  jst j10, j1, ORB
+  jld j2, j1, ORW
+  jcall ort_lt
+  jadd j11, j3, j1
+  jadd j12, j4, j1
+  jld j2, j1, ORV
+  jcall ort_lt
+  jadd j13, j3, j1
+  jadd j14, j4, j1
+  jldi j5, 0
+  jldi j6, 0
+  orn_sq:
+    jsub j2, j5, j12
+    jjz j2, orn_sqend
+    jadd j2, j11, j5
+    jldb j7, j2, 0
+    jsub j2, j6, j14
+    jjz j2, orn_sqrep
+    jadd j2, j13, j6
+    jldb j8, j2, 0
+    jsub j2, j7, j8
+    jjnz j2, orn_sqrep
+    jldi j2, 1
+    jadd j5, j5, j2
+    jadd j6, j6, j2
+    jjmp orn_sq
+  orn_sqrep:
+    jjz j6, orn_edit
+    jldi j2, 1
+    jsub j2, j6, j2
+    jadd j2, j13, j2
+    jldb j8, j2, 0
+    jsub j2, j7, j8
+    jjnz j2, orn_edit
+    jldi j2, 1
+    jadd j5, j5, j2
+    jjmp orn_sq
+  orn_sqend:
+    jsub j2, j6, j14
+    jjnz j2, orn_edit
+    jjmp orn_yes
+orn_edit:
+  jldi j5, 0
+  orn_pre:
+    jsub j2, j5, j12
+    jjz j2, orn_p
+    jsub j2, j5, j14
+    jjz j2, orn_p
+    jadd j2, j11, j5
+    jldb j7, j2, 0
+    jadd j2, j13, j5
+    jldb j8, j2, 0
+    jsub j2, j7, j8
+    jjnz j2, orn_p
+    jldi j2, 1
+    jadd j5, j5, j2
+    jjmp orn_pre
+  orn_p:
+  jldi j6, 0
+  orn_try:
+    jldi j2, 3
+    jsub j2, j6, j2
+    jjz j2, orn_no
+    jadd j7, j5, j1
+    jadd j8, j5, j1
+    jldi j2, 1
+    jjnz j6, orn_t1
+    jadd j7, j7, j2
+    jadd j8, j8, j2
+    jjmp orn_tail
+  orn_t1:
+    jldi j3, 1
+    jsub j3, j6, j3
+    jjnz j3, orn_t2
+    jadd j7, j7, j2
+    jjmp orn_tail
+  orn_t2:
+    jadd j8, j8, j2
+  orn_tail:
+    jsub j2, j12, j7
+    jsub j3, j14, j8
+    jsub j3, j2, j3
+    jjnz j3, orn_tnext
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, orn_tnext
+    orn_cmp:
+      jjz j2, orn_yes
+      jadd j3, j11, j7
+      jldb j3, j3, 0
+      jadd j4, j13, j8
+      jldb j4, j4, 0
+      jsub j3, j3, j4
+      jjnz j3, orn_tnext
+      jldi j3, 1
+      jadd j7, j7, j3
+      jadd j8, j8, j3
+      jsub j2, j2, j3
+      jjmp orn_cmp
+  orn_tnext:
+    jldi j2, 1
+    jadd j6, j6, j2
+    jjmp orn_try
+orn_yes:
+  jldi j1, 0
+  jld j9, j1, ORA
+  jld j10, j1, ORB
+  jldi j2, 1
+  jret
+orn_no:
+  jldi j1, 0
+  jld j9, j1, ORA
+  jld j10, j1, ORB
+  jldi j2, 0
+  jret
+
+; This book's spelling into the library (eating): for each pair, how many different words have it; "tablero/ortografia"
+; and the print of its bytes (salted 11). Qwords {1, how many}, each {pair's key, words}. Uses j1-j14.
+ort_eat:
+  jldi j1, 0
+  jld j2, j1, EATB
+  jjz j2, oe_done
+  jldi j2, ORE
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jldi j3, 1
+  jst j3, j1, ORF
+  jldi j9, 1
+  oe_w:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, oe_write
+    jst j9, j1, ORW
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, oe_wnext
+    jld j2, j1, ORW
+    jcall ort_pairs
+  oe_wnext:
+    jldi j1, 0
+    jld j9, j1, ORW
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp oe_w
+oe_write:
+  jld j11, j1, ORE + 16         ; {1, how many}, each {key, words}
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jst j11, j1, QLW
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QLC
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, ORE + 16
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j8, j13, j2
+  jld j9, j1, ORE
+  jld j10, j1, ORE + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  oe_lap:
+    jjz j10, oe_file
+    jld j2, j9, 0
+    jjz j2, oe_next
+    jst j2, j8, 0
+    jld j2, j9, 8
+    jst j2, j8, 8
+    jldi j2, 16
+    jadd j8, j8, j2
+  oe_next:
+    jld j2, j1, ORE + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp oe_lap
+oe_file:
+  jldi j11, 64
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ELAB
+  jld j5, j1, EATB
+  jldi j3, 11
+  jxor j5, j5, j3
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jldi j6, S_ORT
+  jcall ew_label
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j10, 4
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, oe_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, QLC
+  jld j12, j1, QLW
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+oe_done:
+  jldi j1, 0
+  jret
+oe_pair:                        ; (a pair of a word: one more word has it)
+  jadd j5, j2, j1
+  jldi j2, ORE
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jret
 
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
 th_push:

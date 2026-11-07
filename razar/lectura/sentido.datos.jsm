@@ -11,6 +11,8 @@ times 40h - $ db 0
 db 'sentido: esqueletos=', 0
 times 80h - $ db 0
 db ' pares=', 0
+times 0A0h - $ db 0
+db 'tablero/ortografia', 0
 times 0C0h - $ db 0
 db ' negados=', 0
 times 100h - $ db 0

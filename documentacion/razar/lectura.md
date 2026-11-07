@@ -2631,3 +2631,31 @@ eso sí se tiene que almacenar y perfeccionar"*; *"no solo nos sirve lo común, 
 - **Lo que sigue:** usar el diccionario para el sujeto tácito. Hay que reconocer dónde una instrucción ocupa el lugar de
   un sujeto, y dónde une o abre, para no tomar "y" ni "para" por un "él".
 
+## La ortografía que prueban los libros (2026-11-07)
+
+El Capitán: *"a veces la instrucción puede estar mal escrita: debe inferirla por lo que se le parece en el fondo, su
+núcleo"*; y la regla: *"las que no respeten la regla: no hay regla para yyyy, ni para dle ('dl'), ni para porqe ('qe')"*.
+
+- **La regla es de los libros:** qué dos letras siguen una a la otra dentro de una palabra. Un par está probado cuando
+  lo tienen dos palabras distintas (la regla de la anécdota; una vez por palabra, así "yyyy" no se prueba a sí misma).
+  Cada libro deja sus pares al comer (`tablero/ortografia<huella>`, sal 11, `ort_eat`), la biblioteca los suma
+  (`ort_load`), y el libro que se está leyendo también es evidencia de su propia ortografía.
+- **Mal escrita:** una palabra dicha una sola vez (dicha dos o más, es un término: "kb", "roomv") que tiene un par que
+  los libros nunca probaron. Los números no tienen ortografía: un par con un dígito no se juzga.
+- **Cómo se corrige (`ort_fix`):** se lee como la palabra que respeta todas las reglas y es la misma con las letras
+  repetidas aplastadas o a una letra de distancia, la que la lectura más dice (dos veces al menos). Se reescribe en
+  la lectura y en la pregunta. "madre" y "padre" respetan todas las reglas: no se tocan.
+- **Medido:** con letras solas (sin la regla de pares), la misma búsqueda proponía 85 parejas en el Nuevo Testamento,
+  casi todas falsas ("habías>había", "madre>padre"). Con la regla:
+
+  | Libro | Correcciones |
+  |---|---|
+  | NT con errores plantados | "yyyy" → "y", "porqe" → "porque" (bien) |
+  | NT real | ninguna: no toca nada que esté bien |
+  | Asimov | ninguna |
+  | esta documentación | "kl", "vg", "roomv", "pq" (mal: nombres de código dichos una vez) |
+
+  "dle" no se corrige: el par "dl" lo tienen dos palabras del Nuevo Testamento. Las preguntas de control dan idéntico.
+- **El límite honesto:** un nombre de código dicho una sola vez, que además no respeta la ortografía, es indistinguible
+  de un error de escritura.
+
