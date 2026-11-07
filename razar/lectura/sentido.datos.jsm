@@ -79,6 +79,8 @@ times 940h - $ db 0
 db ' palabras (flechas: ', 0
 times 980h - $ db 0
 db 'come', 0
+times 990h - $ db 0
+db 'tablero/preguntas-', 0
 times 9C0h - $ db 0
 db 'tablero/esqueletos', 0
 times 0A00h - $ db 0
@@ -88,5 +90,7 @@ db ', pares probados en la biblioteca: ', 0
 times 0A80h - $ db 0
 db 'preguntas del libro: ', 0
 times 0AC0h - $ db 0
-db ', con un nucleo en la respuesta de al lado: ', 0
+db ', con nucleo al lado: ', 0
+times 0AE0h - $ db 0
+db 'ensenaron: ', 0
 times 0B00h - $ db 0

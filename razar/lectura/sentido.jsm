@@ -57,11 +57,13 @@ S_SILS  = 8C0h                  ; "siluetas", and what was taken from it
 S_SILT  = 900h
 S_SILA  = 940h
 S_COME  = 980h                  ; eating: "come", the library's label of the skeletons, what it says
+S_PRQ   = 990h                  ; "tablero/preguntas-"
 S_ESQ   = 9C0h
 S_ESQD  = 0A00h
 S_LIBP  = 0A40h                 ; ", pairs proved in the library"
 S_QAN   = 0A80h                 ; the book's questions, and those with a core in the answer next to them
 S_QAM   = 0AC0h
+S_QAL   = 0AE0h                 ; what they taught
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -204,6 +206,15 @@ QAN   = 0CD0h
 QAM   = 0CD8h
 QAI   = 0CE0h
 QAX   = 0CE8h
+QLT   = 0D00h                   ; what the book's questions taught: by hook and its side in the question {key, answers
+QLC   = 0D20h                   ; with the core before the hook, after it} (a table that grows); learning: the core, its
+QLP   = 0D28h                   ; place in the answer and in the question, the window's length, the hook, the core's
+QLQ   = 0D30h                   ; side in the answer, the pairs learned, a place kept
+QLW   = 0D38h
+QLH   = 0D48h
+QLS   = 0D50h
+QLN   = 0D58h
+QLK   = 0D60h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -259,7 +270,10 @@ jcall gather
 jldi j1, 0                      ; eaten: what it proved between skeletons goes to the library, and nothing is asked
 jld j2, j1, EATON
 jjz j2, not_eating
+jcall arrows_calc               ; and what its own questions taught
+jcall qa_scan
 jcall eat_write
+jcall qa_eat
 jjmp finish
 not_eating:
 
@@ -319,8 +333,9 @@ jldi j2, 10
 jcall putch
 jcall flush
 jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
-jcall qa_count                  ; the book's own questions, and the answers next to them
+jcall qa_scan                   ; the book's own questions, and the answers next to them
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
+jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
 jcall sk_report
 jcall cores
 jjmp finish
@@ -1527,6 +1542,11 @@ putmix:
 ; word lives where the book rarely is. No limit and no word is named: the question words come out of the book. Uses
 ; j1-j14.
 arrows:
+  jcall arrows_calc
+  jjmp ar_write
+
+; The arrows found, nothing written (eating: what the book's questions teach needs them). Uses j1-j14.
+arrows_calc:
   jldi j1, 0
   jld j11, j1, NV
   jldi j2, 24
@@ -1556,7 +1576,8 @@ arrows:
   jwend
   jldi j2, 2
   jst j2, j1, AMODE
-  jcall ar_walk
+  jjmp ar_walk
+ar_write:
   jldi j1, S_ARROW              ; written, the most said first
   jcall puts
   jldi j2, 0
@@ -1784,9 +1805,15 @@ ar_walk:
 ; The book's own questions (Capitan, 2026-11-07: "study the questions with the structure they were made with in the
 ; books and infer the answer"): a building is a question when an arrow of it is closed by the arrow's own limit (both
 ; found in the book, none named); the building right after it is where the book answers. Counted: the questions, and
-; those whose answer next to them says a core of the question again (what it can learn from). Uses j1-j14.
-qa_count:
+; those whose answer next to them says a core of the question again (what it can learn from), and what those answers
+; teach learned (QLT; not over a piece read again with the library's silhouettes: the library's books teach it).
+; Written by qa_write_out. Uses j1-j14.
+qa_scan:
+  jldi j2, QLT
+  jldi j3, 24
+  jcall pl_new
   jldi j1, 0
+  jst j1, j1, QLN
   jst j1, j1, QAN
   jst j1, j1, QAM
   jst j1, j1, QAQ
@@ -1828,6 +1855,9 @@ qa_count:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, QAM
+    jld j2, j1, ROOMAX          ; (a piece read again with the library's silhouettes: too little to learn from, the
+    jjnz j2, qa_ask             ; library's books teach it, lib_load)
+    jcall qa_learn
   qa_ask:
     jcall qa_asks               ; does this one ask?
     jldi j1, 0
@@ -1849,6 +1879,9 @@ qa_count:
     jadd j9, j9, j2
     jjmp qa_lap
 qa_done:
+  jldi j1, 0
+  jret
+qa_write_out:
   jldi j1, S_QAN
   jcall puts
   jld j2, j1, QAN
@@ -1859,7 +1892,576 @@ qa_done:
   jcall putnum
   jldi j2, 10
   jcall putch
+  jcall flush
+  jjmp ql_report
+
+; What the answer QAT to QAI teaches about the question QAS to QAE before it (Capitan: "study how the questions are
+; answered in the books", and "plastic structures, not rigid"): each core of the answer the question says too, and each
+; fact of the answer it is an end of (a window as gather reads one: another core one to three pieces away): the hook,
+; the fact's word next to the core (its marks aside), is looked for in the question. Its side there (before the core or
+; after it) and the core's side in the answer are counted together. No order is asked, only before or after: the same
+; hook anywhere in the question teaches the same. Uses j1-j14.
+qa_learn:
+  jldi j1, 0
+  jld j2, j1, QAT
+  jst j2, j1, QLP
+  ql_p:
+    jldi j1, 0
+    jld j2, j1, QLP
+    jld j3, j1, QAI
+    jsub j3, j2, j3
+    jjz j3, ql_done
+    jcall tok_at
+    jst j2, j1, QLC
+    jcall g_core
+    jldi j1, 0
+    jjz j3, ql_pnext
+    jld j2, j1, QLC             ; said in the question?
+    jcall q_in
+    jjz j3, ql_pnext
+    jst j2, j1, QLQ
+    jst j1, j1, QLS             ; the core first in the fact, the hook right after it
+    jldi j2, 1
+    jst j2, j1, QLW
+    ql_r:
+      jldi j1, 0
+      jld j2, j1, QLW
+      jldi j3, 4
+      jsub j3, j2, j3
+      jjz j3, ql_left
+      jld j9, j1, QLP
+      jadd j9, j9, j2
+      jldi j3, 1
+      jadd j9, j9, j3
+      jld j3, j1, QAI
+      jsub j3, j9, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, ql_left
+      jadd j2, j9, j1
+      jcall tok_at
+      jcall g_core
+      jldi j1, 0
+      jjz j3, ql_rnext
+      jld j9, j1, QLP             ; the hook: the first word after the core
+      ql_rh:
+        jldi j1, 0
+        jldi j2, 1
+        jadd j9, j9, j2
+        jld j2, j1, QLP
+        jld j3, j1, QLW
+        jadd j2, j2, j3
+        jldi j3, 1
+        jadd j2, j2, j3
+        jsub j2, j9, j2
+        jjz j2, ql_rnext
+        jadd j2, j9, j1
+        jcall tok_at
+        jjz j2, ql_rnext
+        jst j2, j1, QLH
+        jst j9, j1, QLK
+        jcall w_mark
+        jldi j1, 0
+        jld j9, j1, QLK
+        jjnz j3, ql_rh
+      jcall ql_note
+    ql_rnext:
+      jldi j1, 0
+      jld j2, j1, QLW
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, QLW
+      jjmp ql_r
+  ql_left:
+    jldi j1, 0
+    jldi j2, 1                  ; the core last in the fact, the hook right before it
+    jst j2, j1, QLS
+    jst j2, j1, QLW
+    ql_l:
+      jldi j1, 0
+      jld j2, j1, QLW
+      jldi j3, 4
+      jsub j3, j2, j3
+      jjz j3, ql_pnext
+      jld j9, j1, QLP
+      jsub j9, j9, j2
+      jldi j3, 1
+      jsub j9, j9, j3
+      jld j3, j1, QAT
+      jsub j3, j9, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, ql_pnext
+      jadd j2, j9, j1
+      jcall tok_at
+      jcall g_core
+      jldi j1, 0
+      jjz j3, ql_lnext
+      jld j9, j1, QLP             ; the hook: the last word before the core
+      ql_lh:
+        jldi j1, 0
+        jldi j2, 1
+        jsub j9, j9, j2
+        jld j2, j1, QLP
+        jld j3, j1, QLW
+        jsub j2, j2, j3
+        jldi j3, 1
+        jsub j2, j2, j3
+        jsub j2, j9, j2
+        jjz j2, ql_lnext
+        jadd j2, j9, j1
+        jcall tok_at
+        jjz j2, ql_lnext
+        jst j2, j1, QLH
+        jst j9, j1, QLK
+        jcall w_mark
+        jldi j1, 0
+        jld j9, j1, QLK
+        jjnz j3, ql_lh
+      jcall ql_note
+    ql_lnext:
+      jldi j1, 0
+      jld j2, j1, QLW
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, QLW
+      jjmp ql_l
+  ql_pnext:
+    jldi j1, 0
+    jld j2, j1, QLP
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QLP
+    jjmp ql_p
+ql_done:
+  jldi j1, 0
+  jret
+
+; The hook QLH, the core's side in the answer QLS: if the question says the hook, counted by its side there (1 before
+; the core QLQ, 0 after). Uses j1-j8.
+ql_note:
+  jldi j1, 0
+  jld j2, j1, QLH
+  jcall q_in
+  jjz j3, qln_done
+  jld j3, j1, QLQ
+  jsub j2, j2, j3
+  jldi j3, 63
+  jshr j2, j2, j3
+  jld j5, j1, QLH
+  jcall ql_key
+  jldi j2, QLT
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, QLS
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j2, j4
+  jld j3, j2, 8
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j2, 8
+  jld j2, j1, QLN
+  jadd j2, j2, j5
+  jst j2, j1, QLN
+qln_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the fact's side (QSIDE) is the one the books' questions taught for the hook QBC on side QLK of the core in
+; the question: most of their answers put the core there, two answers at least (the anecdote rule). Nothing taught, or
+; a tie: it does not decide (1). Uses j1-j8.
+ql_decide:
+  jldi j1, 0
+  jld j2, j1, QLT
+  jjz j2, qld_yes
+  jld j5, j1, QBC
+  jld j2, j1, QLK
+  jcall ql_key
+  jldi j2, QLT
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, qld_yes
+  jld j5, j4, 8
+  jld j6, j4, 16
+  jadd j7, j5, j6
+  jldi j8, 2
+  jsub j7, j7, j8
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjnz j7, qld_yes
+  jsub j7, j6, j5
+  jjz j7, qld_yes
+  jshr j7, j7, j8               ; 1 if the core went before the hook more (QSIDE 0), 0 if after
+  jldi j8, 1
+  jxor j7, j7, j8
+  jld j2, j1, QSIDE
+  jsub j7, j7, j2
+  jjnz j7, qld_no
+qld_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qld_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; The key of hook j5 with its side j2 in the question (1 before the core, 0 after) -> j5, never 0. Uses j1, j5, j6.
+ql_key:
+  jldi j1, 0
+  jldi j6, 1
+  jshl j5, j5, j6
+  jor j5, j5, j2
+  jadd j5, j5, j6
+  jret
+
+; The first place of word j2 in the question QAS to QAE -> j2, and j3 = 1 (0: not there). Uses j1-j5.
+q_in:
+  jldi j1, 0
+  jld j4, j1, QAS
+  qi_lap:
+    jld j3, j1, QAE
+    jsub j3, j4, j3
+    jjz j3, qi_no
+    jldi j3, 3
+    jshl j3, j4, j3
+    jld j5, j1, ROOMT
+    jadd j3, j3, j5
+    jld j3, j3, 0
+    jsub j3, j3, j2
+    jjz j3, qi_yes
+    jldi j3, 1
+    jadd j4, j4, j3
+    jjmp qi_lap
+qi_yes:
+  jadd j2, j4, j1
+  jldi j3, 1
+  jret
+qi_no:
+  jldi j3, 0
+  jret
+
+; The unit at place j2 of the book -> j2. Uses j1, j3.
+tok_at:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ROOMT
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jret
+
+; What the book's questions taught, written: each hook with two answers or more (the anecdote rule), "<" if it was
+; before the core in the question and ">" if after, and how many answers had the core before it / after it. Uses j1-j14.
+ql_report:
+  jldi j1, S_QAL
+  jcall puts
+  jld j2, j1, QLN
+  jcall putnum
+  jldi j1, 0
+  jld j9, j1, QLT
+  jld j10, j1, QLT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  qlr_lap:
+    jldi j1, 0
+    jjz j10, qlr_done
+    jld j2, j9, 0
+    jjz j2, qlr_next
+    jld j3, j9, 8
+    jld j4, j9, 16
+    jadd j3, j3, j4
+    jldi j4, 2
+    jsub j3, j3, j4
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qlr_next
+    jst j9, j1, QLK
+    jst j10, j1, QLW
+    jldi j2, 32
+    jcall putch
+    jld j9, j1, QLK
+    jld j2, j9, 0
+    jldi j3, 1
+    jsub j2, j2, j3
+    jshr j2, j2, j3
+    jcall putword
+    jldi j1, 0
+    jld j9, j1, QLK
+    jld j2, j9, 0
+    jldi j3, 1
+    jsub j2, j2, j3
+    jand j2, j2, j3
+    jldi j3, 60
+    jjnz j2, qlr_side
+    jldi j3, 62
+  qlr_side:
+    jadd j2, j3, j1
+    jcall putch
+    jld j9, j1, QLK
+    jld j2, j9, 8
+    jcall putnum
+    jldi j2, 47
+    jcall putch
+    jld j9, j1, QLK
+    jld j2, j9, 16
+    jcall putnum
+    jldi j1, 0
+    jld j9, j1, QLK
+    jld j10, j1, QLW
+  qlr_next:
+    jld j2, j1, QLT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp qlr_lap
+qlr_done:
+  jldi j2, 10
+  jcall putch
   jjmp flush
+
+; What this book's questions taught (QLT), into the library: "tablero/preguntas-" and the print of the book's bytes
+; (salted 3: written once, as the turns). Qwords {1, how many}, then each {its side in the question (1 before the
+; core), answers with the core before the hook, after it, the hook's bytes} and its letters padded. They are counts:
+; they add up over every book. Uses j1-j14.
+qa_eat:
+  jldi j1, 0
+  jld j2, j1, EATB
+  jjz j2, qe_done               ; (the book could not be read)
+  jld j2, j1, QLT
+  jjz j2, qe_done
+  jldi j2, 16                   ; its bytes
+  jst j2, j1, QLW
+  jst j1, j1, QLN
+  jst j1, j1, QLS
+  jcall qe_walk
+  jldi j1, 0
+  jld j11, j1, QLW
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QLC
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, QLN
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j2, j13, j2
+  jst j2, j1, QLP
+  jldi j2, 1
+  jst j2, j1, QLS
+  jcall qe_walk                 ; written
+  jldi j1, 0
+  jldi j11, 64
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ELAB
+  jld j5, j1, EATB
+  jldi j3, 3
+  jxor j5, j5, j3
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jldi j6, S_PRQ
+  jcall ew_label
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, QLN
+  jjz j2, qe_done               ; (nothing taught: no file)
+  jldi j10, 4
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, qe_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, QLC
+  jld j12, j1, QLW
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+qe_done:
+  jldi j1, 0
+  jret
+
+; Every lesson of QLT: counted with its bytes (QLS 0: QLN, QLW), or written at QLP (QLS 1). Uses j1-j14.
+qe_walk:
+  jldi j1, 0
+  jld j9, j1, QLT
+  jld j10, j1, QLT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  qew_lap:
+    jldi j1, 0
+    jjz j10, qew_done
+    jld j2, j9, 0
+    jjz j2, qew_next
+    jldi j3, 1                  ; the hook's letters
+    jsub j2, j2, j3
+    jshr j4, j2, j3
+    jldi j5, 3
+    jshl j4, j4, j5
+    jld j5, j1, ROOMI
+    jadd j4, j4, j5
+    jld j4, j4, 0
+    jld j6, j4, 16
+    jld j7, j4, 8
+    jld j5, j1, ROOMA
+    jadd j7, j7, j5
+    jldi j5, 7
+    jadd j8, j6, j5
+    jldi j5, -8
+    jand j8, j8, j5
+    jldi j5, 32
+    jadd j8, j8, j5
+    jld j5, j1, QLS
+    jjnz j5, qew_write
+    jld j5, j1, QLN
+    jadd j5, j5, j3
+    jst j5, j1, QLN
+    jld j5, j1, QLW
+    jadd j5, j5, j8
+    jst j5, j1, QLW
+    jjmp qew_next
+  qew_write:
+    jld j5, j1, QLP
+    jand j2, j2, j3
+    jst j2, j5, 0
+    jld j2, j9, 8
+    jst j2, j5, 8
+    jld j2, j9, 16
+    jst j2, j5, 16
+    jst j6, j5, 24
+    jadd j8, j5, j8
+    jst j8, j1, QLP
+    jldi j2, 32
+    jadd j5, j5, j2
+    jwhile j6
+      jldb j2, j7, 0
+      jstb j2, j5, 0
+      jadd j7, j7, j3
+      jadd j5, j5, j3
+      jsub j6, j6, j3
+    jwend
+  qew_next:
+    jldi j1, 0
+    jld j2, j1, QLT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp qew_lap
+qew_done:
+  jret
+
+; One file of the questions' lessons (SXR, SXN bytes): each hook this reading knows adds its answers to QLT. A lesson
+; that does not hold together (past the file, a hook longer than a word can be) ends the file. Uses j1-j14.
+pq_file:
+  jldi j1, 0
+  jld j9, j1, SXR
+  jld j2, j9, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, pqf_done
+  jld j2, j9, 8
+  jst j2, j1, QLW
+  jld j2, j1, SXN
+  jadd j2, j9, j2
+  jst j2, j1, QLH               ; (its end)
+  jldi j2, 16
+  jadd j9, j9, j2
+  pqf_lap:
+    jldi j1, 0
+    jld j2, j1, QLW
+    jjz j2, pqf_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, QLW
+    jldi j2, 32                 ; inside the file?
+    jadd j2, j9, j2
+    jld j3, j1, QLH
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, pqf_done
+    jld j4, j9, 24
+    jldi j3, 63
+    jsar j3, j4, j3
+    jjnz j3, pqf_done
+    jldi j3, 255                ; (WBUF holds 255 bytes)
+    jsub j3, j3, j4
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjnz j3, pqf_done
+    jldi j3, 7
+    jadd j5, j4, j3
+    jldi j3, -8
+    jand j5, j5, j3
+    jadd j5, j2, j5
+    jld j3, j1, QLH
+    jsub j3, j3, j5
+    jldi j6, 63
+    jsar j3, j3, j6
+    jjnz j3, pqf_done
+    jst j5, j1, QLK             ; (the next lesson)
+    jst j9, j1, QLP
+    jst j4, j1, WLEN
+    jldi j6, 0
+    pqf_letter:
+      jsub j3, j6, j4
+      jjz j3, pqf_letters
+      jadd j3, j2, j6
+      jldb j3, j3, 0
+      jstb j3, j6, WBUF
+      jldi j3, 1
+      jadd j6, j6, j3
+      jjmp pqf_letter
+  pqf_letters:
+    jcall word_id
+    jldi j1, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, pqf_next           ; (a hook this reading never read)
+    jadd j5, j2, j1
+    jld j9, j1, QLP
+    jld j2, j9, 0
+    jldi j3, 1
+    jand j2, j2, j3
+    jcall ql_key
+    jldi j2, QLT
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, QLP
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j4, 16
+    jld j3, j9, 16
+    jadd j2, j2, j3
+    jst j2, j4, 16
+  pqf_next:
+    jldi j1, 0
+    jld j9, j1, QLK
+    jjmp pqf_lap
+pqf_done:
+  jldi j1, 0
+  jret
 
 ; j2 = 1 if the building QAT to QAI, closed by limit QAX, asks: an arrow of it whose voted limit is QAX. Uses j1-j8.
 qa_asks:
@@ -2360,6 +2962,7 @@ ew_read_end:
   jxor j5, j5, j3
   jld j3, j1, FNVP
   jmul j5, j5, j3
+  jldi j6, S_ESQ
   jcall ew_label
   jldi j10, 12
   jld j11, j1, ELAB
@@ -2367,6 +2970,7 @@ ew_read_end:
   jcall ask
   jldi j1, 0
   jld j5, j1, EATH
+  jldi j6, S_ESQ
   jcall ew_label
   jldi j10, 12
   jld j11, j1, ELAB
@@ -2557,12 +3161,13 @@ ee_done:
   jldi j1, 0
   jret
 
-; The label of print j5 at ELAB: "tablero/esqueletos" and sixteen hex digits. Uses j1-j8.
+; The label of print j5 at ELAB: the 18 bytes at j6 ("tablero/esqueletos", "tablero/preguntas-") and sixteen hex
+; digits. Uses j1-j8.
 ew_label:
   jldi j1, 0
   jst j5, j1, DT4
   jld j2, j1, ELAB
-  jldi j3, S_ESQ
+  jadd j3, j6, j1
   jldi j4, 18
   ew_lab:
     jldb j5, j3, 0
@@ -3549,9 +4154,16 @@ ll_listed:
     jldi j4, 63
     jsar j3, j3, j4
     jjnz j3, ll_next
-    jldi j3, 8
+    jldi j3, 8                  ; (or "tablero/preguntas-": what the books' questions taught)
     jadd j3, j9, j3
     jldi j4, S_ESQ
+    jldb j5, j3, 8
+    jldi j6, 112
+    jsub j5, j5, j6
+    jst j5, j1, QLC
+    jjnz j5, ll_kind
+    jldi j4, S_PRQ
+  ll_kind:
     jldi j5, 18
     ll_cmp:
       jldb j6, j3, 0
@@ -3574,6 +4186,11 @@ ll_listed:
     jldi j3, 63
     jsar j2, j2, j3
     jjnz j2, ll_next
+    jld j2, j1, QLC
+    jjnz j2, ll_turns
+    jcall pq_file
+    jjmp ll_next
+  ll_turns:
     jcall ed_decode
     jjz j2, ll_next
     jcall ll_file
@@ -4120,7 +4737,9 @@ qf_core:
   jldi j1, 0
   jld j3, j1, QBC
   jsub j2, j2, j3
-  jjz j2, qf_other
+  jldi j3, 1                    ; (before the core)
+  jst j3, j1, QLK
+  jjz j2, qf_learned
 qf_cright:
   jldi j1, 0
   jld j2, j1, QP
@@ -4131,6 +4750,10 @@ qf_cright:
   jld j3, j1, QBC
   jsub j2, j2, j3
   jjnz j2, qf_no
+  jst j1, j1, QLK
+qf_learned:
+  jcall ql_decide               ; and the side the book's own questions taught for that hook there
+  jjz j2, qf_no
 qf_other:
   jldi j1, 0                    ; the other's hook: a place of it in the question with a free side
   jld j2, j1, QQS

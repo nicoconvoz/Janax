@@ -335,3 +335,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-07 — La biblioteca guarda huellas, no palabras (formato 7): cada palabra son los 8 bytes de la huella de sus letras; el que pregunta esconde la suya igual. 12 preguntas de control idénticas byte por byte; nido NT 200 → 256 KB (+28 %).
 2026-11-07 — Charla: contesta con la oración que pensó ('jacob, hijo de matán (lo deduje)'), no con el esqueleto.
 2026-11-07 — Preguntas del propio libro (qa_count): NT 3.119 preguntas encontradas por sus flechas, 305 con un núcleo en la respuesta de al lado, casi todas retóricas. El instrumento anda; faltan libros con preguntas y respuestas de verdad.
+2026-11-07 — Aprende a contestar de las preguntas de los libros: lecciones por enganche (antes/después), plásticas, guardadas al comer y sumadas en la biblioteca. '¿qué es janax?' ya no da 'letra es janax'. Control idéntico. La lección de 'es' se apoya en 2 respuestas.

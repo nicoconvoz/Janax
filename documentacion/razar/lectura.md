@@ -2249,3 +2249,31 @@ formas plásticas (enganches, no orden exacto) que se suman entre libros. Antes 
 - **Conclusión:** el instrumento anda, pero el Nuevo Testamento casi no enseña a contestar. Hacen falta libros que
   pregunten y contesten de verdad.
 
+## Aprende a contestar de las preguntas de los libros (2026-11-07)
+
+El Capitán: *"que estudie las preguntas de los libros"*, con *"estructuras plásticas, no rígidas"*, y la regla de la
+casa: Razar crea sus propias reglas.
+
+- **Qué aprende:** en cada pregunta del libro (`qa_scan`) se mira cada núcleo que la respuesta de al lado vuelve a
+  decir, y cada hecho de la respuesta del que ese núcleo es una punta. El enganche es la palabra del hecho pegada al
+  núcleo. Se cuentan juntos dos datos: de qué lado del núcleo estaba el enganche en la pregunta (antes o después) y de
+  qué lado quedó el núcleo en la respuesta (`qa_learn`, tabla `QLT`).
+- **Plástico:** no importa el orden exacto ni que el enganche esté pegado al núcleo en la pregunta. Alcanza con antes o
+  después, así una lección de "¿qué es la luz?" sirve para "¿qué es janax?".
+- **Cómo lo usa:** cuando un hecho encaja con la pregunta, se mira el enganche (`ql_decide`). Si los libros enseñaron
+  con dos respuestas o más (la regla de la anécdota) que el núcleo va de un lado, el hecho tiene que tenerlo de ese
+  lado. Si no enseñaron nada, o empataron, no decide.
+- **Un pedazo no enseña:** en la charla, el pedazo releído no aprende (son preguntas a medias). Al comer, cada libro
+  entero deja sus lecciones en `tablero/preguntas-<huella de sus bytes>`, con qwords {1, cuántas} y cada una {lado en
+  la pregunta, respuestas con el núcleo antes, después, bytes del enganche} y sus letras. Los enganches son palabras de
+  estructura. Al contestar se suman las de todos los libros (`pq_file`).
+- **Medido**, con una biblioteca de Nuevo Testamento, Asimov y esta documentación:
+  - entre las lecciones sumadas está `es<2/0`: dos veces, una pregunta con "es" antes del núcleo se contestó con el
+    núcleo antes de "es";
+  - **"¿qué es janax?"** antes daba "letra es janax" y "janax es determinista". Ahora da solo **"janax es
+    determinista"**;
+  - las 12 preguntas de control dan idéntico contra el programa anterior sobre la misma biblioteca.
+- **Lo que no está probado:** la lección de "es" se apoya en solo dos respuestas, el mínimo. Con más libros que
+  pregunten y contesten, se hace firme o se da vuelta. "¿Qué es la ley?" sigue dando "pecado es la ley": lo que se
+  engancha a "ley" es "la", y los libros enseñaron que con "la" el núcleo va después.
+
