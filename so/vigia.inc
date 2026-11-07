@@ -4,9 +4,12 @@
 ; folder and the board, while some cabin that asked for what is new there (39) waits for a greeting. What changes is
 ; kept until it is quiet (HW_QUIET with no other notice: a log that keeps growing, or a file that dies at once, never
 ; gets there) and then it passes the host's rules: a file, not hidden nor of the system, in no hidden or system folder
-; and in none whose name starts with a dot, owned by the user or by a group the user is in (not by the system), and
-; not in the system's own folder nor the board (Janax writes there: it would watch itself). Whether it is text is the
-; program's to decide: the kernel does not read it.
+; and in none whose name starts with a dot, owned by the user or by a group the user is in (not by the system), not in
+; the system's own folder nor the board (Janax writes there: it would watch itself), and not where the host keeps the
+; programs' data and itself, as the host says (its known folders: AppData, ProgramData, Windows, Program Files). That
+; last one is asked because a process launched from inside an app package sees a virtual view where AppData is not
+; hidden (measured, 2026-11-07): a rule must hold in whatever view Janax runs. Whether it is text is the program's to
+; decide: the kernel does not read it.
 
 ; The folders of JANAX_VIGIA, each ended by a 0, and its own folder and the board in UTF-16 (to know them in a path).
 ; At the start, after the board is known.
@@ -42,9 +45,35 @@ hw_start:
         invoke  MultiByteToWideChar, 0, 0, dir_path, [dir_len], dir_w, HOST_PATH
         mov     [dir_wn], rax
         cmp     qword [board_len], 0
-        je      .done
+        je      .known
         invoke  MultiByteToWideChar, 0, 0, board_path, [board_len], board_w, HOST_PATH
         mov     [board_wn], rax
+.known:                                 ; where the system keeps the programs' data and itself, as it says (its known
+        xor     ebx, ebx                ; folders): never books, whatever the folders look like from here
+        jmp     .knowns
+.known_lap:
+        imul    rax, rbx, 16
+        lea     rcx, [hw_known + rax]
+        invoke  SHGetKnownFolderPath, rcx, 0, 0, hw_kpath
+        test    eax, eax
+        jnz     .known_next
+        mov     rsi, [hw_kpath]
+        xor     ecx, ecx
+        jmp     .length
+.length_lap:
+        inc     rcx
+.length:
+        cmp     word [rsi + rcx*2], 0
+        jne     .length_lap
+        mov     rdx, [hw_nsys]
+        mov     [hw_sys + rdx*8], rsi
+        mov     [hw_sysn + rdx*8], rcx
+        inc     qword [hw_nsys]
+.known_next:
+        inc     rbx
+.knowns:
+        cmp     rbx, HW_KNOWN
+        jb      .known_lap
 .done:
         pop     rdi rsi rbx
         ret
@@ -206,6 +235,18 @@ hw_told:
         call    hw_under
         test    eax, eax
         jnz     .done
+        xor     r12d, r12d              ; nor where the system keeps the programs' data and itself
+        jmp     .systems
+.system:
+        mov     rsi, [hw_sys + r12*8]
+        mov     rcx, [hw_sysn + r12*8]
+        call    hw_under
+        test    eax, eax
+        jnz     .done
+        inc     r12
+.systems:
+        cmp     r12, [hw_nsys]
+        jb      .system
         call    hw_note
 .done:
         pop     r13 r12 rdi rsi rbx
@@ -447,8 +488,10 @@ hw_mature:
         ret
 
 ; eax = 1 if the file at hw_path passes the host's rules: it is a file, not hidden nor of the system; no folder on
-; its way is hidden or of the system, and no name on its way starts with a dot; its owner is the user or a group the
-; user is in. Keeps rbx, rsi, rdi, r12-r15.
+; its way is hidden or of the system, and no name on its way starts with a dot; adding a file to the folder where it
+; lives does not ask for administrator rights (Capitan: "if the folder is invisible or with administrator rights, do
+; not go in"; only that folder: C:\Users asks for them, and every user's file is under it); its owner is the user or
+; a group the user is in. Keeps rbx, rsi, rdi, r12-r15.
 hw_rules:
         push    rbx rsi rdi
         invoke  GetFileAttributesW, hw_path
@@ -477,6 +520,29 @@ hw_rules:
 .ways:
         cmp     rbx, [hw_pathn]
         jb      .way
+        mov     rbx, [hw_pathn]         ; the folder where it lives: if adding a file there asks for administrator
+.parent:                                ; rights, it is not the user's (Capitan) and it is not touched
+        dec     rbx
+        cmp     word [hw_path + rbx*2], '\'
+        jne     .parent
+        lea     rsi, [rbx + 1]          ; (a drive keeps its mark: "C:\")
+        cmp     word [hw_path + rbx*2 - 2], ':'
+        je      .cut
+        mov     rsi, rbx
+.cut:
+        mov     di, [hw_path + rsi*2]
+        mov     word [hw_path + rsi*2], 0
+        invoke  CreateFileW, hw_path, 2, 7, 0, OPEN_EXISTING, 02000000h, 0     ; FILE_ADD_FILE, a folder
+        mov     [hw_path + rsi*2], di
+        cmp     rax, -1
+        jne     .yours
+        invoke  GetLastError
+        cmp     eax, 5                  ; ERROR_ACCESS_DENIED
+        je      .no
+        jmp     .owner
+.yours:
+        invoke  CloseHandle, rax
+.owner:
         invoke  GetNamedSecurityInfoW, hw_path, 1, 1, hw_sid, 0, 0, 0, hw_sd   ; SE_FILE_OBJECT, its owner
         test    eax, eax
         jnz     .no

@@ -1194,6 +1194,14 @@ estén en la PC.
   - ninguna carpeta en su camino es oculta o de sistema, y ningún nombre en su camino empieza con un punto;
   - su dueño es el usuario o un grupo al que el usuario pertenece (`CheckTokenMembership`);
   - no está en la carpeta propia ni en el tablero, que son donde escribe Janax: si no, se vigilaría a sí mismo.
+  - **la carpeta donde vive no pide derecho de administrador** para agregarle un archivo (Capitán: *"si la carpeta es
+    invisible o con derecho de administrador, no acceder"*). Es solo esa carpeta: `C:\Users` pide administrador y
+    todos los archivos de los usuarios están debajo. Medido: piden administrador `C:\`, `C:\Windows`, `Program Files` y
+    `Program Files (x86)`; son del usuario su carpeta, `Documentos`, `E:\` y `E:\Janax`. Por eso un texto en la raíz de
+    C: queda afuera: para estar ahí, se escribió con permiso de administrador.
+  - no está donde el anfitrión guarda los datos de los programas y a sí mismo, según él mismo lo dice (sus carpetas
+    conocidas: `LocalAppData`, `RoamingAppData`, `LocalAppDataLow`, `ProgramData`, `Windows`, `Program Files`,
+    `Program Files (x86)`). Esto se descarta apenas llega el aviso.
 
   Si es texto lo decide el programa: el núcleo no lo lee.
 
@@ -1225,4 +1233,15 @@ estén en la PC.
   llegó con `\`, ya quedaba afuera.
 
 Las seis preguntas de control dan idénticas con el núcleo nuevo. La suite no se corrió.
+
+**La falla del 2026-11-07, y por qué hacen falta las dos señales.** El vigía, arrancado desde adentro de la app de
+Claude, se comió archivos privados de programas que viven en `AppData`: el estado de red de Brave y de Discord, la
+sesión y un archivo de tokens de la app de Claude. Nada salió de la PC. Se lo frenó, se apagó el arranque automático y
+se borraron de la biblioteca los 10 índices y sus 141 pedazos. La causa se midió con la misma rutina del núcleo en un
+programa aparte: la app de Claude corre empaquetada (MSIX) y sus procesos hijos ven una vista virtual del disco, donde
+`AppData` tiene atributo `0x10` (carpeta común). Fuera del paquete, la misma pregunta da `0x12` (oculta). Esos procesos
+tampoco se ven a sí mismos como empaquetados (`GetCurrentPackageFullName` da 15700, sin paquete), así que no hay forma
+de avisarles. Una regla tiene que valer en cualquier vista. Las carpetas conocidas, que dice el propio Windows, valen
+en las dos. **Probado en el peor caso:** el vigía lanzado desde adentro del paquete, vigilando `C:\Users\Nico`, ignoró un
+texto en `AppData` y comió uno en una carpeta del usuario; en 150 s no tocó nada más.
 

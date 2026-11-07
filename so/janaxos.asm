@@ -297,6 +297,33 @@ section '.data' data readable writeable
   hw_sid    dq 0                ; its owner (GetNamedSecurityInfoW), and whether the user is it or in it
   hw_sd     dq 0
   hw_member dd 0
+  HW_KNOWN  = 7                 ; where the host keeps the programs' data and itself, as it says (KNOWNFOLDERID):
+  hw_known  dd 0F1B32785h       ; LocalAppData
+            dw 6FBAh, 4FCFh
+            db 9Dh, 55h, 7Bh, 8Eh, 7Fh, 15h, 70h, 91h
+            dd 3EB685DBh        ; RoamingAppData
+            dw 65F9h, 4CF6h
+            db 0A0h, 3Ah, 0E3h, 0EFh, 65h, 72h, 9Fh, 3Dh
+            dd 0A520A1A4h       ; LocalAppDataLow
+            dw 1780h, 4FF6h
+            db 0BDh, 18h, 16h, 73h, 43h, 0C5h, 0AFh, 16h
+            dd 62AB5D82h        ; ProgramData
+            dw 0FDC1h, 4DC3h
+            db 0A9h, 0DDh, 07h, 0Dh, 1Dh, 49h, 5Dh, 97h
+            dd 0F38BF404h       ; Windows
+            dw 1D43h, 42F2h
+            db 93h, 05h, 67h, 0DEh, 0Bh, 28h, 0FCh, 23h
+            dd 905E63B6h        ; ProgramFiles
+            dw 0C1BFh, 494Eh
+            db 0B2h, 9Ch, 65h, 0B7h, 32h, 0D3h, 0D2h, 1Ah
+            dd 7C5A40EFh        ; ProgramFilesX86
+            dw 0A0FBh, 4BFCh
+            db 87h, 4Ah, 0C0h, 0F2h, 0E0h, 0B9h, 0FAh, 8Eh
+  align 8
+  hw_sys    dq HW_KNOWN dup 0   ; each of them: its path (UTF-16, kept for the kernel's life), its characters
+  hw_sysn   dq HW_KNOWN dup 0
+  hw_nsys   dq 0
+  hw_kpath  dq 0
   align 8
   dir_w     rw HOST_PATH
   board_w   rw HOST_PATH
@@ -488,7 +515,8 @@ section '.idata' import data readable writeable
   library kernel32, 'KERNEL32.DLL',\
           kernelbase, 'KERNELBASE.DLL',\
           normaliz, 'NORMALIZ.DLL',\
-          advapi32, 'ADVAPI32.DLL'
+          advapi32, 'ADVAPI32.DLL',\
+          shell32, 'SHELL32.DLL'
 
   import kernel32,\
          GetCommandLineA, 'GetCommandLineA',\
@@ -534,11 +562,15 @@ section '.idata' import data readable writeable
          GetEnvironmentVariableW, 'GetEnvironmentVariableW',\
          GetTickCount64, 'GetTickCount64',\
          GetFileAttributesW, 'GetFileAttributesW',\
-         LocalFree, 'LocalFree'
+         LocalFree, 'LocalFree',\
+         GetLastError, 'GetLastError'
 
   import advapi32,\
          GetNamedSecurityInfoW, 'GetNamedSecurityInfoW',\
          CheckTokenMembership, 'CheckTokenMembership'
+
+  import shell32,\
+         SHGetKnownFolderPath, 'SHGetKnownFolderPath'
 
   import kernelbase,\
          VirtualAlloc2, 'VirtualAlloc2',\
