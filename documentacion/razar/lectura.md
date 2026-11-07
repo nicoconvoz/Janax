@@ -2442,3 +2442,23 @@ El Capitán: que lo que piensa también lo cambie.
   - La cuarta, con lo pensado ya en su historia, tomó otro camino: "isaac y el dios", y de ahí "dios de jacob".
   - Las preguntas de control dan respuestas idénticas.
 
+## Un camino, un voto (2026-11-07)
+
+Revisión de la sección anterior. "Pensar algo cuenta como leerlo una vez más" inflaba. Medido con un instrumento
+provisorio: preguntando 20 veces lo mismo sin leer nada nuevo, los votos de "isaac y jacob" subían 66 por vuelta
+(66, 132, 198 ... 990). Era rumiar, no convicción.
+
+El Capitán: *"pensar de la misma manera, aunque sea siempre diferente, puede ser reafirmación positiva; lo que hace
+diferencia es la diversidad de pensamiento y las veces que uno piensa lo mismo"*. Llegar a lo mismo por caminos
+distintos es corroboración independiente. Repetir el mismo camino no lo es.
+
+- **La unidad de voto es la ruta:** la cadena de pensamientos que llevó hasta ahí (`THCH`, que arranca en la palabra
+  de la respuesta y se pliega con cada pensamiento elegido).
+- **El diario (formato 2)** guarda {huella de la ruta, huella del pensamiento, veces}. Por pensamiento se cuentan sus
+  rutas distintas (`DRC`).
+- **Votos (`th_votes`):** cada ruta distinta vale una lectura. Pensar lo mismo por la misma ruta solo suma veces, que
+  quedan para medir rumiar contra convicción, pero no vota.
+- **La semilla** usa la suma de las rutas, así repetir no la mueve.
+- **Medido**, 20 vueltas sin texto nuevo: 66 la primera, 132 desde la segunda, y ahí se queda. Las preguntas de
+  control dan idéntico.
+

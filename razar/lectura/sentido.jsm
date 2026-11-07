@@ -235,7 +235,7 @@ GJ    = 0DF0h
 GK2   = 0DF8h
 GT3   = 0E00h
 THX   = 0E10h                   ; thinking on: the word and the skeleton it goes on from, the words thought on {key} (a
-THK   = 0E18h                   ; (free) table that grows), the best composition's times, its skeleton, the word that answers
+THCH  = 0E18h                   ; (the route so far) table that grows), the best composition's times, its skeleton, the word that answers
 TVT   = 0E20h                   ; it, walking, its skeleton's entry, a skeleton looked for, a fact walked, a word
 THB   = 0E40h
 THC   = 0E48h
@@ -272,6 +272,7 @@ DIAB  = 0FA8h
 THSN  = 0FB0h
 THK2  = 0FD0h
 THVV  = 0FD8h
+DRC   = 0FE0h                   ; by thought, the different routes it was reached by {key, routes} (a table that grows)
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
@@ -3240,10 +3241,14 @@ ths_word:
   jld j2, j1, HIST
   jxor j5, j5, j2
   jmul j5, j5, j6
-  jld j2, j1, DIAH              ; and what it thought before
+  jld j2, j1, DIAH              ; and the routes it thought by before
   jxor j5, j5, j2
   jmul j5, j5, j6
   jst j5, j1, THRS
+  jld j5, j1, FNVO              ; the route starts at the word the answer ends with
+  jld j2, j1, THX
+  jcall th_wprint
+  jst j5, j1, THCH
   jret
 
 ; Its genome and its history, once a reading. The genome is read from its house ("genoma"); with none, it is born now:
@@ -3388,8 +3393,9 @@ thk_k:
   jret
 
 ; A branch's votes (THV the times the books went on with its structure, each fact said voting once): the first time
-; this word meets the thought (THSN), the times it thought it before vote too, each as one more reading of the fact
-; (its diary, DIA). -> THVV. Uses j1-j11.
+; this word meets the thought (THSN), each different route it reached that thought by before votes too, as one more
+; reading (Capitan: "what makes the difference is the diversity of thought"; one route, one vote: thinking it again by
+; the same route adds nothing) -> THVV. Uses j1-j11.
 th_votes:
   jldi j1, 0
   jld j2, j1, THV
@@ -3400,7 +3406,7 @@ th_votes:
   jldi j1, 0
   jjz j6, thv_done
   jld j5, j1, THK2
-  jldi j2, DIA
+  jldi j2, DRC
   jcall pl_find
   jldi j1, 0
   jld j2, j4, 0
@@ -3415,10 +3421,21 @@ thv_done:
   jldi j1, 0
   jret
 
-; The thought just chosen (THK2) written in its diary: thought once more. Uses j1-j8.
+; The thought just chosen (THK2) written in its diary by its route (the thoughts that led to it, THCH): a new route
+; is one more route to that thought (DRC); the same route is only thought once more (its times). The route goes on
+; from it. Uses j1-j8.
 th_note:
   jldi j1, 0
-  jld j5, j1, THK2
+  jld j6, j1, FNVP
+  jld j5, j1, THCH
+  jmul j5, j5, j6
+  jld j2, j1, THK2
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jjnz j5, thn_k
+  jldi j5, 1
+thn_k:
+  jst j5, j1, THCH
   jldi j2, DIA
   jcall pl_take
   jldi j1, 0
@@ -3427,12 +3444,28 @@ th_note:
   jadd j2, j2, j3
   jst j2, j4, 8
   jst j3, j1, DIAW
+  jjz j6, thn_done
+  jld j5, j1, THK2              ; a new route to it
+  jst j5, j4, 16
+  jldi j2, DRC
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+thn_done:
+  jldi j1, 0
   jret
 
-; Its diary read from its house ("diario": qwords {1, how many}, each {the thought's print, times}) into DIA, and its
-; print (DIAH: the sum of print times times, so the order does not matter). None: an empty one. Uses j1-j14.
+; Its diary read from its house ("diario": qwords {2, how many}, each {the route's print, the thought's print,
+; times}) into DIA (by route {key, times, thought}) and DRC (by thought, its routes), and its print (DIAH: the sum of
+; the routes' prints, so neither the order nor thinking the same again changes it). None: empty ones. Uses j1-j14.
 dia_load:
   jldi j2, DIA
+  jldi j3, 24
+  jcall pl_new
+  jldi j2, DRC
   jldi j3, 16
   jcall pl_new
   jldi j1, 0
@@ -3450,15 +3483,15 @@ dia_load:
   jjnz j2, dl_done
   jld j9, j1, SXR
   jld j2, j9, 0
-  jldi j3, 1
+  jldi j3, 2
   jsub j2, j2, j3
   jjnz j2, dl_done
   jld j10, j9, 8
   jld j2, j1, SXN               ; (as many as the file holds)
-  jldi j3, 4
-  jshr j2, j2, j3
-  jldi j3, 1
+  jldi j3, 16
   jsub j2, j2, j3
+  jldi j3, 24
+  jdiv j2, j2, j3
   jsub j3, j2, j10
   jldi j4, 63
   jsar j3, j3, j4
@@ -3479,17 +3512,27 @@ dl_n:
     jldi j1, 0
     jld j9, j1, TI
     jld j10, j1, TJ
-    jld j2, j4, 8
-    jld j3, j9, 8
-    jadd j2, j2, j3
+    jld j2, j9, 16
     jst j2, j4, 8
+    jld j2, j9, 8
+    jst j2, j4, 16
     jld j2, j9, 0
-    jmul j2, j2, j3
     jld j3, j1, DIAH
     jadd j2, j2, j3
     jst j2, j1, DIAH
+    jjz j6, dl_next
+    jld j5, j9, 8
+    jldi j2, DRC
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, TI
+    jld j10, j1, TJ
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
   dl_next:
-    jldi j2, 16
+    jldi j2, 24
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
@@ -3505,16 +3548,16 @@ dia_write:
   jjz j2, dw_done
   jld j2, j1, DIA
   jjz j2, dw_done
-  jld j11, j1, DIA + 16         ; {1, how many}, then each {print, times}
-  jldi j2, 4
-  jshl j11, j11, j2
+  jld j11, j1, DIA + 16         ; {2, how many}, then each {route, thought, times}
+  jldi j2, 24
+  jmul j11, j11, j2
   jldi j2, 16
   jadd j11, j11, j2
   jst j11, j1, DIAN
   jcall room
   jldi j1, 0
   jst j13, j1, DIAB
-  jldi j2, 1
+  jldi j2, 2
   jst j2, j13, 0
   jld j2, j1, DIA + 16
   jst j2, j13, 8
@@ -3529,9 +3572,11 @@ dia_write:
     jld j2, j9, 0
     jjz j2, dw_next
     jst j2, j8, 0
-    jld j2, j9, 8
+    jld j2, j9, 16
     jst j2, j8, 8
-    jldi j2, 16
+    jld j2, j9, 8
+    jst j2, j8, 16
+    jldi j2, 24
     jadd j8, j8, j2
   dw_next:
     jld j2, j1, DIA + 24
