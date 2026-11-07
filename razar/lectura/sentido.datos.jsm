@@ -60,3 +60,13 @@ db ' va con ', 0
 times 6C0h - $ db 0
 db ' va con el otro genero de ', 0
 times 700h - $ db 0
+db 'pregunta: ', 0
+times 740h - $ db 0
+db '  -> ', 0
+times 780h - $ db 0
+db '   (el libro dice: ', 0
+times 7C0h - $ db 0
+db '   (deducido: ', 0
+times 800h - $ db 0
+db '  ninguna relacion de lo que leyo encaja con la pregunta', 10, 0
+times 840h - $ db 0

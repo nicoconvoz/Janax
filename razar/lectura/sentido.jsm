@@ -47,6 +47,11 @@ S_TILL  = 600h
 S_OPEN  = 640h
 S_GOES  = 680h
 S_OTHER = 6C0h
+S_ASKQ  = 700h                  ; a question: its line, an answer, said by the book, deduced, no relation fits
+S_ANS   = 740h
+S_SAIDQ = 780h
+S_DEDQ  = 7C0h
+S_NOFIT = 800h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -88,7 +93,18 @@ TMMM  = 1C78h
 TMMN  = 1C80h
 TSN   = 1C90h                   ; what was said of the core asked: {key} (8), one table each
 TSNM  = 1C98h
-GMODE = 1CB0h                   ; what a window is for: 1 learn, 2 the meaning of the core asked, 3 its deductions
+GMODE = 1CB0h                   ; what a window is for: 1 learn, 2 the meaning of the core asked, 3 its deductions,
+                                ; 4 and 5 the same for a core of a question, only what fits it
+QQS   = 1A50h                   ; a question: its first unit, past its last, where its core is, how many answers
+QQE   = 1A58h
+QP    = 1A60h
+QNA   = 1A68h
+QSIDE = 1A70h                   ; fitting: the core's side in the fact (0 left, 1 right), the other core
+QOTH  = 1A78h
+QU    = 1A80h                   ; a piece of the question being matched
+QCV   = 1A88h                   ; how much of the question a fit explains (its core and the middle's words), the pass
+QPASS = 1A90h                   ; (0 finds the most any relation explains, 1 says the ones that explain that much), and
+QBEST = 1A98h                   ; the most
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -960,12 +976,32 @@ cores:
   jst j1, j1, QSI
   jld j2, j1, QN
   jwhile j2
-    jldi j1, 0
-    jld j2, j1, QSI
+    jldi j1, 0                  ; a line: to the 0 that ends it
+    jld j9, j1, QSI
+    jst j9, j1, QQS
+  co_end:
+    jld j2, j1, QN
+    jsub j2, j9, j2
+    jjz j2, co_line
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jjz j2, co_line
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp co_end
+  co_line:
+    jst j9, j1, QQE
+    jld j2, j1, QQS
+    jsub j3, j9, j2
+    jjz j3, co_next
+    jldi j4, 1                  ; one piece: a core, its meaning; more: a question (Capitan: "the furniture and the
+    jsub j3, j3, j4             ; logical relation that fits the question")
+    jjnz j3, co_question
     jldi j3, 3
     jshl j2, j2, j3
     jld j2, j2, QBUF
-    jldi j3, 1                  ; a word it knows (not a hole, not unknown, not the end)
+    jldi j3, 1                  ; a word it knows (not a hole, not unknown)
     jsub j3, j2, j3
     jldi j4, 63
     jsar j3, j3, j4
@@ -973,14 +1009,23 @@ cores:
     jst j2, j1, QCW
     jcall core_one
     jcall flush
+    jjmp co_next
+  co_question:
+    jcall question_one
+    jcall flush
   co_next:
     jldi j1, 0
-    jld j2, j1, QSI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QSI
+    jld j9, j1, QQE
+    jldi j2, 1
+    jadd j9, j9, j2
+    jst j9, j1, QSI
     jld j3, j1, QN
-    jsub j2, j3, j2
+    jsub j2, j3, j9
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjz j3, co_more
+    jldi j2, 0
+  co_more:
   jwend
   jret
 ; The core QCW, read again as the text goes by: first its meaning (every affirmed fact it is in, once, written when its
@@ -1023,6 +1068,12 @@ fm_in:
   jldi j2, TMI
   jcall pl_find
   jst j4, j1, WSK
+  jld j2, j1, GMODE
+  jldi j3, 4
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, q_meet
   jld j2, j1, GMODE
   jldi j3, 2
   jsub j3, j2, j3
@@ -1357,6 +1408,382 @@ putmix:
   jadd j12, j2, j1
   jcall mix
   jjmp putnum
+
+; A question (QQS to QQE in QBUF): every core in it (a word the house left as furniture, as the cores of the facts)
+; asked the facts it is in, and of those only the ones whose relation fits the question: the middle of the fact's
+; skeleton is said in the question right next to the core, on the side the fact has it (its marks aside). The answer
+; is the fact's other core, if the question does not say it already: said so by the book (4), or deduced from a
+; skeleton that turns (5), with its why. Nothing tells it which word asks: the question's own furniture and the
+; relations the book proved decide. Uses j1-j14.
+question_one:
+  jldi j1, S_ASKQ
+  jcall puts
+  jld j9, j1, QQS
+  qo_put:
+    jldi j1, 0
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qo_said
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qo_skip
+    jst j9, j1, QP
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, QP
+  qo_skip:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qo_put
+  qo_said:
+  jldi j2, 10
+  jcall putch
+  jldi j1, 0
+  jst j1, j1, QNA
+  jst j1, j1, QBEST
+  jst j1, j1, QPASS
+qo_pass:
+  jldi j2, TSN                  ; (each answer once)
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, QQS
+  qo_core:
+    jldi j1, 0
+    jst j9, j1, QP
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qo_cores
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qo_ncore
+    jst j2, j1, QCW
+    jcall g_core
+    jjz j3, qo_ncore
+    jldi j1, 0
+    jldi j2, 4
+    jst j2, j1, GMODE
+    jcall gather
+    jldi j1, 0
+    jldi j2, 5
+    jst j2, j1, GMODE
+    jcall gather
+  qo_ncore:
+    jldi j1, 0
+    jld j9, j1, QP
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qo_core
+  qo_cores:
+  jld j2, j1, QPASS             ; the relation that fits it best is the one that explains the most of it (Capitan:
+  jjnz j2, qo_said2             ; "the logical relation that fits the question"): first how much that is, then those
+  jldi j2, 1
+  jst j2, j1, QPASS
+  jjmp qo_pass
+qo_said2:
+  jld j2, j1, QNA
+  jjnz j2, qo_done
+  jldi j1, S_NOFIT
+  jcall puts
+qo_done:
+  jldi j1, 0
+  jret
+
+; The window WA WK WB met by a core of a question (GMODE 4: what the book says; 5: what it deduces). Uses j1-j14.
+q_meet:
+  jcall fm_two
+  jldi j1, 0
+  jjz j6, qm_done
+  jld j2, j1, GMODE
+  jldi j3, 4
+  jsub j3, j2, j3
+  jjnz j3, qm_turned
+  jld j12, j1, WSK              ; said: the core at its end of the fact
+  jld j2, j1, WB
+  jld j3, j1, QCW
+  jsub j2, j2, j3
+  jldi j4, 0
+  jjnz j2, qm_side
+  jldi j4, 1
+qm_side:
+  jst j4, j1, QSIDE
+  jld j2, j1, WA
+  jjz j4, qm_oth
+  jjmp qm_oth2
+qm_oth:
+  jld j2, j1, WB
+qm_oth2:
+  jst j2, j1, QOTH
+  jcall q_fit
+  jjz j2, qm_done
+  jcall q_best
+  jjz j2, qm_done
+  jcall q_new
+  jjz j2, qm_done
+  jldi j1, S_SAIDQ
+  jcall puts
+  jld j2, j1, WA
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, WSK
+  jcall put_mid
+  jld j2, j1, WB
+  jcall putword
+  jldi j2, 41
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+qm_turned:
+  jld j2, j1, WSK               ; deduced: the skeleton that turns, its fact turned (WB «TBEST» WA)
+  jst j2, j1, FE
+  jldi j12, 1
+  jcall best_partner
+  jldi j1, 0
+  jld j2, j1, TBEST
+  jjz j2, qm_done
+  jcall find_mid
+  jldi j1, 0
+  jld j2, j1, WA                ; the core's side in the turned fact
+  jld j3, j1, QCW
+  jsub j2, j2, j3
+  jldi j4, 0
+  jjnz j2, qt_side
+  jldi j4, 1
+qt_side:
+  jst j4, j1, QSIDE
+  jld j2, j1, WB
+  jjz j4, qt_oth
+  jjmp qt_oth2
+qt_oth:
+  jld j2, j1, WA
+qt_oth2:
+  jst j2, j1, QOTH
+  jcall q_fit
+  jjz j2, qm_done
+  jcall q_best
+  jjz j2, qm_done
+  jcall q_new
+  jjz j2, qm_done
+  jldi j1, S_DEDQ
+  jcall puts
+  jld j2, j1, WB
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, TBEST
+  jcall find_mid
+  jcall put_mid
+  jld j2, j1, WA
+  jcall putword
+  jldi j1, S_BEC
+  jcall puts
+  jld j12, j1, WSK
+  jcall put_mid
+  jldi j1, S_BTURN
+  jcall puts
+  jld j2, j1, TBEST
+  jcall find_mid
+  jcall put_mid
+  jldi j2, 41
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+qm_done:
+  jret
+
+; j2 = 1 if the middle of the skeleton at j12 is said in the question right next to its core (QP), on the side the
+; core has in the fact (QSIDE: 1 right, the middle before it; 0 left, the middle after it), the marks of both aside.
+; Uses j1-j14.
+q_fit:
+  jldi j13, MB1
+  jcall m_collect
+  jldi j1, 0
+  jldi j3, 1                    ; (the core: one explained)
+  jst j3, j1, QCV
+  jst j2, j1, FI2               ; the middle's pieces, and the one being matched
+  jld j9, j1, QP
+  jld j10, j1, QSIDE
+  jjz j10, qf_left
+  jst j2, j1, FI3               ; right: from the middle's last piece, back from the core
+  qf_rlap:
+    jldi j1, 0
+    jld j2, j1, FI3
+    jjz j2, qf_yes
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, FI3
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, MB1
+    jst j2, j1, FI4
+    jcall w_mark
+    jjnz j3, qf_rlap            ; (a mark of the fact: aside)
+    qf_rback:
+      jldi j1, 0
+      jldi j2, 1
+      jsub j9, j9, j2
+      jld j2, j1, QQS
+      jsub j2, j9, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjnz j2, qf_no
+      jldi j2, 3
+      jshl j2, j9, j2
+      jld j2, j2, QBUF
+      jldi j3, 1
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, qf_no
+      jst j2, j1, QU
+      jcall w_mark
+      jjnz j3, qf_rback          ; (a mark of the question: aside)
+      jldi j1, 0
+      jld j2, j1, QU
+      jld j3, j1, FI4
+      jsub j2, j2, j3
+      jjnz j2, qf_no
+      jld j2, j1, QCV
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, QCV
+      jjmp qf_rlap
+qf_left:
+  jst j1, j1, FI3               ; left: from the middle's first piece, on from the core
+  qf_llap:
+    jldi j1, 0
+    jld j2, j1, FI3
+    jld j3, j1, FI2
+    jsub j3, j2, j3
+    jjz j3, qf_yes
+    jldi j3, 1
+    jadd j3, j2, j3
+    jst j3, j1, FI3
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, MB1
+    jst j2, j1, FI4
+    jcall w_mark
+    jjnz j3, qf_llap
+    qf_lon:
+      jldi j1, 0
+      jldi j2, 1
+      jadd j9, j9, j2
+      jld j2, j1, QQE
+      jsub j2, j9, j2
+      jjz j2, qf_no
+      jldi j2, 3
+      jshl j2, j9, j2
+      jld j2, j2, QBUF
+      jldi j3, 1
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, qf_no
+      jst j2, j1, QU
+      jcall w_mark
+      jjnz j3, qf_lon
+      jldi j1, 0
+      jld j2, j1, QU
+      jld j3, j1, FI4
+      jsub j2, j2, j3
+      jjnz j2, qf_no
+      jld j2, j1, QCV
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, QCV
+      jjmp qf_llap
+qf_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qf_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the fit just found (QCV) is to be said: in the first pass it only raises the most (QBEST) and is not said;
+; in the second, it is said when it explains that much. Uses j1-j3.
+q_best:
+  jldi j1, 0
+  jld j2, j1, QCV
+  jld j3, j1, QPASS
+  jjnz j3, qb_say
+  jld j3, j1, QBEST
+  jsub j3, j3, j2
+  jldi j1, 63
+  jsar j3, j3, j1
+  jldi j1, 0
+  jjz j3, qb_no
+  jst j2, j1, QBEST
+qb_no:
+  jldi j2, 0
+  jret
+qb_say:
+  jld j3, j1, QBEST
+  jsub j2, j2, j3
+  jldi j3, 1
+  jjz j2, qb_yes
+  jldi j3, 0
+qb_yes:
+  jadd j2, j3, j1
+  jret
+
+; j2 = 1 if QOTH is a new answer: not a word of the question, and not given yet (written then: "  -> " and it). Uses
+; j1-j14.
+q_new:
+  jldi j1, 0
+  jld j9, j1, QQS
+  qn_lap:
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qn_new
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jld j3, j1, QOTH
+    jsub j2, j2, j3
+    jjz j2, qn_no
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qn_lap
+qn_new:
+  jld j5, j1, QOTH
+  jjz j5, qn_no
+  jldi j2, TSN
+  jcall pl_take
+  jjz j6, qn_no
+  jldi j1, 0
+  jld j2, j1, QNA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, QOTH
+  jcall putword
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qn_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
 
 include 'crece.inc'
 include 'casa.inc'
