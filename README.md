@@ -5,6 +5,8 @@
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
 cada pieza tiene sus pruebas.
+📖 **[Carta del autor](CARTA-DEL-AUTOR.md)** — la otra mitad: el diario espiritual, en audio y con licencia libre.
+
 
 > *English summary below.*
 
