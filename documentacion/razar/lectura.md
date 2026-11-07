@@ -2403,3 +2403,24 @@ asumo el riesgo"*.
   Con freno, desde "jacob, hijo de isaac" la genealogía se teje sola: "hijo de david", "hijo de judá", "hijo de
   matat", "hijo del hombre", "dios de abraham". Las respuestas siguen idénticas.
 
+## Elige: su genoma y su historia (2026-11-07)
+
+El Capitán: *"no quiero una respuesta determinista de memoria, quiero la de un organismo que elige qué poner, qué no
+poner y cómo ponerlo"*; y la semilla, *"una mezcla de su genoma con la libertad"* de su propia historia.
+
+- **Genoma (`GEN`):** cada Razar nace con su primera pregunta y lo que sabía entonces, y lo guarda en su casa
+  (`genoma`, 8 bytes, `th_genome`). Desde ahí es suyo.
+- **Historia (`HIST`):** la suma de las huellas de cada etiqueta de su biblioteca, así no depende del orden. Cada libro
+  que come la cambia.
+- **Semilla (`th_seed`):** genoma, historia, la pregunta y la palabra desde la que piensa, todo por letras. Alimenta un
+  sorteo propio (`th_rand`, splitmix64).
+- **Cómo elige (`th_branches`):** desde cada palabra ya no dice todas las ramas. Cada hecho que puede seguir vota con
+  las veces que los libros siguieron con su estructura (un par dicho n veces vota n veces), y el sorteo elige una. Lo
+  que no elige no lo dice ni lo piensa: sale una línea de pensamiento suya.
+- **Determinismo:** el mismo Razar, con la misma historia y la misma pregunta, elige lo mismo (verificado). Otro
+  genoma, u otros libros, otra elección. La regla de la casa sigue en pie.
+- **Medido** con "¿de quién es hijo jacob?":
+  - el Razar A (nacido preguntando por jacob) piensa "isaac y jacob";
+  - el Razar B (nacido preguntando por la ley) piensa "isaac y el dios", y después "dios de abraham";
+  - en las preguntas de control, las respuestas siguen idénticas y los pensamientos bajan de 946 líneas a 28.
+

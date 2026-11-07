@@ -67,6 +67,7 @@ S_QAM   = 0AC0h
 S_QAL   = 0AE0h                 ; what they taught
 S_GLU   = 8D0h                  ; the glue between constructions
 S_GLD   = 8E0h
+S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
@@ -255,6 +256,13 @@ KCT   = 0F00h
 THQ   = 0F20h
 THQH  = 0F28h
 THQT  = 0F30h
+GEN   = 0F38h                   ; its genome, its history, its seed's lottery, the votes of a word's branches, the
+HIST  = 0F40h                   ; place chosen among them, the pass (0 votes, 1 chooses), a branch's votes
+THRS  = 0F48h
+THW   = 0F50h
+THP   = 0F58h
+THPS  = 0F60h
+THV   = 0F68h
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
@@ -2916,7 +2924,9 @@ think:
   jld j2, j1, THR
   jjnz j2, th_ready
   jcall th_build
+  jcall th_genome
 th_ready:
+  jcall th_seed
   jldi j2, TVT
   jldi j3, 8
   jcall pl_new
@@ -2948,84 +2958,29 @@ th_ready:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, THQH
-    jst j1, j1, THB             ; (branches it went on by)
-    jld j2, j1, THX             ; its facts, one after another
-    jldi j3, 3
-    jshl j2, j2, j3
-    jld j3, j1, THH
-    jadd j2, j2, j3
-    jld j2, j2, 0
-    jst j2, j1, THI
-    thb_lap:
-      jldi j1, 0
-      jld j2, j1, THI
-      jjz j2, thb_done
-      jldi j3, 1
-      jsub j2, j2, j3
-      jst j2, j1, THG           ; (the fact's number)
-      jldi j3, 3
-      jshl j3, j2, j3
-      jld j4, j1, THN
-      jadd j3, j3, j4
-      jld j3, j3, 0
-      jst j3, j1, THI
-      jld j2, j1, THG
-      jldi j3, 24
-      jmul j3, j2, j3
-      jld j4, j1, GFL
-      jadd j9, j3, j4
-      jld j2, j9, 8
-      jcall tok_at
-      jst j2, j1, THY
-      jld j5, j1, THY           ; a word not thought on yet
-      jldi j2, TVT
-      jcall pl_find
-      jldi j1, 0
-      jld j2, j4, 0
-      jjnz j2, thb_lap
-      jld j2, j1, THG           ; its skeleton: the books went on with it, two times at least
-      jldi j3, 24
-      jmul j3, j2, j3
-      jld j4, j1, GFL
-      jadd j9, j3, j4
-      jld j5, j9, 16
-      jst j5, j1, THC
-      jldi j2, KCT
-      jcall pl_find
-      jldi j1, 0
-      jld j2, j4, 0
-      jjz j2, thb_lap
-      jld j2, j4, 8
-      jldi j3, 2
-      jsub j2, j2, j3
-      jldi j3, 63
-      jsar j2, j2, j3
-      jjnz j2, thb_lap
-      jld j5, j1, THC           ; and a word in its middle
-      jldi j2, TMI
-      jcall pl_find
-      jldi j1, 0
-      jld j2, j4, 0
-      jjz j2, thb_lap
-      jst j4, j1, THE
-      jadd j12, j4, j1
-      jcall sk_word
-      jjz j2, thb_lap
-      jcall th_twice            ; and the fact itself said twice at least (the anecdote rule)
-      jjz j2, thb_lap
-      jcall th_say              ; asked and answered
-      jldi j1, 0
-      jld j2, j1, THY
-      jcall th_push
-      jldi j1, 0
-      jldi j2, 1
-      jst j2, j1, THB
-      jjmp thb_lap
-  thb_done:
-    jld j2, j1, THB             ; no branch went on: a word it ran out of facts on
-    jjnz j2, th_lap
-    jld j2, j1, THX
+    jst j1, j1, THW             ; its branches weighed: each fact that may go on votes with the times the books went
+    jst j1, j1, THPS            ; on with its structure (a pair said n times votes n times)
+    jcall th_branches
+    jldi j1, 0
+    jld j2, j1, THW
+    jjnz j2, th_pick
+    jld j2, j1, THX             ; none: a word it ran out of facts on
     jcall want_word
+    jjmp th_lap
+  th_pick:
+    jcall th_rand               ; its choice: the seed's lottery over the votes (what it does not choose it does not say)
+    jldi j1, 0
+    jldi j3, 1
+    jshr j2, j2, j3
+    jld j3, j1, THW
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jst j2, j1, THP
+    jldi j2, 1
+    jst j2, j1, THPS
+    jcall th_branches
+    jldi j1, 0
     jjmp th_lap
 th_done:
   jldi j1, 0
@@ -3075,6 +3030,313 @@ th_twice:
     jret
 thw_no:
   jldi j2, 0
+  jret
+
+; The branches of the word THX: each fact of its list that starts there and may go on (a word not thought on yet, a
+; structure the books went on with twice at least, a word in its middle, the fact said twice at least). THPS 0: their
+; votes summed at THW (each the times at KCT). THPS 1: the one whose votes hold the place THP is said, and its word
+; joins the row. Uses j1-j14.
+th_branches:
+  jldi j1, 0
+  jld j2, j1, THX
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, THH
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jst j2, j1, THI
+  thb_lap:
+    jldi j1, 0
+    jld j2, j1, THI
+    jjz j2, thb_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, THG             ; (the fact's number)
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, THN
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jst j3, j1, THI
+    jld j2, j1, THG
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, THY
+    jld j5, j1, THY             ; a word not thought on yet
+    jldi j2, TVT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjnz j2, thb_lap
+    jld j2, j1, THG             ; its skeleton: the books went on with it, two times at least
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jld j5, j9, 16
+    jst j5, j1, THC
+    jldi j2, KCT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, thb_lap
+    jld j2, j4, 8
+    jst j2, j1, THV
+    jldi j3, 2
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, thb_lap
+    jld j5, j1, THC             ; and a word in its middle
+    jldi j2, TMI
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, thb_lap
+    jst j4, j1, THE
+    jadd j12, j4, j1
+    jcall sk_word
+    jjz j2, thb_lap
+    jcall th_twice              ; and the fact itself said twice at least (the anecdote rule)
+    jjz j2, thb_lap
+    jldi j1, 0
+    jld j2, j1, THPS
+    jjnz j2, thb_choose
+    jld j2, j1, THW             ; its votes
+    jld j3, j1, THV
+    jadd j2, j2, j3
+    jst j2, j1, THW
+    jjmp thb_lap
+  thb_choose:
+    jld j2, j1, THP             ; the place falls in its votes?
+    jld j3, j1, THV
+    jsub j4, j2, j3
+    jst j4, j1, THP
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, thb_lap
+    jcall th_say                ; chosen: asked and answered
+    jldi j1, 0
+    jld j2, j1, THY
+    jjmp th_push
+thb_done:
+  jldi j1, 0
+  jret
+
+; The next number of the seed's lottery (splitmix64 over THRS) -> j2. Uses j1-j4.
+th_rand:
+  jldi j1, 0
+  jld j2, j1, THRS
+  jldi j3, 0
+  jshi j3, 9E37h
+  jshi j3, 79B9h
+  jshi j3, 7F4Ah
+  jshi j3, 7C15h
+  jadd j2, j2, j3
+  jst j2, j1, THRS
+  jldi j3, 30
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j3, 0
+  jshi j3, 0BF58h
+  jshi j3, 476Dh
+  jshi j3, 1CE4h
+  jshi j3, 0E5B9h
+  jmul j2, j2, j3
+  jldi j3, 27
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jldi j3, 0
+  jshi j3, 94D0h
+  jshi j3, 49BBh
+  jshi j3, 1331h
+  jshi j3, 11EBh
+  jmul j2, j2, j3
+  jldi j3, 31
+  jshr j4, j2, j3
+  jxor j2, j2, j4
+  jret
+
+; The print of word j2's letters folded into j5 (FNV-1a). Uses j1, j3-j8.
+th_wprint:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j7, j3, 16
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jld j6, j1, FNVP
+  jwhile j7
+    jldb j8, j3, 0
+    jxor j5, j5, j8
+    jmul j5, j5, j6
+    jldi j8, 1
+    jadd j3, j3, j8
+    jsub j7, j7, j8
+  jwend
+  jldi j8, 32
+  jxor j5, j5, j8
+  jmul j5, j5, j6
+  jret
+
+; Its seed for this thought (Capitan, 2026-11-07: "the seed, a mix of its genome with the freedom of its own history"):
+; its genome (GEN: born with its first question, kept in its house, "genoma"), its history (HIST: everything its
+; library holds, summed by the labels' prints, so their order does not matter), the question and the word it thinks
+; from, by their letters -> THRS. The same Razar with the same history and question chooses the same; another genome
+; or more books, another choice. Uses j1-j14.
+th_seed:
+  jldi j1, 0
+  jld j5, j1, FNVO              ; the question's words and the word, by letters
+  jld j9, j1, QQS
+  ths_q:
+    jldi j1, 0
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, ths_word
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, ths_qnext
+    jcall th_wprint
+  ths_qnext:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp ths_q
+ths_word:
+  jst j5, j1, THRS
+  jld j2, j1, THX
+  jcall th_wprint
+  jld j2, j1, GEN
+  jxor j5, j5, j2
+  jld j6, j1, FNVP
+  jmul j5, j5, j6
+  jld j2, j1, HIST
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jst j5, j1, THRS
+  jret
+
+; Its genome and its history, once a reading. The genome is read from its house ("genoma"); with none, it is born now:
+; the print of its first question and its history, written there to stay. The history: the sum of the prints of every
+; label of its library (lib_load listed them). Uses j1-j14.
+th_genome:
+  jldi j1, 0
+  jst j1, j1, HIST
+  jld j9, j1, LSTR
+  jld j10, j1, LSTN
+  jjz j9, thg_hdone
+  jldi j2, 63
+  jsar j2, j10, j2
+  jjnz j2, thg_hdone
+  thg_h:
+    jldi j1, 0
+    jjz j10, thg_hdone
+    jld j7, j9, 0
+    jld j5, j1, FNVO
+    jld j6, j1, FNVP
+    jldi j3, 8
+    jadd j3, j9, j3
+    jadd j4, j7, j1
+    jwhile j4
+      jldb j8, j3, 0
+      jxor j5, j5, j8
+      jmul j5, j5, j6
+      jldi j8, 1
+      jadd j3, j3, j8
+      jsub j4, j4, j8
+    jwend
+    jld j2, j1, HIST
+    jadd j2, j2, j5
+    jst j2, j1, HIST
+    jldi j3, 7
+    jadd j7, j7, j3
+    jldi j3, -8
+    jand j7, j7, j3
+    jldi j3, 8
+    jadd j7, j7, j3
+    jadd j9, j9, j7
+    jldi j3, 1
+    jsub j10, j10, j3
+    jjmp thg_h
+thg_hdone:
+  jldi j11, S_GEN               ; its genome
+  jldi j12, 6
+  jcall sx_read
+  jldi j1, 0
+  jld j2, j1, SXN
+  jldi j3, 8
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, thg_born
+  jld j2, j1, SXR
+  jld j2, j2, 0
+  jst j2, j1, GEN
+  jret
+thg_born:
+  jld j5, j1, FNVO              ; born with its first question and what it knew then
+  jld j9, j1, QQS
+  thg_q:
+    jldi j1, 0
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, thg_qdone
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, thg_qnext
+    jcall th_wprint
+  thg_qnext:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp thg_q
+thg_qdone:
+  jld j2, j1, HIST
+  jxor j5, j5, j2
+  jld j6, j1, FNVP
+  jmul j5, j5, j6
+  jst j5, j1, GEN
+  jldi j10, 4
+  jldi j11, S_GEN
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, thg_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jldi j11, GEN
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+thg_done:
+  jldi j1, 0
   jret
 
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
