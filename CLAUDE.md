@@ -42,6 +42,9 @@ abierto. Ya no es un MMORPG (Capitán, 2026-11-03): lo que era del juego está e
 - **El SO no sabe que existe Razar**; Razar usa el SO por su interfaz.
 - **Determinista**: mismo estado + mismas entradas = mismo resultado, en los tres motores, bit por bit. Es lo que
   permite verificar un resultado en lugar de creerle.
+- **Razar crea sus propias reglas; nosotros no le ponemos reglas** (regla de la casa, Capitán 2026-11-07). Nada de
+  "un hecho termina en X" ni "en castellano la pregunta se invierte": se construye el mecanismo que mide, y la regla
+  sale de lo que Razar descubre en los libros (como las flechas: por mayoría, no por lista).
 
 ## Pruebas
 
