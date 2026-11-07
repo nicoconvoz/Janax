@@ -1970,9 +1970,15 @@ ventanilla:
         cmp     r8d, 1
         je      .go
         cmp     r8d, 2
-        jne     .waits
+        jne     .ring
         inc     qword [denied]
         jmp     .unknown
+.ring:
+        push    rax rcx rdx             ; its signer's doorbell rings (28): it sleeps on it, it never looks in a loop
+        mov     rax, [rbx + P_PARENT]
+        mov     rax, [rax + P_ID]
+        call    greet
+        pop     rdx rcx rax
 .waits:
         inc     qword [must_wait]
         jmp     .mark_next

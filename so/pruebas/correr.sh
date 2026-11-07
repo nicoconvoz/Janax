@@ -651,6 +651,14 @@ P1 codigo=10 j0=* t=*
 P0 codigo=0 j0=0000000000FF0AFE t=*
 ventanilla: *" familia_presupuesto
 
+# A request that waits for a signature rings the signer's doorbell: the parent sleeps on it, never in a loop.
+familia familia_timbre ventanilla_hola
+caso "familia: el pedido que espera firma toca el timbre" 0 0 "$fijo0
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+P0 codigo=0 j0=00000000000001FF t=*
+ventanilla: *" familia_timbre
+
 # A child is born with its parent's bolita, and can not ask for more.
 familia familia_bolita bolita
 caso "familia: el hijo nace con la bolita del padre" 0 0 "$fijo0
