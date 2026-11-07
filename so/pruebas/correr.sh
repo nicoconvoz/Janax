@@ -546,6 +546,18 @@ caso "archivo: leer en otra corrida" 0 0 "$fijo0
 P0 codigo=0 j0=00000000616C6F68 t=43
 ventanilla: pantallas=1 resintonias=1 llamadas al anfitrion=2 pedidos=2" archivo_leer
 
+# The host door (37, 38): a book anywhere on the PC, its address in "ruta"; read only.
+printf '0123456789' > "$salida/libro_anfitrion.txt"
+anfitrion_ruta() { mkdir -p "$archivos"; printf '%s' "$(cygpath -w "$salida/libro_anfitrion.txt")" > "$archivos/72757461"; }
+anfitrion_ruta
+caso "anfitrion: lee un libro de cualquier lugar, desde el byte 3" 0 0 "$fijo0
+P0 codigo=0 j0=0000000036353433 t=74
+ventanilla: pantallas=1 resintonias=4 llamadas al anfitrion=5 pedidos=5" anfitrion_leer
+anfitrion_ruta
+caso "anfitrion: la puerta del anfitrion solo lee" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=64
+ventanilla: pantallas=1 resintonias=3 llamadas al anfitrion=4 pedidos=4" anfitrion_no_escribe
+
 caso "archivo: etiqueta que no es UTF-8" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=20
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_etiqueta_invalida
@@ -606,6 +618,13 @@ caso "porteros: prefijo que no permite" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=58
 ventanilla: *
 porteros: nodos=7 negados=1" archivo_guardar@lg:61
+
+# A prefix keeps a process to its own labels: it may read "ruta", but not go out to the host (0BADh: it did not open).
+anfitrion_ruta
+caso "porteros: un prefijo no deja salir al anfitrion" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000BAD t=*
+ventanilla: *
+porteros: nodos=* negados=1" anfitrion_no_escribe@lg:72757461
 
 carpeta=$(cygpath -m "$salida/archivos_lista")    # holds one label: "c"
 caso "porteros: listar ve lo permitido" 0 0 "$fijo0

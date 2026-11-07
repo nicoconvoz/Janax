@@ -1155,3 +1155,21 @@ Para que dos Razares del mismo Windows se encuentren sin red (Capitán).
   perdió la lista de cambios (se le llenó el búfer), despierta a todos los que vigilan: cada uno mira su huella y decide
   si es novedad. Así no se pierde nada.
 - Es solo archivos: nada sale de la máquina.
+
+## La puerta del anfitrión: leer un libro de cualquier lugar (2026-11-07)
+
+Pedido del Capitán: Razar guarda en su carpeta solo las pistas y la dirección de cada libro; los libros viven donde
+estén en la PC.
+
+- **37 abrir del anfitrión** (`a` = la dirección del archivo en la PC, en UTF-8; `b` = sus bytes): responde una
+  manija de la misma tabla que la 4, que sirve para leer (5), ir a (38) y cerrar (7). Se abre **solo para leer**
+  (`CreateFileW` con `GENERIC_READ`, `OPEN_EXISTING`): una escritura la rechaza el anfitrión, y no hay borrar ni
+  renombrar fuera de la carpeta propia.
+- **38 ir a** (la manija en el tipo, `a` = el byte): la posición del archivo pasa a ese byte desde el principio
+  (`SetFilePointerEx`). Es lo que deja seguir una pista sin pasar por todo lo anterior.
+- **Regla de seguridad, general:** sale al anfitrión solo un proceso al que ningún portero le puso un prefijo de
+  etiquetas. Un prefijo lo encierra en sus etiquetas, y fuera de la carpeta no hay etiquetas (cuenta como negado).
+- **Pruebas:** `anfitrion_leer` (lee "3456" desde el byte 3 de un archivo cualquiera), `anfitrion_no_escribe` (el
+  anfitrión rechaza la escritura) y el mismo programa con prefijo (no abre). Idénticas en los tres motores.
+- **Pendiente:** que se entere sola de un libro nuevo en cualquier lugar (vigilar por evento). Hoy se le dice la
+  dirección.

@@ -152,10 +152,11 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 36                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 38                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake
+                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
+                                ; open on the host, go to
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -195,14 +196,17 @@ section '.data' data readable writeable
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
+              dq serve_host_open, serve_seek
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
+             db R_READ, R_READ
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
+                 db 0, 0                ; (the host door only reads: it changes nothing)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -287,6 +291,7 @@ section '.data' data readable writeable
   list_count dq 0
   hex_lower db '0123456789abcdef'
   fio_bytes dd 0
+  fio_pos   dq 0                  ; go to (38): where the file is now
   lab_ptr   dq 0
   lab_len   dq 0
   slot_free dq 0
@@ -453,7 +458,7 @@ section '.idata' import data readable writeable
   import kernel32,\
          GetCommandLineA, 'GetCommandLineA',\
          lstrlenA, 'lstrlenA',\
-         CreateFileA, 'CreateFileA',\
+         CreateFileA, 'CreateFileA',         CreateFileW, 'CreateFileW',         SetFilePointerEx, 'SetFilePointerEx',\
          ReadFile, 'ReadFile',\
          CreateFileMappingA, 'CreateFileMappingA',\
          DuplicateHandle, 'DuplicateHandle',\
@@ -2250,6 +2255,109 @@ serve_destroy:
         mov     rax, [rbp + r13 + 8]
         call    rooms_destroy
         mov     [rbp + r13 + 24], rax
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "open on the host" (kind 37): a = the address of a file anywhere on the host (UTF-8), b = its bytes.
+; Read only, always: the handle it answers reads (5), goes to (38) and closes (7), and a write to it is refused by the
+; host. Only a process that no porter keeps to a prefix of labels may go out to the host: a prefix keeps it to its
+; own labels. Answers the handle, or -1.
+serve_host_open:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 37
+        jne     .next
+        mov     qword [norm_len], 0     ; (no label: any prefix on the way up refuses it)
+        mov     r8, [rbx + P_GATES + 2*8]
+        call    prefix_allows
+        test    r8d, r8d
+        jz      .refused
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        test    rdx, rdx
+        jz      .invalid
+        cmp     rdx, WIDE_CAP - 1
+        ja      .invalid
+        call    cabin_at
+        jc      .invalid
+        mov     [lab_ptr], rax
+        mov     [lab_len], rdx
+        call    utf8_ok
+        test    eax, eax
+        jz      .invalid
+        invoke  MultiByteToWideChar, CP_UTF8, 0, [lab_ptr], [lab_len], wide_in, WIDE_CAP - 1
+        test    eax, eax
+        jz      .invalid
+        mov     word [wide_in + rax*2], 0
+        invoke  CreateFileW, wide_in, GENERIC_READ, FILE_SHARE_READ + FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .invalid
+        mov     r14, rax
+        call    file_slot
+        cmp     rax, -1
+        je      .no_slot
+        mov     rdx, [rbx + P_FILES]
+        mov     [rdx + rax*8], r14
+        mov     [rbp + r13 + 24], rax
+        jmp     .next
+.no_slot:
+        invoke  CloseHandle, r14
+        jmp     .invalid
+.refused:
+        inc     qword [denied]
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "go to" (kind 38): the file of the handle in the type goes to byte a from its start, so a reader
+; follows a clue to where it read without passing through what is before. Answers the position, or -1.
+serve_seek:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 38
+        jne     .next
+        call    file_handle
+        test    rax, rax
+        jz      .invalid
+        mov     r14, rax
+        mov     rsi, [rbp + r13 + 8]
+        test    rsi, rsi
+        js      .invalid
+        invoke  SetFilePointerEx, r14, rsi, fio_pos, 0
+        inc     qword [hostcalls]
+        test    eax, eax
+        jz      .invalid
+        mov     rax, [fio_pos]
+        mov     [rbp + r13 + 24], rax
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
 .next:
         inc     r12
 .one:
