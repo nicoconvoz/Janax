@@ -2757,3 +2757,30 @@ contexto, encontrá la función de la instrucción y agregá la familia al dicci
 - Ninguna respuesta de control se perdió. Los pensamientos tejidos después de las respuestas cambian porque el
   organismo elige distinto.
 
+
+## La oración procesada, no copiada (2026-11-07)
+
+El Capitán: *"no me hagas copy paste de fragmentos de oración: que Razar procese todo y me dé su propia respuesta, una
+que pensó; incluso puede variar la forma de decirla con la original, y ahí está la gracia"*; *"que dé un equivalente,
+o distinga si va o no, o le quiera agregar o quitar algo"*.
+
+- **Antes**, cada cláusula del párrafo era el hecho más el resto de su edificio, copiado unidad por unidad hasta el
+  límite (`qr_walk`).
+- **Ahora** el resto se recorre en silencio hasta el límite, y lo que se dice son **los hechos comprobados** de ese
+  tramo (`qr_span` → `sk_span`), uno detrás del otro, cada uno dicho a su manera (`sk_say`):
+  - **lo que ya dijo no lo repite:** el mismo esqueleto con los mismos extremos se dice una vez (`SKD`);
+  - **lo que no comprobó no lo dice:** las palabras del tramo que ningún hecho probado cubre quedan afuera;
+  - **encadena:** si un hecho empieza donde terminó el anterior, su primera palabra no se repite; si es el sujeto
+    otra vez, queda tácito; un hueco corto (hasta tres unidades) lleva su propio pegamento y uno largo, el que une.
+- **Estructuras equivalentes (`sk_scan`, `sk_pick`):** dos esqueletos son parientes por la parte de los **pares de
+  muebles que unen en común** (lo compartido sobre lo que une cualquiera de los dos). Es el mismo principio que las
+  familias de instrucciones, un nivel más arriba, y en el oficio es DIRT (Lin y Pantel, 2001). Para decir un hecho,
+  la semilla sortea entre su esqueleto (pesa 1000, un entero) y cada pariente que comparte dos pares o más (pesa su
+  parte). La forma nueva siempre es una que algún libro usó: varía sin inventar gramática.
+- **Medido en "¿quién es jesús?" (NT, tablero TA2):** 1.012 esqueletos y 52 pares de parientes. Hay parientes buenos de
+  verdad ("piedad de ~ compasión de", "de nuestro señor ~ de cristo", "les dijo ~ dijo", "sus ~ los") y ruido
+  (", ~ dijo", "de ~ a"). El ruido comparte poco y casi no gana. En una lectura de pocos renglones cambia una forma
+  por respuesta: hacen falta más pares.
+- **Controles:** de 12, 10 respuestas idénticas. Los otros 2 párrafos cambian porque ahora quitan lo no comprobado.
+- **Lo que falta:** los parientes de estructura en la biblioteca, sumados entre libros como las familias, para que la
+  variación crezca con lo leído; y agregar (traer lo que se sabe del mueble con que termina un hecho).

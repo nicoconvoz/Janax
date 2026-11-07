@@ -348,6 +348,35 @@ FT6   = 55A8h
 FT7   = 55B0h
 FT8   = 55B8h
 FT9   = 55C0h
+SKC   = 5600h                   ; equivalent structures: (skeleton, ends) seen, by pair its skeletons' list, by skeleton
+SKG   = 5620h                   ; its pairs, by two skeletons the pairs in common {key, a, b, shared}, what was said;
+SKN   = 5640h                   ; the lists; walking, the fact, its skeleton, its ends; the lottery (its pairs, the
+SKP   = 5660h                   ; shares, the pass, the place); its first word said, where the last ended, the first of
+SKD   = 5680h                   ; a span, from where, to where; a walk said or silent
+SKL   = 56A0h
+SKLN  = 56A8h
+SKU   = 56B0h
+SKF   = 56B8h
+SKS   = 56C0h
+SK2   = 56C8h
+SK3   = 56D0h
+SK4   = 56D8h
+SK5   = 56E0h
+SK6   = 56E8h
+SK7   = 56F0h
+SK8   = 56F8h
+SK9   = 5700h
+SKO   = 5708h
+SKNS  = 5710h
+SKW   = 5718h
+SKM   = 5720h
+SKR   = 5728h
+SKH   = 5730h
+SKE   = 5738h
+SKBF  = 5740h
+SKFR  = 5748h
+SKT   = 5750h
+SKQ   = 5758h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -5944,6 +5973,7 @@ qpn_kinds:
   jst j2, j1, QPN
   jst j1, j1, QPI
   jcall qp_glues
+  jcall sk_scan
   qpc_lap:                      ; each clause: a kind not said yet, by the seed's lottery over their votes
     jldi j1, 0
     jld j2, j1, QPI
@@ -6227,7 +6257,32 @@ qp_clause:
   jldi j2, TSN
   jcall pl_take
   jldi j1, 0
-  jjnz j6, qpcl_new
+  jjnz j6, qpcl_fresh
+  jret
+qpcl_fresh:
+  jldi j1, 0                    ; (nor what a span already said)
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jst j9, j1, SKF
+  jld j2, j9, 0
+  jcall tok_at
+  jst j2, j1, SK3
+  jld j9, j1, SKF
+  jld j2, j9, 8
+  jcall tok_at
+  jst j2, j1, SK4
+  jld j9, j1, SKF
+  jld j2, j9, 16
+  jld j3, j1, SK3
+  jcall sk_hash
+  jadd j2, j5, j1
+  jld j3, j1, SK4
+  jcall sk_hash
+  jldi j2, SKD
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, qpcl_new
   jret
 qpcl_new:
   jld j2, j1, QPI
@@ -6286,20 +6341,13 @@ qpcl_mid2:
   jldi j2, 32
   jcall putch
 qpcl_body:
-  jldi j1, 0
+  jldi j1, 0                    ; its fact, the way its seed chooses
   jld j9, j1, QPA
   jld j9, j9, 16
-  jld j5, j9, 16
-  jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
-  jadd j12, j4, j1
-  jcall put_plain
-  jld j9, j1, QPA
-  jld j9, j9, 16
-  jld j2, j9, 8
-  jcall tok_at
-  jcall putword
+  jst j9, j1, SKF
+  jldi j2, 1
+  jst j2, j1, SKH
+  jcall sk_say
   jcall qp_rest                 ; and what it says there, to the end of its building
   jldi j1, 0
   jld j2, j1, QPI
@@ -6324,9 +6372,7 @@ qp_rest:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, QPRP
-  jldi j2, 32                   ; (after the fact's last word)
-  jcall putch
-  jcall qr_walk                 ; to its limit
+  jcall qr_span                 ; to its limit, each fact in its building said in Razar's own way
   jldi j1, 0
   jld j2, j1, QPRL
   jjz j2, qr_done
@@ -6359,7 +6405,12 @@ qp_rest:
     jcall put_glue
     jjmp qr_skip
   qr_said:
-  jcall qr_walk
+  jldi j1, 0                    ; (what it announces starts fresh: its first word said)
+  jld j2, j1, QPRP
+  jldi j3, 1
+  jsub j2, j2, j3
+  jst j2, j1, SKE
+  jcall qr_span
 qr_done:
   jldi j1, 0                    ; (the line ends on a word: the next glue brings its own space)
   jld j2, j1, POS
@@ -6375,7 +6426,24 @@ qr_out:
   jldi j1, 0
   jret
 
-; From place QPRP, every unit said (a mark against the word before) until a limit: QPRL that limit (0: the end of
+; From place QPRP to the limit of its building (qr_walk in silence), the facts there said in Razar's own way, from
+; where the last one ended (SKE). Uses j1-j14.
+qr_span:
+  jldi j1, 0
+  jld j2, j1, SKE
+  jst j2, j1, SKFR
+  jldi j2, 1
+  jst j2, j1, SKQ
+  jcall qr_walk
+  jldi j1, 0
+  jst j1, j1, SKQ
+  jld j2, j1, QPRP
+  jst j2, j1, SKT
+  jcall sk_span
+  jldi j1, 0
+  jret
+
+; From place QPRP, every unit said (a mark against the word before) until a limit (SKQ 1: in silence): QPRL that limit (0: the end of
 ; the reading), QPRP its place. A renglon's end is no limit. Uses j1-j14.
 qr_walk:
   jldi j1, 0
@@ -6401,6 +6469,8 @@ qr_walk:
     jst j2, j1, QPRL
     jjmp qrw_done
   qrw_say:
+    jld j2, j1, SKQ
+    jjnz j2, qrw_next
     jld j2, j1, QPRW
     jcall put_glue
   qrw_next:
@@ -6452,6 +6522,495 @@ qr_arrow:
 qra_no:
   jldi j1, 0
   jldi j2, 0
+  jret
+
+; Equivalent structures (Capitan, 2026-11-07: "no copy and paste of pieces of sentences: let Razar process the sentence
+; and give an equivalent, or tell whether it goes or not, or add or take something; one that it thought; it may even
+; vary the way of saying it from the original, and there is the grace"). Two skeletons are kin by the share of the
+; pairs of furniture they join in common (shared over what either joins), as the instructions' families are by their
+; contexts: "_ le dijo a _" and "_ le respondió a _" join the same people. Counted from the reading's facts (GFL): SKN
+; by skeleton {key, its pairs}, SKP by two of them {key, a, b, shared}; a pair once per skeleton (SKC), by pair the
+; list of its skeletons (SKG, SKL). Uses j1-j14.
+sk_scan:
+  jldi j2, SKC
+  jldi j3, 8
+  jcall pl_new
+  jldi j2, SKG
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, SKN
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, SKP
+  jldi j3, 32
+  jcall pl_new
+  jldi j2, SKD
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, GFN              ; the lists {skeleton, next}, one a fact at most
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SKL
+  jldi j2, 1
+  jst j2, j1, SKLN
+  jst j1, j1, SKU
+  sks_lap:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, sks_pairs
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jst j9, j1, SKF
+    jld j2, j9, 16
+    jst j2, j1, SKS
+    jld j2, j9, 0
+    jcall tok_at
+    jst j2, j1, SK3
+    jld j9, j1, SKF
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, SK4
+    jld j2, j1, SKS               ; (skeleton, its ends) once
+    jld j3, j1, SK3
+    jcall sk_hash
+    jadd j2, j5, j1
+    jld j3, j1, SK4
+    jcall sk_hash
+    jldi j2, SKC
+    jcall pl_take
+    jldi j1, 0
+    jjz j6, sks_next
+    jld j5, j1, SKS               ; its pairs, one more
+    jldi j2, SKN
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j1, SK3               ; and into its pair's list
+    jld j3, j1, SK4
+    jcall sk_hash
+    jldi j2, SKG
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j1, SKLN
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j5, j1, SKL
+    jadd j3, j3, j5
+    jld j5, j1, SKS
+    jst j5, j3, 0
+    jld j5, j4, 8
+    jst j5, j3, 8
+    jst j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SKLN
+  sks_next:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SKU
+    jjmp sks_lap
+sks_pairs:                      ; each pair: every two skeletons of its list share it
+  jld j9, j1, SKG
+  jld j10, j1, SKG + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  skp_lap:
+    jldi j1, 0
+    jjz j10, skp_done
+    jld j2, j9, 0
+    jjz j2, skp_next
+    jst j9, j1, SK5
+    jst j10, j1, SK6
+    jld j7, j9, 8
+    skp_a:
+      jldi j1, 0
+      jjz j7, skp_back
+      jst j7, j1, SK7
+      jldi j3, 4
+      jshl j3, j7, j3
+      jld j4, j1, SKL
+      jadd j3, j3, j4
+      jld j2, j3, 0
+      jst j2, j1, SK2
+      jld j8, j3, 8
+      skp_b:
+        jldi j1, 0
+        jjz j8, skp_anext
+        jst j8, j1, SK8
+        jldi j3, 4
+        jshl j3, j8, j3
+        jld j4, j1, SKL
+        jadd j3, j3, j4
+        jld j3, j3, 0
+        jld j2, j1, SK2
+        jcall sk_share
+        jldi j1, 0
+        jld j8, j1, SK8
+        jldi j3, 4
+        jshl j3, j8, j3
+        jld j4, j1, SKL
+        jadd j3, j3, j4
+        jld j8, j3, 8
+        jjmp skp_b
+    skp_anext:
+      jldi j1, 0
+      jld j7, j1, SK7
+      jldi j3, 4
+      jshl j3, j7, j3
+      jld j4, j1, SKL
+      jadd j3, j3, j4
+      jld j7, j3, 8
+      jjmp skp_a
+  skp_back:
+    jldi j1, 0
+    jld j9, j1, SK5
+    jld j10, j1, SK6
+  skp_next:
+    jld j2, j1, SKG + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp skp_lap
+skp_done:
+  jldi j1, 0
+  jret
+
+; Skeletons j2 and j3 join one more pair in common. Uses j1-j8.
+sk_share:
+  jldi j1, 0
+  jsub j5, j2, j3               ; (the smaller first)
+  jjz j5, skh_done
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, skh_ord
+  jadd j5, j2, j1
+  jadd j2, j3, j1
+  jadd j3, j5, j1
+skh_ord:
+  jst j2, j1, SK9
+  jst j3, j1, SKO
+  jcall sk_hash
+  jldi j2, SKP
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, SK9
+  jst j2, j4, 8
+  jld j2, j1, SKO
+  jst j2, j4, 16
+  jld j2, j4, 24
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 24
+skh_done:
+  jldi j1, 0
+  jret
+
+; j2 folded with j3 -> j5 (never 0, a key). Uses j1, j5, j6.
+sk_hash:
+  jldi j1, 0
+  jld j6, j1, FNVP
+  jmul j5, j2, j6
+  jxor j5, j5, j3
+  jmul j5, j5, j6
+  jjnz j5, skx_done
+  jldi j5, 1
+skx_done:
+  jret
+
+; The way skeleton SKS is said, chosen (-> SKS): itself or one of its kin, by the seed's lottery over their shares
+; (itself a whole, 1000; a kin the share of their pairs in common, when they share two at least: the anecdote rule).
+; Uses j1-j14.
+sk_pick:
+  jldi j1, 0
+  jld j5, j1, SKS
+  jldi j2, SKN
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 8
+  jst j2, j1, SKNS
+  jldi j2, 1000
+  jst j2, j1, SKW
+  jst j1, j1, SKM               ; (0: the shares summed; 1: the one chosen)
+skk_pass:
+  jldi j1, 0
+  jld j9, j1, SKP
+  jld j10, j1, SKP + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  skk_lap:
+    jldi j1, 0
+    jjz j10, skk_end
+    jld j2, j9, 0
+    jjz j2, skk_next
+    jld j2, j9, 24
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, skk_next
+    jld j4, j1, SKS
+    jld j3, j9, 8
+    jsub j5, j3, j4
+    jjz j5, skk_b
+    jld j3, j9, 16
+    jsub j5, j3, j4
+    jjz j5, skk_a
+    jjmp skk_next
+  skk_b:
+    jld j3, j9, 16
+    jjmp skk_have
+  skk_a:
+    jld j3, j9, 8
+  skk_have:
+    jst j3, j1, SKO
+    jst j9, j1, SK5
+    jst j10, j1, SK6
+    jadd j5, j3, j1
+    jldi j2, SKN
+    jcall pl_find
+    jldi j1, 0
+    jld j3, j4, 8
+    jld j2, j1, SKNS
+    jadd j3, j3, j2
+    jld j9, j1, SK5
+    jld j10, j1, SK6
+    jld j2, j9, 24
+    jsub j3, j3, j2
+    jjz j3, skk_next
+    jldi j4, 1000
+    jmul j2, j2, j4
+    jdiv j2, j2, j3
+    jld j3, j1, SKM
+    jjnz j3, skk_take
+    jld j3, j1, SKW
+    jadd j3, j3, j2
+    jst j3, j1, SKW
+    jjmp skk_next
+  skk_take:
+    jld j3, j1, SKR
+    jsub j3, j3, j2
+    jst j3, j1, SKR
+    jldi j4, 63
+    jsar j4, j3, j4
+    jjz j4, skk_next
+    jld j2, j1, SKO
+    jst j2, j1, SKS
+    jldi j1, 0
+    jret
+  skk_next:
+    jld j2, j1, SKP + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp skk_lap
+skk_end:
+  jld j2, j1, SKM
+  jjnz j2, skk_out
+  jcall th_rand
+  jldi j1, 0
+  jldi j3, 1
+  jshr j2, j2, j3
+  jld j3, j1, SKW
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j2, j2, j4
+  jldi j3, 1000                 ; itself, or the kin its place falls on
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j4, j3, j4
+  jjnz j4, skk_out
+  jst j3, j1, SKR
+  jldi j2, 1
+  jst j2, j1, SKM
+  jjmp skk_pass
+skk_out:
+  jldi j1, 0
+  jret
+
+; The fact at SKF said in Razar's own way (j2 = 1), or not said when it was already (j2 = 0): what it says once it
+; does not say twice. Its first word unless it is said already (SKH 1), it is where the last fact ended (they chain)
+; or it is the subject again (it goes tacit); a short gap from the last (three units at most) with its own glue, a
+; longer one with the joiner; then the way of its skeleton the seed chooses, and its last word. SKE where it ends.
+; Uses j1-j14.
+sk_say:
+  jldi j1, 0
+  jld j9, j1, SKF
+  jld j2, j9, 0
+  jcall tok_at
+  jst j2, j1, SK3
+  jld j9, j1, SKF
+  jld j2, j9, 8
+  jcall tok_at
+  jst j2, j1, SK4
+  jld j9, j1, SKF
+  jld j2, j9, 16
+  jst j2, j1, SKS
+  jld j3, j1, SK3
+  jcall sk_hash
+  jadd j2, j5, j1
+  jld j3, j1, SK4
+  jcall sk_hash
+  jldi j2, SKD
+  jcall pl_take
+  jldi j1, 0
+  jjnz j6, sky_new
+  jldi j2, 0
+  jret
+sky_new:
+  jld j2, j1, SKH
+  jjnz j2, sky_mid
+  jld j9, j1, SKF
+  jld j2, j9, 0
+  jld j3, j1, SKE
+  jsub j4, j2, j3
+  jjz j4, sky_mid               ; chained
+  jldi j5, 1
+  jsub j4, j4, j5               ; the units between
+  jjz j4, sky_word
+  jldi j5, 4
+  jsub j5, j4, j5
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjz j5, sky_join
+  jadd j3, j3, j1
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j1, SKU
+  sky_gap:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jld j9, j1, SKF
+    jld j3, j9, 0
+    jsub j3, j2, j3
+    jjz j3, sky_word
+    jcall tok_at
+    jjz j2, sky_gnext
+    jcall put_glue
+  sky_gnext:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SKU
+    jjmp sky_gap
+sky_join:
+  jld j2, j1, QPG
+  jjz j2, sky_word
+  jcall put_glue
+sky_word:
+  jldi j1, 0
+  jld j2, j1, SK3
+  jld j3, j1, QCW
+  jsub j3, j2, j3
+  jjz j3, sky_mid               ; the subject again: tacit
+  jcall put_glue
+sky_mid:
+  jcall sk_pick
+  jldi j1, 0
+  jld j5, j1, SKS
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jadd j12, j4, j1
+  jcall put_plain
+  jldi j1, 0
+  jld j2, j1, SK4
+  jcall put_glue
+  jldi j1, 0
+  jld j9, j1, SKF
+  jld j2, j9, 8
+  jst j2, j1, SKE
+  jldi j2, 1
+  jret
+
+; Of the facts that start at SKFR or after and end before SKT, in the book's order, each said in Razar's own way
+; (sk_say): the first (the shortest of those that start first), and on from where it ended; one it had said already
+; is left, and the next is looked for past where it starts. Uses j1-j14.
+sk_span:
+  jldi j1, 0
+  jst j1, j1, SKBF
+  jst j1, j1, SKU
+  skn_scan:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, skn_have
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jld j2, j9, 0
+    jld j3, j1, SKT
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, skn_have            ; (in order: the rest start at the limit or after)
+    jld j3, j1, SKFR
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, skn_next
+    jld j2, j9, 8
+    jld j3, j1, SKT
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, skn_next
+    jld j8, j1, SKBF
+    jjz j8, skn_take
+    jld j2, j9, 0
+    jld j3, j8, 0
+    jsub j4, j2, j3
+    jjnz j4, skn_next           ; (a later start: the first is kept)
+    jld j2, j9, 8
+    jld j3, j8, 8
+    jsub j4, j2, j3
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, skn_next
+  skn_take:
+    jst j9, j1, SKBF
+  skn_next:
+    jldi j1, 0
+    jld j2, j1, SKU
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SKU
+    jjmp skn_scan
+skn_have:
+  jld j2, j1, SKBF
+  jjz j2, skn_done
+  jst j2, j1, SKF
+  jst j1, j1, SKH
+  jcall sk_say
+  jldi j1, 0
+  jjz j2, skn_left
+  jld j2, j1, SKE
+  jst j2, j1, SKFR
+  jjmp sk_span
+skn_left:
+  jld j9, j1, SKF
+  jld j2, j9, 0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, SKFR
+  jjmp sk_span
+skn_done:
   jret
 
 ; The joiners it chains with (what joins is what turns: "pan y vino" is "vino y pan"): of the units whose "_ u _" (one
