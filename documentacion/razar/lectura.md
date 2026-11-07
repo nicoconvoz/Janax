@@ -2971,3 +2971,24 @@ El Capitán: *"guardá los manuales"*.
   pregunta, pesadas por palabras.
 - **Lo que falta entender:** cuándo dos grupos son el mismo idioma. Los pedazos del castellano se tocan muchísimo
   entre sí, y el castellano con el código casi nada. Esa diferencia está medida en el grafo y no la estamos usando.
+
+## Un libro, un idioma: los idiomas se agrupan entre libros (2026-11-07)
+
+El Capitán: *"cada libro habla un idioma; varios libros sí pueden hablar idiomas distintos; a veces mezclan, pero es
+raro"*.
+
+- **Al comer**, cada índice guarda al final el vocabulario de base de su libro (`vc_base`): las palabras más dichas
+  que, juntas, son la mitad de sus palabras (los signos no, porque los comparten todos). Termina con su marca
+  ("vocabula").
+- **Al preguntar**, `lg_scan` lee el vocabulario de cada libro y calcula lo que comparten cada dos (lo común sobre lo
+  que tiene cualquiera de los dos). Después, cada libro toma el idioma que más pesa entre los libros con los que
+  comparte, hasta que ninguno cambia (el mismo algoritmo de vecinas, pero entre libros). Antes se exigía que dos
+  libros se eligieran mutuamente, y eso dejaba islas de a dos (37 grupos).
+- El idioma de la pregunta es el que más palabras de la caminata tiene en el vocabulario de sus libros, y la caminata
+  lee sólo los libros de ese idioma (`lg_ok`). Un índice viejo, sin vocabulario, se lee siempre.
+- **Medido en una copia de la biblioteca real, re-comida:**
+  - grupos: el código Janax (`.jsm`, `.inc`), los datos (`.datos.jsm`), los mapas de nombres de DEDYA, y el
+    castellano (Nuevo Testamento, documentación, `ciencia+`, las cartas). Los dos archivos de Steam cayeron en el
+    castellano: la documentación, que mezcla castellano y términos en inglés, hace de puente;
+  - "¿quién es pedro?": 368 flechas, y el párrafo habla de Pedro;
+  - controles idénticos.

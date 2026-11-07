@@ -150,6 +150,14 @@ DERT  = 7100h                   ; sweeping: the names the indexes give {key} (a 
 SWI   = 7120h                   ; how many left, a book's print unsalted
 SWN   = 7128h
 SWK   = 7130h
+VCP   = 7140h                   ; the base vocabulary: its prints, how many; the words' units, the most a word is
+VCN   = 7148h                   ; said, half the units, the threshold searched (low, high, middle)
+VCT   = 7150h
+VCM   = 7158h
+VCH   = 7160h
+VCLO  = 7168h
+VCHI  = 7170h
+VCMD  = 7178h
 ZALPH = 7000h                   ; the letters, by number (256 bytes)
 PTHP  = 6000h                   ; the address: where its bytes are (a room that doubles while "come" has more), the
 PTHC  = 6008h                   ; bytes it holds, the request that reads it
@@ -491,6 +499,7 @@ jldi j2, 1
 jst j2, j1, OUTR
 jcall clue_walk
 
+jcall vc_base                   ; its base vocabulary, while it still has its letters (its language)
 jcall hide_words                ; every word as its print, never its letters
 jldi j1, 0                      ; every word, in the order of its letters (merge sort, from runs of one)
 jld j2, j1, NV
@@ -1038,6 +1047,12 @@ jldi j1, 0
 jld j11, j1, ZOQ
 jld j2, j1, ZQL
 jadd j11, j11, j2
+jld j2, j1, VCN                 ; (and at its end, its base vocabulary: the prints, how many, and its mark)
+jldi j3, 3
+jshl j2, j2, j3
+jadd j11, j11, j2
+jldi j2, 16
+jadd j11, j11, j2
 jst j11, j1, ZTOT
 jcall room
 jldi j1, 0
@@ -1259,6 +1274,33 @@ jcall zs_copy
 jldi j1, 0
 jldi j2, PLABN
 jst j2, j1, ZLABN
+jld j9, j1, OUTR                ; its base vocabulary, at its end
+jld j2, j1, ZTOT
+jadd j9, j9, j2
+jldi j2, 16
+jsub j9, j9, j2
+jld j2, j1, VCN
+jst j2, j9, 0
+jldi j2, 0                      ; (its mark: "vocabula")
+jshi j2, 7663h
+jshi j2, 6162h
+jshi j2, 756Ch
+jshi j2, 6176h
+jst j2, j9, 8
+jld j10, j1, VCN
+jldi j2, 3
+jshl j10, j10, j2
+jsub j9, j9, j10
+jld j11, j1, VCP
+jwhile j10
+  jld j2, j11, 0
+  jst j2, j9, 0
+  jldi j2, 8
+  jadd j9, j9, j2
+  jadd j11, j11, j2
+  jsub j10, j10, j2
+jwend
+jldi j1, 0
 jld j2, j1, OUTR
 jld j3, j1, ZTOT
 jcall zw_write
@@ -2000,6 +2042,199 @@ swp_is13:
   jld j3, j1, SWI
   jldi j5, 13
   jjmp swi_lap
+
+; The book's base vocabulary (Capitan, 2026-11-07: "the Steam one speaks English: other rules; rules by language"):
+; the words it says the most that, together, make half of its words (marks are no words: every language shares
+; them). Its language is what it shares with other books (pistas.inc: lg_scan), never a list of languages. Their prints
+; (as the library keeps a word: pz_printraw) at VCP, VCN of them. Uses j1-j14.
+vc_base:
+  jldi j1, 0
+  jst j1, j1, VCN
+  jst j1, j1, VCT                ; (its words' units, and the most a word is said)
+  jst j1, j1, VCM
+  jldi j9, 1
+  vcb_sum:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, vcb_summed
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, vcb_snext
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, OCC
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j1, VCT
+    jadd j4, j4, j3
+    jst j4, j1, VCT
+    jld j4, j1, VCM
+    jsub j4, j4, j3
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, vcb_snext
+    jst j3, j1, VCM
+  vcb_snext:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp vcb_sum
+vcb_summed:
+  jld j2, j1, VCT                ; half of them, rounded up
+  jldi j3, 1
+  jadd j2, j2, j3
+  jshr j2, j2, j3
+  jst j2, j1, VCH
+  jjz j2, vcb_done
+  jldi j2, 1                     ; the threshold: the most times T such that the words said T times or more make half
+  jst j2, j1, VCLO
+  jld j2, j1, VCM
+  jst j2, j1, VCHI
+  vcb_half:
+    jldi j1, 0
+    jld j2, j1, VCLO
+    jld j3, j1, VCHI
+    jsub j4, j3, j2
+    jjz j4, vcb_found
+    jadd j2, j2, j3
+    jldi j4, 1
+    jadd j2, j2, j4
+    jshr j2, j2, j4
+    jst j2, j1, VCMD
+    jcall vc_from
+    jldi j1, 0
+    jld j3, j1, VCH
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, vcb_low
+    jld j2, j1, VCMD
+    jst j2, j1, VCLO
+    jjmp vcb_half
+  vcb_low:
+    jld j2, j1, VCMD
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, VCHI
+    jjmp vcb_half
+vcb_found:
+  jld j2, j1, VCLO
+  jst j2, j1, VCMD
+  jcall vc_from                 ; how many words
+  jldi j1, 0
+  jld j11, j1, VCN
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, VCP
+  jst j1, j1, VCN
+  jldi j9, 1                    ; their prints
+  vcb_put:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, vcb_done
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, vcb_pnext
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, OCC
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jld j5, j1, VCMD
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, vcb_pnext
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j3, 16
+    jld j3, j3, 8
+    jld j7, j1, ROOMA
+    jadd j3, j3, j7
+  jldi j5, 0
+  jshi j5, 0CBF2h
+  jshi j5, 9CE4h
+  jshi j5, 8422h
+  jshi j5, 2325h
+  jldi j6, 0
+  jshi j6, 100h
+  jshi j6, 0
+  jshi j6, 1B3h
+    vcb_letter:
+      jjz j4, vcb_print
+      jldb j7, j3, 0
+      jxor j5, j5, j7
+      jmul j5, j5, j6
+      jldi j7, 1
+      jadd j3, j3, j7
+      jsub j4, j4, j7
+      jjmp vcb_letter
+  vcb_print:
+    jjnz j5, vcb_pk
+    jldi j5, 1
+  vcb_pk:
+    jld j2, j1, VCN
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, VCP
+    jadd j3, j3, j4
+    jst j5, j3, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, VCN
+  vcb_pnext:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp vcb_put
+vcb_done:
+  jldi j1, 0
+  jret
+
+; The words said VCMD times or more (not marks): their units -> j2, how many -> VCN. Uses j1-j9.
+vc_from:
+  jldi j1, 0
+  jst j1, j1, VCN
+  jldi j8, 0
+  jldi j9, 1
+  vcf_lap:
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, vcf_done
+    jadd j2, j9, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, vcf_next
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, OCC
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j1, VCMD
+    jsub j4, j3, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, vcf_next
+    jadd j8, j8, j3
+    jld j4, j1, VCN
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j1, VCN
+  vcf_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp vcf_lap
+vcf_done:
+  jadd j2, j8, j1
+  jret
 
 ; The name of the bytes SWK salted j2, (SWK ^ j2) * FNV's prime, noted as one an index gives (DERT). Uses j1-j8.
 swp_name:

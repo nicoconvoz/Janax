@@ -65,6 +65,22 @@ PZX   = 1AC8h
 PZEV  = 3100h                   ; the silhouettes of the word just read: its house verdict, its buildings, its limits
 PZEB  = 3108h
 PZEK  = 3110h
+LGR   = 3420h                   ; languages: the books' records, how many, the language chosen, by language its words;
+LGN   = 3428h                   ; walking
+LGQ   = 3430h
+LGS   = 3438h
+LGT1  = 3440h
+LGT2  = 3448h
+LGT3  = 3450h
+LGT4  = 3458h
+LGT5  = 3460h
+LGT6  = 3468h
+LGT7  = 3470h
+LGT8  = 3478h
+LGM   = 3480h                   ; every two books' share; by language a weight; changed in a pass; passes
+LGW   = 3488h
+LGC   = 3490h
+LGP   = 3498h
 PZRD  = 3400h                   ; the books this round read again (by their bytes' print {key}): their rules read it
 PZWL  = 3120h                   ; the silhouettes summed over the library: by word and limit how many of its buildings
 PZLG  = 3140h                   ; that limit closes {key, count}; by limit {its print, the buildings it closes, -}; all
@@ -215,6 +231,7 @@ clue_round:
   jcall pz_out
   jjmp cr_close
 cr_walk:
+  jcall lg_scan                 ; (the languages first: the walk reads only the books of its own)
   jldi j2, PZRD
   jldi j3, 8
   jcall pl_new
@@ -245,6 +262,8 @@ cr_walk:
     jadd j11, j11, j2
     jld j12, j9, 0
     jcall pz_file
+    jcall lg_ok
+    jjz j2, cw_skip
     jcall pz_read
   cw_skip:
     jldi j1, 0
@@ -385,6 +404,536 @@ lgp_have:
   jld j5, j1, LNY
 lgp_done:
   jldi j1, 0
+  jret
+
+; The languages of the library (Capitan, 2026-11-07: "the Steam one speaks English: other rules; rules by
+; language"). Each book's base vocabulary comes in its index (comer.jsm, vc_base). Two books speak the same language
+; when each is the other's closest by the share of their base vocabularies in common (both choose each other: a chain
+; of near ones would join every book, as the families did); a language is what is joined so. The walk's words choose
+; the language of this reading: the one whose books' vocabularies hold the most of them. Records at LGR, LGN of them,
+; each {its book's print, its vocabulary, how many, its root, its closest, the share} (48 bytes); LGQ the language
+; chosen (its root; -1 none). Uses j1-j14.
+lg_scan:
+  jldi j1, 0
+  jldi j2, -1
+  jst j2, j1, LGQ
+  jst j1, j1, LGN
+  jld j11, j1, PZLSTN
+  jldi j2, 48
+  jmul j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LGR
+  jld j9, j1, PZLST
+  jld j10, j1, PZLSTN
+  jst j9, j1, LGT1
+  jst j10, j1, LGT2
+  lgs_nest:
+    jldi j1, 0
+    jld j10, j1, LGT2
+    jjz j10, lgs_near
+    jld j9, j1, LGT1
+    jcall pz_nest
+    jjz j2, lgs_next
+    jld j9, j1, LGT1
+    jldi j11, 8
+    jadd j11, j9, j11
+    jld j12, j9, 0
+    jcall pz_file
+    jcall lg_vocab
+  lgs_next:
+    jldi j1, 0
+    jld j9, j1, LGT1
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jst j9, j1, LGT1
+    jld j10, j1, LGT2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jst j10, j1, LGT2
+    jjmp lgs_nest
+lgs_near:                       ; every two books' share, once (LGM, by two of them)
+  jld j11, j1, LGN
+  jmul j11, j11, j11
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LGM
+  jld j11, j1, LGN
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LGW
+  jst j1, j1, LGT3
+  lgn_i:
+    jldi j1, 0
+    jld j2, j1, LGT3
+    jld j3, j1, LGN
+    jsub j3, j2, j3
+    jjz j3, lgs_cw
+    jst j1, j1, LGT4
+    lgn_j:
+      jldi j1, 0
+      jld j2, j1, LGT4
+      jld j3, j1, LGN
+      jsub j3, j2, j3
+      jjz j3, lgn_inext
+      jld j3, j1, LGT3
+      jsub j3, j2, j3
+      jjz j3, lgn_jnext
+      jcall lg_share
+      jldi j1, 0
+      jld j3, j1, LGT3
+      jld j4, j1, LGN
+      jmul j3, j3, j4
+      jld j4, j1, LGT4
+      jadd j3, j3, j4
+      jldi j4, 3
+      jshl j3, j3, j4
+      jld j4, j1, LGM
+      jadd j3, j3, j4
+      jst j2, j3, 0
+    lgn_jnext:
+      jldi j1, 0
+      jld j2, j1, LGT4
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, LGT4
+      jjmp lgn_j
+  lgn_inext:
+    jld j2, j1, LGT3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LGT3
+    jjmp lgn_i
+lgs_cw:                         ; each book takes the language that weighs the most among the books it shares with
+  jst j1, j1, LGP               ; (Chinese Whispers over books: a book speaks one language), until none changes
+  lgc_pass:
+    jldi j1, 0
+    jst j1, j1, LGC
+    jst j1, j1, LGT3
+    lgc_i:
+      jldi j1, 0
+      jld j2, j1, LGT3
+      jld j3, j1, LGN
+      jsub j3, j2, j3
+      jjz j3, lgc_passed
+      jldi j9, 0                ; (its neighbours' weights by language, at LGW)
+      lgc_j:
+        jld j3, j1, LGN
+        jsub j3, j9, j3
+        jjz j3, lgc_best
+        jld j2, j1, LGT3
+        jld j4, j1, LGN
+        jmul j2, j2, j4
+        jadd j2, j2, j9
+        jldi j4, 3
+        jshl j2, j2, j4
+        jld j4, j1, LGM
+        jadd j2, j2, j4
+        jld j5, j2, 0
+        jjz j5, lgc_jnext
+        jldi j4, 48
+        jmul j4, j9, j4
+        jld j6, j1, LGR
+        jadd j4, j4, j6
+        jld j4, j4, 24
+        jldi j6, 3
+        jshl j4, j4, j6
+        jld j6, j1, LGW
+        jadd j4, j4, j6
+        jld j6, j4, 0
+        jadd j6, j6, j5
+        jst j6, j4, 0
+      lgc_jnext:
+        jldi j2, 1
+        jadd j9, j9, j2
+        jjmp lgc_j
+    lgc_best:
+      jldi j9, 0                ; (the most, the smaller of equals; LGW back to 0)
+      jldi j11, 0
+      jldi j12, -1
+      lgc_b:
+        jld j3, j1, LGN
+        jsub j3, j9, j3
+        jjz j3, lgc_have
+        jldi j3, 3
+        jshl j3, j9, j3
+        jld j4, j1, LGW
+        jadd j3, j3, j4
+        jld j4, j3, 0
+        jst j1, j3, 0
+        jsub j5, j11, j4
+        jldi j6, 63
+        jsar j5, j5, j6
+        jjz j5, lgc_bnext
+        jadd j11, j4, j1
+        jadd j12, j9, j1
+      lgc_bnext:
+        jldi j2, 1
+        jadd j9, j9, j2
+        jjmp lgc_b
+    lgc_have:
+      jldi j3, 63
+      jsar j3, j12, j3
+      jjnz j3, lgc_inext        ; (it shares with none: its own)
+      jld j2, j1, LGT3
+      jldi j3, 48
+      jmul j3, j2, j3
+      jld j4, j1, LGR
+      jadd j3, j3, j4
+      jld j4, j3, 24
+      jsub j4, j4, j12
+      jjz j4, lgc_inext
+      jst j12, j3, 24
+      jld j2, j1, LGC
+      jldi j4, 1
+      jadd j2, j2, j4
+      jst j2, j1, LGC
+    lgc_inext:
+      jldi j1, 0
+      jld j2, j1, LGT3
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, LGT3
+      jjmp lgc_i
+  lgc_passed:
+    jld j2, j1, LGP
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LGP
+    jld j3, j1, LGC
+    jjz j3, lgs_ask
+    jld j3, j1, LGN             ; (never more passes than books)
+    jsub j3, j2, j3
+    jjnz j3, lgc_pass
+lgs_ask:                        ; the walk's words: each language, how many of them its books' vocabularies hold
+  jld j11, j1, LGN
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LGS              ; by root {how many words, the last word counted}
+  jld j2, j1, PZCAM
+  jst j2, j1, LGT1
+  jst j2, j1, LGT6              ; (where the word walked starts)
+  jld j2, j1, PZCAMN
+  jst j2, j1, LGT2
+  jst j1, j1, LGT7              ; (its number)
+  lga_byte:
+    jldi j1, 0
+    jld j2, j1, LGT2
+    jjz j2, lga_pick
+    jld j9, j1, LGT1
+    jldb j3, j9, 0
+    jldi j4, 1
+    jadd j9, j9, j4
+    jst j9, j1, LGT1
+    jsub j2, j2, j4
+    jst j2, j1, LGT2
+    jldi j4, 10
+    jsub j3, j3, j4
+    jjnz j3, lga_byte
+    jld j3, j1, LGT6            ; a word: its print
+    jsub j4, j9, j3
+    jldi j5, 1
+    jsub j4, j4, j5
+    jst j9, j1, LGT6
+    jjz j4, lga_byte
+    jcall pz_printraw
+    jldi j1, 0
+    jst j5, j1, LGT8
+    jld j2, j1, LGT7
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LGT7
+    jcall lg_word
+    jjmp lga_byte
+lga_pick:
+  jldi j2, -1
+  jst j2, j1, LGQ
+  jldi j11, 0
+  jldi j9, 0
+  jld j10, j1, LGN
+  lgp_lap:
+    jjz j10, lgs_done
+    jldi j3, 4
+    jshl j3, j9, j3
+    jld j4, j1, LGS
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jsub j4, j11, j3
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, lgp_next
+    jadd j11, j3, j1
+    jst j9, j1, LGQ
+  lgp_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp lgp_lap
+lgs_done:
+  jldi j1, 0
+  jret
+
+; The word of print LGT8 (number LGT7) counted once for each language whose books' vocabularies hold it. Uses j1-j14.
+lg_word:
+  jldi j1, 0
+  jldi j9, 0
+  lgw_lap:
+    jldi j1, 0
+    jld j2, j1, LGN
+    jsub j2, j9, j2
+    jjz j2, lgw_done
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j4, j1, LGR
+    jadd j3, j3, j4
+    jld j5, j3, 8
+    jld j6, j3, 16
+    jld j7, j1, LGT8
+    lgw_v:
+      jjz j6, lgw_next
+      jld j8, j5, 0
+      jsub j8, j8, j7
+      jjz j8, lgw_has
+      jldi j8, 8
+      jadd j5, j5, j8
+      jldi j8, 1
+      jsub j6, j6, j8
+      jjmp lgw_v
+  lgw_has:
+    jadd j2, j9, j1
+    jcall lg_root
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, LGS
+    jadd j3, j3, j4
+    jld j4, j3, 8
+    jld j5, j1, LGT7
+    jsub j4, j4, j5
+    jjz j4, lgw_next
+    jst j5, j3, 8
+    jld j4, j3, 0
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 0
+  lgw_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp lgw_lap
+lgw_done:
+  jldi j1, 0
+  jret
+
+; The language of record j2 -> j2. Uses j1-j4.
+lg_root:
+  jldi j1, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, LGR
+  jadd j3, j3, j4
+  jld j2, j3, 24
+  jret
+
+; The share of the vocabularies of records LGT3 and LGT4 -> j2 (1000 a whole; 0 if either has none). Uses j1-j10.
+lg_share:
+  jldi j1, 0
+  jld j2, j1, LGT3
+  jldi j3, 48
+  jmul j2, j2, j3
+  jld j4, j1, LGR
+  jadd j2, j2, j4
+  jld j5, j1, LGT4
+  jmul j5, j5, j3
+  jadd j5, j5, j4
+  jld j6, j2, 8                 ; this one's prints, how many; the other's
+  jld j7, j2, 16
+  jld j8, j5, 8
+  jld j9, j5, 16
+  jjz j7, lgsh_zero
+  jjz j9, lgsh_zero
+  jldi j10, 0                   ; (in common)
+  jst j7, j1, LGT5
+  lgsh_a:
+    jjz j7, lgsh_count
+    jld j2, j6, 0
+    jadd j3, j8, j1
+    jadd j4, j9, j1
+    lgsh_b:
+      jjz j4, lgsh_anext
+      jld j5, j3, 0
+      jsub j5, j5, j2
+      jjz j5, lgsh_hit
+      jldi j5, 8
+      jadd j3, j3, j5
+      jldi j5, 1
+      jsub j4, j4, j5
+      jjmp lgsh_b
+    lgsh_hit:
+      jldi j5, 1
+      jadd j10, j10, j5
+  lgsh_anext:
+    jldi j5, 8
+    jadd j6, j6, j5
+    jldi j5, 1
+    jsub j7, j7, j5
+    jjmp lgsh_a
+lgsh_count:
+  jjz j10, lgsh_zero
+  jld j2, j1, LGT5
+  jadd j2, j2, j9
+  jsub j2, j2, j10
+  jldi j3, 1000
+  jmul j10, j10, j3
+  jdiv j2, j10, j2
+  jret
+lgsh_zero:
+  jldi j2, 0
+  jret
+
+; The index just read (PZFR, PZFRN) as a record: its book's print and its base vocabulary (copied: the file's room is
+; the next file's), when it has one (its end: the prints, how many, its mark). Uses j1-j14.
+lg_vocab:
+  jldi j1, 0
+  jld j2, j1, PZFRN
+  jldi j3, 176
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, lgv_done
+  jld j9, j1, PZFR
+  jld j2, j9, 0
+  jldi j3, 7
+  jsub j2, j2, j3
+  jjnz j2, lgv_done
+  jld j2, j1, LGN               ; its record
+  jldi j3, 48
+  jmul j2, j2, j3
+  jld j3, j1, LGR
+  jadd j12, j2, j3
+  jld j2, j9, 152
+  jst j2, j12, 0
+  jst j1, j12, 8
+  jst j1, j12, 16
+  jld j2, j1, LGN
+  jst j2, j12, 24
+  jst j1, j12, 32
+  jst j1, j12, 40
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, LGN
+  jld j2, j1, PZFRN
+  jadd j9, j9, j2
+  jldi j2, 8
+  jsub j9, j9, j2
+  jld j2, j9, 0
+  jldi j3, 0
+  jshi j3, 7663h
+  jshi j3, 6162h
+  jshi j3, 756Ch
+  jshi j3, 6176h
+  jsub j2, j2, j3
+  jjnz j2, lgv_done
+  jldi j2, 8
+  jsub j9, j9, j2
+  jld j10, j9, 0                ; how many, inside the file
+  jldi j3, 63
+  jsar j3, j10, j3
+  jjnz j3, lgv_done
+  jldi j3, 3
+  jshl j11, j10, j3
+  jld j3, j1, PZFRN
+  jldi j4, 176
+  jsub j3, j3, j4
+  jsub j3, j3, j11
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, lgv_done
+  jsub j9, j9, j11
+  jst j9, j1, LGT5
+  jst j10, j1, LGT6
+  jst j12, j1, LGT7
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jld j12, j1, LGT7
+  jst j13, j12, 8
+  jld j10, j1, LGT6
+  jst j10, j12, 16
+  jld j9, j1, LGT5
+  lgv_copy:
+    jjz j10, lgv_done
+    jld j2, j9, 0
+    jst j2, j13, 0
+    jldi j2, 8
+    jadd j9, j9, j2
+    jadd j13, j13, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp lgv_copy
+lgv_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the index just read (PZFR) may be read again in this reading: no language chosen, a book of no known
+; vocabulary (an index of before), or a book of the language chosen. Uses j1-j8.
+lg_ok:
+  jldi j1, 0
+  jld j2, j1, LGQ
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, lgo_yes
+  jld j9, j1, PZFR
+  jld j5, j9, 152
+  jldi j6, 0
+  lgo_find:
+    jld j2, j1, LGN
+    jsub j2, j6, j2
+    jjz j2, lgo_yes
+    jldi j3, 48
+    jmul j3, j6, j3
+    jld j4, j1, LGR
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jsub j4, j4, j5
+    jjz j4, lgo_have
+    jldi j2, 1
+    jadd j6, j6, j2
+    jjmp lgo_find
+lgo_have:
+  jld j4, j3, 16
+  jjz j4, lgo_yes
+  jadd j2, j6, j1
+  jcall lg_root
+  jld j3, j1, LGQ
+  jsub j2, j2, j3
+  jjnz j2, lgo_no
+lgo_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+lgo_no:
+  jldi j1, 0
+  jldi j2, 0
   jret
 
 ; j2 = 1 if the index just read (PZIX) is of a book this round reads again (PZRD), or if the round reads none by the
