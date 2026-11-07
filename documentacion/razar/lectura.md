@@ -2080,10 +2080,30 @@ El Capitán, después de verme meterle a mano qué es una pregunta (los bytes de
 | el padre de jacob | isaac, matán | lo mismo, con o sin "quién" |
 | ¿quién fue padre de josé? | jacob | "jacob fue padre de josé" |
 | ¿qué es la verdad? | espíritu | "el espíritu es la verdad" (1 Juan 5:6) |
-| ¿de quién es hijo jacob? | mesías ❌ | el orden dado vuelta ("hijo jacob" contra "jacob, hijo de isaac") todavía no encaja |
+| ¿de quién es hijo jacob? | mesías ❌ | (antes de los enganches, abajo) |
+
+**El orden, con lógica: las palabras son instrucciones** (Capitán: *"las palabras son instrucciones escondidas, así
+que resolvé el orden con lógica"*). El encaje ya no pide que el medio esté seguido y en el mismo orden: pide que cada
+palabra del medio cumpla lo que la engancha. Todas las palabras del medio están en la pregunta. La que en el hecho
+toca al mueble, lo toca en la pregunta (de cualquier lado). La que toca al otro núcleo tiene, de algún lado, un
+**lugar libre**: una flecha, el borde de la pregunta o una pieza que no es mueble. Así "padre de isaac" ya no contesta
+"¿quién es el padre de jacob?", porque su "de" toca a "jacob", que es un mueble ocupado. Y "jacob, hijo de isaac" sí
+contesta "¿de quién es hijo jacob?", porque "hijo" toca a "jacob" y "de" toca a "quién", una flecha.
+
+| pregunta | respuesta | por qué |
+|---|---|---|
+| ¿quién es el padre de jacob? | isaac, matán | "isaac, padre de jacob" |
+| el padre de jacob | isaac, matán | lo mismo |
+| ¿de quién es hijo jacob? | isaac | "jacob, hijo de isaac" |
+| | matán | **deducido**: "padre de" dado vuelta es "hijo de" (el libro dice "matán, padre de jacob") |
+| ¿quién fue padre de josé? | jacob | "jacob fue padre de josé" |
+| ¿qué es la verdad? | espíritu | "el espíritu es la verdad" |
+| ¿de quién es padre isaac? | jacob | "isaac, padre de jacob" |
+| ¿quién es hijo de isaac? | jacob | "jacob, hijo de isaac" |
+
+Siete de siete, con su porqué.
 
 **Lo que falta:**
-- que la relación que se adapta dé vuelta el orden, como ya da vuelta "padre de" en "hijo de";
 - pasar esto a la charla, que usa la biblioteca de pistas. `sentido` lee el libro entero en cada consulta: unos 10.000
   millones de instrucciones y 12 s con estas cinco preguntas.
 

@@ -111,6 +111,15 @@ ROOMCN = 1AA8h                  ; by limit: how many buildings close with it; an
 NBLD  = 1AB0h
 AST   = 1AB8h                   ; walking the buildings: where the one walked starts, and the pass (1 vote, 2 count)
 AMODE = 1AC0h
+QBC   = 1D50h                   ; hooks: the middle's word next to the core, the one next to the other core, a place
+QBA   = 1D58h                   ; walked in the question, its neighbour, a word looked for, a side
+QPOS  = 1D60h
+QNB   = 1D68h
+QWL   = 1D70h
+QDIR  = 1D78h
+QNBD  = 1D80h                   ; q_nb: its side, the place it is at, the word there
+QNBP  = 1D88h
+QNBW  = 1D90h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -1917,131 +1926,237 @@ qt_oth2:
 qm_done:
   jret
 
-; j2 = 1 if the middle of the skeleton at j12 is said in the question right next to its core (QP), on the side the
-; core has in the fact (QSIDE: 1 right, the middle before it; 0 left, the middle after it), the marks of both aside.
-; Uses j1-j14.
+; j2 = 1 if the fact's relation fits the question as instructions (Capitan, 2026-11-07: "the words are hidden
+; instructions: solve the order with logic"). Each word of the middle says what it hooks to, and the order is not
+; asked, the hooks are: every word of the middle (its marks aside) is in the question; the one next to the core in the
+; fact is next to the core in the question, on either side; and the one next to the other core has, on a side, a free
+; place: an arrow, the question's edge, or a piece that is no furniture. A middle with an arrow in it answers nothing:
+; it says the question again. QCV: the core and the middle's words. Uses j1-j14.
 q_fit:
   jldi j13, MB1
   jcall m_collect
-  jldi j1, 0
-  jldi j3, 1                    ; (the core: one explained)
-  jst j3, j1, QCV
-  jst j2, j1, FI2               ; the middle's pieces, and the one being matched
-  jst j2, j1, FI3               ; a fact with an arrow in it answers nothing: it says the question again instead of
-  qf_arrow:                     ; filling the place the arrow points at
+  jldi j1, 0                    ; the middle's words, the marks out (in place)
+  jst j2, j1, FI3
+  jst j1, j1, FI2
+  jst j1, j1, FI4
+  qf_words:
     jldi j1, 0
-    jld j2, j1, FI3
-    jjz j2, qf_arrows
-    jldi j3, 1
-    jsub j2, j2, j3
-    jst j2, j1, FI3
+    jld j2, j1, FI4
+    jld j3, j1, FI3
+    jsub j3, j2, j3
+    jjz j3, qf_counted
     jldi j3, 3
     jshl j3, j2, j3
     jld j2, j3, MB1
+    jst j2, j1, QWL
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, qf_wnext
+    jld j2, j1, QWL
     jcall is_arrow
     jjnz j2, qf_no
-    jjmp qf_arrow
-  qf_arrows:
-  jldi j1, 0
-  jld j2, j1, FI2
-  jld j9, j1, QP
-  jld j10, j1, QSIDE
-  jjz j10, qf_left
-  jst j2, j1, FI3               ; right: from the middle's last piece, back from the core
-  qf_rlap:
-    jldi j1, 0
-    jld j2, j1, FI3
-    jjz j2, qf_yes
-    jldi j3, 1
-    jsub j2, j2, j3
-    jst j2, j1, FI3
+    jld j2, j1, FI2
     jldi j3, 3
     jshl j3, j2, j3
-    jld j2, j3, MB1
+    jld j4, j1, QWL
+    jst j4, j3, MB1
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FI2
+  qf_wnext:
+    jld j2, j1, FI4
+    jldi j3, 1
+    jadd j2, j2, j3
     jst j2, j1, FI4
-    jcall w_mark
-    jjnz j3, qf_rlap            ; (a mark of the fact: aside)
-    qf_rback:
-      jldi j1, 0
-      jldi j2, 1
-      jsub j9, j9, j2
-      jld j2, j1, QQS
-      jsub j2, j9, j2
-      jldi j3, 63
-      jsar j2, j2, j3
-      jjnz j2, qf_no
-      jldi j2, 3
-      jshl j2, j9, j2
-      jld j2, j2, QBUF
-      jldi j3, 1
-      jsub j3, j2, j3
-      jldi j4, 63
-      jsar j3, j3, j4
-      jjnz j3, qf_no
-      jst j2, j1, QU
-      jcall w_mark
-      jjnz j3, qf_rback          ; (a mark of the question: aside)
-      jldi j1, 0
-      jld j2, j1, QU
-      jld j3, j1, FI4
-      jsub j2, j2, j3
-      jjnz j2, qf_no
-      jld j2, j1, QCV
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, QCV
-      jjmp qf_rlap
-qf_left:
-  jst j1, j1, FI3               ; left: from the middle's first piece, on from the core
-  qf_llap:
+    jjmp qf_words
+qf_counted:
+  jld j2, j1, FI2
+  jjz j2, qf_no                 ; (marks alone hook nothing)
+  jldi j3, 1
+  jadd j3, j2, j3
+  jst j3, j1, QCV
+  jst j1, j1, FI4               ; every word of the middle in the question
+  qf_each:
     jldi j1, 0
-    jld j2, j1, FI3
+    jld j2, j1, FI4
     jld j3, j1, FI2
     jsub j3, j2, j3
-    jjz j3, qf_yes
-    jldi j3, 1
-    jadd j3, j2, j3
-    jst j3, j1, FI3
+    jjz j3, qf_hooks
     jldi j3, 3
     jshl j3, j2, j3
     jld j2, j3, MB1
+    jcall q_has
+    jjz j2, qf_no
+    jldi j1, 0
+    jld j2, j1, FI4
+    jldi j3, 1
+    jadd j2, j2, j3
     jst j2, j1, FI4
-    jcall w_mark
-    jjnz j3, qf_llap
-    qf_lon:
+    jjmp qf_each
+qf_hooks:
+  jld j2, j1, FI2               ; the words next to each core in the fact: the core's on its side, the other's opposite
+  jldi j3, 1
+  jsub j2, j2, j3
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j4, j2, MB1               ; (the last)
+  jld j5, j1, MB1               ; (the first)
+  jld j6, j1, QSIDE
+  jjz j6, qf_left
+  jst j4, j1, QBC               ; the core on the right: the last word hooks to it, the first to the other
+  jst j5, j1, QBA
+  jjmp qf_core
+qf_left:
+  jst j5, j1, QBC
+  jst j4, j1, QBA
+qf_core:
+  jld j2, j1, QP                ; the core's hook: next to it in the question, either side
+  jldi j3, -1
+  jcall q_nb
+  jjz j2, qf_cright
+  jldi j1, 0
+  jld j3, j1, QBC
+  jsub j2, j2, j3
+  jjz j2, qf_other
+qf_cright:
+  jldi j1, 0
+  jld j2, j1, QP
+  jldi j3, 1
+  jcall q_nb
+  jjz j2, qf_no
+  jldi j1, 0
+  jld j3, j1, QBC
+  jsub j2, j2, j3
+  jjnz j2, qf_no
+qf_other:
+  jldi j1, 0                    ; the other's hook: a place of it in the question with a free side
+  jld j2, j1, QQS
+  jst j2, j1, QPOS
+  qf_place:
+    jldi j1, 0
+    jld j9, j1, QPOS
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qf_no
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jld j3, j1, QBA
+    jsub j2, j2, j3
+    jjnz j2, qf_pnext
+    jld j3, j1, QP
+    jsub j3, j9, j3
+    jjz j3, qf_pnext
+    jldi j2, -1
+    jst j2, j1, QDIR
+    qf_side:
       jldi j1, 0
-      jldi j2, 1
-      jadd j9, j9, j2
-      jld j2, j1, QQE
-      jsub j2, j9, j2
-      jjz j2, qf_no
-      jldi j2, 3
-      jshl j2, j9, j2
-      jld j2, j2, QBUF
+      jld j2, j1, QPOS
+      jld j3, j1, QDIR
+      jcall q_nb
+      jldi j1, 0
+      jjz j2, qf_yes            ; (the edge: free)
+      jst j2, j1, QNB
+      jld j3, j1, QP            ; (the core's own place is not free)
+      jld j4, j1, QNBP
+      jsub j3, j3, j4
+      jjz j3, qf_snext
+      jld j2, j1, QNB
+      jcall is_arrow
+      jjnz j2, qf_yes
+      jldi j1, 0
+      jld j2, j1, QNB
+      jcall g_core
+      jjz j3, qf_yes            ; (no furniture: free)
+    qf_snext:
+      jldi j1, 0
+      jld j2, j1, QDIR
       jldi j3, 1
       jsub j3, j2, j3
-      jldi j4, 63
-      jsar j3, j3, j4
-      jjnz j3, qf_no
-      jst j2, j1, QU
-      jcall w_mark
-      jjnz j3, qf_lon
-      jldi j1, 0
-      jld j2, j1, QU
-      jld j3, j1, FI4
-      jsub j2, j2, j3
-      jjnz j2, qf_no
-      jld j2, j1, QCV
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, QCV
-      jjmp qf_llap
+      jjz j3, qf_pnext
+      jldi j2, 1
+      jst j2, j1, QDIR
+      jjmp qf_side
+  qf_pnext:
+    jldi j1, 0
+    jld j9, j1, QPOS
+    jldi j2, 1
+    jadd j9, j9, j2
+    jst j9, j1, QPOS
+    jjmp qf_place
 qf_yes:
   jldi j1, 0
   jldi j2, 1
   jret
 qf_no:
   jldi j1, 0
+  jldi j2, 0
+  jret
+
+; From the question's place j2, the nearest piece on side j3 (-1 before, 1 after) that is a word (no mark, no hole)
+; -> j2 its word (its place at QNBP), 0 at the question's edge. Uses j1-j8.
+q_nb:
+  jldi j1, 0
+  jst j3, j1, QNBD
+  qnb_lap:
+    jldi j1, 0
+    jld j3, j1, QNBD
+    jadd j2, j2, j3
+    jld j4, j1, QQS
+    jsub j4, j2, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, qnb_edge
+    jld j4, j1, QQE
+    jsub j4, j2, j4
+    jjz j4, qnb_edge
+    jst j2, j1, QNBP
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j3, j3, QBUF
+    jldi j4, 1
+    jsub j4, j3, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, qnb_skip
+    jst j3, j1, QNBW
+    jadd j2, j3, j1
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, qnb_skip2
+    jld j2, j1, QNBW
+    jret
+  qnb_skip2:
+    jld j2, j1, QNBP
+    jjmp qnb_lap
+  qnb_skip:
+    jld j2, j1, QNBP
+    jjmp qnb_lap
+qnb_edge:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the word j2 is said in the question. Uses j1-j5.
+q_has:
+  jldi j1, 0
+  jld j3, j1, QQS
+  qh_lap:
+    jld j4, j1, QQE
+    jsub j4, j3, j4
+    jjz j4, qh_no
+    jldi j4, 3
+    jshl j4, j3, j4
+    jld j4, j4, QBUF
+    jsub j4, j4, j2
+    jjz j4, qh_yes
+    jldi j4, 1
+    jadd j3, j3, j4
+    jjmp qh_lap
+qh_yes:
+  jldi j2, 1
+  jret
+qh_no:
   jldi j2, 0
   jret
 
