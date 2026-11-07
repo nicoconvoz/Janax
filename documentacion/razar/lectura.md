@@ -1539,3 +1539,45 @@ el libro, `p`, el ensamblador y los fuentes de Razar bajo `PDP/`.
   riesgo es real y no está probado con dos.
 - Cada intento cuesta un armado más un examen. El examen es casi todo el costo.
 
+
+## La auditoría de los órganos: invariantes, no canales (2026-11-06)
+
+Un revisor que trajo el Capitán: *"el 55 no es un bicho, es una clase… no buscar canales: exigir independencia del
+orden"*. Después afinó: *"la forma canónica la calcula una función que escribiste vos con tu propia creencia de qué no
+hace nada: comparte tu punto ciego"*. Salir a cazar canales uno por uno (registros, memoria sucia, banderas, punteros)
+es el camino del parche. En cambio se exigen **tres invariantes**, que tapan todos los canales a la vez, conocidos y no
+conocidos, y no se pisan entre sí:
+
+| invariante | qué exige | qué atrapa |
+|---|---|---|
+| orden | el mismo candidato da la misma nota corrido en orden y al revés; el examen sin órgano de Razar da lo mismo antes y después de todos | lo que se hereda **entre** corridas, y la acumulación lenta |
+| basura | la misma nota con la máquina que recibe el órgano en todos ceros y en todos unos (`ORGAN_FILL`, los registros j2-j14) | un órgano, aunque sea canónico, que lee algo que no es suyo |
+| escritura | la misma nota que su forma canónica | lo que una letra le deja a la siguiente, como el `55` |
+
+- **La forma canónica** (`og_canon`) solo aplica transformaciones que no cambian lo que el juez ve. Ordena y saca las
+  repetidas de las mezclas de cada marco (eso solo renombra su clave, uno a uno), saca los marcos repetidos (un mismo
+  lugar testifica una vez) y quita lo que viene después del último hueco (no postea nada).
+- **La basura**, con su límite dicho: son los registros que recibe el órgano. La memoria queda fuera porque su
+  abecedario no puede leer ninguna dirección fuera de la ventana y de las constantes del molde.
+- **La auditoría corrigió una creencia mía.** Mi primera forma canónica además ordenaba los marcos. El órgano `7847`
+  dio −4416 y su "forma canónica" −8795: el orden de los marcos sí importa, por diseño, porque en un lugar testifica el
+  primero que postea. No era una fuga del órgano: era mi función la que suponía algo falso. Ahora conserva el orden.
+- `p` pide la auditoría en el séptimo byte después de K (`organos.sh … 0 <N>`). Los N órganos se sortean: de una a cuatro
+  letras.
+
+**Medido, 50 órganos sorteados** (motor traductor, unos 150 exámenes en ~4 minutos):
+
+```
+auditoria 50: orden y basura 50, escritura 48 (24), base -3554 -3554
+fuga 7157: -3672 -3672 -3613
+fuga 1855: -2028 -2028 -1815
+```
+
+- **Orden y basura: 50 de 50.** Ninguna nota se movió por quién corrió antes ni por la basura en los registros. Esa
+  clase está cerrada por construcción, sin enumerar canales.
+- **Examen sin órgano −3554 antes y después:** no hay acumulación lenta en el proceso de Razar.
+- **Escritura: 48 de 50.** Las dos que fallan tienen un **marco repetido**, y mi forma canónica los sacaba porque creía
+  que "un lugar testifica una vez". El testimonio sí se cuenta una vez, pero **la silueta vota en cada posteo**: si un
+  marco se postea dos veces en el mismo punto del texto, esa aparición vota dos veces en la mayoría (Boyer–Moore). Es
+  contar dos veces la misma evidencia, y también puede pasar con los moldes de fábrica (dos palabras iguales seguidas
+  arman el mismo marco en dos moldes). Queda propuesta la ley "una aparición, un voto", que cambia la huella del lector.

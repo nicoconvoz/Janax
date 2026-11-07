@@ -16,12 +16,28 @@ ORGAN_CANDIDATE =
 ORGAN_GENOME = 
 @O
 ORGAN_CODE = 
+@F
+ORGAN_FILL = 
 @h
 ; An organ Razar grew itself: written from organo.molde and built by the PDP assembler inside Janax OS. The window
 ; of four words is at WAT; the head looks only at windows of four words, the letters mix words into its frame and
 ; post the one in a hole, on the words floor, in a mold of its own (102h).
 organ:
-  jldi j1, 0
+  jldi j1, 0                    ; (the machine as the organ gets it: all 0, or all 1 for ORGAN_FILL 1, the audit's
+  jldi j3, ORGAN_FILL           ; garbage: an organ that reads nothing but its own scores the same with either)
+  jsub j2, j1, j3
+  jadd j3, j2, j1
+  jadd j4, j2, j1
+  jadd j5, j2, j1
+  jadd j6, j2, j1
+  jadd j7, j2, j1
+  jadd j8, j2, j1
+  jadd j9, j2, j1
+  jadd j10, j2, j1
+  jadd j11, j2, j1
+  jadd j12, j2, j1
+  jadd j13, j2, j1
+  jadd j14, j2, j1
   jld j9, j1, WAT
   jld j3, j9, 0
   jjz j3, og_done

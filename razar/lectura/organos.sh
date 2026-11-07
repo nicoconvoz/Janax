@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# organos.sh <folder> <book> <trials> [engine] [vigil]: Razar grows organs inside Janax OS. The folder gets the book,
-# "p" (K 10, one reading, one generation, awake for good if vigil is 1, the trials asked), the PDP assembler and
+# organos.sh <folder> <book> <trials> [engine] [vigil] [audit]: Razar grows organs inside Janax OS. The folder gets the book,
+# "p" (K 10, one reading, one generation, awake for good if vigil is 1, the trials asked, an audit of that many organs instead if audit is more than 0), the PDP assembler and
 # Razar's own sources under PDP/, so it can write organo.inc, build itself and launch the candidates as its children. Then Razar runs there.
 set -u
-carpeta=$1; libro=$2; intentos=$3; motor=${4:-traductor}; vigilia=${5:-0}
+carpeta=$1; libro=$2; intentos=$3; motor=${4:-traductor}; vigilia=${5:-0}; auditoria=${6:-0}
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
@@ -12,7 +12,7 @@ rm -rf "$carpeta" "$armado"; mkdir -p "$carpeta" "$armado"
 bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$armado" \
   "$aqui/pulso.jsm" "$aqui/pulso.datos.jsm" || exit 1
 cp "$libro" "$carpeta/$(etiqueta libro)"
-printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x' "$vigilia" "$intentos")"'\x00\x00' \
+printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x\\x%02x' "$vigilia" "$intentos" "$auditoria")"'\x00' \
   > "$carpeta/$(etiqueta p)"
 cp "$armado/pdp/ensamblador.bin" "$carpeta/$(etiqueta ensamblador.bin)"
 cp "$armado/pdp/ensamblador.datos" "$carpeta/$(etiqueta ensamblador.datos)"

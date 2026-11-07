@@ -94,6 +94,16 @@ SPH   = 1CC8h                   ; shelf_print: its fingerprint so far, the entry
 SPA   = 1CD0h
 SPN   = 1CD8h
 SPHD  = 1CE0h
+OGFILL = 1C40h                  ; the audit of its organs: the garbage, how many, their room, which one, the exams
+AUDN  = 1C48h                   ; without organ before and after, the passes of each invariant, the canonical tried
+AUD   = 1C50h
+AUDI  = 1C58h
+AUDB0 = 1C60h
+AUDB1 = 1C68h
+AUDOK1 = 1C70h
+AUDOK2 = 1C78h
+AUDNC = 1C80h
+AUDC  = 1C88h
 BOOKH = 1CE8h                   ; the fingerprint of its shelf as it read it (names and bytes): news is a new one
 OGWAKE = 1CF0h                  ; someone else rang while it waited on a child of its organs: it is told at its rest
 REBORN = 1CF8h                  ; news woke it: it is reborn (forgotten with what it read)
@@ -2308,7 +2318,15 @@ vw_done:
 ; Both exams without memory (the same coin). If one won, it is built again as Razar itself: the same Razar, with one
 ; organ more. Uses j1-j14.
 organ_trials:
-  jldi j1, 0
+  jldi j1, 0                    ; an audit, if "p" asks for one (the seventh byte after K): instead of its trials
+  jld j2, j1, NPAS
+  jldi j3, 48
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jjz j2, ot_trials
+  jjmp organ_audit
+ot_trials:
   jld j2, j1, NPAS
   jldi j3, 40
   jshr j2, j2, j3
@@ -2441,6 +2459,431 @@ og_label:
   ol_on:
   jwend
   jadd j12, j7, j1
+  jret
+
+; The audit of its organs (a reviewer the Capitan brought: "not hunting channels: demanding invariants, that cover
+; every channel at once, known and unknown"). As many organs as "p" asks (the seventh byte after K), each drawn by its
+; luck, sit the exam three ways: in order with the machine they get all 0; in the reverse order with it all 1 (a score
+; that moves with the order or the garbage hangs on something not its own); and in their canonical form (the same
+; frames, each one's mixes in order and none twice, no frame twice, nothing after the last hole: a score that moves
+; hangs on how it is written, not on what it means). The exam without organ before and after them all: if it moved,
+; something builds up. Uses j1-j14.
+organ_audit:
+  jldi j1, 0
+  jst j2, j1, AUDN
+  jcall og_init
+  jldi j1, 0
+  jld j2, j1, OGML
+  jjnz j2, oa_have
+  jret
+oa_have:
+  jcall og_base
+  jldi j1, 0
+  jld j2, j1, EVS
+  jst j2, j1, AUDB0
+  jldi j10, 35                  ; the cage, as for its organs
+  jldi j11, -1
+  jcall ask
+  jldi j1, 0
+  jadd j2, j13, j13
+  jst j2, j1, OGBUD
+  jld j11, j1, AUDN             ; its organs: {letters, in order, reversed, canonical}
+  jldi j2, 5
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, AUD
+  jst j1, j1, AUDI
+  jld j2, j1, AUDN
+  jwhile j2                     ; drawn: one to four letters, each 1..9
+    jcall ev_rand
+    jldi j3, 4
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jldi j1, 0
+    jst j2, j1, AUDC
+    jst j1, j1, OGTRY
+    jldi j2, 0
+    jst j2, j1, OGT
+    jld j2, j1, AUDC
+    jwhile j2
+      jcall ev_rand
+      jldi j3, 9
+      jdiv j4, j2, j3
+      jmul j4, j4, j3
+      jsub j2, j2, j4
+      jldi j3, 1
+      jadd j2, j2, j3
+      jldi j1, 0
+      jld j3, j1, OGT
+      jshl j2, j2, j3
+      jld j4, j1, OGTRY
+      jor j4, j4, j2
+      jst j4, j1, OGTRY
+      jldi j2, 4
+      jadd j3, j3, j2
+      jst j3, j1, OGT
+      jld j2, j1, AUDC
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, AUDC
+    jwend
+    jcall oa_at
+    jld j2, j1, OGTRY
+    jst j2, j4, 0
+    jld j2, j1, AUDI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDI
+    jld j3, j1, AUDN
+    jsub j2, j3, j2
+  jwend
+  jst j1, j1, AUDI              ; in order, all 0
+  jld j2, j1, AUDN
+  jwhile j2
+    jldi j1, 0
+    jst j1, j1, OGFILL
+    jcall oa_at
+    jld j2, j4, 0
+    jcall oa_exam
+    jcall oa_at
+    jld j2, j1, OGSC
+    jst j2, j4, 8
+    jld j2, j1, AUDI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDI
+    jld j3, j1, AUDN
+    jsub j2, j3, j2
+  jwend
+  jld j2, j1, AUDN              ; reversed, all 1
+  jwhile j2
+    jldi j1, 0
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, AUDI
+    jst j3, j1, OGFILL
+    jcall oa_at
+    jld j2, j4, 0
+    jcall oa_exam
+    jcall oa_at
+    jld j2, j1, OGSC
+    jst j2, j4, 16
+    jld j2, j1, AUDI
+  jwend
+  jst j1, j1, OGFILL            ; canonical, all 0 (the same organ: its score in order)
+  jst j1, j1, AUDNC
+  jst j1, j1, AUDI
+  jld j2, j1, AUDN
+  jwhile j2
+    jcall oa_at
+    jld j2, j4, 0
+    jcall og_canon
+    jldi j1, 0
+    jst j2, j1, AUDC
+    jcall oa_at
+    jld j3, j4, 0
+    jld j5, j4, 8
+    jst j5, j4, 24
+    jsub j3, j3, j2
+    jjz j3, oa_same
+    jld j2, j1, AUDNC
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDNC
+    jld j2, j1, AUDC
+    jcall oa_exam
+    jcall oa_at
+    jld j2, j1, OGSC
+    jst j2, j4, 24
+  oa_same:
+    jldi j1, 0
+    jld j2, j1, AUDI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDI
+    jld j3, j1, AUDN
+    jsub j2, j3, j2
+  jwend
+  jcall og_base                 ; the exam without organ, after them all
+  jldi j1, 0
+  jld j2, j1, EVS
+  jst j2, j1, AUDB1
+  jst j1, j1, AUDOK1            ; what moved, said; how many held
+  jst j1, j1, AUDOK2
+  jst j1, j1, AUDI
+  jld j2, j1, AUDN
+  jwhile j2
+    jcall oa_at
+    jld j2, j4, 8
+    jld j3, j4, 16
+    jsub j3, j3, j2
+    jjnz j3, oa_moved
+    jld j3, j1, AUDOK1
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j1, AUDOK1
+  oa_moved:
+    jld j3, j4, 24
+    jsub j3, j3, j2
+    jjnz j3, oa_moved2
+    jld j3, j1, AUDOK2
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j1, AUDOK2
+  oa_moved2:
+    jld j2, j4, 8
+    jld j3, j4, 16
+    jsub j3, j3, j2
+    jld j5, j4, 24
+    jsub j5, j5, j2
+    jor j3, j3, j5
+    jjz j3, oa_quiet
+    jldi j2, 0                  ; "fuga <letters>: <in order> <reversed> <canonical>"
+    jshi j2, 0066h
+    jshi j2, 7567h
+    jshi j2, 6120h
+    jcall og_r8
+    jcall oa_at
+    jld j2, j4, 0
+    jcall og_hex
+    jldi j2, 58
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jcall oa_at
+    jld j2, j4, 8
+    jcall og_signed
+    jldi j2, 32
+    jcall putch
+    jcall oa_at
+    jld j2, j4, 16
+    jcall og_signed
+    jldi j2, 32
+    jcall putch
+    jcall oa_at
+    jld j2, j4, 24
+    jcall og_signed
+    jldi j2, 10
+    jcall putch
+    jcall flush
+  oa_quiet:
+    jldi j1, 0
+    jld j2, j1, AUDI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, AUDI
+    jld j3, j1, AUDN
+    jsub j2, j3, j2
+  jwend
+  jldi j2, 0                    ; "auditoria <n>: orden y basura <held>, escritura <held> (<canonical tried>), base
+  jshi j2, 6175h                ; <before> <after>"
+  jshi j2, 6469h
+  jshi j2, 746Fh
+  jshi j2, 7269h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 6120h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, AUDN
+  jcall putnum
+  jldi j2, 0
+  jshi j2, 3A20h
+  jshi j2, 6F72h
+  jshi j2, 6465h
+  jshi j2, 6E20h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 7920h
+  jshi j2, 6261h
+  jshi j2, 7375h
+  jshi j2, 7261h
+  jcall og_r8
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, AUDOK1
+  jcall putnum
+  jldi j2, 0
+  jshi j2, 2C20h
+  jshi j2, 6573h
+  jshi j2, 6372h
+  jshi j2, 6974h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 7572h
+  jshi j2, 6120h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, AUDOK2
+  jcall putnum
+  jldi j2, 0
+  jshi j2, 2028h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, AUDNC
+  jcall putnum
+  jldi j2, 0
+  jshi j2, 292Ch
+  jshi j2, 2062h
+  jshi j2, 6173h
+  jshi j2, 6520h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, AUDB0
+  jcall og_signed
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, AUDB1
+  jcall og_signed
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; Where the audit's organ AUDI is -> j4. Uses j1-j4.
+oa_at:
+  jldi j1, 0
+  jld j4, j1, AUDI
+  jldi j3, 5
+  jshl j4, j4, j3
+  jld j3, j1, AUD
+  jadd j4, j4, j3
+  jret
+
+; The organ j2 sits the champion's exam as a candidate (OGFILL its garbage) -> OGSC (the lowest there is if it
+; could not be built). Uses j1-j14.
+oa_exam:
+  jldi j1, 0
+  jst j2, j1, OGTRY
+  jldi j2, 1
+  jldi j3, 63
+  jshl j2, j2, j3
+  jst j2, j1, OGSC
+  jcall og_write
+  jcall og_build
+  jldi j1, 0
+  jjz j2, oe_done
+  jcall og_trial
+oe_done:
+  jldi j1, 0
+  jret
+
+; The champion's exam without memory and without organ change (what an organ has to beat) -> EVS. Uses j1-j14.
+og_base:
+  jldi j1, 0
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jld j2, j1, TMEM
+  jst j2, j1, OGT
+  jst j1, j1, TMEM
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, OGT
+  jst j2, j1, TMEM
+  jret
+
+; The canonical form of the organ j2 -> j2: its frames (the mixes up to each hole) in the order they come, each one's
+; mixes in order and none twice, no frame twice, nothing after its last hole. Only what changes no request the judge
+; sees: a frame's mixes in another order or twice only rename its key, one to one; a frame twice testifies once; mixes
+; with no hole after them post nothing. The order of the frames is kept: at a place the first one testifies (the
+; audit found it, against what was believed here: sorting them moved 7847 from -4416 to -8795). Uses j1-j10 (its frames at OGPEND + 4224, sixteen at most).
+og_canon:
+  jldi j1, 0
+  jld j9, j1, OGPEND
+  jldi j3, 4224
+  jadd j9, j9, j3
+  jldi j6, 0                    ; how many frames
+  jldi j7, 0                    ; the mixes so far
+  jwhile j2
+    jldi j3, 15
+    jand j4, j2, j3
+    jldi j3, 4
+    jshr j2, j2, j3
+    jldi j3, 5
+    jsub j3, j4, j3
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjz j3, oc_hole
+    jldi j3, 1                  ; a mix: its word's bit
+    jsub j4, j4, j3
+    jshl j3, j3, j4
+    jor j7, j7, j3
+    jjmp oc_next
+  oc_hole:
+    jldi j3, 4                  ; a hole: the frame {mixes, hole}, if it is not there yet
+    jshl j4, j4, j3
+    jor j4, j4, j7
+    jldi j7, 0
+    jldi j5, 0
+    jldi j8, 1
+    jsub j10, j6, j5
+    jwhile j10
+      jldi j3, 3
+      jshl j3, j5, j3
+      jadd j3, j9, j3
+      jld j3, j3, 0
+      jsub j3, j3, j4
+      jjnz j3, oc_other
+      jldi j8, 0
+    oc_other:
+      jldi j3, 1
+      jadd j5, j5, j3
+      jsub j10, j6, j5
+    jwend
+    jjz j8, oc_next
+    jldi j3, 3
+    jshl j3, j6, j3
+    jadd j3, j9, j3
+    jst j4, j3, 0
+    jldi j3, 1
+    jadd j6, j6, j3
+  oc_next:
+  jwend
+  jldi j2, 0                    ; written again: each frame's mixes from the first word, then its hole
+  jldi j8, 0
+  jldi j5, 0
+  jsub j10, j6, j5
+  jwhile j10
+    jldi j3, 3
+    jshl j3, j5, j3
+    jadd j3, j9, j3
+    jld j4, j3, 0
+    jldi j7, 1
+    jldi j3, 5
+    jsub j3, j7, j3
+    jwhile j3
+      jldi j3, 1
+      jsub j3, j7, j3
+      jldi j10, 1
+      jshl j3, j10, j3
+      jand j3, j4, j3
+      jjz j3, oc_nomix
+      jshl j3, j7, j8
+      jor j2, j2, j3
+      jldi j3, 4
+      jadd j8, j8, j3
+    oc_nomix:
+      jldi j3, 1
+      jadd j7, j7, j3
+      jldi j3, 5
+      jsub j3, j7, j3
+    jwend
+    jldi j3, 4
+    jshr j3, j4, j3
+    jshl j3, j3, j8
+    jor j2, j2, j3
+    jldi j3, 4
+    jadd j8, j8, j3
+    jldi j3, 1
+    jadd j5, j5, j3
+    jsub j10, j6, j5
+  jwend
+  jldi j1, 0
   jret
 
 ; Its molde read into a room (OGM, OGML bytes; 0 if there is none), and a room for what waits for its signature and
@@ -2674,6 +3117,13 @@ ow_go:
   jcall og_put
   jldi j1, 0
   jld j2, j1, OGTRY
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jldi j2, 70                   ; ORGAN_FILL = (the audit's garbage: 0 or 1)
+  jcall og_put
+  jldi j1, 0
+  jld j2, j1, OGFILL
   jcall putnum
   jldi j2, 10
   jcall putch
