@@ -2305,3 +2305,29 @@ construcciones, sin decirle qué es un pegamento.
   la misma construcción con el pegamento que el libro usa entre una construcción y sí misma; después enganchar hechos
   por el núcleo compartido.
 
+## Piensa: se pregunta y se contesta (2026-11-07)
+
+El Capitán: la estructura es la subrutina y los muebles son sus argumentos, y las respuestas se recombinan. No es
+construir subrutinas de verdad, es aplicar ese concepto a la estructura y a los muebles. *"Que no sean respuestas
+solamente sino la pregunta que ella misma se hace o lo que analiza... y eso es un while."*
+
+- **El ciclo (`think`):** después de cada respuesta que dice el libro, Razar sigue desde la palabra en la que la
+  respuesta termina.
+  - Las composiciones del libro (`GKT`, ahora con sus dos esqueletos) dicen con qué estructura siguió el libro desde
+    una palabra donde terminaba otro hecho (`=`), probada dos veces o más.
+  - Esa estructura con un hueco es la pregunta que se hace. Un hecho del libro la contesta, y la palabra nueva es
+    desde donde sigue.
+  - Es un `while`: sigue mientras haya pregunta y respuesta. Una palabra ya pensada no se vuelve a preguntar, así que
+    termina solo.
+- **Plástico:** vale la estructura que el libro usó para seguir viniera de donde viniera, no solo desde la misma
+  estructura de la respuesta. La versión rígida no pensaba nada en un pedazo.
+- **Una estructura de pura marca no pregunta nada** (`sk_word`). Es la misma regla que ya había para contestar.
+- **Medido en las preguntas de control** (biblioteca NT + Asimov): las respuestas siguen idénticas y aparecen 58
+  líneas de pensamiento. Por ejemplo, desde "jacob, hijo de isaac":
+  `isaac, hijo de ? -> isaac, hijo de abraham`, `dios de ? -> dios de jacob`; y desde "pecado es la ley":
+  `ley de ? -> ley de moisés`. Hay pasos flojos, como "abraham, el dios" o "efecto la promesa".
+- **Lo que falta:**
+  - en la charla real, con pedazos chicos, todavía no piensa, porque un pedazo no prueba composiciones. Igual que las
+    otras siluetas, tienen que venir de la biblioteca;
+  - y para seguir a una palabra nueva tiene que poder ir a releer sus renglones.
+

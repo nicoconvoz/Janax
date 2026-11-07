@@ -85,6 +85,8 @@ times 980h - $ db 0
 db 'come', 0
 times 990h - $ db 0
 db 'tablero/preguntas-', 0
+times 9A4h - $ db 0
+db '    me pregunto: ', 0
 times 9C0h - $ db 0
 db 'tablero/esqueletos', 0
 times 0A00h - $ db 0

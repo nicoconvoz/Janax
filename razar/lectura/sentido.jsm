@@ -66,6 +66,7 @@ S_QAM   = 0AC0h
 S_QAL   = 0AE0h                 ; what they taught
 S_GLU   = 8D0h                  ; the glue between constructions
 S_GLD   = 8E0h
+S_THQ   = 9A4h                  ; the question it asks itself
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -230,6 +231,18 @@ GT2   = 0DE8h
 GJ    = 0DF0h
 GK2   = 0DF8h
 GT3   = 0E00h
+THX   = 0E10h                   ; thinking on: the word and the skeleton it goes on from, the words thought on {key} (a
+THK   = 0E18h                   ; (free) table that grows), the best composition's times, its skeleton, the word that answers
+TVT   = 0E20h                   ; it, walking, its skeleton's entry, a skeleton looked for, a fact walked, a word
+THB   = 0E40h
+THC   = 0E48h
+THY   = 0E50h
+TI    = 0E58h
+TJ    = 0E60h
+THE   = 0E68h
+THF   = 0E70h
+THI   = 0E78h
+THG   = 0E80h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -2506,7 +2519,7 @@ glue_count:
   jldi j3, 32
   jcall pl_new
   jldi j2, GKT
-  jldi j3, 16
+  jldi j3, 48
   jcall pl_new
   jldi j1, 0
   jst j1, j1, GLN
@@ -2653,13 +2666,22 @@ gcp_k:
   jjnz j5, gcp_k2
   jldi j5, 1
 gcp_k2:
-  jldi j2, GKT
+  jldi j2, GKT                  ; {key, times, the first skeleton, the glue's print, the other skeleton, how far}
   jcall pl_take
   jldi j1, 0
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j4, 8
+  jld j2, j1, GP
+  jld j2, j2, 16
+  jst j2, j4, 16
+  jld j2, j1, GT3
+  jst j2, j4, 24
+  jld j2, j1, GK2
+  jst j2, j4, 32
+  jld j2, j1, GJ
+  jst j2, j4, 40
   jret
 
 ; Written: how many joinings, how many glues and constructions proved twice or more, and the glues that join the most
@@ -2856,6 +2878,200 @@ f_glue:
   jst j3, j1, GFN
 fgl_done:
   jldi j1, 0
+  jret
+
+; Thinking on from an answer (Capitan, 2026-11-07: "the structure is the routine and the furniture its arguments,
+; recombined", and "not only answers: the question it asks itself, what it analyses"; "and that is a while"). The
+; structure is the instruction, the furniture what it is given: from the word the answer ends with (THX) and its
+; skeleton (THK), the book's own compositions say which skeleton it goes on with from that same word (GKT, "=": one
+; fact ends on a core and the next starts on it), proved twice at least, whatever skeleton it comes from (plastic: the
+; word decides, not the exact structure before it). That is the question it asks itself: the word and the skeleton,
+; with a hole. A fact of the book answers it, and the word it ends on is the next one. While there is
+; a question and an answer; a word already thought on is not asked again, so it ends. Uses j1-j14.
+think:
+  jldi j2, TVT
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jld j5, j1, THX
+  jldi j2, TVT
+  jcall pl_take
+  th_lap:
+    jldi j1, 0                  ; the composition proved the most that a fact answers
+    jst j1, j1, THB
+    jld j9, j1, GKT
+    jld j10, j1, GKT + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    thc_lap:
+      jldi j1, 0
+      jjz j10, thc_done
+      jld j2, j9, 0
+      jjz j2, thc_next
+      jld j2, j9, 40            ; by the same core (from whatever skeleton: plastic, not rigid)
+      jjnz j2, thc_next
+      jld j2, j9, 8             ; proved, and more than the best so far
+      jldi j3, 2
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, thc_next
+      jld j3, j1, THB
+      jsub j3, j3, j2
+      jsar j3, j3, j4
+      jjz j3, thc_next
+      jst j9, j1, TI
+      jst j10, j1, TJ
+      jld j5, j9, 32            ; a skeleton with a word in its middle (marks alone are no instruction, as in q_fit)
+      jldi j2, TMI
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 0
+      jjz j2, thc_back
+      jadd j12, j4, j1
+      jcall sk_word
+      jjz j2, thc_back
+      jld j9, j1, TI
+      jld j2, j9, 32
+      jcall th_fact             ; answered by a fact of the book?
+      jldi j1, 0
+      jld j9, j1, TI
+      jld j10, j1, TJ
+      jjz j2, thc_next
+      jst j2, j1, THY
+      jld j2, j9, 8
+      jst j2, j1, THB
+      jld j2, j9, 32
+      jst j2, j1, THC
+      jjmp thc_next
+    thc_back:
+      jld j9, j1, TI
+      jld j10, j1, TJ
+    thc_next:
+      jld j2, j1, GKT + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp thc_lap
+  thc_done:
+    jld j2, j1, THB
+    jjz j2, th_done
+    jld j5, j1, THC             ; the skeleton it asks with
+    jldi j2, TMI
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, th_done
+    jst j4, j1, THE
+    jldi j1, S_THQ              ; the question it asks itself, and its answer
+    jcall puts
+    jld j2, j1, THX
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jld j12, j1, THE
+    jcall put_plain
+    jldi j2, 63
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 45
+    jcall putch
+    jldi j2, 62
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, THX
+    jcall putword
+    jldi j2, 32
+    jcall putch
+    jld j12, j1, THE
+    jcall put_plain
+    jld j2, j1, THY
+    jcall putword
+    jldi j2, 10
+    jcall putch
+    jcall flush
+    jldi j1, 0                  ; and it goes on from the new word
+    jld j2, j1, THY
+    jst j2, j1, THX
+    jld j5, j1, THY
+    jldi j2, TVT
+    jcall pl_take
+    jjmp th_lap
+th_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the middle of skeleton j12 has a word (not only marks). Uses j1-j11.
+sk_word:
+  jldi j1, 0
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jldi j11, 1
+  jwhile j10
+    jldi j1, 0
+    jadd j2, j9, j11
+    jcall tok_at
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, skw_next
+    jldi j2, 1
+    jret
+  skw_next:
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 0
+  jret
+
+; A fact of the book of skeleton j2 that starts on THX and ends on a word not thought on yet -> j2 that word (0: none).
+; Uses j1-j14.
+th_fact:
+  jldi j1, 0
+  jst j2, j1, THF
+  jst j1, j1, THI
+  thf_lap:
+    jldi j1, 0
+    jld j2, j1, THI
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, thf_none
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jld j2, j9, 16
+    jld j3, j1, THF
+    jsub j2, j2, j3
+    jjnz j2, thf_next
+    jld j2, j9, 0
+    jcall tok_at
+    jld j3, j1, THX
+    jsub j2, j2, j3
+    jjnz j2, thf_next
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, THG
+    jadd j5, j2, j1
+    jldi j2, TVT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjnz j2, thf_next
+    jld j2, j1, THG
+    jret
+  thf_next:
+    jldi j1, 0
+    jld j2, j1, THI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, THI
+    jjmp thf_lap
+thf_none:
+  jldi j1, 0
+  jldi j2, 0
   jret
 
 ; j2 = 1 if the building QAT to QAI, closed by limit QAX, asks: an arrow of it whose voted limit is QAX. Uses j1-j8.
@@ -4988,7 +5204,11 @@ qm_oth2:
   jcall putword
   jldi j2, 10
   jcall putch
-  jjmp flush
+  jcall flush
+  jldi j1, 0                    ; and it thinks on from the word the answer ends with
+  jld j2, j1, WB
+  jst j2, j1, THX
+  jjmp think
 qm_turned:
   jcall lib_turn                ; the library's turn first: proved over every book, not over a piece
   jjnz j2, qt_lib
