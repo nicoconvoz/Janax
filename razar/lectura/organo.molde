@@ -2,7 +2,8 @@
 ; it inside Janax OS and writes organo.inc from it: the values, the head, one block per letter of its organ, the foot.
 ; Each block starts with a line "@" and its name, and runs to the next one (its last line end left out). Letters 1-9
 ; are the organ's instructions: any string of them builds, so a mutation (a letter put in, taken out or changed) can
-; never break the build; what it does is the exam's to judge.
+; never break the build; what it does is the exam's to judge. A frame is made only of its letters: after each hole
+; it starts again from the mold (else a second hole would hang on what post left in a register, not on its letters).
 @a
 ensamblador.bin
 @o
@@ -63,24 +64,44 @@ organ:
   jld j9, j1, WAT
   jld j3, j9, 0
   jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
 @6
   jldi j1, 0                    ; the hole: the second word
   jld j9, j1, WAT
   jld j3, j9, 8
   jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
 @7
   jldi j1, 0                    ; the hole: the third word
   jld j9, j1, WAT
   jld j3, j9, 16
   jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
 @8
   jldi j1, 0                    ; the hole: the fourth word
   jld j9, j1, WAT
   jld j3, j9, 24
   jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
 @9
   jldi j3, 0                    ; the hole empty: the frame said as it is
   jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
 @f
 og_done:
   jldi j1, 0

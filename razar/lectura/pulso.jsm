@@ -90,6 +90,12 @@ S_SKO   = 580h
 S_KIN   = 640h
 S_DEEP  = 0F80h
 S_CONC  = 0FC0h
+SPH   = 1CC8h                   ; shelf_print: its fingerprint so far, the entry, how many left, the handle
+SPA   = 1CD0h
+SPN   = 1CD8h
+SPHD  = 1CE0h
+BOOKH = 1CE8h                   ; the fingerprint of its shelf as it read it (names and bytes): news is a new one
+OGWAKE = 1CF0h                  ; someone else rang while it waited on a child of its organs: it is told at its rest
 REBORN = 1CF8h                  ; news woke it: it is reborn (forgotten with what it read)
 EVC   = 1D00h                   ; evolving the instincts: the champion, the second, their exams, the child, the
 EVR   = 1D08h                   ; generations left, the luck, an exam, the generation, the child kept, the champion
@@ -235,6 +241,17 @@ jst j13, j1, RLIST
 renace:
 jldi j0, 0                      ; the fingerprint
 jcall read_book
+jldi j1, 0                      ; awake for good, the fingerprint of what it read: the sentinel's word is checked
+jld j2, j1, NPAS                ; against it
+jldi j3, 32
+jshr j2, j2, j3
+jldi j3, 255
+jand j2, j2, j3
+jjz j2, rn_print
+jcall shelf_print
+jldi j1, 0
+jst j2, j1, BOOKH
+rn_print:
 jldi j2, ORGAN_CANDIDATE        ; a candidate built by Razar: it sits its exam and says its score, nothing more
 jjz j2, rn_razar
 jjmp candidate
@@ -2133,6 +2150,7 @@ ev_alone:
   jst j2, j1, EVLIV
   jcall nest_save
   jcall letter_write            ; and its letter for the other, with what it is now
+  jcall organ_trials            ; its organs, every stretch, if "p" asks for them (it may come back remade)
   jldi j1, 0                    ; awake for good (Capitan: "that a Razar never turns off: its will always active,
   jld j2, j1, VIGIL             ; exploring, though it may choose to rest for a while"): it made itself better, it
   jjz j2, ev_end                ; tells the other and explores again; it did not, it rests on its doorbell (nothing
@@ -2158,8 +2176,30 @@ ev_rest:
   jldi j2, 10
   jcall putch
   jcall flush
+  jldi j1, 0                    ; (someone rang while its organs were tried: that one woke it)
+  jld j13, j1, OGWAKE
+  jjz j13, vg_bell
+  jst j1, j1, OGWAKE
+  jldi j1, 1
+  jsub j13, j13, j1
+  jjmp vg_rang
+vg_bell:
   jldi j10, 29
   jcall ask
+  jldi j1, 1                    ; (one of its own children, an end that rang late: no news, asleep again)
+  jadd j1, j13, j1
+  jjz j1, vg_rang
+  jldi j1, 0
+  jst j13, j1, OGT
+  jldi j10, 19
+  jadd j11, j13, j1
+  jcall ask
+  jldi j1, 2
+  jadd j1, j13, j1
+  jjnz j1, vg_bell
+  jldi j1, 0
+  jld j13, j1, OGT
+vg_rang:
   jldi j1, 1
   jadd j1, j13, j1
   jjz j1, ev_end
@@ -2176,6 +2216,11 @@ vg_drain:
   jld j3, j1, PARTNER
   jsub j2, j2, j3
   jjz j2, vg_sib
+  jcall shelf_print             ; the sentinel tells a change, the shelf's fingerprint tells whether it is news (the
+  jldi j1, 0                    ; host tells one copy in several batches: the ones after the first are nothing new)
+  jld j3, j1, BOOKH
+  jsub j3, j2, j3
+  jjz j3, vg_bell
   jldi j2, 0                    ; "novedad"
   jshi j2, 0064h
   jshi j2, 6164h
@@ -2204,7 +2249,6 @@ ev_again:
   jst j2, j1, EVG
   jjmp ev_gens
 ev_end:
-  jcall organ_trials            ; its organs, if "p" asks for them
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
@@ -2343,8 +2387,60 @@ ot_have:
   jst j2, j1, OGTRY
   jcall og_write0
   jcall og_build
+  jldi j1, 0
+  jjz j2, ot_done
+  jldi j2, 0                    ; "se rehace": the same cabin, its new program (36), when it ends here
+  jshi j2, 7365h
+  jshi j2, 2072h
+  jshi j2, 6568h
+  jshi j2, 6163h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 650Ah
+  jcall og_r8
+  jcall flush
+  jldi j2, 112
+  jcall og_label
+  jldi j10, 36
+  jcall ask
+  jhalt
 ot_done:
   jldi j1, 0
+  jret
+
+; The label of the block j2, a file of its own tree: "PDP/razar", its number after it if it has one (each Razar of
+; a society writes, builds and launches only its own), and the rest -> j11 where, j12 its bytes. Uses j1-j10.
+og_label:
+  jcall og_block
+  jldi j1, 0
+  jld j11, j1, OGPEND
+  jldi j2, 4160
+  jadd j11, j11, j2
+  jldi j7, 0
+  jldi j8, 0
+  jwhile j6
+    jldb j2, j5, 0
+    jadd j3, j11, j7
+    jstb j2, j3, 0
+    jldi j3, 1
+    jadd j7, j7, j3
+    jadd j8, j8, j3
+    jadd j5, j5, j3
+    jsub j6, j6, j3
+    jldi j3, 9                  ; after "PDP/razar"
+    jsub j3, j8, j3
+    jjnz j3, ol_on
+    jld j3, j1, QUIEN
+    jjz j3, ol_on
+    jldi j4, 48
+    jadd j3, j3, j4
+    jadd j4, j11, j7
+    jstb j3, j4, 0
+    jldi j3, 1
+    jadd j7, j7, j3
+  ol_on:
+  jwend
+  jadd j12, j7, j1
   jret
 
 ; Its molde read into a room (OGM, OGML bytes; 0 if there is none), and a room for what waits for its signature and
@@ -2353,7 +2449,7 @@ og_init:
   jldi j1, 0
   jst j1, j1, OGML
   jldi j11, 4096
-  jldi j2, 64
+  jldi j2, 256
   jadd j11, j11, j2
   jcall room
   jldi j1, 0
@@ -2385,6 +2481,26 @@ og_init:
   jshi j2, 6C6Fh
   jshi j2, 6D2Eh
   jst j2, j9, 24
+  jldi j2, 30                   ; (its number after "PDP/razar", if it has one: its own tree)
+  jst j2, j1, OGLET
+  jld j3, j1, QUIEN
+  jjz j3, oi_own
+  jldi j4, 21                   ; the 21 bytes after "PDP/razar" one place up, from the last
+  jwhile j4
+    jldi j5, 8
+    jadd j5, j5, j4
+    jadd j5, j9, j5
+    jldb j6, j5, 0
+    jstb j6, j5, 1
+    jldi j6, 1
+    jsub j4, j4, j6
+  jwend
+  jldi j4, 48
+  jadd j3, j3, j4
+  jstb j3, j9, 9
+  jldi j2, 31
+  jst j2, j1, OGLET
+oi_own:
   jldi j11, 4096                ; its room: as big as a molde may be (criterion: the one it has is 3 KB)
   jldi j2, 4
   jshl j11, j11, j2
@@ -2395,7 +2511,7 @@ og_init:
   jld j11, j1, OGPEND
   jldi j2, 4112
   jadd j11, j11, j2
-  jldi j12, 30
+  jld j12, j1, OGLET
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2581,16 +2697,12 @@ ow_go:
   jldi j2, 102
   jcall og_line_put
   jldi j2, 111                  ; its file, whole: the old one out
-  jcall og_block
+  jcall og_label
   jldi j10, 12
-  jadd j11, j5, j1
-  jadd j12, j6, j1
   jcall ask
   jldi j2, 111
-  jcall og_block
+  jcall og_label
   jldi j10, 4
-  jadd j11, j5, j1
-  jadd j12, j6, j1
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2755,14 +2867,12 @@ og_trial:
   jshl j2, j2, j3
   jst j2, j1, OGSC
   jldi j2, 112
-  jcall og_block
+  jcall og_label
   jldi j10, 14
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 16
   jor j10, j10, j2
-  jadd j11, j5, j1
-  jadd j12, j6, j1
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -2789,6 +2899,25 @@ og_serve:
     jldi j1, 1
     jadd j9, j13, j1            ; (-1: nobody is left)
     jjz j9, os_end
+    jldi j1, 0                  ; another rang (its sibling, the sentinel): kept for its rest, never lost; one of its
+    jld j2, j1, OGKID           ; own children (an end that rang late) is never news
+    jsub j2, j13, j2
+    jjz j2, os_child
+    jld j2, j1, OGWAKE
+    jjnz j2, os_child
+    jst j13, j1, OGT
+    jldi j10, 19
+    jadd j11, j13, j1
+    jcall ask
+    jldi j1, 0
+    jldi j2, 2
+    jadd j2, j13, j2
+    jjnz j2, os_child
+    jld j2, j1, OGT
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, OGWAKE
+  os_child:
     jldi j1, 0
     jldi j10, 18                ; what waits: {its number, the child, its kind}
     jld j11, j1, OGPEND
@@ -2845,6 +2974,14 @@ og_serve:
       jldi j8, 0
     os_heard:
     jwend
+    jldi j1, 0                  ; the child ended (its end rang): done; still rowing: asleep again
+    jldi j10, 19
+    jld j11, j1, OGKID
+    jcall ask
+    jldi j1, 1
+    jadd j2, j13, j1
+    jldi j9, 0
+    jjnz j2, os_again
     jldi j9, 1
     jjmp os_again
   os_end:
@@ -3939,6 +4076,19 @@ p8_done:
 ; books is forgotten, so reading the whole shelf again costs the same memory as the first time. What it is stays: its
 ; identity and its evolution (1D00h-1E4Fh), its autopsy, the list of its rooms. Uses j1-j14.
 reborn:
+  jldi j1, 0                    ; its autopsy closed: the next life writes a new one (open, it could not be taken out,
+  jld j10, j1, AUTH             ; and the new one was written over the old, its rest left behind)
+  jjz j10, rb_noaut
+  jldi j2, 1
+  jsub j10, j10, j2
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jst j1, j1, AUTH
+rb_noaut:
   jldi j1, 0                    ; (one more life lived)
   jld j2, j1, RBC
   jldi j3, 1
@@ -3969,6 +4119,114 @@ reborn:
   jldi j2, 1F00h                ; and the growing tables, past its identity
   jldi j3, 100h
   jjmp rb_zero
+
+; The fingerprint of its shelf -> j2: every "libro" file, its label and its bytes, FNV-1a, in the shelf's order. Its
+; list is kept as it was (the one read). Uses j1-j14.
+shelf_print:
+  jldi j1, 0
+  jld j2, j1, SHELF
+  jst j2, j1, OGT
+  jld j2, j1, SHN
+  jst j2, j1, OGLET
+  jcall shelf_build
+  jldi j1, 0
+  jld j2, j1, FNVO
+  jst j2, j1, SPH
+  jld j9, j1, SHELF
+  jld j10, j1, SHN
+  jwhile j10
+    jldi j1, 0
+    jst j9, j1, SPA
+    jst j10, j1, SPN
+    jld j2, j1, SPH             ; its label
+    jld j5, j9, 0
+    jldi j6, 8
+    jadd j6, j9, j6
+    jwhile j5
+      jldb j3, j6, 0
+      jcall hw
+      jldi j4, 1
+      jadd j6, j6, j4
+      jsub j5, j5, j4
+    jwend
+    jldi j1, 0
+    jst j2, j1, SPH
+    jldi j10, 4                 ; and its bytes
+    jld j9, j1, SPA
+    jldi j2, 8
+    jadd j11, j9, j2
+    jld j12, j9, 0
+    jcall ask
+    jldi j1, 0
+    jldi j2, 63
+    jshr j2, j13, j2
+    jjnz j2, sh_next
+    jst j13, j1, SPHD
+    jldi j8, 1
+    jwhile j8
+      jldi j1, 0
+      jld j2, j1, SPHD
+      jldi j3, 32
+      jshl j10, j2, j3
+      jldi j3, 5
+      jor j10, j10, j3
+      jldi j11, 0
+      jshi j11, BUF
+      jldi j12, 0
+      jshi j12, BUFLEN
+      jcall ask
+      jldi j1, 0
+      jldi j2, 63
+      jsar j2, j13, j2
+      jldi j3, -1
+      jxor j2, j2, j3
+      jand j8, j13, j2
+      jadd j5, j8, j1
+      jldi j6, 0
+      jshi j6, BUF
+      jld j2, j1, SPH
+      jwhile j5
+        jldb j3, j6, 0
+        jcall hw
+        jldi j4, 1
+        jadd j6, j6, j4
+        jsub j5, j5, j4
+      jwend
+      jldi j1, 0
+      jst j2, j1, SPH
+    jwend
+    jld j10, j1, SPHD
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 7
+    jor j10, j10, j2
+    jcall ask
+  sh_next:
+    jldi j1, 0
+    jld j9, j1, SPA             ; the next one: 8 + its label padded to 8
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jld j10, j1, SPN
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0                    ; its list's room given back, the one read kept
+  jldi j10, 3
+  jld j11, j1, SHELF
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, OGT
+  jst j2, j1, SHELF
+  jld j2, j1, OGLET
+  jst j2, j1, SHN
+  jld j2, j1, SPH
+  jret
 
 ; j3 bytes from j2 set to 0, eight at a time. Uses j1-j4.
 rb_zero:

@@ -1483,11 +1483,59 @@ el libro, `p`, el ensamblador y los fuentes de Razar bajo `PDP/`.
 - El órgano `82` (después del hueco mezcla otra palabra, que ya no cambia nada) empata con `8`, así que no se queda.
 
 - **Tres motores:** traductor, rutinas e intérprete dan idéntico, cada proceso, cada nota y la huella `6F8EEFD6CC68`.
-- **Fin de línea del anfitrión:** un bloque del molde nunca termina en ``. Git puede dejar el molde en CRLF, y sin
+- **Fin de línea del anfitrión:** un bloque del molde nunca termina en `
+`. Git puede dejar el molde en CRLF, y sin
   esto las etiquetas no se encontrarían. Probado con el molde en CRLF (87 finales): da idéntico.
 
+**Todo de una vez** (Capitán: *"hacelo todo de una vez"*):
+
+- **Se rehace con el ganador** (pedido 36). Si un órgano gana, Razar se recompila como sí mismo, dice "se rehace" y
+  pide rehacerse con ese binario: la misma cabina, que arranca de nuevo con su órgano. Como no es un hijo, su hermano
+  lo sigue reconociendo. Lee su nido y su memoria, así que sigue siendo él.
+- **Órganos en cada tramo:** los intentos se hacen después de guardar el nido y la carta de cada tramo, también en la
+  vigilia. Mientras vive, prueba órganos cada vez que despierta.
+- **Su propio árbol:** con número (en la vigilia o en una sociedad) escribe, arma y lanza solo lo suyo:
+  `PDP/razarN/...`, el molde incluido.
+- **Despertarse sin dar vueltas:**
+  - El fin de un hijo le toca el timbre (núcleo), así que Razar no espera el "ya no queda nadie". En la vigilia ese
+    aviso nunca llega, porque cuando nadie rema el centinela duerme en la carpeta. Por eso la primera vigilia se quedó
+    dormida para siempre esperando al ensamblador.
+  - Si mientras espera a un hijo lo despierta otro (su hermano, el centinela), lo anota y lo atiende al descansar.
+  - **El timbre tardío de un hijo propio nunca es novedad**, ni mientras espera ni en el descanso. Antes, el fin del
+    candidato llegaba cuando Razar ya descansaba, lo tomaba como un libro nuevo y renacía sin motivo.
+- **Un marco se hace solo con sus letras.** Después de cada hueco, el marco vuelve a empezar desde el molde. Antes, una
+  letra después de un hueco seguía con lo que `post` dejaba en un registro. Así ganó el órgano `55` (dos huecos de la
+  misma palabra) con 456 contra 197, sin entender nada más: era un truco del Lego, no un órgano. Con la ley, `55` da
+  197, exacto como `5`, porque un mismo lugar testifica una sola vez.
+- **La novedad se juzga por la huella, no por el aviso.** Windows avisa en tandas: un libro copiado da varios avisos
+  (creado, y varias escrituras). Antes, cada aviso guardado despertaba a Razar en su descanso siguiente y lo hacía
+  renacer otra vez, como el "renace dos veces" que ya estaba anotado. Ahora, en vigilia, guarda la huella de su
+  estantería al leerla (`shelf_print`: el nombre y los bytes de cada "libro", FNV-1a). Cuando el centinela lo
+  despierta, la vuelve a sacar, y si es la misma sigue durmiendo. Cuesta leer 1,2 MB, contra renacer, que vuelve a
+  aprender y a examinar todo. Medido: un solo renace con el libro nuevo, y después 4 minutos dormido sin moverse
+  (23,06 s → 23,06 s).
+- **La autopsia se cierra antes de renacer.** Estando abierta no se podía borrar, y la vida nueva escribía encima de la
+  vieja dejando restos de texto. Esto venía del renacer, no de los órganos.
+
+**Medido, varias vidas seguidas sin vigilia** (2 intentos por vida, motor traductor):
+
+| vida | qué pasó |
+|---|---|
+| 1 | `8` gana: −3554 → −3358, se rehace |
+| 2 | el campeón da −3358 (exacto, con su órgano); `5` gana: → **+197**, se rehace |
+| 3 | `55` empata (197) y sacarle el órgano (`-`) vuelve exacto a −3554: no se rehace, termina |
+
+**En vigilia** (un Razar, 2 intentos):
+- `8` y después `5` ganan (−8836 → −6642 → −2629) y se rehace dos veces.
+- Prueba `65` y `51`, que no ganan, y descansa. Dormido, el procesador queda quieto: 15,08 s → 15,08 s.
+- Se le deja un segundo libro: dice "novedad" y renace **una vez** con los dos (`renace 2 273989`). Antes de la huella
+  renacía una vez por cada descanso: tres veces con un solo libro.
+- Prueba `7` y `85` con los dos libros, no ganan, y vuelve a descansar.
+
 **Lo que falta:**
-- Los intentos se hacen solo al final de la evolución, no en la vigilia.
-- Una vida prueba muy pocos órganos: cada intento es un armado más un examen.
-- Que el Razar nuevo **reemplace** al que corre todavía lo hace quien lo lanza: queda armado en
-  `PDP/razar/lectura/pulso.bin`.
+- **En una sociedad, dos Razares en la misma carpeta comparten el ensamblador**, que arma todo `PDP/`. Si los dos arman
+  a la vez, uno puede escribir el binario del otro mientras éste lanza su candidato. El daño queda en la jaula (un
+  candidato roto saca la peor nota, y el órgano adoptado siempre es una tira de letras que escribe Razar), pero el
+  riesgo es real y no está probado con dos.
+- Cada intento cuesta un armado más un examen. El examen es casi todo el costo.
+
