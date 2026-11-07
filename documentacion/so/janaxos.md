@@ -119,6 +119,7 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
      −2 si no es mío).
    - **33 terminar a un hijo** (`a` = un hijo mío): ver "El padre termina a un hijo colgado".
    - **34 presupuesto** (`a` = un hijo mío, `b` = instrucciones más que puede remar): ver "El presupuesto".
+   - **36 rehacerse** (`a`/`b` = la etiqueta de un programa): ver "Rehacerse".
    - **20 bolita** (`a` = la bolita que quiere, en 65.536avos; 10000h = 1): la recorta a la que le dieron al
      lanzarlo (nadie se da más de lo que le dieron, igual que los permisos), recalcula su turno una vez y
      contesta la que quedó. Ver "La bolita de cada camarote".
@@ -1084,3 +1085,37 @@ Dos leyes chicas que el ciclo de órganos de Razar necesitaba:
   medido, nunca a ojo.
 - **La prueba** (`familia_padre_palabra`, con el hijo `dice_al_padre`): el hijo le dice 2Ah al padre por −1. El padre
   despierta en su timbre, lee la palabra y ve que los dos remaron algo: `2A 1 1` en los tres motores.
+
+## Rehacerse: pedido 36, la misma cabina con otro programa (Capitán, 2026-11-06)
+
+El Capitán: *"no es un hijo, es el mismo Razar mejorándose a sí mismo"*. Cuando Razar compila un órgano que gana,
+lanzarse como hijo no alcanza. Un hijo es un extraño para sus hermanos (`cabin_family`: padre, hijo y hermano), y en la
+sociedad dejaría de poder cartearse.
+
+- **36 rehacerse** (`a`/`b` = la etiqueta de un archivo con un programa, como para lanzar). El programa sigue como
+  estaba hasta que termina solo (`jhalt`). En ese momento la cabina no termina: **se rehace** con ese programa y sus
+  datos iniciales (`X.datos`), y arranca desde su primera instrucción.
+  - **Vuelve lo que tenía**, como cuando termina: sus salas, sus archivos abiertos, sus listas.
+  - **Queda lo que es:** su número, su padre y sus hijos, sus porteros, su bolita, su presupuesto y lo que remó.
+  - Responde 0, o −1 si no hay tal programa o no lo puede leer. Si se pide dos veces, cuenta la última.
+  - Si termina con un error, termina de verdad: no se rehace. Lo terminado por su padre (9) o por su presupuesto (10)
+    tampoco.
+- **Cómo:** el pedido lee el programa en una copia propia y carga sus datos. El remero, cuando la cabina termina con
+  código 0, la rehace en el lugar (`cabin_remake`) en vez de cerrarla: cierra lo abierto, devuelve todo, le da el
+  programa nuevo (compartido si otra cabina tiene las mismas palabras), deja los registros y el contador como al nacer,
+  y la vuelve a poner en la fila. No sale su línea `P<n>`, porque no terminó.
+- **La prueba** (`familia_rehace`, el programa `rehace` con `02_ldi` como "hijo"): la cabina pide rehacerse y termina.
+  La única línea que sale es `P0` con `2A`, la de `02_ldi`, en los tres motores. Antes del pedido salía `77`, que es
+  el programa terminando como él mismo.
+
+## Un hijo que termina le toca el timbre a su padre (2026-11-06)
+
+Misma ley que la de la firma: un padre se entera durmiendo, nunca preguntando. Hasta ahora, un padre que esperaba a un
+hijo dormido en su timbre (29) solo despertaba con "ya no queda nadie" (−1). Ese aviso no llega nunca mientras alguien
+vigila su carpeta (32): cuando nadie rema, el núcleo duerme en la carpeta. Razar, en vigilia, se quedó dormido para
+siempre esperando a su ensamblador.
+
+- **Cuando un hijo termina** (solo, por un error, por su padre o por su presupuesto), **le toca el timbre al padre**,
+  si el padre vive (`ring_parent`). El padre despierta con el número del hijo y mira su estado (19).
+- Cambiaron dos pruebas, justo por esto: en `familia_presupuesto` y `familia_timbre` el padre ahora despierta con el
+  número del hijo (`01`) en vez de con "nadie" (`FF`). Esperan `01 0A FE` y `01 01`.

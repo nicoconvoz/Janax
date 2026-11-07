@@ -1,6 +1,6 @@
 ; The parent launches "hijo" and sleeps on its doorbell (29) instead of looking in a loop: a request that waits for
-; its signature rings it, so it wakes with the child's number, signs (17) what waits (18), and sleeps again; when the
-; child ends nobody is left who could greet it, and it wakes with -1. j0 = the two greetings, one byte each.
+; its signature rings it, so it wakes with the child's number, signs (17) what waits (18), and sleeps again; the
+; child's end rings it too, and it wakes with its number again. j0 = the two greetings, one byte each.
 include '../../escalon0/janax.inc'
 jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
@@ -31,7 +31,7 @@ jldi j10, 17                    ; signed: its id is at 800h
 jld j11, j11, 0
 jldi j12, 1
 jcall tocar
-jldi j10, 29                    ; asleep again: nobody is left once the child ends
+jldi j10, 29                    ; asleep again: the child's end rings it
 jcall tocar
 jshl j0, j0, j8
 jand j13, j13, j7

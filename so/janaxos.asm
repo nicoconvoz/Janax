@@ -103,7 +103,9 @@ P_WATCH  = 592                  ; the sentinel: the prefix of the labels it watc
 P_WATCHN = 600
 P_KILL   = 608                  ; 1 = its parent ended it while it rowed: it ends when its turn does
 P_LIMIT  = 616                  ; the instructions it may row in all (34; 0 = no budget): past them, it ends
-PROC_SIZE = 624
+P_REMAKE = 624                  ; 36: the program it asked to be remade with (its own copy), and its words; 0 = none
+P_REMAKEN = 632
+PROC_SIZE = 640
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -149,10 +151,10 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 35                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 36                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
-                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed
+                                ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -191,15 +193,15 @@ section '.data' data readable writeable
               dq serve_cede, serve_use, serve_revoke, serve_consult, serve_delete, serve_rename, serve_list
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
-              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed
+              dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
-  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35
-  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0
+  ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36
+  kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
-             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0
+             db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
-  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0
+  kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -3430,6 +3432,7 @@ serve_gate serve_bolita,  20, family_bolita
 serve_gate serve_end,     33, family_end
 serve_gate serve_budget,  34, family_budget
 serve_gate serve_rowed,   35, family_rowed
+serve_gate serve_remake,  36, family_remake
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -3785,6 +3788,140 @@ family_rowed:
         mov     qword [rbp + r13 + 24], -2
         ret
 
+; 36 remake (Capitan: "it is not a child, it is the same Razar remaking itself"): a/b = the label of a program file,
+; as to launch. When the cabin ends by itself (jhalt), it is not ended: it is remade, the same cabin with this program
+; and its initial data, started from its first instruction. What it held goes back (its rooms, its open files, its
+; lists, as when one ends); what it is stays: its number, its parent and its children, its porters, its bolita, its
+; budget and what it rowed. Its family still knows it: a child would be a stranger to its siblings. Until it ends it
+; goes on as it was. Answers 0, or -1 (no such program, or not one it may read).
+family_remake:
+        sub     rsp, 8
+        mov     rsi, [rbp + r13 + 8]
+        mov     rcx, [rbp + r13 + 16]
+        lea     rdi, [host_path]
+        call    label_path
+        test    eax, eax
+        jz      .invalid
+        call    files_prefix_ok
+        test    eax, eax
+        jz      .invalid
+        invoke  CreateFileA, host_path, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
+        inc     qword [hostcalls]
+        cmp     rax, -1
+        je      .invalid
+        mov     [hfile], rax
+        call    program_buffer
+        test    rax, rax
+        jz      .close
+        mov     [mp_prog], rax
+        mov     dword [bytesread], 0
+        invoke  ReadFile, [hfile], [mp_prog], MAX_PROGRAM, bytesread, 0
+        inc     qword [hostcalls]
+        invoke  CloseHandle, [hfile]
+        inc     qword [hostcalls]
+        mov     rax, [rbx + P_REMAKE]   ; (asked again: the last one counts)
+        test    rax, rax
+        jz      @f
+        invoke  VirtualFree, rax, 0, MEM_RELEASE
+        mov     qword [rbx + P_REMAKE], 0
+@@:     mov     eax, [bytesread]
+        shr     eax, 2
+        mov     [rbx + P_REMAKEN], rax
+        lea     rdx, [rax*4]
+        test    rdx, rdx
+        jnz     @f
+        mov     edx, 4
+@@:     invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
+        test    rax, rax
+        jz      .invalid
+        mov     [rbx + P_REMAKE], rax
+        mov     rdi, rax                ; its own copy: the loading buffer is everyone's
+        mov     rsi, [mp_prog]
+        mov     rcx, [rbx + P_REMAKEN]
+        rep     movsd
+        mov     rax, [rbx + P_INIT]     ; its initial data: the new program's, or none (never the old one's)
+        test    rax, rax
+        jz      @f
+        invoke  VirtualFree, rax, 0, MEM_RELEASE
+@@:     mov     qword [rbx + P_INIT], 0
+        mov     qword [rbx + P_INITLEN], 0
+        mov     rax, rbx
+        push    rax
+        sub     rsp, 8
+        call    family_data
+        add     rsp, 8
+        pop     rax
+        mov     qword [rbp + r13 + 24], 0
+        add     rsp, 8
+        ret
+.close:
+        invoke  CloseHandle, [hfile]
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+        add     rsp, 8
+        ret
+
+; The cabin rbx, which ended by itself after asking to be remade (36), remade: what it held goes back, its new
+; program in, everything else of a cabin that runs set as at birth, and to the line. With the lock. Keeps rbx.
+cabin_remake:
+        push    rbp r12 r13 r14 r15
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 8                  ; (as the rower ends one: close_files and cabin_free)
+        call    close_files
+        call    cabin_free
+        add     rsp, 8
+        mov     rax, [rbx + P_REMAKE]   ; its program, shared if another cabin has the same words
+        mov     [mp_prog], rax
+        mov     rax, [rbx + P_REMAKEN]
+        mov     [mp_words], rax
+        call    share_program
+        invoke  VirtualFree, qword [rbx + P_REMAKE], 0, MEM_RELEASE
+        xor     eax, eax
+        mov     [rbx + P_REMAKE], rax
+        mov     [rbx + P_REMAKEN], rax
+        lea     rdi, [rbx + P_REGS]     ; as at birth: every register 0, from its first instruction, no room
+        mov     ecx, 16
+        rep     stosq
+        mov     [rbx + P_PC], rax
+        mov     [rbx + P_DEPTH], rax
+        mov     [rbx + P_DONE], rax
+        mov     [rbx + P_CODE], rax
+        mov     [rbx + P_SIZE], rax
+        mov     [rbx + P_ROOMBASE], rax
+        mov     [rbx + P_NEXTROOM], rax
+        mov     [rbx + P_ROOM0], rax
+        mov     [rbx + P_WAITING], rax
+        mov     [rbx + P_GWAIT], rax
+        mov     [rbx + P_NGREET], rax
+        mov     [rbx + P_WATCH], rax
+        mov     [rbx + P_WATCHN], rax
+        mov     [rbx + P_CUT], rax
+        mov     rax, rbx
+        call    q_push
+        mov     rsp, rbp
+        pop     r15 r14 r13 r12 rbp
+        ret
+
+; The cabin rbx ended: its parent's doorbell rings (28), so a parent asleep on it knows (Capitan's rule: no loop
+; that looks). It never waits for "nobody is left", which does not come while a sentinel watches its folder. With the
+; lock. Keeps every register but rax.
+ring_parent:
+        mov     rax, [rbx + P_PARENT]
+        test    rax, rax
+        jz      .done
+        cmp     qword [rax + P_DONE], 0
+        jne     .done
+        push    rbp rcx rdx rsi rdi r8 r9 r10 r11
+        mov     rbp, rsp
+        and     rsp, -16
+        mov     rax, [rax + P_ID]
+        call    greet
+        mov     rsp, rbp
+        pop     r11 r10 r9 r8 rdi rsi rdx rcx rbp
+.done:
+        ret
+
 ; The cabin rbx, not rowing, ends now with code 9, its line first (children that row end when their turn does).
 ; With the lock. Keeps rbx.
 cabin_end:
@@ -3798,6 +3935,7 @@ cabin_end:
         mov     qword [rbx + P_CODE], CODE_ENDED
         mov     qword [rbx + P_DONE], 1
         call    end_records
+        call    ring_parent
         call    close_files             ; as when it ends by itself (remos.inc, run_all)
         call    orphans
         call    cabin_free

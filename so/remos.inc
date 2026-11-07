@@ -223,6 +223,14 @@ run_all:
         call    kern_wake_special       ; it holds others and nobody rows it now
         jmp     .back
 .ended:
+        cmp     qword [rbx + P_REMAKE], 0 ; it asked to be remade (36) and ended by itself: the same cabin, remade
+        je      .gone
+        cmp     qword [rbx + P_CODE], 0
+        jne     .gone
+        call    cabin_remake
+        jmp     .back
+.gone:
+        call    ring_parent             ; its parent's doorbell rings: it ended
         call    close_files             ; whatever the process left open
         call    orphans                 ; its children and what waited for its signature go up
         call    cabin_free              ; and everything it held goes back (ambientes.inc)

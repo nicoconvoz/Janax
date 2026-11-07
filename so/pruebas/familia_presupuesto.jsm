@@ -1,6 +1,6 @@
 ; The parent launches "hijo", which never ends on its own, gives it a budget (request 34: 10000 instructions more)
-; and sleeps on its doorbell (29): the child ends when it spends it, nobody is left who could greet the parent, and
-; it wakes with -1. The child's state (19) is then 10 (it spent its budget), and a number that is not a child of its
+; and sleeps on its doorbell (29): the child ends when it spends it, and its end rings the parent, which wakes with
+; the child's number (1). The child's state (19) is then 10 (it spent its budget), and a number that is not a child of its
 ; own is refused (-2). j0 = the greeting, the state and the refusal, one byte each.
 include '../../escalon0/janax.inc'
 jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
