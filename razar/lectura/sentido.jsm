@@ -64,6 +64,8 @@ S_LIBP  = 0A40h                 ; ", pairs proved in the library"
 S_QAN   = 0A80h                 ; the book's questions, and those with a core in the answer next to them
 S_QAM   = 0AC0h
 S_QAL   = 0AE0h                 ; what they taught
+S_GLU   = 8D0h                  ; the glue between constructions
+S_GLD   = 8E0h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -215,6 +217,19 @@ QLH   = 0D48h
 QLS   = 0D50h
 QLN   = 0D58h
 QLK   = 0D60h
+GFL   = 0D68h                   ; the glue between constructions: the facts of proved skeletons in the book's order
+GFN   = 0D70h                   ; {start, end, skeleton} and how many; by glue {key, times, where seen, how far} and by
+GLT   = 0D80h                   ; construction {key, times} (tables that grow); joinings; walking: a fact, the first,
+GKT   = 0DA0h                   ; its end, a half search, how far the other starts, its skeleton, the glue's print
+GLN   = 0DC0h
+GI    = 0DC8h
+GP    = 0DD0h
+GLE   = 0DD8h
+GT1   = 0DE0h
+GT2   = 0DE8h
+GJ    = 0DF0h
+GK2   = 0DF8h
+GT3   = 0E00h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -336,6 +351,7 @@ jcall arrows                    ; the words that live in a limit most buildings 
 jcall qa_scan                   ; the book's own questions, and the answers next to them
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
+jcall glue_count                ; how the book joins its constructions
 jcall sk_report
 jcall cores
 jjmp finish
@@ -470,6 +486,9 @@ gw_k:
   jjnz j3, gw_meet
   jjmp f_learn
 gw_meet:
+  jldi j3, 6                    ; (6: listed, for the glue between constructions)
+  jsub j3, j2, j3
+  jjz j3, f_glue
   jjmp f_meet
 gw_none:
   jret
@@ -2460,6 +2479,382 @@ pq_file:
     jld j9, j1, QLK
     jjmp pqf_lap
 pqf_done:
+  jldi j1, 0
+  jret
+
+; The glue between constructions (Capitan, 2026-11-07: "glue, structure, so it can think ever more complex mechanisms
+; recombining"): how the book itself joins its facts. Every fact of a proved skeleton (two pairs or more) is listed in
+; the book's order (GMODE 6), then each one is met with every fact that starts where it ends or up to two units after
+; it: the units between are the glue ("=": the same core ends one and starts the other; "+": right after it). Counted:
+; how often each glue joins two facts, and each construction (skeleton, glue, skeleton) proved twice or more. Nothing
+; is named: the glues come out of the book. Uses j1-j14.
+glue_count:
+  jldi j1, 0
+  jld j11, j1, NTOK             ; (three windows a unit at most, each fact 24 bytes)
+  jldi j2, 72
+  jmul j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, GFL
+  jst j1, j1, GFN
+  jldi j2, 6
+  jst j2, j1, GMODE
+  jcall gather
+  jldi j2, GLT
+  jldi j3, 32
+  jcall pl_new
+  jldi j2, GKT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, GLN
+  jst j1, j1, GI
+  gc_fact:
+    jldi j1, 0
+    jld j2, j1, GI
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, gc_report
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j3, j3, j4
+    jst j3, j1, GP              ; the first fact; the first that starts where it ends or after (halving the list)
+    jld j5, j3, 8
+    jst j5, j1, GLE
+    jst j1, j1, GT1
+    jld j2, j1, GFN
+    jst j2, j1, GT2
+    gc_half:
+      jldi j1, 0
+      jld j2, j1, GT1
+      jld j3, j1, GT2
+      jsub j4, j3, j2
+      jjz j4, gc_found
+      jadd j4, j2, j3
+      jldi j5, 1
+      jshr j4, j4, j5
+      jldi j5, 24
+      jmul j5, j4, j5
+      jld j6, j1, GFL
+      jadd j5, j5, j6
+      jld j5, j5, 0
+      jld j6, j1, GLE
+      jsub j5, j5, j6
+      jldi j6, 63
+      jsar j5, j5, j6
+      jjz j5, gc_lo
+      jldi j5, 1
+      jadd j4, j4, j5
+      jst j4, j1, GT1
+      jjmp gc_half
+    gc_lo:
+      jst j4, j1, GT2
+      jjmp gc_half
+  gc_found:
+    gc_next2:
+      jldi j1, 0
+      jld j2, j1, GT1
+      jld j3, j1, GFN
+      jsub j3, j2, j3
+      jjz j3, gc_nextf
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, GFL
+      jadd j3, j3, j4
+      jld j4, j3, 0               ; its start: up to two units past the first's end
+      jld j5, j1, GLE
+      jsub j4, j4, j5
+      jldi j6, 4
+      jsub j6, j4, j6
+      jldi j7, 63
+      jsar j6, j6, j7
+      jjz j6, gc_nextf
+      jst j4, j1, GJ              ; (how far: 0 the same core, 1 right after, 2 and 3 with glue)
+      jld j2, j3, 16
+      jst j2, j1, GK2
+      jcall gc_pair
+      jldi j1, 0
+      jld j2, j1, GT1
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, GT1
+      jjmp gc_next2
+  gc_nextf:
+    jldi j1, 0
+    jld j2, j1, GI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, GI
+    jjmp gc_fact
+gc_report:
+  jjmp glue_report
+
+; Two facts met: the first at GP (its end GLE), the other GJ units on, its skeleton GK2. The glue's print (how far, and
+; each unit between) counted at GLT {key, times, where it was seen, how far}, and the construction at GKT. Uses j1-j14.
+gc_pair:
+  jldi j1, 0
+  jld j5, j1, FNVO
+  jld j6, j1, FNVP
+  jld j2, j1, GJ
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jld j7, j1, GLE
+  jldi j8, 1
+  gcp_unit:
+    jadd j7, j7, j8
+    jld j2, j1, GLE
+    jld j3, j1, GJ
+    jadd j2, j2, j3
+    jsub j2, j7, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, gcp_key
+    jadd j2, j7, j1
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jjmp gcp_unit
+gcp_key:
+  jjnz j5, gcp_k
+  jldi j5, 1
+gcp_k:
+  jst j5, j1, GT3
+  jldi j2, GLT
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jld j2, j1, GLE
+  jst j2, j4, 16
+  jld j2, j1, GJ
+  jst j2, j4, 24
+  jld j2, j1, GLN
+  jadd j2, j2, j3
+  jst j2, j1, GLN
+  jld j2, j1, GP                ; the construction: skeleton, glue, skeleton
+  jld j5, j2, 16
+  jld j6, j1, FNVP
+  jmul j5, j5, j6
+  jld j2, j1, GT3
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jld j2, j1, GK2
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jjnz j5, gcp_k2
+  jldi j5, 1
+gcp_k2:
+  jldi j2, GKT
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jret
+
+; Written: how many joinings, how many glues and constructions proved twice or more, and the glues that join the most
+; (the first twenty: criterion, the report's size). Uses j1-j14.
+glue_report:
+  jldi j1, S_GLU
+  jcall puts
+  jld j2, j1, GLN
+  jcall putnum
+  jldi j1, S_GLD
+  jcall puts
+  jldi j2, GLT
+  jcall gl_proved
+  jcall putnum
+  jldi j2, 47
+  jcall putch
+  jldi j2, GKT
+  jcall gl_proved
+  jcall putnum
+  jldi j1, 0
+  jst j1, j1, GI
+  glr_lap:
+    jldi j1, 0
+    jld j2, j1, GI
+    jldi j3, 20
+    jsub j3, j2, j3
+    jjz j3, glr_done
+    jldi j11, 0                 ; the glue not written yet that joins the most
+    jldi j12, 0
+    jld j9, j1, GLT
+    jld j10, j1, GLT + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    glr_find:
+      jjz j10, glr_found
+      jld j2, j9, 0
+      jjz j2, glr_fnext
+      jld j2, j9, 8
+      jsub j3, j11, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, glr_fnext
+      jadd j11, j2, j1
+      jadd j12, j9, j1
+    glr_fnext:
+      jld j2, j1, GLT + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp glr_find
+  glr_found:
+    jjz j12, glr_done
+    jst j12, j1, GP
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j12, j1, GP
+    jld j2, j12, 24
+    jjnz j2, glr_far
+    jldi j2, 61                 ; "=": the same core
+    jcall putch
+    jjmp glr_count
+  glr_far:
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, glr_units
+    jldi j2, 43                 ; "+": right after
+    jcall putch
+    jjmp glr_count
+  glr_units:
+    jld j2, j12, 16
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, GT1
+    glr_unit:
+      jldi j1, 0
+      jld j12, j1, GP
+      jld j2, j12, 16
+      jld j3, j12, 24
+      jadd j2, j2, j3
+      jld j3, j1, GT1
+      jsub j2, j3, j2
+      jjz j2, glr_count
+      jadd j2, j3, j1
+      jcall tok_at
+      jjnz j2, glr_word
+      jldi j2, 124                ; ("|": a renglon's end)
+      jcall putch
+      jjmp glr_put
+    glr_word:
+      jcall putword
+    glr_put:
+      jldi j1, 0
+      jld j2, j1, GT1
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, GT1
+      jld j12, j1, GP
+      jld j3, j12, 16
+      jld j4, j12, 24
+      jadd j3, j3, j4
+      jsub j3, j2, j3
+      jjz j3, glr_count
+      jldi j2, 95                 ; "_" between units
+      jcall putch
+      jjmp glr_unit
+  glr_count:
+    jldi j2, 40
+    jcall putch
+    jldi j1, 0
+    jld j12, j1, GP
+    jld j2, j12, 8
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j1, 0
+    jld j12, j1, GP             ; (not again: its count goes negative while it is written)
+    jld j2, j12, 8
+    jldi j3, 0
+    jsub j2, j3, j2
+    jst j2, j12, 8
+    jld j2, j1, GI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, GI
+    jjmp glr_lap
+glr_done:
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; How many entries of the table at j2 have two or more (the anecdote rule) -> j2. Uses j1-j6.
+gl_proved:
+  jldi j1, 0
+  jld j3, j2, 0
+  jld j4, j2, 8
+  jld j6, j2, 24
+  jldi j5, 1
+  jadd j4, j4, j5
+  jldi j2, 0
+  glp_lap:
+    jjz j4, glp_done
+    jld j5, j3, 0
+    jjz j5, glp_next
+    jld j5, j3, 8
+    jldi j1, 2
+    jsub j5, j5, j1
+    jldi j1, 63
+    jsar j5, j5, j1
+    jldi j1, 0
+    jjnz j5, glp_next
+    jldi j5, 1
+    jadd j2, j2, j5
+  glp_next:
+    jadd j3, j3, j6
+    jldi j5, 1
+    jsub j4, j4, j5
+    jjmp glp_lap
+glp_done:
+  jret
+
+; A window of a proved skeleton, affirmed (GMODE 6): listed at GFL {its start, its end, its skeleton}. Uses j1-j8.
+f_glue:
+  jldi j1, 0
+  jld j2, j1, WN
+  jjnz j2, fgl_done
+  jld j5, j1, WK
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, fgl_done
+  jld j2, j4, 8
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, fgl_done
+  jld j3, j1, GFN
+  jldi j4, 24
+  jmul j4, j3, j4
+  jld j5, j1, GFL
+  jadd j4, j4, j5
+  jld j2, j1, WJ
+  jst j2, j4, 0
+  jld j5, j1, WM
+  jadd j2, j2, j5
+  jldi j5, 1
+  jadd j2, j2, j5
+  jst j2, j4, 8
+  jld j2, j1, WK
+  jst j2, j4, 16
+  jadd j3, j3, j5
+  jst j3, j1, GFN
+fgl_done:
   jldi j1, 0
   jret
 

@@ -2277,3 +2277,31 @@ casa: Razar crea sus propias reglas.
   pregunten y contesten, se hace firme o se da vuelta. "¿Qué es la ley?" sigue dando "pecado es la ley": lo que se
   engancha a "ley" es "la", y los libros enseñaron que con "la" el núcleo va después.
 
+## El pegamento entre construcciones: el instrumento (2026-11-07)
+
+El Capitán: que Razar *"vuelva rica la respuesta: adjetivos, verbos, construcciones, pegamento, estructura, que pueda
+pensar en mecanismos cada vez más complejos recombinando"*. Primer paso: medir cómo une el libro sus propias
+construcciones, sin decirle qué es un pegamento.
+
+- **Qué cuenta (`glue_count`):**
+  - cada hecho de un esqueleto probado (dos pares o más) se anota en el orden del libro (`GMODE 6`, `f_glue`);
+  - cada uno se cruza con los hechos que arrancan donde él termina o hasta dos unidades después;
+  - lo que hay entre los dos es el **pegamento**: `=` si el mismo núcleo cierra uno y abre el otro, `+` si van pegados,
+    y si no, las unidades del medio (`|` es un fin de renglón);
+  - se cuentan los pegamentos y las **construcciones** (esqueleto, pegamento, esqueleto) vistas dos veces o más.
+- **Medido:**
+
+  | Libro | Uniones | Pegamentos probados | Construcciones probadas |
+  |---|---|---|---|
+  | Nuevo Testamento | 114.406 | 2.981 | 10.412 |
+  | Asimov | 46.384 | 2.130 | 2.969 |
+  | esta documentación | 16.213 | 637 | 1.569 |
+
+  - Los que más unen, descubiertos solos: el núcleo compartido, ",", "de", "y", "que", ", y", "a", ": «" (la cita),
+    "se", "por".
+  - En la documentación aparecen los propios del markdown: "/", "(", "`".
+- Las respuestas no cambian: el número de control del libro entero da igual.
+- **Lo que sigue:** usar estas construcciones para componer la respuesta. Primero juntar los hechos del mismo núcleo y
+  la misma construcción con el pegamento que el libro usa entre una construcción y sí misma; después enganchar hechos
+  por el núcleo compartido.
+
