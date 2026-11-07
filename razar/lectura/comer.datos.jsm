@@ -36,3 +36,9 @@ db ' piezas nuevas=', 0
 times 380h - $ db 0
 db ' ya estaban=', 0
 times 3C0h - $ db 0
+db 'tablero/esqueletos', 0
+times 3E0h - $ db 0
+db 'tablero/preguntas-', 0
+times 400h - $ db 0
+db 'tablero/enganches-', 0
+times 420h - $ db 0

@@ -288,6 +288,7 @@ QSX   = 5078h
 QSY   = 5080h
 QSA   = 5088h
 QSZ   = 5090h
+DKIND = 5098h                   ; what the bits hold: 0 the turns, 1 the compositions ({times, pieces} an entry)
 TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
 DRC   = 0FE0h                   ; by thought, the different routes it was reached by {key, routes} (a table that grows)
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
@@ -4301,7 +4302,22 @@ ee2_summed:
   jldi j2, 1
   jst j2, j1, QLS
   jcall ee2_walk                ; written
+  jldi j1, 0                    ; in bits, as the turns: each piece once, the entries by their indexes
+  jld j2, j1, QLC
+  jst j2, j1, EOUT
+  jld j2, j1, QLW
+  jst j2, j1, EOSZ
+  jld j2, j1, QLC               ; (how many: its head says it; QLN counted both passes)
+  jld j2, j2, 8
+  jst j2, j1, ECNT
+  jldi j2, 1
+  jst j2, j1, DKIND
+  jcall eb_encode
   jldi j1, 0
+  jld j2, j1, EOUT
+  jst j2, j1, QLC
+  jld j2, j1, EOSZ
+  jst j2, j1, QLW
   jldi j11, 64
   jcall room
   jldi j1, 0
@@ -5090,6 +5106,8 @@ ew_read_end:
   jst j2, j1, EPOS
   jst j1, j1, ECNT
   jcall ew_walk                 ; and written
+  jldi j1, 0
+  jst j1, j1, DKIND
   jcall eb_encode               ; in bits
   jldi j1, 0
   jldi j11, 64                  ; its label: "tablero/esqueletos" and sixteen hex digits
@@ -5370,6 +5388,14 @@ eb_encode:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, DT2
+    jld j2, j1, DKIND           ; (compositions: {times, pieces})
+    jjz j2, ebd_turn
+    jld j2, j9, 8
+    jst j2, j1, DT3
+    jldi j2, 16
+    jadd j9, j9, j2
+    jjmp ebd_piece
+  ebd_turn:
     jld j2, j9, 16
     jld j3, j9, 24
     jadd j2, j2, j3
@@ -5497,6 +5523,18 @@ ebw_rels:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, DT2
+    jld j2, j1, DKIND           ; (compositions: gamma of its times and of its pieces)
+    jjz j2, ebw_turn
+    jld j2, j9, 0
+    jcall sb_gamma
+    jld j2, j9, 8
+    jcall sb_gamma
+    jld j2, j9, 8
+    jst j2, j1, DT3
+    jldi j2, 16
+    jadd j9, j9, j2
+    jjmp ebw_piece
+  ebw_turn:
     jld j2, j9, 0
     jjz j2, ebw_t
     jldi j2, 1
@@ -5873,6 +5911,33 @@ edd_walk:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, DT2
+    jld j2, j1, DKIND           ; (compositions: {times, pieces})
+    jjz j2, edw_turn
+    jcall sr_gamma
+    jst j2, j1, DR0
+    jcall sr_gamma
+    jst j2, j1, DR1
+    jst j2, j1, DT3
+    jcall edd_past
+    jjnz j2, edw_bad
+    jld j2, j1, DOUT
+    jjz j2, edw_count1
+    jld j4, j1, DPOS
+    jld j2, j1, DR0
+    jst j2, j4, 0
+    jld j2, j1, DR1
+    jst j2, j4, 8
+    jldi j2, 16
+    jadd j4, j4, j2
+    jst j4, j1, DPOS
+    jjmp edw_piece
+  edw_count1:
+    jld j2, j1, DSZ
+    jldi j3, 16
+    jadd j2, j2, j3
+    jst j2, j1, DSZ
+    jjmp edw_piece
+  edw_turn:
     jldi j3, 1
     jcall sr_bits
     jst j2, j1, DR0
@@ -6342,9 +6407,14 @@ ll_listed:
     jcall pq_file
     jjmp ll_next
   ll_eng:
+    jldi j2, 1
+    jst j2, j1, DKIND
+    jcall ed_decode
+    jjz j2, ll_next
     jcall pe_file
     jjmp ll_next
   ll_turns:
+    jst j1, j1, DKIND
     jcall ed_decode
     jjz j2, ll_next
     jcall ll_file

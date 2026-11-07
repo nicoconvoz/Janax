@@ -51,6 +51,9 @@ S_TAB   = 300h                  ; "tablero/pistas", "tablero/pieza"
 S_TABP  = 310h
 S_NEW   = 340h
 S_SAME  = 380h
+S_DESQ  = 3C0h                  ; what sentido leaves for a book's bytes: "tablero/esqueletos", "tablero/preguntas-",
+S_DPRQ  = 3E0h                  ; "tablero/enganches-"
+S_DENG  = 400h
 
 PLEN  = 1600h                   ; the address's bytes, at PATHB
 HND    = 1608h                   ; a handle
@@ -141,6 +144,10 @@ ZGN   = 6728h
 ZK    = 6730h
 ZKT   = 6738h
 ZCODE = 6800h                   ; by byte: 1 if a word uses it, then its number among the letters (256 qwords)
+DERT  = 7100h                   ; sweeping: the names the indexes give {key} (a table that grows); a label walked,
+SWI   = 7120h                   ; how many left, a book's print unsalted
+SWN   = 7128h
+SWK   = 7130h
 ZALPH = 7000h                   ; the letters, by number (256 bytes)
 PATHB = 6000h                   ; the address (511 bytes at most)
 PLAB  = 6400h                   ; the index's label: "tablero/pistas" and sixteen hex digits
@@ -1283,6 +1290,8 @@ jwhile j10
   jsub j10, j10, j3
 jwend
 old_gone:
+jcall lib_sweep                 ; what sentido left for bytes no index names any more, given back
+jldi j1, 0
 jldi j10, 12                    ; (a nest of before in its own folder goes: the library is where they live now)
 jldi j11, PLAB + 8
 jldi j12, PLABN - 8
@@ -1749,6 +1758,196 @@ zs_first:
   jld j4, j1, ROOMA
   jadd j3, j3, j4
   jst j3, j1, ZLA
+  jret
+
+; What sentido leaves in the library for a book's bytes ("tablero/esqueletos", "tablero/preguntas-",
+; "tablero/enganches-" and sixteen hex digits) is given back when no index names those bytes any more, as the pieces
+; are (one general rule: an old version of a book, a book gone, the same). From every index, the names its book's
+; bytes give: the print unsalted (as that index salts it: 7, or 6 before its version 7) by the inverse of FNV's prime
+; (odd, so it has one: 0xCE965057AFF6957B), salted as sentido salts each (the turns 2 and 1, the lessons 3, the
+; compositions 5). Every such file whose name is none of them goes. Uses j1-j14.
+lib_sweep:
+  jldi j2, DERT
+  jldi j3, 8
+  jcall pl_new
+  jcall pz_list
+  jldi j1, 0
+  jld j2, j1, PZLSTN
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, swp_done
+  jst j2, j1, SWN               ; the names every index gives
+  jld j2, j1, PZLST
+  jst j2, j1, SWI
+  swp_ix:
+    jldi j1, 0
+    jld j2, j1, SWN
+    jjz j2, swp_named
+    jld j9, j1, SWI
+    jcall zw_index
+    jjz j2, swp_ixnext
+    jldi j1, 0
+    jld j9, j1, SWI
+    jldi j11, 8
+    jadd j11, j9, j11
+    jld j12, j9, 0
+    jcall pz_file
+    jldi j1, 0
+    jld j2, j1, PZFRN
+    jldi j3, 160
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, swp_ixnext
+    jld j9, j1, PZFR
+    jld j3, j9, 0
+    jldi j4, 7
+    jsub j4, j3, j4
+    jldi j3, 7
+    jjz j4, swp_salt
+    jldi j3, 6
+  swp_salt:
+    jld j2, j9, 152
+    jldi j4, 0
+    jshi j4, 0CE96h
+    jshi j4, 5057h
+    jshi j4, 0AFF6h
+    jshi j4, 957Bh
+    jmul j2, j2, j4
+    jxor j2, j2, j3
+    jst j2, j1, SWK
+    jldi j2, 2
+    jcall swp_name
+    jldi j2, 1
+    jcall swp_name
+    jldi j2, 3
+    jcall swp_name
+    jldi j2, 5
+    jcall swp_name
+  swp_ixnext:
+    jldi j1, 0
+    jld j9, j1, SWI
+    jld j2, j9, 0
+    jcall zs_pad
+    jldi j3, 8
+    jadd j9, j9, j2
+    jadd j9, j9, j3
+    jst j9, j1, SWI
+    jld j2, j1, SWN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, SWN
+    jjmp swp_ix
+swp_named:
+  jld j2, j1, PZLSTN            ; every file of those kinds, against them
+  jst j2, j1, SWN
+  jld j2, j1, PZLST
+  jst j2, j1, SWI
+  swp_f:
+    jldi j1, 0
+    jld j2, j1, SWN
+    jjz j2, swp_done
+    jld j9, j1, SWI
+    jld j2, j9, 0
+    jldi j3, 34
+    jsub j2, j2, j3
+    jjnz j2, swp_fnext
+    jldi j4, S_DESQ
+    jcall swp_is
+    jjnz j2, swp_kind
+    jldi j4, S_DPRQ
+    jcall swp_is
+    jjnz j2, swp_kind
+    jldi j4, S_DENG
+    jcall swp_is
+    jjz j2, swp_fnext
+  swp_kind:
+    jld j9, j1, SWI             ; its sixteen hex digits
+    jldi j3, 26
+    jadd j3, j9, j3
+    jldi j5, 0
+    jldi j6, 16
+    swp_hex:
+      jldb j2, j3, 0
+      jldi j4, 97
+      jsub j7, j2, j4
+      jldi j8, 63
+      jsar j7, j7, j8
+      jldi j4, 87
+      jjz j7, swp_dig
+      jldi j4, 48
+    swp_dig:
+      jsub j2, j2, j4
+      jldi j4, 4
+      jshl j5, j5, j4
+      jor j5, j5, j2
+      jldi j4, 1
+      jadd j3, j3, j4
+      jsub j6, j6, j4
+      jjnz j6, swp_hex
+    jldi j2, DERT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjnz j2, swp_fnext
+    jld j9, j1, SWI             ; named by no index: it goes
+    jldi j10, 12
+    jldi j11, 8
+    jadd j11, j9, j11
+    jldi j12, 34
+    jcall ask
+  swp_fnext:
+    jldi j1, 0
+    jld j9, j1, SWI
+    jld j2, j9, 0
+    jcall zs_pad
+    jldi j3, 8
+    jadd j9, j9, j2
+    jadd j9, j9, j3
+    jst j9, j1, SWI
+    jld j2, j1, SWN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, SWN
+    jjmp swp_f
+swp_done:
+  jldi j1, 0
+  jret
+
+; The name of the bytes SWK salted j2, (SWK ^ j2) * FNV's prime, noted as one an index gives (DERT). Uses j1-j8.
+swp_name:
+  jldi j1, 0
+  jld j5, j1, SWK
+  jxor j5, j5, j2
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jjnz j5, swpn_k
+  jldi j5, 1
+swpn_k:
+  jldi j2, DERT
+  jcall pl_take
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the label listed at SWI starts with the 18 bytes at j4. Uses j1-j7.
+swp_is:
+  jldi j1, 0
+  jld j3, j1, SWI
+  jldi j5, 18
+  swi_lap:
+    jldb j6, j3, 8
+    jldb j7, j4, 0
+    jsub j6, j6, j7
+    jjnz j6, swi_no
+    jldi j6, 1
+    jadd j3, j3, j6
+    jadd j4, j4, j6
+    jsub j5, j5, j6
+    jjnz j5, swi_lap
+  jldi j2, 1
+  jret
+swi_no:
+  jldi j2, 0
   jret
 
 ; The sixteen hex digits of j5, the last at j3 and the first fifteen before it. Uses j3-j8.

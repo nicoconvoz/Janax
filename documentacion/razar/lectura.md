@@ -2508,3 +2508,43 @@ El Capitán: *"la guía son los muebles, a menos que la estructura se trate como
   relación. Las preguntas de control dan idéntico, y las de dos pasos siguen en 3 de 3.
 - Solo entra cuando ningún mueble de la pregunta encontró respuesta.
 
+## Mediciones de la revisión, composiciones en bits y la biblioteca sin huérfanos (2026-11-07)
+
+**Lecciones apoyadas en dos casos** (instrumento provisorio, no quedó en el código). En cada pregunta la biblioteca (NT +
+Asimov + documentación) carga entre 63 y 112 lecciones: 14 a 24 de un caso (no deciden), 15 a 20 de dos, y 29 a 32
+de tres o más.
+- En "¿de quién es hijo jacob?" **todas** las decisiones (34) y rechazos (32) se apoyan en lecciones de dos casos.
+- En "¿quién es el padre de jacob?" (818 decisiones), "¿hijo de dios?" (2.982) y "¿qué es la ley?" (120), ninguna.
+- Las lecciones flojas deciden poco, pero donde deciden lo hacen solas. Hacen falta más libros que pregunten y
+  contesten.
+
+**Pensamientos contra tamaño** (12 preguntas de control):
+
+| Biblioteca | Bytes | Pedazos | Pensamientos | Tiempo |
+|---|---|---|---|---|
+| NT + génesis | 0,97 MB | 1,08 MB | 10 | 15,1 s |
+| NT + Asimov | 1,35 MB | 1,24 MB | 6 | 14,4 s |
+| + documentación | 1,51 MB | 1,32 MB | 29 | 15,8 s |
+| biblioteca real | 2,27 MB | 1,65 MB | 28 | 21,8 s |
+
+Con una línea de pensamiento por respuesta, la cantidad depende de las composiciones, no del tamaño. El tiempo crece
+menos que la biblioteca: 2,3 veces más biblioteca cuesta 1,4 veces más tiempo.
+
+**Composiciones en bits.** El codificador de las vueltas sirve para las dos cosas: comparten el diccionario de piezas
+y los índices. `DKIND` dice qué lleva cada entrada (vuelta: dada vuelta, pares y piezas de cada medio; composición:
+gamma de sus veces y de sus piezas).
+- Medido en la misma biblioteca: **656.800 → 75.603 bytes (8,7 veces menos)**.
+- Respuestas y pensamientos idénticos contra la versión en cajas de 8 bytes.
+
+**La biblioteca sin huérfanos.** Cuando un libro cambia, sus vueltas, lecciones y composiciones viejas quedaban, y se
+contaban dos veces. En una copia de la biblioteca real había 45 archivos así sobre 95. Ahora vale la misma regla que
+para los pedazos: **lo que ningún índice nombra se devuelve** (`lib_sweep`, en `comer`).
+- Al comer, `comer` calcula los nombres que da cada índice: la huella de los bytes, sacada de su sal con la inversa
+  del primo de FNV (`0xCE965057AFF6957B`), y salada como la sala `sentido` (2 y 1 las vueltas, 3 las lecciones, 5 las
+  composiciones).
+- Devuelve todo archivo de esos tipos cuyo nombre no salga de ninguno.
+- Cubre las versiones viejas de un libro y los libros borrados.
+- Medido: 45 huérfanos → 0.
+
+Las preguntas de control dan idéntico, y las de dos pasos y "¿qué significa con?" siguen igual.
+
