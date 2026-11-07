@@ -53,6 +53,9 @@ S_SAIDQ = 780h
 S_DEDQ  = 7C0h
 S_NOFIT = 800h
 S_ARROW = 840h                  ; the arrows found
+S_SILS  = 8C0h                  ; "siluetas", and what was taken from it
+S_SILT  = 900h
+S_SILA  = 940h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -120,6 +123,15 @@ QDIR  = 1D78h
 QNBD  = 1D80h                   ; q_nb: its side, the place it is at, the word there
 QNBP  = 1D88h
 QNBW  = 1D90h
+SILR  = 1D98h                   ; the library's silhouettes (pistas.inc writes them): the file read, its bytes, the
+SILN  = 1DA0h                   ; room's bytes, its handle; by word, 1 arrow, 2 not (0: the piece decides); words taken,
+SILC  = 1DA8h                   ; arrows among them; walking; the reading's pass kept
+SILH  = 1DB0h
+ROOMAX = 1DB8h
+SILNW = 1DC0h
+SILNA = 1DC8h
+SILP  = 1DD0h
+SILPS = 1DD8h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -151,6 +163,8 @@ jcall learn_pulses
 jcall house_decide
 jcall distill_no
 jcall limits                    ; where each building ends, found in the book
+jcall sil_load                  ; over a piece read again, the library's silhouettes, if they came (the console): read
+                                ; with them before a fact is learned
 jcall genders                   ; the gender of each word, from its twins
 
 jldi j2, TMI                    ; its tables, empty: they grow to what they hold
@@ -1690,6 +1704,19 @@ ar_walk:
 ; Uses j1-j6.
 is_arrow:
   jldi j1, 0
+  jld j3, j1, ROOMAX            ; the library's decision first, when it gave one
+  jjz j3, ia_piece
+  jldi j4, 3
+  jshl j4, j2, j4
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jjz j3, ia_piece
+  jldi j4, 1
+  jsub j3, j3, j4
+  jjnz j3, ia_no
+  jldi j2, 1
+  jret
+ia_piece:
   jld j3, j1, ROOMAR
   jjz j3, ia_no
   jldi j4, 24
@@ -1723,6 +1750,187 @@ is_arrow:
   jret
 ia_no:
   jldi j2, 0
+  jret
+
+; The silhouettes of reading the library left for this piece (Capitan: "the reading rules must not be lost, they must
+; be enriched"): a piece read again is too little to learn to read it, so what every book eaten taught decides for the
+; words it knows: the house (ROOMSD) and the arrows (ROOMAX). The file "siluetas" {its bytes, its letters padded, the
+; house, an arrow} (pistas.inc), if there is one. Uses j1-j14.
+sil_load:
+  jldi j1, 0
+  jst j1, j1, SILNW
+  jst j1, j1, SILNA
+  jldi j10, 4
+  jldi j11, S_SILS
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, sl_done
+  jst j13, j1, SILH
+  jst j1, j1, SILN
+  jldi j11, 4096
+  jst j11, j1, SILC
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SILR
+sl_read:
+  jld j10, j1, SILH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, SILR
+  jld j2, j1, SILN
+  jadd j11, j11, j2
+  jld j12, j1, SILC
+  jsub j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jsub j2, j13, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, sl_close
+  jld j2, j1, SILN
+  jadd j2, j2, j13
+  jst j2, j1, SILN
+  jld j3, j1, SILC
+  jsub j3, j3, j2
+  jjnz j3, sl_read
+  jld j11, j1, SILC             ; full: twice the room, what it holds copied
+  jadd j11, j11, j11
+  jcall room
+  jldi j1, 0
+  jld j4, j1, SILR
+  jadd j5, j13, j1
+  jld j6, j1, SILN
+  jwhile j6
+    jld j7, j4, 0
+    jst j7, j5, 0
+    jldi j7, 8
+    jadd j4, j4, j7
+    jadd j5, j5, j7
+    jsub j6, j6, j7
+  jwend
+  jst j13, j1, SILR
+  jld j2, j1, SILC
+  jadd j2, j2, j2
+  jst j2, j1, SILC
+  jjmp sl_read
+sl_close:
+  jld j10, j1, SILH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, SILN
+  jjnz j2, sl_some
+  jldi j10, 12                  ; (nothing there: the empty file opening made goes)
+  jldi j11, S_SILS
+  jldi j12, 8
+  jcall ask
+  jjmp sl_done
+sl_some:
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ROOMAX
+  jld j2, j1, PASS
+  jst j2, j1, SILPS
+  jldi j2, 2                    ; (a word looked for, never added)
+  jst j2, j1, PASS
+  jld j2, j1, SILR
+  jst j2, j1, SILP
+  sl_word:
+    jldi j1, 0
+    jld j9, j1, SILP
+    jld j2, j1, SILR
+    jsub j2, j9, j2
+    jld j3, j1, SILN
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, sl_words
+    jld j4, j9, 0               ; its letters, as a word being read
+    jst j4, j1, WLEN
+    jldi j5, 8
+    jadd j5, j9, j5
+    jldi j6, 0
+    sl_letter:
+      jsub j7, j6, j4
+      jjz j7, sl_letters
+      jadd j7, j5, j6
+      jldb j7, j7, 0
+      jstb j7, j6, WBUF
+      jldi j7, 1
+      jadd j6, j6, j7
+      jjmp sl_letter
+    sl_letters:
+    jcall word_id
+    jldi j1, 0
+    jld j9, j1, SILP
+    jld j4, j9, 0
+    jldi j5, 7
+    jadd j4, j4, j5
+    jldi j5, -8
+    jand j4, j4, j5
+    jldi j5, 8
+    jadd j4, j4, j5
+    jadd j9, j9, j4             ; its house and its arrow
+    jld j5, j9, 0
+    jld j6, j9, 8
+    jldi j7, 16
+    jadd j7, j9, j7
+    jst j7, j1, SILP
+    jldi j7, 1
+    jsub j7, j2, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jjnz j7, sl_word            ; (a word this piece never read)
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ROOMSD
+    jadd j4, j4, j3
+    jst j5, j4, 0
+    jld j4, j1, ROOMAX
+    jadd j4, j4, j3
+    jldi j7, 2
+    jjz j6, sl_mark
+    jldi j7, 1
+    jld j8, j1, SILNA
+    jadd j8, j8, j7
+    jst j8, j1, SILNA
+  sl_mark:
+    jst j7, j4, 0
+    jld j8, j1, SILNW
+    jldi j7, 1
+    jadd j8, j8, j7
+    jst j8, j1, SILNW
+    jjmp sl_word
+  sl_words:
+  jld j2, j1, SILPS
+  jst j2, j1, PASS
+  jldi j1, S_SILT               ; said: how many it took, how many arrows
+  jcall puts
+  jld j2, j1, SILNW
+  jcall putnum
+  jldi j1, S_SILA
+  jcall puts
+  jld j2, j1, SILNA
+  jcall putnum
+  jldi j2, 41
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jcall flush
+sl_done:
+  jldi j1, 0
   jret
 
 ; A question (QQS to QQE in QBUF): every core in it (a word the house left as furniture, as the cores of the facts)

@@ -2136,8 +2136,30 @@ libros. El formato entra en la huella de los pedazos, así que uno viejo nunca s
 **Medido:** el nido del Nuevo Testamento pasa de 169.587 a 200.243 bytes (+18 %). Las seis preguntas de control dan
 idénticas: el lector salta las siluetas sin correrse un bit.
 
+**Paso 2 y 3, hechos: la biblioteca decide cómo se lee el pedazo.** Al sumar las cuentas del juez, `pregunta`
+suma también las siluetas de cada palabra del pedazo en todos los libros. Los límites se juntan por sus letras. Decide
+como `sentido` (casa: el signo de los veredictos pesados por sus veces; flecha: la regla de siempre, sobre las sumas) y
+lo escribe en el archivo `siluetas`. `sentido` lo carga **antes de aprender un solo hecho del pedazo**, y para cada
+palabra que conoce usa la casa y la flecha de la biblioteca.
+
+**Medido en la charla**, sobre la biblioteca del Nuevo Testamento y el Génesis chico:
+
+| | pedazo solo | pedazo + siluetas |
+|---|---|---|
+| ¿quién es el padre de jacob? | ❌ | isaac, matán |
+| el padre de jacob | ✅ | isaac, matán |
+| ¿de quién es hijo jacob? | ❌ (david) | isaac |
+| ¿quién fue padre de josé? | ❌ | jacob |
+| ¿qué es la verdad? | ✅ | espíritu |
+| ¿de quién es padre isaac? | ❌ | jacob |
+| ¿quién es hijo de isaac? | ❌ (david) | jacob |
+
+Siete de siete, igual que con el libro entero. Lo que el pedazo no alcanza es la deducción de matán (padre de dado
+vuelta es hijo de): esa prueba necesita muchos pares, y es la tercera silueta, la de los esqueletos, que todavía no viaja.
+**El pedazo sí alcanzaba** (Capitán: *"sí alcanza"*). Lo que faltaba era leerlo con lo que Razar ya había aprendido:
+la frase de la sección anterior, *"la lógica no sale de un pedazo"*, valía solo para un pedazo leído sin memoria.
+
 **Falta:**
-- que `sentido` sume las siluetas de toda la biblioteca y lea el pedazo con ellas;
 - que la pregunta mire desde el mueble y amplíe hasta encontrar la respuesta.
 
 Las casas con índices de versión 5 tienen que volver a comer sus libros (el vigía lo hace solo cuando cambian).

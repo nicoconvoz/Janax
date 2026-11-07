@@ -72,3 +72,9 @@ db '  ninguna relacion de lo que leyo encaja con la pregunta', 10, 0
 times 840h - $ db 0
 db 'flechas (palabras que viven en un limite que la mayoria no cierra):', 0
 times 8C0h - $ db 0
+db 'siluetas', 0
+times 900h - $ db 0
+db 'siluetas de la biblioteca: ', 0
+times 940h - $ db 0
+db ' palabras (flechas: ', 0
+times 980h - $ db 0
