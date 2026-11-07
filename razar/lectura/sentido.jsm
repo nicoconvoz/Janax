@@ -5488,6 +5488,193 @@ oe_pair:                        ; (a pair of a word: one more word has it)
   jst j2, j4, 8
   jret
 
+; A question about a subject as a whole (Capitan, 2026-11-07: "the path of jacob's subjects surely knew much more"):
+; when its only furniture (no arrow) is one core, it asks for the subject, not one relation of it. The answer is its
+; thread: every fact of it the reading proves (said twice at least, a skeleton with a word in its middle, the core at
+; one end), the most said first, each said as a sentence; one already given is not said again. Uses j1-j14.
+q_subject:
+  jldi j1, 0
+  jst j1, j1, QSW               ; its one core (0: none or more than one)
+  jld j9, j1, QQS
+  qsu_lap:
+    jldi j1, 0
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qsu_one
+    jst j9, j1, QP
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qsu_next
+    jst j2, j1, QSX
+    jcall g_core
+    jjz j3, qsu_next
+    jldi j1, 0
+    jld j2, j1, QSX
+    jcall is_arrow
+    jjnz j2, qsu_next
+    jld j2, j1, QSW
+    jjnz j2, qsu_done           ; (a second core: it asks a relation, not the subject)
+    jld j2, j1, QSX
+    jst j2, j1, QSW
+  qsu_next:
+    jldi j1, 0
+    jld j9, j1, QP
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qsu_lap
+qsu_one:
+  jld j2, j1, QSW
+  jjz j2, qsu_done
+  jst j2, j1, QCW
+  jldi j2, QST                  ; its facts: by (one end, skeleton, other end) {key, times, the fact}
+  jldi j3, 24
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, QSN
+  qsu_fact:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, qsu_said
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jst j9, j1, QSE
+    jld j2, j9, 0
+    jcall tok_at
+    jst j2, j1, QSX
+    jld j9, j1, QSE
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, QSY
+    jld j3, j1, QCW
+    jld j4, j1, QSX
+    jsub j4, j4, j3
+    jjz j4, qsu_end
+    jld j4, j1, QSY
+    jsub j4, j4, j3
+    jjnz j4, qsu_fnext
+  qsu_end:
+    jld j9, j1, QSE
+    jld j5, j9, 16
+    jst j5, j1, QSK
+    jld j6, j1, FNVP
+    jld j2, j1, QSX
+    jmul j5, j5, j6
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jld j2, j1, QSY
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jjnz j5, qsu_k
+    jldi j5, 1
+  qsu_k:
+    jldi j2, QST
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j1, QSE
+    jst j2, j4, 16
+  qsu_fnext:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QSN
+    jjmp qsu_fact
+qsu_said:                       ; said: the most said first, proven ones only
+  jldi j1, 0
+  jldi j11, 1
+  jldi j12, 0
+  jld j9, j1, QST
+  jld j10, j1, QST + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  qss_find:
+    jjz j10, qss_found
+    jld j2, j9, 0
+    jjz j2, qss_fnext
+    jld j2, j9, 8
+    jsub j3, j11, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qss_fnext
+    jadd j11, j2, j1
+    jadd j12, j9, j1
+  qss_fnext:
+    jld j2, j1, QST + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp qss_find
+qss_found:
+  jjz j12, qsu_done
+  jld j2, j12, 8                ; (taken: its times go negative)
+  jldi j3, 0
+  jsub j2, j3, j2
+  jst j2, j12, 8
+  jld j9, j12, 16
+  jst j9, j1, QSE
+  jld j5, j9, 16                ; a skeleton with a word in its middle
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, qsu_said
+  jst j4, j1, QSZ
+  jadd j12, j4, j1
+  jcall sk_word
+  jjz j2, qsu_said
+  jld j9, j1, QSE
+  jld j2, j9, 0
+  jcall tok_at
+  jst j2, j1, QSX
+  jld j9, j1, QSE
+  jld j2, j9, 8
+  jcall tok_at
+  jst j2, j1, QSY
+  jld j5, j1, QSX               ; its other end not given already
+  jld j3, j1, QCW
+  jsub j3, j5, j3
+  jjnz j3, qss_other
+  jld j5, j1, QSY
+qss_other:
+  jldi j2, TSN
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, qsu_said
+  jld j2, j1, QNA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, QSX
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, QSZ
+  jcall put_plain
+  jld j2, j1, QSY
+  jcall putword
+  jldi j2, 10
+  jcall putch
+  jcall flush
+  jjmp qsu_said
+qsu_done:
+  jldi j1, 0
+  jret
+
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
 th_push:
   jldi j1, 0
@@ -8335,6 +8522,8 @@ qo_pass:
   jst j2, j1, QPASS
   jjmp qo_pass
 qo_said2:
+  jcall q_subject               ; a question about one subject: its whole thread
+  jldi j1, 0
   jld j2, j1, QNA
   jjnz j2, qo_done
   jcall q_struct                ; nothing fits its furniture: is it asking about a structure?

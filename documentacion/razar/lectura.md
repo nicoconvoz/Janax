@@ -2659,3 +2659,22 @@ núcleo"*; y la regla: *"las que no respeten la regla: no hay regla para yyyy, n
 - **El límite honesto:** un nombre de código dicho una sola vez, que además no respeta la ortografía, es indistinguible
   de un error de escritura.
 
+## Una pregunta por un sujeto: todo su hilo (2026-11-07)
+
+El Capitán, después de "¿quién es jacob?" → "jacob es nuestro (lo deduje)": *"el camino de sujetos de jacob seguro sabía
+mucho más"*.
+
+- **Cuándo (`q_subject`):** si el único mueble de la pregunta (sin contar flechas) es un núcleo, la pregunta no pide una
+  relación: pide el sujeto entero.
+- **Qué contesta:** su hilo, es decir, cada hecho suyo que la lectura prueba (dicho dos veces o más, con un esqueleto
+  que tiene una palabra en su medio y el núcleo en una punta), del más dicho al menos dicho, cada uno como oración.
+  No repite lo que ya se dijo.
+- **Medido:**
+  - en la biblioteca real, "¿quién es jacob?" da "isaac, padre de jacob", "matán, padre de jacob", "jacob fue padre
+    de josé", "jacob padre de judá", y también ruido de la documentación ("jacob del libro( identidad");
+  - en el NT, "¿quién es pedro?" da "simón, llamado pedro", "hermano de simón pedro", "pedro, juan y santiago", "jesús
+    tomó a pedro";
+  - ninguna respuesta de control de antes se perdió, y las de dos pasos siguen.
+- **Lo que queda abierto:** con un sujeto muy dicho es una catarata. "¿quién es jesús?" da 134 hechos y "¿qué es la
+  ley?" da 38. Tiene que elegir qué decir, como un organismo, y no volcar todo.
+
