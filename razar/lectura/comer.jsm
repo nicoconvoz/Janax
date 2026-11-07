@@ -54,6 +54,7 @@ S_SAME  = 380h
 S_DESQ  = 3C0h                  ; what sentido leaves for a book's bytes: "tablero/esqueletos", "tablero/preguntas-",
 S_DPRQ  = 3E0h                  ; "tablero/enganches-"
 S_DENG  = 400h
+S_DFUN  = 420h                  ; "tablero/funciones-": the dictionary of instructions
 
 PLEN  = 1600h                   ; the address's bytes, at PATHB
 HND    = 1608h                   ; a handle
@@ -1766,7 +1767,7 @@ zs_first:
 ; are (one general rule: an old version of a book, a book gone, the same). From every index, the names its book's
 ; bytes give: the print unsalted (as that index salts it: 7, or 6 before its version 7) by the inverse of FNV's prime
 ; (odd, so it has one: 0xCE965057AFF6957B), salted as sentido salts each (the turns 2 and 1, the lessons 3, the
-; compositions 5). Every such file whose name is none of them goes. Uses j1-j14.
+; compositions 5, the dictionary of instructions 9). Every such file whose name is none of them goes. Uses j1-j14.
 lib_sweep:
   jldi j2, DERT
   jldi j3, 8
@@ -1825,6 +1826,8 @@ lib_sweep:
     jcall swp_name
     jldi j2, 5
     jcall swp_name
+    jldi j2, 9
+    jcall swp_name
   swp_ixnext:
     jldi j1, 0
     jld j9, j1, SWI
@@ -1860,6 +1863,9 @@ swp_named:
     jcall swp_is
     jjnz j2, swp_kind
     jldi j4, S_DENG
+    jcall swp_is
+    jjnz j2, swp_kind
+    jldi j4, S_DFUN
     jcall swp_is
     jjz j2, swp_fnext
   swp_kind:

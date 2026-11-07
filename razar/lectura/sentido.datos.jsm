@@ -15,6 +15,10 @@ times 0C0h - $ db 0
 db ' negados=', 0
 times 100h - $ db 0
 db ' pares', 0
+times 110h - $ db 0
+db 'tablero/funciones-', 0
+times 128h - $ db 0
+db 'instrucciones:', 0
 times 140h - $ db 0
 db ' | se encadena (', 0
 times 180h - $ db 0

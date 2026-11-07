@@ -2604,3 +2604,30 @@ siluetas"*. Un pedazo releído sirve para buscar hechos, no para aprender a leer
   - las de dos pasos siguen en 3 de 3, más "abraham era hijo de tera (lo pense)".
 - Hay que volver a comer los libros para que dejen su interruptor.
 
+## El diccionario de instrucciones (2026-11-07)
+
+El Capitán: *"el lenguaje son instrucciones y las oraciones programas"*; *"necesitamos un diccionario de instrucciones:
+eso sí se tiene que almacenar y perfeccionar"*; *"no solo nos sirve lo común, sirve todo lo comprobado"*.
+
+- **Qué es una instrucción:** una palabra que la casa tiene por cimiento.
+- **Cómo trabaja:** cada aparición trabaja entre lo que tiene a la izquierda y a la derecha, y cada lado es mueble (M),
+  estructura (E) o un límite, una marca o un borde (L). Son nueve formas. Además se anota si "_ w _" se da vuelta
+  sobre sí mismo (`<>`: une dos que se pueden cambiar de lugar, los pares simétricos de su esqueleto).
+- **Todo lo comprobado vale:** cada forma que el libro muestra dos veces o más (la regla de la anécdota) es una función
+  probada de esa instrucción. No se la reduce a la mayoría, porque "la" abre un mueble y también ocupa un lugar ("la
+  envió"). Cuál está haciendo en cada aparición lo decide su lugar.
+- **Se guarda y se perfecciona:**
+  - al comer, cada libro deja sus cuentas en `tablero/funciones-<huella>` (sal 9, `ins_scan` y `ins_eat`): por
+    instrucción, sus veces, las nueve formas y lo que se da vuelta, con sus letras, porque es estructura;
+  - al leer, la biblioteca suma las de todos los libros (`pf_file`), y el informe del libro entero lo muestra
+    (`ins_report`);
+  - la limpieza (`lib_sweep`) devuelve la parte de un libro que cambió.
+- **Medido** (NT + Asimov, 37 KB):
+  - "y": M_M 2533, M_E 2506, L_M 1313, L_E 1380, y se da vuelta 29;
+  - "la": E_M 4526, M_M 1924, L_M 826;
+  - "lo": E_M 723, M_M 467, M_E 445, L_M 262.
+
+  Las respuestas no cambian, y las de dos pasos siguen contestando.
+- **Lo que sigue:** usar el diccionario para el sujeto tácito. Hay que reconocer dónde una instrucción ocupa el lugar de
+  un sujeto, y dónde une o abre, para no tomar "y" ni "para" por un "él".
+

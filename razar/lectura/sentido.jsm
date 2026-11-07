@@ -70,6 +70,8 @@ S_GLD   = 8E0h
 S_DIA   = 8C9h                  ; "diario": what it thought
 S_PNSE  = 9D8h                  ; " (lo pense)": an answer it thought
 S_USA   = 20h                   ; " (asi se usa)": how a structure asked about is used
+S_FUN   = 110h                  ; "tablero/funciones-": the dictionary of instructions
+S_INS   = 128h                  ; "instrucciones:"
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
@@ -289,6 +291,12 @@ QSY   = 5080h
 QSA   = 5088h
 QSZ   = 5090h
 SILSW = 5130h                   ; a silhouette's switch of the no (1: the books took the word for one)
+INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
+INSW  = 5208h                   ; word looked at, a unit, a way, an entry
+INSW2 = 5210h
+INSI  = 5218h
+INSK  = 5220h
+INSE  = 5228h
 LINEO = 50A0h                   ; 1 while a sentence is being woven (its last word the one thought from)
 DKIND = 5098h                   ; what the bits hold: 0 the turns, 1 the compositions ({times, pieces} an entry)
 TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
@@ -355,6 +363,8 @@ jcall glue_scan
 jcall eat_write
 jcall qa_eat
 jcall eng_eat
+jcall ins_scan                  ; and how it uses each instruction: the dictionary
+jcall ins_eat
 jjmp finish
 not_eating:
 
@@ -416,8 +426,10 @@ jcall flush
 jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
 jcall qa_scan                   ; the book's own questions, and the answers next to them
 jcall glue_count                ; how the book joins its constructions
+jcall ins_room                  ; (the dictionary of instructions, filled by the library's books)
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
+jcall ins_report                ; the dictionary of instructions, as the books proved it
 jcall sk_report
 jcall cores
 jjmp finish
@@ -4125,6 +4137,590 @@ qa2_none:
   jldi j1, 0
   jret
 
+; The dictionary of instructions (Capitan, 2026-11-07: "language is instructions and sentences programs"; "we need a
+; dictionary of instructions: it must be stored and perfected"; "not only the common one serves: everything proven
+; serves"). An instruction is a word the house calls foundation. Each of its appearances works between what stands on
+; its left and on its right, each furniture (M), foundation (E) or a limit, a mark or an edge (L): nine ways, and
+; whether "_ w _" turns on itself (it joins two that can swap). Every way the book shows twice at least (the anecdote
+; rule) is a function of it that is proven; which one it is doing is decided where it stands. They are counts: every
+; book adds its own, and the dictionary is perfected with each one. INS: by word {times, nine ways, swaps} (11 qwords).
+INSQ  = 88                      ; (the bytes of a word's counts)
+
+; The room of the dictionary, empty. Uses j1-j14.
+ins_room:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, INSQ
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, INS
+  jld j2, j1, NV
+  jldi j3, INSQ
+  jmul j2, j2, j3
+  jadd j3, j13, j1
+  insr_z:
+    jjz j2, insr_done
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jsub j2, j2, j4
+    jjmp insr_z
+insr_done:
+  jret
+
+; The unit at j2's kind: 0 furniture, 1 foundation, 2 a limit, a mark or an edge. Uses j1-j5.
+ins_kind:
+  jjz j2, ik_l
+  jst j2, j1, INSW2
+  jcall w_mark
+  jldi j1, 0
+  jjnz j3, ik_l
+  jld j2, j1, INSW2
+  jcall g_core
+  jldi j1, 0
+  jjz j3, ik_e
+  jldi j2, 0
+  jret
+ik_e:
+  jldi j2, 1
+  jret
+ik_l:
+  jldi j1, 0
+  jldi j2, 2
+  jret
+
+; This book's instructions counted into INS (eating: the whole book). Uses j1-j14.
+ins_scan:
+  jcall ins_room
+  jldi j9, 1
+  is_lap:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jldi j3, 1
+    jsub j2, j2, j3
+    jsub j2, j9, j2
+    jjz j2, is_swaps
+    jst j9, j1, INSI
+    jadd j2, j9, j1
+    jcall tok_at
+    jjz j2, is_next
+    jst j2, j1, INSW
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, is_next
+    jld j2, j1, INSW
+    jcall g_core
+    jldi j1, 0
+    jjnz j3, is_next            ; (furniture: no instruction)
+    jld j2, j1, INSI            ; its way: left kind * 3 + right kind
+    jldi j3, 1
+    jsub j2, j2, j3
+    jcall tok_at
+    jcall ins_kind
+    jldi j3, 3
+    jmul j2, j2, j3
+    jst j2, j1, INSK
+    jld j2, j1, INSI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jcall tok_at
+    jcall ins_kind
+    jld j3, j1, INSK
+    jadd j2, j2, j3
+    jldi j3, 1                  ; its counts: times, and that way
+    jadd j2, j2, j3
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, INSW
+    jldi j4, INSQ
+    jmul j3, j3, j4
+    jld j4, j1, INS
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 0
+    jadd j3, j3, j2
+    jld j4, j3, 0
+    jadd j4, j4, j5
+    jst j4, j3, 0
+  is_next:
+    jldi j1, 0
+    jld j9, j1, INSI
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp is_lap
+is_swaps:
+  jldi j9, 1                    ; and the swaps of "_ w _" each one's skeleton proved
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, INSQ
+    jmul j3, j9, j3
+    jld j4, j1, INS
+    jadd j8, j3, j4
+    jld j2, j8, 0
+    jjz j2, iss_next
+    jst j8, j1, INSE
+    jst j9, j1, INSI
+    jst j10, j1, INSK
+    jld j2, j1, FNVO
+    jadd j3, j9, j1
+    jcall hw
+    jldi j3, 1
+    jcall hw
+    jjnz j2, iss_k
+    jldi j2, 1
+  iss_k:
+    jadd j5, j2, j1
+    jldi j2, TMI
+    jcall pl_find
+    jldi j1, 0
+    jld j9, j1, INSI
+    jld j10, j1, INSK
+    jld j2, j4, 0
+    jjz j2, iss_next
+    jld j2, j4, 40
+    jld j8, j1, INSE
+    jst j2, j8, 80
+  iss_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0
+  jret
+
+; This book's dictionary into the library: "tablero/funciones-" and the print of its bytes (salted 9: written once).
+; Qwords {1, how many}, each {its counts (11 qwords), its bytes} and its letters padded. Uses j1-j14.
+ins_eat:
+  jldi j1, 0
+  jld j2, j1, EATB
+  jjz j2, ie_done
+  jldi j2, 16
+  jst j2, j1, QLW
+  jst j1, j1, QLN
+  jst j1, j1, QLS
+  jcall ie_walk
+  jldi j1, 0
+  jld j11, j1, QLW
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QLC
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, QLN
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j2, j13, j2
+  jst j2, j1, QLP
+  jldi j2, 1
+  jst j2, j1, QLS
+  jcall ie_walk
+  jldi j1, 0
+  jldi j11, 64
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ELAB
+  jld j5, j1, EATB
+  jldi j3, 9
+  jxor j5, j5, j3
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jldi j6, S_FUN
+  jcall ew_label
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, QLC
+  jld j2, j2, 8
+  jjz j2, ie_done
+  jldi j10, 4
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ie_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, QLC
+  jld j12, j1, QLW
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ie_done:
+  jldi j1, 0
+  jret
+
+; Every instruction of INS: counted with its bytes (QLS 0: QLN, QLW), or written at QLP (QLS 1). Uses j1-j14.
+ie_walk:
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, INSQ
+    jmul j3, j9, j3
+    jld j4, j1, INS
+    jadd j8, j3, j4
+    jld j2, j8, 0
+    jjz j2, iew_next
+    jldi j3, 3                  ; its letters
+    jshl j3, j9, j3
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j5, j3, 16
+    jld j6, j3, 8
+    jld j4, j1, ROOMA
+    jadd j6, j6, j4
+    jldi j7, 7
+    jadd j7, j5, j7
+    jldi j4, -8
+    jand j7, j7, j4
+    jldi j4, 96
+    jadd j7, j7, j4
+    jld j3, j1, QLN
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, QLN
+    jld j3, j1, QLS
+    jjnz j3, iew_put
+    jld j3, j1, QLW
+    jadd j3, j3, j7
+    jst j3, j1, QLW
+    jjmp iew_next
+  iew_put:
+    jld j3, j1, QLP
+    jadd j4, j3, j7
+    jst j4, j1, QLP
+    jldi j4, 11
+    iew_c:
+      jld j2, j8, 0
+      jst j2, j3, 0
+      jldi j2, 8
+      jadd j8, j8, j2
+      jadd j3, j3, j2
+      jldi j2, 1
+      jsub j4, j4, j2
+      jjnz j4, iew_c
+    jst j5, j3, 0
+    jldi j2, 8
+    jadd j3, j3, j2
+    jldi j2, 1
+    jwhile j5
+      jldb j4, j6, 0
+      jstb j4, j3, 0
+      jadd j6, j6, j2
+      jadd j3, j3, j2
+      jsub j5, j5, j2
+    jwend
+  iew_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j1, 0
+  jret
+
+; One file of the dictionary (SXR, SXN): each instruction this reading knows adds its counts to INS. Something that
+; does not hold together ends the file. Uses j1-j14.
+pf_file:
+  jldi j1, 0
+  jld j2, j1, INS
+  jjz j2, pff_done
+  jld j9, j1, SXR
+  jld j2, j9, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, pff_done
+  jld j2, j9, 8
+  jst j2, j1, QLW
+  jld j2, j1, SXN
+  jadd j2, j9, j2
+  jst j2, j1, QLH
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j9, j1, QLK
+  pff_lap:
+    jldi j1, 0
+    jld j2, j1, QLW
+    jjz j2, pff_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, QLW
+    jld j9, j1, QLK
+    jldi j2, 96
+    jadd j2, j9, j2
+    jld j3, j1, QLH
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, pff_done
+    jld j4, j9, 88
+    jldi j3, 63
+    jsar j3, j4, j3
+    jjnz j3, pff_done
+    jldi j3, 255
+    jsub j3, j3, j4
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjnz j3, pff_done
+    jldi j3, 7
+    jadd j5, j4, j3
+    jldi j3, -8
+    jand j5, j5, j3
+    jadd j5, j2, j5
+    jld j3, j1, QLH
+    jsub j3, j3, j5
+    jldi j6, 63
+    jsar j3, j3, j6
+    jjnz j3, pff_done
+    jst j5, j1, QLK
+    jst j9, j1, QLP
+    jst j4, j1, WLEN
+    jldi j6, 0
+    pff_letter:
+      jsub j3, j6, j4
+      jjz j3, pff_letters
+      jadd j3, j2, j6
+      jldb j3, j3, 0
+      jstb j3, j6, WBUF
+      jldi j3, 1
+      jadd j6, j6, j3
+      jjmp pff_letter
+  pff_letters:
+    jcall word_id
+    jldi j1, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, pff_lap            ; (an instruction this reading never read)
+    jldi j3, INSQ
+    jmul j3, j2, j3
+    jld j4, j1, INS
+    jadd j8, j3, j4
+    jld j9, j1, QLP
+    jldi j4, 11
+    pff_add:
+      jld j2, j8, 0
+      jld j3, j9, 0
+      jadd j2, j2, j3
+      jst j2, j8, 0
+      jldi j2, 8
+      jadd j8, j8, j2
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j4, j4, j2
+      jjnz j4, pff_add
+    jjmp pff_lap
+pff_done:
+  jldi j1, 0
+  jret
+
+; The dictionary written (the reading's report): its instructions said the most, each with every way it works that
+; the books proved twice at least, as left_right (M furniture, E foundation, L a limit or an edge) and its times, and
+; "swaps" if "_ w _" turns on itself. Twelve instructions: criterion, the report's size. Uses j1-j14.
+ins_report:
+  jldi j1, 0
+  jld j2, j1, INS
+  jjz j2, irp_done
+  jldi j1, S_INS
+  jcall puts
+  jst j1, j1, INSK
+  irp_lap:
+    jldi j1, 0
+    jld j2, j1, INSK
+    jldi j3, 12
+    jsub j3, j2, j3
+    jjz j3, irp_out
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    jld j10, j1, NV
+    jldi j2, 1
+    jsub j10, j10, j2
+    jwhile j10
+      jldi j3, INSQ
+      jmul j3, j9, j3
+      jld j4, j1, INS
+      jadd j3, j3, j4
+      jld j4, j3, 0
+      jsub j5, j11, j4
+      jldi j6, 63
+      jsar j5, j5, j6
+      jjz j5, irq_n
+      jadd j11, j4, j1
+      jadd j12, j9, j1
+    irq_n:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jsub j10, j10, j2
+    jwend
+    jjz j12, irp_out
+    jst j12, j1, INSW
+    jldi j2, 10
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, INSW
+    jcall putword
+    jldi j2, 58
+    jcall putch
+    jst j1, j1, INSI
+    irw_lap:
+      jldi j1, 0
+      jld j2, j1, INSI
+      jldi j3, 9
+      jsub j3, j2, j3
+      jjz j3, irw_swap
+      jld j3, j1, INSW
+      jldi j4, INSQ
+      jmul j3, j3, j4
+      jld j4, j1, INS
+      jadd j3, j3, j4
+      jldi j4, 1
+      jadd j4, j2, j4
+      jldi j5, 3
+      jshl j4, j4, j5
+      jadd j3, j3, j4
+      jld j4, j3, 0
+      jst j4, j1, INSE
+      jldi j5, 2
+      jsub j5, j4, j5
+      jldi j6, 63
+      jsar j5, j5, j6
+      jjnz j5, irw_next
+      jldi j2, 32
+      jcall putch
+      jld j2, j1, INSI            ; its left kind and right kind
+      jldi j3, 3
+      jdiv j2, j2, j3
+      jcall irp_kind
+      jldi j2, 95
+      jcall putch
+      jld j2, j1, INSI
+      jldi j3, 3
+      jdiv j4, j2, j3
+      jmul j4, j4, j3
+      jsub j2, j2, j4
+      jcall irp_kind
+      jldi j2, 40
+      jcall putch
+      jld j2, j1, INSE
+      jcall putnum
+      jldi j2, 41
+      jcall putch
+    irw_next:
+      jldi j1, 0
+      jld j2, j1, INSI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, INSI
+      jjmp irw_lap
+  irw_swap:
+    jld j3, j1, INSW
+    jldi j4, INSQ
+    jmul j3, j3, j4
+    jld j4, j1, INS
+    jadd j3, j3, j4
+    jld j2, j3, 80
+    jldi j5, 2
+    jsub j5, j2, j5
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjnz j5, irw_mark
+    jldi j2, 32
+    jcall putch
+    jldi j2, 60
+    jcall putch
+    jldi j2, 62
+    jcall putch
+    jldi j1, 0
+    jld j3, j1, INSW
+    jldi j4, INSQ
+    jmul j3, j3, j4
+    jld j4, j1, INS
+    jadd j3, j3, j4
+    jld j2, j3, 80
+    jcall putnum
+  irw_mark:
+    jldi j1, 0
+    jld j3, j1, INSW            ; (not again: its times go negative while it is written)
+    jldi j4, INSQ
+    jmul j3, j3, j4
+    jld j4, j1, INS
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jldi j4, 0
+    jsub j2, j4, j2
+    jst j2, j3, 0
+    jld j2, j1, INSK
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, INSK
+    jjmp irp_lap
+irp_out:
+  jldi j9, 1                    ; the written ones back to their times
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, INSQ
+    jmul j3, j9, j3
+    jld j4, j1, INS
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjz j4, iro_n
+    jldi j4, 0
+    jsub j2, j4, j2
+    jst j2, j3, 0
+  iro_n:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+irp_done:
+  jret
+
+; The letter of kind j2: M, E or L. Uses j1-j4.
+irp_kind:
+  jldi j3, 77
+  jjz j2, irk_put
+  jldi j3, 69
+  jldi j4, 1
+  jsub j4, j2, j4
+  jjz j4, irk_put
+  jldi j3, 76
+irk_put:
+  jadd j2, j3, j1
+  jjmp putch
+
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
 th_push:
   jldi j1, 0
@@ -6567,6 +7163,13 @@ ll_listed:
     jjz j5, ll_kind
     jldi j4, S_ESQ
     jst j1, j1, QLC
+    jldb j5, j3, 8              ; ("tablero/funciones-": the dictionary of instructions, 3)
+    jldi j6, 102
+    jsub j5, j5, j6
+    jjnz j5, ll_kind
+    jldi j4, S_FUN
+    jldi j5, 3
+    jst j5, j1, QLC
   ll_kind:
     jldi j5, 18
     ll_cmp:
@@ -6592,6 +7195,12 @@ ll_listed:
     jjnz j2, ll_next
     jld j2, j1, QLC
     jjz j2, ll_turns
+    jldi j3, 3
+    jsub j3, j2, j3
+    jjnz j3, ll_notfun
+    jcall pf_file
+    jjmp ll_next
+  ll_notfun:
     jldi j3, 1
     jsub j2, j2, j3
     jjnz j2, ll_eng

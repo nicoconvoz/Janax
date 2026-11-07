@@ -42,3 +42,5 @@ db 'tablero/preguntas-', 0
 times 400h - $ db 0
 db 'tablero/enganches-', 0
 times 420h - $ db 0
+db 'tablero/funciones-', 0
+times 440h - $ db 0
