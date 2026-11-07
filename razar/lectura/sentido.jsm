@@ -324,6 +324,14 @@ QPRP  = 5470h
 QPRL  = 5478h
 QPRW  = 5480h
 QPRA  = 5488h
+QPGU  = 5490h                   ; guided: the fact's, the kinds left, walking the middle and the question
+QPGF  = 5498h
+QPGN  = 54A0h
+QPGA  = 54A8h
+QPGB  = 54B0h
+QPGW  = 54B8h
+QPGQ  = 54C0h
+QPGX  = 54C8h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -5630,8 +5638,8 @@ qp_seeded:
   jld j2, j1, QCW
   jst j2, j1, THX
   jcall th_seed
-  jldi j2, QPK                  ; by kind (skeleton) {key, votes}
-  jldi j3, 16
+  jldi j2, QPK                  ; by kind (skeleton) {key, votes, guided by the question's instruction}
+  jldi j3, 24
   jcall pl_new
   jldi j1, 0
   jld j9, j1, QST               ; the kinds of its proven facts where it comes first
@@ -5656,6 +5664,8 @@ qp_seeded:
     jld j3, j9, 8
     jadd j2, j2, j3
     jst j2, j4, 8
+    jld j2, j1, QPGU
+    jst j2, j4, 16
   qpk_next:
     jldi j1, 0
     jld j9, j1, QPA
@@ -5690,6 +5700,30 @@ qpn_kinds:
     jld j3, j1, QPN
     jsub j2, j2, j3
     jjz j2, qp_end
+    jst j1, j1, QPGF            ; (a guided kind left? those first)
+    jld j9, j1, QPK
+    jld j10, j1, QPK + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    qpc_g:
+      jjz j10, qpc_gd
+      jld j2, j9, 0
+      jjz j2, qpc_gn
+      jld j2, j9, 8
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, qpc_gn
+      jld j2, j9, 16
+      jjz j2, qpc_gn
+      jldi j2, 1
+      jst j2, j1, QPGF
+    qpc_gn:
+      jld j2, j1, QPK + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp qpc_g
+  qpc_gd:
     jldi j11, 0                 ; (the votes left)
     jld j9, j1, QPK
     jld j10, j1, QPK + 8
@@ -5703,6 +5737,11 @@ qpn_kinds:
       jldi j3, 63
       jsar j3, j2, j3
       jjnz j3, qpc_snext
+      jld j3, j1, QPGF
+      jjz j3, qpc_sadd
+      jld j3, j9, 16
+      jjz j3, qpc_snext
+    qpc_sadd:
       jadd j11, j11, j2
     qpc_snext:
       jld j2, j1, QPK + 24
@@ -5734,6 +5773,11 @@ qpn_kinds:
       jldi j4, 63
       jsar j4, j3, j4
       jjnz j4, qpc_pnext
+      jld j4, j1, QPGF
+      jjz j4, qpc_pany
+      jld j4, j9, 16
+      jjz j4, qpc_pnext
+    qpc_pany:
       jsub j2, j2, j3
       jldi j4, 63
       jsar j4, j2, j4
@@ -5807,26 +5851,14 @@ qp_none:
   jldi j1, 0
   jret
 
-; j2 = 1 if the entry of QST at QPA is a proven fact where the subject comes first, with a word in its middle. Uses
-; j1-j11.
+; j2 = 1 if the entry of QST at QPA may go in the paragraph: a fact of the subject (at either end) with a word in its
+; middle, proven (said twice at least), or guided by the question's instruction (QPGU 1: then said once is enough, as
+; for an answer the book says). Uses j1-j14.
 qp_takes:
   jldi j1, 0
   jld j9, j1, QPA
   jld j2, j9, 0
   jjz j2, qpt_no
-  jld j2, j9, 8
-  jldi j3, 2
-  jsub j2, j2, j3
-  jldi j3, 63
-  jsar j2, j2, j3
-  jjnz j2, qpt_no
-  jld j9, j9, 16                ; the fact: the subject first
-  jld j2, j9, 0
-  jcall tok_at
-  jld j3, j1, QCW
-  jsub j2, j2, j3
-  jjnz j2, qpt_no
-  jld j9, j1, QPA
   jld j9, j9, 16
   jld j5, j9, 16
   jldi j2, TMI
@@ -5834,9 +5866,100 @@ qp_takes:
   jldi j1, 0
   jld j2, j4, 0
   jjz j2, qpt_no
+  jst j4, j1, QPRA
   jadd j12, j4, j1
-  jjmp sk_word
+  jcall sk_word
+  jjz j2, qpt_no
+  jld j12, j1, QPRA             ; guided by the question's instruction?
+  jcall qp_guided
+  jst j2, j1, QPGU
+  jjnz j2, qpt_yes
+  jld j9, j1, QPA
+  jld j2, j9, 8
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, qpt_no
+qpt_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
 qpt_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the middle of skeleton j12 carries the question's instruction: a word of it is a structure word of the
+; question (no arrow, no furniture, no mark). (Letters alone are no guide: "es" stands inside "estaba".) Uses j1-j14.
+qp_guided:
+  jldi j1, 0
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jst j10, j1, QPGN
+  jldi j11, 1
+  qgd_mid:
+    jldi j1, 0
+    jld j10, j1, QPGN
+    jjz j10, qgd_no
+    jldi j2, 1
+    jsub j10, j10, j2
+    jst j10, j1, QPGN
+    jadd j2, j9, j11
+    jst j9, j1, QPGA
+    jst j11, j1, QPGB
+    jcall tok_at
+    jst j2, j1, QPGW
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, qgd_mnext
+    jld j8, j1, QQS             ; each structure word of the question
+    qgd_q:
+      jldi j1, 0
+      jld j2, j1, QQE
+      jsub j2, j8, j2
+      jjz j2, qgd_mnext
+      jst j8, j1, QPGQ
+      jldi j2, 3
+      jshl j2, j8, j2
+      jld j2, j2, QBUF
+      jldi j3, 1
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, qgd_qnext
+      jst j2, j1, QPGX
+      jcall w_mark
+      jjnz j3, qgd_qnext
+      jld j2, j1, QPGX
+      jcall g_core
+      jjnz j3, qgd_qnext
+      jld j2, j1, QPGX
+      jcall is_arrow
+      jjnz j2, qgd_qnext
+      jldi j1, 0
+      jld j2, j1, QPGX
+      jld j3, j1, QPGW
+      jsub j4, j2, j3
+      jjz j4, qgd_yes
+    qgd_qnext:
+      jldi j1, 0
+      jld j8, j1, QPGQ
+      jldi j2, 1
+      jadd j8, j8, j2
+      jjmp qgd_q
+  qgd_mnext:
+    jldi j1, 0
+    jld j9, j1, QPGA
+    jld j11, j1, QPGB
+    jldi j2, 1
+    jadd j11, j11, j2
+    jjmp qgd_mid
+qgd_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qgd_no:
   jldi j1, 0
   jldi j2, 0
   jret
@@ -5860,9 +5983,16 @@ qpcl_new:
   jjnz j2, qpcl_glue
   jldi j1, S_ANS
   jcall puts
-  jld j2, j1, QCW
+  jldi j1, 0
+  jld j9, j1, QPA               ; its first word: the subject, or the one before it when it comes last
+  jld j9, j9, 16
+  jld j2, j9, 0
+  jcall tok_at
   jcall putword
-  jjmp qpcl_mid
+  jldi j1, 0
+  jldi j2, 32
+  jcall putch
+  jjmp qpcl_body
 qpcl_glue:
   jld j2, j1, QPI               ; the last one: the joiner that turns the most; the rest: the next one
   jld j3, j1, QPN
@@ -5892,6 +6022,19 @@ qpcl_mid:
   jldi j2, 32
   jcall putch
 qpcl_mid2:
+  jldi j1, 0
+  jld j9, j1, QPA               ; (a fact the subject ends: its first word first)
+  jld j9, j9, 16
+  jld j2, j9, 0
+  jcall tok_at
+  jld j3, j1, QCW
+  jsub j3, j2, j3
+  jjz j3, qpcl_body
+  jcall putword
+  jldi j1, 0
+  jldi j2, 32
+  jcall putch
+qpcl_body:
   jldi j1, 0
   jld j9, j1, QPA
   jld j9, j9, 16

@@ -2716,3 +2716,19 @@ lo que hay entre dos núcleos, y la cláusula se cortaba ahí.
   aquellos a quienes se considera gobernantes, dominan a las naciones ...". Ninguna respuesta de control se perdió.
 - **Lo flojo:** no cierra las comillas que abrió, y la cláusula siguiente se pega después de la cita.
 
+## La instrucción de la pregunta guía el párrafo (2026-11-07)
+
+El Capitán: en "¿quién es pedro?" salía "pedro le dijo", y tendría que ser "tú eres pedro, y sobre esta piedra
+edificaré mi iglesia". "le dijo" cuenta qué hizo, no quién es.
+
+- **Los dos extremos:** entran también los hechos donde el sujeto va al final ("tú eres pedro"), dichos tal cual.
+- **La guía es la instrucción de la pregunta (`qp_guided`):** una clase de relación cuyo medio lleva una palabra de
+  estructura de la pregunta (no una flecha, no un mueble), como el "es" de "¿quién es...?", va antes que todas. Como
+  para una respuesta, alcanza con que el libro la diga una vez. El resto del hilo sigue por el sorteo.
+- **Probado y descartado:** contar como guía "una palabra que contiene las letras" ("eres" contiene "es"). "es" también
+  está dentro de "estaba", y así salía "pedro estaba bajo custodia".
+- **Medido** (NT): "¿quién es jesús?" → "jesús es el hijo de dios y salvador, que es jesús y les dijo: «vengan a
+  comer ...". Ninguna respuesta de control se perdió, y las de dos pasos siguen.
+- **Lo que falta para pedro:** el NT dice "tú eres pedro" una sola vez y nunca "pedro es". Para que "eres" cuente como
+  "es" hace falta una señal más firme que las letras.
+
