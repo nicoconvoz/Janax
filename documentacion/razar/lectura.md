@@ -2732,3 +2732,28 @@ edificaré mi iglesia". "le dijo" cuenta qué hizo, no quién es.
 - **Lo que falta para pedro:** el NT dice "tú eres pedro" una sola vez y nunca "pedro es". Para que "eres" cuente como
   "es" hace falta una señal más firme que las letras.
 
+## Familias de instrucciones en el diccionario (2026-11-07)
+
+El Capitán: *"falta la familia de palabras: él es → tú eres, familias que las deduzca"*; *"con este mecanismo por
+contexto, encontrá la función de la instrucción y agregá la familia al diccionario"*.
+
+- **El contexto de una instrucción** es lo que une: cada mueble justo antes o justo después de ella. Dos instrucciones
+  son parientes por **la parte de sus contextos que comparten** (lo compartido sobre lo que tiene cualquiera de las
+  dos). Medido para "es" en el NT: las más cercanas son "será", "era", "está", "fue", "sea" y "ha". El verbo sale solo,
+  por lo que une.
+- **Se guarda y se perfecciona (formato 2 de `tablero/funciones-`):**
+  - cada instrucción guarda además cuántos contextos tiene;
+  - el archivo trae, por cada dos instrucciones, cuántos contextos comparten, si son dos o más (`fam_scan`, `ie_pairs`);
+  - la biblioteca suma las cuentas (`pf_file`), y el pariente de cada una es la que más comparte con ella
+    (`fam_build`).
+  - El informe muestra cada instrucción con su pariente: "la ~una", "el ~un", "a ~en", "en ~de", "los ~lo".
+- **Encadenar parientes no sirve:** "de~y", "y~que" y "no~que" juntan en una sola familia todas las palabras comunes.
+  Por eso la familia que importa es la cercana: la palabra, su pariente, y los que la tienen de pariente.
+- **Probado y descartado como guía de la pregunta:** el pariente de "es" por contexto es "estaba". Las dos van antes de
+  las mismas cosas, pero "estar" no dice quién es alguien. "¿Quién es jesús?" empeoraba ("jesús estaba en la orilla").
+  La guía queda en la instrucción exacta.
+- **Pedro sigue sin "tú eres pedro":** "eres" casi no comparte contextos con "es" en el Nuevo Testamento. Falta la
+  familia de las personas ("él es" / "tú eres"), que explica la conjugación.
+- Ninguna respuesta de control se perdió. Los pensamientos tejidos después de las respuestas cambian porque el
+  organismo elige distinto.
+

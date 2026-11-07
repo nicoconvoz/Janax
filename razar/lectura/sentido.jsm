@@ -332,6 +332,22 @@ QPGB  = 54B0h
 QPGW  = 54B8h
 QPGQ  = 54C0h
 QPGX  = 54C8h
+CTX   = 5500h                   ; families: contexts seen, by context its instructions' list, shared by two {key, a,
+GRP   = 5520h                   ; b, shared}; the lists and their next; by word its kin {word, share} and its family's
+PRT   = 5540h                   ; root; walking
+LNK   = 5560h
+LNKN  = 5568h
+NEAR  = 5570h
+FAM   = 5578h
+FT1   = 5580h
+FT2   = 5588h
+FT3   = 5590h
+FT4   = 5598h
+FT5   = 55A0h
+FT6   = 55A8h
+FT7   = 55B0h
+FT8   = 55B8h
+FT9   = 55C0h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -407,6 +423,7 @@ jcall eat_write
 jcall qa_eat
 jcall eng_eat
 jcall ins_scan                  ; and how it uses each instruction: the dictionary
+jcall fam_scan                  ; with what each one joins: its families
 jcall ins_eat
 jcall ort_eat                   ; and its spelling
 jjmp finish
@@ -473,6 +490,7 @@ jcall glue_count                ; how the book joins its constructions
 jcall ins_room                  ; (the dictionary of instructions, filled by the library's books)
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
+jcall fam_build                 ; its families, from what the books share
 jcall ins_report                ; the dictionary of instructions, as the books proved it
 jcall sk_report
 jcall cores
@@ -4188,7 +4206,7 @@ qa2_none:
 ; whether "_ w _" turns on itself (it joins two that can swap). Every way the book shows twice at least (the anecdote
 ; rule) is a function of it that is proven; which one it is doing is decided where it stands. They are counts: every
 ; book adds its own, and the dictionary is perfected with each one. INS: by word {times, nine ways, swaps} (11 qwords).
-INSQ  = 88                      ; (the bytes of a word's counts)
+INSQ  = 96                      ; (the bytes of a word's counts: times, nine ways, swaps, contexts)
 
 ; The room of the dictionary, empty. Uses j1-j14.
 ins_room:
@@ -4211,6 +4229,10 @@ ins_room:
     jsub j2, j2, j4
     jjmp insr_z
 insr_done:
+  jldi j2, PRT                  ; (and the contexts two instructions share)
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
   jret
 
 ; The unit at j2's kind: 0 furniture, 1 foundation, 2 a limit, a mark or an edge. Uses j1-j5.
@@ -4349,12 +4371,13 @@ ins_eat:
   jst j1, j1, QLN
   jst j1, j1, QLS
   jcall ie_walk
+  jcall ie_pairs
   jldi j1, 0
   jld j11, j1, QLW
   jcall room
   jldi j1, 0
   jst j13, j1, QLC
-  jldi j2, 1
+  jldi j2, 2
   jst j2, j13, 0
   jld j2, j1, QLN
   jst j2, j13, 8
@@ -4364,6 +4387,7 @@ ins_eat:
   jldi j2, 1
   jst j2, j1, QLS
   jcall ie_walk
+  jcall ie_pairs
   jldi j1, 0
   jldi j11, 64
   jcall room
@@ -4438,7 +4462,7 @@ ie_walk:
     jadd j7, j5, j7
     jldi j4, -8
     jand j7, j7, j4
-    jldi j4, 96
+    jldi j4, 104
     jadd j7, j7, j4
     jld j3, j1, QLN
     jldi j4, 1
@@ -4454,7 +4478,7 @@ ie_walk:
     jld j3, j1, QLP
     jadd j4, j3, j7
     jst j4, j1, QLP
-    jldi j4, 11
+    jldi j4, 12
     iew_c:
       jld j2, j8, 0
       jst j2, j3, 0
@@ -4483,6 +4507,127 @@ ie_walk:
   jldi j1, 0
   jret
 
+; The shared contexts, proven (twice at least): counted with their bytes (QLS 0: QLW, after a qword of how many), or
+; written at QLP (QLS 1). Each {shared, a's bytes, its letters padded, b's bytes, its letters padded}. Uses j1-j14.
+ie_pairs:
+  jldi j1, 0
+  jst j1, j1, FT1               ; (how many)
+  jld j2, j1, QLS
+  jjnz j2, iep_head
+  jld j2, j1, QLW
+  jldi j3, 8
+  jadd j2, j2, j3
+  jst j2, j1, QLW
+  jjmp iep_go
+iep_head:
+  jld j2, j1, QLP               ; (its place, filled at the end)
+  jst j2, j1, FT2
+  jldi j3, 8
+  jadd j2, j2, j3
+  jst j2, j1, QLP
+iep_go:
+  jld j9, j1, PRT
+  jjz j9, iep_done
+  jld j10, j1, PRT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  iep_lap:
+    jldi j1, 0
+    jjz j10, iep_done
+    jld j2, j9, 0
+    jjz j2, iep_next
+    jld j2, j9, 24
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, iep_next
+    jst j9, j1, FT3
+    jst j10, j1, FT4
+    jld j3, j1, FT1
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, FT1
+    jld j3, j1, QLS
+    jjz j3, iep_size
+    jld j3, j1, QLP
+    jst j2, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jst j3, j1, QLP
+    jjmp iep_words
+  iep_size:
+    jld j3, j1, QLW
+    jldi j4, 8
+    jadd j3, j3, j4
+    jst j3, j1, QLW
+  iep_words:
+    jld j9, j1, FT3
+    jld j2, j9, 8
+    jcall iep_word
+    jld j9, j1, FT3
+    jld j2, j9, 16
+    jcall iep_word
+    jldi j1, 0
+    jld j9, j1, FT3
+    jld j10, j1, FT4
+  iep_next:
+    jld j2, j1, PRT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp iep_lap
+iep_done:
+  jld j2, j1, QLS
+  jjz j2, iep_out
+  jld j3, j1, FT2
+  jld j2, j1, FT1
+  jst j2, j3, 0
+iep_out:
+  jldi j1, 0
+  jret
+
+; Word j2 ({its bytes, its letters padded}) counted (QLW) or written at QLP. Uses j1-j8.
+iep_word:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j5, j3, 16
+  jld j6, j3, 8
+  jld j4, j1, ROOMA
+  jadd j6, j6, j4
+  jldi j7, 7
+  jadd j7, j5, j7
+  jldi j4, -8
+  jand j7, j7, j4
+  jldi j4, 8
+  jadd j7, j7, j4
+  jld j3, j1, QLS
+  jjnz j3, iepw_put
+  jld j3, j1, QLW
+  jadd j3, j3, j7
+  jst j3, j1, QLW
+  jret
+iepw_put:
+  jld j3, j1, QLP
+  jadd j4, j3, j7
+  jst j4, j1, QLP
+  jst j5, j3, 0
+  jldi j4, 8
+  jadd j3, j3, j4
+  jldi j4, 1
+  jwhile j5
+    jldb j8, j6, 0
+    jstb j8, j3, 0
+    jadd j6, j6, j4
+    jadd j3, j3, j4
+    jsub j5, j5, j4
+  jwend
+  jret
+
 ; One file of the dictionary (SXR, SXN): each instruction this reading knows adds its counts to INS. Something that
 ; does not hold together ends the file. Uses j1-j14.
 pf_file:
@@ -4491,7 +4636,7 @@ pf_file:
   jjz j2, pff_done
   jld j9, j1, SXR
   jld j2, j9, 0
-  jldi j3, 1
+  jldi j3, 2
   jsub j2, j2, j3
   jjnz j2, pff_done
   jld j2, j9, 8
@@ -4505,19 +4650,19 @@ pf_file:
   pff_lap:
     jldi j1, 0
     jld j2, j1, QLW
-    jjz j2, pff_done
+    jjz j2, pff_pairs
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, QLW
     jld j9, j1, QLK
-    jldi j2, 96
+    jldi j2, 104
     jadd j2, j9, j2
     jld j3, j1, QLH
     jsub j3, j3, j2
     jldi j4, 63
     jsar j3, j3, j4
     jjnz j3, pff_done
-    jld j4, j9, 88
+    jld j4, j9, 96
     jldi j3, 63
     jsar j3, j4, j3
     jjnz j3, pff_done
@@ -4562,7 +4707,7 @@ pf_file:
     jld j4, j1, INS
     jadd j8, j3, j4
     jld j9, j1, QLP
-    jldi j4, 11
+    jldi j4, 12
     pff_add:
       jld j2, j8, 0
       jld j3, j9, 0
@@ -4575,8 +4720,96 @@ pf_file:
       jsub j4, j4, j2
       jjnz j4, pff_add
     jjmp pff_lap
+pff_pairs:                      ; then the pairs: {shared, a's bytes, its letters, b's bytes, its letters}
+  jldi j1, 0
+  jld j9, j1, QLK
+  jld j2, j9, 0
+  jst j2, j1, QLW
+  jldi j2, 8
+  jadd j9, j9, j2
+  jst j9, j1, QLK
+  ppr_lap:
+    jldi j1, 0
+    jld j2, j1, QLW
+    jjz j2, pff_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, QLW
+    jld j9, j1, QLK
+    jld j2, j9, 0
+    jst j2, j1, QLP
+    jldi j2, 8
+    jadd j9, j9, j2
+    jcall ppr_word              ; a
+    jjz j2, pff_done
+    jst j3, j1, QLC
+    jcall ppr_word              ; b
+    jjz j2, pff_done
+    jst j9, j1, QLK
+    jjz j3, ppr_lap             ; (a word this reading never read)
+    jld j2, j1, QLC
+    jjz j2, ppr_lap
+    jld j4, j1, QLP
+    jcall fam_addn
+    jjmp ppr_lap
 pff_done:
   jldi j1, 0
+  jret
+
+; The word at j9 in a pairs file ({its bytes, its letters padded}) -> j3 its number in this reading (0: never read), j9
+; past it; j2 = 0 if it does not hold together. Uses j1-j14 (j9 moved).
+ppr_word:
+  jldi j1, 0
+  jld j4, j9, 0
+  jldi j3, 63
+  jsar j3, j4, j3
+  jjnz j3, ppw_bad
+  jldi j3, 255
+  jsub j3, j3, j4
+  jldi j5, 63
+  jsar j3, j3, j5
+  jjnz j3, ppw_bad
+  jldi j3, 8
+  jadd j2, j9, j3
+  jldi j3, 7
+  jadd j5, j4, j3
+  jldi j3, -8
+  jand j5, j5, j3
+  jadd j5, j2, j5
+  jld j3, j1, QLH
+  jsub j3, j3, j5
+  jldi j6, 63
+  jsar j3, j3, j6
+  jjnz j3, ppw_bad
+  jst j5, j1, QLS
+  jst j4, j1, WLEN
+  jldi j6, 0
+  ppw_l:
+    jsub j3, j6, j4
+    jjz j3, ppw_ld
+    jadd j3, j2, j6
+    jldb j3, j3, 0
+    jstb j3, j6, WBUF
+    jldi j3, 1
+    jadd j6, j6, j3
+    jjmp ppw_l
+ppw_ld:
+  jcall word_id
+  jldi j1, 0
+  jadd j3, j2, j1
+  jldi j4, 1
+  jsub j4, j3, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, ppw_known
+  jldi j3, 0
+ppw_known:
+  jld j9, j1, QLS
+  jldi j2, 1
+  jret
+ppw_bad:
+  jldi j1, 0
+  jldi j2, 0
   jret
 
 ; The dictionary written (the reading's report): its instructions said the most, each with every way it works that
@@ -4708,6 +4941,23 @@ ins_report:
     jld j2, j3, 80
     jcall putnum
   irw_mark:
+    jldi j1, 0                  ; and its kin (the one it shares the most of what it joins with)
+    jld j3, j1, NEAR
+    jjz j3, irw_nokin
+    jld j2, j1, INSW
+    jldi j4, 4
+    jshl j2, j2, j4
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, irw_nokin
+    jst j2, j1, INSE
+    jldi j2, 32
+    jcall putch
+    jldi j2, 126
+    jcall putch
+    jld j2, j1, INSE
+    jcall putword
+  irw_nokin:
     jldi j1, 0
     jld j3, j1, INSW            ; (not again: its times go negative while it is written)
     jldi j4, INSQ
@@ -5891,7 +6141,8 @@ qpt_no:
   jret
 
 ; j2 = 1 if the middle of skeleton j12 carries the question's instruction: a word of it is a structure word of the
-; question (no arrow, no furniture, no mark). (Letters alone are no guide: "es" stands inside "estaba".) Uses j1-j14.
+; question (no arrow, no furniture, no mark). (Letters alone are no guide: "es" is inside "estaba"; nor is the
+; dictionary's kin yet: the kin of "es" by context is "estaba", and "estar" says no one who someone is.) Uses j1-j14.
 qp_guided:
   jldi j1, 0
   jld j9, j12, 16
@@ -6266,6 +6517,392 @@ qpg_fill:
   jst j2, j1, QPG
 qpg_done:
   jldi j1, 0
+  jret
+
+; The families of instructions (Capitan, 2026-11-07: "find the instruction's function by context and add the family to
+; the dictionary"; "él es -> tú eres: families it deduces"). An instruction's context is what it joins: each furniture
+; word right before or right after it. Two instructions are kin by the share of their contexts they hold in common
+; (what they share over what either has). Counts that add up: each instruction's contexts (INS + 88), and for each two
+; of them, how many they share (PRT {key, a, b, shared}). Every book adds its own, and the dictionary perfects them.
+
+; This book's contexts and shared contexts (eating). Uses j1-j14.
+fam_scan:
+  jldi j2, CTX                  ; by (instruction, side, partner): seen {key, instruction}
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, GRP                  ; by (side, partner): the head of its instructions' list {key, head}
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, PRT
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, NTOK             ; the lists: {instruction, next} (two contexts a unit at most)
+  jldi j2, 5
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LNK
+  jldi j2, 1
+  jst j2, j1, LNKN
+  jldi j9, 1
+  fs_lap:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jldi j3, 1
+    jsub j2, j2, j3
+    jsub j2, j9, j2
+    jjz j2, fs_pairs
+    jst j9, j1, FT1
+    jadd j2, j9, j1
+    jcall tok_at
+    jjz j2, fs_next
+    jst j2, j1, FT2
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, fs_next
+    jld j2, j1, FT2
+    jcall g_core
+    jldi j1, 0
+    jjnz j3, fs_next            ; (an instruction)
+    jldi j2, -1
+    jst j2, j1, FT3
+    jcall fs_side
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, FT3
+    jcall fs_side
+  fs_next:
+    jldi j1, 0
+    jld j9, j1, FT1
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp fs_lap
+fs_pairs:                       ; each (side, partner): every two instructions of its list share it
+  jld j9, j1, GRP
+  jld j10, j1, GRP + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  fsp_lap:
+    jldi j1, 0
+    jjz j10, fsp_done
+    jld j2, j9, 0
+    jjz j2, fsp_next
+    jst j9, j1, FT4
+    jst j10, j1, FT5
+    jld j7, j9, 8               ; a
+    fsp_a:
+      jldi j1, 0
+      jjz j7, fsp_back
+      jst j7, j1, FT6
+      jldi j3, 4
+      jshl j3, j7, j3
+      jld j4, j1, LNK
+      jadd j3, j3, j4
+      jld j2, j3, 0
+      jst j2, j1, FT2
+      jld j8, j3, 8             ; b, after it
+      fsp_b:
+        jldi j1, 0
+        jjz j8, fsp_anext
+        jst j8, j1, FT3
+        jldi j3, 4
+        jshl j3, j8, j3
+        jld j4, j1, LNK
+        jadd j3, j3, j4
+        jld j3, j3, 0
+        jld j2, j1, FT2
+        jcall fam_add1
+        jldi j1, 0
+        jld j8, j1, FT3
+        jldi j3, 4
+        jshl j3, j8, j3
+        jld j4, j1, LNK
+        jadd j3, j3, j4
+        jld j8, j3, 8
+        jjmp fsp_b
+    fsp_anext:
+      jldi j1, 0
+      jld j7, j1, FT6
+      jldi j3, 4
+      jshl j3, j7, j3
+      jld j4, j1, LNK
+      jadd j3, j3, j4
+      jld j7, j3, 8
+      jjmp fsp_a
+  fsp_back:
+    jldi j1, 0
+    jld j9, j1, FT4
+    jld j10, j1, FT5
+  fsp_next:
+    jld j2, j1, GRP + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp fsp_lap
+fsp_done:
+  jldi j1, 0
+  jret
+
+; The furniture on side FT3 of the instruction FT2 at FT1: a context, once (its count at INS + 88 and its list).
+; Uses j1-j8.
+fs_side:
+  jldi j1, 0
+  jld j2, j1, FT1
+  jld j3, j1, FT3
+  jadd j2, j2, j3
+  jcall tok_at
+  jjz j2, fss_no
+  jst j2, j1, FT4
+  jcall g_core
+  jldi j1, 0
+  jjz j3, fss_no
+  jld j5, j1, FT4               ; (side, partner): its group's key
+  jld j6, j1, FNVP
+  jmul j5, j5, j6
+  jld j2, j1, FT3
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jjnz j5, fss_g
+  jldi j5, 1
+fss_g:
+  jst j5, j1, FT5
+  jld j2, j1, FT2               ; (instruction, side, partner) seen?
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jjnz j5, fss_k
+  jldi j5, 1
+fss_k:
+  jldi j2, CTX
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, fss_no
+  jld j2, j1, FT2               ; its contexts, one more
+  jldi j3, INSQ
+  jmul j2, j2, j3
+  jld j3, j1, INS
+  jadd j2, j2, j3
+  jld j3, j2, 88
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j2, 88
+  jld j5, j1, FT5               ; and into its group's list
+  jldi j2, GRP
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, LNKN
+  jldi j3, 4
+  jshl j3, j2, j3
+  jld j5, j1, LNK
+  jadd j3, j3, j5
+  jld j5, j1, FT2
+  jst j5, j3, 0
+  jld j5, j4, 8
+  jst j5, j3, 8
+  jst j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, LNKN
+fss_no:
+  jldi j1, 0
+  jret
+
+; Instructions j2 and j3 share one more context (or j4 more: fam_addn). Uses j1-j8.
+fam_add1:
+  jldi j4, 1
+fam_addn:
+  jldi j1, 0
+  jst j4, j1, FT7
+  jsub j5, j2, j3               ; (the smaller first)
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, fa_ord
+  jadd j5, j2, j1
+  jadd j2, j3, j1
+  jadd j3, j5, j1
+fa_ord:
+  jjz j2, fa_done
+  jsub j5, j2, j3
+  jjz j5, fa_done
+  jst j2, j1, FT8
+  jst j3, j1, FT9
+  jld j6, j1, FNVP
+  jadd j5, j2, j1
+  jmul j5, j5, j6
+  jxor j5, j5, j3
+  jmul j5, j5, j6
+  jjnz j5, fa_k
+  jldi j5, 1
+fa_k:
+  jldi j2, PRT
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j1, FT8
+  jst j2, j4, 8
+  jld j2, j1, FT9
+  jst j2, j4, 16
+  jld j2, j4, 24
+  jld j3, j1, FT7
+  jadd j2, j2, j3
+  jst j2, j4, 24
+fa_done:
+  jldi j1, 0
+  jret
+
+; The families, from what the dictionary holds (INS + 88, PRT): each instruction's kin is the one it shares the most of
+; its contexts with (shared over what either has: 1000 a whole); each joined to its kin, and a family is what is joined
+; (a word and its kin, and theirs: no line drawn anywhere). FAM: by word, its family's root. Uses j1-j14.
+fam_build:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, NEAR             ; by word {its kin, the share}
+  jld j2, j1, NV
+  jldi j3, 4
+  jshl j2, j2, j3
+  jadd j3, j13, j1
+  fb_z:
+    jjz j2, fb_zd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jsub j2, j2, j4
+    jjmp fb_z
+fb_zd:
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, FAM
+  jldi j9, 0
+  jld j10, j1, NV
+  jwhile j10
+    jldi j3, 3
+    jshl j3, j9, j3
+    jadd j3, j3, j13
+    jst j9, j3, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j9, j1, PRT
+  jjz j9, fb_done
+  jld j10, j1, PRT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  fb_lap:
+    jldi j1, 0
+    jjz j10, fb_join
+    jld j2, j9, 0
+    jjz j2, fb_next
+    jld j2, j9, 24              ; twice at least (the anecdote rule)
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, fb_next
+    jld j2, j9, 8
+    jld j3, j9, 16
+    jcall fb_note
+    jldi j1, 0
+    jld j2, j9, 16
+    jld j3, j9, 8
+    jcall fb_note
+  fb_next:
+    jldi j1, 0
+    jld j2, j1, PRT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp fb_lap
+fb_join:                        ; each with its kin
+  jldi j9, 1
+  jld j10, j1, NV
+  jldi j2, 1
+  jsub j10, j10, j2
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 4
+    jshl j3, j9, j3
+    jld j4, j1, NEAR
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, fbj_n
+    jadd j2, j9, j1
+    jcall fam_root
+    jst j2, j1, FT1
+    jadd j2, j3, j1
+    jcall fam_root
+    jld j4, j1, FT1
+    jsub j5, j2, j4
+    jjz j5, fbj_n
+    jldi j5, 3
+    jshl j5, j4, j5
+    jld j6, j1, FAM
+    jadd j5, j5, j6
+    jst j2, j5, 0
+  fbj_n:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+fb_done:
+  jldi j1, 0
+  jret
+
+; Instruction j2 met j3 sharing the PRT entry at j9: the share (shared over what either has); its kin if more. Uses
+; j1-j8 (j9, j10 kept).
+fb_note:
+  jldi j1, 0
+  jld j4, j1, INS
+  jldi j5, INSQ
+  jmul j6, j2, j5
+  jadd j6, j6, j4
+  jld j6, j6, 88
+  jmul j7, j3, j5
+  jadd j7, j7, j4
+  jld j7, j7, 88
+  jadd j6, j6, j7
+  jld j7, j9, 24
+  jsub j6, j6, j7
+  jldi j8, 1000
+  jmul j7, j7, j8
+  jjz j6, fbn_done
+  jdiv j7, j7, j6
+  jldi j4, 4
+  jshl j4, j2, j4
+  jld j5, j1, NEAR
+  jadd j4, j4, j5
+  jld j5, j4, 8
+  jsub j5, j5, j7
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjz j5, fbn_done
+  jst j3, j4, 0
+  jst j7, j4, 8
+fbn_done:
+  jret
+
+; The root of word j2's family -> j2. Uses j1, j2, j4-j6.
+fam_root:
+  jldi j1, 0
+  fr_lap:
+    jldi j4, 3
+    jshl j4, j2, j4
+    jld j5, j1, FAM
+    jadd j4, j4, j5
+    jld j6, j4, 0
+    jsub j5, j6, j2
+    jjz j5, fr_done
+    jadd j2, j6, j1
+    jjmp fr_lap
+fr_done:
   jret
 
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
