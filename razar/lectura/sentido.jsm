@@ -248,6 +248,13 @@ WNT   = 0EB0h                   ; the words it wants to read again (pensar): by 
 PNB   = 0ED0h                   ; letters a line each (a room that grows), its bytes, its room's bytes
 PNN   = 0ED8h
 PNC   = 0EE0h
+THR   = 0EE8h                   ; thinking on, once a reading: built; by word its first fact + 1; by fact the next one's;
+THH   = 0EF0h                   ; by skeleton the books' times going on with it {key, times} (a table that grows); the
+THN   = 0EF8h                   ; row of words to think on, its head, its tail
+KCT   = 0F00h
+THQ   = 0F20h
+THQH  = 0F28h
+THQT  = 0F30h
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
@@ -2895,128 +2902,318 @@ fgl_done:
   jret
 
 ; Thinking on from an answer (Capitan, 2026-11-07: "the structure is the routine and the furniture its arguments,
-; recombined", and "not only answers: the question it asks itself, what it analyses"; "and that is a while"). The
-; structure is the instruction, the furniture what it is given: from the word the answer ends with (THX) and its
-; skeleton (THK), the book's own compositions say which skeleton it goes on with from that same word (GKT, "=": one
-; fact ends on a core and the next starts on it), proved twice at least, whatever skeleton it comes from (plastic: the
-; word decides, not the exact structure before it). That is the question it asks itself: the word and the skeleton,
-; with a hole. A fact of the book answers it, and the word it ends on is the next one. While there is
-; a question and an answer; a word already thought on is not asked again, so it ends. Uses j1-j14.
+; recombined"; "not only answers: the question it asks itself, what it analyses"; "and that is a while"; and "weave
+; everything on the way: I want it to learn, I take the risk"). The structure is the instruction, the furniture what
+; it is given. From the word the answer ends with (THX), every branch at once: each fact of the reading that starts on
+; the word, when its skeleton is one the books went on with from a word another fact ended on ("=", GKT, the
+; library's summed in), proved twice at least, whatever came before (plastic), and has a word in its middle (marks
+; alone are no instruction). That is a question it asks itself, and the fact its answer; the word the fact ends on
+; joins the row, to be thought on in its turn (breadth first). A word already thought on is not asked again, so the
+; while ends. A word none of its branches went on from is one it ran out of facts on: wanted (pensar), all of them
+; read again together in the talk's next round. Uses j1-j14.
 think:
+  jldi j1, 0
+  jld j2, j1, THR
+  jjnz j2, th_ready
+  jcall th_build
+th_ready:
   jldi j2, TVT
   jldi j3, 8
   jcall pl_new
   jldi j1, 0
-  jld j5, j1, THX
-  jldi j2, TVT
-  jcall pl_take
+  jld j11, j1, NV               ; the row: a word at most once
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, THQ
+  jst j1, j1, THQH
+  jst j1, j1, THQT
+  jld j2, j1, THX
+  jcall th_push
   th_lap:
-    jldi j1, 0                  ; the composition proved the most that a fact answers
-    jst j1, j1, THB
-    jld j9, j1, GKT
-    jld j10, j1, GKT + 8
-    jldi j2, 1
-    jadd j10, j10, j2
-    thc_lap:
+    jldi j1, 0                  ; the next word of the row
+    jld j2, j1, THQH
+    jld j3, j1, THQT
+    jsub j3, j2, j3
+    jjz j3, th_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, THQ
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jst j3, j1, THX
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, THQH
+    jst j1, j1, THB             ; (branches it went on by)
+    jld j2, j1, THX             ; its facts, one after another
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, THH
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jst j2, j1, THI
+    thb_lap:
       jldi j1, 0
-      jjz j10, thc_done
-      jld j2, j9, 0
-      jjz j2, thc_next
-      jld j2, j9, 40            ; by the same core (from whatever skeleton: plastic, not rigid)
-      jjnz j2, thc_next
-      jld j2, j9, 8             ; proved, and more than the best so far
+      jld j2, j1, THI
+      jjz j2, thb_done
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, THG           ; (the fact's number)
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, THN
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jst j3, j1, THI
+      jld j2, j1, THG
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, GFL
+      jadd j9, j3, j4
+      jld j2, j9, 8
+      jcall tok_at
+      jst j2, j1, THY
+      jld j5, j1, THY           ; a word not thought on yet
+      jldi j2, TVT
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 0
+      jjnz j2, thb_lap
+      jld j2, j1, THG           ; its skeleton: the books went on with it, two times at least
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, GFL
+      jadd j9, j3, j4
+      jld j5, j9, 16
+      jst j5, j1, THC
+      jldi j2, KCT
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 0
+      jjz j2, thb_lap
+      jld j2, j4, 8
       jldi j3, 2
-      jsub j3, j2, j3
-      jldi j4, 63
-      jsar j3, j3, j4
-      jjnz j3, thc_next
-      jld j3, j1, THB
-      jsub j3, j3, j2
-      jsar j3, j3, j4
-      jjz j3, thc_next
-      jst j9, j1, TI
-      jst j10, j1, TJ
-      jld j5, j9, 32            ; a skeleton with a word in its middle (marks alone are no instruction, as in q_fit)
+      jsub j2, j2, j3
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjnz j2, thb_lap
+      jld j5, j1, THC           ; and a word in its middle
       jldi j2, TMI
       jcall pl_find
       jldi j1, 0
       jld j2, j4, 0
-      jjz j2, thc_back
+      jjz j2, thb_lap
+      jst j4, j1, THE
       jadd j12, j4, j1
       jcall sk_word
-      jjz j2, thc_back
-      jld j9, j1, TI
-      jld j2, j9, 32
-      jcall th_fact             ; answered by a fact of the book?
+      jjz j2, thb_lap
+      jcall th_twice            ; and the fact itself said twice at least (the anecdote rule)
+      jjz j2, thb_lap
+      jcall th_say              ; asked and answered
       jldi j1, 0
-      jld j9, j1, TI
-      jld j10, j1, TJ
-      jjz j2, thc_next
-      jst j2, j1, THY
-      jld j2, j9, 8
-      jst j2, j1, THB
-      jld j2, j9, 32
-      jst j2, j1, THC
-      jjmp thc_next
-    thc_back:
-      jld j9, j1, TI
-      jld j10, j1, TJ
-    thc_next:
-      jld j2, j1, GKT + 24
-      jadd j9, j9, j2
+      jld j2, j1, THY
+      jcall th_push
+      jldi j1, 0
       jldi j2, 1
-      jsub j10, j10, j2
-      jjmp thc_lap
-  thc_done:
-    jld j2, j1, THB
-    jjz j2, th_done
-    jld j5, j1, THC             ; the skeleton it asks with
-    jldi j2, TMI
-    jcall pl_find
-    jldi j1, 0
-    jld j2, j4, 0
-    jjz j2, th_done
-    jst j4, j1, THE
-    jldi j1, S_THQ              ; the question it asks itself, and its answer
-    jcall puts
+      jst j2, j1, THB
+      jjmp thb_lap
+  thb_done:
+    jld j2, j1, THB             ; no branch went on: a word it ran out of facts on
+    jjnz j2, th_lap
     jld j2, j1, THX
-    jcall putword
-    jldi j2, 32
-    jcall putch
-    jld j12, j1, THE
-    jcall put_plain
-    jldi j2, 63
-    jcall putch
-    jldi j2, 32
-    jcall putch
-    jldi j2, 45
-    jcall putch
-    jldi j2, 62
-    jcall putch
-    jldi j2, 32
-    jcall putch
-    jld j2, j1, THX
-    jcall putword
-    jldi j2, 32
-    jcall putch
-    jld j12, j1, THE
-    jcall put_plain
-    jld j2, j1, THY
-    jcall putword
-    jldi j2, 10
-    jcall putch
-    jcall flush
-    jldi j1, 0                  ; and it goes on from the new word
-    jld j2, j1, THY
-    jst j2, j1, THX
-    jld j5, j1, THY
-    jldi j2, TVT
-    jcall pl_take
+    jcall want_word
     jjmp th_lap
 th_done:
-  jldi j1, 0                    ; the word it ran out of facts on: to be read again (pensar), if it was not asked yet
+  jldi j1, 0
+  jret
+
+; j2 = 1 if the reading says the fact THX «THC» THY twice at least: two facts of THX's list with that skeleton end on
+; that word. Uses j1-j9.
+th_twice:
+  jldi j1, 0
+  jldi j8, 0
   jld j2, j1, THX
-  jjmp want_word
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, THH
+  jadd j2, j2, j3
+  jld j7, j2, 0
+  thw_lap:
+    jjz j7, thw_no
+    jldi j3, 1
+    jsub j7, j7, j3
+    jldi j3, 24
+    jmul j3, j7, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jldi j3, 3
+    jshl j3, j7, j3
+    jld j4, j1, THN
+    jadd j3, j3, j4
+    jld j7, j3, 0
+    jld j3, j9, 16
+    jld j4, j1, THC
+    jsub j3, j3, j4
+    jjnz j3, thw_lap
+    jld j2, j9, 8
+    jst j7, j1, THF
+    jcall tok_at
+    jld j7, j1, THF
+    jld j3, j1, THY
+    jsub j2, j2, j3
+    jjnz j2, thw_lap
+    jldi j3, 1
+    jadd j8, j8, j3
+    jldi j3, 2
+    jsub j3, j8, j3
+    jjnz j3, thw_lap
+    jldi j2, 1
+    jret
+thw_no:
+  jldi j2, 0
+  jret
+
+; Word j2 into the row, and thought on (TVT). Uses j1-j8.
+th_push:
+  jldi j1, 0
+  jst j2, j1, THF
+  jld j3, j1, THQT
+  jldi j4, 3
+  jshl j4, j3, j4
+  jld j5, j1, THQ
+  jadd j4, j4, j5
+  jst j2, j4, 0
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, THQT
+  jld j5, j1, THF
+  jldi j2, TVT
+  jcall pl_take
+  jldi j1, 0
+  jret
+
+; The question it asks itself and its answer: "me pregunto: X middle ? -> X middle Y" (THX, THE, THY). Uses j1-j11.
+th_say:
+  jldi j1, S_THQ
+  jcall puts
+  jld j2, j1, THX
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, THE
+  jcall put_plain
+  jldi j2, 63
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j2, 45
+  jcall putch
+  jldi j2, 62
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, THX
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, THE
+  jcall put_plain
+  jld j2, j1, THY
+  jcall putword
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; Once a reading: the facts by the word they start on (THH: by word, the first fact's number + 1; THN: by fact, the
+; next one's, 0 the last), and by skeleton how many times the books went on with it from a word another fact ended on,
+; whatever came before (KCT {key, times}, from GKT's "=" compositions, the library's summed in). Uses j1-j14.
+th_build:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, THR
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, THH
+  jld j11, j1, GFN
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, THN
+  jld j9, j1, GFN               ; each fact, from the last, at the head of its word's list
+  thx_lap:
+    jldi j1, 0
+    jjz j9, thx_done
+    jldi j2, 1
+    jsub j9, j9, j2
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, GFL
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jcall tok_at
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, THH
+    jadd j2, j2, j3
+    jld j4, j2, 0
+    jldi j5, 3
+    jshl j5, j9, j5
+    jld j6, j1, THN
+    jadd j5, j5, j6
+    jst j4, j5, 0
+    jldi j4, 1
+    jadd j4, j9, j4
+    jst j4, j2, 0
+    jjmp thx_lap
+thx_done:
+  jldi j2, KCT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, GKT
+  jld j10, j1, GKT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  thk_lap:
+    jldi j1, 0
+    jjz j10, thk_done
+    jld j2, j9, 0
+    jjz j2, thk_next
+    jld j2, j9, 40
+    jjnz j2, thk_next
+    jst j9, j1, TI
+    jst j10, j1, TJ
+    jld j5, j9, 32
+    jldi j2, KCT
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, TI
+    jld j10, j1, TJ
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+  thk_next:
+    jld j2, j1, GKT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp thk_lap
+thk_done:
+  jldi j1, 0
+  jret
 
 ; Word j2 wanted: its letters and a line feed added to PNB, once a word (the room doubles when it would not hold
 ; them). Uses j1-j14.
@@ -3162,54 +3359,6 @@ sk_word:
     jadd j11, j11, j2
     jsub j10, j10, j2
   jwend
-  jldi j2, 0
-  jret
-
-; A fact of the book of skeleton j2 that starts on THX and ends on a word not thought on yet -> j2 that word (0: none).
-; Uses j1-j14.
-th_fact:
-  jldi j1, 0
-  jst j2, j1, THF
-  jst j1, j1, THI
-  thf_lap:
-    jldi j1, 0
-    jld j2, j1, THI
-    jld j3, j1, GFN
-    jsub j3, j2, j3
-    jjz j3, thf_none
-    jldi j3, 24
-    jmul j3, j2, j3
-    jld j4, j1, GFL
-    jadd j9, j3, j4
-    jld j2, j9, 16
-    jld j3, j1, THF
-    jsub j2, j2, j3
-    jjnz j2, thf_next
-    jld j2, j9, 0
-    jcall tok_at
-    jld j3, j1, THX
-    jsub j2, j2, j3
-    jjnz j2, thf_next
-    jld j2, j9, 8
-    jcall tok_at
-    jst j2, j1, THG
-    jadd j5, j2, j1
-    jldi j2, TVT
-    jcall pl_find
-    jldi j1, 0
-    jld j2, j4, 0
-    jjnz j2, thf_next
-    jld j2, j1, THG
-    jret
-  thf_next:
-    jldi j1, 0
-    jld j2, j1, THI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, THI
-    jjmp thf_lap
-thf_none:
-  jldi j1, 0
   jldi j2, 0
   jret
 

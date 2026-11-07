@@ -2374,3 +2374,32 @@ Pensar es caminar: cuando el pensamiento se queda sin hechos en una palabra, Raz
 - **Flojo todavía:** los pasos se apoyan en estructuras pobres ("_ ( el _", sacado del markdown) y en palabras que no
   dicen mucho.
 
+## Piensa en anchura: todas las ramas a la vez (2026-11-07)
+
+El Capitán: *"dejá los while tejidos, pero aprovechá el impulso para tejer todo en el camino... quiero que aprenda,
+asumo el riesgo"*.
+
+- **`think` en anchura:**
+  - desde cada palabra, todas las ramas: cada hecho de la lectura que arranca en ella;
+  - la estructura del hecho tiene que ser una con la que los libros siguieron desde una palabra donde terminaba otro
+    hecho (`KCT`, sumado de las composiciones `=` de `GKT` con las de la biblioteca), probada dos veces o más y con una
+    palabra en su medio;
+  - la palabra nueva entra a la fila y se piensa a su turno;
+  - una palabra desde la que no siguió ninguna rama se pide para releer, y todas las pedidas van juntas a la vuelta
+    siguiente.
+- **Índice:** los hechos se encadenan por la palabra en la que arrancan (`th_build`: `THH` por palabra, `THN` por
+  hecho), así cada palabra recorre solo sus hechos.
+- **El freno, medido:** sin freno, abrir todas las ramas conecta casi todo con todo. El freno es la regla de la
+  anécdota aplicada al hecho mismo (`th_twice`): una rama sigue solo si ese par, con esa estructura, la lectura lo dice
+  dos veces o más.
+
+  | Pregunta (NT + Asimov) | Pensamientos sin freno | Con freno | Palabras que pide |
+  |---|---|---|---|
+  | ¿quién es el hijo de dios? | 7.674 | 656 | 218 |
+  | ¿dónde nació jesús? | 3.538 | 190 | — |
+  | ¿de quién es hijo jacob? | 887 | 86 | 54 |
+  | ¿qué es la ley? | 585 | 14 | 11 |
+
+  Con freno, desde "jacob, hijo de isaac" la genealogía se teje sola: "hijo de david", "hijo de judá", "hijo de
+  matat", "hijo del hombre", "dios de abraham". Las respuestas siguen idénticas.
+
