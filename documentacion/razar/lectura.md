@@ -1874,4 +1874,33 @@ y la dirección del libro.
   archivo se lee hasta el último byte.
 - **Lo que no es todavía:** la casa separa pegamento de contenido, no sujetos de lo demás (`casa`, `tierra` y `dijo`
   son muebles como `pedro`). Deducir los sujetos dentro de los muebles es el paso que sigue.
-- **Falta:** preguntar siguiendo las pistas (ir a esos bytes con 38 y releer solo esos renglones).
+- **Todos los muebles quedan** (Capitán: *"los muebles todos son importantes"*): un mueble es lo que cambia en un lugar
+  fijo, y eso es lo que vale la pena ir a buscar.
+
+## Preguntar siguiendo las pistas: pensar es caminar, caminar es buscar (2026-11-07)
+
+`pistas.inc`, incluido en `pregunta`: si en su carpeta hay nidos, cada vuelta relee **solo** los renglones donde están
+las palabras que viene caminando (va a esos bytes con 38, en el libro del anfitrión), contesta lo que puede, y las
+palabras a las que llegó son lo que busca en la vuelta siguiente. La primera vuelta lee solo la pregunta. Cuando una
+vuelta no llega a nada nuevo, dice esa respuesta; antes, una vuelta no dice nada.
+
+- **Cada vuelta es una vida** (36, rehacerse con su propio programa: todas las salas vuelven solas). Entre vidas
+  quedan `camino` (las palabras caminadas, una por renglón) y `libro` (lo que relee en esta vuelta). Al terminar se
+  borran los dos: en su casa quedan solo los nidos.
+- **Sin nidos no cambia nada:** con el libro y las seis preguntas de siempre, `pregunta` da `0000390478653F8A`,
+  idéntico al commit anterior y al de antes de tocar `lectura.inc` (154 instrucciones más, por mirar si hay nidos).
+- **Medido** (Nuevo Testamento, solo su nido en la casa): unos **0,4 s por pregunta** contra ~7 s releyendo el libro
+  entero; arma de 43.000 a 87.000 hechos en vez de 842.460.
+- **Las seis preguntas, comparadas con el libro entero:** judá, salmón y roboam dan lo mismo (salmón con menos basura);
+  `jacob hijo de ? hijo de ?` da isaac y abraham, pero antes pone un "isaac hijo de jacob" que está mal;
+  `? padre de ? padre de isaac` encuentra abraham (el libro entero no lo sabía) pero el abuelo sale mal ("surgir").
+  No da idéntico porque el juez pesa cada palabra por lo que ve, y ahora ve solo lo releído.
+- **Lo que sigue:** que el juez pese con las cuentas del libro entero (el nido ya sabe en cuántos renglones está cada
+  sujeto); que las piezas (interruptores, puertas) salgan de todo lo leído y no solo de lo releído.
+
+## La consola, sin libro (2026-11-07)
+
+`bash razar/lectura/charla.sh [casa]` (o `RAZAR_CASA`; si no, `~/razar_casa`): Razar vive en su casa con sus nidos.
+`come <dirección>` le da un libro de cualquier lugar de la PC; cualquier otro renglón es una pregunta con huecos.
+Nada corre entre renglones. Probado de punta a punta con una casa vacía: come dos libros de dos lugares, contesta
+desde las pistas, y una dirección que no existe dice que no la encuentra.

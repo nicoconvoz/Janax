@@ -48,3 +48,7 @@ db ' [', 0
 times 540h - $ db 0
 db ' bits]', 0
 times 580h - $ db 0
+db 'camino', 0
+times 5C0h - $ db 0
+db 'pregunta', 0
+times 600h - $ db 0

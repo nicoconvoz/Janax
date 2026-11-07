@@ -35,6 +35,9 @@ S_FLIPS = 480h
 S_NTURN = 4C0h
 S_KBITS = 500h
 S_KBITS2 = 540h
+S_CAMINO = 580h                 ; asking by the clues (pistas.inc): its walk, and its own program
+S_SELF  = 5C0h
+S_SELFN = 8
 
 ROOMX = 1600h                   ; the facts: {key, the word that fills it} per place (a key may have many)
 XMASK = 1608h
@@ -89,6 +92,7 @@ include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
 jldi j0, 0
+jcall clue_round                ; (with nests: what this round reads again, as its book)
 jcall read_book
 jldi j1, 0                      ; the whole book, none kept apart (one renglon in more than any book has)
 jldi j2, 0
@@ -350,7 +354,9 @@ jwhile j2
   jld j2, j1, QS
   jsub j2, j9, j2
   jjz j2, q_next
+  jst j1, j1, NH                ; (no holes, until it finds them)
   jcall answer
+  jcall clue_gather
 q_next:
   jldi j1, 0
   jld j9, j1, QE
@@ -365,12 +371,14 @@ q_next:
   jldi j2, 0
 q_more:
 jwend
+jcall clue_end
 jjmp finish
 
 include 'crece.inc'
 include 'pulso.inc'
 include 'organo.inc'
 include 'negacion.inc'
+include 'pistas.inc'
 
 ; The facts that start at unit JJ: for one, two and three words between, if they are all words. Uses j1-j12.
 hang_at:
