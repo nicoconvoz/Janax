@@ -1814,3 +1814,23 @@ hoy nunca cruza el valle; Lehman y Stanley, búsqueda por novedad). Proponía un
   mezcla). Guardando el mejor de cada comportamiento, `6` sobrevive aunque hoy rinda menos, y desde ahí se llega a
   `16`. La idea de fondo vale: el mejor de cada clase, no un solo campeón. Lo que cambia es el eje: el comportamiento, no
   el peso.
+
+## El archivo por nichos, medido contra el escalador de siempre (2026-11-07)
+
+- **Qué se armó:** seis nichos según dónde pone el primer hueco el órgano (palabra 1 a 4, hueco vacío, o ninguno). Cada
+  Razar guarda el campeón de cada nicho en `organos`. Cada intento muta al campeón de un nicho sorteado y compite contra
+  el de su propio nicho. Está en la rama `nichos`, no en `master`.
+- **Medido** (libro `vig`, 40 intentos por vida, se rehace mientras mejore, un sorteo por lado):
+
+  | | camino | final | intentos |
+  |---|---|---|---|
+  | escalador de siempre | `8 → 18 → 186 → 16 → 516` | **11.144** | 80 (2 vidas) |
+  | archivo por nichos | `6 → 5 → 16 → 716 → 516` | **11.144** | 160 (4 vidas) |
+
+- **Lo que dice:**
+  - Con 40 intentos por vida, el escalador cruza solo hasta `516` (11.144), cuatro veces el mejor de dos letras
+    (`16`, 2649).
+  - El "atrapado en `5`" del paisaje era la suerte de la primera mutación, no la forma de buscar.
+  - Los nichos llegaron a lo mismo con el doble de intentos.
+- **Sin veredicto:** con un sorteo por lado no se concluye. Haría falta varias semillas de cada uno (unos 7 minutos por
+  par). El Capitán decidió quedarse con la duda: el código espera en la rama `nichos`.
