@@ -78,3 +78,9 @@ db 'siluetas de la biblioteca: ', 0
 times 940h - $ db 0
 db ' palabras (flechas: ', 0
 times 980h - $ db 0
+db 'come', 0
+times 9C0h - $ db 0
+db 'tablero/esqueletos', 0
+times 0A00h - $ db 0
+db 'sentido: relaciones entre esqueletos guardadas en la biblioteca: ', 0
+times 0A40h - $ db 0

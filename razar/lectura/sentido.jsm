@@ -56,6 +56,9 @@ S_ARROW = 840h                  ; the arrows found
 S_SILS  = 8C0h                  ; "siluetas", and what was taken from it
 S_SILT  = 900h
 S_SILA  = 940h
+S_COME  = 980h                  ; eating: "come", the library's label of the skeletons, what it says
+S_ESQ   = 9C0h
+S_ESQD  = 0A00h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -132,6 +135,22 @@ SILNW = 1DC0h
 SILNA = 1DC8h
 SILP  = 1DD0h
 SILPS = 1DD8h
+EATON = 1DE0h                   ; eating a book (the address in "come"): 1 if so; the address's room and bytes; the print
+EATP  = 1DE8h                   ; of its bytes; the file written, its bytes, where it writes; walking; relations kept
+EATN  = 1DF0h
+EATH  = 1DF8h
+EOUT  = 1E00h
+EOSZ  = 1E08h
+EPOS  = 1E10h
+EI    = 1E18h
+ECNT  = 1E20h
+EHND  = 1E28h
+ELAB  = 1E30h
+ET1   = 1E38h
+ET2   = 1E40h
+EBUF  = 1E48h                   ; (three pieces of a middle, then three of the other: 6 qwords)
+EN2   = 1E78h                   ; the other middle's pieces; a piece walked
+EK    = 1E80h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -150,6 +169,7 @@ GFP   = 1D48h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
+jcall eat_mode                  ; a book to eat, if "come" names one: read there, and its skeletons kept for every Razar
 jldi j0, 0
 jcall read_book
 jldi j1, 0                      ; the whole book, none kept apart; the house (which are cores), the switch
@@ -183,6 +203,12 @@ jldi j1, 0                      ; the book read once: every fact proves what it 
 jldi j2, 1
 jst j2, j1, GMODE
 jcall gather
+jldi j1, 0                      ; eaten: what it proved between skeletons goes to the library, and nothing is asked
+jld j2, j1, EATON
+jjz j2, not_eating
+jcall eat_write
+jjmp finish
+not_eating:
 
 jldi j1, S_HEAD
 jcall puts
@@ -1933,6 +1959,398 @@ sl_done:
   jldi j1, 0
   jret
 
+; Eating (Capitan, 2026-11-07: the reading rules are logical silhouettes that are enriched, never lost): the file
+; "come" holds a book's address on the host. Then the book is read there (37, read only), and what it proved between
+; its skeletons is kept in the library for every Razar: eat_write. Without "come" (or an empty one: the open made it,
+; and it goes), nothing changes. Uses j1-j14.
+eat_mode:
+  jldi j1, 0
+  jst j1, j1, EATON
+  jldi j10, 4
+  jldi j11, S_COME
+  jldi j12, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, em_done
+  jst j13, j1, EHND
+  jldi j11, 4096                ; (an address of the host: the longest is under that)
+  jcall room
+  jldi j1, 0
+  jst j13, j1, EATP
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, EATP
+  jldi j12, 4095
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jsar j2, j13, j2
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j13, j13, j2
+  jst j13, j1, EATN
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j3, j1, EATN              ; (without the line feed, spaces or controls after it)
+  em_strip:
+    jjz j3, em_stripped
+    jld j4, j1, EATP
+    jadd j4, j4, j3
+    jldi j5, 1
+    jsub j4, j4, j5
+    jldb j5, j4, 0
+    jldi j6, 33
+    jsub j5, j5, j6
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, em_stripped
+    jldi j4, 1
+    jsub j3, j3, j4
+    jjmp em_strip
+em_stripped:
+  jst j3, j1, EATN
+  jjnz j3, em_book
+  jldi j10, 12
+  jldi j11, S_COME
+  jldi j12, 4
+  jcall ask
+  jjmp em_done
+em_book:
+  jld j2, j1, EATP
+  jst j2, j1, LABEL
+  jst j3, j1, LABLEN
+  jldi j2, 1
+  jst j2, j1, HOSTB
+  jst j2, j1, EATON
+em_done:
+  jldi j1, 0
+  jret
+
+; What the book proved between its skeletons (TMM: two of them said of the same pairs, turned or not), each with two
+; pairs or more (the anecdote rule), into the library: "tablero/esqueletos" + the print of the book's bytes (written
+; once, as its pieces: the same book anywhere is one file). Qwords {1, how many}, then each {turned, pairs, the pieces
+; of one middle, of the other}, then their pieces, each {its bytes, its letters padded}. They are counts: they add up
+; over every book. Uses j1-j14.
+eat_write:
+  jldi j1, 0                    ; the print of the book's bytes
+  jld j2, j1, FNVO
+  jst j2, j1, EATH
+  jldi j10, 37
+  jld j11, j1, EATP
+  jld j12, j1, EATN
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ew_done
+  jst j13, j1, EHND
+  jldi j11, 1
+  jshi j11, 0
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ET1
+  ew_read:
+    jld j10, j1, EHND
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, ET1
+    jldi j12, 1
+    jshi j12, 0
+    jcall ask
+    jldi j1, 0
+    jldi j2, 1
+    jsub j2, j13, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, ew_read_end
+    jld j2, j1, EATH
+    jld j3, j1, ET1
+    jld j6, j1, FNVP
+    jwhile j13
+      jldb j4, j3, 0
+      jxor j2, j2, j4
+      jmul j2, j2, j6
+      jldi j4, 1
+      jadd j3, j3, j4
+      jsub j13, j13, j4
+    jwend
+    jst j2, j1, EATH
+    jjmp ew_read
+ew_read_end:
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, EATH              ; (and the format, folded in)
+  jldi j3, 1
+  jxor j2, j2, j3
+  jld j3, j1, FNVP
+  jmul j2, j2, j3
+  jst j2, j1, EATH
+  jst j1, j1, ECNT              ; its bytes: every relation proved twice or more, with the letters of both middles
+  jldi j2, 16
+  jst j2, j1, EOSZ
+  jst j1, j1, EOUT
+  jcall ew_walk
+  jldi j1, 0
+  jld j11, j1, EOSZ
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, EOUT
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, ECNT
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j2, j13, j2
+  jst j2, j1, EPOS
+  jst j1, j1, ECNT
+  jcall ew_walk                 ; and written
+  jldi j1, 0
+  jldi j11, 64                  ; its label: "tablero/esqueletos" and sixteen hex digits
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ELAB
+  jadd j2, j13, j1
+  jldi j3, S_ESQ
+  jldi j4, 18
+  ew_lab:
+    jldb j5, j3, 0
+    jstb j5, j2, 0
+    jldi j5, 1
+    jadd j2, j2, j5
+    jadd j3, j3, j5
+    jsub j4, j4, j5
+    jjnz j4, ew_lab
+  jld j5, j1, EATH
+  jld j3, j1, ELAB
+  jldi j4, 33
+  jadd j3, j3, j4
+  jldi j4, 16
+  ew_hex:
+    jldi j6, 15
+    jand j6, j5, j6
+    jldi j7, 10
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jldi j8, 48
+    jjnz j7, ew_digit
+    jldi j8, 87
+  ew_digit:
+    jadd j6, j6, j8
+    jstb j6, j3, 0
+    jldi j6, 4
+    jshr j5, j5, j6
+    jldi j6, 1
+    jsub j3, j3, j6
+    jsub j4, j4, j6
+    jjnz j4, ew_hex
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j10, 4
+  jldi j1, 0
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ew_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, EOUT
+  jld j12, j1, EOSZ
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, S_ESQD               ; said: how many it kept
+  jcall puts
+  jld j2, j1, ECNT
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+ew_done:
+  jldi j1, 0
+  jjmp flush
+
+; Every relation between skeletons (TMM) proved by two pairs or more: counted with its bytes (EOUT 0), or written at
+; EPOS (EOUT a room). The pieces of both middles go one after the other at EBUF. Uses j1-j14.
+ew_walk:
+  jldi j1, 0
+  jst j1, j1, EI
+  ewk_lap:
+    jldi j1, 0
+    jld j9, j1, EI
+    jld j2, j1, TMMM
+    jsub j2, j2, j9
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, ewk_done           ; (past its last place)
+    jldi j3, 40
+    jmul j3, j9, j3
+    jld j2, j1, TMM
+    jadd j3, j3, j2
+    jst j3, j1, ET2
+    jld j2, j3, 0
+    jjz j2, ewk_next
+    jld j2, j3, 32
+    jldi j4, 2
+    jsub j2, j2, j4
+    jldi j4, 63
+    jsar j2, j2, j4
+    jjnz j2, ewk_next
+    jld j2, j3, 8               ; the first middle's pieces
+    jcall find_mid
+    jldi j13, EBUF
+    jcall m_collect
+    jldi j1, 0
+    jst j2, j1, ET1
+    jjz j2, ewk_next
+    jld j3, j1, ET2             ; and the other's, right after
+    jld j2, j3, 16
+    jcall find_mid
+    jldi j1, 0
+    jld j13, j1, ET1
+    jldi j2, 3
+    jshl j13, j13, j2
+    jldi j2, EBUF
+    jadd j13, j13, j2
+    jcall m_collect
+    jldi j1, 0
+    jst j2, j1, EN2
+    jjz j2, ewk_next
+    jld j4, j1, ECNT
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j1, ECNT
+    jcall ew_entry
+  ewk_next:
+    jldi j1, 0
+    jld j9, j1, EI
+    jldi j2, 1
+    jadd j9, j9, j2
+    jst j9, j1, EI
+    jjmp ewk_lap
+ewk_done:
+  jldi j1, 0
+  jret
+
+; One relation (ET2), its pieces at EBUF (ET1 of the first middle, EN2 of the other): its bytes added, or it written.
+; Uses j1-j14.
+ew_entry:
+  jldi j1, 0
+  jld j2, j1, EOUT
+  jjz j2, ee_count
+  jld j4, j1, EPOS              ; written: turned, pairs, how many pieces each
+  jld j3, j1, ET2
+  jld j2, j3, 24
+  jst j2, j4, 0
+  jld j2, j3, 32
+  jst j2, j4, 8
+  jld j2, j1, ET1
+  jst j2, j4, 16
+  jld j2, j1, EN2
+  jst j2, j4, 24
+  jldi j2, 32
+  jadd j4, j4, j2
+  jst j4, j1, EPOS
+  jjmp ee_pieces
+ee_count:
+  jld j3, j1, EOSZ
+  jldi j4, 32
+  jadd j3, j3, j4
+  jst j3, j1, EOSZ
+ee_pieces:
+  jst j1, j1, EK
+  ee_lap:
+    jldi j1, 0
+    jld j5, j1, EK
+    jld j6, j1, ET1
+    jld j7, j1, EN2
+    jadd j6, j6, j7
+    jsub j6, j5, j6
+    jjz j6, ee_done
+    jldi j6, 3
+    jshl j6, j5, j6
+    jld j2, j6, EBUF
+    jldi j3, 3                  ; its letters
+    jshl j3, j2, j3
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j5, j3, 16
+    jld j3, j3, 8
+    jld j4, j1, ROOMA
+    jadd j3, j3, j4
+    jld j2, j1, EOUT
+    jjz j2, ee_size
+    jld j4, j1, EPOS            ; {its bytes, its letters padded}
+    jst j5, j4, 0
+    jldi j6, 8
+    jadd j4, j4, j6
+    jadd j6, j5, j1
+    jwhile j6
+      jldb j7, j3, 0
+      jstb j7, j4, 0
+      jldi j7, 1
+      jadd j3, j3, j7
+      jadd j4, j4, j7
+      jsub j6, j6, j7
+    jwend
+  ee_size:
+    jldi j6, 7
+    jadd j5, j5, j6
+    jldi j6, -8
+    jand j5, j5, j6
+    jldi j6, 8
+    jadd j5, j5, j6
+    jld j2, j1, EOUT
+    jjz j2, ee_add
+    jld j4, j1, EPOS
+    jadd j4, j4, j5
+    jst j4, j1, EPOS
+    jjmp ee_next
+  ee_add:
+    jld j3, j1, EOSZ
+    jadd j3, j3, j5
+    jst j3, j1, EOSZ
+  ee_next:
+    jld j5, j1, EK
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, EK
+    jjmp ee_lap
+ee_done:
+  jldi j1, 0
+  jret
 ; A question (QQS to QQE in QBUF): every core in it (a word the house left as furniture, as the cores of the facts)
 ; asked the facts it is in, and of those only the ones whose relation fits the question: the middle of the fact's
 ; skeleton is said in the question right next to the core, on the side the fact has it (its marks aside). The answer
