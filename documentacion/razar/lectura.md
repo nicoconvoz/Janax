@@ -2702,3 +2702,17 @@ en vez de ideas sueltas"*.
   - los hechos donde el sujeto va al final ("isaac, padre de jacob") todavía no entran: hay que darlos vuelta;
   - como el diario cambia la semilla, el párrafo cambia de una vez a la otra.
 
+## La cláusula completa: qué cosa (2026-11-07)
+
+El Capitán: *"falta el qué cosa: ¿por qué se truncan? 'jesús les respondió'... ¿qué les respondió?"*. Un hecho es solo
+lo que hay entre dos núcleos, y la cláusula se cortaba ahí.
+
+- **Hasta el fin de su edificio (`qp_rest`):** después del hecho, la cláusula sigue con lo que el libro dice ahí hasta
+  el límite que cierra el edificio.
+- **Lo que anuncia una flecha:** si ese límite es el que cierra una flecha del edificio ("respondió" con ":", como
+  "qué" con "?"), lo que la flecha anuncia es el siguiente edificio que dice algo. Los límites seguidos (": «") se
+  dicen y se saltan. Es la misma estructura que Razar usa para encontrar las respuestas a las preguntas de los libros.
+- **Medido** (NT): "pedro le dijo: «eneas, jesucristo te devuelve la salud ..."; "les dijo: «ustedes saben que
+  aquellos a quienes se considera gobernantes, dominan a las naciones ...". Ninguna respuesta de control se perdió.
+- **Lo flojo:** no cierra las comillas que abrió, y la cláusula siguiente se pega después de la cita.
+

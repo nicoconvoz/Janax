@@ -319,6 +319,11 @@ QPV   = 5448h
 QPP   = 5450h
 QPG   = 5458h
 QPJ   = 5460h
+QPRS  = 5468h                   ; a clause's rest: where its fact starts, the place walked, the limit met, a unit, an arrow
+QPRP  = 5470h
+QPRL  = 5478h
+QPRW  = 5480h
+QPRA  = 5488h
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -5901,6 +5906,7 @@ qpcl_mid2:
   jld j2, j9, 8
   jcall tok_at
   jcall putword
+  jcall qp_rest                 ; and what it says there, to the end of its building
   jldi j1, 0
   jld j2, j1, QPI
   jldi j3, 1
@@ -5910,6 +5916,149 @@ qpcl_mid2:
   jadd j2, j2, j3
   jst j2, j1, QNA
   jjmp flush
+
+; The rest of the clause of QST's fact at QPA (Capitan: "what did he answer? what thing?"): the units after it to the
+; end of its building, the limit that closes it; and when that limit is the one an arrow of the building closes with
+; ("respondió" with ":", as "qué" with "?"), what the arrow announces: the next building, to its limit. Uses j1-j14.
+qp_rest:
+  jldi j1, 0
+  jld j9, j1, QPA
+  jld j9, j9, 16
+  jld j2, j9, 0
+  jst j2, j1, QPRS              ; (where the fact starts: the arrows of its building are looked for from there)
+  jld j2, j9, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QPRP
+  jldi j2, 32                   ; (after the fact's last word)
+  jcall putch
+  jcall qr_walk                 ; to its limit
+  jldi j1, 0
+  jld j2, j1, QPRL
+  jjz j2, qr_done
+  jcall qr_arrow                ; an arrow's limit: what it announces
+  jjz j2, qr_done
+  jldi j1, 0
+  jld j2, j1, QPRL
+  jcall put_glue
+  qr_skip:                      ; (the next building that says something: limits in a row are skipped, said)
+    jldi j1, 0
+    jld j2, j1, QPRP
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QPRP
+    jld j3, j1, NTOK
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qr_done
+    jcall tok_at
+    jjz j2, qr_skip
+    jst j2, j1, QPRW
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, qr_said
+    jld j2, j1, QPRW
+    jcall put_glue
+    jjmp qr_skip
+  qr_said:
+  jcall qr_walk
+qr_done:
+  jldi j1, 0                    ; (the line ends on a word: the next glue brings its own space)
+  jld j2, j1, POS
+  jjz j2, qr_out
+  jldi j3, 1
+  jsub j3, j2, j3
+  jldb j4, j3, TEXT
+  jldi j5, 32
+  jsub j4, j4, j5
+  jjnz j4, qr_out
+  jst j3, j1, POS
+qr_out:
+  jldi j1, 0
+  jret
+
+; From place QPRP, every unit said (a mark against the word before) until a limit: QPRL that limit (0: the end of
+; the reading), QPRP its place. A renglon's end is no limit. Uses j1-j14.
+qr_walk:
+  jldi j1, 0
+  jst j1, j1, QPRL
+  qrw_lap:
+    jldi j1, 0
+    jld j2, j1, QPRP
+    jld j3, j1, NTOK
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qrw_done
+    jcall tok_at
+    jjz j2, qrw_next
+    jst j2, j1, QPRW
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, qrw_say
+    jld j2, j1, QPRW
+    jst j2, j1, QPRL
+    jjmp qrw_done
+  qrw_say:
+    jld j2, j1, QPRW
+    jcall put_glue
+  qrw_next:
+    jldi j1, 0
+    jld j2, j1, QPRP
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QPRP
+    jjmp qrw_lap
+qrw_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if an arrow stands from QPRS to the limit at QPRP whose voted limit is that limit (QPRL). Uses j1-j8.
+qr_arrow:
+  jldi j1, 0
+  jld j9, j1, QPRS
+  qra_lap:
+    jldi j1, 0
+    jld j2, j1, QPRP
+    jsub j2, j9, j2
+    jjz j2, qra_no
+    jst j9, j1, QPRW
+    jadd j2, j9, j1
+    jcall tok_at
+    jjz j2, qra_next
+    jst j2, j1, QPRA
+    jcall is_arrow
+    jjz j2, qra_next
+    jldi j1, 0
+    jld j2, j1, QPRA
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMAR
+    jjz j4, qra_next
+    jadd j3, j3, j4
+    jld j3, j3, 8
+    jld j4, j1, QPRL
+    jsub j3, j3, j4
+    jjnz j3, qra_next
+    jldi j2, 1
+    jret
+  qra_next:
+    jldi j1, 0
+    jld j9, j1, QPRW
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qra_lap
+qra_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
 
 ; The joiners it chains with (what joins is what turns: "pan y vino" is "vino y pan"): of the units whose "_ u _" (one
 ; piece between) turns on itself twice at least in this reading, the one that turns the most (QPJ, before the last
