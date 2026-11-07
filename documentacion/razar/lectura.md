@@ -1959,3 +1959,41 @@ sino que la casa vieja tenía dos libros y la nueva uno. Con los mismos libros, 
 
 **Ojo:** `pregunta` ya no lee los nidos de la versión 2. Una casa vieja tiene que volver a comer sus libros (`come
 <dirección>`): el índice nuevo reemplaza al viejo.
+
+## La biblioteca de pistas para todos los Razares (2026-11-07)
+
+Pedido del Capitán: *"la biblioteca de pistas para todos los Razars, así no duplican memoria"*. Y la regla para escribir
+en ella: *"lee el nombre, revisa las pistas sobre esa base y solo agrega lo que aporta algo nuevo"*.
+
+- **Dónde vive:** en el tablero (`JANAX_TABLERO`), la carpeta del anfitrión que ya comparten todos los Janax de la PC.
+  Todo lo que se llama `tablero/...` va ahí; si no hay tablero, queda en la carpeta propia. Son solo archivos: nada
+  sale de la máquina. `charla.sh` usa `~/razar_tablero` si no se le dice otro.
+- **Los nombres salen de lo que guardan, no de un contador.** El índice es `tablero/pistas<huella de la dirección>`; cada
+  pedazo es `tablero/pieza<huella de los bytes del libro>-<n>`. Con un contador compartido, dos Razares comiendo a la
+  vez tomaban el mismo número y uno pisaba al otro. Con la huella, como Janax es determinista, dos que comen el mismo
+  libro escriben los mismos bytes con el mismo nombre (lo mismo que hace git con sus objetos).
+- **Solo se agrega lo nuevo:** al comer, cada pedazo se compara con el que ya está con ese nombre; si es idéntico, no se
+  escribe. Una regla general que cubre a la vez a otro Razar que ya lo comió, al mismo libro en otra carpeta, a un comer
+  cortado a la mitad y a un pedazo roto (que se repara).
+- **Lo viejo se devuelve solo si nadie lo nombra:** si el libro cambió, sus pedazos nuevos tienen otra huella. Los
+  viejos se borran únicamente si ningún índice de la biblioteca nombra esos bytes (el mismo libro puede estar en otro
+  lugar).
+- **Formato versión 5:** igual que la 4, con la huella de los bytes en la cabecera (el byte 152) y la dirección en el
+  160. El nido viejo de la carpeta propia se borra al volver a comer ese libro.
+
+**Probado** (dos casas, A y B, y un tablero):
+
+| caso | pedazos nuevos | ya estaban |
+|---|---|---|
+| A come el Nuevo Testamento | 109 | 0 |
+| B come el mismo libro | 0 | 109 |
+| A lo come otra vez (intérprete) | 0 | 109 |
+| B come una copia en otra carpeta | 0 | 109 |
+| la copia cambia y B la come (el original sigue usando los viejos) | 109 | 0 |
+| la copia cambia otra vez | 109 | 0 (los de la huella anterior se borran: nadie la nombraba) |
+
+El tablero es idéntico byte a byte al modelo. **Un Razar que no comió nada contesta desde la biblioteca:** las seis
+preguntas de control dan idénticas al nido viejo, con el traductor y con el intérprete. Una huella FNV de 64 bits puede
+repetirse entre dos libros distintos con probabilidad del orden de n²/2⁶⁵ (para diez mil libros, 10⁻¹¹): es criterio,
+no medición, y si pasara, comer vería bytes distintos y reescribiría el pedazo.
+

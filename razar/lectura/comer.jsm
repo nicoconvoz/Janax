@@ -2,11 +2,15 @@
 ; keep the clue of where it read it and look for it to answer me, more like our mind").
 ;
 ; The file "come" holds the book's address on the host. Razar reads the book there (request 37, read only) and keeps
-; nothing of what it says: only its clues, in bits. Its index "pistas" + the print of the address (FNV-1a, sixteen hex
-; digits: the same book eaten again falls in the same index, and listing them finds every book) and its pieces
-; "pieza<n>", numbered in sequence after the last piece in the folder: a piece is written once and never again
-; (Capitan, 2026-11-07: "do not rewrite, put them all in the same folder with a name in sequence"). Eating a book
-; again writes new pieces and its index, and only then gives back the pieces of the index it had.
+; nothing of what it says: only its clues, in bits, in the library every Razar of the host shares (the board: labels
+; "tablero/...", Capitan 2026-11-07: "the library of clues for every Razar, so they do not keep it twice"). Its index
+; "tablero/pistas" + the print of the address (FNV-1a, sixteen hex digits: the same book eaten again falls in the same
+; index) and its pieces "tablero/pieza" + the print of the book's bytes + "-" + its number. A piece is named by what it
+; holds, so it is written once (Capitan: "do not rewrite"): eating reads each piece's name, looks at what the library
+; has there, and writes only what is new (Capitan: "it reads the name, checks the clues on that base and adds only what
+; brings something new"). Another Razar that already ate it, the same book somewhere else, an eating cut halfway: each
+; writes only what is missing. The index is written last: once it is there the book is eaten. A book that changed
+; writes new pieces; the old ones are given back only when no index of the library names those bytes.
 ;
 ; Every word of the book (subjects, the foundation and the marks), in the order of its letters byte by byte, goes in
 ; pieces of sqrt(words) words: what is held at once to answer, the index and one piece, is then the least. A piece is
@@ -19,9 +23,10 @@
 ; "que", the commas) comes back when the renglon is read again. The counts are no facts: they let the judge weigh a
 ; word by the whole book while it reads again only a part.
 ;
-; The index is qwords {4, the book's bytes, renglones, words, subjects, clues, the address's bytes, the book's units,
+; The index is qwords {5, the book's bytes, renglones, words, subjects, clues, the address's bytes, the book's units,
 ; how many letters it uses, the bits that name one, pieces, words a piece, marks a mark page, mark pages, and where
-; the letters, the pieces' list, the mark pages' list and the mark pages start, and its bytes}, the address (padded to
+; the letters, the pieces' list, the mark pages' list and the mark pages start, its bytes, the print of the book's
+; bytes}, the address (padded to
 ; 8), the letters it uses (padded to 8), each piece {its number, the bytes of its first word, those letters padded to
 ; 8}, each mark page {where its bits start (from the first), its first mark}, and the mark pages: where each renglon
 ; starts in the book (renglon k from mark k to mark k + 1, the last mark the end), in pages of sqrt(marks) marks, each
@@ -41,6 +46,10 @@ S_NOCOME = 200h
 S_OF    = 240h
 S_TURN  = 280h                  ; (texts of pulso.inc's reports, never written here)
 S_FLIPS = 2C0h
+S_TAB   = 300h                  ; "tablero/pistas", "tablero/pieza"
+S_TABP  = 310h
+S_NEW   = 340h
+S_SAME  = 380h
 
 PLEN  = 1600h                   ; the address's bytes, at PATHB
 HND    = 1608h                   ; a handle
@@ -91,8 +100,7 @@ ZRP   = 1768h                   ; a run: its qwords, how many, the one before th
 ZRN   = 1770h
 ZRV   = 1778h
 ZRD   = 1780h
-ZFIRST = 1788h                  ; the first piece's number; the index it had (0 if none)
-ZOLD  = 1790h
+ZOLD  = 1790h                   ; the index it had (0 if none)
 ZOA   = 1798h                   ; where in the index the letters, the pieces, the mark pages' list and pages start; its
 ZOP   = 17A0h                   ; bytes
 ZOM   = 17A8h
@@ -101,7 +109,11 @@ ZTOT  = 17B8h
 ZW1   = 17C0h                   ; kept across a request
 ZW2   = 17C8h
 ZLABN = 17D0h                   ; the bytes of the label at ZLAB
-ZLAB  = 6600h                   ; a piece's label: "pieza" and its number
+CHASH = 17D8h                   ; the print of the book's bytes, and of the bytes of the index it had
+OHASH = 17E0h
+ZNEW  = 17E8h                   ; pieces written, and pieces already there
+ZSAME = 17F0h
+ZLAB  = 6600h                   ; a piece's label: "tablero/pieza", the print of the book's bytes, "-", its number
 ZDIG  = 6680h                   ; its digits, the last first
 ZBT   = 6700h                   ; writing bits: the bit, the value and its bits left, unary, gamma, the Rice parameter
 ZV    = 6708h                   ; and the fewest bits found
@@ -114,8 +126,8 @@ ZKT   = 6738h
 ZCODE = 6800h                   ; by byte: 1 if a word uses it, then its number among the letters (256 qwords)
 ZALPH = 7000h                   ; the letters, by number (256 bytes)
 PATHB = 6000h                   ; the address (511 bytes at most)
-PLAB  = 6400h                   ; the nest's label: "pistas" and sixteen hex digits
-PLABN = 22
+PLAB  = 6400h                   ; the index's label: "tablero/pistas" and sixteen hex digits
+PLABN = 30
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
@@ -242,41 +254,73 @@ jwhile j3
   jsub j3, j3, j5
 jwend
 jst j2, j1, PHASH
-jldi j3, PLAB
-jldi j2, 112
-jstb j2, j3, 0
-jldi j2, 105
-jstb j2, j3, 1
-jldi j2, 115
-jstb j2, j3, 2
-jldi j2, 116
-jstb j2, j3, 3
-jldi j2, 97
-jstb j2, j3, 4
-jldi j2, 115
-jstb j2, j3, 5
+jldi j2, PLAB
+jldi j3, S_TAB
+jldi j4, 14
+jcall zs_copy
+jldi j1, 0
 jld j5, j1, PHASH
 jldi j3, PLAB + PLABN - 1
-jldi j4, 16
-jwhile j4
-  jldi j6, 15
-  jand j6, j5, j6
-  jldi j7, 10
-  jsub j7, j6, j7
-  jldi j8, 63
-  jsar j7, j7, j8
-  jldi j8, 48                   ; a digit, or a letter past nine
-  jjnz j7, ph_digit
-  jldi j8, 87
-ph_digit:
-  jadd j6, j6, j8
-  jstb j6, j3, 0
-  jldi j6, 4
-  jshr j5, j5, j6
-  jldi j6, 1
-  jsub j3, j3, j6
-  jsub j4, j4, j6
-jwend
+jcall zw_hex
+
+jldi j1, 0                      ; the print of the book's bytes: its pieces' name (the same book anywhere, one copy)
+jld j2, j1, FNVO
+jst j2, j1, CHASH
+jldi j10, 37
+jldi j11, PATHB
+jld j12, j1, PLEN
+jcall ask
+jldi j1, 0
+jldi j2, 63
+jshr j2, j13, j2
+jjnz j2, no_come
+jst j13, j1, HND
+jldi j11, 1
+jshi j11, 0
+jcall room
+jldi j1, 0
+jst j13, j1, ZW1
+ch_read:
+  jld j10, j1, HND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, ZW1
+  jldi j12, 1
+  jshi j12, 0
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jsub j2, j13, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, ch_read_end
+  jld j2, j1, CHASH
+  jld j3, j1, ZW1
+  jld j6, j1, FNVP
+  jwhile j13
+    jldb j4, j3, 0
+    jxor j2, j2, j4
+    jmul j2, j2, j6
+    jldi j4, 1
+    jadd j3, j3, j4
+    jsub j13, j13, j4
+  jwend
+  jst j2, j1, CHASH
+  jjmp ch_read
+ch_read_end:
+jld j10, j1, HND
+jldi j2, 32
+jshl j10, j10, j2
+jldi j2, 7
+jor j10, j10, j2
+jcall ask
+jldi j1, 0
+jld j11, j1, ZW1
+jldi j10, 3
+jcall ask
+jldi j1, 0
 
 jldi j1, 0                      ; in how many renglones each word is
 jld j11, j1, NV
@@ -827,54 +871,20 @@ jld j4, j1, ZMST
 jadd j3, j3, j4
 jst j2, j3, 0
 
-jcall pz_list                   ; the pieces' numbers: after the last one in its folder
-jldi j1, 0
-jst j1, j1, ZFIRST
-jld j9, j1, PZLST
-jld j10, j1, PZLSTN
-jldi j2, 63
-jsar j2, j10, j2
-jjnz j2, pn_counted
-jwhile j10
-  jcall zw_number
-  jld j3, j1, ZFIRST
-  jsub j3, j3, j2
-  jldi j4, 63
-  jsar j3, j3, j4
-  jjz j3, pn_less
-  jst j2, j1, ZFIRST
-pn_less:
-  jld j2, j9, 0
-  jldi j3, 7
-  jadd j2, j2, j3
-  jldi j3, -8
-  jand j2, j2, j3
-  jldi j3, 8
-  jadd j2, j2, j3
-  jadd j9, j9, j2
-  jldi j2, 1
-  jsub j10, j10, j2
-jwend
-pn_counted:
-jld j2, j1, ZFIRST
-jldi j3, 1
-jadd j2, j2, j3
-jst j2, j1, ZFIRST
-
-jldi j11, PLAB                  ; the index it had, if this book was eaten before: its pieces go once the new is said
+jldi j11, PLAB                  ; the index it had, if this book was eaten before
 jldi j12, PLABN
 jcall pz_file
 jldi j1, 0
 jst j1, j1, ZOLD
 jld j2, j1, PZFRN
-jldi j3, 152
+jldi j3, 160
 jsub j2, j2, j3
 jldi j3, 63
 jsar j2, j2, j3
 jjnz j2, old_none
 jld j2, j1, PZFR
 jld j3, j2, 0
-jldi j4, 4
+jldi j4, 5
 jsub j3, j3, j4
 jjnz j3, old_none
 jst j2, j1, ZOLD
@@ -883,7 +893,7 @@ old_none:
 jldi j1, 0                      ; the index's size: its head, the address, the letters, each piece's number and first
 jld j2, j1, PLEN                ; word, each mark page's start, the mark pages
 jcall zs_pad
-jldi j3, 152
+jldi j3, 160
 jadd j2, j2, j3
 jst j2, j1, ZOA
 jadd j11, j2, j1
@@ -940,7 +950,7 @@ jcall room
 jldi j1, 0
 jst j13, j1, OUTR
 
-jldi j2, 4                      ; its head
+jldi j2, 5                      ; its head
 jst j2, j13, 0
 jld j2, j1, NBYTES
 jst j2, j13, 8
@@ -980,7 +990,9 @@ jld j2, j1, ZOK
 jst j2, j13, 136
 jld j2, j1, ZTOT
 jst j2, j13, 144
-jldi j2, 152                    ; the address
+jld j2, j1, CHASH
+jst j2, j13, 152
+jldi j2, 160                    ; the address
 jadd j2, j13, j2
 jldi j3, PATHB
 jld j4, j1, PLEN
@@ -1006,8 +1018,8 @@ ix_piece:
   jjz j3, ix_marks
   jcall zs_first
   jld j9, j1, ZW1
-  jld j2, j1, ZFIRST
-  jld j3, j1, ZP
+  jld j2, j1, ZP
+  jldi j3, 1
   jadd j2, j2, j3
   jst j2, j9, 0
   jld j4, j1, ZLL
@@ -1069,17 +1081,24 @@ jld j5, j1, ZOK
 jsub j4, j4, j5
 jcall zs_copy
 
-jldi j1, 0                      ; the pieces, each once, in its number
-jst j1, j1, ZP
+jldi j1, 0                      ; the pieces: one already there with the same bytes is left; only what is new is
+jst j1, j1, ZP                  ; written
+jst j1, j1, ZNEW
+jst j1, j1, ZSAME
 wp_piece:
   jldi j1, 0
   jld j2, j1, ZP
   jld j3, j1, ZNP
   jsub j3, j2, j3
   jjz j3, wp_done
-  jld j3, j1, ZFIRST
+  jldi j3, 1
   jadd j2, j2, j3
+  jld j3, j1, CHASH
   jcall zw_label
+  jldi j11, ZLAB
+  jldi j1, 0
+  jld j12, j1, ZLABN
+  jcall pz_file
   jldi j1, 0
   jld j2, j1, ZP
   jldi j3, 3
@@ -1091,7 +1110,48 @@ wp_piece:
   jsub j3, j3, j4
   jld j2, j1, ZBB
   jadd j2, j2, j4
+  jst j2, j1, ZW1
+  jst j3, j1, ZW2
+  jld j5, j1, PZFRN             ; the one there: the same bytes?
+  jsub j5, j5, j3
+  jjnz j5, wp_new
+  jld j5, j1, PZFR
+  wp_cmp:
+    jjz j3, wp_same
+    jldb j6, j2, 0
+    jldb j7, j5, 0
+    jsub j6, j6, j7
+    jjnz j6, wp_new
+    jldi j6, 1
+    jadd j2, j2, j6
+    jadd j5, j5, j6
+    jsub j3, j3, j6
+    jjmp wp_cmp
+wp_same:
+  jld j2, j1, ZSAME
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, ZSAME
+  jjmp wp_give
+wp_new:
+  jld j2, j1, ZW1
+  jld j3, j1, ZW2
   jcall zw_write
+  jld j2, j1, ZNEW
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, ZNEW
+wp_give:
+  jldi j1, 0
+  jld j2, j1, PZFRN
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, wp_next
+  jld j11, j1, PZFR
+  jldi j10, 3
+  jcall ask
+wp_next:
+  jldi j1, 0
   jld j2, j1, ZP
   jldi j3, 1
   jadd j2, j2, j3
@@ -1108,32 +1168,86 @@ jst j2, j1, ZLABN
 jld j2, j1, OUTR
 jld j3, j1, ZTOT
 jcall zw_write
-jld j9, j1, ZOLD                ; and the pieces of the index it had, given back
-jjz j9, old_gone
-jld j10, j9, 80
-jld j2, j9, 120
-jadd j9, j9, j2
-jwhile j10
+jld j9, j1, ZOLD                ; the pieces of the index it had: given back if the book changed and no other index
+jjz j9, old_gone                ; of the library names those bytes (the same book may live somewhere else too)
+jld j2, j9, 152
+jst j2, j1, OHASH
+jld j3, j1, CHASH
+jsub j2, j2, j3
+jjz j2, old_gone
+jcall pz_list
+jldi j1, 0
+jld j10, j1, PZLSTN
+jldi j2, 63
+jsar j2, j10, j2
+jjnz j2, old_gone
+jld j9, j1, PZLST
+og_label:
+  jjz j10, og_free
   jst j9, j1, ZW1
   jst j10, j1, ZW2
+  jcall zw_index
+  jjz j2, og_next
+  jldi j11, 8                   ; (an index: does it name those bytes?)
+  jadd j11, j9, j11
+  jld j12, j9, 0
+  jcall pz_file
+  jldi j1, 0
+  jld j2, j1, PZFRN
+  jldi j3, 160
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, og_next
+  jld j2, j1, PZFR
+  jld j3, j2, 0
+  jldi j4, 5
+  jsub j3, j3, j4
+  jjnz j3, og_next
+  jld j3, j2, 152
+  jld j4, j1, OHASH
+  jsub j3, j3, j4
+  jjz j3, old_gone
+og_next:
+  jldi j1, 0
+  jld j9, j1, ZW1
   jld j2, j9, 0
+  jcall zs_pad
+  jldi j3, 8
+  jadd j9, j9, j2
+  jadd j9, j9, j3
+  jld j10, j1, ZW2
+  jldi j2, 1
+  jsub j10, j10, j2
+  jjmp og_label
+og_free:
+jld j9, j1, ZOLD
+jld j10, j9, 80
+jldi j2, 1
+jst j2, j1, ZP
+jwhile j10
+  jst j10, j1, ZW2
+  jld j2, j1, ZP
+  jld j3, j1, OHASH
   jcall zw_label
   jldi j10, 12
   jldi j11, ZLAB
   jld j12, j1, ZLABN
   jcall ask
   jldi j1, 0
-  jld j9, j1, ZW1
-  jld j2, j9, 8
-  jcall zs_pad
-  jldi j3, 16
-  jadd j9, j9, j2
-  jadd j9, j9, j3
+  jld j2, j1, ZP
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, ZP
   jld j10, j1, ZW2
-  jldi j2, 1
-  jsub j10, j10, j2
+  jsub j10, j10, j3
 jwend
 old_gone:
+jldi j10, 12                    ; (a nest of before in its own folder goes: the library is where they live now)
+jldi j11, PLAB + 8
+jldi j12, PLABN - 8
+jcall ask
+jldi j1, 0
 jld j2, j1, ZTOT                ; (its bytes: the index and its pieces)
 jld j3, j1, ZNP
 jldi j4, 3
@@ -1181,6 +1295,14 @@ jcall putnum
 jldi j1, S_BYTES
 jcall puts
 jld j2, j1, OSZ
+jcall putnum
+jldi j1, S_NEW
+jcall puts
+jld j2, j1, ZNEW
+jcall putnum
+jldi j1, S_SAME
+jcall puts
+jld j2, j1, ZSAME
 jcall putnum
 jldi j2, 10
 jcall putch
@@ -1589,70 +1711,76 @@ zs_first:
   jst j3, j1, ZLA
   jret
 
-; j2 = the number of the label listed at j9 if it is a piece ("pieza" and its number in decimal), 0 if not. Uses
-; j1-j8.
-zw_number:
+; The sixteen hex digits of j5, the last at j3 and the first fifteen before it. Uses j3-j8.
+zw_hex:
+  jldi j4, 16
+  jwhile j4
+    jldi j6, 15
+    jand j6, j5, j6
+    jldi j7, 10
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jldi j8, 48                 ; a digit, or a letter past nine
+    jjnz j7, zh_digit
+    jldi j8, 87
+  zh_digit:
+    jadd j6, j6, j8
+    jstb j6, j3, 0
+    jldi j6, 4
+    jshr j5, j5, j6
+    jldi j6, 1
+    jsub j3, j3, j6
+    jsub j4, j4, j6
+  jwend
+  jret
+
+; j2 = 1 if the label listed at j9 ({its bytes, its bytes padded}) is an index of the library: "tablero/pistas" and
+; more. Uses j1-j7.
+zw_index:
   jldi j1, 0
   jldi j2, 0
   jld j3, j9, 0
-  jldi j4, 6
-  jsub j4, j3, j4
-  jldi j5, 63
-  jsar j4, j4, j5
-  jjnz j4, zwn_done
-  jld j4, j9, 8
-  jldi j5, 24
-  jshl j4, j4, j5
-  jshr j4, j4, j5
-  jldi j5, 0
-  jshi j5, 61h
-  jshi j5, 7A65h
-  jshi j5, 6970h
-  jsub j4, j4, j5
-  jjnz j4, zwn_done
-  jldi j4, 5
-  jldi j8, 13                   ; (its digits, after the length and "pieza")
-  jadd j8, j9, j8
+  jldi j4, 15
   jsub j3, j3, j4
-zwn_digit:
-  jldb j4, j8, 0
-  jldi j5, 48
-  jsub j4, j4, j5
-  jldi j5, 63
-  jsar j6, j4, j5
-  jjnz j6, zwn_no
-  jldi j5, 10
-  jsub j6, j4, j5
-  jldi j5, 63
-  jsar j6, j6, j5
-  jjz j6, zwn_no
-  jldi j5, 10
-  jmul j2, j2, j5
-  jadd j2, j2, j4
-  jldi j5, 1
-  jadd j8, j8, j5
-  jsub j3, j3, j5
-  jjnz j3, zwn_digit
-  jret
-zwn_no:
-  jldi j2, 0
-zwn_done:
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, zwi_done
+  jadd j3, j9, j1
+  jldi j4, S_TAB
+  jldi j5, 14
+zwi_byte:
+  jldb j6, j3, 8
+  jldb j7, j4, 0
+  jsub j6, j6, j7
+  jjnz j6, zwi_done
+  jldi j6, 1
+  jadd j3, j3, j6
+  jadd j4, j4, j6
+  jsub j5, j5, j6
+  jjnz j5, zwi_byte
+  jldi j2, 1
+zwi_done:
   jret
 
-; The label of piece j2: "pieza" and j2 in decimal -> ZLAB, ZLABN. Uses j1-j6.
+; The label of piece j2 of the bytes whose print is j3: "tablero/pieza", the print in hex, "-" and j2 in decimal ->
+; ZLAB, ZLABN. Uses j1-j8.
 zw_label:
   jldi j1, 0
-  jldi j3, ZLAB
-  jldi j4, 112
+  jst j2, j1, ZV
+  jst j3, j1, ZW
+  jldi j2, ZLAB
+  jldi j3, S_TABP
+  jldi j4, 13
+  jcall zs_copy
+  jld j5, j1, ZW
+  jldi j3, ZLAB + 28
+  jcall zw_hex
+  jldi j1, 0
+  jldi j3, ZLAB + 29
+  jldi j4, 45
   jstb j4, j3, 0
-  jldi j4, 105
-  jstb j4, j3, 1
-  jldi j4, 101
-  jstb j4, j3, 2
-  jldi j4, 122
-  jstb j4, j3, 3
-  jldi j4, 97
-  jstb j4, j3, 4
+  jld j2, j1, ZV
   jldi j5, 0                    ; its digits, the last first
 zwl_digit:
   jldi j3, 10
@@ -1666,10 +1794,10 @@ zwl_digit:
   jadd j5, j5, j3
   jadd j2, j4, j1
   jjnz j2, zwl_digit
-  jldi j3, 5
+  jldi j3, 30
   jadd j4, j5, j3
   jst j4, j1, ZLABN
-  jldi j3, ZLAB + 5
+  jldi j3, ZLAB + 30
 zwl_put:
   jldi j4, 1
   jsub j5, j5, j4

@@ -45,7 +45,7 @@ PZTB  = 19F0h
 PZTN  = 19F8h
 PZOCC = 1A00h                   ; how many times each word is in the books: a table that grows {print of its letters,
 PZNTOK = 1A20h                  ; times} (four qwords); and the books' units
-PZLB  = 1A30h                   ; a piece's label: "pieza" and its number (32 bytes)
+PZLBR = 1A30h                   ; a room for a piece's label
 PZRB  = 1A50h                   ; the bits read: where, the bit it is at
 PZRP  = 1A58h
 PZWB  = 1A60h                   ; the word just read: its letters (a room that grows), the room's bytes, its bytes, its
@@ -245,16 +245,24 @@ cr_none:
   jldi j1, 0
   jret
 
-; j2 = 1 if the label listed at j9 ({its bytes, its bytes padded}) is a nest: "pistas" and more. Uses j1-j5.
+; j2 = 1 if the label listed at j9 ({its bytes, its bytes padded}) is an index of the library: "tablero/pistas" and
+; more. Uses j1-j5.
 pz_nest:
   jldi j1, 0
   jld j2, j9, 0
-  jldi j3, 7
+  jldi j3, 15
   jsub j3, j2, j3
   jldi j4, 63
   jsar j3, j3, j4
   jjnz j3, pn_no
-  jld j3, j9, 8
+  jld j3, j9, 8                 ; "tablero/"
+  jldi j4, 2F6Fh
+  jshi j4, 7265h
+  jshi j4, 6C62h
+  jshi j4, 6174h
+  jsub j3, j3, j4
+  jjnz j3, pn_no
+  jld j3, j9, 16                ; "pistas"
   jldi j4, 16
   jshl j3, j3, j4
   jshr j3, j3, j4
@@ -381,7 +389,7 @@ pt_done:
   jst j1, j1, PZOFF
   jldi j10, 37                  ; its book, where it is
   jld j11, j1, PZIX
-  jldi j2, 152
+  jldi j2, 160
   jadd j11, j11, j2
   jld j12, j1, PZIX
   jld j12, j12, 48
@@ -845,19 +853,19 @@ cc_done:
   jldi j1, 0
   jret
 
-; The index just read (PZFR, PZFRN): if it is one (version 4), PZIX, a pointer to each piece in its list (PZPP) and
+; The index just read (PZFR, PZFRN): if it is one (version 5), PZIX, a pointer to each piece in its list (PZPP) and
 ; a byte by piece, 0, for the pieces it needs (PZNEED) -> j2 = 1; j2 = 0 if it is not. Uses j1-j14.
 pz_index:
   jldi j1, 0
   jld j2, j1, PZFRN
-  jldi j3, 152
+  jldi j3, 160
   jsub j2, j2, j3
   jldi j3, 63
   jsar j2, j2, j3
   jjnz j2, pzi_no
   jld j9, j1, PZFR
   jld j2, j9, 0
-  jldi j3, 4
+  jldi j3, 5
   jsub j2, j2, j3
   jjnz j2, pzi_no
   jst j9, j1, PZIX
@@ -976,20 +984,62 @@ pzl_no:
   jldi j2, 0
   jret
 
-; The label of piece j2: "pieza" and j2 in decimal at PZLB -> j2 its bytes. Uses j1-j7.
+; The label of piece j2 of the index at PZIX: "tablero/pieza", the print of its book's bytes in hex, "-" and j2 in
+; decimal, at PZLBR (64 bytes: 13 + 16 + 1 and the twenty digits of the largest number) -> j2 its bytes. Uses j1-j14.
 pz_label:
   jldi j1, 0
-  jldi j3, PZLB
+  jst j2, j1, PZV
+  jld j3, j1, PZLBR
+  jjnz j3, pzb_room
+  jldi j11, 64
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PZLBR
+pzb_room:
+  jld j3, j1, PZLBR
+  jldi j4, 2F6Fh                ; "tablero/"
+  jshi j4, 7265h
+  jshi j4, 6C62h
+  jshi j4, 6174h
+  jst j4, j3, 0
   jldi j4, 112
-  jstb j4, j3, 0
+  jstb j4, j3, 8
   jldi j4, 105
-  jstb j4, j3, 1
+  jstb j4, j3, 9
   jldi j4, 101
-  jstb j4, j3, 2
+  jstb j4, j3, 10
   jldi j4, 122
-  jstb j4, j3, 3
+  jstb j4, j3, 11
   jldi j4, 97
-  jstb j4, j3, 4
+  jstb j4, j3, 12
+  jld j5, j1, PZIX
+  jld j5, j5, 152
+  jldi j4, 28
+  jadd j3, j3, j4
+  jldi j4, 16
+  jwhile j4
+    jldi j6, 15
+    jand j6, j5, j6
+    jldi j7, 10
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jldi j8, 48                 ; a digit, or a letter past nine
+    jjnz j7, pzb_hex
+    jldi j8, 87
+  pzb_hex:
+    jadd j6, j6, j8
+    jstb j6, j3, 0
+    jldi j6, 4
+    jshr j5, j5, j6
+    jldi j6, 1
+    jsub j3, j3, j6
+    jsub j4, j4, j6
+  jwend
+  jld j3, j1, PZLBR
+  jldi j4, 45
+  jstb j4, j3, 29
+  jld j2, j1, PZV
   jldi j5, 0                    ; its digits, the last first
 pzb_digit:
   jldi j3, 10
@@ -1003,9 +1053,11 @@ pzb_digit:
   jadd j5, j5, j3
   jadd j2, j4, j1
   jjnz j2, pzb_digit
-  jldi j3, 5
+  jldi j3, 30
   jadd j7, j5, j3
-  jldi j3, PZLB + 5
+  jld j3, j1, PZLBR
+  jldi j4, 30
+  jadd j3, j3, j4
 pzb_put:
   jldi j4, 1
   jsub j5, j5, j4
@@ -1040,8 +1092,9 @@ pzv_piece:
   jld j3, j3, 0
   jld j2, j3, 0
   jcall pz_label
+  jldi j1, 0
   jadd j12, j2, j1
-  jldi j11, PZLB
+  jld j11, j1, PZLBR
   jcall pz_file
   jldi j1, 0
   jld j2, j1, PZFRN

@@ -28,3 +28,11 @@ db ' (dado vuelta)', 0
 times 2C0h - $ db 0
 db ' (la negacion)', 0
 times 300h - $ db 0
+db 'tablero/pistas', 0
+times 310h - $ db 0
+db 'tablero/pieza', 0
+times 340h - $ db 0
+db ' piezas nuevas=', 0
+times 380h - $ db 0
+db ' ya estaban=', 0
+times 3C0h - $ db 0
