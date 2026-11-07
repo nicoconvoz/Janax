@@ -1362,6 +1362,11 @@ limits:
   jld j10, j1, NTOK
   jldi j2, 2
   jsub j10, j10, j2
+  jldi j2, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j2, j10, j2               ; or "while not zero" would walk past the row)
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j10, j10, j2
   jwhile j10
     jldi j1, 0
     jst j9, j1, LMI

@@ -882,6 +882,11 @@ neg_sil:
   jld j10, j1, NTOK
   jldi j2, 1
   jsub j10, j10, j2
+  jldi j2, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j2, j10, j2               ; or "while not zero" would walk past the row)
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j10, j10, j2
   jwhile j10
     jldi j1, 0
     jadd j11, j9, j1            ; to its end, and is there a switch?
@@ -1330,6 +1335,11 @@ q_occ:
   jld j10, j1, NTOK
   jldi j2, 3
   jsub j10, j10, j2
+  jldi j2, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j2, j10, j2               ; or "while not zero" would walk past the row)
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j10, j10, j2
   jwhile j10
     jld j2, j9, 0
     jsub j2, j2, j11
@@ -6473,6 +6483,11 @@ k_walk:
   jld j2, j1, NTOK
   jldi j3, 4
   jsub j2, j2, j3
+  jldi j3, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j3, j2, j3               ; or "while not zero" would walk past the row)
+  jldi j4, -1
+  jxor j3, j3, j4
+  jand j2, j2, j3
   jst j2, j1, KL
   jwhile j2
     jldi j1, 0
@@ -6948,6 +6963,11 @@ kn_walk:
   jld j10, j1, NTOK
   jldi j2, 4
   jsub j10, j10, j2
+  jldi j2, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j2, j10, j2               ; or "while not zero" would walk past the row)
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j10, j10, j2
   jwhile j10
     jldi j1, 0
     jldi j2, 3
