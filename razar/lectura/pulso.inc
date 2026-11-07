@@ -80,6 +80,8 @@ ROOMHL = 15C8h                  ; another word, and how many
 NHL   = 15D0h
 OCCUR = 15D8h
 DNEW  = 15E0h
+TFORP = 15F0h                   ; the silhouettes another Razar sent, while they are tried: a table like TMEM (0: none)
+SILR  = 15F8h                   ; the room of the silhouettes' traffic (pulso.jsm): labels, and the last fingerprint
 HLCAP = 15E8h                   ; the places of the house's list (it grows with what it holds)                   ; the difference just met was born now                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
 KW1   = 15B0h
 KW2   = 15B8h
@@ -1171,6 +1173,23 @@ judge:
     jjz j6, gm_none
     jst j3, j1, GNE
 gm_none:
+    jldi j1, 0                  ; and what another Razar sent, while it is tried: the larger evidence again, never added
+    jld j2, j1, TFORP
+    jjz j2, gf_none
+    jld j4, j1, GTRD
+    jld j5, j4, 0
+    jcall pl_find
+    jld j3, j4, 0
+    jjz j3, gf_none
+    jld j3, j4, 8
+    jld j2, j1, GNE
+    jsub j6, j2, j3
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjz j6, gf_none
+    jst j3, j1, GNE
+gf_none:
+    jldi j1, 0
     jld j4, j1, GTRD
     jld j2, j4, 32
     jst j2, j1, GBR

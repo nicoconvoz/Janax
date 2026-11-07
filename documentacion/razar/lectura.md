@@ -1753,3 +1753,31 @@ la decisión vive en `j9`, que los pedidos respetan, y todo camino que no sea un
 - A B lo despiertan las cartas nuevas de A. El órgano de A ya es el suyo, así que sigue con sus mutaciones, que no
   ganan, y descansa.
 - Los dos terminan con el mismo órgano, `5`: lo inventó B, y A lo adoptó porque también le paga en sus libros.
+
+## Las siluetas viajan, y se prueban como un órgano (2026-11-07)
+
+El Capitán: *"las siluetas son siluetas que nadie entiende, y aunque las entiendan solo es un acertijo lógico: no pasa
+nada que se transmitan"*.
+
+- **El detalle técnico que manda el diseño:** una pieza nombra sus dos rellenos con los **números de este libro** (la
+  palabra 37 de A no es la 37 de B, porque cada uno numera en el orden en que leyó). Así que una palabra viaja como el
+  **hash de sus letras**, que es igual en todo Razar, y una letra de los gemelos viaja tal cual. Las puertas, que tienen
+  dos palabras en un relleno, todavía no viajan.
+- **Lo que se manda** (`sil_export`, desde `mem_save`): las piezas que guarda en su memoria ahora, en
+  `tablero/siluetas-<llave>` = {cuántas, y cada una {piso, bajo, alto, evidencia, bits por par}}.
+- **Lo que se recibe** (`sil_import`): cada pieza se traduce a sus propios números (`w_id`). Si una palabra no está en
+  sus libros, la pieza no le dice nada y se descarta. Después se **prueba, no se cree**: el examen del campeón con su
+  memoria, y con su memoria más éstas (el juez las cuenta como evidencia traída, la mayor y nunca sumada, `TFORP`). Si
+  gana, pasan a su memoria; si no, se van. Solo se prueba cuando lo que llegó cambió (su huella).
+- **Mirar antes de dormir.** El centinela solo ve lo que cambia desde que empieza a vigilar. Por eso, antes de esperar
+  el timbre, Razar mira si la carta del otro cambió mientras él trabajaba. Sin esto, A no se enteraba de los órganos que
+  B fue ganando.
+
+**Medido** (`tablero.sh`, dos Razares, libros distintos):
+- A dejó 540 piezas en el tablero y B 117. A tradujo 170 de las de B y le dieron igual (−9218 con y sin ellas): no se
+  quedaron. B tradujo 413 de las de A y le dieron peor (−5708 contra −1916): tampoco.
+- A miró antes de dormir, vio la carta nueva de B, probó su órgano `5` y ganó (−9218 → −3028).
+- En estos dos libros, las siluetas ajenas no ayudan, y el examen lo dice en vez de quedárselas.
+
+**Lo que queda:** después de rehacerse, Razar vuelve a probar las mismas siluetas, porque la huella de lo ya probado
+vive en la memoria del proceso. Son dos exámenes por vida.

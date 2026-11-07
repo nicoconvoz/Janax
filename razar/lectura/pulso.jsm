@@ -2272,6 +2272,15 @@ ev_rest:
   jsub j13, j13, j1
   jjmp vg_rang
 vg_bell:
+  jcall letter_new              ; before it sleeps, a look: the other's letter may have changed while it worked, and
+  jldi j1, 0                    ; the sentinel tells only what changes once it watches
+  jjz j2, vg_sleep
+  jldi j2, 0                    ; "carta"
+  jshi j2, 0061h
+  jshi j2, 7472h
+  jshi j2, 6163h
+  jjmp vg_said
+vg_sleep:
   jldi j10, 29
   jcall ask
   jldi j1, 1                    ; (one of its own children, an end that rang late: no news, asleep again)
@@ -3972,6 +3981,7 @@ mem_save:
   jldi j2, 10
   jcall putch
   jcall flush
+  jcall sil_export              ; and its silhouettes onto the board, for the others
 ms_free:
   jldi j1, 0                    ; its room given back
   jldi j10, 3
@@ -4259,7 +4269,11 @@ letter_read:
   jjnz j2, lr_done
   jcall board_find              ; on the board first (another Razar of this host), else the other's letter file
   jldi j1, 0
-  jjnz j2, lr_have
+  jjz j2, lr_file
+  jcall sil_import              ; (and its silhouettes, tried if they changed)
+  jldi j1, 0
+  jjmp lr_have
+lr_file:
   jldi j10, 4
   jldi j11, OTRL
   jldi j12, 6
@@ -4307,6 +4321,551 @@ lr_organ:
   jldi j2, 1
   jst j2, j1, PARTOK
 lr_done:
+  jret
+
+; The silhouettes that travel (Capitan: "silhouettes nobody understands, and even if they did they are only a logical
+; riddle: nothing happens if they are sent"). A piece names its two fillings by the numbers of this book, which are
+; another book's nothing: so a word travels as the hash of its letters (the same in every Razar), and a letter of
+; the twins as it is. Sent: the pieces it keeps in its memory now, on the board ("tablero/siluetas-" and its key):
+; {how many, then each {floor, low, high, evidence, bits a pair}} (doors, two words in one filling, stay home).
+; Received: each translated to its own numbers (a word its books do not have: the piece is nothing to it), and
+; tried like an organ, never believed: the champion's exam with its memory, and with its memory and these; better,
+; they are its own from then on (into its memory), else they go. Only when what came changed (its fingerprint). Uses
+; j1-j14.
+
+; The label of the silhouettes of the board label at j2 ("tablero/razar-" and a key) -> at SILR + 32, 33 bytes.
+; Uses j1-j6.
+sil_label:
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j4, j2, 0
+  jst j4, j3, 32
+  jldi j4, 0
+  jshi j4, 7361h
+  jshi j4, 7465h
+  jshi j4, 756Ch
+  jshi j4, 6973h
+  jst j4, j3, 40
+  jldi j4, 45
+  jstb j4, j3, 48
+  jldi j5, 0
+  jldi j6, 16
+  jwhile j6
+    jadd j4, j2, j5
+    jldb j4, j4, 14
+    jadd j1, j3, j5
+    jstb j4, j1, 49
+    jldi j4, 1
+    jadd j5, j5, j4
+    jsub j6, j6, j4
+  jwend
+  jldi j1, 0
+  jret
+
+; The hash of the letters of the word number j2 -> j2 (a letter, the empty and 0 travel as they are). Uses j1-j4.
+w_hash:
+  jldi j1, 0
+  jjz j2, wh_done
+  jld j3, j1, NV
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, wh_done
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j2, j3, 0
+wh_done:
+  jret
+
+; The word of the book whose letters hash to j2 -> j2 its number, 0 if it has none (the empty travels as it is).
+; Uses j1-j8.
+w_id:
+  jldi j1, 0
+  jldi j3, 1
+  jldi j4, 62
+  jshl j3, j3, j4
+  jsub j3, j2, j3
+  jjz j3, wi2_done
+  jldi j3, 32
+  jshr j3, j2, j3
+  jxor j3, j3, j2
+  jld j4, j1, WMASK
+  jand j3, j3, j4
+  jldi j8, 1
+  jwhile j8
+    jldi j4, 5
+    jshl j4, j3, j4
+    jld j5, j1, ROOMV
+    jadd j4, j4, j5
+    jld j5, j4, 16
+    jjz j5, wi2_none
+    jld j5, j4, 0
+    jsub j5, j5, j2
+    jjnz j5, wi2_next
+    jld j2, j4, 24
+    jret
+  wi2_next:
+    jldi j5, 1
+    jadd j3, j3, j5
+    jld j5, j1, WMASK
+    jand j3, j3, j5
+  jwend
+wi2_none:
+  jldi j2, 0
+wi2_done:
+  jret
+
+; Its silhouettes onto the board: the pieces now in the memory just written (MBUFP, MNOW of them). Uses j1-j14.
+sil_export:
+  jldi j1, 0
+  jld j2, j1, LLAVE
+  jjz j2, se_done
+  jld j2, j1, SILR
+  jjz j2, se_done
+  jld j11, j1, MNOW
+  jldi j2, 40
+  jmul j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jld j2, j1, SILR
+  jst j13, j2, 88               ; (its room)
+  jst j1, j13, 0
+  jldi j9, 0
+  jld j10, j1, MNOW
+  jwhile j10
+    jldi j1, 0
+    jldi j3, 48
+    jmul j3, j9, j3
+    jld j2, j1, MBUFP
+    jadd j3, j3, j2
+    jld j2, j3, 48              ; its floor: the twins and the words travel
+    jldi j4, 255
+    jand j2, j2, j4
+    jst j2, j1, EVT
+    jldi j4, 1
+    jsub j4, j2, j4
+    jjz j4, se_take
+    jldi j4, 2
+    jsub j4, j2, j4
+    jjnz j4, se_next
+  se_take:
+    jst j3, j1, EVT2
+    jld j2, j3, 32              ; its fillings, the words as their letters' hash
+    jld j4, j1, EVT
+    jldi j5, 2
+    jsub j4, j4, j5
+    jjnz j4, se_lo
+    jcall w_hash
+  se_lo:
+    jldi j1, 0
+    jld j3, j1, SILR
+    jst j2, j3, 96
+    jld j3, j1, EVT2
+    jld j2, j3, 40
+    jld j4, j1, EVT
+    jldi j5, 2
+    jsub j4, j4, j5
+    jjnz j4, se_hi
+    jcall w_hash
+  se_hi:
+    jldi j1, 0
+    jld j3, j1, SILR            ; the record, at the end of what it holds
+    jld j4, j3, 88
+    jld j5, j4, 0
+    jldi j6, 40
+    jmul j6, j5, j6
+    jadd j6, j6, j4
+    jld j7, j1, EVT
+    jst j7, j6, 8
+    jld j7, j3, 96
+    jst j7, j6, 16
+    jst j2, j6, 24
+    jld j3, j1, EVT2
+    jld j7, j3, 16
+    jst j7, j6, 32
+    jld j7, j3, 24
+    jst j7, j6, 40
+    jldi j7, 1
+    jadd j5, j5, j7
+    jst j5, j4, 0
+  se_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jldi j2, BLAB                 ; its file on the board, whole
+  jcall sil_label
+  jldi j1, 0
+  jld j3, j1, SILR
+  jldi j2, 32
+  jadd j11, j3, j2
+  jldi j10, 12
+  jldi j12, 33
+  jcall ask
+  jldi j1, 0
+  jld j3, j1, SILR
+  jldi j2, 32
+  jadd j11, j3, j2
+  jldi j10, 4
+  jldi j12, 33
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, se_free
+  jst j13, j1, EVT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j3, j1, SILR
+  jld j11, j3, 88
+  jld j12, j11, 0
+  jldi j2, 40
+  jmul j12, j12, j2
+  jldi j2, 8
+  jadd j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+se_free:
+  jldi j1, 0
+  jldi j10, 3
+  jld j3, j1, SILR
+  jld j11, j3, 88
+  jcall ask
+se_done:
+  jldi j1, 0
+  jret
+
+; The silhouettes of the other whose board label is at SILR (+0), if they changed since the last ones: translated and
+; tried. Uses j1-j14.
+sil_import:
+  jldi j1, 0
+  jld j2, j1, SILR
+  jjz j2, si_done
+  jcall sil_label
+  jldi j1, 0
+  jld j3, j1, SILR
+  jldi j2, 32
+  jadd j11, j3, j2
+  jldi j10, 4
+  jldi j12, 33
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, si_done
+  jst j13, j1, EVT
+  jldi j2, 32                   ; how many
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j3, j1, SILR
+  jldi j2, 80
+  jadd j11, j3, j2
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 8
+  jsub j2, j13, j2
+  jjnz j2, si_close
+  jld j3, j1, SILR
+  jld j11, j3, 80
+  jjz j11, si_close
+  jldi j2, 40
+  jmul j11, j11, j2
+  jst j11, j1, EVT2
+  jcall room
+  jldi j1, 0
+  jld j3, j1, SILR
+  jst j13, j3, 88
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jadd j11, j13, j1
+  jld j12, j1, EVT2
+  jcall ask
+  jldi j1, 0
+  jld j9, j1, EVT2              ; (all of it, and the file closed now)
+  jsub j9, j13, j9
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jjnz j9, si_free
+  jld j3, j1, SILR              ; its fingerprint: the same as the last ones tried, nothing to do
+  jld j9, j3, 88
+  jld j10, j1, EVT2
+  jld j2, j1, FNVO
+  jwhile j10
+    jldb j3, j9, 0
+    jcall hw
+    jldi j4, 1
+    jadd j9, j9, j4
+    jsub j10, j10, j4
+  jwend
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j4, j3, 104
+  jsub j4, j2, j4
+  jjz j4, si_free
+  jst j2, j3, 104
+  jldi j11, 32                  ; what came, into a table like its memory, each one in its own numbers
+  jcall room
+  jldi j1, 0
+  jld j3, j1, SILR
+  jst j13, j3, 112
+  jadd j2, j13, j1
+  jldi j3, 48
+  jcall pl_new
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j9, j3, 88
+  jld j10, j3, 80
+  jwhile j10
+    jldi j1, 0
+    jst j9, j1, EVT2
+    jld j2, j9, 0               ; its floor, and its fillings in its own numbers (the header was read apart)
+    jst j2, j1, EVT
+    jld j2, j9, 8
+    jld j4, j1, EVT
+    jldi j5, 2
+    jsub j4, j4, j5
+    jjnz j4, si_lo
+    jcall w_id
+    jjz j2, si_next
+  si_lo:
+    jldi j1, 0
+    jld j3, j1, SILR
+    jst j2, j3, 96
+    jld j9, j1, EVT2
+    jld j2, j9, 16
+    jld j4, j1, EVT
+    jldi j5, 2
+    jsub j4, j4, j5
+    jjnz j4, si_hi
+    jcall w_id
+    jjz j2, si_next
+  si_hi:
+    jldi j1, 0                  ; low and high, in its order
+    jld j3, j1, SILR
+    jld j6, j3, 96
+    jadd j7, j2, j1
+    jsub j4, j7, j6
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, si_ordered
+    jadd j4, j6, j1
+    jadd j6, j7, j1
+    jadd j7, j4, j1
+  si_ordered:
+    jst j6, j3, 96
+    jst j7, j3, 120
+    jld j2, j1, FNVO            ; its key, as the judge makes it: floor, low, high
+    jld j3, j1, EVT
+    jcall hw
+    jld j3, j1, SILR
+    jld j3, j3, 96
+    jcall hw
+    jld j3, j1, SILR
+    jld j3, j3, 120
+    jcall hw
+    jjnz j2, si_key
+    jldi j2, 1
+  si_key:
+    jadd j5, j2, j1
+    jld j3, j1, SILR
+    jld j2, j3, 112
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, EVT2
+    jld j2, j9, 24              ; {key, evidence (the larger), bits a pair, low, high, floor}
+    jld j3, j4, 8
+    jsub j3, j3, j2
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjz j3, si_ev
+    jst j2, j4, 8
+  si_ev:
+    jld j2, j9, 32
+    jst j2, j4, 16
+    jld j3, j1, SILR
+    jld j2, j3, 96
+    jst j2, j4, 24
+    jld j2, j3, 120
+    jst j2, j4, 32
+    jld j2, j1, EVT
+    jst j2, j4, 40
+  si_next:
+    jldi j1, 0
+    jld j9, j1, EVT2
+    jldi j2, 40
+    jadd j9, j9, j2
+    jld j3, j1, SILR
+    jld j10, j3, 80
+    jldi j2, 1
+    jsub j10, j10, j2
+    jst j10, j3, 80
+  jwend
+  jld j3, j1, SILR              ; tried: the champion's exam with its memory, and with these too
+  jld j2, j3, 112
+  jld j2, j2, 16
+  jjz j2, si_drop
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, EVS
+  jld j3, j1, SILR
+  jst j2, j3, 80
+  jld j2, j3, 112
+  jst j2, j1, TFORP
+  jcall ev_exam
+  jldi j1, 0
+  jst j1, j1, TFORP
+  jldi j2, 0                    ; "siluetas <how many> = <with them> (sin <without>)", and " *" if they stay
+  jshi j2, 7369h
+  jshi j2, 6C75h
+  jshi j2, 6574h
+  jshi j2, 6173h
+  jcall og_r8
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j2, j3, 112
+  jld j2, j2, 16
+  jcall putnum
+  jldi j2, 0
+  jshi j2, 0020h
+  jshi j2, 3D20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, EVS
+  jcall og_signed
+  jldi j2, 0
+  jshi j2, 2028h
+  jshi j2, 7369h
+  jshi j2, 6E20h
+  jcall og_r8
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j2, j3, 80
+  jcall og_signed
+  jldi j2, 41
+  jcall putch
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j2, j3, 80
+  jld j4, j1, EVS
+  jsub j2, j2, j4
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, si_say
+  jldi j2, 32
+  jcall putch
+  jldi j2, 42
+  jcall putch
+  jcall sil_adopt
+si_say:
+  jldi j2, 10
+  jcall putch
+  jcall flush
+si_drop:
+  jldi j1, 0                    ; what came, given back (if it stayed, it is in its memory now)
+  jld j3, j1, SILR
+  jld j2, j3, 112
+  jld j11, j2, 0
+  jldi j10, 3
+  jcall ask
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j11, j3, 112
+  jldi j10, 3
+  jcall ask
+si_free:
+  jldi j1, 0
+  jld j3, j1, SILR
+  jld j11, j3, 88
+  jldi j10, 3
+  jcall ask
+  jjmp si_done
+si_close:
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+si_done:
+  jldi j1, 0
+  jret
+
+; What came and won, into its memory: each one carried from now on with the larger evidence. Uses j1-j14.
+sil_adopt:
+  jldi j1, 0
+  jld j2, j1, TMEM
+  jjz j2, sa_done
+  jld j3, j1, SILR
+  jld j2, j3, 112
+  jld j9, j2, 0
+  jld j10, j2, 8
+  jldi j3, 1
+  jadd j10, j10, j3
+  jwhile j10
+    jldi j1, 0
+    jld j5, j9, 0
+    jjz j5, sa_next
+    jldi j2, TMEM
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j9, 8
+    jld j3, j4, 8
+    jsub j3, j3, j2
+    jldi j6, 63
+    jsar j3, j3, j6
+    jjz j3, sa_ev
+    jst j2, j4, 8
+  sa_ev:
+    jldi j6, 16
+    jldi j7, 4
+    jwhile j7
+      jadd j2, j9, j6
+      jld j8, j2, 0
+      jadd j2, j4, j6
+      jst j8, j2, 0
+      jldi j2, 8
+      jadd j6, j6, j2
+      jldi j2, 1
+      jsub j7, j7, j2
+    jwend
+  sa_next:
+    jldi j1, 0
+    jldi j2, 48
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+  jwend
+sa_done:
+  jldi j1, 0
   jret
 
 ; The board (Capitan: "that it can find another Razar on the same host"): a folder of the host that several Janax
@@ -4399,6 +4958,13 @@ bi_key:
   jwend
   jldi j2, 30
   jst j2, j1, BLEN
+  jld j2, j1, SILR              ; (the room of its silhouettes' traffic, once)
+  jjnz j2, bi_room
+  jldi j11, 128
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SILR
+bi_room:
   jldi j10, 32                  ; the board watched: a letter there that changes wakes it
   jldi j11, 8
   jld j12, j1, BLAB
@@ -4493,7 +5059,16 @@ board_find:
     jsub j3, j3, j4
     jor j2, j2, j3
     jjz j2, bf_next
-    jst j9, j1, EVT2            ; another's: its letter read
+    jst j9, j1, EVT2            ; another's: its label kept (its silhouettes are found by it), its letter read
+    jld j3, j1, SILR
+    jld j2, j9, 8
+    jst j2, j3, 0
+    jld j2, j9, 16
+    jst j2, j3, 8
+    jld j2, j9, 24
+    jst j2, j3, 16
+    jld j2, j9, 32
+    jst j2, j3, 24
     jst j1, j1, LETB
     jst j1, j1, LETB + 8
     jldi j10, 4
