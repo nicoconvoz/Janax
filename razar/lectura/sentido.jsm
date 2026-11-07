@@ -288,6 +288,7 @@ QSX   = 5078h
 QSY   = 5080h
 QSA   = 5088h
 QSZ   = 5090h
+LINEO = 50A0h                   ; 1 while a sentence is being woven (its last word the one thought from)
 DKIND = 5098h                   ; what the bits hold: 0 the turns, 1 the compositions ({times, pieces} an entry)
 TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
 DRC   = 0FE0h                   ; by thought, the different routes it was reached by {key, routes} (a table that grows)
@@ -3029,6 +3030,14 @@ th_ready:
     jldi j1, 0
     jjmp th_lap
 th_done:
+  jldi j1, 0                    ; the sentence it was weaving ends
+  jld j2, j1, LINEO
+  jjz j2, thd_closed
+  jst j1, j1, LINEO
+  jldi j2, 10
+  jcall putch
+  jcall flush
+thd_closed:
   jldi j1, 0
   jret
 
@@ -3185,8 +3194,7 @@ th_branches:
     jsar j4, j4, j5
     jjz j4, thb_lap
     jcall th_note               ; chosen: thought once more (its diary)
-    jcall th_say                ; asked and answered
-    jcall th_answer             ; (and if it asks what the question asks, an answer it thought)
+    jcall th_line               ; woven into the sentence, or an answer it thought
     jldi j1, 0
     jld j2, j1, THY
     jjmp th_push
@@ -3971,36 +3979,40 @@ th_push:
   jldi j1, 0
   jret
 
-; The question it asks itself and its answer: "me pregunto: X middle ? -> X middle Y" (THX, THE, THY). Uses j1-j11.
+; The branch chosen said (Capitan: "build me the sentence, not the walk"): it starts on the word the sentence being
+; woven ends on (LINEO), so it goes on in it, its middle and the word it answers with, as the books go on from a word
+; another fact ended on; with no sentence open, a new one starts on its word. One that asks what the question asks
+; is an answer it thought: the sentence closes and it is said on its own line (th_answer). Uses j1-j11.
+th_line:
+  jldi j1, 0
+  jld j2, j1, THGO
+  jjz j2, th_say
+  jld j2, j1, LINEO
+  jjz j2, thl_ans
+  jst j1, j1, LINEO
+  jldi j2, 10
+  jcall putch
+thl_ans:
+  jjmp th_answer
+
 th_say:
-  jldi j1, S_THQ
+  jldi j1, 0
+  jld j2, j1, LINEO
+  jjnz j2, ths_on
+  jldi j1, S_ANS
   jcall puts
   jld j2, j1, THX
   jcall putword
-  jldi j2, 32
-  jcall putch
-  jld j12, j1, THE
-  jcall put_plain
-  jldi j2, 63
-  jcall putch
-  jldi j2, 32
-  jcall putch
-  jldi j2, 45
-  jcall putch
-  jldi j2, 62
-  jcall putch
-  jldi j2, 32
-  jcall putch
-  jld j2, j1, THX
-  jcall putword
+ths_on:
   jldi j2, 32
   jcall putch
   jld j12, j1, THE
   jcall put_plain
   jld j2, j1, THY
   jcall putword
-  jldi j2, 10
-  jcall putch
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, LINEO
   jjmp flush
 
 ; Once a reading: the facts by the word they start on (THH: by word, the first fact's number + 1; THN: by fact, the
@@ -6819,12 +6831,19 @@ qm_oth2:
   jcall put_plain
   jld j2, j1, WB
   jcall putword
-  jldi j2, 10
-  jcall putch
-  jcall flush
-  jldi j1, 0                    ; and it thinks on from what it just learned: the answer
+  jldi j1, 0                    ; and it thinks on from what it just learned, the answer: its thought goes on in the
+  jldi j2, 1                    ; same sentence when the sentence ends on it (LINEO), as the books go on from a word
+  jst j2, j1, LINEO             ; a fact ended on; when not, the sentence closes here
   jld j2, j1, QOTH
   jst j2, j1, THX
+  jld j3, j1, WB
+  jsub j3, j2, j3
+  jjz j3, qm_think
+  jst j1, j1, LINEO
+  jldi j2, 10
+  jcall putch
+qm_think:
+  jcall flush
   jjmp think
 qm_turned:
   jcall lib_turn                ; the library's turn first: proved over every book, not over a piece

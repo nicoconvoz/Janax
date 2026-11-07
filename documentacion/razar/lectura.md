@@ -2548,3 +2548,16 @@ para los pedazos: **lo que ningún índice nombra se devuelve** (`lib_sweep`, en
 
 Las preguntas de control dan idéntico, y las de dos pasos y "¿qué significa con?" siguen igual.
 
+## La oración, no el recorrido (2026-11-07)
+
+El Capitán: *"construime la oración, no el recorrido"*. Antes, cada pensamiento salía como "me pregunto: X ? -> X Y".
+
+- **Se enhebra (`th_line`, `th_say`):** cada pensamiento arranca en la palabra donde terminó el anterior, así que sigue
+  en la misma oración con su medio y su palabra nueva, igual que el libro compone por el núcleo compartido (`=`). Si
+  la respuesta no termina en la palabra desde la que piensa, la oración se cierra y el pensamiento arranca una nueva
+  (`LINEO`).
+- **Lo que contesta una pregunta guiada** sigue en su propia línea con "(lo pense)", porque es otra respuesta.
+- **Medido:** "¿qué es janax?" → "janax es determinista( el libro de cualquier lugar de la pc". "¿de quién es hijo el
+  padre de jacob?" → "isaac, padre de jacob" / "isaac, hijo de abraham (lo pense)" / "abraham, el dios de jacob".
+  Las 24 respuestas de control siguen empezando igual que antes.
+
