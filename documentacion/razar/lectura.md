@@ -2196,3 +2196,28 @@ la charla no.
 - **Pendiente:** cuando un libro cambia, su archivo de vueltas viejo queda. Falta devolverlo como se devuelven los
   pedazos.
 
+## La biblioteca guarda huellas, no palabras (2026-11-07)
+
+Regla del Capitán: *"Razar estudia siluetas, no se deja estructuras exactas de nada... solo queremos su estructura, no
+su contenido"*. Hasta acá los pedazos guardaban las letras de todas las palabras del libro, empaquetadas en bits, y el
+índice tenía en claro la primera palabra de cada pedazo. Ya no.
+
+- **Formato 7:** `comer` cambia cada palabra por los 8 bytes de la huella de sus letras (FNV-1a, el byte más bajo
+  primero; `hide_words`), justo antes de ordenar y escribir. El orden, los pedazos y el índice no cambian de forma:
+  la "palabra" pasa a ser su huella.
+- **Al preguntar**, la palabra propia se esconde igual (`pz_hide`) antes de buscarla en un pedazo (`pz_find`) o de
+  contarla (`pz_hprint`). Para marcar los renglones, las palabras caminadas se guardan por su huella escondida
+  (`PZHT`), así una palabra del pedazo se reconoce sin letras.
+- **Lo que sigue con letras**, a propósito:
+  - las siluetas de la casa (`siluetas`), que son de la lectura propia y no van a la biblioteca;
+  - los medios de las vueltas de esqueletos ("hijo de"), que son estructura;
+  - la dirección del libro, que hace falta para ir a releerlo.
+- **Medido:**
+  - las 12 preguntas de control dan **idéntico byte por byte** contra la biblioteca de letras: 9 habladas y 3 con
+    huecos, incluido matán deducido;
+  - en los índices, las palabras legibles bajan de 112 a solo las de la dirección;
+  - el nido del Nuevo Testamento sube de 200.243 a **256.488 bytes (+28 %)**. Una huella son 64 bits, más que las
+    letras que compartían su comienzo con la palabra anterior. Es el precio de no guardar contenido.
+- Un índice de formato 6 ya no se lee: cada libro se vuelve a comer, y sus pedazos viejos con letras se devuelven al
+  comerlo (su huella de bytes cambió de sal, de 6 a 7).
+

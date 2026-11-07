@@ -12,7 +12,8 @@
 ; writes only what is missing. The index is written last: once it is there the book is eaten. A book that changed
 ; writes new pieces; the old ones are given back only when no index of the library names those bytes.
 ;
-; Every word of the book (subjects, the foundation and the marks), in the order of its letters byte by byte, goes in
+; Every word of the book (subjects, the foundation and the marks), hidden as the eight bytes of the print of its
+; letters (hide_words: the library keeps no letters), in the order of those bytes byte by byte, goes in
 ; pieces of sqrt(words) words: what is held at once to answer, the index and one piece, is then the least. A piece is
 ; bits, the lowest first: each word as {what it shares with the word before in the piece + 1, in Elias gamma; how many
 ; letters it has past that + 1, gamma; those letters, each its number among the letters the book uses, in the bits
@@ -128,6 +129,9 @@ ZOQ   = 6788h                   ; where the limits start in the index, and their
 ZQL   = 6790h
 ZKL   = 6798h                   ; a word's limits written: how many, the one walked
 ZLI   = 67A0h
+HDA   = 67A8h                   ; the words hidden: their prints' bytes, each word's entry, the entries
+HDI   = 67B0h
+HDE   = 67B8h
 ZBT   = 6700h                   ; writing bits: the bit, the value and its bits left, unary, gamma, the Rice parameter
 ZV    = 6708h                   ; and the fewest bits found
 ZW    = 6710h
@@ -337,7 +341,7 @@ jldi j10, 3
 jcall ask
 jldi j1, 0                      ; (and the format, folded into the print: pieces of another format never share a name)
 jld j2, j1, CHASH
-jldi j3, 6
+jldi j3, 7
 jxor j2, j2, j3
 jld j3, j1, FNVP
 jmul j2, j2, j3
@@ -431,6 +435,7 @@ jldi j2, 1
 jst j2, j1, OUTR
 jcall clue_walk
 
+jcall hide_words                ; every word as its print, never its letters
 jldi j1, 0                      ; every word, in the order of its letters (merge sort, from runs of one)
 jld j2, j1, NV
 jldi j3, 1
@@ -982,7 +987,7 @@ jcall room
 jldi j1, 0
 jst j13, j1, OUTR
 
-jldi j2, 6                      ; its head
+jldi j2, 7                      ; its head
 jst j2, j13, 0
 jld j2, j1, NBYTES
 jst j2, j13, 8
@@ -2149,6 +2154,85 @@ zs_cell:
   jld j3, j1, ZACN
   jadd j2, j2, j3
   jld j2, j2, 0
+  jret
+
+; Every word as the library keeps it (Capitan, 2026-11-07: "Razar studies silhouettes, it keeps no exact structure of
+; anything; we only want its structure, not its content"): the eight bytes of the print of its letters (FNV-1a, the
+; lowest first) in place of its letters, ROOMI and ROOMA then those. Asking finds a word by the print of the letters
+; asked (pistas.inc, pz_hide), and the library never holds what a word says. Uses j1-j14.
+hide_words:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HDA
+  jld j11, j1, NV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HDI
+  jld j11, j1, NV
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HDE
+  jldi j9, 0
+  jld j10, j1, NV
+  jwhile j10
+    jldi j3, 24                 ; its entry: {-, its place among the prints, 8 bytes}
+    jmul j3, j9, j3
+    jld j4, j1, HDE
+    jadd j3, j3, j4
+    jldi j4, 3
+    jshl j4, j9, j4
+    jst j4, j3, 8
+    jldi j5, 8
+    jst j5, j3, 16
+    jld j5, j1, HDI
+    jadd j5, j5, j4
+    jst j3, j5, 0
+    jjz j9, hd_next             ; (word 0 is none)
+    jld j3, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j5, j3, 16
+    jld j3, j3, 8
+    jld j6, j1, ROOMA
+    jadd j3, j3, j6
+    jld j7, j1, FNVO
+    jld j8, j1, FNVP
+    jwhile j5
+      jldb j6, j3, 0
+      jxor j7, j7, j6
+      jmul j7, j7, j8
+      jldi j6, 1
+      jadd j3, j3, j6
+      jsub j5, j5, j6
+    jwend
+    jld j3, j1, HDA
+    jadd j3, j3, j4
+    jldi j5, 8
+    jwhile j5
+      jstb j7, j3, 0
+      jldi j6, 8
+      jshr j7, j7, j6
+      jldi j6, 1
+      jadd j3, j3, j6
+      jsub j5, j5, j6
+    jwend
+  hd_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, HDA
+  jst j2, j1, ROOMA
+  jld j2, j1, HDI
+  jst j2, j1, ROOMI
   jret
 
 ; The bytes of the book's limits in the index -> ZQL: {how many, all the buildings}, then each {the buildings it closes,

@@ -11,7 +11,7 @@
 ;
 ; The program that includes it calls clue_round before read_book, clue_gather after each answer and clue_end before
 ; finish, and clue_counts once it knows how often each word is in what it read, names the labels S_CAMINO ("camino",
-; 6 bytes) and S_SELF (its own program, S_SELFN bytes), includes carpeta.inc, and keeps away from 1900h-1ACFh and 3100h-3117h.
+; 6 bytes) and S_SELF (its own program, S_SELFN bytes), includes carpeta.inc, and keeps away from 1900h-1ACFh and 3100h-31DFh.
 ;
 ; The judge weighs a filling against the book ("what the filling says here beyond what it says anywhere"): reading
 ; again only a part, a word of those renglones would look common there and be rare in the book. So the counts come from
@@ -78,6 +78,8 @@ PZT3  = 3198h
 PZT4  = 31A0h
 PZT5  = 31A8h
 PZT6  = 31B0h
+PZHB  = 31B8h                   ; a word looked for as the library keeps it (pz_hide): 8 bytes; the words walked so,
+PZHT  = 31C0h                   ; by the print of those bytes {key} (a table that grows)
 
 ; j2 = 1 if the word at PZHP (PZHN bytes) is a line of the text at PZTB (PZTN bytes). Uses j1-j8.
 pz_has:
@@ -336,7 +338,11 @@ pz_read:
   jst j13, j1, PZMC
   jldi j2, -1
   jst j2, j1, PZMCP
-  jld j2, j1, PZCAM             ; each word walked: the piece where it is
+  jldi j2, PZHT
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jld j2, j1, PZCAM             ; each word walked: the piece where it is, and its hidden bytes known
   jst j2, j1, PZK
 prd_word:
   jldi j1, 0
@@ -363,6 +369,11 @@ prd_line:
   jadd j5, j5, j6
   jst j5, j1, PZK
   jcall pz_find
+  jldi j3, PZHB
+  jldi j4, 8
+  jcall pz_printat
+  jldi j2, PZHT
+  jcall pl_take
   jjmp prd_word
 prd_found:
   jldi j2, 1                    ; those pieces: the renglones of the words walked
@@ -717,6 +728,11 @@ ce_done:
 ; The print of the letters at PZHP (PZHN bytes): FNV-1a, never 0 (a key of a table that grows) -> j5. Uses j1-j7.
 pz_print:
   jldi j1, 0
+  jld j3, j1, PZHP
+  jld j4, j1, PZHN
+; The print of the j4 bytes at j3 -> j5. Uses j1, j3-j7.
+pz_printat:
+  jldi j1, 0
   jldi j5, 0
   jshi j5, 0CBF2h
   jshi j5, 9CE4h
@@ -726,8 +742,6 @@ pz_print:
   jshi j6, 100h
   jshi j6, 0
   jshi j6, 1B3h
-  jld j3, j1, PZHP
-  jld j4, j1, PZHN
   jwhile j4
     jldb j7, j3, 0
     jxor j5, j5, j7
@@ -739,6 +753,55 @@ pz_print:
   jjnz j5, pp_done
   jldi j5, 1
 pp_done:
+  jret
+
+; The word at PZHP (PZHN bytes) as the library keeps it (comer.jsm, hide_words): the eight bytes of the print of its
+; letters, the lowest first, at PZHB. The library holds no letters of a word: it is found by this. Uses j1-j7.
+pz_hide:
+  jldi j1, 0
+  jld j3, j1, PZHP
+  jld j4, j1, PZHN
+  jcall pz_printraw
+  jldi j3, PZHB
+  jldi j4, 8
+  jwhile j4
+    jstb j5, j3, 0
+    jldi j7, 8
+    jshr j5, j5, j7
+    jldi j7, 1
+    jadd j3, j3, j7
+    jsub j4, j4, j7
+  jwend
+  jret
+
+; The key of the word at PZHP (PZHN bytes) among the library's words: the print of its hidden bytes, as pz_print of a
+; word read in a piece. Uses j1-j7.
+pz_hprint:
+  jcall pz_hide
+  jldi j3, PZHB
+  jldi j4, 8
+  jjmp pz_printat
+
+; FNV-1a of the j4 bytes at j3, as it is (it may be 0) -> j5. Uses j1, j3-j7.
+pz_printraw:
+  jldi j1, 0
+  jldi j5, 0
+  jshi j5, 0CBF2h
+  jshi j5, 9CE4h
+  jshi j5, 8422h
+  jshi j5, 2325h
+  jldi j6, 0
+  jshi j6, 100h
+  jshi j6, 0
+  jshi j6, 1B3h
+  jwhile j4
+    jldb j7, j3, 0
+    jxor j5, j5, j7
+    jmul j5, j5, j6
+    jldi j7, 1
+    jadd j3, j3, j7
+    jsub j4, j4, j7
+  jwend
   jret
 
 ; The word at PZHP (PZHN bytes), just read in a piece, adds its times (PZEO). Uses j1-j8.
@@ -1024,7 +1087,7 @@ clue_counts:
     jld j4, j1, ROOMA
     jadd j3, j3, j4
     jst j3, j1, PZHP
-    jcall pz_print
+    jcall pz_hprint
     jldi j2, PZOCC
     jcall pl_find
     jldi j1, 0
@@ -1066,7 +1129,7 @@ pz_index:
   jjnz j2, pzi_no
   jld j9, j1, PZFR
   jld j2, j9, 0
-  jldi j3, 6
+  jldi j3, 7
   jsub j2, j2, j3
   jjnz j2, pzi_no
   jst j9, j1, PZIX
@@ -1115,6 +1178,7 @@ pzi_no:
 ; The piece where the word at PZHP (PZHN bytes) is, if it is in the book: the last whose first word is not after it
 ; (halving the list) -> j2, and marked needed. Uses j1-j8.
 pz_find:
+  jcall pz_hide
   jldi j1, 0
   jst j1, j1, PZLO
   jld j2, j1, PZIX
@@ -1156,12 +1220,12 @@ pzf_done:
   jstb j4, j3, 0
   jret
 
-; j2 = 1 if the word at PZHP (PZHN bytes) goes before the j6 bytes at j5 (byte by byte; a word before what it starts).
+; j2 = 1 if the word at PZHP (PZHN bytes), hidden (PZHB), goes before the j6 bytes at j5 (byte by byte; a word before what it starts).
 ; Uses j1-j8.
 pz_less:
   jldi j1, 0
-  jld j3, j1, PZHP
-  jld j4, j1, PZHN
+  jldi j3, PZHB
+  jldi j4, 8
 pzl_lap:
   jjz j6, pzl_no
   jjz j4, pzl_yes
@@ -1336,11 +1400,14 @@ pzv_entry:
   jldi j3, 1
   jsub j2, j2, j3
   jjnz j2, pzv_times
-  jld j2, j1, PZCAM
-  jst j2, j1, PZTB
-  jld j2, j1, PZCAMN
-  jst j2, j1, PZTN
-  jcall pz_has
+  jcall pz_print                ; (a word of the piece is its hidden bytes: walked if a word walked hides so)
+  jldi j2, PZHT
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, pzv_walked
+  jldi j2, 1
+pzv_walked:
   jcall pz_clues
   jjmp pzv_entry
 pzv_times:
@@ -1825,7 +1892,7 @@ pz_wfound:
   jld j4, j1, ROOMA
   jadd j3, j3, j4
   jst j3, j1, PZHP
-  jcall pz_print
+  jcall pz_hprint
   jldi j1, 0
   jst j5, j1, PZT1
   jldi j2, PZOCC
