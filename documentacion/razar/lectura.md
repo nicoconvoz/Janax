@@ -1482,6 +1482,10 @@ el libro, `p`, el ensamblador y los fuentes de Razar bajo `PDP/`.
 - La mutación que se lo saca (`-`) da **exactamente −9218**.
 - El órgano `82` (después del hueco mezcla otra palabra, que ya no cambia nada) empata con `8`, así que no se queda.
 
+- **Tres motores:** traductor, rutinas e intérprete dan idéntico, cada proceso, cada nota y la huella `6F8EEFD6CC68`.
+- **Fin de línea del anfitrión:** un bloque del molde nunca termina en ``. Git puede dejar el molde en CRLF, y sin
+  esto las etiquetas no se encontrarían. Probado con el molde en CRLF (87 finales): da idéntico.
+
 **Lo que falta:**
 - Los intentos se hacen solo al final de la evolución, no en la vigilia.
 - Una vida prueba muy pocos órganos: cada intento es un armado más un examen.

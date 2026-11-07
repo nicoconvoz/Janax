@@ -2691,6 +2691,16 @@ og_block:
     jwend
   ob_end:
     jsub j6, j7, j5
+    jjz j6, ob_bare
+    jldi j3, -1                 ; (a line end of the host, "\r\n", is a line end too: its "\r" left out)
+    jadd j4, j7, j3
+    jldb j4, j4, 0
+    jldi j3, 13
+    jsub j4, j4, j3
+    jjnz j4, ob_bare
+    jldi j3, 1
+    jsub j6, j6, j3
+  ob_bare:
     jldi j3, 0
     jjmp ob_last
   ob_next:
