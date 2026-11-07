@@ -67,7 +67,11 @@ LABEL = 1110h                   ; the file being read: its label and how long it
 LABLEN = 1118h
 QN    = 1120h                   ; reading a question (PASS 2): its units so far, at QBUF (-1 a hole, -2 a word the
                                 ; book never had, 0 its end)
-TEXT  = 2000h                   ; the lines it writes
+TEXT  = 2000h                   ; the lines it writes (TEXTN bytes: full, they go out, to the console or to SINK)
+TEXTN = 1000h
+SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
+PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
+PCS   = 3240h
 WBUF  = 3000h                   ; (255 bytes)
 DIG   = 3200h                   ; digits of a number being written
 QBUF  = 4000h                   ; a question read (QMAX units: criterion, a question is short)
@@ -227,19 +231,17 @@ putword:
   jadd j3, j3, j4
   jld j3, j3, 0
   jld j5, j3, 16
-  jld j3, j3, 8
-  jld j4, j1, ROOMA
-  jadd j3, j3, j4
-  jld j4, j1, POS
+  jld j4, j3, 8
+  jld j3, j1, ROOMA
+  jadd j4, j4, j3
   jwhile j5
-    jldb j2, j3, 0
-    jstb j2, j4, TEXT
+    jldb j2, j4, 0
+    jcall putch
     jldi j2, 1
-    jadd j3, j3, j2
     jadd j4, j4, j2
     jsub j5, j5, j2
   jwend
-  jst j4, j1, POS
+  jldi j1, 0
   jret
 
 ; The shelf (Capitan: "let it eat the new book"): every file whose label starts "libro", listed by the system
@@ -1124,11 +1126,7 @@ rm_none:
   jldi j1, S_NOMEM
   jcall puts
 finish:
-  jldi j10, 1
-  jldi j11, TEXT
-  jldi j1, 0
-  jld j12, j1, POS
-  jcall ask
+  jcall flush
   jhalt
 
 ; log2 of j2 (1 or more) in 2^-16 of a bit -> j2: the highest bit, then sixteen bits of the rest by squaring.
@@ -1200,8 +1198,23 @@ putq16:
 pq_two:
   jjmp putnum
 
-; What it wrote so far, out (request 1), and TEXT empty again. Uses j1, j10-j14.
+; What it wrote so far, out (request 1; to SINK's file when it has one), and TEXT empty again. Uses j1, j10-j14.
 flush:
+  jldi j1, 0
+  jld j10, j1, SINK
+  jjz j10, fl_console
+  jldi j11, 1
+  jsub j10, j10, j11
+  jldi j11, 32
+  jshl j10, j10, j11
+  jldi j11, 6
+  jor j10, j10, j11
+  jldi j11, TEXT
+  jld j12, j1, POS
+  jcall ask
+  jldi j1, 0
+  jjmp fl_out
+fl_console:
   jldi j10, 1
   jldi j11, TEXT
   jldi j1, 0
@@ -1224,32 +1237,76 @@ fl_out:
   jst j1, j1, POS
   jret
 
-; The text at j1 (ended by a 0) at TEXT + POS. Uses j1-j3 (j1 = 0 after).
+; The text at j1 (ended by a 0) at TEXT + POS, a character at a time (putch: no ceiling). Uses j1-j3 (j1 = 0 after).
 puts:
   jldi j3, 0
-  jld j2, j3, POS
+  jst j1, j3, PUTP
 pu_lap:
-  jldb j3, j1, 0
-  jjz j3, pu_done
-  jstb j3, j2, TEXT
-  jldi j3, 1
-  jadd j1, j1, j3
-  jadd j2, j2, j3
+  jldi j1, 0
+  jld j3, j1, PUTP
+  jldb j2, j3, 0
+  jjz j2, pu_done
+  jldi j1, 1
+  jadd j3, j3, j1
+  jldi j1, 0
+  jst j3, j1, PUTP
+  jcall putch
   jjmp pu_lap
 pu_done:
   jldi j1, 0
-  jst j2, j1, POS
   jret
 
-; The character j2 at TEXT + POS. Uses j1, j3.
+; The character j2 at TEXT + POS. When the text is full (TEXTN bytes) it goes out first, to where it goes (flush): what
+; is written has no ceiling (Capitan, 2026-11-07: "no ceilings: if tomorrow it grows more, it adjusts itself"). Uses
+; j1, j3 (every other register kept, even when the text goes out).
 putch:
   jldi j1, 0
   jld j3, j1, POS
+  jldi j1, TEXTN
+  jsub j1, j3, j1
+  jjnz j1, pc_put
+  jcall pc_out
+  jldi j3, 0
+pc_put:
+  jldi j1, 0
   jstb j2, j3, TEXT
   jldi j1, 1
   jadd j3, j3, j1
   jldi j1, 0
   jst j3, j1, POS
+  jret
+
+; The text out (flush), every register kept. Uses j1.
+pc_out:
+  jldi j1, 0
+  jst j2, j1, PCS
+  jst j3, j1, PCS + 8
+  jst j4, j1, PCS + 16
+  jst j5, j1, PCS + 24
+  jst j6, j1, PCS + 32
+  jst j7, j1, PCS + 40
+  jst j8, j1, PCS + 48
+  jst j9, j1, PCS + 56
+  jst j10, j1, PCS + 64
+  jst j11, j1, PCS + 72
+  jst j12, j1, PCS + 80
+  jst j13, j1, PCS + 88
+  jst j14, j1, PCS + 96
+  jcall flush
+  jldi j1, 0
+  jld j2, j1, PCS
+  jld j3, j1, PCS + 8
+  jld j4, j1, PCS + 16
+  jld j5, j1, PCS + 24
+  jld j6, j1, PCS + 32
+  jld j7, j1, PCS + 40
+  jld j8, j1, PCS + 48
+  jld j9, j1, PCS + 56
+  jld j10, j1, PCS + 64
+  jld j11, j1, PCS + 72
+  jld j12, j1, PCS + 80
+  jld j13, j1, PCS + 88
+  jld j14, j1, PCS + 96
   jret
 
 ; j2 (0 or more) in decimal at TEXT + POS. Uses j1-j4 (j1 = 0 after).
@@ -1269,16 +1326,14 @@ pn_digit:
   jsub j2, j2, j0
   jjnz j2, pn_digit
   jldi j1, 0
-  jld j4, j1, POS
+  jadd j4, j3, j1
 pn_put:
   jldi j1, 1
-  jsub j3, j3, j1
-  jldb j2, j3, DIG
-  jstb j2, j4, TEXT
-  jadd j4, j4, j1
-  jjnz j3, pn_put
+  jsub j4, j4, j1
+  jldb j2, j4, DIG
+  jcall putch
+  jjnz j4, pn_put
   jldi j1, 0
-  jst j4, j1, POS
   jret
 
 ; One request through the window: kind j10, a = j11, b = j12 -> j13 = its answer. Uses j14.

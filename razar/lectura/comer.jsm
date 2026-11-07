@@ -1312,18 +1312,16 @@ jst j2, j1, OSZ
 cm_said:
 jldi j1, S_ATE                  ; said: what it ate, how many renglones and words, how many clues, how many bytes
 jcall puts
-jld j2, j1, POS
-jld j3, j1, PLEN
+jld j6, j1, PLEN
 jldi j4, PATHB
-jwhile j3
-  jldb j5, j4, 0
-  jstb j5, j2, TEXT
+jwhile j6
+  jldb j2, j4, 0
+  jcall putch
   jldi j5, 1
   jadd j4, j4, j5
-  jadd j2, j2, j5
-  jsub j3, j3, j5
+  jsub j6, j6, j5
 jwend
-jst j2, j1, POS
+jldi j1, 0
 jldi j1, S_REN
 jcall puts
 jld j2, j1, ROFFN

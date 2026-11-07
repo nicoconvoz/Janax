@@ -3584,7 +3584,23 @@ og_write0:
 ow_go:
   jldi j1, 0
   jst j2, j1, OGKID
-  jcall flush                   ; (what it wrote is out: TEXT is the organ's now)
+  jcall flush                   ; (what it wrote is out: the text goes to the organ's file now)
+  jldi j2, 111                  ; its file, whole: the old one out, the new one open
+  jcall og_label
+  jldi j10, 12
+  jcall ask
+  jldi j2, 111
+  jcall og_label
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ow_done
+  jst j13, j1, OGT
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
   jldi j2, 67                   ; ORGAN_CANDIDATE =
   jcall og_put
   jldi j1, 0
@@ -3632,27 +3648,9 @@ ow_go:
   jwend
   jldi j2, 102
   jcall og_line_put
-  jldi j2, 111                  ; its file, whole: the old one out
-  jcall og_label
-  jldi j10, 12
-  jcall ask
-  jldi j2, 111
-  jcall og_label
-  jldi j10, 4
-  jcall ask
+  jcall flush                   ; (the rest, to it; the text goes to the console again)
   jldi j1, 0
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, ow_done
-  jst j13, j1, OGT
-  jldi j2, 32
-  jshl j10, j13, j2
-  jldi j2, 6
-  jor j10, j10, j2
-  jldi j11, TEXT
-  jld j12, j1, POS
-  jcall ask
-  jldi j1, 0
+  jst j1, j1, SINK
   jld j10, j1, OGT
   jldi j2, 32
   jshl j10, j10, j2

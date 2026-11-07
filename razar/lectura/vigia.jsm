@@ -26,7 +26,10 @@ BIN   = 1058h
 SEENB = 1060h
 KID   = 1068h                   ; comer, its child; what waits for its signature (a room)
 PEND  = 1070h
-TEXT  = 2000h                   ; the lines it writes
+TEXT  = 2000h                   ; the lines it writes (TEXTN bytes: full, they go out)
+TEXTN = 1000h
+PUTP  = 1080h                   ; the text written walked; the registers kept while it goes out (13 qwords)
+PCS   = 1088h
 DIG   = 3000h                   ; digits of a number being written
 PATHC = 98304                   ; a path of the host in UTF-8: 32768 UTF-16 units, 3 bytes each at most
 BUFC  = 65536                   ; (the bytes read at once: any number gives the same answer)
@@ -302,18 +305,16 @@ it_out:
 ; The path at PATH (PATHN bytes) at TEXT + POS. Uses j1-j5.
 put_path:
   jldi j1, 0
-  jld j2, j1, POS
-  jld j3, j1, PATHN
+  jld j6, j1, PATHN
   jld j4, j1, PATH
-  jwhile j3
-    jldb j5, j4, 0
-    jstb j5, j2, TEXT
+  jwhile j6
+    jldb j2, j4, 0
+    jcall putch
     jldi j5, 1
     jadd j4, j4, j5
-    jadd j2, j2, j5
-    jsub j3, j3, j5
+    jsub j6, j6, j5
   jwend
-  jst j2, j1, POS
+  jldi j1, 0
   jret
 
 ; A new room of j11 bytes (request 2) -> j13 its address; without one, it says so and ends. Uses j1, j10-j14.
@@ -344,21 +345,76 @@ flush:
   jst j1, j1, POS
   jret
 
-; The text at j1 (ended by a 0) at TEXT + POS. Uses j1-j3 (j1 = 0 after).
+; The text at j1 (ended by a 0) at TEXT + POS, a character at a time (putch: no ceiling). Uses j1-j3 (j1 = 0 after).
 puts:
   jldi j3, 0
-  jld j2, j3, POS
+  jst j1, j3, PUTP
 pu_lap:
-  jldb j3, j1, 0
-  jjz j3, pu_done
-  jstb j3, j2, TEXT
-  jldi j3, 1
-  jadd j1, j1, j3
-  jadd j2, j2, j3
+  jldi j1, 0
+  jld j3, j1, PUTP
+  jldb j2, j3, 0
+  jjz j2, pu_done
+  jldi j1, 1
+  jadd j3, j3, j1
+  jldi j1, 0
+  jst j3, j1, PUTP
+  jcall putch
   jjmp pu_lap
 pu_done:
   jldi j1, 0
-  jst j2, j1, POS
+  jret
+
+; The character j2 at TEXT + POS. When the text is full (TEXTN bytes) it goes out first, to where it goes (flush): what
+; is written has no ceiling (Capitan, 2026-11-07: "no ceilings: if tomorrow it grows more, it adjusts itself"). Uses
+; j1, j3 (every other register kept, even when the text goes out).
+putch:
+  jldi j1, 0
+  jld j3, j1, POS
+  jldi j1, TEXTN
+  jsub j1, j3, j1
+  jjnz j1, pc_put
+  jcall pc_out
+  jldi j3, 0
+pc_put:
+  jldi j1, 0
+  jstb j2, j3, TEXT
+  jldi j1, 1
+  jadd j3, j3, j1
+  jldi j1, 0
+  jst j3, j1, POS
+  jret
+
+; The text out (flush), every register kept. Uses j1.
+pc_out:
+  jldi j1, 0
+  jst j2, j1, PCS
+  jst j3, j1, PCS + 8
+  jst j4, j1, PCS + 16
+  jst j5, j1, PCS + 24
+  jst j6, j1, PCS + 32
+  jst j7, j1, PCS + 40
+  jst j8, j1, PCS + 48
+  jst j9, j1, PCS + 56
+  jst j10, j1, PCS + 64
+  jst j11, j1, PCS + 72
+  jst j12, j1, PCS + 80
+  jst j13, j1, PCS + 88
+  jst j14, j1, PCS + 96
+  jcall flush
+  jldi j1, 0
+  jld j2, j1, PCS
+  jld j3, j1, PCS + 8
+  jld j4, j1, PCS + 16
+  jld j5, j1, PCS + 24
+  jld j6, j1, PCS + 32
+  jld j7, j1, PCS + 40
+  jld j8, j1, PCS + 48
+  jld j9, j1, PCS + 56
+  jld j10, j1, PCS + 64
+  jld j11, j1, PCS + 72
+  jld j12, j1, PCS + 80
+  jld j13, j1, PCS + 88
+  jld j14, j1, PCS + 96
   jret
 
 ; One request through the window: kind j10, a = j11, b = j12 -> j13 = its answer. Uses j14.

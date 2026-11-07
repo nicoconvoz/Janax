@@ -2810,3 +2810,22 @@ a tomar, porque cada palabra es una valiosa instrucción"*.
   mandó"): parientes que comparten apenas 2 pares de 2 pesan como la forma original. Con más libros ese peso baja solo.
 - **Controles** con la biblioteca de formato 2: idénticos.
 - **Corrección:** las claves de 64 bits se comparan sin signo, por mitades (`sk_lt`). Restarlas desborda.
+
+## Lo que se escribe no tiene techo (2026-11-07)
+
+El Capitán: *"no quiero techos: si mañana crece más tenemos desbordamiento; que se autoajuste"*.
+
+- **El techo que había:** todo lo que Razar escribe se arma en `TEXT` (4 KB, de `2000h` a `2FFFh`), y nadie miraba el
+  borde. Un párrafo o un informe de más de 4 KB entre dos vaciados pisaba en silencio la palabra que se está leyendo
+  (`WBUF`, `3000h`), los dígitos y las variables de las siluetas (`3100h`). El órgano de `pulso.jsm` arma
+  `organo.inc` entero ahí adentro (hoy son 519 bytes, pero no tenía tope).
+- **La regla general:** nadie escribe directo en `TEXT`. Todo pasa por `putch` (`puts`, `putnum`, `putword`, la
+  dirección de `comer`, las rutas del vigía), y `putch`, cuando el texto se llena, lo vacía primero (`pc_out` guarda
+  y devuelve todos los registros de quien lo llamó). El texto tiene un **destino**, `SINK`: la consola, o el archivo
+  que se está escribiendo (el órgano abre su archivo antes de armarlo, y lo que se llena va derecho ahí).
+- **Prueba (`razar/lectura/pruebas/texto_largo.jsm`):** escribe 10.000 letras sin vaciar a mano. Salen exactas en el
+  intérprete y en el traductor, y un registro que `putch` no usa queda como estaba.
+- **Controles:** los 12 idénticos y el informe idéntico byte por byte. Cuesta unas 20.000 instrucciones más sobre
+  30 millones (0,07%).
+- **Topes fijos que quedan** (no desbordan: recortan; pendientes): una palabra de más de 255 letras (`WBUF`), una
+  dirección de más de 511 bytes (`PATHB`), una pregunta de más de 512 unidades (`QMAX`).
