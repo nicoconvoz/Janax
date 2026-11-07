@@ -67,6 +67,7 @@ S_QAM   = 0AC0h
 S_QAL   = 0AE0h                 ; what they taught
 S_GLU   = 8D0h                  ; the glue between constructions
 S_GLD   = 8E0h
+S_DIA   = 8C9h                  ; "diario": what it thought
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
@@ -263,6 +264,14 @@ THW   = 0F50h
 THP   = 0F58h
 THPS  = 0F60h
 THV   = 0F68h
+DIA   = 0F70h                   ; its diary: by thought's print {key, times} (a table that grows); its print; 1 when it
+DIAH  = 0F90h                   ; thought something; the file's bytes and room; this word's thoughts met {key}; a
+DIAW  = 0F98h                   ; thought's print; a branch's votes
+DIAN  = 0FA0h
+DIAB  = 0FA8h
+THSN  = 0FB0h
+THK2  = 0FD0h
+THVV  = 0FD8h
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
@@ -2925,6 +2934,7 @@ think:
   jjnz j2, th_ready
   jcall th_build
   jcall th_genome
+  jcall dia_load
 th_ready:
   jcall th_seed
   jldi j2, TVT
@@ -3037,6 +3047,9 @@ thw_no:
 ; votes summed at THW (each the times at KCT). THPS 1: the one whose votes hold the place THP is said, and its word
 ; joins the row. Uses j1-j14.
 th_branches:
+  jldi j2, THSN
+  jldi j3, 8
+  jcall pl_new
   jldi j1, 0
   jld j2, j1, THX
   jldi j3, 3
@@ -3103,23 +3116,25 @@ th_branches:
     jjz j2, thb_lap
     jcall th_twice              ; and the fact itself said twice at least (the anecdote rule)
     jjz j2, thb_lap
+    jcall th_votes              ; (and what it thought of it before, as one more reading)
     jldi j1, 0
     jld j2, j1, THPS
     jjnz j2, thb_choose
     jld j2, j1, THW             ; its votes
-    jld j3, j1, THV
+    jld j3, j1, THVV
     jadd j2, j2, j3
     jst j2, j1, THW
     jjmp thb_lap
   thb_choose:
     jld j2, j1, THP             ; the place falls in its votes?
-    jld j3, j1, THV
+    jld j3, j1, THVV
     jsub j4, j2, j3
     jst j4, j1, THP
     jldi j5, 63
     jsar j4, j4, j5
     jjz j4, thb_lap
-    jcall th_say                ; chosen: asked and answered
+    jcall th_note               ; chosen: thought once more (its diary)
+    jcall th_say                ; asked and answered
     jldi j1, 0
     jld j2, j1, THY
     jjmp th_push
@@ -3223,6 +3238,9 @@ ths_word:
   jld j6, j1, FNVP
   jmul j5, j5, j6
   jld j2, j1, HIST
+  jxor j5, j5, j2
+  jmul j5, j5, j6
+  jld j2, j1, DIAH              ; and what it thought before
   jxor j5, j5, j2
   jmul j5, j5, j6
   jst j5, j1, THRS
@@ -3336,6 +3354,220 @@ thg_qdone:
   jor j10, j10, j2
   jcall ask
 thg_done:
+  jldi j1, 0
+  jret
+
+; The print of the thought THX «THE» THY by letters (the word, the structure's middle, the word it answers with), so
+; it stays the same in every reading -> j5 (never 0). Uses j1-j11.
+th_tkey:
+  jldi j1, 0
+  jld j5, j1, FNVO
+  jld j2, j1, THX
+  jcall th_wprint
+  jld j12, j1, THE
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jldi j11, 1
+  jwhile j10
+    jldi j1, 0
+    jadd j2, j9, j11
+    jst j5, j1, THK2
+    jcall tok_at
+    jld j5, j1, THK2
+    jcall th_wprint
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, THY
+  jcall th_wprint
+  jjnz j5, thk_k
+  jldi j5, 1
+thk_k:
+  jst j5, j1, THK2
+  jret
+
+; A branch's votes (THV the times the books went on with its structure, each fact said voting once): the first time
+; this word meets the thought (THSN), the times it thought it before vote too, each as one more reading of the fact
+; (its diary, DIA). -> THVV. Uses j1-j11.
+th_votes:
+  jldi j1, 0
+  jld j2, j1, THV
+  jst j2, j1, THVV
+  jcall th_tkey
+  jldi j2, THSN
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, thv_done
+  jld j5, j1, THK2
+  jldi j2, DIA
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, thv_done
+  jld j2, j4, 8
+  jld j3, j1, THV
+  jmul j2, j2, j3
+  jld j3, j1, THVV
+  jadd j2, j2, j3
+  jst j2, j1, THVV
+thv_done:
+  jldi j1, 0
+  jret
+
+; The thought just chosen (THK2) written in its diary: thought once more. Uses j1-j8.
+th_note:
+  jldi j1, 0
+  jld j5, j1, THK2
+  jldi j2, DIA
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jst j3, j1, DIAW
+  jret
+
+; Its diary read from its house ("diario": qwords {1, how many}, each {the thought's print, times}) into DIA, and its
+; print (DIAH: the sum of print times times, so the order does not matter). None: an empty one. Uses j1-j14.
+dia_load:
+  jldi j2, DIA
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, DIAH
+  jst j1, j1, DIAW
+  jldi j11, S_DIA
+  jldi j12, 6
+  jcall sx_read
+  jldi j1, 0
+  jld j2, j1, SXN
+  jldi j3, 16
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, dl_done
+  jld j9, j1, SXR
+  jld j2, j9, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, dl_done
+  jld j10, j9, 8
+  jld j2, j1, SXN               ; (as many as the file holds)
+  jldi j3, 4
+  jshr j2, j2, j3
+  jldi j3, 1
+  jsub j2, j2, j3
+  jsub j3, j2, j10
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, dl_n
+  jadd j10, j2, j1
+dl_n:
+  jldi j2, 16
+  jadd j9, j9, j2
+  dl_lap:
+    jldi j1, 0
+    jjz j10, dl_done
+    jld j5, j9, 0
+    jjz j5, dl_next
+    jst j9, j1, TI
+    jst j10, j1, TJ
+    jldi j2, DIA
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, TI
+    jld j10, j1, TJ
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j9, 0
+    jmul j2, j2, j3
+    jld j3, j1, DIAH
+    jadd j2, j2, j3
+    jst j2, j1, DIAH
+  dl_next:
+    jldi j2, 16
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp dl_lap
+dl_done:
+  jldi j1, 0
+  jret
+
+; Its diary, when it thought something, written back to its house. Uses j1-j14.
+dia_write:
+  jldi j1, 0
+  jld j2, j1, DIAW
+  jjz j2, dw_done
+  jld j2, j1, DIA
+  jjz j2, dw_done
+  jld j11, j1, DIA + 16         ; {1, how many}, then each {print, times}
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jst j11, j1, DIAN
+  jcall room
+  jldi j1, 0
+  jst j13, j1, DIAB
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, DIA + 16
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j8, j13, j2
+  jld j9, j1, DIA
+  jld j10, j1, DIA + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  dw_lap:
+    jjz j10, dw_file
+    jld j2, j9, 0
+    jjz j2, dw_next
+    jst j2, j8, 0
+    jld j2, j9, 8
+    jst j2, j8, 8
+    jldi j2, 16
+    jadd j8, j8, j2
+  dw_next:
+    jld j2, j1, DIA + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp dw_lap
+dw_file:
+  jldi j10, 12
+  jldi j11, S_DIA
+  jldi j12, 6
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_DIA
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, dw_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, DIAB
+  jld j12, j1, DIAN
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+dw_done:
   jldi j1, 0
   jret
 
@@ -6091,6 +6323,7 @@ qo_said2:
   jldi j1, S_NOFIT
   jcall puts
 qo_done:
+  jcall dia_write
   jjmp want_write
 
 ; The window WA WK WB met by a core of a question (GMODE 4: what the book says; 5: what it deduces). Uses j1-j14.

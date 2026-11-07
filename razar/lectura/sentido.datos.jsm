@@ -73,6 +73,7 @@ times 840h - $ db 0
 db 'flechas (palabras que viven en un limite que la mayoria no cierra):', 0
 times 8C0h - $ db 0
 db 'siluetas', 0
+db 'diario', 0
 times 8D0h - $ db 0
 db 'pegamentos: ', 0
 times 8E0h - $ db 0

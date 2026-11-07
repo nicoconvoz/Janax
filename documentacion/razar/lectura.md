@@ -2424,3 +2424,21 @@ poner y cómo ponerlo"*; y la semilla, *"una mezcla de su genoma con la libertad
   - el Razar B (nacido preguntando por la ley) piensa "isaac y el dios", y después "dios de abraham";
   - en las preguntas de control, las respuestas siguen idénticas y los pensamientos bajan de 946 líneas a 28.
 
+## Lo que piensa lo forma (2026-11-07)
+
+El Capitán: que lo que piensa también lo cambie.
+
+- **Pensar algo cuenta como leerlo una vez más.**
+  - Cada pensamiento elegido queda en el diario de su casa (`diario`: qwords {1, cuántos}, cada uno {huella, veces}).
+  - La huella es por letras: la palabra, el medio de la estructura y la respuesta (`th_tkey`). Va solo la huella, nunca
+    las letras.
+- **Cómo pesa (`th_votes`):** la próxima vez que esa rama es candidata, cada vez que la pensó vota como un hecho más,
+  con las mismas veces que los libros siguieron con su estructura. No hay número inventado: un pensamiento vale lo que
+  una lectura.
+- **Su historia incluye lo que pensó:** la huella del diario (`DIAH`) entra en la semilla, así después de pensar elige
+  desde otro lugar.
+- **Medido:** el Razar B preguntó cuatro veces "¿de quién es hijo jacob?" en su casa.
+  - Las tres primeras pensó "isaac y jacob", y el diario lo fue reforzando.
+  - La cuarta, con lo pensado ya en su historia, tomó otro camino: "isaac y el dios", y de ahí "dios de jacob".
+  - Las preguntas de control dan respuestas idénticas.
+
