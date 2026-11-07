@@ -654,7 +654,7 @@ l_unit:
   jldi j4, 1
   jsub j3, j3, j4
   jjnz j3, lu_put
-  jcall r_mark
+  jcall renglon_mark
 lu_put:
   jldi j1, 0
   jldi j2, 0
@@ -669,7 +669,7 @@ lu_none:
 
 ; Where the next renglon starts: the byte after the one being read (the end of the book, past it), at ROFF. Uses
 ; j1-j5.
-r_mark:
+renglon_mark:
   jldi j1, 0
   jld j3, j1, NBYTES
   jld j4, j1, LEFT
