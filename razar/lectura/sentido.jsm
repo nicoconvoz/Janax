@@ -49,7 +49,7 @@ S_GOES  = 680h
 S_OTHER = 6C0h
 S_ASKQ  = 700h                  ; a question: its line, an answer, said by the book, deduced, no relation fits
 S_ANS   = 740h
-S_SAIDQ = 780h
+S_ENG   = 780h                  ; "tablero/enganches-"
 S_DEDQ  = 7C0h
 S_NOFIT = 800h
 S_ARROW = 840h                  ; the arrows found
@@ -243,6 +243,7 @@ THE   = 0E68h
 THF   = 0E70h
 THI   = 0E78h
 THG   = 0E80h
+CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -298,10 +299,12 @@ jcall gather
 jldi j1, 0                      ; eaten: what it proved between skeletons goes to the library, and nothing is asked
 jld j2, j1, EATON
 jjz j2, not_eating
-jcall arrows_calc               ; and what its own questions taught
+jcall arrows_calc               ; and what its own questions taught, and its compositions
 jcall qa_scan
+jcall glue_scan
 jcall eat_write
 jcall qa_eat
+jcall eng_eat
 jjmp finish
 not_eating:
 
@@ -362,9 +365,9 @@ jcall putch
 jcall flush
 jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
 jcall qa_scan                   ; the book's own questions, and the answers next to them
+jcall glue_count                ; how the book joins its constructions
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall qa_write_out              ; (and what the books' questions taught, the library's summed in)
-jcall glue_count                ; how the book joins its constructions
 jcall sk_report
 jcall cores
 jjmp finish
@@ -2502,6 +2505,11 @@ pqf_done:
 ; how often each glue joins two facts, and each construction (skeleton, glue, skeleton) proved twice or more. Nothing
 ; is named: the glues come out of the book. Uses j1-j14.
 glue_count:
+  jcall glue_scan
+  jjmp glue_report
+
+; The facts listed and their joinings counted (GFL, GLT, GKT), nothing written. Uses j1-j14.
+glue_scan:
   jldi j1, 0
   jld j11, j1, NTOK             ; (three windows a unit at most, each fact 24 bytes)
   jldi j2, 72
@@ -2603,7 +2611,8 @@ glue_count:
     jst j2, j1, GI
     jjmp gc_fact
 gc_report:
-  jjmp glue_report
+  jldi j1, 0
+  jret
 
 ; Two facts met: the first at GP (its end GLE), the other GJ units on, its skeleton GK2. The glue's print (how far, and
 ; each unit between) counted at GLT {key, times, where it was seen, how far}, and the construction at GKT. Uses j1-j14.
@@ -3072,6 +3081,372 @@ th_fact:
 thf_none:
   jldi j1, 0
   jldi j2, 0
+  jret
+
+; What this book's compositions teach to think with (think), into the library: "tablero/enganches-" and the print of
+; the book's bytes (salted 5: written once, as the turns). How many times the book went on from a word another fact
+; ended on ("=") with each skeleton, whatever skeleton came before (plastic, as think asks), its middle by letters (a
+; word's number is this reading's only). Qwords {1, how many}, each {times, its pieces} and each piece {its bytes,
+; its letters padded}. They are counts: they add up over every book. Uses j1-j14.
+eng_eat:
+  jldi j1, 0
+  jld j2, j1, EATB
+  jjz j2, ee2_done
+  jld j2, j1, GKT
+  jjz j2, ee2_done
+  jldi j2, CKT                  ; by skeleton, summed over what came before
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, GKT
+  jld j10, j1, GKT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  ee2_sum:
+    jldi j1, 0
+    jjz j10, ee2_summed
+    jld j2, j9, 0
+    jjz j2, ee2_snext
+    jld j2, j9, 40
+    jjnz j2, ee2_snext
+    jst j9, j1, TI
+    jst j10, j1, TJ
+    jld j5, j9, 32
+    jldi j2, CKT
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, TI
+    jld j10, j1, TJ
+    jld j2, j4, 8
+    jld j3, j9, 8
+    jadd j2, j2, j3
+    jst j2, j4, 8
+  ee2_snext:
+    jld j2, j1, GKT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp ee2_sum
+ee2_summed:
+  jldi j2, 16                   ; its bytes
+  jst j2, j1, QLW
+  jst j1, j1, QLN
+  jst j1, j1, QLS
+  jcall ee2_walk
+  jldi j1, 0
+  jld j11, j1, QLW
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QLC
+  jldi j2, 1
+  jst j2, j13, 0
+  jld j2, j1, QLN
+  jst j2, j13, 8
+  jldi j2, 16
+  jadd j2, j13, j2
+  jst j2, j1, QLP
+  jldi j2, 1
+  jst j2, j1, QLS
+  jcall ee2_walk                ; written
+  jldi j1, 0
+  jldi j11, 64
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ELAB
+  jld j5, j1, EATB
+  jldi j3, 5
+  jxor j5, j5, j3
+  jld j3, j1, FNVP
+  jmul j5, j5, j3
+  jldi j6, S_ENG
+  jcall ew_label
+  jldi j10, 12
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, QLN
+  jjz j2, ee2_done
+  jldi j10, 4
+  jld j11, j1, ELAB
+  jldi j12, 34
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ee2_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, QLC
+  jld j12, j1, QLW
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ee2_done:
+  jldi j1, 0
+  jret
+
+; Every skeleton of CKT: counted with its bytes (QLS 0: QLN, QLW), or written at QLP (QLS 1). Uses j1-j14.
+ee2_walk:
+  jldi j1, 0
+  jld j9, j1, CKT
+  jld j10, j1, CKT + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  ee2w_lap:
+    jldi j1, 0
+    jjz j10, ee2w_done
+    jld j2, j9, 0
+    jjz j2, ee2w_next
+    jst j9, j1, TI
+    jst j10, j1, TJ
+    jld j2, j9, 0               ; its pieces
+    jcall find_mid
+    jldi j1, 0
+    jld j2, j12, 0
+    jjz j2, ee2w_back
+    jldi j13, EBUF
+    jcall m_collect
+    jldi j1, 0
+    jst j2, j1, EN2
+    jjz j2, ee2w_back
+    jld j3, j1, QLS
+    jjz j3, ee2w_size
+    jld j4, j1, QLP             ; {times, pieces}
+    jld j9, j1, TI
+    jld j3, j9, 8
+    jst j3, j4, 0
+    jst j2, j4, 8
+    jldi j3, 16
+    jadd j4, j4, j3
+    jst j4, j1, QLP
+    jjmp ee2w_pieces
+  ee2w_size:
+    jld j3, j1, QLW
+    jldi j4, 16
+    jadd j3, j3, j4
+    jst j3, j1, QLW
+  ee2w_pieces:
+    jld j2, j1, QLN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QLN
+    jst j1, j1, EK
+    ee2w_piece:
+      jldi j1, 0
+      jld j2, j1, EK
+      jld j3, j1, EN2
+      jsub j3, j2, j3
+      jjz j3, ee2w_back
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j2, j3, EBUF
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, ROOMI
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jld j5, j3, 16            ; its bytes, its letters
+      jld j6, j3, 8
+      jld j4, j1, ROOMA
+      jadd j6, j6, j4
+      jldi j7, 7
+      jadd j8, j5, j7
+      jldi j7, -8
+      jand j8, j8, j7
+      jldi j7, 8
+      jadd j8, j8, j7
+      jld j3, j1, QLS
+      jjnz j3, ee2w_put
+      jld j3, j1, QLW
+      jadd j3, j3, j8
+      jst j3, j1, QLW
+      jjmp ee2w_pnext
+    ee2w_put:
+      jld j4, j1, QLP
+      jst j5, j4, 0
+      jadd j3, j4, j8
+      jst j3, j1, QLP
+      jldi j3, 8
+      jadd j4, j4, j3
+      jldi j3, 1
+      jwhile j5
+        jldb j7, j6, 0
+        jstb j7, j4, 0
+        jadd j6, j6, j3
+        jadd j4, j4, j3
+        jsub j5, j5, j3
+      jwend
+    ee2w_pnext:
+      jld j2, j1, EK
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, EK
+      jjmp ee2w_piece
+  ee2w_back:
+    jldi j1, 0
+    jld j9, j1, TI
+    jld j10, j1, TJ
+  ee2w_next:
+    jld j2, j1, CKT + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp ee2w_lap
+ee2w_done:
+  jldi j1, 0
+  jret
+
+; One file of compositions (SXR, SXN bytes): each skeleton this reading knows (all its pieces are words it read) adds
+; its times to GKT as a composition from any skeleton by the same core, as think asks. Something that does not hold
+; together (past the file, a piece longer than a word can be) ends the file. Uses j1-j14.
+pe_file:
+  jldi j1, 0
+  jld j9, j1, SXR
+  jld j2, j9, 0
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjnz j2, pef_done
+  jld j2, j9, 8
+  jst j2, j1, QLW
+  jld j2, j1, SXN
+  jadd j2, j9, j2
+  jst j2, j1, QLH               ; (its end)
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j9, j1, QLK
+  pef_lap:
+    jldi j1, 0
+    jld j2, j1, QLW
+    jjz j2, pef_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, QLW
+    jld j9, j1, QLK
+    jldi j2, 16                 ; {times, pieces} inside?
+    jadd j2, j9, j2
+    jld j3, j1, QLH
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, pef_done
+    jld j2, j9, 0
+    jst j2, j1, QLP
+    jld j2, j9, 8
+    jst j2, j1, QLC
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, pef_done
+    jldi j2, 16
+    jadd j9, j9, j2
+    jst j9, j1, QLK
+    jld j2, j1, FNVO            ; the skeleton's key, as gather makes it
+    jst j2, j1, QLQ
+    jst j1, j1, QLS             ; (1: a piece this reading never read)
+    jld j2, j1, QLC
+    jst j2, j1, QLN
+    pef_piece:
+      jldi j1, 0
+      jld j2, j1, QLN
+      jjz j2, pef_key
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, QLN
+      jld j9, j1, QLK
+      jldi j2, 8
+      jadd j2, j9, j2
+      jld j3, j1, QLH
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, pef_done
+      jld j4, j9, 0
+      jldi j3, 63
+      jsar j3, j4, j3
+      jjnz j3, pef_done
+      jldi j3, 255
+      jsub j3, j3, j4
+      jldi j5, 63
+      jsar j3, j3, j5
+      jjnz j3, pef_done
+      jldi j3, 7
+      jadd j5, j4, j3
+      jldi j3, -8
+      jand j5, j5, j3
+      jadd j5, j2, j5
+      jld j3, j1, QLH
+      jsub j3, j3, j5
+      jldi j6, 63
+      jsar j3, j3, j6
+      jjnz j3, pef_done
+      jst j5, j1, QLK
+      jst j4, j1, WLEN
+      jldi j6, 0
+      pef_letter:
+        jsub j3, j6, j4
+        jjz j3, pef_letters
+        jadd j3, j2, j6
+        jldb j3, j3, 0
+        jstb j3, j6, WBUF
+        jldi j3, 1
+        jadd j6, j6, j3
+        jjmp pef_letter
+    pef_letters:
+      jcall word_id
+      jldi j1, 0
+      jldi j3, 1
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, pef_known
+      jldi j3, 1
+      jst j3, j1, QLS
+      jjmp pef_piece
+    pef_known:
+      jadd j3, j2, j1
+      jld j2, j1, QLQ
+      jcall hw
+      jst j2, j1, QLQ
+      jjmp pef_piece
+  pef_key:
+    jld j2, j1, QLS
+    jjnz j2, pef_lap
+    jld j2, j1, QLQ
+    jld j3, j1, QLC
+    jcall hw
+    jjnz j2, pef_k
+    jldi j2, 1
+  pef_k:
+    jst j2, j1, QLQ
+    jld j4, j1, FNVP            ; its composition's key in GKT, the library's own
+    jldi j3, 5
+    jxor j5, j2, j3
+    jmul j5, j5, j4
+    jjnz j5, pef_k2
+    jldi j5, 1
+  pef_k2:
+    jldi j2, GKT
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jld j3, j1, QLP
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j1, QLQ
+    jst j2, j4, 32
+    jst j1, j4, 16
+    jst j1, j4, 40
+    jjmp pef_lap
+pef_done:
+  jldi j1, 0
   jret
 
 ; j2 = 1 if the building QAT to QAI, closed by limit QAX, asks: an arrow of it whose voted limit is QAX. Uses j1-j8.
@@ -4765,15 +5140,24 @@ ll_listed:
     jldi j4, 63
     jsar j3, j3, j4
     jjnz j3, ll_next
-    jldi j3, 8                  ; (or "tablero/preguntas-": what the books' questions taught)
-    jadd j3, j9, j3
-    jldi j4, S_ESQ
+    jldi j3, 8                  ; (or "tablero/preguntas-": what the books' questions taught; "tablero/enganches-":
+    jadd j3, j9, j3             ; their compositions) -> QLC 0 turns, 1 questions, 2 compositions
+    jldi j4, S_PRQ
+    jldi j5, 1
+    jst j5, j1, QLC
     jldb j5, j3, 8
     jldi j6, 112
     jsub j5, j5, j6
+    jjz j5, ll_kind
+    jldi j4, S_ENG
+    jldi j5, 2
     jst j5, j1, QLC
-    jjnz j5, ll_kind
-    jldi j4, S_PRQ
+    jldb j5, j3, 9
+    jldi j6, 110
+    jsub j5, j5, j6
+    jjz j5, ll_kind
+    jldi j4, S_ESQ
+    jst j1, j1, QLC
   ll_kind:
     jldi j5, 18
     ll_cmp:
@@ -4798,8 +5182,14 @@ ll_listed:
     jsar j2, j2, j3
     jjnz j2, ll_next
     jld j2, j1, QLC
-    jjnz j2, ll_turns
+    jjz j2, ll_turns
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjnz j2, ll_eng
     jcall pq_file
+    jjmp ll_next
+  ll_eng:
+    jcall pe_file
     jjmp ll_next
   ll_turns:
     jcall ed_decode

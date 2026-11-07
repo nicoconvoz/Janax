@@ -64,7 +64,7 @@ db 'pregunta: ', 0
 times 740h - $ db 0
 db '  ', 0
 times 780h - $ db 0
-db '   (el libro dice: ', 0
+db 'tablero/enganches-', 0
 times 7C0h - $ db 0
 db ' (lo deduje)', 0
 times 800h - $ db 0

@@ -2331,3 +2331,24 @@ solamente sino la pregunta que ella misma se hace o lo que analiza... y eso es u
     otras siluetas, tienen que venir de la biblioteca;
   - y para seguir a una palabra nueva tiene que poder ir a releer sus renglones.
 
+## Las composiciones viajan a la biblioteca (2026-11-07)
+
+Un pedazo releído no prueba composiciones, así que en la charla real Razar no pensaba. Ahora pasa lo mismo que con las
+otras siluetas:
+
+- **Al comer** (`eng_eat`), cada libro entero deja `tablero/enganches-<huella de sus bytes>`, con sal 5. Guarda cuántas
+  veces siguió desde una palabra donde terminaba otro hecho, con cada esqueleto, sumado sobre lo que venía antes (lo
+  plástico que pregunta `think`).
+  - El medio se guarda por sus letras, porque el número de una palabra es solo de esa lectura.
+  - El archivo son qwords {1, cuántas}, cada una {veces, piezas}, y cada pieza {bytes, letras rellenas}.
+- **Al contestar** (`pe_file`), cada esqueleto cuyas piezas conoce esta lectura rehace su llave igual que `gather` y
+  suma sus veces a `GKT`. `glue_count` ahora corre antes de `lib_load`, que es quien suma.
+- **Medido** sobre una copia de la biblioteca real (22 libros):
+  - "¿qué es janax?" → "janax es determinista", y piensa: `determinista( el ? -> determinista( el libro`,
+    `libro de ? -> libro de thomas`;
+  - las preguntas de control sobre NT + Asimov dan respuestas y pensamientos idénticos.
+- **Lo que falta:**
+  - los archivos pesan 643 KB en qwords para 22 libros, y hay que pasarlos a bits como las vueltas;
+  - "¿qué es razar?" todavía no piensa, porque el pedazo no tiene hechos que arranquen en "autónomo" ni en
+    "determinista". Para seguir a una palabra nueva tiene que ir a releer sus renglones.
+
