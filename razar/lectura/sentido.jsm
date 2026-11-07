@@ -68,6 +68,7 @@ S_QAL   = 0AE0h                 ; what they taught
 S_GLU   = 8D0h                  ; the glue between constructions
 S_GLD   = 8E0h
 S_DIA   = 8C9h                  ; "diario": what it thought
+S_PNSE  = 9D8h                  ; " (lo pense)": an answer it thought
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
@@ -234,6 +235,7 @@ GT2   = 0DE8h
 GJ    = 0DF0h
 GK2   = 0DF8h
 GT3   = 0E00h
+THGO  = 0E08h                   ; 1 if the branch chosen asks what the question asks
 THX   = 0E10h                   ; thinking on: the word and the skeleton it goes on from, the words thought on {key} (a
 THCH  = 0E18h                   ; (the route so far) table that grows), the best composition's times, its skeleton, the word that answers
 TVT   = 0E20h                   ; it, walking, its skeleton's entry, a skeleton looked for, a fact walked, a word
@@ -246,6 +248,7 @@ THE   = 0E68h
 THF   = 0E70h
 THI   = 0E78h
 THG   = 0E80h
+THWG  = 0E88h                   ; the votes of the branches that ask what the question asks
 WNT   = 0EB0h                   ; the words it wants to read again (pensar): by word {key} (a table that grows), their
 PNB   = 0ED0h                   ; letters a line each (a room that grows), its bytes, its room's bytes
 PNN   = 0ED8h
@@ -272,6 +275,7 @@ DIAB  = 0FA8h
 THSN  = 0FB0h
 THK2  = 0FD0h
 THVV  = 0FD8h
+TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
 DRC   = 0FE0h                   ; by thought, the different routes it was reached by {key, routes} (a table that grows)
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
@@ -2938,6 +2942,16 @@ think:
   jcall dia_load
 th_ready:
   jcall th_seed
+  jldi j2, TCS                  ; the question is a recipe: what the answer already used of its furniture (its core and
+  jldi j3, 8                    ; its middle's) is spent
+  jcall pl_new
+  jldi j1, 0
+  jld j5, j1, QCW
+  jldi j2, TCS
+  jcall pl_take
+  jldi j1, 0
+  jld j12, j1, WSK
+  jcall th_spend
   jldi j2, TVT
   jldi j3, 8
   jcall pl_new
@@ -2970,20 +2984,27 @@ th_ready:
     jadd j2, j2, j3
     jst j2, j1, THQH
     jst j1, j1, THW             ; its branches weighed: each fact that may go on votes with the times the books went
-    jst j1, j1, THPS            ; on with its structure (a pair said n times votes n times)
+    jst j1, j1, THWG            ; on with its structure (a pair said n times votes n times); those that ask what the
+    jst j1, j1, THPS            ; question asks apart
     jcall th_branches
     jldi j1, 0
-    jld j2, j1, THW
-    jjnz j2, th_pick
-    jld j2, j1, THX             ; none: a word it ran out of facts on
+    jld j2, j1, THWG            ; no branch of the question's: the question still points there, read it again
+    jjnz j2, th_some
+    jld j2, j1, THX
     jcall want_word
-    jjmp th_lap
+    jldi j1, 0
+  th_some:
+    jld j2, j1, THW
+    jjz j2, th_lap              ; (none at all: a word it ran out of facts on)
   th_pick:
     jcall th_rand               ; its choice: the seed's lottery over the votes (what it does not choose it does not say)
     jldi j1, 0
     jldi j3, 1
     jshr j2, j2, j3
+    jld j3, j1, THWG            ; (the question guides: among its own branches first, if it has some)
+    jjnz j3, th_among
     jld j3, j1, THW
+  th_among:
     jdiv j4, j2, j3
     jmul j4, j4, j3
     jsub j2, j2, j4
@@ -3115,18 +3136,33 @@ th_branches:
     jadd j12, j4, j1
     jcall sk_word
     jjz j2, thb_lap
-    jcall th_twice              ; and the fact itself said twice at least (the anecdote rule)
-    jjz j2, thb_lap
-    jcall th_votes              ; (and what it thought of it before, as one more reading)
+    jcall th_goal               ; the question guides it? (said once is enough then, as for an answer the book says)
     jldi j1, 0
+    jst j2, j1, THGO
+    jjnz j2, thb_guided
+    jcall th_twice              ; free: the fact itself said twice at least (the anecdote rule)
+    jjz j2, thb_lap
+  thb_guided:
+    jcall th_votes              ; (and what it thought of it before, as one more reading)
     jld j2, j1, THPS
     jjnz j2, thb_choose
     jld j2, j1, THW             ; its votes
     jld j3, j1, THVV
     jadd j2, j2, j3
     jst j2, j1, THW
+    jld j2, j1, THGO
+    jjz j2, thb_lap
+    jld j2, j1, THWG
+    jld j3, j1, THVV
+    jadd j2, j2, j3
+    jst j2, j1, THWG
     jjmp thb_lap
   thb_choose:
+    jld j2, j1, THWG            ; (only among the question's own, if it has some)
+    jjz j2, thb_any
+    jld j2, j1, THGO
+    jjz j2, thb_lap
+  thb_any:
     jld j2, j1, THP             ; the place falls in its votes?
     jld j3, j1, THVV
     jsub j4, j2, j3
@@ -3136,6 +3172,7 @@ th_branches:
     jjz j4, thb_lap
     jcall th_note               ; chosen: thought once more (its diary)
     jcall th_say                ; asked and answered
+    jcall th_answer             ; (and if it asks what the question asks, an answer it thought)
     jldi j1, 0
     jld j2, j1, THY
     jjmp th_push
@@ -3614,6 +3651,106 @@ dw_file:
   jcall ask
 dw_done:
   jldi j1, 0
+  jret
+
+; j2 = 1 if the branch (THE, THY) asks what the question asks (Capitan, 2026-11-07: "the guide is the furniture"):
+; a word of its structure's middle is furniture of the question (said in it, and no foundation of the house: "de",
+; "el" are structure, "hijo", "padre" are what it is about) the thought has not spent yet (TCS: the question is a
+; recipe, each piece used once), and the word it answers with is not said there. Uses j1-j11.
+th_goal:
+  jldi j1, 0
+  jld j2, j1, THY
+  jcall q_has
+  jjnz j2, thgo_no
+  jldi j1, 0
+  jld j12, j1, THE
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jldi j11, 1
+  jwhile j10
+    jldi j1, 0
+    jadd j2, j9, j11
+    jcall tok_at
+    jst j2, j1, QWL
+    jcall g_core
+    jldi j1, 0
+    jjz j3, thgo_next
+    jld j2, j1, QWL
+    jcall q_has
+    jjz j2, thgo_next
+    jldi j1, 0
+    jld j5, j1, QWL             ; (and not spent yet by the thought)
+    jldi j2, TCS
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjnz j2, thgo_next
+    jldi j2, 1
+    jret
+  thgo_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j10, j10, j2
+  jwend
+thgo_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; The furniture of skeleton j12's middle (no mark, no foundation) spent (TCS). Uses j1-j11.
+th_spend:
+  jldi j1, 0
+  jld j9, j12, 16
+  jld j10, j12, 24
+  jldi j11, 1
+  jwhile j10
+    jldi j1, 0
+    jadd j2, j9, j11
+    jcall tok_at
+    jst j2, j1, QWL
+    jcall g_core
+    jldi j1, 0
+    jjz j3, ths2_next
+    jld j5, j1, QWL
+    jldi j2, TCS
+    jcall pl_take
+  ths2_next:
+    jldi j1, 0
+    jldi j2, 1
+    jadd j11, j11, j2
+    jsub j10, j10, j2
+  jwend
+  jret
+
+; The branch just said, if it asks what the question asks (THGO): an answer it thought, said as a sentence with its
+; mark, and counted as an answer. Uses j1-j11.
+th_answer:
+  jldi j1, 0
+  jld j2, j1, THGO
+  jjz j2, tha_done
+  jld j2, j1, QNA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jld j12, j1, THE              ; its furniture spent
+  jcall th_spend
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, THX
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, THE
+  jcall put_plain
+  jld j2, j1, THY
+  jcall putword
+  jldi j1, S_PNSE
+  jcall puts
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+tha_done:
   jret
 
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
@@ -6413,8 +6550,8 @@ qm_oth2:
   jldi j2, 10
   jcall putch
   jcall flush
-  jldi j1, 0                    ; and it thinks on from the word the answer ends with
-  jld j2, j1, WB
+  jldi j1, 0                    ; and it thinks on from what it just learned: the answer
+  jld j2, j1, QOTH
   jst j2, j1, THX
   jjmp think
 qm_turned:

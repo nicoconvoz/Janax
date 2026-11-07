@@ -2462,3 +2462,32 @@ distintos es corroboración independiente. Repetir el mismo camino no lo es.
 - **Medido**, 20 vueltas sin texto nuevo: 66 la primera, 132 desde la segunda, y ahí se queda. Las preguntas de
   control dan idéntico.
 
+## El pensamiento contesta: preguntas de dos pasos (2026-11-07)
+
+Pedido de la revisión: "respuestas idénticas" no prueba que pensar sirva. Hace falta un juego de preguntas que **solo
+se contestan pensando**.
+
+- **El juego (`pasos`)**, sobre el Nuevo Testamento, por la charla con su relectura:
+  - "¿de quién es hijo el padre de jacob?" → abraham;
+  - "¿de quién es hijo el padre de judá?" → isaac;
+  - "¿de quién es padre el hijo de isaac?" → judá.
+- **Antes: 0 de 3.** Daba solo el paso intermedio. Medido, encontré dos causas:
+  1. pensaba desde la última palabra de la oración ("jacob", lo preguntado) y no desde lo que acababa de aprender (la
+     respuesta, "isaac");
+  2. nada lo guiaba hacia lo que pedía la pregunta.
+- **Lo que cambió:**
+  - **Piensa desde la respuesta** (`QOTH`).
+  - **La guía son los muebles de la pregunta** (Capitán: *"la guía son los muebles"*). Una rama es guiada cuando el
+    medio de su estructura lleva un mueble de la pregunta: dicho en ella y que la casa no tiene por cimiento, como
+    "hijo" o "padre"; "de" y "el" son estructura (`th_goal`). El sorteo elige primero entre las guiadas. Si no hay
+    ninguna, pide releer esa palabra, porque la pregunta sigue apuntando ahí.
+  - **La pregunta es una receta:** cada mueble se gasta una vez (`TCS`, `th_spend`). La respuesta gasta su núcleo y
+    los muebles de su medio, y cada rama guiada gasta los suyos. Cuando no queda ninguno, la pregunta está contestada
+    y lo que sigue es pensamiento libre. Esto sacó la genealogía entera que seguía de largo.
+  - **Una rama guiada no necesita la regla de la anécdota:** la pregunta ya es el filtro, y alcanza con que el libro lo
+    diga, igual que para una respuesta directa. El pensamiento libre sigue con su freno.
+  - Lo pensado se dice como respuesta: "isaac, hijo de abraham (lo pense)".
+- **Ahora: 3 de 3**, cada una con su paso intermedio y sin ruido detrás. Las preguntas de control dan idéntico.
+- **Pendiente** (Capitán): una palabra de estructura puede ser el mueble cuando es de lo que se habla ("¿qué significa
+  con?"). Eso se sabe por el lugar que ocupa en la pregunta, no por la palabra.
+

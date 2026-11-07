@@ -94,6 +94,8 @@ times 9B8h - $ db 0
 db 'genoma', 0
 times 9C0h - $ db 0
 db 'tablero/esqueletos', 0
+times 9D8h - $ db 0
+db ' (lo pense)', 0
 times 0A00h - $ db 0
 db 'sentido: vueltas de esqueletos guardadas: ', 0
 times 0A40h - $ db 0
