@@ -3960,6 +3960,170 @@ qs_done:
   jldi j1, 0
   jret
 
+; Nothing fits the question, and it is about no structure: it still asks about its furniture (Capitan: "the guide is
+; the furniture"). Of each core of the question (furniture, no arrow), what the book says the most of it: the fact of
+; a proved skeleton with a word in its middle that has the core at one end and the reading says the most, said as a
+; sentence, and thought on from its other end (woven, as an answer the book says). Uses j1-j14.
+q_about:
+  jldi j1, 0
+  jld j9, j1, QQS
+  qa2_core:
+    jldi j1, 0
+    jld j2, j1, QQE
+    jsub j2, j9, j2
+    jjz j2, qa2_done
+    jst j9, j1, QP
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qa2_next
+    jst j2, j1, QCW
+    jcall g_core
+    jjz j3, qa2_next
+    jldi j1, 0
+    jld j2, j1, QCW
+    jcall is_arrow
+    jjnz j2, qa2_next
+    jcall qa2_most
+  qa2_next:
+    jldi j1, 0
+    jld j9, j1, QP
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qa2_core
+qa2_done:
+  jldi j1, 0
+  jret
+
+; The fact of the core QCW the reading says the most (QST by ends {key, times}): said and thought on. Uses j1-j14.
+qa2_most:
+  jldi j2, QST
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, QSB
+  jst j1, j1, QSN
+  qa2_fact:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, qa2_said
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jst j9, j1, QSE
+    jld j2, j9, 0
+    jcall tok_at
+    jst j2, j1, QSX
+    jld j9, j1, QSE
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, QSY
+    jld j3, j1, QCW             ; the core at one end
+    jld j4, j1, QSX
+    jsub j4, j4, j3
+    jjz j4, qa2_end
+    jld j4, j1, QSY
+    jsub j4, j4, j3
+    jjnz j4, qa2_fnext
+  qa2_end:
+    jld j9, j1, QSE             ; a skeleton with a word in its middle
+    jld j5, j9, 16
+    jst j5, j1, QSK
+    jldi j2, TMI
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, qa2_fnext
+    jst j4, j1, QSZ
+    jadd j12, j4, j1
+    jcall sk_word
+    jjz j2, qa2_fnext
+    jld j5, j1, QSX             ; its times
+    jld j6, j1, FNVP
+    jmul j5, j5, j6
+    jld j2, j1, QSY
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jld j2, j1, QSK
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jjnz j5, qa2_fk
+    jldi j5, 1
+  qa2_fk:
+    jldi j2, QST
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j3, j1, QSB
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qa2_fnext
+    jst j2, j1, QSB
+    jld j2, j1, QSX
+    jst j2, j1, QSA
+    jld j2, j1, QSY
+    jst j2, j1, QSO
+    jld j2, j1, QSZ
+    jst j2, j1, QSL
+  qa2_fnext:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QSN
+    jjmp qa2_fact
+qa2_said:
+  jld j2, j1, QSB
+  jjz j2, qa2_none
+  jld j2, j1, QNA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, QSA
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, QSL
+  jcall put_plain
+  jld j2, j1, QSO
+  jcall putword
+  jldi j1, 0                    ; thought on from its other end, as an answer the book says
+  jld j2, j1, QSL
+  jst j2, j1, WSK
+  jldi j2, 1
+  jst j2, j1, LINEO
+  jld j2, j1, QSO
+  jld j3, j1, QCW
+  jsub j3, j2, j3
+  jjnz j3, qa2_from
+  jld j2, j1, QSA               ; (the core ends it: from the other, on a new sentence)
+  jst j1, j1, LINEO
+  jst j2, j1, THX
+  jldi j2, 10
+  jcall putch
+  jcall flush
+  jjmp think
+qa2_from:
+  jst j2, j1, THX
+  jcall flush
+  jjmp think
+qa2_none:
+  jldi j1, 0
+  jret
+
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
 th_push:
   jldi j1, 0
@@ -6783,6 +6947,10 @@ qo_said2:
   jld j2, j1, QNA
   jjnz j2, qo_done
   jcall q_struct                ; nothing fits its furniture: is it asking about a structure?
+  jldi j1, 0
+  jld j2, j1, QNA
+  jjnz j2, qo_done
+  jcall q_about                 ; no: what the book says the most of its furniture
   jldi j1, 0
   jld j2, j1, QNA
   jjnz j2, qo_done

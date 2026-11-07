@@ -2561,3 +2561,18 @@ El Capitán: *"construime la oración, no el recorrido"*. Antes, cada pensamient
   padre de jacob?" → "isaac, padre de jacob" / "isaac, hijo de abraham (lo pense)" / "abraham, el dios de jacob".
   Las 24 respuestas de control siguen empezando igual que antes.
 
+## Sin relación que encaje: lo que el libro dice del mueble (2026-11-07)
+
+"¿quién es jacob?" daba "ninguna relación encaja". Si nada encaja y no se pregunta por una estructura, la pregunta
+igual pregunta por su mueble.
+- **`q_about`:** de cada núcleo de la pregunta (mueble, no flecha) dice el hecho de un esqueleto probado, con una
+  palabra en su medio, que lo tiene en una punta y que la lectura más dice. Después piensa desde la otra punta,
+  tejiendo como una respuesta del libro.
+- **Medido** (Nuevo Testamento): "¿quién es isaac?" → "dios de isaac"; "¿quién es herodes?" → "herodes, en efecto de
+  sus movimientos". Contesta, pero flojo: lo que más se dice suele ser lo que menos informa. Lo que corresponde es
+  elegir con la vara del juez (lo que ese hecho dice acá por encima de lo que dice en cualquier lado), no por cantidad.
+- **La causa de "¿quién es jacob?" y "¿quién es jesús?" está antes:** en esas lecturas la casa tiene a "jacob" (en la
+  biblioteca real) y a "jesús" (en el Nuevo Testamento) por **cimiento**, no por mueble (medido: `g_core` 0). Ningún
+  hecho los tiene en una punta, así que no hay qué decir. Los nombres muy frecuentes terminan clasificados como
+  estructura. Es un problema de la casa.
+
