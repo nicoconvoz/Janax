@@ -1946,5 +1946,16 @@ carpeta sin las viejas.
 calla las demás. Con cien piezas por libro, una lista de 4 KB dejaba afuera los índices. `carpeta.inc` lista de nuevo
 con el doble de lugar mientras quede menos lugar libre que el que podría ocupar una etiqueta más (8 + NORM_CAP bytes).
 
-**Lo que falta:** que `pregunta` lea este formato. Hasta entonces, los nidos nuevos no le dan pistas; pregunta sin ellos
-y no se rompe.
+**Preguntar levanta solo los pedazos que necesita** (`pistas.inc`). Por cada índice de la carpeta: busca partiendo
+por la mitad en la lista de pedazos dónde está cada palabra caminada, lee esos pedazos de a uno (y los devuelve al
+terminar), marca los renglones y lee del libro solo esos bytes. Las marcas de renglón se decodifican de a una página.
+Las cuentas del juez salen igual: de los pedazos donde están las palabras leídas, no del nido entero. En memoria hay
+el índice (13 KB), un pedazo (2,8 KB el mayor) y el mapa de renglones; antes era el nido entero (703 KB).
+
+**Verificado:** las seis preguntas de control dan respuestas idénticas, con los mismos bits del juez, al nido viejo,
+con el traductor y con el intérprete. La primera comparación dio 36 hechos de diferencia en todas: no era el lector,
+sino que la casa vieja tenía dos libros y la nueva uno. Con los mismos libros, idéntico. Tarda 0,08 s más por pregunta
+(0,50 s contra 0,41 s). ARM64 no se probó: el teléfono no estaba conectado.
+
+**Ojo:** `pregunta` ya no lee los nidos de la versión 2. Una casa vieja tiene que volver a comer sus libros (`come
+<dirección>`): el índice nuevo reemplaza al viejo.
