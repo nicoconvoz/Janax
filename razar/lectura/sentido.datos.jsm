@@ -37,12 +37,20 @@ times 1D0h - $ db 0
 db ', sola la otra en ', 0
 times 200h - $ db 0
 db ' | dado vuelta es: ', 0
+times 214h - $ db 0
+db 10, 'idiomas (por contexto):', 0
 times 240h - $ db 0
 db ' | es lo mismo que: ', 0
+times 258h - $ db 0
+db ' unidades, ', 0
 times 280h - $ db 0
 db ' | dicho y negado a la vez (', 0
+times 2A0h - $ db 0
+db ' palabras | signos:', 0
 times 2C0h - $ db 0
 db 'el significado de: ', 0
+times 2D8h - $ db 0
+db ' | palabras:', 0
 times 300h - $ db 0
 db '  deduce: ', 0
 times 340h - $ db 0

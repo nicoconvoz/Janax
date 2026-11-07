@@ -2908,3 +2908,30 @@ El Capitán, mirando "¿quién es pedro?" en la charla: *"me cuesta entender su 
   `E:\Program Files (x86)\Steam\logs\webhelper.txt` (186 KB). Las flechas de la biblioteca real salen de ahí ("type",
   "x86", "program", "files", "user", "enable": 2.433 de 3.002 palabras son flechas), y "quién" no es flecha. Por eso
   contesta sobre "quién". Es además un dato privado del Capitán dentro de la biblioteca.
+
+## Idiomas por contexto, con su manual (2026-11-07, pasos 1 y 2)
+
+El Capitán: *"fijate que el de Steam habla en inglés: otras reglas, reglas por idioma"*; *"el idioma se detecta por
+contexto, así sabés cómo separar los idiomas y no se te escapa ninguna instrucción"*; *"se crea un manual de
+diccionario por cada idioma, con su puntuación incluida"*.
+
+- **Probado y sacado antes:** agrupar libros por vocabulario. Un libro no tiene un idioma (la documentación es
+  castellano y código en el mismo renglón), y dio 37 grupos chiquitos: la pregunta leía uno solo.
+- **Paso 1, `idioma.inc` (`ln_scan`):** cada dos unidades vecinas de un renglón unen sus palabras, signos incluidos.
+  Cada palabra toma, vuelta tras vuelta, el idioma que más pesa entre sus vecinas, hasta que ninguna cambia
+  (*Chinese Whispers*, Biemann 2006). Orden y desempates fijos: da siempre igual. Ningún idioma tiene nombre
+  puesto: cada uno se llama por lo que más dice.
+- **El manual de cada idioma** sale en el informe (`ln_report`): su nombre, sus unidades y palabras, sus signos y sus
+  palabras más dichas. En una lectura de la biblioteca real (con logs de Steam) encontró tres idiomas grandes:
+  - `,`: el castellano (`, . ? ¿ « » ; —`; "de el y que la es a no");
+  - `:`: los números y fechas de los logs (`: " - / → =`; "11 2026 0 06 07");
+  - `)`: código y siglas (`) ( + ±`; "x86", "kb", "nt").
+- **Paso 2 (`ln_ask`):** la pregunta se lee al principio. Su idioma es el de la mayoría de sus palabras, y los
+  renglones de otro idioma (los que no tienen mayoría del idioma de la pregunta) salen de la lectura.
+- **Medido:** de los 12 controles, uno pierde dos líneas flojas ("¿quién nació en belén?" ya no dice "dicen que
+  nació" ni "dicen que soy"; sigue diciendo "belén de judea"). El resto, idéntico.
+- **Lo que todavía falla, y por qué (paso 3):** "¿quién es pedro?" sigue contestando sobre "quién", porque "pedro"
+  figura como flecha (`pedro(. 104/204)`). Esas flechas vienen de las siluetas de la biblioteca, que se suman sin
+  separar idiomas: en el mundo del castellano "." cierra la mayoría de los edificios, pero sumado con logs y código
+  deja de ser la mayoría, y entonces "pedro" parece vivir en un límite raro. Hace falta que la biblioteca guarde las
+  cuentas de límites por idioma.

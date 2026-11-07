@@ -75,6 +75,10 @@ S_INS   = 128h                  ; "instrucciones:"
 S_ORT   = 0A0h                  ; "tablero/ortografia": the spelling the books proved
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
+S_LNH   = 214h                  ; the languages' manuals (in the gaps)
+S_LNU   = 258h
+S_LNP   = 2A0h
+S_LNS   = 2D8h
 S_SKH   = 0D0h                  ; the structures with their kin, what they do alike and alone (in the gaps)
 S_SKI   = 158h
 S_SKJ   = 190h
@@ -432,6 +436,12 @@ jldi j0, 0
 jcall read_book
 jcall ort_load                  ; the spelling the books proved: a word that keeps no rule is read as its well written one
 jcall ort_fix
+jldi j1, 0                      ; its languages, by context; asked, it is read with the question's own
+jld j2, j1, EATON
+jjnz j2, ln_eating
+jcall ln_scan
+jcall ln_ask
+ln_eating:
 jldi j1, 0                      ; the whole book, none kept apart; the house (which are cores), the switch
 jldi j2, 0
 jshi j2, 4000h
@@ -546,6 +556,7 @@ jcall qa_write_out              ; (and what the books' questions taught, the lib
 jcall fam_build                 ; its families, from what the books share
 jcall ins_report                ; the dictionary of instructions, as the books proved it
 jcall sk_kinrep                 ; and its structures with their kin
+jcall ln_report                 ; and the manual of each language
 jcall sk_report
 jcall cores
 jjmp finish
@@ -7883,6 +7894,439 @@ skl_done:
   jldi j1, 0
   jret
 
+; The question's language (Capitan, 2026-11-07: "a dictionary manual for each language, its punctuation included"):
+; its words read here already (as cores reads them), each one's language counted; the most is its language (LNQ).
+; The renglones of another language are left out of the reading: it is read with its own language's manual. A renglon
+; is of the language most of its units are. Uses j1-j14.
+ln_ask:
+  jldi j1, 0
+  jst j1, j1, LNQ
+  jld j2, j1, PASS
+  jst j2, j1, LN4
+  jld j2, j1, LABEL
+  jst j2, j1, LN5
+  jld j2, j1, LABLEN
+  jst j2, j1, LN6
+  jldi j2, S_Q
+  jst j2, j1, LABEL
+  jldi j2, 1
+  jst j2, j1, LABLEN
+  jldi j2, 2
+  jst j2, j1, PASS
+  jst j1, j1, QN
+  jcall scan
+  jldi j1, 0
+  jst j1, j1, LNTN
+  jldi j9, 0
+  lna_unit:
+    jldi j1, 0
+    jld j2, j1, QN
+    jsub j2, j9, j2
+    jjz j2, lna_counted
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, lna_next           ; (a hole, a word the reading never had)
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, LNG
+    jadd j3, j3, j4
+    jld j8, j3, 0
+    jldi j3, 3
+    jshl j3, j8, j3
+    jld j4, j1, LNW
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjnz j2, lna_add
+    jld j5, j1, LNTN
+    jldi j6, 3
+    jshl j6, j5, j6
+    jld j7, j1, LNT
+    jadd j6, j6, j7
+    jst j8, j6, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, LNTN
+  lna_add:
+    jldi j4, 1
+    jadd j2, j2, j4
+    jst j2, j3, 0
+  lna_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp lna_unit
+lna_counted:
+  jldi j5, 0                    ; the most (the smaller of equals)
+  jldi j6, 0
+  jld j3, j1, LNTN
+  jld j4, j1, LNT
+  lna_b:
+    jjz j3, lna_have
+    jld j8, j4, 0
+    jldi j7, 3
+    jshl j7, j8, j7
+    jld j2, j1, LNW
+    jadd j7, j7, j2
+    jld j2, j7, 0
+    jst j1, j7, 0
+    jsub j7, j2, j5
+    jjz j7, lna_tie
+    jldi j10, 63
+    jsar j7, j7, j10
+    jjnz j7, lna_bnext
+    jadd j5, j2, j1
+    jadd j6, j8, j1
+    jjmp lna_bnext
+  lna_tie:
+    jsub j7, j8, j6
+    jldi j10, 63
+    jsar j7, j7, j10
+    jjz j7, lna_bnext
+    jadd j6, j8, j1
+  lna_bnext:
+    jldi j7, 8
+    jadd j4, j4, j7
+    jldi j7, 1
+    jsub j3, j3, j7
+    jjmp lna_b
+lna_have:
+  jst j6, j1, LNQ
+  jld j2, j1, LN4               ; (the reading as it was)
+  jst j2, j1, PASS
+  jld j2, j1, LN5
+  jst j2, j1, LABEL
+  jld j2, j1, LN6
+  jst j2, j1, LABLEN
+  jst j1, j1, QN
+  jjz j6, lna_done
+  jldi j9, 1                    ; each renglon: of its language, or out
+  lnk_ren:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, lna_done
+    jst j9, j1, LN1
+    jldi j10, 0                 ; (its units, and those of the question's language)
+    jldi j11, 0
+    lnk_unit:
+      jld j2, j1, NTOK
+      jsub j2, j9, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjz j2, lnk_end
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, ROOMT
+      jadd j3, j3, j4
+      jld j2, j3, 0
+      jjz j2, lnk_end
+      jldi j3, 1
+      jadd j10, j10, j3
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, LNG
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jld j4, j1, LNQ
+      jsub j3, j3, j4
+      jjnz j3, lnk_other
+      jldi j3, 1
+      jadd j11, j11, j3
+    lnk_other:
+      jldi j3, 1
+      jadd j9, j9, j3
+      jjmp lnk_unit
+  lnk_end:
+    jjz j10, lnk_next
+    jadd j3, j11, j11           ; most of it its language: kept
+    jsub j3, j10, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, lnk_next
+    jld j5, j1, LN1             ; else out
+    lnk_out:
+      jsub j3, j5, j9
+      jjz j3, lnk_next
+      jldi j3, 3
+      jshl j3, j5, j3
+      jld j4, j1, ROOMT
+      jadd j3, j3, j4
+      jst j1, j3, 0
+      jldi j3, 1
+      jadd j5, j5, j3
+      jjmp lnk_out
+  lnk_next:
+    jldi j3, 1
+    jadd j9, j9, j3
+    jjmp lnk_ren
+lna_done:
+  jldi j1, 0
+  jret
+
+; The manual of each language of the reading (the report): the languages with the most units first, each called by
+; the word it says the most, with its units and words, its marks (its punctuation) and its words said the most. Six
+; languages, twelve marks and eight words each: criterion, the report's size. Uses j1-j14.
+ln_report:
+  jldi j1, 0
+  jld j2, j1, LNG
+  jjz j2, lnr_done
+  jcall ln_units
+  jld j11, j1, NV               ; by language: its units (then minus, once said)
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, LN6
+  jldi j9, 1
+  lnr_sum:
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, lnr_summed
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, LNU
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jld j5, j1, LNG
+    jadd j5, j5, j3
+    jld j5, j5, 0
+    jldi j6, 3
+    jshl j5, j5, j6
+    jld j6, j1, LN6
+    jadd j5, j5, j6
+    jld j6, j5, 0
+    jadd j6, j6, j4
+    jst j6, j5, 0
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp lnr_sum
+lnr_summed:
+  jldi j1, S_LNH
+  jcall puts
+  jst j1, j1, LN5
+  lnr_lang:
+    jldi j1, 0
+    jld j2, j1, LN5
+    jldi j3, 6
+    jsub j3, j2, j3
+    jjz j3, lnr_out
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    lnr_most:
+      jld j2, j1, NV
+      jsub j2, j9, j2
+      jjz j2, lnr_got
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, LN6
+      jadd j3, j3, j4
+      jld j3, j3, 0
+      jsub j4, j11, j3
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjz j4, lnr_mnext
+      jadd j11, j3, j1
+      jadd j12, j9, j1
+    lnr_mnext:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp lnr_most
+  lnr_got:
+    jjz j12, lnr_out
+    jst j12, j1, LN3            ; this language
+    jldi j3, 3
+    jshl j3, j12, j3
+    jld j4, j1, LN6
+    jadd j3, j3, j4
+    jldi j4, 0
+    jsub j4, j4, j11
+    jst j4, j3, 0
+    jst j11, j1, LN4
+    jldi j2, 10
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 1                  ; its name: its word said the most
+    jst j2, j1, LN2
+    jcall lnr_words
+    jldi j2, 58
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, LN4
+    jcall putnum
+    jldi j1, S_LNU
+    jcall puts
+    jcall lnr_count
+    jcall putnum
+    jldi j1, S_LNP
+    jcall puts
+    jldi j2, 12                 ; its marks
+    jst j2, j1, LN2
+    jldi j2, 1
+    jst j2, j1, LN1
+    jcall lnr_words
+    jldi j1, S_LNS
+    jcall puts
+    jldi j2, 8                  ; its words
+    jst j2, j1, LN2
+    jst j1, j1, LN1
+    jcall lnr_words
+    jldi j1, 0
+    jld j2, j1, LN5
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LN5
+    jjmp lnr_lang
+lnr_out:
+  jldi j2, 10
+  jcall putch
+  jcall flush
+lnr_done:
+  jldi j1, 0
+  jret
+
+; The words of language LN3 -> j2 how many. Uses j1-j9.
+lnr_count:
+  jldi j1, 0
+  jldi j8, 0
+  jldi j9, 1
+  lnc_lap:
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, lnc_done
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, LNG
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j1, LN3
+    jsub j3, j3, j4
+    jjnz j3, lnc_next
+    jldi j3, 1
+    jadd j8, j8, j3
+  lnc_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp lnc_lap
+lnc_done:
+  jadd j2, j8, j1
+  jret
+
+; Of language LN3, its LN2 words said the most (LN1 1: marks; 0: words, no marks; LN2 1 alone: its name, any), each
+; after a space. Said ones are not said again (a list of them, at LNT). Uses j1-j14.
+lnr_words:
+  jldi j1, 0
+  jst j1, j1, LNTN
+  lnrw_lap:
+    jldi j1, 0
+    jld j2, j1, LNTN
+    jld j3, j1, LN2
+    jsub j3, j2, j3
+    jjz j3, lnrw_done
+    jldi j11, 0
+    jldi j12, 0
+    jldi j9, 1
+    lnrw_w:
+      jldi j1, 0
+      jld j2, j1, NV
+      jsub j2, j9, j2
+      jjz j2, lnrw_got
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, LNG
+      jadd j4, j4, j3
+      jld j4, j4, 0
+      jld j5, j1, LN3
+      jsub j4, j4, j5
+      jjnz j4, lnrw_next
+      jld j4, j1, LNU
+      jadd j4, j4, j3
+      jld j4, j4, 0
+      jsub j5, j11, j4
+      jldi j6, 63
+      jsar j5, j5, j6
+      jjz j5, lnrw_next
+      jld j2, j1, LN2             ; (its name: any word)
+      jldi j5, 1
+      jsub j2, j2, j5
+      jjz j2, lnrw_said
+      jst j4, j1, LNX
+      jadd j2, j9, j1
+      jcall w_mark
+      jldi j1, 0
+      jjz j3, lnrw_word
+      jldi j3, 1
+    lnrw_word:
+      jld j2, j1, LN1
+      jsub j2, j2, j3
+      jld j4, j1, LNX
+      jjnz j2, lnrw_next
+    lnrw_said:
+      jld j5, j1, LNTN            ; (said already?)
+      jld j6, j1, LNT
+      lnrw_s:
+        jjz j5, lnrw_take
+        jld j7, j6, 0
+        jsub j7, j7, j9
+        jjz j7, lnrw_next
+        jldi j7, 8
+        jadd j6, j6, j7
+        jldi j7, 1
+        jsub j5, j5, j7
+        jjmp lnrw_s
+    lnrw_take:
+      jadd j11, j4, j1
+      jadd j12, j9, j1
+    lnrw_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp lnrw_w
+  lnrw_got:
+    jjz j12, lnrw_done
+    jld j2, j1, LNTN
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, LNT
+    jadd j3, j3, j4
+    jst j12, j3, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LNTN
+    jld j2, j1, LN2
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjz j2, lnrw_name
+    jldi j2, 32
+    jcall putch
+  lnrw_name:
+    jldi j1, 0
+    jld j2, j1, LNTN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, LNT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jcall putword
+    jjmp lnrw_lap
+lnrw_done:
+  jldi j1, 0
+  jret
+
 ; The joiners it chains with (what joins is what turns: "pan y vino" is "vino y pan"): of the units whose "_ u _" (one
 ; piece between) turns on itself twice at least in this reading, the one that turns the most (QPJ, before the last
 ; clause) and the next (QPG, between the others; the first if there is no second). Uses j1-j14.
@@ -11651,3 +12095,4 @@ include 'pulso.inc'
 include 'organo.inc'
 include 'negacion.inc'
 include 'lectura.inc'
+include 'idioma.inc'
