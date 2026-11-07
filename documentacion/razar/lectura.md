@@ -2954,3 +2954,20 @@ diccionario por cada idioma, con su puntuación incluida"*.
   - controles: mismas respuestas (cambia sólo una cuenta interna de hechos, 4.458 → 3.714); dos pasos: 3/3.
 - **Pendiente:** guardar en la biblioteca los manuales por idioma (que sus cuentas de límites ya vengan por idioma, sin
   el peso por palabras), y el tope de 4.095 bytes con que `sentido` lee `come`.
+
+## Manuales por idioma en la biblioteca: probado y sacado (2026-11-07)
+
+El Capitán: *"guardá los manuales"*.
+
+- **Lo que se armó:** al comer, cada libro dejaba `tablero/lenguajes-` con el manual de cada idioma suyo (edificios,
+  qué signo cierra cuántos, contado por edificio, y su vocabulario de base). Al preguntar, cada manual votaba con sus
+  palabras a qué idioma de la lectura pertenece, y los de la pregunta sumaban sus cuentas.
+- **Por qué no entra:** el separador de idiomas sobre un libro entero corta un idioma en pedazos. El Nuevo
+  Testamento solo salió como 15 "idiomas" (agrupados alrededor de la coma, el punto…), cada uno con 2 palabras de
+  vocabulario. Con el peso "cuánto más que el azar" (la cura de Biemann), peor: 301. Con esos manuales, la pregunta por
+  Pedro pasó de 359 flechas a 2.472. En una lectura (más chica y con idiomas de verdad distintos) separa bien; sobre
+  un libro de un solo idioma, no.
+- **Queda** la versión que funciona: los idiomas se separan en cada lectura y las reglas se cuentan en el idioma de la
+  pregunta, pesadas por palabras.
+- **Lo que falta entender:** cuándo dos grupos son el mismo idioma. Los pedazos del castellano se tocan muchísimo
+  entre sí, y el castellano con el código casi nada. Esa diferencia está medida en el grafo y no la estamos usando.
