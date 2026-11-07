@@ -2107,3 +2107,12 @@ Siete de siete, con su porqué.
 - pasar esto a la charla, que usa la biblioteca de pistas. `sentido` lee el libro entero en cada consulta: unos 10.000
   millones de instrucciones y 12 s con estas cinco preguntas.
 
+**En la charla (2026-11-07):** una línea sin un `?` suelto es una pregunta hablada. `pregunta` camina las pistas en
+silencio y deja los renglones releídos en `libro` (ya no los borra: la charla limpia antes de cada pregunta), y
+`sentido` busca el mueble y la relación sobre ellos. **Medido: 2 de 7** sobre los renglones releídos, contra 7 de 7
+con el libro entero. Armando el pedazo solo con los lugares del mueble (idea del Capitán) los hechos están todos ("isaac,
+padre de jacob" está entre los 50 renglones de jacob), pero **la lógica no sale de un pedazo**: "quién" no aparece en
+él, así que no hay flecha, y en 50 renglones la casa no sabe que "el" es relleno. La casa, las flechas y los esqueletos
+que se dan vuelta se aprenden del libro entero, y el paso que sigue es guardarlos en la biblioteca al comer. De paso:
+la primera pasada del encaje ya no cuenta como mejor una respuesta que la pregunta ya dice.
+

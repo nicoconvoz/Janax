@@ -2163,7 +2163,11 @@ qh_no:
 ; j2 = 1 if the fit just found (QCV) is to be said: in the first pass it only raises the most (QBEST) and is not said;
 ; in the second, it is said when it explains that much. Uses j1-j3.
 q_best:
+  jldi j1, 0                    ; (an answer the question says already is no answer: it cannot be the best either)
+  jld j2, j1, QOTH
+  jcall q_has
   jldi j1, 0
+  jjnz j2, qb_no
   jld j2, j1, QCV
   jld j3, j1, QPASS
   jjnz j3, qb_say

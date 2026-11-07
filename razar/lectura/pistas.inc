@@ -641,17 +641,15 @@ pa_done:
   jret
 
 ; The round ends: something new to walk, written to "camino", and the round starts again saying nothing (36); nothing
-; new, its answer is said, and "libro" and "camino" go. Uses j1-j14.
+; new, its answer is said and "camino" goes. "libro" stays: what it read again is what a reasoning over it reads next
+; (the meaning, sentido.jsm, in the console), and a new question starts from nothing (the console clears both).
+; Uses j1-j14.
 clue_end:
   jldi j1, 0
   jld j2, j1, PZON
   jjz j2, ce_done
   jld j2, j1, PZNEWN
   jjnz j2, ce_again
-  jldi j10, 12
-  jldi j11, S_LIBRO
-  jldi j12, 5
-  jcall ask
   jldi j10, 12
   jldi j11, S_CAMINO
   jldi j12, 6
