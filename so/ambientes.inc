@@ -1830,6 +1830,7 @@ cabin_free:
 .room_lap:
         cmp     qword [rsi + RE_SIZE], 0
         je      .room_next              ; destroyed already
+        call    sala_measure            ; (the instrument of the rooms, if it is on)
         mov     rax, [rsi + RE_PLACE]
         shl     rax, 16
         shr     rax, 16

@@ -313,6 +313,23 @@ section '.data' data readable writeable
   rowing      dq 0                ; cabins being rowed right now
   remos       dq 1                ; how many rowers
   remos_env   db 'JANAX_REMOS', 0
+  salas_env   db 'JANAX_SALAS', 0     ; the instrument of the rooms: what each cabin asked for and what it used
+  salas_on    db 0
+  salas_live  db 0                ; (measuring a cabin that ends, not one remade)
+  SAL_TOP = 10
+  sal_asked   dq 0
+  sal_used    dq 0
+  sal_n       dq 0
+  sal_pick    dq 0
+  sal_top     dq 4 * SAL_TOP dup 0  ; the rooms that waste the most: {waste, asked, used, its number}
+  t_salas     db 'salas P', 0
+  t_salas2    db ': pedidas ', 0
+  t_salas3    db ' KB, usadas ', 0
+  t_salas4    db ' KB, salas ', 0
+  t_sala      db '  sala ', 0
+  t_sala2     db ': ', 0
+  t_sala3     db ' KB, usada ', 0
+  t_kb        db ' KB', 0
   STACK_SIZE_PARAM_IS_A_RESERVATION = 10000h
   plan_default: file 'pdp/semilla/planificador.bin'   ; the factory planner (ayudantes.inc)
   PLAN_DEFAULT_WORDS = ($ - plan_default) / 4
@@ -514,7 +531,11 @@ start:
         invoke  InitializeCriticalSection, kern_lock
         mov     eax, dword [sysinfo + 32] ; dwNumberOfProcessors: one rower per core
         mov     [remos], rax
-        invoke  GetEnvironmentVariableA, remos_env, env_value, 31   ; JANAX_REMOS: how many rowers
+        invoke  GetEnvironmentVariableA, salas_env, env_value, 31   ; JANAX_SALAS: the instrument of the rooms
+        test    eax, eax
+        jz      @f
+        mov     byte [salas_on], 1
+@@:     invoke  GetEnvironmentVariableA, remos_env, env_value, 31   ; JANAX_REMOS: how many rowers
         test    eax, eax
         jz      .rowers_known
         xor     eax, eax
@@ -3920,6 +3941,173 @@ ring_parent:
         mov     rsp, rbp
         pop     r11 r10 r9 r8 rdi rsi rdx rcx rbp
 .done:
+        ret
+
+; The instrument of the rooms (Capitan: "memory that adjusts itself, anywhere in Janax and Razar"; not hunting what is
+; oversized by belief: measuring it). The room at the cartel entry rsi of the cabin rbx, before it goes back: its
+; size, and how much of it was used: its eight-byte places that are not 0 (a lower bound: a 0 can be data, a counter
+; at 0; what it shows wasted is a lead, confirmed when it is fixed). Keeps every register but rax, rcx, rdx, r8-r11.
+sala_measure:
+        cmp     byte [salas_live], 0
+        je      .done
+        push    rsi rdi
+        mov     rax, [rsi + RE_PLACE]
+        shl     rax, 16
+        shr     rax, 16
+        mov     rcx, [rsi + RE_SIZE]
+        mov     rdi, rax                ; its eight-byte places that are not 0 (a sparse table shows too, not only an
+        mov     r8, rcx                 ; empty tail)
+        shr     r8, 3
+        xor     edx, edx
+        jmp     .qword
+.qword_lap:
+        cmp     qword [rdi], 0
+        je      @f
+        add     rdx, 8
+@@:     add     rdi, 8
+        dec     r8
+.qword:                                 ; while places are left
+        test    r8, r8
+        jnz     .qword_lap
+.found:
+        add     [sal_asked], rcx
+        add     [sal_used], rdx
+        inc     qword [sal_n]
+        mov     r8, rcx                 ; its waste, into the ten that waste the most (the least of them out)
+        sub     r8, rdx
+        mov     r9, [rsp + 8]           ; (its number: its entry in the cartel)
+        sub     r9, [rbx + P_ROOMS]
+        shr     r9, ROOM_ESHIFT
+        lea     r10, [sal_top]
+        xor     r11d, r11d              ; the least of the ten
+        mov     eax, 1
+        jmp     .least
+.least_lap:
+        mov     rdi, rax
+        shl     rdi, 5
+        mov     rsi, r11
+        shl     rsi, 5
+        mov     rsi, [r10 + rsi]
+        cmp     [r10 + rdi], rsi
+        jae     @f
+        mov     r11, rax
+@@:     inc     eax
+.least:                                 ; while there are places to look at
+        cmp     eax, SAL_TOP
+        jb      .least_lap
+        shl     r11, 5
+        cmp     [r10 + r11], r8
+        jae     .out
+        mov     [r10 + r11], r8
+        mov     [r10 + r11 + 8], rcx
+        mov     [r10 + r11 + 16], rdx
+        mov     [r10 + r11 + 24], r9
+.out:
+        pop     rdi rsi
+.done:
+        ret
+
+; "salas P<n>: pedidas <K> KB, usadas <K> KB, salas <n>", and the ten that waste the most, the most first; the
+; instrument emptied for the next cabin. With the lock.
+sala_report:
+        cmp     byte [salas_live], 0
+        je      .done
+        push    rsi rdi r12
+        lea     rdi, [line]
+        lea     rsi, [t_salas]
+        call    put_text
+        mov     rax, [rbx + P_ID]
+        call    put_decimal
+        lea     rsi, [t_salas2]
+        call    put_text
+        mov     rax, [sal_asked]
+        shr     rax, 10
+        call    put_decimal
+        lea     rsi, [t_salas3]
+        call    put_text
+        mov     rax, [sal_used]
+        shr     rax, 10
+        call    put_decimal
+        lea     rsi, [t_salas4]
+        call    put_text
+        mov     rax, [sal_n]
+        call    put_decimal
+        call    sala_line
+        mov     r12d, SAL_TOP           ; the most wasted first: each time the largest left
+        jmp     .one
+.one_lap:
+        lea     r10, [sal_top]
+        xor     r11d, r11d
+        mov     eax, 1
+        jmp     .most
+.most_lap:
+        mov     rdi, rax
+        shl     rdi, 5
+        mov     rsi, r11
+        shl     rsi, 5
+        mov     rsi, [r10 + rsi]
+        cmp     [r10 + rdi], rsi
+        jbe     @f
+        mov     r11, rax
+@@:     inc     eax
+.most:                                  ; while there are places to look at
+        cmp     eax, SAL_TOP
+        jb      .most_lap
+        shl     r11, 5
+        cmp     qword [r10 + r11 + 8], 0
+        je      .next
+        mov     [sal_pick], r11         ; (kept apart: writing the line keeps no scratch register)
+        lea     rdi, [line]
+        lea     rsi, [t_sala]
+        call    put_text
+        mov     rax, [sal_top + r11 + 24]
+        call    put_decimal
+        lea     rsi, [t_sala2]
+        call    put_text
+        mov     rax, [sal_top + r11 + 8]
+        shr     rax, 10
+        call    put_decimal
+        lea     rsi, [t_sala3]
+        call    put_text
+        mov     rax, [sal_top + r11 + 16]
+        shr     rax, 10
+        call    put_decimal
+        lea     rsi, [t_kb]
+        call    put_text
+        call    sala_line
+        lea     r10, [sal_top]
+        mov     r11, [sal_pick]
+        mov     qword [r10 + r11], 0
+        mov     qword [r10 + r11 + 8], 0
+.next:
+        dec     r12d
+.one:                                   ; while lines are left
+        test    r12d, r12d
+        jnz     .one_lap
+        xor     eax, eax
+        mov     [sal_asked], rax
+        mov     [sal_used], rax
+        mov     [sal_n], rax
+        lea     rdi, [sal_top]
+        mov     ecx, 4 * SAL_TOP
+        rep     stosq
+        mov     byte [salas_live], 0
+        pop     r12 rdi rsi
+.done:
+        ret
+
+; The line at [line]..rdi, ended and written. Keeps rbx, rsi, r12-r15.
+sala_line:
+        push    rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        mov     ax, 0A0Dh
+        stosw
+        lea     rax, [line]
+        sub     rdi, rax
+        invoke  WriteFile, [hout], line, rdi, written, 0
+        mov     rsp, rbp
+        pop     rbp
         ret
 
 ; The cabin rbx, not rowing, ends now with code 9, its line first (children that row end when their turn does).

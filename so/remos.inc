@@ -233,7 +233,10 @@ run_all:
         call    ring_parent             ; its parent's doorbell rings: it ended
         call    close_files             ; whatever the process left open
         call    orphans                 ; its children and what waited for its signature go up
+        mov     al, [salas_on]          ; (the instrument measures the rooms of a cabin that ends)
+        mov     [salas_live], al
         call    cabin_free              ; and everything it held goes back (ambientes.inc)
+        call    sala_report
         cmp     byte [quiet], 0
         jne     .back
         call    report
