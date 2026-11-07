@@ -2491,3 +2491,20 @@ se contestan pensando**.
 - **Pendiente** (Capitán): una palabra de estructura puede ser el mueble cuando es de lo que se habla ("¿qué significa
   con?"). Eso se sabe por el lugar que ocupa en la pregunta, no por la palabra.
 
+## Una estructura como mueble: "¿qué significa con?" (2026-11-07)
+
+El Capitán: *"la guía son los muebles, a menos que la estructura se trate como un mueble, por ejemplo qué significa
+'con'"*. Antes, la pregunta no encajaba con nada: "con" es cimiento y no quedaba ningún mueble que buscar.
+
+- **Cuándo es mueble, por su lugar (`q_struct`).** Una estructura une dos cosas, así que en el libro casi nunca cierra
+  un edificio.
+  - Si la última palabra de la pregunta es cimiento de la casa (ni marca ni flecha) y el libro la pone justo antes de
+    un límite menos seguido de lo que cierra un edificio en cualquier lado, entonces en la pregunta no une nada: se
+    está hablando de ella.
+  - La comparación es `fin / veces < edificios / unidades`, relativa al propio libro. No hay umbral fijo.
+- **Qué contesta:** el significado de una estructura es cómo se usa. Busca el hecho de su esqueleto `_ w _` (con la
+  llave que arma `gather`) que la lectura más dice, y lo dice como oración con "(asi se usa)".
+- **Medido** (Nuevo Testamento): "¿qué significa con?" → **"dios con nosotros (asi se usa)"**. Antes: ninguna
+  relación. Las preguntas de control dan idéntico, y las de dos pasos siguen en 3 de 3.
+- Solo entra cuando ningún mueble de la pregunta encontró respuesta.
+

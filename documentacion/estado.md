@@ -345,3 +345,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-07 — Lo que piensa lo forma: diario de pensamientos en su casa; pensar cuenta como una lectura más y entra en su semilla. Preguntando 4 veces lo mismo, a la cuarta piensa otro camino. Respuestas idénticas.
 2026-11-07 — Un camino, un voto: el diario cuenta rutas distintas, no repeticiones. 20 vueltas sin texto nuevo: votos 66→132 y quietos (antes subían hasta 990). Respuestas idénticas.
 2026-11-07 — El pensamiento contesta: juego de preguntas de dos pasos, 0/3 → 3/3. Piensa desde la respuesta, guiado por los muebles de la pregunta, que se gastan como receta. Controles idénticos.
+2026-11-07 — Estructura como mueble: '¿qué significa con?' → 'dios con nosotros (asi se usa)'. Se descubre por el lugar: cimiento al final de la pregunta, donde el libro casi nunca lo pone. Controles idénticos, dos pasos 3/3.

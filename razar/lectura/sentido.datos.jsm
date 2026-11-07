@@ -5,6 +5,8 @@ times 10h - $ db 0
 db 'p', 0
 times 18h - $ db 0
 db 'q', 0
+times 20h - $ db 0
+db ' (asi se usa)', 0
 times 40h - $ db 0
 db 'sentido: esqueletos=', 0
 times 80h - $ db 0

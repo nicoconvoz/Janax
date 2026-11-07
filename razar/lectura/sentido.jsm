@@ -69,6 +69,7 @@ S_GLU   = 8D0h                  ; the glue between constructions
 S_GLD   = 8E0h
 S_DIA   = 8C9h                  ; "diario": what it thought
 S_PNSE  = 9D8h                  ; " (lo pense)": an answer it thought
+S_USA   = 20h                   ; " (asi se usa)": how a structure asked about is used
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 
@@ -275,6 +276,18 @@ DIAB  = 0FA8h
 THSN  = 0FB0h
 THK2  = 0FD0h
 THVV  = 0FD8h
+QSW   = 5020h                   ; a question about a structure: its word, its times in the book, at an end; its
+QSO   = 5028h                   ; skeleton's key and entry; by fact {key, times} (a table that grows); the most, walking,
+QSL   = 5030h                   ; a fact's ends, the most said one's
+QSK   = 5038h
+QST   = 5040h
+QSE   = 5060h
+QSB   = 5068h
+QSN   = 5070h
+QSX   = 5078h
+QSY   = 5080h
+QSA   = 5088h
+QSZ   = 5090h
 TCS   = 5000h                   ; the question's furniture a thought already used {key} (a table that grows)
 DRC   = 0FE0h                   ; by thought, the different routes it was reached by {key, routes} (a table that grows)
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
@@ -3753,6 +3766,191 @@ th_answer:
 tha_done:
   jret
 
+; A question about a structure (Capitan, 2026-11-07: "the guide is the furniture, unless the structure is treated as
+; furniture: what does 'con' mean?"). Its last word, a foundation of the house (no mark, no arrow), is what it is
+; about when it stands where the book almost never puts it: right before a limit, less often than the book closes a
+; building anywhere (its buildings by its units: relative to the book, not a number). A structure joins two things,
+; so standing at the end it joins nothing: it is mentioned, not used. Its meaning is how it is used: the fact of its
+; structure, "_ w _", the reading says the most, said as a sentence with "(asi se usa)". Uses j1-j14.
+q_struct:
+  jldi j1, 0
+  jld j9, j1, QQE               ; the question's last word
+  qs_back:
+    jldi j1, 0
+    jld j2, j1, QQS
+    jsub j2, j9, j2
+    jjz j2, qs_done
+    jldi j2, 1
+    jsub j9, j9, j2
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j2, j2, QBUF
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, qs_back
+    jst j2, j1, QSW
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, qs_back
+  jld j2, j1, QSW               ; a foundation, no arrow
+  jcall g_core
+  jldi j1, 0
+  jjnz j3, qs_done
+  jld j2, j1, QSW
+  jcall is_arrow
+  jjnz j2, qs_done
+  jldi j1, 0                    ; how often the book puts it right before a limit, against how often it is anywhere
+  jst j1, j1, QSO
+  jst j1, j1, QSL
+  jldi j9, 1
+  qs_count:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, qs_counted
+    jadd j2, j9, j1
+    jcall tok_at
+    jld j3, j1, QSW
+    jsub j2, j2, j3
+    jjnz j2, qs_cnext
+    jld j2, j1, QSO
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QSO
+    jadd j2, j9, j3
+    jld j3, j1, NTOK
+    jsub j3, j2, j3
+    jjz j3, qs_cnext
+    jcall tok_at
+    jjz j2, qs_cnext
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, qs_cnext
+    jld j2, j1, QSL
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QSL
+  qs_cnext:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qs_count
+qs_counted:
+  jld j2, j1, QSL               ; mentioned: at an end less than the book closes a building, end / all < buildings / units
+  jld j3, j1, NTOK
+  jmul j2, j2, j3
+  jld j3, j1, QSO
+  jld j4, j1, NBLD
+  jmul j3, j3, j4
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, qs_done
+  jld j5, j1, FNVO              ; its structure "_ w _", as gather keys it
+  jld j3, j1, QSW
+  jadd j2, j5, j1
+  jcall hw
+  jldi j3, 1
+  jcall hw
+  jjnz j2, qs_k
+  jldi j2, 1
+qs_k:
+  jst j2, j1, QSK
+  jadd j5, j2, j1
+  jldi j2, TMI
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, qs_done
+  jst j4, j1, QSE
+  jldi j2, QST                  ; the fact of it the reading says the most
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, QSB
+  jst j1, j1, QSN
+  qs_fact:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jld j3, j1, GFN
+    jsub j3, j2, j3
+    jjz j3, qs_said
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, GFL
+    jadd j9, j3, j4
+    jld j2, j9, 16
+    jld j3, j1, QSK
+    jsub j2, j2, j3
+    jjnz j2, qs_fnext
+    jld j2, j9, 0
+    jcall tok_at
+    jst j2, j1, QSX
+    jld j2, j9, 8
+    jcall tok_at
+    jst j2, j1, QSY
+    jld j5, j1, QSX
+    jld j6, j1, FNVP
+    jmul j5, j5, j6
+    jxor j5, j5, j2
+    jmul j5, j5, j6
+    jjnz j5, qs_fk
+    jldi j5, 1
+  qs_fk:
+    jldi j2, QST
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j3, j1, QSB
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, qs_fnext
+    jst j2, j1, QSB
+    jld j2, j1, QSX
+    jst j2, j1, QSA
+    jld j2, j1, QSY
+    jst j2, j1, QSZ
+  qs_fnext:
+    jldi j1, 0
+    jld j2, j1, QSN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QSN
+    jjmp qs_fact
+qs_said:
+  jld j2, j1, QSB
+  jjz j2, qs_done
+  jld j2, j1, QNA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QNA
+  jldi j1, S_ANS
+  jcall puts
+  jld j2, j1, QSA
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jld j12, j1, QSE
+  jcall put_plain
+  jld j2, j1, QSZ
+  jcall putword
+  jldi j1, S_USA
+  jcall puts
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+qs_done:
+  jldi j1, 0
+  jret
+
 ; Word j2 into the row, and thought on (TVT). Uses j1-j8.
 th_push:
   jldi j1, 0
@@ -6500,6 +6698,10 @@ qo_pass:
   jst j2, j1, QPASS
   jjmp qo_pass
 qo_said2:
+  jld j2, j1, QNA
+  jjnz j2, qo_done
+  jcall q_struct                ; nothing fits its furniture: is it asking about a structure?
+  jldi j1, 0
   jld j2, j1, QNA
   jjnz j2, qo_done
   jldi j1, S_NOFIT
