@@ -162,6 +162,10 @@ OGKID = 1EE0h
 OGSC  = 1EE8h
 OGT   = 1EF0h
 OGLET = 1EF8h
+OGT2  = 1C60h                   ; (the audit's and the landscape's, never while it tries: four temporaries of the
+OGT3  = 1C68h                   ; niches)
+OGT4  = 1C70h
+OGLET2 = 1C78h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 LLAVE = 1C08h                   ; the board (on the host, a folder several Janax share): its key (from the file "llave"),
@@ -2480,6 +2484,17 @@ ot_have:
   jldi j1, 0
   jadd j2, j13, j13
   jst j2, j1, OGBUD
+  jcall og_arch_load            ; its archive of niches, and the organ it has in its own, its score fresh
+  jldi j1, 0
+  jld j2, j1, OGCODE
+  jcall og_niche
+  jcall og_arch_at
+  jld j2, j1, OGCODE
+  jst j2, j4, 0
+  jld j2, j1, OGBASE
+  jst j2, j4, 8
+  jcall og_stamp
+  jst j2, j4, 16
   jld j2, j1, OGN
   jwhile j2
     jcall og_next
@@ -2490,6 +2505,7 @@ ot_have:
     jjz j2, ot_next
     jcall og_trial
     jcall og_line
+    jcall og_niche_meet         ; it meets the champion of its niche (the best of each way of doing, not only one)
     jldi j1, 0                  ; better: the new organ is its own
     jld j2, j1, OGSC
     jld j3, j1, OGBASE
@@ -2507,6 +2523,8 @@ ot_have:
     jsub j2, j2, j3
     jst j2, j1, OGN
   jwend
+  jcall og_arch_save            ; its archive, for its next lives
+  jldi j1, 0
   jld j2, j1, OGCODE            ; it grew one: built again as itself (not a candidate), for its next life
   jldi j3, ORGAN_CODE
   jsub j2, j2, j3
@@ -3102,8 +3120,8 @@ og_canon:
 og_init:
   jldi j1, 0
   jst j1, j1, OGML
-  jldi j11, 4096
-  jldi j2, 256
+  jldi j11, 4096                ; (and from 4352 its archive of niches: og_arch_load)
+  jldi j2, 512
   jadd j11, j11, j2
   jcall room
   jldi j1, 0
@@ -3203,12 +3221,246 @@ oi_done:
 og_next:
   jldi j1, 0
   jld j2, j1, PORG
-  jjz j2, og_mutate
+  jjz j2, og_child
   jld j3, j1, OGCODE
   jsub j3, j2, j3
   jst j1, j1, PORG
-  jjz j3, og_mutate
+  jjz j3, og_child
   jst j2, j1, OGTRY
+  jret
+
+; A child: one letter changed from the champion of a niche its luck draws (the organ it has, if that niche is empty).
+; Uses j1-j8.
+og_child:
+  jld j2, j1, OGCODE
+  jst j2, j1, OGT2
+  jcall ev_rand
+  jldi j3, 6
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j2, j2, j4
+  jcall og_arch_at
+  jld j2, j4, 16
+  jjz j2, oc_own
+  jld j2, j4, 0
+  jst j2, j1, OGCODE
+oc_own:
+  jcall og_mutate
+  jldi j1, 0
+  jld j2, j1, OGT2
+  jst j2, j1, OGCODE
+  jret
+
+; The niche of the organ j2: where its first hole is (the first, ..., the fourth word, or the hole empty: 1-5), or 0
+; if it has none. Six, criterion: what parted 5 from 6 in the landscape measured, the hole first or second, each to its
+; own (by weight both were one letter, and 5 would have erased 6). -> j2. Uses j1-j4.
+og_niche:
+  jldi j1, 0
+  jwhile j2
+    jldi j3, 15
+    jand j3, j2, j3
+    jldi j4, 5
+    jsub j4, j3, j4
+    jldi j1, 63
+    jsar j4, j4, j1
+    jjz j4, on_hole
+    jldi j4, 4
+    jshr j2, j2, j4
+  jwend
+  jldi j1, 0
+  jret
+on_hole:
+  jldi j1, 0
+  jldi j2, 4
+  jsub j2, j3, j2
+  jret
+
+; The archive's entry of the niche j2 -> j4 {organ, score, stamp (0: empty)}. Uses j1, j3, j4.
+og_arch_at:
+  jldi j1, 0
+  jldi j3, 24
+  jmul j4, j2, j3
+  jld j3, j1, OGPEND
+  jadd j4, j4, j3
+  jldi j3, 4360
+  jadd j4, j4, j3
+  jret
+
+; This call's stamp -> j2 (a score of another stamp is in another coin: sat again before it competes). Uses j1-j3.
+og_stamp:
+  jldi j1, 0
+  jld j3, j1, OGPEND
+  jldi j2, 4352
+  jadd j3, j3, j2
+  jld j2, j3, 0
+  jret
+
+; The child just tried (OGTRY, OGSC) meets the champion of its niche: that one sits the exam again first if its score
+; is of another time; the child takes the niche if it is empty or the child is better. Uses j1-j14.
+og_niche_meet:
+  jldi j1, 0
+  jld j2, j1, OGTRY
+  jst j2, j1, OGT2
+  jld j2, j1, OGSC
+  jst j2, j1, OGLET2
+  jld j2, j1, OGTRY
+  jcall og_niche
+  jst j2, j1, OGT3
+  jcall og_arch_at
+  jld j2, j4, 16
+  jjz j2, nm_take
+  jst j4, j1, OGT4
+  jcall og_stamp
+  jld j4, j1, OGT4
+  jld j3, j4, 16
+  jsub j3, j3, j2
+  jjz j3, nm_fresh
+  jld j2, j4, 0                 ; (its champion, again, in this coin)
+  jcall oa_exam
+  jldi j1, 0
+  jld j4, j1, OGT4
+  jld j2, j1, OGSC
+  jst j2, j4, 8
+  jcall og_stamp
+  jld j4, j1, OGT4
+  jst j2, j4, 16
+  jld j2, j1, OGT2              ; (what was tried stays what was tried)
+  jst j2, j1, OGTRY
+  jld j2, j1, OGLET2
+  jst j2, j1, OGSC
+nm_fresh:
+  jldi j1, 0
+  jld j4, j1, OGT4
+  jld j2, j4, 8
+  jld j3, j1, OGLET2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, nm_done
+nm_take:
+  jldi j1, 0
+  jld j2, j1, OGT3
+  jcall og_arch_at
+  jld j2, j1, OGT2
+  jst j2, j4, 0
+  jld j2, j1, OGLET2
+  jst j2, j4, 8
+  jst j4, j1, OGT4
+  jcall og_stamp
+  jld j4, j1, OGT4
+  jst j2, j4, 16
+nm_done:
+  jldi j1, 0
+  jret
+
+; Its archive of niches read from "organos" (its number after it, if it has one): {its stamp, six {organ, score,
+; stamp}}; a new call, a new stamp. Uses j1-j14.
+og_arch_load:
+  jldi j1, 0
+  jld j9, j1, OGPEND
+  jldi j2, 4352
+  jadd j9, j9, j2
+  jldi j3, 19                   ; (empty first: 1 + 6 * 3 qwords)
+  jldi j4, 0
+  jwhile j3
+    jadd j5, j9, j4
+    jst j1, j5, 0
+    jldi j5, 8
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j3, j3, j5
+  jwend
+  jcall og_arch_label
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, al_new
+  jst j13, j1, OGT4
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, OGPEND
+  jldi j2, 4352
+  jadd j11, j11, j2
+  jldi j12, 152
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, OGT4
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+al_new:
+  jldi j1, 0
+  jld j3, j1, OGPEND
+  jldi j2, 4352
+  jadd j3, j3, j2
+  jld j2, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 0
+  jret
+
+; Its archive written whole. Uses j1-j14.
+og_arch_save:
+  jcall og_arch_label
+  jldi j10, 12
+  jcall ask
+  jcall og_arch_label
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, as_done
+  jst j13, j1, OGT4
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, OGPEND
+  jldi j2, 4352
+  jadd j11, j11, j2
+  jldi j12, 152
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, OGT4
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+as_done:
+  jldi j1, 0
+  jret
+
+; The label of its archive, "organos" and its number if it has one, at OGPEND + 4512 -> j11 where, j12 its bytes.
+; Uses j1-j5.
+og_arch_label:
+  jldi j1, 0
+  jld j11, j1, OGPEND
+  jldi j2, 4512
+  jadd j11, j11, j2
+  jldi j2, 0
+  jshi j2, 0073h
+  jshi j2, 6F6Eh
+  jshi j2, 6167h
+  jshi j2, 726Fh
+  jldi j12, 7
+  jld j3, j1, QUIEN
+  jjz j3, oal_one
+  jldi j4, 48
+  jadd j4, j3, j4
+  jldi j5, 56
+  jshl j4, j4, j5
+  jor j2, j2, j4
+  jldi j12, 8
+oal_one:
+  jst j2, j11, 0
   jret
 
 ; Its organ changed by one letter: OGCODE -> OGTRY (four bits a letter from the lowest, 1-9; 0 ends it). A letter
