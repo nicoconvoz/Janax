@@ -1581,3 +1581,37 @@ fuga 1855: -2028 -2028 -1815
   marco se postea dos veces en el mismo punto del texto, esa aparición vota dos veces en la mayoría (Boyer–Moore). Es
   contar dos veces la misma evidencia, y también puede pasar con los moldes de fábrica (dos palabras iguales seguidas
   arman el mismo marco en dos moldes). Queda propuesta la ley "una aparición, un voto", que cambia la huella del lector.
+
+**Una aparición, un posteo** (Capitán: *"sí, arreglalo"*).
+
+- **El primer intento no anduvo.** Puse la ley solamente en el voto de la silueta. `7157` y `1855` dieron las mismas
+  notas que antes, y apareció un tercero. Un posteo cuenta en tres lugares: las formas, el voto de la silueta y, al
+  golpear lo no leído, **el acierto del examen**. Poner la ley en un contador y dejar los otros dos era el parche.
+- **La ley va en la puerta** (`post`): si un pedido ya se posteó en esta misma aparición del texto, no hace nada. La
+  aparición es la pasada más el lugar (`OCCUR`), que la marca cada recorrido: la ventana por posición y las letras por
+  palabra. Cada pedido guarda la aparición en que entró por última vez, así que pasa de 24 a 32 bytes.
+- **Corrige también los moldes de fábrica.** Dos palabras iguales seguidas arman el mismo marco en dos moldes. En el
+  Nuevo Testamento son 15 pulsos de interruptores (15.618 → 15.603). Los bits casi no se mueven (10.697,77 → 10.676,01
+  y 11.347,16 → 11.362,41), y las piezas y los aciertos en lo no leído quedan iguales. La huella de pulso pasa de
+  `D3698F1AE83D` a `9AAE4A035FAE`. `pregunta` y `sentido` no cambian (`E78A9442B1C1`, `1570B9C9E345`). Cuesta +1,2 % de
+  instrucciones.
+- **La memoria, medida** (el pico del proceso, sobre el Nuevo Testamento): de 277,9 a 294,1 MB, **+16,2 MB**. La tabla
+  de pedidos se reserva por lugares, el doble de todo lo que podría hacer falta redondeado a una potencia de dos:
+  2.097.152 lugares para 487.729 pedidos. Mi estimación de 32 MB estaba al doble, porque supuse 4 millones de lugares
+  sin medir. La tabla está ocupada al **23,3 %**: los pedidos pagan unos **3,9 MB** (487.729 × 8), y los otros
+  **12,3 MB** son casilleros vacíos. El costo real del arreglo son unos 4 MB; la perilla de la memoria está en el tamaño
+  fijo de la tabla, que va contra la regla plástica ("se usa lo que se necesita"). Si algún día importa, la tabla puede
+  crecer a la medida del uso, como las otras.
+
+**La auditoría otra vez, con la ley en la puerta:**
+
+```
+auditoria 50: orden y basura 50, escritura 49 (24), base -3554 -3554
+fuga 1117: -4189 -4189 -4216
+```
+
+`7157` y `1855` ya dan igual que su forma canónica. Queda `1117`, que es de **otra clase**: mezcla la primera palabra tres
+veces y su forma canónica una sola. No cambia ningún marco, solo le da otro nombre (otra clave), uno a uno, y aun así la
+nota se mueve. La sospecha, **no verificada**, es que algún desempate se resuelve por el orden de los casilleros de una
+tabla, que depende de las claves. Entonces la nota dependería de cómo se llaman las cosas. Los otros 23 renombres
+pasaron.

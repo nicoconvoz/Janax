@@ -3,7 +3,8 @@
 ; the pulses and judges every difference; all_floors with TESTING 1 then knocks with what it never read. The program
 ; that includes it keeps its own variables from 1600h on and includes it before lectura.inc.
 ROOMC = 1200h                   ; how often each word was read where it learns, by number
-ROOMR = 1208h                   ; the requests: {key, its silhouette (a filling, or the empty as 1 << 62), its weight}
+ROOMR = 1208h                   ; the requests: {key, its silhouette (a filling, or the empty as 1 << 62), its weight,
+                                ; the occurrence it was last met in}
                                 ; (24 bytes)
 ROOMS = 1F20h                   ; the forms seen: {hash of key and filling, key, filling, times, first place, floor,
                                 ; its question's bits} per place (56 bytes)
@@ -77,6 +78,7 @@ ROOMFX = 15A0h                  ; by word: how often it was the frame kept (foun
 ROOMVR = 15A8h                  ; (furniture); the frame of the request being hung; the pulses of the same place with
 ROOMHL = 15C8h                  ; another word, and how many
 NHL   = 15D0h
+OCCUR = 15D8h                   ; the occurrence of the text being walked (its pass and its place; 0: none): one vote each
 KW1   = 15B0h
 KW2   = 15B8h
 KW3   = 15C0h
@@ -173,7 +175,7 @@ jcall pow2
 jldi j4, 1
 jsub j4, j3, j4
 jst j4, j1, RMASK
-jldi j4, 24
+jldi j4, 32
 jmul j11, j3, j4
 jcall room
 jldi j1, 0
@@ -267,7 +269,7 @@ lp_clear:
   jadd j5, j5, j4
   jst j5, j1, PDK
   jld j2, j1, ROOMR
-  jldi j4, 24
+  jldi j4, 32
   jmul j3, j5, j4
   jcall zfill
   jld j5, j1, PDK
@@ -370,7 +372,17 @@ all_floors:
 
 ; The word WID hangs one request per letter: the word with that letter as the hole, filled by the letter. Uses j1-j12.
 letters:
-  jldi j1, 0
+  jldi j1, 0                    ; (its occurrence: this pass, this word)
+  jld j2, j1, PASN
+  jldi j3, 1
+  jadd j2, j2, j3
+  jldi j3, 40
+  jshl j2, j2, j3
+  jld j3, j1, WID
+  jor j2, j2, j3
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, OCCUR
   jld j2, j1, WID
   jldi j3, 3
   jshl j3, j2, j3
@@ -459,6 +471,16 @@ windows:
   wn_kept:
     jjz j3, wn_next
   wn_post:
+    jld j2, j1, PASN            ; (its occurrence: this pass, this place of the text)
+    jldi j3, 1
+    jadd j2, j2, j3
+    jldi j3, 40
+    jshl j2, j2, j3
+    jld j3, j1, JJ
+    jor j2, j2, j3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, OCCUR
     jld j9, j1, WAT
     jld j3, j9, 8
     jjz j3, wn_next
@@ -615,6 +637,22 @@ post:
 po_key:
   jst j2, j1, KEY
   jst j3, j1, PAY
+  jld j6, j1, OCCUR             ; one occurrence, one post (Capitan's law, "a place, one testimony", at the door, for
+  jjz j6, po_go                 ; everything a post counts: the forms, the silhouette's vote, the exam's hit): met
+  jadd j5, j2, j1               ; again in the same occurrence of the text, the same evidence is not counted twice
+  jld j2, j1, ROOMR             ; (the audit found it: a frame posted twice at one place counted twice)
+  jldi j3, 32
+  jcall t_find
+  jld j6, j4, 0
+  jjz j6, po_go                 ; (not asleep yet: it is stamped when it is)
+  jld j6, j1, OCCUR
+  jld j7, j4, 24
+  jsub j7, j7, j6
+  jjz j7, po_done
+  jst j6, j4, 24
+po_go:
+  jld j2, j1, KEY
+  jld j3, j1, PAY
   jld j4, j1, TESTING
   jjnz j4, po_test
   jld j4, j1, FORMS
@@ -663,10 +701,12 @@ po_req:
   jldi j1, 0
   jld j5, j1, KEY
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jldi j3, 32
   jcall t_find
   jld j6, j4, 0
   jjnz j6, po_old
+  jld j6, j1, OCCUR
+  jst j6, j4, 24
   jst j5, j4, 0                 ; a new request falls asleep: its silhouette is its first move, weight one
   jld j6, j1, NREQ
   jldi j7, 1
@@ -708,7 +748,7 @@ po_done:
 po_test:
   jadd j5, j2, j1
   jld j2, j1, ROOMR
-  jldi j3, 24
+  jldi j3, 32
   jcall t_find
   jld j6, j4, 0
   jjz j6, po_done               ; nothing asleep there
