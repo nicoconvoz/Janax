@@ -1819,7 +1819,7 @@ hoy nunca cruza el valle; Lehman y Stanley, búsqueda por novedad). Proponía un
 
 - **Qué se armó:** seis nichos según dónde pone el primer hueco el órgano (palabra 1 a 4, hueco vacío, o ninguno). Cada
   Razar guarda el campeón de cada nicho en `organos`. Cada intento muta al campeón de un nicho sorteado y compite contra
-  el de su propio nicho. Está en la rama `nichos`, no en `master`.
+  el de su propio nicho. Está en `master` (Capitán: "que no lo mida no significa que no lo quiera").
 - **Medido** (libro `vig`, 40 intentos por vida, se rehace mientras mejore, un sorteo por lado):
 
   | | camino | final | intentos |
@@ -1833,4 +1833,4 @@ hoy nunca cruza el valle; Lehman y Stanley, búsqueda por novedad). Proponía un
   - El "atrapado en `5`" del paisaje era la suerte de la primera mutación, no la forma de buscar.
   - Los nichos llegaron a lo mismo con el doble de intentos.
 - **Sin veredicto:** con un sorteo por lado no se concluye. Haría falta varias semillas de cada uno (unos 7 minutos por
-  par). El Capitán decidió quedarse con la duda: el código espera en la rama `nichos`.
+  par). El Capitán decidió quedarse con la duda, y con los nichos andando.
