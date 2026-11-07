@@ -1699,3 +1699,27 @@ una tabla ni del orden de sus casilleros.
   atado al límite de tamaño de programa del idioma. Solo se le da memoria física a lo que se toca.
 - Me equivoqué dos veces en esta tanda, y lo dejo anotado. Primero dije que la tabla de formas no guardaba sus claves,
   y sí las guardaba (después de contar). Después estimé 32 MB donde eran 16, por no medir.
+
+## La sociedad de Razares autónomos: el órgano viaja en la carta (2026-11-06)
+
+El Capitán: *"es por Nostr, cada Razar es autónomo, y como dijimos qué cosas compartían"* (ver
+`documentacion/so/ideas.md`, "La sociedad de Razares en red"). Cada Razar tiene su propio Janax, sus archivos, sus libros
+y su ensamblador: no comparten nada local. Lo que viaja es lo que no sale del texto.
+
+- **La carta** (`letter_write` / `letter_read`) pasa de 8 bytes (el genoma) a 16: **genoma y órgano**. El órgano es una
+  tira de letras del molde, ninguna palabra. La nota del órgano no viaja, porque la del otro está sacada con otros
+  libros y no se compara: cada uno examina con lo suyo. Una carta vieja de 8 bytes cuenta como "sin órgano".
+- **El órgano ajeno se prueba primero** (`og_next`), en la jaula y con los libros propios, y se queda solo si gana acá
+  también. Nadie le cree a nadie.
+- **Una carta nueva despierta a Razar para explorar, no para renacer.** El centinela ahora vigila una lista de prefijos
+  (núcleo): "libro" y **la carta del otro** (`carta2`, no la propia). Al despertar, la huella de la estantería dice si
+  es un libro nuevo, y `letter_new` dice si llegó carta.
+- **Las siluetas todavía no viajan.** Sus claves son hashes de palabras, y un hash de palabras se adivina probando un
+  diccionario. Para viajar necesitan otro diseño, uno que no salga del texto.
+
+**Medido** (`autonomos.sh`, dos Janax autónomos con dos libros distintos; el "cartero" cruza las cartas cuando los dos
+descansan):
+- **B** gana `7` y después `5` (−3532 → −1916) y descansa. **A** no gana con `4` ni con `9` (−8836) y descansa.
+- Se cruzan las cartas. A despierta con "carta", prueba primero el órgano `5` de B **con sus propios libros**: −2575
+  contra −8836, **gana**, y A se rehace con él.
+- B recibe la carta de A, que no trae órgano, sigue con sus mutaciones (`1` no gana) y vuelve a descansar.

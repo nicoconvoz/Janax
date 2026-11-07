@@ -164,6 +164,9 @@ OGT   = 1EF0h
 OGLET = 1EF8h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
+LETB  = 1CA0h                   ; a letter as it travels: {genome, organ} (what it has, never what it read), the
+PORG  = 1CB0h                   ; other's organ to try first, and the last letter of the other it read
+LSEEN = 1CB8h
 OPCAP = 1C90h                   ; the places of the two lists (they grow with what they hold)
 OWCAP = 1C98h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -2301,7 +2304,16 @@ vg_drain:
   jldi j1, 0                    ; host tells one copy in several batches: the ones after the first are nothing new)
   jld j3, j1, BOOKH
   jsub j3, j2, j3
-  jjz j3, vg_bell
+  jjnz j3, vg_book
+  jcall letter_new              ; not a book: a letter of the other? it explores again with it (not reborn)
+  jldi j1, 0
+  jjz j2, vg_bell
+  jldi j2, 0                    ; "carta"
+  jshi j2, 0061h
+  jshi j2, 7472h
+  jshi j2, 6163h
+  jjmp vg_said
+vg_book:
   jldi j2, 0                    ; "novedad"
   jshi j2, 0064h
   jshi j2, 6164h
@@ -2376,6 +2388,12 @@ vw_set:
   jshi j12, 7262h
   jshi j12, 696Ch
   jcall ask
+  jcall nest_labels             ; and so does the other's letter (only the other's: its own does not wake it)
+  jldi j1, 0
+  jldi j10, 32
+  jldi j11, 6
+  jld j12, j1, OTRL
+  jcall ask
   jldi j1, 0
 vw_done:
   jret
@@ -2443,7 +2461,7 @@ ot_have:
   jst j2, j1, OGBUD
   jld j2, j1, OGN
   jwhile j2
-    jcall og_mutate
+    jcall og_next
     jcall og_write
     jldi j1, 0
     jcall og_build
@@ -3056,6 +3074,19 @@ oi_close:
   jcall ask
 oi_done:
   jldi j1, 0
+  jret
+
+; The organ to try now -> OGTRY: the other's, first, if a letter brought one (it is tried with its own books, in its
+; cage, and stays only if it wins here too); else its own changed by one letter. Uses j1-j8.
+og_next:
+  jldi j1, 0
+  jld j2, j1, PORG
+  jjz j2, og_mutate
+  jld j3, j1, OGCODE
+  jsub j3, j2, j3
+  jst j1, j1, PORG
+  jjz j3, og_mutate
+  jst j2, j1, OGTRY
   jret
 
 ; Its organ changed by one letter: OGCODE -> OGTRY (four bits a letter from the lowest, 1-9; 0 ends it). A letter
@@ -4230,12 +4261,13 @@ letter_read:
   jshr j2, j13, j2
   jjnz j2, lr_done
   jst j13, j1, EVT
+  jst j1, j1, LETB + 8          ; (a letter of 8 bytes, from before organs: one without an organ)
   jldi j2, 32
   jshl j10, j13, j2
   jldi j2, 5
   jor j10, j10, j2
-  jldi j11, CARTA
-  jldi j12, 8
+  jldi j11, LETB
+  jldi j12, 16
   jcall ask
   jldi j1, 0
   jst j13, j1, EVT2
@@ -4246,13 +4278,73 @@ letter_read:
   jor j10, j10, j2
   jcall ask
   jldi j1, 0
-  jld j2, j1, EVT2
+  jld j2, j1, EVT2              ; eight bytes at least: its genome
   jldi j3, 8
   jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
   jjnz j2, lr_done
+  jld j2, j1, LETB
+  jst j2, j1, CARTA
+  jst j2, j1, LSEEN
+  jld j2, j1, LETB + 8          ; and its organ, to try first (if it is not the one it has)
+  jst j2, j1, LSEEN + 8
+  jldi j3, ORGAN_CODE
+  jsub j3, j2, j3
+  jjnz j3, lr_organ
+  jldi j2, 0
+lr_organ:
+  jst j2, j1, PORG
   jldi j2, 1
   jst j2, j1, PARTOK
 lr_done:
+  jret
+
+; j2 = 1 if the other's letter is not the last one it read (it came while it slept). Uses j1-j14.
+letter_new:
+  jldi j1, 0
+  jld j2, j1, QUIEN
+  jjz j2, ln_none
+  jldi j10, 4
+  jldi j11, OTRL
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ln_none
+  jst j13, j1, EVT
+  jst j1, j1, LETB
+  jst j1, j1, LETB + 8
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, LETB
+  jldi j12, 16
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EVT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, LETB
+  jjz j2, ln_none
+  jld j3, j1, LSEEN
+  jsub j2, j2, j3
+  jld j3, j1, LETB + 8
+  jld j4, j1, LSEEN + 8
+  jsub j3, j3, j4
+  jor j2, j2, j3
+  jjz j2, ln_none
+  jldi j2, 1
+  jret
+ln_none:
+  jldi j1, 0
+  jldi j2, 0
   jret
 
 ; Its letter for the other: its champion's genome, in "cartaN". Uses j1-j14.
@@ -4262,6 +4354,9 @@ letter_write:
   jjz j2, lw_done
   jld j2, j1, EVC
   jst j2, j1, CARTA
+  jst j2, j1, LETB
+  jldi j2, ORGAN_CODE           ; and the organ it has: letters of its molde, no word of what it read
+  jst j2, j1, LETB + 8
   jldi j10, 12
   jldi j11, CARL
   jldi j12, 6
@@ -4279,8 +4374,8 @@ letter_write:
   jshl j10, j13, j2
   jldi j2, 6
   jor j10, j10, j2
-  jldi j11, CARTA
-  jldi j12, 8
+  jldi j11, LETB
+  jldi j12, 16
   jcall ask
   jldi j1, 0
   jld j10, j1, EVT

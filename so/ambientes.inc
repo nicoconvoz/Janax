@@ -1606,14 +1606,43 @@ greet_nobody:
 ; to a file of that prefix, made inside Janax or dropped in from outside, wakes whoever asked, with a greeting from
 ; itself.
 
-; 32 watch: a = how many bytes of the prefix (0: stop, up to 8), b = the prefix (in one qword). -> 0, or -1.
+; 32 watch: a = how many bytes of a prefix (up to 8), b = the prefix (in one qword): one more it watches, besides
+; the others (the same one twice is one); a = 0: it watches nothing. -> 0, or -1.
 gate_watch:
         mov     rax, [rbp + r13 + 8]
         cmp     rax, 8
         ja      .invalid
-        mov     [rbx + P_WATCHN], rax
-        mov     rax, [rbp + r13 + 16]
-        mov     [rbx + P_WATCH], rax
+        test    rax, rax
+        jnz     .add
+        mov     qword [rbx + P_WATCHN], 0       ; (its list's book kept, to be reused)
+        jmp     .ok
+.add:
+        mov     rcx, [rbx + P_WATCH]
+        mov     rdx, [rbx + P_WATCHN]
+        shl     rdx, 4
+        add     rdx, rcx
+        mov     r8, [rbp + r13 + 16]
+        jmp     .seen
+.seen_lap:
+        cmp     [rcx], rax
+        jne     @f
+        cmp     [rcx + 8], r8
+        je      .ok                     ; watched already
+@@:     add     rcx, 16
+.seen:                                  ; while prefixes are left
+        cmp     rcx, rdx
+        jb      .seen_lap
+        push    rax
+        mov     ecx, P_WATCH
+        mov     r8d, 16
+        call    list_slot
+        pop     rdx
+        test    rax, rax
+        jz      .invalid
+        mov     [rax], rdx
+        mov     rcx, [rbp + r13 + 16]
+        mov     [rax + 8], rcx
+.ok:
         mov     qword [rbp + r13 + 24], 0
         ret
 .invalid:
@@ -1694,9 +1723,9 @@ watch_any:
         ret
 
 ; The change at r13 (FILE_NOTIFY_INFORMATION: next, action, bytes of the name, the name in UTF-16, its letters the
-; label in hexadecimal): every waiting cabin whose prefix starts that name wakes (r15d = 1). Keeps rbx, r12-r14.
+; label in hexadecimal): every waiting cabin with a prefix that starts that name wakes (r15d = 1). Keeps rbx, r12-r14.
 watch_name:
-        push    rbx
+        push    rbx rdi r12
         xor     ecx, ecx
         jmp     .one
 .one_lap:
@@ -1706,16 +1735,18 @@ watch_name:
         jne     .next
         cmp     qword [rsi + P_GWAIT], 1
         jne     .next
-        mov     r8, [rsi + P_WATCHN]
-        test    r8, r8
-        jz      .next
+        mov     rdi, [rsi + P_WATCH]    ; each prefix it watches
+        mov     r12, [rsi + P_WATCHN]
+        jmp     .prefixes
+.prefix:
+        mov     r8, [rdi]
         mov     eax, [r13 + 8]          ; the name has room for the prefix in hexadecimal?
         shr     eax, 1
         lea     rdx, [r8*2]
         cmp     rax, rdx
-        jb      .next
+        jb      .other
         xor     r9d, r9d                ; each byte of the prefix: its two letters
-        lea     r10, [rsi + P_WATCH]
+        lea     r10, [rdi + 8]
         jmp     .bytes
 .byte:
         movzx   edx, byte [r10 + r9]
@@ -1725,28 +1756,35 @@ watch_name:
         movzx   eax, word [r13 + 12 + r9*4]
         or      eax, 20h                ; (a capital letter of the host is the same letter)
         cmp     eax, edx
-        jne     .next
+        jne     .other
         and     r11d, 15
         movzx   edx, byte [hex_lower + r11]
         movzx   eax, word [r13 + 14 + r9*4]
         or      eax, 20h
         cmp     eax, edx
-        jne     .next
+        jne     .other
         inc     r9
 .bytes:
         cmp     r9, r8
         jb      .byte
-        push    rcx r13                 ; it is its: a greeting from itself, and it wakes
+        push    rcx r13                 ; it is its: a greeting from itself, and it wakes (one prefix is enough)
         mov     rbx, rsi
         call    watch_wake
         pop     r13 rcx
         mov     r15d, 1
+        jmp     .next
+.other:
+        add     rdi, 16
+        dec     r12
+.prefixes:                              ; while prefixes are left
+        test    r12, r12
+        jnz     .prefix
 .next:
         inc     rcx
 .one:
         cmp     rcx, [nprocs]
         jb      .one_lap
-        pop     rbx
+        pop     r12 rdi rbx
         ret
 
 ; The cabin rbx gets a greeting from itself (one mark is enough) and wakes. Keeps rbx, rcx, rsi.
@@ -1872,6 +1910,8 @@ cabin_free:
         mov     r12d, P_GREET
         call    list_back
         mov     r12d, P_SAID            ; and the words nobody read
+        call    list_back
+        mov     r12d, P_WATCH           ; and what it watched
         call    list_back
         mov     qword [rbx + P_TAKEN], 0
         pop     r12 rdi rsi

@@ -1135,3 +1135,10 @@ salas P0: pedidas 110182 KB, usadas 46063 KB, salas 38
 Las diez que más sobran van ordenadas. Solo mide las cabinas que terminan, no las que se rehacen. Lo usado es una cota
 por abajo, porque un cero puede ser un dato. Sin la variable no cuesta nada. Con él se encontraron todas las
 estructuras de Razar reservadas para el peor caso (ver `documentacion/razar/lectura.md`).
+
+## El centinela vigila una lista de prefijos (2026-11-06)
+
+El pedido 32 ahora **agrega** un prefijo a una lista que crece (`P_WATCH` / `P_WATCHN`, con `list_slot`), en vez de
+reemplazar el único que había. El mismo prefijo dos veces cuenta una sola. Con `a = 0` deja de vigilar. El centinela
+despierta a una cabina si el nombre del archivo que cambió empieza con **cualquiera** de sus prefijos, y la lista vuelve
+con todo lo demás cuando la cabina termina. Razar vigila "libro" y la carta del otro.

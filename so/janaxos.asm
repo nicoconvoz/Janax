@@ -99,7 +99,8 @@ P_NGREET = 560
 P_GWAIT  = 568                  ; 1 = it waits for a greeting, 2 = nobody is left who could greet it
 P_SAID   = 576                  ; words said to it and not read yet: {who said it, the word}, 16 bytes each, in order
 P_NSAID  = 584
-P_WATCH  = 592                  ; the sentinel: the prefix of the labels it watches (up to 8 bytes), and how many (0: none)
+P_WATCH  = 592                  ; the sentinel: the prefixes of the labels it watches, a list {bytes, prefix} that grows
+                                ; (ambientes.inc, list_slot), and how many (0: none)
 P_WATCHN = 600
 P_KILL   = 608                  ; 1 = its parent ended it while it rowed: it ends when its turn does
 P_LIMIT  = 616                  ; the instructions it may row in all (34; 0 = no budget): past them, it ends
