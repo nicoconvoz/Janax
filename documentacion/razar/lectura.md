@@ -2233,3 +2233,19 @@ respuesta. Ahora sale la oración armada con el hecho:
 Las marcas se pegan a la palabra de antes (`put_glue`). El porqué ya no se escribe en la charla. El modo del libro
 entero no cambia.
 
+## Las preguntas del propio libro: el instrumento (2026-11-07)
+
+La idea del Capitán: que Razar aprenda a contestar estudiando cómo se contestan las preguntas en los libros, con
+formas plásticas (enganches, no orden exacto) que se suman entre libros. Antes de construirlo, se mide si hay con qué.
+
+- **Cómo encuentra una pregunta, sin que se le diga:** un edificio es pregunta cuando una de sus flechas lo cierra con
+  el límite propio de esa flecha. Las flechas y los límites ya los descubre solo. La respuesta candidata es el
+  edificio de al lado (`qa_count`, una línea más en el informe del libro entero).
+- **Nuevo Testamento:**
+  - las flechas salen de dos clases: las de "?" (qué, quién, acaso, dónde) y las de ":" (dijo, respondió, preguntó);
+  - **3.119 preguntas**, y en **305** la respuesta de al lado vuelve a decir un núcleo de la pregunta;
+  - mirando ejemplos, casi todas son retóricas ("¿acaso no profetizamos en tu nombre? ¿no expulsamos...?") o son
+    anuncios de un diálogo ("le dijeron:"). Las de la forma "¿qué es X? X es tal" son casi ninguna.
+- **Conclusión:** el instrumento anda, pero el Nuevo Testamento casi no enseña a contestar. Hacen falta libros que
+  pregunten y contesten de verdad.
+

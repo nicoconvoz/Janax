@@ -334,3 +334,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-07 — Vueltas de esqueletos en bits (formato 2): diccionario de piezas + índices + gamma. NT: 235.648 → 18.608 bytes (12,7×); la charla da idéntico (mismo control), +6 % de tiempo al contestar. Al comer se borra el formato 1 del mismo libro.
 2026-11-07 — La biblioteca guarda huellas, no palabras (formato 7): cada palabra son los 8 bytes de la huella de sus letras; el que pregunta esconde la suya igual. 12 preguntas de control idénticas byte por byte; nido NT 200 → 256 KB (+28 %).
 2026-11-07 — Charla: contesta con la oración que pensó ('jacob, hijo de matán (lo deduje)'), no con el esqueleto.
+2026-11-07 — Preguntas del propio libro (qa_count): NT 3.119 preguntas encontradas por sus flechas, 305 con un núcleo en la respuesta de al lado, casi todas retóricas. El instrumento anda; faltan libros con preguntas y respuestas de verdad.

@@ -60,6 +60,8 @@ S_COME  = 980h                  ; eating: "come", the library's label of the ske
 S_ESQ   = 9C0h
 S_ESQD  = 0A00h
 S_LIBP  = 0A40h                 ; ", pairs proved in the library"
+S_QAN   = 0A80h                 ; the book's questions, and those with a core in the answer next to them
+S_QAM   = 0AC0h
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -194,6 +196,14 @@ DR0   = 0C80h
 DR1   = 0C88h
 DR2   = 0C90h
 DR3   = 0C98h
+QAS   = 0CB0h                   ; the book's questions: the building before (its start, its end, 1 if it asks), the one
+QAE   = 0CB8h                   ; walked starts at, how many questions, how many with a core in the answer next to them;
+QAQ   = 0CC0h                   ; walking
+QAT   = 0CC8h
+QAN   = 0CD0h
+QAM   = 0CD8h
+QAI   = 0CE0h
+QAX   = 0CE8h
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -309,6 +319,7 @@ jldi j2, 10
 jcall putch
 jcall flush
 jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
+jcall qa_count                  ; the book's own questions, and the answers next to them
 jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall sk_report
 jcall cores
@@ -1768,6 +1779,175 @@ ar_walk:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jret
+
+; The book's own questions (Capitan, 2026-11-07: "study the questions with the structure they were made with in the
+; books and infer the answer"): a building is a question when an arrow of it is closed by the arrow's own limit (both
+; found in the book, none named); the building right after it is where the book answers. Counted: the questions, and
+; those whose answer next to them says a core of the question again (what it can learn from). Uses j1-j14.
+qa_count:
+  jldi j1, 0
+  jst j1, j1, QAN
+  jst j1, j1, QAM
+  jst j1, j1, QAQ
+  jldi j2, 1
+  jst j2, j1, QAT
+  jldi j9, 1
+  qa_lap:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, qa_done
+    jst j9, j1, QAI
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, qa_next
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMCL
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjz j3, qa_next
+    jst j2, j1, QAX             ; a limit: the building QAT to here closes with it
+    jld j5, j1, QAT
+    jsub j6, j9, j5
+    jjz j6, qa_empty
+    jld j2, j1, QAQ             ; the one before asked: this one answers it
+    jjz j2, qa_ask
+    jld j2, j1, QAN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QAN
+    jcall qa_shared
+    jldi j1, 0
+    jjz j2, qa_ask
+    jld j2, j1, QAM
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QAM
+  qa_ask:
+    jcall qa_asks               ; does this one ask?
+    jldi j1, 0
+    jst j2, j1, QAQ
+    jld j2, j1, QAT
+    jst j2, j1, QAS
+    jld j2, j1, QAI
+    jst j2, j1, QAE
+  qa_empty:
+    jldi j1, 0
+    jld j2, j1, QAI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QAT
+  qa_next:
+    jldi j1, 0
+    jld j9, j1, QAI
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qa_lap
+qa_done:
+  jldi j1, S_QAN
+  jcall puts
+  jld j2, j1, QAN
+  jcall putnum
+  jldi j1, S_QAM
+  jcall puts
+  jld j2, j1, QAM
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; j2 = 1 if the building QAT to QAI, closed by limit QAX, asks: an arrow of it whose voted limit is QAX. Uses j1-j8.
+qa_asks:
+  jldi j1, 0
+  jld j9, j1, QAT
+  qas_lap:
+    jldi j1, 0
+    jld j2, j1, QAI
+    jsub j2, j9, j2
+    jjz j2, qas_no
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, qas_next
+    jst j2, j1, PMT
+    jcall is_arrow
+    jldi j1, 0
+    jjz j2, qas_next
+    jld j2, j1, PMT
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ROOMAR
+    jadd j3, j3, j4
+    jld j3, j3, 8
+    jld j4, j1, QAX
+    jsub j3, j3, j4
+    jjnz j3, qas_next
+    jldi j2, 1
+    jret
+  qas_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qas_lap
+qas_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; j2 = 1 if a core of the building QAT to QAI (furniture) is a core of the question before it (QAS to QAE) too. Uses
+; j1-j8, j9 kept.
+qa_shared:
+  jldi j1, 0
+  jld j7, j1, QAT
+  qsh_lap:
+    jldi j1, 0
+    jld j2, j1, QAI
+    jsub j2, j7, j2
+    jjz j2, qsh_no
+    jldi j2, 3
+    jshl j2, j7, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jst j2, j1, QWL
+    jst j7, j1, QNBP
+    jcall g_core
+    jldi j1, 0
+    jld j7, j1, QNBP
+    jjz j3, qsh_next
+    jld j8, j1, QAS             ; said in the question too?
+    qsh_q:
+      jld j2, j1, QAE
+      jsub j2, j8, j2
+      jjz j2, qsh_next
+      jldi j2, 3
+      jshl j2, j8, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jld j3, j1, QWL
+      jsub j2, j2, j3
+      jjz j2, qsh_yes
+      jldi j2, 1
+      jadd j8, j8, j2
+      jjmp qsh_q
+  qsh_next:
+    jldi j2, 1
+    jadd j7, j7, j2
+    jjmp qsh_lap
+qsh_yes:
+  jldi j1, 0
+  jldi j2, 1
+  jret
+qsh_no:
+  jldi j1, 0
+  jldi j2, 0
   jret
 
 ; j2 = 1 if word j2 is an arrow: its voted limit closes most of its buildings, two at least, and not most of the book's.

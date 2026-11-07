@@ -86,3 +86,7 @@ db 'sentido: vueltas de esqueletos guardadas: ', 0
 times 0A40h - $ db 0
 db ', pares probados en la biblioteca: ', 0
 times 0A80h - $ db 0
+db 'preguntas del libro: ', 0
+times 0AC0h - $ db 0
+db ', con un nucleo en la respuesta de al lado: ', 0
+times 0B00h - $ db 0
