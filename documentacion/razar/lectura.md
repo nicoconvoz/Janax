@@ -2012,3 +2012,29 @@ pistas"*, y *"me sirven todos los de texto o código, lo que sí entiende"*.
 
 
 **Por defecto en la PC del Capitán** (2026-11-07): el vigía arranca escondido con Windows, desde `razar_vigia.vbs` en la carpeta de Inicio, con su propia casa (`~/razar_vigia`, para no pisarse con la charla en el archivo `come`) y la biblioteca compartida. Lo que hace queda en `~/razar_vigia/vigia.log`. Para que no arranque más, se borra ese `.vbs`. La charla se abre con el comando `razar` (`C:\Users\Nico\bin\razar.cmd`).
+
+## Una pregunta corta tumbaba a Razar (2026-11-07)
+
+Buscando por qué una "á" mal codificada hacía caer una pregunta (código 5, tocar memoria fuera de una sala), apareció
+que la letra no era la causa: **toda pregunta de una o dos palabras se caía**, y también preguntar sin ningún libro.
+La letra rota solo achicaba la pregunta.
+
+- **Cómo se encontró:** un núcleo de diagnóstico (fuera del repo) que dice en qué instrucción quedó la cabina, corrido
+  con el intérprete, dio la instrucción 756. Decodificada, era la lectura de la fila en `windows` (`pulso.inc`).
+- **La causa:** las rutinas que recorren ventanas de varias unidades seguidas contaban lo que les quedaba como
+  "unidades menos el ancho" y repetían *mientras no fuera cero*. Con menos unidades que el ancho, la cuenta arrancaba
+  negativa, nunca pasaba por cero, y seguían de largo fuera de la fila. Eran cuatro: `windows` en `pulso.inc` (ancho
+  3) y tres en `negacion.inc` (anchos 2, 3 y 2).
+- **La regla, una para las cuatro:** una cuenta de lo que queda nunca arranca debajo de cero. Con menos unidades que la
+  ventana, no hay ventana.
+- **Y una del lector** (`tok_byte`, `lectura.inc`): una letra de varios bytes tomaba los bytes siguientes aunque no la
+  continuaran (`10xxxxxx`), y armaba palabras que no existen ("á" rota + " s"). Ahora un byte que no la continúa la
+  termina y se lee solo, que es lo que ya hacía la otra rama del lector.
+- **Y la charla:** una vuelta que se caía dejaba escrito su `camino`, y las preguntas siguientes lo heredaban y se caían
+  calladas (en una medición corrieron 30 de 297). Ahora cada pregunta empieza su camino de cero.
+
+**Verificado:** "jesus x", "x", "? podr\xe1 salvarse", "jesus \xc3 x", "a \xe1 b", "\xe1" y "? padre de \xe1" terminan
+bien en traductor e intérprete (la de la letra rota dice "no conoce una de sus palabras", que es la verdad); preguntar
+sin libros también. Con libros sanos nada cambia: las seis preguntas de control dan idénticas, y comer el Nuevo
+Testamento da el tablero idéntico byte a byte al modelo.
+

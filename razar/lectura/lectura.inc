@@ -437,6 +437,18 @@ tok_byte:
   jldi j1, 0
   jld j3, j1, MLEFT             ; the rest of a mark of more than one byte
   jjz j3, tb_lead
+  jldi j4, 0C0h                 ; a byte that does not continue it (10xxxxxx) ends it, and is read on its own: the
+  jand j4, j2, j4               ; same as a letter's second byte (tb_bad)
+  jldi j5, 80h
+  jsub j4, j4, j5
+  jjz j4, tb_cont
+  jst j1, j1, MLEFT
+  jst j2, j1, BYTE
+  jcall w_end
+  jldi j1, 0
+  jld j2, j1, BYTE
+  jjmp tb_lead
+tb_cont:
   jldi j4, 1
   jsub j3, j3, j4
   jst j3, j1, MLEFT

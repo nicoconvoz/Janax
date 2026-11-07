@@ -470,6 +470,11 @@ windows:
   jld j2, j1, NTOK
   jldi j3, 3
   jsub j2, j2, j3
+  jldi j3, 63                   ; (fewer units than the window: no window; a count left never starts below zero,
+  jsar j3, j2, j3               ; or "while not zero" would walk past the row)
+  jldi j4, -1
+  jxor j3, j3, j4
+  jand j2, j2, j3
   jst j2, j1, JLEFT
   jwhile j2
     jldi j1, 0
