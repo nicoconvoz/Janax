@@ -37,6 +37,7 @@ S_KBITS = 500h
 S_KBITS2 = 540h
 S_CAMINO = 580h                 ; asking by the clues (pistas.inc): its walk, and its own program
 S_SELF  = 5C0h
+S_SIL   = 600h                  ; "siluetas": the reading's silhouettes, decided over the library (pistas.inc)
 S_SELFN = 8
 
 ROOMX = 1600h                   ; the facts: {key, the word that fills it} per place (a key may have many)

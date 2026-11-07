@@ -65,6 +65,19 @@ PZX   = 1AC8h
 PZEV  = 3100h                   ; the silhouettes of the word just read: its house verdict, its buildings, its limits
 PZEB  = 3108h
 PZEK  = 3110h
+PZWL  = 3120h                   ; the silhouettes summed over the library: by word and limit how many of its buildings
+PZLG  = 3140h                   ; that limit closes {key, count}; by limit {its print, the buildings it closes, -}; all
+PZNBL = 3160h                   ; the buildings; this book's limits by number (their prints), how many; a word's limits
+PZBLM = 3168h                   ; just read {number, count} and how many; temporaries
+PZBLN = 3170h
+PZEL  = 3178h
+PZELN = 3180h
+PZT1  = 3188h
+PZT2  = 3190h
+PZT3  = 3198h
+PZT4  = 31A0h
+PZT5  = 31A8h
+PZT6  = 31B0h
 
 ; j2 = 1 if the word at PZHP (PZHN bytes) is a line of the text at PZTB (PZTN bytes). Uses j1-j8.
 pz_has:
@@ -199,9 +212,17 @@ clue_round:
   jcall pz_out
   jjmp cr_close
 cr_walk:
-  jldi j2, PZOCC                ; (the counts of every word, from the nests)
+  jldi j2, PZOCC                ; (the counts of every word, from the nests: {print, times, the house's verdict weighed,
+  jldi j3, 32                   ; buildings})
+  jcall pl_new
+  jldi j2, PZWL
   jldi j3, 16
   jcall pl_new
+  jldi j2, PZLG
+  jldi j3, 24
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, PZNBL
   jldi j1, 0
   jst j1, j1, PZNTOK
   jld j9, j1, PZLST             ; every nest: the renglones of the words walked
@@ -723,6 +744,8 @@ pp_done:
 ; The word at PZHP (PZHN bytes), just read in a piece, adds its times (PZEO). Uses j1-j8.
 pz_count:
   jcall pz_print
+  jldi j1, 0
+  jst j5, j1, PZT1
   jldi j2, PZOCC
   jcall pl_take
   jldi j1, 0
@@ -730,6 +753,181 @@ pz_count:
   jld j2, j4, 8
   jadd j2, j2, j3
   jst j2, j4, 8
+  jld j5, j1, PZEV              ; its silhouettes: the verdict weighed by its times (-1 furniture, 0, 1 foundation)
+  jldi j6, 1
+  jsub j5, j5, j6
+  jmul j5, j5, j3
+  jld j2, j4, 16
+  jadd j2, j2, j5
+  jst j2, j4, 16
+  jld j2, j4, 24                ; its buildings
+  jld j3, j1, PZEB
+  jadd j2, j2, j3
+  jst j2, j4, 24
+  jst j1, j1, PZT2              ; and each limit's
+  pzk_lim:
+    jldi j1, 0
+    jld j2, j1, PZT2
+    jld j3, j1, PZELN
+    jsub j3, j2, j3
+    jjz j3, pzk_done
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, PZEL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jld j6, j3, 8
+    jst j6, j1, PZT3
+    jldi j3, 3
+    jshl j4, j4, j3
+    jld j3, j1, PZBLM
+    jadd j4, j4, j3
+    jld j3, j4, 0
+    jld j2, j1, PZT1
+    jcall pz_wlkey
+    jldi j2, PZWL
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jld j3, j1, PZT3
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j1, PZT2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PZT2
+    jjmp pzk_lim
+pzk_done:
+  jldi j1, 0
+  jret
+
+; The key of word print j2 and limit print j3 (never 0) -> j5. Uses j1, j4, j5.
+pz_wlkey:
+  jldi j1, 0
+  jld j4, j1, FNVP
+  jmul j5, j2, j4
+  jxor j5, j5, j3
+  jmul j5, j5, j4
+  jjnz j5, pzw_done
+  jldi j5, 1
+pzw_done:
+  jret
+
+; The index at PZIX: its limits' prints by number (PZBLM, PZBLN of them) and room for a word's limits (PZEL). Uses
+; j1-j14.
+pz_blims:
+  jldi j1, 0
+  jld j9, j1, PZIX
+  jld j2, j9, 144
+  jadd j9, j9, j2
+  jld j2, j9, 0
+  jst j2, j1, PZBLN
+  jldi j3, 4
+  jshl j11, j2, j3
+  jldi j3, 16
+  jadd j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PZEL
+  jld j11, j1, PZBLN
+  jldi j3, 3
+  jshl j11, j11, j3
+  jldi j3, 8
+  jadd j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PZBLM
+  jld j9, j1, PZIX
+  jld j2, j9, 144
+  jadd j9, j9, j2
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j1, j1, PZT4
+  pzb_lim:
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, PZBLN
+    jsub j3, j2, j3
+    jjz j3, pzb_lims
+    jst j9, j1, PZT5
+    jld j2, j9, 8
+    jst j2, j1, PZHN
+    jldi j3, 16
+    jadd j3, j9, j3
+    jst j3, j1, PZHP
+    jcall pz_print
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, PZBLM
+    jadd j3, j3, j4
+    jst j5, j3, 0
+    jld j9, j1, PZT5
+    jld j2, j9, 8
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 16
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jld j2, j1, PZT4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PZT4
+    jjmp pzb_lim
+pzb_lims:
+  jldi j1, 0
+  jret
+
+; The index at PZIX adds its limits to the library's: each one's buildings (by its print), and all of them. Uses j1-j14.
+pz_lsum:
+  jldi j1, 0
+  jld j9, j1, PZIX
+  jld j2, j9, 144
+  jadd j9, j9, j2
+  jld j2, j9, 8
+  jld j3, j1, PZNBL
+  jadd j3, j3, j2
+  jst j3, j1, PZNBL
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j1, j1, PZT4
+  pzl_lim:
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, PZBLN
+    jsub j3, j2, j3
+    jjz j3, pzl_done
+    jst j9, j1, PZT5
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, PZBLM
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jldi j2, PZLG
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, PZT5
+    jld j2, j4, 8
+    jld j3, j9, 0
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j9, 8
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 16
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jld j2, j1, PZT4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PZT4
+    jjmp pzl_lim
+pzl_done:
   jldi j1, 0
   jret
 
@@ -757,6 +955,7 @@ clue_counts:
     jcall pz_file
     jcall pz_index
     jjz j2, cct_skip
+    jcall pz_lsum
     jldi j1, 0
     jld j2, j1, PZIX
     jld j2, j2, 80
@@ -850,6 +1049,7 @@ clue_counts:
   jcall lg16
   jldi j1, 0
   jst j2, j1, LGT
+  jcall pz_silwrite             ; and the reading's silhouettes, decided over the library, for the meaning
 cc_done:
   jldi j1, 0
   jret
@@ -904,6 +1104,7 @@ pz_index:
   jcall room
   jldi j1, 0
   jst j13, j1, PZNEED
+  jcall pz_blims
   jldi j2, 1
   jret
 pzi_no:
@@ -1243,6 +1444,7 @@ pze_said:
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEK
+  jst j1, j1, PZELN
   pze_lims:
     jldi j1, 0
     jld j2, j1, PZEK
@@ -1251,7 +1453,27 @@ pze_said:
     jsub j2, j2, j3
     jst j2, j1, PZEK
     jcall zr_gamma
+    jldi j1, 0
+    jldi j3, 1
+    jsub j2, j2, j3
+    jld j3, j1, PZELN
+    jldi j4, 4
+    jshl j3, j3, j4
+    jld j4, j1, PZEL
+    jadd j3, j3, j4
+    jst j2, j3, 0
     jcall zr_gamma
+    jldi j1, 0
+    jld j3, j1, PZELN
+    jldi j4, 4
+    jshl j3, j3, j4
+    jld j4, j1, PZEL
+    jadd j3, j3, j4
+    jst j2, j3, 8
+    jld j3, j1, PZELN
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, PZELN
     jjmp pze_lims
   pze_limd:
   jcall zr_gamma
@@ -1451,4 +1673,237 @@ zr_rice:
   jld j4, j1, PZRK
   jshl j3, j3, j4
   jor j2, j2, j3
+  jret
+
+; The silhouettes of every word read, summed over the library, decided as the meaning (sentido.jsm) decides them, into
+; the file "siluetas" (S_SIL) for it: each {its bytes, its letters padded, the house (1 foundation, -1 furniture, 0 not
+; decided: the sign of its verdicts weighed by its times), 1 if it is an arrow (the limit that closes the most of its
+; buildings closes most of them, two at least, and not most of the library's)}. Uses j1-j14.
+pz_silwrite:
+  jldi j1, 0
+  jldi j2, 0
+  jst j2, j1, PZT6              ; its bytes, then each word written
+  jldi j2, 1
+  jst j2, j1, PZT4
+  psw_size:
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, NV
+    jsub j3, j2, j3
+    jjz j3, psw_sized
+    jcall pz_wfound
+    jjz j2, psw_snext
+    jld j2, j1, PZHN
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 24
+    jadd j2, j2, j3
+    jld j3, j1, PZT6
+    jadd j3, j3, j2
+    jst j3, j1, PZT6
+  psw_snext:
+    jld j2, j1, PZT4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PZT4
+    jjmp psw_size
+psw_sized:
+  jld j11, j1, PZT6
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PZT5
+  jst j13, j1, PZT3
+  jldi j2, 1
+  jst j2, j1, PZT4
+  psw_word:
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, NV
+    jsub j3, j2, j3
+    jjz j3, psw_file
+    jcall pz_wfound
+    jjz j2, psw_wnext
+    jld j9, j1, PZT3
+    jld j2, j1, PZHN
+    jst j2, j9, 0
+    jldi j3, 8
+    jadd j9, j9, j3
+    jld j3, j1, PZHP
+    jld j4, j1, PZHN
+    jwhile j4
+      jldb j5, j3, 0
+      jstb j5, j9, 0
+      jldi j5, 1
+      jadd j3, j3, j5
+      jadd j9, j9, j5
+      jsub j4, j4, j5
+    jwend
+    jld j9, j1, PZT3
+    jld j2, j1, PZHN
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j9, j9, j2
+    jadd j9, j9, j3
+    jst j9, j1, PZT3
+    jld j4, j1, PZT2              ; the house: the sign of the verdicts weighed
+    jld j2, j4, 16
+    jldi j3, 0
+    jjz j2, psw_house
+    jldi j3, 1
+    jldi j5, 63
+    jsar j5, j2, j5
+    jjz j5, psw_house
+    jldi j3, -1
+  psw_house:
+    jst j3, j9, 0
+    jcall pz_warrow
+    jldi j1, 0
+    jld j9, j1, PZT3
+    jst j2, j9, 8
+    jldi j3, 16
+    jadd j9, j9, j3
+    jst j9, j1, PZT3
+  psw_wnext:
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PZT4
+    jjmp psw_word
+psw_file:
+  jldi j10, 12
+  jldi j11, S_SIL
+  jldi j12, 8
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_SIL
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, psw_done
+  jst j13, j1, PZT4
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, PZT5
+  jld j12, j1, PZT6
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, PZT4
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+psw_done:
+  jldi j1, 0
+  jret
+
+; Word PZT4 of the reading: its letters (PZHP, PZHN), and j2 = 1 with its place among the counts (PZT2) if the library
+; has it. Uses j1-j8.
+pz_wfound:
+  jldi j1, 0
+  jld j2, j1, PZT4
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j5, j3, 16
+  jst j5, j1, PZHN
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jst j3, j1, PZHP
+  jcall pz_print
+  jldi j1, 0
+  jst j5, j1, PZT1
+  jldi j2, PZOCC
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, pwf_no
+  jst j4, j1, PZT2
+  jldi j2, 1
+  jret
+pwf_no:
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the word of print PZT1 (its counts at PZT2) is an arrow over the library: of every limit, the one that
+; closes the most of its buildings closes most of them, two at least, and does not close most of the library's
+; buildings. Uses j1-j14.
+pz_warrow:
+  jldi j1, 0
+  jst j1, j1, PZT6 + 8          ; the most, and the buildings its limit closes
+  jst j1, j1, PZT6 + 16
+  jld j9, j1, PZLG              ; every limit of the library (its table's places)
+  jld j10, j1, PZLG + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  pwa_lim:
+    jjz j10, pwa_decide
+    jld j3, j9, 0
+    jjz j3, pwa_next
+    jst j9, j1, PZT6 + 24
+    jst j10, j1, PZT6 + 32
+    jld j2, j1, PZT1
+    jcall pz_wlkey
+    jldi j2, PZWL
+    jcall pl_find
+    jldi j1, 0
+    jld j9, j1, PZT6 + 24
+    jld j10, j1, PZT6 + 32
+    jld j2, j4, 0
+    jjz j2, pwa_next
+    jld j2, j4, 8
+    jld j3, j1, PZT6 + 8
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, pwa_next
+    jst j2, j1, PZT6 + 8
+    jld j2, j9, 8
+    jst j2, j1, PZT6 + 16
+  pwa_next:
+    jld j2, j1, PZLG + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp pwa_lim
+pwa_decide:
+  jld j2, j1, PZT6 + 8          ; two at least
+  jldi j3, 2
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, pwa_no
+  jadd j2, j2, j2               ; most of its buildings
+  jld j4, j1, PZT2
+  jld j4, j4, 24
+  jsub j3, j4, j2
+  jldi j5, 63
+  jsar j3, j3, j5
+  jjz j3, pwa_no
+  jld j2, j1, PZT6 + 16         ; and not most of the library's
+  jadd j2, j2, j2
+  jld j3, j1, PZNBL
+  jsub j2, j2, j3
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, pwa_no
+  jldi j2, 1
+  jret
+pwa_no:
+  jldi j2, 0
   jret
