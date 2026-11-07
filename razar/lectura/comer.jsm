@@ -4,10 +4,13 @@
 ; The file "come" holds the book's address on the host. Razar reads the book there (request 37, read only) and keeps
 ; nothing of what it says: only its clues, in its nest "pistas" + the print of the address (FNV-1a, sixteen hex
 ; digits: the same book eaten again falls in the same nest, and listing the nests finds every book). A nest is
-; qwords: {1, the book's bytes, how many renglon marks, how many subjects, how many clues, the address's bytes, the
-; bytes of a clue}, the address (padded to 8), where each renglon starts (renglon k is from mark k to mark k + 1, the
-; last mark the end), and each subject in order of first sight: {its bytes, its letters padded to 8, in how many
-; renglones it is, those renglones (each in the bytes of a clue, little end first; padded to 8)}. A clue takes the
+; qwords: {2, the book's bytes, how many renglon marks, how many subjects, how many clues, the address's bytes, the
+; bytes of a clue, the book's units, how many words of the foundation}, the address (padded to 8), where each renglon
+; starts (renglon k is from mark k to mark k + 1, the last mark the end), each subject in order of first sight: {its
+; bytes, its letters padded to 8, how many times it is in the book, in how many renglones it is, those renglones (each
+; in the bytes of a clue, little end first; padded to 8)}, and then each word of the foundation: {its bytes, its
+; letters, how many times}. The counts are no facts: they let the judge weigh a word by the whole book while it reads
+; again only a part. A clue takes the
 ; bytes this book needs to name its last renglon (Capitan: "what is needed is used"): one up to 256 renglones, two for
 ; the New Testament's 7976. Only the subjects keep clues (Capitan: "the system deduces the subjects and keeps the
 ; subjects", not by capital letters): whatever the house did not decide is foundation (the furniture, and what it
@@ -40,6 +43,7 @@ PHASH = 1640h                   ; the print of the address
 CW    = 1648h                   ; the bytes of a clue
 KEEP  = 1650h                   ; by number of word: 1 if it is a subject (its clues are kept), and how many are
 NK    = 1658h
+OCC   = 1660h                   ; by number of word: how many times it is in the book
 PATHB = 6000h                   ; the address (511 bytes at most)
 PLAB  = 6400h                   ; the nest's label: "pistas" and sixteen hex digits
 PLABN = 22
@@ -238,19 +242,48 @@ cm_width:
   jjmp cm_width
 cm_wide:
 
-jldi j1, 0                      ; the nest's size: its head, the address, the marks, every word with its clues
-jld j11, j1, PLEN
+jldi j1, 0                      ; how many times each word is in the book (the judge weighs by the whole book)
+jld j11, j1, NV
+jldi j2, 3
+jshl j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, OCC
+jld j9, j1, ROOMT
+jld j10, j1, NTOK
+jwhile j10
+  jld j2, j9, 0
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j2, j13
+  jld j3, j2, 0
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j2, 0
+  jldi j2, 8
+  jadd j9, j9, j2
+  jsub j10, j10, j4
+jwend
+
+jldi j1, 0                      ; the nest's size: its head, the address, the marks, every word (a subject with its
+jld j11, j1, PLEN               ; clues)
 jldi j2, 7
 jadd j11, j11, j2
 jldi j2, -8
 jand j11, j11, j2
-jldi j2, 56
+jldi j2, 72
 jadd j11, j11, j2
 jld j2, j1, ROFFN
 jldi j3, 3
 jshl j2, j2, j3
 jadd j11, j11, j2
 jld j2, j1, NK
+jldi j3, 3
+jshl j2, j2, j3
+jadd j11, j11, j2
+jld j2, j1, NV
+jldi j3, 1
+jsub j2, j2, j3
 jldi j3, 4
 jshl j2, j2, j3
 jadd j11, j11, j2
@@ -260,19 +293,19 @@ jsub j10, j10, j9
 jwhile j10
   jldi j3, 3
   jshl j3, j9, j3
+  jld j4, j1, ROOMI
+  jadd j4, j3, j4
+  jld j4, j4, 0
+  jld j4, j4, 16
+  jldi j5, 7
+  jadd j4, j4, j5
+  jldi j5, -8
+  jand j4, j4, j5
+  jadd j11, j11, j4
   jld j4, j1, KEEP
   jadd j4, j4, j3
   jld j4, j4, 0
   jjz j4, sz_next
-  jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
-  jld j3, j3, 16
-  jldi j4, 7
-  jadd j3, j3, j4
-  jldi j4, -8
-  jand j3, j3, j4
-  jadd j11, j11, j3
   jldi j3, 3                    ; (and its clues, padded)
   jshl j3, j9, j3
   jld j4, j1, CNTW
@@ -295,7 +328,7 @@ jcall room
 jldi j1, 0
 jst j13, j1, OUTR
 
-jldi j2, 1                      ; its head
+jldi j2, 2                      ; its head
 jst j2, j13, 0
 jld j2, j1, NBYTES
 jst j2, j13, 8
@@ -309,7 +342,15 @@ jld j2, j1, PLEN
 jst j2, j13, 40
 jld j2, j1, CW
 jst j2, j13, 48
-jldi j4, 56
+jld j2, j1, NTOK
+jst j2, j13, 56
+jld j2, j1, NV
+jld j3, j1, NK
+jsub j2, j2, j3
+jldi j3, 1
+jsub j2, j2, j3
+jst j2, j13, 64
+jldi j4, 72
 jadd j4, j13, j4
 jldi j5, PATHB                  ; the address
 jld j3, j1, PLEN
@@ -326,7 +367,7 @@ jldi j2, 7
 jadd j3, j3, j2
 jldi j2, -8
 jand j3, j3, j2
-jldi j4, 56
+jldi j4, 72
 jadd j4, j13, j4
 jadd j4, j4, j3
 jld j5, j1, ROFF                ; the marks
@@ -376,6 +417,12 @@ jwhile j10
   jldi j7, 8
   jadd j4, j4, j7
   jadd j4, j4, j6
+  jld j6, j1, OCC               ; how many times it is in the book
+  jadd j6, j6, j3
+  jld j6, j6, 0
+  jst j6, j4, 0
+  jldi j7, 8
+  jadd j4, j4, j7
   jld j6, j1, CNTW
   jadd j6, j6, j3
   jld j7, j6, 0
@@ -391,6 +438,53 @@ jwhile j10
   jand j7, j7, j2
   jadd j4, j4, j7
 wr_next:
+  jldi j2, 1
+  jadd j9, j9, j2
+  jsub j10, j10, j2
+jwend
+jld j10, j1, NV                 ; the foundation: its letters and how many times, no clues
+jldi j9, 1
+jsub j10, j10, j9
+jwhile j10
+  jldi j3, 3
+  jshl j3, j9, j3
+  jld j5, j1, KEEP
+  jadd j5, j5, j3
+  jld j5, j5, 0
+  jjnz j5, wf_next
+  jld j5, j1, ROOMI
+  jadd j5, j5, j3
+  jld j5, j5, 0
+  jld j6, j5, 16
+  jld j5, j5, 8
+  jld j7, j1, ROOMA
+  jadd j5, j5, j7
+  jst j6, j4, 0
+  jldi j7, 8
+  jadd j8, j4, j7
+  jadd j7, j6, j1
+  jwhile j7
+    jldb j2, j5, 0
+    jstb j2, j8, 0
+    jldi j2, 1
+    jadd j5, j5, j2
+    jadd j8, j8, j2
+    jsub j7, j7, j2
+  jwend
+  jldi j7, 7
+  jadd j6, j6, j7
+  jldi j7, -8
+  jand j6, j6, j7
+  jldi j7, 8
+  jadd j4, j4, j7
+  jadd j4, j4, j6
+  jld j6, j1, OCC
+  jadd j6, j6, j3
+  jld j6, j6, 0
+  jst j6, j4, 0
+  jldi j7, 8
+  jadd j4, j4, j7
+wf_next:
   jldi j2, 1
   jadd j9, j9, j2
   jsub j10, j10, j2

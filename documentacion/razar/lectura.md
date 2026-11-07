@@ -1895,8 +1895,16 @@ vuelta no llega a nada nuevo, dice esa respuesta; antes, una vuelta no dice nada
   `jacob hijo de ? hijo de ?` da isaac y abraham, pero antes pone un "isaac hijo de jacob" que está mal;
   `? padre de ? padre de isaac` encuentra abraham (el libro entero no lo sabía) pero el abuelo sale mal ("surgir").
   No da idéntico porque el juez pesa cada palabra por lo que ve, y ahora ve solo lo releído.
-- **Lo que sigue:** que el juez pese con las cuentas del libro entero (el nido ya sabe en cuántos renglones está cada
-  sujeto); que las piezas (interruptores, puertas) salgan de todo lo leído y no solo de lo releído.
+- **El juez pesa con las cuentas del libro entero** (nido formato 2: cuántas veces aparece cada palabra, cimientos
+  incluidos, y las unidades del libro; 703 KB). Verificado afuera: `jesús` 1.071 y `pedro` 167, igual que una cuenta
+  aparte; la suma de las cuentas da las unidades menos los renglones. Los bits cambian (el isaac de judá, de 13 a 19)
+  pero **los dos errores siguen**, y la causa era otra:
+  - "surgir padre de abraham" sale **igual con el libro entero** (6,33 bits): es un error de Razar de antes ("hacer
+    surgir de estas piedras hijos a Abraham", por la puerta "hijo de / padre de").
+  - "isaac hijo de jacob" usa la puerta "hijo de / padre de" **en su lugar**: con el libro entero esa puerta sale dada
+    vuelta. Releyendo pocos renglones no se da cuenta.
+- **Lo que sigue:** las piezas (interruptores y puertas, y si van dadas vuelta) del libro entero, guardadas en el nido
+  al comer, como la casa y las cuentas: forma del idioma, no hechos.
 
 ## La consola, sin libro (2026-11-07)
 

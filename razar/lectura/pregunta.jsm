@@ -226,6 +226,7 @@ jldi j3, 1
 jadd j2, j2, j3
 jcall lg16
 jst j2, j1, PCOST
+jcall clue_counts               ; (asking by the clues: the counts of the whole books)
 
 jldi j1, 0                      ; the facts: places for two per word for each of the three lengths, twice over
 jld j2, j1, NTOK

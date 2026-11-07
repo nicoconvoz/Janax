@@ -10,8 +10,13 @@
 ; question's own words. Without nests nothing changes: it reads its "libro" as always.
 ;
 ; The program that includes it calls clue_round before read_book, clue_gather after each answer and clue_end before
-; finish, names the labels S_CAMINO ("camino", 6 bytes) and S_SELF (its own program, S_SELFN bytes), and keeps away
-; from 1900h-19FFh.
+; finish, and clue_counts once it knows how often each word is in what it read, names the labels S_CAMINO ("camino",
+; 6 bytes) and S_SELF (its own program, S_SELFN bytes), and keeps away from 1900h-1A2Fh.
+;
+; The judge weighs a filling against the book ("what the filling says here beyond what it says anywhere"): reading
+; again only a part, a word of those renglones would look common there and be rare in the book. So the counts come from
+; the nests (how many times each word is in its book, the book's units), summed over every book, and not from what it
+; read again. What was said and what was asked are whole as they are: every renglon of a word walked is read again.
 PZON  = 1900h                   ; 1: there are nests (it asks by the clues)
 PZCAM = 1908h                   ; the walk so far: its letters, a word a line, and its bytes
 PZCAMN = 1910h
@@ -44,6 +49,8 @@ PZHP  = 19E0h                   ; a word looked for: its letters, its bytes; and
 PZHN  = 19E8h
 PZTB  = 19F0h
 PZTN  = 19F8h
+PZOCC = 1A00h                   ; how many times each word is in the books: a table that grows {print of its letters,
+PZNTOK = 1A20h                  ; times} (four qwords); and the books' units
 
 ; The file of the label at j11 (j12 bytes), read whole into a room that grows to hold it -> PZFR, PZFRN (-1 if it
 ; cannot be opened). Uses j1-j14.
@@ -263,6 +270,11 @@ clue_round:
   jcall pz_out
   jjmp cr_close
 cr_walk:
+  jldi j2, PZOCC                ; (the counts of every word, from the nests)
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, PZNTOK
   jld j9, j1, PZLST             ; every nest: the renglones of the words walked
   jld j10, j1, PZLSTN
   jst j9, j1, PZLP
@@ -337,12 +349,20 @@ pn_no:
 pz_read:
   jldi j1, 0
   jld j2, j1, PZFRN
-  jldi j3, 56
+  jldi j3, 72
   jsub j2, j2, j3
   jldi j3, 63
   jsar j2, j2, j3
-  jjnz j2, prd_done              ; (no nest there)
+  jjnz j2, prd_done              ; (no nest there, or one of another form)
   jld j9, j1, PZFR
+  jld j2, j9, 0
+  jldi j3, 2
+  jsub j2, j2, j3
+  jjnz j2, prd_done
+  jld j2, j9, 56
+  jld j3, j1, PZNTOK
+  jadd j3, j3, j2
+  jst j3, j1, PZNTOK
   jld j2, j9, 16
   jst j2, j1, PZNR
   jld j2, j9, 24
@@ -354,7 +374,7 @@ pz_read:
   jadd j2, j2, j3
   jldi j3, -8
   jand j2, j2, j3
-  jldi j3, 56
+  jldi j3, 72
   jadd j2, j2, j3
   jadd j2, j9, j2
   jst j2, j1, PZMK
@@ -377,7 +397,7 @@ pz_read:
   jld j2, j1, PZCAMN
   jst j2, j1, PZTN
   jld j2, j1, PZWI
-  jwhile j2                     ; every subject: walked? its renglones, marked
+  jwhile j2                     ; every subject: its count; walked? its renglones, marked
     jldi j1, 0
     jld j9, j1, PZW
     jld j2, j9, 0
@@ -385,6 +405,7 @@ pz_read:
     jldi j3, 8
     jadd j3, j9, j3
     jst j3, j1, PZHP
+    jcall pz_count
     jcall pz_has
     jldi j1, 0
     jld j9, j1, PZW
@@ -393,7 +414,7 @@ pz_read:
     jadd j3, j3, j4
     jldi j4, -8
     jand j3, j3, j4
-    jldi j4, 8
+    jldi j4, 16                 ; (past its letters and its count)
     jadd j9, j9, j4
     jadd j9, j9, j3
     jld j5, j9, 0               ; how many renglones
@@ -437,6 +458,35 @@ pz_read:
     jsub j2, j2, j3
     jst j2, j1, PZWI
   jwend
+  jldi j1, 0                    ; and every word of the foundation: its count
+  jld j2, j1, PZFR
+  jld j2, j2, 64
+  jst j2, j1, PZWI
+  jwhile j2
+    jldi j1, 0
+    jld j9, j1, PZW
+    jld j2, j9, 0
+    jst j2, j1, PZHN
+    jldi j3, 8
+    jadd j3, j9, j3
+    jst j3, j1, PZHP
+    jcall pz_count
+    jldi j1, 0
+    jld j9, j1, PZW
+    jld j3, j9, 0
+    jldi j4, 7
+    jadd j3, j3, j4
+    jldi j4, -8
+    jand j3, j3, j4
+    jldi j4, 16
+    jadd j9, j9, j4
+    jadd j9, j9, j3
+    jst j9, j1, PZW
+    jld j2, j1, PZWI
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, PZWI
+  jwend
   jldi j1, 0                    ; the bytes to read again (and a line feed a renglon, at most)
   jst j1, j1, PZTOT
   jld j9, j1, PZMAP
@@ -471,7 +521,7 @@ pz_read:
   jst j1, j1, PZOFF
   jldi j10, 37                  ; its book, where it is
   jld j11, j1, PZFR
-  jldi j2, 56
+  jldi j2, 72
   jadd j11, j11, j2
   jld j12, j1, PZFR
   jld j12, j12, 40
@@ -778,5 +828,107 @@ ce_again:
   jldi j1, 0
   jst j1, j1, POS
 ce_done:
+  jldi j1, 0
+  jret
+
+; The print of the letters at PZHP (PZHN bytes): FNV-1a, never 0 (a key of a table that grows) -> j5. Uses j1-j7.
+pz_print:
+  jldi j1, 0
+  jldi j5, 0
+  jshi j5, 0CBF2h
+  jshi j5, 9CE4h
+  jshi j5, 8422h
+  jshi j5, 2325h
+  jldi j6, 0
+  jshi j6, 100h
+  jshi j6, 0
+  jshi j6, 1B3h
+  jld j3, j1, PZHP
+  jld j4, j1, PZHN
+  jwhile j4
+    jldb j7, j3, 0
+    jxor j5, j5, j7
+    jmul j5, j5, j6
+    jldi j7, 1
+    jadd j3, j3, j7
+    jsub j4, j4, j7
+  jwend
+  jjnz j5, pp_done
+  jldi j5, 1
+pp_done:
+  jret
+
+; The word at PZHP (PZHN bytes) of the nest walked (PZW: its count after its letters) adds its count. Uses j1-j8.
+pz_count:
+  jcall pz_print
+  jldi j2, PZOCC
+  jcall pl_take
+  jldi j1, 0
+  jld j9, j1, PZW
+  jld j3, j9, 0
+  jldi j2, 7
+  jadd j3, j3, j2
+  jldi j2, -8
+  jand j3, j3, j2
+  jadd j3, j9, j3
+  jld j3, j3, 8
+  jld j2, j4, 8
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jldi j1, 0
+  jret
+
+; The judge's counts from the books, not from what it read again: each word's times (ROOMF2) and the books' units
+; (LGT). Uses j1-j14.
+clue_counts:
+  jldi j1, 0
+  jld j2, j1, PZON
+  jjz j2, cc_done
+  jld j2, j1, PZNTOK
+  jjz j2, cc_done
+  jld j10, j1, NV
+  jldi j9, 1
+  jsub j10, j10, j9
+  jwhile j10
+    jldi j1, 0
+    jst j9, j1, PZK
+    jst j10, j1, PZA
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j5, j3, 16
+    jst j5, j1, PZHN
+    jld j3, j3, 8
+    jld j4, j1, ROOMA
+    jadd j3, j3, j4
+    jst j3, j1, PZHP
+    jcall pz_print
+    jldi j2, PZOCC
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, cc_next             ; (a word of no book: what it read is all it has)
+    jld j2, j4, 8
+    jld j9, j1, PZK
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMF2
+    jadd j3, j3, j4
+    jst j2, j3, 0
+  cc_next:
+    jldi j1, 0
+    jld j9, j1, PZK
+    jld j10, j1, PZA
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+  jwend
+  jld j2, j1, PZNTOK
+  jcall lg16
+  jldi j1, 0
+  jst j2, j1, LGT
+cc_done:
   jldi j1, 0
   jret
