@@ -82,5 +82,7 @@ db 'come', 0
 times 9C0h - $ db 0
 db 'tablero/esqueletos', 0
 times 0A00h - $ db 0
-db 'sentido: relaciones entre esqueletos guardadas en la biblioteca: ', 0
+db 'sentido: vueltas de esqueletos guardadas: ', 0
 times 0A40h - $ db 0
+db ', pares probados en la biblioteca: ', 0
+times 0A80h - $ db 0

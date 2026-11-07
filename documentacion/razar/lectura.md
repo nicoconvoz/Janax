@@ -2164,3 +2164,18 @@ la frase de la sección anterior, *"la lógica no sale de un pedazo"*, valía so
 
 Las casas con índices de versión 5 tienen que volver a comer sus libros (el vigía lo hace solo cuando cambian).
 
+**La tercera silueta: las vueltas de los esqueletos** (2026-11-07). "Padre de" dado vuelta es "hijo de" se prueba con
+muchos pares, y un pedazo no los tiene: con el libro entero se deducía "matán" para "¿de quién es hijo jacob?", y en
+la charla no.
+- **`sentido` come:** si la casa tiene un `come`, lee ese libro en el anfitrión, prueba sus esqueletos como siempre y
+  deja en la biblioteca `tablero/esqueletos<huella de sus bytes>`. Cada relación entre dos esqueletos va con dos pares
+  o más, con si se dan vuelta, cuántos pares la prueban y las letras de los dos medios. Nuevo Testamento: 2.646
+  relaciones, 1,9 s. Comer pasa ahora por los dos: la charla (`come`) y el vigía lanzan `comer` y después `sentido`.
+- **Al contestar, `sentido` suma las vueltas de todos los libros** por las letras de los dos esqueletos, en los dos
+  sentidos, y para cada esqueleto se queda con la vuelta probada por más pares. Al deducir usa primero esa, y si no hay
+  ninguna, la del pedazo.
+- **Medido en la charla:** "¿de quién es hijo jacob?" da isaac (el libro lo dice) y **matán, deducido**: "porque
+  'padre de' dado vuelta es 'hijo de', pares probados en la biblioteca: 4". Con el libro entero todo sigue idéntico.
+- **Pendiente:** el archivo de vueltas pesa 235 KB en cajas de 8 bytes, más que el nido entero. Hay que pasarlo a bits.
+  Y cuando un libro cambia, su archivo de vueltas viejo queda: falta devolverlo como se devuelven los pedazos.
+

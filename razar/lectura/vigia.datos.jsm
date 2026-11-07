@@ -16,3 +16,5 @@ db ' -> a comer', 10, 0
 times 0C0h - $ db 0
 db 'vigia: no pude lanzar a comer', 10, 0
 times 100h - $ db 0
+db 'sentido', 0
+times 108h - $ db 0

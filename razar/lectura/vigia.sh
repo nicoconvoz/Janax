@@ -17,9 +17,11 @@ etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 mkdir -p "$casa" "$(cygpath -u "$tablero")"
 d=$(mktemp -d); trap 'rm -rf "$d"' EXIT
 bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$d" \
-  "$aqui/vigia.jsm" "$aqui/vigia.datos.jsm" "$aqui/comer.jsm" "$aqui/comer.datos.jsm" > /dev/null || exit 1
-cp "$d/comer.bin" "$casa/$(etiqueta comer)"         # the program it launches for each book
-cp "$d/comer.datos" "$casa/$(etiqueta comer.datos)"
+  "$aqui/vigia.jsm" "$aqui/vigia.datos.jsm" "$aqui/comer.jsm" "$aqui/comer.datos.jsm"   "$aqui/sentido.jsm" "$aqui/sentido.datos.jsm" > /dev/null || exit 1
+cp "$d/comer.bin" "$casa/$(etiqueta comer)"         # the programs it launches for each book: its clues and silhouettes,
+cp "$d/comer.datos" "$casa/$(etiqueta comer.datos)" # and the turns of its skeletons
+cp "$d/sentido.bin" "$casa/$(etiqueta sentido)"
+cp "$d/sentido.datos" "$casa/$(etiqueta sentido.datos)"
 registro() {   # each line to VIGIA_LOG, the file cut to its last 100 lines; without it, to the screen
   if [ -z "${VIGIA_LOG:-}" ]; then cat; return; fi
   while IFS= read -r linea; do

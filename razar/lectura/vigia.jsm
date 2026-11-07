@@ -13,6 +13,7 @@ S_NOTXT = 60h
 S_NOMEM = 80h
 S_EATS  = 0A0h
 S_NOKID = 0C0h
+S_SENT  = 100h
 
 QUEUE = 1000h                   ; its window: one request {count, kind, a, b, answer}
 POS   = 1028h                   ; what it wrote in TEXT
@@ -111,21 +112,35 @@ vg_text:
   jldi j2, 7
   jor j10, j10, j2
   jcall ask
-  jldi j1, 0                    ; comer, its child, with every right it has
+  jldi j11, S_COMER             ; comer, its child: the book's clues and silhouettes
+  jldi j12, 5
+  jcall child
+  jldi j11, S_SENT              ; then sentido, eating too: the turns of its skeletons, for every Razar
+  jldi j12, 7
+  jcall child
+  jldi j1, 0                    ; ("come" goes: what it names is eaten)
+  jldi j10, 12
+  jldi j11, S_COME
+  jldi j12, 4
+  jcall ask
+  jjmp vg_wait
+
+; The program of the label at j11 (j12 bytes) launched as its child, with every right it has, and what it asks signed
+; until it ends. Uses j1-j14.
+child:
+  jldi j1, 0
   jldi j10, 15
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 16
   jor j10, j10, j2
-  jldi j11, S_COMER
-  jldi j12, 5
   jcall ask
   jldi j1, 0
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, vg_nokid
   jst j13, j1, KID
-vg_serve:                       ; what it asks, signed, until it ends
+ch_serve:                       ; what it asks, signed, until it ends
   jcall sign_all
   jldi j1, 0
   jldi j10, 19
@@ -133,15 +148,19 @@ vg_serve:                       ; what it asks, signed, until it ends
   jcall ask
   jldi j1, 1
   jadd j2, j13, j1
-  jjnz j2, vg_wait              ; (-1 while it runs)
+  jjnz j2, ch_done              ; (-1 while it runs)
   jldi j10, 29
   jcall ask
-  jjmp vg_serve
+  jjmp ch_serve
+ch_done:
+  jldi j1, 0
+  jret
 vg_nokid:
   jldi j1, S_NOKID
   jcall puts
   jcall flush
-  jjmp vg_wait
+  jldi j1, 0
+  jret
 
 ; Every request of its child that waits for its signature, signed (17). Uses j1-j14.
 sign_all:

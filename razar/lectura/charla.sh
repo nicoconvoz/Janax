@@ -43,6 +43,7 @@ while IFS= read -r -e -p "vos> " linea; do
       [ -f "$ruta" ] || { echo "  no encuentro ese libro: $ruta"; continue; }
       printf '%s\n' "$(cygpath -w "$ruta")" > "$casa/$(etiqueta come)"
       razar comer
+      razar sentido                                                    # and the turns of its skeletons, for every Razar
       rm -f "$casa/$(etiqueta come)" ;;
     *)
       rm -f "$casa/$(etiqueta camino)" "$casa/$(etiqueta libro)"   # a new question walks from nothing: a round

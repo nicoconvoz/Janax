@@ -59,6 +59,7 @@ S_SILA  = 940h
 S_COME  = 980h                  ; eating: "come", the library's label of the skeletons, what it says
 S_ESQ   = 9C0h
 S_ESQD  = 0A00h
+S_LIBP  = 0A40h                 ; ", pairs proved in the library"
 
 NSK   = 1930h                   ; skeletons, pairs, denied pairs
 NPR   = 1938h
@@ -151,6 +152,25 @@ ET2   = 1E40h
 EBUF  = 1E48h                   ; (three pieces of a middle, then three of the other: 6 qwords)
 EN2   = 1E78h                   ; the other middle's pieces; a piece walked
 EK    = 1E80h
+SXR   = 0B00h                   ; the library's turns: a file read whole (room, bytes, room's bytes, handle); the folder's
+SXN   = 0B08h                   ; labels (room, how many, room's bytes); by two skeletons' prints {key, pairs summed, the
+SXC   = 0B10h                   ; other's pieces, how many, this one's print} (a growing table); by skeleton's print its
+SXH   = 0B18h                   ; best turn {print, pairs, the other's pieces, how many}; walking; a middle's pieces
+LSTR  = 0B20h
+LSTN  = 0B28h
+LSTC  = 0B30h
+LREL  = 0B40h
+LBEST = 0B60h
+LP    = 0B80h
+LI    = 0B88h
+LT1   = 0B90h
+LT2   = 0B98h
+LT3   = 0BA0h
+LT4   = 0BA8h
+LNR   = 0BB0h
+LPB   = 0BB8h
+LPC   = 0BC0h                   ; (three pieces)
+LPP   = 0BD8h                   ; the turn's pairs
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
 FLT   = 1CC8h
@@ -266,6 +286,7 @@ jldi j2, 10
 jcall putch
 jcall flush
 jcall arrows                    ; the words that live in a limit most buildings do not close: what a question asks
+jcall lib_load                  ; the turns every book proved (sentido eating), summed: what a piece cannot prove
 jcall sk_report
 jcall cores
 jjmp finish
@@ -2351,6 +2372,602 @@ ee_pieces:
 ee_done:
   jldi j1, 0
   jret
+; The library's turn of the fact's skeleton (WSK): deduced as with TBEST, over the pairs every book proved. The core's
+; side and the answer as qm_turned finds them; the fit over the turn's pieces (MB1, from lib_turn). Uses j1-j14.
+qt_lib:
+  jldi j1, 0
+  jld j2, j1, WA
+  jld j3, j1, QCW
+  jsub j2, j2, j3
+  jldi j4, 0
+  jjnz j2, qtl_side
+  jldi j4, 1
+qtl_side:
+  jst j4, j1, QSIDE
+  jld j2, j1, WB
+  jjz j4, qtl_oth
+  jjmp qtl_oth2
+qtl_oth:
+  jld j2, j1, WA
+qtl_oth2:
+  jst j2, j1, QOTH
+  jld j2, j1, LPB
+  jcall q_fit_mb
+  jjz j2, qtl_done
+  jcall q_best
+  jjz j2, qtl_done
+  jcall q_new
+  jjz j2, qtl_done
+  jldi j1, S_DEDQ
+  jcall puts
+  jld j2, j1, WB
+  jcall putword
+  jldi j2, 32
+  jcall putch
+  jcall put_lpc
+  jld j2, j1, WA
+  jcall putword
+  jldi j1, S_BEC
+  jcall puts
+  jld j12, j1, WSK
+  jcall put_mid
+  jldi j1, S_BTURN
+  jcall puts
+  jcall put_lpc
+  jldi j1, S_LIBP
+  jcall puts
+  jld j2, j1, LPP
+  jcall putnum
+  jldi j2, 41
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+qtl_done:
+  jldi j1, 0
+  jret
+
+; The turn's pieces (LPC, LPB of them), written between quotes as put_mid writes a middle. Uses j1-j9.
+put_lpc:
+  jldi j1, 0
+  jldi j2, 34
+  jcall putch
+  jldi j2, 95
+  jcall putch
+  jldi j1, 0
+  jst j1, j1, LT4
+  plc_lap:
+    jldi j1, 0
+    jld j2, j1, LT4
+    jld j3, j1, LPB
+    jsub j3, j2, j3
+    jjz j3, plc_done
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, LT4
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, LPC
+    jcall putword
+    jldi j1, 0
+    jld j2, j1, LT4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LT4
+    jjmp plc_lap
+plc_done:
+  jldi j2, 32
+  jcall putch
+  jldi j2, 95
+  jcall putch
+  jldi j2, 34
+  jcall putch
+  jldi j2, 32
+  jjmp putch
+
+; j2 = 1 if the library proved a turn of the skeleton WSK: its pieces (as this reading's words) at MB1 and LPC, LPB of
+; them, its pairs at LPP. Uses j1-j14.
+lib_turn:
+  jldi j1, 0
+  jld j2, j1, LBEST
+  jjz j2, lt_no
+  jld j12, j1, WSK              ; the skeleton's print, by its pieces' letters
+  jldi j13, LPC
+  jcall m_collect
+  jldi j1, 0
+  jst j2, j1, LT1
+  jld j5, j1, FNVO
+  jst j5, j1, LT2
+  jst j1, j1, LT3
+  lt_print:
+    jldi j1, 0
+    jld j2, j1, LT3
+    jld j3, j1, LT1
+    jsub j3, j2, j3
+    jjz j3, lt_printed
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j2, j3, LPC
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, ROOMI
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j3, 16
+    jld j3, j3, 8
+    jld j6, j1, ROOMA
+    jadd j3, j3, j6
+    jcall lp_letters
+    jldi j1, 0
+    jld j2, j1, LT3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LT3
+    jjmp lt_print
+lt_printed:
+  jld j5, j1, LT2
+  jjnz j5, lt_key
+  jldi j5, 1
+lt_key:
+  jldi j2, LBEST
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, lt_no
+  jld j2, j4, 8                 ; proved twice at least
+  jst j2, j1, LPP
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, lt_no
+  jld j9, j4, 16                ; its pieces: as words of this reading
+  jld j2, j4, 24
+  jst j2, j1, LPB
+  jld j2, j1, PASS
+  jst j2, j1, LT4
+  jldi j2, 2
+  jst j2, j1, PASS
+  jst j1, j1, LT3
+  lt_piece:
+    jldi j1, 0
+    jld j2, j1, LT3
+    jld j3, j1, LPB
+    jsub j3, j2, j3
+    jjz j3, lt_pieces
+    jst j9, j1, LT1
+    jld j4, j9, 0
+    jst j4, j1, WLEN
+    jldi j5, 8
+    jadd j5, j9, j5
+    jldi j6, 0
+    lt_letter:
+      jsub j7, j6, j4
+      jjz j7, lt_letters
+      jadd j7, j5, j6
+      jldb j7, j7, 0
+      jstb j7, j6, WBUF
+      jldi j7, 1
+      jadd j6, j6, j7
+      jjmp lt_letter
+    lt_letters:
+    jcall word_id
+    jldi j1, 0
+    jldi j3, 1
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, lt_unknown         ; (a word this reading never read: no fit is possible)
+    jld j3, j1, LT3
+    jldi j4, 3
+    jshl j3, j3, j4
+    jst j2, j3, LPC
+    jst j2, j3, MB1
+    jld j9, j1, LT1
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jld j2, j1, LT3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LT3
+    jjmp lt_piece
+lt_pieces:
+  jld j2, j1, LT4
+  jst j2, j1, PASS
+  jldi j2, 1
+  jret
+lt_unknown:
+  jld j2, j1, LT4
+  jst j2, j1, PASS
+lt_no:
+  jldi j1, 0
+  jldi j2, 0
+  jret
+
+; The print LT2 goes on with j4 letters at j3, and a space after them (a middle's pieces, one after the other). Uses
+; j1-j7.
+lp_letters:
+  jldi j1, 0
+  jld j2, j1, LT2
+  jld j6, j1, FNVP
+  jwhile j4
+    jldb j5, j3, 0
+    jxor j2, j2, j5
+    jmul j2, j2, j6
+    jldi j5, 1
+    jadd j3, j3, j5
+    jsub j4, j4, j5
+  jwend
+  jldi j5, 32
+  jxor j2, j2, j5
+  jmul j2, j2, j6
+  jst j2, j1, LT2
+  jret
+
+; The turns every book proved (the files "tablero/esqueletos...", sentido eating), summed by the letters of both
+; skeletons, in both directions; then each skeleton's best turn (the most pairs). None: LBEST stays 0. Uses j1-j14.
+lib_load:
+  jldi j1, 0
+  jst j1, j1, LBEST
+  jst j1, j1, LNR
+  jldi j2, 4096                 ; its folder's labels, all of them (while one more could be cut, twice the room)
+  jst j2, j1, LSTC
+  ll_list:
+    jld j11, j1, LSTC
+    jcall room
+    jldi j1, 0
+    jst j13, j1, LSTR
+    jldi j10, 14
+    jadd j11, j13, j1
+    jld j12, j1, LSTC
+    jcall ask
+    jldi j1, 0
+    jst j13, j1, LSTN
+    jldi j2, 63
+    jsar j2, j13, j2
+    jjnz j2, ll_done
+    jld j9, j1, LSTR
+    jadd j10, j13, j1
+    jwhile j10
+      jld j2, j9, 0
+      jldi j3, 7
+      jadd j2, j2, j3
+      jldi j3, -8
+      jand j2, j2, j3
+      jldi j3, 8
+      jadd j2, j2, j3
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+    jwend
+    jld j3, j1, LSTR
+    jsub j9, j9, j3
+    jld j3, j1, LSTC
+    jsub j3, j3, j9
+    jldi j4, 4104
+    jsub j3, j3, j4
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ll_listed
+    jld j2, j1, LSTC
+    jadd j2, j2, j2
+    jst j2, j1, LSTC
+    jjmp ll_list
+ll_listed:
+  jldi j2, LREL
+  jldi j3, 40
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, LSTR
+  jst j9, j1, LP
+  jld j2, j1, LSTN
+  jst j2, j1, LI
+  ll_label:
+    jldi j1, 0
+    jld j2, j1, LI
+    jjz j2, ll_best
+    jld j9, j1, LP
+    jld j2, j9, 0               ; "tablero/esqueletos" and more?
+    jldi j3, 19
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, ll_next
+    jldi j3, 8
+    jadd j3, j9, j3
+    jldi j4, S_ESQ
+    jldi j5, 18
+    ll_cmp:
+      jldb j6, j3, 0
+      jldb j7, j4, 0
+      jsub j6, j6, j7
+      jjnz j6, ll_next
+      jldi j6, 1
+      jadd j3, j3, j6
+      jadd j4, j4, j6
+      jsub j5, j5, j6
+      jjnz j5, ll_cmp
+    jldi j11, 8
+    jadd j11, j9, j11
+    jld j12, j9, 0
+    jcall sx_read
+    jldi j1, 0
+    jld j2, j1, SXN
+    jldi j3, 16
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, ll_next
+    jcall ll_file
+  ll_next:
+    jldi j1, 0
+    jld j9, j1, LP
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jst j9, j1, LP
+    jld j2, j1, LI
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, LI
+    jjmp ll_label
+ll_best:
+  jld j2, j1, LNR
+  jjz j2, ll_done
+  jldi j2, LBEST
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
+  jld j9, j1, LREL              ; each relation: the best of its skeleton
+  jld j10, j1, LREL + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  ll_rel:
+    jjz j10, ll_done
+    jld j2, j9, 0
+    jjz j2, ll_rnext
+    jst j9, j1, LT1
+    jst j10, j1, LT3
+    jld j5, j9, 32
+    jldi j2, LBEST
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, LT1
+    jld j10, j1, LT3
+    jld j2, j9, 8
+    jld j3, j4, 8
+    jsub j3, j3, j2
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjz j3, ll_rnext
+    jst j2, j4, 8
+    jld j2, j9, 16
+    jst j2, j4, 16
+    jld j2, j9, 24
+    jst j2, j4, 24
+  ll_rnext:
+    jld j2, j1, LREL + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp ll_rel
+ll_done:
+  jldi j1, 0
+  jret
+
+; One file read (SXR, SXN bytes): each turned relation, both ways, added to LREL by the prints of its two skeletons
+; (their pieces' letters). The eating's variables are free here: ET1 turned, ET2 pairs, EI and EN2 the pieces of each,
+; EOUT and EPOS where they start, EOSZ and ECNT their prints, EK the relation walked. Uses j1-j14.
+ll_file:
+  jldi j1, 0
+  jld j9, j1, SXR
+  jld j2, j9, 8
+  jst j2, j1, LT4
+  jldi j2, 16
+  jadd j9, j9, j2
+  jst j9, j1, EK
+  lf_rel:
+    jldi j1, 0
+    jld j2, j1, LT4
+    jjz j2, lf_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, LT4
+    jld j9, j1, EK
+    jld j2, j9, 0
+    jst j2, j1, ET1
+    jld j2, j9, 8
+    jst j2, j1, ET2
+    jld j2, j9, 16
+    jst j2, j1, EI
+    jld j2, j9, 24
+    jst j2, j1, EN2
+    jldi j2, 32
+    jadd j9, j9, j2
+    jst j9, j1, EOUT
+    jld j10, j1, EI
+    jcall lf_walk
+    jldi j1, 0
+    jld j2, j1, LT2
+    jst j2, j1, EOSZ
+    jst j9, j1, EPOS
+    jld j10, j1, EN2
+    jcall lf_walk
+    jldi j1, 0
+    jld j2, j1, LT2
+    jst j2, j1, ECNT
+    jst j9, j1, EK
+    jld j2, j1, ET1               ; only a turn
+    jjz j2, lf_rel
+    jld j2, j1, EOSZ              ; one way: from the first to the other
+    jld j3, j1, ECNT
+    jld j5, j1, EPOS
+    jld j6, j1, EN2
+    jcall lf_add
+    jldi j1, 0
+    jld j2, j1, ECNT              ; and back
+    jld j3, j1, EOSZ
+    jld j5, j1, EOUT
+    jld j6, j1, EI
+    jcall lf_add
+    jldi j1, 0
+    jld j2, j1, LNR
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, LNR
+    jjmp lf_rel
+lf_done:
+  jldi j1, 0
+  jret
+
+; The pieces from j9 (j10 of them, each {its bytes, its letters padded}): their print -> LT2, and j9 past them.
+; Uses j1-j10.
+lf_walk:
+  jldi j1, 0
+  jld j2, j1, FNVO
+  jst j2, j1, LT2
+  lfw_lap:
+    jjz j10, lfw_done
+    jst j9, j1, LT1
+    jst j10, j1, LT3
+    jld j4, j9, 0
+    jldi j3, 8
+    jadd j3, j9, j3
+    jcall lp_letters
+    jldi j1, 0
+    jld j9, j1, LT1
+    jld j10, j1, LT3
+    jld j2, j9, 0
+    jldi j3, 7
+    jadd j2, j2, j3
+    jldi j3, -8
+    jand j2, j2, j3
+    jldi j3, 8
+    jadd j2, j2, j3
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp lfw_lap
+lfw_done:
+  jret
+
+; One way of a turn: from the skeleton of print j2 to the one of print j3, whose pieces are at j5 (j6 of them): its
+; pairs (ET2) added. Uses j1-j14.
+lf_add:
+  jldi j1, 0
+  jst j2, j1, LT1
+  jst j5, j1, LT3
+  jst j6, j1, LPB
+  jld j4, j1, FNVP
+  jmul j5, j2, j4
+  jxor j5, j5, j3
+  jmul j5, j5, j4
+  jjnz j5, lfa_key
+  jldi j5, 1
+lfa_key:
+  jldi j2, LREL
+  jcall pl_take
+  jldi j1, 0
+  jld j2, j4, 8
+  jld j3, j1, ET2
+  jadd j2, j2, j3
+  jst j2, j4, 8
+  jld j2, j1, LT3
+  jst j2, j4, 16
+  jld j2, j1, LPB
+  jst j2, j4, 24
+  jld j2, j1, LT1
+  jjnz j2, lfa_print
+  jldi j2, 1
+lfa_print:
+  jst j2, j4, 32
+  jret
+
+; The file of the label at j11 (j12 bytes), read whole into a room that grows -> SXR, SXN (-1 if it cannot be
+; opened). Uses j1-j14.
+sx_read:
+  jldi j1, 0
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, -1
+  jst j2, j1, SXN
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, sxr_done
+  jst j13, j1, SXH
+  jst j1, j1, SXN
+  jldi j11, 4096
+  jst j11, j1, SXC
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SXR
+sxr_read:
+  jld j10, j1, SXH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, SXR
+  jld j2, j1, SXN
+  jadd j11, j11, j2
+  jld j12, j1, SXC
+  jsub j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jsub j2, j13, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjnz j2, sxr_close
+  jld j2, j1, SXN
+  jadd j2, j2, j13
+  jst j2, j1, SXN
+  jld j3, j1, SXC
+  jsub j3, j3, j2
+  jjnz j3, sxr_read
+  jld j11, j1, SXC
+  jadd j11, j11, j11
+  jcall room
+  jldi j1, 0
+  jld j4, j1, SXR
+  jadd j5, j13, j1
+  jld j6, j1, SXN
+  jwhile j6
+    jld j7, j4, 0
+    jst j7, j5, 0
+    jldi j7, 8
+    jadd j4, j4, j7
+    jadd j5, j5, j7
+    jsub j6, j6, j7
+  jwend
+  jst j13, j1, SXR
+  jld j2, j1, SXC
+  jadd j2, j2, j2
+  jst j2, j1, SXC
+  jjmp sxr_read
+sxr_close:
+  jld j10, j1, SXH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+sxr_done:
+  jldi j1, 0
+  jret
 ; A question (QQS to QQE in QBUF): every core in it (a word the house left as furniture, as the cores of the facts)
 ; asked the facts it is in, and of those only the ones whose relation fits the question: the middle of the fact's
 ; skeleton is said in the question right next to the core, on the side the fact has it (its marks aside). The answer
@@ -2494,6 +3111,9 @@ qm_oth2:
   jcall putch
   jjmp flush
 qm_turned:
+  jcall lib_turn                ; the library's turn first: proved over every book, not over a piece
+  jjnz j2, qt_lib
+  jldi j1, 0
   jld j2, j1, WSK               ; deduced: the skeleton that turns, its fact turned (WB «TBEST» WA)
   jst j2, j1, FE
   jldi j12, 1
@@ -2561,6 +3181,7 @@ qm_done:
 q_fit:
   jldi j13, MB1
   jcall m_collect
+q_fit_mb:                       ; (a middle's pieces already at MB1, j2 of them)
   jldi j1, 0                    ; the middle's words, the marks out (in place)
   jst j2, j1, FI3
   jst j1, j1, FI2
