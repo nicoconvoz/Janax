@@ -56,6 +56,7 @@ S_ARROW = 840h                  ; the arrows found
 S_SILS  = 8C0h                  ; "siluetas", and what was taken from it
 S_SILT  = 900h
 S_SILA  = 940h
+S_PENS  = 985h                  ; "pensar": the words a thought ran out of facts on
 S_COME  = 980h                  ; eating: "come", the library's label of the skeletons, what it says
 S_PRQ   = 990h                  ; "tablero/preguntas-"
 S_ESQ   = 9C0h
@@ -243,6 +244,10 @@ THE   = 0E68h
 THF   = 0E70h
 THI   = 0E78h
 THG   = 0E80h
+WNT   = 0EB0h                   ; the words it wants to read again (pensar): by word {key} (a table that grows), their
+PNB   = 0ED0h                   ; letters a line each (a room that grows), its bytes, its room's bytes
+PNN   = 0ED8h
+PNC   = 0EE0h
 CKT   = 0E90h                   ; the compositions eaten: by skeleton {key, times} (a table that grows)
 FLS   = 1CB8h                   ; learning: the skeleton's place, the pair's, turned
 FLP   = 1CC0h
@@ -3009,6 +3014,131 @@ think:
     jcall pl_take
     jjmp th_lap
 th_done:
+  jldi j1, 0                    ; the word it ran out of facts on: to be read again (pensar), if it was not asked yet
+  jld j2, j1, THX
+  jjmp want_word
+
+; Word j2 wanted: its letters and a line feed added to PNB, once a word (the room doubles when it would not hold
+; them). Uses j1-j14.
+want_word:
+  jldi j1, 0
+  jst j2, j1, THG
+  jld j2, j1, WNT
+  jjnz j2, ww_ready
+  jldi j2, WNT
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jldi j11, 4096
+  jst j11, j1, PNC
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PNB
+  jst j1, j1, PNN
+ww_ready:
+  jld j5, j1, THG
+  jldi j2, WNT
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, ww_done
+  jld j2, j1, THG               ; its letters
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j5, j3, 16
+  jld j6, j3, 8
+  jld j4, j1, ROOMA
+  jadd j6, j6, j4
+  jst j5, j1, TI
+  jst j6, j1, TJ
+  jld j2, j1, PNN               ; room for them and a line feed?
+  jadd j2, j2, j5
+  jldi j3, 1
+  jadd j2, j2, j3
+  jld j3, j1, PNC
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ww_put
+  jld j11, j1, PNC
+  jadd j11, j11, j11
+  jadd j11, j11, j5
+  jst j11, j1, PNC
+  jcall room
+  jldi j1, 0
+  jld j4, j1, PNB
+  jadd j5, j13, j1
+  jld j6, j1, PNN
+  jldi j7, 1
+  jwhile j6
+    jldb j8, j4, 0
+    jstb j8, j5, 0
+    jadd j4, j4, j7
+    jadd j5, j5, j7
+    jsub j6, j6, j7
+  jwend
+  jst j13, j1, PNB
+ww_put:
+  jld j4, j1, PNB
+  jld j2, j1, PNN
+  jadd j4, j4, j2
+  jld j5, j1, TI
+  jld j6, j1, TJ
+  jldi j7, 1
+  jwhile j5
+    jldb j8, j6, 0
+    jstb j8, j4, 0
+    jadd j6, j6, j7
+    jadd j4, j4, j7
+    jsub j5, j5, j7
+  jwend
+  jldi j8, 10
+  jstb j8, j4, 0
+  jadd j4, j4, j7
+  jld j2, j1, PNB
+  jsub j4, j4, j2
+  jst j4, j1, PNN
+ww_done:
+  jldi j1, 0
+  jret
+
+; The words wanted, into "pensar" (none: it goes), for the talk to read their renglones again and think on. Uses
+; j1-j14.
+want_write:
+  jldi j1, 0
+  jldi j10, 12
+  jldi j11, S_PENS
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, PNN
+  jjz j2, wwr_done
+  jldi j10, 4
+  jldi j11, S_PENS
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, wwr_done
+  jst j13, j1, EHND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jld j11, j1, PNB
+  jld j12, j1, PNN
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, EHND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+wwr_done:
   jldi j1, 0
   jret
 
@@ -5550,8 +5680,7 @@ qo_said2:
   jldi j1, S_NOFIT
   jcall puts
 qo_done:
-  jldi j1, 0
-  jret
+  jjmp want_write
 
 ; The window WA WK WB met by a core of a question (GMODE 4: what the book says; 5: what it deduces). Uses j1-j14.
 q_meet:

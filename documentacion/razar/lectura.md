@@ -2352,3 +2352,25 @@ otras siluetas:
   - "¿qué es razar?" todavía no piensa, porque el pedazo no tiene hechos que arranquen en "autónomo" ni en
     "determinista". Para seguir a una palabra nueva tiene que ir a releer sus renglones.
 
+## Relee para seguir pensando (2026-11-07)
+
+Pensar es caminar: cuando el pensamiento se queda sin hechos en una palabra, Razar va a releer sus renglones.
+
+- **`sentido`** anota en `pensar` la palabra en la que cada pensamiento se quedó sin hechos (`want_word`, una vez cada
+  una). Al terminar la pregunta escribe el archivo, o lo borra si no pidió nada (`want_write`).
+- **La charla** (`charla.sh`) hace el `while` entre programas:
+  1. suma las palabras pedidas al camino;
+  2. `pregunta` relee sus renglones (y los de la pregunta, que agrega sola);
+  3. `sentido` piensa de nuevo.
+
+  Corta cuando no pide ninguna palabra que no haya leído ya. Nada corre por las dudas: solo se relee lo que el
+  pensamiento pidió.
+- **Medido** sobre una copia de la biblioteca real:
+  - "¿qué es razar?" ahora piensa: después de "razar es determinista" sigue con `determinista( el ? -> determinista(
+    el libro` y `libro de ? -> libro de thomas`. Antes no pensaba nada;
+  - las preguntas de control dan idéntico;
+  - **costo:** cada vuelta es un `pregunta` y un `sentido` más. Una pregunta pasó a tardar unos 14 a 19 s en la
+    charla.
+- **Flojo todavía:** los pasos se apoyan en estructuras pobres ("_ ( el _", sacado del markdown) y en palabras que no
+  dicen mucho.
+

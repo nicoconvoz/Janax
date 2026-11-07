@@ -52,8 +52,22 @@ while IFS= read -r -e -p "vos> " linea; do
         razar pregunta                                                 # a melody with holes
       else
         razar pregunta > /dev/null                                     # its clues walked: the renglones read again
-        razar sentido | sed -n '/^pregunta:/,$p'                       # and the relation that fits, over them
-        rm -f "$casa/$(etiqueta libro)"
+        leidas=" "                                                     # and the relation that fits, over them; while
+        while :; do                                                    # it thinks it asks for the words it ran out of
+          salida=$(razar sentido)                                      # facts on ("pensar"): their renglones are read
+          nuevas=0                                                     # again and it thinks once more, until it asks
+          if [ -f "$casa/$(etiqueta pensar)" ]; then                   # for nothing it did not read already
+            while IFS= read -r w; do
+              case "$leidas" in *" $w "*) ;; *) leidas="$leidas$w "; nuevas=1 ;; esac
+            done < "$casa/$(etiqueta pensar)"
+          fi
+          [ "$nuevas" = 1 ] || break
+          printf '%s' "$leidas" | tr ' ' '\n' | sed '/^$/d' > "$casa/$(etiqueta camino)"
+          rm -f "$casa/$(etiqueta libro)" "$casa/$(etiqueta pensar)"
+          razar pregunta > /dev/null
+        done
+        printf '%s\n' "$salida" | sed -n '/^pregunta:/,$p'
+        rm -f "$casa/$(etiqueta libro)" "$casa/$(etiqueta pensar)"
       fi ;;
   esac
 done

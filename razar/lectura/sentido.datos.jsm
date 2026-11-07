@@ -83,6 +83,8 @@ times 940h - $ db 0
 db ' palabras (flechas: ', 0
 times 980h - $ db 0
 db 'come', 0
+times 985h - $ db 0
+db 'pensar', 0
 times 990h - $ db 0
 db 'tablero/preguntas-', 0
 times 9A4h - $ db 0
