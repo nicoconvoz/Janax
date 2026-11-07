@@ -541,7 +541,11 @@ clue_gather:
     jjz j2, cg_holes
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jst j9, j1, PZK
     jcall pz_add
     jldi j1, 0

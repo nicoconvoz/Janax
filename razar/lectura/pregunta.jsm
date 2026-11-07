@@ -295,7 +295,11 @@ jld j10, j1, QN
 jwhile j10
   jldi j2, 3
   jshl j2, j9, j2
-  jld j2, j2, QBUF
+  jst j3, j1, QBT
+  jld j3, j1, QBP
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jld j3, j1, QBT
   jjnz j2, mh_unit
   jldi j3, 0
   jjmp mh_next
@@ -346,7 +350,11 @@ jwhile j2
     jjz j2, qe_found
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jjz j2, qe_found
     jldi j2, 1
     jadd j9, j9, j2
@@ -585,7 +593,11 @@ answer:
     jjz j2, an_known
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 2
     jadd j2, j2, j3
     jjnz j2, an_unext
@@ -604,7 +616,11 @@ answer:
     jjz j2, an_holes
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jadd j2, j2, j3
     jjnz j2, an_hnext
@@ -745,7 +761,11 @@ ct_h1:
   jjnz j5, ct_mid
   jldi j5, 3                    ; left end: the word at j3; middle from j3 + 1, j4 - 1 long; right end: hole 0
   jshl j5, j3, j5
-  jld j5, j5, QBUF
+  jst j2, j1, QBT
+  jld j2, j1, QBP
+  jadd j5, j5, j2
+  jld j5, j5, 0
+  jld j2, j1, QBT
   jldi j6, -1
   jldi j7, 1
   jadd j3, j3, j7
@@ -819,7 +839,11 @@ ct_t1:
   jsub j6, j6, j7
   jldi j7, 3
   jshl j6, j6, j7
-  jld j6, j6, QBUF
+  jst j2, j1, QBT
+  jld j2, j1, QBP
+  jadd j6, j6, j2
+  jld j6, j6, 0
+  jld j2, j1, QBT
   jldi j7, 1
   jsub j4, j4, j7
   jcall c_add
@@ -996,12 +1020,12 @@ wf_ask:
   jst j1, j1, VIA
   jld j2, j1, SIDE
   jst j2, j1, SIDEQ
-  jld j10, j1, CM               ; the middle: QBUF + 8 * (CM - 1), as the row's facts are read (j10 + 8)
+  jld j10, j1, CM               ; the middle: QBP + 8 * (CM - 1), as the row's facts are read (j10 + 8)
   jldi j2, 1
   jsub j10, j10, j2
   jldi j2, 3
   jshl j10, j10, j2
-  jldi j2, QBUF
+  jld j2, j1, QBP
   jadd j10, j10, j2
   jld j11, j1, CMN
   jcall wf_look
@@ -1058,8 +1082,10 @@ wf_ask:
     jld j2, j1, CM
     jldi j3, 3
     jshl j2, j2, j3
-    jld j4, j2, QBUF
-    jld j5, j2, QBUF + 8
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j4, j2, 0
+    jld j5, j2, 8
     jldi j3, 24
     jshl j5, j5, j3
     jor j4, j4, j5
@@ -1113,7 +1139,7 @@ m_insert:
   jld j2, j1, CM
   jldi j3, 3
   jshl j2, j2, j3
-  jldi j3, QBUF
+  jld j3, j1, QBP
   jadd j2, j2, j3
   jldi j3, MBUF
   jldi j5, 0
@@ -1429,7 +1455,11 @@ put_units:
   jwhile j10
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jadd j3, j2, j3
     jjnz j3, pu_word
@@ -1497,7 +1527,11 @@ said_so:
     jwhile j5
       jldi j2, 3
       jshl j2, j7, j2
-      jld j2, j2, QBUF
+      jst j3, j1, QBT
+      jld j3, j1, QBP
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jld j3, j1, QBT
       jldi j3, 1
       jadd j3, j2, j3
       jjnz j3, ss_word

@@ -2829,3 +2829,30 @@ El Capitán: *"no quiero techos: si mañana crece más tenemos desbordamiento; q
   30 millones (0,07%).
 - **Topes fijos que quedan** (no desbordan: recortan; pendientes): una palabra de más de 255 letras (`WBUF`), una
   dirección de más de 511 bytes (`PATHB`), una pregunta de más de 512 unidades (`QMAX`).
+
+## Sin topes: la palabra, la pregunta y la dirección crecen solas (2026-11-07)
+
+El Capitán: *"sí, sacalos"* (los tres topes que recortaban).
+
+- **Una sola regla para todo buffer que crece: `buf_need`** (`lectura.inc`). El buffer se describe con su bloque
+  {dónde están sus bytes, cuántos tiene, cuántos tiene que tener, uno guardado, los registros guardados}. Cuando va a
+  quedar chico, pide una habitación del doble y muda lo que tenía. Es lo mismo que hacen las tablas (`pl_take`). Guarda
+  y devuelve todos los registros de quien lo llama.
+- **La palabra** (`WBP`, antes `WBUF` de 255 bytes): `w_put` la hace crecer letra por letra. Los cargadores de la
+  biblioteca (lecciones, diccionario, composiciones, siluetas, vueltas, estructuras) ya no rechazan una pieza de más de
+  255 letras: el único límite es el fin del archivo.
+- **La pregunta** (`QBP`, antes `QBUF` de 512 unidades): `t_put` la hace crecer. Las 23 lecturas pasan por `QBP`.
+  `pulso.jsm` usaba ese mismo buffer como lista de trabajo (`GN`), que con más de 512 entradas pisaba las variables de
+  `5000h`: ahora también crece.
+- **La dirección del libro** (`PTHP` en `comer`, antes `PATHB` de 511 bytes): se lee mientras el archivo `come`
+  tenga más, duplicando la habitación.
+- **Pruebas:**
+  - dos palabras de 600 letras que comparten las primeras 300: antes quedaban recortadas a 255 y eran la misma
+    (10 palabras en el libro); ahora son dos (11), y la pregunta llega con la palabra entera;
+  - una pregunta de 605 unidades: antes llegaban 506 de las 600 repeticiones, ahora las 600;
+  - un `come` de 818 bytes (la ruta y 700 espacios) se lee entero, duplicando de 512 a 1024. Una ruta real de más
+    de 511 bytes no se pudo armar: Windows corta en 260 si no tiene habilitadas las rutas largas.
+  - controles idénticos; texto largo exacto en los dos motores.
+- **Pendientes que aparecieron:** `MLEFT` está definido dos veces, en `pregunta.jsm` (`1708h`) y en `lectura.inc`
+  (`1128h`), desde antes de este cambio. `pulso.jsm` anota sus habitaciones en una lista de 4.096 para devolverlas:
+  las que pasan de ahí no se devuelven.

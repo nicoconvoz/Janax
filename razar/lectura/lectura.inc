@@ -17,7 +17,7 @@ NBYTES = 1058h                  ; the book's bytes
 LEFT  = 1060h                   ; bytes of the piece read still to look at, and where the next is
 AT    = 1068h
 GOT   = 1070h                   ; bytes the last read gave
-WLEN  = 1078h                   ; the word being read: its bytes so far (at WBUF)
+WLEN  = 1078h                   ; the word being read: its bytes so far (at WBP)
 LEAD  = 1080h                   ; 1: the last byte opened a letter of U+00C0..U+00FF
 LASTL = 1088h                   ; 1: the last unit was a renglon
 BYTE  = 1090h
@@ -72,10 +72,18 @@ TEXTN = 1000h
 SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
 PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
 PCS   = 3240h
-WBUF  = 3000h                   ; (255 bytes)
+WBP   = 3000h                   ; the word being read: where its bytes are (a room that grows: wb_need), how many
+WBC   = 3008h                   ; it holds, how many it must hold, the registers kept while it grows (13 qwords), one
+WBN   = 3010h                   ; kept
+WBT   = 3018h
+WBS   = 3020h
 DIG   = 3200h                   ; digits of a number being written
-QBUF  = 4000h                   ; a question read (QMAX units: criterion, a question is short)
-QMAX  = 512
+QBP   = 4000h                   ; a question read: where its units are (a room that grows: qb_need), its bytes, the
+QBK   = 4008h                   ; bytes it must hold, one kept, the registers kept while it grows (13 qwords)
+QBN   = 4010h
+QBT   = 4018h
+QBS   = 4020h
+QSCR  = 4100h                   ; (16 bytes read from "p")
 BUF   = 8000h                   ; a piece of the book
 BUFLEN = 8000h
 
@@ -121,13 +129,13 @@ jldi j2, 32
 jshl j10, j13, j2
 jldi j2, 5
 jor j10, j10, j2
-jldi j11, QBUF                  ; K, and after it how many passes
+jldi j11, QSCR                  ; K, and after it how many passes
 jldi j12, 16
 jcall ask
 jldi j1, 0
-jld j2, j1, QBUF + 8
+jld j2, j1, QSCR + 8
 jst j2, j1, NPAS
-jld j2, j1, QBUF
+jld j2, j1, QSCR
 jst j2, j1, PK
 jjnz j2, pr_done
 jldi j2, 10
@@ -599,18 +607,112 @@ tb_space:
   jcall w_put
   jjmp w_end
 
-; The letter byte j2 at the end of the word being read (past 255 bytes they are not kept). Uses j1, j3, j4.
+; The buffer described at j1 {where its bytes are, how many it holds, how many it must hold, one kept, the registers
+; kept (13 qwords)} holds what it must (Capitan, 2026-11-07: "no ceilings: if tomorrow it grows more, it adjusts
+; itself"): a room that doubles before it would be short, what it held moved to the new one. Uses j1 (0 after; every
+; other register kept).
+buf_need:
+  jst j3, j1, 40
+  jst j4, j1, 48
+  jld j3, j1, 16
+  jld j4, j1, 8
+  jsub j3, j4, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, bfn_grow
+  jld j3, j1, 40
+  jld j4, j1, 48
+  jldi j1, 0
+  jret
+bfn_grow:
+  jst j2, j1, 32
+  jst j5, j1, 56
+  jst j6, j1, 64
+  jst j7, j1, 72
+  jst j8, j1, 80
+  jst j9, j1, 88
+  jst j10, j1, 96
+  jst j11, j1, 104
+  jst j12, j1, 112
+  jst j13, j1, 120
+  jst j14, j1, 128
+  jldi j9, 0
+  jadd j9, j9, j1
+  jld j11, j9, 8
+  jadd j11, j11, j11
+  jjnz j11, bfn_twice
+  jldi j11, 256
+bfn_twice:
+  jld j2, j9, 16
+  jsub j2, j11, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, bfn_room
+  jadd j11, j11, j11
+  jjmp bfn_twice
+bfn_room:
+  jst j11, j9, 24
+  jcall room
+  jld j3, j9, 0                 ; (what it held, to the new room)
+  jld j4, j9, 8
+  jldi j5, 0
+  bfn_copy:
+    jsub j6, j5, j4
+    jjz j6, bfn_moved
+    jadd j6, j3, j5
+    jldb j6, j6, 0
+    jadd j7, j13, j5
+    jstb j6, j7, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jjmp bfn_copy
+bfn_moved:
+  jst j13, j9, 0
+  jld j2, j9, 24
+  jst j2, j9, 8
+  jldi j1, 0
+  jadd j1, j1, j9
+  jld j3, j1, 40
+  jld j4, j1, 48
+  jld j2, j1, 32
+  jld j5, j1, 56
+  jld j6, j1, 64
+  jld j7, j1, 72
+  jld j8, j1, 80
+  jld j9, j1, 88
+  jld j10, j1, 96
+  jld j11, j1, 104
+  jld j12, j1, 112
+  jld j13, j1, 120
+  jld j14, j1, 128
+  jldi j1, 0
+  jret
+
+; The word buffer holds WBN bytes at least. Uses j1 (0 after; every other register kept).
+wb_need:
+  jldi j1, WBP
+  jjmp buf_need
+
+; The question holds QBN bytes at least. Uses j1 (0 after; every other register kept).
+qb_need:
+  jldi j1, QBP
+  jjmp buf_need
+
+; The letter byte j2 at the end of the word being read (as long as it is: the room grows). Uses j1, j3, j4.
 w_put:
   jldi j1, 0
   jld j3, j1, WLEN
-  jldi j4, 255
-  jsub j4, j3, j4
-  jjz j4, wp_full
-  jstb j2, j3, WBUF
+  jldi j4, 1
+  jadd j4, j3, j4
+  jst j4, j1, WBN
+  jcall wb_need
+  jld j3, j1, WLEN
+  jld j4, j1, WBP
+  jadd j4, j4, j3
+  jstb j2, j4, 0
   jldi j4, 1
   jadd j3, j3, j4
   jst j3, j1, WLEN
-wp_full:
   jret
 
 ; The word being read ends (if there is one): counted, or its number to the row. Uses j1-j8, j10, j11.
@@ -704,17 +806,24 @@ t_put:
   jldi j4, 2
   jsub j3, j3, j4
   jjnz j3, tp_book
-  jld j3, j1, QN
-  jldi j4, QMAX
-  jsub j4, j3, j4
-  jjz j4, tp_full
+  jld j3, j1, QN                ; (as long as it is: the room grows)
+  jldi j4, 1
+  jadd j3, j3, j4
   jldi j4, 3
   jshl j4, j3, j4
-  jst j2, j4, QBUF
+  jst j4, j1, QBN
+  jcall qb_need
+  jld j3, j1, QN
+  jldi j4, 3
+  jshl j4, j3, j4
+  jst j2, j1, QBT
+  jld j2, j1, QBP
+  jadd j4, j4, j2
+  jld j2, j1, QBT
+  jst j2, j4, 0
   jldi j4, 1
   jadd j3, j3, j4
   jst j3, j1, QN
-tp_full:
   jret
 tp_book:
   jld j3, j1, NTOK
@@ -735,7 +844,7 @@ tp_book:
   jst j3, j1, NTOK
   jret
 
-; The number of the word at WBUF (WLEN bytes) -> j2; a word never seen gets the next. Uses j1-j8, j10, j11.
+; The number of the word at WBP (WLEN bytes) -> j2; a word never seen gets the next. Uses j1-j8, j10, j11.
 word_id:
   jldi j1, 0
   jld j2, j1, FNVO
@@ -743,7 +852,9 @@ word_id:
   jld j4, j1, WLEN
   jldi j5, 0
   jwhile j4
-    jldb j6, j5, WBUF
+    jld j6, j1, WBP
+    jadd j6, j6, j5
+    jldb j6, j6, 0
     jxor j2, j2, j6
     jmul j2, j2, j3
     jldi j6, 1
@@ -775,7 +886,9 @@ word_id:
     jldi j7, 0
     jwhile j5
       jldb j10, j6, 0
-      jldb j11, j7, WBUF
+      jld j11, j1, WBP
+      jadd j11, j11, j7
+      jldb j11, j11, 0
       jsub j10, j10, j11
       jjnz j10, wi_next
       jldi j10, 1
@@ -848,7 +961,9 @@ wi_letters:
   jadd j6, j6, j7
   jldi j7, 0
   jwhile j5
-    jldb j10, j7, WBUF
+    jld j10, j1, WBP
+    jadd j10, j10, j7
+    jldb j10, j10, 0
     jstb j10, j6, 0
     jldi j10, 1
     jadd j6, j6, j10

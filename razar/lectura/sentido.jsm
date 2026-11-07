@@ -1324,7 +1324,11 @@ cores:
     jjz j2, co_line
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jjz j2, co_line
     jldi j2, 1
     jadd j9, j9, j2
@@ -1339,7 +1343,11 @@ cores:
     jjnz j3, co_question
     jldi j3, 3
     jshl j2, j2, j3
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1                  ; a word it knows (not a hole, not unknown)
     jsub j3, j2, j3
     jldi j4, 63
@@ -1636,11 +1644,15 @@ genders:
     jjnz j7, gn_next
   gn_end:
     jst j8, j1, GNG
+    jst j5, j1, WBN
+    jcall wb_need
     jldi j4, 0                  ; its twin: the same, the other ending
     jadd j7, j5, j1
     jwhile j7
       jldb j6, j3, 0
-      jstb j6, j4, WBUF
+      jld j8, j1, WBP
+      jadd j8, j8, j4
+      jstb j6, j8, 0
       jldi j6, 1
       jadd j3, j3, j6
       jadd j4, j4, j6
@@ -1648,10 +1660,12 @@ genders:
     jwend
     jldi j6, 1
     jsub j4, j4, j6
-    jldb j7, j4, WBUF
+    jld j8, j1, WBP
+    jadd j8, j8, j4
+    jldb j7, j8, 0
     jldi j6, 208
     jsub j6, j6, j7
-    jstb j6, j4, WBUF
+    jstb j6, j8, 0
     jst j9, j1, GNW
     jst j10, j1, GNL
     jcall word_id
@@ -2614,11 +2628,6 @@ pq_file:
     jldi j3, 63
     jsar j3, j4, j3
     jjnz j3, pqf_done
-    jldi j3, 255                ; (WBUF holds 255 bytes)
-    jsub j3, j3, j4
-    jldi j5, 63
-    jsar j3, j3, j5
-    jjnz j3, pqf_done
     jldi j3, 7
     jadd j5, j4, j3
     jldi j3, -8
@@ -2632,13 +2641,17 @@ pq_file:
     jst j5, j1, QLK             ; (the next lesson)
     jst j9, j1, QLP
     jst j4, j1, WLEN
+    jst j4, j1, WBN
+    jcall wb_need
     jldi j6, 0
     pqf_letter:
       jsub j3, j6, j4
       jjz j3, pqf_letters
       jadd j3, j2, j6
       jldb j3, j3, 0
-      jstb j3, j6, WBUF
+      jld j5, j1, WBP
+      jadd j5, j5, j6
+      jstb j3, j5, 0
       jldi j3, 1
       jadd j6, j6, j3
       jjmp pqf_letter
@@ -3407,7 +3420,11 @@ th_seed:
     jjz j2, ths_word
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -3506,7 +3523,11 @@ thg_born:
     jjz j2, thg_qdone
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -3922,7 +3943,11 @@ q_struct:
     jsub j9, j9, j2
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -4104,7 +4129,11 @@ q_about:
     jst j9, j1, QP
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -4728,11 +4757,6 @@ pff_v:
     jldi j3, 63
     jsar j3, j4, j3
     jjnz j3, pff_done
-    jldi j3, 255
-    jsub j3, j3, j4
-    jldi j5, 63
-    jsar j3, j3, j5
-    jjnz j3, pff_done
     jldi j3, 7
     jadd j5, j4, j3
     jldi j3, -8
@@ -4746,13 +4770,17 @@ pff_v:
     jst j5, j1, QLK
     jst j9, j1, QLP
     jst j4, j1, WLEN
+    jst j4, j1, WBN
+    jcall wb_need
     jldi j6, 0
     pff_letter:
       jsub j3, j6, j4
       jjz j3, pff_letters
       jadd j3, j2, j6
       jldb j3, j3, 0
-      jstb j3, j6, WBUF
+      jld j5, j1, WBP
+      jadd j5, j5, j6
+      jstb j3, j5, 0
       jldi j3, 1
       jadd j6, j6, j3
       jjmp pff_letter
@@ -4836,11 +4864,6 @@ ppr_word:
   jldi j3, 63
   jsar j3, j4, j3
   jjnz j3, ppw_bad
-  jldi j3, 255
-  jsub j3, j3, j4
-  jldi j5, 63
-  jsar j3, j3, j5
-  jjnz j3, ppw_bad
   jldi j3, 8
   jadd j2, j9, j3
   jldi j3, 7
@@ -4855,13 +4878,17 @@ ppr_word:
   jjnz j3, ppw_bad
   jst j5, j1, QLS
   jst j4, j1, WLEN
+  jst j4, j1, WBN
+  jcall wb_need
   jldi j6, 0
   ppw_l:
     jsub j3, j6, j4
     jjz j3, ppw_ld
     jadd j3, j2, j6
     jldb j3, j3, 0
-    jstb j3, j6, WBUF
+    jld j5, j1, WBP
+    jadd j5, j5, j6
+    jstb j3, j5, 0
     jldi j3, 1
     jadd j6, j6, j3
     jjmp ppw_l
@@ -5553,7 +5580,7 @@ of_zd:
       jldi j4, 1
       jsub j10, j10, j4
     jwend
-    jldi j9, QBUF
+    jld j9, j1, QBP
     jld j10, j1, QN
     jwhile j10
       jld j4, j9, 0
@@ -5849,7 +5876,11 @@ q_subject:
     jst j9, j1, QP
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -6246,7 +6277,11 @@ qp_guided:
       jst j8, j1, QPGQ
       jldi j2, 3
       jshl j2, j8, j2
-      jld j2, j2, QBUF
+      jst j3, j1, QBT
+      jld j3, j1, QBP
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jld j3, j1, QBT
       jldi j3, 1
       jsub j3, j2, j3
       jldi j4, 63
@@ -7625,11 +7660,6 @@ sk_sread:
       jldi j3, 63
       jsar j3, j4, j3
       jjnz j3, skf_done
-      jldi j3, 255
-      jsub j3, j3, j4
-      jldi j5, 63
-      jsar j3, j3, j5
-      jjnz j3, skf_done
       jldi j3, 7
       jadd j5, j4, j3
       jldi j3, -8
@@ -7642,7 +7672,9 @@ sk_sread:
       jjnz j3, skf_done
       jst j5, j1, SKU
       jst j4, j1, WLEN
-      jld j7, j1, SKR             ; its letters, into WBUF and the letters' key
+      jst j4, j1, WBN
+      jcall wb_need
+      jld j7, j1, SKR             ; its letters, into the word and the letters' key
       jld j8, j1, FNVP
       jxor j7, j7, j4
       jmul j7, j7, j8
@@ -7652,7 +7684,9 @@ sk_sread:
         jjz j3, skf_letters
         jadd j3, j2, j6
         jldb j3, j3, 0
-        jstb j3, j6, WBUF
+        jld j5, j1, WBP
+        jadd j5, j5, j6
+        jstb j3, j5, 0
         jxor j7, j7, j3
         jmul j7, j7, j8
         jldi j3, 1
@@ -7800,13 +7834,17 @@ sk_lit:
     jadd j5, j5, j3
     jadd j5, j9, j5
     jst j5, j1, SKLP
+    jst j4, j1, WBN
+    jcall wb_need
     jldi j6, 0
     skl_letter:
       jsub j3, j6, j4
       jjz j3, skl_letters
       jadd j3, j9, j6
       jldb j3, j3, 8
-      jstb j3, j6, WBUF
+      jld j5, j1, WBP
+      jadd j5, j5, j6
+      jstb j3, j5, 0
       jldi j3, 1
       jadd j6, j6, j3
       jjmp skl_letter
@@ -7827,7 +7865,9 @@ sk_lit:
       jsub j3, j6, j4
       jjz j3, skl_sp
       jst j6, j1, SKO
-      jldb j2, j6, WBUF
+      jld j5, j1, WBP
+      jadd j5, j5, j6
+      jldb j2, j5, 0
       jcall putch
       jldi j1, 0
       jld j6, j1, SKO
@@ -8887,11 +8927,6 @@ pe_file:
       jldi j3, 63
       jsar j3, j4, j3
       jjnz j3, pef_done
-      jldi j3, 255
-      jsub j3, j3, j4
-      jldi j5, 63
-      jsar j3, j3, j5
-      jjnz j3, pef_done
       jldi j3, 7
       jadd j5, j4, j3
       jldi j3, -8
@@ -8904,13 +8939,17 @@ pe_file:
       jjnz j3, pef_done
       jst j5, j1, QLK
       jst j4, j1, WLEN
+      jst j4, j1, WBN
+      jcall wb_need
       jldi j6, 0
       pef_letter:
         jsub j3, j6, j4
         jjz j3, pef_letters
         jadd j3, j2, j6
         jldb j3, j3, 0
-        jstb j3, j6, WBUF
+        jld j5, j1, WBP
+        jadd j5, j5, j6
+        jstb j3, j5, 0
         jldi j3, 1
         jadd j6, j6, j3
         jjmp pef_letter
@@ -9212,6 +9251,8 @@ sl_some:
     jjz j2, sl_words
     jld j4, j9, 0               ; its letters, as a word being read
     jst j4, j1, WLEN
+    jst j4, j1, WBN
+    jcall wb_need
     jldi j5, 8
     jadd j5, j9, j5
     jldi j6, 0
@@ -9220,7 +9261,9 @@ sl_some:
       jjz j7, sl_letters
       jadd j7, j5, j6
       jldb j7, j7, 0
-      jstb j7, j6, WBUF
+      jld j3, j1, WBP
+      jadd j3, j3, j6
+      jstb j7, j3, 0
       jldi j7, 1
       jadd j6, j6, j7
       jjmp sl_letter
@@ -10577,6 +10620,8 @@ lt_key:
     jst j9, j1, LT1
     jld j4, j9, 0
     jst j4, j1, WLEN
+    jst j4, j1, WBN
+    jcall wb_need
     jldi j5, 8
     jadd j5, j9, j5
     jldi j6, 0
@@ -10585,7 +10630,9 @@ lt_key:
       jjz j7, lt_letters
       jadd j7, j5, j6
       jldb j7, j7, 0
-      jstb j7, j6, WBUF
+      jld j3, j1, WBP
+      jadd j3, j3, j6
+      jstb j7, j3, 0
       jldi j7, 1
       jadd j6, j6, j7
       jjmp lt_letter
@@ -11070,7 +11117,11 @@ question_one:
     jjz j2, qo_said
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -11107,7 +11158,11 @@ qo_pass:
     jjz j2, qo_cores
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -11384,7 +11439,11 @@ qf_other:
     jjz j2, qf_no
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jld j3, j1, QBA
     jsub j2, j2, j3
     jjnz j2, qf_pnext
@@ -11457,7 +11516,11 @@ q_nb:
     jst j2, j1, QNBP
     jldi j3, 3
     jshl j3, j2, j3
-    jld j3, j3, QBUF
+    jst j2, j1, QBT
+    jld j2, j1, QBP
+    jadd j3, j3, j2
+    jld j3, j3, 0
+    jld j2, j1, QBT
     jldi j4, 1
     jsub j4, j3, j4
     jldi j5, 63
@@ -11491,7 +11554,11 @@ q_has:
     jjz j4, qh_no
     jldi j4, 3
     jshl j4, j3, j4
-    jld j4, j4, QBUF
+    jst j2, j1, QBT
+    jld j2, j1, QBP
+    jadd j4, j4, j2
+    jld j4, j4, 0
+    jld j2, j1, QBT
     jsub j4, j4, j2
     jjz j4, qh_yes
     jldi j4, 1
@@ -11546,7 +11613,11 @@ q_new:
     jjz j2, qn_new
     jldi j2, 3
     jshl j2, j9, j2
-    jld j2, j2, QBUF
+    jst j3, j1, QBT
+    jld j3, j1, QBP
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jld j3, j1, QBT
     jld j3, j1, QOTH
     jsub j2, j2, j3
     jjz j2, qn_no

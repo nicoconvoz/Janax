@@ -6167,10 +6167,19 @@ kind_report:
     jldi j2, 0
     jsub j2, j2, j11
     jst j2, j12, 40
+    jld j3, j1, GN              ; (its list as long as it is: the room grows)
+    jldi j4, 1
+    jadd j4, j3, j4
+    jldi j2, 3
+    jshl j4, j4, j2
+    jst j4, j1, QBN
+    jcall qb_need
     jld j3, j1, GN
     jldi j4, 3
     jshl j4, j3, j4
-    jst j12, j4, QBUF
+    jld j2, j1, QBP
+    jadd j4, j4, j2
+    jst j12, j4, 0
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j1, GN
@@ -6219,7 +6228,7 @@ kind_report:
 kr_done:
   jldi j1, 0                    ; the bits given back
   jld j9, j1, GN
-  jldi j10, QBUF
+  jld j10, j1, QBP
   jwhile j9
     jld j3, j10, 0
     jld j2, j3, 40

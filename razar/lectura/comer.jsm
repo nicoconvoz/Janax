@@ -151,7 +151,9 @@ SWI   = 7120h                   ; how many left, a book's print unsalted
 SWN   = 7128h
 SWK   = 7130h
 ZALPH = 7000h                   ; the letters, by number (256 bytes)
-PATHB = 6000h                   ; the address (511 bytes at most)
+PTHP  = 6000h                   ; the address: where its bytes are (a room that doubles while "come" has more), the
+PTHC  = 6008h                   ; bytes it holds, the request that reads it
+PTHK  = 6010h
 PLAB  = 6400h                   ; the index's label: "tablero/pistas" and sixteen hex digits
 PLABN = 30
 include '../../escalon0/janax.inc'
@@ -171,16 +173,58 @@ jldi j2, 32
 jshl j10, j13, j2
 jldi j2, 5
 jor j10, j10, j2
-jldi j11, PATHB
-jldi j12, 511
-jcall ask
-jldi j1, 0                      ; (a failed read is nothing)
-jldi j2, 63
-jsar j2, j13, j2
-jldi j3, -1
-jxor j2, j2, j3
-jand j13, j13, j2
-jst j13, j1, PLEN
+jldi j1, 0                      ; as long as it is (Capitan: "no ceilings"): read while the file has more, the room
+jst j10, j1, PTHK               ; doubling
+jldi j11, 512
+jst j11, j1, PTHC
+jcall room
+jldi j1, 0
+jst j13, j1, PTHP
+jst j1, j1, PLEN
+cm_read:
+  jld j10, j1, PTHK
+  jld j11, j1, PTHP
+  jld j2, j1, PLEN
+  jadd j11, j11, j2
+  jld j12, j1, PTHC
+  jsub j12, j12, j2
+  jcall ask
+  jldi j1, 0                    ; (a failed read is nothing)
+  jldi j2, 63
+  jsar j2, j13, j2
+  jldi j3, -1
+  jxor j2, j2, j3
+  jand j13, j13, j2
+  jld j2, j1, PLEN
+  jadd j2, j2, j13
+  jst j2, j1, PLEN
+  jld j3, j1, PTHC
+  jsub j3, j2, j3
+  jjnz j3, cm_readd             ; (less than it had room for: the file ended)
+  jld j11, j1, PTHC
+  jadd j11, j11, j11
+  jcall room
+  jldi j1, 0
+  jld j3, j1, PTHP
+  jld j4, j1, PLEN
+  jldi j5, 0
+  cm_mv:
+    jsub j6, j5, j4
+    jjz j6, cm_moved
+    jadd j6, j3, j5
+    jldb j6, j6, 0
+    jadd j7, j13, j5
+    jstb j6, j7, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jjmp cm_mv
+  cm_moved:
+  jst j13, j1, PTHP
+  jld j2, j1, PTHC
+  jadd j2, j2, j2
+  jst j2, j1, PTHC
+  jjmp cm_read
+cm_readd:
 jld j10, j1, HND
 jldi j2, 32
 jshl j10, j10, j2
@@ -191,8 +235,10 @@ jldi j1, 0                      ; (without the line feed, spaces or controls aft
 jld j3, j1, PLEN
 cm_strip:
   jjz j3, cm_stripped
-  jldi j4, PATHB - 1
+  jld j4, j1, PTHP
   jadd j4, j4, j3
+  jldi j5, 1
+  jsub j4, j4, j5
   jldb j5, j4, 0
   jldi j6, 33
   jsub j5, j5, j6
@@ -206,7 +252,7 @@ cm_stripped:
 jst j3, j1, PLEN
 jjz j3, no_come
 
-jldi j2, PATHB                  ; the book, there: read as always, keeping where each renglon starts
+jld j2, j1, PTHP                ; the book, there: read as always, keeping where each renglon starts
 jst j2, j1, LABEL
 jst j3, j1, LABLEN
 jldi j2, 1
@@ -272,7 +318,7 @@ jld j2, j1, FNVO
 jld j3, j1, PLEN
 jldi j4, 0
 jwhile j3
-  jldi j5, PATHB
+  jld j5, j1, PTHP
   jadd j5, j5, j4
   jldb j5, j5, 0
   jxor j2, j2, j5
@@ -296,7 +342,7 @@ jldi j1, 0                      ; the print of the book's bytes: its pieces' nam
 jld j2, j1, FNVO
 jst j2, j1, CHASH
 jldi j10, 37
-jldi j11, PATHB
+jld j11, j1, PTHP
 jld j12, j1, PLEN
 jcall ask
 jldi j1, 0
@@ -1041,7 +1087,7 @@ jld j2, j1, CHASH
 jst j2, j13, 152
 jldi j2, 160                    ; the address
 jadd j2, j13, j2
-jldi j3, PATHB
+jld j3, j1, PTHP
 jld j4, j1, PLEN
 jcall zs_copy
 jldi j1, 0
@@ -1313,7 +1359,7 @@ cm_said:
 jldi j1, S_ATE                  ; said: what it ate, how many renglones and words, how many clues, how many bytes
 jcall puts
 jld j6, j1, PLEN
-jldi j4, PATHB
+jld j4, j1, PTHP
 jwhile j6
   jldb j2, j4, 0
   jcall putch
