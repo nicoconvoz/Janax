@@ -1435,3 +1435,55 @@ código"*.
   El órgano paga, pero no gratis. Mete más palabras en el mismo piso, así que nombrar una pieza ahí cuesta más
   (2·log2 U) y las piezas flojas de los interruptores dejan de pagar. Esa es justamente la cuenta que tiene que hacer el
   examen: si lo que el órgano gana supera lo que le quita al resto.
+
+## Razar se compila un órgano a sí mismo, adentro de Janax (2026-11-06)
+
+El ciclo completo, sin salir del sistema operativo (Capitán: *"siempre desde adentro del SO de Janax, que es lo que
+tengo permitido"*):
+
+1. **El abecedario** (`organo.molde`, en la carpeta PDP). Tiene la cabecera y el pie del órgano, nueve **letras** y las
+   etiquetas que usa.
+   - Letras 1-4: mezclar en el marco la palabra 1…4 de la ventana.
+   - Letras 5-8: el hueco es la palabra 1…4.
+   - Letra 9: hueco vacío.
+
+   Un órgano es una tira de letras, guardada en `ORGAN_CODE` de a cuatro bits, hasta 16 letras: un qword, y eso es
+   criterio. Cualquier tira compila, porque cada letra es Janax válido. Los órganos raros (sin hueco, con dos huecos, la
+   misma palabra dos veces) los juzga el examen, no el ensamblador.
+2. **La mutación libre adentro del Lego** (`og_mutate`): una letra que entra, sale o cambia, en un lugar que sortea su
+   suerte. Si sale el mismo órgano, se sortea otra vez.
+3. **Se escribe** `organo.inc` entero desde el molde (`og_write`), como candidato (`ORGAN_CANDIDATE = 1`) y con el
+   genoma del campeón.
+4. **Se compila:** Razar lanza al ensamblador PDP como hijo suyo (`og_build`) y firma lo que pide, durmiendo en su
+   timbre.
+5. **Se examina en jaula** (`og_trial`): lanza al candidato con un **presupuesto** (pedido 34) del doble de lo que esta
+   vida le costó a Razar hasta ahora (pedido 35). El 2 es criterio; un órgano real midió +2 %. El candidato rinde el
+   examen del campeón y le dice su nota a su padre con una palabra a −1. Las letras no piden nada al sistema, así que un
+   mutante no puede tocar un archivo; si se cuelga, el presupuesto lo termina.
+6. **Gana el mejor:** si el candidato supera la nota del campeón sin órgano (los dos exámenes sin memoria, en la misma
+   moneda), ese órgano pasa a ser suyo. Al final, si ganó alguno, Razar **se vuelve a compilar como sí mismo**
+   (`ORGAN_CANDIDATE = 0`) con el órgano nuevo: el mismo Razar, con un órgano más, para su próxima vida.
+
+`p` pide los intentos en el sexto byte después de K. `organos.sh <carpeta> <libro> <intentos> [motor]` arma la carpeta:
+el libro, `p`, el ensamblador y los fuentes de Razar bajo `PDP/`.
+
+**Medido** (libro de 973 KB, 2 intentos, motor traductor):
+
+| proceso | qué es | resultado |
+|---|---|---|
+| P1 | el ensamblador | armó 2 fuentes (pulso y sus textos) |
+| P2 | el órgano `1` (mezcla una palabra, sin hueco: no hace nada) | **−3554, exactamente la nota sin órgano** |
+| P3 | el ensamblador | armó 1: los textos no cambiaron, no los rearmó |
+| P4 | el órgano `8` (el hueco es la cuarta palabra) | **−3358 contra −3554: gana** |
+| P5 | el ensamblador | rearmó a Razar con `ORGAN_CODE = 8` |
+
+**La segunda vida**, con el Razar que se compiló (y el nido borrado, así que nació con el genoma `4 1 1`):
+- El genoma `4 1 1` da **−7181**, contra −9218 sin órgano: el órgano está adentro.
+- La mutación que se lo saca (`-`) da **exactamente −9218**.
+- El órgano `82` (después del hueco mezcla otra palabra, que ya no cambia nada) empata con `8`, así que no se queda.
+
+**Lo que falta:**
+- Los intentos se hacen solo al final de la evolución, no en la vigilia.
+- Una vida prueba muy pocos órganos: cada intento es un armado más un examen.
+- Que el Razar nuevo **reemplace** al que corre todavía lo hace quien lo lanza: queda armado en
+  `PDP/razar/lectura/pulso.bin`.

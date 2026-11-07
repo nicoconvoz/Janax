@@ -134,6 +134,18 @@ MBUFP = 1E80h
 MCOST = 1E88h
 MNOW  = 1E90h
 MHELP = 1E98h                   ; how many pieces now pay with what they carried (more than this reading saw)
+OGN   = 1EA0h                   ; its organs: trials left, its molde (room, bytes), the room for signatures and words,
+OGM   = 1EA8h                   ; the organ it has and the one tried, the score to beat, the candidate's budget, the
+OGML  = 1EB0h                   ; child it waits on, the candidate's score, and two to keep
+OGPEND = 1EB8h
+OGCODE = 1EC0h
+OGTRY = 1EC8h
+OGBASE = 1ED0h
+OGBUD = 1ED8h
+OGKID = 1EE0h
+OGSC  = 1EE8h
+OGT   = 1EF0h
+OGLET = 1EF8h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 ROOMMK = 1910h                  ; by word: the stamp of the renglones marked, the stamp of the last counted, its whys,
@@ -223,6 +235,10 @@ jst j13, j1, RLIST
 renace:
 jldi j0, 0                      ; the fingerprint
 jcall read_book
+jldi j2, ORGAN_CANDIDATE        ; a candidate built by Razar: it sits its exam and says its score, nothing more
+jjz j2, rn_razar
+jjmp candidate
+rn_razar:
 jldi j1, 0                      ; (reborn: what it ate, the books and the words)
 jld j2, j1, RBC
 jjz j2, rn_first
@@ -2188,6 +2204,7 @@ ev_again:
   jst j2, j1, EVG
   jjmp ev_gens
 ev_end:
+  jcall organ_trials            ; its organs, if "p" asks for them
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
@@ -2237,6 +2254,722 @@ vw_set:
   jldi j1, 0
 vw_done:
   jret
+
+; Its organs (Capitan: "that it improves itself with what it learned, compiling a better solution: new members,
+; maybe eyes, ears, and who knows what organ it invents"; "Legos, and inside the Legos free mutation of code"). As
+; many times as "p" asks (the sixth byte after K): its organ changed by one letter (organo.molde: put in, taken out
+; or changed), written as organo.inc, built by the PDP assembler launched as its child, and the candidate built from
+; it launched in a cage (a budget, request 34) to sit the champion's exam and say its score; the better one stays.
+; Everything waits on its doorbell (29): a signature its children ask for, the candidate's word, or nobody left.
+; Both exams without memory (the same coin). If one won, it is built again as Razar itself: the same Razar, with one
+; organ more. Uses j1-j14.
+organ_trials:
+  jldi j1, 0
+  jld j2, j1, NPAS
+  jldi j3, 40
+  jshr j2, j2, j3
+  jldi j3, 255
+  jand j2, j2, j3
+  jjnz j2, ot_go
+  jret
+ot_go:
+  jst j2, j1, OGN
+  jcall og_init
+  jldi j1, 0
+  jld j2, j1, OGML
+  jjnz j2, ot_have
+  jldi j2, 0                    ; "sin molde"
+  jshi j2, 7369h
+  jshi j2, 6E20h
+  jshi j2, 6D6Fh
+  jshi j2, 6C64h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 650Ah
+  jcall og_r8
+  jjmp flush
+ot_have:
+  jldi j2, ORGAN_CODE           ; the organ it has, and its exam without memory: what a new one has to beat
+  jst j2, j1, OGCODE
+  jld j2, j1, EVC
+  jst j2, j1, EVCH
+  jld j2, j1, TMEM
+  jst j2, j1, OGT
+  jst j1, j1, TMEM
+  jcall ev_exam
+  jldi j1, 0
+  jld j2, j1, OGT
+  jst j2, j1, TMEM
+  jld j2, j1, EVS
+  jst j2, j1, OGBASE
+  jldi j10, 35                  ; the cage: twice what this life cost it so far (a reading and its exams; a real organ
+  jldi j11, -1                  ; measured +2 %: the 2 is criterion, not measurement)
+  jcall ask
+  jldi j1, 0
+  jadd j2, j13, j13
+  jst j2, j1, OGBUD
+  jld j2, j1, OGN
+  jwhile j2
+    jcall og_mutate
+    jcall og_write
+    jldi j1, 0
+    jcall og_build
+    jldi j1, 0
+    jjz j2, ot_next
+    jcall og_trial
+    jcall og_line
+    jldi j1, 0                  ; better: the new organ is its own
+    jld j2, j1, OGSC
+    jld j3, j1, OGBASE
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ot_next
+    jst j2, j1, OGBASE
+    jld j2, j1, OGTRY
+    jst j2, j1, OGCODE
+  ot_next:
+    jldi j1, 0
+    jld j2, j1, OGN
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, OGN
+  jwend
+  jld j2, j1, OGCODE            ; it grew one: built again as itself (not a candidate), for its next life
+  jldi j3, ORGAN_CODE
+  jsub j2, j2, j3
+  jjz j2, ot_done
+  jld j2, j1, OGCODE
+  jst j2, j1, OGTRY
+  jcall og_write0
+  jcall og_build
+ot_done:
+  jldi j1, 0
+  jret
+
+; Its molde read into a room (OGM, OGML bytes; 0 if there is none), and a room for what waits for its signature and
+; the words it hears (OGPEND: 4096 bytes of pending, then 16 of a word, then the molde's label). Uses j1-j14.
+og_init:
+  jldi j1, 0
+  jst j1, j1, OGML
+  jldi j11, 4096
+  jldi j2, 64
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, OGPEND
+  jldi j2, 4096                 ; "PDP/razar/lectura/organo.molde"
+  jadd j9, j13, j2
+  jldi j2, 16
+  jadd j9, j9, j2
+  jldi j2, 0
+  jshi j2, 617Ah
+  jshi j2, 6172h
+  jshi j2, 2F50h
+  jshi j2, 4450h
+  jst j2, j9, 0
+  jldi j2, 0
+  jshi j2, 7275h
+  jshi j2, 7463h
+  jshi j2, 656Ch
+  jshi j2, 2F72h
+  jst j2, j9, 8
+  jldi j2, 0
+  jshi j2, 6F6Eh
+  jshi j2, 6167h
+  jshi j2, 726Fh
+  jshi j2, 2F61h
+  jst j2, j9, 16
+  jldi j2, 0
+  jshi j2, 6564h
+  jshi j2, 6C6Fh
+  jshi j2, 6D2Eh
+  jst j2, j9, 24
+  jldi j11, 4096                ; its room: as big as a molde may be (criterion: the one it has is 3 KB)
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, OGM
+  jldi j10, 4
+  jld j11, j1, OGPEND
+  jldi j2, 4112
+  jadd j11, j11, j2
+  jldi j12, 30
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, oi_done
+  jst j13, j1, OGT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, OGM
+  jldi j12, 4096
+  jldi j2, 4
+  jshl j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, oi_close
+  jst j13, j1, OGML
+oi_close:
+  jldi j1, 0
+  jld j10, j1, OGT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+oi_done:
+  jldi j1, 0
+  jret
+
+; Its organ changed by one letter: OGCODE -> OGTRY (four bits a letter from the lowest, 1-9; 0 ends it). A letter
+; put in, taken out or changed, at a place drawn by its luck; drawn again until it is another organ (at most 16
+; letters: a qword, criterion). Uses j1-j8.
+og_mutate:
+  jldi j8, 1
+  jwhile j8
+    jldi j1, 0
+    jld j5, j1, OGCODE          ; how many letters it has
+    jldi j6, 0
+    jadd j7, j5, j1
+    jwhile j7
+      jldi j3, 1
+      jadd j6, j6, j3
+      jldi j3, 4
+      jshr j7, j7, j3
+    jwend
+    jst j6, j1, OGT
+    jcall ev_rand               ; which: 0 in, 1 out, 2 changed (none yet: in; sixteen: not in)
+    jldi j3, 3
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j7, j2, j4
+    jldi j1, 0
+    jld j6, j1, OGT
+    jjnz j6, om_some
+    jldi j7, 0
+  om_some:
+    jldi j3, 16
+    jsub j3, j6, j3
+    jjnz j3, om_room
+    jjnz j7, om_room
+    jldi j7, 1
+  om_room:
+    jst j7, j1, OGKID
+    jcall ev_rand               ; where: 0..n for in, 0..n-1 otherwise
+    jldi j1, 0
+    jld j6, j1, OGT
+    jld j7, j1, OGKID
+    jadd j3, j6, j1
+    jjnz j7, om_where
+    jldi j4, 1
+    jadd j3, j3, j4
+  om_where:
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j4, j2, j4
+    jldi j3, 2
+    jshl j4, j4, j3             ; its bit
+    jst j4, j1, OGSC
+    jcall ev_rand               ; the letter, 1..9
+    jldi j3, 9
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jldi j1, 0
+    jld j3, j1, OGSC
+    jshl j2, j2, j3             ; the letter at its place
+    jld j5, j1, OGCODE
+    jldi j4, 1                  ; below its place, kept
+    jshl j4, j4, j3
+    jldi j6, 1
+    jsub j4, j4, j6
+    jand j6, j5, j4
+    jshr j5, j5, j3             ; from its place on
+    jld j7, j1, OGKID
+    jjnz j7, om_out
+    jldi j4, 4                  ; in: the rest moves up one letter
+    jshl j5, j5, j4
+    jshl j5, j5, j3
+    jor j5, j5, j2
+    jjmp om_put
+  om_out:
+    jldi j4, 4                  ; out or changed: its letter leaves
+    jshr j5, j5, j4
+    jldi j4, 1
+    jsub j4, j7, j4
+    jjz j4, om_down
+    jshl j5, j5, j4             ; changed: the new one in its place (j4 = 1: one letter up again)
+    jldi j4, 3
+    jshl j5, j5, j4
+    jshl j5, j5, j3
+    jor j5, j5, j2
+    jjmp om_put
+  om_down:
+    jshl j5, j5, j3
+  om_put:
+    jor j5, j5, j6
+    jst j5, j1, OGTRY
+    jld j4, j1, OGCODE
+    jsub j8, j5, j4             ; the same organ: drawn again
+    jjz j8, om_again
+    jldi j8, 0
+    jjmp om_end
+  om_again:
+    jldi j8, 1
+  om_end:
+  jwend
+  jret
+
+; organo.inc written whole from the molde: as a candidate (og_write: it sits the exam and says its score) or as
+; Razar itself (og_write0), with the champion's genome and the organ OGTRY. Uses j1-j14.
+og_write:
+  jldi j2, 1
+  jjmp ow_go
+og_write0:
+  jldi j2, 0
+ow_go:
+  jldi j1, 0
+  jst j2, j1, OGKID
+  jcall flush                   ; (what it wrote is out: TEXT is the organ's now)
+  jldi j2, 67                   ; ORGAN_CANDIDATE =
+  jcall og_put
+  jldi j1, 0
+  jld j2, j1, OGKID
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jldi j2, 71                   ; ORGAN_GENOME =
+  jcall og_put
+  jldi j1, 0
+  jld j2, j1, EVC
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jldi j2, 79                   ; ORGAN_CODE =
+  jcall og_put
+  jldi j1, 0
+  jld j2, j1, OGTRY
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jldi j2, 104                  ; the head, then its letters, then the foot
+  jcall og_line_put
+  jldi j1, 0
+  jld j2, j1, OGTRY
+  jst j2, j1, OGLET
+  jwhile j2
+    jldi j3, 15
+    jand j2, j2, j3
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall og_line_put
+    jldi j1, 0
+    jld j2, j1, OGLET
+    jldi j3, 4
+    jshr j2, j2, j3
+    jst j2, j1, OGLET
+  jwend
+  jldi j2, 102
+  jcall og_line_put
+  jldi j2, 111                  ; its file, whole: the old one out
+  jcall og_block
+  jldi j10, 12
+  jadd j11, j5, j1
+  jadd j12, j6, j1
+  jcall ask
+  jldi j2, 111
+  jcall og_block
+  jldi j10, 4
+  jadd j11, j5, j1
+  jadd j12, j6, j1
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ow_done
+  jst j13, j1, OGT
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 6
+  jor j10, j10, j2
+  jldi j11, TEXT
+  jld j12, j1, POS
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, OGT
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ow_done:
+  jldi j1, 0
+  jst j1, j1, POS
+  jret
+
+; The block named j2 of the molde into the text, and a line end after it. Uses j1-j10.
+og_line_put:
+  jcall og_put
+  jldi j2, 10
+  jjmp putch
+
+; The block named j2 of the molde into the text (TEXT + POS). Uses j1-j10.
+og_put:
+  jcall og_block
+  jwhile j6
+    jldb j2, j5, 0
+    jst j5, j1, EVT
+    jst j6, j1, EVT2
+    jcall putch
+    jldi j1, 0
+    jld j5, j1, EVT
+    jld j6, j1, EVT2
+    jldi j2, 1
+    jadd j5, j5, j2
+    jsub j6, j6, j2
+  jwend
+  jret
+
+; The block named j2 (a byte) of the molde -> j5 where it starts, j6 its bytes (0 if there is none): after its line
+; "@" and its name, up to the line end before the next block (that line end left out). Uses j1-j10.
+og_block:
+  jldi j1, 0
+  jld j7, j1, OGM
+  jld j8, j1, OGML
+  jadd j8, j7, j8
+  jldi j5, 0
+  jldi j6, 0
+  jldi j9, 10                   ; (the byte before the first: as if a line ended)
+  jsub j3, j8, j7
+  jwhile j3
+    jldb j4, j7, 0
+    jldi j10, 10
+    jsub j10, j9, j10
+    jjnz j10, ob_next
+    jldi j10, 64
+    jsub j10, j4, j10
+    jjnz j10, ob_next
+    jldb j10, j7, 1
+    jsub j10, j10, j2
+    jjnz j10, ob_next
+    jldi j10, 1                 ; its line passed
+    jldi j3, 1
+    jwhile j3
+      jadd j7, j7, j10
+      jldb j4, j7, 0
+      jldi j3, 10
+      jsub j3, j4, j3
+    jwend
+    jadd j7, j7, j10
+    jadd j5, j7, j1             ; up to a line end followed by "@", or the end
+    jldi j3, 1
+    jwhile j3
+      jsub j3, j8, j7
+      jjz j3, ob_end
+      jldb j4, j7, 0
+      jldi j10, 10
+      jsub j10, j4, j10
+      jldi j3, 1
+      jjnz j10, ob_step
+      jldb j4, j7, 1
+      jldi j10, 64
+      jsub j3, j4, j10
+      jjz j3, ob_end
+      jldi j3, 1
+    ob_step:
+      jldi j10, 1
+      jadd j7, j7, j10
+    jwend
+  ob_end:
+    jsub j6, j7, j5
+    jldi j3, 0
+    jjmp ob_last
+  ob_next:
+    jadd j9, j4, j1
+    jldi j10, 1
+    jadd j7, j7, j10
+    jsub j3, j8, j7
+  ob_last:
+  jwend
+  jldi j1, 0
+  jret
+
+; The PDP assembler launched as its child (the block "a": memory, reading and writing), everything it asks signed,
+; until nobody is left: -> j2 1 if it ended well. Uses j1-j14.
+og_build:
+  jldi j2, 97
+  jcall og_block
+  jldi j10, 14
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 16
+  jor j10, j10, j2
+  jadd j11, j5, j1
+  jadd j12, j6, j1
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ob_bad
+  jst j13, j1, OGKID
+  jcall og_serve
+  jldi j1, 0
+  jldi j10, 19
+  jld j11, j1, OGKID
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jjz j13, ob_ok
+ob_bad:
+  jldi j1, 0
+  jldi j2, 0
+ob_ok:
+  jret
+
+; The candidate launched as its child (the block "p": memory, reading and writing; its letters ask for nothing, so a
+; mutant can not touch a file), caged by its budget, everything it asks signed, its word heard -> OGSC its score
+; (the lowest there is if it said none: it broke or spent its budget). Uses j1-j14.
+og_trial:
+  jldi j1, 0
+  jldi j2, 1
+  jldi j3, 63
+  jshl j2, j2, j3
+  jst j2, j1, OGSC
+  jldi j2, 112
+  jcall og_block
+  jldi j10, 14
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 16
+  jor j10, j10, j2
+  jadd j11, j5, j1
+  jadd j12, j6, j1
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, otr_done
+  jst j13, j1, OGKID
+  jldi j10, 34
+  jadd j11, j13, j1
+  jld j12, j1, OGBUD
+  jcall ask
+  jcall og_serve
+otr_done:
+  jldi j1, 0
+  jret
+
+; Asleep on its doorbell until nobody is left: each time it wakes, what waits for its signature is signed (its
+; children's own requests: what they may do the porters already checked) and the words are heard; a word from the
+; child OGKID is its score (OGSC). Uses j1-j14.
+og_serve:
+  jldi j9, 1
+  jwhile j9
+    jldi j10, 29
+    jcall ask
+    jldi j1, 1
+    jadd j9, j13, j1            ; (-1: nobody is left)
+    jjz j9, os_end
+    jldi j1, 0
+    jldi j10, 18                ; what waits: {its number, the child, its kind}
+    jld j11, j1, OGPEND
+    jldi j12, 4096
+    jcall ask
+    jldi j1, 0
+    jld j9, j1, OGPEND
+    jadd j8, j13, j1
+    jldi j2, 63                 ; (-1: nothing to sign)
+    jsar j2, j8, j2
+    jjz j2, os_some
+    jldi j8, 0
+  os_some:
+    jwhile j8
+      jldi j1, 0
+      jst j9, j1, OGT
+      jst j8, j1, OGLET
+      jldi j10, 17
+      jld j11, j9, 0
+      jldi j12, 1
+      jcall ask
+      jldi j1, 0
+      jld j9, j1, OGT
+      jld j8, j1, OGLET
+      jldi j2, 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j8, j8, j2
+    jwend
+    jldi j8, 1                  ; the words it was told
+    jwhile j8
+      jldi j1, 0
+      jldi j10, 31
+      jld j11, j1, OGPEND
+      jldi j2, 4096
+      jadd j11, j11, j2
+      jcall ask
+      jldi j1, 0
+      jldi j2, 1
+      jsub j8, j13, j2
+      jjnz j8, os_quiet
+      jld j3, j1, OGPEND
+      jldi j2, 4096
+      jadd j3, j3, j2
+      jld j2, j3, 0
+      jld j4, j1, OGKID
+      jsub j2, j2, j4
+      jldi j8, 1
+      jjnz j2, os_heard
+      jld j2, j3, 8
+      jst j2, j1, OGSC
+      jjmp os_heard
+    os_quiet:
+      jldi j8, 0
+    os_heard:
+    jwend
+    jldi j9, 1
+    jjmp os_again
+  os_end:
+    jldi j9, 0
+  os_again:
+  jwend
+  jldi j1, 0
+  jret
+
+; "organo <its letters> = <its score> (sin <the one to beat>)", and " *" if it won. Uses j1-j12.
+og_line:
+  jldi j2, 0
+  jshi j2, 006Fh
+  jshi j2, 7267h
+  jshi j2, 616Eh
+  jshi j2, 6F20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGTRY
+  jcall og_hex
+  jldi j2, 0
+  jshi j2, 0020h
+  jshi j2, 3D20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGSC
+  jcall og_signed
+  jldi j2, 0
+  jshi j2, 2028h
+  jshi j2, 7369h
+  jshi j2, 6E20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGBASE
+  jcall og_signed
+  jldi j2, 41
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, OGSC
+  jld j3, j1, OGBASE
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, ol_end
+  jldi j2, 32
+  jcall putch
+  jldi j2, 42
+  jcall putch
+ol_end:
+  jldi j2, 10
+  jcall putch
+  jjmp flush
+
+; Up to 8 letters of j2, the first in its highest byte (a 0 byte skipped). Uses j1-j6.
+og_r8:
+  jldi j1, 0
+  jst j2, j1, OGLET
+  jldi j5, 8
+  jwhile j5
+    jldi j1, 0
+    jld j2, j1, OGLET
+    jldi j3, 56
+    jshr j2, j2, j3
+    jst j5, j1, EVT2
+    jjz j2, or_skip
+    jcall putch
+  or_skip:
+    jldi j1, 0
+    jld j2, j1, OGLET
+    jldi j3, 8
+    jshl j2, j2, j3
+    jst j2, j1, OGLET
+    jld j5, j1, EVT2
+    jldi j3, 1
+    jsub j5, j5, j3
+  jwend
+  jret
+
+; Its letters as they are written, the first one first ("-": none). Uses j1-j6.
+og_hex:
+  jldi j1, 0
+  jst j2, j1, OGLET
+  jjnz j2, oh_some
+  jldi j2, 45
+  jjmp putch
+oh_some:
+  jwhile j2
+    jldi j3, 15
+    jand j2, j2, j3
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, OGLET
+    jldi j3, 4
+    jshr j2, j2, j3
+    jst j2, j1, OGLET
+  jwend
+  jret
+
+; j2 with its sign, as the exam is said. Uses j1-j12.
+og_signed:
+  jldi j1, 0
+  jst j2, j1, OGLET
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, osg_pos
+  jldi j2, 45
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, OGLET
+  jldi j3, 0
+  jsub j2, j3, j2
+  jjmp putmix
+osg_pos:
+  jld j2, j1, OGLET
+  jjmp putmix
+
+; A candidate (ORGAN_CANDIDATE): it sits the exam of the genome it was built with, tells its parent its score (a word
+; to -1, "my parent") and ends. Nothing written. Uses j1-j14.
+candidate:
+  jcall distill_no
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, FORMS
+  jldi j2, ORGAN_GENOME
+  jst j2, j1, EVC
+  jcall ev_exam
+  jldi j1, 0
+  jldi j10, 30
+  jldi j11, -1
+  jld j12, j1, EVS
+  jcall ask
+  jhalt
+
 
 ; Its memory (Capitan: "the concepts it learned and the genome cannot be lost: something has to remain… no paste +
 ; paste + paste growing the file: only taking out or keeping the best paths"). The file "memoria" (its number after
