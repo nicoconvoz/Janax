@@ -311,7 +311,9 @@ HQL   = 1C98h                   ; forms once (a growing table)
 HQU   = 1CA0h
 HQV   = 1CA8h
 HPDN  = 1CB0h
-HPDS  = 1CB8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HPDS  = 1CB8h
+HQA   = 1CD8h                   ; the pending ones whose two forms this book has {form, form, way} (a room), how many
+HQAN  = 1CE0h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -407,6 +409,7 @@ jst j2, j1, HTURN
 jwhile j2                      ; while a turn joins something
   jcall hl_groups
   jcall hl_agree
+  jcall hl_pinject
   jcall hl_props
   jcall hl_derive
   jcall hl_merge
@@ -5622,9 +5625,9 @@ hkp_done:
 ; What was left to solve (Capitan: "the ones without a partner, put them to sleep and look in the next book if they
 ; have one: it leaves something on its mind to solve, and when it finds where to check it, it checks it"): the house's
 ; "pendiente", two forms that held one pair alike in a book before (one confirmation: not enough to join), a line each
-; as in "sabido". Each line whose two forms this book has is judged by it: one more confirmation and none against make
-; two, from two books, and it is checked ("verifica:"), joined as a premise; otherwise it stays pending, as it is.
-; Uses j1-j14.
+; as in "sabido", kept as it is. The ones whose two forms this book has sit the same exam as any join (Capitan: "the
+; same ones"): in every turn the pair the book before saw counts as one more read alike for them (hl_pinject), and
+; they join only if they beat chance, choose each other, nothing contradicts them and they explain. Uses j1-j14.
 hl_pending:
   jldi j11, S_PEND
   jldi j12, 9
@@ -5641,6 +5644,13 @@ hl_pending:
   jcall room
   jldi j1, 0
   jst j13, j1, HQL
+  jld j11, j1, HQN              ; (24 bytes each, a line is 36 or more)
+  jldi j3, 24
+  jadd j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HQA
+  jst j1, j1, HQAN
   jld j2, j1, HQB
   jst j2, j1, HKP
   jld j3, j1, HQN
@@ -5709,20 +5719,20 @@ hl_pending:
     jjnz j6, hq_keep
     jld j6, j4, 8
     jst j6, j1, HKFP
-    jcall hk_judge
-    jldi j1, 0
-    jld j2, j1, HKXX            ; none against, one for at least: two, from two books
-    jjnz j2, hq_keep
-    jld j2, j1, HKC
-    jjz j2, hq_keep
-    jld j2, j1, HQV
+    jld j2, j1, HQAN            ; this book can judge it: listed, for its turns (hl_pinject)
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, HQA
+    jadd j3, j3, j4
+    jld j4, j1, HKFF
+    jst j4, j3, 0
+    jld j4, j1, HKFP
+    jst j4, j3, 8
+    jld j4, j1, HKW
+    jst j4, j3, 16
     jldi j3, 1
     jadd j2, j2, j3
-    jst j2, j1, HQV
-    jldi j1, S_VERIF
-    jcall puts
-    jcall hk_join
-    jjmp hq_next
+    jst j2, j1, HQAN
   hq_keep:
     jldi j1, 0
     jld j2, j1, HQU
@@ -5747,11 +5757,144 @@ hq_done:
   jldi j1, 0
   jret
 
+; This turn's relations of relations: each pending one this book has, between the relations its two forms are in now,
+; one read alike more (the pair the book before saw), if this book holds a pair of them alike too (a hypothesis to
+; judge: the pending one adds to it, never makes one by itself). Uses j1-j14.
+hl_pinject:
+  jldi j1, 0
+  jst j1, j1, HKI
+  hpi_lap:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HQAN
+    jsub j3, j2, j3
+    jjz j3, hpi_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, HQA
+    jadd j3, j3, j4
+    jst j3, j1, HKP
+    jld j2, j3, 0
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HKRA
+    jst j3, j1, HKPA
+    jld j4, j1, HKP
+    jld j2, j4, 8
+    jcall hl_find
+    jldi j1, 0
+    jld j4, j1, HKRA
+    jsub j4, j4, j2
+    jjz j4, hpi_next            ; (one relation already)
+    jld j4, j1, HKPA            ; their way, as relations now: 1 the same, 2 the other
+    jxor j3, j3, j4
+    jld j4, j1, HKP
+    jld j4, j4, 16
+    jxor j3, j3, j4
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HDIR
+    jld j10, j1, HKRA           ; the smaller first, as hl_agree keys them
+    jadd j11, j2, j1
+    jsub j12, j10, j11
+    jldi j14, 63
+    jsar j12, j12, j14
+    jjnz j12, hpi_ord
+    jadd j12, j10, j1
+    jadd j10, j11, j1
+    jadd j11, j12, j1
+  hpi_ord:
+    jadd j5, j10, j1
+    jadd j6, j11, j1
+    jcall hl_mix
+    jld j6, j1, HDIR
+    jcall hl_mix
+    jjnz j5, hpi_k
+    jldi j5, 1
+  hpi_k:
+    jst j5, j1, HKEY
+    jldi j2, HAG
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKEY
+    jsub j6, j6, j5
+    jjnz j6, hpi_next
+    jld j6, j4, 32
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j4, 32
+  hpi_next:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hpi_lap
+hpi_done:
+  jldi j1, 0
+  jret
+
+; The pending ones this book joined (they passed the exam): checked ("verifica:"), counted. Uses j1-j14.
+hl_pchecked:
+  jldi j1, 0
+  jst j1, j1, HQV
+  jst j1, j1, HKI
+  hpc_lap:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HQAN
+    jsub j3, j2, j3
+    jjz j3, hpc_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, HQA
+    jadd j3, j3, j4
+    jst j3, j1, HKP
+    jld j2, j3, 0
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HKRA
+    jld j4, j1, HKP
+    jld j2, j4, 8
+    jcall hl_find
+    jldi j1, 0
+    jld j4, j1, HKRA
+    jsub j4, j4, j2
+    jjnz j4, hpc_next
+    jld j2, j1, HQV
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HQV
+    jldi j1, S_VERIF
+    jcall puts
+    jld j4, j1, HKP
+    jld j2, j4, 0
+    jcall hl_sayform
+    jldi j1, S_TIL
+    jcall puts
+    jld j4, j1, HKP
+    jld j2, j4, 8
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+  hpc_next:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hpc_lap
+hpc_done:
+  jldi j1, 0
+  jret
+
 ; What is left to solve now, into "pendiente" for the next book: the lines still pending (one whose two forms joined in
 ; this book is solved, and goes), then two forms of this book's last turn that held one pair alike and none crossed
 ; (one confirmation), whose relations are not one. Each two forms once (Capitan: "do not keep duplicates"). Uses
 ; j1-j14.
 hl_psave:
+  jcall hl_pchecked
   jldi j2, HPDS
   jldi j3, 16
   jcall pl_new
@@ -5980,6 +6123,8 @@ hps_close:
   jldi j1, S_PVER
   jcall puts
   jld j2, j1, HQU
+  jld j3, j1, HQV
+  jsub j2, j2, j3
   jcall putnum
   jldi j1, S_PSIG
   jcall puts

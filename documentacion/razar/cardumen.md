@@ -2717,3 +2717,36 @@ duplicado"*.
   mira el nulo (los pares cruzados, lo que da el azar), ni que se elijan una a la otra, ni la regla de explicar. Las
   formas de gramática comparten pares por suerte en todos los libros. Para que lo verificado valga, la verificación
   tiene que pasar las mismas pruebas que una unión.
+
+## Lo pendiente rinde el mismo examen que una unión (2026-11-08)
+
+El Capitán: *"sí, las mismas"* (que verificar entre libros pase las mismas pruebas que una unión).
+
+- **Cómo:** una pendiente ya no se verifica aparte. En cada vuelta, cada pendiente cuyas dos formas tiene el libro
+  suma su par (el que vio el libro anterior) como un "dicho igual" más a la hipótesis de este libro entre las
+  relaciones donde están ahora esas formas (`hl_pinject`). Solo si el libro también la tiene: la pendiente suma a una
+  hipótesis, nunca la crea sola. Después rinde lo de siempre: dos confirmaciones o más, ganarle al nulo, elegirse una a
+  la otra, nada que la contradiga, explicar más de lo que deja. Si se une, `verifica:`. Si no, sigue pendiente.
+- **Prueba (`hilos_pendiente_prueba.sh`):** el segundo libro, que solo no une nada, con la pendiente del primero:
+  `vuelta 1 une: padre de ~ hijo de | al reves | lo confirman 2 | nada lo contradice` y `verifica:`.
+- **Los diez libros de personas:**
+
+  | libro | sin pendientes | pendiente suelta | con el mismo examen | verificadas |
+  |---|---|---|---|---|
+  | NT | 101 | 101 | 101 | 0 |
+  | Asimov | 118 | 141 | 122 | 5 |
+  | Lazarillo | 119 | 143 | 125 | 3 |
+  | Quijote | 315 | 469 | 313 | 9 |
+  | Palma | 316 | 472 | 325 | 12 |
+  | Bécquer | 330 | 488 | 350 | 16 |
+  | Darío | 331 | 489 | 358 | 18 |
+  | Quiroga | 336 | 494 | 372 | 13 |
+  | Unamuno | 343 | 508 | 394 | 15 |
+  | Baroja | 347 | 524 | 404 | 11 |
+
+  Con el mismo examen suben **los libros chicos**, que es lo que faltaba: Palma suma 12 en vez de 1, Darío 8 en vez
+  de 1, Unamuno 22 en vez de 7. El Quijote no cambia (ya se repite solo). El archivo de pendientes queda en 1,07 MB.
+- **Lo verificado:** `con ~ contra`, `sus ~ nuestras`, `fue ~ ha sido`, `es ~ era`, `era ~ sería`, `una ~ otra`,
+  `dos ~ tres`, `de tres ~ de cinco`, `allí ~ aquí`, `he ~ tengo`, `unos ~ algunos`, `aquella ~ esa`, `os ~ les`,
+  `le ~ nos`. Todavía pasa ruido de gramática (`y ~ y la`, `se ~ un`, `en ~ había`), mucho menos que con la verificación
+  suelta (`como ~ también`, `y ~ el`).

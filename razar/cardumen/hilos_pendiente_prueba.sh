@@ -3,7 +3,8 @@
 # mind to solve, and when it finds where to check it, it checks it"). Book 1: "padre de" and "hijo de" say two pairs
 # each (a relation is said by two) and share one, turned: one confirmation, not enough to join, so it is left pending
 # (once, though the two forms meet both ways). Book 2, other people, the same again: alone it joins nothing; with book
-# 1's "pendiente" it is two, from two books, and it checks it ("verifica:") and knows it.
+# 1's "pendiente" the pair the book before saw counts as one more read alike, and the join sits the same exam as any
+# (it beats chance, they choose each other, nothing contradicts it): "une: ... | lo confirman 2", then "verifica:".
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -27,7 +28,8 @@ corre "$d/solo" > "$d/solo.out"
 pend="$d/uno/$(etiqueta pendiente)"
 if [ "$(grep -cE '\| (padre de ~ hijo de|hijo de ~ padre de)$' "$pend")" = 1 ] &&
    ! grep -Eq 'une: (padre de|hijo de) ~ ' "$d/uno.out" &&
-   grep -Eq '^verifica: sabe: (padre de ~ hijo de|hijo de ~ padre de) \| al reves$' "$d/dos.out" &&
+   grep -Eq '^vuelta [0-9]+ une: (padre de ~ hijo de|hijo de ~ padre de) \| al reves \| lo confirman 2 \| nada lo contradice$' "$d/dos.out" &&
+   grep -Eq '^verifica: (padre de ~ hijo de|hijo de ~ padre de)$' "$d/dos.out" &&
    ! grep -q '^verifica:' "$d/solo.out" && ! grep -Eq 'une: (padre de|hijo de) ~ ' "$d/solo.out" &&
    grep -Eq '\| (padre de ~ hijo de|hijo de ~ padre de)$' "$d/dos/$(etiqueta sabido)"; then
   echo "hilos_pendiente_prueba: bien"
