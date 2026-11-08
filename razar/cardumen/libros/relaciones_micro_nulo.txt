@@ -1,0 +1,156 @@
+Q: quien engendro a tomas?
+O: carlos es el hijo de tomas.
+O: eso dicen en la familia.
+Q: quien nacio del mismo que luis?
+O: diego es el padre de luis.
+O: asi lo cuentan los viejos.
+Q: quien engendro al que engendro a diego?
+O: juan es el abuelo de diego.
+O: eso dicen en la familia.
+Q: a quien engendro el que nacio del mismo que mateo?
+O: felipe es el sobrino de mateo.
+O: eso dicen en la familia.
+Q: quien engendro al que engendro a tomas?
+O: asi fue siempre.
+O: juan es el sobrino de tomas.
+Q: quien nacio del mismo que engendro a simon?
+O: diego es el padre de simon.
+O: eso dicen en la familia.
+Q: quien engendro a diego?
+O: pedro es el hijo de diego.
+O: todos en el pueblo lo saben.
+Q: a quien engendro juan?
+O: pedro es el primo de juan.
+O: carlos es el tio de juan.
+O: todos en el pueblo lo saben.
+Q: quien engendro a carlos?
+O: juan es el tio de carlos.
+O: eso dicen en la familia.
+Q: quien nacio del mismo que mateo?
+O: eso dicen en la familia.
+O: tomas es el sobrino de mateo.
+Q: quien engendro al que engendro a mateo?
+O: juan es el nieto de mateo.
+O: todos en el pueblo lo saben.
+Q: a quien engendro el que engendro juan?
+O: mateo es el hijo de juan.
+O: tomas es el tio de juan.
+O: nadie lo discute.
+O: luis es el tio de juan.
+O: diego es el primo de juan.
+Q: quien nacio del mismo que engendro a bruno?
+O: diego es el tio de bruno.
+O: asi fue siempre.
+Q: quien nacio del mismo que engendro a luis?
+O: eso dicen en la familia.
+O: carlos es el hermano de luis.
+Q: quien engendro a simon?
+O: asi fue siempre.
+O: luis es el nieto de simon.
+Q: a quien engendro luis?
+O: es algo conocido.
+O: simon es el nieto de luis.
+O: bruno es el nieto de luis.
+Q: a quien engendro el que nacio del mismo que engendro a mateo?
+O: diego es el sobrino de mateo.
+O: luis es el hijo de mateo.
+O: eso dicen en la familia.
+Q: a quien engendro el que nacio del mismo que pedro?
+O: asi lo cuentan los viejos.
+O: mateo es el tio de pedro.
+O: tomas es el nieto de pedro.
+Q: a quien engendro pedro?
+O: asi fue siempre.
+O: diego es el nieto de pedro.
+O: luis es el primo de pedro.
+Q: quien engendro al que engendro a bruno?
+O: eso dicen en la familia.
+O: pedro es el nieto de bruno.
+Q: quien nacio del mismo que engendro a diego?
+O: eso dicen en la familia.
+O: carlos es el hermano de diego.
+Q: quien nacio del mismo que engendro a tomas?
+O: pedro es el nieto de tomas.
+O: asi lo cuentan los viejos.
+Q: a quien engendro tomas?
+O: asi fue siempre.
+O: felipe es el hijo de tomas.
+Q: a quien engendro el que engendro pedro?
+O: es algo conocido.
+O: simon es el tio de pedro.
+O: bruno es el sobrino de pedro.
+Q: a quien engendro carlos?
+O: mateo es el hermano de carlos.
+O: es algo conocido.
+O: tomas es el padre de carlos.
+Q: quien nacio del mismo que bruno?
+O: nadie lo discute.
+O: simon es el padre de bruno.
+Q: quien engendro a felipe?
+O: tomas es el tio de felipe.
+O: es algo conocido.
+Q: quien engendro a luis?
+O: pedro es el hijo de luis.
+O: nadie lo discute.
+Q: a quien engendro el que nacio del mismo que engendro a tomas?
+O: todos en el pueblo lo saben.
+O: diego es el primo de tomas.
+O: luis es el padre de tomas.
+Q: a quien engendro el que nacio del mismo que engendro a diego?
+O: asi fue siempre.
+O: tomas es el hermano de diego.
+O: mateo es el primo de diego.
+Q: quien nacio del mismo que simon?
+O: asi fue siempre.
+O: bruno es el padre de simon.
+Q: quien nacio del mismo que carlos?
+O: pedro es el tio de carlos.
+O: asi fue siempre.
+Q: a quien engendro el que nacio del mismo que engendro a luis?
+O: mateo es el hijo de luis.
+O: tomas es el tio de luis.
+O: es algo conocido.
+Q: a quien engendro el que engendro carlos?
+O: felipe es el tio de carlos.
+O: asi fue siempre.
+Q: a quien engendro el que nacio del mismo que carlos?
+O: luis es el nieto de carlos.
+O: nadie lo discute.
+O: diego es el primo de carlos.
+Q: quien engendro a bruno?
+O: todos en el pueblo lo saben.
+O: luis es el tio de bruno.
+Q: quien nacio del mismo que engendro a felipe?
+O: eso dicen en la familia.
+O: mateo es el sobrino de felipe.
+Q: quien engendro a mateo?
+O: eso dicen en la familia.
+O: carlos es el hijo de mateo.
+Q: quien nacio del mismo que diego?
+O: eso dicen en la familia.
+O: luis es el nieto de diego.
+Q: a quien engendro el que nacio del mismo que diego?
+O: eso dicen en la familia.
+O: simon es el hijo de diego.
+O: bruno es el primo de diego.
+Q: quien engendro a pedro?
+O: es algo conocido.
+O: juan es el hijo de pedro.
+Q: quien nacio del mismo que engendro a mateo?
+O: es algo conocido.
+O: pedro es el abuelo de mateo.
+Q: quien nacio del mismo que pedro?
+O: es algo conocido.
+O: carlos es el hermano de pedro.
+Q: quien engendro al que engendro a simon?
+O: pedro es el sobrino de simon.
+O: todos en el pueblo lo saben.
+Q: quien engendro al que engendro a luis?
+O: juan es el primo de luis.
+O: nadie lo discute.
+Q: quien nacio del mismo que tomas?
+O: eso dicen en la familia.
+O: mateo es el sobrino de tomas.
+Q: quien engendro al que engendro a felipe?
+O: nadie lo discute.
+O: carlos es el abuelo de felipe.

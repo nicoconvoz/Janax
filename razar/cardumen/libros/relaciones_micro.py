@@ -4,7 +4,8 @@
 # their answer only the person; the answers say the relation by its name. Every fact is said twice, once from each side
 # ("pedro es el padre de luis", "luis es el hijo de pedro"), each the answer of another question: the other sentences
 # about a person are the decoys, in their own shape and with the roles swapped.
-#   python relaciones_micro.py <file>
+#   python relaciones_micro.py <file> [nulo]    nulo: each answer says a relation drawn at random (the null: the
+#                                               question no longer says which name its answer has)
 # Text only: Razar measures, in Janax.
 import random
 import sys
@@ -64,7 +65,8 @@ r.shuffle(Q)
 out = []
 for q, name, x, ys in Q:
     out.append('Q: ' + q.format(x=x))
-    body = ['%s es el %s de %s.' % (y, name, x) for y in ys] + [r.choice(FILL)]
+    said = (lambda: r.choice(REL)[1]) if 'nulo' in sys.argv[2:] else (lambda: name)
+    body = ['%s es el %s de %s.' % (y, said(), x) for y in ys] + [r.choice(FILL)]
     r.shuffle(body)
     out += ['O: ' + b for b in body]
 open(sys.argv[1], 'w', encoding='utf-8').write('\n'.join(out) + '\n')

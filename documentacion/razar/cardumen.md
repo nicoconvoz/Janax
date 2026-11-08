@@ -1923,3 +1923,20 @@ Cuatro tramos sin leer:
   y 96 % el cubo: aquí el cubo sí aporta sobre las notas.
 - ⚠️ Falta: la regla general de qué palabra conserva su identidad (la mitad era para no memorizar contenido), el nulo
   con identidad en los bancos anteriores (¿filtra?), y una relación nunca vista.
+
+**El nulo y los bancos anteriores, con identidad** (la misma copia de diagnóstico):
+
+| libro | sin identidad: memoria / cubo 4³ | con identidad: memoria / cubo 4³ |
+|---|---|---|
+| relaciones micro, **nulo** (`nulo`: la relación de cada respuesta sorteada) | 10 / 10 de 47 | **10 / 11 de 47** |
+| relaciones micro | 10 / 10 de 47 | 41 / 45 de 47 |
+| preguntas con otras palabras (trampas de verbo) | 105 / 103-104 de 116 | 116 / 109 de 116 |
+| trampas con forma de respuesta, mezcladas | 102 / 101-102 de 112 | 100 / 102 de 112 |
+| trampas, una relación nunca vista | 4 de 112 (memoria) | 4 / 14 de 112 |
+
+- **No filtra**: cuando la respuesta no dice qué relación tiene, con identidad vuelve a 10-11 de 47 (lo que da saber
+  sólo dónde está la persona). El 41-45 sale de la relación.
+- En "otras palabras" llega a 116: sus trampas se distinguen por el verbo ("mira a"), y con identidad el verbo se ve.
+  En las trampas con forma de respuesta no cambia (100-102 de 112).
+- Una relación nunca vista sigue sin salir (4 y 14 de 112, el azar ~21 %): la identidad deja aprender relaciones
+  vistas, no inventar una nueva.
