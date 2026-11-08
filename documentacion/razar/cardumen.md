@@ -2131,3 +2131,30 @@ pares o más, las más dichas si no entran en la canción: lo que comparten los 
 - **Por qué el cubo no llega a la cuenta:** el gorro son notas que nadie más tiene, el apellido de las nuevas tiene de
   1 a 4 notas contra gorros de 1 a 3, y una nota compartida entre decenas no mueve la forma de toda la canción. La
   cuenta mira sólo lo compartido; el cubo oye todo.
+
+**El apellido, medido en serio** (las críticas del otro chat, el 2026-11-08: *"sacá los nombres más repetidos y
+volvé a medir; si se cae, era pertenencia al libro"*, *"que oiga sólo el apellido"*, *"el apellido prestado de otra
+familia, del mismo tamaño"*, y *"¿qué otros bancos usaban esa misma comparación?"*).
+
+- **Los bancos de ayer no tenían la regla rota:** `voluntad_semilla` recuerda por Jaccard (las notas que comparten
+  sobre las notas de las dos), que ya divide por el tamaño de las dos. La comparación por cantidad sólo existió en el
+  modo canciones de `voluntad_hilos`, escrito hoy. El 13/22/17 de Asimov y el 100-103 de las trampas siguen en pie.
+- **El 13 de 16 lo había contado Doc en Python:** ahora lo cuenta `hilos` (`F: j r nombres compartidos ...`): 13 de
+  16 por nombres, **12 de 16** pesando cada nombre por lo raro que es (un millón sobre cuántos apellidos de la tanda lo
+  dicen). Sacarles peso a los nombres de todos no lo cae.
+- **Pero era circular:** el pariente de cada nueva lo eligió hilos porque comparten pares, y compartir pares es
+  compartir sus nombres. El apellido de una nueva ahora deja afuera los pares que tiene también una elegida (lo que
+  las hizo parientes):
+
+| apellido de las nuevas | cuenta por nombres | por nombres raros | el cubo, sólo apellido | el cubo, apellido de otra familia del mismo tamaño |
+|---|---|---|---|---|
+| con los pares compartidos | 13 de 16 | 12 de 16 | — | — |
+| **sin los pares compartidos** | **6 de 16** | 5 de 16 | **4 de 16** | **0 de 16** |
+
+- Las siete de la cadena de Lucas **se quedan sin apellido**: todos sus nombres repetidos eran los de los pares que
+  comparten con "hijo de". "fue padre de" conserva uno, y apunta a "hijo de".
+- De las 9 con apellido propio, la cuenta acierta 6 y el cubo 4; con apellido prestado de otra familia, 0. **Hay
+  señal, y es chica**: cuatro de esas nueve tienen de pariente a "y la", cuyo apellido es grande (apostar siempre por
+  ella da 4 de 9).
+- El cubo con el apellido solo no destruye la entrada: llega cerca de la cuenta (4 contra 6) y su nulo da 0. Lo que lo
+  ahogaba antes era el gorro.

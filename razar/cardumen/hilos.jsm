@@ -62,6 +62,7 @@ S_GT     = 4F0h
 S_AT     = 500h
 S_HT     = 510h
 S_BT     = 520h
+S_FT     = 530h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -147,6 +148,16 @@ HWX   = 17D8h                   ; the words a form's pairs say, by print {print,
 HSCUT = 17F8h                   ; fewest times a surname's word has; how many words it has
 HSWN  = 1800h
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
+HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
+HSUN  = 1818h                   ; by new one, the chosen one it relates to (a room); walking: the new one, how many
+HRELS = 1820h                   ; surnames, the best plain and its count, the best weighted and its sum, a name's
+HFJ   = 1828h                   ; weight
+HFT   = 1830h
+HFBP  = 1838h
+HFSP  = 1840h
+HFBW  = 1848h
+HFSW  = 1850h
+HFI   = 1858h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -567,6 +578,11 @@ hf_done:
 ; The pair HA, HB of form HM (HTG 1 if crossed) by its two words, either way (HKEY; HDIR 1 if HA is the first). Pass
 ; HPASS 1: counted (HGT); 2: put where its words' pairs go (HGE). Uses j1-j14.
 hl_entry:
+  jcall hl_pkey
+  jjmp he_k
+
+; The key of the pair HA, HB by its two words either way -> HKEY, j5 (HDIR 1 if HA is the first). Uses j1-j7.
+hl_pkey:
   jldi j1, 0
   jld j2, j1, HA
   jld j3, j1, HB
@@ -594,10 +610,13 @@ he_ab:
   jcall hl_mix
   jldi j6, 7
   jcall hl_mix
-  jjnz j5, he_k
+  jjnz j5, hpk_k
   jldi j5, 1
-he_k:
+hpk_k:
   jst j5, j1, HKEY
+  jret
+he_k:
+  jldi j1, 0
   jld j2, j1, HPASS
   jldi j3, 1
   jsub j2, j2, j3
@@ -920,7 +939,11 @@ hl_sayform:
 ; word of the form itself ("G: i p p p"; "H:" for the new ones), what only it has; its surname, a note a word its
 ; pairs say, the words said by two of its pairs or more (the most said, if they do not fit in a song with its cap)
 ; ("A: i p p p"; "B:" for the new ones), what its relatives share: "hijo de" and "padre de" share three pairs, but
-; the names of the same family. Uses j1-j14.
+; the names of the same family; a new one's surname leaves out the pairs a chosen one holds too (what made them
+; relatives). And, counted here and not by the cube, which chosen one each new one shares the most
+; surname with: "F: j r plain shared weighted shared", plain by how many names, weighted by how rare each name is
+; (1000000 over how many of all the surnames say it: a name every family says tells nothing of which one). Uses
+; j1-j14.
 hl_tanda:
   jldi j1, 0
   jld j11, j1, HTK
@@ -946,6 +969,28 @@ hl_tanda:
   jcall room
   jldi j1, 0
   jst j13, j1, HCNT
+  jld j11, j1, HTK              ; the surnames: 256 words by form, how many; the relative by new one
+  jadd j11, j11, j11
+  jldi j2, 2
+  jadd j11, j11, j2
+  jst j11, j1, HT1
+  jldi j2, 11
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSUR
+  jld j11, j1, HT1
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSUN
+  jld j11, j1, HT1
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HRELS
   jst j1, j1, HNCH
   jst j1, j1, HNUS
   ht_pick:                      ; the strongest relation of relations not taken yet
@@ -1171,6 +1216,212 @@ ht_rd:
     jjmp ht_c
 ht_done:
   jcall ht_news
+  jcall ht_family
+  jret
+
+; Which chosen one each new one shares the most surname with, by names and by rare names: "F: j r plain shared
+; weighted shared". Uses j1-j14.
+ht_family:
+  jldi j1, 0
+  jld j2, j1, HNCH
+  jld j3, j1, HNNEW
+  jadd j2, j2, j3
+  jst j2, j1, HFT
+  jst j1, j1, HFJ
+  hf2_j:
+    jldi j1, 0
+    jld j2, j1, HFJ
+    jld j3, j1, HNNEW
+    jsub j3, j2, j3
+    jjz j3, hf2_done
+    jst j1, j1, HFBP
+    jst j1, j1, HFSP
+    jst j1, j1, HFBW
+    jst j1, j1, HFSW
+    jldi j2, -1
+    jst j2, j1, HFBP
+    jst j2, j1, HFBW
+    jst j1, j1, HFI
+    hf2_i:                      ; each chosen one
+      jldi j1, 0
+      jld j2, j1, HFI
+      jld j3, j1, HNCH
+      jsub j3, j2, j3
+      jjz j3, hf2_say
+      jld j2, j1, HNCH          ; the new one's surname
+      jld j3, j1, HFJ
+      jadd j2, j2, j3
+      jcall hf2_list            ; j9 its words, j10 how many
+      jadd j12, j9, j1
+      jadd j13, j10, j1
+      jld j2, j1, HFI
+      jcall hf2_list            ; the chosen one's: j9, j10
+      jldi j14, 0               ; plain
+      jst j1, j1, HT1           ; weighted
+      hf2_w:
+        jjz j13, hf2_wd
+        jld j5, j12, 0
+        jadd j6, j9, j1
+        jadd j7, j10, j1
+        hf2_in:
+          jjz j7, hf2_wn
+          jld j8, j6, 0
+          jsub j8, j8, j5
+          jjz j8, hf2_hit
+          jldi j8, 8
+          jadd j6, j6, j8
+          jldi j8, 1
+          jsub j7, j7, j8
+          jjmp hf2_in
+      hf2_hit:
+        jldi j8, 1
+        jadd j14, j14, j8
+        jst j9, j1, HT2
+        jst j10, j1, HT3
+        jst j12, j1, HT4
+        jst j13, j1, HT5
+        jst j14, j1, HDIR
+        jcall hf2_weight        ; j5's weight -> j2
+        jldi j1, 0
+        jld j3, j1, HT1
+        jadd j3, j3, j2
+        jst j3, j1, HT1
+        jld j9, j1, HT2
+        jld j10, j1, HT3
+        jld j12, j1, HT4
+        jld j13, j1, HT5
+        jld j14, j1, HDIR
+      hf2_wn:
+        jldi j8, 8
+        jadd j12, j12, j8
+        jldi j8, 1
+        jsub j13, j13, j8
+        jjmp hf2_w
+    hf2_wd:
+      jld j3, j1, HFSP          ; the most names
+      jsub j3, j3, j14
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, hf2_pw
+      jst j14, j1, HFSP
+      jld j2, j1, HFI
+      jst j2, j1, HFBP
+    hf2_pw:
+      jld j3, j1, HFSW          ; the rarest names
+      jld j5, j1, HT1
+      jsub j3, j3, j5
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, hf2_in2
+      jst j5, j1, HFSW
+      jld j2, j1, HFI
+      jst j2, j1, HFBW
+    hf2_in2:
+      jld j2, j1, HFI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HFI
+      jjmp hf2_i
+  hf2_say:
+    jldi j1, S_FT
+    jcall puts
+    jld j2, j1, HFJ
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, HFJ
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, HRELS
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, HFBP
+    jcall hf2_num
+    jld j2, j1, HFSP
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, HFBW
+    jcall hf2_num
+    jld j2, j1, HFSW
+    jcall putnum
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HFJ
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HFJ
+    jjmp hf2_j
+hf2_done:
+  jret
+
+; j2 (-1: "-") and a space. Uses j1-j4.
+hf2_num:
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, hfn_n
+  jldi j2, 45
+  jcall putch
+  jjmp hfn_s
+hfn_n:
+  jcall putnum
+hfn_s:
+  jldi j2, 32
+  jcall putch
+  jret
+
+; The surname of form j2 of the tanda -> j9 its words, j10 how many. Uses j2-j4, j9, j10.
+hf2_list:
+  jldi j3, 3
+  jshl j3, j2, j3
+  jldi j4, 0
+  jld j4, j4, HSUN
+  jadd j3, j3, j4
+  jld j10, j3, 0
+  jldi j3, 11
+  jshl j9, j2, j3
+  jldi j4, 0
+  jld j4, j4, HSUR
+  jadd j9, j9, j4
+  jret
+
+; The weight of name j5: 1000000 over how many of the tanda's surnames say it -> j2. Uses j1-j11.
+hf2_weight:
+  jldi j1, 0
+  jldi j11, 0                   ; how many say it
+  jld j8, j1, HFT
+  hfw_f:
+    jjz j8, hfw_d
+    jldi j2, 1
+    jsub j2, j8, j2
+    jcall hf2_list
+    hfw_w:
+      jjz j10, hfw_fn
+      jld j6, j9, 0
+      jsub j6, j6, j5
+      jjz j6, hfw_has
+      jldi j6, 8
+      jadd j9, j9, j6
+      jldi j6, 1
+      jsub j10, j10, j6
+      jjmp hfw_w
+  hfw_has:
+    jldi j6, 1
+    jadd j11, j11, j6
+  hfw_fn:
+    jldi j6, 1
+    jsub j8, j8, j6
+    jjmp hfw_f
+hfw_d:
+  jldi j2, 15
+  jshi j2, 4240h
+  jjz j11, hfw_z
+  jdiv j2, j2, j11
+hfw_z:
   jret
 
 ; The new ones: forms not chosen that relate to a chosen one (the strongest first, as many as the chosen at most),
@@ -1276,6 +1527,12 @@ ht_news:
     jcall ht_index
     jldi j1, 0
     jst j6, j1, HP1
+    jld j2, j1, HNNEW
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, HRELS
+    jadd j2, j2, j3
+    jst j6, j2, 0
     jldi j1, S_UT
     jcall puts
     jld j2, j1, HNNEW
@@ -1447,6 +1704,10 @@ hsn_count:
     jldi j3, 63
     jsar j3, j2, j3
     jjnz j3, hsn_pd
+    jcall hsn_shared
+    jjnz j6, hsn_pn
+    jldi j1, 0
+    jld j2, j1, HTJ
     jldi j3, 5
     jshl j3, j2, j3
     jld j4, j1, HFL
@@ -1461,6 +1722,7 @@ hsn_count:
     jadd j3, j3, j4
     jld j5, j3, 16
     jcall hsn_one
+  hsn_pn:
     jldi j1, 0
     jld j2, j1, HTJ
     jldi j3, 5
@@ -1536,6 +1798,23 @@ hsn_say:
     jldi j9, 63
     jsar j8, j8, j9
     jjnz j8, hsn_sn
+    jld j8, j1, HTI               ; (kept, for the count)
+    jldi j9, 3
+    jshl j9, j8, j9
+    jld j10, j1, HSUN
+    jadd j9, j9, j10
+    jld j10, j9, 0
+    jldi j11, 11
+    jshl j8, j8, j11
+    jld j11, j1, HSUR
+    jadd j8, j8, j11
+    jldi j11, 3
+    jshl j11, j10, j11
+    jadd j8, j8, j11
+    jst j7, j8, 0
+    jldi j11, 1
+    jadd j10, j10, j11
+    jst j10, j9, 0
     jcall ht_pieces
     jld j1, j1, HSX
     jcall ht_say
@@ -1554,6 +1833,60 @@ hsn_say:
     jst j3, j1, HT4
     jjmp hsn_s
 hsn_done:
+  jret
+
+; j6 = 1 if pair HTJ is of a new one and a chosen one holds it too: what made them relatives is not their surname (the
+; count would find it by what it was given). Uses j1-j14.
+hsn_shared:
+  jldi j1, 0
+  jld j2, j1, HTI
+  jld j3, j1, HNCH
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jldi j6, 0
+  jjnz j3, hsh_done             ; (a chosen one: all its pairs)
+  jld j2, j1, HTJ
+  jldi j3, 5
+  jshl j3, j2, j3
+  jld j4, j1, HFL
+  jadd j3, j3, j4
+  jld j5, j3, 8
+  jst j5, j1, HA
+  jld j5, j3, 16
+  jst j5, j1, HB
+  jcall hl_pkey
+  jldi j2, HGT
+  jcall pl_find
+  jldi j1, 0
+  jldi j6, 0
+  jld j7, j4, 0
+  jld j8, j1, HKEY
+  jsub j7, j7, j8
+  jjnz j7, hsh_done
+  jld j9, j4, 16                ; its entries: a chosen one's, read?
+  jld j10, j4, 8
+  hsh_lap:
+    jjz j10, hsh_done
+    jldi j11, 24
+    jmul j11, j9, j11
+    jld j12, j1, HGE
+    jadd j11, j11, j12
+    jld j12, j11, 16
+    jjnz j12, hsh_next
+    jld j7, j11, 0
+    jcall hn_flag
+    jldi j8, 1
+    jsub j7, j7, j8
+    jjnz j7, hsh_next
+    jldi j6, 1
+    jjmp hsh_done
+  hsh_next:
+    jldi j11, 1
+    jadd j9, j9, j11
+    jsub j10, j10, j11
+    jjmp hsh_lap
+hsh_done:
   jret
 
 ; Word j5 of a pair counted in HWX. Uses j1-j8.

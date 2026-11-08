@@ -78,3 +78,5 @@ times 510h - $ db 0
 db 'H: ', 0
 times 520h - $ db 0
 db 'B: ', 0
+times 530h - $ db 0
+db 'F: ', 0
