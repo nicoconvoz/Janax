@@ -1596,3 +1596,24 @@ la marca entra como una canción y la plantilla no la escribe nadie.
 - **El control dice que la señal chica de contenido sale de los datos**: con las respuestas revueltas cae a 0,6 %, el
   nivel del nulo.
 
+### Deducir la pregunta desde la respuesta, medido antes de escalar (Capitán, 2026-11-08)
+
+> *"La Biblia es la respuesta: si hay mecanismo de respuesta, deducimos la pregunta, y recién con todas las preguntas
+> deducimos las respuestas que faltan."* — Es la retrotraducción (Sennrich y otros, 2016) y lo que hizo PAQ (Lewis y
+> otros, 2021, 65 millones de preguntas generadas desde textos).
+
+Antes de generar un millón de preguntas se midió el mecanismo al revés: los mismos pares dados vuelta (la respuesta como
+pregunta), con `razona`, sobre los cuatro tramos sin leer.
+
+| al revés | de contenido | nulo | recitado |
+|---|---|---|---|
+| tramo 1 | 1,2 % | 0,4 % | 76 % |
+| tramo 2 | 1,4 % | 0,4 % | 75 % |
+| tramo 3 | 0,7 % | 0,4 % | 79 % |
+| tramo 4 | 0,7 % | 0,6 % | 80 % |
+
+- **Deduce la pregunta tan poco como deduce la respuesta:** de 1,2 a 3,5 veces el nulo, alrededor del 1 % en absoluto.
+  Un millón de preguntas deducidas así serían, en su contenido, casi todas de otra cosa: Razar aprendería ruido.
+- **Lo que sí da preguntas fieles:** tapar una palabra de cada oración. Esa pregunta es correcta por construcción (no
+  hay que deducirla), y lo que se aprende es contestarla desde otra oración del libro.
+
