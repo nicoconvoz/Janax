@@ -1,0 +1,624 @@
+Q: a que clase pertenece el gato?
+O: el gato es un animal.
+O: asi es desde siempre.
+O: bogota vive en la laguna.
+O: cervantes escribio el auto.
+O: el delfin esta en santiago.
+O: martin fierro es una fruta.
+Q: a que clase pertenece la rosa?
+O: es algo que todos saben.
+O: la rosa es una flor.
+O: madrid come la gallina.
+O: la ardilla esta en inglaterra.
+O: el limon come queso.
+Q: a que clase pertenece el roble?
+O: el roble es un arbol.
+O: asi es desde siempre.
+Q: a que clase pertenece el martillo?
+O: lo aprendimos en la escuela.
+O: el martillo es una herramienta.
+O: el violin come el raton.
+O: facundo escribio el aleph.
+O: la guitarra es de color gris.
+Q: a que clase pertenece la guitarra?
+O: la nieve come queso.
+O: montevideo come bambu.
+O: cervantes escribio la tierra.
+O: eso dicen los libros.
+O: homero escribio la arana.
+O: el pez esta en peru.
+O: la guitarra es un instrumento.
+Q: a que clase pertenece el sol?
+O: es bueno recordarlo.
+O: el proceso es un pez.
+O: el sol es una estrella.
+Q: a que clase pertenece la tierra?
+O: la tierra es un planeta.
+O: la gallina vive en la colmena.
+O: es bueno recordarlo.
+Q: a que clase pertenece el oro?
+O: shakespeare escribio el tiburon.
+O: es bueno recordarlo.
+O: el oro es un metal.
+O: exupery escribio el cielo.
+O: la uva tiene seis patas.
+O: la naranja vive en la selva.
+Q: a que clase pertenece la manzana?
+O: la hormiga come avena.
+O: dracula escribio el gato.
+O: asi es desde siempre.
+O: el loro come hojas.
+O: la manzana es una fruta.
+Q: a que clase pertenece la zanahoria?
+O: la zanahoria es una verdura.
+O: homero escribio el panda.
+O: el camello es de color rojo.
+O: lo aprendimos en la escuela.
+O: el elefante es de color negro.
+Q: a que clase pertenece el tiburon?
+O: el tiburon es un pez.
+O: madrid es de color rojo.
+O: borges escribio el pato.
+O: lo aprendimos en la escuela.
+O: la guitarra esta en lima.
+O: lisboa tiene cuatro patas.
+O: la arana esta en espana.
+Q: a que clase pertenece el aguila?
+O: otelo tiene seis patas.
+O: es algo que todos saben.
+O: el aguila es un ave.
+Q: a que clase pertenece la mesa?
+O: la mesa es un mueble.
+O: asi es desde siempre.
+O: el tiburon vive en la selva.
+O: shakespeare escribio la frutilla.
+Q: a que clase pertenece el auto?
+O: facundo es un instrumento.
+O: es algo que todos saben.
+O: el caballo come avena.
+O: el perro esta en francia.
+O: el auto es un vehiculo.
+O: la arana vive en el murcielago.
+Q: a que clase pertenece el violin?
+O: el raton come el conejo.
+O: el violin es un instrumento.
+O: la sangre esta en espana.
+O: asi es desde siempre.
+O: el quijote esta en francia.
+Q: a que clase pertenece el cobre?
+O: asi es desde siempre.
+O: el cobre es un metal.
+Q: donde habita el oso?
+O: la leche esta en argentina.
+O: cordoba come peces.
+O: el oso vive en el bosque.
+O: hamlet come la jirafa.
+O: asi es desde siempre.
+Q: donde habita el pez?
+O: londres vive en la cueva.
+O: asi es desde siempre.
+O: el pez vive en el agua.
+O: el murcielago come carne.
+Q: donde habita el camello?
+O: es bueno recordarlo.
+O: el camello vive en el desierto.
+Q: donde habita el pinguino?
+O: el pinguino vive en el hielo.
+O: asi es desde siempre.
+O: la odisea es de color rojo.
+Q: donde habita el mono?
+O: cordoba es de color amarillo.
+O: el mono vive en la selva.
+O: roma vive en la hormiga.
+O: es bueno recordarlo.
+Q: donde habita la vaca?
+O: la hierba esta en londres.
+O: la vaca vive en el campo.
+O: shakespeare escribio el pulpo.
+O: la leche come bambu.
+O: el leon tiene dos patas.
+O: lo aprendimos en la escuela.
+Q: donde habita el topo?
+O: el pez tiene dos patas.
+O: mucha gente lo sabe.
+O: el leon es un instrumento.
+O: la odisea esta en grecia.
+O: cervantes escribio el chocolate.
+O: el topo vive en la tierra.
+Q: donde habita la abeja?
+O: el delfin es un arbol.
+O: el pajaro es una estrella.
+O: la abeja vive en la colmena.
+O: hamlet es una verdura.
+O: lo aprendimos en la escuela.
+Q: donde habita el pajaro?
+O: lo aprendimos en la escuela.
+O: martin fierro escribio el martillo.
+O: el gato vive en el bosque.
+O: stoker escribio el limon.
+O: el pajaro vive en el nido.
+O: la iliada tiene seis patas.
+O: la abeja come polen.
+O: la rosa tiene dos patas.
+Q: donde habita el leon?
+O: santiago es un instrumento.
+O: la rosa es de color verde.
+O: es algo que todos saben.
+O: el leon vive en la sabana.
+O: berlin tiene dos patas.
+O: el canguro come maiz.
+O: quito es de color rojo.
+Q: donde habita la rana?
+O: es algo que todos saben.
+O: la rana vive en la laguna.
+O: la guitarra esta en colombia.
+O: el carbon esta en cordoba.
+O: hamlet vive en la laguna.
+O: la iliada es de color marron.
+Q: donde habita el murcielago?
+O: homero escribio el canguro.
+O: la abeja esta en mendoza.
+O: el tiburon es de color roja.
+O: el murcielago vive en la cueva.
+O: es bueno recordarlo.
+Q: donde habita la ardilla?
+O: el pato esta en rusia.
+O: el aleph vive en el mono.
+O: la ardilla vive en el arbol.
+O: berlin es de color roja.
+O: eso dicen los libros.
+Q: donde habita el delfin?
+O: el delfin vive en el mar.
+O: el perro es de color blanca.
+O: la abeja vive en la colmena.
+O: es algo que todos saben.
+Q: donde habita la hormiga?
+O: la hormiga vive en el hormiguero.
+O: el raton esta en madrid.
+O: el pajaro es de color negro.
+O: eso dicen los libros.
+Q: donde habita el caballo?
+O: el cielo come zanahorias.
+O: el caballo vive en el establo.
+O: paris tiene ocho patas.
+O: es bueno recordarlo.
+O: el topo come bananas.
+Q: que tono muestra el limon?
+O: el tiburon esta en inglaterra.
+O: el limon es de color amarillo.
+O: mucha gente lo sabe.
+O: moscu vive en el hielo.
+Q: que tono muestra el cielo?
+O: homero escribio el caballo.
+O: el cielo es de color azul.
+O: el aleph vive en el hielo.
+O: asi es desde siempre.
+Q: que tono muestra la hierba?
+O: la hierba es de color verde.
+O: la sangre vive en el campo.
+O: asi es desde siempre.
+O: la naranja vive en el caballo.
+Q: que tono muestra la nieve?
+O: mucha gente lo sabe.
+O: la nieve es de color blanca.
+O: el violin tiene ocho patas.
+O: el mono es de color marron.
+Q: que tono muestra el carbon?
+O: es algo que todos saben.
+O: la ardilla vive en el arbol.
+O: el carbon es de color negro.
+O: la mosca es de color azul.
+Q: que tono muestra la frutilla?
+O: el koala vive en la ardilla.
+O: el grillo es de color amarilla.
+O: la frutilla es de color roja.
+O: es algo que todos saben.
+Q: que tono muestra la naranja?
+O: la naranja es de color naranja.
+O: el caballo vive en el establo.
+O: lo aprendimos en la escuela.
+Q: que tono muestra la uva?
+O: la uva es de color violeta.
+O: mucha gente lo sabe.
+O: la vaca vive en el campo.
+O: el cielo esta en paris.
+Q: que tono muestra el tomate?
+O: es bueno recordarlo.
+O: el tomate es de color rojo.
+Q: que tono muestra la leche?
+O: asi es desde siempre.
+O: la leche es de color blanca.
+O: el conejo es un vehiculo.
+O: el martillo esta en alemania.
+O: el principito esta en chile.
+O: el martillo come el leon.
+Q: que tono muestra el chocolate?
+O: el chocolate es de color marron.
+O: lo aprendimos en la escuela.
+O: moscu tiene ocho patas.
+O: la mesa vive en el bosque.
+O: la ardilla esta en espana.
+Q: que tono muestra la banana?
+O: mucha gente lo sabe.
+O: hernandez escribio el carbon.
+O: el leon esta en quito.
+O: la banana es de color amarilla.
+O: la ardilla es un mueble.
+Q: que tono muestra el pasto?
+O: el pasto es de color verde.
+O: es algo que todos saben.
+Q: que tono muestra el mar?
+O: el mar es de color azul.
+O: es bueno recordarlo.
+Q: que tono muestra la ceniza?
+O: asi es desde siempre.
+O: la ceniza es de color gris.
+O: macbeth vive en el hielo.
+O: la banana vive en el topo.
+Q: que tono muestra la sangre?
+O: la sangre es de color roja.
+O: es bueno recordarlo.
+O: el mar come miel.
+Q: cuantas piernas usa la arana?
+O: borges escribio la vaca.
+O: la arana tiene ocho patas.
+O: eso dicen los libros.
+O: dracula es un planeta.
+O: el pasto esta en espana.
+Q: cuantas piernas usa el perro?
+O: el perro tiene cuatro patas.
+O: es algo que todos saben.
+O: frankenstein escribio paris.
+O: el elefante come el gato.
+Q: cuantas piernas usa la gallina?
+O: la hormiga esta en colombia.
+O: la vaca vive en el campo.
+O: rayuela vive en la laguna.
+O: asi es desde siempre.
+O: el quijote come el tiburon.
+O: martin fierro esta en alemania.
+O: la gallina tiene dos patas.
+Q: cuantas piernas usa la hormiga?
+O: macbeth escribio la gallina.
+O: la hormiga tiene seis patas.
+O: el leon come el oso.
+O: el panda vive en el bosque.
+O: la abeja es un metal.
+O: lo aprendimos en la escuela.
+Q: cuantas piernas usa el pulpo?
+O: otelo vive en la vaca.
+O: la abeja esta en francia.
+O: la hormiga come huesos.
+O: montevideo vive en el leon.
+O: el pulpo tiene ocho patas.
+O: asi es desde siempre.
+Q: cuantas piernas usa el caballo?
+O: el caballo tiene cuatro patas.
+O: el murcielago tiene ocho patas.
+O: el camello come zanahorias.
+O: dracula vive en el oso.
+O: londres esta en lisboa.
+O: es algo que todos saben.
+Q: cuantas piernas usa el pato?
+O: macbeth come nueces.
+O: roma tiene ocho patas.
+O: el pato tiene dos patas.
+O: la gallina esta en bogota.
+O: asi es desde siempre.
+Q: cuantas piernas usa la mosca?
+O: el sol es de color verde.
+O: asi es desde siempre.
+O: la abeja es de color naranja.
+O: la mosca tiene seis patas.
+Q: cuantas piernas usa el gato?
+O: el gato tiene cuatro patas.
+O: asi es desde siempre.
+Q: cuantas piernas usa el canguro?
+O: lo aprendimos en la escuela.
+O: shakespeare escribio el tomate.
+O: el auto vive en el delfin.
+O: el canguro tiene dos patas.
+Q: cuantas piernas usa la abeja?
+O: lo aprendimos en la escuela.
+O: el violin come bambu.
+O: el sol come pasto.
+O: la abeja tiene seis patas.
+O: kafka escribio el mono.
+O: lisboa come nueces.
+Q: cuantas piernas usa el elefante?
+O: el violin esta en atenas.
+O: el elefante tiene cuatro patas.
+O: el principito es de color azul.
+O: lo aprendimos en la escuela.
+Q: cuantas piernas usa el escorpion?
+O: el escorpion tiene ocho patas.
+O: mucha gente lo sabe.
+O: la iliada escribio quito.
+O: el gato esta en chile.
+Q: cuantas piernas usa la vaca?
+O: la hormiga come el mono.
+O: shakespeare escribio la ceniza.
+O: la vaca tiene cuatro patas.
+O: eso dicen los libros.
+Q: cuantas piernas usa el loro?
+O: la gallina es un animal.
+O: lo aprendimos en la escuela.
+O: la vaca es de color azul.
+O: el loro tiene dos patas.
+O: shakespeare escribio la hierba.
+O: la tierra come pescado.
+Q: cuantas piernas usa el grillo?
+O: el escorpion come carne.
+O: londres come la ardilla.
+O: el principito escribio bogota.
+O: la vaca esta en argentina.
+O: el grillo tiene seis patas.
+O: es bueno recordarlo.
+O: la manzana es de color blanca.
+Q: quien fue autor de el quijote?
+O: es algo que todos saben.
+O: el raton vive en la sabana.
+O: cervantes escribio el quijote.
+O: mendoza come bananas.
+O: el caballo esta en argentina.
+Q: quien fue autor de hamlet?
+O: mucha gente lo sabe.
+O: el caballo tiene cuatro patas.
+O: atenas es de color azul.
+O: el auto esta en portugal.
+O: shakespeare escribio hamlet.
+Q: quien fue autor de la odisea?
+O: frankenstein vive en el nido.
+O: la rana tiene dos patas.
+O: mucha gente lo sabe.
+O: homero escribio la odisea.
+O: el cobre come bambu.
+Q: quien fue autor de martin fierro?
+O: hernandez escribio martin fierro.
+O: es bueno recordarlo.
+O: el oro esta en argentina.
+O: facundo come el caballo.
+O: lima tiene seis patas.
+Q: quien fue autor de rayuela?
+O: el koala esta en colombia.
+O: la vaca es una estrella.
+O: la mesa es de color naranja.
+O: lo aprendimos en la escuela.
+O: cortazar escribio rayuela.
+O: la metamorfosis come avena.
+Q: quien fue autor de el aleph?
+O: borges escribio el aleph.
+O: stoker escribio el conejo.
+O: el elefante esta en italia.
+O: eso dicen los libros.
+Q: quien fue autor de la iliada?
+O: el perro esta en grecia.
+O: santiago tiene cuatro patas.
+O: rayuela escribio la zanahoria.
+O: atenas vive en el establo.
+O: homero escribio la iliada.
+O: mucha gente lo sabe.
+Q: quien fue autor de macbeth?
+O: shakespeare escribio macbeth.
+O: asi es desde siempre.
+O: el violin vive en la rana.
+Q: quien fue autor de ficciones?
+O: el raton esta en argentina.
+O: lo aprendimos en la escuela.
+O: borges escribio ficciones.
+O: santiago come el panda.
+O: el panda come el koala.
+Q: quien fue autor de facundo?
+O: la gallina tiene dos patas.
+O: es algo que todos saben.
+O: kafka escribio el pinguino.
+O: sarmiento escribio facundo.
+Q: quien fue autor de el principito?
+O: la metamorfosis tiene dos patas.
+O: el chocolate esta en portugal.
+O: exupery escribio el principito.
+O: cortazar escribio el delfin.
+O: es bueno recordarlo.
+O: exupery escribio la manzana.
+O: la gallina es un planeta.
+Q: quien fue autor de frankenstein?
+O: el cobre vive en la tierra.
+O: la metamorfosis escribio macbeth.
+O: el oro esta en montevideo.
+O: asi es desde siempre.
+O: shelley escribio frankenstein.
+O: el roble come zanahorias.
+Q: quien fue autor de dracula?
+O: eso dicen los libros.
+O: la vaca come el perro.
+O: stoker escribio dracula.
+O: la hormiga es de color blanca.
+O: el quijote escribio el perro.
+O: la frutilla vive en la cueva.
+Q: quien fue autor de la metamorfosis?
+O: el gato es un animal.
+O: el proceso escribio el principito.
+O: es bueno recordarlo.
+O: el caballo es un planeta.
+O: kafka escribio la metamorfosis.
+Q: quien fue autor de el proceso?
+O: kafka escribio el proceso.
+O: el carbon esta en uruguay.
+O: es algo que todos saben.
+Q: quien fue autor de otelo?
+O: shakespeare escribio otelo.
+O: el violin esta en berlin.
+O: homero escribio madrid.
+O: es bueno recordarlo.
+Q: de que se alimenta el conejo?
+O: lo aprendimos en la escuela.
+O: frankenstein tiene cuatro patas.
+O: el conejo come zanahorias.
+O: la ceniza tiene cuatro patas.
+Q: de que se alimenta el leon?
+O: la odisea escribio el pez.
+O: la rana es de color azul.
+O: eso dicen los libros.
+O: el leon come carne.
+Q: de que se alimenta la vaca?
+O: la vaca come pasto.
+O: la metamorfosis vive en el pez.
+O: la mosca vive en la tierra.
+O: es algo que todos saben.
+Q: de que se alimenta el mono?
+O: el tomate tiene cuatro patas.
+O: eso dicen los libros.
+O: el mono come bananas.
+O: la leche esta en roma.
+O: el proceso vive en el campo.
+O: el aleph escribio la nieve.
+O: el martillo vive en el establo.
+Q: de que se alimenta el oso?
+O: borges escribio roma.
+O: lo aprendimos en la escuela.
+O: el oso come miel.
+Q: de que se alimenta el raton?
+O: es bueno recordarlo.
+O: el topo come la abeja.
+O: ficciones esta en peru.
+O: el raton come queso.
+Q: de que se alimenta la gallina?
+O: la gallina come maiz.
+O: shakespeare escribio el leon.
+O: hamlet escribio lima.
+O: la jirafa tiene dos patas.
+O: el koala es una verdura.
+O: eso dicen los libros.
+Q: de que se alimenta el panda?
+O: eso dicen los libros.
+O: el panda come bambu.
+Q: de que se alimenta el gato?
+O: lo aprendimos en la escuela.
+O: el gato come pescado.
+Q: de que se alimenta el caballo?
+O: el caballo come avena.
+O: bogota tiene cuatro patas.
+O: es algo que todos saben.
+O: otelo escribio el panda.
+O: el roble esta en chile.
+Q: de que se alimenta la ardilla?
+O: mendoza vive en el arbol.
+O: la ardilla come nueces.
+O: el gato es de color azul.
+O: lo aprendimos en la escuela.
+Q: de que se alimenta el koala?
+O: el koala come hojas.
+O: es algo que todos saben.
+Q: de que se alimenta el tiburon?
+O: el aleph esta en inglaterra.
+O: eso dicen los libros.
+O: el tiburon come peces.
+O: la gallina vive en la abeja.
+Q: de que se alimenta la abeja?
+O: es bueno recordarlo.
+O: la abeja come polen.
+O: montevideo es un metal.
+O: la uva vive en la laguna.
+Q: de que se alimenta la jirafa?
+O: la hierba es un instrumento.
+O: rayuela es de color blanca.
+O: es algo que todos saben.
+O: el gato come pescado.
+O: la jirafa come hojas.
+Q: de que se alimenta el perro?
+O: kafka escribio el oso.
+O: lo aprendimos en la escuela.
+O: la naranja come polen.
+O: el perro come huesos.
+O: kafka escribio el mar.
+O: ficciones escribio rayuela.
+Q: a que nacion pertenece roma?
+O: roma esta en italia.
+O: eso dicen los libros.
+O: el pasto come polen.
+O: la hierba vive en el camello.
+Q: a que nacion pertenece paris?
+O: ficciones es un animal.
+O: lima es un mueble.
+O: paris esta en francia.
+O: el escorpion vive en el campo.
+O: mucha gente lo sabe.
+Q: a que nacion pertenece madrid?
+O: madrid esta en espana.
+O: es algo que todos saben.
+O: el oro tiene cuatro patas.
+Q: a que nacion pertenece lima?
+O: lima esta en peru.
+O: el pinguino esta en grecia.
+O: el loro vive en el hielo.
+O: la jirafa vive en el bosque.
+O: es algo que todos saben.
+Q: a que nacion pertenece tokio?
+O: el aguila es de color verde.
+O: la abeja vive en el pajaro.
+O: londres es un animal.
+O: el gato vive en el nido.
+O: el leon esta en espana.
+O: la nieve vive en el establo.
+O: lo aprendimos en la escuela.
+O: tokio esta en japon.
+Q: a que nacion pertenece berlin?
+O: facundo esta en colombia.
+O: el mono vive en la selva.
+O: berlin esta en alemania.
+O: eso dicen los libros.
+Q: a que nacion pertenece cordoba?
+O: quito tiene cuatro patas.
+O: eso dicen los libros.
+O: cordoba esta en argentina.
+O: el oso esta en ecuador.
+O: la zanahoria tiene dos patas.
+Q: a que nacion pertenece lisboa?
+O: lisboa esta en portugal.
+O: el oso come miel.
+O: kafka escribio tokio.
+O: el roble esta en moscu.
+O: quito vive en el pinguino.
+O: mucha gente lo sabe.
+O: el pulpo es de color marron.
+Q: a que nacion pertenece quito?
+O: mucha gente lo sabe.
+O: la banana esta en alemania.
+O: paris es de color gris.
+O: quito esta en ecuador.
+O: la banana tiene seis patas.
+Q: a que nacion pertenece mendoza?
+O: mucha gente lo sabe.
+O: tokio tiene dos patas.
+O: mendoza esta en argentina.
+O: el oso es de color azul.
+O: el grillo vive en el campo.
+Q: a que nacion pertenece londres?
+O: sarmiento escribio el perro.
+O: dracula tiene cuatro patas.
+O: eso dicen los libros.
+O: londres esta en inglaterra.
+Q: a que nacion pertenece atenas?
+O: eso dicen los libros.
+O: el aguila esta en ecuador.
+O: la rana esta en tokio.
+O: el topo es un ave.
+O: atenas esta en grecia.
+O: el oso come la vaca.
+O: el mono es de color roja.
+Q: a que nacion pertenece moscu?
+O: moscu esta en rusia.
+O: es algo que todos saben.
+Q: a que nacion pertenece santiago?
+O: santiago esta en chile.
+O: el quijote vive en la laguna.
+O: es bueno recordarlo.
+O: la zanahoria vive en el arbol.
+Q: a que nacion pertenece bogota?
+O: stoker escribio la abeja.
+O: es algo que todos saben.
+O: bogota esta en colombia.
+Q: a que nacion pertenece montevideo?
+O: es algo que todos saben.
+O: montevideo esta en uruguay.
+O: otelo esta en japon.

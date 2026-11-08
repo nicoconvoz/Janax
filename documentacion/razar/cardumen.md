@@ -1821,4 +1821,30 @@ Aciertos sobre las 16 del mecanismo nunca visto (el azar, ~20 %):
 la memoria 24, solo el canto 5, fallan los dos 6 (las piernas de el gato, la vaca y la abeja; el autor de el
 principito; lo que come el perro y la abeja). Si se supiera a cuál creerle en cada pregunta, juntos llegarían a 110 de
 116 (95 %): ese es el techo de sumarlos, falta la regla que elija sin mirar la respuesta.
+**Trampas con forma de respuesta** (`libros/preguntas_trampas.py`; `preguntas_trampas.txt` mezclado,
+`preguntas_trampas_agrupadas.txt` en bloques): las trampas de una cosa ya no tienen verbos propios ("mira a"): son la
+misma cosa en otro mecanismo ("el conejo está en chile", "el conejo tiene cuatro patas") o en el otro papel del suyo
+("otelo come el conejo", "la metamorfosis escribió la manzana"); van en las respuestas de otras cosas. 112 preguntas
+con otras palabras, 288 trampas.
+
+| mezclado, 112 sin leer | acierta |
+|---|---|
+| azar | ~21 % |
+| buscador (y contando todas las palabras) | ~20 % |
+| el canto | 26 % |
+| memoria del kernel, control | **102 de 112 (91 %)** |
+| cubo 4³ + memoria del kernel, semillas 1001-1003 | 101, 102, 102 |
+
+| un mecanismo entero afuera | memoria | cubo 4³ | azar |
+|---|---|---|---|
+| qué es | 4 de 16 | 1 | ~25 % |
+| los otros seis | 0 de 16 cada uno | 0-2 | ~14-27 % |
+| **total** | **4 de 112 (4 %)** | 4 de 112 | ~21 % |
+
+- **Con mecanismos conocidos, se sostiene en 91 % aunque las trampas tengan forma de respuesta**: elige la forma del
+  mecanismo que se pregunta, no cualquier forma de respuesta.
+- **Con un mecanismo nunca visto, cae debajo del azar** (4 %): elige siempre una trampa con la forma de un mecanismo que
+  sí conoce. El 64 % del banco anterior era el defecto de las trampas fáciles. **Aprendió siete relaciones, no la idea
+  de relación**: con 16 ejemplos de cada una, sin entrenar y a prueba de paráfrasis, pero ninguna transferencia a una
+  relación nueva.
 
