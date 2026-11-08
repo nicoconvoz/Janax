@@ -2545,3 +2545,37 @@ achata. (El "instrumento del libro 23" que nombraba no está en la documentació
 - **Lo que prueba y lo que no:** que la pendiente no se achata cuando llega material nuevo, con **un** libro agregado.
   Es un punto, no una curva: para decir "sin techo" hacen falta muchos libros distintos, uno detrás de otro, y ver si
   cada uno sigue sumando. Ninguno de los dos textos va al repo.
+
+## Once libros: la curva no sube, se revuelve (2026-11-08)
+
+El Capitán: *"sí, más libros"*. Once libros, uno sumado a los anteriores cada vez: el NT, Asimov, y nueve documentos
+de este proyecto (`estado`, `lectura`, `cardumen`, `janaxos`, `ideas`, la especificación del idioma, `traductores`,
+`receta-para-la-vida`, `CARTA-DEL-AUTOR`), armados igual (oraciones, minúscula, sin bloques de código ni marcas). Los
+documentos citan palabras del NT: no son del todo ajenos. Ninguno de los textos ni de las salidas va al repo.
+
+| suma hasta | renglones | uniones | nuevas | siguen hasta el final | solo |
+|---|---|---|---|---|---|
+| NT | 11.766 | 104 | 104 | 41 | 104 |
+| + Asimov | 14.958 | 148 | 44 | 71 | 17 |
+| + estado | 16.378 | 164 | 16 | 74 | 1 |
+| + lectura | 19.727 | 177 | 13 | 98 | 40 |
+| + cardumen | 22.217 | 230 | 53 | 151 | 29 |
+| + janaxos | 23.478 | 238 | 8 | 166 | 2 |
+| + ideas | 24.148 | 213 | **−25** | 163 | 1 |
+| + especificación | 24.241 | 218 | 5 | 214 | 0 |
+| + traductores | 24.370 | 251 | **+33** (129 renglones) | 179 | 0 |
+| + receta | 24.635 | 246 | −5 | 244 | 0 |
+| + carta | 24.690 | 245 | −1 | 245 | 0 |
+
+- **El instrumento mentía:** contar uniones no mide lo aprendido. Un documento de 129 renglones "suma" 33 uniones, y
+  otro "resta" 25. Las uniones de cada corrida son el final de un while que empieza de cero: cada libro que se suma
+  cambia el orden, y el final es otro. A lo largo de las once corridas aparecieron 543 uniones distintas. De las 104
+  del NT, solo 41 siguen al final.
+- **Lo que de verdad dice, y es lo importante:** **más libro le hace perder lo que había probado.** Al final ya no
+  están `hijo de ~ padre de`, `cinco mil ~ cuatro mil` ni `algún ~ ningún`. Siguen `piedad de ~ compasión de`,
+  `fue ~ había sido`, `la multitud ~ pedro`, `cercano al ~ próximo al` y `de hidrógeno ~ de helio`. Los textos
+  técnicos meten uniones de ruido alrededor de palabras muy dichas (`a ~ mb mb mb`, `a ~ ms traductor`).
+- **Por qué:** `hilos` no acumula entre libros. Lo probado se vuelve premisa dentro de una corrida, pero cada corrida
+  empieza de cero, así que lo probado en el NT no defiende su lugar cuando llega lo nuevo: compite de nuevo, y a veces
+  pierde. Un aprendiz sin techo tiene que llevarse lo que aprendió al libro siguiente. Esto todavía no lo hace, y por
+  eso la pendiente hoy no se puede medir: falta que lo aprendido sobreviva.
