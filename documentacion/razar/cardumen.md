@@ -2850,3 +2850,41 @@ mecanismo."* Por la regla de la casa (Razar crea sus propias reglas), lo que hac
     (`a`, `de la`, `en el`). "Iguales" termina queriendo decir "dichas después de `a`".
 - **Lo que hace falta:** papeles de relaciones que digan algo de las cosas (no de la gramática), y una vara que no se
   conforme con 2 de 2.
+
+## Las piezas de las palabras: las terminaciones, encontradas solas y corregidas por el MATS (2026-11-08)
+
+El Capitán: *"sacá por contexto qué hace cada instrucción: cada palabra, letra, terminación, inicio, puntuación;
+recombiná para explicar mecanismos; que aprenda a programar órganos en lenguaje natural como hacemos con los legos"*.
+Primer escalón: las terminaciones.
+
+- **Cómo (`hl_partes`, en `hilos`, solo si la casa pide `partes`):** cada palabra dicha dos veces o más se corta al final
+  de todas las maneras posibles: cualquier terminación, nunca en el medio de una letra, con raíz de tres bytes o más.
+  Dos palabras de una misma raíz que terminan distinto son un cambio de terminación (`rápid|o` y `rápid|amente`:
+  `o → amente`). Un cambio es una pieza según en cuántas raíces funciona. No se le da ninguna lista: se encuentran
+  cortando lo que leyó. Van a `piezas` en la casa. (Se había puesto un tope de cuatro letras a la terminación, y
+  `amente` tiene seis: era un número a ojo y se sacó.)
+- **Prueba (`hilos_partes_prueba.sh`):** rápido/rápidamente, lento/lentamente, claro/claramente dan `o → amente` en tres
+  raíces, y casa/casas, mesa/mesas dan `_ → s` en dos.
+- **Sobre los once libros de personas juntos** (seis segundos): `_ → s` (5.096 raíces), `o → os`, `o → a`, `a → as`,
+  `a → an`, `_ → do`, `da → do`, `ado → ar`, `ó → ar`, `e → es`, `_ → es`. El plural, el género y los verbos del
+  castellano.
+- **El juez ajeno, el MATS** (que Razar nunca lee; la cuenta se hace afuera de Janax, con la clave). Una pareja del MATS
+  cuenta si sus dos palabras están en lo leído. Queda explicada si, cortadas donde dejan de coincidir, sus dos
+  terminaciones son una pieza que Razar encontró. Contra el azar: cada palabra con la respuesta de la pareja siguiente
+  de su misma relación.
+
+  | familia | parejas cubiertas | explicadas (pieza de 2+ raíces) | de 10+ | azar |
+  |---|---|---|---|---|
+  | morfología flexiva (plural, género, verbos) | 418 | **391 (94 %)** | 363 | 4 |
+  | morfología derivativa | 233 | **177 (76 %)** | 164 | 1 |
+  | semántica enciclopédica | 289 | 35 | 31 | 0 |
+  | semántica lexicográfica | 406 | 6 | 4 | 0 |
+
+  Por relación: plural 49 de 49 y 45 de 46, femenino 41 de 41, `-mente` 38 de 38, `-ción` 31 de 31, `-miento` 20 de
+  20, gerundio 43 de 46, participio 39 de 42, macho→hembra 28 de 41 (por `o → a`). **Las de prefijo dan 0**
+  (`in-`, `sobre-`, `re-`), como tiene que ser: todavía solo mira las terminaciones. La semántica (capitales, colores,
+  sinónimos) no es morfología, y casi no la explica.
+- **Lo que dice:** sin que nadie se lo diga, Razar encontró las piezas con que el castellano arma sus palabras, y una
+  clave hecha por otros, que nunca vio, le da la razón en el 94 % de la morfología flexiva, contra un 1 % del azar. Es
+  el primer engranaje del plan del Capitán: el siguiente son los comienzos (`in-`, `re-`, `sobre-`), después la
+  puntuación, después qué hace cada pieza en su contexto, y recombinar.

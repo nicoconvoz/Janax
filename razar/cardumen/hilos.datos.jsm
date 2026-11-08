@@ -182,3 +182,9 @@ times 0B60h - $ db 0
 db ' confirmadas de ', 0
 times 0B80h - $ db 0
 db ' comprobables | azar: ', 0
+times 0BA0h - $ db 0
+db 'partes', 0
+times 0BC0h - $ db 0
+db 'piezas', 0
+times 0BE0h - $ db 0
+db 'pieza: ', 0

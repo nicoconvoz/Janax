@@ -131,6 +131,9 @@ S_CONFI  = 0B20h
 S_IMGN   = 0B40h
 S_CONFS  = 0B60h
 S_AZAR   = 0B80h
+S_PARTES = 0BA0h
+S_PIEZ   = 0BC0h
+S_PIEZA  = 0BE0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -362,7 +365,25 @@ HVU   = 1E38h
 HVL   = 1E40h
 HIML  = 1E48h
 HIMN  = 1E50h
-HIMC  = 1E58h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HIMC  = 1E58h
+HPB   = 1E60h                   ; the pieces (hl_partes): by root its endings, the changes, the cuts; walking
+HPS   = 1E80h
+HPE   = 1EA0h
+HPEN  = 1EA8h
+HPK   = 1EB0h
+HPW   = 1EB8h
+HPP   = 1EC0h
+HPNN  = 1EC8h
+HPL   = 1ED0h
+HPRN  = 1ED8h
+HPSP  = 1EE0h
+HPHB  = 1EE8h
+HPHS  = 1EF0h
+HPA   = 1EF8h
+HPBB  = 1F00h
+HPX   = 1F08h
+HPY   = 1F10h
+HPZ   = 1F18h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -439,6 +460,8 @@ jjmp finish
 hl_go:
 jcall en_lines
 jcall hl_half
+jcall hl_pmaybe                 ; (the pieces of words, if the house asks: nothing else then)
+jjnz j2, finish
 jcall hl_facts
 jcall hl_rooms
 jcall hl_known
@@ -7193,6 +7216,439 @@ hl_inventa:
 hlv_close:
   jcall hl_iclose
 hlv_done:
+  jldi j1, 0
+  jret
+
+; Whether the house asks for the pieces ("partes", not empty): then they are found (hl_partes) and j2 = 1. Uses
+; j1-j14.
+hl_pmaybe:
+  jldi j11, S_PARTES
+  jldi j12, 6
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRN
+  jjz j2, hpm_no
+  jcall hl_partes
+  jldi j2, 1
+  jret
+hpm_no:
+  jldi j2, 0
+  jret
+
+; The pieces of words (Capitan: "take by context what each instruction does: each word, letter, ending, beginning,
+; punctuation; recombine to explain mechanisms"), the first step: endings. Every word said twice or more is cut at
+; its end in each way (any ending, never in the middle of a letter, the root three bytes or more): the
+; root and the ending. Two words of one root that end differently are a change of ending ("rápid|o" and
+; "rápid|amente": "o" into "amente"), and a change is a piece by how many roots it works for (none given: each found
+; in the book). Into the house's "piezas", a line each {how many roots, one ending, the other, a root it works for};
+; the most said said. Only when the house asks ("partes"): then nothing else is done. Uses j1-j14.
+hl_partes:
+  jldi j2, HPB
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, HPS
+  jldi j3, 64
+  jcall pl_new
+  jldi j1, 0                    ; (as many cuts as its words have bytes, 48 bytes each: counted first)
+  jldi j2, ZWT
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jld j4, j2, 0
+  jldi j11, 1
+  hpt_n:
+    jjz j3, hpt_nd
+    jld j5, j4, 0
+    jjz j5, hpt_nn
+    jld j5, j4, 16
+    jadd j11, j11, j5
+  hpt_nn:
+    jldi j5, ZWT
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j3, j3, j5
+    jjmp hpt_n
+hpt_nd:
+  jldi j3, 48
+  jmul j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPE
+  jst j1, j1, HPEN
+  jldi j2, ZWT
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPK
+  jld j4, j2, 0
+  jst j4, j1, HPW
+  hpt_w:                        ; each word, each cut
+    jldi j1, 0
+    jld j3, j1, HPK
+    jjz j3, hpt_wd
+    jld j4, j1, HPW
+    jld j5, j4, 0
+    jjz j5, hpt_wn
+    jldi j2, HWC                ; said twice or more
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jjz j6, hpt_wn
+    jld j6, j4, 8
+    jldi j7, 2
+    jsub j6, j6, j7
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, hpt_wn
+    jld j4, j1, HPW
+    jld j2, j4, 8
+    jst j2, j1, HPP
+    jld j2, j4, 16
+    jst j2, j1, HPNN
+    jst j1, j1, HPL
+    hpt_c:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jld j3, j1, HPNN          ; the root three bytes or more
+      jsub j3, j3, j2
+      jldi j4, 3
+      jsub j4, j3, j4
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjnz j4, hpt_wn
+      jst j3, j1, HPRN
+      jld j4, j1, HPP
+      jadd j4, j4, j3
+      jst j4, j1, HPSP
+      jjz j2, hpt_ok            ; (never in the middle of a letter)
+      jldb j5, j4, 0
+      jldi j6, 192
+      jand j5, j5, j6
+      jldi j6, 128
+      jsub j5, j5, j6
+      jjz j5, hpt_cn
+    hpt_ok:
+      jld j3, j1, HPP           ; the root's print, the ending's
+      jld j4, j1, HPRN
+      jcall mp_print
+      jldi j1, 0
+      jst j5, j1, HPHB
+      jld j3, j1, HPSP
+      jld j4, j1, HPL
+      jcall mp_print
+      jldi j1, 0
+      jst j5, j1, HPHS
+      jld j5, j1, HPHB          ; onto the root's list
+      jldi j2, HPB
+      jcall pl_take
+      jldi j1, 0
+      jld j6, j4, 8
+      jld j2, j1, HPEN
+      jldi j3, 48
+      jmul j3, j2, j3
+      jld j7, j1, HPE
+      jadd j3, j3, j7
+      jld j7, j1, HPHS
+      jst j7, j3, 0
+      jld j7, j1, HPSP
+      jst j7, j3, 8
+      jld j7, j1, HPL
+      jst j7, j3, 16
+      jld j7, j1, HPP
+      jst j7, j3, 24
+      jld j7, j1, HPRN
+      jst j7, j3, 32
+      jst j6, j3, 40
+      jldi j7, 1
+      jadd j2, j2, j7
+      jst j2, j1, HPEN
+      jst j2, j4, 8
+    hpt_cn:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HPL
+      jjmp hpt_c
+  hpt_wn:
+    jldi j1, 0
+    jld j4, j1, HPW
+    jldi j5, ZWT
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HPW
+    jld j3, j1, HPK
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HPK
+    jjmp hpt_w
+hpt_wd:
+  jldi j2, HPB                  ; each root: each two of its endings, a change
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPK
+  jld j4, j2, 0
+  jst j4, j1, HPW
+  hpt_r:
+    jldi j1, 0
+    jld j3, j1, HPK
+    jjz j3, hpt_out
+    jld j4, j1, HPW
+    jld j5, j4, 0
+    jjz j5, hpt_rn
+    jld j2, j4, 8
+    jst j2, j1, HPA
+    hpt_a:
+      jldi j1, 0
+      jld j2, j1, HPA
+      jjz j2, hpt_rn
+      jldi j3, 1
+      jsub j2, j2, j3
+      jldi j3, 48
+      jmul j3, j2, j3
+      jld j4, j1, HPE
+      jadd j3, j3, j4
+      jst j3, j1, HPX
+      jld j2, j3, 40
+      jst j2, j1, HPA
+      jst j2, j1, HPBB
+      hpt_b:
+        jldi j1, 0
+        jld j2, j1, HPBB
+        jjz j2, hpt_a
+        jldi j3, 1
+        jsub j2, j2, j3
+        jldi j3, 48
+        jmul j3, j2, j3
+        jld j4, j1, HPE
+        jadd j3, j3, j4
+        jst j3, j1, HPY
+        jld j2, j3, 40
+        jst j2, j1, HPBB
+        jld j4, j1, HPX         ; (the smaller ending first: the same change either way)
+        jld j5, j4, 0
+        jld j6, j3, 0
+        jsub j7, j5, j6
+        jjz j7, hpt_b
+        jcall hp_order
+        jcall hl_mix
+        jjnz j5, hpt_k
+        jldi j5, 1
+      hpt_k:
+        jldi j2, HPS
+        jcall pl_take
+        jldi j1, 0
+        jjz j6, hpt_old
+        jld j5, j1, HPX         ; new: its two endings, a root (from the first)
+        jld j6, j1, HPY
+        jld j7, j5, 0
+        jld j8, j6, 0
+        jsub j7, j7, j8
+        jldi j8, 63
+        jsar j7, j7, j8
+        jjnz j7, hpt_xo
+        jadd j7, j5, j1
+        jadd j5, j6, j1
+        jadd j6, j7, j1
+      hpt_xo:
+        jld j7, j5, 8
+        jst j7, j4, 16
+        jld j7, j5, 16
+        jst j7, j4, 24
+        jld j7, j6, 8
+        jst j7, j4, 32
+        jld j7, j6, 16
+        jst j7, j4, 40
+        jld j7, j5, 24
+        jst j7, j4, 48
+        jld j7, j5, 32
+        jst j7, j4, 56
+      hpt_old:
+        jld j7, j4, 8
+        jldi j8, 1
+        jadd j7, j7, j8
+        jst j7, j4, 8
+        jjmp hpt_b
+  hpt_rn:
+    jldi j1, 0
+    jld j4, j1, HPW
+    jldi j5, HPB
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HPW
+    jld j3, j1, HPK
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HPK
+    jjmp hpt_r
+hpt_out:                        ; into "piezas": the changes of two roots or more
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_PIEZ
+  jldi j12, 6
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_PIEZ
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hpt_top
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jldi j2, HPS
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPK
+  jld j4, j2, 0
+  jst j4, j1, HPW
+  hpt_f:
+    jldi j1, 0
+    jld j3, j1, HPK
+    jjz j3, hpt_fd
+    jld j4, j1, HPW
+    jld j5, j4, 0
+    jjz j5, hpt_fn
+    jld j2, j4, 8
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjnz j3, hpt_fn
+    jcall hp_say
+  hpt_fn:
+    jldi j1, 0
+    jld j4, j1, HPW
+    jldi j5, HPS
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HPW
+    jld j3, j1, HPK
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HPK
+    jjmp hpt_f
+hpt_fd:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hpt_top:                        ; to the console: the twenty that work for the most roots
+  jldi j1, 0
+  jldi j2, 20
+  jst j2, j1, HPL
+  hpt_t:
+    jldi j1, 0
+    jld j2, j1, HPL
+    jjz j2, hpt_done
+    jldi j2, HPS
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jld j4, j2, 0
+    jldi j6, 0                  ; (the best so far, and where)
+    jldi j7, 0
+    hpt_s:
+      jjz j3, hpt_sd
+      jld j5, j4, 0
+      jjz j5, hpt_sn
+      jld j5, j4, 8
+      jsub j8, j6, j5
+      jldi j9, 63
+      jsar j8, j8, j9
+      jjz j8, hpt_sn
+      jadd j6, j5, j1
+      jadd j7, j4, j1
+    hpt_sn:
+      jldi j5, HPS
+      jld j5, j5, 24
+      jadd j4, j4, j5
+      jldi j5, 1
+      jsub j3, j3, j5
+      jjmp hpt_s
+  hpt_sd:
+    jjz j7, hpt_done
+    jst j7, j1, HPW
+    jldi j1, S_PIEZA
+    jcall puts
+    jld j4, j1, HPW
+    jcall hp_say
+    jldi j1, 0
+    jld j4, j1, HPW             ; (said: out of the race)
+    jld j5, j4, 8
+    jldi j6, 0
+    jsub j5, j6, j5
+    jst j5, j4, 8
+    jld j2, j1, HPL
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, HPL
+    jjmp hpt_t
+hpt_done:
+  jldi j1, 0
+  jret
+
+; The change at j4: "<roots>\t<ending>\t<ending>\t<a root>" ("_" for no ending), and a line end. Uses j1-j10.
+hp_say:
+  jldi j1, 0
+  jst j4, j1, HPZ
+  jld j2, j4, 8
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, hps_pos
+  jldi j3, 0
+  jsub j2, j3, j2
+hps_pos:
+  jcall putnum
+  jldi j2, 9
+  jcall putch
+  jldi j1, 0
+  jld j4, j1, HPZ
+  jld j9, j4, 16
+  jld j10, j4, 24
+  jcall hp_text
+  jldi j2, 9
+  jcall putch
+  jldi j1, 0
+  jld j4, j1, HPZ
+  jld j9, j4, 32
+  jld j10, j4, 40
+  jcall hp_text
+  jldi j2, 9
+  jcall putch
+  jldi j1, 0
+  jld j4, j1, HPZ
+  jld j9, j4, 48
+  jld j10, j4, 56
+  jcall hp_text
+  jldi j2, 10
+  jjmp putch
+
+; The j10 bytes at j9 into the text ("_" if none). Uses j1-j3, j9, j10.
+hp_text:
+  jjnz j10, hpx_lap
+  jldi j2, 95
+  jjmp putch
+  hpx_lap:
+    jjz j10, hpx_done
+    jldb j2, j9, 0
+    jcall putch
+    jldi j1, 1
+    jadd j9, j9, j1
+    jsub j10, j10, j1
+    jjmp hpx_lap
+hpx_done:
   jldi j1, 0
   jret
 
