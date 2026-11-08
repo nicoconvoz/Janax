@@ -2750,3 +2750,24 @@ El Capitán: *"sí, las mismas"* (que verificar entre libros pase las mismas pru
   `dos ~ tres`, `de tres ~ de cinco`, `allí ~ aquí`, `he ~ tengo`, `unos ~ algunos`, `aquella ~ esa`, `os ~ les`,
   `le ~ nos`. Todavía pasa ruido de gramática (`y ~ y la`, `se ~ un`, `en ~ había`), mucho menos que con la verificación
   suelta (`como ~ también`, `y ~ el`).
+
+## Wikipedia como libro 11 (2026-11-08)
+
+El Capitán: *"en E:\bancos tenés wikipedia_es, usalo para ver qué pasa con la curva"*. Artículos de Wikipedia en
+castellano, texto plano (2,2 MB, bajado por otra sesión), sin los títulos de sección ni los espacios invisibles:
+16.227 oraciones. Leído como libro 11, con lo sabido y lo pendiente de los diez anteriores (ni el texto ni las salidas
+van al repo).
+
+| | uniones que sabe | uniones propias del libro | verificadas de pendientes | dormidas |
+|---|---|---|---|---|
+| después de Baroja | 404 | | | 4 |
+| + Wikipedia | **496** (+92) | 95 | 28 | 6 |
+| Wikipedia sola, sin memoria | 88 | 88 | | 0 |
+
+- **Sigue subiendo:** +92 en el undécimo libro. Leída sola, Wikipedia da 88. Con la memoria da 92 más sobre lo que ya
+  sabía, y despierta 28 pendientes de los libros de antes. Entre las verificadas: `también ~ además`, `no ~ sí`,
+  `cuarenta ~ treinta`, `el cual ~ la cual`, `una ~ media`, `por el ~ bajo el`, `de una ~ de una nueva`.
+- **Comparado con el Quijote:** se repite parecido por dentro (14.011 formas dichas por dos, contra 15.537) y salta la
+  mitad (92 contra 188). Puede ser el género (una enciclopedia nombra cosas distintas en cada artículo y repite menos
+  las mismas relaciones) o el principio de la saturación (ya sabe mucho de la gramática que comparten). Con un solo
+  punto no se distingue: hace falta otra enciclopedia antes que el Quijote, o el Quijote al final.
