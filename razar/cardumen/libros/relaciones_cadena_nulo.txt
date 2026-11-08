@@ -1,0 +1,382 @@
+Q: quien engendro a felipe?
+O: tomasz es el padre de felipe.
+O: eso dicen en la familia.
+Q: quien engendro a pedro?
+O: juanz es el padre de pedro.
+O: todos en el pueblo lo saben.
+Q: a quien engendro carlosz?
+O: carlosz es el padre de tomas.
+O: carlosz es el padre de mateo.
+O: todos en el pueblo lo saben.
+Q: a quien engendro tomasz?
+O: asi lo cuentan los viejos.
+O: tomasz es el padre de felipe.
+Q: quien engendro a diego?
+O: pedroz es el padre de diego.
+O: asi lo cuentan los viejos.
+Q: a quien engendro juanz?
+O: juanz es el padre de pedro.
+O: asi lo cuentan los viejos.
+O: juanz es el padre de carlos.
+Q: quien engendro a simon?
+O: luisz es el padre de simon.
+O: eso dicen en la familia.
+Q: quien engendro a mateo?
+O: carlosz es el padre de mateo.
+O: eso dicen en la familia.
+Q: a quien engendro pedroz?
+O: pedroz es el padre de diego.
+O: eso dicen en la familia.
+O: pedroz es el padre de luis.
+Q: quien engendro a carlos?
+O: juanz es el padre de carlos.
+O: eso dicen en la familia.
+Q: a quien engendro luisz?
+O: luisz es el padre de bruno.
+O: asi lo cuentan los viejos.
+O: luisz es el padre de simon.
+Q: quien engendro a luis?
+O: pedroz es el padre de luis.
+O: todos en el pueblo lo saben.
+Q: quien engendro a tomas?
+O: carlosz es el padre de tomas.
+O: todos en el pueblo lo saben.
+Q: quien engendro a bruno?
+O: luisz es el padre de bruno.
+O: todos en el pueblo lo saben.
+Q: quien engendro a aquel que engendro a aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro luis?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro bruno?
+R: 
+Q: quien engendro a aquel que engendro a luisz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a bruno?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro luisz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a juanz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro carlosz?
+R: mateo tomas
+Q: a quien engendro aquel que engendro aquel que engendro a carlosz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a tomas?
+R: 
+Q: quien engendro a aquel que engendro a juanz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro tomasz?
+R: felipe
+Q: quien engendro a aquel que engendro a aquel que engendro a felipe?
+R: 
+Q: quien engendro a aquel que engendro felipe?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro luisz?
+R: 
+Q: a quien engendro aquel que engendro a luisz?
+R: 
+Q: quien engendro a aquel que engendro carlosz?
+R: carlosz
+Q: a quien engendro aquel que engendro bruno?
+R: 
+Q: a quien engendro aquel que engendro juanz?
+R: 
+Q: a quien engendro aquel que engendro a diego?
+R: diego luis
+Q: quien engendro a aquel que engendro aquel que engendro bruno?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro luis?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a carlosz?
+R: 
+Q: a quien engendro aquel que engendro tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro luisz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a tomas?
+R: carlosz
+Q: quien engendro a aquel que engendro aquel que engendro a mateo?
+R: carlosz
+Q: quien engendro a aquel que engendro tomasz?
+R: tomasz
+Q: quien engendro a aquel que engendro luis?
+R: 
+Q: quien engendro a aquel que engendro bruno?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a diego?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro carlosz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro diego?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a carlosz?
+R: 
+Q: quien engendro a aquel que engendro diego?
+R: 
+Q: a quien engendro aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro carlosz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a tomas?
+R: 
+Q: quien engendro a aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro pedroz?
+R: diego luis
+Q: a quien engendro aquel que engendro a aquel que engendro a pedro?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a carlos?
+R: juanz
+Q: quien engendro a aquel que engendro juanz?
+R: juanz
+Q: a quien engendro aquel que engendro carlos?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro tomasz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a felipe?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a luisz?
+R: 
+Q: a quien engendro aquel que engendro mateo?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a juanz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro felipe?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro juanz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro pedroz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a mateo?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro luis?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro carlos?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro pedroz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro carlos?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro juanz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a carlos?
+R: 
+Q: a quien engendro aquel que engendro a juanz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a pedroz?
+R: 
+Q: a quien engendro aquel que engendro a mateo?
+R: mateo tomas
+Q: quien engendro a aquel que engendro aquel que engendro a pedro?
+R: juanz
+Q: a quien engendro aquel que engendro a aquel que engendro diego?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a diego?
+R: 
+Q: a quien engendro aquel que engendro luis?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a simon?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro luis?
+R: 
+Q: quien engendro a aquel que engendro carlos?
+R: 
+Q: a quien engendro aquel que engendro a tomas?
+R: mateo tomas
+Q: a quien engendro aquel que engendro carlosz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro pedroz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a tomas?
+R: 
+Q: quien engendro a aquel que engendro a felipe?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a mateo?
+R: 
+Q: quien engendro a aquel que engendro a tomas?
+R: 
+Q: quien engendro a aquel que engendro a luis?
+R: 
+Q: quien engendro a aquel que engendro simon?
+R: 
+Q: a quien engendro aquel que engendro simon?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a luis?
+R: pedroz
+Q: quien engendro a aquel que engendro aquel que engendro a diego?
+R: pedroz
+Q: quien engendro a aquel que engendro a aquel que engendro a carlosz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a felipe?
+R: tomasz
+Q: a quien engendro aquel que engendro a aquel que engendro a bruno?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a luis?
+R: 
+Q: a quien engendro aquel que engendro diego?
+R: 
+Q: a quien engendro aquel que engendro a carlosz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a carlos?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro mateo?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro carlos?
+R: 
+Q: a quien engendro aquel que engendro luisz?
+R: 
+Q: quien engendro a aquel que engendro a pedro?
+R: 
+Q: a quien engendro aquel que engendro pedroz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro mateo?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro juanz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro diego?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro felipe?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a simon?
+R: 
+Q: a quien engendro aquel que engendro a carlos?
+R: carlos pedro
+Q: quien engendro a aquel que engendro aquel que engendro simon?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a simon?
+R: luisz
+Q: a quien engendro aquel que engendro aquel que engendro a pedro?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro mateo?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a luis?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro diego?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a tomasz?
+R: 
+Q: quien engendro a aquel que engendro a diego?
+R: 
+Q: a quien engendro aquel que engendro a pedro?
+R: carlos pedro
+Q: a quien engendro aquel que engendro a aquel que engendro a simon?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro simon?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro a tomasz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a carlos?
+R: 
+Q: a quien engendro aquel que engendro a luis?
+R: diego luis
+Q: quien engendro a aquel que engendro a simon?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a felipe?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro felipe?
+R: 
+Q: quien engendro a aquel que engendro a mateo?
+R: 
+Q: a quien engendro aquel que engendro felipe?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a diego?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro simon?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a pedroz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a luisz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a pedroz?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a luis?
+R: 
+Q: quien engendro a aquel que engendro a bruno?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a tomasz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a juanz?
+R: 
+Q: a quien engendro aquel que engendro a bruno?
+R: bruno simon
+Q: a quien engendro aquel que engendro aquel que engendro a juanz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro a luisz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro a felipe?
+R: felipe
+Q: quien engendro a aquel que engendro aquel que engendro a bruno?
+R: luisz
+Q: a quien engendro aquel que engendro a aquel que engendro bruno?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro pedro?
+R: 
+Q: a quien engendro aquel que engendro a simon?
+R: bruno simon
+Q: quien engendro a aquel que engendro pedroz?
+R: pedroz
+Q: quien engendro a aquel que engendro aquel que engendro a pedroz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro a bruno?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro a carlos?
+R: 
+Q: quien engendro a aquel que engendro a pedroz?
+R: 
+Q: a quien engendro aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro felipe?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro a mateo?
+R: 
+Q: quien engendro a aquel que engendro tomas?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro carlosz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro luisz?
+R: bruno simon
+Q: quien engendro a aquel que engendro a aquel que engendro a pedro?
+R: 
+Q: quien engendro a aquel que engendro a carlosz?
+R: 
+Q: a quien engendro aquel que engendro a pedroz?
+R: 
+Q: a quien engendro aquel que engendro a aquel que engendro carlos?
+R: 
+Q: quien engendro a aquel que engendro a aquel que engendro bruno?
+R: 
+Q: quien engendro a aquel que engendro a tomasz?
+R: 
+Q: quien engendro a aquel que engendro aquel que engendro a luisz?
+R: 
+Q: a quien engendro aquel que engendro aquel que engendro mateo?
+R: 
+Q: quien engendro a aquel que engendro mateo?
+R: 
+Q: quien engendro a aquel que engendro luisz?
+R: luisz
+Q: a quien engendro aquel que engendro a aquel que engendro juanz?
+R: carlos pedro
+Q: a quien engendro aquel que engendro aquel que engendro simon?
+R: 

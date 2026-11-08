@@ -1959,3 +1959,37 @@ del canto. Sólo cuentan las semillas leídas: lo aparte no entra.
 - Asimov no cambia más allá del ruido de semilla (cubo media 20,3 antes, 17,3 ahora; rangos que se pisan): sus
   respuestas casi no repiten palabras entre semillas.
 - `semilla_prueba.sh` fallaba desde que el renglón `P:` dice si acertó (`canto: 1 ...`); ahora lo espera.
+
+### El encadenado: pasos y paréntesis (encadena.jsm, 2026-11-08)
+
+El Capitán: *"no necesitamos abuelo, sólo un mecanismo: si a es padre de b y b es padre de c, entonces a es abuelo de
+c"*, y su calculadora (`profundidad()`: lo más hondo se resuelve primero). `encadena.jsm` (prueba
+`encadena_prueba.sh`), libro `libros/relaciones_cadena.py` (la familia, dicha sólo como "X es el padre de Y"; 14
+preguntas de un paso leídas, 62 compuestas sin ninguna oración que las conteste, sólo su verdad en "R:" para el juez):
+
+- **Los pasos los saca Razar:** una pregunta leída es un caso de su clase (sus palabras con la entidad como lugar; la
+  entidad es la palabra de la pregunta que dicen más oraciones de su respuesta). Una clase es paso si la dicen dos casos
+  y, en sus respuestas, además del lugar de la entidad cambia **un solo** lugar: ahí está la respuesta. Los dos
+  casilleros dicen para qué lado va. Salen dos: "quien engendro a _" (respuesta en la palabra 1 de 6) y "a quien
+  engendro _" (en la 6 de 6), del mismo "X es el padre de Y" leído al revés.
+- **El paréntesis lo descubre:** entre la cabeza de paso más larga con que empieza una compuesta y el final de cabeza
+  más largo con que termina queda un candidato. Gana el que **arma más compuestas**, no el más dicho: en el nulo las
+  de tres pasos dejan "aquel que engendro a aquel que" más veces que "aquel que", y por mayoría ganaba el equivocado
+  (la misma regla que las piezas de pulso: vale lo que paga). Sale "aquel que" (arma 62 de 62).
+- **Contesta encadenando**, de derecha a izquierda: la entidad, el final de un paso, el paréntesis, …, la cabeza
+  entera de un paso; los pasos se corren sobre las oraciones del libro, las respuestas de uno son las entidades del
+  siguiente.
+
+| libro | compuestas | se arman | aciertan | con verdad vacía: dice algo |
+|---|---|---|---|---|
+| la familia | 62 | 62 | **62** | — |
+| nulo, enganche roto (cada padre dicho con otro nombre: "pedroz") | 168 | 168 | 168 | **0 de 140** |
+
+- **Doce relaciones que nadie escribió** (4 de dos pasos, 8 de tres: abuelo, nieto, hermano, padre de los hijos,
+  bisabuelo, tío, primo…), de **dos** pasos leídos. Ninguna tiene nombre en el libro: el nombre es un cartel que se
+  pega al camino después.
+- En el nulo, donde el enganche está roto calla en las 140; las 28 que sí enganchan (subir y bajar por el mismo
+  nombre) las acierta. No empareja superficie: junta pasos.
+- ⚠️ Límites: el paréntesis tiene que repetirse tal cual (no sabe que "al" es "a el": por eso el libro dice "a aquel
+  que"); sólo compone pasos con la entidad al final de la pregunta; el libro es de juguete y sus oraciones son de una
+  sola plantilla. El salto es llevarlo a pasos de verdad de un libro.
