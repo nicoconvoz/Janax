@@ -40,3 +40,15 @@ db ', que NO es de su respuesta (contestan ', 0
 times 4C0h - $ db 0
 db ' de sus candidatas); ', 0
 times 500h - $ db 0
+db 'curva (parecido:conocidas que pierde/errores que saca):', 0
+times 540h - $ db 0
+db '; corte (de lo leido, por el precio): ', 0
+times 580h - $ db 0
+db '; contesta ', 0
+times 5C0h - $ db 0
+db ', mal ', 0
+times 600h - $ db 0
+db '; dice no se en ', 0
+times 640h - $ db 0
+db ', de las que acertaba ', 0
+times 680h - $ db 0

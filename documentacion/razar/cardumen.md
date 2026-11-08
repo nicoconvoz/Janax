@@ -1865,4 +1865,23 @@ recuerdo más parecido que contestaba (Jaccard, millonésimas). Banco de trampas
   calla 98. Los errores seguros en relaciones nuevas bajan de 108 a 14.
 - ⚠️ Ese 90 % salió de mirar esta tabla: **es criterio, no medición**. Para que valga, Razar tiene que sacarlo de lo que
   leyó (probarse con sus propias preguntas leídas, de a una afuera) antes de ver ninguna nueva.
+**El corte se despeja del precio** (el otro chat: *"dejar cada una afuera te da la distribución, no el umbral; el umbral
+sale sólo si decís qué estás dispuesto a pagar"*). `precio` (undécimo parámetro, P + 1): antes de preguntar lo no leído,
+Razar se pregunta a sí mismo cada pregunta leída con sus marcos afuera, arma la curva (por corte, cuántas conocidas
+que acierta dejaría de contestar y cuántos errores suyos se sacaría) y toma el corte que pierde P de las que acierta.
+Nada de lo no leído entra en el corte. Banco de trampas, control:
+
+| precio (P conocidas que acepta perder) | conocidas: contesta (bien / mal), calla | nuevas: contesta (mal), calla |
+|---|---|---|
+| 0 | 111 (101 / 10), 1 | 93 (89), 19 |
+| 1 | 108 (98 / 10), 4 | 61 (61), 51 |
+| **2 o más** (el corte cae en "idéntico") | **106 (98 / 8), 6** | **0, 112** |
+
+- Lo leído dice que casi todo lo que acierta tiene un recuerdo **idéntico** (parecido 1,0); unas pocas conocidas raras
+  quedan en 0,54-0,83. Pagándolas (precio 2), el corte cae en 1,0 en los once tramos, y **deja de errar con seguridad
+  en todas las relaciones nuevas**: calla las 112 (pierde las 4 que acertaba de casualidad). En las conocidas calla 6 (4
+  de ellas las acertaba) y los errores bajan de 10 a 8.
+- ⚠️ El límite: "contestar solo si tiene un recuerdo idéntico" anda en este banco porque sus respuestas salen de
+  plantillas y dan notas idénticas. En un libro real como Asimov ninguna nota es idéntica y callaría casi todo: ahí el
+  precio va a despejar otro corte, y la curva lo dirá.
 

@@ -41,6 +41,12 @@ S_UNA2 = 400h
 S_UNA3 = 440h
 S_UNA4 = 480h
 S_UNA5 = 4C0h
+S_CURVA = 500h
+S_CORTE = 540h
+S_CONT = 580h
+S_MAL  = 5C0h
+S_NOSE = 600h
+S_NOSER = 640h
 ; Room 0 (4000h bytes):
 QUEUE = 1000h                   ; its window: one request
 PLAB  = 1040h                   ; "p", the parameters file
@@ -57,6 +63,8 @@ REPS  = 10B0h                   ; before remembering, the school hears every rea
 CONSV = 10B8h                   ; 1: the school keeps each piece's total (born with bit 9)
 UNA   = 10C0h                   ; a question plus one: only that one is asked, and what it chose is said
 VER   = 10C8h                   ; 1: every question asked says how alike its winner was to what it remembers
+PRECIO = 10D0h                  ; the price plus one: how many questions it read and answers right it accepts to stop
+                                ; answering, so that it can say "I do not know" (0: it always answers)
 HOWA  = 10E8h                   ; what the school said of itself (order 7): off their total; at the ceiling, all
 HOWB  = 10F0h
 M48   = 1100h                   ; 2^48 - 1
@@ -126,6 +134,13 @@ FNMAX = 1398h
 SGN   = 13A0h                   ; the song being said: how many greetings
 GBI   = 13A8h                   ; asking: the sentence of its best frame, how alike it was to the most alike that answered
 GBP   = 13B0h
+SELF  = 13B8h                   ; 1: it asks itself what it read, each question with its own frames left out
+LOOB  = 13C0h                   ; what it asked itself: by question {how alike its winner, right}, how many
+LOON  = 13C8h
+THR   = 13D0h                   ; the cut: below it, "I do not know" (0: none)
+QABS  = 13D8h                   ; asked: it said it does not know, of them right had it answered; answered wrong
+QABSR = 13E0h
+QWRONG = 13E8h
 SONGM = 2000h                   ; the song being said: the pieces of each greeting (a qword each, 255 at most)
 TEXT  = 3000h                   ; the line it writes
 include '../../escalon0/janax.inc'
@@ -153,7 +168,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 80
+jldi j12, 88
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -519,6 +534,15 @@ jld j2, j1, MEMO
 jjz j2, p_nomemo
 jcall memorize
 p_nomemo:
+jldi j1, 0
+jst j1, j1, THR
+jst j1, j1, QABS
+jst j1, j1, QABSR
+jst j1, j1, QWRONG
+jld j2, j1, PRECIO
+jjz j2, p_noself
+jcall selftest
+p_noself:
 jcall asked                     ; the questions it never read
 
 jldi j1, 0
@@ -630,6 +654,29 @@ jldi j1, S_DE
 jcall puts
 jld j2, j1, QASK
 jcall putnum
+jld j2, j1, PRECIO
+jjz j2, o_noprecio
+jldi j1, S_CORTE
+jcall puts
+jld j2, j1, THR
+jcall putnum
+jldi j1, S_CONT
+jcall puts
+jld j2, j1, QASK
+jcall putnum
+jldi j1, S_MAL
+jcall puts
+jld j2, j1, QWRONG
+jcall putnum
+jldi j1, S_NOSE
+jcall puts
+jld j2, j1, QABS
+jcall putnum
+jldi j1, S_NOSER
+jcall puts
+jld j2, j1, QABSR
+jcall putnum
+o_noprecio:
 jldi j1, S_AZAR
 jcall puts
 jld j2, j1, QCH                 ; chance: the part of a question's frames that answer, summed, in 1000ths
@@ -1059,8 +1106,10 @@ asked:
     jmul j3, j9, j3
     jld j4, j1, ITB
     jadd j3, j3, j4
-    jld j4, j3, 24
-    jjnz j4, ak_next            ; (read: not asked)
+    jld j4, j3, 24              ; (read: not asked; asking itself, only the read ones)
+    jld j5, j1, SELF
+    jsub j4, j4, j5
+    jjnz j4, ak_next
     jld j4, j1, UNA             ; (only one, if asked so)
     jjz j4, ak_any
     jldi j5, 1
@@ -1124,6 +1173,139 @@ asked:
 ak_end:
   jjmp ak_judge
 
+; The price (Capitan's other chat, 2026-11-08: "leaving each one out gives the distribution, not the cut; the cut comes
+; out when you say what you will pay"): it asks itself every question it read, its own frames left out, and keeps how
+; alike each winner was and whether it was right; the curve, for each cut, how many it would stop answering that it
+; answered right and how many wrong ones it would not say; and the cut that loses PRECIO - 1 of the right ones: the
+; how-alike of the PRECIO-th least alike right one. Uses j1-j14.
+selftest:
+  jldi j1, 0
+  jld j11, j1, ITN
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, LOOB
+  jst j1, j1, LOON
+  jldi j2, 1
+  jst j2, j1, SELF
+  jld j2, j1, VER
+  jst j2, j1, TE
+  jst j1, j1, VER
+  jcall asked
+  jldi j1, 0
+  jst j1, j1, SELF
+  jld j2, j1, TE
+  jst j2, j1, VER
+  jld j9, j1, LOON              ; sorted by how alike, least first (a few hundred at most: one by one)
+  jldi j10, 1
+  st_i:
+    jsub j2, j10, j9
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, st_sorted
+    jldi j11, 4
+    jshl j11, j10, j11
+    jld j3, j1, LOOB
+    jadd j11, j11, j3
+    jld j5, j11, 0
+    jld j6, j11, 8
+    st_j:
+      jld j3, j1, LOOB
+      jsub j3, j11, j3
+      jjz j3, st_put
+      jldi j3, 16
+      jsub j12, j11, j3
+      jld j7, j12, 0
+      jsub j8, j5, j7
+      jldi j3, 63
+      jsar j8, j8, j3
+      jjz j8, st_put
+      jst j7, j11, 0
+      jld j7, j12, 8
+      jst j7, j11, 8
+      jadd j11, j12, j1
+      jjmp st_j
+    st_put:
+      jst j5, j11, 0
+      jst j6, j11, 8
+      jldi j3, 1
+      jadd j10, j10, j3
+      jjmp st_i
+st_sorted:
+  jldi j1, S_CURVA              ; the curve: at each right one's how-alike, the right ones below it and the wrong ones
+  jcall puts
+  jldi j9, 0                    ; (the right ones seen so far, the wrong ones)
+  jldi j10, 0
+  jldi j11, 0
+  jldi j12, 0                   ; the cut, once the price is reached
+  st_c:
+    jldi j1, 0
+    jld j2, j1, LOON
+    jsub j2, j11, j2
+    jjz j2, st_cd
+    jldi j3, 4
+    jshl j3, j11, j3
+    jld j4, j1, LOOB
+    jadd j3, j3, j4
+    jld j5, j3, 8
+    jjz j5, st_wrong
+    jld j6, j1, PRECIO          ; the PRECIO-th right one: its how-alike is the cut
+    jldi j7, 1
+    jadd j7, j9, j7
+    jsub j6, j6, j7
+    jjnz j6, st_say
+    jld j12, j3, 0
+  st_say:
+    jldi j6, 20                 ; (the first twenty points of the curve said)
+    jsub j6, j9, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjz j6, st_r
+    jst j3, j1, TA
+    jst j9, j1, TB
+    jst j10, j1, TC
+    jst j11, j1, TD
+    jst j12, j1, TE
+    jldi j2, 32
+    jcall putc1
+    jld j3, j1, TA
+    jld j2, j3, 0
+    jcall putnum
+    jldi j2, 58
+    jcall putc1
+    jld j2, j1, TB
+    jcall putnum
+    jldi j2, 47
+    jcall putc1
+    jld j2, j1, TC
+    jcall putnum
+    jldi j1, 0
+    jld j9, j1, TB
+    jld j10, j1, TC
+    jld j11, j1, TD
+    jld j12, j1, TE
+  st_r:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp st_cn
+  st_wrong:
+    jldi j2, 1
+    jadd j10, j10, j2
+  st_cn:
+    jldi j2, 1
+    jadd j11, j11, j2
+    jjmp st_c
+st_cd:
+  jldi j1, 0
+  jst j12, j1, THR
+  jldi j2, 10
+  jcall putc1
+  jret
+
 ; The question GQ judged: right if its best frame answers; chance, the part of its frames that answer. Uses j1-j4.
 ak_judge:
   jldi j1, 0
@@ -1131,6 +1313,46 @@ ak_judge:
   jldi j3, 63
   jsar j3, j2, j3
   jjnz j3, akj_done
+  jld j2, j1, SELF              ; asking itself: kept for the curve
+  jjz j2, akj_cut
+  jld j2, j1, LOON
+  jldi j3, 4
+  jshl j3, j2, j3
+  jld j4, j1, LOOB
+  jadd j3, j3, j4
+  jld j4, j1, GBP
+  jst j4, j3, 0
+  jld j4, j1, GBL
+  jst j4, j3, 8
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, LOON
+  jjmp akj_done
+akj_cut:
+  jld j2, j1, THR               ; below the cut: "I do not know"
+  jjz j2, akj_ans
+  jld j3, j1, GBP
+  jsub j3, j3, j2
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, akj_ans
+  jld j2, j1, QABS
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QABS
+  jld j2, j1, QABSR
+  jld j3, j1, GBL
+  jadd j2, j2, j3
+  jst j2, j1, QABSR
+  jjmp akj_done
+akj_ans:
+  jld j2, j1, GBL
+  jjnz j2, akj_ok
+  jld j2, j1, QWRONG
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, QWRONG
+akj_ok:
   jld j2, j1, QASK
   jldi j3, 1
   jadd j2, j2, j3
@@ -1357,9 +1579,9 @@ mz_rec:
   jst j1, j1, NTC
   jst j1, j1, FRN
   jld j11, j1, ITN
-  jldi j2, 24
+  jldi j2, 32
   jmul j11, j11, j2
-  jldi j2, 24
+  jldi j2, 32
   jadd j11, j11, j2
   jldi j10, 2
   jcall ask
@@ -1385,7 +1607,7 @@ mz_rec:
     jcall notes_of
     jldi j1, 0
     jld j2, j1, FRN
-    jldi j3, 24
+    jldi j3, 32
     jmul j3, j2, j3
     jld j4, j1, FRB
     jadd j3, j3, j4
@@ -1396,6 +1618,9 @@ mz_rec:
     jst j5, j3, 8
     jld j4, j1, LABEL
     jst j4, j3, 16
+    jld j4, j1, CUR             ; (and its question)
+    jld j4, j4, 0
+    jst j4, j3, 24
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, FRN
@@ -1492,7 +1717,7 @@ mzi_sd:
     jld j2, j1, FRN
     jsub j2, j9, j2
     jjz j2, mzi_fd
-    jldi j3, 24
+    jldi j3, 32
     jmul j3, j9, j3
     jld j4, j1, FRB
     jadd j3, j3, j4
@@ -1768,6 +1993,20 @@ recall:
       jld j7, j1, PST
       jadd j6, j6, j7
       jld j6, j6, 0             ; a frame that has this note
+      jld j7, j1, SELF          ; (asking itself: not one of its own question)
+      jjz j7, rc_mine
+      jldi j7, 5
+      jshl j7, j6, j7
+      jld j8, j1, FRB
+      jadd j7, j7, j8
+      jld j7, j7, 24
+      jld j8, j1, GQ
+      jsub j7, j7, j8
+      jjnz j7, rc_mine
+      jldi j3, 1
+      jadd j4, j4, j3
+      jjmp rc_p
+    rc_mine:
       jldi j7, 3
       jshl j7, j6, j7
       jld j8, j1, CNT
@@ -1807,7 +2046,7 @@ rc_judge:
     jadd j7, j7, j8
     jld j2, j7, 0               ; shared notes
     jst j1, j7, 0
-    jldi j3, 24
+    jldi j3, 32
     jmul j3, j6, j3
     jld j4, j1, FRB
     jadd j3, j3, j4
