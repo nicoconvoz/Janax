@@ -136,6 +136,12 @@ S_PIEZ   = 0BC0h
 S_PIEZA  = 0BE0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
+S_SIGNO  = 0C40h
+S_ABRE   = 0C60h
+S_CIERRA = 0C80h
+S_RENG   = 0CA0h
+S_SINAB  = 0CC0h
+S_ABIER  = 0CE0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -385,7 +391,32 @@ HPA   = 1EF8h
 HPBB  = 1F00h
 HPX   = 1F08h
 HPY   = 1F10h
-HPZ   = 1F18h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HPZ   = 1F18h
+HSOT  = 3800h                   ; the signs (hl_signos): beginning ones, end ones, their counts, a line walked (past 37D0h,
+HSCT  = 3820h                   ; the last of lectura.inc)
+HSON  = 3840h
+HSCN  = 3848h
+HSGP  = 3850h
+HSGN  = 3858h
+HSGV  = 3860h
+HSGT  = 3868h
+HSM   = 3870h
+HSF   = 3878h
+HSL   = 3880h
+HSW   = 3888h
+HSQN  = 3890h
+HSI   = 3898h
+HSA   = 38A0h
+HSB   = 38A8h
+HSX1  = 38B0h
+HSX2  = 38B8h
+HSCP  = 38C0h                   ; (the line being read, from where to where; the pairs' lists; how many nodes)
+HSCE  = 38C8h
+HSOL  = 38D0h
+HSKN  = 38D8h
+HSBF  = 38E0h                   ; (each first's best second, each second's best first, their scores)
+HSBS  = 38E8h
+HSBV  = 38F0h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -7562,7 +7593,8 @@ hpt_wd:
     jsub j3, j3, j5
     jst j3, j1, HPK
     jjmp hpt_r
-hpt_out:                        ; into "piezas": the changes of two roots or more
+hpt_out:                        ; what each sign does; then into "piezas": the changes of two roots or more
+  jcall hl_signos
   jcall flush
   jldi j10, 12
   jldi j11, S_PIEZ
@@ -7676,6 +7708,836 @@ hpt_top:                        ; to the console: the twenty that work for the m
     jjmp hpt_t
 hpt_done:
   jldi j1, 0
+  jret
+
+; What a sign does (Capitan: "the punctuation"; "for that we have the law of the parentheses and brackets of my
+; calculator: there none escapes"), found by its context. The lines are read letter by letter, and every one the reader
+; does not take for a..z or a space is a candidate (signs, and the letters with an accent: it does not know which is
+; which). First, its order in the lines: in a line where both are, two candidates go in order when the first comes
+; first and the second last; a pair is kept when it is in order in more than half the lines both are in, two at
+; least (as the arrows were found). Then the law of the calculator, over the whole text: each time the first comes it
+; is stacked, each time the second comes it closes the last one open, or nothing; some stay open at the end. A first
+; opens and a second closes when it closes something more than half the times it comes, and more than half the firsts
+; get closed: "signo: ¿ abre, ? cierra | en orden 120 de 124 renglones | cierra 120, sin abrir 0, abiertos 1". Uses
+; j1-j14.
+hl_signos:
+  jldi j2, HSCT
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, HSCN
+  jst j1, j1, HSL               ; the candidates: by letter {key, number plus one, lines, the last line seen}
+  sg1_l:
+    jcall sg_line
+    jjz j2, sg1_done
+    sg1_c:
+      jcall sg_char
+      jjz j2, sg1_next
+      jld j5, j1, HSGV
+      jldi j2, HSCT
+      jcall pl_take
+      jldi j1, 0
+      jjz j6, sg1_old
+      jld j2, j1, HSCN
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSCN
+      jst j2, j4, 8
+    sg1_old:
+      jld j2, j1, HSL
+      jldi j3, 1
+      jadd j2, j2, j3
+      jld j3, j4, 24
+      jsub j3, j3, j2
+      jjz j3, sg1_c
+      jst j2, j4, 24
+      jld j3, j4, 16
+      jldi j5, 1
+      jadd j3, j3, j5
+      jst j3, j4, 16
+      jjmp sg1_c
+  sg1_next:
+    jldi j1, 0
+    jld j2, j1, HSL
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSL
+    jjmp sg1_l
+sg1_done:
+  jld j11, j1, HSCN             ; by candidate {first, last} in the line (-1: not), then the list of this line's ones
+  jldi j2, 24
+  jmul j11, j11, j2
+  jldi j2, 24
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSF
+  jld j2, j1, HSCN
+  jadd j2, j2, j2
+  jldi j3, -1
+  jadd j4, j13, j1
+  sg_z:
+    jjz j2, sg_zd
+    jst j3, j4, 0
+    jldi j5, 8
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j2, j2, j5
+    jjmp sg_z
+sg_zd:
+  jld j11, j1, HSCN             ; by pair {both, in order, open now, closed, closing nothing}
+  jmul j11, j11, j11
+  jldi j2, 40
+  jmul j11, j11, j2
+  jldi j2, 40
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSM
+  jst j1, j1, HSL
+  sg2_l:                        ; in order, line by line
+    jcall sg_line
+    jjz j2, sg2_done
+    jldi j1, 0
+    jst j1, j1, HSI
+    jst j1, j1, HSQN
+    sg2_c:
+      jcall sg_char
+      jjz j2, sg2_pairs
+      jcall sg_index
+      jldi j1, 0
+      jldi j3, 4
+      jshl j3, j2, j3
+      jld j4, j1, HSF
+      jadd j3, j3, j4
+      jld j5, j1, HSI
+      jld j4, j3, 0
+      jldi j6, 63
+      jsar j4, j4, j6
+      jjz j4, sg2_last
+      jst j5, j3, 0             ; first here: onto this line's list
+      jld j6, j1, HSQN
+      jldi j7, 3
+      jshl j7, j6, j7
+      jld j8, j1, HSCN
+      jldi j9, 4
+      jshl j8, j8, j9
+      jadd j7, j7, j8
+      jld j8, j1, HSF
+      jadd j7, j7, j8
+      jst j2, j7, 0
+      jldi j7, 1
+      jadd j6, j6, j7
+      jst j6, j1, HSQN
+    sg2_last:
+      jst j5, j3, 8
+      jldi j6, 1
+      jadd j5, j5, j6
+      jst j5, j1, HSI
+      jjmp sg2_c
+  sg2_pairs:
+    jldi j1, 0
+    jst j1, j1, HSA
+    sg2_a:
+      jldi j1, 0
+      jld j2, j1, HSA
+      jld j3, j1, HSQN
+      jsub j3, j2, j3
+      jjz j3, sg2_reset
+      jcall sg_listed
+      jst j2, j1, HSX1
+      jst j1, j1, HSB
+      sg2_b:
+        jldi j1, 0
+        jld j2, j1, HSB
+        jld j3, j1, HSQN
+        jsub j3, j2, j3
+        jjz j3, sg2_an
+        jcall sg_listed
+        jld j3, j1, HSX1
+        jsub j4, j3, j2
+        jjz j4, sg2_bn
+        jcall sg_entry          ; {first j3, second j2} -> j4
+        jld j5, j4, 0
+        jldi j6, 1
+        jadd j5, j5, j6
+        jst j5, j4, 0
+        jldi j5, 4              ; in order: the first's first place before the second's, the second's last after
+        jshl j5, j3, j5
+        jld j6, j1, HSF
+        jadd j5, j5, j6
+        jldi j7, 4
+        jshl j7, j2, j7
+        jadd j7, j7, j6
+        jld j8, j5, 0
+        jld j9, j7, 0
+        jsub j8, j8, j9
+        jldi j10, 63
+        jsar j8, j8, j10
+        jjz j8, sg2_bn
+        jld j8, j7, 8
+        jld j9, j5, 8
+        jsub j8, j9, j8
+        jsar j8, j8, j10
+        jjz j8, sg2_bn
+        jld j5, j4, 8
+        jldi j6, 1
+        jadd j5, j5, j6
+        jst j5, j4, 8
+      sg2_bn:
+        jldi j1, 0
+        jld j2, j1, HSB
+        jldi j3, 1
+        jadd j2, j2, j3
+        jst j2, j1, HSB
+        jjmp sg2_b
+    sg2_an:
+      jldi j1, 0
+      jld j2, j1, HSA
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSA
+      jjmp sg2_a
+  sg2_reset:
+    jst j1, j1, HSA
+    sg2_r:
+      jldi j1, 0
+      jld j2, j1, HSA
+      jld j3, j1, HSQN
+      jsub j3, j2, j3
+      jjz j3, sg2_next
+      jcall sg_listed
+      jldi j3, 4
+      jshl j3, j2, j3
+      jld j4, j1, HSF
+      jadd j3, j3, j4
+      jldi j4, -1
+      jst j4, j3, 0
+      jst j4, j3, 8
+      jld j2, j1, HSA
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSA
+      jjmp sg2_r
+  sg2_next:
+    jld j2, j1, HSL
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSL
+    jjmp sg2_l
+sg2_done:                       ; the pairs kept by their order, listed by each one's first and by its second
+  jld j11, j1, HSCN
+  jmul j11, j11, j11
+  jldi j2, 32
+  jmul j11, j11, j2
+  jld j2, j1, HSCN
+  jldi j3, 16
+  jmul j2, j2, j3
+  jadd j11, j11, j2
+  jldi j2, 32
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSOL             ; {as first, as second} heads by candidate, then the nodes {entry, next}
+  jld j2, j1, HSCN
+  jadd j2, j2, j2
+  jadd j4, j13, j1
+  sg_hz:
+    jjz j2, sg_hzd
+    jst j1, j4, 0
+    jldi j5, 8
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j2, j2, j5
+    jjmp sg_hz
+sg_hzd:
+  jst j1, j1, HSKN
+  jst j1, j1, HSA
+  sg_ka:
+    jldi j1, 0
+    jld j3, j1, HSA
+    jld j4, j1, HSCN
+    jsub j4, j3, j4
+    jjz j4, sg3_go
+    jst j1, j1, HSB
+    sg_kb:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jld j4, j1, HSCN
+      jsub j4, j2, j4
+      jjz j4, sg_kan
+      jld j3, j1, HSA
+      jcall sg_entry
+      jld j5, j4, 0             ; kept: in order in more than half, two at least
+      jld j6, j4, 8
+      jldi j7, 2
+      jsub j7, j6, j7
+      jldi j8, 63
+      jsar j7, j7, j8
+      jjnz j7, sg_kbn
+      jadd j7, j6, j6
+      jsub j7, j5, j7
+      jsar j7, j7, j8
+      jjz j7, sg_kbn
+      jst j4, j1, HSX1
+      jld j2, j1, HSA           ; onto its first's list (as first) and its second's (as second)
+      jldi j3, 0
+      jcall sg_node
+      jld j2, j1, HSB
+      jldi j3, 1
+      jcall sg_node
+    sg_kbn:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSB
+      jjmp sg_kb
+  sg_kan:
+    jldi j1, 0
+    jld j2, j1, HSA
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSA
+    jjmp sg_ka
+sg3_go:                         ; the law of the calculator over the whole text
+  jst j1, j1, HSL
+  sg3_l:
+    jcall sg_line
+    jjz j2, sg3_done
+    sg3_c:
+      jcall sg_char
+      jjz j2, sg3_next
+      jcall sg_index
+      jldi j1, 0
+      jst j2, j1, HSX2
+      jldi j3, 4                ; as a first: stacked in each of its pairs
+      jshl j3, j2, j3
+      jld j4, j1, HSOL
+      jadd j3, j3, j4
+      jld j5, j3, 0
+      sg3_o:
+        jjz j5, sg3_cl
+        jld j6, j5, 0
+        jld j7, j6, 16
+        jldi j8, 1
+        jadd j7, j7, j8
+        jst j7, j6, 16
+        jld j5, j5, 8
+        jjmp sg3_o
+    sg3_cl:                     ; as a second: it closes the last open, or nothing
+      jld j2, j1, HSX2
+      jldi j3, 4
+      jshl j3, j2, j3
+      jld j4, j1, HSOL
+      jadd j3, j3, j4
+      jld j5, j3, 8
+      sg3_s:
+        jjz j5, sg3_c
+        jld j6, j5, 0
+        jld j7, j6, 16
+        jjz j7, sg3_or
+        jldi j8, 1
+        jsub j7, j7, j8
+        jst j7, j6, 16
+        jld j7, j6, 24
+        jadd j7, j7, j8
+        jst j7, j6, 24
+        jjmp sg3_sn
+      sg3_or:
+        jld j7, j6, 32
+        jldi j8, 1
+        jadd j7, j7, j8
+        jst j7, j6, 32
+      sg3_sn:
+        jld j5, j5, 8
+        jjmp sg3_s
+  sg3_next:
+    jldi j1, 0
+    jld j2, j1, HSL
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSL
+    jjmp sg3_l
+sg3_done:                       ; the ones that open and close: by the law, each first's best second and each
+  jcall sg_best                 ; second's best first; only the pairs that choose each other
+  jldi j1, 0
+  jst j1, j1, HSA
+  sg_ra:
+    jldi j1, 0
+    jld j3, j1, HSA
+    jld j4, j1, HSCN
+    jsub j4, j3, j4
+    jjz j4, sg_done
+    jst j1, j1, HSB
+    sg_rb:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jld j4, j1, HSCN
+      jsub j4, j2, j4
+      jjz j4, sg_ran
+      jld j3, j1, HSA
+      jcall sg_entry
+      jst j4, j1, HSX1
+      jld j5, j4, 8             ; kept by order
+      jldi j6, 2
+      jsub j6, j5, j6
+      jldi j8, 63
+      jsar j6, j6, j8
+      jjnz j6, sg_rbn
+      jadd j6, j5, j5
+      jld j7, j4, 0
+      jsub j6, j7, j6
+      jsar j6, j6, j8
+      jjz j6, sg_rbn
+      jld j5, j4, 24            ; closed more than closing nothing, and more than left open
+      jld j6, j4, 32
+      jsub j6, j6, j5
+      jsar j6, j6, j8
+      jjz j6, sg_rbn
+      jld j6, j4, 16
+      jsub j6, j6, j5
+      jsar j6, j6, j8
+      jjz j6, sg_rbn
+      jld j2, j1, HSA           ; they choose each other
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j6, j1, HSBF
+      jadd j6, j6, j3
+      jld j6, j6, 0
+      jld j7, j1, HSB
+      jsub j6, j6, j7
+      jjnz j6, sg_rbn
+      jldi j3, 3
+      jshl j3, j7, j3
+      jld j6, j1, HSBS
+      jadd j6, j6, j3
+      jld j6, j6, 0
+      jsub j6, j6, j2
+      jjnz j6, sg_rbn
+      jldi j1, S_SIGNO
+      jcall puts
+      jld j2, j1, HSA
+      jcall sg_say
+      jldi j1, S_ABRE
+      jcall puts
+      jld j2, j1, HSB
+      jcall sg_say
+      jldi j1, S_CIERRA
+      jcall puts
+      jld j4, j1, HSX1
+      jld j2, j4, 8
+      jcall putnum
+      jldi j1, S_DE
+      jcall puts
+      jld j4, j1, HSX1
+      jld j2, j4, 0
+      jcall putnum
+      jldi j1, S_RENG
+      jcall puts
+      jld j4, j1, HSX1
+      jld j2, j4, 24
+      jcall putnum
+      jldi j1, S_SINAB
+      jcall puts
+      jld j4, j1, HSX1
+      jld j2, j4, 32
+      jcall putnum
+      jldi j1, S_ABIER
+      jcall puts
+      jld j4, j1, HSX1
+      jld j2, j4, 16
+      jcall putnum
+      jldi j2, 10
+      jcall putch
+    sg_rbn:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSB
+      jjmp sg_rb
+  sg_ran:
+    jldi j1, 0
+    jld j2, j1, HSA
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSA
+    jjmp sg_ra
+sg_done:
+  jldi j1, 0
+  jret
+
+; The score of the pair at j4 by the law (closed, less what it closed with nothing open and what it left open) -> j6.
+; Uses j6, j7.
+sg_score:
+  jld j6, j4, 24
+  jld j7, j4, 32
+  jsub j6, j6, j7
+  jld j7, j4, 16
+  jsub j6, j6, j7
+  jret
+
+; Each first's best second (HSBF) and each second's best first (HSBS), by the law's score among the pairs kept by
+; their order (-1: none). Uses j1-j14.
+sg_best:
+  jldi j1, 0
+  jld j11, j1, HSCN
+  jldi j2, 32
+  jmul j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSBF
+  jld j2, j1, HSCN
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j13, j2
+  jst j2, j1, HSBS
+  jld j2, j1, HSBS              ; (the best scores, after the two lists)
+  jld j3, j1, HSCN
+  jldi j4, 3
+  jshl j3, j3, j4
+  jadd j2, j2, j3
+  jst j2, j1, HSBV
+  jld j2, j1, HSCN
+  jldi j3, 4
+  jmul j2, j2, j3
+  jldi j3, -1
+  jadd j4, j13, j1
+  sgb_z:
+    jjz j2, sgb_zd
+    jst j3, j4, 0
+    jldi j5, 8
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j2, j2, j5
+    jjmp sgb_z
+sgb_zd:
+  jst j1, j1, HSA
+  sgb_a:
+    jldi j1, 0
+    jld j3, j1, HSA
+    jld j4, j1, HSCN
+    jsub j4, j3, j4
+    jjz j4, sgb_done
+    jst j1, j1, HSB
+    sgb_b:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jld j4, j1, HSCN
+      jsub j4, j2, j4
+      jjz j4, sgb_an
+      jld j3, j1, HSA
+      jcall sg_entry
+      jld j5, j4, 8             ; (kept by order)
+      jldi j6, 2
+      jsub j6, j5, j6
+      jldi j8, 63
+      jsar j6, j6, j8
+      jjnz j6, sgb_bn
+      jadd j6, j5, j5
+      jld j7, j4, 0
+      jsub j6, j7, j6
+      jsar j6, j6, j8
+      jjz j6, sgb_bn
+      jcall sg_score
+      jst j6, j1, HSX2
+      jld j3, j1, HSA           ; the first's best second
+      jldi j9, 3
+      jshl j9, j3, j9
+      jld j10, j1, HSBF
+      jadd j10, j10, j9
+      jld j11, j1, HSBV
+      jld j12, j1, HSCN
+      jldi j13, 4
+      jshl j12, j12, j13
+      jadd j11, j11, j9
+      jld j12, j10, 0
+      jldi j13, 63
+      jsar j12, j12, j13
+      jjnz j12, sgb_f
+      jld j12, j11, 0
+      jsub j12, j12, j6
+      jsar j12, j12, j13
+      jjz j12, sgb_s
+    sgb_f:
+      jld j2, j1, HSB
+      jst j2, j10, 0
+      jst j6, j11, 0
+    sgb_s:
+      jld j2, j1, HSB           ; the second's best first
+      jldi j9, 3
+      jshl j9, j2, j9
+      jld j10, j1, HSBS
+      jadd j10, j10, j9
+      jld j11, j1, HSBV
+      jld j12, j1, HSCN
+      jldi j13, 3
+      jshl j12, j12, j13
+      jadd j11, j11, j12
+      jadd j11, j11, j9
+      jld j6, j1, HSX2
+      jld j12, j10, 0
+      jldi j13, 63
+      jsar j12, j12, j13
+      jjnz j12, sgb_g
+      jld j12, j11, 0
+      jsub j12, j12, j6
+      jsar j12, j12, j13
+      jjz j12, sgb_bn
+    sgb_g:
+      jld j3, j1, HSA
+      jst j3, j10, 0
+      jst j6, j11, 0
+    sgb_bn:
+      jldi j1, 0
+      jld j2, j1, HSB
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HSB
+      jjmp sgb_b
+  sgb_an:
+    jldi j1, 0
+    jld j2, j1, HSA
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSA
+    jjmp sgb_a
+sgb_done:
+  jldi j1, 0
+  jret
+
+; The next line (HSL) -> j2 = 0 if none; else its letters from HSCP to HSCE. Uses j1-j6.
+sg_line:
+  jldi j1, 0
+  jld j2, j1, HSL
+  jld j3, j1, ZNLN
+  jsub j3, j2, j3
+  jjz j3, sgl_none
+  jldi j3, 5
+  jshl j3, j2, j3
+  jld j4, j1, ZLN
+  jadd j3, j3, j4
+  jld j4, j3, 24
+  jldi j5, 2
+  jadd j4, j4, j5
+  jst j4, j1, HSCP
+  jld j6, j1, ZEEND
+  sgl_e:
+    jsub j5, j6, j4
+    jjz j5, sgl_end
+    jldb j5, j4, 0
+    jldi j3, 10
+    jsub j5, j5, j3
+    jjz j5, sgl_end
+    jldi j3, 1
+    jadd j4, j4, j3
+    jjmp sgl_e
+sgl_end:
+  jst j4, j1, HSCE
+  jldi j2, 1
+  jret
+sgl_none:
+  jldi j2, 0
+  jret
+
+; The next candidate letter of the line -> j2 = 0 at its end; else its value in HSGV, and HSI its place counted.
+; (a..z and a space are not candidates; everything else is.) Uses j1-j8.
+sg_char:
+  jldi j1, 0
+  jld j3, j1, HSCP
+  jld j4, j1, HSCE
+  jsub j4, j4, j3
+  jjz j4, sgc_none
+  jldb j5, j3, 0
+  jcall hs_len
+  jld j4, j1, HSCE              ; (a letter cut by the line's end: its bytes left)
+  jsub j4, j4, j3
+  jsub j6, j4, j7
+  jldi j8, 63
+  jsar j6, j6, j8
+  jjz j6, sgc_full
+  jadd j7, j4, j1
+sgc_full:
+  jadd j4, j3, j7
+  jst j4, j1, HSCP
+  jldi j6, 1
+  jsub j6, j7, j6
+  jjnz j6, sgc_take
+  jldi j6, 32
+  jsub j6, j5, j6
+  jjz j6, sg_char
+  jldi j6, 97
+  jsub j6, j5, j6
+  jsar j6, j6, j8
+  jjnz j6, sgc_take
+  jldi j6, 123
+  jsub j6, j5, j6
+  jsar j6, j6, j8
+  jjnz j6, sg_char
+sgc_take:
+  jadd j4, j7, j1
+  jcall hs_val
+  jldi j2, 1
+  jret
+sgc_none:
+  jldi j2, 0
+  jret
+
+; The number of the candidate HSGV -> j2. Uses j1-j8.
+sg_index:
+  jldi j1, 0
+  jld j5, j1, HSGV
+  jldi j2, HSCT
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 8
+  jldi j3, 1
+  jsub j2, j2, j3
+  jret
+
+; The candidate number HSA's place on this line's list -> j2 (HSA or HSB: j2 is the place asked). Uses j1-j4.
+sg_listed:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HSCN
+  jldi j1, 4
+  jshl j4, j4, j1
+  jadd j3, j3, j4
+  jldi j1, 0
+  jld j4, j1, HSF
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jret
+
+; The pair {first j3, second j2} -> j4 its counts. Uses j1, j4, j5.
+sg_entry:
+  jldi j1, 0
+  jld j4, j1, HSCN
+  jmul j4, j3, j4
+  jadd j4, j4, j2
+  jldi j5, 40
+  jmul j4, j4, j5
+  jld j5, j1, HSM
+  jadd j4, j4, j5
+  jret
+
+; The pair HSX1 onto candidate j2's list, as its first (j3 0) or its second (j3 1). Uses j1-j8.
+sg_node:
+  jldi j1, 0
+  jldi j4, 4
+  jshl j4, j2, j4
+  jldi j5, 3
+  jshl j5, j3, j5
+  jadd j4, j4, j5
+  jld j5, j1, HSOL
+  jadd j4, j4, j5               ; (its head)
+  jld j6, j1, HSKN
+  jldi j7, 4
+  jshl j7, j6, j7
+  jld j8, j1, HSCN
+  jldi j5, 4
+  jshl j8, j8, j5
+  jadd j7, j7, j8
+  jld j8, j1, HSOL
+  jadd j7, j7, j8               ; (the node)
+  jld j8, j1, HSX1
+  jst j8, j7, 0
+  jld j8, j4, 0
+  jst j8, j7, 8
+  jst j7, j4, 0
+  jldi j8, 1
+  jadd j6, j6, j8
+  jst j6, j1, HSKN
+  jret
+
+; The letter of candidate number j2 said. Uses j1-j10.
+sg_say:
+  jldi j1, 0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, HSGN
+  jldi j3, HSCT
+  jld j5, j3, 8
+  jldi j6, 1
+  jadd j5, j5, j6
+  jld j4, j3, 0
+  sgs_lap:
+    jjz j5, sgs_done
+    jld j6, j4, 8
+    jld j7, j1, HSGN
+    jsub j6, j6, j7
+    jjnz j6, sgs_n
+    jld j6, j4, 0
+    jjz j6, sgs_n
+    sgs_b:
+      jldi j7, 256
+      jsub j7, j6, j7
+      jldi j8, 63
+      jsar j7, j7, j8
+      jjnz j7, sgs_done
+      jldi j7, 255
+      jand j2, j6, j7
+      jldi j7, 8
+      jshr j6, j6, j7
+      jst j6, j1, HSGV
+      jcall putch
+      jldi j1, 0
+      jld j6, j1, HSGV
+      jjmp sgs_b
+  sgs_n:
+    jldi j6, HSCT
+    jld j6, j6, 24
+    jadd j4, j4, j6
+    jldi j6, 1
+    jsub j5, j5, j6
+    jjmp sgs_lap
+sgs_done:
+  jldi j1, 0
+  jret
+
+; How many bytes the letter whose first byte is j5 has -> j7. Uses j6, j7.
+hs_len:
+  jldi j7, 1
+  jldi j6, 128
+  jand j6, j5, j6
+  jjz j6, hsl_done
+  jldi j7, 2
+  jldi j6, 32
+  jand j6, j5, j6
+  jjz j6, hsl_done
+  jldi j7, 3
+  jldi j6, 16
+  jand j6, j5, j6
+  jjz j6, hsl_done
+  jldi j7, 4
+hsl_done:
+  jret
+
+; The value of the j4 bytes at j3 (the first lowest, and a 1 above them: never 0) -> HSGV. Uses j1, j3-j8.
+hs_val:
+  jldi j1, 0
+  jldi j6, 0
+  jldi j8, 0
+  hsv_lap:
+    jjz j4, hsv_done
+    jldb j5, j3, 0
+    jshl j5, j5, j8
+    jor j6, j6, j5
+    jldi j5, 8
+    jadd j8, j8, j5
+    jldi j5, 1
+    jadd j3, j3, j5
+    jsub j4, j4, j5
+    jjmp hsv_lap
+hsv_done:
+  jldi j5, 1
+  jshl j5, j5, j8
+  jor j6, j6, j5
+  jst j6, j1, HSGV
   jret
 
 ; The change at j4: "<roots>\t<ending>\t<ending>\t<a root>" ("_" for no ending), and a line end. Uses j1-j10.

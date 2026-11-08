@@ -192,3 +192,15 @@ times 0C00h - $ db 0
 db 'fin', 0
 times 0C20h - $ db 0
 db 'inicio', 0
+times 0C40h - $ db 0
+db 'signo: ', 0
+times 0C60h - $ db 0
+db ' abre, ', 0
+times 0C80h - $ db 0
+db ' cierra | en orden ', 0
+times 0CA0h - $ db 0
+db ' renglones | cierra ', 0
+times 0CC0h - $ db 0
+db ', sin abrir ', 0
+times 0CE0h - $ db 0
+db ', abiertos ', 0

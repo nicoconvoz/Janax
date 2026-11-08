@@ -2912,3 +2912,21 @@ lado es (`fin` o `inicio`). La prueba suma hacer/rehacer y leer/releer: `_ → r
 
   Las dos familias de morfología quedan en 94 %, contra un azar del 1 %. Lo de la lexicográfica sube un poco por
   antónimos que se arman con comienzo (`in-`, `des-`).
+
+## Los signos: un intento que ponía reglas, guardado y sacado (2026-11-08)
+
+Primer intento de la puntuación (`hl_signos`, `hilos_signos_prueba.sh`): leer los renglones carácter por carácter,
+tomar como candidato todo lo que no es `a…z`, quedarse con los pares que van "en orden" en más de la mitad de los
+renglones, pasarles la ley de los paréntesis de la calculadora del Capitán y mostrar los que se eligen mutuamente.
+Sobre los once libros encontró `( )` (3.099 cierres, 27 sin abrir, 0 abiertos), `[ ]`, `{ }`, `“ ”` y `¡ !` (3.169 de
+3.173 renglones en orden). No encontró `¿ ?`, y dejó pasar ruido (`í → .`, `ñ → ;`, números, letras de otros
+alfabetos). Cada arreglo era un filtro más mío.
+
+El Capitán lo paró: *"no quiero reglas, quiero ayudar al contexto para que él deduzca las reglas; si no estaríamos
+haciendo trampa, completando en vez de generalizando"*. *"Que descubra qué instrucción es y para qué sirve; el resto es
+fácil: ya sabe cómo aplicarlos, y puede armar mecanismos imaginados luego."* "Más de la mitad", "que dependa en los dos
+sentidos", "que se elijan": todo eso era decirle qué es un signo. Y la trampa más grande ya estaba debajo: el lector
+(`mp_isletter`) tira los signos de un byte (`? ! ( ) . ,`) antes de que Razar los vea.
+
+Este commit guarda el intento tal cual (su prueba pequeña falla: dejaba pasar `ó → .`). El siguiente lo saca del
+código, y el lector deja de esconder los signos.
