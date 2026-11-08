@@ -192,6 +192,7 @@ OGRY  = 3898h
 OGRH  = 38A0h
 OGRC  = 38A8h
 OGRI  = 38B0h
+OGB0  = 38B8h                   ; the score of the organ it was born with (what a winner improved)
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 LLAVE = 1C08h                   ; the board (on the host, a folder several Janax share): its key (from the file "llave"),
@@ -2575,6 +2576,7 @@ ot_own:
   jst j2, j1, TMEM
   jld j2, j1, EVS
   jst j2, j1, OGBASE
+  jst j2, j1, OGB0              ; (what it had, for the recipe of one that wins)
   jldi j10, 35                  ; the cage: twice what this life cost it so far (a reading and its exams; a real organ
   jldi j11, -1                  ; measured +2 %: the 2 is criterion, not measurement)
   jcall ask
@@ -3490,6 +3492,47 @@ og_rec_write:
   jldi j1, 0
   jld j2, j1, EVC
   jcall og_hex16
+  jldi j2, 0                    ; "  mejora: ", from the score it had to its own, and the organ it had
+  jshi j2, 0A20h
+  jshi j2, 206Dh
+  jshi j2, 656Ah
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 6F72h
+  jshi j2, 613Ah
+  jshi j2, 2000h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGB0
+  jcall og_dec
+  jldi j2, 0                    ; " -> "
+  jshi j2, 202Dh
+  jshi j2, 3E20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGBASE
+  jcall og_dec
+  jldi j2, 0                    ; " (+"
+  jshi j2, 2028h
+  jshi j2, 2B00h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGBASE
+  jld j3, j1, OGB0
+  jsub j2, j2, j3
+  jcall og_dec
+  jldi j2, 0                    ; "), antes: "
+  jshi j2, 292Ch
+  jshi j2, 2061h
+  jshi j2, 6E74h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 6573h
+  jshi j2, 3A20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, ORGW
+  jcall og_hex
   jldi j2, 10
   jcall putch
   jldi j1, 0
@@ -3512,6 +3555,20 @@ og_rec_write:
     jcall putch
     jldi j2, 58
     jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0                  ; what it does, as the molde says it (its block "1" to "9")
+    jld j2, j1, OGRC
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall og_block
+    jwhile j6
+      jldb j2, j5, 0
+      jcall putch
+      jldi j2, 1
+      jadd j5, j5, j2
+      jsub j6, j6, j2
+    jwend
     jldi j2, 10
     jcall putch
     jldi j1, 0

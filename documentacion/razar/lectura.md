@@ -3180,6 +3180,16 @@ pasa a ser otro órgano sin que nadie se entere.
   lugares fijos para que la lea una persona y también él:
   `receta <letras, 16 hex> alfabeto <huella, 16 hex> nota <nota> genoma <16 hex>`, y abajo **el código de cada una de
   sus letras, en el orden en que corren, copiado tal cual de su alfabeto**.
+- **Qué mejora y qué hace** (Capitán: *"anotar también qué mejora con el órgano o qué hace"*): debajo del encabezado,
+  `mejora: <nota con el que tenía> -> <nota> (+diferencia), antes: <el órgano que tenía>`, y cada letra con lo que
+  hace en castellano (los bloques `1` a `9` del molde: son texto para leer, no código). Así quedó la del 5:
+
+  ```
+  receta 0000000000000005 alfabeto c53a5ba6979a2cf2 nota 208 genoma 0000000000010105
+    mejora: -1586 -> 208 (+1794), antes: 6
+    letra 5: el hueco es la primera palabra: el marco la anuncia (y vuelve a empezar)
+    <su código>
+  ```
 - **Al nacer sin órgano**, Razar lee sus recetas hasta el final y toma la última. Si su alfabeto es este, la hace suya
   ("receta 5: suya"): la escribe en su `pulso.datos` y se rehace. Si el alfabeto cambió, la dice ("de otro alfabeto,
   no se usa") y sigue sin órgano: nunca un número leído a ciegas.

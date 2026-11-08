@@ -2,7 +2,7 @@
 ; reads it inside Janax OS. Each block starts with a line "@" and its name, and runs to the next one (its last line
 ; end left out). The organ itself is read, not compiled (organo.inc): its letters are data in the program's initial
 ; data, so a candidate is this same program (hijo.bin, copied once) with its own hijo.datos, and a winner stays in
-; pulso.datos. Nothing is built.
+; pulso.datos. Nothing is built. Blocks 1 to 9: what each letter does, said for whoever reads a recipe.
 @p
 PDP/razar/lectura/pulso.bin
 @d
@@ -15,3 +15,21 @@ PDP/razar/lectura/hijo.datos
 PDP/razar/lectura/organo.inc
 @r
 tablero/Receta de Organos/recetas
+@1
+mezcla en el marco la primera palabra de la ventana
+@2
+mezcla en el marco la segunda palabra de la ventana
+@3
+mezcla en el marco la tercera palabra de la ventana
+@4
+mezcla en el marco la cuarta palabra de la ventana
+@5
+el hueco es la primera palabra: el marco la anuncia (y vuelve a empezar)
+@6
+el hueco es la segunda palabra: el marco la anuncia (y vuelve a empezar)
+@7
+el hueco es la tercera palabra: el marco la anuncia (y vuelve a empezar)
+@8
+el hueco es la cuarta palabra: el marco la anuncia (y vuelve a empezar)
+@9
+el hueco vacio: el marco se dice como esta (y vuelve a empezar)
