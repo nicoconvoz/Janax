@@ -3384,29 +3384,35 @@ oab_done:
   jldi j1, 0
   jret
 
-; The label of its recipes, "recetas" and its number if it has one, at OGPEND + 4512 -> j11 where, j12 its bytes.
-; Uses j1-j5.
+; The label of its recipes, on the board every Razar of this PC shares (the block "r": "tablero/Receta de Organos/
+; recetas", Capitan), and its number after it if it has one, at OGPEND + 4512 -> j11 where, j12 its bytes. Uses
+; j1-j12.
 og_rec_label:
-  jldi j1, 0
+  jldi j2, 114
+  jcall og_block
   jld j11, j1, OGPEND
   jldi j2, 4512
   jadd j11, j11, j2
-  jldi j2, 0
-  jshi j2, 0073h
-  jshi j2, 6174h
-  jshi j2, 6563h
-  jshi j2, 6572h
-  jldi j12, 7
+  jldi j7, 0
+  jwhile j6
+    jldb j2, j5, 0
+    jadd j3, j11, j7
+    jstb j2, j3, 0
+    jldi j3, 1
+    jadd j5, j5, j3
+    jadd j7, j7, j3
+    jsub j6, j6, j3
+  jwend
   jld j3, j1, QUIEN
   jjz j3, orl_one
   jldi j4, 48
-  jadd j4, j3, j4
-  jldi j5, 56
-  jshl j4, j4, j5
-  jor j2, j2, j4
-  jldi j12, 8
+  jadd j3, j3, j4
+  jadd j4, j11, j7
+  jstb j3, j4, 0
+  jldi j3, 1
+  jadd j7, j7, j3
 orl_one:
-  jst j2, j11, 0
+  jadd j12, j7, j1
   jret
 
 ; The recipe of the organ OGCODE, after the ones it wrote before (Capitan: "a good organ can be lost if nobody knows
