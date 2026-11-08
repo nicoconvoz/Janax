@@ -3164,3 +3164,29 @@ programa"*).
 - **La basura del auditor:** con la basura del auditor en 1 los registros `j13` y `j14` llegan a las letras con el
   estado del lector, no con la basura. Ninguna letra los lee. **Medido:** la auditoría de 3 órganos da la misma salida que la
   vieja, renglón por renglón (`orden y basura 3, escritura 3`), con 9 procesos en vez de 17.
+
+## La receta de los órganos: que uno bueno no se pierda (2026-11-08)
+
+El Capitán: *"que pueda guardar la receta de los órganos, porque un órgano bueno se puede perder si no se sabe cómo
+está construido"*. Se perdía de dos maneras: `organos.sh` borraba la casa entera en cada corrida (nichos incluidos), y
+rearmar desde el repo deja `pulso.datos` en ceros. Y había una tercera, más fina: las letras solas no son la receta.
+`5` quiere decir "el hueco es la primera palabra" solo con **este** alfabeto; si una letra cambia, el `5` guardado
+pasa a ser otro órgano sin que nadie se entere.
+
+- **El alfabeto, leído y con huella:** `organos.sh` lleva `organo.inc` a la casa; Razar lo lee entero y saca su huella
+  (FNV-1a de sus bytes, sin los `` del anfitrión).
+- **La receta** (`recetas`, y su número si lo tiene): cada vez que un órgano gana, Razar agrega una, en texto, con
+  lugares fijos para que la lea una persona y también él:
+  `receta <letras, 16 hex> alfabeto <huella, 16 hex> nota <nota> genoma <16 hex>`, y abajo **el código de cada una de
+  sus letras, en el orden en que corren, copiado tal cual de su alfabeto**.
+- **Al nacer sin órgano**, Razar lee sus recetas hasta el final y toma la última. Si su alfabeto es este, la hace suya
+  ("receta 5: suya"): la escribe en su `pulso.datos` y se rehace. Si el alfabeto cambió, la dice ("de otro alfabeto,
+  no se usa") y sigue sin órgano: nunca un número leído a ciegas.
+- `organos.sh` ya no borra las recetas de la carpeta entre corridas.
+- **Probado:** una corrida de 6 intentos escribió dos recetas (el `6`, nota −1586, y el `5`, nota 208), con la huella
+  final de siempre (`00005FCD04441AB1`: la receta no entra en lo que leyó). Una segunda corrida en la misma carpeta nació
+  sin órgano, leyó "receta 5: suya", se rehízo y arrancó con 208 de base. Con una línea agregada a `organo.inc`: "receta
+  5: de otro alfabeto, no se usa", y siguió sin órgano.
+- **Lo que no resuelve:** la receta vive en la carpeta de la corrida, no en el repo. Si se borra la carpeta a mano,
+  se pierde. La de una carpeta tampoco pasa a otra. Llevarlas al tablero (lo que comparten todos los Razares de la
+  PC) es el paso siguiente si hace falta.

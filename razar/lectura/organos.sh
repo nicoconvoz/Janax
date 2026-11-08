@@ -11,7 +11,10 @@ aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 armado="$carpeta.armado"
+recetas=$(mktemp -d)   # its recipes ("recetas", and its number) outlive the folder: a good organ is never lost
+cp "$carpeta"/$(etiqueta recetas)* "$recetas"/ 2>/dev/null
 rm -rf "$carpeta" "$armado"; mkdir -p "$carpeta" "$armado"
+cp "$recetas"/* "$carpeta"/ 2>/dev/null; rm -rf "$recetas"
 bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$armado" \
   "$aqui/pulso.jsm" "$aqui/pulso.datos.jsm" || exit 1
 cp "$libro" "$carpeta/$(etiqueta libro)"
@@ -21,7 +24,7 @@ fi
 printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00'"$(printf '\\x%02x\\x%02x\\x%02x\\x%02x' "$vigilia" "$intentos" "$auditoria" "$paisaje")" \
   > "$carpeta/$(etiqueta p)"
 arbol=razar; [ "$vigilia" = 1 ] && arbol=razar1  # awake for good it has a number: its own tree, PDP/razarN
-for f in "$armado/pulso.bin" "$armado/pulso.datos" "$aqui/organo.molde"; do
+for f in "$armado/pulso.bin" "$armado/pulso.datos" "$aqui/organo.molde" "$aqui/organo.inc"; do
   cp "$f" "$carpeta/$(etiqueta "PDP/$arbol/lectura/$(basename "$f")")"
 done
 JANAX_MOTOR=$motor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$carpeta")" \
