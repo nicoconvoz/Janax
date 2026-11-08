@@ -76,6 +76,15 @@ S_ORT   = 0A0h                  ; "tablero/ortografia": the spelling the books p
 S_GEN   = 9B8h                  ; "genoma": its own seed
 S_THQ   = 9A4h                  ; the question it asks itself
 S_LNH   = 214h                  ; the languages' manuals (in the gaps)
+S_MKH   = 310h                  ; the marks' work (in the gaps)
+S_MCAP  = 34Ch
+S_MNL   = 358h
+S_MAB   = 368h
+S_MCI   = 370h
+S_MSE   = 392h
+S_MNU   = 39Ah
+S_MPG   = 3AAh
+S_MPA   = 3CEh
 S_LNU   = 258h
 S_LNP   = 2A0h
 S_LNS   = 2D8h
@@ -405,6 +414,19 @@ SKX4  = 57F0h
 QPAS  = 5800h                   ; a fact walked against the question: where, its end, a word
 QPAE  = 5808h
 QPAW  = 5810h
+MKC   = 5820h                   ; the marks' work: by mark its counts, by two {key, opener, closer, times}, the marks
+MKP   = 5828h                   ; seen (a list, how many); walking
+MKL   = 5848h
+MKLN  = 5850h
+MK1   = 5858h
+MK2   = 5860h
+MK3   = 5868h
+MK4   = 5870h
+MK5   = 5878h
+MK6   = 5880h
+MK7   = 5888h
+MK8   = 5890h
+MK9   = 5898h
 QPTI  = 5818h                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
@@ -561,6 +583,7 @@ jcall fam_build                 ; its families, from what the books share
 jcall ins_report                ; the dictionary of instructions, as the books proved it
 jcall sk_kinrep                 ; and its structures with their kin
 jcall ln_report                 ; and the manual of each language
+jcall mk_report                 ; and what each mark does
 jcall sk_report
 jcall cores
 jjmp finish
@@ -7988,6 +8011,510 @@ sk_lit:
 skl_done:
   jldi j1, 0
   jret
+
+; What each mark does (Capitan, 2026-11-07: "find what is a separator, as the point or the comma in a number, what
+; divides as a parenthesis or a bracket, as a capital and a point, or two exclamation marks, or two question marks";
+; "do not forget the line end: it speaks too"). Every mark of the reading, and the capital (a word that begins with
+; one) and the line end as marks too, counted over the row: how many times it comes glued to the unit before it, how
+; many the unit after it comes glued to it, how many it stands glued between two digits; and, for every two, how many
+; times one comes with the other seen since its own last time (the pairs that compensate, as the parentheses of the
+; Capitan's calculator). Its work, by majority: one that the next unit glues to opens; one glued to the one before
+; closes when an opener goes with it most times (its pair), and separates when none does; one glued on both sides
+; between digits separates inside a number. Nothing is listed: the marks and their pairs come out of the books. By
+; mark (a word's number; NV the capital, NV + 1 the line end) at MKC {times, glued before, glued after, between digits,
+; last place seen}; by two at MKP {key, opener, closer, times}. Uses j1-j14.
+mk_report:
+  jldi j1, 0
+  jld j2, j1, ROOMGL
+  jjz j2, mkr_done
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 40
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKC
+  jldi j2, MKP
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, NV               ; the marks seen so far (a list)
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKL
+  jst j1, j1, MKLN
+  jldi j9, 1
+  mkr_unit:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, mkr_counted
+    jst j9, j1, MK1
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMT
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjnz j2, mkr_word
+    jld j2, j1, NV              ; a line end
+    jldi j3, 1
+    jadd j2, j2, j3
+    jjmp mkr_mark
+  mkr_word:
+    jst j2, j1, MK2
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, mkr_isn
+    jld j2, j1, MK1             ; a word: with a capital, a mark too
+    jld j3, j1, ROOMCP
+    jadd j3, j3, j2
+    jldb j3, j3, 0
+    jjz j3, mkr_next
+    jld j2, j1, NV
+    jjmp mkr_mark
+  mkr_isn:
+    jld j2, j1, MK2
+  mkr_mark:
+    jst j2, j1, MK3             ; the mark, at place MK1
+    jcall mk_count
+  mkr_next:
+    jldi j1, 0
+    jld j9, j1, MK1
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mkr_unit
+mkr_counted:
+  jldi j1, S_MKH
+  jcall puts
+  jst j1, j1, MK4               ; each mark seen twice or more, in the order first seen
+  mkr_say:
+    jldi j1, 0
+    jld j2, j1, MK4
+    jld j3, j1, MKLN
+    jsub j3, j2, j3
+    jjz j3, mkr_out
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKL
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jst j2, j1, MK3
+    jcall mk_say
+    jldi j1, 0
+    jld j2, j1, MK4
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MK4
+    jjmp mkr_say
+mkr_out:
+  jldi j2, 10
+  jcall putch
+  jcall flush
+mkr_done:
+  jldi j1, 0
+  jret
+
+; The record of mark j2 -> j3 (MKC + 40 j2). Uses j1, j3, j4.
+mk_rec:
+  jldi j1, 0
+  jldi j3, 40
+  jmul j3, j2, j3
+  jld j4, j1, MKC
+  jadd j3, j3, j4
+  jret
+
+; Mark MK3 at place MK1: its times, its gluings, between digits, and with every opener seen since its last time.
+; Uses j1-j14.
+mk_count:
+  jldi j1, 0
+  jld j2, j1, MK3
+  jcall mk_rec
+  jst j3, j1, MK5
+  jld j2, j3, 0
+  jjnz j2, mkc_seen
+  jld j4, j1, MKLN              ; (first seen: into the list)
+  jldi j5, 3
+  jshl j5, j4, j5
+  jld j6, j1, MKL
+  jadd j5, j5, j6
+  jld j6, j1, MK3
+  jst j6, j5, 0
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, MKLN
+mkc_seen:
+  jld j3, j1, MK5
+  jld j2, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 0
+  jld j2, j1, MK3               ; (the capital and the line end glue to nothing: they are no unit of their own)
+  jld j4, j1, NV
+  jsub j4, j2, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkc_pairs
+  jld j9, j1, MK1               ; glued to the one before (a word, no line end)
+  jldi j4, 1
+  jsub j10, j9, j4
+  jadd j2, j10, j1
+  jcall tok_at
+  jldi j1, 0
+  jst j2, j1, MK6
+  jjz j2, mkc_after
+  jst j1, j1, MK7
+  jcall w_mark                  ; (a word before it: a mark glued to a mark says nothing of either)
+  jldi j1, 0
+  jjnz j3, mkc_after
+  jld j9, j1, MK1
+  jld j4, j1, ROOMGL
+  jadd j4, j4, j9
+  jldb j4, j4, 0
+  jst j4, j1, MK7
+  jjz j4, mkc_after
+  jld j3, j1, MK5
+  jld j2, j3, 8
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 8
+mkc_after:
+  jld j9, j1, MK1               ; the one after glued to it
+  jldi j4, 1
+  jadd j9, j9, j4
+  jld j2, j1, NTOK
+  jsub j2, j9, j2
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, mkc_pairs
+  jadd j2, j9, j1
+  jcall tok_at
+  jldi j1, 0
+  jst j2, j1, MK8
+  jjz j2, mkc_pairs
+  jcall w_mark                  ; (a word after it)
+  jldi j1, 0
+  jjnz j3, mkc_pairs
+  jld j9, j1, MK1
+  jldi j4, 1
+  jadd j9, j9, j4
+  jld j4, j1, ROOMGL
+  jadd j4, j4, j9
+  jldb j4, j4, 0
+  jjz j4, mkc_pairs
+  jld j3, j1, MK5
+  jld j2, j3, 16
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 16
+  jld j4, j1, MK7               ; glued on both sides: between two digits?
+  jjz j4, mkc_pairs
+  jld j2, j1, MK6
+  jcall mk_digit
+  jjz j2, mkc_pairs
+  jld j2, j1, MK8
+  jcall mk_digit
+  jjz j2, mkc_pairs
+  jld j3, j1, MK5
+  jld j2, j3, 24
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 24
+mkc_pairs:                      ; every mark seen since this one's last time goes with it once
+  jldi j1, 0
+  jld j3, j1, MK5
+  jld j2, j3, 32
+  jst j2, j1, MK6               ; (its last place)
+  jld j2, j1, MK1
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 32
+  jst j1, j1, MK7
+  mkc_o:
+    jldi j1, 0
+    jld j2, j1, MK7
+    jld j3, j1, MKLN
+    jsub j3, j2, j3
+    jjz j3, mkc_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKL
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jst j2, j1, MK8
+    jld j4, j1, MK3
+    jsub j4, j2, j4
+    jjz j4, mkc_onext
+    jcall mk_rec
+    jld j4, j3, 32
+    jld j5, j1, MK6
+    jsub j4, j5, j4
+    jldi j6, 63
+    jsar j4, j4, j6
+    jjz j4, mkc_onext           ; (not since its last time)
+    jld j5, j1, FNVP
+    jld j2, j1, MK8
+    jmul j2, j2, j5
+    jld j3, j1, MK3
+    jxor j2, j2, j3
+    jmul j5, j2, j5
+    jjnz j5, mkc_k
+    jldi j5, 1
+  mkc_k:
+    jldi j2, MKP
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j1, MK8
+    jst j2, j4, 8
+    jld j2, j1, MK3
+    jst j2, j4, 16
+    jld j2, j4, 24
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 24
+  mkc_onext:
+    jldi j1, 0
+    jld j2, j1, MK7
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MK7
+    jjmp mkc_o
+mkc_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if word j2 begins with a digit. Uses j1-j4.
+mk_digit:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j4, j3, 16
+  jjz j4, mkd_no
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jldb j3, j3, 0
+  jldi j4, 48
+  jsub j4, j3, j4
+  jldi j2, 63
+  jsar j2, j4, j2
+  jjnz j2, mkd_no
+  jldi j4, 58
+  jsub j4, j3, j4
+  jldi j2, 63
+  jsar j2, j4, j2
+  jjz j2, mkd_no
+  jldi j2, 1
+  jret
+mkd_no:
+  jldi j2, 0
+  jret
+
+; Mark MK3 said, with what it does (twice at least: the anecdote rule). Uses j1-j14.
+mk_say:
+  jldi j1, 0
+  jld j2, j1, MK3
+  jcall mk_rec
+  jst j3, j1, MK5
+  jld j2, j3, 0
+  jldi j4, 2
+  jsub j4, j2, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, mks_done
+  jldi j2, 10
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jcall mk_name
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j3, j1, MK5
+  jld j2, j3, 0
+  jcall putnum
+  jld j3, j1, MK5               ; between digits, most of its times: it separates inside numbers
+  jld j2, j3, 24
+  jadd j2, j2, j2
+  jld j4, j3, 0
+  jsub j2, j4, j2
+  jldi j5, 63
+  jsar j2, j2, j5
+  jjz j2, mks_open
+  jldi j1, S_MNU
+  jcall puts
+  jjmp mks_glue
+mks_open:
+  jld j3, j1, MK5               ; the next glued to it most times (or the capital): it opens
+  jld j2, j1, MK3
+  jld j4, j1, NV
+  jsub j4, j2, j4
+  jjz j4, mks_opens
+  jld j2, j3, 16
+  jadd j2, j2, j2
+  jld j4, j3, 0
+  jsub j2, j4, j2
+  jldi j5, 63
+  jsar j2, j2, j5
+  jjz j2, mks_close
+mks_opens:
+  jldi j1, S_MAB
+  jcall puts
+  jjmp mks_glue
+mks_close:                      ; else it closes (an opener goes with it most times) or it separates
+  jcall mk_pair
+  jjz j2, mks_sep
+  jst j2, j1, MK3
+  jldi j1, S_MCI
+  jcall puts
+  jcall mk_name
+  jjmp mks_glue
+mks_sep:
+  jldi j1, S_MSE
+  jcall puts
+mks_glue:
+  jldi j1, S_MPG
+  jcall puts
+  jld j3, j1, MK5
+  jld j2, j3, 8
+  jcall putnum
+  jldi j1, S_MPA
+  jcall puts
+  jld j3, j1, MK5
+  jld j2, j3, 16
+  jcall putnum
+mks_done:
+  jldi j1, 0
+  jret
+
+; Mark MK3's pair: of the openers (the capital, or one the next glues to most times) that compensate with it both ways
+; (as the Capitan's parentheses: it comes with the opener seen since its own last time most of its times, and the
+; opener with it since the opener's last time most of the opener's times), the one that goes with it most -> j2 (0:
+; none). Uses j1-j14.
+mk_pair:
+  jldi j1, 0
+  jst j1, j1, MK6
+  jst j1, j1, MK7
+  jld j9, j1, MKP
+  jld j10, j1, MKP + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  mkp_lap:
+    jldi j1, 0
+    jjz j10, mkp_have
+    jld j2, j9, 0
+    jjz j2, mkp_next
+    jld j2, j9, 16
+    jld j3, j1, MK3
+    jsub j2, j2, j3
+    jjnz j2, mkp_next
+    jld j2, j9, 24              ; (more than the best so far)
+    jld j3, j1, MK7
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, mkp_next
+    jst j9, j1, MK8
+    jst j10, j1, MK9
+    jcall mk_both
+    jldi j1, 0
+    jld j9, j1, MK8
+    jld j10, j1, MK9
+    jjz j2, mkp_next
+    jld j2, j9, 24
+    jst j2, j1, MK7
+    jld j2, j9, 8
+    jst j2, j1, MK6
+  mkp_next:
+    jld j2, j1, MKP + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp mkp_lap
+mkp_have:
+  jld j2, j1, MK6
+  jret
+
+; j2 = 1 if the pair at MKP's entry j9 (opener, closer MK3) opens and compensates both ways. Uses j1-j8.
+mk_both:
+  jldi j1, 0
+  jld j2, j9, 8                 ; an opener?
+  jld j3, j1, NV
+  jsub j3, j2, j3
+  jjz j3, mkb_way
+  jcall mk_rec
+  jld j4, j3, 16
+  jadd j4, j4, j4
+  jld j5, j3, 0
+  jsub j4, j5, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+mkb_way:
+  jld j2, j1, MK3               ; most of the closer's times
+  jcall mk_rec
+  jld j4, j3, 0
+  jld j2, j9, 24
+  jadd j2, j2, j2
+  jsub j4, j4, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+  jld j6, j1, FNVP              ; and of the opener's: the closer with it, since its own last time
+  jld j3, j1, MK3
+  jmul j3, j3, j6
+  jld j2, j9, 8
+  jxor j3, j3, j2
+  jmul j5, j3, j6
+  jjnz j5, mkb_k
+  jldi j5, 1
+mkb_k:
+  jldi j2, MKP
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, mkb_no
+  jld j7, j4, 24
+  jld j2, j9, 8
+  jcall mk_rec
+  jld j4, j3, 0
+  jadd j7, j7, j7
+  jsub j4, j4, j7
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+  jldi j2, 1
+  jret
+mkb_no:
+  jldi j2, 0
+  jret
+
+; Mark MK3's name: its word, or the capital, or the line end. Uses j1-j8.
+mk_name:
+  jldi j1, 0
+  jld j2, j1, MK3
+  jld j3, j1, NV
+  jsub j3, j2, j3
+  jjnz j3, mkn_nl
+  jldi j1, S_MCAP
+  jjmp puts
+mkn_nl:
+  jldi j4, 1
+  jsub j3, j3, j4
+  jjnz j3, mkn_word
+  jldi j1, S_MNL
+  jjmp puts
+mkn_word:
+  jjmp putword
 
 ; The manual of each language of the reading (the report): the languages with the most units first, each called by
 ; the word it says the most, with its units and words, its marks (its punctuation) and its words said the most. Six

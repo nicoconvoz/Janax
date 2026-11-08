@@ -73,6 +73,8 @@ TEXTN = 1000h
 BKP   = 3300h                   ; where each book starts in the row (a page break ends one): {where, bytes, bytes it
                                 ; must hold, one kept, the registers kept}, a room that grows; how many
 BKN   = 3390h
+WSP   = 11C0h                   ; 1: a space or a line end since the last unit; by unit, 1 if it came glued to the
+ROOMGL = 11C8h                  ; one before (no space between: Capitan, "what is a separator, what opens, what closes")
 RLT   = 11B8h                   ; (the room just got, while the list of rooms grows)
 SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
 PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
@@ -177,6 +179,12 @@ jadd j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROOMCP
+jld j11, j1, NUNITS              ; and which came glued to the one before (a byte each)
+jldi j2, 8
+jadd j11, j11, j2
+jcall room
+jldi j1, 0
+jst j13, j1, ROOMGL
 jldi j11, 264                   ; the words' letters, one after the other: they grow with them, from 256 bytes (it
 jcall room                      ; was made for every byte of the book, and held one in ten)
 jldi j1, 0
@@ -605,19 +613,28 @@ tb_lf:
   jsub j3, j2, j3
   jjnz j3, tb_space
   jcall w_end
+  jldi j1, 0
+  jldi j3, 1
+  jst j3, j1, WSP
   jjmp l_unit
 tb_space:
   jldi j3, 21h                  ; a space, a tab, a carriage return: the word ends
   jsub j3, j2, j3
   jldi j4, 63
   jsar j3, j3, j4
-  jjnz j3, w_end
+  jjnz j3, tb_white
   jst j2, j1, BYTE              ; any other: a mark, a piece of its own
   jcall w_end
   jldi j1, 0
   jld j2, j1, BYTE
   jcall w_put
   jjmp w_end
+tb_white:                       ; (what comes next comes apart)
+  jcall w_end
+  jldi j1, 0
+  jldi j3, 1
+  jst j3, j1, WSP
+  jret
 
 ; The buffer described at j1 {where its bytes are, how many it holds, how many it must hold, one kept, the registers
 ; kept (13 qwords)} holds what it must (Capitan, 2026-11-07: "no ceilings: if tomorrow it grows more, it adjusts
@@ -881,6 +898,17 @@ tp_book:
   jld j6, j1, WCAP
   jstb j6, j5, 0
   jst j1, j1, WCAP
+  jld j5, j1, ROOMGL            ; and whether it came glued to the one before
+  jjz j5, tp_glued
+  jadd j5, j5, j3
+  jldi j6, 1
+  jsub j5, j5, j6
+  jld j6, j1, WSP
+  jldi j4, 1
+  jxor j6, j6, j4
+  jstb j6, j5, 0
+tp_glued:
+  jst j1, j1, WSP
   jst j3, j1, NTOK
   jret
 

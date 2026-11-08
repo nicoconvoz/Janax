@@ -3022,3 +3022,28 @@ existe, en los pronombres"*; *"cuando los pedro son tan escasos puede que escoja
   "quién" terminan en signos distintos, ninguno es mayoría, y "quién" no sale flecha. Por eso otro camino de respuesta
   lo toma como sujeto ("quién es hijo de…").
 - **Controles:** una cláusula cambia en el párrafo de Jesús (empieza igual); ninguna respuesta se pierde.
+
+## Qué hace cada signo, por contexto (2026-11-07, el instrumento)
+
+El Capitán: *"detectar qué es un separador, como el punto o la coma en un número, qué divide como un paréntesis o un
+corchete, como una mayúscula y un punto, o dos signos de exclamación, o dos de interrogación"*; *"no te olvides del
+salto de línea: también habla"*; y su calculadora (`nicoconvoz/calculadora`, `profundidad()`): cada símbolo con su
+profundidad, lo más hondo se resuelve primero.
+
+- **El lector anota si cada unidad venía pegada a la anterior** (sin espacio ni salto: `WSP`, `ROOMGL`, un byte por
+  unidad, al lado del de la mayúscula).
+- **`mk_report`** cuenta, para cada signo (y la mayúscula y el salto de línea como signos): cuántas veces se pega a la
+  palabra de antes, cuántas se le pega la de después, cuántas va pegado entre dos dígitos, y con cuál otro se compensa
+  de ida y vuelta (cada uno aparece con el otro visto desde su propia última vez, la mayoría de sus veces). Por mayoría:
+  - el que se le pega la palabra siguiente, **abre**; la mayúscula abre;
+  - el que se pega a la anterior **cierra** si una apertura se compensa con él de ida y vuelta, y si no, **separa**;
+  - el que va pegado entre dígitos **separa números**.
+- **Lo que encontró en el Nuevo Testamento, solo:** "» cierra «", "? cierra ¿", "! cierra ¡", "] cierra [";
+  abren la mayúscula, «, ¿, ¡, [ y (; separan , ; . – y el salto de línea.
+- **Lo que falta:**
+  - ":" sale como "cierra «", pero anuncia la cita. El lado de adentro de un par es el corto (de ":" a "«" no hay
+    nada; de "«" a ":" hay toda la cita);
+  - la mayúscula y el punto no salen como par, por los nombres propios: la que abre la oración es la que viene
+    después de un cierre o de un salto;
+  - el paso 3: que cada edificio se cierre con el signo de su propia profundidad.
+- Es sólo el instrumento: no cambia cómo lee. Controles idénticos.

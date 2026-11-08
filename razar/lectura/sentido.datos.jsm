@@ -53,12 +53,30 @@ times 2D8h - $ db 0
 db ' | palabras:', 0
 times 300h - $ db 0
 db '  deduce: ', 0
+times 310h - $ db 0
+db 10, 'signos (su funcion, por contexto):', 0
 times 340h - $ db 0
 db '   (porque ', 0
+times 34Ch - $ db 0
+db 'mayuscula', 0
+times 358h - $ db 0
+db 'salto de linea', 0
+times 368h - $ db 0
+db ' abre', 0
+times 370h - $ db 0
+db ' cierra ', 0
 times 380h - $ db 0
 db ' dado vuelta es ', 0
+times 392h - $ db 0
+db ' separa', 0
+times 39Ah - $ db 0
+db ' separa numeros', 0
+times 3AAh - $ db 0
+db ' | pega atras ', 0
 times 3C0h - $ db 0
 db ' se encadena)', 0
+times 3CEh - $ db 0
+db ', adelante ', 0
 times 400h - $ db 0
 db 'sentido: no encuentro el libro', 10, 0
 times 440h - $ db 0
