@@ -107,8 +107,9 @@ FNB   = 1380h                   ; the whole sentence's notes ("N:" lines): all o
 FNBN  = 1388h                   ; first, how many} (ITX); the biggest note
 ITX   = 1390h
 FNMAX = 1398h
-SONGM = 2000h                   ; the song being said: the pieces of each greeting (5 qwords)
-TEXT  = 2100h                   ; the line it writes
+SGN   = 13A0h                   ; the song being said: how many greetings
+SONGM = 2000h                   ; the song being said: the pieces of each greeting (a qword each, 255 at most)
+TEXT  = 3000h                   ; the line it writes
 include '../../escalon0/janax.inc'
 jfirst j1, 4000h               ; first order: room 0
 
@@ -160,7 +161,13 @@ jmul j2, j1, j1
 jst j2, j13, N2
 jmul j3, j2, j1
 jst j3, j13, PP
-jldi j4, 5
+jldi j4, 5                      ; (5 greetings; with MEMO 4 up to 255, the most a song may last: 256 + n^3)
+jld j5, j13, MEMO
+jldi j6, 4
+jsub j5, j5, j6
+jjnz j5, b_tmax
+jldi j4, 256
+b_tmax:
 jadd j4, j4, j3
 jst j4, j13, TMAXW
 jld j2, j13, NACE
@@ -232,6 +239,21 @@ jldi j3, 1
 jadd j2, j2, j3
 jst j2, j1, SEED2
 
+jldi j1, 0                      ; (with MEMO 4 every note of the sentences is a word: as many as the biggest note needs)
+jld j2, j1, MEMO
+jldi j3, 4
+jsub j2, j2, j3
+jjnz j2, w_ntok
+jld j2, j1, FNMAX
+jldi j3, 1
+jadd j2, j2, j3
+jld j3, j1, NTOK
+jsub j3, j3, j2
+jldi j4, 63
+jsar j3, j3, j4
+jjz j3, w_ntok
+jst j2, j1, NTOK
+w_ntok:
 jldi j1, 0                      ; its invented words: 3 distinct pieces of the bottom face each, by dice
 jld j11, j1, NTOK
 jldi j2, 24
@@ -1053,6 +1075,12 @@ sing:
   jld j2, j1, CUR
   jld j3, j2, 16
   jst j3, j1, LABEL
+  jldi j3, 5
+  jst j3, j1, SGN
+  jld j3, j1, MEMO
+  jldi j4, 4
+  jsub j3, j3, j4
+  jjz j3, s_notes
   jldi j5, 0
 s_greet:
   jldi j3, 5
@@ -1083,8 +1111,12 @@ s_greet:
   jadd j5, j5, j3
   jjmp s_greet
 s_said:
-  jldi j1, 0                    ; order 6: how many (5), only heard if asked, then each greeting
-  jldi j2, 506h
+  jldi j1, 0                    ; order 6: how many (SGN), only heard if asked, then each greeting
+  jld j2, j1, SGN
+  jldi j3, 8
+  jshl j2, j2, j3
+  jldi j3, 6
+  jor j2, j2, j3
   jld j3, j1, ONLY
   jldi j4, 16
   jshl j3, j3, j4
@@ -1092,7 +1124,7 @@ s_said:
   jst j2, j1, WORD
   jcall say
   jldi j4, 0
-  jldi j5, 5
+  jld j5, j1, SGN
   jwhile j5
     jld j2, j4, SONGM
     jldi j1, 0
@@ -1634,6 +1666,56 @@ rc_done:
   jld j3, j1, BNEG
   jsub j2, j2, j3
   jret
+
+; MEMO 4: the frame's sentence sung, its notes ("N:") one greeting each, in their order (the cube takes 255 at most:
+; past them a sentence is heard by its first 255 notes). Then said as any song. Uses j1-j8, j10-j14 (keeps j9, j15).
+s_notes:
+  jld j2, j1, CUR
+  jld j3, j1, ITB
+  jsub j2, j2, j3
+  jldi j3, 72
+  jdiv j2, j2, j3
+  jldi j3, 4
+  jshl j2, j2, j3
+  jld j3, j1, ITX
+  jadd j2, j2, j3
+  jld j6, j2, 8
+  jld j7, j2, 0
+  jldi j3, 255
+  jsub j3, j6, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, sn_few
+  jldi j6, 255
+sn_few:
+  jst j6, j1, SGN
+  jldi j3, 3
+  jshl j7, j7, j3
+  jld j3, j1, FNB
+  jadd j7, j7, j3               ; its notes
+  jldi j8, 0                    ; SONGM offset
+  sn_lap:
+    jjz j6, s_said
+    jld j2, j7, 0
+    jldi j3, 24
+    jmul j2, j2, j3
+    jld j3, j1, SAYB
+    jadd j2, j2, j3
+    jld j5, j2, 16
+    jldi j4, 16
+    jshl j5, j5, j4
+    jld j3, j2, 8
+    jor j5, j5, j3
+    jshl j5, j5, j4
+    jld j3, j2, 0
+    jor j5, j5, j3
+    jst j5, j8, SONGM
+    jldi j3, 8
+    jadd j7, j7, j3
+    jadd j8, j8, j3
+    jldi j3, 1
+    jsub j6, j6, j3
+    jjmp sn_lap
 
 ; What the melody heard says: its notes as heard for "it answers" over all heard for it, less the same for "it does
 ; not" (in millionths) -> j2. Uses j1-j8, j10-j14 (keeps j9, j15).

@@ -1710,3 +1710,16 @@ no).
   palabras (35). Sin cubo es determinista: no es suerte de una semilla.
 - Falta: que el cubo oiga la oración entera y la memoria guarde esa melodía.
 
+**El cubo oye la oración entera** (`memoria=4`): las notas de la oración (las de "N:") son cada una una palabra inventada
+de 3 piezas, la oración es una canción de tantos saludos como notas (la mayor, 27), y la memoria del kernel guarda su
+melodía. 7³ nacido de su semilla, sin practicar, cinco semillas:
+
+| semilla | 1001 | 1002 | 1003 | 1004 | 1005 | media |
+|---|---|---|---|---|---|---|
+| acierta de 110 | 22 | 23 | 17 | 19 | 18 | **19,8** |
+
+- **Las cinco semillas quedan arriba del azar** (~15,7): una prueba de signos da p ≈ 0,03. El oído del cubo conserva
+  parte de lo que el control encontró: 19,8 contra 24 sin cubo. Pierde unos cuatro aciertos en el camino.
+- Hay cubos que oyen mejor que otros (17 a 23), según cómo nacieron.
+- Todavía debajo del canto (28) y del buscador de palabras (35).
+
