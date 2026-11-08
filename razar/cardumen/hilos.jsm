@@ -25,8 +25,11 @@
 ;     And a hypothesis must explain what it says of the same people: of what one relation says of two words the other
 ;     knows (its A on the other's A side, its B on its B side), what the other says too is explained, what it does not
 ;     is left unexplained. Each must explain more of the other's people than it leaves unexplained; if not, the
-;     hypothesis is refuted, in a coma (Capitan: "not refuted for good, in a coma: who knows if we need it some day"):
-;     it sleeps while the two are as they were, and wakes to be judged again when either grows (a form of grammar that coincides in three pairs and says many more of the same
+;     hypothesis is refuted, in a coma (Capitan: "not refuted for good, in a coma: who knows if we need it some day"),
+;     with what it left unexplained as its context: the people it could not account for. It wakes ("despierta:") when
+;     something like what refuted it comes back (Capitan: "if there is a context like the one that made them, they may
+;     wake; if something starts as an absurd, the answer may be there"): when a join brings pairs about those people
+;     (news about them); then it is judged again with what is known (a form of grammar that coincides in three pairs and says many more of the same
 ;     people does not explain them), and each relation looks for another. What is left unexplained may be one place
 ;     with two names ("obed" in Mateo, "jobed" in Lucas: each said the same twice, so a name, not a slip): when the
 ;     other names it so with the same partners on both sides, one in each telling, it is explained, and said.
@@ -88,6 +91,7 @@ S_PARES2 = 600h
 S_MAS    = 610h
 S_COMA   = 620h
 S_ESPERA = 640h
+S_DESP   = 670h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -191,8 +195,8 @@ HQ6   = 1918h
 HQ7   = 1920h
 HQ8   = 1928h
 HFV   = 1930h
-HREF  = 1950h                   ; the hypotheses refuted, in a coma {key, the two sizes then} (a growing table); by
-                                ; relation, its pairs (where
+HREF  = 1950h                   ; the hypotheses refuted, in a coma {key, the turn it fell (-1: awake), where its
+                                ; context starts, how many} (a growing table); by relation, its pairs (where
 HCCNT = 1970h                   ; they start, how many: rooms) and them, turned to it {A, B} (a room); walking
 HCOFF = 1978h
 HCTRI = 1980h
@@ -223,7 +227,14 @@ HNM0  = 1A40h
 HNF0  = 1A48h
 HSFD  = 1A50h
 HSFS  = 1A58h
-HNESP = 1AE0h                   ; deduced ones waiting, without a witness                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HNESP = 1AE0h                   ; deduced ones waiting, without a witness
+HNREF = 1AE8h                   ; refuted for the first time in this turn (one refuted again is no news: the while ends)
+HWT   = 1AF0h                   ; by word, the turn something was last said or stumbled on about it {key, turn}
+HCXT  = 1B10h                   ; what the hypothesis being judged left unexplained: its words (a room), how many; the
+HCXTN = 1B18h                   ; contexts of the ones in a coma (a room), how many words, room for
+HCXW  = 1B20h
+HCXWN = 1B28h
+HCXCAP = 1B30h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -305,6 +316,8 @@ jwhile j2                      ; while a turn joins something
   jst j2, j1, HTURN
   jld j2, j1, HNMRG
   jld j3, j1, HNDER
+  jadd j2, j2, j3
+  jld j3, j1, HNREF
   jadd j2, j2, j3
 jwend
 jcall hl_end
@@ -2964,6 +2977,7 @@ hpl_done:
 hl_explains:
   jldi j1, 0
   jst j4, j1, HEW
+  jst j1, j1, HCXTN
   jld j2, j4, 8
   jld j3, j4, 16
   jld j5, j4, 24
@@ -3083,6 +3097,12 @@ hex_dir:
     jst j7, j1, HEX
     jjmp hxd_next
   hxd_un2:
+    jld j5, j1, HQ4
+    jcall hx_ctx
+    jldi j1, 0
+    jld j5, j1, HQ5
+    jcall hx_ctx
+    jldi j1, 0
     jld j7, j1, HEU
     jldi j8, 1
     jadd j7, j7, j8
@@ -3821,8 +3841,30 @@ hro_c2:
   jldi j3, 48
   jcall pl_new
   jldi j2, HREF
-  jldi j3, 24
+  jldi j3, 32
   jcall pl_new
+  jldi j2, HWT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, HNF
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCXT
+  jld j11, j1, HNF
+  jldi j2, 1
+  jadd j11, j11, j2
+  jst j11, j1, HCXCAP
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCXW
+  jst j1, j1, HCXWN
   jldi j1, 0
   jld j11, j1, HNM
   jldi j2, 1
@@ -3962,6 +4004,7 @@ hsc_no:
 ; -> HNMRG how many, HNACC how many beat their null. Uses j1-j14.
 hl_merge:
   jldi j1, 0
+  jst j1, j1, HNREF
   jst j1, j1, HNMRG
   jst j1, j1, HNACC
   jst j1, j1, HI
@@ -4088,17 +4131,22 @@ hm_ad:
   hm_rk:
     jldi j2, HREF
     jcall pl_take
-    jldi j1, 0                  ; (how the two were when it was refuted)
-    jld j5, j1, HT2
-    jld j6, j5, 8
-    jcall hm_size
-    jst j6, j4, 8
-    jld j5, j1, HT2
-    jld j6, j5, 16
-    jcall hm_size
-    jst j6, j4, 16
+    jldi j1, 0                  ; when it fell, and its context: what it left unexplained
+    jst j6, j1, HQ6             ; (refuted for the first time: the turn changed who chooses whom)
+    jld j5, j1, HTURN
+    jst j5, j4, 8
+    jcall hm_keepctx
+    jldi j1, 0
+    jld j6, j1, HQ6
+    jld j5, j1, HNREF
+    jadd j5, j5, j6
+    jst j5, j1, HNREF
     jjmp hm_bn
   hm_expl:
+    jld j4, j1, HT2             ; what the second brings is said about its people: they are touched
+    jld j2, j4, 16
+    jcall hm_touchrel
+    jldi j1, 0
     jld j4, j1, HT2
     jld j5, j4, 8               ; the second into the first
     jld j6, j4, 16
@@ -4177,18 +4225,9 @@ hrs_r:
   jld j7, j4, 0
   jsub j7, j7, j5
   jjnz j7, hrs_awake            ; never refuted
-  jadd j8, j4, j1               ; refuted: in a coma while the two are as they were
-  jld j4, j1, HT5
-  jld j6, j4, 8
-  jcall hm_size
-  jld j7, j8, 8
-  jsub j7, j7, j6
-  jjnz j7, hrs_awake
-  jld j6, j4, 16
-  jcall hm_size
-  jld j7, j8, 16
-  jsub j7, j7, j6
-  jjz j7, hrs_no
+  jcall hrs_wakes               ; refuted: in a coma unless its people came back
+  jldi j1, 0
+  jjz j6, hrs_coma
 hrs_awake:
   jldi j1, 0
   jld j4, j1, HT5
@@ -4246,10 +4285,166 @@ hrs_yes:
   jld j4, j1, HT5
   jld j6, j1, HT4
   jret
+hrs_coma:
+  jld j4, j1, HT5
+  jjmp hrs_no
 hrs_no2:
   jld j4, j1, HT5
 hrs_no:
   jldi j6, 0
+  jret
+
+; The refuted hypothesis at j4 (its HREF entry): j6 = 1 if it is awake (awake already, or a word of its context was
+; touched after it fell: then it wakes, and says so). Uses j1-j14 (HT5 the hypothesis).
+hrs_wakes:
+  jldi j1, 0
+  jst j4, j1, HQ7
+  jld j2, j4, 8
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, hwk_yes              ; (awake already)
+  jld j9, j4, 16
+  jld j10, j4, 24
+  hwk_lap:
+    jjz j10, hwk_no
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j5, j1, HCXW
+    jadd j3, j3, j5
+    jld j5, j3, 0
+    jldi j2, HWT
+    jcall pl_find
+    jldi j1, 0
+    jld j7, j4, 0
+    jsub j7, j7, j5
+    jjnz j7, hwk_n
+    jld j7, j4, 8
+    jld j8, j1, HQ7
+    jld j8, j8, 8
+    jsub j7, j8, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jjnz j7, hwk_wake           ; touched after it fell
+  hwk_n:
+    jldi j3, 1
+    jadd j9, j9, j3
+    jsub j10, j10, j3
+    jjmp hwk_lap
+hwk_wake:
+  jld j4, j1, HQ7
+  jldi j2, -1
+  jst j2, j4, 8
+  jldi j1, S_DESP
+  jcall puts
+  jld j4, j1, HT5
+  jld j2, j4, 8
+  jcall hl_sayform
+  jldi j1, S_TIL
+  jcall puts
+  jld j4, j1, HT5
+  jld j2, j4, 16
+  jcall hl_sayform
+  jldi j2, 10
+  jcall putch
+hwk_yes:
+  jldi j6, 1
+  jret
+hwk_no:
+  jldi j6, 0
+  jret
+
+; Word j5 into the context of the hypothesis being judged. (Not touched: stumbling on someone brings nothing new about
+; them, and a hypothesis woken by that falls again and holds another's choice meanwhile; only a join brings news.)
+; Uses j1-j8.
+hx_ctx:
+  jldi j1, 0
+  jld j2, j1, HCXTN
+  jld j3, j1, HCXCAP
+  jsub j3, j2, j3
+  jjz j3, hxc_t
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCXT
+  jadd j3, j3, j4
+  jst j5, j3, 0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, HCXTN
+hxc_t:
+  jret
+
+; Word j5 touched in this turn. Uses j1-j8.
+hm_touch:
+  jldi j2, HWT
+  jcall pl_take
+  jldi j1, 0
+  jld j7, j1, HTURN
+  jst j7, j4, 8
+  jret
+
+; The pairs of relation j2 (as this turn's props hold them): their words touched. Uses j1-j14.
+hm_touchrel:
+  jcall hxr_of
+  jldi j1, 0
+  jst j9, j1, HQ8
+  jst j10, j1, HE1
+  hmt_lap:
+    jldi j1, 0
+    jld j10, j1, HE1
+    jjz j10, hmt_done
+    jld j9, j1, HQ8
+    jld j5, j9, 0
+    jcall hm_touch
+    jldi j1, 0
+    jld j9, j1, HQ8
+    jld j5, j9, 8
+    jcall hm_touch
+    jldi j1, 0
+    jld j9, j1, HQ8
+    jldi j10, 16
+    jadd j9, j9, j10
+    jst j9, j1, HQ8
+    jld j10, j1, HE1
+    jldi j9, 1
+    jsub j10, j10, j9
+    jst j10, j1, HE1
+    jjmp hmt_lap
+hmt_done:
+  jret
+
+; The context of the hypothesis just refuted (HCXT) kept for its HREF entry at j4. Uses j1-j10.
+hm_keepctx:
+  jldi j1, 0
+  jld j5, j1, HCXWN
+  jst j5, j4, 16
+  jld j6, j1, HCXTN
+  jld j7, j1, HCXCAP
+  jsub j7, j7, j5
+  jsub j8, j7, j6
+  jldi j9, 63
+  jsar j8, j8, j9
+  jjz j8, hkc_fit
+  jadd j6, j7, j1               ; (what fits)
+hkc_fit:
+  jst j6, j4, 24
+  jld j7, j1, HCXT
+  jldi j8, 3
+  jshl j9, j5, j8
+  jld j10, j1, HCXW
+  jadd j9, j9, j10
+  hkc_lap:
+    jjz j6, hkc_done
+    jld j10, j7, 0
+    jst j10, j9, 0
+    jldi j10, 8
+    jadd j7, j7, j10
+    jadd j9, j9, j10
+    jldi j10, 1
+    jadd j5, j5, j10
+    jsub j6, j6, j10
+    jjmp hkc_lap
+hkc_done:
+  jst j5, j1, HCXWN
   jret
 
 ; j6 = the size of relation j6 (how many forms it holds). Uses j6, j7.

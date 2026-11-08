@@ -2346,3 +2346,27 @@ mismo"*; el Capitán: *"refutada no para siempre: en coma, quién sabe si algún
 - ⚠️ El portero de lo probado no alcanza: "a", "y la", "su" también nacen de uniones (de gramática con gramática) y se
   encadenan ("a + a", 1.307 pares). Falta que lo probado sea de una relación que afirma, no de dos que coinciden en
   pegamento; y que una pregunta pueda despertar a las que esperan.
+
+**Despertar por contexto** (Capitán: *"que si hay un contexto parecido al que las generó puedan despertar; si algo
+empieza siendo un absurdo, la respuesta puede estar ahí"*). Cada hipótesis en coma guarda su **contexto**: los nombres
+de lo que dejó sin explicar. Cada unión **toca** a las personas de lo que trae (le dice algo nuevo sobre ellas), y la
+hipótesis dormida cuya gente fue tocada después de caer se **despierta** (`despierta:`) y se juzga de nuevo. Prueba
+(`hilos_despierta_prueba.sh`, maestros y alumnos, sin propiedades): "enseña a" cae por sol y cielo; se une "guía a",
+que los trae; "despierta: maestro de ~ enseña a" y se une con 10 confirmaciones.
+
+- **Un bug que destapó:** el while terminaba en una vuelta que sólo refutaba; ahora sigue mientras una, una deducción
+  o una refutación **nueva** cambien algo (una hipótesis refutada otra vez no es noticia: así el while termina).
+- **Probado y sacado: despertar por tropiezo** (cuando otra hipótesis no puede explicar a la misma gente). La dormida
+  despertada así no tiene nada nuevo a favor, cae otra vez y mientras tanto le ocupa la elección a otra: en el NT las
+  uniones bajaron de 118 a 76 y se perdieron las ventanas de Lucas. Sólo una unión trae noticia.
+
+| NT | uniones | vueltas | despiertan | en coma | en espera | la más grande |
+|---|---|---|---|---|---|---|
+| coma por tamaño | 118 | 22 | — | 116 | 42 | 13 |
+| **coma por contexto** | **104** | 23 | 167 | **68** | 33 | 16 (la genealogía) |
+
+- Vuelven las ventanas de la cadena de Lucas ("hijo de cainán", "cainán hijo de", "hijo de matatías"; algunas
+  después de despertar), "cuarenta ~ mil"; las seis uniones buenas y "obed = jobed" siguen. Se fue "del señor ~ de
+  dios".
+- ⚠️ Pendiente: el absurdo como pregunta (que una dormida explique el tropiezo de otra, no que se juzgue sola), y que
+  una pregunta despierte a las que esperan.

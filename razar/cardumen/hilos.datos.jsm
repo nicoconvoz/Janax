@@ -102,3 +102,5 @@ times 620h - $ db 0
 db ' | hipotesis en coma: ', 0
 times 640h - $ db 0
 db ' | deducidas en espera (sin testigo): ', 0
+times 670h - $ db 0
+db 'despierta: ', 0
