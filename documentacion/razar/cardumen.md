@@ -1795,4 +1795,30 @@ problema se resolvió: significa que la respuesta se filtró al banco"*). Dos pr
 - **El cubo resta**: 103-104 contra 105 del control, como en todas las mediciones de este libro (115 contra 116, 106
   contra 106-107). El oído del cubo no agrega nada a las notas; en el mejor caso las conserva. Es un dato sobre el cubo:
   hoy lo que razona es la memoria del kernel con sus notas.
+**Una relación que nunca vio** (el otro chat: *"entrená con 6 mecanismos y preguntale el séptimo"*):
+`libros/preguntas_agrupadas.txt` (otras palabras, 16 por mecanismo, en bloques; `fuera` "k 7" deja uno entero afuera).
+Aciertos sobre las 16 del mecanismo nunca visto (el azar, ~20 %):
+
+| afuera | memoria (control) | cubo 4³ | canto | buscador |
+|---|---|---|---|---|
+| qué es | 14 | 2 | 11 | 10 |
+| dónde vive | 8 | 7 | 2 | 4 |
+| color | 15 | 9 | 11 | 3 |
+| patas | 4 | 7 | 0 | 0 |
+| quién escribió | 10 | 2 | 0 | 0 |
+| qué come | 5 | 8 | 2 | 0 |
+| país | 16 | 16 | 4 | 0 |
+| **total** | **72 de 112 (64 %)** | 51 (46 %) | 27 % | 15 % |
+
+- La memoria generaliza a una relación nueva bastante arriba del azar, pero lo general que aprendió es **"esto es una
+  respuesta, esto es una trampa"**, no "esto responde a esta relación": acierta todo donde la competencia son trampas
+  (país: las ciudades solo están ahí) y falla donde la misma cosa tiene respuestas de otros mecanismos (patas 4, qué come
+  5). ⚠️ Parte de "es una trampa" lo regala el banco: los verbos de las trampas ("mira a", "se parece a") nunca están en
+  una respuesta. El próximo banco tiene que tener trampas con la forma de una respuesta.
+- El cubo resta mucho con relaciones nuevas: 46 % contra 64 %.
+
+**El canto y la memoria no fallan en las mismas** (libro de otras palabras, 116 sin leer): aciertan los dos 81, solo
+la memoria 24, solo el canto 5, fallan los dos 6 (las piernas de el gato, la vaca y la abeja; el autor de el
+principito; lo que come el perro y la abeja). Si se supiera a cuál creerle en cada pregunta, juntos llegarían a 110 de
+116 (95 %): ese es el techo de sumarlos, falta la regla que elija sin mirar la respuesta.
 

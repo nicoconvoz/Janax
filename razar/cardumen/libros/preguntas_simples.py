@@ -1,6 +1,7 @@
 # Writes a test book of simple questions (Q:/O: lines, as sentido.jsm writes them) with seven mechanisms, each over
 # many things, and decoy sentences that say the same things without answering. Text only: Razar measures, in Janax.
-# With 'otras' after the file, every question is said with other words, none of them in its answer but the thing.
+# With 'otras' after the file, every question is said with other words, none of them in its answer but the thing; with
+# 'agrupado', the questions go by mechanism, 16 each, in a row.
 import random
 import sys
 
@@ -54,7 +55,20 @@ if len(sys.argv) > 2 and sys.argv[2] == 'otras':  # the same questions said with
                 break
         N.append((q, a, x))
     M = N
-r.shuffle(M)
+if 'agrupado' in sys.argv[2:]:          # by mechanism, 16 each, in a row: a stretch of the seeds is one relation
+    G = {}
+    for q, a, x in M:
+        G.setdefault(q.replace(x, ''), []).append((q, a, x))
+    K = []
+    for q, a, x in M:
+        k = next(k for k in G if (q, a, x) in G[k])
+        if k not in K:
+            K.append(k)
+    M = []
+    for k in K:
+        M += G[k][:16]
+else:
+    r.shuffle(M)
 things = [m[2] for m in M]
 FILL = ['eso dicen los libros.', 'es algo que todos saben.', 'lo aprendimos en la escuela.', 'asi es desde siempre.',
         'mucha gente lo sabe.', 'es bueno recordarlo.']

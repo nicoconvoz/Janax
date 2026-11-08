@@ -1,0 +1,552 @@
+Q: a que clase pertenece el gato?
+O: el canguro mira a la ardilla.
+O: lo aprendimos en la escuela.
+O: el gato es un animal.
+O: el perro y la iliada.
+Q: a que clase pertenece la rosa?
+O: el auto mira a el gato.
+O: es bueno recordarlo.
+O: la rosa es una flor.
+O: la naranja esta cerca de el raton.
+Q: a que clase pertenece el roble?
+O: el gato se parece a el pato.
+O: lo aprendimos en la escuela.
+O: el roble es un arbol.
+O: quito esta cerca de el gato.
+Q: a que clase pertenece el martillo?
+O: asi es desde siempre.
+O: el martillo es una herramienta.
+O: el loro juega con el mono.
+O: la rosa esta cerca de madrid.
+Q: a que clase pertenece la guitarra?
+O: asi es desde siempre.
+O: la guitarra es un instrumento.
+O: la abeja no conoce a mendoza.
+O: el grillo se parece a la zanahoria.
+Q: a que clase pertenece el sol?
+O: eso dicen los libros.
+O: el leon no conoce a el gato.
+O: el sol es una estrella.
+O: el mar mira a la tierra.
+Q: a que clase pertenece la tierra?
+O: el limon esta cerca de tokio.
+O: la odisea y la gallina.
+O: la tierra es un planeta.
+O: lo aprendimos en la escuela.
+Q: a que clase pertenece el oro?
+O: el oro es un metal.
+O: la jirafa se parece a el tiburon.
+O: la sangre y cordoba.
+O: mucha gente lo sabe.
+Q: a que clase pertenece la manzana?
+O: lo aprendimos en la escuela.
+O: el oso esta cerca de martin fierro.
+O: la manzana es una fruta.
+O: la sangre esta cerca de el violin.
+Q: a que clase pertenece la zanahoria?
+O: el murcielago no conoce a el caballo.
+O: la zanahoria es una verdura.
+O: mucha gente lo sabe.
+O: la vaca mira a mendoza.
+Q: a que clase pertenece el tiburon?
+O: el tiburon es un pez.
+O: mucha gente lo sabe.
+O: el pajaro mira a el aguila.
+O: el elefante no conoce a la leche.
+Q: a que clase pertenece el aguila?
+O: eso dicen los libros.
+O: el mono no conoce a la ardilla.
+O: la rana no conoce a el aleph.
+O: el aguila es un ave.
+Q: a que clase pertenece la mesa?
+O: es algo que todos saben.
+O: el pato no conoce a el roble.
+O: la mesa es un mueble.
+O: el koala y el pulpo.
+Q: a que clase pertenece el auto?
+O: el mar juega con la leche.
+O: el auto es un vehiculo.
+O: la leche juega con la abeja.
+O: es algo que todos saben.
+Q: a que clase pertenece el violin?
+O: eso dicen los libros.
+O: el oso y el conejo.
+O: otelo mira a la abeja.
+O: el violin es un instrumento.
+Q: a que clase pertenece el cobre?
+O: el cobre es un metal.
+O: el tomate y el oso.
+O: lo aprendimos en la escuela.
+O: el raton se parece a la zanahoria.
+Q: donde habita el oso?
+O: rayuela esta cerca de el cielo.
+O: el aleph y el carbon.
+O: el oso vive en el bosque.
+O: eso dicen los libros.
+Q: donde habita el pez?
+O: la metamorfosis esta cerca de el tiburon.
+O: mucha gente lo sabe.
+O: el martillo esta cerca de el pasto.
+O: el pez vive en el agua.
+Q: donde habita el camello?
+O: el camello vive en el desierto.
+O: eso dicen los libros.
+O: la tierra mira a la ceniza.
+Q: donde habita el pinguino?
+O: el pinguino vive en el hielo.
+O: es bueno recordarlo.
+O: el gato juega con la ardilla.
+O: la nieve y el topo.
+Q: donde habita el mono?
+O: la mosca no conoce a el koala.
+O: moscu y el mar.
+O: es bueno recordarlo.
+O: el mono vive en la selva.
+Q: donde habita la vaca?
+O: es algo que todos saben.
+O: el elefante esta cerca de el mono.
+O: la vaca vive en el campo.
+O: lisboa se parece a la abeja.
+Q: donde habita el topo?
+O: la mesa y la zanahoria.
+O: la tierra juega con el principito.
+O: el topo vive en la tierra.
+O: asi es desde siempre.
+Q: donde habita la abeja?
+O: la abeja vive en la colmena.
+O: asi es desde siempre.
+O: el cobre y paris.
+Q: donde habita el pajaro?
+O: el pez y el pulpo.
+O: el pajaro vive en el nido.
+O: mucha gente lo sabe.
+O: la zanahoria y la arana.
+Q: donde habita el leon?
+O: la vaca se parece a el canguro.
+O: el leon vive en la sabana.
+O: asi es desde siempre.
+O: la ardilla no conoce a el perro.
+Q: donde habita la rana?
+O: el principito mira a la manzana.
+O: la vaca juega con la metamorfosis.
+O: la rana vive en la laguna.
+O: es algo que todos saben.
+Q: donde habita el murcielago?
+O: lisboa mira a tokio.
+O: es bueno recordarlo.
+O: el murcielago vive en la cueva.
+O: la mesa no conoce a el pulpo.
+Q: donde habita la ardilla?
+O: asi es desde siempre.
+O: la ardilla vive en el arbol.
+O: paris mira a el perro.
+O: rayuela y el leon.
+Q: donde habita el delfin?
+O: lo aprendimos en la escuela.
+O: el caballo y madrid.
+O: el delfin vive en el mar.
+O: el mono y rayuela.
+Q: donde habita la hormiga?
+O: la hormiga vive en el hormiguero.
+O: es bueno recordarlo.
+O: cordoba y el chocolate.
+O: la ceniza y el cobre.
+Q: donde habita el caballo?
+O: el conejo mira a hamlet.
+O: el caballo vive en el establo.
+O: es bueno recordarlo.
+O: madrid esta cerca de el loro.
+Q: que tono muestra el limon?
+O: el gato mira a berlin.
+O: frankenstein esta cerca de la guitarra.
+O: el limon es de color amarillo.
+O: es bueno recordarlo.
+Q: que tono muestra el cielo?
+O: la odisea esta cerca de santiago.
+O: el escorpion y el elefante.
+O: lo aprendimos en la escuela.
+O: el cielo es de color azul.
+Q: que tono muestra la hierba?
+O: la vaca juega con la iliada.
+O: la hierba es de color verde.
+O: lo aprendimos en la escuela.
+O: frankenstein mira a la ceniza.
+Q: que tono muestra la nieve?
+O: mucha gente lo sabe.
+O: el koala esta cerca de la ceniza.
+O: la nieve es de color blanca.
+O: la ardilla juega con la iliada.
+Q: que tono muestra el carbon?
+O: el carbon es de color negro.
+O: la vaca se parece a cordoba.
+O: es algo que todos saben.
+Q: que tono muestra la frutilla?
+O: la frutilla es de color roja.
+O: el quijote juega con rayuela.
+O: es bueno recordarlo.
+O: la tierra no conoce a la odisea.
+Q: que tono muestra la naranja?
+O: la abeja juega con el martillo.
+O: asi es desde siempre.
+O: la naranja es de color naranja.
+O: la banana y el oso.
+Q: que tono muestra la uva?
+O: el raton juega con el mono.
+O: el auto no conoce a el leon.
+O: eso dicen los libros.
+O: la uva es de color violeta.
+Q: que tono muestra el tomate?
+O: la banana se parece a la ardilla.
+O: la iliada y el raton.
+O: el tomate es de color rojo.
+O: eso dicen los libros.
+Q: que tono muestra la leche?
+O: es bueno recordarlo.
+O: el chocolate y berlin.
+O: la leche es de color blanca.
+O: el tiburon y la tierra.
+Q: que tono muestra el chocolate?
+O: el aguila esta cerca de el cielo.
+O: la hierba se parece a el pato.
+O: el chocolate es de color marron.
+O: es bueno recordarlo.
+Q: que tono muestra la banana?
+O: asi es desde siempre.
+O: la uva esta cerca de la ardilla.
+O: la abeja mira a el gato.
+O: la banana es de color amarilla.
+Q: que tono muestra el pasto?
+O: la zanahoria no conoce a la odisea.
+O: mucha gente lo sabe.
+O: el pasto es de color verde.
+O: cordoba juega con la vaca.
+Q: que tono muestra el mar?
+O: lo aprendimos en la escuela.
+O: el leon y el tiburon.
+O: el mar es de color azul.
+O: la odisea y la jirafa.
+Q: que tono muestra la ceniza?
+O: la ceniza es de color gris.
+O: el proceso no conoce a el canguro.
+O: lo aprendimos en la escuela.
+Q: que tono muestra la sangre?
+O: el leon no conoce a la vaca.
+O: el delfin esta cerca de la rana.
+O: la sangre es de color roja.
+O: lo aprendimos en la escuela.
+Q: cuantas piernas usa la arana?
+O: berlin juega con rayuela.
+O: el loro se parece a la metamorfosis.
+O: asi es desde siempre.
+O: la arana tiene ocho patas.
+Q: cuantas piernas usa el perro?
+O: es bueno recordarlo.
+O: mendoza no conoce a londres.
+O: el tiburon esta cerca de la abeja.
+O: el perro tiene cuatro patas.
+Q: cuantas piernas usa la gallina?
+O: lo aprendimos en la escuela.
+O: la gallina tiene dos patas.
+O: londres juega con el pinguino.
+O: la sangre juega con la banana.
+Q: cuantas piernas usa la hormiga?
+O: eso dicen los libros.
+O: la hormiga tiene seis patas.
+O: ficciones se parece a la abeja.
+O: la tierra juega con la vaca.
+Q: cuantas piernas usa el pulpo?
+O: el delfin esta cerca de el tomate.
+O: asi es desde siempre.
+O: el pulpo tiene ocho patas.
+O: la rana no conoce a el auto.
+Q: cuantas piernas usa el caballo?
+O: mucha gente lo sabe.
+O: el caballo tiene cuatro patas.
+O: el pasto mira a la guitarra.
+O: la sangre esta cerca de la manzana.
+Q: cuantas piernas usa el pato?
+O: mucha gente lo sabe.
+O: el tomate no conoce a el grillo.
+O: el pato tiene dos patas.
+O: la zanahoria y el pajaro.
+Q: cuantas piernas usa la mosca?
+O: el caballo esta cerca de el chocolate.
+O: el martillo y el pinguino.
+O: asi es desde siempre.
+O: la mosca tiene seis patas.
+Q: cuantas piernas usa el gato?
+O: es algo que todos saben.
+O: el gato tiene cuatro patas.
+O: macbeth se parece a el mar.
+O: la tierra y dracula.
+Q: cuantas piernas usa el canguro?
+O: asi es desde siempre.
+O: atenas mira a facundo.
+O: el canguro tiene dos patas.
+O: la ceniza juega con el auto.
+Q: cuantas piernas usa la abeja?
+O: la abeja tiene seis patas.
+O: macbeth se parece a el topo.
+O: asi es desde siempre.
+O: el roble juega con el martillo.
+Q: cuantas piernas usa el elefante?
+O: el elefante tiene cuatro patas.
+O: es bueno recordarlo.
+O: el escorpion mira a la tierra.
+O: bogota y el carbon.
+Q: cuantas piernas usa el escorpion?
+O: es bueno recordarlo.
+O: paris se parece a el carbon.
+O: el escorpion tiene ocho patas.
+O: la frutilla mira a la uva.
+Q: cuantas piernas usa la vaca?
+O: la vaca tiene cuatro patas.
+O: eso dicen los libros.
+O: la sangre se parece a el carbon.
+O: el limon mira a berlin.
+Q: cuantas piernas usa el loro?
+O: asi es desde siempre.
+O: moscu mira a el limon.
+O: la abeja se parece a la rana.
+O: el loro tiene dos patas.
+Q: cuantas piernas usa el grillo?
+O: el violin se parece a otelo.
+O: lo aprendimos en la escuela.
+O: la mesa se parece a la abeja.
+O: el grillo tiene seis patas.
+Q: quien fue autor de el quijote?
+O: cervantes escribio el quijote.
+O: el perro se parece a la hormiga.
+O: mucha gente lo sabe.
+O: el aleph y el murcielago.
+Q: quien fue autor de hamlet?
+O: el murcielago no conoce a el violin.
+O: shakespeare escribio hamlet.
+O: asi es desde siempre.
+O: el koala no conoce a el aguila.
+Q: quien fue autor de la odisea?
+O: macbeth se parece a santiago.
+O: atenas esta cerca de el tiburon.
+O: homero escribio la odisea.
+O: mucha gente lo sabe.
+Q: quien fue autor de martin fierro?
+O: hernandez escribio martin fierro.
+O: el camello mira a el gato.
+O: el limon no conoce a el pulpo.
+O: es bueno recordarlo.
+Q: quien fue autor de rayuela?
+O: berlin se parece a el panda.
+O: el canguro se parece a la vaca.
+O: eso dicen los libros.
+O: cortazar escribio rayuela.
+Q: quien fue autor de el aleph?
+O: la naranja y la jirafa.
+O: asi es desde siempre.
+O: el raton y la mosca.
+O: borges escribio el aleph.
+Q: quien fue autor de la iliada?
+O: homero escribio la iliada.
+O: facundo mira a madrid.
+O: mendoza juega con el caballo.
+O: lo aprendimos en la escuela.
+Q: quien fue autor de macbeth?
+O: el mar mira a el camello.
+O: shakespeare escribio macbeth.
+O: el loro se parece a el pajaro.
+O: mucha gente lo sabe.
+Q: quien fue autor de ficciones?
+O: es bueno recordarlo.
+O: borges escribio ficciones.
+O: la vaca mira a el caballo.
+O: el pajaro mira a la naranja.
+Q: quien fue autor de facundo?
+O: es bueno recordarlo.
+O: la naranja no conoce a el cobre.
+O: sarmiento escribio facundo.
+O: la abeja no conoce a el tomate.
+Q: quien fue autor de el principito?
+O: la gallina mira a el pez.
+O: exupery escribio el principito.
+O: la ceniza no conoce a el carbon.
+O: asi es desde siempre.
+Q: quien fue autor de frankenstein?
+O: shelley escribio frankenstein.
+O: la hormiga esta cerca de macbeth.
+O: la leche se parece a el limon.
+O: lo aprendimos en la escuela.
+Q: quien fue autor de dracula?
+O: stoker escribio dracula.
+O: el chocolate y la rosa.
+O: es algo que todos saben.
+O: la manzana esta cerca de el leon.
+Q: quien fue autor de la metamorfosis?
+O: kafka escribio la metamorfosis.
+O: la mosca mira a el aguila.
+O: es algo que todos saben.
+O: tokio esta cerca de el cobre.
+Q: quien fue autor de el proceso?
+O: kafka escribio el proceso.
+O: asi es desde siempre.
+O: el camello juega con la abeja.
+O: la abeja no conoce a lima.
+Q: quien fue autor de otelo?
+O: es algo que todos saben.
+O: shakespeare escribio otelo.
+O: la jirafa y la arana.
+O: roma mira a hamlet.
+Q: de que se alimenta el conejo?
+O: lo aprendimos en la escuela.
+O: la frutilla juega con paris.
+O: el conejo come zanahorias.
+O: la sangre no conoce a el raton.
+Q: de que se alimenta el leon?
+O: es bueno recordarlo.
+O: la rosa esta cerca de martin fierro.
+O: el tiburon no conoce a la vaca.
+O: el leon come carne.
+Q: de que se alimenta la vaca?
+O: la vaca come pasto.
+O: eso dicen los libros.
+O: la abeja se parece a bogota.
+Q: de que se alimenta el mono?
+O: rayuela se parece a tokio.
+O: el pasto mira a el tiburon.
+O: el mono come bananas.
+O: es bueno recordarlo.
+Q: de que se alimenta el oso?
+O: la uva esta cerca de atenas.
+O: eso dicen los libros.
+O: la sangre no conoce a el elefante.
+O: el oso come miel.
+Q: de que se alimenta el raton?
+O: el raton come queso.
+O: montevideo se parece a el pajaro.
+O: lo aprendimos en la escuela.
+O: el leon esta cerca de madrid.
+Q: de que se alimenta la gallina?
+O: lo aprendimos en la escuela.
+O: la gallina come maiz.
+O: facundo juega con el gato.
+Q: de que se alimenta el panda?
+O: el panda come bambu.
+O: el conejo juega con la vaca.
+O: eso dicen los libros.
+O: la metamorfosis no conoce a el pasto.
+Q: de que se alimenta el gato?
+O: asi es desde siempre.
+O: el aguila mira a la hormiga.
+O: la abeja juega con el chocolate.
+O: el gato come pescado.
+Q: de que se alimenta el caballo?
+O: el caballo come avena.
+O: eso dicen los libros.
+O: el principito y el oro.
+O: facundo esta cerca de cordoba.
+Q: de que se alimenta la ardilla?
+O: es bueno recordarlo.
+O: el pulpo mira a la mesa.
+O: la abeja y hamlet.
+O: la ardilla come nueces.
+Q: de que se alimenta el koala?
+O: el koala come hojas.
+O: el limon no conoce a bogota.
+O: la hierba esta cerca de el sol.
+O: es bueno recordarlo.
+Q: de que se alimenta el tiburon?
+O: el tiburon come peces.
+O: el auto esta cerca de la tierra.
+O: hamlet no conoce a el topo.
+O: es algo que todos saben.
+Q: de que se alimenta la abeja?
+O: el auto esta cerca de la manzana.
+O: es algo que todos saben.
+O: el mono juega con santiago.
+O: la abeja come polen.
+Q: de que se alimenta la jirafa?
+O: la jirafa come hojas.
+O: facundo juega con hamlet.
+O: es algo que todos saben.
+O: londres mira a el cielo.
+Q: de que se alimenta el perro?
+O: el conejo se parece a la iliada.
+O: madrid mira a la uva.
+O: asi es desde siempre.
+O: el perro come huesos.
+Q: a que nacion pertenece roma?
+O: es bueno recordarlo.
+O: el martillo se parece a el pato.
+O: roma esta en italia.
+Q: a que nacion pertenece paris?
+O: el escorpion y roma.
+O: paris esta en francia.
+O: eso dicen los libros.
+O: londres juega con el mar.
+Q: a que nacion pertenece madrid?
+O: el gato y la gallina.
+O: el murcielago esta cerca de el sol.
+O: madrid esta en espana.
+O: mucha gente lo sabe.
+Q: a que nacion pertenece lima?
+O: la hormiga juega con martin fierro.
+O: lima esta en peru.
+O: la sangre no conoce a el leon.
+O: lo aprendimos en la escuela.
+Q: a que nacion pertenece tokio?
+O: lo aprendimos en la escuela.
+O: tokio esta en japon.
+O: el gato no conoce a el tomate.
+O: la nieve y el topo.
+Q: a que nacion pertenece berlin?
+O: el auto se parece a el caballo.
+O: berlin esta en alemania.
+O: el gato mira a la sangre.
+O: asi es desde siempre.
+Q: a que nacion pertenece cordoba?
+O: mendoza no conoce a la vaca.
+O: es bueno recordarlo.
+O: el grillo esta cerca de la gallina.
+O: cordoba esta en argentina.
+Q: a que nacion pertenece lisboa?
+O: el koala se parece a el cobre.
+O: mucha gente lo sabe.
+O: lisboa esta en portugal.
+O: el pato y la sangre.
+Q: a que nacion pertenece quito?
+O: lima mira a el violin.
+O: quito esta en ecuador.
+O: eso dicen los libros.
+Q: a que nacion pertenece mendoza?
+O: el oso y el violin.
+O: es bueno recordarlo.
+O: la abeja juega con el pato.
+O: mendoza esta en argentina.
+Q: a que nacion pertenece londres?
+O: ficciones esta cerca de la leche.
+O: el gato juega con macbeth.
+O: londres esta en inglaterra.
+O: lo aprendimos en la escuela.
+Q: a que nacion pertenece atenas?
+O: es algo que todos saben.
+O: la gallina no conoce a el topo.
+O: atenas esta en grecia.
+O: el caballo juega con el cobre.
+Q: a que nacion pertenece moscu?
+O: moscu esta en rusia.
+O: es bueno recordarlo.
+O: el elefante juega con el proceso.
+O: el koala mira a el cielo.
+Q: a que nacion pertenece santiago?
+O: santiago esta en chile.
+O: berlin juega con el mono.
+O: es bueno recordarlo.
+O: el oso y la vaca.
+Q: a que nacion pertenece bogota?
+O: bogota esta en colombia.
+O: es algo que todos saben.
+O: la mesa y la abeja.
+O: dracula se parece a la abeja.
+Q: a que nacion pertenece montevideo?
+O: montevideo esta en uruguay.
+O: lo aprendimos en la escuela.
+O: el delfin juega con el conejo.
+O: la ardilla mira a la tierra.

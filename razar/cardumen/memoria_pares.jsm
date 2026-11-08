@@ -2956,6 +2956,14 @@ ms_eval:
     jcall ms_putspan
     jldi j1, S_SD10
     jcall puts
+    jld j2, j1, SBEST             ; (1 if it is of its answer, then the sentence)
+    jcall ms_isreg
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
     jld j2, j1, SBEST
     jcall ms_putsen
     jldi j1, S_SD11
