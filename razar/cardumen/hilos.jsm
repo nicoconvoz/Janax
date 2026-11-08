@@ -107,6 +107,13 @@ S_SABE   = 800h
 S_SABN   = 820h
 S_APL    = 840h
 S_SINU   = 860h
+S_DUERME = 8A0h
+S_DESPS  = 8C0h
+S_DORM   = 8E0h
+S_ENC    = 900h
+S_AFAV   = 920h
+S_DUER2  = 940h
+S_DESP2  = 960h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -281,7 +288,17 @@ HKFP  = 1C10h
 HKRA  = 1C18h
 HKPA  = 1C20h
 HKRB  = 1C28h
-HKPB  = 1C30h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HKPB  = 1C30h
+HKZ   = 1C38h                   ; the lines put to sleep in this book {where, bytes} (a room), how many; a line against
+HKZN  = 1C40h                   ; this book: what confirms it, what says it the other way, whether it was asleep;
+HKC   = 1C48h                   ; walking a form's pairs; how many slept, how many woke
+HKXX  = 1C50h
+HKAS  = 1C58h
+HKJ   = 1C60h
+HKJA  = 1C68h
+HKJB  = 1C70h
+HKD   = 1C78h
+HKWK  = 1C80h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -4973,6 +4990,15 @@ hl_known:
   jcall room
   jldi j1, 0
   jst j13, j1, HKL
+  jld j11, j1, HKN
+  jldi j3, 16
+  jadd j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HKZ
+  jst j1, j1, HKZN
+  jst j1, j1, HKD
+  jst j1, j1, HKWK
   jld j2, j1, HKB
   jst j2, j1, HKP
   jld j3, j1, HKN
@@ -5021,6 +5047,20 @@ hl_known:
     jldi j3, 0
   hk_way:
     jst j3, j1, HKW
+    jld j4, j1, HKP             ; asleep: " dormida" after its way
+    jldb j2, j4, 36
+    jldi j3, 100
+    jsub j2, j2, j3
+    jldi j3, 0
+    jjnz j2, hk_aw
+    jldb j2, j4, 37
+    jldi j3, 111
+    jsub j2, j2, j3
+    jldi j3, 0
+    jjnz j2, hk_aw
+    jldi j3, 1
+  hk_aw:
+    jst j3, j1, HKAS
     jld j5, j1, HKKF            ; its two forms in this book
     jldi j2, HMID
     jcall pl_find
@@ -5041,6 +5081,67 @@ hl_known:
     jjnz j6, hk_keep
     jld j6, j4, 8
     jst j6, j1, HKFP
+    jcall hk_judge              ; what this book says of it
+    jldi j1, 0
+    jld j2, j1, HKAS
+    jjnz j2, hk_asleep
+    jld j2, j1, HKXX            ; awake: more against it than for it, it sleeps (Capitan: "pruning is sleeping for a
+    jld j3, j1, HKC             ; while, not removing: nothing is thrown away")
+    jsub j2, j3, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, hk_apply
+    jld j2, j1, HKZN
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HKZ
+    jadd j3, j3, j4
+    jld j4, j1, HKP
+    jst j4, j3, 0
+    jld j5, j1, HKX
+    jsub j5, j5, j4
+    jst j5, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKZN
+    jld j2, j1, HKD
+    jadd j2, j2, j3
+    jst j2, j1, HKD
+    jldi j1, S_DUERME
+    jcall puts
+    jld j2, j1, HKFF
+    jcall hl_sayform
+    jldi j1, S_TIL
+    jcall puts
+    jld j2, j1, HKFP
+    jcall hl_sayform
+    jldi j1, S_ENC
+    jcall puts
+    jld j2, j1, HKXX
+    jcall putnum
+    jldi j1, S_AFAV
+    jcall puts
+    jld j2, j1, HKC
+    jcall putnum
+    jldi j2, 10
+    jcall putch
+    jjmp hk_next
+  hk_asleep:                    ; asleep: it wakes when a book confirms it as a join is confirmed (two, none against)
+    jld j2, j1, HKXX
+    jjnz j2, hk_keep
+    jld j2, j1, HKC
+    jldi j3, 2
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, hk_keep
+    jld j2, j1, HKWK
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKWK
+    jldi j1, S_DESPS
+    jcall puts
+  hk_apply:
     jcall hk_join
     jjmp hk_next
   hk_keep:                      ; not in this book: kept as it is
@@ -5076,8 +5177,109 @@ hk_done:
   jcall putnum
   jldi j1, S_SINU
   jcall puts
+  jldi j1, S_SABN
+  jcall puts
+  jld j2, j1, HKD
+  jcall putnum
+  jldi j1, S_DUER2
+  jcall puts
+  jld j2, j1, HKWK
+  jcall putnum
+  jldi j1, S_DESP2
+  jcall puts
 hk_quiet:
   jldi j1, 0
+  jret
+
+; What this book says of the line (form HKFF with form HKFP, HKW the way): each pair of the first, as the second says
+; it (turned if the way is), confirms it if the second says it so, and is against it if the second says it only the
+; other way -> HKC, HKXX. Uses j1-j14.
+hk_judge:
+  jldi j1, 0
+  jst j1, j1, HKC
+  jst j1, j1, HKXX
+  jld j2, j1, HKFF
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j2, j3, 40
+  jst j2, j1, HKJ
+  hkg_lap:
+    jldi j1, 0
+    jld j2, j1, HKJ
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, hkg_done
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j5, j3, 8
+    jld j6, j3, 16
+    jld j7, j3, 24
+    jst j7, j1, HKJ
+    jld j7, j1, HKW
+    jjz j7, hkg_so
+    jadd j7, j5, j1
+    jadd j5, j6, j1
+    jadd j6, j7, j1
+  hkg_so:
+    jst j5, j1, HKJA
+    jst j6, j1, HKJB
+    jcall hkg_has               ; the second says it so: it confirms
+    jldi j1, 0
+    jjz j6, hkg_rev
+    jld j2, j1, HKC
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKC
+    jjmp hkg_lap
+  hkg_rev:
+    jld j5, j1, HKJB
+    jld j6, j1, HKJA
+    jst j5, j1, HKJA
+    jst j6, j1, HKJB
+    jcall hkg_has
+    jldi j1, 0
+    jjz j6, hkg_lap
+    jld j2, j1, HKXX
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKXX
+    jjmp hkg_lap
+hkg_done:
+  jldi j1, 0
+  jret
+
+; j6 = 1 if form HKFP says the pair {HKJA, HKJB}. Uses j1-j8.
+hkg_has:
+  jldi j1, 0
+  jld j2, j1, HKFP
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j5, j3, 0
+  jld j6, j1, HKJA
+  jcall hl_mix
+  jld j6, j1, HKJB
+  jcall hl_mix
+  jjnz j5, hkh_k
+  jldi j5, 1
+hkh_k:
+  jst j5, j1, HKEY
+  jldi j2, HFT
+  jcall pl_find
+  jldi j1, 0
+  jld j6, j4, 0
+  jld j5, j1, HKEY
+  jsub j6, j6, j5
+  jldi j7, 1
+  jjz j6, hkh_yes
+  jldi j7, 0
+hkh_yes:
+  jadd j6, j7, j1
   jret
 
 ; Sixteen hexadecimal digits at j4 -> j9. Uses j2, j3, j4, j8, j9.
@@ -5289,6 +5491,49 @@ hks_old:
     jst j2, j1, HKI
     jjmp hks_o
 hks_close:
+  jldi j1, 0                    ; the lines put to sleep here, " dormida" after their way
+  jst j1, j1, HKI
+  hks_z:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HKZN
+    jsub j3, j2, j3
+    jjz j3, hks_end
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HKZ
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jld j5, j3, 8
+    jldi j6, 35
+    hks_z1:
+      jjz j6, hks_zm
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jsub j6, j6, j3
+      jjmp hks_z1
+  hks_zm:
+    jldi j1, S_DORM
+    jcall puts
+    hks_z2:
+      jjz j5, hks_zn
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jjmp hks_z2
+  hks_zn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hks_z
+hks_end:
   jcall flush
   jldi j1, 0
   jst j1, j1, SINK

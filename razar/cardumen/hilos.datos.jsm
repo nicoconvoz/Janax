@@ -134,3 +134,17 @@ times 840h - $ db 0
 db ' aplicadas | ', 0
 times 860h - $ db 0
 db ' sin usar (sus formas no estan en este libro)', 10, 0
+times 8A0h - $ db 0
+db 'duerme: ', 0
+times 8C0h - $ db 0
+db 'despierta lo sabido: ', 0
+times 8E0h - $ db 0
+db ' dormida', 0
+times 900h - $ db 0
+db ' | en contra ', 0
+times 920h - $ db 0
+db ', a favor ', 0
+times 940h - $ db 0
+db ' se duermen, ', 0
+times 960h - $ db 0
+db ' despiertan', 10, 0

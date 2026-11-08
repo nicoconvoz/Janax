@@ -2616,3 +2616,29 @@ había probado (`hijo de ~ padre de` se iba al sumar los documentos).
   "y", junto con `sin` y `→ − y`. Lo que se lleva no se vuelve a juzgar: **un error de un libro queda para siempre.**
   Falta la poda: que una flecha traída sea premisa, pero que el libro nuevo pueda mandarla al coma si la contradice o
   no la explica (al coma, no a la basura: como todo lo refutado).
+
+## La poda es dormir, no tirar (2026-11-08)
+
+El Capitán: *"la poda es dormir temporalmente, no eliminar: nada se tira, regla de la casa"*.
+
+- **Al empezar un libro,** cada flecha de `sabido` cuyas dos formas están en él se mide contra ese libro: cada par de
+  una forma (dado vuelta si la flecha va al revés) la confirma si la otra lo dice así, y va en contra si la otra lo
+  dice solo del otro lado. **Si hay más en contra que a favor, se duerme** (`duerme: … | en contra N, a favor M`): no
+  se usa en ese libro, y en `sabido` queda con `dormida` después de su lado, entera. **Una dormida despierta** cuando
+  un libro la confirma como se confirma una unión (dos a favor, ninguno en contra): `despierta lo sabido:`. Mientras
+  tanto pasa de libro en libro tal cual. (Que "más en contra que a favor" baste para dormirla es criterio: lo probado en
+  otro libro solo cede ante más evidencia en contra que a favor.)
+- **Prueba (`hilos_poda_prueba.sh`), cuatro libros:**
+  1. La familia une `padre de ~ hijo de` al revés.
+  2. Un libro que dice cada par como `padre de` y como `hijo de` del mismo lado: la vieja se duerme (2 en contra,
+     0 a favor), y ese libro une las mismas formas a su manera, del mismo lado.
+  3. Un libro que no habla de eso: las dos se guardan tal cual.
+  4. Otra familia bien dicha: la vieja despierta y la del libro 2 se duerme.
+
+  Dos creencias, ninguna tirada: cada libro deja despierta la que él sostiene.
+- **Los once libros con la poda:** 189 flechas despiertas, una dormida (`contra ~ con`, en `cardumen`, 1 en contra y
+  0 a favor). **La contaminación de la `y` no se duerme:** ningún libro de después dice nada en contra de
+  `hijo de ~ y`, solo no la vuelve a confirmar. La poda duerme lo que un libro contradice, no lo que se calla.
+- **La decisión que queda:** si una flecha cuyas dos formas hablan en un libro, y que podría confirmarse ahí, no es
+  confirmada por ningún par, ¿se duerme también (como la regla de explicar dentro del libro)? Así dormiría la de la `y`,
+  pero también lo sabido que un libro menciona sin repetirlo par por par.
