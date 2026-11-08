@@ -39,7 +39,7 @@ db ' une: ', 0
 times 2C0h - $ db 0
 db 'el while paro en la vuelta ', 0
 times 2E0h - $ db 0
-db ': nada nuevo le gana a su nulo', 0
+db ': nada nuevo se deduce sin contradiccion', 0
 times 340h - $ db 0
 db ' | relaciones de dos formas o mas: ', 0
 times 380h - $ db 0
@@ -47,7 +47,7 @@ db ' | la mas grande: ', 0
 times 3C0h - $ db 0
 db ' formas, la primera: ', 0
 times 3E0h - $ db 0
-db ': le ganan a su nulo ', 0
+db ': hipotesis sin contradiccion ', 0
 times 420h - $ db 0
 db ' | se unen ', 0
 times 440h - $ db 0
@@ -80,3 +80,11 @@ times 520h - $ db 0
 db 'B: ', 0
 times 530h - $ db 0
 db 'F: ', 0
+times 540h - $ db 0
+db 'cruce', 0
+times 550h - $ db 0
+db ' | lo confirman ', 0
+times 570h - $ db 0
+db ' | nada lo contradice', 0
+times 590h - $ db 0
+db ' | pegamento (dicen un par de los dos lados): ', 0

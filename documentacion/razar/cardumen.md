@@ -2219,3 +2219,27 @@ su nulo, elección mutua). Sin número elegido: la relación que se compara con 
   "con", "para", "de los", "este": es la clase de las preposiciones y compañía, gramática de verdad.
 - ⚠️ Falta una prueba chica que la vara frene una unión por azar (la de la familia no la toca: su mundo cruzado no
   comparte nada).
+
+### Razonar, no barajar (2026-11-08)
+
+El Capitán: *"no quiero estadística, quiero razonamiento"*; *"quiero sintetizar el pensamiento sin estadística"*. El
+while de `hilos` ya no baraja nada (sin nulo, sin vara, sin mundo cruzado): una unión es una **hipótesis** ("hijo
+de" es "padre de" al revés); lo que el libro dice como ella deduce la **confirma**, lo que dice al revés la
+**contradice**. Dos confirmaciones y ninguna contradicción, la elección mutua de siempre. Sólo se unen relaciones que
+**afirman algo**: la que dice un par de los dos lados no se compromete y nada la puede refutar (pegamento). Prueba:
+une "padre de ~ hijo de" (3) y "fue padre de" (2); "cuida a", con un par al revés, queda refutada; "ve a", que dice
+los dos lados, nunca se une.
+
+| | uniones | vueltas | la más grande | uniones buenas (de 7) |
+|---|---|---|---|---|
+| Marcos | 2 | 2 | 2 formas | — |
+| sinópticos | 138 | 56 | "hijo de", 103 formas | 4 (las otras tres no están en ellos) |
+| NT | 455 | 226 | "y la", 261 formas | **7** |
+
+- **La primera vuelta es la más limpia de todas:** "hijo de ~ padre de", "cinco mil ~ cuatro mil", "piedad de ~
+  compasión de", "fue ~ había sido", "algún ~ ningún", "la multitud ~ pedro", "han ~ ha", "estaba ~ estaban",
+  "puede ~ pueden", "doce ~ siete", "cuarenta ~ tres", "su ~ mi", "las ~ sus"… sin barajar nada.
+- **Y después se desborda:** "hijo de" suma "a", "en", "por", "y la" (2 a 5 confirmaciones), y "y la" junta 261
+  formas. Una forma de gramática casi nunca dice un par al revés: nada la contradice.
+- ⚠️ Lo que falta es lo que la refuta: **las propiedades** que la relación muestra en el libro. En "hijo de" cada hijo
+  tiene un solo padre; sumarle "en" le daría dos padres a isaac. Esa es la contradicción que todavía no mira.

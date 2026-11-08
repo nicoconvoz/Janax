@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
-# hilos_prueba.sh: relations found in raw text, joined by a while (hilos.jsm). Nobody asks anything: the text says
-# "ana, padre de eva", "eva, hijo de ana", ... and "rosa fue padre de sol", "sol, hijo de rosa". Every form "_ <one to
-# three words> _" with two words not of the half in its places, said by two, is a relation; two that share their
-# pairs (the same way or the other way round) more than their null (each one's pairs crossed) relate. Each turn of
-# the while, a relation joins the one it relates to most, if that one chooses it too: turn 1 joins "padre de" and
-# "hijo de" (three pairs the other way round); turn 2, "fue padre de", which shares nothing with "padre de" but two
-# pairs with what "hijo de" brought; turn 3 joins nothing, and the while ends.
+# hilos_prueba.sh: relations found in raw text, joined by reasoning in a while (hilos.jsm). Nobody asks anything: the
+# text says "ana, padre de eva", "eva, hijo de ana", ... and "rosa fue padre de sol", "sol, hijo de rosa". Every form
+# "_ <one to three words> _" with two words not of the half in its places, said by two, is a relation. A join is a
+# hypothesis ("hijo de" is "padre de" the other way round): what the book says as it deduces confirms it, what it says
+# the other way contradicts it; two confirmations and no contradiction join them. Turn 1 joins "padre de" and "hijo de"
+# (three confirmations); turn 2, "fue padre de", which shares nothing with "padre de" but two pairs with what "hijo de"
+# brought; turn 3 joins nothing, and the while ends. "cuida a" says two pairs as "padre de" does and one the other way
+# round: refuted, never joined. "ve a" says a pair both ways: it does not commit to a side, nothing can refute it, it
+# asserts nothing (glue), and it is never joined.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -17,11 +19,14 @@ bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$d" 
 printf '%s\n' 'O: ana, padre de eva.' 'O: eva, padre de luz.' 'O: luz, padre de mar.' \
   'O: eva, hijo de ana.' 'O: luz, hijo de eva.' 'O: mar, hijo de luz.' 'O: sol, hijo de rosa.' 'O: cielo, hijo de sol.' \
   'O: rosa fue padre de sol.' 'O: sol fue padre de cielo.' \
-  "O: $(printf 'y %.0s' $(seq 1 60))y." > "$d/casa/$(etiqueta pares)"
+  'O: ana cuida a eva.' 'O: eva cuida a luz.' 'O: mar cuida a luz.' \
+  'O: eva ve a luz.' 'O: luz ve a eva.' 'O: ana ve a eva.' \
+  "O: $(printf 'y %.0s' $(seq 1 90))y." > "$d/casa/$(etiqueta pares)"
 salida=$(JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$d/casa")" \
   "$proyecto/so/build/janaxos.exe" "$(cygpath -m "$d/hilos.bin")" | tr -d '\r')
-if printf '%s\n' "$salida" | grep -q '^vuelta 1 une: padre de ~ hijo de | al reves | lo dicen 3 | nulo 0$' &&
-   printf '%s\n' "$salida" | grep -q '^vuelta 2 une: padre de ~ fue padre de | misma | lo dicen 2 | nulo 0$' &&
+if printf '%s\n' "$salida" | grep -q '^vuelta 1 une: padre de ~ hijo de | al reves | lo confirman 3 | nada lo contradice$' &&
+   printf '%s\n' "$salida" | grep -q '^vuelta 2 une: padre de ~ fue padre de | misma | lo confirman 2 | nada lo contradice$' &&
+   ! printf '%s\n' "$salida" | grep -q 'une: .*\(cuida a\|ve a\)' &&
    printf '%s\n' "$salida" | grep -q '^el while paro en la vuelta 3'; then
   echo "hilos_prueba: bien"
 else

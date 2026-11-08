@@ -11,17 +11,17 @@
 ;     padre de jacob") or the other way round ("jacob, hijo de isaac"), share it. Against the null: each relation's
 ;     pairs crossed among themselves (every pair's second word given to the pair before it), so what the two hold
 ;     alike is only what words they use, not which goes with which. Two relations relate when two pairs say it and it
-;     shares more than its null.
-;   - the while (Capitan, 2026-11-08: "a chained while: my idea, everything in while, applied as a mechanism"): each
-;     turn, a relation joins the one it relates to most (twice what they share read, minus what they share crossed),
-;     if that one chooses it too and what they share read is more than the bar of both. A relation's bar is the most
-;     it shares with any other in the all-crossed world (both crossed): what chance alone gives it, at its best, among
-;     all it is compared with (a relation compared with hundreds gets a high bar: the pass "two against one" was chance
-;     once one is compared with enough, and the largest swallowed the rest, 727 forms of "de" in the NT), and the joined ones are one relation from then on (their pairs together, turned
-;     when they relate the other way round). Then everything is measured again with what was joined. While a turn joins
-;     something, there is another; when nothing new beats its null, the while ends by itself: no number of turns is
-;     given. (One join a turn for each, the strongest chosen by both: what a turn joins is never carried by what it
-;     joined in the same turn, so weak links do not chain everything into one.)
+;     shares more than its null. (A pair is crossed with the pair one before it; with "cruce" in the house, n before:
+;     another shuffle of the same world, to see how much what it finds depends on the one shuffle.)
+;   - the while (Capitan, 2026-11-08: "a chained while: my idea, everything in while, applied as a mechanism"), by
+;     reasoning and not by chance (Capitan: "I do not want statistics, I want reasoning"): a join is a hypothesis, "S
+;     is R" or "S is R the other way round". What the book says as the hypothesis deduces confirms it; what it says
+;     the other way round contradicts it. Two confirmations and no contradiction, and each relation joins the one that
+;     confirms it most, if that one chooses it too; the joined ones are one relation from then on (their pairs
+;     together, turned when they are the other way round), and everything is deduced again with what was joined. Only
+;     relations that assert something join: one that says a pair both ways ("a de b" and "b de a") does not commit
+;     to a side, nothing can refute it, and it is glue, not a relation. While a turn joins something, there is
+;     another; when nothing new is deduced without contradiction, the while ends by itself.
 ;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
 ;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
 ;     with its pairs crossed, the null), for voluntad_hilos.jsm to play with.
@@ -66,6 +66,10 @@ S_AT     = 500h
 S_HT     = 510h
 S_BT     = 520h
 S_FT     = 530h
+S_CRUCE  = 540h
+S_CONF   = 550h
+S_NADA   = 570h
+S_PEG    = 590h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -150,7 +154,9 @@ HSC   = 17D0h
 HWX   = 17D8h                   ; the words a form's pairs say, by print {print, how many} (a growing table); the
 HSCUT = 17F8h                   ; fewest times a surname's word has; how many words it has
 HSWN  = 1800h
-HTMX  = 1860h                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
+HCRS  = 1868h                   ; how many pairs back a pair is crossed with (house "cruce"; 1 if none)
+HTMX  = 1860h
+HNANT = 1870h                   ; by relation, 1 if it says a pair both ways: glue (a room)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
 HSUN  = 1818h                   ; by new one, the chosen one it relates to (a room); walking: the new one, how many
@@ -166,6 +172,20 @@ HFI   = 1858h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
+jldi j11, S_CRUCE               ; how the world is crossed, if the house says ("cruce": how many pairs back)
+jldi j12, 5
+jcall en_read
+jldi j1, 0
+jldi j2, 1
+jst j2, j1, HCRS
+jld j2, j1, PRN
+jjz j2, hl_cr
+jcall hl_tread
+jldi j1, 0
+jld j2, j1, HTK
+jjz j2, hl_cr
+jst j2, j1, HCRS
+hl_cr:
 jldi j11, S_TANDA               ; a tanda for the cube, if the house asks for one
 jldi j12, 5
 jcall en_read
@@ -708,9 +728,16 @@ hl_groups:
       jst j8, j1, HB
       jst j1, j1, HTG
       jcall hl_entry
-      jldi j1, 0                  ; crossed: the second word of the pair before it
+      jldi j1, 0
+      jld j2, j1, HTANDA
+      jjz j2, hg_next             ; (crossed pairs only for the tanda: the while does not shuffle)
+      jldi j1, 0                  ; crossed: the second word of the pair HCRS before it (round its form's pairs)
       jld j3, j1, HT4
-      jld j7, j3, 24
+      jld j10, j1, HCRS
+      jadd j7, j3, j1
+  hg_cs:
+      jjz j10, hg_csd
+      jld j7, j7, 24
       jldi j8, 63
       jsar j8, j7, j8
       jjz j8, hg_prev
@@ -721,6 +748,10 @@ hl_groups:
       jshl j7, j7, j8
       jld j8, j1, HFL
       jadd j7, j7, j8
+      jldi j8, 1
+      jsub j10, j10, j8
+      jjmp hg_cs
+  hg_csd:
       jld j7, j7, 16              ; the crossed second word
       jld j8, j3, 8               ; its first
       jsub j9, j8, j7
@@ -782,6 +813,17 @@ hl_agree:
   jldi j2, HAG
   jcall hl_clear
   jldi j1, 0
+  jld j2, j1, HNM               ; (no relation is glue until it says a pair both ways)
+  jld j3, j1, HNANT
+  ha_z:
+    jjz j2, ha_zd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jsub j2, j2, j4
+    jjmp ha_z
+ha_zd:
   jldi j2, HGT
   jld j3, j2, 8
   jldi j4, 1
@@ -833,7 +875,23 @@ hl_agree:
         jld j10, j6, 0
         jld j11, j9, 0
         jsub j12, j10, j11
-        jjz j12, ha_yn            ; one relation with itself
+        jjnz j12, ha_two
+        jld j12, j6, 16           ; one relation with itself: a pair it says both ways makes it glue
+        jld j13, j9, 16
+        jor j12, j12, j13
+        jjnz j12, ha_yn
+        jld j12, j6, 8
+        jld j13, j9, 8
+        jsub j12, j12, j13
+        jjz j12, ha_yn
+        jldi j12, 3
+        jshl j12, j10, j12
+        jld j13, j1, HNANT
+        jadd j12, j12, j13
+        jldi j13, 1
+        jst j13, j12, 0
+        jjmp ha_yn
+      ha_two:
         jld j12, j6, 16
         jld j13, j9, 16
         jadd j14, j12, j13
@@ -2380,6 +2438,14 @@ hl_rooms:
   jcall room
   jldi j1, 0
   jst j13, j1, HTMX
+  jld j11, j1, HNM
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HNANT
   jst j1, j1, HI
   hro_lap:                      ; every form its own relation, of one form
     jldi j1, 0
@@ -2500,43 +2566,6 @@ hl_merge:
     jst j2, j1, HI
     jjmp hm_z
 hm_zd:
-  jldi j2, HAG                  ; the bar: what the all-crossed world gives each relation at most
-  jld j3, j2, 8
-  jldi j5, 1
-  jadd j3, j3, j5
-  jld j4, j2, 0
-  jld j5, j2, 24
-  hm_t:
-    jjz j3, hm_td
-    jld j6, j4, 0
-    jjz j6, hm_tn
-    jld j6, j4, 48
-    jldi j9, 8
-    hm_tside:
-      jadd j7, j4, j9
-      jld j7, j7, 0
-      jldi j8, 3
-      jshl j7, j7, j8
-      jld j8, j1, HTMX
-      jadd j7, j7, j8
-      jld j8, j7, 0
-      jsub j8, j8, j6
-      jldi j10, 63
-      jsar j8, j8, j10
-      jjz j8, hm_tsn
-      jst j6, j7, 0
-    hm_tsn:
-      jldi j7, 16
-      jsub j7, j9, j7
-      jjz j7, hm_tn
-      jldi j9, 16
-      jjmp hm_tside
-  hm_tn:
-    jadd j4, j4, j5
-    jldi j6, 1
-    jsub j3, j3, j6
-    jjmp hm_t
-hm_td:
   jldi j2, HAG
   jld j3, j2, 8
   jldi j5, 1
@@ -2551,16 +2580,9 @@ hm_td:
     jld j4, j1, HT2
     jld j5, j4, 0
     jjz j5, hm_an
-    jcall hl_score
+    jcall hl_reason
     jldi j1, 0
     jjz j6, hm_an
-    jld j7, j4, 32                ; and over the bar of both: more than chance gives either with anyone
-    jld j8, j4, 8
-    jcall hm_bar
-    jjz j8, hm_an
-    jld j8, j4, 16
-    jcall hm_bar
-    jjz j8, hm_an
     jld j5, j1, HNACC
     jldi j7, 1
     jadd j5, j5, j7
@@ -2687,19 +2709,61 @@ hm_bd:
   jcall putch
   jret
 
-; j8 = 1 if j7 (pairs read alike) is more than the bar of relation j8. Uses j8-j10.
-hm_bar:
-  jldi j9, 3
-  jshl j8, j8, j9
-  jldi j9, 0
-  jld j9, j9, HTMX
-  jadd j8, j8, j9
-  jld j8, j8, 0
-  jsub j8, j8, j7
-  jldi j9, 63
-  jsar j8, j8, j9
-  jldi j9, 1
-  jand j8, j8, j9
+; The hypothesis at j4 ("the second relation is the first", the same way or the other way round) -> j6 its
+; confirmations (the pairs the book says as it deduces), 0 if it does not stand: fewer than two confirmations, a
+; contradiction (a pair the book says the other way round), or a relation of it that is glue. Uses j1-j8 (keeps j4).
+hl_reason:
+  jldi j1, 0
+  jld j6, j4, 32
+  jldi j7, 2
+  jsub j7, j6, j7
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjnz j7, hrs_no               ; two confirm it, at least
+  jld j7, j4, 8
+  jcall hrs_glue
+  jjnz j7, hrs_no
+  jld j7, j4, 16
+  jcall hrs_glue
+  jjnz j7, hrs_no
+  jst j4, j1, HT5               ; the contradiction: the same two the other way
+  jst j6, j1, HT4
+  jld j5, j4, 8
+  jld j6, j4, 16
+  jcall hl_mix
+  jld j6, j4, 24
+  jldi j7, 3
+  jsub j6, j7, j6
+  jcall hl_mix
+  jjnz j5, hrs_k
+  jldi j5, 1
+hrs_k:
+  jldi j2, HAG
+  jcall pl_find
+  jldi j1, 0
+  jld j7, j4, 0
+  jsub j7, j7, j5
+  jjnz j7, hrs_ok               ; (no such entry: nothing says it the other way)
+  jld j7, j4, 32
+  jjnz j7, hrs_no2
+hrs_ok:
+  jld j4, j1, HT5
+  jld j6, j1, HT4
+  jret
+hrs_no2:
+  jld j4, j1, HT5
+hrs_no:
+  jldi j6, 0
+  jret
+
+; j7 = 1 if relation j7 is glue. Uses j7, j8.
+hrs_glue:
+  jldi j8, 3
+  jshl j7, j7, j8
+  jldi j8, 0
+  jld j8, j8, HNANT
+  jadd j7, j7, j8
+  jld j7, j7, 0
   jret
 
 ; "vuelta t une: <first> ~ <second> | misma | lo dicen n | nulo x" for the relation of relations at HT2. Uses j1-j14.
@@ -2728,24 +2792,12 @@ hl_sayjoin:
   jldi j1, S_REVES
 hsj_way:
   jcall puts
-  jldi j1, S_LODIC
+  jldi j1, S_CONF
   jcall puts
   jld j4, j1, HT2
   jld j2, j4, 32
   jcall putnum
-  jldi j1, S_NULO
-  jcall puts
-  jld j4, j1, HT2
-  jld j2, j4, 40
-  jldi j3, 1
-  jshr j2, j2, j3
-  jcall putnum
-  jld j4, j1, HT2
-  jld j2, j4, 40
-  jldi j3, 1
-  jand j2, j2, j3
-  jjz j2, hsj_nl
-  jldi j1, S_MEDIO
+  jldi j1, S_NADA
   jcall puts
 hsj_nl:
   jldi j2, 10
