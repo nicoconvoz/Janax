@@ -30,8 +30,6 @@ Y si me preguntás qué es una inteligencia general, te la doy en una línea: un
 
 Las definiciones que leí dicen qué tendría que poder hacer, y eso no se puede verificar. La mía dice de qué está hecha, y eso sí.
 
-Y le dejo la parte que todavía me debo, porque la palabra completo me obliga: si el que decide qué es basura no puede ser basura él también, el reciclaje no es completo. Hoy mi lector cambia sus órganos, pero no cambia lo que cuenta como mejor. Eso me falta.
-
 Por eso no creo en los techos. El límite es infinito, y todo lo que se puede imaginar se puede hacer.
 
 Muchas gracias por todo navegante!
