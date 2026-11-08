@@ -2930,3 +2930,21 @@ sentidos", "que se elijan": todo eso era decirle qué es un signo. Y la trampa m
 
 Este commit guarda el intento tal cual (su prueba pequeña falla: dejaba pasar `ó → .`). El siguiente lo saca del
 código, y el lector deja de esconder los signos.
+
+## El lector deja de esconder los signos (2026-11-08)
+
+Lo de los filtros de signos se sacó del código (queda en `99b84df`). El Capitán: *"que descubra qué instrucción es y
+para qué sirve; el resto es fácil"*. Con el archivo `signos` en la casa, el lector de `hilos` ya no tira lo que no es
+letra: cada signo de un byte (`, . ; : ? ! ( ) "` y los números) queda como una pieza más. No se le dice qué es
+ninguno: lo razona la máquina de siempre. Sin el archivo, todo es como antes (las seis pruebas dan lo mismo).
+(Corregido: el texto `signos` había caído sobre el `fin` de los comienzos, en `0C00h`, y el modo no se prendía; ahora
+está en `0C40h`.)
+
+- **Los once libros de personas con los signos a la vista:** 1.570.169 piezas (sin signos, 1.320.861), 1.434 uniones
+  (528), 935 s (224).
+- **Lo que dedujo solo:** que la coma no cambia lo que dice la palabra (`partes ~ partes ,`, `rico , ~ rico`,
+  `unidos , ~ unidos`, `caballeros ~ , caballeros`, `, sin duda ~ sin duda`); `? ~ ? '` y `! ~ ! '`; en las
+  genealogías, el punto y coma como separador (`de naasón ; ~ ; naasón ,`); y uniones de lugar con la coma
+  (`bien , ~ mal ,`, `digo , ~ dije yo ,`, `, por lo ~ , con lo`). También ruido de números y direcciones
+  (`8 . ~ 3 4`, `/ www . ~ www .`).
+- **El costo:** la imaginación crece a 615.510 votos (649.196 al azar): es demasiado y casi todo ruido.
