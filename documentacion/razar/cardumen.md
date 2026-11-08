@@ -2420,5 +2420,18 @@ euclidiana: sacar un axioma y ver qué sigue siendo consistente).
   - 27 "y la" **mueve el barco, pero no lo hunde:** el while dura el doble, se suman 12 uniones y se pierden 7. Entre
     las nuevas hay alguna buena (`tanto ~ mucho`, `que ~ quién`) y otras flojas (`una ~ allí una`). Entre las perdidas
     hay una buena (`tu ~ mi`). No se derrumba ni se ordena: es una regla que reparte. Esto no prueba que valga romperla.
-- **Falta:** probar todas, no solo las tres que más frenan (cada una es una vuelta entera del NT, unos minutos). Y una
-  vara para decir si lo que aparece es mecanismo o ruido: hoy eso lo juzgo yo leyendo las uniones, y no debería.
+- **Las 64, una por una** (cada una ~20 s, de a 4 en paralelo: la tanda entera, unos 4 minutos):
+  - **43 son redundantes:** sin ellas salen las mismas 104 uniones. Lo que frenan lo frena otra cosa.
+  - **21 mueven algo**, y casi todas lo mismo. "por el", "las", "en la", "y a su", "por los", "de un", "cuando", "puede"
+    y "ese" dan el mismo cambio: 31 vueltas, +6 uniones y −3. Las nuevas son `tanto ~ mucho`, `que ~ quién`,
+    `no ~ en cambio`, `que ~ potente que`, `tu ~ tu + tu` y `no robarás no ~ no + no`. Las perdidas, tres de `tu`
+    (`tu ~ y del`, `tu ~ y la + y la`, `y la ~ tu + tu`). Reglas distintas, el mismo efecto: **no es la regla lo que
+    importa, es que moverla cambia el orden en que se eligen las uniones**, y el while llega a otro final. El final
+    depende del camino: hay por lo menos dos equilibrios, y `tanto ~ mucho` solo vive en uno.
+  - **Una es viga:** sin "de tus" (un B por cada A) se pierden tres uniones de la genealogía (`hijo de ~ hijo de judá`,
+    `hijo de ~ hijo de leví`, `hijo de ~ matatías hijo de`) y el while para antes (19 vueltas). Esa regla protege algo.
+  - Tabla completa: `regla | forma | frena | vueltas | uniones | coma | despiertan | nuevas | perdidas`, en la salida de
+    `hilos` con cada `suspende` (no está en el repo: lleva palabras del NT).
+- **Lo que esto pide (no está hecho):** si el final depende del orden, una unión que aparece en un equilibrio y no en el
+  otro no está probada por el libro, solo por el camino. La vara que faltaba para separar mecanismo de ruido puede
+  salir de acá: lo que queda en todos los caminos es del libro; lo que depende del camino, todavía no.
