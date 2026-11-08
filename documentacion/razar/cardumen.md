@@ -1564,3 +1564,35 @@ tres instrumentos a `memoria_pares.jsm`:
   falta lo anotado: que la memoria le diga qué decir, y que "dos pares" cuente libros o lugares distintos, no
   repeticiones.
 
+### Razonar: el canto aprende dónde la respuesta repite la pregunta (Capitán, 2026-11-07)
+
+> *"Quiero que razone, que produzca respuesta, no que sea otra respuesta que antes vio."* — Su idea: como en los
+> acertijos, "una oración 1 más una oración 1 da una oración 2".
+
+Con `razona` en la casa, cada palabra de una respuesta que también está en su pregunta se canta como **su lugar**: una
+canción más, `BASE + 3 + k`, a k palabras del final de la pregunta (la más cercana). El canto aprende esa marca con la
+misma regla de "dos pares o más", y al cantar la llena con la palabra que esté en ese lugar de la pregunta nueva. En el
+oficio es el mecanismo de copia de los traductores neuronales (pointer-generator, See y otros, 2017); lo propio es que
+la marca entra como una canción y la plantilla no la escribe nadie.
+
+- **La prueba** (`razona_prueba.sh`): cuatro pares "tu eres X? → si, yo soy X". A "tu eres felipe?", que no está en
+  ningún libro, contesta **"si yo soy felipe"**. Sin `razona`, decía "si yo soy p".
+- **El Nuevo Testamento, tramos sin leer:**
+
+| | de contenido, sin razonar | de contenido, razonando | nulo | recitado sin razonar → razonando |
+|---|---|---|---|---|
+| tramo 1 | 1,6 % | 1,6 % | 0,5 % | 81 % → 73 % |
+| tramo 2 | 1,8 % | 1,9 % | 0,5 % | 80 % → 76 % |
+| tramo 3 | 1,4 % | 1,5 % | 0,5 % | 85 % → 78 % |
+| tramo 4 | 0,8 % | 0,7 % | 0,6 % | 86 % → 81 % |
+| control: respuestas revueltas, tramo 1 | | 0,6 % | 0,4 % | 70 % |
+
+- **El mecanismo anda, pero en estos pares casi no hay qué copiar.** Aprendió 72 lugares; en el tramo 1 cantó 322
+  (el 5 % de las palabras) y 238 dijeron una palabra. El contenido no se mueve, y recita menos (de 4 a 8 puntos).
+- **Por qué:** los pares del NT son turnos de diálogo ("¿quién es este?" → "jesús les respondió"), no preguntas con
+  su dato. La respuesta casi nunca repite la pregunta. Para que razone sobre hechos hace falta la otra mitad de la idea
+  del Capitán: **pregunta + oración del libro → respuesta**, aprendiendo dónde la respuesta repite **la oración del
+  hecho**, no la pregunta.
+- **El control dice que la señal chica de contenido sale de los datos**: con las respuestas revueltas cae a 0,6 %, el
+  nivel del nulo.
+

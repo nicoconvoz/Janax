@@ -55,3 +55,11 @@ db ' a ', 0
 times 440h - $ db 0
 db 'inventadas:', 0
 times 450h - $ db 0
+db 'razona', 0
+times 460h - $ db 0
+db 'razona: lugares de la pregunta que repiten las respuestas, aprendidos: ', 0
+times 4B0h - $ db 0
+db ' | lugares cantados: ', 0
+times 4D0h - $ db 0
+db ', con su palabra: ', 0
+times 4F0h - $ db 0
