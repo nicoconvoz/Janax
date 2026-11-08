@@ -2285,3 +2285,9 @@ sostiene ("ana habla con sol", "eva habla con cielo"), y nada de lo que dice cho
   de David, Mateo baja por Salomón y Lucas por Natán, y el "fue padre de" de Mateo dice de esa gente cosas que la
   cadena de Lucas no sostiene. Falta mirar qué pares quedaron sin explicar.
 - ⚠️ En los sinópticos todavía entra "hijo de ~ a" (3 confirmaciones).
+- **Verificado qué refutó "hijo de ~ fue padre de"** (copia con instrumento, no en el repo): de lo que el "fue padre
+  de" de Mateo dice de la gente de la cadena de Lucas, explica 2 (abraham→isaac, judá→fares) y deja sin explicar 4:
+  **david→salomón** (en Lucas el hijo de David es Natán), **jacob→josé** (en Lucas José es hijo de Elí), booz→obed
+  (Lucas escribe "jobed") y fares→aram (Lucas pone a esrom en el medio y escribe "arní"). Razar refutó que las dos
+  genealogías sean una justo donde Mateo y Lucas no coinciden: dos diferencias de fondo, las de siempre, y dos de
+  escritura que no sabe que son la misma persona.
