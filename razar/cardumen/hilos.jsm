@@ -26,7 +26,9 @@
 ;     knows (its A on the other's A side, its B on its B side), what the other says too is explained, what it does not
 ;     is left unexplained. Each must explain more of the other's people than it leaves unexplained; if not, the
 ;     hypothesis is refuted for good (a form of grammar that coincides in three pairs and says many more of the same
-;     people does not explain them), and each relation looks for another. While a turn joins something, there is
+;     people does not explain them), and each relation looks for another. What is left unexplained may be one place
+;     with two names ("obed" in Mateo, "jobed" in Lucas: each said the same twice, so a name, not a slip): when the
+;     other names it so with the same partners on both sides, one in each telling, it is explained, and said. While a turn joins something, there is
 ;     another; when nothing new is deduced without contradiction, the while ends by itself.
 ;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
 ;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
@@ -76,6 +78,8 @@ S_CRUCE  = 540h
 S_CONF   = 550h
 S_NADA   = 570h
 S_PEG    = 590h
+S_MISMO  = 5D0h
+S_IGUAL  = 5E0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -189,7 +193,15 @@ HEX   = 1998h
 HEU   = 19A0h
 HER   = 19A8h
 HES   = 19B0h
-HEW   = 19B8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HEW   = 19B8h
+HAI   = 19C0h                   ; (the same place: walking the pairs of each, a name, how many and where, a value)
+HAJ   = 19C8h
+HAB   = 19D0h
+HAN   = 19D8h
+HAS   = 19E0h
+HAP   = 19E8h
+HAQ   = 19F0h
+HAC   = 19F8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -3007,6 +3019,15 @@ hex_dir:
     jst j7, j1, HEX
     jjmp hxd_next
   hxd_un:
+    jcall hx_rescue             ; two names for one place?
+    jldi j1, 0
+    jjz j6, hxd_un2
+    jld j7, j1, HEX
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j1, HEX
+    jjmp hxd_next
+  hxd_un2:
     jld j7, j1, HEU
     jldi j8, 1
     jadd j7, j7, j8
@@ -3030,6 +3051,209 @@ hxd_done:
   jsar j7, j7, j8
   jldi j6, 1
   jand j6, j6, j7
+  jret
+
+; The pair HQ4, HQ5 that relation HES says (turned by HE2) and HER does not: j6 = 1 if one of its names is, in HER,
+; another name for the same place (Capitan, 2026-11-08: "if it were a slip it would not be written the same twice":
+; "jobed", said twice, is how Lucas names who Mateo calls "obed"). HER says HQ4 with b' where HES says HQ5, and b' and
+; HQ5 have the same partner on their other side too, one in each (the same father and the same son: two places, as
+; two say); or the same with the first word. Said "mismo lugar: <name of HES> = <name of HER>". Uses j1-j14.
+hx_rescue:
+  jldi j1, 0
+  jld j2, j1, HER
+  jcall hxr_of
+  jldi j1, 0
+  jst j9, j1, HAP
+  jst j10, j1, HAN
+  jld j2, j1, HES
+  jcall hxr_of
+  jldi j1, 0
+  jst j9, j1, HAQ
+  jst j10, j1, HAS
+  jst j1, j1, HAI               ; the second word: what HER pairs HQ4 with
+  hxr_b:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jld j4, j1, HAN
+    jsub j4, j3, j4
+    jjz j4, hxr_a0
+    jld j2, j1, HAP
+    jcall hxr_get               ; j5, j6
+    jld j7, j1, HQ4
+    jsub j7, j5, j7
+    jjnz j7, hxr_bn
+    jld j7, j1, HQ5
+    jsub j7, j6, j7
+    jjz j7, hxr_bn
+    jst j6, j1, HAB             ; b'
+    jst j1, j1, HAJ
+    hxr_bs:                     ; HES pairs HQ5 with c, and HER b' with c?
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jld j4, j1, HAS
+      jsub j4, j3, j4
+      jjz j4, hxr_bn
+      jld j2, j1, HAQ
+      jcall hxr_get
+      jcall hxr_turn
+      jld j7, j1, HQ5
+      jsub j7, j5, j7
+      jjnz j7, hxr_bsn
+      jld j8, j1, HAB
+      jcall hxr_says            ; HER says j8 with j6?
+      jjz j6, hxr_bsn
+      jldi j1, 0
+      jld j8, j1, HQ5
+      jld j9, j1, HAB
+      jjmp hxr_yes
+    hxr_bsn:
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jldi j4, 1
+      jadd j3, j3, j4
+      jst j3, j1, HAJ
+      jjmp hxr_bs
+  hxr_bn:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HAI
+    jjmp hxr_b
+hxr_a0:
+  jst j1, j1, HAI               ; the first word: what HER pairs with HQ5
+  hxr_a:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jld j4, j1, HAN
+    jsub j4, j3, j4
+    jjz j4, hxr_no
+    jld j2, j1, HAP
+    jcall hxr_get
+    jld j7, j1, HQ5
+    jsub j7, j6, j7
+    jjnz j7, hxr_an
+    jld j7, j1, HQ4
+    jsub j7, j5, j7
+    jjz j7, hxr_an
+    jst j5, j1, HAB             ; a'
+    jst j1, j1, HAJ
+    hxr_as:                     ; HES pairs d with HQ4, and HER d with a'?
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jld j4, j1, HAS
+      jsub j4, j3, j4
+      jjz j4, hxr_an
+      jld j2, j1, HAQ
+      jcall hxr_get
+      jcall hxr_turn
+      jld j7, j1, HQ4
+      jsub j7, j6, j7
+      jjnz j7, hxr_asn
+      jadd j8, j5, j1
+      jld j6, j1, HAB
+      jcall hxr_says
+      jjz j6, hxr_asn
+      jldi j1, 0
+      jld j8, j1, HQ4
+      jld j9, j1, HAB
+      jjmp hxr_yes
+    hxr_asn:
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jldi j4, 1
+      jadd j3, j3, j4
+      jst j3, j1, HAJ
+      jjmp hxr_as
+  hxr_an:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HAI
+    jjmp hxr_a
+hxr_no:
+  jldi j6, 0
+  jret
+hxr_yes:
+  jst j9, j1, HAB
+  jst j8, j1, HAJ
+  jldi j1, S_MISMO
+  jcall puts
+  jld j5, j1, HAJ
+  jcall en_sayprint
+  jldi j1, S_IGUAL
+  jcall puts
+  jld j5, j1, HAB
+  jcall en_sayprint
+  jldi j2, 10
+  jcall putch
+  jldi j6, 1
+  jret
+
+; Relation j2's pairs -> j9 where they are, j10 how many. Uses j2-j4, j9, j10.
+hxr_of:
+  jldi j3, 3
+  jshl j3, j2, j3
+  jldi j4, 0
+  jld j9, j4, HCOFF
+  jadd j9, j9, j3
+  jld j9, j9, 0
+  jld j10, j4, HCCNT
+  jadd j10, j10, j3
+  jld j10, j10, 0
+  jldi j3, 4
+  jshl j9, j9, j3
+  jld j4, j4, HCTRI
+  jadd j9, j9, j4
+  jret
+
+; Pair j3 of the pairs at j2 -> j5 its A, j6 its B. Uses j4-j6.
+hxr_get:
+  jldi j4, 4
+  jshl j4, j3, j4
+  jadd j4, j4, j2
+  jld j5, j4, 0
+  jld j6, j4, 8
+  jret
+
+; j5, j6 turned when HE2 is 2 (the hypothesis the other way round). Uses j4-j7.
+hxr_turn:
+  jldi j4, 0
+  jld j4, j4, HE2
+  jldi j7, 2
+  jsub j4, j4, j7
+  jjnz j4, hxt_done
+  jldi j4, 0
+  jadd j7, j5, j4
+  jadd j5, j6, j4
+  jadd j6, j7, j4
+hxt_done:
+  jret
+
+; j6 = 1 if relation HER says j8 with j6 (A, B). Uses j1-j8.
+hxr_says:
+  jldi j1, 0
+  jst j6, j1, HAC
+  jld j5, j1, HER
+  jldi j6, 0
+  jcall hl_mix
+  jadd j6, j8, j1
+  jcall hl_mix
+  jld j6, j1, HAC
+  jcall hl_mix
+  jjnz j5, hxs_k
+  jldi j5, 1
+hxs_k:
+  jldi j2, HFV
+  jcall pl_find
+  jldi j1, 0
+  jld j7, j4, 0
+  jsub j7, j7, j5
+  jldi j6, 0
+  jjnz j7, hxs_done
+  jldi j6, 1
+hxs_done:
   jret
 
 ; Relation j2, side j3 (0: one B for each A; 1: one A for each B): j6 = 1 if it is so (two words with one confirmed

@@ -2291,3 +2291,18 @@ sostiene ("ana habla con sol", "eva habla con cielo"), y nada de lo que dice cho
   (Lucas escribe "jobed") y fares→aram (Lucas pone a esrom en el medio y escribe "arní"). Razar refutó que las dos
   genealogías sean una justo donde Mateo y Lucas no coinciden: dos diferencias de fondo, las de siempre, y dos de
   escritura que no sabe que son la misma persona.
+
+**Dos nombres para un mismo lugar** (Capitán: *"si fuera un error de verdad, la palabra no figuraría dos veces escrita
+exactamente igual"*: "jobed", dicho dos veces igual, es cómo Lucas nombra a quien Mateo llama "obed"; no lo toca la
+ortografía, que sólo corrige lo dicho una vez). Lo que una hipótesis deja sin explicar puede ser un lugar con dos
+nombres: si la otra relación nombra ese lugar con otro nombre que tiene **el mismo compañero de los dos lados**, uno en
+cada relato (el mismo padre y el mismo hijo: dos lugares, lo dicen dos), queda explicado y lo dice. Prueba
+(`hilos_nombres_prueba.sh`): una familia contada dos veces con "caro" y "karo" → "mismo lugar: karo = caro" y las dos
+se unen.
+
+- **Sobre los sinópticos y el NT, solo:** `mismo lugar: obed = jobed` (booz su padre y jesé su hijo, en Mateo y en
+  Lucas). Ningún otro par de nombres.
+- **La unión de las dos genealogías sigue sin pasar, y está bien:** explica abraham→isaac, judá→fares y ahora
+  booz→obed; deja sin explicar david→salomón (Lucas: Natán), jacob→josé (Lucas: Elí) y fares→aram (Lucas pone a esrom
+  en el medio y escribe "arní"). Tres contra tres: lo que queda son las diferencias de verdad entre los dos
+  evangelios, no grafías.

@@ -88,3 +88,7 @@ times 570h - $ db 0
 db ' | nada lo contradice', 0
 times 590h - $ db 0
 db ' | pegamento (dicen un par de los dos lados): ', 0
+times 5D0h - $ db 0
+db 'mismo lugar: ', 0
+times 5E0h - $ db 0
+db ' = ', 0
