@@ -1771,4 +1771,28 @@ palabras de su pregunta que no son un lugar ("come", "patas", "vive", "es"). Pre
   tipo. El control acierta todas; el cubo oyendo falla una, con los tres dados.
 - En Asimov no cambia: control 22 de 110 (antes 24), cubo 4³ 27 y 18 con dos semillas. Ahí cada pregunta es única y
   sus palabras no se repiten en otras: no hay de quién aprender el tipo de pregunta.
+**La alarma del 116 de 116** (el otro chat del Capitán, 2026-11-08: *"un puntaje perfecto casi nunca significa que el
+problema se resolvió: significa que la respuesta se filtró al banco"*). Dos pruebas:
+
+1. **El nulo con las mismas palabras**: el buscador contando todas las palabras de la pregunta (no solo las que no son
+   de la mitad) acierta **100 % en los cuatro tramos**. El 116 era filtración: pregunta y respuesta salen de la misma
+   plantilla y comparten "que", "es", "de", "escribió". (El 106 de antes no las usaba: su vara era el buscador de 27 %.)
+2. **Las mismas preguntas con otras palabras** (`libros/preguntas_otras.txt`, `preguntas_simples.py ... otras`): "¿de
+   qué se alimenta el conejo?", "¿a qué clase pertenece el gato?", "¿cuántas piernas usa la araña?"; con la respuesta
+   solo comparten la cosa.
+
+| otras palabras, 116 sin leer | acierta |
+|---|---|
+| azar | 23 % |
+| buscador contando todas las palabras | **15 %** (24, 28, 7, 3) |
+| buscador de palabras | 27 % |
+| el canto | 74 % |
+| memoria del kernel, control | **105 de 116 (91 %)** |
+| cubo 4³ + memoria del kernel, semillas 1001-1003 | 103, 104, 103 |
+
+- **Sin filtración el buscador cae al azar y la memoria se sostiene en 91 %**: de las otras preguntas aprendió que "se
+  alimenta" va con una respuesta "X come Y", sin compartir esa palabra. **Eso sí es el mecanismo.**
+- **El cubo resta**: 103-104 contra 105 del control, como en todas las mediciones de este libro (115 contra 116, 106
+  contra 106-107). El oído del cubo no agrega nada a las notas; en el mejor caso las conserva. Es un dato sobre el cubo:
+  hoy lo que razona es la memoria del kernel con sus notas.
 

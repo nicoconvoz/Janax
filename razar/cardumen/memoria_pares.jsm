@@ -66,6 +66,7 @@ S_SD11  = 720h
 S_MARCOS = 730h
 S_MK    = 740h
 S_NK    = 750h
+S_SDA   = 760h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -237,6 +238,13 @@ FNLN  = 1908h
 FOV   = 1910h
 FNI   = 1918h
 FND   = 1920h
+QALL  = 1928h                   ; the ruler that counts every word of the question (Capitan's other chat, 2026-11-08):
+QCA   = 1930h                   ; 1 while its set is made; its set, how many; the best by it, its count; right by it;
+QCAN  = 1938h                   ; (the content set, kept aside)
+OBA   = 1940h
+OBEA  = 1948h
+HOA   = 1950h
+QCSV  = 1958h
 SQL   = 1840h                   ; (the question's places kept; a plain cost)
 SPL   = 1848h
 QPN   = 1828h
@@ -2391,6 +2399,14 @@ msl_done:
   jldi j1, 0
   jst j13, j1, QCS
   jld j11, j1, MAXS
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QCA
+  jld j11, j1, MAXS
   jldi j2, 8
   jadd j11, j11, j2
   jcall room
@@ -2460,6 +2476,8 @@ ms_qset:
     jadd j3, j3, j4
     jld j5, j3, 0
     jst j5, j1, QK
+    jld j2, j1, QALL            ; (the ruler of every word: none left out)
+    jjnz j2, mqs_take
     jldi j2, VOC
     jcall pl_find
     jldi j1, 0
@@ -2469,6 +2487,7 @@ ms_qset:
     jldi j2, 63
     jsar j3, j3, j2
     jjz j3, mqs_next
+  mqs_take:
     jld j5, j1, QK
     jld j6, j1, QCN
     jld j7, j1, QCS
@@ -2710,6 +2729,7 @@ ms_eval:
   jldi j1, 0
   jst j1, j1, HSG
   jst j1, j1, HOV
+  jst j1, j1, HOA
   jst j1, j1, HRN
   jst j1, j1, NEV
   jst j1, j1, NCAND
@@ -2731,6 +2751,21 @@ ms_eval:
     jadd j9, j9, j4
     jst j9, j1, QP
     jst j10, j1, QPN
+    jld j2, j1, QCS             ; the ruler's set: every word of the question
+    jst j2, j1, QCSV
+    jld j2, j1, QCA
+    jst j2, j1, QCS
+    jldi j2, 1
+    jst j2, j1, QALL
+    jcall ms_qset
+    jldi j1, 0
+    jld j2, j1, QCN
+    jst j2, j1, QCAN
+    jld j2, j1, QCSV
+    jst j2, j1, QCS
+    jst j1, j1, QALL
+    jld j9, j1, QP
+    jld j10, j1, QPN
     jcall ms_qset
     jldi j1, 0
     jld j9, j1, QP
@@ -2781,6 +2816,9 @@ ms_eval:
     jst j1, j1, SCC
     jst j1, j1, SCN
     jst j1, j1, SJJ
+    jst j1, j1, OBA
+    jldi j2, -1
+    jst j2, j1, OBEA
     mev_c:
       jldi j1, 0
       jld j2, j1, SJJ
@@ -2822,7 +2860,32 @@ ms_eval:
       jst j2, j1, OBS
       jld j2, j1, SJJ
       jst j2, j1, OBEST
-    mev_song:                   ; what the question gives it: its cost sung as plain words, less sung with the places
+    mev_song:
+      jld j2, j1, QCS             ; the ruler of every word: the same sentence, counted with all of them
+      jst j2, j1, QCSV
+      jld j2, j1, QCA
+      jst j2, j1, QCS
+      jld j2, j1, QCN
+      jst j2, j1, TT7
+      jld j2, j1, QCAN
+      jst j2, j1, QCN
+      jld j9, j1, SK
+      jld j10, j1, SB
+      jcall ms_overlap
+      jldi j1, 0
+      jld j3, j1, QCSV
+      jst j3, j1, QCS
+      jld j3, j1, TT7
+      jst j3, j1, QCN
+      jld j3, j1, OBA
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mev_song2
+      jst j2, j1, OBA
+      jld j2, j1, SJJ
+      jst j2, j1, OBEA
+    mev_song2:                   ; what the question gives it: its cost sung as plain words, less sung with the places
       jld j2, j1, QLN           ; of the question (a sentence read as it is costs little both ways: it gains nothing)
       jst j2, j1, SQL
       jst j1, j1, QLN
@@ -2879,6 +2942,12 @@ ms_eval:
     jld j3, j1, HOV
     jadd j3, j3, j2
     jst j3, j1, HOV
+    jld j2, j1, OBEA
+    jcall ms_isreg
+    jldi j1, 0
+    jld j3, j1, HOA
+    jadd j3, j3, j2
+    jst j3, j1, HOA
   mev_say:
     jldi j1, S_SD9
     jcall puts
@@ -2935,6 +3004,11 @@ mss0:
   jld j3, j1, NEV
   jldi j4, 1000
   jmul j3, j3, j4
+  jcall mp_pct10
+  jldi j1, S_SDA
+  jcall puts
+  jld j2, j1, HOA
+  jld j3, j1, NEV
   jcall mp_pct10
   jldi j1, S_CH7
   jcall puts

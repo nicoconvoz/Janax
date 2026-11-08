@@ -1,5 +1,6 @@
 # Writes a test book of simple questions (Q:/O: lines, as sentido.jsm writes them) with seven mechanisms, each over
 # many things, and decoy sentences that say the same things without answering. Text only: Razar measures, in Janax.
+# With 'otras' after the file, every question is said with other words, none of them in its answer but the thing.
 import random
 import sys
 
@@ -41,6 +42,18 @@ for x, y in [('roma', 'italia'), ('paris', 'francia'), ('madrid', 'espana'), ('l
              ('mendoza', 'argentina'), ('londres', 'inglaterra'), ('atenas', 'grecia'), ('moscu', 'rusia'),
              ('santiago', 'chile'), ('bogota', 'colombia'), ('montevideo', 'uruguay')]:
     M.append(('en que pais esta ' + x + '?', x + ' esta en ' + y + '.', x))
+if len(sys.argv) > 2 and sys.argv[2] == 'otras':  # the same questions said with other words: only the thing is shared
+    ALT = [('que es ', 'a que clase pertenece '), ('donde vive ', 'donde habita '), ('de que color es ', 'que tono muestra '),
+           ('cuantas patas tiene ', 'cuantas piernas usa '), ('quien escribio ', 'quien fue autor de '),
+           ('que come ', 'de que se alimenta '), ('en que pais esta ', 'a que nacion pertenece ')]
+    N = []
+    for q, a, x in M:
+        for o, n in ALT:
+            if q.startswith(o):
+                q = n + q[len(o):]
+                break
+        N.append((q, a, x))
+    M = N
 r.shuffle(M)
 things = [m[2] for m in M]
 FILL = ['eso dicen los libros.', 'es algo que todos saben.', 'lo aprendimos en la escuela.', 'asi es desde siempre.',

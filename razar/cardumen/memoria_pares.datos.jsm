@@ -93,3 +93,5 @@ db 'M: ', 0
 times 750h - $ db 0
 db 'N: ', 0
 times 760h - $ db 0
+db '%, la que mas palabras comparte contandolas todas ', 0
+times 7A0h - $ db 0
