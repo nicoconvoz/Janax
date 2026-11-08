@@ -2262,3 +2262,26 @@ pares como "padre de" y ninguno al revés, pero le da a mar un segundo padre: re
 - ⚠️ Todavía entran formas de gramática ("a", "o qué", "se", "y se") con 2 a 5 confirmaciones: dicen miles de pares,
   coinciden en pocos, y ninguno choca con un valor confirmado porque hablan de gente de la que la otra no confirmó
   nada. Una hipótesis así no está refutada, pero tampoco explica lo que afirma.
+
+**Una hipótesis tiene que explicar lo que dice de la misma gente** (la regla que faltaba, razonamiento puro). De lo que
+una relación dice de dos palabras que la otra conoce (su A del lado de los A de la otra, su B del de los B), lo que la
+otra dice también está **explicado**, lo que no, **sin explicar**. Cada una tiene que explicar más de la gente de la
+otra que lo que deja sin explicar; si no, la hipótesis queda **refutada para siempre** y cada relación busca otra
+pareja. Prueba: "habla con" confirma dos pares de la familia y dice dos más de la misma gente que la familia no
+sostiene ("ana habla con sol", "eva habla con cielo"), y nada de lo que dice choca: refutada igual.
+
+| | antes (propiedades) | explicando a la misma gente |
+|---|---|---|
+| NT: uniones, vueltas, la más grande | 366, 127, "y la" 151 formas | **121, 20, "hijo de" 16** |
+| sinópticos | 87, 20, "hijo de" 21 | **60, 6, "hijo de" 7** |
+| Marcos | 2 | 1 |
+
+- **Sin una gota de estadística, el agujero negro se fue**: la relación más grande del NT es la genealogía y nada más
+  ("hijo de", "padre de", las ventanas de la cadena de Lucas). Las formas de gramática no explicaban lo que decían de
+  esa gente.
+- Quedan "hijo de ~ padre de", "cinco mil ~ cuatro mil", "piedad de ~ compasión de", "fue ~ había sido", "algún ~
+  ningún", "la multitud ~ pedro".
+- ⚠️ **Se perdió "hijo de ~ fue padre de"**: lo refuta esta regla. La sospecha (sin verificar) es que es justo: después
+  de David, Mateo baja por Salomón y Lucas por Natán, y el "fue padre de" de Mateo dice de esa gente cosas que la
+  cadena de Lucas no sostiene. Falta mirar qué pares quedaron sin explicar.
+- ⚠️ En los sinópticos todavía entra "hijo de ~ a" (3 confirmaciones).

@@ -21,7 +21,12 @@
 ;     together, turned when they are the other way round), and everything is deduced again with what was joined. Only
 ;     relations that assert something join: one that says a pair both ways ("a de b" and "b de a") does not commit
 ;     to a side, nothing can refute it, and it is glue, not a relation. And what each relation is refutes too: when
-;     every A it says has one B, shown by two (each child one father), a join that gives an A two B's contradicts it. While a turn joins something, there is
+;     every A it says has one B, shown by two (each child one father), a join that gives an A two B's contradicts it.
+;     And a hypothesis must explain what it says of the same people: of what one relation says of two words the other
+;     knows (its A on the other's A side, its B on its B side), what the other says too is explained, what it does not
+;     is left unexplained. Each must explain more of the other's people than it leaves unexplained; if not, the
+;     hypothesis is refuted for good (a form of grammar that coincides in three pairs and says many more of the same
+;     people does not explain them), and each relation looks for another. While a turn joins something, there is
 ;     another; when nothing new is deduced without contradiction, the while ends by itself.
 ;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
 ;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
@@ -173,7 +178,18 @@ HQ5   = 1910h
 HQ6   = 1918h
 HQ7   = 1920h
 HQ8   = 1928h
-HFV   = 1930h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HFV   = 1930h
+HREF  = 1950h                   ; the hypotheses refuted for good {key} (a growing table); by relation, its pairs (where
+HCCNT = 1970h                   ; they start, how many: rooms) and them, turned to it {A, B} (a room); walking
+HCOFF = 1978h
+HCTRI = 1980h
+HE1   = 1988h
+HE2   = 1990h
+HEX   = 1998h
+HEU   = 19A0h
+HER   = 19A8h
+HES   = 19B0h
+HEW   = 19B8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -2385,6 +2401,17 @@ hl_props:
     jsub j2, j2, j5
     jjmp hp_z
 hp_zd:
+  jld j2, j1, HNM               ; (no pairs by relation yet)
+  jld j3, j1, HCCNT
+  hp_cz:
+    jjz j2, hp_czd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jsub j2, j2, j4
+    jjmp hp_cz
+hp_czd:
   jst j1, j1, HQ1               ; each pair of a form said by two, by its relation, turned to it: how many say it
   hp_f:
     jldi j1, 0
@@ -2421,6 +2448,15 @@ hp_zd:
   hp_or:
     jst j5, j1, HQ4               ; A
     jst j6, j1, HQ5               ; B
+    jld j7, j1, HQ3               ; (one pair more of its relation)
+    jldi j8, 3
+    jshl j7, j7, j8
+    jld j8, j1, HCCNT
+    jadd j7, j7, j8
+    jld j8, j7, 0
+    jldi j9, 1
+    jadd j8, j8, j9
+    jst j8, j7, 0
     jst j1, j1, HQ6
     jadd j7, j5, j1
     jadd j8, j6, j1
@@ -2439,6 +2475,8 @@ hp_zd:
     jst j2, j1, HQ1
     jjmp hp_f
 hp_fd:
+  jcall hp_place
+  jldi j1, 0
   jldi j2, HFV                  ; what each relation says of each word: its values, the confirmed ones
   jld j3, j2, 8
   jldi j4, 1
@@ -2772,6 +2810,228 @@ hp_c:
 hp_done:
   jret
 
+; Each relation's pairs, turned to it, in a row by relation (HCOFF where its own start, HCTRI {A, B}). Uses j1-j14.
+hp_place:
+  jldi j1, 0
+  jld j2, j1, HNM
+  jld j3, j1, HCCNT
+  jld j4, j1, HCOFF
+  jldi j5, 0
+  hpl_o:
+    jjz j2, hpl_od
+    jst j5, j4, 0
+    jld j6, j3, 0
+    jadd j5, j5, j6
+    jst j1, j3, 0               ; (counted again while placing)
+    jldi j6, 8
+    jadd j3, j3, j6
+    jadd j4, j4, j6
+    jldi j6, 1
+    jsub j2, j2, j6
+    jjmp hpl_o
+hpl_od:
+  jst j1, j1, HQ1
+  hpl_f:
+    jldi j1, 0
+    jld j2, j1, HQ1
+    jld j3, j1, HNF
+    jsub j3, j2, j3
+    jjz j3, hpl_done
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jst j3, j1, HQ2
+    jld j2, j3, 0
+    jldi j4, 48
+    jmul j4, j2, j4
+    jld j5, j1, HMA
+    jadd j4, j4, j5
+    jld j4, j4, 32
+    jldi j5, 2
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, hpl_n
+    jcall hl_find
+    jldi j1, 0
+    jld j4, j1, HQ2
+    jld j5, j4, 8
+    jld j6, j4, 16
+    jjz j3, hpl_or
+    jadd j7, j5, j1
+    jadd j5, j6, j1
+    jadd j6, j7, j1
+  hpl_or:
+    jldi j7, 3
+    jshl j7, j2, j7
+    jld j8, j1, HCCNT
+    jadd j8, j8, j7
+    jld j9, j8, 0
+    jld j10, j1, HCOFF
+    jadd j10, j10, j7
+    jld j10, j10, 0
+    jadd j10, j10, j9
+    jldi j11, 1
+    jadd j9, j9, j11
+    jst j9, j8, 0
+    jldi j11, 4
+    jshl j10, j10, j11
+    jld j11, j1, HCTRI
+    jadd j10, j10, j11
+    jst j5, j10, 0
+    jst j6, j10, 8
+  hpl_n:
+    jldi j1, 0
+    jld j2, j1, HQ1
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HQ1
+    jjmp hpl_f
+hpl_done:
+  jret
+
+; The hypothesis at j4: j6 = 1 if each of its two relations explains more of the other's people than it leaves
+; unexplained (what one says of two words the other knows, the A on its A side and the B on its B side, said by the
+; other too, against not). Uses j1-j14 (keeps j4).
+hl_explains:
+  jldi j1, 0
+  jst j4, j1, HEW
+  jld j2, j4, 8
+  jld j3, j4, 16
+  jld j5, j4, 24
+  jcall hex_dir                 ; the second's, of the first's people
+  jjz j6, hex_no
+  jldi j1, 0
+  jld j4, j1, HEW
+  jld j2, j4, 16
+  jld j3, j4, 8
+  jld j5, j4, 24
+  jcall hex_dir                 ; the first's, of the second's people
+  jldi j1, 0
+  jld j4, j1, HEW
+  jret
+hex_no:
+  jldi j1, 0
+  jld j4, j1, HEW
+  jldi j6, 0
+  jret
+
+; Of what relation j3 says (turned the other way when j5 is 2) of the people of relation j2: j6 = 1 if it explains
+; more than it leaves unexplained. Uses j1-j14.
+hex_dir:
+  jldi j1, 0
+  jst j2, j1, HER
+  jst j3, j1, HES
+  jst j5, j1, HE2
+  jst j1, j1, HEX
+  jst j1, j1, HEU
+  jldi j6, 3
+  jshl j6, j3, j6
+  jld j7, j1, HCOFF
+  jadd j7, j7, j6
+  jld j7, j7, 0
+  jld j8, j1, HCCNT
+  jadd j8, j8, j6
+  jld j8, j8, 0
+  jst j8, j1, HE1               ; its pairs left
+  jldi j6, 4
+  jshl j7, j7, j6
+  jld j6, j1, HCTRI
+  jadd j7, j7, j6
+  jst j7, j1, HQ8               ; where they are
+  hxd_lap:
+    jldi j1, 0
+    jld j8, j1, HE1
+    jjz j8, hxd_done
+    jld j7, j1, HQ8
+    jld j9, j7, 0
+    jld j10, j7, 8
+    jld j6, j1, HE2
+    jldi j11, 2
+    jsub j6, j6, j11
+    jjnz j6, hxd_or
+    jadd j11, j9, j1
+    jadd j9, j10, j1
+    jadd j10, j11, j1
+  hxd_or:
+    jst j9, j1, HQ4
+    jst j10, j1, HQ5
+    jld j5, j1, HER             ; does the other know A, on its A side?
+    jldi j6, 0
+    jcall hl_mix
+    jld j6, j1, HQ4
+    jcall hl_mix
+    jjnz j5, hxd_k1
+    jldi j5, 1
+  hxd_k1:
+    jldi j2, HFT2
+    jcall pl_find
+    jldi j1, 0
+    jld j7, j4, 0
+    jsub j7, j7, j5
+    jjnz j7, hxd_next
+    jld j5, j1, HER             ; and B, on its B side?
+    jldi j6, 1
+    jcall hl_mix
+    jld j6, j1, HQ5
+    jcall hl_mix
+    jjnz j5, hxd_k2
+    jldi j5, 1
+  hxd_k2:
+    jldi j2, HFT2
+    jcall pl_find
+    jldi j1, 0
+    jld j7, j4, 0
+    jsub j7, j7, j5
+    jjnz j7, hxd_next
+    jld j5, j1, HER             ; then the other says A with B, or leaves it unexplained
+    jldi j6, 0
+    jcall hl_mix
+    jld j6, j1, HQ4
+    jcall hl_mix
+    jld j6, j1, HQ5
+    jcall hl_mix
+    jjnz j5, hxd_k3
+    jldi j5, 1
+  hxd_k3:
+    jldi j2, HFV
+    jcall pl_find
+    jldi j1, 0
+    jld j7, j4, 0
+    jsub j7, j7, j5
+    jjnz j7, hxd_un
+    jld j7, j1, HEX
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j1, HEX
+    jjmp hxd_next
+  hxd_un:
+    jld j7, j1, HEU
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j1, HEU
+  hxd_next:
+    jldi j1, 0
+    jld j7, j1, HQ8
+    jldi j8, 16
+    jadd j7, j7, j8
+    jst j7, j1, HQ8
+    jld j8, j1, HE1
+    jldi j7, 1
+    jsub j8, j8, j7
+    jst j8, j1, HE1
+    jjmp hxd_lap
+hxd_done:
+  jld j7, j1, HEU
+  jld j8, j1, HEX
+  jsub j7, j7, j8
+  jldi j8, 63
+  jsar j7, j7, j8
+  jldi j6, 1
+  jand j6, j6, j7
+  jret
+
 ; Relation j2, side j3 (0: one B for each A; 1: one A for each B): j6 = 1 if it is so (two words with one confirmed
 ; value, none with two). Uses j6-j8.
 hp_is:
@@ -2972,6 +3232,31 @@ hl_rooms:
   jldi j2, HFV
   jldi j3, 48
   jcall pl_new
+  jldi j2, HREF
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, HNM
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jst j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCCNT
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCOFF
+  jld j11, j1, HNF
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCTRI
   jldi j2, HWGT
   jldi j3, 32
   jcall pl_new
@@ -3186,6 +3471,23 @@ hm_ad:
     jld j7, j7, 0
     jsub j7, j7, j4
     jjnz j7, hm_bn
+    jcall hl_explains           ; it must explain the same people, both ways
+    jldi j1, 0
+    jjnz j6, hm_expl
+    jld j4, j1, HT2             ; refuted for good: never again
+    jld j5, j4, 8
+    jld j6, j4, 16
+    jcall hl_mix
+    jld j6, j4, 24
+    jcall hl_mix
+    jjnz j5, hm_rk
+    jldi j5, 1
+  hm_rk:
+    jldi j2, HREF
+    jcall pl_take
+    jjmp hm_bn
+  hm_expl:
+    jld j4, j1, HT2
     jld j5, j4, 8               ; the second into the first
     jld j6, j4, 16
     jldi j7, 3
@@ -3248,6 +3550,22 @@ hm_bd:
 ; with two B's where one of them has one B for each A), or a relation of it that is glue. Uses j1-j8 (keeps j4).
 hl_reason:
   jldi j1, 0
+  jst j4, j1, HT5               ; (refuted for good?)
+  jld j5, j4, 8
+  jld j6, j4, 16
+  jcall hl_mix
+  jld j6, j4, 24
+  jcall hl_mix
+  jjnz j5, hrs_r
+  jldi j5, 1
+hrs_r:
+  jldi j2, HREF
+  jcall pl_find
+  jldi j1, 0
+  jld j7, j4, 0
+  jld j4, j1, HT5
+  jsub j7, j7, j5
+  jjz j7, hrs_no
   jld j6, j4, 32
   jldi j7, 2
   jsub j7, j6, j7
