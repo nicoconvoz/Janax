@@ -2459,3 +2459,29 @@ mayorías otra vez. Lo que se hace es ponerle nombre, y valen las dos cosas (Cap
   siempre (se pierde sin "y la"). `tanto ~ mucho` y `que ~ quién` son de un camino nuevo.
 - **Lo que no cubre:** solo una regla suspendida a la vez; los caminos de dos juntas no se recorren. La salida tiene
   palabras del NT y no va al repo.
+
+## Una relación que hilos nunca vio (2026-11-08)
+
+Al revisar las cuentas quedó a la vista que el while de `hilos` (el que razona sin estadística) nunca se había medido
+contra una relación que no conoce. El banco de la relación nunca vista que había (4 de 112 con la memoria, 13 con el
+cubo) es de `memoria_pares` y `voluntad_semilla`: sigue vigente, porque esos archivos no cambiaron después de medirlo.
+
+- **El banco** (`nunca_vista.sh`, libros de `libros/nunca_vista.py`): diez personas. `cuida a` dice doce pares, y
+  `habla con` y `ve a` ocho cada una, sorteados (ruido). La nueva, `vela por`, dice k de los pares de `cuida a`: del
+  mismo lado, o dados vuelta como `es cuidado por`, y con o sin un par de más que nadie dijo. El nulo: k pares sorteados
+  entre las mismas personas, que `cuida a` no dice para ningún lado (diez semillas por k).
+- **Medido** (40 s todo):
+
+  | caso | resultado |
+  |---|---|
+  | k = 2, 3, 4, 6, del mismo lado (con y sin el par de más) | 8 de 8 se unen a `cuida a`, `misma` |
+  | k = 2, 3, 4, 6, dados vuelta (con y sin el par de más) | 8 de 8 se unen a `cuida a`, `al reves` |
+  | nulo (40 libros) | 0 de 40 se unen a `cuida a`; 2 de 40 se unen a `habla con` |
+
+- **Lo que dice:** con dos pares compartidos, `hilos` reconoce una forma nueva como una relación que ya conoce, y de qué
+  lado. Con pares sorteados nunca se confunde con ella. Las 2 de 40 son un falso positivo de verdad: dos relaciones de
+  ruido compartieron por suerte dos pares dados vuelta, y dos confirmaciones alcanzan para unir. Entre relaciones de
+  ruido es un 5 %.
+- **Lo que no prueba:** es la cancha de `hilos`, porque la nueva comparte pares con una conocida. Una relación nueva de
+  verdad, sin ningún par en común con nada, queda sola: se guarda como relación propia, pero no hay con qué
+  entenderla.
