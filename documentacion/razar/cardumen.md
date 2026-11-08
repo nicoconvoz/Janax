@@ -1754,5 +1754,9 @@ son "Q:"/"O:". Cuatro tramos sin leer:
   dos ya oyen todo lo que las notas dicen. Los ~10 que faltan son el límite de las notas, no del cubo.- **Y con un 4³**: 106, 106 y 106 de 116, en 5 segundos por semilla (el 7³ y el 10³, unos 32). El cubo más chico ya
   oye todo lo que dicen las notas; para esta tarea alcanza el 4³, seis veces más rápido.- **Más vueltas de escucha con el 4³** (oye todos los marcos aprendiendo, con conserva, antes de recordar): 1, 3, 10 y
   30 vueltas dan 106 a 107 de 116 con dos semillas, con 1 a 6 % de los pesos en el techo. Las vueltas tampoco mueven
-  nada: con conserva el cubo no se satura, pero ya oía todo. El techo de ~106 está en las notas.
+  nada: con conserva el cubo no se satura, pero ya oía todo. El techo de ~106 está en las notas.- **Las ~10 que falla, mirada una por una** (`una=`, el control): 9 de 10 son **el mecanismo equivocado sobre la misma
+  cosa**. La vaca tiene "qué es", "qué come", "dónde vive" y "cuántas patas", y a "¿qué come la vaca?" contesta "la vaca
+  es un animal": una respuesta verdadera, pero de otra pregunta. La décima es una trampa ("el mono y moscú"). Las notas
+  describen la oración alrededor de la cosa, pero no dicen nada de la pregunta: las palabras del mecanismo ("come",
+  "patas", "vive") no entran. Siguiente: sumar a las notas las palabras de la pregunta que no son el lugar.
 

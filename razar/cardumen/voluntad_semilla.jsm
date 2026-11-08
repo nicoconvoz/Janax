@@ -1157,8 +1157,9 @@ ak_judge:
   jcall puts
   jld j2, j1, GBI
   jcall putnum
-  jldi j1, S_UNA3
+  jldi j1, 0
   jld j2, j1, GBL
+  jldi j1, S_UNA3
   jjnz j2, akj_si
   jldi j1, S_UNA4
 akj_si:
