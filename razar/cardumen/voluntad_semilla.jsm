@@ -56,8 +56,9 @@ MEMO  = 10A8h                   ; 1: the kernel's memory (memorize, recall): the
 REPS  = 10B0h                   ; before remembering, the school hears every read frame this many times, learning
 CONSV = 10B8h                   ; 1: the school keeps each piece's total (born with bit 9)
 UNA   = 10C0h                   ; a question plus one: only that one is asked, and what it chose is said
-HOWA  = 10C8h                   ; what the school said of itself (order 7): off their total; at the ceiling, all
-HOWB  = 10D0h
+VER   = 10C8h                   ; 1: every question asked says how alike its winner was to what it remembers
+HOWA  = 10E8h                   ; what the school said of itself (order 7): off their total; at the ceiling, all
+HOWB  = 10F0h
 M48   = 1100h                   ; 2^48 - 1
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
@@ -123,7 +124,8 @@ FNBN  = 1388h                   ; first, how many} (ITX); the biggest note
 ITX   = 1390h
 FNMAX = 1398h
 SGN   = 13A0h                   ; the song being said: how many greetings
-GBI   = 13A8h                   ; asking: the sentence of its best frame
+GBI   = 13A8h                   ; asking: the sentence of its best frame, how alike it was to the most alike that answered
+GBP   = 13B0h
 SONGM = 2000h                   ; the song being said: the pieces of each greeting (a qword each, 255 at most)
 TEXT  = 3000h                   ; the line it writes
 include '../../escalon0/janax.inc'
@@ -151,7 +153,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 72
+jldi j12, 80
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -1113,6 +1115,8 @@ asked:
     jld j2, j1, CUR
     jld j2, j2, 8
     jst j2, j1, GBI
+    jld j2, j1, BPOS
+    jst j2, j1, GBP
   ak_next:
     jldi j2, 1
     jadd j9, j9, j2
@@ -1146,6 +1150,37 @@ ak_judge:
   jst j2, j1, QCH
   jld j12, j1, GBL
   jcall mix
+  jldi j1, 0                    ; (each one: right, its winner's share, how alike to the most alike that answered)
+  jld j2, j1, VER
+  jjz j2, akj_una
+  jldi j2, 90                   ; "Z: question right share alike" (a share less than 0 said as 0)
+  jcall putc1
+  jldi j2, 58
+  jcall putc1
+  jldi j2, 32
+  jcall putc1
+  jld j2, j1, GQ
+  jcall putnum
+  jldi j2, 32
+  jcall putc1
+  jld j2, j1, GBL
+  jcall putnum
+  jldi j2, 32
+  jcall putc1
+  jld j2, j1, GBS
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, akj_pos
+  jldi j2, 0
+akj_pos:
+  jcall putnum
+  jldi j2, 32
+  jcall putc1
+  jld j2, j1, GBP
+  jcall putnum
+  jldi j2, 10
+  jcall putc1
+akj_una:
   jldi j1, 0                    ; (only one: what it chose, said)
   jld j2, j1, UNA
   jjz j2, akj_done
@@ -1950,6 +1985,16 @@ learn:
   jld j2, j1, HEARD
   jadd j2, j2, j10
   jst j2, j1, HEARD
+  jret
+
+; The character j2 at TEXT + POS. Uses j1, j3, j4 (j1 = 0 after).
+putc1:
+  jldi j1, 0
+  jld j4, j1, POS
+  jstb j2, j4, TEXT
+  jldi j3, 1
+  jadd j4, j4, j3
+  jst j4, j1, POS
   jret
 
 ; Its dice: seed2 = (seed2 * 1103515245 + 12345) mod 2^31 -> j13 = seed2 >> 16. Uses j14.

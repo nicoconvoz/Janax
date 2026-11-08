@@ -1847,4 +1847,22 @@ con otras palabras, 288 trampas.
   sí conoce. El 64 % del banco anterior era el defecto de las trampas fáciles. **Aprendió siete relaciones, no la idea
   de relación**: con 16 ejemplos de cada una, sin entrenar y a prueba de paráfrasis, pero ninguna transferencia a una
   relación nueva.
+**¿Sabe cuándo no sabe?** (el otro chat: *"no puede decir no sé, así que contesta mal con seguridad"*).
+`voluntad_semilla.jsm` con `ver=1` (décimo parámetro) dice por pregunta si acertó y cuánto se parece su ganador al
+recuerdo más parecido que contestaba (Jaccard, millonésimas). Banco de trampas, control:
+
+| parecido del ganador | conocidas (112) | bien | nuevas (112) | bien |
+|---|---|---|---|---|
+| 90–100 % | 106 | 98 | 14 | 0 |
+| 80–90 % | 4 | 2 | 38 | 0 |
+| 70–80 % | 0 | 0 | 28 | 0 |
+| 60–70 % | 1 | 1 | 10 | 0 |
+| 50–60 % | 1 | 1 | 16 | 4 |
+| menos de 50 % | 0 | 0 | 6 | 0 |
+
+- **Las relaciones nuevas se parecen menos a lo que recuerda**: el parecido separa casi limpio lo conocido de lo nuevo.
+- Callándose por debajo de 90 %: conocidas, contesta 106 (98 bien, 8 mal) y calla 6; nuevas, contesta 14 (todas mal) y
+  calla 98. Los errores seguros en relaciones nuevas bajan de 108 a 14.
+- ⚠️ Ese 90 % salió de mirar esta tabla: **es criterio, no medición**. Para que valga, Razar tiene que sacarlo de lo que
+  leyó (probarse con sus propias preguntas leídas, de a una afuera) antes de ver ninguna nueva.
 
