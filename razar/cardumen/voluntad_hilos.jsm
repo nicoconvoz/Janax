@@ -7,7 +7,11 @@
 ; With "cantos" instead (Capitan, 2026-11-08: "that it hears it"), each thing is a song: for each thing, its notes
 ; (two bytes how many, then three bytes a note: its bottom pieces). A round sings the whole song, note by note, and
 ; what the cube answers to all of it (which top piece woke at which step, how many times) is what it heard; it guesses
-; the thing whose learned answers that resembles most (as for one signal), and learns it. Pieces are never moved, and
+; the thing whose learned answers that resembles most, and learns it. Resembles by shape, not by amount: what it heard
+; times what it learned of a thing, over the size of what it learned of it (its square root of the sum of squares, the
+; cosine but for what it heard, the same for every thing). For one signal the answers are all of one size and the
+; share of all it heard does; for songs of many lengths that share took the long ones for the short ones (the 16
+; learned at 68%). Pieces are never moved, and
 ; a right song is not sounded again (a song is many signals already). Songs after the k things are new ones (256 at
 ; most): never learned, each heard once after the rounds, and "U: song thing" says which learned thing it took it for
 ; ("-": none of them), to see where a relation it never learned goes.
@@ -77,6 +81,7 @@ CLAB2 = 0D70h
 SEXT  = 0D78h                   ; the new songs: how many, walking, what it took each for (a room)
 SXI   = 0D80h
 SUG   = 0D88h
+SRR   = 0D90h                   ; by thing, the sum of the squares of what it learned (a room)
 include '../../escalon0/janax.inc'
 jfirst j1, 2000h               ; first order: room 0
 
@@ -801,6 +806,13 @@ sr_xd:
   jcall ask
   jldi j1, 0
   jst j13, j1, SUG
+  jld j11, j1, KV
+  jldi j6, 3
+  jshl j11, j11, j6
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SRR
   jld j2, j1, STH
   jld j6, j1, SBYT
   jsub j6, j6, j2
@@ -939,8 +951,13 @@ s_hear:
     jldi j1, 0
     jldi j3, 3
     jshl j3, j8, j3
-    jld j10, j3, HEARD
-    jjz j10, sg_next
+    jld j2, j1, SRR
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jjz j2, sg_next
+    jcall isqrt
+    jldi j1, 0
+    jadd j10, j2, j1
     jld j4, j1, GSZ
     jmul j4, j8, j4
     jld j3, j1, RBASE
@@ -1018,6 +1035,7 @@ s_main:
     jadd j4, j4, j3
     jld j5, j1, SHN
     jld j6, j1, SHL
+    jldi j11, 0
     jwhile j5
       jld j7, j6, 0
       jldi j3, 3
@@ -1028,6 +1046,10 @@ s_main:
       jst j1, j3, 0
       jadd j7, j7, j4
       jld j10, j7, 0
+      jadd j12, j10, j10            ; (its square grows by 2 r v + v^2)
+      jadd j12, j12, j9
+      jmul j12, j12, j9
+      jadd j11, j11, j12
       jadd j10, j10, j9
       jst j10, j7, 0
       jldi j3, 8
@@ -1037,6 +1059,11 @@ s_main:
     jwend
     jldi j3, 3
     jshl j3, j8, j3
+    jld j7, j1, SRR
+    jadd j7, j7, j3
+    jld j9, j7, 0
+    jadd j9, j9, j11
+    jst j9, j7, 0
     jld j7, j3, HEARD
     jld j6, j1, CNTS
     jadd j7, j7, j6
@@ -1140,6 +1167,44 @@ s_main:
     jjmp s_x
 s_xd:
   jjmp v_end
+
+; j2 = the whole square root of j2 (j2 >= 0), bit by bit. Uses j2-j6.
+isqrt:
+  jldi j3, 0                    ; the root
+  jldi j4, 1
+  jldi j5, 62
+  jshl j4, j4, j5
+  isq_top:
+    jsub j5, j2, j4
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, isq_lap
+    jldi j6, 2
+    jshr j4, j4, j6
+    jjnz j4, isq_top
+isq_lap:
+  jjz j4, isq_done
+  jadd j5, j3, j4
+  jsub j6, j2, j5
+  jldi j5, 63
+  jsar j6, j6, j5
+  jldi j5, 1
+  jjnz j6, isq_small
+  jsub j2, j2, j3
+  jsub j2, j2, j4
+  jshr j3, j3, j5
+  jadd j3, j3, j4
+  jjmp isq_next
+isq_small:
+  jshr j3, j3, j5
+isq_next:
+  jldi j5, 2
+  jshr j4, j4, j5
+  jjmp isq_lap
+isq_done:
+  jldi j5, 0
+  jadd j2, j3, j5
+  jret
 
 ; j2 and a space at TEXT + j7 (putnum); j7 moves past them. Keeps j8-j15. Uses j1-j4.
 c_num:

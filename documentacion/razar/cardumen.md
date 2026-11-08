@@ -2111,3 +2111,23 @@ aprendidas son las mismas en los dos. NT, 7³, 800 vueltas:
 - **Lo que deja esta línea:** con lo que el NT tiene (relaciones que comparten 2 o 3 pares entre decenas), el cubo no
   ve más que la cuenta de hilos, y ve menos: la cuenta contra el nulo los encuentra (nulo 0), el cubo no. Los 16 del
   7³ eran 16 cosas distintas que separar; acá lo que hace falta es juntar lo poco que dos relaciones comparten.
+
+**Gorro y apellido** (Capitán: *"no miramos el gorro, miramos el apellido: dos distinciones, color de gorro y apellido,
+y podemos diferenciar incluso entre hermanos"*). `hilos` con `tanda` dice de cada forma su **gorro** (una nota por
+palabra de la forma: lo que sólo ella tiene, `G:`/`H:`) y su **apellido** (una nota por palabra que dicen dos de sus
+pares o más, las más dichas si no entran en la canción: lo que comparten los parientes, `A:`/`B:`). "hijo de" y
+"padre de" comparten 3 pares, pero los nombres de la misma familia: el apellido de "hijo de" tiene 69 nombres, el de
+"padre de" 26; el de "fue padre de" 4, y 2 son de "hijo de".
+
+- **La cuenta de apellidos, sin cubo:** de las 16 nuevas, en **13** la que más notas de apellido comparte es su
+  pariente. La idea del apellido tiene la señal.
+- **El instrumento mentía:** la voluntad adivinaba por la parte de todo lo que oyó de cada cosa; con canciones de
+  largos distintos eso toma las largas por las cortas (las 16 aprendidas, 68 %). Ahora compara por forma y no por
+  cantidad (lo oído por lo aprendido sobre el tamaño de lo aprendido: el coseno): las aprendidas llegan al **100 %**.
+  Con canciones idénticas el cubo a veces las separa por cuándo las oyó (la escuela cambia); la prueba lo dice así.
+- **El cubo, con gorro y apellido** (7³, 800 vueltas): lleva la nueva a su pariente **5 de 16**; con el apellido
+  prestado de la nueva siguiente, **4 de 16** (y el prestado no es nulo limpio: las cinco de Lucas se prestan apellido
+  entre parientes). Las que acierta son las de apellido grande ("y de", "ni", "y en el") y dos de Lucas.
+- **Por qué el cubo no llega a la cuenta:** el gorro son notas que nadie más tiene, el apellido de las nuevas tiene de
+  1 a 4 notas contra gorros de 1 a 3, y una nota compartida entre decenas no mueve la forma de toda la canción. La
+  cuenta mira sólo lo compartido; el cubo oye todo.

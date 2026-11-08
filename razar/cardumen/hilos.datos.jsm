@@ -70,3 +70,11 @@ times 4D0h - $ db 0
 db 'V: ', 0
 times 4E0h - $ db 0
 db 'W: ', 0
+times 4F0h - $ db 0
+db 'G: ', 0
+times 500h - $ db 0
+db 'A: ', 0
+times 510h - $ db 0
+db 'H: ', 0
+times 520h - $ db 0
+db 'B: ', 0

@@ -3,9 +3,10 @@
 # "cosas" it is the will of always: 7^3 with 16 things and seed 7, the fingerprint of voluntad.jsm. With "cosas", where
 # things 0 and 1 are said with the same three pieces and the rest each with its own, the cube cannot tell them apart:
 # for 1 it keeps guessing 0 (more than half the last quarter); a thing with pieces of its own is guessed right more
-# than half of it. With "cantos", each thing a song of five notes, songs 0 and 1 the same and the rest each its own:
-# the same, for songs sung whole (which of 0 and 1 it keeps is the cube's). And a new song, never learned, made of three
-# of the five notes of song 5: heard once at the end, it is taken for 5.
+# than half of it. With "cantos", each thing a song of five notes, songs 0 and 1 the same and the rest each its own,
+# sung whole: 1 is taken for 0 some of the time (by shape the two are one; what tells them apart sometimes is only when
+# the cube heard them, as the school changes), a song of its own right more than half. And a new song, never learned,
+# made of three of the five notes of song 5: heard once at the end, it is taken for 5.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -58,7 +59,7 @@ fi
 set -- $(printf '%s\n' "$cantadas" | grep '^C: 5 '); cbien5=$3; ctodas5=$4
 set -- $(printf '%s\n' "$cantadas" | grep '^U: 0 '); nueva=${3:-}
 if [ "$(huella "$sola")" = "$(huella "$madre")" ] && [ "$otro1" = 0 ] && [ $((veces1 * 2)) -gt "$todas1" ] &&
-   [ $((bien5 * 2)) -gt "$todas5" ] && [ "$cotro1" = 0 ] && [ $((cveces1 * 2)) -gt "$ctodas1" ] &&
+   [ $((bien5 * 2)) -gt "$todas5" ] && [ "$cotro1" = 0 ] && [ "$cveces1" -gt 0 ] &&
    [ $((cbien5 * 2)) -gt "$ctodas5" ] && [ "$nueva" = 5 ]; then
   echo "voluntad_hilos_prueba: bien"
 else

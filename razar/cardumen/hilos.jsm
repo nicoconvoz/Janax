@@ -58,6 +58,10 @@ S_QT     = 4B0h
 S_UT     = 4C0h
 S_VT     = 4D0h
 S_WT     = 4E0h
+S_GT     = 4F0h
+S_AT     = 500h
+S_HT     = 510h
+S_BT     = 520h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -139,6 +143,10 @@ HTSAY = 17B8h                   ; (the number said for a form; how many new ones
 HNNEW = 17C0h                   ; crossed)
 HSR   = 17C8h
 HSC   = 17D0h
+HWX   = 17D8h                   ; the words a form's pairs say, by print {print, how many} (a growing table); the
+HSCUT = 17F8h                   ; fewest times a surname's word has; how many words it has
+HSWN  = 1800h
+HSX   = 1808h                   ; (the text a cap or a surname is said with)
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -907,7 +915,12 @@ hl_sayform:
 ; forms fit in a song are taken: 255 notes at most, what a melody holds (measured: a melody joins up to 255 greetings).
 ; Then the new ones, for the cube to hear without learning them: forms not chosen that relate to a chosen one (the
 ; strongest first, as many as the chosen at most), "U: j r way pairs | words" (r the chosen one it relates to), and
-; their songs, "V: j p p p" ("W:" crossed). Uses j1-j14.
+; their songs, "V: j p p p" ("W:" crossed). And each one's cap and surname (Capitan, 2026-11-08: "we look at the
+; surname: two distinctions, the cap's color and the surname, and we can tell even brothers apart"): its cap, a note a
+; word of the form itself ("G: i p p p"; "H:" for the new ones), what only it has; its surname, a note a word its
+; pairs say, the words said by two of its pairs or more (the most said, if they do not fit in a song with its cap)
+; ("A: i p p p"; "B:" for the new ones), what its relatives share: "hijo de" and "padre de" share three pairs, but
+; the names of the same family. Uses j1-j14.
 hl_tanda:
   jldi j1, 0
   jld j11, j1, HTK
@@ -1146,6 +1159,10 @@ ht_rd:
     jldi j2, 1
     jst j2, j1, HTG
     jcall ht_song
+    jldi j1, S_GT
+    jcall ht_cap
+    jldi j1, S_AT
+    jcall ht_surname
     jldi j1, 0
     jld j2, j1, HTI
     jldi j3, 1
@@ -1297,6 +1314,10 @@ ht_news:
     jldi j2, 1
     jst j2, j1, HTG
     jcall ht_song
+    jldi j1, S_HT
+    jcall ht_cap
+    jldi j1, S_BT
+    jcall ht_surname
     jldi j1, 0
     jld j2, j1, HNNEW
     jldi j3, 1
@@ -1304,6 +1325,246 @@ ht_news:
     jst j2, j1, HNNEW
     jjmp hn_pick
 hn_done:
+  jret
+
+; The three pieces of a note from value j7 (a print, or the two words of a pair): all different, of HTN^2 -> HP1-HP3.
+; Uses j1, j7-j13.
+ht_pieces:
+  jldi j1, 0
+  jldi j8, 4
+  jshr j7, j7, j8
+  jld j8, j1, HTN
+  jmul j8, j8, j8
+  jdiv j9, j7, j8
+  jmul j10, j9, j8
+  jsub j10, j7, j10
+  jst j10, j1, HP1
+  jdiv j7, j9, j8
+  jmul j11, j7, j8
+  jsub j11, j9, j11
+  jsub j12, j11, j10
+  jjnz j12, hpc_2
+  jldi j12, 1
+  jadd j11, j11, j12
+  jsub j12, j11, j8
+  jjnz j12, hpc_2
+  jldi j11, 0
+hpc_2:
+  jst j11, j1, HP2
+  jdiv j9, j7, j8
+  jmul j12, j9, j8
+  jsub j12, j7, j12
+  hpc_3:
+    jsub j13, j12, j10
+    jjz j13, hpc_3n
+    jsub j13, j12, j11
+    jjnz j13, hpc_3d
+  hpc_3n:
+    jldi j13, 1
+    jadd j12, j12, j13
+    jsub j13, j12, j8
+    jjnz j13, hpc_3
+    jldi j12, 0
+    jjmp hpc_3
+hpc_3d:
+  jst j12, j1, HP3
+  jret
+
+; The cap of form HTI (of HCH), said with the text at j1: a note a word of the form. Uses j1-j14.
+ht_cap:
+  jldi j2, 0
+  jst j1, j2, HSX
+  jldi j1, 0
+  jld j2, j1, HTI
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCH
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jst j3, j1, HT3
+  jst j1, j1, HTJ
+  hcp_lap:
+    jldi j1, 0
+    jld j3, j1, HT3
+    jld j4, j3, 24
+    jld j5, j1, HTJ
+    jsub j4, j5, j4
+    jjz j4, hcp_done
+    jld j2, j3, 8
+    jld j4, j3, 16
+    jadd j3, j4, j5
+    jcall en_word
+    jadd j7, j5, j1
+    jcall ht_pieces
+    jld j1, j1, HSX
+    jcall ht_say
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HTJ
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HTJ
+    jjmp hcp_lap
+hcp_done:
+  jret
+
+; The surname of form HTI, said with the text at j1: a note a word its pairs say, the words said by two of its pairs or
+; more; if they do not fit in a song with its cap (255 notes), the most said (the fewest times raised until they fit).
+; Uses j1-j14.
+ht_surname:
+  jldi j2, 0
+  jst j1, j2, HSX
+  jldi j2, HWX
+  jld j3, j2, 0
+  jjnz j3, hsn_have
+  jldi j3, 16
+  jcall pl_new
+  jjmp hsn_count
+hsn_have:
+  jcall hl_clear
+hsn_count:
+  jldi j1, 0
+  jld j2, j1, HTI
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCH
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jst j3, j1, HT3
+  jld j2, j3, 40
+  hsn_p:                        ; each word of its pairs, counted
+    jldi j1, 0
+    jst j2, j1, HTJ
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, hsn_pd
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j5, j3, 8
+    jcall hsn_one
+    jldi j1, 0
+    jld j2, j1, HTJ
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j5, j3, 16
+    jcall hsn_one
+    jldi j1, 0
+    jld j2, j1, HTJ
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j2, j3, 24
+    jjmp hsn_p
+hsn_pd:
+  jldi j2, 2                    ; the fewest times: two, raised until they fit with its cap
+  jst j2, j1, HSCUT
+  hsn_c:
+    jldi j1, 0
+    jst j1, j1, HSWN
+    jldi j2, HWX
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jld j4, j2, 0
+    jld j5, j2, 24
+    jld j6, j1, HSCUT
+    hsn_w:
+      jjz j3, hsn_wd
+      jld j7, j4, 0
+      jjz j7, hsn_wn
+      jld j7, j4, 8
+      jsub j7, j7, j6
+      jldi j8, 63
+      jsar j7, j7, j8
+      jjnz j7, hsn_wn
+      jld j7, j1, HSWN
+      jldi j8, 1
+      jadd j7, j7, j8
+      jst j7, j1, HSWN
+    hsn_wn:
+      jadd j4, j4, j5
+      jldi j7, 1
+      jsub j3, j3, j7
+      jjmp hsn_w
+  hsn_wd:
+    jld j3, j1, HT3
+    jld j3, j3, 24
+    jld j2, j1, HSWN
+    jadd j2, j2, j3
+    jldi j3, 256
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, hsn_say
+    jld j2, j1, HSCUT
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HSCUT
+    jjmp hsn_c
+hsn_say:
+  jldi j2, HWX
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HT4
+  jld j4, j2, 0
+  jst j4, j1, HT5
+  hsn_s:
+    jldi j1, 0
+    jld j3, j1, HT4
+    jjz j3, hsn_done
+    jld j4, j1, HT5
+    jld j7, j4, 0
+    jjz j7, hsn_sn
+    jld j8, j4, 8
+    jld j9, j1, HSCUT
+    jsub j8, j8, j9
+    jldi j9, 63
+    jsar j8, j8, j9
+    jjnz j8, hsn_sn
+    jcall ht_pieces
+    jld j1, j1, HSX
+    jcall ht_say
+    jldi j2, 10
+    jcall putch
+  hsn_sn:
+    jldi j1, 0
+    jld j4, j1, HT5
+    jldi j5, HWX
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HT5
+    jld j3, j1, HT4
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HT4
+    jjmp hsn_s
+hsn_done:
+  jret
+
+; Word j5 of a pair counted in HWX. Uses j1-j8.
+hsn_one:
+  jldi j2, HWX
+  jcall pl_take
+  jldi j1, 0
+  jld j7, j4, 8
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j4, 8
   jret
 
 ; j7 = the flag of form j7 (0 nothing, 1 chosen, 2 new). Uses j7, j8.
