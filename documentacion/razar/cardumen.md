@@ -2000,3 +2000,30 @@ tienen un solo lugar que cambie. La genealogía sí es un encadenado (*"abraham 
 jacob; jacob, padre de judá y de sus hermanos"*), pero nadie pregunta por ella, y dice varios pasos por oración con
 el verbo callado desde el segundo. El instrumento contaba como acierto callar donde no había verdad ("aciertan 1103"):
 ahora sin "R:" no se juzga.
+
+### Hilos: relaciones del texto crudo, sin preguntas (hilos.jsm, 2026-11-08)
+
+El Capitán: *"no tenemos que masticarle la comida para que coma: tiene que aprender a comer él mismo y destilar sus
+propios mecanismos, que emerja el razonamiento"*. Nadie le pregunta nada ni le corta el texto. `hilos.jsm` (prueba
+`hilos_prueba.sh`) lee los edificios del libro y:
+
+- **la mitad** (las palabras más dichas que hacen la mitad de lo que dice el libro) son la gramática; el resto puede
+  ocupar un lugar;
+- **una relación** es una forma "_ <una a tres palabras> _" con dos palabras fuera de la mitad en sus lugares, dicha
+  por dos pares;
+- **dos relaciones se relacionan** si sostienen el mismo par, del mismo lado o al revés. **Nulo:** los pares de cada
+  relación cruzados entre sí (cada uno con la segunda palabra del anterior): conservan qué palabras usa, no cuál va
+  con cuál. Vale si la dicen dos pares y supera su nulo.
+
+Sobre el NT entero (167.035 palabras, 0,4 s): la mitad son las dichas 344 veces o más; 6.439 de 38.574 formas las
+dicen dos pares; **444 relaciones de relaciones**, 145 con nulo 0.
+
+- **Lo primero que emerge es gramática**, sin que nadie la nombre: "el ~ un", "la ~ una", "su ~ mi", "los ~ sus",
+  "de ~ del", "y ~ o", "y ~ ni" (13-28 pares, nulos 0-2,5). Son las clases de los determinantes y los conectores.
+- **Y el parentesco al revés:** "hijo de ~ padre de | al revés | 3 pares | nulo 0" (Lucas 3 contra Mateo 1, dos
+  traducciones de la misma cadena), y "hijo de ~ fue padre de | al revés | 2 | nulo 0". El verbo callado de Mateo
+  ("isaac, padre de jacob") y el dicho ("abraham fue padre de isaac") nunca sostienen el mismo par, pero los dos son
+  el revés de "hijo de": son la misma relación un piso más arriba.
+- Las de "hijo de ~ sela hijo de" (nulo 1) son la cadena de Lucas vista con un nombre adentro: dos pasos seguidos.
+- ⚠️ Falta: unir relaciones por sus relaciones (el mismo mecanismo, un piso arriba), encadenar con ellas y verificar
+  los caminos contra lo que el libro dice de una vez ("jesucristo, hijo de david, hijo de abraham").
