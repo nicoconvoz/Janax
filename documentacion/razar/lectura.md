@@ -3047,3 +3047,9 @@ profundidad, lo más hondo se resuelve primero.
     después de un cierre o de un salto;
   - el paso 3: que cada edificio se cierre con el signo de su propia profundidad.
 - Es sólo el instrumento: no cambia cómo lee. Controles idénticos.
+- **Los pares, como una pila (la calculadora del Capitán: cada cierre cierra al último que abrió):** los candidatos se
+  prueban del más fuerte al más débil, y cada uno queda si, leyendo la fila con una pila de los ya aceptados, la
+  mayoría de sus cierres encuentran arriba a su propia apertura (`mk_stack`, `mk_run`). Así ":" queda como separador:
+  cuando aparece, la "«" anterior ya la cerró "»". La mayúscula queda fuera de la pila (los nombres abren y nunca
+  cierran). Se probaron y se sacaron "el lado de adentro es el corto" (rompe el par de la oración, que va pegada a la
+  siguiente) y "la mayúscula que abre es la que viene después de un signo" (la de "Pedro, Santiago" también).

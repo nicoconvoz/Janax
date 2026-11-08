@@ -427,6 +427,17 @@ MK6   = 5880h
 MK7   = 5888h
 MK8   = 5890h
 MK9   = 5898h
+MKO   = 58A0h                   ; the pairs as a stack: by word as an opener, as a closer; the pairs, how many; the
+MKQ   = 58A8h                   ; stack, how high; the best candidate, its times; a mark kept; a closer's times on
+MKPR  = 58B0h                   ; its opener, its times
+MKPN  = 58B8h
+MKS   = 58C0h
+MKSN  = 58C8h
+MKBE  = 58D0h
+MKBT  = 58D8h
+MKX   = 58E0h
+MKHIT = 58E8h
+MKALL = 58F0h
 QPTI  = 5818h                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
@@ -8089,6 +8100,7 @@ mk_report:
     jadd j9, j9, j2
     jjmp mkr_unit
 mkr_counted:
+  jcall mk_stack                ; (its pairs, as a stack)
   jldi j1, S_MKH
   jcall puts
   jst j1, j1, MK4               ; each mark seen twice or more, in the order first seen
@@ -8370,9 +8382,21 @@ mks_opens:
   jldi j1, S_MAB
   jcall puts
   jjmp mks_glue
-mks_close:                      ; else it closes (an opener goes with it most times) or it separates
-  jcall mk_pair
-  jjz j2, mks_sep
+mks_close:                      ; else it closes (a pair kept, as a stack) or it separates
+  jld j2, j1, MK3
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, MKQ
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jjz j3, mks_sep
+  jldi j4, 1
+  jsub j3, j3, j4
+  jldi j4, 4
+  jshl j3, j3, j4
+  jld j4, j1, MKPR
+  jadd j3, j3, j4
+  jld j2, j3, 0
   jst j2, j1, MK3
   jldi j1, S_MCI
   jcall puts
@@ -8394,6 +8418,260 @@ mks_glue:
   jcall putnum
 mks_done:
   jldi j1, 0
+  jret
+
+; The pairs, as a stack (the Capitan's calculator: "each one that closes closes the last one that opened"): the
+; candidates (an opener that compensates with a closer both ways, mk_both) tried from the strongest (the most times)
+; down; each one is kept when, with the ones kept before it, the row read with a stack has most of its closer's times
+; closing its own opener, the one on top. ":" goes so: when it comes, the last "«" was closed already by "»". The
+; capital stays out of the stack (names open and never close). By word: MKO its pair as an opener, MKQ as a closer
+; (the pair's number plus one); the pairs at MKPR {opener, closer}, MKPN of them. Uses j1-j14.
+mk_stack:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKO
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKQ
+  jld j11, j1, MKLN
+  jmul j11, j11, j11
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKPR
+  jst j1, j1, MKPN
+  jld j11, j1, NTOK             ; (the stack: an opener a place at most)
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKS
+  mks2_round:                   ; the strongest candidate not tried
+    jldi j1, 0
+    jst j1, j1, MKBE
+    jst j1, j1, MKBT
+    jld j9, j1, MKP
+    jld j10, j1, MKP + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    mks2_c:
+      jldi j1, 0
+      jjz j10, mks2_got
+      jld j2, j9, 0
+      jjz j2, mks2_cnext
+      jld j2, j9, 24
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, mks2_cnext       ; (tried: its times made negative)
+      jld j3, j1, MKBT
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j2, j9, 8             ; (the capital stays out; a mark already in a pair stays as it is)
+      jld j3, j1, NV
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j2, j9, 16
+      jld j3, j1, NV
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j3, j9, 16
+      jld j2, j1, MK3
+      jst j3, j1, MK3
+      jst j9, j1, MK8
+      jst j10, j1, MK9
+      jst j2, j1, MKX
+      jcall mk_both
+      jldi j1, 0
+      jld j3, j1, MKX
+      jst j3, j1, MK3
+      jld j9, j1, MK8
+      jld j10, j1, MK9
+      jjz j2, mks2_cnext
+      jld j2, j9, 24
+      jst j2, j1, MKBT
+      jst j9, j1, MKBE
+    mks2_cnext:
+      jld j2, j1, MKP + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp mks2_c
+  mks2_got:
+    jld j9, j1, MKBE
+    jjz j9, mks2_done
+    jld j2, j9, 24              ; (tried)
+    jldi j3, 0
+    jsub j2, j3, j2
+    jst j2, j9, 24
+    jld j2, j9, 8               ; a mark in a pair already: no second pair
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjnz j3, mks2_round
+    jld j2, j9, 16
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjnz j3, mks2_round
+    jld j2, j1, MKPN            ; tried with the ones kept: as a pair for now
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, MKPR
+    jadd j3, j3, j4
+    jld j4, j9, 8
+    jst j4, j3, 0
+    jld j4, j9, 16
+    jst j4, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MKPN
+    jld j3, j9, 8
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jst j2, j3, 0
+    jld j3, j9, 16
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jst j2, j3, 0
+    jst j2, j1, MKX
+    jcall mk_run
+    jldi j1, 0
+    jjnz j2, mks2_round         ; most of its closer's times close its own: kept
+    jld j2, j1, MKPN            ; else out again
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, MKPN
+    jld j9, j1, MKBE
+    jld j3, j9, 8
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jst j1, j3, 0
+    jld j3, j9, 16
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jst j1, j3, 0
+    jjmp mks2_round
+mks2_done:
+  jldi j1, 0
+  jret
+
+; The row read with a stack of the pairs kept: j2 = 1 if most times the closer of pair MKX comes, its opener is on
+; top. Uses j1-j14.
+mk_run:
+  jldi j1, 0
+  jst j1, j1, MKSN
+  jst j1, j1, MKHIT
+  jst j1, j1, MKALL
+  jldi j9, 1
+  mkrn_lap:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, mkrn_end
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMT
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjz j2, mkrn_next
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKQ
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jjz j5, mkrn_open
+    jld j6, j1, MKX             ; a closer: is its opener on top?
+    jsub j6, j5, j6
+    jjnz j6, mkrn_close
+    jld j6, j1, MKALL
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKALL
+  mkrn_close:
+    jld j6, j1, MKSN
+    jjz j6, mkrn_next
+    jldi j7, 1
+    jsub j6, j6, j7
+    jldi j7, 3
+    jshl j7, j6, j7
+    jld j8, j1, MKS
+    jadd j7, j7, j8
+    jld j8, j7, 0
+    jsub j8, j8, j5
+    jjnz j8, mkrn_next          ; (another one on top: it closes nothing)
+    jst j6, j1, MKSN
+    jld j6, j1, MKX
+    jsub j6, j5, j6
+    jjnz j6, mkrn_next
+    jld j6, j1, MKHIT
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKHIT
+    jjmp mkrn_next
+  mkrn_open:
+    jld j4, j1, MKO
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jjz j5, mkrn_next
+    jld j6, j1, MKSN
+    jldi j7, 3
+    jshl j7, j6, j7
+    jld j8, j1, MKS
+    jadd j7, j7, j8
+    jst j5, j7, 0
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKSN
+  mkrn_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mkrn_lap
+mkrn_end:
+  jld j2, j1, MKHIT
+  jadd j2, j2, j2
+  jld j3, j1, MKALL
+  jsub j2, j3, j2
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, mkrn_no
+  jldi j2, 1
+  jret
+mkrn_no:
+  jldi j2, 0
   jret
 
 ; Mark MK3's pair: of the openers (the capital, or one the next glues to most times) that compensate with it both ways
