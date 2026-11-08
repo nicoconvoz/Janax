@@ -2771,3 +2771,24 @@ van al repo).
   mitad (92 contra 188). Puede ser el género (una enciclopedia nombra cosas distintas en cada artículo y repite menos
   las mismas relaciones) o el principio de la saturación (ya sabe mucho de la gramática que comparten). Con un solo
   punto no se distingue: hace falta otra enciclopedia antes que el Quijote, o el Quijote al final.
+
+## El cruce: Wikipedia en el lugar 4, el Quijote en el 11 (2026-11-08)
+
+Una devolución pegada por el Capitán propuso cambiar solo esos dos y dejar quietos los otros nueve, así lo único que
+cambia es su lugar en la fila.
+
+| libro | salto en el lugar 4 | salto en el lugar 11 |
+|---|---|---|
+| Wikipedia | 88 | 92 |
+| Quijote | 188 | 157 |
+
+- **Es sobre todo el género.** Wikipedia suma lo mismo temprano o tarde (88 y 92: un poco más tarde, por lo que ya
+  sabía). El Quijote suma el doble que Wikipedia en cualquier lugar.
+- **Hay un poco de saturación, solo en el Quijote:** al final suma 31 menos (−17 %). La gramática que comparte con los
+  demás ya estaba sabida.
+- **Transferencia positiva:** Wikipedia sola da 88. Después de diez libros da 92, y 28 de esas son pendientes de
+  libros anteriores que solo pudo verificar por lo que ya sabía. Un libro rinde más por lo que se aprendió antes.
+- **El total depende del orden:** 496 en la fila de antes, 451 en esta (−45). Es el mismo efecto del camino que ya se
+  había visto dentro de un libro, ahora entre libros. Medirlo bien pide recorrer varios órdenes.
+- **La curva puede bajar:** se durmieron 7 uniones en esta fila. La pendiente se mide sobre algo que puede perder, no
+  es una suma que solo crece.
