@@ -3256,3 +3256,23 @@ ingredientes nunca se descartan; lo que se mira es qué hace y en qué es mejor.
 - **Lo que no cubre:** un índice o un tipo de más de 64 KB se lee cortado (criterio: diez recetas son unos 15 KB). Dos
   Razares del mismo libro escribiendo a la vez pisarían el mismo archivo. Un libro del anfitrión (no un estante) cae
   en un modelo solo para todos los libros así.
+
+## Separadas por huella genética, y sin el tope de 64 KB (2026-11-08)
+
+El Capitán: *"que se separen por huella genética. Arreglá lo de los 64."*
+
+- **El lugar:** `tablero/Receta de Organos/<modelo>/<tipo>/<genoma>/recetas`. Cada Razar escribe solo en la carpeta de
+  su genoma (el del campeón cuando gana), así dos Razares del mismo libro nunca escriben el mismo archivo.
+- **Sin índice:** era el único archivo que compartían todos. Para saber qué hay, Razar lista (pedido 14) y toma cada
+  archivo que esté en la carpeta de su modelo y termine en `/recetas`: de cualquier tipo y de cualquier genoma, y
+  también los del formato anterior, sin carpeta de genoma. La primera receta de cada uno (la mejor) rinde primero, y
+  cada órgano una sola vez.
+- **Sin tope:** lo que se lee de un archivo de recetas crece a la medida (cuando la sala se llena, una del doble con lo
+  leído adentro). El listado también: el SO dice cuántas etiquetas entraron, no cuántas hay. Si ocupan más de la mitad
+  de la sala, se lista de nuevo en una del doble. Así la mitad libre siempre es más que la etiqueta más larga
+  (144 bytes) y ninguna queda afuera. Eso vale con la sala de 288 bytes o más, y arranca en 4.096.
+- **Probado:** la versión normal y una con las salas arrancando en 64 y 288 bytes (crece muchas veces), sobre tres
+  corridas (A, A otra vez, B), dan las mismas notas, las mismas huellas y las mismas recetas byte por byte. En la
+  segunda corrida de A los tipos guardados rinden primero (`organo 5 = 208 (sin -3554) *`, después el `6`).
+- **Corregido en el camino:** al cambiar la cola se había ido `og_rec_block` (el que copia el código de cada letra), y
+  `pulso` no armaba. Volvió del commit anterior.
