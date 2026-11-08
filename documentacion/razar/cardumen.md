@@ -2642,3 +2642,39 @@ El Capitán: *"la poda es dormir temporalmente, no eliminar: nada se tira, regla
 - **Decidido (Capitán: *"no, solo si contradice"*):** una flecha que un libro podría confirmar y no confirma sigue
   despierta. Callar no es contradecir. La de la `y` queda despierta hasta que un libro diga lo contrario, y lo sabido
   que un libro menciona sin repetirlo par por par no se olvida.
+
+## Diez libros de personas, y qué hace saltar la curva (2026-11-08)
+
+El Capitán: *"no contaminemos con libros nuestros: un experimento con todos libros distintos, que no coma nada de
+Claude, solo lo que le damos"*. Los documentos del proyecto los escribí yo y citan al NT, así que quedaron afuera.
+Libros: el NT, Asimov, y ocho de Proyecto Gutenberg en castellano, escritos en castellano (dominio público, bajados
+con permiso del Capitán): Lazarillo (320), Don Quijote (2000), Tradiciones peruanas (21282), Bécquer (53552), Azul...
+(52894), Cuentos de amor, de locura y de muerte (13507), Niebla (49836), El árbol de la ciencia (60464). Sin
+encabezados ni licencia de Gutenberg, armados como el NT. Ninguno va al repo.
+
+- **La curva con memoria** (cada libro solo, con el `sabido` del anterior): 101 (NT), 118, 119, **315 (Quijote)**,
+  316, 330, 331, 336, 343, 347. No baja nunca. Siguen las buenas del NT y `cercano al ~ próximo al`. Se duerme una.
+  Aprende de los nuevos `cuatro ~ dos`, `diez ~ cuarenta`, `aquel ~ ese`, `tan ~ más`, `en tu ~ en su`,
+  `—respondió ~ —dijo`, y también ruido (`apolo ~ la multitud`, `fin ~ las`).
+- **Qué hace saltar cada libro** (idea pegada por el Capitán: el dato ya estaba en la corrida). Para los nueve libros
+  después del NT, el salto (uniones nuevas) contra dos medidas del libro:
+
+  | libro | salto | formas dichas por dos (de `hilos`) | palabras que no había visto (contadas afuera) |
+  |---|---|---|---|
+  | Asimov | 17 | 2.679 | 4.360 |
+  | Lazarillo | 1 | 780 | 1.877 |
+  | Quijote | 196 | 15.537 | 15.833 |
+  | Palma | 1 | 1.539 | 3.999 |
+  | Bécquer | 14 | 3.421 | 4.524 |
+  | Darío | 1 | 918 | 1.968 |
+  | Quiroga | 5 | 1.588 | 2.343 |
+  | Unamuno | 7 | 1.801 | 1.936 |
+  | Baroja | 4 | 1.989 | 2.178 |
+
+  Correlación de rangos (Spearman, calculada afuera de Janax): **salto contra repetición 0,92** (0,88 sin el
+  Quijote); salto contra lo nuevo 0,70 (0,56 sin el Quijote).
+- **Lo que dice:** no es saturación del método, porque el Quijote, cuarto en la fila, salta 196, y Bécquer, sexto,
+  salta 14. Tampoco es "cuánto trae de nuevo": Palma trae 3.999 palabras que nunca vio y salta 1. **Salta lo que el
+  libro repite adentro.** `hilos` necesita dos confirmaciones dentro del mismo libro, y lo que se lleva entre libros
+  son las conclusiones, no la evidencia. Un libro rico que dice cada cosa una vez casi no deja nada. Para que suba con
+  los libros ricos, la evidencia también tiene que pasar de un libro al otro.
