@@ -22,3 +22,11 @@ db ' marcos=', 0
 times 280h - $ db 0
 db ' memoria del kernel', 0
 times 2C0h - $ db 0
+db ' conserva', 0
+times 300h - $ db 0
+db ' repeticiones=', 0
+times 340h - $ db 0
+db ' piezas fuera de su total: ', 0
+times 380h - $ db 0
+db ' pesos en el techo: ', 0
+times 3C0h - $ db 0

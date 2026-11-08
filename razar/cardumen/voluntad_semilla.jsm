@@ -13,10 +13,11 @@
 ;   - right: it sings that frame once more (the school settles it). Wrong: one piece of one of its five words moves.
 ; Then each question it never read is asked, without anyone learning (the song only heard): of its sentences, the one
 ; whose melody says "it answers" the most (its share minus that of "it does not") is its answer, right when it is of
-; its answer. Its parameters are the file "p" (6 qwords): the seed, the side n, the rounds, 1 if the school is quiet
+; its answer. Its parameters are the file "p" (8 qwords): the seed, the side n, the rounds, 1 if the school is quiet
 ; (it never learns), 1 if a round is a pass (Capitan, 2026-11-08: "every round already has the examples of
 ; everything": each frame that answers once, in order, each followed by one that does not, drawn), 1 if the
-; kernel remembers (memorize, recall). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
+; kernel remembers (memorize, recall), how many times it hears every read frame, learning, before it remembers, 1 if the school keeps each
+; piece's total (cardumen_cubo.jsm, bit 9). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
 ; seed2 >> 16. It writes how it went.
 ;
 ; Its initial data (voluntad_semilla.datos): the texts, one every 40h bytes.
@@ -31,6 +32,10 @@ S_DE   = 1C0h
 S_AZAR = 200h
 S_MARC = 240h
 S_MEMO = 280h
+S_CONS = 2C0h
+S_REPS = 300h
+S_FUERA = 340h
+S_TECHO = 380h
 ; Room 0 (4000h bytes):
 QUEUE = 1000h                   ; its window: one request
 PLAB  = 1040h                   ; "p", the parameters file
@@ -41,8 +46,12 @@ NN    = 1088h
 VUELTAS = 1090h
 QUIET = 1098h
 PASADA = 10A0h                  ; 1: a round is a pass over every read frame that answers, each one followed by one that
-VEFF  = 10B0h                   ; does not (drawn): the rounds that makes
+VEFF  = 10C0h                   ; does not (drawn): the rounds that makes
 MEMO  = 10A8h                   ; 1: the kernel's memory (memorize, recall): the school only hears
+REPS  = 10B0h                   ; before remembering, the school hears every read frame this many times, learning
+CONSV = 10B8h                   ; 1: the school keeps each piece's total (born with bit 9)
+HOWA  = 10C8h                   ; what the school said of itself (order 7): off their total; at the ceiling, all
+HOWB  = 10D0h
 M48   = 1100h                   ; 2^48 - 1
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
@@ -135,7 +144,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 48
+jldi j12, 64
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -178,6 +187,10 @@ jshl j4, j1, j3
 jor j2, j2, j4
 jld j4, j13, QUIET
 jldi j3, 8
+jshl j4, j4, j3
+jor j2, j2, j4
+jld j4, j13, CONSV
+jldi j3, 9
 jshl j4, j4, j3
 jor j2, j2, j4
 jldi j3, 5
@@ -504,6 +517,18 @@ jld j12, j1, HITS
 jcall mix
 jld j12, j1, QRIGHT
 jcall mix
+jldi j1, 0                      ; how the school is (order 7): pieces off their total, weights at the ceiling
+jldi j2, 7
+jst j2, j1, WORD
+jcall say
+jcall hear
+jldi j1, 0
+jld j2, j1, MAIL + 8
+jst j2, j1, HOWA
+jcall hear
+jldi j1, 0
+jld j2, j1, MAIL + 8
+jst j2, j1, HOWB
 jldi j1, 0                      ; the school ends (order 3: it says its fingerprint, not mixed here)
 jldi j2, 3
 jst j2, j1, WORD
@@ -533,6 +558,46 @@ jjz j2, o_memo
 jldi j1, S_MEMO
 jcall puts
 o_memo:
+jldi j1, 0
+jld j2, j1, CONSV
+jjz j2, o_cons
+jldi j1, S_CONS
+jcall puts
+o_cons:
+jldi j1, 0
+jld j2, j1, REPS
+jjz j2, o_reps
+jldi j1, S_REPS
+jcall puts
+jld j2, j1, REPS
+jcall putnum
+o_reps:
+jldi j1, S_FUERA
+jcall puts
+jld j2, j1, HOWA
+jcall putnum
+jldi j1, S_TECHO
+jcall puts
+jld j2, j1, HOWB                ; at the ceiling, in percent of all
+jldi j3, 32
+jshr j2, j2, j3
+jldi j3, 100
+jmul j2, j2, j3
+jld j3, j1, HOWB                ; (all: its low 32 bits)
+jldi j4, 32
+jshl j3, j3, j4
+jshr j3, j3, j4
+jjz j3, o_t0
+jdiv j2, j2, j3
+o_t0:
+jcall putnum
+jldi j2, 37
+jldi j1, 0
+jld j4, j1, POS
+jstb j2, j4, TEXT
+jldi j3, 1
+jadd j4, j4, j3
+jst j4, j1, POS
 jldi j1, S_MARC
 jcall puts
 jld j2, j1, ITN
@@ -1172,6 +1237,40 @@ judge:
 ; step: piece and step, its notes) is kept with whether it answers: one memory a frame, as each of the 16 things had
 ; its own, not two drawers where thousands mix. By note, the frames it sounded in (PCNT, PST). Uses j1-j14.
 memorize:
+  jldi j1, 0                    ; (Capitan, 2026-11-08: "more repetition of melodies, the triple": the school hears
+  jst j1, j1, ONLY              ; every read frame REPS times, learning, and settles; then, quiet, it is remembered)
+  jld j2, j1, REPS
+  jst j2, j1, TB
+  mz_rep:
+    jldi j1, 0
+    jld j2, j1, TB
+    jjz j2, mz_rec
+    jldi j9, 0
+    mz_rf:
+      jldi j1, 0
+      jld j2, j1, ITN
+      jsub j2, j9, j2
+      jjz j2, mz_rd
+      jldi j3, 72
+      jmul j3, j9, j3
+      jld j4, j1, ITB
+      jadd j3, j3, j4
+      jld j4, j3, 24
+      jjz j4, mz_rn
+      jst j3, j1, CUR
+      jcall sing
+    mz_rn:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mz_rf
+  mz_rd:
+    jldi j1, 0
+    jld j2, j1, TB
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, TB
+    jjmp mz_rep
+mz_rec:
   jldi j1, 0
   jldi j2, 1
   jst j2, j1, ONLY

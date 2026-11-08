@@ -2,7 +2,8 @@
 ; its own size"). The school of cardumen_canto.jsm (harmony, the top face answering, waves that cross) with a side n the
 ; will chooses: n * n * n pieces, its tables in a room to that measure, nothing fixed to 64 pieces. It is the child of
 ; the will (voluntad_acertijos.jsm); the two talk in words (requests 30 say, 31 read):
-;   5 born: quiet (it never learns) if bit 8, the side n in bits 16..23, the seed in bits 24... It answers how many
+;   5 born: quiet (it never learns) if bit 8, keeping each piece's total if bit 9 (conserve_piece in modelo.pl), the
+;     side n in bits 16..23, the seed in bits 24... It answers how many
 ;     bytes its tables need, or 0 if the room it has is enough: a child's request for memory would wait for its
 ;     mother's signature, so she builds the room and moves it here (request 23), says so, and it takes it (25).
 ;   6 a song with the exact pieces of each greeting: how many in bits 8..15 (at most 255), bit 16 if it is only heard
@@ -10,6 +11,8 @@
 ;     its 3 pieces in bits 0..15, 16..31, 32..47. Each pulse a wave of its own, their pushes adding up. It answers how
 ;     many steps the song lasted, then the top face of every step as a stream of bits (step t, top piece j at bit
 ;     t * n^2 + j, 64 per word); and the shape learns from it.
+;   7 how it is: the pieces whose total is not the one they were born with, then the weights at the ceiling (255)
+;     shifted 32, or'ed with all the weights it has (to a neighbor), as two words.
 ;   3 the end: its own fingerprint (every weight and rate, h = (h * 31 + v) mod 2^48), as one word, and it ends.
 ; A wave wakes each piece once at most and the last starts at step 254 at the latest, so a song lasts at most 256 + n^3
 ; steps: that is the size of its table of top faces.
@@ -33,6 +36,9 @@ HAVE  = 1F0h                    ; how big its room of tables is (0: none yet)
 NEED  = 1F8h                    ; how big it has to be for this side
 SEEDV = 270h                    ; the seed it is born from
 SQ    = 278h                    ; 1: this song is only heard (order 6, bit 16)
+CONS  = 280h                    ; 1: each piece keeps the total it says to its neighbors (born, bit 9)
+HW1   = 288h                    ; (how it is: at the ceiling, all)
+HW2   = 290h
 ; Where each table is, in its room (addresses):
 AW    = 200h                    ; weights: piece i, direction d at AW + i*8 + d (one byte each)
 ARATE = 208h                    ; one byte per piece
@@ -47,6 +53,7 @@ ANOW  = 248h                    ; wave w, piece i: awake now (ANOW + w*n^3 + i, 
 AWOKE = 250h                    ; wave w, piece i: ever woke in it
 APUSH = 258h                    ; wave w, piece i: it pushed it this step
 ATOP  = 260h                    ; the top face of step t: ATOP + t*n^2 + j
+ABORN = 268h                    ; what each piece says to its neighbors in all, as it was born (a qword each)
 SONG  = 400h                    ; this song: the pieces of each greeting (a qword each, 256)
 include '../../escalon0/janax.inc'
 jfirst j1, 1000h               ; first order: room 0
@@ -71,6 +78,9 @@ jwhile j15
   jldi j3, 5
   jsub j3, j1, j3
   jjz j3, c_born
+  jldi j3, 7
+  jsub j3, j1, j3
+  jjz j3, c_how
   jldi j3, 6
   jsub j3, j1, j3
   jjnz j3, c_end
@@ -103,6 +113,9 @@ jwhile j15
 c_born:
   jcall born
   jjmp c_next
+c_how:
+  jcall how
+  jjmp c_next
 c_end:
   jcall fingerprint             ; the end: its fingerprint, as one word
   jldi j13, 0
@@ -123,6 +136,11 @@ born:
   jand j1, j1, j3
   jldi j13, 0
   jst j1, j13, WHISP
+  jldi j3, 9
+  jshr j1, j2, j3
+  jldi j3, 1
+  jand j1, j1, j3
+  jst j1, j13, CONS
   jldi j3, 16
   jshr j1, j2, j3
   jldi j3, 0FFh
@@ -185,7 +203,9 @@ born:
   jadd j3, j3, j4
   jldi j4, 0FFF8h
   jand j3, j3, j4
-  jadd j11, j7, j3              ; all of it. A child's request for memory waits for its mother's signature, so it
+  jadd j7, j7, j3
+  jst j7, j13, ABORN
+  jadd j11, j7, j9              ; all of it. A child's request for memory waits for its mother's signature, so it
   jldi j1, 0                    ; asks her: it says how much it needs (0: the room it has is enough) and she builds
   jst j11, j1, NEED             ; the room and moves it here (request 23); it takes it (request 25) when she says so
   jld j2, j1, HAVE
@@ -212,7 +232,7 @@ b_kept:
   jldi j1, 0
   jld j13, j1, ROOMB
   jldi j2, AW                   ; every table: its place in the room
-  jldi j3, 13
+  jldi j3, 14
   jwhile j3
     jld j4, j2, 0
     jadd j4, j4, j13
@@ -310,6 +330,211 @@ b_kept:
     jadd j10, j10, j6
     jsub j2, j2, j6
   jwend
+  jldi j1, 0                    ; what each piece says in all, as it was born
+  jldi j13, 0
+  jld j2, j13, PP
+  jwhile j2
+    jcall total
+    jldi j13, 0
+    jld j3, j13, ABORN
+    jldi j4, 3
+    jshl j4, j1, j4
+    jadd j3, j3, j4
+    jst j6, j3, 0
+    jldi j3, 1
+    jadd j1, j1, j3
+    jsub j2, j2, j3
+  jwend
+  jret
+
+; What piece j1 says to its neighbors in all -> j6; j3 its weights, j4 its neighbors. Uses j3-j8, j13, j14.
+total:
+  jldi j13, 0
+  jld j3, j13, AW
+  jldi j4, 3
+  jshl j4, j1, j4
+  jadd j3, j3, j4
+  jldi j4, 48
+  jmul j4, j1, j4
+  jld j5, j13, ANB
+  jadd j4, j4, j5
+  jldi j6, 0
+  jldi j7, 0
+  tt_lap:
+    jldi j8, 6
+    jsub j8, j7, j8
+    jjz j8, tt_done
+    jldi j8, 3
+    jshl j8, j7, j8
+    jadd j8, j8, j4
+    jld j8, j8, 0
+    jldi j14, 63
+    jsar j14, j8, j14
+    jjnz j14, tt_next
+    jadd j8, j3, j7
+    jldb j8, j8, 0
+    jadd j6, j6, j8
+  tt_next:
+    jldi j8, 1
+    jadd j7, j7, j8
+    jjmp tt_lap
+tt_done:
+  jret
+
+; Piece j1 keeps its total (conserve_piece in modelo.pl, Capitan 2026-11-05: "the ceiling that adjusts itself"): if
+; what it says in all is not what it said when born, each weight becomes w * born / now (rounded, at most 255), and
+; what is left over goes one by one to the weights that can take it, in order. Uses j3-j14 (keeps j1, j2).
+conserve:
+  jcall total
+  jldi j13, 0
+  jld j5, j13, ABORN
+  jldi j8, 3
+  jshl j8, j1, j8
+  jadd j5, j5, j8
+  jld j5, j5, 0                 ; born
+  jjz j6, cv_done
+  jsub j8, j6, j5
+  jjz j8, cv_done
+  jadd j9, j5, j13              ; left
+  jldi j7, 0
+  cv_a:
+    jldi j8, 6
+    jsub j8, j7, j8
+    jjz j8, cv_b0
+    jldi j8, 3
+    jshl j8, j7, j8
+    jadd j8, j8, j4
+    jld j8, j8, 0
+    jldi j14, 63
+    jsar j14, j8, j14
+    jjnz j14, cv_an
+    jadd j10, j3, j7
+    jldb j11, j10, 0
+    jmul j11, j11, j5
+    jldi j12, 1
+    jshr j12, j6, j12
+    jadd j11, j11, j12
+    jdiv j11, j11, j6
+    jldi j12, 255
+    jsub j12, j12, j11
+    jldi j14, 63
+    jsar j12, j12, j14
+    jjz j12, cv_a1
+    jldi j11, 255
+  cv_a1:
+    jstb j11, j10, 0
+    jsub j9, j9, j11
+  cv_an:
+    jldi j8, 1
+    jadd j7, j7, j8
+    jjmp cv_a
+cv_b0:
+  jldi j7, 0
+  cv_b:
+    jjz j9, cv_done
+    jldi j8, 6
+    jsub j8, j7, j8
+    jjz j8, cv_done
+    jldi j8, 3
+    jshl j8, j7, j8
+    jadd j8, j8, j4
+    jld j8, j8, 0
+    jldi j14, 63
+    jsar j14, j8, j14
+    jjnz j14, cv_bn
+    jadd j10, j3, j7
+    jldb j11, j10, 0
+    jldi j14, 63
+    jsar j12, j9, j14           ; -1 if left < 0
+    jjnz j12, cv_down
+    jldi j12, 1
+    jadd j11, j11, j12
+    jldi j12, 255
+    jsub j12, j12, j11
+    jsar j12, j12, j14
+    jjnz j12, cv_bn             ; (past 255: this one cannot)
+    jstb j11, j10, 0
+    jldi j12, 1
+    jsub j9, j9, j12
+    jjmp cv_bn
+  cv_down:
+    jjz j11, cv_bn              ; (below 0: this one cannot)
+    jldi j12, 1
+    jsub j11, j11, j12
+    jstb j11, j10, 0
+    jadd j9, j9, j12
+  cv_bn:
+    jldi j8, 1
+    jadd j7, j7, j8
+    jjmp cv_b
+cv_done:
+  jret
+
+; Order 7: how it is. The pieces whose total is not the one they were born with (one word), then its weights at the
+; ceiling shifted 32, or'ed with how many weights it has (one word). Uses j1-j14.
+how:
+  jldi j1, 0
+  jldi j9, 0                    ; off their total
+  jldi j10, 0                   ; at 255
+  jldi j11, 0                   ; all
+  jldi j13, 0
+  jld j2, j13, PP
+  jwhile j2
+    jcall total
+    jldi j13, 0
+    jld j5, j13, ABORN
+    jldi j8, 3
+    jshl j8, j1, j8
+    jadd j5, j5, j8
+    jld j5, j5, 0
+    jsub j5, j5, j6
+    jjz j5, hw_on
+    jldi j5, 1
+    jadd j9, j9, j5
+  hw_on:
+    jldi j7, 0
+    hw_d:
+      jldi j8, 6
+      jsub j8, j7, j8
+      jjz j8, hw_dd
+      jldi j8, 3
+      jshl j8, j7, j8
+      jadd j8, j8, j4
+      jld j8, j8, 0
+      jldi j14, 63
+      jsar j14, j8, j14
+      jjnz j14, hw_dn
+      jldi j8, 1
+      jadd j11, j11, j8
+      jadd j8, j3, j7
+      jldb j8, j8, 0
+      jldi j14, 255
+      jsub j8, j8, j14
+      jjnz j8, hw_dn
+      jldi j8, 1
+      jadd j10, j10, j8
+    hw_dn:
+      jldi j8, 1
+      jadd j7, j7, j8
+      jjmp hw_d
+  hw_dd:
+    jldi j3, 1
+    jadd j1, j1, j3
+    jsub j2, j2, j3
+  jwend
+  jldi j13, 0
+  jst j9, j13, WORD
+  jst j10, j13, HW1
+  jst j11, j13, HW2
+  jcall say
+  jldi j13, 0
+  jld j2, j13, HW1
+  jldi j3, 32
+  jshl j2, j2, j3
+  jld j3, j13, HW2
+  jor j2, j2, j3
+  jst j2, j13, WORD
+  jcall say
   jret
 
 ; Direction slot j4 of piece j1: none (-1) if j8 = 0, else the piece j1 + j12 (and one more neighbor in j10). Then the
@@ -759,10 +984,15 @@ s_done:
     jldb j13, j6, 0             ; its rate drops by one, down to 1
     jldi j14, 1
     jsub j14, j13, j14
-    jjz j14, ln_next
+    jjz j14, l_cons
     jldi j14, 1
     jsub j13, j13, j14
     jstb j13, j6, 0
+  l_cons:
+    jldi j13, 0                 ; and it keeps its total, if born so
+    jld j13, j13, CONS
+    jjz j13, ln_next
+    jcall conserve
   ln_next:
     jldi j13, 1
     jadd j1, j1, j13
