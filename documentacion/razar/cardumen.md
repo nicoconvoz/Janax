@@ -2167,3 +2167,6 @@ familia, del mismo tamaño"*, y *"¿qué otros bancos usaban esa misma comparaci
   pariente que define el apellido. Si lo que se predice se eligió con lo que se mide, el número sale lindo y hueco.
 - ⚠️ Falta: un apellido para las 7 de Lucas que no sean nombres de personas (la forma que las rodea en la cadena), y
   ver si el 4 contra 0 se sostiene cuando las 9 crezcan.
+- **Más vueltas no lo mueven:** 800, 3.200 y 12.800 vueltas dan lo mismo (aprendidas 100 %; nuevas con apellido 4 de
+  9, nulo 0 de 9). Las vueltas afinan lo aprendido, no agregan nada de las nuevas: lo que falta es entrada (más
+  apellido compartido), no práctica.
