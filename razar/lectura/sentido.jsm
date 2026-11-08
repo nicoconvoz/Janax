@@ -418,6 +418,7 @@ QPAW  = 5810h
 QPTI  = 5818h
 ARML  = 5820h
 QAWP  = 5828h                   ; 1: the books' question-answer pairs are said (an instrument); a handle
+QACS  = 5850h                   ; the building before the question: its start (the question's context)
 QAWH  = 5830h                   ; the book's ordinary end: the limit that closes the most buildings                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
@@ -2145,6 +2146,8 @@ qa_scan:
     jcall qa_asks               ; does this one ask?
     jldi j1, 0
     jst j2, j1, QAQ
+    jld j3, j1, QAS             ; (the one before it, its context)
+    jst j3, j1, QACS
     jld j2, j1, QAT
     jst j2, j1, QAS
     jld j2, j1, QAI
@@ -2233,6 +2236,20 @@ qa_pair_say:
   jldi j1, 0
   jld j2, j1, QAWP
   jjz j2, qps_done
+  jldi j2, 67                   ; its context: the building before the question
+  jcall putch
+  jldi j2, 58
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j9, j1, QACS
+  jld j10, j1, QAS
+  jldi j2, 1
+  jsub j10, j10, j2
+  jcall qps_units
+  jldi j2, 10
+  jcall putch
   jldi j2, 80
   jcall putch
   jldi j2, 58

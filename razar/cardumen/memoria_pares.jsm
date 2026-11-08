@@ -53,6 +53,10 @@ CFS   = 1328h                   ; song sung its row (heard: 0 nothing, g + 1 son
 CFON  = 1330h                   ; the pieces' base (7 Fano's, or the 30 songs); a label
 BASE  = 1338h
 CFL   = 1340h
+PCX   = 1348h                   ; by pair its context (the building before the question, "C:"): {start, bytes}; the
+CXS   = 1350h                   ; last "C:" line's start and bytes; 1 when the pairs have contexts
+CXL   = 1358h
+CTX   = 1360h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -267,6 +271,15 @@ mp_pairs:
   jcall room
   jldi j1, 0
   jst j13, j1, PPR
+  jld j11, j1, PRN              ; (and their contexts)
+  jldi j2, 1
+  jshl j11, j11, j2
+  jldi j2, 32
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PCX
+  jst j1, j1, CXL
   jst j1, j1, PPN
   jst j1, j1, TT1               ; the place walked
   mpp_line:
@@ -282,6 +295,21 @@ mp_pairs:
     jld j2, j1, PRB
     jadd j2, j2, j9
     jldb j3, j2, 0
+    jldi j4, 67                 ; (a context: the next question's)
+    jsub j4, j3, j4
+    jjnz j4, mpp_notc
+    jldi j2, 3
+    jadd j2, j9, j2
+    jst j2, j1, CXS
+    jsub j2, j10, j2
+    jldi j4, 63
+    jsar j4, j2, j4
+    jjnz j4, mpp_next
+    jst j2, j1, CXL
+    jldi j2, 1
+    jst j2, j1, CTX
+    jjmp mpp_next
+  mpp_notc:
     jldi j4, 80
     jsub j3, j3, j4
     jjnz j3, mpp_next
@@ -329,6 +357,15 @@ mp_pairs:
     jld j4, j1, PPR
     jadd j8, j3, j4
     jst j5, j8, 16
+    jldi j3, 4                  ; its context, if a "C:" line came before it
+    jshl j3, j2, j3
+    jld j4, j1, PCX
+    jadd j3, j3, j4
+    jld j4, j1, CXS
+    jst j4, j3, 0
+    jld j4, j1, CXL
+    jst j4, j3, 8
+    jst j1, j1, CXL
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PPN
@@ -507,6 +544,20 @@ mp_index:
     jadd j8, j3, j4
     jld j2, j1, TT6
     jst j2, j8, 24
+    jld j2, j1, TT5             ; and its context's words, the same pair's (its length is the question's)
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, PCX
+    jadd j3, j3, j4
+    jld j10, j3, 8
+    jjz j10, mpx_nocx
+    jld j9, j3, 0
+    jld j2, j1, PRB
+    jadd j9, j9, j2
+    jldi j2, 0
+    jcall mp_words
+  mpx_nocx:
+    jldi j1, 0
     jld j2, j1, TT5
     jldi j3, 1
     jadd j2, j2, j3
@@ -787,6 +838,23 @@ mpq_end:
 ; the two pieces heard give the letter back (one past the alphabet: no letter, a space). Into NBF, NBN. Uses j1-j14.
 mp_hear:
   jldi j1, 0
+  jld j11, j1, NBF
+  jld j2, j1, TT5               ; its context first, if it has one (what came before it in the book)
+  jldi j3, 4
+  jshl j3, j2, j3
+  jld j4, j1, PCX
+  jadd j8, j3, j4
+  jld j10, j8, 8
+  jjz j10, mph_q
+  jld j9, j8, 0
+  jld j2, j1, PRB
+  jadd j9, j9, j2
+  jcall mp_hspan
+  jldi j3, 32
+  jstb j3, j11, 0
+  jldi j3, 1
+  jadd j11, j11, j3
+mph_q:
   jld j2, j1, TT5
   jldi j3, 5
   jshl j3, j2, j3
@@ -796,8 +864,14 @@ mp_hear:
   jld j10, j8, 8
   jld j2, j1, PRB
   jadd j9, j9, j2
-  jst j10, j1, NBN
-  jld j11, j1, NBF
+  jcall mp_hspan
+  jld j2, j1, NBF
+  jsub j2, j11, j2
+  jst j2, j1, NBN
+  jret
+
+; The j10 bytes at j9 heard into j11 (moved past them). Uses j1-j14.
+mp_hspan:
   mph_lap:
     jldi j1, 0
     jjz j10, mph_done

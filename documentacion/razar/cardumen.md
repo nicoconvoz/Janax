@@ -1464,3 +1464,21 @@ no calcula. Semilla fija, en Janax, 1,1 segundos.
 - **Con las canciones que ya sabe, el cubo real anda mejor que Fano**, aunque cada canción se oiga mal más seguido (11 %
   con 20 % de resbalones): sus confusiones no son al azar, y una letra con dos canciones aguanta más.
 - Las cortas siguen ambiguas por sí mismas: les falta el contexto.
+
+### El contexto: la pregunta con lo que venía antes (2026-11-07)
+
+- `sentido` escribe, junto a cada par, una línea "C:" con el edificio que viene antes de la pregunta en el libro (`QACS`).
+  La memoria (`memoria_pares.jsm`) guarda cada pregunta por sus palabras **y** las de su contexto, y oye las dos cosas
+  juntas, cantadas con las 30 canciones y la tabla real del cubo.
+
+| | 1-5 palabras | 6-12 | 13 o más |
+|---|---|---|---|
+| resbalones 10 %, sin contexto | 37 % | 89 % | 97 % |
+| resbalones 10 %, con contexto | 91 % | 98 % | 99 % |
+| resbalones 20 %, sin contexto | 32 % | 86 % | 97 % |
+| resbalones 20 %, con contexto | 86 % | 96 % | 99 % |
+
+- **Las cortas dejan de ser ambiguas:** "y les dijo:" con lo que se venía contando ya dice cuál es. Con el temblor más
+  fuerte pasan del 32 % al 86 %.
+- **Pendiente sin explicar:** con contexto la memoria arma 2.800 pares, y sin él, 2.710, de los mismos renglones. Los
+  porcentajes son de cada conjunto.
