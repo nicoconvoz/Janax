@@ -1759,4 +1759,16 @@ son "Q:"/"O:". Cuatro tramos sin leer:
   es un animal": una respuesta verdadera, pero de otra pregunta. La décima es una trampa ("el mono y moscú"). Las notas
   describen la oración alrededor de la cosa, pero no dicen nada de la pregunta: las palabras del mecanismo ("come",
   "patas", "vive") no entran. Siguiente: sumar a las notas las palabras de la pregunta que no son el lugar.
+**Las notas dicen también qué se pregunta** (Capitán: *"sí, sumalas"*): cada oración lleva además, como notas, las
+palabras de su pregunta que no son un lugar ("come", "patas", "vive", "es"). Preguntas simples, 116 sin leer:
+
+| | antes | con las palabras de la pregunta |
+|---|---|---|
+| control sin cubo | 106 | **116 de 116** |
+| cubo 4³ + memoria del kernel, semillas 1001, 1002, 1003 | 106, 106, 107 | **115, 115, 115** |
+
+- Ya no confunde los mecanismos: sabiendo qué se pregunta, el recuerdo más parecido viene de una pregunta del mismo
+  tipo. El control acierta todas; el cubo oyendo falla una, con los tres dados.
+- En Asimov no cambia: control 22 de 110 (antes 24), cubo 4³ 27 y 18 con dos semillas. Ahí cada pregunta es única y
+  sus palabras no se repiten en otras: no hay de quién aprender el tipo de pregunta.
 

@@ -3155,7 +3155,8 @@ mfr_done:
 
 ; The whole sentence seen from the question, as notes, its "N:" line after its "M:" (Capitan, 2026-11-08: the frame of
 ; five words was too little; the ruler said so): around every place of what the question is about, the token at each
-; of -2..+2 of it; how many of the question's words it says; how many it does not. Each note once, numbered by first
+; of -2..+2 of it; the question's words that are not a place (what it asks); how many of the question's words it says;
+; how many it does not. Each note once, numbered by first
 ; sight (NTK). "N: seed sentence answers read how-many notes...". Uses j1-j14.
 ms_notes:
   jldi j1, 0
@@ -3204,6 +3205,49 @@ ms_notes:
     jst j2, j1, FNI
     jjmp mno_w
 mno_counts:
+  jld j9, j1, QP                ; the question's words that are not a place: what it asks (Capitan, 2026-11-08: the
+  jld j10, j1, QPN              ; notes said nothing of the question, so "what does the cow eat?" took "the cow is an
+  jld j11, j1, ALB              ; animal", an answer to another question of the same thing)
+  jcall mp_wlist
+  jldi j1, 0
+  jst j12, j1, FND
+  jst j1, j1, FNI
+  mno_q:
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FND
+    jsub j3, j2, j3
+    jjz j3, mno_qd
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, ALB
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jld j6, j1, QLN             ; (a place of the question: said already)
+    jld j7, j1, QLB
+    mno_ql:
+      jjz j6, mno_qk
+      jld j8, j7, 0
+      jsub j8, j8, j5
+      jjz j8, mno_qn
+      jldi j8, 24
+      jadd j7, j7, j8
+      jldi j8, 1
+      jsub j6, j6, j8
+      jjmp mno_ql
+  mno_qk:
+    jldi j7, 10
+    jcall mp_mix
+    jcall mno_add
+  mno_qn:
+    jldi j1, 0
+    jld j2, j1, FNI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FNI
+    jjmp mno_q
+mno_qd:
+  jldi j1, 0
   jld j2, j1, FOV               ; how many it says, how many it does not
   jldi j3, 1
   jadd j2, j2, j3
