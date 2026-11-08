@@ -2639,6 +2639,6 @@ El Capitán: *"la poda es dormir temporalmente, no eliminar: nada se tira, regla
 - **Los once libros con la poda:** 189 flechas despiertas, una dormida (`contra ~ con`, en `cardumen`, 1 en contra y
   0 a favor). **La contaminación de la `y` no se duerme:** ningún libro de después dice nada en contra de
   `hijo de ~ y`, solo no la vuelve a confirmar. La poda duerme lo que un libro contradice, no lo que se calla.
-- **La decisión que queda:** si una flecha cuyas dos formas hablan en un libro, y que podría confirmarse ahí, no es
-  confirmada por ningún par, ¿se duerme también (como la regla de explicar dentro del libro)? Así dormiría la de la `y`,
-  pero también lo sabido que un libro menciona sin repetirlo par por par.
+- **Decidido (Capitán: *"no, solo si contradice"*):** una flecha que un libro podría confirmar y no confirma sigue
+  despierta. Callar no es contradecir. La de la `y` queda despierta hasta que un libro diga lo contrario, y lo sabido
+  que un libro menciona sin repetirlo par por par no se olvida.
