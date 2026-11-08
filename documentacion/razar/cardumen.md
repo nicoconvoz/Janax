@@ -2327,3 +2327,22 @@ derecho a olvidar). Lugar: el doble de formas y de pares de lo leído, hasta don
   y las uniones que toman son ruido ("tu ~ y la + y la"). El portero "afirma algo" deja pasar formas de gramática
   que muestran por casualidad un valor por palabra. Y en los sinópticos "hijo de" se une con "a" (vuelta 2), y la
   cadena de esa clase mezclada da 243 pares que "a + a" comparte al revés: la mancha de una unión floja se encadena.
+
+**En coma, no muerta; en espera, no refutada** (el otro chat: *"refutado y sin testigo mueren igual, y no son lo
+mismo"*; el Capitán: *"refutada no para siempre: en coma, quién sabe si algún día la necesitamos"*).
+
+- **Refutada = en coma:** cada refutación guarda cómo estaban las dos relaciones (cuántas formas tenía cada una); duerme
+  mientras sigan así y se despierta para juzgarse de nuevo cuando cualquiera crece.
+- **Sin testigo = en espera:** la deducida que nadie tomó deja de tener pares (se puede volver a deducir), pero no está
+  refutada; se cuenta aparte.
+- **El portero:** sólo se encadena lo probado (una relación nacida de una unión), no una forma suelta.
+
+| | uniones | deducidas | en coma | en espera | la más grande | uniones buenas (6) |
+|---|---|---|---|---|---|---|
+| sinópticos | 68 | 20 | 19 | 17 | "hijo de", 8 | — |
+| NT | 118 | 47 | **116** | **42** | "hijo de", 13 | **6** |
+
+- `mismo lugar: obed = jobed` sigue saliendo solo; las seis uniones buenas siguen.
+- ⚠️ El portero de lo probado no alcanza: "a", "y la", "su" también nacen de uniones (de gramática con gramática) y se
+  encadenan ("a + a", 1.307 pares). Falta que lo probado sea de una relación que afirma, no de dos que coinciden en
+  pegamento; y que una pregunta pueda despertar a las que esperan.

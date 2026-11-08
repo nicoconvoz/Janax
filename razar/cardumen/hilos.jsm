@@ -25,7 +25,8 @@
 ;     And a hypothesis must explain what it says of the same people: of what one relation says of two words the other
 ;     knows (its A on the other's A side, its B on its B side), what the other says too is explained, what it does not
 ;     is left unexplained. Each must explain more of the other's people than it leaves unexplained; if not, the
-;     hypothesis is refuted for good (a form of grammar that coincides in three pairs and says many more of the same
+;     hypothesis is refuted, in a coma (Capitan: "not refuted for good, in a coma: who knows if we need it some day"):
+;     it sleeps while the two are as they were, and wakes to be judged again when either grows (a form of grammar that coincides in three pairs and says many more of the same
 ;     people does not explain them), and each relation looks for another. What is left unexplained may be one place
 ;     with two names ("obed" in Mateo, "jobed" in Lucas: each said the same twice, so a name, not a slip): when the
 ;     other names it so with the same partners on both sides, one in each telling, it is explained, and said.
@@ -85,6 +86,8 @@ S_IGUAL  = 5E0h
 S_DEDUCE = 5F0h
 S_PARES2 = 600h
 S_MAS    = 610h
+S_COMA   = 620h
+S_ESPERA = 640h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -188,7 +191,8 @@ HQ6   = 1918h
 HQ7   = 1920h
 HQ8   = 1928h
 HFV   = 1930h
-HREF  = 1950h                   ; the hypotheses refuted for good {key} (a growing table); by relation, its pairs (where
+HREF  = 1950h                   ; the hypotheses refuted, in a coma {key, the two sizes then} (a growing table); by
+                                ; relation, its pairs (where
 HCCNT = 1970h                   ; they start, how many: rooms) and them, turned to it {A, B} (a room); walking
 HCOFF = 1978h
 HCTRI = 1980h
@@ -218,7 +222,8 @@ HDVER = 1A38h
 HNM0  = 1A40h
 HNF0  = 1A48h
 HSFD  = 1A50h
-HSFS  = 1A58h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HSFS  = 1A58h
+HNESP = 1AE0h                   ; deduced ones waiting, without a witness                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -3367,8 +3372,8 @@ hpv_old:
   jret
 
 ; What is proved becomes a premise (Capitan, 2026-11-08: "it does not accumulate yet"; "with a touch of magic: plastic,
-; it grows and prunes, so it does not grow exponentially"). After each turn, every relation that asserts something (a
-; property of it is so, and it is not glue) and changed since it was last chained is chained with itself: where it says
+; it grows and prunes, so it does not grow exponentially"). After each turn, every relation proved (born of a join)
+; that asserts something (a property of it is so, and it is not glue) and changed since it was last chained is chained with itself: where it says
 ; a with b and b with c, the deduced relation "<it> + <it>" says a with c. Nobody wrote it: it is a relation like the
 ; others in the next turn, and it lives if it is used (a join takes it: the book confirms and it explains); one nobody
 ; uses is dead from the next turn on (it holds no pairs), and what can be deduced again is not kept, it is deduced
@@ -3399,7 +3404,13 @@ hl_derive:
     jmul j4, j2, j4
     jld j5, j1, HMA
     jadd j4, j4, j5
-    jst j1, j4, 32              ; it holds no pairs any more
+    jld j5, j4, 32
+    jjz j5, hd_dn
+    jst j1, j4, 32              ; it holds no pairs any more: waiting, without a witness (it can be deduced again)
+    jld j5, j1, HNESP
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, HNESP
   hd_dn:
     jldi j3, 1
     jadd j2, j2, j3
@@ -3431,6 +3442,11 @@ hd_deadd:
     jld j6, j5, 0
     jsub j6, j6, j4
     jjz j6, hd_next             ; chained already as it is
+    jldi j6, 2
+    jsub j6, j4, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, hd_next            ; one form alone: not proved (only what a join proved is a premise)
     jld j6, j1, HNANT
     jadd j6, j6, j3
     jld j6, j6, 0
@@ -3805,7 +3821,7 @@ hro_c2:
   jldi j3, 48
   jcall pl_new
   jldi j2, HREF
-  jldi j3, 8
+  jldi j3, 24
   jcall pl_new
   jldi j1, 0
   jld j11, j1, HNM
@@ -4072,6 +4088,15 @@ hm_ad:
   hm_rk:
     jldi j2, HREF
     jcall pl_take
+    jldi j1, 0                  ; (how the two were when it was refuted)
+    jld j5, j1, HT2
+    jld j6, j5, 8
+    jcall hm_size
+    jst j6, j4, 8
+    jld j5, j1, HT2
+    jld j6, j5, 16
+    jcall hm_size
+    jst j6, j4, 16
     jjmp hm_bn
   hm_expl:
     jld j4, j1, HT2
@@ -4150,9 +4175,23 @@ hrs_r:
   jcall pl_find
   jldi j1, 0
   jld j7, j4, 0
-  jld j4, j1, HT5
   jsub j7, j7, j5
+  jjnz j7, hrs_awake            ; never refuted
+  jadd j8, j4, j1               ; refuted: in a coma while the two are as they were
+  jld j4, j1, HT5
+  jld j6, j4, 8
+  jcall hm_size
+  jld j7, j8, 8
+  jsub j7, j7, j6
+  jjnz j7, hrs_awake
+  jld j6, j4, 16
+  jcall hm_size
+  jld j7, j8, 16
+  jsub j7, j7, j6
   jjz j7, hrs_no
+hrs_awake:
+  jldi j1, 0
+  jld j4, j1, HT5
   jld j6, j4, 32
   jldi j7, 2
   jsub j7, j6, j7
@@ -4211,6 +4250,16 @@ hrs_no2:
   jld j4, j1, HT5
 hrs_no:
   jldi j6, 0
+  jret
+
+; j6 = the size of relation j6 (how many forms it holds). Uses j6, j7.
+hm_size:
+  jldi j7, 3
+  jshl j6, j6, j7
+  jldi j7, 0
+  jld j7, j7, HSIZE
+  jadd j6, j6, j7
+  jld j6, j6, 0
   jret
 
 ; j7 = 1 if relation j7 is glue. Uses j7, j8.
@@ -4329,6 +4378,15 @@ he_done:
   jld j2, j1, HT4
   jcall hl_sayform
 he_nl:
+  jldi j1, S_COMA
+  jcall puts
+  jldi j2, HREF
+  jld j2, j2, 16
+  jcall putnum
+  jldi j1, S_ESPERA
+  jcall puts
+  jld j2, j1, HNESP
+  jcall putnum
   jldi j2, 10
   jcall putch
   jret

@@ -98,3 +98,7 @@ times 600h - $ db 0
 db ' | pares ', 0
 times 610h - $ db 0
 db ' + ', 0
+times 620h - $ db 0
+db ' | hipotesis en coma: ', 0
+times 640h - $ db 0
+db ' | deducidas en espera (sin testigo): ', 0
