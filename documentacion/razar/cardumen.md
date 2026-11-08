@@ -1408,3 +1408,35 @@ no deja una huella que se oiga en una canción limpia. (Una primera lectura, "m�
 la palabra sola tapaba todo.) Encaja con lo de las palabras-canción: aprender le ganaba al quieto **solo con ruido**,
 cuando un dedo resbalaba y el camino reforzado completaba la palabra. La memoria del cubo, tal como aprende hoy, es de
 **completar**, no de **distinguir**.
+
+## La memoria del kernel y las piezas de Fano: los pares de los libros (Capitán, 2026-11-07)
+
+> *"Traducir la oración a la construcción de las canciones que ya saben, con recombinaciones; la memoria no hace falta
+> en el cubo: la porta el kernel, la memoria está del lado del kernel neuronal."* — *"Mientras más larga, más difícil de
+> llegar al 20 %."*
+
+**El instrumento** (`razar/cardumen/memoria_pares.jsm`): lee los pares pregunta → respuesta que `sentido` saca de los
+libros (archivo `pares` de la casa). El kernel guarda cada pregunta por sus palabras. Cada pregunta se canta con las 7
+piezas de Fano, una letra son dos piezas, y el alfabeto lo dan las letras de los pares (34 de las 49 posibles: a..z y
+las de las tildes y la ñ). Cada pieza tiembla con la chance dada (se oye como otra de las siete), y el kernel devuelve
+la respuesta del par que comparte más palabras con lo que oyó. Las chances son las medidas en el cubo con Fano (cerca del
+4 % de las piezas con temblor del 10 %, cerca del 9 % con 20 %); el cubo no corre todavía, porque se midió que transmite y
+no calcula. Semilla fija, en Janax, 1,1 segundos.
+
+**Medido con 2.710 pares del Nuevo Testamento** (respuestas bien, por largo de la pregunta):
+
+| piezas que tiemblan | 1-5 palabras (1.100) | 6-12 (1.015) | 13 o más (595) |
+|---|---|---|---|
+| 0 % | 51 % | 93 % | 98 % |
+| 2 % | 39 % | 91 % | 97 % |
+| 4 % (≈ temblor 10 %) | 29 % | 86 % | 96 % |
+| 9 % (≈ temblor 20 %) | 14 % | 60 % | 92 % |
+| 20 % | 2 % | 17 % | 48 % |
+
+- **La hipótesis del Capitán se cumple:** cuanto más larga la oración, más le cuesta al temblor taparla. Con el temblor
+  del 20 %, una pregunta larga vuelve bien el 92 % de las veces y una corta el 14 %: a la larga le sobran palabras para
+  que el kernel la reconozca.
+- **Las cortas no llegan al 100 % ni sin temblor (51 %):** muchas son el mismo anuncio repetido ("y les dijo:") con una
+  respuesta distinta cada vez. Con esas palabras solas la pregunta no alcanza; hace falta el contexto (lo que venía
+  antes), que es lo que el telescopio de oraciones tendría que traer.
+- **Lo que falta:** que oiga el cubo de verdad en lugar de las chances medidas, y que la respuesta se cante de vuelta.
