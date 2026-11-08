@@ -1749,4 +1749,7 @@ son "Q:"/"O:". Cuatro tramos sin leer:
 - El canto también entiende (73 %), pero confunde mecanismos cuando una cosa aparece en varios ("¿qué come la vaca?" →
   "la vaca es un animal").
 - Con Asimov el problema eran pocos casos y muy complejos, como dijo el Capitán.
+- **Con un cubo de 10³**, oyendo lo mismo que el de 7³ (cada marco una vez, sin practicar): 107, 106 y 105 de 116 con
+  las mismas semillas. Igual que el 7³ (106, 107, 107) y que el control (106): el tamaño no cambia nada acá, porque los
+  dos ya oyen todo lo que las notas dicen. Los ~10 que faltan son el límite de las notas, no del cubo.
 
