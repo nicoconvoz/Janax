@@ -20,7 +20,8 @@
 ;     confirms it most, if that one chooses it too; the joined ones are one relation from then on (their pairs
 ;     together, turned when they are the other way round), and everything is deduced again with what was joined. Only
 ;     relations that assert something join: one that says a pair both ways ("a de b" and "b de a") does not commit
-;     to a side, nothing can refute it, and it is glue, not a relation. While a turn joins something, there is
+;     to a side, nothing can refute it, and it is glue, not a relation. And what each relation is refutes too: when
+;     every A it says has one B, shown by two (each child one father), a join that gives an A two B's contradicts it. While a turn joins something, there is
 ;     another; when nothing new is deduced without contradiction, the while ends by itself.
 ;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
 ;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
@@ -156,7 +157,24 @@ HSCUT = 17F8h                   ; fewest times a surname's word has; how many wo
 HSWN  = 1800h
 HCRS  = 1868h                   ; how many pairs back a pair is crossed with (house "cruce"; 1 if none)
 HTMX  = 1860h
-HNANT = 1870h                   ; by relation, 1 if it says a pair both ways: glue (a room)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
+HNANT = 1870h                   ; by relation, 1 if it says a pair both ways: glue (a room)
+HFT2  = 1878h                   ; what each relation says of a word, by relation, side and word {key, relation, side,
+HSUPP = 1898h                   ; word, its confirmed value, how many confirmed, how many values, one of them}; by
+                                ; relation and side, how many words show it is so, and if one breaks it
+HBROK = 18A0h                   ; (rooms); the words by the relations that say them {key, how many, where, put} and
+HWGT  = 18A8h                   ; them {relation, side, other} (a room); the contradictions, by the two and which way
+HWGE  = 18C8h                   ; {key, how many}
+HCFT  = 18D0h
+HQ1   = 18F0h                   ; (walking)
+HQ2   = 18F8h
+HQ3   = 1900h
+HQ4   = 1908h
+HQ5   = 1910h
+HQ6   = 1918h
+HQ7   = 1920h
+HQ8   = 1928h
+HFV   = 1930h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+                                ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
 HSUN  = 1818h                   ; by new one, the chosen one it relates to (a room); walking: the new one, how many
@@ -227,6 +245,7 @@ jst j2, j1, HTURN
 jwhile j2                      ; while a turn joins something
   jcall hl_groups
   jcall hl_agree
+  jcall hl_props
   jcall hl_merge
   jldi j1, 0
   jld j2, j1, HTURN
@@ -2334,6 +2353,485 @@ hl_tread:
 htr_done:
   jret
 
+; The properties each relation shows in the book, and what they refute (Capitan, 2026-11-08: reasoning, not chance).
+; What a relation says of a word (on its A side: the B's it gives it; on its B side: the A's) is confirmed when two
+; say it. A relation is "one B for each A" when two words at least have one confirmed B, and none has two confirmed
+; B's (a counterexample breaks it only if it is confirmed too: one stray pair of the raw text, as "fue" taken for a
+; father in "rosa fue padre de sol", refutes nothing). Joining two relations so that a word whose B is confirmed in
+; one, where that one is so, gets another B from the other is a contradiction (HCFT, by the two and which way). The
+; same for "one A for each B". Uses j1-j14.
+hl_props:
+  jldi j2, HFT2
+  jcall hl_clear
+  jldi j2, HFV
+  jcall hl_clear
+  jldi j2, HWGT
+  jcall hl_clear
+  jldi j2, HCFT
+  jcall hl_clear
+  jldi j1, 0
+  jld j2, j1, HNM
+  jadd j2, j2, j2
+  jld j3, j1, HSUPP
+  jld j4, j1, HBROK
+  hp_z:
+    jjz j2, hp_zd
+    jst j1, j3, 0
+    jst j1, j4, 0
+    jldi j5, 8
+    jadd j3, j3, j5
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j2, j2, j5
+    jjmp hp_z
+hp_zd:
+  jst j1, j1, HQ1               ; each pair of a form said by two, by its relation, turned to it: how many say it
+  hp_f:
+    jldi j1, 0
+    jld j2, j1, HQ1
+    jld j3, j1, HNF
+    jsub j3, j2, j3
+    jjz j3, hp_fd
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jst j3, j1, HQ2
+    jld j2, j3, 0
+    jldi j4, 48
+    jmul j4, j2, j4
+    jld j5, j1, HMA
+    jadd j4, j4, j5
+    jld j4, j4, 32
+    jldi j5, 2
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, hp_fn
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HQ3               ; its relation
+    jld j4, j1, HQ2
+    jld j5, j4, 8
+    jld j6, j4, 16
+    jjz j3, hp_or
+    jadd j7, j5, j1
+    jadd j5, j6, j1
+    jadd j6, j7, j1
+  hp_or:
+    jst j5, j1, HQ4               ; A
+    jst j6, j1, HQ5               ; B
+    jst j1, j1, HQ6
+    jadd j7, j5, j1
+    jadd j8, j6, j1
+    jcall hp_val
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, HQ6
+    jld j7, j1, HQ5
+    jld j8, j1, HQ4
+    jcall hp_val
+  hp_fn:
+    jldi j1, 0
+    jld j2, j1, HQ1
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HQ1
+    jjmp hp_f
+hp_fd:
+  jldi j2, HFV                  ; what each relation says of each word: its values, the confirmed ones
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HQ1
+  jld j4, j2, 0
+  jst j4, j1, HQ2
+  hp_v:
+    jldi j1, 0
+    jld j3, j1, HQ1
+    jjz j3, hp_vd
+    jld j4, j1, HQ2
+    jld j5, j4, 0
+    jjz j5, hp_vn
+    jld j5, j4, 8                 ; its relation, side, word
+    jld j6, j4, 16
+    jcall hl_mix
+    jld j6, j4, 24
+    jcall hl_mix
+    jjnz j5, hp_vk
+    jldi j5, 1
+  hp_vk:
+    jldi j2, HFT2
+    jcall pl_take
+    jldi j1, 0
+    jld j8, j1, HQ2
+    jjz j6, hp_vold
+    jld j7, j8, 8
+    jst j7, j4, 8
+    jld j7, j8, 16
+    jst j7, j4, 16
+    jld j7, j8, 24
+    jst j7, j4, 24
+    jld j7, j8, 32
+    jst j7, j4, 56                ; a value it says
+  hp_vold:
+    jld j7, j4, 48                ; one value more
+    jldi j9, 1
+    jadd j7, j7, j9
+    jst j7, j4, 48
+    jld j7, j8, 40
+    jldi j9, 2
+    jsub j7, j7, j9
+    jldi j9, 63
+    jsar j7, j7, j9
+    jjnz j7, hp_vn
+    jld j7, j4, 40                ; confirmed (two say it)
+    jldi j9, 1
+    jadd j7, j7, j9
+    jst j7, j4, 40
+    jld j7, j8, 32
+    jst j7, j4, 32
+  hp_vn:
+    jldi j1, 0
+    jld j4, j1, HQ2
+    jldi j5, HFV
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HQ2
+    jld j3, j1, HQ1
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HQ1
+    jjmp hp_v
+hp_vd:
+  jldi j2, HFT2                 ; what each relation is: shown (words with one confirmed value), broken (two)
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jld j4, j2, 0
+  jld j5, j2, 24
+  hp_p:
+    jjz j3, hp_pd
+    jld j6, j4, 0
+    jjz j6, hp_pn
+    jld j6, j4, 8
+    jadd j6, j6, j6
+    jld j7, j4, 16
+    jadd j6, j6, j7
+    jldi j7, 3
+    jshl j6, j6, j7
+    jld j7, j4, 40
+    jjz j7, hp_pn
+    jldi j8, 1
+    jsub j8, j7, j8
+    jjz j8, hp_pk
+    jld j7, j1, HBROK
+    jadd j7, j7, j6
+    jldi j8, 1
+    jst j8, j7, 0
+    jjmp hp_pn
+  hp_pk:
+    jld j7, j1, HSUPP
+    jadd j7, j7, j6
+    jld j8, j7, 0
+    jldi j9, 1
+    jadd j8, j8, j9
+    jst j8, j7, 0
+  hp_pn:
+    jadd j4, j4, j5
+    jldi j6, 1
+    jsub j3, j3, j6
+    jjmp hp_p
+hp_pd:
+  jldi j2, 1                    ; by word: the relations that say it, on which side
+  jst j2, j1, HQ7
+  hp_w:
+    jldi j1, 0
+    jldi j2, HFT2
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HQ1
+    jld j4, j2, 0
+    jst j4, j1, HQ2
+    hp_wl:
+      jldi j1, 0
+      jld j3, j1, HQ1
+      jjz j3, hp_wld
+      jld j4, j1, HQ2
+      jld j6, j4, 0
+      jjz j6, hp_wn
+      jld j5, j4, 24
+      jld j6, j1, HQ7
+      jldi j7, 1
+      jsub j6, j6, j7
+      jjnz j6, hp_wput
+      jldi j2, HWGT
+      jcall pl_take
+      jldi j1, 0
+      jld j7, j4, 8
+      jldi j8, 1
+      jadd j7, j7, j8
+      jst j7, j4, 8
+      jjmp hp_wn
+    hp_wput:
+      jldi j2, HWGT
+      jcall pl_find
+      jldi j1, 0
+      jld j7, j4, 16
+      jld j8, j4, 24
+      jadd j7, j7, j8
+      jldi j9, 1
+      jadd j8, j8, j9
+      jst j8, j4, 24
+      jldi j8, 24
+      jmul j7, j7, j8
+      jld j8, j1, HWGE
+      jadd j7, j7, j8
+      jld j4, j1, HQ2
+      jld j8, j4, 8
+      jst j8, j7, 0
+      jld j8, j4, 16
+      jst j8, j7, 8
+      jst j4, j7, 16                ; (what it says of the word, there)
+    hp_wn:
+      jldi j1, 0
+      jld j4, j1, HQ2
+      jldi j5, HFT2
+      jld j5, j5, 24
+      jadd j4, j4, j5
+      jst j4, j1, HQ2
+      jld j3, j1, HQ1
+      jldi j5, 1
+      jsub j3, j3, j5
+      jst j3, j1, HQ1
+      jjmp hp_wl
+  hp_wld:
+    jld j2, j1, HQ7
+    jldi j3, 2
+    jsub j3, j2, j3
+    jjz j3, hp_c
+    jldi j2, HWGT
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jld j4, j2, 0
+    jld j5, j2, 24
+    jldi j6, 0
+    hp_s:
+      jjz j3, hp_sd
+      jld j7, j4, 0
+      jjz j7, hp_sn
+      jst j6, j4, 16
+      jst j1, j4, 24
+      jld j7, j4, 8
+      jadd j6, j6, j7
+    hp_sn:
+      jadd j4, j4, j5
+      jldi j7, 1
+      jsub j3, j3, j7
+      jjmp hp_s
+  hp_sd:
+    jldi j2, 2
+    jst j2, j1, HQ7
+    jjmp hp_w
+hp_c:
+  jldi j2, HWGT                 ; the contradictions, word by word
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HQ1
+  jld j4, j2, 0
+  jst j4, j1, HQ2
+  hp_g:
+    jldi j1, 0
+    jld j3, j1, HQ1
+    jjz j3, hp_done
+    jld j4, j1, HQ2
+    jld j5, j4, 0
+    jjz j5, hp_gn
+    jld j5, j4, 8
+    jldi j6, 2
+    jsub j6, j5, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, hp_gn
+    jst j1, j1, HQ3
+    hp_x:
+      jldi j1, 0
+      jld j4, j1, HQ2
+      jld j2, j1, HQ3
+      jld j3, j4, 8
+      jsub j3, j2, j3
+      jjz j3, hp_gn
+      jst j1, j1, HQ4
+      hp_y:
+        jldi j1, 0
+        jld j4, j1, HQ2
+        jld j3, j1, HQ4
+        jld j5, j4, 8
+        jsub j5, j3, j5
+        jjz j5, hp_xn
+        jld j5, j4, 16
+        jld j6, j1, HQ3
+        jadd j6, j6, j5
+        jldi j7, 24
+        jmul j6, j6, j7
+        jld j8, j1, HWGE
+        jadd j6, j6, j8             ; x: the one whose confirmed value is defended
+        jadd j9, j3, j5
+        jmul j9, j9, j7
+        jadd j9, j9, j8             ; y: the one that would give the word another
+        jld j10, j6, 0
+        jld j11, j9, 0
+        jsub j12, j10, j11
+        jjz j12, hp_yn              ; one relation
+        jld j12, j6, 16
+        jld j13, j12, 40
+        jldi j14, 1
+        jsub j13, j13, j14
+        jjnz j13, hp_yn             ; x has not one confirmed value
+        jst j6, j1, HQ5
+        jst j9, j1, HQ6
+        jadd j2, j10, j1            ; and x is so, on its side
+        jld j3, j6, 8
+        jcall hp_is
+        jjz j6, hp_yn
+        jldi j1, 0
+        jld j6, j1, HQ5
+        jld j9, j1, HQ6
+        jld j12, j6, 16             ; does y say another value?
+        jld j13, j9, 16
+        jld j14, j13, 48
+        jldi j7, 1
+        jsub j14, j14, j7
+        jjnz j14, hp_conf           ; more than one: another for sure
+        jld j14, j13, 56
+        jld j7, j12, 32
+        jsub j14, j14, j7
+        jjz j14, hp_yn              ; the same one
+      hp_conf:
+        jld j10, j6, 0
+        jld j11, j9, 0
+        jld j12, j6, 8
+        jld j13, j9, 8
+        jsub j12, j12, j13
+        jldi j13, 1
+        jjz j12, hp_way
+        jldi j13, 2
+      hp_way:
+        jsub j12, j10, j11
+        jldi j14, 63
+        jsar j12, j12, j14
+        jjnz j12, hp_ord
+        jadd j12, j10, j1
+        jadd j10, j11, j1
+        jadd j11, j12, j1
+      hp_ord:
+        jadd j5, j10, j1
+        jadd j6, j11, j1
+        jcall hl_mix
+        jadd j6, j13, j1
+        jcall hl_mix
+        jjnz j5, hp_ck
+        jldi j5, 1
+      hp_ck:
+        jldi j2, HCFT
+        jcall pl_take
+        jldi j1, 0
+        jld j7, j4, 8
+        jldi j8, 1
+        jadd j7, j7, j8
+        jst j7, j4, 8
+      hp_yn:
+        jldi j1, 0
+        jld j3, j1, HQ4
+        jldi j4, 1
+        jadd j3, j3, j4
+        jst j3, j1, HQ4
+        jjmp hp_y
+    hp_xn:
+      jldi j1, 0
+      jld j2, j1, HQ3
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HQ3
+      jjmp hp_x
+  hp_gn:
+    jldi j1, 0
+    jld j4, j1, HQ2
+    jldi j5, HWGT
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HQ2
+    jld j3, j1, HQ1
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HQ1
+    jjmp hp_g
+hp_done:
+  jret
+
+; Relation j2, side j3 (0: one B for each A; 1: one A for each B): j6 = 1 if it is so (two words with one confirmed
+; value, none with two). Uses j6-j8.
+hp_is:
+  jadd j6, j2, j2
+  jadd j6, j6, j3
+  jldi j7, 3
+  jshl j6, j6, j7
+  jldi j7, 0
+  jld j8, j7, HBROK
+  jadd j8, j8, j6
+  jld j8, j8, 0
+  jjnz j8, hpi_no
+  jld j8, j7, HSUPP
+  jadd j8, j8, j6
+  jld j8, j8, 0
+  jldi j7, 2
+  jsub j8, j8, j7
+  jldi j7, 63
+  jsar j8, j8, j7
+  jjnz j8, hpi_no
+  jldi j6, 1
+  jret
+hpi_no:
+  jldi j6, 0
+  jret
+
+; Relation HQ3, side HQ6, word j7, value j8: once more (HFV {key, relation, side, word, value, how many}). Uses j1-j8.
+hp_val:
+  jldi j1, 0
+  jst j7, j1, HQ8
+  jst j8, j1, HKEY
+  jld j5, j1, HQ3
+  jld j6, j1, HQ6
+  jcall hl_mix
+  jld j6, j1, HQ8
+  jcall hl_mix
+  jld j6, j1, HKEY
+  jcall hl_mix
+  jjnz j5, hpv_k
+  jldi j5, 1
+hpv_k:
+  jldi j2, HFV
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, hpv_old
+  jld j7, j1, HQ3
+  jst j7, j4, 8
+  jld j7, j1, HQ6
+  jst j7, j4, 16
+  jld j7, j1, HQ8
+  jst j7, j4, 24
+  jld j7, j1, HKEY
+  jst j7, j4, 32
+hpv_old:
+  jld j7, j4, 40
+  jldi j8, 1
+  jadd j7, j7, j8
+  jst j7, j4, 40
+  jret
+
 ; What it read: the words, the half, the forms said by two. Uses j1-j14.
 hl_say0:
   jldi j1, 0
@@ -2446,6 +2944,41 @@ hl_rooms:
   jcall room
   jldi j1, 0
   jst j13, j1, HNANT
+  jld j11, j1, HNM              ; what each relation is: rooms and tables
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 4
+  jshl j11, j11, j2
+  jst j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSUPP
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HBROK
+  jld j11, j1, HNF
+  jadd j11, j11, j11
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HWGE
+  jldi j2, HFT2
+  jldi j3, 64
+  jcall pl_new
+  jldi j2, HFV
+  jldi j3, 48
+  jcall pl_new
+  jldi j2, HWGT
+  jldi j3, 32
+  jcall pl_new
+  jldi j2, HCFT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
   jst j1, j1, HI
   hro_lap:                      ; every form its own relation, of one form
     jldi j1, 0
@@ -2711,7 +3244,8 @@ hm_bd:
 
 ; The hypothesis at j4 ("the second relation is the first", the same way or the other way round) -> j6 its
 ; confirmations (the pairs the book says as it deduces), 0 if it does not stand: fewer than two confirmations, a
-; contradiction (a pair the book says the other way round), or a relation of it that is glue. Uses j1-j8 (keeps j4).
+; contradiction (a pair the book says the other way round, or a property of either that the join would break: an A
+; with two B's where one of them has one B for each A), or a relation of it that is glue. Uses j1-j8 (keeps j4).
 hl_reason:
   jldi j1, 0
   jld j6, j4, 32
@@ -2747,6 +3281,24 @@ hrs_k:
   jld j7, j4, 32
   jjnz j7, hrs_no2
 hrs_ok:
+  jld j4, j1, HT5               ; and no property of either refutes it
+  jld j5, j4, 8
+  jld j6, j4, 16
+  jcall hl_mix
+  jld j6, j4, 24
+  jcall hl_mix
+  jjnz j5, hrs_k2
+  jldi j5, 1
+hrs_k2:
+  jldi j2, HCFT
+  jcall pl_find
+  jldi j1, 0
+  jld j7, j4, 0
+  jsub j7, j7, j5
+  jjnz j7, hrs_yes
+  jld j7, j4, 8
+  jjnz j7, hrs_no2
+hrs_yes:
   jld j4, j1, HT5
   jld j6, j1, HT4
   jret

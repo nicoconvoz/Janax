@@ -2243,3 +2243,22 @@ los dos lados, nunca se une.
   formas. Una forma de gramática casi nunca dice un par al revés: nada la contradice.
 - ⚠️ Lo que falta es lo que la refuta: **las propiedades** que la relación muestra en el libro. En "hijo de" cada hijo
   tiene un solo padre; sumarle "en" le daría dos padres a isaac. Esa es la contradicción que todavía no mira.
+
+**Las propiedades refutan** (lo que faltaba): lo que una relación dice de una palabra está **confirmado** cuando lo
+dicen dos. Una relación es "un solo B por cada A" cuando dos palabras tienen un B confirmado y ninguna tiene dos B
+confirmados: un contraejemplo sólo rompe si está confirmado también (en "rosa fue padre de sol", la forma "padre de"
+toma "fue" por padre: un par suelto del texto crudo no tumba nada). Unir dos relaciones de modo que una palabra cuyo
+valor está confirmado en una, que es así, reciba otro de la otra es una **contradicción**. Prueba: "junto a" dice dos
+pares como "padre de" y ninguno al revés, pero le da a mar un segundo padre: refutada.
+
+| | sin propiedades | con propiedades |
+|---|---|---|
+| sinópticos: uniones, la clase de "hijo de" | 138, 103 formas | **87, 21 formas** |
+| NT: uniones, la más grande ("y la") | 455, 261 formas | **366, 151 formas** |
+| uniones buenas del NT (7) | 7 | 7 |
+
+- En los sinópticos la clase de "hijo de" quedó casi limpia: "padre de", "fue padre de" y las ventanas de la cadena de
+  Lucas ("sela hijo de", "hijo de cainán": la misma relación con un nombre adentro).
+- ⚠️ Todavía entran formas de gramática ("a", "o qué", "se", "y se") con 2 a 5 confirmaciones: dicen miles de pares,
+  coinciden en pocos, y ninguno choca con un valor confirmado porque hablan de gente de la que la otra no confirmó
+  nada. Una hipótesis así no está refutada, pero tampoco explica lo que afirma.
