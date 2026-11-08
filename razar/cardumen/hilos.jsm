@@ -134,6 +134,8 @@ S_AZAR   = 0B80h
 S_PARTES = 0BA0h
 S_PIEZ   = 0BC0h
 S_PIEZA  = 0BE0h
+S_PFIN   = 0C00h
+S_PINI   = 0C20h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -7241,15 +7243,17 @@ hpm_no:
 ; root and the ending. Two words of one root that end differently are a change of ending ("rápid|o" and
 ; "rápid|amente": "o" into "amente"), and a change is a piece by how many roots it works for (none given: each found
 ; in the book). Into the house's "piezas", a line each {how many roots, one ending, the other, a root it works for};
-; the most said said. Only when the house asks ("partes"): then nothing else is done. Uses j1-j14.
+; the most said said. And the same at its beginning ("re|hacer", "in|útil"): each piece says which it is. Only when
+; the house asks ("partes"): then nothing else is done. Uses j1-j14.
 hl_partes:
   jldi j2, HPB
   jldi j3, 16
   jcall pl_new
   jldi j2, HPS
-  jldi j3, 64
+  jldi j3, 72
   jcall pl_new
-  jldi j1, 0                    ; (as many cuts as its words have bytes, 48 bytes each: counted first)
+  jldi j1, 0                    ; (two cuts, an end and a beginning, for each byte of its words, 56 bytes each: counted
+                                ; first)
   jldi j2, ZWT
   jld j3, j2, 8
   jldi j4, 1
@@ -7270,7 +7274,7 @@ hl_partes:
     jsub j3, j3, j5
     jjmp hpt_n
 hpt_nd:
-  jldi j3, 48
+  jldi j3, 112
   jmul j11, j11, j3
   jcall room
   jldi j1, 0
@@ -7316,7 +7320,7 @@ hpt_nd:
       jsub j4, j3, j4
       jldi j5, 63
       jsar j4, j4, j5
-      jjnz j4, hpt_wn
+      jjnz j4, hpt_b0
       jst j3, j1, HPRN
       jld j4, j1, HPP
       jadd j4, j4, j3
@@ -7345,7 +7349,7 @@ hpt_nd:
       jldi j1, 0
       jld j6, j4, 8
       jld j2, j1, HPEN
-      jldi j3, 48
+      jldi j3, 56
       jmul j3, j2, j3
       jld j7, j1, HPE
       jadd j3, j3, j7
@@ -7360,6 +7364,7 @@ hpt_nd:
       jld j7, j1, HPRN
       jst j7, j3, 32
       jst j6, j3, 40
+      jst j1, j3, 48            ; (an end)
       jldi j7, 1
       jadd j2, j2, j7
       jst j2, j1, HPEN
@@ -7371,6 +7376,78 @@ hpt_nd:
       jadd j2, j2, j3
       jst j2, j1, HPL
       jjmp hpt_c
+  hpt_b0:                       ; the beginnings: the same, cut at its start ("re|hacer"; the rest three bytes or more)
+    jldi j1, 0
+    jst j1, j1, HPL
+    hpt_g:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jld j3, j1, HPNN
+      jsub j3, j3, j2
+      jldi j4, 3
+      jsub j4, j3, j4
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjnz j4, hpt_wn
+      jst j3, j1, HPRN
+      jld j4, j1, HPP
+      jadd j4, j4, j2
+      jst j4, j1, HPSP          ; (here: where the rest starts)
+      jjz j2, hpt_gok
+      jldb j5, j4, 0
+      jldi j6, 192
+      jand j5, j5, j6
+      jldi j6, 128
+      jsub j5, j5, j6
+      jjz j5, hpt_gn
+    hpt_gok:
+      jld j3, j1, HPSP          ; the rest's print and the beginning's, marked apart from the ends
+      jld j4, j1, HPRN
+      jcall mp_print
+      jldi j6, 2
+      jcall hl_mix
+      jldi j1, 0
+      jst j5, j1, HPHB
+      jld j3, j1, HPP
+      jld j4, j1, HPL
+      jcall mp_print
+      jldi j6, 2
+      jcall hl_mix
+      jldi j1, 0
+      jst j5, j1, HPHS
+      jld j5, j1, HPHB
+      jldi j2, HPB
+      jcall pl_take
+      jldi j1, 0
+      jld j6, j4, 8
+      jld j2, j1, HPEN
+      jldi j3, 56
+      jmul j3, j2, j3
+      jld j7, j1, HPE
+      jadd j3, j3, j7
+      jld j7, j1, HPHS
+      jst j7, j3, 0
+      jld j7, j1, HPP           ; the piece: the beginning
+      jst j7, j3, 8
+      jld j7, j1, HPL
+      jst j7, j3, 16
+      jld j7, j1, HPSP          ; the root: the rest
+      jst j7, j3, 24
+      jld j7, j1, HPRN
+      jst j7, j3, 32
+      jst j6, j3, 40
+      jldi j7, 1
+      jst j7, j3, 48            ; (a beginning)
+      jadd j2, j2, j7
+      jst j2, j1, HPEN
+      jst j2, j4, 8
+    hpt_gn:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HPL
+      jjmp hpt_g
   hpt_wn:
     jldi j1, 0
     jld j4, j1, HPW
@@ -7406,7 +7483,7 @@ hpt_wd:
       jjz j2, hpt_rn
       jldi j3, 1
       jsub j2, j2, j3
-      jldi j3, 48
+      jldi j3, 56
       jmul j3, j2, j3
       jld j4, j1, HPE
       jadd j3, j3, j4
@@ -7420,7 +7497,7 @@ hpt_wd:
         jjz j2, hpt_a
         jldi j3, 1
         jsub j2, j2, j3
-        jldi j3, 48
+        jldi j3, 56
         jmul j3, j2, j3
         jld j4, j1, HPE
         jadd j3, j3, j4
@@ -7465,6 +7542,8 @@ hpt_wd:
         jst j7, j4, 48
         jld j7, j5, 32
         jst j7, j4, 56
+        jld j7, j5, 48
+        jst j7, j4, 64
       hpt_old:
         jld j7, j4, 8
         jldi j8, 1
@@ -7632,6 +7711,16 @@ hps_pos:
   jld j9, j4, 48
   jld j10, j4, 56
   jcall hp_text
+  jldi j2, 9
+  jcall putch
+  jldi j1, 0
+  jld j4, j1, HPZ
+  jld j2, j4, 64
+  jldi j1, S_PFIN
+  jjz j2, hpy_k
+  jldi j1, S_PINI
+hpy_k:
+  jcall puts
   jldi j2, 10
   jjmp putch
 

@@ -188,3 +188,7 @@ times 0BC0h - $ db 0
 db 'piezas', 0
 times 0BE0h - $ db 0
 db 'pieza: ', 0
+times 0C00h - $ db 0
+db 'fin', 0
+times 0C20h - $ db 0
+db 'inicio', 0

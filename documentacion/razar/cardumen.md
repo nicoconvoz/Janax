@@ -2888,3 +2888,27 @@ Primer escalón: las terminaciones.
   clave hecha por otros, que nunca vio, le da la razón en el 94 % de la morfología flexiva, contra un 1 % del azar. Es
   el primer engranaje del plan del Capitán: el siguiente son los comienzos (`in-`, `re-`, `sobre-`), después la
   puntuación, después qué hace cada pieza en su contexto, y recombinar.
+
+## Los comienzos (2026-11-08)
+
+El Capitán: *"sí, los comienzos"*. El mismo corte, desde el principio de cada palabra (`re|hacer`, `in|útil`): dos
+palabras con el mismo resto (tres bytes o más) y distinto comienzo son un cambio de comienzo. Cada pieza dice de qué
+lado es (`fin` o `inicio`). La prueba suma hacer/rehacer y leer/releer: `_ → re`, de inicio, en dos raíces.
+
+- **Sobre los once libros de personas** (69 s): `re` (397 raíces), `des` (301), `in` (206), `con` (198), `en`, `de`.
+  Y también aparecen solos los signos que se pegan al comienzo de una palabra: `¡` (237), `«` (199), `—` (169), `¿`
+  (124). Es el engranaje de la puntuación, que todavía no está mirado como tal. Hay ruido de cortes sin sentido
+  (`p → c`, `i → co`).
+- **El juez (MATS)**, ahora mirando también desde el final de cada pareja:
+
+  | relación | antes (solo finales) | con comienzos |
+  |---|---|---|
+  | negación `in-` (D02) | 0 de 24 | **23 de 24** |
+  | `sobre-` (D04) | 0 de 9 | **9 de 9** |
+  | `re-` (D06) | 0 de 10 | **10 de 10** |
+  | morfología derivativa, total | 177 de 233 | **219 de 233 (94 %)**, azar 1 |
+  | morfología flexiva, total | 391 de 418 | 391 de 418 (94 %), azar 4 |
+  | semántica lexicográfica | 6 de 406 | 36 de 406, azar 5 |
+
+  Las dos familias de morfología quedan en 94 %, contra un azar del 1 %. Lo de la lexicográfica sube un poco por
+  antónimos que se arman con comienzo (`in-`, `des-`).
