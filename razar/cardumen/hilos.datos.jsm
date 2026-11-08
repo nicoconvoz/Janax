@@ -108,3 +108,19 @@ times 690h - $ db 0
 db ' | huecos de las refutadas: ', 0
 times 6B0h - $ db 0
 db ', que explicaria una dormida: ', 0
+times 6E0h - $ db 0
+db 'suspende', 0
+times 700h - $ db 0
+db 'regla ', 0
+times 720h - $ db 0
+db ' | frena ', 0
+times 740h - $ db 0
+db ' uniones (', 0
+times 760h - $ db 0
+db ' palabras)', 10, 0
+times 780h - $ db 0
+db ' | un B por cada A', 0
+times 7A0h - $ db 0
+db ' | un A por cada B', 0
+times 7C0h - $ db 0
+db 'suspendida: regla ', 0

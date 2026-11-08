@@ -94,6 +94,14 @@ S_ESPERA = 640h
 S_DESP   = 670h
 S_HUECO  = 690h
 S_ABSU   = 6B0h
+S_SUSP   = 6E0h
+S_REGLA  = 700h
+S_FRENA  = 720h
+S_UNION  = 740h
+S_PALAB  = 760h
+S_LADO0  = 780h
+S_LADO1  = 7A0h
+S_SUSPD  = 7C0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -243,7 +251,13 @@ HABS  = 1B48h                   ; says the pair; walking)
 HAR   = 1B50h
 HAX   = 1B58h
 HAE   = 1B60h
-HAEN  = 1B68h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HAEN  = 1B68h
+HPBP  = 1B70h                   ; by relation and side, what its rule ("one value") forbids: the pairs of relations it
+HPBW  = 1B78h                   ; keeps apart, and the words in conflict (rooms); the rule suspended (house "suspende":
+HSUSF = 1B80h                   ; its number, relation twice plus side, plus one here; 0 none), as it is this turn
+HSUSS = 1B88h                   ; {its side, its relation}; walking
+HSUSR = 1B90h
+HPI   = 1B98h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -274,6 +288,28 @@ jld j2, j1, HTK
 jjz j2, hl_cr
 jst j2, j1, HCRS
 hl_cr:
+jldi j11, S_SUSP                ; a rule suspended, if the house says ("suspende": its number, as the rules are said)
+jldi j12, 8
+jcall en_read
+jldi j1, 0
+jst j1, j1, HSUSF
+jld j2, j1, PRN
+jjz j2, hl_su
+jcall hl_tread
+jldi j1, 0
+jld j2, j1, HTK
+jldi j3, 1
+jadd j2, j2, j3
+jst j2, j1, HSUSF
+jldi j1, S_SUSPD
+jcall puts
+jld j2, j1, HSUSF
+jldi j3, 1
+jsub j2, j2, j3
+jcall putnum
+jldi j2, 10
+jcall putch
+hl_su:
 jldi j11, S_TANDA               ; a tanda for the cube, if the house asks for one
 jldi j12, 5
 jcall en_read
@@ -2479,17 +2515,38 @@ hl_props:
   jadd j2, j2, j2
   jld j3, j1, HSUPP
   jld j4, j1, HBROK
+  jld j6, j1, HPBP
+  jld j7, j1, HPBW
   hp_z:
     jjz j2, hp_zd
     jst j1, j3, 0
     jst j1, j4, 0
+    jst j1, j6, 0
+    jst j1, j7, 0
     jldi j5, 8
     jadd j3, j3, j5
     jadd j4, j4, j5
+    jadd j6, j6, j5
+    jadd j7, j7, j5
     jldi j5, 1
     jsub j2, j2, j5
     jjmp hp_z
 hp_zd:
+  jld j2, j1, HSUSF             ; the suspended rule: in the relation its form is in now, on its side as it is there
+  jjz j2, hp_sud
+  jldi j3, 1
+  jsub j2, j2, j3
+  jand j4, j2, j3
+  jst j4, j1, HSUSS
+  jshr j2, j2, j3
+  jcall hl_find
+  jldi j1, 0
+  jst j2, j1, HSUSR
+  jld j4, j1, HSUSS
+  jxor j4, j4, j3
+  jst j4, j1, HSUSS
+hp_sud:
+  jldi j1, 0
   jld j2, j1, HNM               ; (no pairs by relation yet)
   jld j3, j1, HCCNT
   hp_cz:
@@ -2870,6 +2927,26 @@ hp_c:
         jldi j8, 1
         jadd j7, j7, j8
         jst j7, j4, 8
+        jld j9, j1, HQ5             ; whose rule it is: x's, on its side (a word more; the first: a pair of relations)
+        jld j10, j9, 0
+        jadd j10, j10, j10
+        jld j11, j9, 8
+        jadd j10, j10, j11
+        jldi j11, 3
+        jshl j10, j10, j11
+        jld j11, j1, HPBW
+        jadd j11, j11, j10
+        jld j12, j11, 0
+        jldi j13, 1
+        jadd j12, j12, j13
+        jst j12, j11, 0
+        jsub j7, j7, j13
+        jjnz j7, hp_yn
+        jld j11, j1, HPBP
+        jadd j11, j11, j10
+        jld j12, j11, 0
+        jadd j12, j12, j13
+        jst j12, j11, 0
       hp_yn:
         jldi j1, 0
         jld j3, j1, HQ4
@@ -3345,6 +3422,16 @@ hxs_done:
 ; Relation j2, side j3 (0: one B for each A; 1: one A for each B): j6 = 1 if it is so (two words with one confirmed
 ; value, none with two). Uses j6-j8.
 hp_is:
+  jldi j7, 0                    ; (the rule suspended is not, whatever the book shows)
+  jld j6, j7, HSUSF
+  jjz j6, hpi_go
+  jld j6, j7, HSUSR
+  jsub j6, j6, j2
+  jjnz j6, hpi_go
+  jld j6, j7, HSUSS
+  jsub j6, j6, j3
+  jjz j6, hpi_no
+hpi_go:
   jadd j6, j2, j2
   jadd j6, j6, j3
   jldi j7, 3
@@ -3836,6 +3923,14 @@ hro_c2:
   jcall room
   jldi j1, 0
   jst j13, j1, HBROK
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPBP
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPBW
   jld j11, j1, HNF
   jadd j11, j11, j11
   jldi j2, 2
@@ -4757,6 +4852,78 @@ he_nl:
   jcall putnum
   jldi j2, 10
   jcall putch
+  jjmp hl_rules
+
+; The rules that keep relations apart (Capitan: "suspend one and deduce again; the rule whose suspension frees the most
+; is the one worth breaking"): each relation and side whose rule forbids a pair of relations, as the last turn left
+; them: "regla" its number (to suspend it), its first form, which way, how many pairs of relations it keeps apart and
+; how many words are in conflict. Uses j1-j14.
+hl_rules:
+  jldi j1, 0
+  jst j1, j1, HPI
+  hru_lap:
+    jldi j1, 0
+    jld j2, j1, HPI
+    jld j3, j1, HNM
+    jadd j3, j3, j3
+    jsub j3, j2, j3
+    jjz j3, hru_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HPBP
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jjz j4, hru_next
+    jldi j1, S_REGLA
+    jcall puts
+    jld j2, j1, HPI
+    jcall putnum
+    jldi j2, 58
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HPI
+    jldi j3, 1
+    jshr j2, j2, j3
+    jcall hl_sayform
+    jldi j1, 0
+    jld j2, j1, HPI
+    jldi j3, 1
+    jand j2, j2, j3
+    jldi j1, S_LADO0
+    jjz j2, hru_side
+    jldi j1, S_LADO1
+  hru_side:
+    jcall puts
+    jldi j1, S_FRENA
+    jcall puts
+    jld j2, j1, HPI
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, HPBP
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jcall putnum
+    jldi j1, S_UNION
+    jcall puts
+    jld j2, j1, HPI
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j1, HPBW
+    jadd j3, j3, j2
+    jld j2, j3, 0
+    jcall putnum
+    jldi j1, S_PALAB
+    jcall puts
+  hru_next:
+    jldi j1, 0
+    jld j2, j1, HPI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HPI
+    jjmp hru_lap
+hru_done:
   jret
 
 ; The house's file named by the j12 bytes at j11 -> PRB, PRN (0: none). Uses j1-j14.

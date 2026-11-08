@@ -2389,3 +2389,36 @@ relación de alguna hipótesis en coma que comparte una relación con ella.
   pueden haber salido cortas; desde cfb6d85, no.
 - Y lo que cambió el contexto: menos uniones que antes (104 contra 118) pero mejores (la más grande es la genealogía),
   y las seis buenas más "obed = jobed" aguantaron: las pruebas cuidan lo ganado.
+
+## Romper una regla: suspenderla y volver a deducir (2026-11-08)
+
+El Capitán: *"suspendé una propiedad y volvé a deducir todo. Si sin ella el resto igual cierra, era una costumbre
+local y lo que aparece en su ausencia es mecanismo nuevo; si todo se derrumba, era viga"* (como la geometría no
+euclidiana: sacar un axioma y ver qué sigue siendo consistente).
+
+- **Lo que había que saber primero:** una regla no manda a nadie al coma. Una unión que rompe "un solo valor" se
+  descarta en el acto. Los que están en coma son los que no explicaban lo suficiente.
+- **El instrumento:** al final del while, cada regla ("un B por cada A" o "un A por cada B" de una relación) que
+  mantiene separado algo se dice: `regla <número>: <forma> | <cuál> | frena N uniones (M palabras)`. N son los pares de
+  relaciones que esa regla no deja juntar, M las palabras en conflicto. Sin suspender nada, el NT da lo mismo que antes
+  (23 vueltas, 104 uniones, 68 en coma, 33 en espera).
+- **Suspender:** el archivo de la casa `suspende` con el número de una regla. En cada vuelta la regla se busca en la
+  relación donde está su forma ahora, del lado que le toca, y se la da por no cumplida.
+- **Medido en el NT** (64 reglas frenan algo; las tres que más):
+
+  | regla suspendida | frenaba | vueltas | uniones | en coma | despiertan |
+  |---|---|---|---|---|---|
+  | ninguna | | 23 | 104 | 68 | 167 |
+  | 27 "y la" (un A por cada B) | 393 | 47 | 112 | 106 | 332 |
+  | 154 "de la" (un B por cada A) | 366 | 23 | 104 | 68 | 167 |
+  | 3489 "piedad de" (un A por cada B) | 327 | 23 | 104 | 68 | 167 |
+
+- **Lo que dice:**
+  - 154 y 3489 **no eran vigas ni costumbres: eran redundantes.** Sin ellas sale todo idéntico: lo que frenaban lo
+    frena otra cosa. "Frena N" cuenta lo que una regla impide en potencia, no lo que cambia de verdad. Solo
+    suspendiendo se sabe.
+  - 27 "y la" **mueve el barco, pero no lo hunde:** el while dura el doble, se suman 12 uniones y se pierden 7. Entre
+    las nuevas hay alguna buena (`tanto ~ mucho`, `que ~ quién`) y otras flojas (`una ~ allí una`). Entre las perdidas
+    hay una buena (`tu ~ mi`). No se derrumba ni se ordena: es una regla que reparte. Esto no prueba que valga romperla.
+- **Falta:** probar todas, no solo las tres que más frenan (cada una es una vuelta entera del NT, unos minutos). Y una
+  vara para decir si lo que aparece es mecanismo o ruido: hoy eso lo juzgo yo leyendo las uniones, y no debería.
