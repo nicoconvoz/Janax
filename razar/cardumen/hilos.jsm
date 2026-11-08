@@ -19,6 +19,9 @@
 ;     something, there is another; when nothing new beats its null, the while ends by itself: no number of turns is
 ;     given. (One join a turn for each, the strongest chosen by both: what a turn joins is never carried by what it
 ;     joined in the same turn, so weak links do not chain everything into one.)
+;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
+;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
+;     with its pairs crossed, the null), for voluntad_hilos.jsm to play with.
 S_LIBRO  = 0                    ; (the texts lectura.inc asks for)
 S_P      = 10h
 S_NOBOOK = 20h
@@ -45,6 +48,11 @@ S_GRANDE = 380h
 S_FORMAS = 3C0h
 S_GANAN  = 3E0h
 S_SEUNEN = 420h
+S_TANDA  = 440h
+S_TT     = 460h
+S_NT     = 470h
+S_RT     = 480h
+S_BARR   = 490h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -107,10 +115,37 @@ HBSE  = 1720h
 HTURN = 1728h                   ; the turn; joins in it; relations of relations that beat their null in it
 HNMRG = 1730h
 HNACC = 1738h
+HTANDA = 1740h                  ; the tanda (house "tanda": how many forms, the cube's side): 1 if asked, its two
+HTK   = 1748h                   ; numbers; the chosen forms (a room), how many; the relations of relations taken (a
+HTN   = 1750h                   ; room), how many; hits by piece (a room); the strongest, its relation of relations;
+HCH   = 1758h                   ; a form's three pieces; walking
+HNCH  = 1760h
+HUS   = 1768h
+HNUS  = 1770h
+HCNT  = 1778h
+HTBEST = 1780h
+HTE   = 1788h
+HP1   = 1790h
+HP2   = 1798h
+HP3   = 17A0h
+HTI   = 17A8h
+HTJ   = 17B0h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
+jldi j11, S_TANDA               ; a tanda for the cube, if the house asks for one
+jldi j12, 5
+jcall en_read
+jldi j1, 0
+jst j1, j1, HTANDA
+jld j2, j1, PRN
+jjz j2, hl_book
+jcall hl_tread
+jldi j1, 0
+jldi j2, 1
+jst j2, j1, HTANDA
+hl_book:
 jldi j11, S_PARES
 jldi j12, 5
 jcall en_read
@@ -126,6 +161,14 @@ jcall hl_half
 jcall hl_facts
 jcall hl_rooms
 jcall hl_say0
+jldi j1, 0
+jld j2, j1, HTANDA
+jjz j2, hl_while
+jcall hl_groups
+jcall hl_agree
+jcall hl_tanda
+jjmp finish
+hl_while:
 jldi j1, 0
 jldi j2, 1
 jst j2, j1, HTURN
@@ -844,6 +887,482 @@ hl_sayform:
   jadd j4, j3, j4
   jldi j5, -1
   jjmp en_saywords
+
+; The tanda (Capitan, 2026-11-08: "that the 7^3 cube learns 16 relations at a time"): the forms of the strongest
+; relations of relations (each brings its two), until HTK of them. For each, the three bottom pieces (of HTN^2) its
+; pairs fall on most, a pair by its two words either way (A xor B), as the cube's "cosa"; a form with fewer pieces than
+; three is filled with pieces of its own key (nothing it holds, but not another's); and the same for its pairs crossed
+; (the null). Said "T: i p p p | words", "N: i p p p", and the relations of relations among them, "R: i j way pairs".
+; Uses j1-j14.
+hl_tanda:
+  jldi j1, 0
+  jld j11, j1, HTK
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jst j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCH
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HUS
+  jld j11, j1, HTN
+  jmul j11, j11, j11
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HCNT
+  jst j1, j1, HNCH
+  jst j1, j1, HNUS
+  ht_pick:                      ; the strongest relation of relations not taken yet
+    jldi j1, 0
+    jld j2, j1, HNCH
+    jld j3, j1, HTK
+    jsub j3, j2, j3
+    jjz j3, ht_picked
+    jst j1, j1, HTBEST
+    jst j1, j1, HTE
+    jldi j2, HAG
+    jld j3, j2, 8
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j1, HTI
+    jld j4, j2, 0
+    jst j4, j1, HTJ
+    ht_s:
+      jldi j1, 0
+      jld j3, j1, HTI
+      jjz j3, ht_sd
+      jld j4, j1, HTJ
+      jld j5, j4, 0
+      jjz j5, ht_sn
+      jcall hl_score
+      jldi j1, 0
+      jld j7, j1, HTBEST
+      jsub j7, j7, j6
+      jldi j8, 63
+      jsar j7, j7, j8
+      jjz j7, ht_sn
+      jld j7, j1, HNUS            ; (not taken)
+      jld j8, j1, HUS
+      ht_u:
+        jjz j7, ht_new
+        jld j9, j8, 0
+        jsub j9, j9, j4
+        jjz j9, ht_sn
+        jldi j9, 8
+        jadd j8, j8, j9
+        jldi j9, 1
+        jsub j7, j7, j9
+        jjmp ht_u
+    ht_new:
+      jst j6, j1, HTBEST
+      jst j4, j1, HTE
+    ht_sn:
+      jldi j1, 0
+      jld j4, j1, HTJ
+      jldi j5, HAG
+      jld j5, j5, 24
+      jadd j4, j4, j5
+      jst j4, j1, HTJ
+      jld j3, j1, HTI
+      jldi j5, 1
+      jsub j3, j3, j5
+      jst j3, j1, HTI
+      jjmp ht_s
+  ht_sd:
+    jld j4, j1, HTE
+    jjz j4, ht_picked             ; none left
+    jld j5, j1, HNUS
+    jldi j6, 3
+    jshl j6, j5, j6
+    jld j7, j1, HUS
+    jadd j6, j6, j7
+    jst j4, j6, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, HNUS
+    jldi j9, 8
+    ht_side:                      ; its two forms, if not chosen yet
+      jldi j1, 0
+      jld j2, j1, HNCH
+      jld j3, j1, HTK
+      jsub j3, j2, j3
+      jjz j3, ht_pick
+      jld j4, j1, HTE
+      jadd j4, j4, j9
+      jld j4, j4, 0
+      jldi j5, 3
+      jshl j5, j4, j5
+      jld j6, j1, HBST
+      jadd j5, j5, j6
+      jld j6, j5, 0
+      jjnz j6, ht_sidn
+      jldi j6, 1
+      jst j6, j5, 0
+      jldi j5, 3
+      jshl j5, j2, j5
+      jld j6, j1, HCH
+      jadd j5, j5, j6
+      jst j4, j5, 0
+      jldi j5, 1
+      jadd j2, j2, j5
+      jst j2, j1, HNCH
+    ht_sidn:
+      jldi j5, 16
+      jsub j5, j9, j5
+      jjz j5, ht_pick
+      jldi j9, 16
+      jjmp ht_side
+ht_picked:
+  jldi j2, HAG                  ; the relations of relations among them
+  jld j3, j2, 8
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j1, HTI
+  jld j4, j2, 0
+  jst j4, j1, HTJ
+  ht_r:
+    jldi j1, 0
+    jld j3, j1, HTI
+    jjz j3, ht_rd
+    jld j4, j1, HTJ
+    jld j5, j4, 0
+    jjz j5, ht_rn
+    jcall hl_score
+    jldi j1, 0
+    jjz j6, ht_rn
+    jld j2, j4, 8
+    jcall ht_index
+    jldi j7, 63
+    jsar j7, j6, j7
+    jjnz j7, ht_rn
+    jst j6, j1, HP1
+    jld j4, j1, HTJ
+    jld j2, j4, 16
+    jcall ht_index
+    jldi j7, 63
+    jsar j7, j6, j7
+    jjnz j7, ht_rn
+    jst j6, j1, HP2
+    jldi j1, S_RT
+    jcall puts
+    jld j2, j1, HP1
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, HP2
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j4, j1, HTJ
+    jld j2, j4, 24
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j4, j1, HTJ
+    jld j2, j4, 32
+    jcall putnum
+    jldi j2, 10
+    jcall putch
+  ht_rn:
+    jldi j1, 0
+    jld j4, j1, HTJ
+    jldi j5, HAG
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HTJ
+    jld j3, j1, HTI
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HTI
+    jjmp ht_r
+ht_rd:
+  jst j1, j1, HTI
+  ht_c:                         ; each form's pieces, read and crossed
+    jldi j1, 0
+    jld j2, j1, HTI
+    jld j3, j1, HNCH
+    jsub j3, j2, j3
+    jjz j3, ht_done
+    jst j1, j1, HTG
+    jcall ht_code
+    jldi j1, S_TT
+    jcall ht_say
+    jld j2, j1, HTI
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCH
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, HTG
+    jcall ht_code
+    jldi j1, S_NT
+    jcall ht_say
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HTI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HTI
+    jjmp ht_c
+ht_done:
+  jret
+
+; The place of form j2 among the chosen -> j6 (-1: not chosen). Uses j6-j8.
+ht_index:
+  jldi j6, 0
+  hti_lap:
+    jldi j7, 0
+    jld j7, j7, HNCH
+    jsub j7, j6, j7
+    jjz j7, hti_no
+    jldi j7, 3
+    jshl j7, j6, j7
+    jldi j8, 0
+    jld j8, j8, HCH
+    jadd j7, j7, j8
+    jld j7, j7, 0
+    jsub j7, j7, j2
+    jjz j7, hti_yes
+    jldi j7, 1
+    jadd j6, j6, j7
+    jjmp hti_lap
+hti_yes:
+  jret
+hti_no:
+  jldi j6, -1
+  jret
+
+; The text at j1, then "i p p p" (HTI, HP1-HP3), then " | ". Uses j1-j14.
+ht_say:
+  jcall puts
+  jld j2, j1, HTI
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, HP1
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, HP2
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jld j2, j1, HP3
+  jcall putnum
+  jldi j1, S_BARR
+  jcall puts
+  jret
+
+; The three pieces of the chosen form HTI, by its pairs (HTG 1: crossed) -> HP1, HP2, HP3. Uses j1-j14.
+ht_code:
+  jldi j1, 0
+  jld j2, j1, HTN
+  jmul j2, j2, j2
+  jst j2, j1, HT2               ; n^2
+  jld j3, j1, HCNT
+  jadd j4, j2, j1
+  htz:
+    jjz j4, htz_d
+    jst j1, j3, 0
+    jldi j5, 8
+    jadd j3, j3, j5
+    jldi j5, 1
+    jsub j4, j4, j5
+    jjmp htz
+htz_d:
+  jld j2, j1, HTI
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCH
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jst j3, j1, HT3               ; its form
+  jld j2, j3, 40                ; its last pair
+  htp:
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, htp_d
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j5, j3, 8               ; A
+    jld j6, j3, 16              ; B
+    jld j7, j1, HTG
+    jjz j7, htp_k
+    jld j7, j3, 24              ; crossed: the B of the pair before (the last's, for the first)
+    jldi j8, 63
+    jsar j8, j7, j8
+    jjz j8, htp_pv
+    jld j8, j1, HT3
+    jld j7, j8, 40
+  htp_pv:
+    jldi j8, 5
+    jshl j7, j7, j8
+    jadd j7, j7, j4
+    jld j6, j7, 16
+  htp_k:
+    jsub j7, j5, j6
+    jjz j7, htp_n
+    jxor j7, j5, j6
+    jldi j8, 20
+    jshr j7, j7, j8
+    jld j8, j1, HT2
+    jdiv j9, j7, j8
+    jmul j9, j9, j8
+    jsub j7, j7, j9
+    jldi j8, 3
+    jshl j7, j7, j8
+    jld j8, j1, HCNT
+    jadd j7, j7, j8
+    jld j8, j7, 0
+    jldi j9, 1
+    jadd j8, j8, j9
+    jst j8, j7, 0
+  htp_n:
+    jld j2, j3, 24
+    jjmp htp
+htp_d:
+  jldi j2, -1
+  jst j2, j1, HP1
+  jst j2, j1, HP2
+  jst j2, j1, HP3
+  jldi j10, HP1
+  jldi j11, 3
+  htt:                          ; three times: the most hit not taken (none: one of its own key)
+    jjz j11, htt_d
+    jldi j12, -1
+    jldi j13, 0
+    jldi j14, 0
+    htx:
+      jld j2, j1, HT2
+      jsub j2, j14, j2
+      jjz j2, htx_d
+      jadd j2, j14, j1
+      jcall ht_taken
+      jjnz j6, htx_n
+      jldi j2, 3
+      jshl j2, j14, j2
+      jld j3, j1, HCNT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jsub j3, j13, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, htx_n
+      jadd j12, j14, j1
+      jadd j13, j2, j1
+    htx_n:
+      jldi j2, 1
+      jadd j14, j14, j2
+      jjmp htx
+  htx_d:
+    jldi j2, 63
+    jsar j2, j12, j2
+    jjz j2, htt_put
+    jld j3, j1, HT3             ; of its own key
+    jld j2, j3, 0
+    jldi j4, 1
+    jshr j2, j2, j4
+    htk:
+      jld j4, j1, HT2
+      jdiv j5, j2, j4
+      jmul j5, j5, j4
+      jsub j12, j2, j5
+      jadd j2, j12, j1
+      jcall ht_taken
+      jjz j6, htt_put
+      jldi j4, 7
+      jadd j2, j12, j4
+      jjmp htk
+  htt_put:
+    jst j12, j10, 0
+    jldi j2, 8
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j11, j11, j2
+    jjmp htt
+htt_d:
+  jret
+
+; j6 = 1 if piece j2 is one of HP1-HP3. Uses j6, j7.
+ht_taken:
+  jldi j6, 0
+  jld j7, j6, HP1
+  jsub j7, j7, j2
+  jjz j7, htk_y
+  jld j7, j6, HP2
+  jsub j7, j7, j2
+  jjz j7, htk_y
+  jld j7, j6, HP3
+  jsub j7, j7, j2
+  jjz j7, htk_y
+  jret
+htk_y:
+  jldi j6, 1
+  jret
+
+; The two numbers of the house's "tanda" (how many forms, the cube's side) in PRB, PRN -> HTK, HTN. Uses j1-j6.
+hl_tread:
+  jldi j1, 0
+  jst j1, j1, HTK
+  jst j1, j1, HTN
+  jld j2, j1, PRB
+  jld j3, j1, PRN
+  jldi j4, HTK
+  jldi j5, 0                    ; in a number
+  htr_lap:
+    jjz j3, htr_done
+    jldb j6, j2, 0
+    jldi j7, 48
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j8, j7, j8
+    jjnz j8, htr_gap
+    jldi j8, 10
+    jsub j8, j7, j8
+    jldi j9, 63
+    jsar j8, j8, j9
+    jjz j8, htr_gap
+    jld j8, j4, 0
+    jldi j9, 10
+    jmul j8, j8, j9
+    jadd j8, j8, j7
+    jst j8, j4, 0
+    jldi j5, 1
+    jjmp htr_next
+  htr_gap:
+    jjz j5, htr_next
+    jldi j5, 0
+    jldi j8, HTN
+    jsub j8, j4, j8
+    jjz j8, htr_done
+    jldi j4, HTN
+  htr_next:
+    jldi j6, 1
+    jadd j2, j2, j6
+    jsub j3, j3, j6
+    jjmp htr_lap
+htr_done:
+  jret
 
 ; What it read: the words, the half, the forms said by two. Uses j1-j14.
 hl_say0:

@@ -2048,3 +2048,26 @@ Sobre el NT (51 s): **652 vueltas, 742 uniones, 13 relaciones de dos formas o m�
   (el rico se hace más rico). No es la regla de unir: es la vara del nulo, que no cuenta cuántas veces se probó.
 - ⚠️ La vara tiene que salir del propio nulo, no de un número: correr el mismo while sobre un libro con **todos** los
   pares cruzados; lo que ahí une es error puro, y la evidencia que hace falta es la que en ese mundo no une nada.
+
+**El cubo de 7³ con 16 relaciones** (Capitán: *"que el 7³ aprenda de a 16 relaciones, como aprendía el idioma de 16
+cosas"*; los 16 eran eso: la corrida larga del 2026-11-03, 7³ con 16 cosas al 100 %, 250 de 250 cada una).
+`voluntad_hilos.jsm` (prueba `voluntad_hilos_prueba.sh`) es la voluntad de siempre (sin `cosas`, la misma huella que
+`voluntad.jsm`) que, con `cosas` en la casa, dice cada cosa con las tres piezas dadas y no las mueve nunca, y cuenta en
+el último cuarto qué adivinó para cada una (`C: cosa bien todas otra veces`): dos cosas con las mismas piezas, el cubo
+no las separa (prueba: la 1 dicha como la 0 sale 0 las 62 veces). `hilos.jsm` con `tanda` ("16 7") elige las 16 formas
+de las relaciones de relaciones más fuertes y dice cada una con las tres piezas de la cara de abajo donde más caen sus
+pares (y el nulo, con sus pares cruzados).
+
+| tanda del NT (7³, 16 cosas, 4.000 vueltas) | último cuarto | confusiones |
+|---|---|---|
+| piezas de sus pares | 100 % | ninguna |
+| nulo: piezas de sus pares cruzados | 100 % | ninguna |
+
+- **El cubo no ve las relaciones**, y no es culpa del cubo: las 16 formas (su, la, de, en, y, el, un, una…) tienen
+  miles de pares cada una, y "su ~ la" comparte 28. Tres piezas de 49 sacadas de miles de pares son ruido: ninguna
+  forma comparte piezas con otra (su: 2 31 34; la: 18 10 23), el real y el nulo dan lo mismo, y el cubo separa las 16.
+- Lo que el cubo puede decir depende de lo que le entra: **tres piezas no cargan un conjunto de pares**. Para que vea
+  una relación tiene que oírla entera (sus pares cantados como melodía, como la memoria del kernel con el cubo que
+  canta las notas), no un resumen de tres.
+- ⚠️ En el camino: el pedido 4 crea el archivo si no está; una `cosas` vacía se tomaba por dada. Ahora sólo vale si
+  se leen las k×4 enteras.

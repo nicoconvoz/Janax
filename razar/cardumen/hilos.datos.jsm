@@ -50,3 +50,13 @@ times 3E0h - $ db 0
 db ': le ganan a su nulo ', 0
 times 420h - $ db 0
 db ' | se unen ', 0
+times 440h - $ db 0
+db 'tanda', 0
+times 460h - $ db 0
+db 'T: ', 0
+times 470h - $ db 0
+db 'N: ', 0
+times 480h - $ db 0
+db 'R: ', 0
+times 490h - $ db 0
+db ' | ', 0
