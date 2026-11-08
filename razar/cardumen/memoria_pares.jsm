@@ -48,11 +48,17 @@ TT5   = 12D0h
 TT6   = 12D8h
 TT7   = 12E0h
 BKT   = 12E8h                   ; by length (1-5, 6-12, 13 words or more): asked, right (6 qwords)
+CFT   = 1320h                   ; the cube's own confusions, if the house has them ("cf", voluntad_oraciones.jsm): by
+CFS   = 1328h                   ; song sung its row (heard: 0 nothing, g + 1 song g), each row's sum; 1 when there;
+CFON  = 1330h                   ; the pieces' base (7 Fano's, or the 30 songs); a label
+BASE  = 1338h
+CFL   = 1340h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
 jcall mp_read
+jcall mp_cube                   ; (the cube's own confusions, when they are there: the 30 songs it knows are the pieces)
 jldi j1, 0
 jld j2, j1, PRN
 jjz j2, finish
@@ -66,6 +72,12 @@ jld j2, j1, PPN
 jcall putnum
 jldi j2, 10
 jcall putch
+jld j2, j1, CFON                ; with the cube's table: one round, heard as the cube hears
+jjz j2, mp_fano
+jldi j2, 0
+jcall mp_round
+jjmp finish
+mp_fano:
 jldi j2, 0                      ; the chances: 0, 2%, 4% (temblor 10%), 9% (temblor 20%), 20%
 jcall mp_round
 jldi j2, 20
@@ -77,6 +89,93 @@ jcall mp_round
 jldi j2, 200
 jcall mp_round
 jjmp finish
+
+; The cube's own confusions, from the house's "cf" (30 songs x 31 qwords, voluntad_oraciones.jsm): when it is there,
+; the pieces are the 30 songs (BASE 30) and each is heard as the cube heard it; else Fano's 7 (BASE 7). Uses j1-j14.
+mp_cube:
+  jldi j1, 0
+  jst j1, j1, CFON
+  jldi j2, 7
+  jst j2, j1, BASE
+  jldi j2, 6663h                ; "cf"
+  jst j2, j1, CFL
+  jldi j11, 7448
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CFT
+  jldi j10, 4
+  jldi j11, CFL
+  jldi j12, 2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, mpc_done
+  jst j13, j1, TT1
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, CFT
+  jldi j12, 7440
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, TT2
+  jld j10, j1, TT1
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, TT2
+  jldi j3, 7440
+  jsub j2, j2, j3
+  jjnz j2, mpc_done
+  jldi j11, 248                 ; each row's sum
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CFS
+  jldi j9, 0
+  mpc_w:
+    jldi j2, 30
+    jsub j2, j9, j2
+    jjz j2, mpc_on
+    jldi j10, 0
+    jldi j11, 0
+    mpc_g:
+      jldi j2, 31
+      jsub j2, j11, j2
+      jjz j2, mpc_sum
+      jldi j2, 31
+      jmul j2, j9, j2
+      jadd j2, j2, j11
+      jldi j3, 3
+      jshl j2, j2, j3
+      jld j3, j1, CFT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+      jadd j10, j10, j2
+      jldi j2, 1
+      jadd j11, j11, j2
+      jjmp mpc_g
+    mpc_sum:
+      jldi j3, 3
+      jshl j3, j9, j3
+      jld j4, j1, CFS
+      jadd j3, j3, j4
+      jst j10, j3, 0
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mpc_w
+mpc_on:
+  jldi j2, 1
+  jst j2, j1, CFON
+  jldi j2, 30
+  jst j2, j1, BASE
+mpc_done:
+  jldi j1, 0
+  jret
 
 ; The house's "pares", whole, into a room that doubles while the file has more (PRB, PRN). Uses j1-j14.
 mp_read:
@@ -344,8 +443,9 @@ mp_alphabet:
     jadd j4, j4, j5
     jld j5, j4, 0
     jjnz j5, mpa_next
-    jld j6, j1, ALN
-    jldi j7, 49
+    jld j6, j1, ALN               ; (at most the base's two pieces: 49, or 900)
+    jld j7, j1, BASE
+    jmul j7, j7, j7
     jsub j7, j6, j7
     jjz j7, mpa_next
     jldi j7, 1
@@ -710,7 +810,7 @@ mp_hear:
     jjz j4, mph_put             ; (no letter: as it is)
     jldi j5, 1
     jsub j4, j4, j5
-    jldi j5, 7
+    jld j5, j1, BASE
     jdiv j6, j4, j5             ; its pieces
     jmul j7, j6, j5
     jsub j7, j4, j7
@@ -724,7 +824,13 @@ mp_hear:
     jld j2, j1, TT4
     jcall mp_tremble
     jld j6, j1, TT6
-    jldi j5, 7
+    jldi j5, 63                 ; (a piece not heard: no letter)
+    jsar j5, j6, j5
+    jjnz j5, mph_nol
+    jldi j5, 63
+    jsar j5, j2, j5
+    jjnz j5, mph_nol
+    jld j5, j1, BASE
     jmul j6, j6, j5
     jadd j6, j6, j2
     jld j9, j1, TT1
@@ -736,6 +842,14 @@ mp_hear:
     jsar j5, j5, j7
     jldi j3, 32
     jjz j5, mph_put
+    jjmp mph_letter
+  mph_nol:
+    jld j9, j1, TT1
+    jld j10, j1, TT2
+    jld j11, j1, TT3
+    jldi j3, 32
+    jjmp mph_put
+  mph_letter:
     jldi j5, 3
     jshl j5, j6, j5
     jld j7, j1, ALI
@@ -752,10 +866,48 @@ mph_done:
   jldi j1, 0
   jret
 
-; Piece j2 heard: with chance PCH, one of the other six -> j2. Uses j1-j6.
+; Piece j2 heard -> j2 (-1: nothing heard): with the cube's table, drawn from its row (what the cube heard when it was
+; sung); else with chance PCH, one of the other six. Uses j1-j6.
 mp_tremble:
   jldi j1, 0
   jst j2, j1, TT7
+  jld j3, j1, CFON
+  jjz j3, mpt_fano
+  jcall mp_rand
+  jldi j1, 0
+  jld j3, j1, TT7
+  jldi j4, 3
+  jshl j3, j3, j4
+  jld j4, j1, CFS
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jdiv j4, j2, j3
+  jmul j4, j4, j3
+  jsub j2, j2, j4               ; (its place in the row)
+  jld j3, j1, TT7
+  jldi j4, 31
+  jmul j3, j3, j4
+  jldi j4, 3
+  jshl j3, j3, j4
+  jld j4, j1, CFT
+  jadd j3, j3, j4
+  jldi j5, 0
+  mpt_row:
+    jld j4, j3, 0
+    jsub j2, j2, j4
+    jldi j6, 63
+    jsar j6, j2, j6
+    jjnz j6, mpt_got
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jadd j5, j5, j4
+    jjmp mpt_row
+mpt_got:
+  jldi j4, 1
+  jsub j2, j5, j4
+  jret
+mpt_fano:
   jcall mp_rand
   jldi j3, 1000
   jdiv j4, j2, j3

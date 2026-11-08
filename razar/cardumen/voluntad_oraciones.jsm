@@ -17,6 +17,11 @@ PLAB  = 210h                    ; "p", the parameters file
 NACE  = 220h                    ; the parameters: the school's seed
 DESLIZ = 228h                   ; the percent of slipping fingers
 QUIET = 230h                    ; 1: the school never learns
+CONFN = 238h                    ; a fourth, if it is there: how many times each word is sung for the confusions table
+CWD   = 240h                    ; (that table: the word sung, the times left, its file's label "cf")
+CRP   = 248h
+CFL   = 250h
+CONF  = 2000h                   ; the confusions: word sung w, word heard g (0: nothing, else g + 1), CONF + (w*31+g)*8
 M48   = 300h                    ; 2^48 - 1
 SEED2 = 308h                    ; its dice
 CHILD = 310h                    ; the school's number
@@ -592,7 +597,7 @@ jshl j10, j13, j1               ; the handle travels in the high half of the kin
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 24
+jldi j12, 32
 jcall ask
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -767,6 +772,82 @@ jld j12, j1, WALL
 jcall mix
 jld j12, j1, SW
 jcall mix
+
+jldi j1, 0                      ; the confusions (Capitan, 2026-11-07: "translate the sentence into the songs it
+jld j2, j1, CONFN               ; already knows, recombined"): each of the 30 words sung CONFN times, its fingers
+jjz j2, c_done                  ; slipping as DESLIZ says, and what it heard counted; the table into the file "cf".
+jst j1, j1, CWD                 ; (after the counts: the fingerprint stays oraciones.pl's)
+c_word:
+  jldi j1, 0
+  jld j2, j1, CWD
+  jldi j3, 30
+  jsub j3, j2, j3
+  jjz j3, c_write
+  jld j2, j1, CONFN
+  jst j2, j1, CRP
+  c_rep:
+    jldi j1, 0
+    jld j2, j1, CRP
+    jjz j2, c_wnext
+    jld j2, j1, CWD
+    jst j2, j1, THING
+    jst j1, j1, CLEAN
+    jcall sing
+    jcall guess
+    jldi j1, 0
+    jld j2, j1, CWD
+    jldi j3, 31
+    jmul j2, j2, j3
+    jld j3, j1, BEST
+    jldi j4, 1
+    jadd j3, j3, j4
+    jadd j2, j2, j3
+    jldi j3, 3
+    jshl j2, j2, j3
+    jld j3, j2, CONF
+    jadd j3, j3, j4
+    jst j3, j2, CONF
+    jld j2, j1, CRP
+    jsub j2, j2, j4
+    jst j2, j1, CRP
+    jjmp c_rep
+  c_wnext:
+    jld j2, j1, CWD
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CWD
+    jjmp c_word
+c_write:
+  jldi j2, 6663h                ; "cf"
+  jst j2, j1, CFL
+  jldi j10, 12
+  jldi j11, CFL
+  jldi j12, 2
+  jcall ask
+  jldi j10, 4
+  jldi j11, CFL
+  jldi j12, 2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, c_done
+  jst j13, j1, CRP
+  jldi j1, 32
+  jshl j10, j13, j1
+  jldi j1, 6
+  jor j10, j10, j1
+  jldi j11, CONF
+  jldi j12, 7440
+  jcall ask
+  jldi j1, 0
+  jld j10, j1, CRP
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+c_done:
 
 jldi j1, 0                      ; the school ends (order 3: it says its fingerprint, not mixed here)
 jldi j2, 3

@@ -1440,3 +1440,27 @@ no calcula. Semilla fija, en Janax, 1,1 segundos.
   respuesta distinta cada vez. Con esas palabras solas la pregunta no alcanza; hace falta el contexto (lo que venía
   antes), que es lo que el telescopio de oraciones tendría que traer.
 - **Lo que falta:** que oiga el cubo de verdad en lugar de las chances medidas, y que la respuesta se cante de vuelta.
+
+### Con las 30 canciones que el cubo ya sabe, y su propia tabla de confusiones (Capitán, 2026-11-07)
+
+> *"Traducir la oración a la construcción de las 30 canciones que ya saben, con recombinaciones."* — *"Ni se te ocurra
+> usar Perl: todo lo medimos en Janax."*
+
+- **La tabla del cubo, en Janax** (`voluntad_oraciones.jsm`, un cuarto parámetro en `p`: cuántas veces cantar cada
+  palabra). Después de lo de siempre (la huella del modelo no cambia: `0000A1A4AA959425`, 86 %, 93 %, 32), canta cada
+  una de las 30 palabras esa cantidad de veces, con los dedos resbalando, y guarda qué oyó en la casa (`cf`, 30 × 31).
+  Con 50 veces cada una, en un segundo: con resbalones del 10 % oye bien 1.407 de 1.500 (93,8 %); con 20 %, 1.337
+  (89,1 %). Nunca se queda sin oír: siempre elige alguna.
+- **La memoria con esas piezas** (`memoria_pares.jsm`, si la casa tiene `cf`): cada letra se canta con dos de las 30
+  canciones (900 combinaciones, sobran para las 34 letras), y cada canción se oye como la oyó el cubo, sorteada de su
+  fila de la tabla. 2.710 pares del Nuevo Testamento, respuestas bien:
+
+| | 1-5 palabras | 6-12 | 13 o más |
+|---|---|---|---|
+| cubo, resbalones 10 % | 37 % | 89 % | 97 % |
+| cubo, resbalones 20 % | 32 % | 86 % | 97 % |
+| Fano, 9 % de piezas (≈ temblor 20 %) | 14 % | 60 % | 92 % |
+
+- **Con las canciones que ya sabe, el cubo real anda mejor que Fano**, aunque cada canción se oiga mal más seguido (11 %
+  con 20 % de resbalones): sus confusiones no son al azar, y una letra con dos canciones aguanta más.
+- Las cortas siguen ambiguas por sí mismas: les falta el contexto.
