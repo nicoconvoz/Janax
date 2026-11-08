@@ -1617,3 +1617,36 @@ pregunta), con `razona`, sobre los cuatro tramos sin leer.
 - **Lo que sí da preguntas fieles:** tapar una palabra de cada oración. Esa pregunta es correcta por construcción (no
   hay que deducirla), y lo que se aprende es contestarla desde otra oración del libro.
 
+### La semilla: las respuestas del libro como canción (Capitán, 2026-11-08)
+
+> *"Necesitás un ejemplo real del libro y luego desmantelar ese mecanismo, darlo como canción, y ahí sí deducir una
+> pregunta o una respuesta que falte."* — *"Todas las oraciones de la respuesta valen."* — *"No tires nada, todo
+> funciona."* El libro: *100 preguntas básicas sobre la ciencia*, de Asimov (`E:/ciencia+.txt`, nunca al repo).
+
+- `sentido.jsm` escribe, con `pares`, cada edificio del libro en orden: "Q:" si pregunta, "O:" si no (Asimov: 183
+  preguntas, 3.331 oraciones, menos de un segundo).
+- `memoria_pares.jsm` con `semilla`: la respuesta de una pregunta son las oraciones que siguen hasta la próxima
+  pregunta; su semilla, la que más palabras de la pregunta repite (de las que no son de la mitad). El canto aprende cada
+  semilla con **los lugares de lo que trata la pregunta** (solo esas palabras; "es", "el", "que" son gramática).
+- A una pregunta no leída le elige, entre las oraciones del libro que dicen alguna palabra suya, **la que la pregunta
+  vuelve más esperable**: su costo cantada como palabras sueltas menos su costo con los lugares. Medir lo más esperable a
+  secas elegía respuestas ya leídas (recitar), y se corrigió.
+- Prueba: `bash razar/cardumen/semilla_prueba.sh`.
+
+Asimov, 110 preguntas con semilla, cuatro tramos sin leer (acierta si elige cualquier oración de su respuesta):
+
+| | preguntas | el canto | la que más palabras comparte | al azar |
+|---|---|---|---|---|
+| tramo 1 | 27 | 18,5 % | 44,4 % | 13,7 % |
+| tramo 2 | 28 | 14,2 % | 14,2 % | 9,0 % |
+| tramo 3 | 27 | 33,3 % | 37,0 % | 19,2 % |
+| tramo 4 | 28 | 35,7 % | 32,1 % | 15,2 % |
+| **total** | **110** | **25 %** (28) | **32 %** (35) | **14 %** |
+
+- **El canto le gana al azar** (25 contra 14 %), pero **todavía no al buscador de palabras** (32 %). Le gana en un
+  tramo de cuatro.
+- **Aprendió de muy poco:** unas 82 semillas por tramo. La muestra también es chica: 110 preguntas, así que unos
+  puntos para arriba o para abajo son ruido.
+- Lo que falta probar: más semillas (otros libros de preguntas), y que el canto sume lo que el buscador ya sabe (cuántas
+  palabras comparte) en vez de competir con él.
+
