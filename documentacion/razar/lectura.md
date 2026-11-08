@@ -3108,3 +3108,26 @@ palabra"*.
   Primero tiene que oír cualquier palabra (no una lista), y tener una memoria que asocie una melodía con otra.
 - **Corregido en el camino:** el nombre "pares" se había puesto justo después de "libro" en los datos, donde se arman
   los nombres de la estantería ("libro1"…), y se pisaba: `sentido` caía con código 5. Ahora vive en un hueco libre.
+
+## El órgano leído, no compilado: la huella idéntica (2026-11-08)
+
+El Capitán: *"¿se puede hacer que el código en caliente cambie sin recompilarse?"*, para los órganos de Razar. En
+Janax el programa no puede escribir su código (código y datos separados, la pila de retorno intocable) ni saltar a una
+dirección guardada: parchear bytes o una entrada no se puede, y está bien. Lo que sí: que el órgano sea **datos**. Su
+tira de letras ya es un qword y sus 9 letras son un repertorio cerrado; un `organ:` fijo que **lee** las letras de un
+casillero en memoria (`ORGW`) y hace el bloque de cada una (los mismos del molde, en el mismo orden) cambia de órgano
+con una escritura, sin recompilar.
+
+- **Medido** (copia aparte, no en el repo; el NT, motor traductor, el órgano "la palabra que sigue", letras 1-2-3-8):
+
+  | | huella | instrucciones |
+  |---|---|---|
+  | compilado (el de siempre) | `0000DDE5FD0394D4` | 2.223,5 millones |
+  | leído del casillero | `0000DDE5FD0394D4` | 2.239,4 millones (+0,7 %) |
+
+  La salida, idéntica renglón por renglón.
+- **Lo que costó encontrar:** las letras se pasan el resumen del marco de una a la siguiente en el registro `j2` (cada
+  `hw` lo recibe y lo devuelve); el lector tiene que leer con registros que ninguna letra toca entre una y otra
+  (`j13`, `j14`). La primera versión usaba `j2` y la huella daba otra.
+- **Lo que abre:** como cada letra hace un trabajo fijo, un mutante leído no puede colgarse: el examen podría correr
+  dentro de la misma vida, escribiendo el casillero, sin jaula ni recompilar. Falta llevarlo al ciclo de los órganos.
