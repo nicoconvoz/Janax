@@ -2432,6 +2432,30 @@ euclidiana: sacar un axioma y ver qué sigue siendo consistente).
     `hijo de ~ hijo de leví`, `hijo de ~ matatías hijo de`) y el while para antes (19 vueltas). Esa regla protege algo.
   - Tabla completa: `regla | forma | frena | vueltas | uniones | coma | despiertan | nuevas | perdidas`, en la salida de
     `hilos` con cada `suspende` (no está en el repo: lleva palabras del NT).
-- **Lo que esto pide (no está hecho):** si el final depende del orden, una unión que aparece en un equilibrio y no en el
-  otro no está probada por el libro, solo por el camino. La vara que faltaba para separar mecanismo de ruido puede
-  salir de acá: lo que queda en todos los caminos es del libro; lo que depende del camino, todavía no.
+
+## Los caminos: ninguno se tira, cada uno con su nombre (2026-11-08)
+
+El Capitán corrigió la vara que propuse (*"probado es lo que sobrevive en todos los caminos"*): *"a veces que un camino
+no se verifique no significa camino inválido, solo nuevo o diferente"*. Tirar lo que no se repite sería contar
+mayorías otra vez. Lo que se hace es ponerle nombre, y valen las dos cosas (Capitán: *"las dos cosas"*):
+
+- **`caminos.sh <casa>`** corre `hilos` tal cual y una vez con cada regla suspendida (de a 4), y dice cada unión:
+  - `de todos los caminos`: el libro la sostiene, se suspenda la regla que se suspenda;
+  - `del camino de siempre, se pierde sin: [reglas]`: el camino de siempre la tiene, y sin esas reglas se va;
+  - `de un camino nuevo, aparece sin: [reglas]`: no está en el de siempre, y aparece cuando esas reglas no frenan.
+- En el oficio se parece a la programación lógica con varios **modelos estables**: razonar *cauto* (lo que vale en
+  todos) y *valiente* (lo que vale en alguno). Lo propio: los caminos no se sortean, se abren rompiendo una regla con
+  nombre, así que cada camino nuevo se explica ("sin 'y la', aparece `tanto ~ mucho`").
+- **Medido en el NT** (65 caminos, 4 min 44 s):
+
+  | | uniones |
+  |---|---|
+  | de todos los caminos | 96 |
+  | del camino de siempre, se pierden sin alguna | 8 |
+  | de un camino nuevo | 31 |
+
+  Las seis buenas de siempre (`hijo de ~ padre de`, `cinco mil ~ cuatro mil`, `piedad de ~ compasión de`,
+  `fue ~ había sido`, `algún ~ ningún`, `la multitud ~ pedro`) son **de todos los caminos**. `tu ~ mi` es del camino de
+  siempre (se pierde sin "y la"). `tanto ~ mucho` y `que ~ quién` son de un camino nuevo.
+- **Lo que no cubre:** solo una regla suspendida a la vez; los caminos de dos juntas no se recorren. La salida tiene
+  palabras del NT y no va al repo.
