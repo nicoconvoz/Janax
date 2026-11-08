@@ -104,3 +104,7 @@ times 640h - $ db 0
 db ' | deducidas en espera (sin testigo): ', 0
 times 670h - $ db 0
 db 'despierta: ', 0
+times 690h - $ db 0
+db ' | huecos de las refutadas: ', 0
+times 6B0h - $ db 0
+db ', que explicaria una dormida: ', 0

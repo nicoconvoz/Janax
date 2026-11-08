@@ -2370,3 +2370,22 @@ que los trae; "despierta: maestro de ~ enseña a" y se une con 10 confirmaciones
   dios".
 - ⚠️ Pendiente: el absurdo como pregunta (que una dormida explique el tropiezo de otra, no que se juzgue sola), y que
   una pregunta despierte a las que esperan.
+
+**Antes de construir el absurdo, medir si tiene de dónde agarrarse** (el otro chat: *"las uniones compiten por un
+lugar finito: un mecanismo nuevo se juzga por si encuentra más de lo que desplaza"*). Un instrumento (no cambia nada:
+mismas uniones): de cada hipótesis que cae, sus huecos (los pares que dejó sin explicar), y cuántos los dice la otra
+relación de alguna hipótesis en coma que comparte una relación con ella.
+
+| | huecos de las refutadas | que explicaría una dormida |
+|---|---|---|
+| sinópticos | 882 | 0 |
+| NT | 3.838 | 198 (5 %) |
+
+- Poco: para dar vuelta un veredicto, una dormida tendría que llenar muchos huecos de una misma hipótesis; con un 5 %
+  repartido es de esperar que casi nunca (sin medir todavía: es la sospecha). No se construye el mecanismo hasta tener
+  un libro donde ese número sea grande.
+- **Nota al pie (sexto instrumento):** el while se cortaba en la primera vuelta que sólo refutaba, desde la regla de
+  explicar a la misma gente (87913d4) hasta el coma por tamaño (ac8b9a4). Las vueltas y uniones medidas en ese tramo
+  pueden haber salido cortas; desde cfb6d85, no.
+- Y lo que cambió el contexto: menos uniones que antes (104 contra 118) pero mejores (la más grande es la genealogía),
+  y las seis buenas más "obed = jobed" aguantaron: las pruebas cuidan lo ganado.

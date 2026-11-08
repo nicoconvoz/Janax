@@ -92,6 +92,8 @@ S_MAS    = 610h
 S_COMA   = 620h
 S_ESPERA = 640h
 S_DESP   = 670h
+S_HUECO  = 690h
+S_ABSU   = 6B0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -234,7 +236,14 @@ HCXT  = 1B10h                   ; what the hypothesis being judged left unexplai
 HCXTN = 1B18h                   ; contexts of the ones in a coma (a room), how many words, room for
 HCXW  = 1B20h
 HCXWN = 1B28h
-HCXCAP = 1B30h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HCXCAP = 1B30h
+HCXT1 = 1B38h                   ; (where the second's holes start in HCXT; the holes, and those a sleeping hypothesis
+HHOL  = 1B40h                   ; would explain: the other relation of one in a coma, sharing a relation with it,
+HABS  = 1B48h                   ; says the pair; walking)
+HAR   = 1B50h
+HAX   = 1B58h
+HAE   = 1B60h
+HAEN  = 1B68h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -2982,8 +2991,10 @@ hl_explains:
   jld j3, j4, 16
   jld j5, j4, 24
   jcall hex_dir                 ; the second's, of the first's people
-  jjz j6, hex_no
   jldi j1, 0
+  jld j2, j1, HCXTN
+  jst j2, j1, HCXT1
+  jjz j6, hex_no
   jld j4, j1, HEW
   jld j2, j4, 16
   jld j3, j4, 8
@@ -3841,7 +3852,7 @@ hro_c2:
   jldi j3, 48
   jcall pl_new
   jldi j2, HREF
-  jldi j3, 32
+  jldi j3, 56
   jcall pl_new
   jldi j2, HWT
   jldi j3, 16
@@ -4135,6 +4146,17 @@ hm_ad:
     jst j6, j1, HQ6             ; (refuted for the first time: the turn changed who chooses whom)
     jld j5, j1, HTURN
     jst j5, j4, 8
+    jld j5, j1, HT2
+    jld j6, j5, 8
+    jst j6, j4, 32
+    jld j6, j5, 16
+    jst j6, j4, 40
+    jld j6, j5, 24
+    jst j6, j4, 48
+    jst j4, j1, HAE
+    jcall hm_absurd
+    jldi j1, 0
+    jld j4, j1, HAE
     jcall hm_keepctx
     jldi j1, 0
     jld j6, j1, HQ6
@@ -4412,6 +4434,149 @@ hm_touchrel:
 hmt_done:
   jret
 
+; The instrument for the absurd (Capitan: "if something starts as an absurd, the answer may be there"): of the holes of
+; the hypothesis just refuted (HT2; HCXT, the first's people up to HCXT1, the second's after), how many the other
+; relation of a hypothesis in a coma that shares a relation with it would explain (it says the pair). Counted (HHOL,
+; HABS), not used: whether the absurd has anything to find, before building what would use it. Uses j1-j14.
+hm_absurd:
+  jldi j1, 0
+  jst j1, j1, HAX               ; (the hole walking)
+  hab_lap:
+    jldi j1, 0
+    jld j2, j1, HAX
+    jld j3, j1, HCXTN
+    jsub j3, j2, j3
+    jjz j3, hab_done
+    jld j3, j1, HCXT
+    jldi j4, 3
+    jshl j4, j2, j4
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jld j6, j3, 8
+    jst j5, j1, HQ4
+    jst j6, j1, HQ5
+    jld j4, j1, HT2             ; whose people: the first's up to HCXT1
+    jld j7, j4, 8
+    jld j8, j1, HCXT1
+    jsub j8, j2, j8
+    jldi j9, 63
+    jsar j8, j8, j9
+    jjnz j8, hab_r
+    jld j7, j4, 16
+  hab_r:
+    jst j7, j1, HAR
+    jld j7, j1, HHOL
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j1, HHOL
+    jcall hab_one
+    jldi j1, 0
+    jjz j6, hab_next
+    jld j7, j1, HABS
+    jldi j8, 1
+    jadd j7, j7, j8
+    jst j7, j1, HABS
+  hab_next:
+    jld j2, j1, HAX
+    jldi j3, 2
+    jadd j2, j2, j3
+    jst j2, j1, HAX
+    jjmp hab_lap
+hab_done:
+  jret
+
+; j6 = 1 if a hypothesis in a coma (other than HAE) shares relation HAR and its other relation says HQ4 with HQ5 (in
+; HAR's way). Uses j1-j14.
+hab_one:
+  jldi j2, HREF
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jldi j1, 0
+  jst j3, j1, HAEN
+  jld j4, j2, 0
+  jst j4, j1, HAB
+  hbo_lap:
+    jldi j1, 0
+    jld j3, j1, HAEN
+    jjz j3, hbo_no
+    jld j4, j1, HAB
+    jld j5, j4, 0
+    jjz j5, hbo_n
+    jld j5, j1, HAE
+    jsub j5, j5, j4
+    jjz j5, hbo_n
+    jld j5, j4, 8
+    jldi j6, 63
+    jsar j6, j5, j6
+    jjnz j6, hbo_n              ; awake: not sleeping
+    jld j2, j4, 32              ; its two, as relations now, and which way they are
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HAC
+    jst j3, j1, HAP
+    jld j4, j1, HAB
+    jld j2, j4, 40
+    jcall hl_find
+    jldi j1, 0
+    jld j4, j1, HAB
+    jld j5, j4, 48
+    jldi j6, 2
+    jsub j5, j5, j6
+    jldi j6, 1
+    jjnz j5, hbo_w
+    jldi j6, 0
+  hbo_w:
+    jxor j6, j6, j3             ; 1 the same way, as relations now
+    jld j7, j1, HAP
+    jxor j6, j6, j7
+    jld j7, j1, HAC
+    jsub j8, j7, j2
+    jjz j8, hbo_n
+    jld j8, j1, HAR
+    jsub j9, j7, j8
+    jjz j9, hbo_t2
+    jsub j9, j2, j8
+    jjnz j9, hbo_n
+    jadd j2, j7, j1             ; (the other is the first)
+  hbo_t2:
+    jst j6, j1, HAQ
+    jjz j6, hbo_rev
+    jld j8, j1, HQ4
+    jld j6, j1, HQ5
+    jjmp hbo_say
+  hbo_rev:
+    jld j8, j1, HQ5
+    jld j6, j1, HQ4
+  hbo_say:
+    jst j2, j1, HAI
+    jld j9, j1, HER
+    jst j9, j1, HAN
+    jst j2, j1, HER
+    jcall hxr_says
+    jldi j1, 0
+    jld j9, j1, HAN
+    jst j9, j1, HER
+    jjnz j6, hbo_yes
+  hbo_n:
+    jldi j1, 0
+    jld j4, j1, HAB
+    jldi j5, HREF
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HAB
+    jld j3, j1, HAEN
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HAEN
+    jjmp hbo_lap
+hbo_yes:
+  jldi j6, 1
+  jret
+hbo_no:
+  jldi j6, 0
+  jret
+
 ; The context of the hypothesis just refuted (HCXT) kept for its HREF entry at j4. Uses j1-j10.
 hm_keepctx:
   jldi j1, 0
@@ -4581,6 +4746,14 @@ he_nl:
   jldi j1, S_ESPERA
   jcall puts
   jld j2, j1, HNESP
+  jcall putnum
+  jldi j1, S_HUECO
+  jcall puts
+  jld j2, j1, HHOL
+  jcall putnum
+  jldi j1, S_ABSU
+  jcall puts
+  jld j2, j1, HABS
   jcall putnum
   jldi j2, 10
   jcall putch
