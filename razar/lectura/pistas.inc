@@ -81,6 +81,9 @@ LGM   = 3480h                   ; every two books' share; by language a weight; 
 LGW   = 3488h
 LGC   = 3490h
 LGP   = 3498h
+PZML  = 34A0h                   ; a word's limit voted (its print); the library's ordinary end, and its buildings
+PZMX  = 34A8h
+PZMB  = 34B0h
 PZRD  = 3400h                   ; the books this round read again (by their bytes' print {key}): their rules read it
 PZWL  = 3120h                   ; the silhouettes summed over the library: by word and limit how many of its buildings
 PZLG  = 3140h                   ; that limit closes {key, count}; by limit {its print, the buildings it closes, -}; all
@@ -2642,6 +2645,41 @@ pwf_no:
   jldi j2, 0
   jret
 
+; The library's ordinary end (in the question's language when it has one: lg_closes): the limit that closes the most
+; buildings, its print -> PZMX. Uses j1-j10 (PZT6 + 24 and + 32 walking).
+pz_mend:
+  jldi j1, 0
+  jst j1, j1, PZMX
+  jst j1, j1, PZMB
+  jld j9, j1, PZLG
+  jld j10, j1, PZLG + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  pzm_l:
+    jldi j1, 0
+    jjz j10, pzm_d
+    jld j2, j9, 0
+    jjz j2, pzm_n
+    jcall lg_closes
+    jldi j1, 0
+    jld j3, j1, PZMB
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, pzm_n
+    jst j2, j1, PZMB
+    jld j2, j9, 0
+    jst j2, j1, PZMX
+  pzm_n:
+    jld j2, j1, PZLG + 24
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp pzm_l
+pzm_d:
+  jldi j1, 0
+  jret
+
 ; j2 = 1 if the word of print PZT1 (its counts at PZT2) is an arrow over the library: of every limit, the one that
 ; closes the most of its buildings closes most of them, two at least, and does not close most of the library's
 ; buildings. Uses j1-j14.
@@ -2677,6 +2715,8 @@ pz_warrow:
     jst j2, j1, PZT6 + 8
     jcall lg_closes
     jst j2, j1, PZT6 + 16
+    jld j2, j9, 0
+    jst j2, j1, PZML
   pwa_next:
     jld j2, j1, PZLG + 24
     jadd j9, j9, j2
@@ -2697,15 +2737,10 @@ pwa_decide:
   jldi j5, 63
   jsar j3, j3, j5
   jjz j3, pwa_no
-  jld j2, j1, PZT6 + 16         ; and not most of the library's (of its language's, when asked in one)
-  jadd j2, j2, j2
-  jld j3, j1, LTN
-  jjnz j3, pwa_lang
-  jld j3, j1, PZNBL
-pwa_lang:
+  jcall pz_mend                 ; and not the library's ordinary end (of its language's, when asked in one): the limit
+  jld j2, j1, PZML              ; that closes the most buildings
+  jld j3, j1, PZMX
   jsub j2, j2, j3
-  jldi j4, 63
-  jsar j2, j2, j4
   jjz j2, pwa_no
   jldi j2, 1
   jret

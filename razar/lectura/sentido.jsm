@@ -414,7 +414,8 @@ SKX4  = 57F0h
 QPAS  = 5800h                   ; a fact walked against the question: where, its end, a word
 QPAE  = 5808h
 QPAW  = 5810h
-QPTI  = 5818h                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
+QPTI  = 5818h
+ARML  = 5820h                   ; the book's ordinary end: the limit that closes the most buildings                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -1816,6 +1817,30 @@ arrows_calc:
   jldi j2, 1
   jst j2, j1, AMODE
   jcall ar_walk
+  jldi j1, 0                    ; (the book's ordinary end: the limit that closes the most buildings, the first of
+  jst j1, j1, ARML              ; equals)
+  jldi j11, 0
+  jldi j9, 1
+  arm_l:
+    jld j2, j1, NV
+    jsub j2, j9, j2
+    jjz j2, arm_d
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMCN
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jsub j4, j11, j3
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, arm_n
+    jadd j11, j3, j1
+    jst j9, j1, ARML
+  arm_n:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp arm_l
+arm_d:
   jldi j1, 0                    ; the voted limit, now counted
   jld j10, j1, NV
   jld j9, j1, ROOMAR
@@ -9644,17 +9669,9 @@ ia_piece:
   jldi j6, 63
   jsar j5, j5, j6
   jjz j5, ia_no
-  jld j4, j3, 8                 ; and the limit closes fewer than half the book's buildings
-  jldi j5, 3
-  jshl j4, j4, j5
-  jld j5, j1, ROOMCN
-  jadd j4, j4, j5
-  jld j4, j4, 0
-  jadd j4, j4, j4
-  jld j5, j1, NBLD
-  jsub j4, j4, j5
-  jldi j6, 63
-  jsar j4, j4, j6
+  jld j4, j3, 8                 ; and the limit is not the book's ordinary end, the one that closes the most of its
+  jld j5, j1, ARML              ; buildings (a word lives there where the book does not usually end; "fewer than half
+  jsub j4, j4, j5               ; the book's" stood on an edge: in the NT "." closes 50.01%)
   jjz j4, ia_no
   jldi j2, 1
   jret

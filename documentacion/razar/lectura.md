@@ -3067,3 +3067,20 @@ profundidad, lo más hondo se resuelve primero.
   En el Nuevo Testamento sólo agrega "]" (14 veces), y eso basta para que "de", "y", "que", "la" salgan flechas en
   todo el libro. Un signo tan raro no puede mover tanto: algo en cómo se cuentan las flechas es frágil. Queda apagado
   hasta entenderlo, sin parche encima.
+
+## La regla de la flecha estaba sobre un filo (2026-11-07)
+
+- **Medido:** en el Nuevo Testamento hay 12.432 edificios y "." cierra 6.217: el 50,01 %. La regla decía "el límite
+  de una flecha cierra menos de la mitad de los edificios del libro". Con los 14 "]" de más, "." quedó en 6.214 de
+  12.431 (49,99 %), cruzó la raya, y toda palabra de oraciones con punto ("de", "y", "que") pasó por flecha. No era
+  el "]": era la regla.
+- **La regla general, por lo que la flecha quiere decir:** una flecha vive donde el libro no termina normalmente. El
+  final normal de un libro es el límite que más edificios cierra (`ARML` en `sentido`; `pz_mend`/`PZMX` en la
+  biblioteca, en el idioma de la pregunta). Ese nunca es límite de flecha; los demás pueden serlo. Para moverlo habría
+  que dar vuelta la proporción entre "." (6.217) y ":" (2.569), no correrla dos edificios.
+- **Con eso vuelve la regla de los pares** (`mk_limits`: lo que abre una apertura lo cierra su cierre). En el Nuevo
+  Testamento las flechas quedan las de siempre (dijo, qué, quién, respondió, acaso…). En la biblioteca mezclada, "?"
+  pasa a ser límite y aparecen "qué(? 35/61)" y "acaso(? 7/9)".
+- **Controles idénticos**; dos pasos 3/3.
+- **Lo que falta:** "quién" todavía no sale flecha en la biblioteca mezclada, y la primera línea de "¿quién es
+  pedro?" lo sigue tomando como sujeto.

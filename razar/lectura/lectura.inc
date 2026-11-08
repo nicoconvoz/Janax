@@ -1742,8 +1742,7 @@ limits:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
-  jret                          ; (mk_limits, a pair's closer closing too, waits: making "]" a limit, 14 times in
-                                ; the NT, turned "de", "y", "que" into arrows; not understood yet)
+  jjmp mk_limits                ; and what a pair's opener opens, its closer closes
 
 ; What each mark does (Capitan, 2026-11-07: "find what is a separator, as the point or the comma in a number, what
 ; divides as a parenthesis or a bracket, as a capital and a point, or two exclamation marks, or two question marks";
