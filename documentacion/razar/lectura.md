@@ -3175,18 +3175,24 @@ pasa a ser otro órgano sin que nadie se entere.
 
 - **El alfabeto, leído y con huella:** `organos.sh` lleva `organo.inc` a la casa; Razar lo lee entero y saca su huella
   (FNV-1a de sus bytes, sin los `` del anfitrión).
-- **La receta** (`recetas`, y su número si lo tiene): cada vez que un órgano gana, Razar agrega una, en texto, con
+- **La receta** (en el tablero que comparten todos los Razares de la PC: `tablero/Receta de Organos/recetas`, y su
+  número si lo tiene; Capitán: *"guardalo en la carpeta del tablero, en Receta de Organos"*): cada vez que un órgano gana, Razar agrega una, en texto, con
   lugares fijos para que la lea una persona y también él:
   `receta <letras, 16 hex> alfabeto <huella, 16 hex> nota <nota> genoma <16 hex>`, y abajo **el código de cada una de
   sus letras, en el orden en que corren, copiado tal cual de su alfabeto**.
 - **Al nacer sin órgano**, Razar lee sus recetas hasta el final y toma la última. Si su alfabeto es este, la hace suya
   ("receta 5: suya"): la escribe en su `pulso.datos` y se rehace. Si el alfabeto cambió, la dice ("de otro alfabeto,
   no se usa") y sigue sin órgano: nunca un número leído a ciegas.
-- `organos.sh` ya no borra las recetas de la carpeta entre corridas.
+- `organos.sh` usa el tablero de siempre (`JANAX_TABLERO`, o `~/razar_tablero`). Al terminar deja una copia que se abre
+  desde Windows: `<tablero>/Receta de Organos/recetas.txt` (`recetas1.txt`… para cada Razar de una vigilia). Adentro
+  del tablero el archivo se llama con el hexadecimal de su etiqueta, como todo archivo de Janax.
+- **Ojo:** con el tablero compartido, **cualquier** Razar de la PC que nace sin órgano adopta la última receta, venga
+  del libro que venga. Las pruebas de `tablero.sh` usan su propio tablero y no se mezclan. Dos `organos.sh` sin número
+  corriendo a la vez escribirían la misma receta: queda para cuando haga falta.
 - **Probado:** una corrida de 6 intentos escribió dos recetas (el `6`, nota −1586, y el `5`, nota 208), con la huella
   final de siempre (`00005FCD04441AB1`: la receta no entra en lo que leyó). Una segunda corrida en la misma carpeta nació
   sin órgano, leyó "receta 5: suya", se rehízo y arrancó con 208 de base. Con una línea agregada a `organo.inc`: "receta
   5: de otro alfabeto, no se usa", y siguió sin órgano.
-- **Lo que no resuelve:** la receta vive en la carpeta de la corrida, no en el repo. Si se borra la carpeta a mano,
-  se pierde. La de una carpeta tampoco pasa a otra. Llevarlas al tablero (lo que comparten todos los Razares de la
-  PC) es el paso siguiente si hace falta.
+- **En el tablero, probado** (con un tablero de prueba): la primera corrida dejó ahí sus dos recetas y la copia
+  legible; la segunda, en una carpeta nueva, la encontró en el tablero y la adoptó ("receta 5: suya"). Las dos recetas
+  quedaron copiadas en el tablero del Capitán (`~/razar_tablero/Receta de Organos/recetas.txt`).
