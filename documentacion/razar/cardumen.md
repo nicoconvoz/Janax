@@ -2182,3 +2182,21 @@ gramática y con 2 pares ("a su ~ a tu", "los ~ y los ~ y a los", "de ~ a"). Nin
   no alcanza a pasar.
 - Lo que Marcos sí trae es que **Mateo y Lucas cuentan lo mismo con otras palabras** (los sinópticos): es el "dos"
   que le falta, de otro libro.
+
+**Los tres sinópticos juntos** (Capitán: *"sí, los tres"*): Mateo, Marcos y Lucas (4.600 edificios, 56.295 palabras),
+`hilos` con su while, contra cada uno solo:
+
+| | formas dichas por dos | uniones | la relación más grande |
+|---|---|---|---|
+| Mateo solo | 815 | 15 | 6 formas |
+| Marcos solo | 543 | 4 | 3 formas |
+| Lucas solo | 847 | 32 | 29 formas |
+| **los tres juntos** | **2.254** | 160 (31 en la vuelta 1) | "de", 146 formas |
+
+- **22 de las 31 uniones de la primera vuelta sólo salen con los tres juntos**: "hijo de ~ padre de (al revés)" (la
+  genealogía de Mateo contra la de Lucas), **"cinco mil ~ cuatro mil"** (las dos multiplicaciones de los panes),
+  "piedad de ~ compasión de", "produce ~ que dé", "cuando ~ cuándo", "doce ~ siete", "el ~ un", "su ~ la"… El "dos"
+  que a cada evangelio le falta lo pone otro que cuenta la misma escena.
+- ⚠️ Con más libro vuelve el agujero negro ("de" junta 146 formas en 103 vueltas): sigue faltando la vara sacada de un
+  mundo todo cruzado. Y la mitad cambia con el tamaño (54, 31, 61, 144 veces), así que "sólo juntos" mezcla dos cosas:
+  la repetición entre evangelios y que el libro es más grande.
