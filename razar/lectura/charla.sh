@@ -53,9 +53,13 @@ while IFS= read -r -e -p "vos> " linea; do
       else
         razar pregunta > /dev/null                                     # its clues walked: the renglones read again
         leidas=" "                                                     # and the relation that fits, over them; while
-        while :; do                                                    # it thinks it asks for the words it ran out of
-          salida=$(razar sentido)                                      # facts on ("pensar"): their renglones are read
-          nuevas=0                                                     # again and it thinks once more, until it asks
+        antes=""                                                       # it thinks it asks for the words it ran out of
+        while :; do                                                    # facts on ("pensar"): their renglones are read
+          salida=$(razar sentido)                                      # again and it thinks once more, until it asks
+          ahora=$(printf '%s\n' "$salida" | sed -n '/^pregunta:/,$p')  # (for nothing new, or until a reading again
+          [ "$ahora" = "$antes" ] && break                             # changes nothing it says: it thought enough)
+          antes=$ahora
+          nuevas=0
           if [ -f "$casa/$(etiqueta pensar)" ]; then                   # for nothing it did not read already
             while IFS= read -r w; do
               case "$leidas" in *" $w "*) ;; *) leidas="$leidas$w "; nuevas=1 ;; esac
