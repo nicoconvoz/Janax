@@ -1480,5 +1480,16 @@ no calcula. Semilla fija, en Janax, 1,1 segundos.
 
 - **Las cortas dejan de ser ambiguas:** "y les dijo:" con lo que se venía contando ya dice cuál es. Con el temblor más
   fuerte pasan del 32 % al 86 %.
-- **Pendiente sin explicar:** con contexto la memoria arma 2.800 pares, y sin él, 2.710, de los mismos renglones. Los
-  porcentajes son de cada conjunto.
+- **La diferencia de pares, explicada (2026-11-07).** Era un error del lector: cuando una pregunta no tenía su "R:" justo
+  después, se salteaba también el renglón que había mirado. Sin contexto ese renglón era la pregunta siguiente (se
+  perdía); con contexto era su "C:" (se salvaba, pero pegada al contexto equivocado). Ahora ese renglón se vuelve a
+  leer como propio y el contexto viejo se descarta: 2.889 pares sin contexto, 2.881 con él. Los 8 de diferencia son
+  del filtro de prueba, no del lector: `rg "^(P|R): "` saca respuestas que empiezan con coma (`R:,`), y sin las "C:" de
+  por medio la pregunta anterior queda pegada a la respuesta de otra. Con contexto, esos 8 se cortan bien.
+
+| (2.889 / 2.881 pares) | 1-5 palabras | 6-12 | 13 o más |
+|---|---|---|---|
+| resbalones 10 %, sin contexto | 37 % | 90 % | 98 % |
+| resbalones 10 %, con contexto | 90 % | 97 % | 99 % |
+| resbalones 20 %, sin contexto | 31 % | 87 % | 97 % |
+| resbalones 20 %, con contexto | 85 % | 95 % | 99 % |

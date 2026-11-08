@@ -329,7 +329,7 @@ mp_pairs:
     jldb j3, j2, 0
     jldi j4, 82
     jsub j3, j3, j4
-    jjnz j3, mpp_next
+    jjnz j3, mpp_noans
     jst j10, j1, TT4
     jld j2, j1, PPN             ; kept: {its question's start, bytes, its answer's print}
     jldi j3, 5
@@ -375,6 +375,11 @@ mp_pairs:
     jldi j2, 1
     jadd j2, j10, j2
     jst j2, j1, TT1
+    jjmp mpp_line
+  mpp_noans:                    ; a question with no answer line: the line looked at is read again as its own (it may
+    jldi j1, 0                  ; be the next question, or its context), and this question's context goes
+    jst j9, j1, TT1
+    jst j1, j1, CXL
     jjmp mpp_line
 mpp_done:
   jldi j1, 0
