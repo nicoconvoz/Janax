@@ -92,3 +92,9 @@ times 5D0h - $ db 0
 db 'mismo lugar: ', 0
 times 5E0h - $ db 0
 db ' = ', 0
+times 5F0h - $ db 0
+db 'deduce: ', 0
+times 600h - $ db 0
+db ' | pares ', 0
+times 610h - $ db 0
+db ' + ', 0

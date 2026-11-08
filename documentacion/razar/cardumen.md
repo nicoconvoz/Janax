@@ -2306,3 +2306,24 @@ se unen.
   booz→obed; deja sin explicar david→salomón (Lucas: Natán), jacob→josé (Lucas: Elí) y fares→aram (Lucas pone a esrom
   en el medio y escribe "arní"). Tres contra tres: lo que queda son las diferencias de verdad entre los dos
   evangelios, no grafías.
+
+### Lo probado se vuelve premisa (2026-11-08)
+
+El otro chat: *"todavía no acumula: cada hipótesis la juzga contra el libro, nunca contra lo que ya probó"*; el
+Capitán: *"con un toque de magia: que sea plástico, que aumente y vaya podando, así no tiene un crecimiento
+exponencial"*. En cada vuelta, cada relación que **afirma algo** (una propiedad suya es así y no es pegamento) y
+cambió desde la última vez se **encadena consigo misma**: donde dice a con b y b con c, la deducida "<ella> + <ella>"
+dice a con c. Nadie la escribió; entra a la vuelta siguiente como una relación más. **Vive si una unión la toma**
+(el libro la confirma y ella lo explica); la que nadie usa muere en la vuelta siguiente (deja de tener pares), y lo
+que se puede volver a deducir no se guarda: se vuelve a deducir (Razar lee en un segundo; la velocidad compra el
+derecho a olvidar). Lugar: el doble de formas y de pares de lo leído, hasta donde llegan las salas.
+
+- **Prueba (`hilos_deduce_prueba.sh`):** la familia con "abuelo de" escrito → `deduce: padre de + padre de | pares 3`
+  y en la vuelta 3 `une: abuelo de ~ padre de + padre de | misma | lo confirman 3`. Una relación que nadie escribió,
+  deducida, y confirmada por el libro.
+- **Sobre el NT:** 50 deducidas, 128 uniones, la más grande sigue siendo la genealogía (16). Deduce "hijo de + hijo
+  de" (132 pares: los abuelos de la cadena), pero el NT casi nunca nombra un abuelo: nada la confirma, y muere.
+- **Lo que no anda todavía:** la mayoría de las deducidas son cadenas de gramática ("a + a", "y la + y la", "su + su")
+  y las uniones que toman son ruido ("tu ~ y la + y la"). El portero "afirma algo" deja pasar formas de gramática
+  que muestran por casualidad un valor por palabra. Y en los sinópticos "hijo de" se une con "a" (vuelta 2), y la
+  cadena de esa clase mezclada da 243 pares que "a + a" comparte al revés: la mancha de una unión floja se encadena.

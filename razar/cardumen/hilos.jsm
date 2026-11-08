@@ -28,7 +28,9 @@
 ;     hypothesis is refuted for good (a form of grammar that coincides in three pairs and says many more of the same
 ;     people does not explain them), and each relation looks for another. What is left unexplained may be one place
 ;     with two names ("obed" in Mateo, "jobed" in Lucas: each said the same twice, so a name, not a slip): when the
-;     other names it so with the same partners on both sides, one in each telling, it is explained, and said. While a turn joins something, there is
+;     other names it so with the same partners on both sides, one in each telling, it is explained, and said.
+;   - deducing: what is proved becomes a premise (see hl_derive): each relation that asserts something is chained with
+;     itself as a new relation, which lives if a join takes it and dies if nobody uses it. While a turn joins something, there is
 ;     another; when nothing new is deduced without contradiction, the while ends by itself.
 ;   - the tanda, when the house has "tanda" (k forms, the cube's side n): instead of the while, the k forms of the
 ;     strongest relations of relations, each said with the three bottom pieces of the cube its pairs fall on most (and
@@ -80,6 +82,9 @@ S_NADA   = 570h
 S_PEG    = 590h
 S_MISMO  = 5D0h
 S_IGUAL  = 5E0h
+S_DEDUCE = 5F0h
+S_PARES2 = 600h
+S_MAS    = 610h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -201,7 +206,19 @@ HAN   = 19D8h
 HAS   = 19E0h
 HAP   = 19E8h
 HAQ   = 19F0h
-HAC   = 19F8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HAC   = 19F8h
+HNDER = 1A00h                   ; (deducing: how many this turn; where the last ones and the ones before start; walking;
+HDFROM = 1A08h                  ; its number; room for forms and pairs; by relation, its size when last chained (a
+HDFROM2 = 1A10h                 ; room); saying a deduced one, a stack)
+HDC   = 1A18h
+HDF   = 1A20h
+HDCAP = 1A28h
+HFCAP = 1A30h
+HDVER = 1A38h
+HNM0  = 1A40h
+HNF0  = 1A48h
+HSFD  = 1A50h
+HSFS  = 1A58h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -274,6 +291,7 @@ jwhile j2                      ; while a turn joins something
   jcall hl_groups
   jcall hl_agree
   jcall hl_props
+  jcall hl_derive
   jcall hl_merge
   jldi j1, 0
   jld j2, j1, HTURN
@@ -281,6 +299,8 @@ jwhile j2                      ; while a turn joins something
   jadd j2, j2, j3
   jst j2, j1, HTURN
   jld j2, j1, HNMRG
+  jld j3, j1, HNDER
+  jadd j2, j2, j3
 jwend
 jcall hl_end
 jjmp finish
@@ -1017,6 +1037,10 @@ ha_zd:
 ha_done:
   jret
 
+; The words of relation j2 (its own form: the first of it). Uses j1-j14.
+hl_sayroot:
+  jjmp hl_sayform
+
 ; The words of form j2 (by its number). Uses j1-j14.
 hl_sayform:
   jldi j3, 48
@@ -1024,6 +1048,32 @@ hl_sayform:
   jldi j1, 0
   jld j4, j1, HMA
   jadd j3, j3, j4
+  jld j4, j3, 24
+  jldi j5, 63
+  jsar j5, j4, j5
+  jjz j5, hsf_read
+  jld j2, j3, 16                ; deduced: its relation, chained ("<it> + <it>")
+  jld j4, j1, HSFD
+  jldi j5, 3
+  jshl j5, j4, j5
+  jadd j5, j5, j1
+  jst j2, j5, HSFS
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, HSFD
+  jcall hl_sayroot
+  jldi j1, S_MAS
+  jcall puts
+  jld j4, j1, HSFD
+  jldi j5, 1
+  jsub j4, j4, j5
+  jst j4, j1, HSFD
+  jldi j5, 3
+  jshl j5, j4, j5
+  jadd j5, j5, j1
+  jld j2, j5, HSFS
+  jjmp hl_sayroot
+hsf_read:
   jld j2, j3, 8
   jld j4, j3, 24
   jld j3, j3, 16
@@ -3316,6 +3366,279 @@ hpv_old:
   jst j7, j4, 40
   jret
 
+; What is proved becomes a premise (Capitan, 2026-11-08: "it does not accumulate yet"; "with a touch of magic: plastic,
+; it grows and prunes, so it does not grow exponentially"). After each turn, every relation that asserts something (a
+; property of it is so, and it is not glue) and changed since it was last chained is chained with itself: where it says
+; a with b and b with c, the deduced relation "<it> + <it>" says a with c. Nobody wrote it: it is a relation like the
+; others in the next turn, and it lives if it is used (a join takes it: the book confirms and it explains); one nobody
+; uses is dead from the next turn on (it holds no pairs), and what can be deduced again is not kept, it is deduced
+; again (Razar reads in a second: speed buys the right to forget). It grows where what it proved bears weight. Said
+; "deduce: <it> + <it> | pares n". -> HNDER how many deduced in this turn. Uses j1-j14.
+hl_derive:
+  jldi j1, 0
+  jst j1, j1, HNDER
+  jld j2, j1, HDFROM2           ; the deduced ones tried in the turn before and not taken: dead
+  hd_dead:
+    jld j3, j1, HDFROM
+    jsub j3, j2, j3
+    jjz j3, hd_deadd
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jsub j4, j4, j2
+    jjnz j4, hd_dn              ; (joined: it lives)
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jldi j5, 1
+    jsub j4, j4, j5
+    jjnz j4, hd_dn              ; (others joined it)
+    jldi j4, 48
+    jmul j4, j2, j4
+    jld j5, j1, HMA
+    jadd j4, j4, j5
+    jst j1, j4, 32              ; it holds no pairs any more
+  hd_dn:
+    jldi j3, 1
+    jadd j2, j2, j3
+    jjmp hd_dead
+hd_deadd:
+  jld j2, j1, HDFROM
+  jst j2, j1, HDFROM2
+  jld j2, j1, HNM
+  jst j2, j1, HDFROM
+  jst j1, j1, HDC
+  hd_lap:                       ; each relation that asserts something and changed
+    jldi j1, 0
+    jld j2, j1, HDC
+    jld j3, j1, HDFROM
+    jsub j3, j2, j3
+    jjz j3, hd_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jsub j4, j4, j2
+    jjnz j4, hd_next            ; not a relation of its own
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jld j5, j1, HDVER
+    jadd j5, j5, j3
+    jld j6, j5, 0
+    jsub j6, j6, j4
+    jjz j6, hd_next             ; chained already as it is
+    jld j6, j1, HNANT
+    jadd j6, j6, j3
+    jld j6, j6, 0
+    jjnz j6, hd_next            ; glue
+    jld j6, j1, HCCNT
+    jadd j6, j6, j3
+    jld j6, j6, 0
+    jldi j7, 2
+    jsub j7, j6, j7
+    jldi j8, 63
+    jsar j7, j7, j8
+    jjnz j7, hd_next
+    jldi j3, 0
+    jcall hp_is
+    jjnz j6, hd_so
+    jldi j1, 0
+    jld j2, j1, HDC
+    jldi j3, 1
+    jcall hp_is
+    jjz j6, hd_next             ; it asserts nothing
+  hd_so:
+    jldi j1, 0
+    jld j2, j1, HDC
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jld j5, j1, HDVER
+    jadd j5, j5, j3
+    jst j4, j5, 0
+    jcall hd_chain
+  hd_next:
+    jldi j1, 0
+    jld j2, j1, HDC
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HDC
+    jjmp hd_lap
+hd_done:
+  jret
+
+; Relation HDC chained with itself, as a new form (if there is room for it and it holds two pairs). Uses j1-j14.
+hd_chain:
+  jldi j1, 0
+  jld j2, j1, HNM
+  jld j3, j1, HDCAP
+  jsub j3, j2, j3
+  jjz j3, hdc_none              ; (no room for one more form)
+  jst j2, j1, HDF               ; its number
+  jld j2, j1, HDC
+  jldi j5, 0Dh
+  jadd j6, j2, j1
+  jcall hl_mix
+  jjnz j5, hdc_k
+  jldi j5, 1
+hdc_k:
+  jst j5, j1, HKEY
+  jld j2, j1, HDF               ; the form: no line of its own, its relation, "chained"
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jst j5, j3, 0
+  jldi j4, -1
+  jst j4, j3, 8
+  jld j4, j1, HDC
+  jst j4, j3, 16
+  jldi j4, -1
+  jst j4, j3, 24
+  jst j1, j3, 32
+  jldi j4, -1
+  jst j4, j3, 40
+  jld j2, j1, HDC
+  jcall hxr_of
+  jldi j1, 0
+  jst j9, j1, HAP
+  jst j10, j1, HAN
+  jst j1, j1, HAI
+  hdc_i:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jld j4, j1, HAN
+    jsub j4, j3, j4
+    jjz j4, hdc_id
+    jld j2, j1, HAP
+    jcall hxr_get
+    jldi j1, 0
+    jst j5, j1, HQ4             ; a
+    jst j6, j1, HQ5             ; b
+    jst j1, j1, HAJ
+    hdc_j:
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jld j4, j1, HAN
+      jsub j4, j3, j4
+      jjz j4, hdc_in
+      jld j2, j1, HAP
+      jcall hxr_get
+      jldi j1, 0
+      jld j7, j1, HQ5
+      jsub j7, j5, j7
+      jjnz j7, hdc_jn             ; b with c?
+      jld j7, j1, HQ4
+      jsub j7, j6, j7
+      jjz j7, hdc_jn              ; (not back to a)
+      jst j6, j1, HAB
+      jcall hdc_put
+    hdc_jn:
+      jldi j1, 0
+      jld j3, j1, HAJ
+      jldi j4, 1
+      jadd j3, j3, j4
+      jst j3, j1, HAJ
+      jjmp hdc_j
+  hdc_in:
+    jldi j1, 0
+    jld j3, j1, HAI
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HAI
+    jjmp hdc_i
+hdc_id:
+  jld j2, j1, HDF
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j4, j3, 32
+  jldi j5, 2
+  jsub j4, j4, j5
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, hdc_none             ; fewer than two: not a relation
+  jld j4, j1, HNM               ; a form now
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, HNM
+  jld j4, j1, HNDER
+  jadd j4, j4, j5
+  jst j4, j1, HNDER
+  jldi j1, S_DEDUCE
+  jcall puts
+  jld j2, j1, HDF
+  jcall hl_sayform
+  jldi j1, S_PARES2
+  jcall puts
+  jld j2, j1, HDF
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j2, j3, 32
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jret
+hdc_none:
+  jldi j1, 0
+  jld j2, j1, HDF               ; (its pairs, if any, belong to no form: held by none)
+  jret
+
+; The pair HQ4, HAB of the deduced form HDF, once. Uses j1-j14.
+hdc_put:
+  jldi j1, 0
+  jld j2, j1, HNF
+  jld j3, j1, HFCAP
+  jsub j3, j2, j3
+  jjz j3, hdp_done              ; (no room for one more pair)
+  jld j5, j1, HKEY
+  jld j6, j1, HQ4
+  jcall hl_mix
+  jld j6, j1, HAB
+  jcall hl_mix
+  jjnz j5, hdp_k
+  jldi j5, 1
+hdp_k:
+  jldi j2, HFT
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, hdp_done              ; (said already)
+  jld j6, j1, HNF
+  jldi j7, 5
+  jshl j7, j6, j7
+  jld j8, j1, HFL
+  jadd j7, j7, j8
+  jld j8, j1, HDF
+  jst j8, j7, 0
+  jld j9, j1, HQ4
+  jst j9, j7, 8
+  jld j9, j1, HAB
+  jst j9, j7, 16
+  jldi j9, 48
+  jmul j9, j8, j9
+  jld j10, j1, HMA
+  jadd j9, j9, j10
+  jld j10, j9, 40
+  jst j10, j7, 24
+  jst j6, j9, 40
+  jld j10, j9, 32
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j9, 32
+  jadd j6, j6, j11
+  jst j6, j1, HNF
+hdp_done:
+  jret
+
 ; What it read: the words, the half, the forms said by two. Uses j1-j14.
 hl_say0:
   jldi j1, 0
@@ -3371,6 +3694,31 @@ hs_md:
 ; The rooms the while uses: by form the one it joined, if turned, how many forms; the strongest by relation; where the
 ; pairs go by their words (each pair and its crossed one, at most); the tables. Uses j1-j14.
 hl_rooms:
+  jldi j1, 0
+  jld j2, j1, HNM               ; room for deduced forms and pairs: twice what was read, as far as the rooms go
+  jst j2, j1, HNM0
+  jld j3, j1, HNF
+  jst j3, j1, HNF0
+  jld j4, j1, ZNWD
+  jldi j5, 3
+  jmul j4, j4, j5
+  jadd j2, j2, j2
+  jsub j5, j2, j4
+  jldi j6, 63
+  jsar j5, j5, j6
+  jjnz j5, hro_c1
+  jadd j2, j4, j1
+hro_c1:
+  jst j2, j1, HDCAP
+  jst j2, j1, HNM
+  jadd j3, j3, j3
+  jsub j5, j3, j4
+  jsar j5, j5, j6
+  jjnz j5, hro_c2
+  jadd j3, j4, j1
+hro_c2:
+  jst j3, j1, HFCAP
+  jst j3, j1, HNF
   jldi j1, 0
   jld j11, j1, HNM
   jldi j2, 1
@@ -3508,6 +3856,21 @@ hl_rooms:
     jst j2, j1, HI
     jjmp hro_lap
 hro_done:
+  jldi j1, 0
+  jld j11, j1, HDCAP            ; by relation, its size when last chained
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HDVER
+  jld j2, j1, HNM0
+  jst j2, j1, HNM
+  jst j2, j1, HDFROM
+  jst j2, j1, HDFROM2
+  jld j2, j1, HNF0
+  jst j2, j1, HNF
   jret
 
 ; The growing table at j2 emptied, in the places it has. Uses j3-j6.
