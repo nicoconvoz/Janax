@@ -32,3 +32,21 @@ times 220h - $ db 0
 db '.5', 0
 times 240h - $ db 0
 db ' | relaciones que comparten dos pares y mas que su nulo: ', 0
+times 280h - $ db 0
+db 'vuelta ', 0
+times 2A0h - $ db 0
+db ' une: ', 0
+times 2C0h - $ db 0
+db 'el while paro en la vuelta ', 0
+times 2E0h - $ db 0
+db ': nada nuevo le gana a su nulo', 0
+times 340h - $ db 0
+db ' | relaciones de dos formas o mas: ', 0
+times 380h - $ db 0
+db ' | la mas grande: ', 0
+times 3C0h - $ db 0
+db ' formas, la primera: ', 0
+times 3E0h - $ db 0
+db ': le ganan a su nulo ', 0
+times 420h - $ db 0
+db ' | se unen ', 0

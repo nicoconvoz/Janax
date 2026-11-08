@@ -2027,3 +2027,24 @@ dicen dos pares; **444 relaciones de relaciones**, 145 con nulo 0.
 - Las de "hijo de ~ sela hijo de" (nulo 1) son la cadena de Lucas vista con un nombre adentro: dos pasos seguidos.
 - ⚠️ Falta: unir relaciones por sus relaciones (el mismo mecanismo, un piso arriba), encadenar con ellas y verificar
   los caminos contra lo que el libro dice de una vez ("jesucristo, hijo de david, hijo de abraham").
+
+**El while encadenado** (Capitán: *"que sea un while encadenado: mi idea, todo en while, aplicada en mecanismo"*).
+`hilos.jsm` es ahora un `jwhile` sobre las uniones de la vuelta: en cada vuelta una relación se une con la que más se
+relaciona (dos veces lo leído menos lo cruzado), si esa también la elige; lo unido es una sola relación desde ahí (sus
+pares juntos, dados vuelta si se relacionan al revés) y se mide todo de nuevo. Sin número de vueltas: para solo cuando
+nada nuevo le gana a su nulo. Prueba: vuelta 1 une "padre de ~ hijo de", vuelta 2 "fue padre de" (que no comparte nada
+con "padre de", sí con lo que trajo "hijo de"), vuelta 3 para.
+
+Sobre el NT (51 s): **652 vueltas, 742 uniones, 13 relaciones de dos formas o más.**
+
+- **La primera vuelta es lo mejor que salió hasta ahora** (46 uniones): "será ~ es", "fue ~ había sido", "estaba ~
+  estaban", "puede ~ pueden", "tres ~ diez", "doce ~ siete", "ese ~ aquel", "algún ~ ningún", "del señor ~ de dios",
+  "piedad de ~ compasión de", "hijo de ~ padre de (al revés)". En las siguientes crecen clases enteras: personas que
+  hacen lo mismo ("la multitud ~ pedro ~ maría ~ apolo ~ el pueblo"), los tiempos de "haber" ("había ~ ha ~ han ~
+  has ~ hubiera"), los determinantes ("su ~ la ~ una ~ mi ~ el ~ tu").
+- **Y un agujero negro:** desde la vuelta 13 la relación "de" se traga una forma por vuelta hasta juntar **727**
+  (649 uniones, casi todas con 2 pares contra un nulo de 0 a 1,5). La causa: "dos contra uno" es evidencia floja, y
+  la relación más grande se compara con cientos por vuelta: alguna pasa por azar, crece, y la próxima le es más fácil
+  (el rico se hace más rico). No es la regla de unir: es la vara del nulo, que no cuenta cuántas veces se probó.
+- ⚠️ La vara tiene que salir del propio nulo, no de un número: correr el mismo while sobre un libro con **todos** los
+  pares cruzados; lo que ahí une es error puro, y la evidencia que hace falta es la que en ese mundo no une nada.

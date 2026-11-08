@@ -10,8 +10,15 @@
 ;   - how relations relate: two relations that hold the same pair, the same way ("abraham fue padre de isaac", "isaac,
 ;     padre de jacob") or the other way round ("jacob, hijo de isaac"), share it. Against the null: each relation's
 ;     pairs crossed among themselves (every pair's second word given to the pair before it), so what the two hold
-;     alike is only what words they use, not which goes with which. A relation of relations is said when two pairs say
-;     it and it shares more than its null; the strongest first.
+;     alike is only what words they use, not which goes with which. Two relations relate when two pairs say it and it
+;     shares more than its null.
+;   - the while (Capitan, 2026-11-08: "a chained while: my idea, everything in while, applied as a mechanism"): each
+;     turn, a relation joins the one it relates to most (twice what they share read, minus what they share crossed),
+;     if that one chooses it too, and the joined ones are one relation from then on (their pairs together, turned
+;     when they relate the other way round). Then everything is measured again with what was joined. While a turn joins
+;     something, there is another; when nothing new beats its null, the while ends by itself: no number of turns is
+;     given. (One join a turn for each, the strongest chosen by both: what a turn joins is never carried by what it
+;     joined in the same turn, so weak links do not chain everything into one.)
 S_LIBRO  = 0                    ; (the texts lectura.inc asks for)
 S_P      = 10h
 S_NOBOOK = 20h
@@ -29,6 +36,15 @@ S_LODIC  = 1E0h
 S_NULO   = 200h
 S_MEDIO  = 220h
 S_CUANT  = 240h
+S_VUELTA = 280h
+S_UNE    = 2A0h
+S_PARO   = 2C0h
+S_PAROB  = 2E0h
+S_CLASES = 340h
+S_GRANDE = 380h
+S_FORMAS = 3C0h
+S_GANAN  = 3E0h
+S_SEUNEN = 420h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -83,6 +99,14 @@ HT4   = 1680h
 HT5   = 1688h
 HKEY  = 1690h
 HDIR  = 1698h
+HCLS  = 1700h                   ; by form: the one it joined (itself while it is a relation of its own), 1 if turned
+HPAR  = 1708h                   ; against it, how many forms its relation holds; the strongest score by relation and
+HSIZE = 1710h                   ; its relation of relations (rooms)
+HBST  = 1718h
+HBSE  = 1720h
+HTURN = 1728h                   ; the turn; joins in it; relations of relations that beat their null in it
+HNMRG = 1730h
+HNACC = 1738h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -100,9 +124,23 @@ hl_go:
 jcall en_lines
 jcall hl_half
 jcall hl_facts
-jcall hl_groups
-jcall hl_agree
-jcall hl_report
+jcall hl_rooms
+jcall hl_say0
+jldi j1, 0
+jldi j2, 1
+jst j2, j1, HTURN
+jwhile j2                      ; while a turn joins something
+  jcall hl_groups
+  jcall hl_agree
+  jcall hl_merge
+  jldi j1, 0
+  jld j2, j1, HTURN
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, HTURN
+  jld j2, j1, HNMRG
+jwend
+jcall hl_end
 jjmp finish
 
 ; Each word's times, the half (the words said most that make half of what the book says: HHC the fewest times one
@@ -538,8 +576,7 @@ he_put:
 ; the first one), by its two words: counted, given their places, put (HGT, HGE). Uses j1-j14.
 hl_groups:
   jldi j2, HGT
-  jldi j3, 32
-  jcall pl_new
+  jcall hl_clear
   jldi j1, 0
   jldi j2, 1
   jst j2, j1, HPASS
@@ -570,10 +607,22 @@ hl_groups:
       jldi j8, 63
       jsar j7, j7, j8
       jjnz j7, hg_next            ; said by one: a memory
+      jld j2, j1, HM              ; its relation, and if it is turned against it
+      jcall hl_find
+      jldi j1, 0
+      jst j2, j1, HM
+      jst j3, j1, HT1
+      jld j3, j1, HT4
       jld j7, j3, 8
+      jld j8, j3, 16
+      jld j9, j1, HT1
+      jjz j9, hg_or
+      jadd j9, j7, j1
+      jadd j7, j8, j1
+      jadd j8, j9, j1
+  hg_or:
       jst j7, j1, HA
-      jld j7, j3, 16
-      jst j7, j1, HB
+      jst j8, j1, HB
       jst j1, j1, HTG
       jcall hl_entry
       jldi j1, 0                  ; crossed: the second word of the pair before it
@@ -589,11 +638,18 @@ hl_groups:
       jshl j7, j7, j8
       jld j8, j1, HFL
       jadd j7, j7, j8
-      jld j7, j7, 16
+      jld j7, j7, 16              ; the crossed second word
+      jld j8, j3, 8               ; its first
+      jsub j9, j8, j7
+      jjz j9, hg_next
+      jld j9, j1, HT1
+      jjz j9, hg_cor
+      jadd j9, j7, j1
+      jadd j7, j8, j1
+      jadd j8, j9, j1
+  hg_cor:
+      jst j8, j1, HA
       jst j7, j1, HB
-      jld j8, j1, HA
-      jsub j8, j8, j7
-      jjz j8, hg_next
       jldi j7, 1
       jst j7, j1, HTG
       jcall hl_entry
@@ -631,13 +687,6 @@ hl_groups:
       jjmp hg_s
   hg_sd:
     jst j6, j1, HNGE
-    jldi j2, 24
-    jmul j11, j6, j2
-    jldi j2, 24
-    jadd j11, j11, j2
-    jcall room
-    jldi j1, 0
-    jst j13, j1, HGE
     jldi j2, 2
     jst j2, j1, HPASS
     jjmp hg_pass
@@ -648,8 +697,7 @@ hg_done:
 ; how many read alike, how many with one of them crossed). Uses j1-j14.
 hl_agree:
   jldi j2, HAG
-  jldi j3, 48
-  jcall pl_new
+  jcall hl_clear
   jldi j1, 0
   jldi j2, HGT
   jld j3, j2, 8
@@ -702,7 +750,7 @@ hl_agree:
         jld j10, j6, 0
         jld j11, j9, 0
         jsub j12, j10, j11
-        jjz j12, ha_yn            ; one form with itself
+        jjz j12, ha_yn            ; one relation with itself
         jld j12, j6, 16
         jld j13, j9, 16
         jand j14, j12, j13
@@ -797,19 +845,17 @@ hl_sayform:
   jldi j5, -1
   jjmp en_saywords
 
-; What it found: the words, the half, the forms said by two; and the relations of relations said by two pairs and more
-; than their null (read alike, against half of the crossed: each pair crossed once on each side), the strongest first
-; (twice read minus crossed). Uses j1-j14.
-hl_report:
+; What it read: the words, the half, the forms said by two. Uses j1-j14.
+hl_say0:
   jldi j1, 0
-  jst j1, j1, HKEPT
+  jst j1, j1, HT1
   jst j1, j1, HI
-  hr_m:
+  hs_m:
     jldi j1, 0
     jld j2, j1, HI
     jld j3, j1, HNM
     jsub j3, j2, j3
-    jjz j3, hr_md
+    jjz j3, hs_md
     jldi j3, 48
     jmul j3, j2, j3
     jld j4, j1, HMA
@@ -819,18 +865,18 @@ hl_report:
     jsub j3, j3, j4
     jldi j4, 63
     jsar j3, j3, j4
-    jjnz j3, hr_mn
-    jld j3, j1, HKEPT
+    jjnz j3, hs_mn
+    jld j3, j1, HT1
     jldi j4, 1
     jadd j3, j3, j4
-    jst j3, j1, HKEPT
-  hr_mn:
+    jst j3, j1, HT1
+  hs_mn:
     jld j2, j1, HI
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, HI
-    jjmp hr_m
-hr_md:
+    jjmp hs_m
+hs_md:
   jldi j1, S_PAL
   jcall puts
   jld j2, j1, HTOT
@@ -841,7 +887,7 @@ hr_md:
   jcall putnum
   jldi j1, S_VECES
   jcall puts
-  jld j2, j1, HKEPT
+  jld j2, j1, HT1
   jcall putnum
   jldi j1, S_DE
   jcall puts
@@ -849,157 +895,432 @@ hr_md:
   jcall putnum
   jldi j2, 10
   jcall putch
-  jldi j1, 0                    ; the ones said: a room for them
-  jldi j2, HAG
-  jld j11, j2, 16
-  jldi j3, 1
-  jadd j11, j11, j3
-  jldi j3, 3
-  jshl j11, j11, j3
+  jret
+
+; The rooms the while uses: by form the one it joined, if turned, how many forms; the strongest by relation; where the
+; pairs go by their words (each pair and its crossed one, at most); the tables. Uses j1-j14.
+hl_rooms:
+  jldi j1, 0
+  jld j11, j1, HNM
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jst j11, j1, HT1
   jcall room
   jldi j1, 0
-  jst j13, j1, HTOP
-  jst j1, j1, HNTOP
+  jst j13, j1, HCLS
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPAR
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HSIZE
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HBST
+  jld j11, j1, HT1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HBSE
+  jld j11, j1, HNF
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 48
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HGE
+  jldi j2, HGT
+  jldi j3, 32
+  jcall pl_new
   jldi j2, HAG
+  jldi j3, 48
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, HI
+  hro_lap:                      ; every form its own relation, of one form
+    jldi j1, 0
+    jld j2, j1, HI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hro_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jst j2, j4, 0
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jldi j5, 1
+    jst j5, j4, 0
+    jadd j2, j2, j5
+    jst j2, j1, HI
+    jjmp hro_lap
+hro_done:
+  jret
+
+; The growing table at j2 emptied, in the places it has. Uses j3-j6.
+hl_clear:
   jld j3, j2, 8
   jldi j4, 1
   jadd j3, j3, j4
+  jld j4, j2, 24
+  jmul j3, j3, j4
+  jldi j4, 3
+  jshr j3, j3, j4
   jld j4, j2, 0
-  jld j5, j2, 24
-  hr_a:
-    jjz j3, hr_ad
-    jld j6, j4, 0
-    jjz j6, hr_an
-    jld j6, j4, 32
-    jldi j7, 2
-    jsub j7, j6, j7
-    jldi j8, 63
-    jsar j7, j7, j8
-    jjnz j7, hr_an              ; said by one pair
-    jadd j6, j6, j6
-    jld j7, j4, 40
-    jsub j6, j6, j7
-    jldi j7, 1
-    jsub j6, j6, j7
-    jsar j6, j6, j8
-    jjnz j6, hr_an              ; not more than its null
-    jld j6, j1, HNTOP
-    jldi j7, 3
-    jshl j7, j6, j7
-    jld j8, j1, HTOP
-    jadd j7, j7, j8
-    jst j4, j7, 0
-    jldi j7, 1
-    jadd j6, j6, j7
-    jst j6, j1, HNTOP
-  hr_an:
-    jadd j4, j4, j5
+  jldi j5, 0
+  jst j5, j2, 16
+  hcl_lap:
+    jjz j3, hcl_done
+    jst j5, j4, 0
+    jldi j6, 8
+    jadd j4, j4, j6
     jldi j6, 1
     jsub j3, j3, j6
-    jjmp hr_a
-hr_ad:
-  jldi j1, S_CUANT
+    jjmp hcl_lap
+hcl_done:
+  jret
+
+; The relation of form j2 -> j2, and j3 = 1 if the form is turned against it. Uses j2-j5.
+hl_find:
+  jldi j3, 0
+  hfd_lap:
+    jldi j4, 3
+    jshl j4, j2, j4
+    jldi j5, 0
+    jld j5, j5, HCLS
+    jadd j5, j5, j4
+    jld j5, j5, 0
+    jsub j5, j5, j2
+    jjz j5, hfd_done
+    jldi j5, 0
+    jld j5, j5, HPAR
+    jadd j5, j5, j4
+    jld j5, j5, 0
+    jxor j3, j3, j5
+    jldi j5, 0
+    jld j5, j5, HCLS
+    jadd j5, j5, j4
+    jld j2, j5, 0
+    jjmp hfd_lap
+hfd_done:
+  jret
+
+; j6 = the score of the relation of relations at j4 (twice read alike, minus crossed), 0 if it does not beat its null
+; or two pairs do not say it. Uses j6-j8.
+hl_score:
+  jld j6, j4, 32
+  jldi j7, 2
+  jsub j7, j6, j7
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjnz j7, hsc_no
+  jadd j6, j6, j6
+  jld j7, j4, 40
+  jsub j6, j6, j7
+  jsar j7, j6, j8
+  jjnz j7, hsc_no
+  jjz j6, hsc_no
+  jret
+hsc_no:
+  jldi j6, 0
+  jret
+
+; One turn's joins: of the relations of relations that beat their null, each relation's strongest; two relations whose
+; strongest is each other join (the second into the first, turned if they relate the other way round). Each join said.
+; -> HNMRG how many, HNACC how many beat their null. Uses j1-j14.
+hl_merge:
+  jldi j1, 0
+  jst j1, j1, HNMRG
+  jst j1, j1, HNACC
+  jst j1, j1, HI
+  hm_z:                         ; no strongest yet
+    jldi j1, 0
+    jld j2, j1, HI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hm_zd
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HBST
+    jadd j4, j4, j3
+    jst j1, j4, 0
+    jld j4, j1, HBSE
+    jadd j4, j4, j3
+    jst j1, j4, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HI
+    jjmp hm_z
+hm_zd:
+  jldi j2, HAG
+  jld j3, j2, 8
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j1, HT1
+  jld j4, j2, 0
+  jst j4, j1, HT2
+  hm_a:                         ; each relation's strongest
+    jldi j1, 0
+    jld j3, j1, HT1
+    jjz j3, hm_ad
+    jld j4, j1, HT2
+    jld j5, j4, 0
+    jjz j5, hm_an
+    jcall hl_score
+    jldi j1, 0
+    jjz j6, hm_an
+    jld j5, j1, HNACC
+    jldi j7, 1
+    jadd j5, j5, j7
+    jst j5, j1, HNACC
+    jldi j9, 8
+    hm_side:                    ; (its first relation, then its second)
+      jadd j10, j4, j9
+      jld j10, j10, 0
+      jldi j7, 3
+      jshl j10, j10, j7
+      jld j7, j1, HBST
+      jadd j7, j7, j10
+      jld j8, j7, 0
+      jsub j8, j8, j6
+      jldi j11, 63
+      jsar j8, j8, j11
+      jjz j8, hm_sn
+      jst j6, j7, 0
+      jld j7, j1, HBSE
+      jadd j7, j7, j10
+      jst j4, j7, 0
+    hm_sn:
+      jldi j7, 16
+      jsub j7, j9, j7
+      jjz j7, hm_an
+      jldi j9, 16
+      jjmp hm_side
+  hm_an:
+    jldi j1, 0
+    jld j4, j1, HT2
+    jldi j5, HAG
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HT2
+    jld j3, j1, HT1
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HT1
+    jjmp hm_a
+hm_ad:
+  jldi j2, HAG                  ; the ones both chose
+  jld j3, j2, 8
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j1, HT1
+  jld j4, j2, 0
+  jst j4, j1, HT2
+  hm_b:
+    jldi j1, 0
+    jld j3, j1, HT1
+    jjz j3, hm_bd
+    jld j4, j1, HT2
+    jld j5, j4, 0
+    jjz j5, hm_bn
+    jld j5, j4, 8
+    jldi j7, 3
+    jshl j5, j5, j7
+    jld j7, j1, HBSE
+    jadd j7, j7, j5
+    jld j7, j7, 0
+    jsub j7, j7, j4
+    jjnz j7, hm_bn
+    jld j5, j4, 16
+    jldi j7, 3
+    jshl j5, j5, j7
+    jld j7, j1, HBSE
+    jadd j7, j7, j5
+    jld j7, j7, 0
+    jsub j7, j7, j4
+    jjnz j7, hm_bn
+    jld j5, j4, 8               ; the second into the first
+    jld j6, j4, 16
+    jldi j7, 3
+    jshl j8, j6, j7
+    jld j9, j1, HCLS
+    jadd j9, j9, j8
+    jst j5, j9, 0
+    jld j9, j4, 24
+    jldi j10, 1
+    jsub j9, j9, j10
+    jld j10, j1, HPAR
+    jadd j10, j10, j8
+    jst j9, j10, 0
+    jld j10, j1, HSIZE
+    jadd j10, j10, j8
+    jld j11, j10, 0
+    jshl j12, j5, j7
+    jld j13, j1, HSIZE
+    jadd j13, j13, j12
+    jld j14, j13, 0
+    jadd j14, j14, j11
+    jst j14, j13, 0
+    jld j5, j1, HNMRG
+    jldi j7, 1
+    jadd j5, j5, j7
+    jst j5, j1, HNMRG
+    jcall hl_sayjoin
+  hm_bn:
+    jldi j1, 0
+    jld j4, j1, HT2
+    jldi j5, HAG
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HT2
+    jld j3, j1, HT1
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HT1
+    jjmp hm_b
+hm_bd:
+  jldi j1, S_VUELTA
   jcall puts
-  jld j2, j1, HNTOP
+  jld j2, j1, HTURN
+  jcall putnum
+  jldi j1, S_GANAN
+  jcall puts
+  jld j2, j1, HNACC
+  jcall putnum
+  jldi j1, S_SEUNEN
+  jcall puts
+  jld j2, j1, HNMRG
   jcall putnum
   jldi j2, 10
   jcall putch
-  jld j2, j1, HNTOP             ; (all of them, the strongest first)
-  jst j2, j1, HT3
-  hr_pick:
+  jret
+
+; "vuelta t une: <first> ~ <second> | misma | lo dicen n | nulo x" for the relation of relations at HT2. Uses j1-j14.
+hl_sayjoin:
+  jldi j1, S_VUELTA
+  jcall puts
+  jld j2, j1, HTURN
+  jcall putnum
+  jldi j1, S_UNE
+  jcall puts
+  jld j4, j1, HT2
+  jld j2, j4, 8
+  jcall hl_sayform
+  jldi j1, S_TIL
+  jcall puts
+  jld j4, j1, HT2
+  jld j2, j4, 16
+  jcall hl_sayform
+  jldi j1, 0
+  jld j4, j1, HT2
+  jld j2, j4, 24
+  jldi j3, 1
+  jsub j2, j2, j3
+  jldi j1, S_MISMA
+  jjz j2, hsj_way
+  jldi j1, S_REVES
+hsj_way:
+  jcall puts
+  jldi j1, S_LODIC
+  jcall puts
+  jld j4, j1, HT2
+  jld j2, j4, 32
+  jcall putnum
+  jldi j1, S_NULO
+  jcall puts
+  jld j4, j1, HT2
+  jld j2, j4, 40
+  jldi j3, 1
+  jshr j2, j2, j3
+  jcall putnum
+  jld j4, j1, HT2
+  jld j2, j4, 40
+  jldi j3, 1
+  jand j2, j2, j3
+  jjz j2, hsj_nl
+  jldi j1, S_MEDIO
+  jcall puts
+hsj_nl:
+  jldi j2, 10
+  jcall putch
+  jret
+
+; The while's end: the turn it stopped in, how many relations hold two forms or more, and the largest. Uses j1-j14.
+hl_end:
+  jldi j1, S_PARO
+  jcall puts
+  jld j2, j1, HTURN
+  jldi j3, 1
+  jsub j2, j2, j3
+  jcall putnum
+  jldi j1, S_PAROB
+  jcall puts
+  jst j1, j1, HT1               ; how many
+  jst j1, j1, HT3               ; the largest's forms
+  jst j1, j1, HT4               ; the largest
+  jst j1, j1, HI
+  he_lap:
     jldi j1, 0
-    jld j2, j1, HT3
-    jjz j2, hr_done
-    jldi j2, -1                   ; the strongest left
+    jld j2, j1, HI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, he_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jsub j4, j4, j2
+    jjnz j4, he_next
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jldi j5, 2
+    jsub j5, j4, j5
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjnz j5, he_next
+    jld j5, j1, HT1
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j1, HT1
+    jld j5, j1, HT3
+    jsub j5, j5, j4
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, he_next
+    jst j4, j1, HT3
     jst j2, j1, HT4
-    jst j1, j1, HT5
-    jst j1, j1, HI
-    hr_s:
-      jldi j1, 0
-      jld j2, j1, HI
-      jld j3, j1, HNTOP
-      jsub j3, j2, j3
-      jjz j3, hr_sd
-      jldi j3, 3
-      jshl j3, j2, j3
-      jld j4, j1, HTOP
-      jadd j3, j3, j4
-      jld j4, j3, 0
-      jjz j4, hr_sn
-      jld j5, j4, 32
-      jadd j5, j5, j5
-      jld j6, j4, 40
-      jsub j5, j5, j6
-      jld j6, j1, HT5
-      jsub j6, j6, j5
-      jldi j7, 63
-      jsar j6, j6, j7
-      jjz j6, hr_sn
-      jst j5, j1, HT5
-      jst j3, j1, HT4
-    hr_sn:
-      jld j2, j1, HI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HI
-      jjmp hr_s
-  hr_sd:
-    jld j3, j1, HT4
-    jldi j4, 63
-    jsar j4, j3, j4
-    jjnz j4, hr_done
-    jld j4, j3, 0
-    jst j4, j1, HT1
-    jst j1, j3, 0
-    jldi j1, S_REL
-    jcall puts
-    jld j4, j1, HT1
-    jld j2, j4, 8
-    jcall hl_sayform
-    jldi j1, S_TIL
-    jcall puts
-    jld j4, j1, HT1
-    jld j2, j4, 16
-    jcall hl_sayform
-    jldi j1, 0
-    jld j4, j1, HT1
-    jld j2, j4, 24
+  he_next:
+    jld j2, j1, HI
     jldi j3, 1
-    jsub j2, j2, j3
-    jldi j1, S_MISMA
-    jjz j2, hr_way
-    jldi j1, S_REVES
-  hr_way:
-    jcall puts
-    jldi j1, S_LODIC
-    jcall puts
-    jld j4, j1, HT1
-    jld j2, j4, 32
-    jcall putnum
-    jldi j1, S_NULO
-    jcall puts
-    jld j4, j1, HT1
-    jld j2, j4, 40
-    jldi j3, 1
-    jshr j2, j2, j3
-    jcall putnum
-    jld j4, j1, HT1
-    jld j2, j4, 40
-    jldi j3, 1
-    jand j2, j2, j3
-    jjz j2, hr_nl
-    jldi j1, S_MEDIO
-    jcall puts
-  hr_nl:
-    jldi j2, 10
-    jcall putch
-    jldi j1, 0
-    jld j2, j1, HT3
-    jldi j3, 1
-    jsub j2, j2, j3
-    jst j2, j1, HT3
-    jjmp hr_pick
-hr_done:
+    jadd j2, j2, j3
+    jst j2, j1, HI
+    jjmp he_lap
+he_done:
+  jldi j1, S_CLASES
+  jcall puts
+  jld j2, j1, HT1
+  jcall putnum
+  jld j2, j1, HT1
+  jjz j2, he_nl
+  jldi j1, S_GRANDE
+  jcall puts
+  jld j2, j1, HT3
+  jcall putnum
+  jldi j1, S_FORMAS
+  jcall puts
+  jld j2, j1, HT4
+  jcall hl_sayform
+he_nl:
+  jldi j2, 10
+  jcall putch
   jret
 
 ; The house's file named by the j12 bytes at j11 -> PRB, PRN (0: none). Uses j1-j14.
