@@ -75,6 +75,31 @@ BKP   = 3300h                   ; where each book starts in the row (a page brea
 BKN   = 3390h
 WSP   = 11C0h                   ; 1: a space or a line end since the last unit; by unit, 1 if it came glued to the
 ROOMGL = 11C8h                  ; one before (no space between: Capitan, "what is a separator, what opens, what closes")
+MKP   = 3700h                   ; what each mark does (mk_learn): by two marks {key, opener, closer, times}; by mark
+                                ; its counts, the marks seen and how many; walking; the pairs as a stack
+MKC   = 3720h
+MKL   = 3728h
+MKLN  = 3730h
+MK1   = 3738h
+MK2   = 3740h
+MK3   = 3748h
+MK4   = 3750h
+MK5   = 3758h
+MK6   = 3760h
+MK7   = 3768h
+MK8   = 3770h
+MK9   = 3778h
+MKO   = 3780h
+MKQ   = 3788h
+MKPR  = 3790h
+MKPN  = 3798h
+MKS   = 37A0h
+MKSN  = 37A8h
+MKBE  = 37B0h
+MKBT  = 37B8h
+MKX   = 37C0h
+MKHIT = 37C8h
+MKALL = 37D0h
 RLT   = 11B8h                   ; (the room just got, while the list of rooms grows)
 SINK  = 3230h                   ; where the text goes: 0 the console, or a file's handle plus one; the text written
 PUTP  = 3238h                   ; walked; the registers kept while it goes out (13 qwords)
@@ -1630,6 +1655,7 @@ wm_no:
 ; times it is followed by a word, that word began with a capital (a run of marks: each of them). The end of a renglon
 ; always closes. ROOMCL gets, by word, 1 for a mark that closes. Uses j1-j14.
 limits:
+  jcall mk_learn                ; (what each mark does: its pairs, as a stack)
   jldi j1, 0
   jld j11, j1, NV               ; by word: closes, followed by a capital, followed by a word
   jldi j2, 24
@@ -1716,4 +1742,635 @@ limits:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
+  jret                          ; (mk_limits, a pair's closer closing too, waits: making "]" a limit, 14 times in
+                                ; the NT, turned "de", "y", "que" into arrows; not understood yet)
+
+; What each mark does (Capitan, 2026-11-07: "find what is a separator, as the point or the comma in a number, what
+; divides as a parenthesis or a bracket, as a capital and a point, or two exclamation marks, or two question marks";
+; "do not forget the line end: it speaks too"). Every mark of the reading, and the capital (a word that begins with
+; one) and the line end as marks too, counted over the row: how many times it comes glued to the unit before it, how
+; many the unit after it comes glued to it, how many it stands glued between two digits; and, for every two, how many
+; times one comes with the other seen since its own last time (the pairs that compensate, as the parentheses of the
+; Capitan's calculator). Its work, by majority: one that the next unit glues to opens; one glued to the one before
+; closes when an opener goes with it most times (its pair), and separates when none does; one glued on both sides
+; between digits separates inside a number. Nothing is listed: the marks and their pairs come out of the books. By
+; mark (a word's number; NV the capital, NV + 1 the line end) at MKC {times, glued before, glued after, between digits,
+; last place seen}; by two at MKP {key, opener, closer, times}. Uses j1-j14.
+mk_learn:
+  jldi j1, 0
+  jld j2, j1, ROOMGL
+  jjz j2, mkl_done
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 40
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKC
+  jldi j2, MKP
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0
+  jld j11, j1, NV               ; the marks seen so far (a list)
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKL
+  jst j1, j1, MKLN
+  jldi j9, 1
+  mkl_unit:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, mkl_counted
+    jst j9, j1, MK1
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMT
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjnz j2, mkl_word
+    jld j2, j1, NV              ; a line end
+    jldi j3, 1
+    jadd j2, j2, j3
+    jjmp mkl_mark
+  mkl_word:
+    jst j2, j1, MK2
+    jcall w_mark
+    jldi j1, 0
+    jjnz j3, mkl_isn
+    jld j2, j1, MK1             ; a word: with a capital, a mark too
+    jld j3, j1, ROOMCP
+    jadd j3, j3, j2
+    jldb j3, j3, 0
+    jjz j3, mkl_next
+    jld j2, j1, NV
+    jjmp mkl_mark
+  mkl_isn:
+    jld j2, j1, MK2
+  mkl_mark:
+    jst j2, j1, MK3             ; the mark, at place MK1
+    jcall mk_note
+  mkl_next:
+    jldi j1, 0
+    jld j9, j1, MK1
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mkl_unit
+mkl_counted:
+  jcall mk_stack                ; (its pairs, as a stack)
+mkl_done:
+  jldi j1, 0
   jret
+
+; The record of mark j2 -> j3 (MKC + 40 j2). Uses j1, j3, j4.
+mk_rec:
+  jldi j1, 0
+  jldi j3, 40
+  jmul j3, j2, j3
+  jld j4, j1, MKC
+  jadd j3, j3, j4
+  jret
+
+; Mark MK3 at place MK1: its times, its gluings, between digits, and with every opener seen since its last time.
+; Uses j1-j14.
+mk_note:
+  jldi j1, 0
+  jld j2, j1, MK3
+  jcall mk_rec
+  jst j3, j1, MK5
+  jld j2, j3, 0
+  jjnz j2, mkc_seen
+  jld j4, j1, MKLN              ; (first seen: into the list)
+  jldi j5, 3
+  jshl j5, j4, j5
+  jld j6, j1, MKL
+  jadd j5, j5, j6
+  jld j6, j1, MK3
+  jst j6, j5, 0
+  jldi j5, 1
+  jadd j4, j4, j5
+  jst j4, j1, MKLN
+mkc_seen:
+  jld j3, j1, MK5
+  jld j2, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 0
+  jld j2, j1, MK3               ; (the capital and the line end glue to nothing: they are no unit of their own)
+  jld j4, j1, NV
+  jsub j4, j2, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkc_pairs
+  jld j9, j1, MK1               ; glued to the one before (a word, no line end)
+  jldi j4, 1
+  jsub j10, j9, j4
+  jadd j2, j10, j1
+  jcall mk_tok
+  jldi j1, 0
+  jst j2, j1, MK6
+  jjz j2, mkc_after
+  jst j1, j1, MK7
+  jcall w_mark                  ; (a word before it: a mark glued to a mark says nothing of either)
+  jldi j1, 0
+  jjnz j3, mkc_after
+  jld j9, j1, MK1
+  jld j4, j1, ROOMGL
+  jadd j4, j4, j9
+  jldb j4, j4, 0
+  jst j4, j1, MK7
+  jjz j4, mkc_after
+  jld j3, j1, MK5
+  jld j2, j3, 8
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 8
+mkc_after:
+  jld j9, j1, MK1               ; the one after glued to it
+  jldi j4, 1
+  jadd j9, j9, j4
+  jld j2, j1, NTOK
+  jsub j2, j9, j2
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, mkc_pairs
+  jadd j2, j9, j1
+  jcall mk_tok
+  jldi j1, 0
+  jst j2, j1, MK8
+  jjz j2, mkc_pairs
+  jcall w_mark                  ; (a word after it)
+  jldi j1, 0
+  jjnz j3, mkc_pairs
+  jld j9, j1, MK1
+  jldi j4, 1
+  jadd j9, j9, j4
+  jld j4, j1, ROOMGL
+  jadd j4, j4, j9
+  jldb j4, j4, 0
+  jjz j4, mkc_pairs
+  jld j3, j1, MK5
+  jld j2, j3, 16
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 16
+  jld j4, j1, MK7               ; glued on both sides: between two digits?
+  jjz j4, mkc_pairs
+  jld j2, j1, MK6
+  jcall mk_digit
+  jjz j2, mkc_pairs
+  jld j2, j1, MK8
+  jcall mk_digit
+  jjz j2, mkc_pairs
+  jld j3, j1, MK5
+  jld j2, j3, 24
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 24
+mkc_pairs:                      ; every mark seen since this one's last time goes with it once
+  jldi j1, 0
+  jld j3, j1, MK5
+  jld j2, j3, 32
+  jst j2, j1, MK6               ; (its last place)
+  jld j2, j1, MK1
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j3, 32
+  jst j1, j1, MK7
+  mkc_o:
+    jldi j1, 0
+    jld j2, j1, MK7
+    jld j3, j1, MKLN
+    jsub j3, j2, j3
+    jjz j3, mkc_done
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKL
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jst j2, j1, MK8
+    jld j4, j1, MK3
+    jsub j4, j2, j4
+    jjz j4, mkc_onext
+    jcall mk_rec
+    jld j4, j3, 32
+    jld j5, j1, MK6
+    jsub j4, j5, j4
+    jldi j6, 63
+    jsar j4, j4, j6
+    jjz j4, mkc_onext           ; (not since its last time)
+    jld j5, j1, FNVP
+    jld j2, j1, MK8
+    jmul j2, j2, j5
+    jld j3, j1, MK3
+    jxor j2, j2, j3
+    jmul j5, j2, j5
+    jjnz j5, mkc_k
+    jldi j5, 1
+  mkc_k:
+    jldi j2, MKP
+    jcall pl_take
+    jldi j1, 0
+    jld j2, j1, MK8
+    jst j2, j4, 8
+    jld j2, j1, MK3
+    jst j2, j4, 16
+    jld j2, j4, 24
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 24
+  mkc_onext:
+    jldi j1, 0
+    jld j2, j1, MK7
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MK7
+    jjmp mkc_o
+mkc_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if word j2 begins with a digit. Uses j1-j4.
+mk_digit:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, ROOMI
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jld j4, j3, 16
+  jjz j4, mkd_no
+  jld j3, j3, 8
+  jld j4, j1, ROOMA
+  jadd j3, j3, j4
+  jldb j3, j3, 0
+  jldi j4, 48
+  jsub j4, j3, j4
+  jldi j2, 63
+  jsar j2, j4, j2
+  jjnz j2, mkd_no
+  jldi j4, 58
+  jsub j4, j3, j4
+  jldi j2, 63
+  jsar j2, j4, j2
+  jjz j2, mkd_no
+  jldi j2, 1
+  jret
+mkd_no:
+  jldi j2, 0
+  jret
+
+; The pairs, as a stack (the Capitan's calculator: "each one that closes closes the last one that opened"): the
+; candidates (an opener that compensates with a closer both ways, mk_both) tried from the strongest (the most times)
+; down; each one is kept when, with the ones kept before it, the row read with a stack has most of its closer's times
+; closing its own opener, the one on top. ":" goes so: when it comes, the last "«" was closed already by "»". The
+; capital stays out of the stack (names open and never close). By word: MKO its pair as an opener, MKQ as a closer
+; (the pair's number plus one); the pairs at MKPR {opener, closer}, MKPN of them. Uses j1-j14.
+mk_stack:
+  jldi j1, 0
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKO
+  jld j11, j1, NV
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKQ
+  jld j11, j1, MKLN
+  jmul j11, j11, j11
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKPR
+  jst j1, j1, MKPN
+  jld j11, j1, NTOK             ; (the stack: an opener a place at most)
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, MKS
+  mks2_round:                   ; the strongest candidate not tried
+    jldi j1, 0
+    jst j1, j1, MKBE
+    jst j1, j1, MKBT
+    jld j9, j1, MKP
+    jld j10, j1, MKP + 8
+    jldi j2, 1
+    jadd j10, j10, j2
+    mks2_c:
+      jldi j1, 0
+      jjz j10, mks2_got
+      jld j2, j9, 0
+      jjz j2, mks2_cnext
+      jld j2, j9, 24
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, mks2_cnext       ; (tried: its times made negative)
+      jld j3, j1, MKBT
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j2, j9, 8             ; (the capital stays out; a mark already in a pair stays as it is)
+      jld j3, j1, NV
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j2, j9, 16
+      jld j3, j1, NV
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mks2_cnext
+      jld j3, j9, 16
+      jld j2, j1, MK3
+      jst j3, j1, MK3
+      jst j9, j1, MK8
+      jst j10, j1, MK9
+      jst j2, j1, MKX
+      jcall mk_both
+      jldi j1, 0
+      jld j3, j1, MKX
+      jst j3, j1, MK3
+      jld j9, j1, MK8
+      jld j10, j1, MK9
+      jjz j2, mks2_cnext
+      jld j2, j9, 24
+      jst j2, j1, MKBT
+      jst j9, j1, MKBE
+    mks2_cnext:
+      jld j2, j1, MKP + 24
+      jadd j9, j9, j2
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp mks2_c
+  mks2_got:
+    jld j9, j1, MKBE
+    jjz j9, mks2_done
+    jld j2, j9, 24              ; (tried)
+    jldi j3, 0
+    jsub j2, j3, j2
+    jst j2, j9, 24
+    jld j2, j9, 8               ; a mark in a pair already: no second pair
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjnz j3, mks2_round
+    jld j2, j9, 16
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jjnz j3, mks2_round
+    jld j2, j1, MKPN            ; tried with the ones kept: as a pair for now
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, MKPR
+    jadd j3, j3, j4
+    jld j4, j9, 8
+    jst j4, j3, 0
+    jld j4, j9, 16
+    jst j4, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, MKPN
+    jld j3, j9, 8
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jst j2, j3, 0
+    jld j3, j9, 16
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jst j2, j3, 0
+    jst j2, j1, MKX
+    jcall mk_run
+    jldi j1, 0
+    jjnz j2, mks2_round         ; most of its closer's times close its own: kept
+    jld j2, j1, MKPN            ; else out again
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, MKPN
+    jld j9, j1, MKBE
+    jld j3, j9, 8
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKO
+    jadd j3, j3, j4
+    jst j1, j3, 0
+    jld j3, j9, 16
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, MKQ
+    jadd j3, j3, j4
+    jst j1, j3, 0
+    jjmp mks2_round
+mks2_done:
+  jldi j1, 0
+  jret
+
+; The row read with a stack of the pairs kept: j2 = 1 if most times the closer of pair MKX comes, its opener is on
+; top. Uses j1-j14.
+mk_run:
+  jldi j1, 0
+  jst j1, j1, MKSN
+  jst j1, j1, MKHIT
+  jst j1, j1, MKALL
+  jldi j9, 1
+  mkrn_lap:
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jjz j2, mkrn_end
+    jldi j3, 3
+    jshl j3, j9, j3
+    jld j4, j1, ROOMT
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jjz j2, mkrn_next
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, MKQ
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jjz j5, mkrn_open
+    jld j6, j1, MKX             ; a closer: is its opener on top?
+    jsub j6, j5, j6
+    jjnz j6, mkrn_close
+    jld j6, j1, MKALL
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKALL
+  mkrn_close:
+    jld j6, j1, MKSN
+    jjz j6, mkrn_next
+    jldi j7, 1
+    jsub j6, j6, j7
+    jldi j7, 3
+    jshl j7, j6, j7
+    jld j8, j1, MKS
+    jadd j7, j7, j8
+    jld j8, j7, 0
+    jsub j8, j8, j5
+    jjnz j8, mkrn_next          ; (another one on top: it closes nothing)
+    jst j6, j1, MKSN
+    jld j6, j1, MKX
+    jsub j6, j5, j6
+    jjnz j6, mkrn_next
+    jld j6, j1, MKHIT
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKHIT
+    jjmp mkrn_next
+  mkrn_open:
+    jld j4, j1, MKO
+    jadd j4, j4, j3
+    jld j5, j4, 0
+    jjz j5, mkrn_next
+    jld j6, j1, MKSN
+    jldi j7, 3
+    jshl j7, j6, j7
+    jld j8, j1, MKS
+    jadd j7, j7, j8
+    jst j5, j7, 0
+    jldi j7, 1
+    jadd j6, j6, j7
+    jst j6, j1, MKSN
+  mkrn_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mkrn_lap
+mkrn_end:
+  jld j2, j1, MKHIT
+  jadd j2, j2, j2
+  jld j3, j1, MKALL
+  jsub j2, j3, j2
+  jldi j4, 63
+  jsar j2, j2, j4
+  jjz j2, mkrn_no
+  jldi j2, 1
+  jret
+mkrn_no:
+  jldi j2, 0
+  jret
+
+; j2 = 1 if the pair at MKP's entry j9 (opener, closer MK3) opens and compensates both ways. Uses j1-j8.
+mk_both:
+  jldi j1, 0
+  jld j2, j9, 8                 ; an opener?
+  jld j3, j1, NV
+  jsub j3, j2, j3
+  jjz j3, mkb_way
+  jcall mk_rec
+  jld j4, j3, 16
+  jadd j4, j4, j4
+  jld j5, j3, 0
+  jsub j4, j5, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+mkb_way:
+  jld j2, j1, MK3               ; most of the closer's times
+  jcall mk_rec
+  jld j4, j3, 0
+  jld j2, j9, 24
+  jadd j2, j2, j2
+  jsub j4, j4, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+  jld j6, j1, FNVP              ; and of the opener's: the closer with it, since its own last time
+  jld j3, j1, MK3
+  jmul j3, j3, j6
+  jld j2, j9, 8
+  jxor j3, j3, j2
+  jmul j5, j3, j6
+  jjnz j5, mkb_k
+  jldi j5, 1
+mkb_k:
+  jldi j2, MKP
+  jcall pl_find
+  jldi j1, 0
+  jld j2, j4, 0
+  jjz j2, mkb_no
+  jld j7, j4, 24
+  jld j2, j9, 8
+  jcall mk_rec
+  jld j4, j3, 0
+  jadd j7, j7, j7
+  jsub j4, j4, j7
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mkb_no
+  jldi j2, 1
+  jret
+mkb_no:
+  jldi j2, 0
+  jret
+
+; The unit at place j2 of the row -> j2. Uses j1, j3.
+mk_tok:
+  jldi j1, 0
+  jldi j3, 3
+  jshl j2, j2, j3
+  jld j3, j1, ROOMT
+  jadd j2, j2, j3
+  jld j2, j2, 0
+  jret
+
+; The pairs' closers close (Capitan's stack: what an opener opens, its closer closes): of every pair kept, when its
+; opener closes a building (ROOMCL), its closer does too ("?" with "¿", "»" with "«", "]" with "["). Uses j1-j8.
+mk_limits:
+  jldi j1, 0
+  jld j9, j1, MKPN
+  jld j10, j1, MKPR
+  mkm_lap:
+    jjz j9, mkm_done
+    jld j2, j10, 0
+    jldi j3, 24
+    jmul j2, j2, j3
+    jld j3, j1, ROOMCL
+    jadd j2, j2, j3
+    jld j2, j2, 0
+    jjz j2, mkm_next
+    jld j2, j10, 8
+    jldi j3, 24
+    jmul j2, j2, j3
+    jld j3, j1, ROOMCL
+    jadd j2, j2, j3
+    jldi j3, 1
+    jst j3, j2, 0
+  mkm_next:
+    jldi j2, 16
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j9, j9, j2
+    jjmp mkm_lap
+mkm_done:
+  jret
+

@@ -3053,3 +3053,17 @@ profundidad, lo más hondo se resuelve primero.
   cuando aparece, la "«" anterior ya la cerró "»". La mayúscula queda fuera de la pila (los nombres abren y nunca
   cierran). Se probaron y se sacaron "el lado de adentro es el corto" (rompe el par de la oración, que va pegada a la
   siguiente) y "la mayúscula que abre es la que viene después de un signo" (la de "Pedro, Santiago" también).
+
+## La profundidad al leer: primer intento, en pausa (2026-11-07)
+
+- **Por qué "?" no es límite en la biblioteca real:** la regla de `limits` (Capitán, 2026-11-06) dice que un signo
+  cierra un edificio si la palabra que le sigue empieza con mayúscula. "¿" pasa ("¿Quién"), "?" casi nunca ("?,
+  dijo"). En el Nuevo Testamento solo, "?" igual queda como límite y "quién" sale flecha (`quién(? 113/145)`); en la
+  biblioteca mezclada, no.
+- **Movido al lector común:** el aprendizaje de los signos y de sus pares como pila (`mk_learn` y lo que usa) vive ahora
+  en `lectura.inc`, con sus variables en `3700h`–`37D7h`, libres en todos los programas. `limits` lo llama primero.
+  El informe de `sentido` sólo imprime. Controles idénticos.
+- **Probado y apagado:** "lo que abre una apertura, lo cierra su cierre" (si "¿" es límite, "?" también; `mk_limits`).
+  En el Nuevo Testamento sólo agrega "]" (14 veces), y eso basta para que "de", "y", "que", "la" salgan flechas en
+  todo el libro. Un signo tan raro no puede mover tanto: algo en cómo se cuentan las flechas es frágil. Queda apagado
+  hasta entenderlo, sin parche encima.
