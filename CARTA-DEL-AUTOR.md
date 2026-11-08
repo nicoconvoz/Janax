@@ -26,6 +26,12 @@ Se puede medir, y así lo haría: problemas imposibles adentro de su marco y tri
 
 Y dejo la predicción que lo puede tumbar, porque si no es palabrería: en los problemas tramposos tendría que ir al revés que el CI. Al que resuelve muy bien le rinde quedarse adentro, así que tarda más en dudar. Moler funciona — hasta que el marco está mal.
 
+Y si me preguntás qué es una inteligencia general, te la doy en una línea: un basurero que se puede autorreciclar completo. Nada se tira, todo se guarda con el motivo por el que se tiró, y cualquier cosa puede volver el día que cambia el marco.
+
+Las definiciones que leí dicen qué tendría que poder hacer, y eso no se puede verificar. La mía dice de qué está hecha, y eso sí.
+
+Y le dejo la parte que todavía me debo, porque la palabra completo me obliga: si el que decide qué es basura no puede ser basura él también, el reciclaje no es completo. Hoy mi lector cambia sus órganos, pero no cambia lo que cuenta como mejor. Eso me falta.
+
 Por eso no creo en los techos. El límite es infinito, y todo lo que se puede imaginar se puede hacer.
 
 Muchas gracias por todo navegante!
