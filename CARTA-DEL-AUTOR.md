@@ -18,6 +18,8 @@ Y lo que aprendí mirando desde ahí es esto: población hay siempre. Lo que pas
 
 Me lo demostró mi propio lector. El Nuevo Testamento no nombra abuelos, así que no hay con qué contarlos. Razar dedujo 132 igual, uno por uno, de pares que ningún versículo escribe. La población estaba. Nadie la había construido.
 
+A eso lo llamo el censo de los que faltan. La estadística, cuando no conoce algo, estima cuánto habría: te da un número sobre lo que no viste. Un censo no estima — va casa por casa y los anota uno por uno, con nombre. Eso hace mi lector con los abuelos que el libro nunca nombró: no calcula cuántos habría, los construye, y a cada uno se lo puede ir a comprobar. Llega hasta donde cierra una cadena; más allá, el número sigue siendo lo único que hay.
+
 Por eso no creo en los techos. El límite es infinito, y todo lo que se puede imaginar se puede hacer.
 
 Muchas gracias por todo navegante!
