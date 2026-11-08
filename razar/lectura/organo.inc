@@ -9,8 +9,15 @@
 ; the mold. The frame's hash travels in j2 from letter to letter (hw takes and gives it back), so the reading of the
 ; letters uses only j13 and j14. Measured: the same fingerprint as the compiled organ, bit by bit (genome 0x8321 on the
 ; NT: 0000DDE5FD0394D4), and 0.7 % more instructions.
+ORGW  = 30h                     ; its letters and the audit's garbage, in the initial data of every program that
+ORGF  = 38h                     ; includes it: 30h to 3Fh of its X.datos are the organ's (zeros: no organ)
 ORGL  = 3800h                   ; the letters still to read
 organ:
+  jldi j1, 0                    ; no letters, no organ: nothing is touched (as a program that never grew one)
+  jld j2, j1, ORGW
+  jjnz j2, og_some
+  jret
+og_some:
   jldi j1, 0                    ; (the machine as the organ gets it: all 0, or all 1 for ORGF 1, the audit's garbage:
   jld j3, j1, ORGF              ; an organ that reads nothing but its own scores the same with either)
   jsub j2, j1, j3

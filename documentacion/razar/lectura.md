@@ -3206,3 +3206,19 @@ pasa a ser otro órgano sin que nadie se entere.
 - **En el tablero, probado** (con un tablero de prueba): la primera corrida dejó ahí sus dos recetas y la copia
   legible; la segunda, en una carpeta nueva, la encontró en el tablero y la adoptó ("receta 5: suya"). Las dos recetas
   quedaron copiadas en el tablero del Capitán (`~/razar_tablero/Receta de Organos/recetas.txt`).
+
+## Arreglado: comer y sentido no armaban (2026-11-08)
+
+El Capitán preguntó por qué había solo dos recetas. Las razones: Razar no hace crecer órganos solo (el vigía lanza
+`comer` y `sentido`, que leen con el órgano pero no lo cambian; el ciclo corre con `organos.sh`), y el vigía que corre
+es de ayer. Buscando eso apareció un error mío: **desde `7f51cb2`, `comer`, `sentido` y `pregunta` no armaban**.
+También incluyen `organo.inc`, y `ORGW`/`ORGF` estaban definidos solo en `pulso.jsm`. El vigía siguió andando porque
+corre con lo armado ayer; la próxima vez que arrancara no iba a armar.
+
+- **La regla, no un parche:** el órgano es dueño de sus palabras. `ORGW` y `ORGF` se definen en `organo.inc`, y todo
+  programa que lo incluye deja `30h`–`3Fh` de sus datos para él (los cuatro ya los tenían en cero). `ORGK` y `ORGG`
+  (candidato y genoma) son solo de `pulso` y quedan ahí.
+- **Sin letras no hay órgano:** si `ORGW` es 0, `organ` vuelve en el acto, como el `organ: jret` que tenían antes.
+- **Verificado:** arman los cinco (`vigia`, `comer`, `sentido`, `pregunta`, `pulso`). `comer` contra el de `6aabe65`,
+  sobre el mismo libro: la misma salida y el mismo tablero, byte por byte (+0,04 % de instrucciones). `pulso` con
+  6 intentos: las mismas notas y la misma huella (`00005FCD04441AB1`).
