@@ -1493,3 +1493,41 @@ no calcula. Semilla fija, en Janax, 1,1 segundos.
 | resbalones 10 %, con contexto | 90 % | 97 % | 99 % |
 | resbalones 20 %, sin contexto | 31 % | 87 % | 97 % |
 | resbalones 20 %, con contexto | 85 % | 95 % | 99 % |
+
+## Su propio canto (2026-11-07)
+
+El Capitán: *"quiero que construya su propia canción como el idioma, no solo acertar la respuesta"*, *"desde las
+canciones mismas"*. Con un archivo `canta` en la casa (una pregunta por renglón), `memoria_pares.jsm` no contesta: canta.
+
+- **Cada par es una fila de canciones:** una letra son sus dos piezas (su número en la base: las 30 canciones con la
+  tabla del cubo, o las 7 de Fano sin ella), un silencio entre palabras, un turno después de la pregunta y un fin
+  después de la respuesta.
+- **Aprende qué sigue a cada contexto**, y el contexto crece una canción más **sólo donde el más corto lo dicen dos
+  pares o más**: lo que dice una sola oración es un recuerdo; lo que dicen dos, una regla. No hay largo fijo: los
+  contextos llegan hasta donde los libros se repiten. En el oficio es un Markov de orden variable, de la familia de PPM;
+  lo propio es la regla de crecimiento por repetición y que las piezas son las canciones del cubo.
+- **Compone** después de oír la pregunta, canción por canción, desde el contexto más largo que dicen dos pares. Sortea
+  según las veces que cada canción vino después de él, con un sorteo de semilla fija (determinista), hasta el fin o
+  hasta el largo de la respuesta más larga de los libros.
+- Prueba: `bash razar/cardumen/canto_prueba.sh`. Con cuatro pares, "hola primo" (no está en ningún libro) da
+  "buen dia".
+
+Medido con el Nuevo Testamento (2.889 pares, la tabla real del cubo, 15 s):
+
+| | |
+|---|---|
+| contexto más largo que dicen dos pares | 519 piezas |
+| palabras cantadas que son palabras de los libros | 99 % |
+| palabras cantadas que son de su propia respuesta | 16 % |
+| copia de su respuesta (el tramo más largo en común) | 18 % |
+
+Ejemplos: "y les dijo:" → *ahora su nombre de jesús dijo*; "quien es este?" → *jesús les respondió*; "donde esta
+pedro?" → *seguro que eres uno de ellos porque tú también eres galileo».*
+
+- **Lo que ya canta:** frases propias con palabras reales; casi no inventa palabras (99 % existen).
+- **Lo que todavía no:** la pregunta lo guía poco (16 % de su respuesta). Un contexto de canciones sólo ve el final de
+  la pregunta, no su sentido. El paso siguiente es que la memoria le diga *qué* decir, y el canto *cómo*.
+- **Ojo con "dos pares":** los evangelios repiten versículos enteros, así que dos pares a veces son el mismo recuerdo
+  contado dos veces, no una regla (el ejemplo de Pedro es casi Mateo 26:73). Lo honesto sería contar libros o lugares
+  distintos, no pares.
+

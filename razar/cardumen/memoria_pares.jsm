@@ -11,6 +11,14 @@
 ;     the most words with what was heard is the answer said back.
 ; It reads the house's "pares" ("P:" and "R:" lines, sentido.jsm writes them) and says, for each chance, how many
 ; answers came back right, by the question's length in words.
+; With a "canta" file in the house (lines, each a question) it does not answer: it sings (Capitan, 2026-11-07: "I want
+; it to build its own song, like the language, not only to hit the answer"; "from the songs themselves"). Every pair
+; is a row of songs (a letter its two pieces, a silence between words, a turn after the question, an end after the
+; answer); what follows each context is counted, the context one song longer only where the shorter one is said by two
+; pairs or more (what one sentence says is a memory, what two say is a rule: the contexts grow as far as the books
+; repeat themselves, no length given). After each question it composes, song by song, from the longest context two
+; pairs say, and says what it sang; and over every pair of the books, how many of the words it sang are words of the
+; books, how many of its own answer's, and how much of its answer it copied (the longest stretch in common).
 S_LIBRO = 0                     ; (the texts lectura.inc asks for)
 S_P     = 10h
 S_NOBOOK = 20h
@@ -20,6 +28,16 @@ S_HEAD  = 0C0h
 S_PROB  = 100h
 S_OK    = 140h
 S_LEN   = 180h
+S_CANTA = 1C0h
+S_CANL  = 1D0h
+S_ARROW = 1E0h
+S_CH1   = 200h
+S_CH2   = 240h
+S_CH3   = 260h
+S_CH4   = 280h
+S_CH5   = 2A0h
+S_CH6   = 2C0h
+S_CH7   = 2E0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -57,10 +75,47 @@ PCX   = 1348h                   ; by pair its context (the building before the q
 CXS   = 1350h                   ; last "C:" line's start and bytes; 1 when the pairs have contexts
 CXL   = 1358h
 CTX   = 1360h
+SYM   = 1400h                   ; the song: every pair's songs in a row, how many; by pair {its first, its answer's
+SYN   = 1408h                   ; first (after the turn), one past its end}
+PSY   = 1410h
+HPX   = 1418h                   ; by place, the print of its context so far (0: grows no more)
+CXT   = 1420h                   ; the contexts: by print {key, its last pair plus one, how many pairs say it}
+NXT   = 1440h                   ; what follows: by the print of a context and a song {key, times}
+VOC   = 1460h                   ; the books' words, by print; each answer's words, by print and pair
+OWN   = 1480h
+PAN   = 14A0h                   ; by pair its answer: {start, bytes}
+CS0   = 14A8h                   ; the empty context's print; the contexts' length now; 1 when one more was counted
+ORD   = 14B0h
+ALIVE = 14B8h
+MAXA  = 14C0h                   ; the longest answer of the books, in songs (its end included)
+CQ    = 14C8h                   ; the song being sung: its room, how many, where its answer starts, its room's size
+CQN   = 14D0h
+CQ0   = 14D8h
+CQC   = 14E0h
+CBEST = 14E8h                   ; composing: the context it follows, the times after it, the draw
+CTOT  = 14F0h
+CDRAW = 14F8h
+CT    = 1500h                   ; what it sang, as text: its room, bytes; a row for the longest stretch in common
+CTN   = 1508h
+CROW  = 1510h
+WMODE = 1518h                   ; the words walked: what for, which pair, a print kept
+WPR   = 1520h
+WPRT  = 1528h
+CSW   = 1530h                   ; over the books: words sung, of the books, of its own answer, copied (1000ths
+CSR   = 1538h                   ; summed), pairs
+CSO   = 1540h
+CCP   = 1548h
+CSN   = 1550h
+SPB   = 1558h                   ; the pairs' file kept aside while "canta" is read; "canta", its bytes
+SPN   = 1560h
+CNB   = 1568h
+CNN   = 1570h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
+jldi j11, S_PARES
+jldi j12, 5
 jcall mp_read
 jcall mp_cube                   ; (the cube's own confusions, when they are there: the 30 songs it knows are the pieces)
 jldi j1, 0
@@ -76,6 +131,9 @@ jld j2, j1, PPN
 jcall putnum
 jldi j2, 10
 jcall putch
+jcall mp_sing                   ; (with "canta": it sings instead)
+jjnz j2, finish
+jldi j1, 0
 jld j2, j1, CFON                ; with the cube's table: one round, heard as the cube hears
 jjz j2, mp_fano
 jldi j2, 0
@@ -181,13 +239,12 @@ mpc_done:
   jldi j1, 0
   jret
 
-; The house's "pares", whole, into a room that doubles while the file has more (PRB, PRN). Uses j1-j14.
+; The house's file labeled by the j12 bytes at j11, whole, into a room that doubles while the file has more (PRB,
+; PRN: 0 when it is not there). Uses j1-j14.
 mp_read:
   jldi j1, 0
   jst j1, j1, PRN
   jldi j10, 4
-  jldi j11, S_PARES
-  jldi j12, 5
   jcall ask
   jldi j1, 0
   jldi j2, 63
@@ -279,6 +336,14 @@ mp_pairs:
   jcall room
   jldi j1, 0
   jst j13, j1, PCX
+  jld j11, j1, PRN              ; (and their answers' places)
+  jldi j2, 1
+  jshl j11, j11, j2
+  jldi j2, 32
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PAN
   jst j1, j1, CXL
   jst j1, j1, PPN
   jst j1, j1, TT1               ; the place walked
@@ -365,6 +430,16 @@ mp_pairs:
     jst j4, j3, 0
     jld j4, j1, CXL
     jst j4, j3, 8
+    jldi j3, 4                  ; and where its answer is
+    jshl j3, j2, j3
+    jld j4, j1, PAN
+    jadd j3, j3, j4
+    jldi j4, 3
+    jadd j4, j9, j4
+    jst j4, j3, 0
+    jld j5, j1, TT4
+    jsub j5, j5, j4
+    jst j5, j3, 8
     jst j1, j1, CXL
     jldi j3, 1
     jadd j2, j2, j3
@@ -1092,6 +1167,1027 @@ mp_best:
     jsub j9, j9, j2
     jjmp mpb_lap
 mpb_done:
+  jadd j2, j12, j1
+  jret
+
+; Its own song, when the house has "canta": the pairs as songs, what follows each context learned, a song composed
+; after each of its questions, and over every pair of the books what it sang said. j2 = 1 if it sang (0: no "canta").
+; Uses j1-j14.
+mp_sing:
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, SPB
+  jld j2, j1, PRN
+  jst j2, j1, SPN
+  jldi j11, S_CANTA
+  jldi j12, 5
+  jcall mp_read
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, CNB
+  jld j2, j1, PRN
+  jst j2, j1, CNN
+  jld j2, j1, SPB
+  jst j2, j1, PRB
+  jld j2, j1, SPN
+  jst j2, j1, PRN
+  jld j2, j1, CNN
+  jjnz j2, msg_on
+  jldi j2, 0
+  jret
+msg_on:
+  jcall mp_syms
+  jcall mp_learn
+  jcall mp_vocab
+  jldi j1, 0
+  jld j11, j1, MAXA
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CT
+  jst j1, j1, CQC
+  jldi j9, 0                    ; the row for the longest stretch: as long as the longest answer
+  jldi j12, 0
+  msg_mx:
+    jld j2, j1, PPN
+    jsub j2, j9, j2
+    jjz j2, msg_mxd
+    jldi j3, 4
+    jshl j3, j9, j3
+    jld j4, j1, PAN
+    jadd j3, j3, j4
+    jld j3, j3, 8
+    jsub j4, j12, j3
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, msg_mxn
+    jadd j12, j3, j1
+  msg_mxn:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp msg_mx
+msg_mxd:
+  jldi j2, 2
+  jadd j11, j12, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CROW
+  jldi j2, 0                    ; (the same lottery every time: seeded the same)
+  jshi j2, 1234h
+  jshi j2, 5678h
+  jshi j2, 9ABCh
+  jshi j2, 0DEF1h
+  jst j2, j1, RNG
+  jst j1, j1, TT1
+  msg_line:                     ; each question of "canta"
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j2, j1, CNN
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, msg_all
+    jadd j10, j9, j1
+    msg_le:
+      jld j2, j1, CNN
+      jsub j2, j10, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjz j2, msg_led
+      jld j2, j1, CNB
+      jadd j2, j2, j10
+      jldb j2, j2, 0
+      jldi j3, 10
+      jsub j2, j2, j3
+      jjz j2, msg_led
+      jldi j2, 1
+      jadd j10, j10, j2
+      jjmp msg_le
+  msg_led:
+    jst j10, j1, TT2
+    jsub j2, j10, j9
+    jjz j2, msg_lnext
+    jadd j11, j2, j2
+    jld j3, j1, MAXA
+    jadd j11, j11, j3
+    jldi j3, 8
+    jadd j11, j11, j3
+    jcall mp_cqneed
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j10, j1, TT2
+    jsub j10, j10, j9
+    jld j2, j1, CNB
+    jadd j9, j9, j2
+    jld j11, j1, CQ
+    jcall mp_span
+    jldi j1, 0
+    jld j2, j1, BASE            ; its turn
+    jldi j3, 1
+    jadd j2, j2, j3
+    jstb j2, j11, 0
+    jadd j11, j11, j3
+    jld j2, j1, CQ
+    jsub j2, j11, j2
+    jst j2, j1, CQN
+    jcall mp_compose
+    jcall mp_text
+    jldi j1, S_CANL
+    jcall puts
+    jld j9, j1, TT1
+    msg_q:
+      jld j2, j1, TT2
+      jsub j2, j9, j2
+      jjz j2, msg_qd
+      jld j2, j1, CNB
+      jadd j2, j2, j9
+      jldb j2, j2, 0
+      jldi j3, 13
+      jsub j3, j2, j3
+      jjz j3, msg_qn
+      jcall putch
+    msg_qn:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp msg_q
+  msg_qd:
+    jldi j1, S_ARROW
+    jcall puts
+    jcall mp_puttext
+    jldi j2, 10
+    jcall putch
+  msg_lnext:
+    jldi j1, 0
+    jld j2, j1, TT2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT1
+    jjmp msg_line
+msg_all:                        ; over every pair of the books
+  jldi j1, 0
+  jst j1, j1, CSW
+  jst j1, j1, CSR
+  jst j1, j1, CSO
+  jst j1, j1, CCP
+  jst j1, j1, CSN
+  jst j1, j1, TT5
+  msg_p:
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, msg_say
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, PSY
+    jadd j8, j3, j4
+    jld j9, j8, 0
+    jld j10, j8, 8
+    jsub j10, j10, j9           ; its question and its turn
+    jst j9, j1, TT6
+    jst j10, j1, TT7
+    jld j11, j1, MAXA
+    jadd j11, j11, j10
+    jldi j2, 8
+    jadd j11, j11, j2
+    jcall mp_cqneed
+    jldi j1, 0
+    jld j9, j1, TT6
+    jld j10, j1, TT7
+    jld j2, j1, SYM
+    jadd j9, j9, j2
+    jld j11, j1, CQ
+    jst j10, j1, CQN
+    msg_cp:
+      jjz j10, msg_cpd
+      jldb j3, j9, 0
+      jstb j3, j11, 0
+      jldi j3, 1
+      jadd j9, j9, j3
+      jadd j11, j11, j3
+      jsub j10, j10, j3
+      jjmp msg_cp
+  msg_cpd:
+    jcall mp_compose
+    jcall mp_text
+    jldi j1, 0
+    jldi j2, 2
+    jst j2, j1, WMODE
+    jld j2, j1, TT5
+    jst j2, j1, WPR
+    jld j9, j1, CT
+    jld j10, j1, CTN
+    jcall mp_wwalk
+    jldi j1, 0
+    jld j2, j1, CTN
+    jjz j2, msg_pn
+    jld j2, j1, TT5
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, PAN
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jcall mp_copy
+    jldi j1, 0
+    jldi j3, 1000
+    jmul j2, j2, j3
+    jld j3, j1, CTN
+    jdiv j2, j2, j3
+    jld j3, j1, CCP
+    jadd j3, j3, j2
+    jst j3, j1, CCP
+  msg_pn:
+    jld j2, j1, CSN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CSN
+    jld j2, j1, TT5
+    jadd j2, j2, j3
+    jst j2, j1, TT5
+    jjmp msg_p
+msg_say:
+  jldi j1, S_CH1
+  jcall puts
+  jld j2, j1, ORD               ; (the last pass counted nothing: the one before it grew from the longest rule)
+  jldi j3, 2
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, msg_o
+  jldi j2, 0
+msg_o:
+  jcall putnum
+  jldi j1, S_CH2
+  jcall puts
+  jld j2, j1, CSN
+  jcall putnum
+  jldi j1, S_CH3
+  jcall puts
+  jld j2, j1, CSW
+  jcall putnum
+  jldi j1, S_CH4
+  jcall puts
+  jld j2, j1, CSR
+  jld j3, j1, CSW
+  jcall mp_pct
+  jcall putnum
+  jldi j1, S_CH5
+  jcall puts
+  jld j2, j1, CSO
+  jld j3, j1, CSW
+  jcall mp_pct
+  jcall putnum
+  jldi j1, S_CH6
+  jcall puts
+  jld j2, j1, CCP
+  jldi j3, 10
+  jdiv j2, j2, j3
+  jld j3, j1, CSN
+  jldi j4, 100
+  jmul j3, j3, j4
+  jcall mp_pct
+  jcall putnum
+  jldi j1, S_CH7
+  jcall puts
+  jcall flush
+  jldi j2, 1
+  jret
+
+; j2 * 100 / j3 -> j2 (0 when j3 is 0). Uses j1-j4.
+mp_pct:
+  jldi j1, 0
+  jjz j3, mpp0
+  jldi j4, 100
+  jmul j2, j2, j4
+  jdiv j2, j2, j3
+  jret
+mpp0:
+  jldi j2, 0
+  jret
+
+; What it sang (CT, CTN), out. Uses j1-j3, j9.
+mp_puttext:
+  jldi j9, 0
+  mpu_lap:
+    jldi j1, 0
+    jld j2, j1, CTN
+    jsub j2, j9, j2
+    jjz j2, mpu_done
+    jld j2, j1, CT
+    jadd j2, j2, j9
+    jldb j2, j2, 0
+    jcall putch
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mpu_lap
+mpu_done:
+  jldi j1, 0
+  jret
+
+; Room at CQ for j11 songs (it doubles to hold them; what it held is not kept). Uses j1-j14.
+mp_cqneed:
+  jldi j1, 0
+  jld j2, j1, CQC
+  jsub j2, j2, j11
+  jldi j3, 63
+  jsar j2, j2, j3
+  jjz j2, mcq_done
+  jld j2, j1, CQC
+  jadd j2, j2, j2
+  jsub j3, j2, j11
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, mcq_dbl
+  jadd j2, j11, j1
+mcq_dbl:
+  jst j2, j1, CQC
+  jadd j11, j2, j1
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CQ
+mcq_done:
+  jldi j1, 0
+  jret
+
+; The j10 bytes at j9 as songs, from j11 on (j11 moved past them): a letter its two pieces (its number in the base), a
+; run of no letters between two letters one silence (BASE). Uses j1-j13.
+mp_span:
+  jldi j1, 0
+  jldi j12, 0                   ; a letter sung already
+  jldi j13, 0                   ; a silence owed
+  msp_lap:
+    jjz j10, msp_done
+    jldb j3, j9, 0
+    jldi j4, 3
+    jshl j4, j3, j4
+    jld j5, j1, ALF
+    jadd j4, j4, j5
+    jld j4, j4, 0
+    jjnz j4, msp_letter
+    jadd j13, j12, j1           ; (owed only after a letter)
+    jjmp msp_next
+  msp_letter:
+    jjz j13, msp_songs
+    jld j5, j1, BASE
+    jstb j5, j11, 0
+    jldi j5, 1
+    jadd j11, j11, j5
+    jldi j13, 0
+  msp_songs:
+    jldi j5, 1
+    jsub j4, j4, j5
+    jld j5, j1, BASE
+    jdiv j6, j4, j5
+    jmul j7, j6, j5
+    jsub j7, j4, j7
+    jstb j6, j11, 0
+    jstb j7, j11, 1
+    jldi j5, 2
+    jadd j11, j11, j5
+    jldi j12, 1
+  msp_next:
+    jldi j5, 1
+    jadd j9, j9, j5
+    jsub j10, j10, j5
+    jjmp msp_lap
+msp_done:
+  jret
+
+; Song j7 after the print j5 -> j5 (FNV-1a's step; never 0). Uses j5-j7.
+mp_mix:
+  jldi j6, 1
+  jadd j7, j7, j6
+  jxor j5, j5, j7
+  jldi j6, 0
+  jshi j6, 100h
+  jshi j6, 0
+  jshi j6, 1B3h
+  jmul j5, j5, j6
+  jjnz j5, mpm_out
+  jldi j5, 1
+mpm_out:
+  jret
+
+; Every pair as songs, one after another (SYM, SYN; by pair PSY): its question, a turn (BASE + 1), its answer, an end
+; (BASE + 2); and the longest answer (MAXA). Uses j1-j14.
+mp_syms:
+  jldi j1, 0
+  jld j11, j1, PRN
+  jadd j11, j11, j11
+  jld j2, j1, PPN
+  jldi j3, 2
+  jshl j2, j2, j3
+  jadd j11, j11, j2
+  jldi j2, 64
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SYM
+  jst j1, j1, SYN
+  jld j11, j1, PPN
+  jldi j2, 24
+  jmul j11, j11, j2
+  jldi j2, 24
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PSY
+  jst j1, j1, MAXA
+  jst j1, j1, TT5
+  mss_lap:
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, mss_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, PSY
+    jadd j8, j3, j4
+    jld j5, j1, SYN
+    jst j5, j8, 0
+    jst j8, j1, TT6
+    jldi j3, 5                  ; its question
+    jshl j3, j2, j3
+    jld j4, j1, PPR
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jld j11, j1, SYM
+    jld j4, j1, SYN
+    jadd j11, j11, j4
+    jcall mp_span
+    jldi j1, 0
+    jld j4, j1, BASE            ; its turn
+    jldi j5, 1
+    jadd j4, j4, j5
+    jstb j4, j11, 0
+    jadd j11, j11, j5
+    jld j2, j1, SYM
+    jsub j3, j11, j2
+    jst j3, j1, SYN
+    jld j8, j1, TT6
+    jst j3, j8, 8
+    jld j2, j1, TT5             ; its answer
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, PAN
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jcall mp_span
+    jldi j1, 0
+    jld j4, j1, BASE            ; its end
+    jldi j5, 2
+    jadd j4, j4, j5
+    jstb j4, j11, 0
+    jldi j5, 1
+    jadd j11, j11, j5
+    jld j2, j1, SYM
+    jsub j3, j11, j2
+    jst j3, j1, SYN
+    jld j8, j1, TT6
+    jst j3, j8, 16
+    jld j4, j8, 8
+    jsub j4, j3, j4
+    jld j5, j1, MAXA
+    jsub j5, j5, j4
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, mss_next
+    jst j4, j1, MAXA
+  mss_next:
+    jld j2, j1, TT5
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT5
+    jjmp mss_lap
+mss_done:
+  jldi j1, 0
+  jret
+
+; What follows each context, counted (CXT, NXT): first the empty one, then each one a song longer, but only where the
+; shorter one is said by two pairs or more; until no longer one is counted. Uses j1-j14.
+mp_learn:
+  jldi j1, 0
+  jldi j5, 0
+  jshi j5, 0CBF2h
+  jshi j5, 9CE4h
+  jshi j5, 8422h
+  jshi j5, 2325h
+  jst j5, j1, CS0
+  jld j11, j1, SYN
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPX
+  jld j2, j1, SYN               ; every place starts at the empty context
+  jld j3, j1, CS0
+  mle_f:
+    jjz j2, mle_fd
+    jldi j4, 1
+    jsub j2, j2, j4
+    jldi j4, 3
+    jshl j4, j2, j4
+    jadd j4, j4, j13
+    jst j3, j4, 0
+    jjmp mle_f
+mle_fd:
+  jldi j2, CXT
+  jldi j3, 24
+  jcall pl_new
+  jldi j2, NXT
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, ORD
+  mle_pass:
+    jldi j1, 0
+    jst j1, j1, ALIVE
+    jldi j9, 0
+    mle_pair:
+      jldi j1, 0
+      jld j2, j1, PPN
+      jsub j2, j9, j2
+      jjz j2, mle_pdone
+      jldi j3, 24
+      jmul j3, j9, j3
+      jld j4, j1, PSY
+      jadd j3, j3, j4
+      jld j10, j3, 0
+      jld j11, j3, 16
+      jld j2, j1, ORD
+      jadd j10, j10, j2         ; (the first place with a context this long)
+      mle_at:
+        jldi j1, 0
+        jsub j2, j10, j11
+        jldi j3, 63
+        jsar j2, j2, j3
+        jjz j2, mle_pnext
+        jldi j3, 3
+        jshl j3, j10, j3
+        jld j4, j1, HPX
+        jadd j12, j3, j4
+        jld j5, j12, 0
+        jjz j5, mle_next
+        jld j2, j1, ORD
+        jjz j2, mle_count
+        jldi j2, CXT            ; one longer only where the shorter is said by two pairs or more
+        jcall pl_find
+        jld j2, j4, 16
+        jldi j3, 2
+        jsub j2, j2, j3
+        jldi j3, 63
+        jsar j2, j2, j3
+        jjz j2, mle_grow
+        jldi j1, 0
+        jst j1, j12, 0
+        jjmp mle_next
+      mle_grow:
+        jldi j1, 0
+        jld j5, j12, 0
+        jld j2, j1, ORD
+        jsub j2, j10, j2
+        jld j3, j1, SYM
+        jadd j2, j2, j3
+        jldb j7, j2, 0
+        jcall mp_mix
+        jst j5, j12, 0
+      mle_count:
+        jldi j1, 0
+        jld j5, j12, 0
+        jldi j2, CXT
+        jcall pl_take
+        jldi j1, 0
+        jldi j2, 1
+        jadd j2, j9, j2
+        jld j3, j4, 8
+        jsub j3, j3, j2
+        jjz j3, mle_same
+        jst j2, j4, 8
+        jld j3, j4, 16
+        jldi j2, 1
+        jadd j3, j3, j2
+        jst j3, j4, 16
+      mle_same:
+        jld j5, j12, 0
+        jld j2, j1, SYM
+        jadd j2, j2, j10
+        jldb j7, j2, 0
+        jcall mp_mix
+        jldi j2, NXT
+        jcall pl_take
+        jldi j1, 0
+        jld j3, j4, 8
+        jldi j2, 1
+        jadd j3, j3, j2
+        jst j3, j4, 8
+        jst j2, j1, ALIVE
+      mle_next:
+        jldi j2, 1
+        jadd j10, j10, j2
+        jjmp mle_at
+    mle_pnext:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mle_pair
+  mle_pdone:
+    jld j2, j1, ALIVE
+    jjz j2, mle_done
+    jld j2, j1, ORD
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ORD
+    jjmp mle_pass
+mle_done:
+  jldi j1, 0
+  jret
+
+; Its own song after the CQN songs at CQ (a question and its turn): song by song, from the longest context that two
+; pairs or more say (what one sentence says is not a rule), drawn by the times each song came after it; until it ends,
+; or it is as long as the longest answer of the books. Uses j1-j14.
+mp_compose:
+  jldi j1, 0
+  jld j2, j1, CQN
+  jst j2, j1, CQ0
+  mco_step:
+    jldi j1, 0
+    jld j2, j1, CQN
+    jld j3, j1, CQ0
+    jsub j2, j2, j3
+    jld j3, j1, MAXA
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, mco_done
+    jld j5, j1, CS0
+    jst j5, j1, CBEST
+    jldi j9, 1
+    mco_ctx:
+      jldi j1, 0
+      jld j2, j1, CQN
+      jsub j3, j2, j9
+      jldi j4, 63
+      jsar j4, j3, j4
+      jjnz j4, mco_have
+      jld j4, j1, CQ
+      jadd j3, j3, j4
+      jldb j7, j3, 0
+      jcall mp_mix
+      jldi j2, CXT
+      jcall pl_find
+      jld j2, j4, 16
+      jldi j3, 2
+      jsub j2, j2, j3
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjnz j2, mco_have
+      jldi j1, 0
+      jst j5, j1, CBEST
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mco_ctx
+  mco_have:
+    jldi j1, 0
+    jst j1, j1, CTOT
+    jldi j9, 0
+    mco_sum:
+      jldi j1, 0
+      jld j2, j1, BASE
+      jldi j3, 3
+      jadd j2, j2, j3
+      jsub j2, j9, j2
+      jjz j2, mco_draw
+      jld j5, j1, CBEST
+      jadd j7, j9, j1
+      jcall mp_mix
+      jldi j2, NXT
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 8
+      jld j3, j1, CTOT
+      jadd j3, j3, j2
+      jst j3, j1, CTOT
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mco_sum
+  mco_draw:
+    jld j2, j1, CTOT
+    jjz j2, mco_done
+    jcall mp_rand
+    jldi j1, 0
+    jld j3, j1, CTOT
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jst j2, j1, CDRAW
+    jldi j9, 0
+    mco_pick:
+      jldi j1, 0
+      jld j5, j1, CBEST
+      jadd j7, j9, j1
+      jcall mp_mix
+      jldi j2, NXT
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 8
+      jld j3, j1, CDRAW
+      jsub j3, j3, j2
+      jst j3, j1, CDRAW
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjnz j3, mco_got
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mco_pick
+  mco_got:
+    jld j2, j1, BASE            ; a turn or an end: the song is over
+    jldi j3, 1
+    jadd j2, j2, j3
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, mco_done
+    jld j2, j1, CQ
+    jld j3, j1, CQN
+    jadd j2, j2, j3
+    jstb j9, j2, 0
+    jldi j2, 1
+    jadd j3, j3, j2
+    jst j3, j1, CQN
+    jjmp mco_step
+mco_done:
+  jldi j1, 0
+  jret
+
+; What it sang (CQ from CQ0 to CQN) as text, into CT (CTN bytes): two pieces a letter (a number no book's letter has
+; says nothing), a silence a space (a lone piece before it says nothing). Uses j1-j11.
+mp_text:
+  jldi j1, 0
+  jld j9, j1, CQ0
+  jld j10, j1, CT
+  jldi j11, -1
+  mtx_lap:
+    jld j2, j1, CQN
+    jsub j2, j9, j2
+    jjz j2, mtx_done
+    jld j2, j1, CQ
+    jadd j2, j2, j9
+    jldb j3, j2, 0
+    jld j4, j1, BASE
+    jsub j4, j3, j4
+    jjnz j4, mtx_song
+    jldi j11, -1
+    jldi j3, 32
+    jstb j3, j10, 0
+    jldi j3, 1
+    jadd j10, j10, j3
+    jjmp mtx_next
+  mtx_song:
+    jldi j4, 63
+    jsar j4, j11, j4
+    jjz j4, mtx_pair
+    jadd j11, j3, j1
+    jjmp mtx_next
+  mtx_pair:
+    jld j4, j1, BASE
+    jmul j4, j11, j4
+    jadd j4, j4, j3
+    jldi j11, -1
+    jld j5, j1, ALN
+    jsub j5, j4, j5
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjz j5, mtx_next
+    jldi j5, 3
+    jshl j5, j4, j5
+    jld j6, j1, ALI
+    jadd j5, j5, j6
+    jld j3, j5, 0
+    jstb j3, j10, 0
+    jldi j3, 1
+    jadd j10, j10, j3
+  mtx_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mtx_lap
+mtx_done:
+  jld j2, j1, CT
+  jsub j2, j10, j2
+  jst j2, j1, CTN
+  jret
+
+; The books' words (VOC) and each answer's (OWN, by print and pair). Uses j1-j14.
+mp_vocab:
+  jldi j2, VOC
+  jldi j3, 8
+  jcall pl_new
+  jldi j2, OWN
+  jldi j3, 8
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, TT5
+  mvo_lap:
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, mvo_done
+    jst j2, j1, WPR
+    jst j1, j1, WMODE
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, PPR
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jcall mp_wwalk
+    jcall mp_ansat
+    jcall mp_wwalk
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, WMODE
+    jcall mp_ansat
+    jcall mp_wwalk
+    jldi j1, 0
+    jld j2, j1, TT5
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT5
+    jjmp mvo_lap
+mvo_done:
+  jldi j1, 0
+  jret
+
+; Pair WPR's answer -> j9 where it is, j10 its bytes. Uses j1-j4.
+mp_ansat:
+  jldi j1, 0
+  jld j2, j1, WPR
+  jldi j3, 4
+  jshl j3, j2, j3
+  jld j4, j1, PAN
+  jadd j3, j3, j4
+  jld j9, j3, 0
+  jld j10, j3, 8
+  jld j4, j1, PRB
+  jadd j9, j9, j4
+  jret
+
+; The words of the j10 bytes at j9, each by its print, to what WMODE says: 0 the books' words (VOC); 1 pair WPR's
+; answer's (OWN); 2 a song sung for pair WPR: how many, how many are words of the books, how many of its own answer's
+; (CSW, CSR, CSO). Uses j1-j14.
+mp_wwalk:
+  mww_lap:
+    jldi j1, 0
+    jjz j10, mww_done
+    jldb j3, j9, 0
+    jcall mp_isletter
+    jjnz j2, mww_word
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp mww_lap
+  mww_word:
+    jldi j8, 0
+    mww_end:
+      jsub j2, j8, j10
+      jjz j2, mww_have
+      jadd j2, j9, j8
+      jldb j3, j2, 0
+      jcall mp_isletter
+      jjz j2, mww_have
+      jldi j2, 1
+      jadd j8, j8, j2
+      jjmp mww_end
+  mww_have:
+    jadd j3, j9, j1
+    jadd j4, j8, j1
+    jadd j9, j9, j8
+    jsub j10, j10, j8
+    jcall mp_print
+    jld j2, j1, WMODE
+    jjnz j2, mww_m1
+    jldi j2, VOC
+    jcall pl_take
+    jjmp mww_lap
+  mww_m1:
+    jldi j3, 1
+    jsub j3, j2, j3
+    jjnz j3, mww_m2
+    jld j7, j1, WPR
+    jcall mp_mix
+    jldi j2, OWN
+    jcall pl_take
+    jjmp mww_lap
+  mww_m2:
+    jst j5, j1, WPRT
+    jld j2, j1, CSW
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CSW
+    jldi j2, VOC
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, mww_lap             ; (no word of the books: of its answer neither)
+    jld j2, j1, CSR
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CSR
+    jld j5, j1, WPRT
+    jld j7, j1, WPR
+    jcall mp_mix
+    jldi j2, OWN
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 0
+    jjz j2, mww_lap
+    jld j2, j1, CSO
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CSO
+    jjmp mww_lap
+mww_done:
+  jldi j1, 0
+  jret
+
+; The longest stretch in common between what it sang (CT, CTN) and the j10 bytes at j9 -> j2 its bytes. Uses j1-j14.
+mp_copy:
+  jldi j1, 0
+  jld j11, j1, CROW
+  jldi j2, 0
+  mcp_z:
+    jsub j3, j10, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, mcp_zd
+    jldi j3, 3
+    jshl j3, j2, j3
+    jadd j3, j3, j11
+    jst j1, j3, 0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jjmp mcp_z
+mcp_zd:
+  jldi j12, 0
+  jldi j13, 0
+  mcp_i:
+    jld j2, j1, CTN
+    jsub j2, j13, j2
+    jjz j2, mcp_done
+    jld j2, j1, CT
+    jadd j2, j2, j13
+    jldb j8, j2, 0
+    jadd j14, j10, j1
+    mcp_j:
+      jjz j14, mcp_inext
+      jldi j3, 1
+      jsub j2, j14, j3
+      jadd j2, j2, j9
+      jldb j3, j2, 0
+      jldi j4, 3
+      jshl j4, j14, j4
+      jadd j4, j4, j11
+      jsub j5, j3, j8
+      jjnz j5, mcp_zero
+      jldi j5, 8
+      jsub j5, j4, j5
+      jld j6, j5, 0
+      jldi j5, 1
+      jadd j6, j6, j5
+      jst j6, j4, 0
+      jsub j5, j12, j6
+      jldi j7, 63
+      jsar j5, j5, j7
+      jjz j5, mcp_jnext
+      jadd j12, j6, j1
+      jjmp mcp_jnext
+    mcp_zero:
+      jst j1, j4, 0
+    mcp_jnext:
+      jldi j2, 1
+      jsub j14, j14, j2
+      jjmp mcp_j
+  mcp_inext:
+    jldi j2, 1
+    jadd j13, j13, j2
+    jjmp mcp_i
+mcp_done:
   jadd j2, j12, j1
   jret
 

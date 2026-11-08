@@ -17,3 +17,23 @@ db ' | respuestas bien, por largo: ', 0
 times 180h - $ db 0
 db '(1-5 palabras, 6-12, 13 o mas)', 0
 times 1C0h - $ db 0
+db 'canta', 0
+times 1D0h - $ db 0
+db 'canta: ', 0
+times 1E0h - $ db 0
+db ' -> ', 0
+times 200h - $ db 0
+db 'canto propio: contexto mas largo que dicen dos pares o mas: ', 0
+times 240h - $ db 0
+db ' piezas | pares ', 0
+times 260h - $ db 0
+db ' | palabras cantadas ', 0
+times 280h - $ db 0
+db ': de los libros ', 0
+times 2A0h - $ db 0
+db '%, de su respuesta ', 0
+times 2C0h - $ db 0
+db '% | copia de su respuesta ', 0
+times 2E0h - $ db 0
+db '%', 10, 0
+times 300h - $ db 0
