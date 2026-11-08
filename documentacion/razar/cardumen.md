@@ -1993,3 +1993,10 @@ preguntas de un paso leídas, 62 compuestas sin ninguna oración que las contest
 - ⚠️ Límites: el paréntesis tiene que repetirse tal cual (no sabe que "al" es "a el": por eso el libro dice "a aquel
   que"); sólo compone pasos con la entidad al final de la pregunta; el libro es de juguete y sus oraciones son de una
   sola plantilla. El salto es llevarlo a pasos de verdad de un libro.
+
+**Sobre el NT, tal cual** (los "Q:"/"O:" de sentido): 0 pasos de 695 clases. Sus "preguntas" son edificios de diálogo
+("_ les dijo", "jesús _ respondió", 16 casos el que más) cuya entidad es una palabra cualquiera, y sus respuestas no
+tienen un solo lugar que cambie. La genealogía sí es un encadenado (*"abraham fue padre de isaac; isaac, padre de
+jacob; jacob, padre de judá y de sus hermanos"*), pero nadie pregunta por ella, y dice varios pasos por oración con
+el verbo callado desde el segundo. El instrumento contaba como acierto callar donde no había verdad ("aciertan 1103"):
+ahora sin "R:" no se juzga.

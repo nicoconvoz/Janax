@@ -15,7 +15,8 @@
 ;   - the answer: the composed question put together from the right, the deepest first (its entity; the end of a step;
 ;     the bracket; ... ; a step's whole head), and its steps run on the book's sentences, each step's answers the next
 ;     one's entities. No sentence of the book answers a composed question: what it says, it put together.
-; It says every step, the bracket, and every composed question with what it said, the truth and 1 if they are the same.
+; It says every step, the bracket, and every composed question with what it said, the truth and 1 if they are the same
+; ("-" when it has no truth: not judged, and not counted as right).
 S_LIBRO  = 0                    ; (the texts lectura.inc asks for)
 S_P      = 10h
 S_NOBOOK = 20h
@@ -1730,6 +1731,17 @@ en_answer:
     jldi j2, 45
     jcall putch
   ea_judge:
+    jldi j1, 0
+    jld j2, j1, ZTRR
+    jjnz j2, ea_jtr
+    jldi j1, S_BAR                ; no truth: not judged
+    jcall puts
+    jldi j2, 45
+    jcall putch
+    jldi j2, 10
+    jcall putch
+    jjmp ea_next
+  ea_jtr:
     jcall en_judge
     jldi j1, 0
     jst j6, j1, ZT3
