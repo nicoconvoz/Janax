@@ -1,0 +1,566 @@
+Q: en que pais esta santiago?
+O: el oso y el carbon.
+O: es bueno recordarlo.
+O: el canguro se parece a facundo.
+O: santiago esta en chile.
+Q: en que pais esta montevideo?
+O: lo aprendimos en la escuela.
+O: el cielo esta cerca de el escorpion.
+O: montevideo esta en uruguay.
+O: el cielo juega con el delfin.
+Q: quien escribio facundo?
+O: es bueno recordarlo.
+O: mendoza se parece a el topo.
+O: el delfin mira a la odisea.
+O: sarmiento escribio facundo.
+Q: cuantas patas tiene el grillo?
+O: el grillo tiene seis patas.
+O: el murcielago y la hormiga.
+O: lo aprendimos en la escuela.
+O: la vaca se parece a la arana.
+Q: quien escribio dracula?
+O: el aguila esta cerca de el limon.
+O: la ardilla y el leon.
+O: stoker escribio dracula.
+O: eso dicen los libros.
+Q: quien escribio frankenstein?
+O: la mesa esta cerca de el perro.
+O: mucha gente lo sabe.
+O: el grillo esta cerca de la metamorfosis.
+O: shelley escribio frankenstein.
+Q: de que color es el pasto?
+O: el pasto es de color verde.
+O: eso dicen los libros.
+O: lisboa y hamlet.
+O: el chocolate se parece a la manzana.
+Q: que come el conejo?
+O: el conejo come zanahorias.
+O: es algo que todos saben.
+O: el pasto no conoce a la gallina.
+O: el mono mira a el principito.
+Q: que es el martillo?
+O: santiago no conoce a la metamorfosis.
+O: eso dicen los libros.
+O: el martillo es una herramienta.
+O: el gato no conoce a el oso.
+Q: cuantas patas tiene la arana?
+O: mucha gente lo sabe.
+O: el pato no conoce a cordoba.
+O: la arana tiene ocho patas.
+O: el caballo esta cerca de la ceniza.
+Q: que es la guitarra?
+O: el topo y la arana.
+O: el pasto juega con el principito.
+O: la guitarra es un instrumento.
+O: asi es desde siempre.
+Q: que come la vaca?
+O: asi es desde siempre.
+O: la vaca come pasto.
+O: el camello y cordoba.
+O: el mono se parece a el delfin.
+Q: donde vive el topo?
+O: el camello no conoce a martin fierro.
+O: el topo vive en la tierra.
+O: asi es desde siempre.
+O: santiago esta cerca de el oso.
+Q: quien escribio ficciones?
+O: madrid se parece a el perro.
+O: borges escribio ficciones.
+O: asi es desde siempre.
+O: el pino no conoce a la mosca.
+Q: que es el sol?
+O: el principito mira a el martillo.
+O: el quijote juega con la mesa.
+O: el sol es una estrella.
+O: es algo que todos saben.
+Q: donde vive el camello?
+O: berlin mira a el gato.
+O: es bueno recordarlo.
+O: el camello vive en el desierto.
+O: el topo no conoce a el carbon.
+Q: que come la jirafa?
+O: asi es desde siempre.
+O: la jirafa come hojas.
+O: cordoba mira a el canguro.
+O: el aguila y el pinguino.
+Q: donde vive el oso?
+O: lo aprendimos en la escuela.
+O: el mono y moscu.
+O: el oso vive en el bosque.
+O: el panda y el aguila.
+Q: donde vive la abeja?
+O: la abeja vive en la colmena.
+O: es bueno recordarlo.
+O: el raton y el aleph.
+O: el chocolate y el camello.
+Q: donde vive la rana?
+O: mendoza mira a el caballo.
+O: la rana vive en la laguna.
+O: es bueno recordarlo.
+O: moscu esta cerca de macbeth.
+Q: que come el panda?
+O: santiago mira a el auto.
+O: el pato esta cerca de dracula.
+O: el panda come bambu.
+O: es bueno recordarlo.
+Q: quien escribio el quijote?
+O: la hierba esta cerca de la tierra.
+O: la pera y el caballo.
+O: lo aprendimos en la escuela.
+O: cervantes escribio el quijote.
+Q: que es el violin?
+O: madrid juega con la vaca.
+O: el violin es un instrumento.
+O: lo aprendimos en la escuela.
+O: el pato mira a el chocolate.
+Q: quien escribio hamlet?
+O: mucha gente lo sabe.
+O: el oso esta cerca de el chocolate.
+O: shakespeare escribio hamlet.
+O: lima juega con la vaca.
+Q: que es el cobre?
+O: es algo que todos saben.
+O: el cobre es un metal.
+O: el leon esta cerca de la naranja.
+O: la abeja se parece a el raton.
+Q: de que color es la nieve?
+O: la nieve es de color blanca.
+O: el gato se parece a el mar.
+O: eso dicen los libros.
+O: la tierra esta cerca de el oso.
+Q: de que color es el cielo?
+O: es algo que todos saben.
+O: el mono juega con el leon.
+O: el cielo es de color azul.
+O: ficciones y hamlet.
+Q: de que color es la uva?
+O: ficciones no conoce a el pinguino.
+O: es algo que todos saben.
+O: la hierba esta cerca de montevideo.
+O: la uva es de color violeta.
+Q: que es el pino?
+O: el pino es un arbol.
+O: es algo que todos saben.
+O: el tiburon no conoce a la vaca.
+O: ficciones juega con el quijote.
+Q: donde vive la hormiga?
+O: la abeja juega con el carbon.
+O: eso dicen los libros.
+O: el perro y el pasto.
+O: la hormiga vive en el hormiguero.
+Q: que es la vaca?
+O: asi es desde siempre.
+O: la vaca es un animal.
+O: el limon no conoce a el proceso.
+Q: que come el mono?
+O: el delfin mira a santiago.
+O: eso dicen los libros.
+O: el mono come bananas.
+O: bogota esta cerca de facundo.
+Q: donde vive el mono?
+O: la iliada no conoce a la ardilla.
+O: frankenstein y la naranja.
+O: el mono vive en la selva.
+O: es bueno recordarlo.
+Q: de que color es el limon?
+O: el gato se parece a el chocolate.
+O: eso dicen los libros.
+O: tokio y el caballo.
+O: el limon es de color amarillo.
+Q: que es el oro?
+O: el aguila se parece a rayuela.
+O: eso dicen los libros.
+O: el oro es un metal.
+Q: de que color es el tomate?
+O: mucha gente lo sabe.
+O: el tomate es de color rojo.
+O: berlin mira a el aguila.
+O: el perro mira a el oso.
+Q: donde vive el leon?
+O: el leon vive en la sabana.
+O: el cielo se parece a el pasto.
+O: es bueno recordarlo.
+O: la hormiga esta cerca de el cielo.
+Q: que come el koala?
+O: el koala come hojas.
+O: mucha gente lo sabe.
+O: la jirafa mira a el topo.
+O: la odisea se parece a la zanahoria.
+Q: que es la manzana?
+O: es bueno recordarlo.
+O: la sangre mira a el limon.
+O: la manzana es una fruta.
+O: frankenstein juega con el caballo.
+Q: donde vive el pez?
+O: es algo que todos saben.
+O: el tomate juega con el principito.
+O: montevideo no conoce a martin fierro.
+O: el pez vive en el agua.
+Q: donde vive el murcielago?
+O: el murcielago vive en la cueva.
+O: la mosca esta cerca de la abeja.
+O: la abeja esta cerca de el sol.
+O: mucha gente lo sabe.
+Q: cuantas patas tiene el escorpion?
+O: la guitarra se parece a el caballo.
+O: es algo que todos saben.
+O: el escorpion tiene ocho patas.
+O: ficciones esta cerca de roma.
+Q: quien escribio el aleph?
+O: lo aprendimos en la escuela.
+O: el martillo esta cerca de el gato.
+O: la mosca se parece a el camello.
+O: borges escribio el aleph.
+Q: cuantas patas tiene el pulpo?
+O: el pulpo tiene ocho patas.
+O: la frutilla no conoce a el clavel.
+O: lo aprendimos en la escuela.
+O: el chocolate y el conejo.
+Q: quien escribio la metamorfosis?
+O: ficciones no conoce a el escorpion.
+O: el grillo y la rana.
+O: kafka escribio la metamorfosis.
+O: asi es desde siempre.
+Q: en que pais esta quito?
+O: quito esta en ecuador.
+O: el martillo mira a atenas.
+O: el aguila se parece a el tomate.
+O: mucha gente lo sabe.
+Q: de que color es el chocolate?
+O: la nieve se parece a la abeja.
+O: eso dicen los libros.
+O: el pulpo mira a martin fierro.
+O: el chocolate es de color marron.
+Q: que come el gato?
+O: el gato come pescado.
+O: el grillo se parece a el cielo.
+O: eso dicen los libros.
+O: el violin mira a el principito.
+Q: donde vive la ardilla?
+O: la ardilla vive en el arbol.
+O: eso dicen los libros.
+O: la frutilla y la pera.
+O: el murcielago se parece a el tomate.
+Q: cuantas patas tiene el canguro?
+O: el raton esta cerca de el tiburon.
+O: el canguro tiene dos patas.
+O: el koala mira a el pez.
+O: mucha gente lo sabe.
+Q: que es el roble?
+O: el roble es un arbol.
+O: eso dicen los libros.
+O: el gato se parece a el leon.
+O: el mono mira a el auto.
+Q: en que pais esta paris?
+O: asi es desde siempre.
+O: londres mira a el mono.
+O: hamlet se parece a el cielo.
+O: paris esta en francia.
+Q: de que color es el carbon?
+O: el sol se parece a el tiburon.
+O: lo aprendimos en la escuela.
+O: el topo se parece a lisboa.
+O: el carbon es de color negro.
+Q: quien escribio el proceso?
+O: kafka escribio el proceso.
+O: el canguro juega con la hierba.
+O: mucha gente lo sabe.
+O: la ardilla y la uva.
+Q: quien escribio otelo?
+O: la uva no conoce a el sol.
+O: shakespeare escribio otelo.
+O: asi es desde siempre.
+O: el oso no conoce a la vaca.
+Q: cuantas patas tiene el gato?
+O: atenas se parece a la rosa.
+O: la abeja esta cerca de el perro.
+O: el gato tiene cuatro patas.
+O: mucha gente lo sabe.
+Q: cuantas patas tiene el loro?
+O: el mono no conoce a el carbon.
+O: el loro tiene dos patas.
+O: es bueno recordarlo.
+Q: cuantas patas tiene el perro?
+O: mucha gente lo sabe.
+O: el perro tiene cuatro patas.
+Q: en que pais esta lisboa?
+O: asi es desde siempre.
+O: el gato mira a facundo.
+O: la ardilla no conoce a el carbon.
+O: lisboa esta en portugal.
+Q: que come el caballo?
+O: la zanahoria mira a moscu.
+O: el caballo come avena.
+O: la vaca mira a el loro.
+O: mucha gente lo sabe.
+Q: que es la pera?
+O: el leon esta cerca de la ardilla.
+O: la pera es una fruta.
+O: el cobre mira a la ardilla.
+O: lo aprendimos en la escuela.
+Q: en que pais esta madrid?
+O: madrid esta en espana.
+O: ficciones juega con el oso.
+O: es bueno recordarlo.
+O: la manzana no conoce a el pez.
+Q: quien escribio macbeth?
+O: el murcielago mira a la mosca.
+O: es bueno recordarlo.
+O: ficciones juega con el oso.
+O: shakespeare escribio macbeth.
+Q: que es el clavel?
+O: la naranja mira a el oso.
+O: el clavel es una flor.
+O: es algo que todos saben.
+O: roma esta cerca de el sol.
+Q: quien escribio la iliada?
+O: homero escribio la iliada.
+O: el caballo no conoce a el mar.
+O: lo aprendimos en la escuela.
+O: frankenstein esta cerca de el escorpion.
+Q: donde vive el caballo?
+O: mucha gente lo sabe.
+O: el auto mira a el proceso.
+O: el caballo vive en el establo.
+Q: que es la tierra?
+O: la tierra es un planeta.
+O: el raton se parece a frankenstein.
+O: es algo que todos saben.
+O: el proceso y el aleph.
+Q: de que color es la leche?
+O: la leche es de color blanca.
+O: el gato mira a la vaca.
+O: es algo que todos saben.
+O: el gato esta cerca de el camello.
+Q: que es el aguila?
+O: el aguila es un ave.
+O: asi es desde siempre.
+O: la abeja juega con hamlet.
+O: hamlet no conoce a la banana.
+Q: que come la ardilla?
+O: la sangre mira a el caballo.
+O: es algo que todos saben.
+O: la ardilla come nueces.
+Q: cuantas patas tiene la vaca?
+O: la vaca tiene cuatro patas.
+O: es bueno recordarlo.
+O: el cobre mira a el koala.
+Q: en que pais esta atenas?
+O: el grillo no conoce a moscu.
+O: es algo que todos saben.
+O: martin fierro mira a la vaca.
+O: atenas esta en grecia.
+Q: quien escribio martin fierro?
+O: dracula y la zanahoria.
+O: es bueno recordarlo.
+O: montevideo esta cerca de la leche.
+O: hernandez escribio martin fierro.
+Q: que es la zanahoria?
+O: la zanahoria es una verdura.
+O: mucha gente lo sabe.
+O: el aguila se parece a la hierba.
+O: la abeja no conoce a el clavel.
+Q: quien escribio el principito?
+O: el aguila mira a el caballo.
+O: la sangre se parece a el camello.
+O: es algo que todos saben.
+O: exupery escribio el principito.
+Q: cuantas patas tiene el pato?
+O: el pato tiene dos patas.
+O: lo aprendimos en la escuela.
+O: el grillo esta cerca de la jirafa.
+O: el caballo se parece a el perro.
+Q: en que pais esta bogota?
+O: bogota esta en colombia.
+O: la ardilla mira a el murcielago.
+O: es algo que todos saben.
+O: la odisea no conoce a la zanahoria.
+Q: que es la mesa?
+O: la mesa es un mueble.
+O: es algo que todos saben.
+O: el sol se parece a facundo.
+O: la naranja se parece a atenas.
+Q: cuantas patas tiene el elefante?
+O: es algo que todos saben.
+O: el chocolate esta cerca de el proceso.
+O: el elefante tiene cuatro patas.
+O: el escorpion mira a la abeja.
+Q: que come el tiburon?
+O: el gato no conoce a dracula.
+O: asi es desde siempre.
+O: el sol se parece a el pasto.
+O: el tiburon come peces.
+Q: en que pais esta mendoza?
+O: la tierra no conoce a el loro.
+O: asi es desde siempre.
+O: mendoza esta en argentina.
+O: el delfin y el caballo.
+Q: donde vive el pinguino?
+O: el conejo juega con la mesa.
+O: el pinguino vive en el hielo.
+O: mucha gente lo sabe.
+O: tokio y el oro.
+Q: cuantas patas tiene la abeja?
+O: el aleph juega con el tiburon.
+O: es bueno recordarlo.
+O: el caballo no conoce a el violin.
+O: la abeja tiene seis patas.
+Q: de que color es la ceniza?
+O: el gato no conoce a el leon.
+O: el perro y la abeja.
+O: es algo que todos saben.
+O: la ceniza es de color gris.
+Q: cuantas patas tiene la hormiga?
+O: eso dicen los libros.
+O: la hormiga tiene seis patas.
+O: el cobre mira a el leon.
+O: la jirafa mira a la frutilla.
+Q: donde vive la vaca?
+O: la vaca vive en el campo.
+O: moscu esta cerca de el koala.
+O: mucha gente lo sabe.
+Q: de que color es la naranja?
+O: la vaca y la mesa.
+O: el canguro esta cerca de el principito.
+O: la naranja es de color naranja.
+O: es bueno recordarlo.
+Q: quien escribio rayuela?
+O: el cobre y la hierba.
+O: cortazar escribio rayuela.
+O: el topo mira a el leon.
+O: mucha gente lo sabe.
+Q: que come la gallina?
+O: el gato se parece a el martillo.
+O: la uva esta cerca de frankenstein.
+O: lo aprendimos en la escuela.
+O: la gallina come maiz.
+Q: en que pais esta roma?
+O: el perro juega con la leche.
+O: roma esta en italia.
+O: mucha gente lo sabe.
+O: la abeja y la hormiga.
+Q: en que pais esta lima?
+O: la mosca juega con la vaca.
+O: lima esta en peru.
+O: mucha gente lo sabe.
+O: el cielo no conoce a el violin.
+Q: que come el oso?
+O: la gallina no conoce a el murcielago.
+O: eso dicen los libros.
+O: el oso come miel.
+O: el limon y el perro.
+Q: que come el perro?
+O: el caballo mira a el cobre.
+O: mucha gente lo sabe.
+O: la gallina mira a el gato.
+O: el perro come huesos.
+Q: donde vive el delfin?
+O: el delfin vive en el mar.
+O: es bueno recordarlo.
+O: el clavel esta cerca de la naranja.
+O: la vaca se parece a el pino.
+Q: en que pais esta tokio?
+O: el caballo se parece a lima.
+O: lo aprendimos en la escuela.
+O: tokio esta en japon.
+O: dracula y el oso.
+Q: cuantas patas tiene la mosca?
+O: la naranja mira a el tiburon.
+O: la mosca tiene seis patas.
+O: la banana mira a el sol.
+O: eso dicen los libros.
+Q: de que color es la sangre?
+O: asi es desde siempre.
+O: la sangre es de color roja.
+Q: en que pais esta cordoba?
+O: es bueno recordarlo.
+O: cordoba esta en argentina.
+O: la zanahoria mira a el gato.
+O: martin fierro esta cerca de el escorpion.
+Q: en que pais esta moscu?
+O: la hormiga se parece a lima.
+O: es bueno recordarlo.
+O: moscu esta en rusia.
+O: el panda no conoce a el mono.
+Q: de que color es la banana?
+O: es algo que todos saben.
+O: el camello esta cerca de la rana.
+O: el mar esta cerca de tokio.
+O: la banana es de color amarilla.
+Q: que es el gato?
+O: el gato es un animal.
+O: es bueno recordarlo.
+O: el caballo juega con el elefante.
+O: el oso mira a el limon.
+Q: que es el auto?
+O: la jirafa y el quijote.
+O: es bueno recordarlo.
+O: el auto es un vehiculo.
+Q: que come el raton?
+O: hamlet y bogota.
+O: asi es desde siempre.
+O: el escorpion se parece a el cobre.
+O: el raton come queso.
+Q: en que pais esta berlin?
+O: el pino mira a el pasto.
+O: berlin esta en alemania.
+O: el caballo mira a el gato.
+O: mucha gente lo sabe.
+Q: que es el tiburon?
+O: el tiburon es un pez.
+O: mucha gente lo sabe.
+O: la frutilla mira a el caballo.
+Q: cuantas patas tiene la gallina?
+O: la hormiga mira a el loro.
+O: la gallina tiene dos patas.
+O: la mesa se parece a el oro.
+O: mucha gente lo sabe.
+Q: que come el leon?
+O: la rana esta cerca de el sol.
+O: mucha gente lo sabe.
+O: la guitarra juega con el pulpo.
+O: el leon come carne.
+Q: que come la abeja?
+O: el gato se parece a el pato.
+O: la abeja come polen.
+O: el canguro no conoce a la mesa.
+O: asi es desde siempre.
+Q: en que pais esta londres?
+O: la vaca esta cerca de la ardilla.
+O: el tiburon mira a el oso.
+O: eso dicen los libros.
+O: londres esta en inglaterra.
+Q: que es la rosa?
+O: el grillo se parece a la mesa.
+O: la rosa es una flor.
+O: asi es desde siempre.
+O: el limon no conoce a el pulpo.
+Q: quien escribio la odisea?
+O: el pino juega con el pinguino.
+O: la nieve mira a el violin.
+O: homero escribio la odisea.
+O: eso dicen los libros.
+Q: de que color es el mar?
+O: es bueno recordarlo.
+O: paris juega con la rana.
+O: la uva mira a el aguila.
+O: el mar es de color azul.
+Q: de que color es la hierba?
+O: lo aprendimos en la escuela.
+O: la hierba es de color verde.
+O: ficciones se parece a el tomate.
+Q: donde vive el pajaro?
+O: el pajaro vive en el nido.
+O: el elefante mira a dracula.
+O: lo aprendimos en la escuela.
+O: el pulpo mira a el gato.
+Q: cuantas patas tiene el caballo?
+O: lo aprendimos en la escuela.
+O: el loro no conoce a la nieve.
+O: el caballo tiene cuatro patas.
+O: el violin juega con el aleph.
+Q: de que color es la frutilla?
+O: la metamorfosis y moscu.
+O: mucha gente lo sabe.
+O: la rana juega con el koala.
+O: la frutilla es de color roja.

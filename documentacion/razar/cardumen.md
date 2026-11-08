@@ -1723,3 +1723,30 @@ melodía. 7³ nacido de su semilla, sin practicar, cinco semillas:
 - Hay cubos que oyen mejor que otros (17 a 23), según cómo nacieron.
 - Todavía debajo del canto (28) y del buscador de palabras (35).
 
+### Preguntas simples y casos diversos (Capitán, 2026-11-08)
+
+> *"Necesito medir algo: generá un texto con preguntas sencillas y casos diversos. Quiero ver si entiende los
+> mecanismos; lo que nos está enredando son pocos casos y muy complejos."*
+
+`razar/cardumen/libros/preguntas_simples.txt` (lo arma `preguntas_simples.py` con plantillas: solo texto, la medición
+es de Razar en Janax): 116 preguntas de siete mecanismos (qué es, dónde vive, de qué color, cuántas patas, quién
+escribió, qué come, en qué país está), cada uno sobre muchas cosas, mezcladas; cada respuesta con su oración, una de
+relleno y oraciones trampa que nombran las mismas cosas sin contestar ("el canguro se parece a facundo"). Las líneas ya
+son "Q:"/"O:". Cuatro tramos sin leer:
+
+| | acierta (116 preguntas no leídas) |
+|---|---|
+| azar | 23 % |
+| buscador de palabras | 27 % |
+| el canto | 73 % (79, 66, 69, 79) |
+| memoria del kernel, control sin cubo (`memoria=3`) | **106 de 116 (91 %)** |
+| **el cubo 7³ oyendo + memoria del kernel** (`memoria=4`), semillas 1001, 1002, 1003 | **106, 107, 107 (92 %)** |
+
+- **Razar entiende los mecanismos**: en preguntas que nunca leyó, sobre cosas nuevas, elige la oración con la forma de
+  la respuesta ("sarmiento escribió facundo") y no la trampa con la misma palabra. El buscador de palabras cae en las
+  trampas.
+- **El oído del cubo no pierde nada** frente al control, y da igual con tres dados distintos.
+- El canto también entiende (73 %), pero confunde mecanismos cuando una cosa aparece en varios ("¿qué come la vaca?" →
+  "la vaca es un animal").
+- Con Asimov el problema eran pocos casos y muy complejos, como dijo el Capitán.
+

@@ -36,6 +36,11 @@ S_CONS = 2C0h
 S_REPS = 300h
 S_FUERA = 340h
 S_TECHO = 380h
+S_UNA1 = 3C0h
+S_UNA2 = 400h
+S_UNA3 = 440h
+S_UNA4 = 480h
+S_UNA5 = 4C0h
 ; Room 0 (4000h bytes):
 QUEUE = 1000h                   ; its window: one request
 PLAB  = 1040h                   ; "p", the parameters file
@@ -46,10 +51,11 @@ NN    = 1088h
 VUELTAS = 1090h
 QUIET = 1098h
 PASADA = 10A0h                  ; 1: a round is a pass over every read frame that answers, each one followed by one that
-VEFF  = 10C0h                   ; does not (drawn): the rounds that makes
+VEFF  = 10E0h                   ; does not (drawn): the rounds that makes
 MEMO  = 10A8h                   ; 1: the kernel's memory (memorize, recall): the school only hears
 REPS  = 10B0h                   ; before remembering, the school hears every read frame this many times, learning
 CONSV = 10B8h                   ; 1: the school keeps each piece's total (born with bit 9)
+UNA   = 10C0h                   ; a question plus one: only that one is asked, and what it chose is said
 HOWA  = 10C8h                   ; what the school said of itself (order 7): off their total; at the ceiling, all
 HOWB  = 10D0h
 M48   = 1100h                   ; 2^48 - 1
@@ -117,6 +123,7 @@ FNBN  = 1388h                   ; first, how many} (ITX); the biggest note
 ITX   = 1390h
 FNMAX = 1398h
 SGN   = 13A0h                   ; the song being said: how many greetings
+GBI   = 13A8h                   ; asking: the sentence of its best frame
 SONGM = 2000h                   ; the song being said: the pieces of each greeting (a qword each, 255 at most)
 TEXT  = 3000h                   ; the line it writes
 include '../../escalon0/janax.inc'
@@ -144,7 +151,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 64
+jldi j12, 72
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -1052,6 +1059,14 @@ asked:
     jadd j3, j3, j4
     jld j4, j3, 24
     jjnz j4, ak_next            ; (read: not asked)
+    jld j4, j1, UNA             ; (only one, if asked so)
+    jjz j4, ak_any
+    jldi j5, 1
+    jsub j4, j4, j5
+    jld j5, j3, 0
+    jsub j4, j4, j5
+    jjnz j4, ak_next
+  ak_any:
     jst j3, j1, CUR
     jld j4, j3, 0
     jld j5, j1, GQ
@@ -1095,6 +1110,9 @@ asked:
     jst j2, j1, GBS
     jld j2, j1, LABEL
     jst j2, j1, GBL
+    jld j2, j1, CUR
+    jld j2, j2, 8
+    jst j2, j1, GBI
   ak_next:
     jldi j2, 1
     jadd j9, j9, j2
@@ -1128,6 +1146,31 @@ ak_judge:
   jst j2, j1, QCH
   jld j12, j1, GBL
   jcall mix
+  jldi j1, 0                    ; (only one: what it chose, said)
+  jld j2, j1, UNA
+  jjz j2, akj_done
+  jldi j1, S_UNA1
+  jcall puts
+  jld j2, j1, GQ
+  jcall putnum
+  jldi j1, S_UNA2
+  jcall puts
+  jld j2, j1, GBI
+  jcall putnum
+  jldi j1, S_UNA3
+  jld j2, j1, GBL
+  jjnz j2, akj_si
+  jldi j1, S_UNA4
+akj_si:
+  jcall puts
+  jld j2, j1, GFP
+  jcall putnum
+  jldi j1, S_DE
+  jcall puts
+  jld j2, j1, GFN
+  jcall putnum
+  jldi j1, S_UNA5
+  jcall puts
 akj_done:
   jldi j1, 0
   jret

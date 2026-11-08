@@ -30,3 +30,13 @@ db ' piezas fuera de su total: ', 0
 times 380h - $ db 0
 db ' pesos en el techo: ', 0
 times 3C0h - $ db 0
+db 'pregunta ', 0
+times 400h - $ db 0
+db ': elige la oracion ', 0
+times 440h - $ db 0
+db ', que SI es de su respuesta (contestan ', 0
+times 480h - $ db 0
+db ', que NO es de su respuesta (contestan ', 0
+times 4C0h - $ db 0
+db ' de sus candidatas); ', 0
+times 500h - $ db 0
