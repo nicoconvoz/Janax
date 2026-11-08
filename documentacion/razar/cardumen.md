@@ -2515,3 +2515,33 @@ repo.
   "hijo de", "padre de"), y por eso tiene relaciones que se confirman entre sí. Un ensayo casi no repite pares de
   palabras de la misma forma. Encuentra menos, pero lo que encuentra es estable: las 17 están en todos los caminos.
 - **El camino nuevo de Asimov:** sin la regla de `millones de` (un B por cada A) aparece `millones de ~ cuarenta`.
+
+## La pendiente, no el nivel: la curva de crecimiento (2026-11-08)
+
+Una devolución pegada por el Capitán: todo lo medido hasta acá son niveles (91 %, 104 uniones, 17 uniones), y lo que
+importa para "un aprendiz sin techo" es la pendiente: si al darle más libro lo que aprende sigue subiendo o se
+achata. (El "instrumento del libro 23" que nombraba no está en la documentación del proyecto: la curva se armó ahora.)
+
+- **Cómo:** `hilos` entero sobre un octavo, un cuarto, la mitad y todo el NT, y después el NT seguido de Asimov.
+
+  | libro | renglones | uniones | relaciones de 2+ formas | en coma | reglas |
+  |---|---|---|---|---|---|
+  | NT, 1/8 | 1.470 | 9 | 8 | 1 | 11 |
+  | NT, 1/4 | 2.941 | 33 | 23 | 5 | 29 |
+  | NT, 1/2 | 5.883 | 70 | 34 | 42 | 43 |
+  | NT entero | 11.766 | 104 | 49 | 68 | 64 |
+  | NT + Asimov | 14.958 | 148 | 70 | 107 | 88 |
+
+- **La pendiente** (uniones nuevas cada mil renglones agregados): 6,1 en el primer octavo, 16,3 en el segundo, 12,6 en
+  el segundo cuarto, **5,8 en la segunda mitad**, y **13,8 al agregar Asimov**. Dentro de un mismo libro se achata
+  (vuelve a decir lo que ya dijo). Al llegar un libro distinto, sube de nuevo.
+- **Juntos dan más que la suma:** el NT solo da 104 y Asimov solo 17 (121 distintas). Juntos dan 148: 80 están en los
+  dos lados, 68 aparecen solo juntos y 41 se pierden. Entre las que aparecen solo juntos, algunas cruzan los dos libros
+  (`cuarenta ~ treinta`, `cuarenta ~ millones de`, `de hidrógeno ~ de helio`, `del señor ~ de nuestro señor`), y otras
+  son flojas. Las seis buenas del NT siguen (`hijo de ~ padre de`, `cinco mil ~ cuatro mil`, `piedad de ~ compasión de`,
+  `fue ~ había sido`, `algún ~ ningún`, `la multitud ~ pedro`) y también `cercano al ~ próximo al`. Se pierden
+  `más ~ tan` y `con ~ contra`. Es el mismo efecto del camino que ya se había visto: más libro cambia el orden, y el
+  final es otro.
+- **Lo que prueba y lo que no:** que la pendiente no se achata cuando llega material nuevo, con **un** libro agregado.
+  Es un punto, no una curva: para decir "sin techo" hacen falta muchos libros distintos, uno detrás de otro, y ver si
+  cada uno sigue sumando. Ninguno de los dos textos va al repo.
