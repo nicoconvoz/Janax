@@ -1885,3 +1885,41 @@ Nada de lo no leído entra en el corte. Banco de trampas, control:
   plantillas y dan notas idénticas. En un libro real como Asimov ninguna nota es idéntica y callaría casi todo: ahí el
   precio va a despejar otro corte, y la curva lo dirá.
 
+
+### Las puertas del NT (pulso.jsm, 2026-11-08)
+
+pulso.jsm sobre el NT entero (2,5 s), con 1 de cada 10 pulsos aparte y un ciego que aprende sin mirar:
+
+| piso | explica de lo aparte | el ciego |
+|---|---|---|
+| gemelos | 85,2 % | 22 % |
+| interruptores | 62,6 % | 40,9 % |
+| asociados | 14,9 % | 3,5 % |
+| puertas (64 piezas) | 63 de 10.222 (0,6 %) | 0 de 10.221 |
+
+- Las puertas que pagan en bits son variantes de superficie (`: «` / `: "`, "del señor" / "de dios", "le dijo" /
+  "les dijo"). "hijo de" / "padre de" **no pagan**: cada relación aparece pocas veces y con formas distintas.
+
+### Relaciones en miniatura (2026-11-08)
+
+El Capitán: *"era bueno resolviendo acertijos: hay que darle ejemplos de las relaciones, no la relación una vez"*, y
+*"a escala micro primero: un puñado, y todos los casos"*. `libros/relaciones_micro.py` (texto, sin medir): una familia
+de once en cuatro generaciones y **todo** parentesco de cada uno que lo tiene (47 preguntas: padre 9, hijo 5, abuelo 7,
+nieto 3, hermano 8, tío 7, sobrino 4, primo 4). Las preguntas componen dos actos ("¿quién engendró al que engendró a
+luis?" es el abuelo) y comparten con su respuesta sólo la persona; cada hecho se dice de los dos lados ("pedro es el
+padre de luis", "luis es el hijo de pedro"), así las otras oraciones de la persona son trampas con roles cambiados.
+
+Cuatro tramos sin leer:
+
+| | memoria (control) | cubo 4³ | buscador | azar |
+|---|---|---|---|---|
+| notas como están | 10 de 47 | 10 de 47 | 0-36 % | ~10 % |
+| cada palabra con su identidad (diagnóstico) | **41 de 47** | **45 de 47** | | |
+
+- **La causa del 10 de 47 era el instrumento**: `mf_token` anota toda palabra que no es de "la mitad" (las más dichas
+  del libro) como el mismo token 1. En un libro chico "padre", "tío" y "abuelo" no llegan a la mitad: las notas no
+  distinguían una relación de otra, sólo dónde estaba la persona.
+- Con identidad (copia de diagnóstico, `HEADC` = 1 sólo en `mf_token`; **no está en el repo**) acierta 87 % la memoria
+  y 96 % el cubo: aquí el cubo sí aporta sobre las notas.
+- ⚠️ Falta: la regla general de qué palabra conserva su identidad (la mitad era para no memorizar contenido), el nulo
+  con identidad en los bancos anteriores (¿filtra?), y una relación nunca vista.
