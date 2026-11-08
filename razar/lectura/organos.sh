@@ -28,10 +28,11 @@ for f in "$armado/pulso.bin" "$armado/pulso.datos" "$aqui/organo.molde" "$aqui/o
 done
 JANAX_MOTOR=$motor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$carpeta")" JANAX_TABLERO="$tablero" \
   "$proyecto/so/build/janaxos.exe" "$(cygpath -m "$armado/pulso.bin")" | tr -d '\r'
-# and a copy anyone can open from Windows: <board>/Receta de Organos/recetas.txt (recetas1.txt... for each Razar)
-b=$(cygpath -u "$tablero"); h=$(etiqueta "tablero/Receta de Organos/recetas")
+# and a copy anyone can open from Windows, in folders as Janax names them: <board>/Receta de Organos/<model>/<organ>/
+# recetas.txt and <model>/indice.txt (a model is a book, its shelf's fingerprint; an organ, its letters as they run)
+b=$(cygpath -u "$tablero"); h=$(etiqueta "tablero/Receta de Organos/")
 for f in "$b/$h"*; do
   [ -f "$f" ] || continue
-  n=$(basename "$f"); n=${n#$h}; n=$(printf '%s' "$n" | xxd -r -p)
-  mkdir -p "$b/Receta de Organos"; cp "$f" "$b/Receta de Organos/recetas$n.txt"
+  r=$(basename "$f" | xxd -r -p); r=${r#tablero/}
+  mkdir -p "$b/$(dirname "$r")"; cp "$f" "$b/$r.txt"
 done

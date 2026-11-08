@@ -3222,3 +3222,33 @@ corre con lo armado ayer; la próxima vez que arrancara no iba a armar.
 - **Verificado:** arman los cinco (`vigia`, `comer`, `sentido`, `pregunta`, `pulso`). `comer` contra el de `6aabe65`,
   sobre el mismo libro: la misma salida y el mismo tablero, byte por byte (+0,04 % de instrucciones). `pulso` con
   6 intentos: las mismas notas y la misma huella (`00005FCD04441AB1`).
+
+## Las recetas por modelo y por tipo, y ninguna se descarta por la huella (2026-11-08)
+
+Al juntar recetas aparecieron dos problemas: una receta de otro libro se adoptaba igual (la última del tablero), y
+la huella del alfabeto, que mira el archivo entero, dejó fuera las recetas viejas por un cambio que no tocaba ninguna
+letra. El Capitán: *"una carpeta por modelo y una carpeta dentro de cada modelo por tipo, y los txt repartidos;
+además las recetas no deben colapsar los txt: guardá las 10 mejores"*. *"Receta de otro libro = modelo; otro órgano,
+otro tipo de receta = tipo."* Y sobre la huella: *"eso se arregla con el resultado: eso te dice si es mejor. Los
+ingredientes nunca se descartan; lo que se mira es qué hace y en qué es mejor."*
+
+- **El lugar:** `tablero/Receta de Organos/<modelo>/<tipo>/recetas`. El **modelo** es la huella del estante (los
+  libros que lee, sus nombres y sus bytes: `shelf_print`). El **tipo** es el órgano, sus letras en el orden en que
+  corren (`16`, `5`…). Cada tipo guarda **sus 10 mejores**, de mayor a menor nota. Una que ya está (mismo alfabeto,
+  misma nota) no se escribe dos veces. `<modelo>/indice` tiene una línea por tipo: su mejor cabeza.
+- **La huella informa, no decide.** Al empezar los intentos, la mejor receta de **cada tipo de su modelo** rinde
+  primero como candidata, en su jaula, sea del alfabeto que sea. Si gana, se adopta. Esos intentos no le restan
+  intentos a la búsqueda. Ya no hay adopción a ciegas al nacer.
+- `organos.sh` deja la copia legible en carpetas de verdad: `<tablero>/Receta de Organos/<modelo>/<tipo>/recetas.txt`
+  y `<modelo>/indice.txt`. El archivo viejo de una sola lista (`recetas`) queda donde estaba: no se borra.
+- **Probado** (tablero de prueba; libro A, A otra vez, B; 6 intentos cada una):
+  - A: modelo `76951bbb9c47d761`, tipos `6` (−1586) y `5` (208), y el índice con los dos.
+  - A otra vez: el `6` y el `5` rinden primero (`organo 6 = -1586 (sin -3554) *`, `organo 5 = 208 (sin -1586) *`) y
+    ninguno se escribe dos veces.
+  - B: su propio modelo (`ac0a752b3f07db6c`), con su `6` (−1659). No ve las de A.
+  - La huella final de A cambió (`00005B1D48AA530F`, antes `00005FCD04441AB1`) con las mismas notas: en su tercera
+    vida el índice le ofreció el `6`, que rindió como candidato extra, y esa línea entra en lo que escribe.
+- **Corregido en el camino:** `flush` usa `j11` y `j12`, y `og_wopen` los perdía. Los archivos se abrían vacíos.
+- **Lo que no cubre:** un índice o un tipo de más de 64 KB se lee cortado (criterio: diez recetas son unos 15 KB). Dos
+  Razares del mismo libro escribiendo a la vez pisarían el mismo archivo. Un libro del anfitrión (no un estante) cae
+  en un modelo solo para todos los libros así.

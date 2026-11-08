@@ -178,19 +178,35 @@ OGP2  = 3838h
 OGP3  = 3840h
 OGRD  = 3848h
 OGOK  = 3850h
-OGALF = 3858h                   ; its alphabet (organo.inc, read): its fingerprint, the room it is in, its bytes; a
-OGALR = 3860h                   ; recipe read: its letters and its alphabet (the last one), and as it is read: where in
-OGALN = 3868h                   ; its line, whether the line is a recipe, the two so far; a handle, a letter, a count
-OGRL  = 3870h
-OGRA  = 3878h
+OGALF = 3858h                   ; its alphabet (organo.inc, read): its fingerprint, the room it is in, its bytes; in a
+OGALR = 3860h                   ; file of recipes, where a recipe starts and where it ends; a handle, a letter, a count
+OGALN = 3868h
 OGRP  = 3880h
 OGRQ  = 3888h
-OGRX  = 3890h
-OGRY  = 3898h
 OGRH  = 38A0h
 OGRC  = 38A8h
 OGRI  = 38B0h
-OGB0  = 38B8h                   ; the score of the organ it was born with (what a winner improved)
+OGB0  = 38B8h
+OGLN  = 38C0h                   ; a label being built: its bytes, and walking; its model (the fingerprint of its shelf)
+OGLW  = 38C8h
+OGLE  = 38D0h
+OGLF  = 38D8h
+OGLT  = 38E0h
+OGBK  = 38E8h
+OGRB  = 38F0h                   ; a file of recipes read whole: its room, its bytes, its end; a recipe in it: its score
+OGRBN = 38F8h                   ; and alphabet; the new one written, how many written; a head read {letters, alphabet,
+OGRE  = 3900h                   ; score}; the kinds to sit the exam first {room, how many, the next}, and whether the
+OGRS  = 3908h                   ; one tried is one of them
+OGRT  = 3910h
+OGINS = 3918h
+OGCNT = 3920h
+OGHL  = 3928h
+OGHA  = 3930h
+OGHS  = 3938h
+OGQ   = 3940h
+OGQN  = 3948h
+OGQI  = 3950h
+OGQF  = 3958h                   ; the score of the organ it was born with (what a winner improved)
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 LLAVE = 1C08h                   ; the board (on the host, a folder several Janax share): its key (from the file "llave"),
@@ -2500,65 +2516,8 @@ ot_go:
   jcall og_r8
   jjmp flush
 ot_have:
-  jld j2, j1, ORGW              ; born without an organ: its last recipe, if its alphabet is this one, is its own
-  jjnz j2, ot_own
-  jcall og_rec_find
+  jcall og_rec_queue            ; the kinds its model has: they sit the exam first, as candidates
   jldi j1, 0
-  jld j2, j1, OGRL
-  jjz j2, ot_own
-  jldi j2, 0                    ; "receta "
-  jshi j2, 0072h
-  jshi j2, 6563h
-  jshi j2, 6574h
-  jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
-  jld j2, j1, OGRL
-  jcall og_hex
-  jldi j1, 0
-  jld j2, j1, OGALF
-  jjz j2, ot_old
-  jld j3, j1, OGRA
-  jsub j2, j2, j3
-  jjnz j2, ot_old
-  jldi j2, 0                    ; ": suya"
-  jshi j2, 3A20h
-  jshi j2, 7375h
-  jshi j2, 7961h
-  jcall og_r8
-  jldi j2, 10
-  jcall putch
-  jldi j1, 0
-  jld j2, j1, OGRL
-  jst j2, j1, OGCODE
-  jcall og_self
-  jldi j1, 0
-  jjz j2, ot_own
-  jjmp ot_remake
-ot_old:
-  jldi j2, 0                    ; ": de otro alfabeto, no se usa"
-  jshi j2, 3A20h
-  jshi j2, 6465h
-  jshi j2, 206Fh
-  jcall og_r8
-  jldi j2, 0
-  jshi j2, 7472h
-  jshi j2, 6F20h
-  jshi j2, 616Ch
-  jshi j2, 6661h
-  jcall og_r8
-  jldi j2, 0
-  jshi j2, 6265h
-  jshi j2, 746Fh
-  jshi j2, 2C20h
-  jshi j2, 6E6Fh
-  jcall og_r8
-  jldi j2, 0
-  jshi j2, 2073h
-  jshi j2, 6520h
-  jshi j2, 7573h
-  jshi j2, 610Ah
-  jcall og_r8
 ot_own:
   jldi j1, 0
   jld j2, j1, ORGW              ; the organ it has, and its exam without memory: what a new one has to beat
@@ -2614,9 +2573,12 @@ ot_own:
   ot_next:
     jldi j1, 0
     jld j2, j1, OGN
+    jld j3, j1, OGQF            ; (one of its kinds is not one of its trials)
+    jjnz j3, ot_kept
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, OGN
+  ot_kept:
   jwend
   jcall og_arch_save            ; its archive, for its next lives
   jldi j1, 0
@@ -3316,6 +3278,17 @@ oi_done:
   jldi j3, 107
   jcall og_copy
   jcall og_alphabet
+  jldi j11, 4096                ; (the room a file of recipes is read into, and its model)
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, OGRB
+  jst j1, j1, OGQN
+  jst j1, j1, OGQI
+  jcall shelf_print
+  jldi j1, 0
+  jst j2, j1, OGBK
   jldi j1, 0
   jret
 
@@ -3384,114 +3357,13 @@ oab_done:
   jldi j1, 0
   jret
 
-; The label of its recipes, on the board every Razar of this PC shares (the block "r": "tablero/Receta de Organos/
-; recetas", Capitan), and its number after it if it has one, at OGPEND + 4512 -> j11 where, j12 its bytes. Uses
-; j1-j12.
-og_rec_label:
-  jldi j2, 114
-  jcall og_block
-  jld j11, j1, OGPEND
-  jldi j2, 4512
-  jadd j11, j11, j2
-  jldi j7, 0
-  jwhile j6
-    jldb j2, j5, 0
-    jadd j3, j11, j7
-    jstb j2, j3, 0
-    jldi j3, 1
-    jadd j5, j5, j3
-    jadd j7, j7, j3
-    jsub j6, j6, j3
-  jwend
-  jld j3, j1, QUIEN
-  jjz j3, orl_one
-  jldi j4, 48
-  jadd j3, j3, j4
-  jadd j4, j11, j7
-  jstb j3, j4, 0
-  jldi j3, 1
-  jadd j7, j7, j3
-orl_one:
-  jadd j12, j7, j1
-  jret
-
-; The recipe of the organ OGCODE, after the ones it wrote before (Capitan: "a good organ can be lost if nobody knows
-; how it is built"): its letters, its alphabet's fingerprint, its score (OGBASE) and the genome it won with, in a line
-; of fixed places ("receta" letters "alfabeto" fingerprint, sixteen hexadecimal digits each), and below it the code of
-; each of its letters, in the order they run, as its alphabet has it: read by anyone, and by Razar. Uses j1-j14.
-og_rec_write:
-  jcall flush                   ; (what it wrote is out: the text goes to the recipes now)
-  jcall og_rec_label
-  jldi j10, 4
-  jcall ask
-  jldi j1, 0
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, orw_done
-  jst j13, j1, OGRH
-  jldi j9, 1                    ; to its end: what it wrote before stays
-  jwhile j9
-    jldi j1, 0
-    jld j10, j1, OGRH
-    jldi j2, 32
-    jshl j10, j10, j2
-    jldi j2, 5
-    jor j10, j10, j2
-    jld j11, j1, OGBUF
-    jldi j12, 4096
-    jcall ask
-    jldi j1, 0
-    jadd j9, j13, j1
-    jldi j2, 63
-    jshr j2, j9, j2
-    jjz j2, orw_on
-    jldi j9, 0
-  orw_on:
-  jwend
-  jld j2, j1, OGRH
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, SINK
-  jldi j2, 0                    ; "receta "
-  jshi j2, 0072h
-  jshi j2, 6563h
-  jshi j2, 6574h
-  jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
-  jld j2, j1, OGCODE
-  jcall og_hex16
-  jldi j2, 0                    ; " alfabeto "
-  jshi j2, 2061h
-  jshi j2, 6C66h
-  jshi j2, 6162h
-  jcall og_r8
-  jldi j2, 0
-  jshi j2, 6574h
-  jshi j2, 6F20h
-  jcall og_r8
-  jldi j1, 0
-  jld j2, j1, OGALF
-  jcall og_hex16
-  jldi j2, 0                    ; " nota "
-  jshi j2, 206Eh
-  jshi j2, 6F74h
-  jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
-  jld j2, j1, OGBASE
-  jcall og_dec
-  jldi j2, 0                    ; " genoma "
-  jshi j2, 2067h
-  jshi j2, 656Eh
-  jshi j2, 6F6Dh
-  jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
-  jld j2, j1, EVC
-  jcall og_hex16
+; One recipe of the organ OGCODE into the text (Capitan: "a good organ can be lost if nobody knows how it is built"):
+; its head, what it improved, and below it the code of each of its letters, in the order they run, as its alphabet
+; has it, with what each one does: read by anyone, and by Razar. Uses j1-j14.
+og_rec_text:
+  jcall og_rec_head
   jldi j2, 0                    ; "  mejora: ", from the score it had to its own, and the organ it had
-  jshi j2, 0A20h
+  jshi j2, 0020h
   jshi j2, 206Dh
   jshi j2, 656Ah
   jcall og_r8
@@ -3579,8 +3451,283 @@ og_rec_write:
     jst j2, j1, OGRI
   jwend
   jldi j2, 10
-  jcall putch
-  jcall flush                   ; (the rest, to it; the text goes to the console again)
+  jjmp putch
+
+; The head of the recipe of OGCODE, a line of fixed places: "receta", its letters, "alfabeto" and its alphabet's
+; fingerprint (sixteen hexadecimal digits each), its score (OGBASE) and the genome it won with. Uses j1-j12.
+og_rec_head:
+  jldi j2, 0                    ; "receta "
+  jshi j2, 0072h
+  jshi j2, 6563h
+  jshi j2, 6574h
+  jshi j2, 6120h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGCODE
+  jcall og_hex16
+  jldi j2, 0                    ; " alfabeto "
+  jshi j2, 2061h
+  jshi j2, 6C66h
+  jshi j2, 6162h
+  jcall og_r8
+  jldi j2, 0
+  jshi j2, 6574h
+  jshi j2, 6F20h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGALF
+  jcall og_hex16
+  jldi j2, 0                    ; " nota "
+  jshi j2, 206Eh
+  jshi j2, 6F74h
+  jshi j2, 6120h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, OGBASE
+  jcall og_dec
+  jldi j2, 0                    ; " genoma "
+  jshi j2, 2067h
+  jshi j2, 656Eh
+  jshi j2, 6F6Dh
+  jshi j2, 6120h
+  jcall og_r8
+  jldi j1, 0
+  jld j2, j1, EVC
+  jcall og_hex16
+  jldi j2, 10
+  jjmp putch
+
+; The label being built, at OGPEND + 4512 (OGLN bytes so far): empty again. Uses j1.
+lb_new:
+  jldi j1, 0
+  jst j1, j1, OGLN
+  jret
+
+; The byte j2 after the label being built. Uses j1, j3, j4.
+lb_ch:
+  jldi j1, 0
+  jld j3, j1, OGPEND
+  jldi j4, 4512
+  jadd j3, j3, j4
+  jld j4, j1, OGLN
+  jadd j3, j3, j4
+  jstb j2, j3, 0
+  jldi j3, 1
+  jadd j4, j4, j3
+  jst j4, j1, OGLN
+  jret
+
+; Up to eight letters of j2 after it, the first in its lowest byte (a 0 ends them). Uses j1-j5.
+lb_str:
+  jldi j1, 0
+  jst j2, j1, OGLW
+  jldi j5, 8
+  jwhile j5
+    jldi j1, 0
+    jld j2, j1, OGLW
+    jldi j3, 255
+    jand j2, j2, j3
+    jjz j2, lbs_end
+    jcall lb_ch
+    jldi j1, 0
+    jld j2, j1, OGLW
+    jldi j3, 8
+    jshr j2, j2, j3
+    jst j2, j1, OGLW
+    jldi j3, 1
+    jsub j5, j5, j3
+  jwend
+lbs_end:
+  jret
+
+; j2 after it in sixteen hexadecimal digits, the highest first. Uses j1-j5.
+lb_hex16:
+  jldi j1, 0
+  jst j2, j1, OGLW
+  jldi j5, 16
+  jwhile j5
+    jldi j1, 0
+    jld j2, j1, OGLW
+    jldi j3, 60
+    jshr j2, j2, j3
+    jldi j3, 10
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jldi j4, 48
+    jjnz j3, lbx_dig
+    jldi j4, 87
+  lbx_dig:
+    jadd j2, j2, j4
+    jcall lb_ch
+    jldi j1, 0
+    jld j2, j1, OGLW
+    jldi j3, 4
+    jshl j2, j2, j3
+    jst j2, j1, OGLW
+    jldi j3, 1
+    jsub j5, j5, j3
+  jwend
+  jret
+
+; The letters j2 after it as they run, the first one first (as og_hex says them). Uses j1-j5.
+lb_letters:
+  jldi j1, 0
+  jst j2, j1, OGLW
+  jwhile j2
+    jldi j3, 15
+    jand j2, j2, j3
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall lb_ch
+    jldi j1, 0
+    jld j2, j1, OGLW
+    jldi j3, 4
+    jshr j2, j2, j3
+    jst j2, j1, OGLW
+  jwend
+  jret
+
+; The folder of its model on the board: the molde's block "r" ("tablero/Receta de Organos/") and the fingerprint of
+; its shelf (Capitan: "a recipe of another book, another model"). Uses j1-j10.
+lb_model:
+  jcall lb_new
+  jldi j2, 114
+  jcall og_block
+  jwhile j6
+    jldb j2, j5, 0
+    jst j5, j1, OGLE
+    jst j6, j1, OGLF
+    jcall lb_ch
+    jldi j1, 0
+    jld j5, j1, OGLE
+    jld j6, j1, OGLF
+    jldi j2, 1
+    jadd j5, j5, j2
+    jsub j6, j6, j2
+  jwend
+  jld j2, j1, OGBK
+  jjmp lb_hex16
+
+; The label of the recipes of the organ j2 in its model ("another organ, another kind of recipe": a folder each, its
+; letters as they run), "recetas" in it -> j11 where, j12 its bytes. Uses j1-j10.
+og_type_label:
+  jldi j1, 0
+  jst j2, j1, OGLT
+  jcall lb_model
+  jldi j2, 47
+  jcall lb_ch
+  jldi j1, 0
+  jld j2, j1, OGLT
+  jcall lb_letters
+  jldi j2, 0                    ; "/recetas"
+  jshi j2, 7361h
+  jshi j2, 7465h
+  jshi j2, 6365h
+  jshi j2, 722Fh
+  jcall lb_str
+  jjmp lb_done
+
+; The label of the index of its model (the best of each kind, a line each) -> j11, j12. Uses j1-j10.
+og_index_label:
+  jcall lb_model
+  jldi j2, 0                    ; "/indice"
+  jshi j2, 0065h
+  jshi j2, 6369h
+  jshi j2, 646Eh
+  jshi j2, 692Fh
+  jcall lb_str
+lb_done:
+  jldi j1, 0
+  jld j11, j1, OGPEND
+  jldi j2, 4512
+  jadd j11, j11, j2
+  jld j12, j1, OGLN
+  jret
+
+; The file labelled j11, j12 read whole into OGRB -> OGRBN its bytes (0 if there is none; opening makes it). As big
+; as its room (criterion: ten recipes are some 15 KB). Uses j1-j14.
+og_readall:
+  jldi j1, 0
+  jst j1, j1, OGRBN
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, ora_done
+  jst j13, j1, OGRH
+  jldi j9, 1
+  jwhile j9
+    jldi j1, 0
+    jld j10, j1, OGRH
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, OGRB
+    jld j2, j1, OGRBN
+    jadd j11, j11, j2
+    jldi j12, 4096
+    jldi j3, 4
+    jshl j12, j12, j3
+    jsub j12, j12, j2
+    jadd j9, j12, j1
+    jjz j9, ora_end
+    jcall ask
+    jldi j1, 0
+    jadd j9, j13, j1
+    jldi j2, 63
+    jshr j2, j9, j2
+    jjz j2, ora_on
+    jldi j9, 0
+  ora_on:
+    jld j2, j1, OGRBN
+    jadd j2, j2, j9
+    jst j2, j1, OGRBN
+  ora_end:
+  jwend
+  jld j10, j1, OGRH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ora_done:
+  jldi j1, 0
+  jret
+
+; The file labelled j11, j12 written new: the old one out, the new one open, the text to it (SINK) -> j2 1 if it
+; opened. Uses j1-j14.
+og_wopen:
+  jldi j1, 0                    ; (flush takes j11 and j12: the label kept meanwhile)
+  jst j11, j1, OGLE
+  jst j12, j1, OGLF
+  jcall flush
+  jldi j1, 0
+  jld j11, j1, OGLE
+  jld j12, j1, OGLF
+  jldi j10, 12
+  jcall ask
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, owo_no
+  jst j13, j1, OGRH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jldi j2, 1
+  jret
+owo_no:
+  jldi j2, 0
+  jret
+
+; The text out to the file being written, closed, the text to the console again. Uses j1-j14.
+og_wclose:
+  jcall flush
   jldi j1, 0
   jst j1, j1, SINK
   jld j10, j1, OGRH
@@ -3589,10 +3736,381 @@ og_rec_write:
   jldi j2, 7
   jor j10, j10, j2
   jcall ask
+  jldi j1, 0
+  jret
+
+; Where the line at j4 ends (after its line end, or at OGRE) -> j7. Uses j1, j7, j8.
+og_eol:
+  jldi j1, 0
+  jadd j7, j4, j1
+  oel_lap:
+    jld j8, j1, OGRE
+    jsub j8, j8, j7
+    jjz j8, oel_done
+    jldb j8, j7, 0
+    jldi j1, 1
+    jadd j7, j7, j1
+    jldi j1, 10
+    jsub j8, j8, j1
+    jldi j1, 0
+    jjnz j8, oel_lap
+oel_done:
+  jldi j1, 0
+  jret
+
+; The line at j4 (OGRE its end): j6 1 if it is a recipe's head ("receta ", its letters at 7, its alphabet at 33, its
+; score from 55) -> OGHL, OGHA, OGHS. Uses j1-j3, j6-j10.
+og_hdr:
+  jldi j1, 0
+  jldi j6, 0
+  jld j7, j1, OGRE
+  jsub j7, j7, j4
+  jldi j8, 56
+  jsub j7, j7, j8
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjnz j7, ohd_done
+  jldi j9, 0                    ; "receta "
+  jshi j9, 0020h
+  jshi j9, 6174h
+  jshi j9, 6563h
+  jshi j9, 6572h
+  jldi j7, 0
+  jldi j10, 7
+  jwhile j10
+    jadd j8, j4, j7
+    jldb j8, j8, 0
+    jldi j3, 3
+    jshl j3, j7, j3
+    jshr j2, j9, j3
+    jldi j3, 255
+    jand j2, j2, j3
+    jsub j2, j2, j8
+    jjnz j2, ohd_done
+    jldi j3, 1
+    jadd j7, j7, j3
+    jsub j10, j10, j3
+  jwend
+  jldi j7, 7
+  jcall ohd_hex
+  jst j9, j1, OGHL
+  jldi j7, 33
+  jcall ohd_hex
+  jst j9, j1, OGHA
+  jldi j7, 55                   ; its score: a sign, and digits
+  jadd j7, j4, j7
+  jldb j8, j7, 0
+  jldi j10, 0
+  jldi j3, 45
+  jsub j3, j8, j3
+  jjnz j3, ohd_pos
+  jldi j10, 1
+  jldi j3, 1
+  jadd j7, j7, j3
+ohd_pos:
+  jldi j9, 0
+  jldi j3, 1
+  jwhile j3
+    jldb j8, j7, 0
+    jldi j3, 48
+    jsub j8, j8, j3
+    jldi j3, 63
+    jsar j2, j8, j3             ; (below "0": not a digit)
+    jldi j3, 9
+    jsub j3, j3, j8
+    jldi j6, 63
+    jsar j3, j3, j6             ; (above "9": not a digit)
+    jor j2, j2, j3
+    jldi j3, 1
+    jjnz j2, ohd_num
+    jldi j6, 10
+    jmul j9, j9, j6
+    jadd j9, j9, j8
+    jldi j6, 1
+    jadd j7, j7, j6
+    jjmp ohd_dig
+  ohd_num:
+    jldi j3, 0
+  ohd_dig:
+  jwend
+  jjz j10, ohd_sc
+  jldi j3, 0
+  jsub j9, j3, j9
+ohd_sc:
+  jst j9, j1, OGHS
+  jldi j6, 1
+ohd_done:
+  jret
+
+; Sixteen hexadecimal digits at j4 + j7 -> j9. Uses j2, j3, j7-j9.
+ohd_hex:
+  jadd j7, j4, j7
+  jldi j9, 0
+  jldi j8, 16
+  jwhile j8
+    jldb j2, j7, 0
+    jldi j3, 97
+    jsub j3, j2, j3
+    jldi j6, 63
+    jsar j3, j3, j6
+    jldi j6, 48
+    jjnz j3, ohh_dig
+    jldi j6, 87
+  ohh_dig:
+    jsub j2, j2, j6
+    jldi j3, 4
+    jshl j9, j9, j3
+    jor j9, j9, j2
+    jldi j3, 1
+    jadd j7, j7, j3
+    jsub j8, j8, j3
+  jwend
+  jldi j6, 0
+  jret
+
+; The bytes from j4 to j7 into the text being written. Uses j1-j3 (j4 moved to j7).
+og_copytext:
+  jsub j3, j7, j4
+  jjz j3, oct_done
+  jldb j2, j4, 0
+  jcall putch
+  jldi j3, 1
+  jadd j4, j4, j3
+  jjmp og_copytext
+oct_done:
+  jret
+
+; The recipe of the organ OGCODE, among the ten best of its kind in its model, by score (Capitan: "the recipes must not
+; swell the files: keep the ten best"); one that is already there (its alphabet and its score) is not written twice.
+; Then the index of its model: its line, if it is the best of its kind now. Uses j1-j14.
+og_rec_write:
+  jldi j1, 0
+  jld j2, j1, OGCODE
+  jcall og_type_label
+  jcall og_readall
+  jldi j1, 0
+  jld j2, j1, OGCODE
+  jcall og_type_label
+  jcall og_wopen
+  jjz j2, orw_done
+  jldi j1, 0
+  jst j1, j1, OGINS
+  jst j1, j1, OGCNT
+  jld j4, j1, OGRB
+  jld j2, j1, OGRBN
+  jadd j2, j4, j2
+  jst j2, j1, OGRE
+  orw_lap:
+    jldi j1, 0
+    jld j2, j1, OGRE
+    jsub j2, j2, j4
+    jjz j2, orw_tail
+    jst j4, j1, OGRP            ; a recipe: its head, up to the next head
+    jcall og_hdr
+    jldi j1, 0
+    jld j2, j1, OGHS
+    jst j2, j1, OGRS
+    jld j2, j1, OGHA
+    jst j2, j1, OGRT
+    jld j4, j1, OGRP
+    jcall og_eol
+    jadd j4, j7, j1
+    orw_body:
+      jldi j1, 0
+      jld j2, j1, OGRE
+      jsub j2, j2, j4
+      jjz j2, orw_blk
+      jst j4, j1, OGRQ
+      jcall og_hdr
+      jldi j1, 0
+      jld j4, j1, OGRQ
+      jjnz j6, orw_blk
+      jcall og_eol
+      jadd j4, j7, j1
+      jjmp orw_body
+  orw_blk:
+    jldi j1, 0
+    jst j4, j1, OGRQ
+    jld j2, j1, OGINS           ; the new one before the first it beats
+    jjnz j2, orw_old
+    jld j2, j1, OGRT
+    jld j3, j1, OGALF
+    jsub j2, j2, j3
+    jjnz j2, orw_cmp
+    jld j2, j1, OGRS
+    jld j3, j1, OGBASE
+    jsub j2, j2, j3
+    jjnz j2, orw_cmp
+    jldi j2, 1                  ; (it is already there)
+    jst j2, j1, OGINS
+    jjmp orw_old
+  orw_cmp:
+    jld j2, j1, OGRS
+    jld j3, j1, OGBASE
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, orw_old
+    jcall orw_new
+  orw_old:
+    jldi j1, 0
+    jld j2, j1, OGCNT
+    jldi j3, 10
+    jsub j2, j2, j3
+    jjz j2, orw_skip
+    jld j2, j1, OGCNT
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, OGCNT
+    jld j4, j1, OGRP
+    jld j7, j1, OGRQ
+    jcall og_copytext
+  orw_skip:
+    jldi j1, 0
+    jld j4, j1, OGRQ
+    jjmp orw_lap
+orw_tail:
+  jldi j1, 0
+  jld j2, j1, OGINS
+  jjnz j2, orw_close
+  jcall orw_new
+orw_close:
+  jcall og_wclose
+  jcall og_index_write
 orw_done:
   jldi j1, 0
   jret
 
+; The new recipe written here, if the ten are not full. Uses j1-j14.
+orw_new:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, OGINS
+  jld j2, j1, OGCNT
+  jldi j3, 10
+  jsub j2, j2, j3
+  jjz j2, orn_done
+  jld j2, j1, OGCNT
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, OGCNT
+  jcall og_rec_text
+orn_done:
+  jldi j1, 0
+  jret
+
+; The index of its model written again: each kind's line as it was, but the line of OGCODE's kind is its head now if
+; it beats the one there (one line, new, if its kind had none). Uses j1-j14.
+og_index_write:
+  jcall og_index_label
+  jcall og_readall
+  jcall og_index_label
+  jcall og_wopen
+  jjz j2, oiw_done
+  jldi j1, 0
+  jst j1, j1, OGINS
+  jld j4, j1, OGRB
+  jld j2, j1, OGRBN
+  jadd j2, j4, j2
+  jst j2, j1, OGRE
+  oiw_lap:
+    jldi j1, 0
+    jld j2, j1, OGRE
+    jsub j2, j2, j4
+    jjz j2, oiw_tail
+    jst j4, j1, OGRP
+    jcall og_hdr
+    jldi j1, 0
+    jld j4, j1, OGRP
+    jcall og_eol
+    jst j7, j1, OGRQ
+    jjz j6, oiw_copy
+    jld j2, j1, OGHL
+    jld j3, j1, OGCODE
+    jsub j2, j2, j3
+    jjnz j2, oiw_copy
+    jldi j2, 1
+    jst j2, j1, OGINS
+    jld j2, j1, OGHS
+    jld j3, j1, OGBASE
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, oiw_copy
+    jcall og_rec_head
+    jjmp oiw_next
+  oiw_copy:
+    jldi j1, 0
+    jld j4, j1, OGRP
+    jld j7, j1, OGRQ
+    jcall og_copytext
+  oiw_next:
+    jldi j1, 0
+    jld j4, j1, OGRQ
+    jjmp oiw_lap
+oiw_tail:
+  jldi j1, 0
+  jld j2, j1, OGINS
+  jjnz j2, oiw_close
+  jcall og_rec_head
+oiw_close:
+  jcall og_wclose
+oiw_done:
+  jldi j1, 0
+  jret
+
+; The kinds its model has, to sit the exam first (Capitan: "the ingredients are never thrown away: what is looked at
+; is what it does and in what it is better"): the organ of each line of its index, whatever alphabet it was written
+; for (the exam says if it still serves), into OGQ. Uses j1-j14.
+og_rec_queue:
+  jldi j1, 0
+  jst j1, j1, OGQN
+  jst j1, j1, OGQI
+  jcall og_index_label
+  jcall og_readall
+  jldi j1, 0
+  jld j11, j1, OGRBN            ; (a line each, 56 bytes or more: room for all)
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, OGQ
+  jld j4, j1, OGRB
+  jld j2, j1, OGRBN
+  jadd j2, j4, j2
+  jst j2, j1, OGRE
+  orq_lap:
+    jldi j1, 0
+    jld j2, j1, OGRE
+    jsub j2, j2, j4
+    jjz j2, orq_done
+    jst j4, j1, OGRP
+    jcall og_hdr
+    jldi j1, 0
+    jjz j6, orq_next
+    jld j2, j1, OGHL
+    jjz j2, orq_next
+    jld j3, j1, ORGW
+    jsub j3, j2, j3
+    jjz j3, orq_next
+    jld j3, j1, OGQN
+    jldi j5, 3
+    jshl j5, j3, j5
+    jld j6, j1, OGQ
+    jadd j5, j5, j6
+    jst j2, j5, 0
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j1, OGQN
+  orq_next:
+    jldi j1, 0
+    jld j4, j1, OGRP
+    jcall og_eol
+    jadd j4, j7, j1
+    jjmp orq_lap
+orq_done:
+  jldi j1, 0
+  jret
 ; The code of the letter j2 (1-9) as its alphabet has it: the lines after its label ("og_l" and its digit) up to the
 ; next label (a line that does not start with a space), into the text. A letter it does not have, nothing. Uses j1-j10.
 og_rec_block:
@@ -3680,143 +4198,6 @@ og_rec_block:
   jwend
   jret
 
-; Its recipes read, to the end -> OGRL the letters of the last one (0: none) and OGRA its alphabet's fingerprint. Each
-; byte at its place in its line: a line that starts with "receta " is one, its letters at places 7 to 22 and its
-; alphabet at 33 to 48. Uses j1-j14.
-og_rec_find:
-  jldi j1, 0
-  jst j1, j1, OGRL
-  jst j1, j1, OGRA
-  jcall og_rec_label
-  jldi j10, 4
-  jcall ask
-  jldi j1, 0
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, orf_done
-  jst j13, j1, OGRH
-  jst j1, j1, OGRP
-  jst j1, j1, OGRX
-  jst j1, j1, OGRY
-  jldi j2, 1
-  jst j2, j1, OGRQ
-  jldi j9, 1
-  jwhile j9
-    jldi j1, 0
-    jld j10, j1, OGRH
-    jldi j2, 32
-    jshl j10, j10, j2
-    jldi j2, 5
-    jor j10, j10, j2
-    jld j11, j1, OGBUF
-    jldi j12, 4096
-    jcall ask
-    jldi j1, 0
-    jadd j9, j13, j1
-    jldi j2, 63
-    jshr j2, j9, j2
-    jjz j2, orf_got
-    jldi j9, 0
-  orf_got:
-    jld j4, j1, OGBUF
-    jadd j5, j9, j1
-    jwhile j5
-      jldb j6, j4, 0
-      jld j7, j1, OGRP
-      jldi j10, 10
-      jsub j10, j6, j10
-      jjnz j10, orf_ch
-      jst j1, j1, OGRP          ; a line ends: the next one may be a recipe
-      jst j1, j1, OGRX
-      jst j1, j1, OGRY
-      jldi j10, 1
-      jst j10, j1, OGRQ
-      jjmp orf_next
-    orf_ch:
-      jldi j10, 13
-      jsub j10, j6, j10
-      jjz j10, orf_next
-      jld j10, j1, OGRQ
-      jjz j10, orf_step
-      jldi j10, 7
-      jsub j10, j7, j10
-      jldi j11, 63
-      jsar j10, j10, j11
-      jjz j10, orf_body
-      jldi j10, 0               ; "receta ", its byte at this place
-      jshi j10, 0020h
-      jshi j10, 6174h
-      jshi j10, 6563h
-      jshi j10, 6572h
-      jldi j11, 3
-      jshl j11, j7, j11
-      jshr j10, j10, j11
-      jldi j11, 255
-      jand j10, j10, j11
-      jsub j10, j10, j6
-      jjz j10, orf_step
-      jst j1, j1, OGRQ
-      jjmp orf_step
-    orf_body:
-      jldi j11, 97              ; a hexadecimal digit
-      jsub j11, j6, j11
-      jldi j12, 63
-      jsar j11, j11, j12
-      jldi j10, 48
-      jjnz j11, orf_dig
-      jldi j10, 87
-    orf_dig:
-      jsub j10, j6, j10
-      jldi j11, 23
-      jsub j11, j7, j11
-      jsar j11, j11, j12
-      jjz j11, orf_alf
-      jld j11, j1, OGRX
-      jldi j12, 4
-      jshl j11, j11, j12
-      jor j11, j11, j10
-      jst j11, j1, OGRX
-      jjmp orf_step
-    orf_alf:
-      jldi j11, 33
-      jsub j11, j7, j11
-      jsar j11, j11, j12
-      jjnz j11, orf_step
-      jldi j11, 49
-      jsub j11, j7, j11
-      jsar j11, j11, j12
-      jjz j11, orf_step
-      jld j11, j1, OGRY
-      jldi j12, 4
-      jshl j11, j11, j12
-      jor j11, j11, j10
-      jst j11, j1, OGRY
-      jldi j12, 48
-      jsub j12, j7, j12
-      jjnz j12, orf_step
-      jld j12, j1, OGRX         ; the line read whole: the last one so far
-      jst j12, j1, OGRL
-      jst j11, j1, OGRA
-    orf_step:
-      jldi j10, 1
-      jadd j7, j7, j10
-      jst j7, j1, OGRP
-    orf_next:
-      jldi j10, 1
-      jadd j4, j4, j10
-      jsub j5, j5, j10
-    jwend
-  jwend
-  jld j10, j1, OGRH
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 7
-  jor j10, j10, j2
-  jcall ask
-orf_done:
-  jldi j1, 0
-  jret
-
 ; j2 in sixteen hexadecimal digits, the highest first. Uses j1-j5.
 og_hex16:
   jldi j1, 0
@@ -3867,6 +4248,23 @@ og_dec:
 ; cage, and stays only if it wins here too); else its own changed by one letter. Uses j1-j8.
 og_next:
   jldi j1, 0
+  jst j1, j1, OGQF
+  jld j2, j1, OGQI              ; a kind of its model, first
+  jld j3, j1, OGQN
+  jsub j3, j2, j3
+  jjz j3, ogn_own
+  jld j3, j1, OGQ
+  jldi j4, 3
+  jshl j4, j2, j4
+  jadd j3, j3, j4
+  jld j3, j3, 0
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, OGQI
+  jst j3, j1, OGTRY
+  jst j4, j1, OGQF
+  jret
+ogn_own:
   jld j2, j1, PORG
   jjz j2, og_child
   jld j3, j1, OGCODE
