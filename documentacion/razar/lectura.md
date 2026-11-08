@@ -3005,3 +3005,20 @@ El Capitán: *"nadie responde quién es pedro con quién es pedro: es una misma 
     "quién es pedro" como la misma pregunta;
   - la primera línea ("quién es hijo de melquí") sale de otro camino de respuesta, que toma "quién" como el sujeto:
     en esta biblioteca Razar todavía no reconoce "quién" como la palabra que pregunta.
+
+## El párrafo por niveles: primero lo que nombra al sujeto (2026-11-07)
+
+El Capitán: *"lo normal sería llenar el espacio con cosas del sujeto principal primero, y después con la herencia, si
+existe, en los pronombres"*; *"cuando los pedro son tan escasos puede que escoja no ponerlo"*.
+
+- **Niveles (`QPTI`):** primero los hechos comprobados (dichos dos veces o más) o guiados por la instrucción de la
+  pregunta; si con ellos no se llenan las cláusulas, entran los dichos una vez que nombran al sujeto. La lotería elige
+  entre todos; un hecho del primer nivel no se cuenta dos veces.
+- **Lo que todavía no aparece, y por qué:** "tú eres Pedro" está una sola vez en el Nuevo Testamento. El párrafo de
+  Pedro tiene una cláusula (los hechos del libro por edificio dan 1), y la llena un hecho comprobado. Para que salga
+  hace falta que "eres" cuente como "es" (la familia de las personas), y para eso faltan libros en castellano.
+- **La herencia por pronombres** queda pendiente: se midió floja antes y no entra sin medirla de nuevo.
+- **La palabra que pregunta:** en la biblioteca real, "¿" quedó como límite pero "?" no, así que los edificios de
+  "quién" terminan en signos distintos, ninguno es mayoría, y "quién" no sale flecha. Por eso otro camino de respuesta
+  lo toma como sujeto ("quién es hijo de…").
+- **Controles:** una cláusula cambia en el párrafo de Jesús (empieza igual); ninguna respuesta se pierde.

@@ -405,6 +405,7 @@ SKX4  = 57F0h
 QPAS  = 5800h                   ; a fact walked against the question: where, its end, a word
 QPAE  = 5808h
 QPAW  = 5810h
+QPTI  = 5818h                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -6009,6 +6010,9 @@ qp_seeded:
   jldi j3, 24
   jcall pl_new
   jldi j1, 0
+  jst j1, j1, QPTI              ; (first what is proven)
+qpk_again:
+  jldi j1, 0
   jld j9, j1, QST               ; the kinds of its proven facts where it comes first
   jld j10, j1, QST + 8
   jldi j2, 1
@@ -6042,7 +6046,27 @@ qp_seeded:
     jldi j2, 1
     jsub j10, j10, j2
     jjmp qpk_lap
-qpk_done:
+qpk_done:                       ; (Capitan: "fill the space with the main subject's things first": when the proven do
+  jld j2, j1, QPTI              ; not fill the clauses, what names the subject said once comes in next)
+  jjnz j2, qpk_levels
+  jld j3, j1, GFN
+  jld j4, j1, NBLD
+  jjz j4, qpk_levels
+  jadd j3, j3, j4
+  jldi j5, 1
+  jsub j3, j3, j5
+  jdiv j3, j3, j4
+  jld j2, j1, QPK + 16
+  jsub j2, j2, j3
+  jldi j5, 63
+  jsar j2, j2, j5
+  jjz j2, qpk_levels
+  jldi j2, 1
+  jst j2, j1, QPTI
+  jjmp qpk_again
+qpk_levels:
+  jldi j2, 2                    ; (the facts of a kind chosen: of either level)
+  jst j2, j1, QPTI
   jld j2, j1, QPK + 16          ; the clauses: as many facts as the book puts in a building (its facts by its
   jjz j2, qp_none               ; buildings, rounded up), the kinds at most
   jld j3, j1, GFN
@@ -6243,14 +6267,23 @@ qp_takes:
   jld j12, j1, QPRA             ; guided by the question's instruction?
   jcall qp_guided
   jst j2, j1, QPGU
-  jjnz j2, qpt_yes
+  jjnz j2, qpt_proven
   jld j9, j1, QPA
   jld j2, j9, 8
   jldi j3, 2
   jsub j2, j2, j3
   jldi j3, 63
   jsar j2, j2, j3
-  jjnz j2, qpt_no
+  jjnz j2, qpt_once
+qpt_proven:                     ; (the first level's: not again in the second's pass)
+  jld j2, j1, QPTI
+  jldi j3, 1
+  jsub j2, j2, j3
+  jjz j2, qpt_no
+  jjmp qpt_yes
+qpt_once:                       ; said once, it names the subject: from the second level on
+  jld j2, j1, QPTI
+  jjz j2, qpt_no
 qpt_yes:
   jldi j1, 0
   jldi j2, 1
