@@ -53,6 +53,8 @@ S_TT     = 460h
 S_NT     = 470h
 S_RT     = 480h
 S_BARR   = 490h
+S_PT     = 4A0h
+S_QT     = 4B0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -893,6 +895,9 @@ hl_sayform:
 ; pairs fall on most, a pair by its two words either way (A xor B), as the cube's "cosa"; a form with fewer pieces than
 ; three is filled with pieces of its own key (nothing it holds, but not another's); and the same for its pairs crossed
 ; (the null). Said "T: i p p p | words", "N: i p p p", and the relations of relations among them, "R: i j way pairs".
+; And each form whole, as a song (Capitan, 2026-11-08: "that it hears it"): each of its pairs a note of three pieces
+; (from its two words either way), "P: i p p p" a note, "Q: i p p p" a note of its pairs crossed. Only relations whose
+; forms fit in a song are taken: 255 notes at most, what a melody holds (measured: a melody joins up to 255 greetings).
 ; Uses j1-j14.
 hl_tanda:
   jldi j1, 0
@@ -944,6 +949,13 @@ hl_tanda:
       jjz j5, ht_sn
       jcall hl_score
       jldi j1, 0
+      jjz j6, ht_sn
+      jld j7, j4, 8               ; (both forms fit in a song)
+      jcall ht_fits
+      jjz j7, ht_sn
+      jld j7, j4, 16
+      jcall ht_fits
+      jjz j7, ht_sn
       jld j7, j1, HTBEST
       jsub j7, j7, j6
       jldi j8, 63
@@ -1113,12 +1125,139 @@ ht_rd:
     jldi j2, 10
     jcall putch
     jldi j1, 0
+    jst j1, j1, HTG
+    jcall ht_song
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, HTG
+    jcall ht_song
+    jldi j1, 0
     jld j2, j1, HTI
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, HTI
     jjmp ht_c
 ht_done:
+  jret
+
+; j7 = 1 if form j7 fits in a song (255 pairs at most). Uses j7, j8.
+ht_fits:
+  jldi j8, 48
+  jmul j7, j7, j8
+  jldi j8, 0
+  jld j8, j8, HMA
+  jadd j7, j7, j8
+  jld j7, j7, 32
+  jldi j8, 256
+  jsub j7, j7, j8
+  jldi j8, 63
+  jsar j7, j7, j8
+  jldi j8, 1
+  jand j7, j7, j8
+  jret
+
+; The chosen form HTI as a song, a note a pair (HTG 1: its pairs crossed): "P: i p p p" ("Q:" crossed), the three
+; pieces of a pair from its two words either way (A xor B), all different. Uses j1-j14.
+ht_song:
+  jldi j1, 0
+  jld j2, j1, HTN
+  jmul j2, j2, j2
+  jst j2, j1, HT2
+  jld j2, j1, HTI
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCH
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jst j3, j1, HT3
+  jld j2, j3, 40
+  hsg_lap:
+    jldi j1, 0
+    jst j2, j1, HTJ
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, hsg_done
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j5, j3, 8
+    jld j6, j3, 16
+    jld j7, j1, HTG
+    jjz j7, hsg_k
+    jld j7, j3, 24
+    jldi j8, 63
+    jsar j8, j7, j8
+    jjz j8, hsg_pv
+    jld j8, j1, HT3
+    jld j7, j8, 40
+  hsg_pv:
+    jldi j8, 5
+    jshl j7, j7, j8
+    jadd j7, j7, j4
+    jld j6, j7, 16
+  hsg_k:
+    jsub j7, j5, j6
+    jjz j7, hsg_next
+    jxor j7, j5, j6
+    jldi j8, 4
+    jshr j7, j7, j8
+    jld j8, j1, HT2
+    jdiv j9, j7, j8             ; the first piece
+    jmul j10, j9, j8
+    jsub j10, j7, j10
+    jst j10, j1, HP1
+    jdiv j7, j9, j8             ; the second, not the first
+    jmul j11, j7, j8
+    jsub j11, j9, j11
+    jsub j12, j11, j10
+    jjnz j12, hsg_2
+    jldi j12, 1
+    jadd j11, j11, j12
+    jsub j12, j11, j8
+    jjnz j12, hsg_2
+    jldi j11, 0
+  hsg_2:
+    jst j11, j1, HP2
+    jdiv j9, j7, j8             ; the third, not the others
+    jmul j12, j9, j8
+    jsub j12, j7, j12
+    hsg_3:
+      jsub j13, j12, j10
+      jjz j13, hsg_3n
+      jsub j13, j12, j11
+      jjnz j13, hsg_3d
+    hsg_3n:
+      jldi j13, 1
+      jadd j12, j12, j13
+      jsub j13, j12, j8
+      jjnz j13, hsg_3
+      jldi j12, 0
+      jjmp hsg_3
+  hsg_3d:
+    jst j12, j1, HP3
+    jld j2, j1, HTG
+    jldi j1, S_PT
+    jjz j2, hsg_say
+    jldi j1, S_QT
+  hsg_say:
+    jcall ht_say
+    jldi j2, 10
+    jcall putch
+  hsg_next:
+    jldi j1, 0
+    jld j2, j1, HTJ
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jld j2, j3, 24
+    jjmp hsg_lap
+hsg_done:
   jret
 
 ; The place of form j2 among the chosen -> j6 (-1: not chosen). Uses j6-j8.

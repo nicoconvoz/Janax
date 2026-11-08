@@ -2071,3 +2071,24 @@ pares (y el nulo, con sus pares cruzados).
   canta las notas), no un resumen de tres.
 - ⚠️ En el camino: el pedido 4 crea el archivo si no está; una `cosas` vacía se tomaba por dada. Ahora sólo vale si
   se leen las k×4 enteras.
+
+**Que la oiga entera** (Capitán: *"que la oiga"*). `voluntad_hilos.jsm` con `cantos`: cada cosa es una canción (dos
+bytes cuántas notas, tres bytes cada nota), una vuelta la canta entera, nota por nota, junta lo que el cubo contestó a
+toda la canción (qué pieza de arriba despertó en qué paso, cuántas veces) y adivina como con una señal. `hilos.jsm`
+con `tanda` canta cada par como una nota (`P:`; `Q:` los cruzados) y sólo toma relaciones cuyas formas entran en una
+canción (255 notas, lo que junta una melodía). La tanda del NT: "y el", "y del", "y la", "y de la", "y a los", "y de
+los", "y los", "y al", "y sus", "y mis", **"hijo de" (96 notas) y "padre de" (40)**, "y me", "y no me", "lo que",
+"todo lo que" (9 a 169 notas). 7³, 16 cosas, 800 vueltas (9 s cada una):
+
+| | aciertos al final | confusiones del último cuarto |
+|---|---|---|
+| canciones de sus pares | 80-82 % | y el→y sus, y los→y mis, lo que→y mis (todas, 12-13 de 12-13) |
+| nulo: de sus pares cruzados | 74-76 % | y el→y no me, y la→y no me, y los→y mis, lo que→y no me |
+
+- **"hijo de" y "padre de" no se confunden**: comparten 3 pares de 96 y 40; el cubo separa las dos (13 de 13).
+- **Las confusiones son del largo, no de la relación**: las canciones largas (112, 160, 169, 130 notas) se toman por
+  las más cortas (9 y 10 notas), en el real y en el nulo por igual. Es la cuenta de adivinar (lo oído contra todo lo
+  que aprendió de cada cosa), que favorece a las cosas de poco.
+- **Lo que enseña:** el juego de señales está hecho para **separar** las 16 cosas: nunca va a decir que dos son una
+  mientras lo que entra no sea casi lo mismo. Para que el cubo una relaciones, la pregunta tiene que ser otra: que
+  aprenda 16 y después oiga una que **no** aprendió, y ver a cuál de las 16 la lleva (contra el nulo).

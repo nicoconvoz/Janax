@@ -4,6 +4,11 @@
 ; with those pieces and never moves them (they are what the thing holds, not a name it can change); and over the last
 ; quarter of the rounds it counts what it guessed for each thing, and writes a line "C: thing right all other times"
 ; for each (its most guessed other thing, and how many times). Two things it keeps confusing are, for the cube, one.
+; With "cantos" instead (Capitan, 2026-11-08: "that it hears it"), each thing is a song: for each thing, its notes
+; (two bytes how many, then three bytes a note: its bottom pieces). A round sings the whole song, note by note, and
+; what the cube answers to all of it (which top piece woke at which step, how many times) is what it heard; it guesses
+; the thing whose learned answers that resembles most (as for one signal), and learns it. Pieces are never moved, and
+; a right song is not sounded again (a song is many signals already).
 ;
 ; Razar's will (Capitan, 2026-11-03), a lo Janax: the kernel that listens to the school's melody and answers it,
 ; with a cube of any side up to 7 and any number of things (Capitan, 2026-11-06: everything in Janax). It reads its
@@ -55,6 +60,18 @@ TEXT  = 1000h                   ; the line of hits it writes at the end
 CLAB  = 0D00h                   ; "cosas"; 1 if its things are said with the pieces given; what it guessed by thing in
 FIXED = 0D08h                   ; the last quarter (a room, k * k qwords)
 CONF  = 0D10h
+SONGS = 0D18h                   ; the songs: 1 if given, their bytes (a room), where each starts (a room), how many
+SNG   = 0D20h                   ; bytes; what a song made the cube answer, by top piece and step (a room), the places
+SOFF  = 0D28h                   ; it touched (a room), how many, how many answers; the note being sung, the notes
+SBYT  = 0D30h                   ; left; the thing meant; "cantos"
+SH    = 0D38h
+SHL   = 0D40h
+SHN   = 0D48h
+CNTS  = 0D50h
+SNP   = 0D58h
+SNN   = 0D60h
+STH   = 0D68h
+CLAB2 = 0D70h
 include '../../escalon0/janax.inc'
 jfirst j1, 2000h               ; first order: room 0
 
@@ -190,6 +207,11 @@ jldi j10, 2
 jcall ask
 jldi j1, 0
 jst j13, j1, CONF
+
+jcall songs_read                ; the songs, if the house has "cantos"
+jldi j1, 0
+jld j2, j1, SONGS
+jjnz j2, s_main
 
 jldi j1, 0                      ; the rounds
 jst j1, j1, ROUND
@@ -416,6 +438,7 @@ next_round:
 no_block:
 jwend
 
+v_end:
 jldi j1, 0                      ; the line of hits, written once at the end
 jld j4, j1, POS
 jldi j5, 0Ah
@@ -599,6 +622,371 @@ bk_t:
   jldi j2, 0
   jst j2, j1, OKC
   jret
+
+; The songs: "cantos" read (64 KB at most), where each thing's song starts; all of them there, or none. Uses j1-j14.
+songs_read:
+  jldi j1, 0
+  jst j1, j1, SONGS
+  jldi j2, 736Fh
+  jshi j2, 746Eh
+  jshi j2, 6163h
+  jst j2, j1, CLAB2
+  jldi j10, 4
+  jldi j11, CLAB2
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, sr_none
+  jst j13, j1, STH              ; (its handle, a moment)
+  jldi j11, 1
+  jldi j2, 16
+  jshl j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SNG
+  jld j10, j1, STH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jadd j11, j13, j1
+  jldi j12, 1
+  jldi j2, 16
+  jshl j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SBYT
+  jld j11, j1, KV
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SOFF
+  jldi j2, 0                    ; where each starts
+  jldi j3, 0
+  jld j4, j1, KV
+  sr_lap:
+    jjz j4, sr_all
+    jldi j5, 3
+    jshl j5, j3, j5
+    jld j6, j1, SOFF
+    jadd j5, j5, j6
+    jst j2, j5, 0
+    jldi j5, 2
+    jadd j5, j2, j5
+    jld j6, j1, SBYT
+    jsub j6, j6, j5
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, sr_none
+    jld j6, j1, SNG
+    jadd j6, j6, j2
+    jldb j7, j6, 0
+    jldb j8, j6, 1
+    jldi j9, 8
+    jshl j8, j8, j9
+    jor j7, j7, j8
+    jldi j8, 3
+    jmul j7, j7, j8
+    jadd j2, j5, j7
+    jldi j5, 1
+    jadd j3, j3, j5
+    jsub j4, j4, j5
+    jjmp sr_lap
+sr_all:
+  jld j6, j1, SBYT
+  jsub j6, j6, j2
+  jldi j7, 63
+  jsar j6, j6, j7
+  jjnz j6, sr_none
+  jld j11, j1, NNV              ; what a song made it answer: n^2 * P qwords, and the places touched
+  jld j2, j1, PV
+  jmul j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jst j11, j1, STH
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SH
+  jld j11, j1, STH
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, SHL
+  jldi j2, 1
+  jst j2, j1, SONGS
+sr_none:
+  jldi j1, 0
+  jret
+
+; One note sung: the three pieces at SNP said as a signal (through the place of thing 191), what it answered into SH
+; (each top piece that woke, at its step, once more), the places touched into SHL. Uses j1-j14.
+song_note:
+  jldi j1, 0
+  jld j2, j1, SNP
+  jldb j3, j2, 0
+  jstb j3, j1, SAY + 764        ; (191 * 4)
+  jldb j3, j2, 1
+  jstb j3, j1, SAY + 765
+  jldb j3, j2, 2
+  jstb j3, j1, SAY + 766
+  jld j2, j1, THING
+  jst j2, j1, STH
+  jldi j2, 191
+  jst j2, j1, THING
+  jldi j3, 1
+  jcall order
+  jldi j1, 0
+  jld j2, j1, STH
+  jst j2, j1, THING
+  jld j2, j1, ANS
+  jldi j12, 0
+  jld j5, j1, NNV
+  jwhile j5
+    jldi j6, 1
+    jand j7, j2, j6
+    jjz j7, sn_next
+    jldb j7, j12, STB
+    jld j3, j1, PV
+    jmul j3, j12, j3
+    jadd j3, j3, j7
+    jldi j4, 3
+    jshl j4, j3, j4
+    jld j6, j1, SH
+    jadd j4, j4, j6
+    jld j6, j4, 0
+    jjnz j6, sn_old
+    jld j8, j1, SHN             ; a place touched the first time
+    jldi j9, 3
+    jshl j9, j8, j9
+    jld j10, j1, SHL
+    jadd j9, j9, j10
+    jst j3, j9, 0
+    jldi j9, 1
+    jadd j8, j8, j9
+    jst j8, j1, SHN
+  sn_old:
+    jldi j9, 1
+    jadd j6, j6, j9
+    jst j6, j4, 0
+    jld j8, j1, CNTS
+    jadd j8, j8, j9
+    jst j8, j1, CNTS
+  sn_next:
+    jldi j6, 1
+    jshr j2, j2, j6
+    jadd j12, j12, j6
+    jsub j5, j5, j6
+  jwend
+  jret
+
+; The rounds of songs: each round a thing sung whole, guessed by what the cube answered, learned. Uses j1-j15.
+s_main:
+  jldi j1, 0
+  jst j1, j1, ROUND
+  jld j15, j1, RNDS
+  jwhile j15
+    jldi j1, 0
+    jld j2, j1, ROUND
+    jld j3, j1, KV
+    jdiv j4, j2, j3
+    jmul j4, j4, j3
+    jsub j2, j2, j4
+    jst j2, j1, THING
+    jst j1, j1, SHN
+    jst j1, j1, CNTS
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, SOFF
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jld j4, j1, SNG
+    jadd j3, j3, j4
+    jldb j5, j3, 0
+    jldb j6, j3, 1
+    jldi j7, 8
+    jshl j6, j6, j7
+    jor j5, j5, j6
+    jst j5, j1, SNN
+    jldi j6, 2
+    jadd j3, j3, j6
+    jst j3, j1, SNP
+    sm_n:
+      jldi j1, 0
+      jld j2, j1, SNN
+      jjz j2, sm_nd
+      jcall song_note
+      jldi j1, 0
+      jld j2, j1, SNP
+      jldi j3, 3
+      jadd j2, j2, j3
+      jst j2, j1, SNP
+      jld j2, j1, SNN
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, SNN
+      jjmp sm_n
+  sm_nd:
+    jldi j2, -1                 ; what it guesses: the thing whose answers that resembles most
+    jst j2, j1, BEST
+    jst j1, j1, BSUM
+    jldi j2, 1
+    jst j2, j1, BTOT
+    jldi j8, 0
+    jld j9, j1, KV
+    jwhile j9
+      jldi j1, 0
+      jldi j3, 3
+      jshl j3, j8, j3
+      jld j10, j3, HEARD
+      jjz j10, sg_next
+      jld j4, j1, GSZ
+      jmul j4, j8, j4
+      jld j3, j1, RBASE
+      jadd j4, j4, j3
+      jldi j11, 0
+      jld j5, j1, SHN
+      jld j6, j1, SHL
+      jwhile j5
+        jld j7, j6, 0
+        jldi j3, 3
+        jshl j7, j7, j3
+        jld j3, j1, SH
+        jadd j3, j3, j7
+        jld j3, j3, 0
+        jadd j7, j7, j4
+        jld j7, j7, 0
+        jmul j7, j7, j3
+        jadd j11, j11, j7
+        jldi j3, 8
+        jadd j6, j6, j3
+        jldi j3, 1
+        jsub j5, j5, j3
+      jwend
+      jld j3, j1, BTOT
+      jmul j3, j11, j3
+      jld j4, j1, BSUM
+      jmul j4, j4, j10
+      jsub j4, j4, j3
+      jldi j6, 63
+      jsar j4, j4, j6
+      jjz j4, sg_next
+      jst j8, j1, BEST
+      jst j11, j1, BSUM
+      jst j10, j1, BTOT
+    sg_next:
+      jldi j6, 1
+      jadd j8, j8, j6
+      jsub j9, j9, j6
+    jwend
+    jldi j1, 0
+    jld j2, j1, BEST
+    jldi j6, 63
+    jsar j3, j2, j6
+    jjz j3, s_guessed
+    jcall rnd
+    jldi j1, 0
+    jld j6, j1, KV
+    jdiv j2, j13, j6
+    jmul j2, j2, j6
+    jsub j2, j13, j2
+    jst j2, j1, BEST
+  s_guessed:
+    jldi j1, 0                  ; it learns what that song sounded like, and the places go back to nothing
+    jld j8, j1, THING
+    jld j4, j1, GSZ
+    jmul j4, j8, j4
+    jld j3, j1, RBASE
+    jadd j4, j4, j3
+    jld j5, j1, SHN
+    jld j6, j1, SHL
+    jwhile j5
+      jld j7, j6, 0
+      jldi j3, 3
+      jshl j7, j7, j3
+      jld j3, j1, SH
+      jadd j3, j3, j7
+      jld j9, j3, 0
+      jst j1, j3, 0
+      jadd j7, j7, j4
+      jld j10, j7, 0
+      jadd j10, j10, j9
+      jst j10, j7, 0
+      jldi j3, 8
+      jadd j6, j6, j3
+      jldi j3, 1
+      jsub j5, j5, j3
+    jwend
+    jldi j3, 3
+    jshl j3, j8, j3
+    jld j7, j3, HEARD
+    jld j6, j1, CNTS
+    jadd j7, j7, j6
+    jst j7, j3, HEARD
+    jld j2, j1, BEST
+    jsub j3, j2, j8
+    jldi j9, 0
+    jjnz j3, s_judged
+    jjz j6, s_judged
+    jldi j9, 1
+  s_judged:
+    jld j3, j1, ROUND           ; the last quarter: what it guessed for this thing
+    jldi j4, 2
+    jshl j3, j3, j4
+    jld j4, j1, RNDS
+    jldi j5, 3
+    jmul j4, j4, j5
+    jsub j3, j3, j4
+    jldi j5, 63
+    jsar j3, j3, j5
+    jjnz j3, s_early
+    jld j3, j1, KV
+    jmul j3, j8, j3
+    jadd j3, j3, j2
+    jldi j4, 3
+    jshl j3, j3, j4
+    jld j4, j1, CONF
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jldi j5, 1
+    jadd j4, j4, j5
+    jst j4, j3, 0
+  s_early:
+    jldi j3, 3                  ; into the fingerprint: thing * 8 + guess * 2 + right + 1
+    jshl j12, j8, j3
+    jadd j12, j12, j2
+    jadd j12, j12, j2
+    jadd j12, j12, j9
+    jldi j3, 1
+    jadd j12, j12, j3
+    jcall mix
+    jjz j9, sm_next
+    jldi j1, 0
+    jld j3, j1, OKC
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, OKC
+  sm_next:
+    jldi j1, 0
+    jld j2, j1, ROUND
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, ROUND
+    jsub j15, j15, j3
+    jldi j6, 50
+    jdiv j7, j2, j6
+    jmul j7, j7, j6
+    jsub j7, j2, j7
+    jjnz j7, s_noblock
+    jcall block
+  s_noblock:
+  jwend
+  jjmp v_end
 
 ; j2 and a space at TEXT + j7 (putnum); j7 moves past them. Keeps j8-j15. Uses j1-j4.
 c_num:

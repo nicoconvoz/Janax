@@ -60,3 +60,7 @@ times 480h - $ db 0
 db 'R: ', 0
 times 490h - $ db 0
 db ' | ', 0
+times 4A0h - $ db 0
+db 'P: ', 0
+times 4B0h - $ db 0
+db 'Q: ', 0
