@@ -63,6 +63,8 @@ S_SD8   = 6C0h
 S_SD9   = 700h
 S_SD10  = 710h
 S_SD11  = 720h
+S_MARCOS = 730h
+S_MK    = 740h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -218,6 +220,15 @@ PLC   = 1850h                   ; 1: a place only for what the question is about
 QFI   = 1858h
 QFO   = 1860h
 QFP   = 1868h
+TOK   = 1870h                   ; the frames (ms_frames): the song's tokens by key {key, number}, how many; walking
+TOKN  = 1890h
+FSE   = 1898h
+FSJ   = 18A0h
+FWN   = 18A8h
+FFP   = 18B0h
+FFI   = 18B8h
+FLAB  = 18C0h
+FTR   = 18C8h
 SQL   = 1840h                   ; (the question's places kept; a plain cost)
 SPL   = 1848h
 QPN   = 1828h
@@ -2264,6 +2275,12 @@ msd_read:
   jldi j1, 0
   jst j13, j1, CHN
   jst j1, j1, CQC
+  jldi j11, S_MARCOS            ; (with "marcos": the frames, for the cube)
+  jldi j12, 6
+  jcall mp_aside
+  jjz j3, msd_eval
+  jcall ms_frames
+msd_eval:
   jcall ms_eval
   jcall ms_say
   jcall flush
@@ -2948,6 +2965,254 @@ ms_putspan:
     jjmp mpsp_lap
 mpsp_done:
   jldi j1, 0
+  jret
+
+; The frames, when the house has "marcos" (for voluntad_semilla.jsm, the cube's practice): for every seed and every
+; sentence that says a word of its question, a line "M: seed sentence answers read t1 t2 t3 t4 t5" (answers: 1 if
+; the sentence is of its answer; read: 1 if the seed is read, 0 if left out): the five words around the first place of
+; what the question is about in it, as the song's tokens. 0 is past the sentence, 1 a word the question is not about
+; and not of the half; the rest numbered by first sight: a place k words from the question's end, or a word of the
+; half itself. Uses j1-j14.
+ms_frames:
+  jldi j2, TOK
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jldi j2, 2
+  jst j2, j1, TOKN
+  jst j1, j1, FSE
+  mfr_lap:
+    jldi j1, 0
+    jld j2, j1, FSE
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, mfr_done
+    jcall mp_out
+    jldi j1, 0
+    jldi j3, 1
+    jsub j2, j3, j2
+    jst j2, j1, FTR
+    jld j2, j1, FSE
+    jst j2, j1, SEV
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, PPR
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jst j9, j1, QP
+    jst j10, j1, QPN
+    jcall ms_qset
+    jldi j1, 0
+    jld j9, j1, QP
+    jld j10, j1, QPN
+    jcall mp_qwords
+    jldi j1, 0
+    jst j1, j1, FSJ
+    mfr_s:
+      jldi j1, 0
+      jld j2, j1, FSJ
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+      jjz j3, mfr_next
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, SEN
+      jadd j8, j3, j4
+      jld j3, j8, 16
+      jjnz j3, mfr_sn
+      jld j9, j8, 0
+      jld j10, j8, 8
+      jld j4, j1, PRB
+      jadd j9, j9, j4
+      jst j9, j1, SK
+      jst j10, j1, SB
+      jcall ms_overlap
+      jldi j1, 0
+      jjz j2, mfr_sn
+      jld j2, j1, FSJ
+      jcall ms_isreg
+      jldi j1, 0
+      jst j2, j1, FLAB
+      jld j9, j1, SK              ; its words again (SWB), and its first place
+      jld j10, j1, SB
+      jld j11, j1, SWB
+      jcall mp_wlist
+      jldi j1, 0
+      jst j12, j1, FWN
+      jldi j2, -1
+      jst j2, j1, FFP
+      jst j1, j1, FFI
+      mfr_f:
+        jldi j1, 0
+        jld j2, j1, FFI
+        jld j3, j1, FWN
+        jsub j3, j2, j3
+        jjz j3, mfr_fd
+        jcall mf_place
+        jldi j1, 0
+        jjnz j3, mfr_fhit
+        jld j2, j1, FFI
+        jldi j3, 1
+        jadd j2, j2, j3
+        jst j2, j1, FFI
+        jjmp mfr_f
+      mfr_fhit:
+        jld j2, j1, FFI
+        jst j2, j1, FFP
+    mfr_fd:
+      jld j2, j1, FFP
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, mfr_sn             ; (no place in it: no frame)
+      jldi j1, S_MK
+      jcall puts
+      jld j2, j1, FSE
+      jcall putnum
+      jldi j2, 32
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, FSJ
+      jcall putnum
+      jldi j2, 32
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, FLAB
+      jcall putnum
+      jldi j2, 32
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, FTR
+      jcall putnum
+      jldi j1, 0
+      jld j2, j1, FFP
+      jldi j3, 2
+      jsub j2, j2, j3
+      jst j2, j1, FFI
+      mfr_t:
+        jldi j2, 32
+        jcall putch
+        jldi j1, 0
+        jld j2, j1, FFI
+        jcall mf_token
+        jcall putnum
+        jldi j1, 0
+        jld j2, j1, FFI
+        jldi j3, 1
+        jadd j2, j2, j3
+        jst j2, j1, FFI
+        jld j3, j1, FFP
+        jldi j4, 3
+        jadd j3, j3, j4
+        jsub j3, j2, j3
+        jjnz j3, mfr_t
+      jldi j2, 10
+      jcall putch
+    mfr_sn:
+      jldi j1, 0
+      jld j2, j1, FSJ
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, FSJ
+      jjmp mfr_s
+  mfr_next:
+    jldi j1, 0
+    jld j2, j1, FSE
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FSE
+    jjmp mfr_lap
+mfr_done:
+  jcall flush
+  jldi j1, 0
+  jret
+
+; Word j2 of the sentence in SWB a place of the question (QLB)? -> j3 = 1 and j4 = its k (words from the question's
+; end), else j3 = 0; j5 its print. Uses j1-j8.
+mf_place:
+  jldi j1, 0
+  jldi j3, 24
+  jmul j3, j2, j3
+  jld j4, j1, SWB
+  jadd j3, j3, j4
+  jld j5, j3, 0
+  jld j6, j1, QLN
+  jldi j7, 0
+  mfp_lap:
+    jsub j3, j7, j6
+    jjz j3, mfp_no
+    jsub j3, j6, j7
+    jldi j4, 1
+    jsub j3, j3, j4
+    jldi j4, 24
+    jmul j3, j3, j4
+    jld j4, j1, QLB
+    jadd j3, j3, j4
+    jld j3, j3, 0
+    jsub j3, j3, j5
+    jjz j3, mfp_yes
+    jldi j3, 1
+    jadd j7, j7, j3
+    jjmp mfp_lap
+mfp_yes:
+  jldi j3, 1
+  jadd j4, j7, j1
+  jret
+mfp_no:
+  jldi j3, 0
+  jret
+
+; The token of word j2 of the sentence in SWB (FWN words) -> j2: 0 past it, 1 a word the question is not about and not
+; of the half, else a place's or a word of the half's number (TOK, by first sight). Uses j1-j8.
+mf_token:
+  jldi j1, 0
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, mft0
+  jld j3, j1, FWN
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, mft0
+  jcall mf_place
+  jldi j1, 0
+  jjz j3, mft_word
+  jldi j5, 3                    ; a place: its key 3 + k
+  jadd j5, j5, j4
+  jjmp mft_key
+mft_word:
+  jst j5, j1, FTR + 8           ; (its print kept)
+  jldi j2, VOC
+  jcall pl_find
+  jldi j1, 0
+  jld j3, j4, 8
+  jld j2, j1, HEADC
+  jsub j3, j3, j2
+  jldi j2, 63
+  jsar j3, j3, j2
+  jjnz j3, mft1                 ; not of the half: a word the question is not about
+  jld j5, j1, FTR + 8
+mft_key:
+  jldi j2, TOK
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, mft_old
+  jld j2, j1, TOKN
+  jst j2, j4, 8
+  jldi j3, 1
+  jadd j3, j2, j3
+  jst j3, j1, TOKN
+  jret
+mft_old:
+  jld j2, j4, 8
+  jret
+mft0:
+  jldi j2, 0
+  jret
+mft1:
+  jldi j2, 1
   jret
 
 ; Candidate sentence SK, SB bytes, sung after the question (CQ to SL0) against QLB -> j2 its cost (ms_fit).

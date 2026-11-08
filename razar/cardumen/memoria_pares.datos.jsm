@@ -87,3 +87,7 @@ db ' | canto: ', 0
 times 720h - $ db 0
 db ' | palabras: ', 0
 times 730h - $ db 0
+db 'marcos', 0
+times 740h - $ db 0
+db 'M: ', 0
+times 750h - $ db 0
