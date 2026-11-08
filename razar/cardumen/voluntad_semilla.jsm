@@ -13,8 +13,9 @@
 ;   - right: it sings that frame once more (the school settles it). Wrong: one piece of one of its five words moves.
 ; Then each question it never read is asked, without anyone learning (the song only heard): of its sentences, the one
 ; whose melody says "it answers" the most (its share minus that of "it does not") is its answer, right when it is of
-; its answer. Its parameters are the file "p" (4 qwords): the seed, the side n, the rounds, 1 if the school is quiet
-; (it never learns). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
+; its answer. Its parameters are the file "p" (5 qwords): the seed, the side n, the rounds, 1 if the school is quiet
+; (it never learns), 1 if a round is a pass (Capitan, 2026-11-08: "every round already has the examples of
+; everything": each frame that answers once, in order, each followed by one that does not, drawn). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
 ; seed2 >> 16. It writes how it went.
 ;
 ; Its initial data (voluntad_semilla.datos): the texts, one every 40h bytes.
@@ -37,6 +38,8 @@ NACE  = 1080h                   ; the parameters (4 qwords)
 NN    = 1088h
 VUELTAS = 1090h
 QUIET = 1098h
+PASADA = 10A0h                  ; 1: a round is a pass over every read frame that answers, each one followed by one that
+VEFF  = 10A8h                   ; does not (drawn): the rounds that makes
 M48   = 1100h                   ; 2^48 - 1
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
@@ -110,7 +113,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 32
+jldi j12, 40
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -265,20 +268,52 @@ jst j1, j1, HITS
 jst j1, j1, TAILN
 jst j1, j1, ROUND
 jst j1, j1, ONLY
+jld j2, j1, VUELTAS             ; (passes: each two frames per one that answers)
+jld j3, j1, PASADA
+jjz j3, p_eff
+jld j3, j1, POSN
+jadd j3, j3, j3
+jmul j2, j2, j3
+p_eff:
+jst j2, j1, VEFF
 p_lap:
   jldi j1, 0
   jld j2, j1, ROUND
-  jld j3, j1, VUELTAS
+  jld j3, j1, VEFF
   jsub j3, j2, j3
   jjz j3, p_done
   jld j2, j1, POSN
   jjz j2, p_done
   jld j2, j1, NEGN
   jjz j2, p_done
+  jld j2, j1, PASADA
+  jjz j2, p_draw
+  jld j2, j1, ROUND             ; a pass: even rounds the next one that answers, in order; odd ones, one that does not
+  jldi j3, 1
+  jand j3, j2, j3
+  jjnz j3, p_odd
+  jshr j2, j2, j3
+  jldi j3, 1
+  jshr j2, j2, j3
+  jld j4, j1, POSN
+  jdiv j5, j2, j4
+  jmul j5, j5, j4
+  jsub j3, j2, j5
+  jldi j4, 3
+  jshl j3, j3, j4
+  jld j5, j1, POSL
+  jadd j3, j3, j5
+  jld j3, j3, 0
+  jjmp p_frame
+p_odd:
+  jldi j2, 0
+  jjmp p_side
+p_draw:
   jcall rnd2                    ; which of the two
   jldi j1, 0
   jldi j2, 1
   jand j2, j13, j2
+p_side:
   jldi j3, POSL
   jldi j4, POSN
   jjnz j2, p_list
@@ -300,6 +335,8 @@ p_list:
   jld j5, j1, TE
   jadd j3, j3, j5
   jld j3, j3, 0                 ; the frame's number
+p_frame:
+  jldi j1, 0
   jldi j4, 72
   jmul j3, j3, j4
   jld j4, j1, ITB
@@ -324,7 +361,7 @@ p_g:
   jld j2, j1, ROUND
   jldi j3, 4
   jmul j2, j2, j3
-  jld j3, j1, VUELTAS
+  jld j3, j1, VEFF
   jldi j4, 3
   jmul j3, j3, j4
   jsub j2, j2, j3

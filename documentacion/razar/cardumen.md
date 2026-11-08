@@ -1650,3 +1650,37 @@ Asimov, 110 preguntas con semilla, cuatro tramos sin leer (acierta si elige cual
 - Lo que falta probar: más semillas (otros libros de preguntas), y que el canto sume lo que el buscador ya sabe (cuántas
   palabras comparte) en vez de competir con él.
 
+### El cubo practica la semilla (Capitán, 2026-11-08)
+
+> *"Poné al cubo a practicar la semilla, con vueltas y tamaño que crecen."* — *"Acordate cuando llegábamos al 100 %:
+> iba mejorando con las corridas, y ahí sí dependía del tamaño del cubo."*
+
+`memoria_pares.jsm` con `marcos` escribe, por pregunta de Asimov y oración que dice una palabra suya, **el marco**: las
+cinco palabras alrededor del primer lugar de lo que trata la pregunta, como fichas (un lugar, una palabra de la mitad, u
+"otra"). 8.319 marcos por tramo, 89 fichas, 6 % contestan. `voluntad_semilla.jsm` con `cardumen_cubo.jsm` (como el
+juego): cada ficha es una palabra inventada de 3 piezas de la cara de abajo, un marco es una canción de cinco saludos,
+la voluntad aprende a oír "contesta" o "no" (mitad y mitad), y lo no leído se pregunta solo oído (nadie aprende). Con
+`pasada` (quinto parámetro) una vuelta recorre todos los que contestan, cada uno con uno que no.
+
+Aciertos sobre las 110 preguntas no leídas (el azar, unas 15):
+
+| | aprende | quieto |
+|---|---|---|
+| 4³, de 1.000 a 64.000 vueltas | 13 a 19 | |
+| 5³, 1.000 y 4.000 | 22, 17 | |
+| 7³, 4.000, semilla 1001 | **28** | 14 |
+| 10³, 1.372 | 26 | 20 |
+| 20³, 171 | 21 | (cortado) |
+| 7³, 10³, 15³ con 3 pasadas | 20, 18, (9 de 55) | |
+| **7³, 4.000, semillas 1002 a 1005** | **17, 18, 18, 19** | **19, 15, 17, 18** |
+
+El 7³ barriendo vueltas (semilla 1001): 0 → 11, 3 → 18, 10 → 15, 30 → 21, 100 → 24, 300 → 18, 1.000 → 17, 4.000 → 28.
+
+- **El 28 fue suerte de los dados.** Con otras cuatro semillas el que aprende da 17 a 19 y el quieto 15 a 19: los dos
+  en el azar. **El cubo no aprende la semilla.**
+- **No hay curva**: más vueltas no suben los aciertos. En la práctica pasa algo que ya se había visto: a las 100 vueltas
+  llega a 56–68 % y después vuelve a 50 %. Aprende un poco y lo pierde (los pesos se saturan y lo nuevo pisa lo viejo,
+  "la rigidez del cardumen").
+- **El tamaño tampoco lo cambia** dentro de lo medido (4³ a 20³).
+- Lo que sí deduce respuestas de Asimov sigue siendo el canto (25 %) y el buscador de palabras (32 %), en el núcleo.
+
