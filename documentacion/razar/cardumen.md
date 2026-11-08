@@ -1531,3 +1531,36 @@ pedro?" → *seguro que eres uno de ellos porque tú también eres galileo».*
   contado dos veces, no una regla (el ejemplo de Pedro es casi Mateo 26:73). Lo honesto sería contar libros o lugares
   distintos, no pares.
 
+### El canto, medido en serio (2026-11-07)
+
+Una devolución externa le marcó al canto lo que le faltaba: un nulo, y preguntarle sobre lo que no leyó. Se sumaron
+tres instrumentos a `memoria_pares.jsm`:
+
+- **Nulo de orden cero:** cuántas palabras de su respuesta sacaría un canto que elige palabras sólo por las veces que
+  las dicen los libros, sin ningún contexto, cantando la misma cantidad. Se calcula exacto (la esperanza), sin sortear.
+- **De contenido:** lo mismo, pero sin las palabras más dichas que juntas hacen la mitad de todo lo que dicen los
+  libros (46 a 50 palabras: y, de, que, el...). El corte sale de la distribución de los libros, no de un número fijo.
+- **Afuera:** con `fuera` ("k n" en la casa) el tramo k de n de los pares, en su orden, no se lee: sólo se pregunta.
+- **Recitado de lo leído:** el tramo más largo de lo que cantó que está tal cual en los libros leídos. Lo sabe el
+  propio modelo: un contexto de k piezas más la pieza elegida son k+1 piezas que vio así.
+
+| | de su respuesta | nulo | de contenido | nulo de contenido | recitado |
+|---|---|---|---|---|---|
+| todo leído | 16 % | 8,5 % | 7,6 % | 0,6 % | 83 % |
+| tramo 1 de 4 afuera | 9 % | 8,0 % | 1,6 % | 0,5 % | 81 % |
+| tramo 2 de 4 afuera | 10 % | 8,6 % | 1,8 % | 0,5 % | 80 % |
+| tramo 3 de 4 afuera | 8 % | 7,1 % | 1,4 % | 0,4 % | 85 % |
+| tramo 4 de 4 afuera | 10 % | 9,6 % | 0,8 % | 0,6 % | 86 % |
+
+- **Sobre lo que no leyó, casi no le gana al nulo:** 9 % contra 8 %. El 16 % con todo leído era, casi todo, recitado.
+- **En contenido hay una señal chica pero real:** de 2 a 3,5 veces el nulo en tres de cuatro tramos. Es muy poco en
+  absoluto (1 a 2 %).
+- **Recita del 80 al 86 % de lo que canta:** junta pedazos de versículos que vio (un centón), no compone frases nuevas.
+- **Las palabras inventadas no son choques:** no hay ningún tope de 255 en el código. Son empalmes de piezas, y una
+  parte son castellano correcto que ningún libro leído tiene ("denuncian", "destruirán", "arrasado", "quemarlo",
+  "pidiéndole", "recompensando"): aprendió algo de cómo se arman las palabras. Otra parte son mezclas
+  ("samujeres", "despíritu", "ultrajestad").
+- **Conclusión:** el canto ya habla el idioma de los libros, pero todavía no contesta lo que se le pregunta. Para eso
+  falta lo anotado: que la memoria le diga qué decir, y que "dos pares" cuente libros o lugares distintos, no
+  repeticiones.
+

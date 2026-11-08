@@ -38,6 +38,15 @@ S_CH4   = 280h
 S_CH5   = 2A0h
 S_CH6   = 2C0h
 S_CH7   = 2E0h
+S_FUERA = 300h
+S_CH8   = 310h
+S_CH9   = 380h
+S_CH10  = 3A0h
+S_CH11  = 3E0h
+S_CH12  = 3F0h
+S_CH13  = 410h
+S_CH14  = 430h
+S_CH15  = 440h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -110,6 +119,33 @@ SPB   = 1558h                   ; the pairs' file kept aside while "canta" is re
 SPN   = 1560h
 CNB   = 1568h
 CNN   = 1570h
+UNK   = 1580h                   ; the words sung that no book read has, by print (each said once)
+F0    = 15A0h                   ; the times of all the words read; the half (mp_head): the fewest times, their times,
+HEADC = 15A8h                   ; how many words; by pair its answer's words' times {all, not of the half}
+HMASS = 15B0h
+HEADN = 15B8h
+PNUL  = 15C0h
+CSWC  = 15C8h                   ; sung, not of the half, of its answer; the nulls (1000ths of a word, summed)
+CSOC  = 15D0h
+N0    = 15D8h
+N0C   = 15E0h
+CSWP  = 15E8h                   ; (before this pair)
+CSWCP = 15F0h
+CRMAX = 15F8h                   ; recited: the longest stretch as it is in the books read, this song's, a step's;
+CRC   = 1600h                   ; summed (1000ths)
+CRS   = 1608h
+FK    = 1610h                   ; the pairs left out ("fuera"): from, to; the pairs asked: from, to
+FE    = 1618h
+EVS   = 1620h
+EVE   = 1628h
+NUM1  = 1630h                   ; (two numbers read)
+NUM2  = 1638h
+WLEN  = 1640h                   ; the word walked: its bytes, its times, 1 if not of the half
+WTIM  = 1648h
+WCON  = 1650h
+HLO   = 1658h                   ; (halving)
+HHI   = 1660h
+HMID  = 1668h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -1171,31 +1207,63 @@ mpb_done:
   jret
 
 ; Its own song, when the house has "canta": the pairs as songs, what follows each context learned, a song composed
-; after each of its questions, and over every pair of the books what it sang said. j2 = 1 if it sang (0: no "canta").
-; Uses j1-j14.
+; after each of its questions, and over the pairs of the books what it sang said. With "fuera" ("k n": the k-th of n
+; stretches of the pairs, in their order) that stretch is not read: it is only asked. j2 = 1 if it sang (0: no
+; "canta"). Uses j1-j14.
 mp_sing:
-  jldi j1, 0
-  jld j2, j1, PRB
-  jst j2, j1, SPB
-  jld j2, j1, PRN
-  jst j2, j1, SPN
   jldi j11, S_CANTA
   jldi j12, 5
-  jcall mp_read
+  jcall mp_aside
   jldi j1, 0
-  jld j2, j1, PRB
   jst j2, j1, CNB
-  jld j2, j1, PRN
-  jst j2, j1, CNN
-  jld j2, j1, SPB
-  jst j2, j1, PRB
-  jld j2, j1, SPN
-  jst j2, j1, PRN
-  jld j2, j1, CNN
-  jjnz j2, msg_on
+  jst j3, j1, CNN
+  jjnz j3, msg_on
   jldi j2, 0
   jret
 msg_on:
+  jst j1, j1, FK
+  jst j1, j1, FE
+  jst j1, j1, EVS
+  jld j2, j1, PPN
+  jst j2, j1, EVE
+  jldi j11, S_FUERA
+  jldi j12, 5
+  jcall mp_aside
+  jldi j1, 0
+  jadd j9, j2, j1
+  jadd j10, j3, j1
+  jcall mp_nums
+  jldi j1, 0
+  jld j2, j1, NUM1              ; the k-th of n: from (k - 1) PPN / n to k PPN / n
+  jld j3, j1, NUM2
+  jjz j3, msg_read
+  jjz j2, msg_read
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, msg_read
+  jld j4, j1, PPN
+  jmul j5, j2, j4
+  jdiv j5, j5, j3
+  jst j5, j1, FE
+  jst j5, j1, EVE
+  jldi j5, 1
+  jsub j2, j2, j5
+  jmul j5, j2, j4
+  jdiv j5, j5, j3
+  jst j5, j1, FK
+  jst j5, j1, EVS
+  jldi j1, S_CH13
+  jcall puts
+  jld j2, j1, FK
+  jcall putnum
+  jldi j1, S_CH14
+  jcall puts
+  jld j2, j1, FE
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+msg_read:
   jcall mp_syms
   jcall mp_learn
   jcall mp_vocab
@@ -1326,18 +1394,26 @@ msg_mxd:
     jadd j2, j2, j3
     jst j2, j1, TT1
     jjmp msg_line
-msg_all:                        ; over every pair of the books
+msg_all:                        ; over the pairs asked (all, or those left out)
   jldi j1, 0
   jst j1, j1, CSW
   jst j1, j1, CSR
   jst j1, j1, CSO
   jst j1, j1, CCP
   jst j1, j1, CSN
-  jst j1, j1, TT5
+  jst j1, j1, CSWC
+  jst j1, j1, CSOC
+  jst j1, j1, N0
+  jst j1, j1, N0C
+  jst j1, j1, CRS
+  jld j2, j1, EVS
+  jst j2, j1, TT5
+  jldi j1, S_CH15
+  jcall puts
   msg_p:
     jldi j1, 0
     jld j2, j1, TT5
-    jld j3, j1, PPN
+    jld j3, j1, EVE
     jsub j3, j2, j3
     jjz j3, msg_say
     jldi j3, 24
@@ -1374,6 +1450,22 @@ msg_all:                        ; over every pair of the books
     jcall mp_compose
     jcall mp_text
     jldi j1, 0
+    jld j2, j1, CQN             ; recited: its longest stretch as it is in the books read, of what it sang
+    jld j3, j1, CQ0
+    jsub j3, j2, j3
+    jjz j3, msg_rd
+    jld j2, j1, CRMAX
+    jldi j4, 1000
+    jmul j2, j2, j4
+    jdiv j2, j2, j3
+    jld j3, j1, CRS
+    jadd j3, j3, j2
+    jst j3, j1, CRS
+  msg_rd:
+    jld j2, j1, CSW
+    jst j2, j1, CSWP
+    jld j2, j1, CSWC
+    jst j2, j1, CSWCP
     jldi j2, 2
     jst j2, j1, WMODE
     jld j2, j1, TT5
@@ -1381,7 +1473,42 @@ msg_all:                        ; over every pair of the books
     jld j9, j1, CT
     jld j10, j1, CTN
     jcall mp_wwalk
-    jldi j1, 0
+    jldi j1, 0                  ; the null: as many words drawn by their times, with no context
+    jld j2, j1, TT5
+    jldi j3, 4
+    jshl j2, j2, j3
+    jld j3, j1, PNUL
+    jadd j8, j2, j3
+    jld j2, j1, CSW
+    jld j3, j1, CSWP
+    jsub j2, j2, j3
+    jld j3, j8, 0
+    jmul j2, j2, j3
+    jldi j3, 1000
+    jmul j2, j2, j3
+    jld j3, j1, F0
+    jjz j3, msg_n1
+    jdiv j2, j2, j3
+    jld j3, j1, N0
+    jadd j3, j3, j2
+    jst j3, j1, N0
+  msg_n1:
+    jld j2, j1, CSWC
+    jld j3, j1, CSWCP
+    jsub j2, j2, j3
+    jld j3, j8, 8
+    jmul j2, j2, j3
+    jldi j3, 1000
+    jmul j2, j2, j3
+    jld j3, j1, F0
+    jld j4, j1, HMASS
+    jsub j3, j3, j4
+    jjz j3, msg_n2
+    jdiv j2, j2, j3
+    jld j3, j1, N0C
+    jadd j3, j3, j2
+    jst j3, j1, N0C
+  msg_n2:
     jld j2, j1, CTN
     jjz j2, msg_pn
     jld j2, j1, TT5
@@ -1412,6 +1539,8 @@ msg_all:                        ; over every pair of the books
     jst j2, j1, TT5
     jjmp msg_p
 msg_say:
+  jldi j2, 10
+  jcall putch
   jldi j1, S_CH1
   jcall puts
   jld j2, j1, ORD               ; (the last pass counted nothing: the one before it grew from the longest rule)
@@ -1455,8 +1584,133 @@ msg_o:
   jcall putnum
   jldi j1, S_CH7
   jcall puts
+  jldi j1, S_CH8
+  jcall puts
+  jld j2, j1, N0
+  jld j3, j1, CSW
+  jldi j4, 1000
+  jmul j3, j3, j4
+  jcall mp_pct10
+  jldi j1, S_CH9
+  jcall puts
+  jld j2, j1, HEADN
+  jcall putnum
+  jldi j1, S_CH10
+  jcall puts
+  jld j2, j1, CSOC
+  jld j3, j1, CSWC
+  jcall mp_pct10
+  jldi j1, S_CH11
+  jcall puts
+  jld j2, j1, N0C
+  jld j3, j1, CSWC
+  jldi j4, 1000
+  jmul j3, j3, j4
+  jcall mp_pct10
+  jldi j1, S_CH12
+  jcall puts
+  jld j2, j1, CRS
+  jldi j3, 10
+  jdiv j2, j2, j3
+  jld j3, j1, CSN
+  jldi j4, 100
+  jmul j3, j3, j4
+  jcall mp_pct
+  jcall putnum
+  jldi j1, S_CH7
+  jcall puts
   jcall flush
   jldi j2, 1
+  jret
+
+; The house's file labeled by the j12 bytes at j11 -> j2 where its bytes are, j3 how many (0: not there); the pairs'
+; file stays as it was. Uses j1-j14.
+mp_aside:
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, SPB
+  jld j2, j1, PRN
+  jst j2, j1, SPN
+  jcall mp_read
+  jldi j1, 0
+  jld j2, j1, PRB
+  jld j3, j1, PRN
+  jld j4, j1, SPB
+  jst j4, j1, PRB
+  jld j4, j1, SPN
+  jst j4, j1, PRN
+  jret
+
+; The first two numbers of the j10 bytes at j9 -> NUM1, NUM2 (0 when not there). Uses j1-j8.
+mp_nums:
+  jldi j1, 0
+  jst j1, j1, NUM1
+  jst j1, j1, NUM2
+  jldi j5, 0                    ; numbers found, the one being read, 1 while in it
+  jldi j6, 0
+  jldi j7, 0
+  mnu_lap:
+    jjz j10, mnu_end
+    jldb j2, j9, 0
+    jldi j3, 48
+    jsub j2, j2, j3
+    jldi j4, 63
+    jsar j3, j2, j4
+    jjnz j3, mnu_not
+    jldi j3, 10
+    jsub j3, j2, j3
+    jsar j3, j3, j4
+    jjz j3, mnu_not
+    jldi j3, 10
+    jmul j6, j6, j3
+    jadd j6, j6, j2
+    jldi j7, 1
+    jjmp mnu_next
+  mnu_not:
+    jjz j7, mnu_next
+    jcall mnu_keep
+  mnu_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp mnu_lap
+mnu_end:
+  jjz j7, mnu_done
+  jcall mnu_keep
+mnu_done:
+  jret
+mnu_keep:
+  jldi j2, 3
+  jshl j2, j5, j2
+  jldi j3, 16
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, mnk_full
+  jst j6, j2, NUM1
+mnk_full:
+  jldi j2, 1
+  jadd j5, j5, j2
+  jldi j6, 0
+  jldi j7, 0
+  jret
+
+; j2 = 1 if pair j2 is left out (from FK to FE). Uses j1-j4.
+mp_out:
+  jldi j1, 0
+  jld j3, j1, FK
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjnz j3, mpo_no
+  jld j3, j1, FE
+  jsub j3, j2, j3
+  jsar j3, j3, j4
+  jjz j3, mpo_no
+  jldi j2, 1
+  jret
+mpo_no:
+  jldi j2, 0
   jret
 
 ; j2 * 100 / j3 -> j2 (0 when j3 is 0). Uses j1-j4.
@@ -1470,6 +1724,30 @@ mp_pct:
 mpp0:
   jldi j2, 0
   jret
+
+; j2 * 100 / j3 with one decimal, out (0 when j3 is 0). Uses j1-j4.
+mp_pct10:
+  jldi j1, 0
+  jjz j3, mpt10_0
+  jldi j4, 1000
+  jmul j2, j2, j4
+  jdiv j2, j2, j3
+  jjmp mpt10_out
+mpt10_0:
+  jldi j2, 0
+mpt10_out:
+  jldi j3, 10
+  jdiv j4, j2, j3
+  jmul j3, j4, j3
+  jsub j3, j2, j3
+  jst j3, j1, WTIM
+  jadd j2, j4, j1
+  jcall putnum
+  jldi j2, 46
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, WTIM
+  jjmp putnum
 
 ; What it sang (CT, CTN), out. Uses j1-j3, j9.
 mp_puttext:
@@ -1723,6 +2001,10 @@ mle_fd:
       jld j2, j1, PPN
       jsub j2, j9, j2
       jjz j2, mle_pdone
+      jadd j2, j9, j1           ; (the pairs left out are not read)
+      jcall mp_out
+      jjnz j2, mle_pnext
+      jldi j1, 0
       jldi j3, 24
       jmul j3, j9, j3
       jld j4, j1, PSY
@@ -1823,6 +2105,7 @@ mp_compose:
   jldi j1, 0
   jld j2, j1, CQN
   jst j2, j1, CQ0
+  jst j1, j1, CRMAX
   mco_step:
     jldi j1, 0
     jld j2, j1, CQN
@@ -1861,7 +2144,19 @@ mp_compose:
       jadd j9, j9, j2
       jjmp mco_ctx
   mco_have:
-    jldi j1, 0
+    jldi j1, 0                  ; (a context of k songs and a song after it: k + 1 songs as they are in the books read,
+    jld j2, j1, CQN             ; but no more than it sang)
+    jld j3, j1, CQ0
+    jsub j2, j2, j3
+    jldi j3, 1
+    jadd j2, j2, j3
+    jsub j3, j9, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, mco_crc
+    jadd j2, j9, j1
+  mco_crc:
+    jst j2, j1, CRC
     jst j1, j1, CTOT
     jldi j9, 0
     mco_sum:
@@ -1928,6 +2223,13 @@ mp_compose:
     jldi j2, 1
     jadd j3, j3, j2
     jst j3, j1, CQN
+    jld j2, j1, CRC
+    jld j3, j1, CRMAX
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, mco_step
+    jst j2, j1, CRMAX
     jjmp mco_step
 mco_done:
   jldi j1, 0
@@ -1990,24 +2292,49 @@ mtx_done:
   jst j2, j1, CTN
   jret
 
-; The books' words (VOC) and each answer's (OWN, by print and pair). Uses j1-j14.
+; The books' words (VOC, {print, times}: of the pairs read, not of those left out; F0 all their times), each answer's
+; (OWN, {print and pair, 1 when weighed}), the words said most that together make half of what the books say (mp_head),
+; and by pair the times of its answer's words, each once (PNUL: all of them, and those not of the half): what a song of
+; words drawn by their times, with no context, would get of its answer. Uses j1-j14.
 mp_vocab:
   jldi j2, VOC
-  jldi j3, 8
+  jldi j3, 16
   jcall pl_new
   jldi j2, OWN
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, UNK
   jldi j3, 8
   jcall pl_new
   jldi j1, 0
+  jst j1, j1, F0
+  jld j11, j1, PPN
+  jldi j2, 4
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PNUL
   jst j1, j1, TT5
   mvo_lap:
     jldi j1, 0
     jld j2, j1, TT5
     jld j3, j1, PPN
     jsub j3, j2, j3
-    jjz j3, mvo_done
+    jjz j3, mvo_head
     jst j2, j1, WPR
+    jldi j2, 1
+    jst j2, j1, WMODE
+    jcall mp_ansat
+    jcall mp_wwalk
+    jldi j1, 0
+    jld j2, j1, WPR
+    jcall mp_out
+    jjnz j2, mvo_next
+    jldi j1, 0
     jst j1, j1, WMODE
+    jld j2, j1, WPR
     jldi j3, 5
     jshl j3, j2, j3
     jld j4, j1, PPR
@@ -2019,8 +2346,25 @@ mp_vocab:
     jcall mp_wwalk
     jcall mp_ansat
     jcall mp_wwalk
+  mvo_next:
     jldi j1, 0
-    jldi j2, 1
+    jld j2, j1, TT5
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT5
+    jjmp mvo_lap
+mvo_head:
+  jcall mp_head
+  jldi j1, 0
+  jst j1, j1, TT5
+  mvo_n:
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, mvo_done
+    jst j2, j1, WPR
+    jldi j2, 3
     jst j2, j1, WMODE
     jcall mp_ansat
     jcall mp_wwalk
@@ -2029,9 +2373,87 @@ mp_vocab:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mvo_lap
+    jjmp mvo_n
 mvo_done:
   jldi j1, 0
+  jret
+
+; The words said most that together make half of what the books say: HEADC the fewest times one of them has (found
+; halving: the most times c with the words of c times or more saying half of F0), HMASS their times, HEADN how many.
+; The cut comes from the books' own words, no count given. Uses j1-j14.
+mp_head:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, HLO
+  jld j2, j1, F0
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, HHI
+  mhd_lap:
+    jldi j1, 0
+    jld j2, j1, HHI
+    jld j3, j1, HLO
+    jsub j4, j2, j3
+    jldi j5, 2
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, mhd_done
+    jadd j11, j2, j3
+    jldi j4, 1
+    jshr j11, j11, j4
+    jst j11, j1, HMID
+    jcall mp_mass
+    jldi j1, 0
+    jadd j12, j12, j12
+    jld j2, j1, F0
+    jsub j12, j12, j2
+    jldi j3, 63
+    jsar j12, j12, j3
+    jld j2, j1, HMID
+    jjnz j12, mhd_hi
+    jst j2, j1, HLO
+    jjmp mhd_lap
+  mhd_hi:
+    jst j2, j1, HHI
+    jjmp mhd_lap
+mhd_done:
+  jld j11, j1, HLO
+  jst j11, j1, HEADC
+  jcall mp_mass
+  jldi j1, 0
+  jst j12, j1, HMASS
+  jst j13, j1, HEADN
+  jret
+
+; Of the books' words, those of j11 times or more: j12 their times, j13 how many. Uses j1-j13.
+mp_mass:
+  jldi j1, 0
+  jldi j12, 0
+  jldi j13, 0
+  jld j9, j1, VOC
+  jld j10, j1, VOC + 8
+  jldi j2, 1
+  jadd j10, j10, j2
+  mms_lap:
+    jjz j10, mms_done
+    jld j2, j9, 0
+    jjz j2, mms_next
+    jld j3, j9, 8
+    jsub j4, j3, j11
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, mms_next
+    jadd j12, j12, j3
+    jldi j4, 1
+    jadd j13, j13, j4
+  mms_next:
+    jldi j2, 16
+    jadd j9, j9, j2
+    jldi j2, 1
+    jsub j10, j10, j2
+    jjmp mms_lap
+mms_done:
   jret
 
 ; Pair WPR's answer -> j9 where it is, j10 its bytes. Uses j1-j4.
@@ -2048,9 +2470,10 @@ mp_ansat:
   jadd j9, j9, j4
   jret
 
-; The words of the j10 bytes at j9, each by its print, to what WMODE says: 0 the books' words (VOC); 1 pair WPR's
-; answer's (OWN); 2 a song sung for pair WPR: how many, how many are words of the books, how many of its own answer's
-; (CSW, CSR, CSO). Uses j1-j14.
+; The words of the j10 bytes at j9, each by its print, to what WMODE says: 0 a word of the books read, once more
+; (VOC, F0); 1 of pair WPR's answer (OWN); 2 sung for pair WPR: how many, of the books, of its own answer, and of those
+; not of the half (CSW, CSR, CSO, CSWC, CSOC; one no book has is said once, after "inventadas:"); 3 of pair WPR's
+; answer, each once, its times into PNUL. Uses j1-j14.
 mp_wwalk:
   mww_lap:
     jldi j1, 0
@@ -2079,11 +2502,21 @@ mp_wwalk:
     jadd j4, j8, j1
     jadd j9, j9, j8
     jsub j10, j10, j8
+    jst j8, j1, WLEN
     jcall mp_print
+    jst j5, j1, WPRT
     jld j2, j1, WMODE
     jjnz j2, mww_m1
     jldi j2, VOC
     jcall pl_take
+    jldi j1, 0
+    jld j2, j4, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j4, 8
+    jld j2, j1, F0
+    jadd j2, j2, j3
+    jst j2, j1, F0
     jjmp mww_lap
   mww_m1:
     jldi j3, 1
@@ -2095,7 +2528,9 @@ mp_wwalk:
     jcall pl_take
     jjmp mww_lap
   mww_m2:
-    jst j5, j1, WPRT
+    jldi j3, 2
+    jsub j3, j2, j3
+    jjnz j3, mww_m3
     jld j2, j1, CSW
     jldi j3, 1
     jadd j2, j2, j3
@@ -2103,12 +2538,50 @@ mp_wwalk:
     jldi j2, VOC
     jcall pl_find
     jldi j1, 0
+    jld j3, j4, 8
     jld j2, j4, 0
-    jjz j2, mww_lap             ; (no word of the books: of its answer neither)
+    jjnz j2, mww_known
+    jst j1, j1, WTIM            ; no book read has it: invented, said once
+    jld j5, j1, WPRT
+    jldi j2, UNK
+    jcall pl_take
+    jldi j1, 0
+    jjz j6, mww_cont
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j3, j1, WLEN
+    jsub j11, j9, j3
+    mww_pw:
+      jsub j2, j11, j9
+      jjz j2, mww_cont
+      jldb j2, j11, 0
+      jcall putch
+      jldi j2, 1
+      jadd j11, j11, j2
+      jjmp mww_pw
+  mww_known:
+    jst j3, j1, WTIM
     jld j2, j1, CSR
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, CSR
+  mww_cont:
+    jldi j1, 0
+    jst j1, j1, WCON
+    jld j2, j1, WTIM
+    jld j3, j1, HEADC
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, mww_own
+    jldi j2, 1
+    jst j2, j1, WCON
+    jld j2, j1, CSWC
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, CSWC
+  mww_own:
     jld j5, j1, WPRT
     jld j7, j1, WPR
     jcall mp_mix
@@ -2121,6 +2594,47 @@ mp_wwalk:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, CSO
+    jld j2, j1, WCON
+    jjz j2, mww_lap
+    jld j2, j1, CSOC
+    jadd j2, j2, j3
+    jst j2, j1, CSOC
+    jjmp mww_lap
+  mww_m3:
+    jld j7, j1, WPR
+    jcall mp_mix
+    jldi j2, OWN
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 8
+    jjnz j2, mww_lap
+    jldi j2, 1
+    jst j2, j4, 8
+    jld j5, j1, WPRT
+    jldi j2, VOC
+    jcall pl_find
+    jldi j1, 0
+    jld j3, j4, 8
+    jld j2, j4, 0
+    jjnz j2, mww_m3k
+    jldi j3, 0
+  mww_m3k:
+    jld j2, j1, WPR
+    jldi j4, 4
+    jshl j2, j2, j4
+    jld j4, j1, PNUL
+    jadd j2, j2, j4
+    jld j4, j2, 0
+    jadd j4, j4, j3
+    jst j4, j2, 0
+    jld j4, j1, HEADC
+    jsub j4, j3, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, mww_lap
+    jld j4, j2, 8
+    jadd j4, j4, j3
+    jst j4, j2, 8
     jjmp mww_lap
 mww_done:
   jldi j1, 0
