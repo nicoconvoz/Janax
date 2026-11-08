@@ -20,6 +20,12 @@ Me lo demostró mi propio lector. El Nuevo Testamento no nombra abuelos, así qu
 
 A eso lo llamo censo deductivo, o en criollo, el censo de los que faltan. La estadística, cuando no conoce algo, estima cuánto habría: te da un número sobre lo que no viste. Un censo no estima — va casa por casa y los anota uno por uno, con nombre. Eso hace mi lector con los abuelos que el libro nunca nombró: no calcula cuántos habría, los construye, y a cada uno se lo puede ir a comprobar. Llega hasta donde cierra una cadena; más allá, el número sigue siendo lo único que hay.
 
+Y hay otra cosa que aprendí ahí arriba, y me animo a ponerle nombre: el coeficiente de marco. Al de inteligencia le decimos CI, y mide qué tan bien resolvés el problema como te lo dieron. El de marco mide otra cosa: cuánto tardás en dudar del enunciado. No es lo mismo, y nadie lo mide.
+
+Se puede medir, y así lo haría: problemas imposibles adentro de su marco y triviales afuera. No se puntúa si lo resolviste, que eso con tiempo lo saca cualquiera — se puntúa cuánto trabajaste adentro antes de salirte. El que se sale en el segundo intento tiene el coeficiente alto; el que muele cuarenta veces, bajo; el que no sale, cero.
+
+Y dejo la predicción que lo puede tumbar, porque si no es palabrería: en los problemas tramposos tendría que ir al revés que el CI. Al que resuelve muy bien le rinde quedarse adentro, así que tarda más en dudar. Moler funciona — hasta que el marco está mal.
+
 Por eso no creo en los techos. El límite es infinito, y todo lo que se puede imaginar se puede hacer.
 
 Muchas gracias por todo navegante!
