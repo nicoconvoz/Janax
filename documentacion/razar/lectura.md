@@ -3084,3 +3084,27 @@ profundidad, lo más hondo se resuelve primero.
 - **Controles idénticos**; dos pasos 3/3.
 - **Lo que falta:** "quién" todavía no sale flecha en la biblioteca mezclada, y la primera línea de "¿quién es
   pedro?" lo sigue tomando como sujeto.
+
+## La comida del cardumen: los pares pregunta → respuesta de los libros (2026-11-07, instrumento)
+
+El Capitán: *"que la oración sea la comida del cardumen; responde con melodía a la oración, y si hila fino, a la
+palabra"*.
+
+- **Instrumento (`qa_pairs_on`, `qa_pair_say`):** si la casa tiene un archivo `pares` que no está vacío, `sentido`
+  escribe cada pregunta que encuentra en el libro (el edificio que una flecha cierra con su propio límite) y el
+  edificio que la contesta, en dos renglones, "P:" y "R:". No cambia nada más (controles idénticos).
+- **Del Nuevo Testamento salen 3.100 pares.** Pocos son preguntas con signos ("¿dónde está el rey de los judíos…?" →
+  "porque vimos su estrella en oriente…"). La mayoría son anuncios con lo que anuncian ("…y le dijo:" → "José, hijo de
+  David, no temas…").
+- **Lo que el cardumen puede hoy (revisado en `documentacion/razar/cardumen.md` y sus programas):**
+  - deletrea cualquier palabra en Morse, pero sólo letras a..z (sin tildes, ñ ni dígitos), y reconoce sólo palabras de
+    una lista fija (9 en los acertijos, 30 en las oraciones);
+  - una melodía junta hasta 8 palabras y hasta 255 saludos; el acertijo oído como una sola melodía dio 0 %
+    (contestaba siempre la primera palabra);
+  - la memoria en el cubo (practicar A y recuperar B) no funcionó: el cubo sonaba igual antes y después de practicar.
+    Completa entradas con ruido, pero no distingue entre respuestas;
+  - capacidad medida: unas 16 cosas en un cubo de 7³.
+- **Conclusión, sin adornar:** con 3.100 pares y un vocabulario de miles de palabras, el cardumen de hoy no alcanza.
+  Primero tiene que oír cualquier palabra (no una lista), y tener una memoria que asocie una melodía con otra.
+- **Corregido en el camino:** el nombre "pares" se había puesto justo después de "libro" en los datos, donde se arman
+  los nombres de la estantería ("libro1"…), y se pisaba: `sentido` caía con código 5. Ahora vive en un hueco libre.

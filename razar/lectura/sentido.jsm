@@ -18,6 +18,7 @@
 ; skeleton that turns gives the turned fact the book does not say, with its why. The tables grow to what they hold.
 ; The cores asked about are the words of the file "q", one per line. Its counts go into j0.
 S_LIBRO = 0
+S_PARES = 2E8h                  ; "pares": when the house has it (not empty), the books' questions and answers said
 S_P     = 10h
 S_Q     = 18h
 S_HEAD  = 40h
@@ -415,7 +416,9 @@ QPAS  = 5800h                   ; a fact walked against the question: where, its
 QPAE  = 5808h
 QPAW  = 5810h
 QPTI  = 5818h
-ARML  = 5820h                   ; the book's ordinary end: the limit that closes the most buildings                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
+ARML  = 5820h
+QAWP  = 5828h                   ; 1: the books' question-answer pairs are said (an instrument); a handle
+QAWH  = 5830h                   ; the book's ordinary end: the limit that closes the most buildings                   ; the paragraph's level: 0 the proven, 1 what names the subject once, 2 both
 INS   = 5200h                   ; the dictionary of instructions: its room (by word, INSQ bytes); walking: a word, a
 INSW  = 5208h                   ; word looked at, a unit, a way, an entry
 INSW2 = 5210h
@@ -2086,6 +2089,7 @@ ar_walk:
 ; teach learned (QLT; not over a piece read again with the library's silhouettes: the library's books teach it).
 ; Written by qa_write_out. Uses j1-j14.
 qa_scan:
+  jcall qa_pairs_on             ; (the pairs said, when asked for: the cardumen's food)
   jldi j2, QLT
   jldi j3, 24
   jcall pl_new
@@ -2121,6 +2125,8 @@ qa_scan:
     jjz j6, qa_empty
     jld j2, j1, QAQ             ; the one before asked: this one answers it
     jjz j2, qa_ask
+    jcall qa_pair_say
+    jldi j1, 0
     jld j2, j1, QAN
     jldi j3, 1
     jadd j2, j2, j3
@@ -2171,6 +2177,115 @@ qa_write_out:
   jcall putch
   jcall flush
   jjmp ql_report
+
+; The books' question-answer pairs as text (Capitan, 2026-11-07: "the sentence is the cardumen's food: it answers a
+; sentence with a melody"): when the house has a file "pares" that is not empty, each question of the book (QAS to
+; QAE, its limit with it) and the building that answers it (QAT to QAI) are said, "P:" and "R:", a line each. An
+; instrument: nothing else changes. Uses j1-j14.
+qa_pairs_on:
+  jldi j1, 0
+  jst j1, j1, QAWP
+  jldi j10, 4
+  jldi j11, S_PARES
+  jldi j12, 5
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, qpo_done
+  jst j13, j1, QAWH
+  jst j1, j1, QAWH + 8
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jldi j11, QAWH + 8
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, QAWP + 16
+  jld j10, j1, QAWH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, QAWP + 16         ; (nothing read: the open made it, and it goes)
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, qpo_gone
+  jjz j2, qpo_gone
+  jldi j2, 1
+  jst j2, j1, QAWP
+  jret
+qpo_gone:
+  jldi j10, 12
+  jldi j11, S_PARES
+  jldi j12, 5
+  jcall ask
+qpo_done:
+  jldi j1, 0
+  jret
+
+; The pair QAS..QAE (it asks) and QAT..QAI (it answers) said, when asked for. Uses j1-j14.
+qa_pair_say:
+  jldi j1, 0
+  jld j2, j1, QAWP
+  jjz j2, qps_done
+  jldi j2, 80
+  jcall putch
+  jldi j2, 58
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j9, j1, QAS
+  jld j10, j1, QAE
+  jcall qps_units
+  jldi j2, 10
+  jcall putch
+  jldi j2, 82
+  jcall putch
+  jldi j2, 58
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j9, j1, QAT
+  jld j10, j1, QAI
+  jcall qps_units
+  jldi j2, 10
+  jcall putch
+qps_done:
+  jldi j1, 0
+  jret
+
+; The units from j9 to j10 (both) said as a sentence. Uses j1-j14.
+qps_units:
+  jldi j1, 0
+  jst j10, j1, QAWH + 16
+  qpu_lap:
+    jldi j1, 0
+    jld j2, j1, QAWH + 16
+    jsub j2, j2, j9
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, qpu_done
+    jst j9, j1, QAWH + 24
+    jadd j2, j9, j1
+    jcall tok_at
+    jjz j2, qpu_next
+    jcall put_glue
+  qpu_next:
+    jldi j1, 0
+    jld j9, j1, QAWH + 24
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp qpu_lap
+qpu_done:
+  jldi j1, 0
+  jret
 
 ; What the answer QAT to QAI teaches about the question QAS to QAE before it (Capitan: "study how the questions are
 ; answered in the books", and "plastic structures, not rigid"): each core of the answer the question says too, and each

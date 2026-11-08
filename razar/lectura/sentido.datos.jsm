@@ -51,6 +51,8 @@ times 2C0h - $ db 0
 db 'el significado de: ', 0
 times 2D8h - $ db 0
 db ' | palabras:', 0
+times 2E8h - $ db 0
+db 'pares', 0
 times 300h - $ db 0
 db '  deduce: ', 0
 times 310h - $ db 0
