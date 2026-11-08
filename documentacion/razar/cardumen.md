@@ -2579,3 +2579,40 @@ documentos citan palabras del NT: no son del todo ajenos. Ninguno de los textos 
   empieza de cero, así que lo probado en el NT no defiende su lugar cuando llega lo nuevo: compite de nuevo, y a veces
   pierde. Un aprendiz sin techo tiene que llevarse lo que aprendió al libro siguiente. Esto todavía no lo hace, y por
   eso la pendiente hoy no se puede medir: falta que lo aprendido sobreviva.
+
+## Lo sabido pasa al libro siguiente (2026-11-08)
+
+El Capitán: *"sí, que se lo lleve"*. Hasta acá cada corrida de `hilos` empezaba de cero, y con más libro perdía lo que
+había probado (`hijo de ~ padre de` se iba al sumar los documentos).
+
+- **`sabido`** (un archivo de la casa): al terminar, cada unión del while se escribe como lo que es, una flecha
+  {la llave de la forma, la llave de aquella a la que se unió, 1 del mismo lado o 2 al revés, y sus palabras}. Las
+  llaves salen de las huellas de las palabras, así que una forma tiene la misma llave en cualquier libro. Al empezar el
+  libro siguiente, antes de la primera vuelta, cada flecha cuyas dos formas están en ese libro se vuelve a tender
+  (`sabe: …`). Las que no están se copian tal cual al `sabido` nuevo. No se pierde ninguna. Una forma deducida no se
+  escribe: se vuelve a deducir.
+- **Prueba (`hilos_sabido_prueba.sh`):** un libro con la familia une `padre de ~ hijo de`. Un segundo libro con otra
+  gente y un par de cada una no une nada solo. Con el `sabido` del primero dice `sabe: padre de ~ hijo de | al reves`
+  y guarda la línea para el próximo.
+- **Los once libros, cada uno solo, con lo que dejó el anterior:**
+
+  | libro | vuelve a tender | guardadas sin usar | uniones nuevas | lo que sabe después |
+  |---|---|---|---|---|
+  | NT | 0 | 0 | 104 | 101 |
+  | Asimov | 30 | 71 | 17 | 118 |
+  | estado | 13 | 105 | 1 | 119 |
+  | lectura | 27 | 92 | 42 | 159 |
+  | cardumen | 50 | 109 | 30 | 184 |
+  | janaxos | 31 | 153 | 3 | 187 |
+  | ideas | 25 | 162 | 1 | 188 |
+  | especificación, traductores, receta, carta | 5 a 16 | 172 a 186 | 0 | 188 |
+
+  **Sube y no baja:** 101 → 188, y no pierde nada en el camino (sin la memoria, la misma tanda iba 104 → 213 → 251 →
+  245 y perdía lo probado). Los cuatro documentos chicos no traen nada nuevo y no borran nada. Al final siguen, como
+  flecha directa, `cinco mil ~ cuatro mil`, `piedad de ~ compasión de`, `fue ~ había sido`, `algún ~ ningún`,
+  `la multitud ~ pedro` y `cercano al ~ próximo al`. `hijo de` y `padre de` siguen en la misma familia.
+- **Lo malo, y viene de lo mismo:** en `lectura` (que cita al NT y habla de sus relaciones) se unió `y ~ hijo de`
+  con tres confirmaciones. Como ya sabía `hijo de ~ padre de`, la genealogía entera quedó en la clase de la conjunción
+  "y", junto con `sin` y `→ − y`. Lo que se lleva no se vuelve a juzgar: **un error de un libro queda para siempre.**
+  Falta la poda: que una flecha traída sea premisa, pero que el libro nuevo pueda mandarla al coma si la contradice o
+  no la explica (al coma, no a la basura: como todo lo refutado).

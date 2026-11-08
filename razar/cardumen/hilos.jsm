@@ -102,6 +102,11 @@ S_PALAB  = 760h
 S_LADO0  = 780h
 S_LADO1  = 7A0h
 S_SUSPD  = 7C0h
+S_SABIDO = 7E0h
+S_SABE   = 800h
+S_SABN   = 820h
+S_APL    = 840h
+S_SINU   = 860h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -257,7 +262,26 @@ HPBW  = 1B78h                   ; keeps apart, and the words in conflict (rooms)
 HSUSF = 1B80h                   ; its number, relation twice plus side, plus one here; 0 none), as it is this turn
 HSUSS = 1B88h                   ; {its side, its relation}; walking
 HSUSR = 1B90h
-HPI   = 1B98h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HPI   = 1B98h
+HKB   = 1BA0h                   ; what it knew ("sabido"): its bytes and how many, walking it and its end, how many
+HKN   = 1BA8h                   ; joined again and how many kept, the lines kept {where, bytes} (a room); a handle; a
+HKP   = 1BB0h                   ; form walked; the next line; a line's two keys, its way, its two forms; their
+HKE   = 1BB8h                   ; relations and ways
+HKA   = 1BC0h
+HKU   = 1BC8h
+HKL   = 1BD0h
+HKH   = 1BD8h
+HKI   = 1BE0h
+HKX   = 1BE8h
+HKKF  = 1BF0h
+HKKP  = 1BF8h
+HKW   = 1C00h
+HKFF  = 1C08h
+HKFP  = 1C10h
+HKRA  = 1C18h
+HKPA  = 1C20h
+HKRB  = 1C28h
+HKPB  = 1C30h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -336,6 +360,7 @@ jcall en_lines
 jcall hl_half
 jcall hl_facts
 jcall hl_rooms
+jcall hl_known
 jcall hl_say0
 jldi j1, 0
 jld j2, j1, HTANDA
@@ -366,6 +391,7 @@ jwhile j2                      ; while a turn joins something
   jadd j2, j2, j3
 jwend
 jcall hl_end
+jcall hl_ksave
 jjmp finish
 
 ; Each word's times, the half (the words said most that make half of what the book says: HHC the fewest times one
@@ -4924,6 +4950,413 @@ hl_rules:
     jst j2, j1, HPI
     jjmp hru_lap
 hru_done:
+  jret
+
+; What it proved in the books before (Capitan: "that it takes it with it"): the house's "sabido", a line each join
+; {the form's key, the key of the one it joined, 1 the same way or 2 the other way round, and its words to read}, the
+; keys in sixteen hexadecimal digits (a form's key comes from its words' prints, so it is the same in every book). Each
+; line whose two forms this book has is joined again before the first turn, as a premise ("sabe:"); one whose forms
+; this book does not have is kept as it is, for the next book. Uses j1-j14.
+hl_known:
+  jldi j11, S_SABIDO
+  jldi j12, 6
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, HKB
+  jld j2, j1, PRN
+  jst j2, j1, HKN
+  jst j1, j1, HKA
+  jst j1, j1, HKU
+  jldi j3, 16                   ; (the lines not used: {where, bytes}; a line is 36 bytes or more)
+  jadd j11, j2, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HKL
+  jld j2, j1, HKB
+  jst j2, j1, HKP
+  jld j3, j1, HKN
+  jadd j3, j2, j3
+  jst j3, j1, HKE
+  hk_lap:
+    jldi j1, 0
+    jld j4, j1, HKP
+    jld j5, j1, HKE
+    jsub j5, j5, j4
+    jjz j5, hk_done
+    jadd j7, j4, j1             ; where the line ends (after its line end)
+    hk_eol:
+      jld j5, j1, HKE
+      jsub j5, j5, j7
+      jjz j5, hk_eold
+      jldb j5, j7, 0
+      jldi j6, 1
+      jadd j7, j7, j6
+      jldi j6, 10
+      jsub j5, j5, j6
+      jjnz j5, hk_eol
+  hk_eold:
+    jst j7, j1, HKX
+    jsub j5, j7, j4             ; 36 bytes at least
+    jldi j6, 36
+    jsub j6, j5, j6
+    jldi j8, 63
+    jsar j6, j6, j8
+    jjnz j6, hk_next
+    jcall hk_hex                ; the form, the one it joined, which way
+    jldi j1, 0
+    jst j9, j1, HKKF
+    jld j4, j1, HKP
+    jldi j2, 17
+    jadd j4, j4, j2
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HKKP
+    jld j4, j1, HKP
+    jldb j2, j4, 34
+    jldi j3, 50
+    jsub j2, j2, j3
+    jldi j3, 1
+    jjz j2, hk_way
+    jldi j3, 0
+  hk_way:
+    jst j3, j1, HKW
+    jld j5, j1, HKKF            ; its two forms in this book
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKF
+    jsub j6, j6, j5
+    jjnz j6, hk_keep
+    jld j6, j4, 8
+    jst j6, j1, HKFF
+    jld j5, j1, HKKP
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKP
+    jsub j6, j6, j5
+    jjnz j6, hk_keep
+    jld j6, j4, 8
+    jst j6, j1, HKFP
+    jcall hk_join
+    jjmp hk_next
+  hk_keep:                      ; not in this book: kept as it is
+    jldi j1, 0
+    jld j2, j1, HKU
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HKL
+    jadd j3, j3, j4
+    jld j4, j1, HKP
+    jst j4, j3, 0
+    jld j5, j1, HKX
+    jsub j5, j5, j4
+    jst j5, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKU
+  hk_next:
+    jldi j1, 0
+    jld j2, j1, HKX
+    jst j2, j1, HKP
+    jjmp hk_lap
+hk_done:
+  jld j2, j1, HKN
+  jjz j2, hk_quiet
+  jldi j1, S_SABN
+  jcall puts
+  jld j2, j1, HKA
+  jcall putnum
+  jldi j1, S_APL
+  jcall puts
+  jld j2, j1, HKU
+  jcall putnum
+  jldi j1, S_SINU
+  jcall puts
+hk_quiet:
+  jldi j1, 0
+  jret
+
+; Sixteen hexadecimal digits at j4 -> j9. Uses j2, j3, j4, j8, j9.
+hk_hex:
+  jldi j9, 0
+  jldi j8, 16
+  hkh_lap:
+    jjz j8, hkh_done
+    jldb j2, j4, 0
+    jldi j3, 97
+    jsub j3, j2, j3
+    jldi j1, 63
+    jsar j3, j3, j1
+    jldi j1, 48
+    jjnz j3, hkh_dig
+    jldi j1, 87
+  hkh_dig:
+    jsub j2, j2, j1
+    jldi j3, 4
+    jshl j9, j9, j3
+    jor j9, j9, j2
+    jldi j3, 1
+    jadd j4, j4, j3
+    jsub j8, j8, j3
+    jjmp hkh_lap
+hkh_done:
+  jldi j1, 0
+  jret
+
+; Form HKFF joined to form HKFP again, HKW the way the first is to the second: their relations, one into the other, as
+; a join of a turn does (the second's relation into the first's). Said "sabe:". Uses j1-j14.
+hk_join:
+  jldi j1, 0
+  jld j2, j1, HKFP
+  jcall hl_find
+  jldi j1, 0
+  jst j2, j1, HKRA
+  jst j3, j1, HKPA
+  jld j2, j1, HKFF
+  jcall hl_find
+  jldi j1, 0
+  jld j4, j1, HKRA
+  jsub j4, j4, j2
+  jjz j4, hkj_done              ; (together already)
+  jld j4, j1, HKPA              ; its way, against the first's relation
+  jxor j3, j3, j4
+  jld j4, j1, HKW
+  jxor j3, j3, j4
+  jst j2, j1, HKRB
+  jst j3, j1, HKPB
+  jldi j4, 3
+  jshl j4, j2, j4
+  jld j5, j1, HCLS
+  jadd j5, j5, j4
+  jld j6, j1, HKRA
+  jst j6, j5, 0
+  jld j5, j1, HPAR
+  jadd j5, j5, j4
+  jst j3, j5, 0
+  jld j5, j1, HSIZE
+  jadd j5, j5, j4
+  jld j7, j5, 0
+  jldi j8, 3
+  jshl j8, j6, j8
+  jld j9, j1, HSIZE
+  jadd j9, j9, j8
+  jld j10, j9, 0
+  jadd j10, j10, j7
+  jst j10, j9, 0
+  jld j2, j1, HKA
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, HKA
+  jldi j1, S_SABE
+  jcall puts
+  jld j2, j1, HKRA
+  jcall hl_sayform
+  jldi j1, S_TIL
+  jcall puts
+  jld j2, j1, HKRB
+  jcall hl_sayform
+  jldi j1, 0
+  jld j2, j1, HKPB
+  jldi j1, S_MISMA
+  jjz j2, hkj_way
+  jldi j1, S_REVES
+hkj_way:
+  jcall puts
+  jldi j2, 10
+  jcall putch
+hkj_done:
+  jldi j1, 0
+  jret
+
+; What it knows now, into the house's "sabido" for the next book: each form joined to another (one line each: its key,
+; the key of the one it joined, the way, its words), and the lines of the books before it could not use, as they were.
+; A form deduced here is not written (it is deduced again). Uses j1-j14.
+hl_ksave:
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_SABIDO
+  jldi j12, 6
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_SABIDO
+  jldi j12, 6
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hks_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jst j1, j1, HKI
+  hks_lap:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hks_old
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jsub j5, j4, j2
+    jjz j5, hks_next            ; a relation of its own
+    jst j4, j1, HKFP
+    jld j5, j1, HPAR
+    jadd j5, j5, j3
+    jld j5, j5, 0
+    jst j5, j1, HKW
+    jadd j2, j2, j1             ; neither deduced
+    jcall hk_deduced
+    jjnz j6, hks_next
+    jldi j1, 0
+    jld j2, j1, HKFP
+    jcall hk_deduced
+    jjnz j6, hks_next
+    jldi j1, 0
+    jld j2, j1, HKI
+    jcall hk_key
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKFP
+    jcall hk_key
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKW
+    jldi j3, 49
+    jadd j2, j2, j3
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 124
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKI
+    jcall hl_sayform
+    jldi j1, S_TIL
+    jcall puts
+    jld j2, j1, HKFP
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+  hks_next:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hks_lap
+hks_old:
+  jldi j1, 0
+  jst j1, j1, HKI
+  hks_o:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HKU
+    jsub j3, j2, j3
+    jjz j3, hks_close
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HKL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jld j5, j3, 8
+    hks_b:
+      jjz j5, hks_bn
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jjmp hks_b
+  hks_bn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hks_o
+hks_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hks_done:
+  jldi j1, 0
+  jret
+
+; j6 = 1 if form j2 was deduced here (not read). Uses j1, j3, j4, j6.
+hk_deduced:
+  jldi j3, 48
+  jmul j3, j2, j3
+  jldi j1, 0
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j4, j3, 24
+  jldi j6, 63
+  jsar j6, j4, j6
+  jjz j6, hkd_no
+  jldi j6, 1
+hkd_no:
+  jret
+
+; j2 = the key of form j2. Uses j1, j3, j4.
+hk_key:
+  jldi j3, 48
+  jmul j3, j2, j3
+  jldi j1, 0
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j2, j3, 0
+  jret
+
+; j2 in sixteen hexadecimal digits, the highest first. Uses j1-j5.
+hk_puthex:
+  jldi j1, 0
+  jst j2, j1, HKKF
+  jldi j5, 16
+  hkp_lap:
+    jjz j5, hkp_done
+    jldi j1, 0
+    jld j2, j1, HKKF
+    jldi j3, 60
+    jshr j2, j2, j3
+    jldi j3, 10
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jldi j4, 48
+    jjnz j3, hkp_dig
+    jldi j4, 87
+  hkp_dig:
+    jadd j2, j2, j4
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKKF
+    jldi j3, 4
+    jshl j2, j2, j3
+    jst j2, j1, HKKF
+    jldi j3, 1
+    jsub j5, j5, j3
+    jjmp hkp_lap
+hkp_done:
   jret
 
 ; The house's file named by the j12 bytes at j11 -> PRB, PRN (0: none). Uses j1-j14.

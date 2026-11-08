@@ -124,3 +124,13 @@ times 7A0h - $ db 0
 db ' | un A por cada B', 0
 times 7C0h - $ db 0
 db 'suspendida: regla ', 0
+times 7E0h - $ db 0
+db 'sabido', 0
+times 800h - $ db 0
+db 'sabe: ', 0
+times 820h - $ db 0
+db 'sabido: ', 0
+times 840h - $ db 0
+db ' aplicadas | ', 0
+times 860h - $ db 0
+db ' sin usar (sus formas no estan en este libro)', 10, 0
