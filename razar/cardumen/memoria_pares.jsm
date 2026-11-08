@@ -51,6 +51,18 @@ S_RAZONA = 450h
 S_RZ1   = 460h
 S_RZ2   = 4B0h
 S_RZ3   = 4D0h
+S_SEMILLA = 4F0h
+S_SD1   = 500h
+S_SD2   = 540h
+S_SD3   = 580h
+S_SD4   = 5C0h
+S_SD5   = 600h
+S_SD6   = 640h
+S_SD7   = 680h
+S_SD8   = 6C0h
+S_SD9   = 700h
+S_SD10  = 710h
+S_SD11  = 720h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -92,7 +104,7 @@ SYM   = 1400h                   ; the song: every pair's songs in a row, how man
 SYN   = 1408h                   ; first (after the turn), one past its end}
 PSY   = 1410h
 HPX   = 1418h                   ; by place, the print of its context so far (0: grows no more)
-CXT   = 1420h                   ; the contexts: by print {key, its last pair plus one, how many pairs say it}
+CXT   = 1420h                   ; the contexts: by print {key, its last pair plus one, how many pairs say it, times}
 NXT   = 1440h                   ; what follows: by the print of a context and a song {key, times}
 VOC   = 1460h                   ; the books' words, by print; each answer's words, by print and pair
 OWN   = 1480h
@@ -165,6 +177,50 @@ CTC   = 16C8h                   ; CT's room, bytes; the question's longest word
 QMW   = 16D0h
 CEC   = 16E0h                   ; places of the question sung, and how many of them said a word (over the pairs asked)
 CEW   = 16E8h
+SEN   = 1700h                   ; the seed (mp_seed): the book's sentences, and the rest of its walking
+SENN  = 1708h
+SDQ   = 1710h
+QCS   = 1718h
+QCN   = 1720h
+QHB   = 1728h
+SWB   = 1730h
+MAXS  = 1738h
+QI    = 1740h
+QJ    = 1748h
+QK    = 1750h
+SA    = 1758h
+SB    = 1760h
+SBV   = 1768h
+SBB   = 1770h
+NQS   = 1778h
+SBEST = 1780h
+SBS   = 1788h
+OBEST = 1790h
+OBS   = 1798h
+SCC   = 17A0h
+SCN   = 17A8h
+HSG   = 17B0h
+HOV   = 17B8h
+HRN   = 17C0h
+NEV   = 17C8h
+NCAND = 17D0h
+SL0   = 17D8h
+SSC   = 17E0h
+SPOS  = 17E8h
+SCTX  = 17F0h
+SLGT  = 17F8h
+CHN   = 1800h
+SEV   = 1808h
+SJJ   = 1810h
+SK    = 1818h
+QP    = 1820h
+PLC   = 1850h                   ; 1: a place only for what the question is about (the seed); walking QLB
+QFI   = 1858h
+QFO   = 1860h
+QFP   = 1868h
+SQL   = 1840h                   ; (the question's places kept; a plain cost)
+SPL   = 1848h
+QPN   = 1828h
 RG4   = 16D8h                   ; (a list's entry, while its print is made)
 
 include '../../escalon0/janax.inc'
@@ -1231,6 +1287,12 @@ mpb_done:
 ; stretches of the pairs, in their order) that stretch is not read: it is only asked. j2 = 1 if it sang (0: no
 ; "canta"). Uses j1-j14.
 mp_sing:
+  jldi j11, S_SEMILLA           ; (with "semilla": the book's own answers as the seed)
+  jldi j12, 7
+  jcall mp_aside
+  jjz j3, msg_nosd
+  jjmp mp_seed
+msg_nosd:
   jldi j11, S_CANTA
   jldi j12, 5
   jcall mp_aside
@@ -1827,8 +1889,17 @@ mas_on:
   jcall mp_wlist
   jldi j1, 0
   jst j12, j1, QLN
+  jcall mp_qlfilter
+  jldi j1, 0
   jld j9, j1, RG1
   jld j10, j1, RG2
+  jld j11, j1, RG3
+; The same, against the question's words already in QLB (QLN): the j10 bytes at j9 from j11 on (moved past them).
+mp_encode:
+  jldi j1, 0
+  jst j9, j1, RG1
+  jst j10, j1, RG2
+  jst j11, j1, RG3
   jld j11, j1, ALB
   jcall mp_wlist
   jldi j1, 0
@@ -1911,6 +1982,66 @@ mas_done:
   jld j11, j1, RG3
   jret
 
+; With PLC (the seed), the question's words in QLB that are of the half go: a place is only what the question is
+; about, the rest is the song's grammar. Uses j1-j14.
+mp_qlfilter:
+  jldi j1, 0
+  jld j2, j1, PLC
+  jjz j2, mqf_done
+  jst j1, j1, QFI
+  jst j1, j1, QFO
+  mqf_lap:
+    jldi j1, 0
+    jld j2, j1, QFI
+    jld j3, j1, QLN
+    jsub j3, j2, j3
+    jjz j3, mqf_end
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, QLB
+    jadd j8, j3, j4
+    jst j8, j1, QFP
+    jld j5, j8, 0
+    jldi j2, VOC
+    jcall pl_find
+    jldi j1, 0
+    jld j3, j4, 8
+    jld j2, j4, 0
+    jjz j2, mqf_keep            ; (a word no book has: what it is about)
+    jld j2, j1, HEADC
+    jsub j3, j3, j2
+    jldi j2, 63
+    jsar j3, j3, j2
+    jjz j3, mqf_next
+  mqf_keep:
+    jld j8, j1, QFP
+    jld j2, j1, QFO
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, QLB
+    jadd j3, j3, j4
+    jld j5, j8, 0
+    jst j5, j3, 0
+    jld j5, j8, 8
+    jst j5, j3, 8
+    jld j5, j8, 16
+    jst j5, j3, 16
+    jldi j5, 1
+    jadd j2, j2, j5
+    jst j2, j1, QFO
+  mqf_next:
+    jld j2, j1, QFI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QFI
+    jjmp mqf_lap
+mqf_end:
+  jld j2, j1, QFO
+  jst j2, j1, QLN
+mqf_done:
+  jldi j1, 0
+  jret
+
 ; The words of the j10 bytes at j9 into the list at j11 ({print, where, bytes} each) -> j12 how many. Uses j1-j12.
 mp_wlist:
   jldi j12, 0
@@ -1981,6 +2112,9 @@ mqw_room:
   jcall mp_wlist
   jldi j1, 0
   jst j12, j1, QLN
+  jcall mp_qlfilter
+  jldi j1, 0
+  jld j12, j1, QLN
   jst j1, j1, QMW
   jldi j9, 0
   mqw_lap:
@@ -2030,6 +2164,939 @@ mp_ctneed:
   jst j13, j1, CT
 mct_done:
   jldi j1, 0
+  jret
+
+; The book's own answers as the seed (Capitan, 2026-11-08: "a real example of the book, its mechanism taken apart and
+; given as a song, and then deduce a question or an answer that is missing"; "every sentence of the answer counts";
+; "throw nothing away: everything works"). With "semilla" in the house, "pares" holds every building of the book in its
+; order (sentido.jsm: "Q:" if it asks, "O:" if not). A question's answer is the sentences after it, up to the next
+; question; its seed, the one of them that says the most words of the question not of the half (none: no seed). The
+; seeds are the pairs: each answer sung with the places of its question (razona), and the song learns them. With
+; "fuera" a stretch of the seeds is not read and each of its questions is asked: of every sentence of the book that says
+; a word of it not of the half, the one the song expects the most (the least -lg a song) is its answer, right when it is
+; one of the sentences of its answer. The ruler, from the same pass: one drawn at random (the part of those sentences
+; that are of its answer), and the one that says the most of its words. j2 = 1. Uses j1-j14.
+mp_seed:
+  jcall ms_lines
+  jcall ms_vocab
+  jcall ms_seeds
+  jldi j1, S_SD1
+  jcall puts
+  jld j2, j1, NQS
+  jcall putnum
+  jldi j1, S_SD2
+  jcall puts
+  jld j2, j1, PPN
+  jcall putnum
+  jldi j1, S_SD3
+  jcall puts
+  jld j2, j1, SENN
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+  jldi j1, 0
+  jst j1, j1, FK
+  jst j1, j1, FE
+  jst j1, j1, EVS
+  jld j2, j1, PPN
+  jst j2, j1, EVE
+  jldi j11, S_FUERA
+  jldi j12, 5
+  jcall mp_aside
+  jldi j1, 0
+  jadd j9, j2, j1
+  jadd j10, j3, j1
+  jcall mp_nums
+  jldi j1, 0
+  jld j2, j1, NUM1              ; the k-th of n: from (k - 1) PPN / n to k PPN / n
+  jld j3, j1, NUM2
+  jjz j3, msd_read
+  jjz j2, msd_read
+  jsub j4, j3, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, msd_read
+  jld j4, j1, PPN
+  jmul j5, j2, j4
+  jdiv j5, j5, j3
+  jst j5, j1, FE
+  jst j5, j1, EVE
+  jldi j5, 1
+  jsub j2, j2, j5
+  jmul j5, j2, j4
+  jdiv j5, j5, j3
+  jst j5, j1, FK
+  jst j5, j1, EVS
+  jldi j1, S_CH13
+  jcall puts
+  jld j2, j1, FK
+  jcall putnum
+  jldi j1, S_CH14
+  jcall puts
+  jld j2, j1, FE
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+msd_read:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, GON
+  jst j2, j1, PLC
+  jst j1, j1, QLN
+  jst j1, j1, QMW
+  jcall mp_syms
+  jcall mp_learn
+  jldi j1, 0                    ; rooms: the words of any sentence, the contexts of a song
+  jld j11, j1, MAXS
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, ALB
+  jld j11, j1, ORD
+  jldi j2, 3
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, CHN
+  jst j1, j1, CQC
+  jcall ms_eval
+  jcall ms_say
+  jcall flush
+  jldi j2, 1
+  jret
+
+; The book's buildings, the "Q:" and "O:" lines of "pares" -> SEN {start, bytes, 1 if it asks}, SENN; MAXS the
+; longest; rooms for a sentence's words (SWB), a question's words (QCS) and which were said (QHB). Uses j1-j14.
+ms_lines:
+  jldi j1, 0
+  jld j11, j1, PRN
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j2, 32
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SEN
+  jst j1, j1, SENN
+  jst j1, j1, MAXS
+  jst j1, j1, TT1
+  msl_lap:
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j2, j1, PRN
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjz j2, msl_done
+    jcall mp_lineat
+    jldi j1, 0
+    jst j10, j1, TT2
+    jsub j2, j10, j9
+    jldi j3, 3
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, msl_next
+    jld j2, j1, PRB
+    jadd j2, j2, j9
+    jldb j3, j2, 1
+    jldi j4, 58
+    jsub j3, j3, j4
+    jjnz j3, msl_next
+    jldb j3, j2, 0
+    jldi j5, 0
+    jldi j4, 81
+    jsub j4, j3, j4
+    jjz j4, msl_q
+    jldi j4, 79
+    jsub j4, j3, j4
+    jjnz j4, msl_next
+    jjmp msl_keep
+  msl_q:
+    jldi j5, 1
+  msl_keep:
+    jld j2, j1, SENN
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, SEN
+    jadd j3, j3, j4
+    jldi j4, 3
+    jadd j4, j9, j4
+    jst j4, j3, 0
+    jsub j6, j10, j4
+    jst j6, j3, 8
+    jst j5, j3, 16
+    jld j7, j1, MAXS
+    jsub j7, j7, j6
+    jldi j8, 63
+    jsar j7, j7, j8
+    jjz j7, msl_cnt
+    jst j6, j1, MAXS
+  msl_cnt:
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SENN
+  msl_next:
+    jldi j1, 0
+    jld j2, j1, TT2
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT1
+    jjmp msl_lap
+msl_done:
+  jld j11, j1, MAXS
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 24
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SWB
+  jld j11, j1, MAXS
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QCS
+  jld j11, j1, MAXS
+  jldi j2, 8
+  jadd j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, QHB
+  jld j11, j1, SENN
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 5
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, SDQ
+  jret
+
+; The book's words, every sentence's (VOC, F0), and the half (mp_head). Uses j1-j14.
+ms_vocab:
+  jldi j2, VOC
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, F0
+  jst j1, j1, WMODE
+  jst j1, j1, TT5
+  msv_lap:
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, SENN
+    jsub j3, j2, j3
+    jjz j3, msv_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, SEN
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jcall mp_wwalk
+    jldi j1, 0
+    jld j2, j1, TT5
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, TT5
+    jjmp msv_lap
+msv_done:
+  jjmp mp_head
+
+; The words of the j10 bytes at j9 not of the half, each once -> QCS (prints), QCN. Uses j1-j14.
+ms_qset:
+  jldi j1, 0
+  jld j11, j1, SWB
+  jcall mp_wlist
+  jldi j1, 0
+  jst j12, j1, QJ
+  jst j1, j1, QCN
+  jst j1, j1, QI
+  mqs_lap:
+    jldi j1, 0
+    jld j2, j1, QI
+    jld j3, j1, QJ
+    jsub j3, j2, j3
+    jjz j3, mqs_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, SWB
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jst j5, j1, QK
+    jldi j2, VOC
+    jcall pl_find
+    jldi j1, 0
+    jld j3, j4, 8
+    jld j2, j1, HEADC
+    jsub j3, j3, j2
+    jldi j2, 63
+    jsar j3, j3, j2
+    jjz j3, mqs_next
+    jld j5, j1, QK
+    jld j6, j1, QCN
+    jld j7, j1, QCS
+    mqs_d:
+      jjz j6, mqs_add
+      jld j8, j7, 0
+      jsub j8, j8, j5
+      jjz j8, mqs_next
+      jldi j8, 8
+      jadd j7, j7, j8
+      jldi j8, 1
+      jsub j6, j6, j8
+      jjmp mqs_d
+  mqs_add:
+    jst j5, j7, 0
+    jld j6, j1, QCN
+    jldi j8, 1
+    jadd j6, j6, j8
+    jst j6, j1, QCN
+  mqs_next:
+    jld j2, j1, QI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, QI
+    jjmp mqs_lap
+mqs_done:
+  jret
+
+; How many of the question's words (QCS) the j10 bytes at j9 say, each once -> j2. Uses j1-j12.
+ms_overlap:
+  jldi j1, 0
+  jld j11, j1, SWB
+  jcall mp_wlist
+  jldi j1, 0
+  jld j2, j1, QCN
+  jld j3, j1, QHB
+  mov_z:
+    jjz j2, mov_zd
+    jstb j1, j3, 0
+    jldi j4, 1
+    jadd j3, j3, j4
+    jsub j2, j2, j4
+    jjmp mov_z
+mov_zd:
+  jldi j9, 0
+  jldi j8, 0
+  mov_lap:
+    jsub j2, j9, j12
+    jjz j2, mov_done
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, SWB
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jld j6, j1, QCN
+    jld j7, j1, QCS
+    jldi j10, 0
+    mov_f:
+      jsub j2, j10, j6
+      jjz j2, mov_next
+      jld j2, j7, 0
+      jsub j2, j2, j5
+      jjz j2, mov_hit
+      jldi j2, 8
+      jadd j7, j7, j2
+      jldi j2, 1
+      jadd j10, j10, j2
+      jjmp mov_f
+    mov_hit:
+      jld j2, j1, QHB
+      jadd j2, j2, j10
+      jldb j3, j2, 0
+      jjnz j3, mov_next
+      jldi j3, 1
+      jstb j3, j2, 0
+      jadd j8, j8, j3
+    mov_next:
+      jldi j2, 1
+      jadd j9, j9, j2
+      jjmp mov_lap
+mov_done:
+  jadd j2, j8, j1
+  jret
+
+; The seeds: each question of the book, its answer (the sentences up to the next question) and of them the one that
+; says the most of its words (the first of equals) -> the pairs (PPR its question, PAN that sentence; PPN), and by
+; seed SDQ {the question, its answer's first sentence, one past its last, the seed}. Uses j1-j14.
+ms_seeds:
+  jldi j1, 0
+  jst j1, j1, PPN
+  jst j1, j1, NQS
+  jst j1, j1, SA
+  mse_lap:
+    jldi j1, 0
+    jld j2, j1, SA
+    jld j3, j1, SENN
+    jsub j3, j2, j3
+    jjz j3, mse_done
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, SEN
+    jadd j8, j3, j4
+    jld j3, j8, 16
+    jjz j3, mse_next
+    jld j3, j1, NQS
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, NQS
+    jld j9, j8, 0
+    jld j10, j8, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jcall ms_qset
+    jldi j1, 0
+    jld j2, j1, SA
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SB
+    jst j1, j1, SBV
+    jldi j2, -1
+    jst j2, j1, SBB
+    mse_r:
+      jldi j1, 0
+      jld j2, j1, SB
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+      jjz j3, mse_rd
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, SEN
+      jadd j8, j3, j4
+      jld j3, j8, 16
+      jjnz j3, mse_rd
+      jld j9, j8, 0
+      jld j10, j8, 8
+      jld j4, j1, PRB
+      jadd j9, j9, j4
+      jcall ms_overlap
+      jldi j1, 0
+      jld j3, j1, SBV
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mse_rn
+      jst j2, j1, SBV
+      jld j2, j1, SB
+      jst j2, j1, SBB
+    mse_rn:
+      jld j2, j1, SB
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, SB
+      jjmp mse_r
+  mse_rd:
+    jld j2, j1, SBB
+    jldi j3, 63
+    jsar j3, j2, j3
+    jjnz j3, mse_next           ; (none of its answer says a word of it: no seed)
+    jld j2, j1, PPN
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, PPR
+    jadd j3, j3, j4
+    jld j5, j1, SA
+    jldi j6, 24
+    jmul j5, j5, j6
+    jld j6, j1, SEN
+    jadd j5, j5, j6
+    jld j6, j5, 0
+    jst j6, j3, 0
+    jld j6, j5, 8
+    jst j6, j3, 8
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, PAN
+    jadd j3, j3, j4
+    jld j5, j1, SBB
+    jldi j6, 24
+    jmul j5, j5, j6
+    jld j6, j1, SEN
+    jadd j5, j5, j6
+    jld j6, j5, 0
+    jst j6, j3, 0
+    jld j6, j5, 8
+    jst j6, j3, 8
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, SDQ
+    jadd j3, j3, j4
+    jld j5, j1, SA
+    jst j5, j3, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j3, 8
+    jld j5, j1, SB
+    jst j5, j3, 16
+    jld j5, j1, SBB
+    jst j5, j3, 24
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, PPN
+  mse_next:
+    jldi j1, 0
+    jld j2, j1, SA
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SA
+    jjmp mse_lap
+mse_done:
+  jldi j1, 0
+  jret
+
+; j2 = 1 if sentence j2 is of the answer of seed SEV (0 for -1). Uses j1-j5.
+ms_isreg:
+  jldi j1, 0
+  jld j3, j1, SEV
+  jldi j4, 5
+  jshl j3, j3, j4
+  jld j4, j1, SDQ
+  jadd j3, j3, j4
+  jld j4, j3, 8
+  jsub j4, j2, j4
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, msr_no
+  jld j4, j3, 16
+  jsub j4, j2, j4
+  jsar j4, j4, j5
+  jjz j4, msr_no
+  jldi j2, 1
+  jret
+msr_no:
+  jldi j2, 0
+  jret
+
+; Each seed asked (all, or those left out): its answer looked for among every sentence of the book that says a word
+; of it; judged by the song and by the ruler. Uses j1-j14.
+ms_eval:
+  jldi j1, 0
+  jst j1, j1, HSG
+  jst j1, j1, HOV
+  jst j1, j1, HRN
+  jst j1, j1, NEV
+  jst j1, j1, NCAND
+  jld j2, j1, EVS
+  jst j2, j1, SEV
+  mev_lap:
+    jldi j1, 0
+    jld j2, j1, SEV
+    jld j3, j1, EVE
+    jsub j3, j2, j3
+    jjz j3, mev_done
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, PPR
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jst j9, j1, QP
+    jst j10, j1, QPN
+    jcall ms_qset
+    jldi j1, 0
+    jld j9, j1, QP
+    jld j10, j1, QPN
+    jcall mp_qwords
+    jldi j1, 0                  ; the question sung, and its turn
+    jld j2, j1, SEV
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, PSY
+    jadd j8, j3, j4
+    jld j9, j8, 0
+    jld j10, j8, 8
+    jsub j10, j10, j9
+    jst j9, j1, SA
+    jst j10, j1, SL0
+    jld j11, j1, MAXS
+    jldi j2, 3
+    jmul j11, j11, j2
+    jadd j11, j11, j10
+    jldi j2, 16
+    jadd j11, j11, j2
+    jcall mp_cqneed
+    jldi j1, 0
+    jld j9, j1, SA
+    jld j2, j1, SYM
+    jadd j9, j9, j2
+    jld j10, j1, SL0
+    jld j11, j1, CQ
+    mev_cp:
+      jjz j10, mev_cpd
+      jldb j3, j9, 0
+      jstb j3, j11, 0
+      jldi j3, 1
+      jadd j9, j9, j3
+      jadd j11, j11, j3
+      jsub j10, j10, j3
+      jjmp mev_cp
+  mev_cpd:
+    jldi j2, -1
+    jst j2, j1, SBEST
+    jst j2, j1, OBEST
+    jldi j2, 1
+    jldi j3, 60
+    jshl j2, j2, j3
+    jst j2, j1, SBS
+    jst j1, j1, OBS
+    jst j1, j1, SCC
+    jst j1, j1, SCN
+    jst j1, j1, SJJ
+    mev_c:
+      jldi j1, 0
+      jld j2, j1, SJJ
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+      jjz j3, mev_judge
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, SEN
+      jadd j8, j3, j4
+      jld j3, j8, 16
+      jjnz j3, mev_cn             ; (a question answers nothing)
+      jld j9, j8, 0
+      jld j10, j8, 8
+      jld j4, j1, PRB
+      jadd j9, j9, j4
+      jst j9, j1, SK
+      jst j10, j1, SB
+      jcall ms_overlap
+      jldi j1, 0
+      jjz j2, mev_cn
+      jst j2, j1, SBV
+      jld j3, j1, SCN
+      jldi j4, 1
+      jadd j3, j3, j4
+      jst j3, j1, SCN
+      jld j2, j1, SJJ
+      jcall ms_isreg
+      jldi j1, 0
+      jld j3, j1, SCC
+      jadd j3, j3, j2
+      jst j3, j1, SCC
+      jld j2, j1, SBV
+      jld j3, j1, OBS
+      jsub j3, j3, j2
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mev_song
+      jst j2, j1, OBS
+      jld j2, j1, SJJ
+      jst j2, j1, OBEST
+    mev_song:                   ; what the question gives it: its cost sung as plain words, less sung with the places
+      jld j2, j1, QLN           ; of the question (a sentence read as it is costs little both ways: it gains nothing)
+      jst j2, j1, SQL
+      jst j1, j1, QLN
+      jcall ms_cost
+      jldi j1, 0
+      jst j2, j1, SPL
+      jld j2, j1, SQL
+      jst j2, j1, QLN
+      jcall ms_cost
+      jldi j1, 0
+      jld j3, j1, SPL
+      jsub j2, j2, j3           ; (less is better: the places' cost minus the plain one)
+      jld j3, j1, SBS
+      jsub j3, j2, j3
+      jldi j4, 63
+      jsar j3, j3, j4
+      jjz j3, mev_cn
+      jst j2, j1, SBS
+      jld j2, j1, SJJ
+      jst j2, j1, SBEST
+    mev_cn:
+      jldi j1, 0
+      jld j2, j1, SJJ
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, SJJ
+      jjmp mev_c
+  mev_judge:
+    jld j2, j1, NEV
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, NEV
+    jld j2, j1, NCAND
+    jld j3, j1, SCN
+    jadd j2, j2, j3
+    jst j2, j1, NCAND
+    jjz j3, mev_say
+    jld j2, j1, SCC
+    jldi j4, 1000
+    jmul j2, j2, j4
+    jdiv j2, j2, j3
+    jld j3, j1, HRN
+    jadd j3, j3, j2
+    jst j3, j1, HRN
+    jld j2, j1, SBEST
+    jcall ms_isreg
+    jldi j1, 0
+    jld j3, j1, HSG
+    jadd j3, j3, j2
+    jst j3, j1, HSG
+    jld j2, j1, OBEST
+    jcall ms_isreg
+    jldi j1, 0
+    jld j3, j1, HOV
+    jadd j3, j3, j2
+    jst j3, j1, HOV
+  mev_say:
+    jldi j1, S_SD9
+    jcall puts
+    jld j9, j1, QP
+    jld j10, j1, QPN
+    jcall ms_putspan
+    jldi j1, S_SD10
+    jcall puts
+    jld j2, j1, SBEST
+    jcall ms_putsen
+    jldi j1, S_SD11
+    jcall puts
+    jld j2, j1, OBEST
+    jcall ms_putsen
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, SEV
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SEV
+    jjmp mev_lap
+mev_done:
+  jldi j1, 0
+  jret
+
+; What the seeds found, said. Uses j1-j14.
+ms_say:
+  jldi j1, S_SD4
+  jcall puts
+  jld j2, j1, NEV
+  jcall putnum
+  jldi j1, S_SD5
+  jcall puts
+  jld j2, j1, NCAND
+  jld j3, j1, NEV
+  jjz j3, mss0
+  jdiv j2, j2, j3
+mss0:
+  jcall putnum
+  jldi j1, S_SD6
+  jcall puts
+  jld j2, j1, HSG
+  jld j3, j1, NEV
+  jcall mp_pct10
+  jldi j1, S_SD7
+  jcall puts
+  jld j2, j1, HOV
+  jld j3, j1, NEV
+  jcall mp_pct10
+  jldi j1, S_SD8
+  jcall puts
+  jld j2, j1, HRN
+  jld j3, j1, NEV
+  jldi j4, 1000
+  jmul j3, j3, j4
+  jcall mp_pct10
+  jldi j1, S_CH7
+  jcall puts
+  jret
+
+; Sentence j2 said (-1: "-"). Uses j1-j14.
+ms_putsen:
+  jldi j1, 0
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjz j3, mps_s
+  jldi j2, 45
+  jjmp putch
+mps_s:
+  jldi j3, 24
+  jmul j3, j2, j3
+  jld j4, j1, SEN
+  jadd j3, j3, j4
+  jld j9, j3, 0
+  jld j10, j3, 8
+  jld j4, j1, PRB
+  jadd j9, j9, j4
+; The j10 bytes at j9 said (no line ends). Uses j1-j3, j9, j10.
+ms_putspan:
+  mpsp_lap:
+    jjz j10, mpsp_done
+    jldb j2, j9, 0
+    jldi j3, 13
+    jsub j3, j2, j3
+    jjz j3, mpsp_n
+    jcall putch
+  mpsp_n:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp mpsp_lap
+mpsp_done:
+  jldi j1, 0
+  jret
+
+; Candidate sentence SK, SB bytes, sung after the question (CQ to SL0) against QLB -> j2 its cost (ms_fit).
+; Uses j1-j14.
+ms_cost:
+  jldi j1, 0
+  jld j9, j1, SK
+  jld j10, j1, SB
+  jld j11, j1, CQ
+  jld j2, j1, SL0
+  jadd j11, j11, j2
+  jcall mp_encode
+  jldi j1, 0
+  jld j2, j1, CQ
+  jsub j2, j11, j2
+  jst j2, j1, CQN
+  jjmp ms_fit
+
+; How well what follows SL0 in CQ fits the song: each song by the longest context said by two pairs or more that saw
+; it after (or a shorter one; none: by one more than the empty context saw in all), its cost lg(all) - lg(times), in
+; 1/256ths; the average -> j2. Uses j1-j14.
+ms_fit:
+  jldi j1, 0
+  jst j1, j1, SSC
+  jld j2, j1, SL0
+  jst j2, j1, SPOS
+  mft_lap:
+    jldi j1, 0
+    jld j9, j1, SPOS
+    jld j2, j1, CQN
+    jsub j2, j9, j2
+    jjz j2, mft_done
+    jld j5, j1, CS0
+    jld j12, j1, CHN
+    jst j5, j12, 0
+    jldi j10, 1
+    mft_c:
+      jldi j1, 0
+      jsub j3, j9, j10
+      jldi j4, 63
+      jsar j4, j3, j4
+      jjnz j4, mft_have
+      jld j4, j1, CQ
+      jadd j3, j3, j4
+      jldb j7, j3, 0
+      jcall mp_mix
+      jldi j2, CXT
+      jcall pl_find
+      jld j2, j4, 16
+      jldi j3, 2
+      jsub j2, j2, j3
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjnz j2, mft_have
+      jldi j3, 3
+      jshl j3, j10, j3
+      jadd j3, j3, j12
+      jst j5, j3, 0
+      jldi j2, 1
+      jadd j10, j10, j2
+      jjmp mft_c
+  mft_have:
+    jldi j1, 0
+    jld j2, j1, CQ
+    jadd j2, j2, j9
+    jldb j11, j2, 0
+    jldi j2, 1
+    jsub j10, j10, j2
+    mft_b:
+      jldi j1, 0
+      jldi j3, 3
+      jshl j3, j10, j3
+      jadd j3, j3, j12
+      jld j5, j3, 0
+      jst j5, j1, SCTX
+      jadd j7, j11, j1
+      jcall mp_mix
+      jldi j2, NXT
+      jcall pl_find
+      jldi j1, 0
+      jld j13, j4, 8
+      jjnz j13, mft_cost
+      jjz j10, mft_none
+      jldi j2, 1
+      jsub j10, j10, j2
+      jjmp mft_b
+  mft_none:
+    jld j5, j1, CS0
+    jldi j2, CXT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 24
+    jldi j3, 1
+    jadd j2, j2, j3
+    jcall mp_lg
+    jjmp mft_add
+  mft_cost:
+    jld j5, j1, SCTX
+    jldi j2, CXT
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 24
+    jcall mp_lg
+    jst j2, j1, SLGT
+    jadd j2, j13, j1
+    jcall mp_lg
+    jld j3, j1, SLGT
+    jsub j2, j3, j2
+  mft_add:
+    jld j3, j1, SSC
+    jadd j3, j3, j2
+    jst j3, j1, SSC
+    jld j2, j1, SPOS
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SPOS
+    jjmp mft_lap
+mft_done:
+  jld j2, j1, SSC
+  jld j3, j1, CQN
+  jld j4, j1, SL0
+  jsub j3, j3, j4
+  jjz j3, mft_z
+  jdiv j2, j2, j3
+  jret
+mft_z:
+  jldi j2, 0
+  jret
+
+; lg2 of j2 (1 or more), in 1/256ths: the place of its top bit, and a straight line to the next power of two. Uses
+; j2-j5.
+mp_lg:
+  jldi j3, 0
+  jadd j4, j2, j3
+  mlg_l:
+    jldi j5, 1
+    jshr j4, j4, j5
+    jjz j4, mlg_d
+    jadd j3, j3, j5
+    jjmp mlg_l
+mlg_d:
+  jldi j4, 8
+  jshl j2, j2, j4
+  jshr j2, j2, j3
+  jldi j4, 256
+  jsub j2, j2, j4
+  jldi j4, 8
+  jshl j3, j3, j4
+  jadd j2, j2, j3
   jret
 
 ; j2 * 100 / j3 with one decimal, out (0 when j3 is 0). Uses j1-j4.
@@ -2341,7 +3408,7 @@ mp_learn:
     jjmp mle_f
 mle_fd:
   jldi j2, CXT
-  jldi j3, 24
+  jldi j3, 32
   jcall pl_new
   jldi j2, NXT
   jldi j3, 16
@@ -2421,6 +3488,10 @@ mle_fd:
         jadd j3, j3, j2
         jst j3, j4, 16
       mle_same:
+        jld j3, j4, 24          ; (all the times after it)
+        jldi j2, 1
+        jadd j3, j3, j2
+        jst j3, j4, 24
         jld j5, j12, 0
         jld j2, j1, SYM
         jadd j2, j2, j10

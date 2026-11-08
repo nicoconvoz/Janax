@@ -63,3 +63,27 @@ db ' | lugares cantados: ', 0
 times 4D0h - $ db 0
 db ', con su palabra: ', 0
 times 4F0h - $ db 0
+db 'semilla', 0
+times 500h - $ db 0
+db 'semilla: preguntas del libro ', 0
+times 540h - $ db 0
+db ', con su respuesta en el libro: ', 0
+times 580h - $ db 0
+db ', oraciones: ', 0
+times 5C0h - $ db 0
+db 'preguntadas sin leer su semilla: ', 0
+times 600h - $ db 0
+db ' | candidatas por pregunta: ', 0
+times 640h - $ db 0
+db ' | aciertan (una oracion de su respuesta): el canto ', 0
+times 680h - $ db 0
+db '%, la que mas palabras comparte ', 0
+times 6C0h - $ db 0
+db '%, al azar ', 0
+times 700h - $ db 0
+db 'P: ', 0
+times 710h - $ db 0
+db ' | canto: ', 0
+times 720h - $ db 0
+db ' | palabras: ', 0
+times 730h - $ db 0

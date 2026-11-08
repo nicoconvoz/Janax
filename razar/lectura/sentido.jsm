@@ -2146,6 +2146,8 @@ qa_scan:
     jcall qa_asks               ; does this one ask?
     jldi j1, 0
     jst j2, j1, QAQ
+    jcall qa_line_say           ; (every building said, when asked for)
+    jldi j1, 0
     jld j3, j1, QAS             ; (the one before it, its context)
     jst j3, j1, QACS
     jld j2, j1, QAT
@@ -2275,6 +2277,32 @@ qa_pair_say:
   jldi j2, 10
   jcall putch
 qps_done:
+  jldi j1, 0
+  jret
+
+; Every building of the book said in its order, when the pairs are asked for: "Q:" if it asks (j2 = 1), else "O:",
+; QAT to QAI (its limit with it). Uses j1-j14.
+qa_line_say:
+  jldi j1, 0
+  jld j3, j1, QAWP
+  jjz j3, qls_done
+  jldi j3, 79
+  jjz j2, qls_put
+  jldi j3, 81
+qls_put:
+  jadd j2, j3, j1
+  jcall putch
+  jldi j2, 58
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j9, j1, QAT
+  jld j10, j1, QAI
+  jcall qps_units
+  jldi j2, 10
+  jcall putch
+qls_done:
   jldi j1, 0
   jret
 
