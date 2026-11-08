@@ -1751,5 +1751,6 @@ son "Q:"/"O:". Cuatro tramos sin leer:
 - Con Asimov el problema eran pocos casos y muy complejos, como dijo el Capitán.
 - **Con un cubo de 10³**, oyendo lo mismo que el de 7³ (cada marco una vez, sin practicar): 107, 106 y 105 de 116 con
   las mismas semillas. Igual que el 7³ (106, 107, 107) y que el control (106): el tamaño no cambia nada acá, porque los
-  dos ya oyen todo lo que las notas dicen. Los ~10 que faltan son el límite de las notas, no del cubo.
+  dos ya oyen todo lo que las notas dicen. Los ~10 que faltan son el límite de las notas, no del cubo.- **Y con un 4³**: 106, 106 y 106 de 116, en 5 segundos por semilla (el 7³ y el 10³, unos 32). El cubo más chico ya
+  oye todo lo que dicen las notas; para esta tarea alcanza el 4³, seis veces más rápido.
 
