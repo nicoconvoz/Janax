@@ -186,7 +186,8 @@ OGRQ  = 3888h
 OGRH  = 38A0h
 OGRC  = 38A8h
 OGRI  = 38B0h
-OGB0  = 38B8h
+OGB0  = 38B8h                   ; the champion a winner beat: its score, and its letters (what the winner improved)
+OGBA  = 3960h
 OGLN  = 38C0h                   ; a label being built: its bytes, and walking; its model (the fingerprint of its shelf)
 OGLW  = 38C8h
 OGLE  = 38D0h
@@ -2533,7 +2534,6 @@ ot_own:
   jst j2, j1, TMEM
   jld j2, j1, EVS
   jst j2, j1, OGBASE
-  jst j2, j1, OGB0              ; (what it had, for the recipe of one that wins)
   jldi j10, 35                  ; the cage: twice what this life cost it so far (a reading and its exams; a real organ
   jldi j11, -1                  ; measured +2 %: the 2 is criterion, not measurement)
   jcall ask
@@ -2567,9 +2567,14 @@ ot_own:
     jldi j4, 63
     jsar j3, j3, j4
     jjz j3, ot_next
+    jld j3, j1, OGBASE          ; (what it beat, for its recipe)
+    jst j3, j1, OGB0
+    jld j3, j1, OGCODE
+    jst j3, j1, OGBA
     jst j2, j1, OGBASE
     jld j2, j1, OGTRY
     jst j2, j1, OGCODE
+    jcall og_rec_write          ; every organ that wins leaves its recipe, so none is ever lost
   ot_next:
     jldi j1, 0
     jld j2, j1, OGN
@@ -2586,7 +2591,6 @@ ot_own:
   jld j3, j1, ORGW              ; is the same: nothing is built)
   jsub j2, j2, j3
   jjz j2, ot_done
-  jcall og_rec_write            ; (and its recipe, so it is never lost)
   jcall og_self
   jldi j1, 0
   jjz j2, ot_done
@@ -3362,7 +3366,7 @@ oab_done:
 ; has it, with what each one does: read by anyone, and by Razar. Uses j1-j14.
 og_rec_text:
   jcall og_rec_head
-  jldi j2, 0                    ; "  mejora: ", from the score it had to its own, and the organ it had
+  jldi j2, 0                    ; "  mejora: ", from the champion it beat to its own score, and which
   jshi j2, 0020h
   jshi j2, 206Dh
   jshi j2, 656Ah
@@ -3401,7 +3405,7 @@ og_rec_text:
   jshi j2, 3A20h
   jcall og_r8
   jldi j1, 0
-  jld j2, j1, ORGW
+  jld j2, j1, OGBA
   jcall og_hex
   jldi j2, 10
   jcall putch

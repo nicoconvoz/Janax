@@ -3249,6 +3249,10 @@ ingredientes nunca se descartan; lo que se mira es qué hace y en qué es mejor.
   - La huella final de A cambió (`00005B1D48AA530F`, antes `00005FCD04441AB1`) con las mismas notas: en su tercera
     vida el índice le ofreció el `6`, que rindió como candidato extra, y esa línea entra en lo que escribe.
 - **Corregido en el camino:** `flush` usa `j11` y `j12`, y `og_wopen` los perdía. Los archivos se abrían vacíos.
+- **Cada órgano que gana deja su receta**, no solo el campeón al final de la vida. Al juntar en el tablero del Capitán
+  ganaron el `6`, el `5` y el `16` en el libro A, y el `6` no tenía receta: fue campeón un rato de la misma vida que
+  terminó con el `5`. Ahora cada triunfo escribe la suya, y su `mejora` se mide contra el campeón al que le ganó en
+  ese momento (`208 -> 2649 (+2441), antes: 5`). Probado con 30 intentos: quedan las tres.
 - **Lo que no cubre:** un índice o un tipo de más de 64 KB se lee cortado (criterio: diez recetas son unos 15 KB). Dos
   Razares del mismo libro escribiendo a la vez pisarían el mismo archivo. Un libro del anfitrión (no un estante) cae
   en un modelo solo para todos los libros así.
