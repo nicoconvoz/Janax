@@ -3130,4 +3130,37 @@ con una escritura, sin recompilar.
   `hw` lo recibe y lo devuelve); el lector tiene que leer con registros que ninguna letra toca entre una y otra
   (`j13`, `j14`). La primera versión usaba `j2` y la huella daba otra.
 - **Lo que abre:** como cada letra hace un trabajo fijo, un mutante leído no puede colgarse: el examen podría correr
-  dentro de la misma vida, escribiendo el casillero, sin jaula ni recompilar. Falta llevarlo al ciclo de los órganos.
+  dentro de la misma vida, escribiendo el casillero, sin jaula ni recompilar.
+- **Probado y descartado: el examen dentro de la misma vida.** De 100 candidatos, solo 25 dieron la misma nota que en
+  su jaula: el examen hecho adentro arrastra estado de los anteriores (las mismas notas repetidas, 13213, 2649, 869,
+  −1586). La jaula del hijo es lo que da un estado limpio, así que se queda.
+
+## El hijo de siempre, sin recompilar (2026-11-08)
+
+El Capitán, a la propuesta *"el hijo de siempre, pero sin recompilar"*: *"siiii"*. Cada candidato sigue rindiendo en
+su jaula, como hijo, pero **todos corren el mismo programa ya armado**: lo único que cambia son sus letras, y viajan en
+sus **datos iniciales** (`X.datos`, la regla del SO: *"cualquiera puede cambiar los datos de un programa sin tocar el
+programa"*).
+
+- **El órgano vive en el `.datos`**, en el hueco libre después de la etiqueta `p`: `20h` candidato (1), `28h` el
+  genoma cuyo examen rinde, `30h` sus letras (`ORGW`), `38h` la basura del auditor. El Razar de siempre trae ceros: sin
+  órgano. `organo.inc` es el órgano leído, fijo en el repo; el molde quedó solo con las etiquetas.
+- **El ciclo:** al empezar, Razar copia `pulso.bin` como `hijo.bin` (una vez). Para cada candidato escribe
+  `hijo.datos`: su propio `pulso.datos` con esas cuatro palabras, 4 KB. Lo lanza con su presupuesto y oye su nota, como
+  siempre. **Ya no escribe `organo.inc` ni lanza el ensamblador.**
+- **El que gana queda como dato:** Razar escribe sus letras en su `pulso.datos` (pasando por `hijo.datos`: un archivo
+  nunca se lee y se escribe a la vez) y se rehace (36) con el mismo programa. La vida siguiente nace con ese órgano.
+- `organos.sh` ya no lleva a la casa ni las fuentes ni el ensamblador: solo `pulso.bin`, `pulso.datos` y el molde.
+- **Medido** (el mismo libro, 6 intentos, motor traductor, el viejo y el nuevo lado a lado):
+
+  | | procesos | instrucciones | notas | huella final |
+  |---|---|---|---|---|
+  | compilando cada candidato | 47 | 30.468 millones | | `00005FCD04441AB1` |
+  | el mismo programa, sus datos | 23 | 29.402 millones (−3,5 %) | idénticas, en el mismo orden | `00005FCD04441AB1` |
+
+  El ganador (`5`, nota 208 contra −3554 sin órgano) quedó en `pulso.datos` y la segunda vida arrancó con él. El
+  tiempo de reloj casi no cambia (77 s contra 74 s): lo caro es el examen, no el armado. Lo que se gana es que el
+  ciclo no depende del ensamblador ni de sus fuentes, y que la mitad de los procesos desaparece.
+- **La basura del auditor:** con la basura del auditor en 1 los registros `j13` y `j14` llegan a las letras con el
+  estado del lector, no con la basura. Ninguna letra los lee. **Medido:** la auditoría de 3 órganos da la misma salida que la
+  vieja, renglón por renglón (`orden y basura 3, escritura 3`), con 9 procesos en vez de 17.

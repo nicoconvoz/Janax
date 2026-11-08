@@ -1,124 +1,13 @@
-; The alphabet of the organs Razar grows (Capitan: "Legos, and inside the Legos free mutation of code"). Razar reads
-; it inside Janax OS and writes organo.inc from it: the values, the head, one block per letter of its organ, the foot.
-; Each block starts with a line "@" and its name, and runs to the next one (its last line end left out). Letters 1-9
-; are the organ's instructions: any string of them builds, so a mutation (a letter put in, taken out or changed) can
-; never break the build; what it does is the exam's to judge. A frame is made only of its letters: after each hole
-; it starts again from the mold (else a second hole would hang on what post left in a register, not on its letters).
-@a
-ensamblador.bin
-@o
-PDP/razar/lectura/organo.inc
+; The labels of the organ cycle Razar runs (Capitan: "Legos, and inside the Legos free mutation of code"). Razar
+; reads it inside Janax OS. Each block starts with a line "@" and its name, and runs to the next one (its last line
+; end left out). The organ itself is read, not compiled (organo.inc): its letters are data in the program's initial
+; data, so a candidate is this same program (hijo.bin, copied once) with its own hijo.datos, and a winner stays in
+; pulso.datos. Nothing is built.
 @p
 PDP/razar/lectura/pulso.bin
-@C
-ORGAN_CANDIDATE = 
-@G
-ORGAN_GENOME = 
-@O
-ORGAN_CODE = 
-@F
-ORGAN_FILL = 
-@h
-; An organ Razar grew itself: written from organo.molde and built by the PDP assembler inside Janax OS. The window
-; of four words is at WAT; the head looks only at windows of four words, the letters mix words into its frame and
-; post the one in a hole, on the words floor, in a mold of its own (102h).
-organ:
-  jldi j1, 0                    ; (the machine as the organ gets it: all 0, or all 1 for ORGAN_FILL 1, the audit's
-  jldi j3, ORGAN_FILL           ; garbage: an organ that reads nothing but its own scores the same with either)
-  jsub j2, j1, j3
-  jadd j3, j2, j1
-  jadd j4, j2, j1
-  jadd j5, j2, j1
-  jadd j6, j2, j1
-  jadd j7, j2, j1
-  jadd j8, j2, j1
-  jadd j9, j2, j1
-  jadd j10, j2, j1
-  jadd j11, j2, j1
-  jadd j12, j2, j1
-  jadd j13, j2, j1
-  jadd j14, j2, j1
-  jld j9, j1, WAT
-  jld j3, j9, 0
-  jjz j3, og_done
-  jld j3, j9, 8
-  jjz j3, og_done
-  jld j3, j9, 16
-  jjz j3, og_done
-  jld j3, j9, 24
-  jjz j3, og_done
-  jst j1, j1, KW1
-  jst j1, j1, KW2
-  jst j1, j1, KW3
-  jldi j2, 2
-  jst j2, j1, FLOOR
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@1
-  jldi j1, 0                    ; the first word into the frame
-  jld j9, j1, WAT
-  jld j3, j9, 0
-  jcall hw
-@2
-  jldi j1, 0                    ; the second word into the frame
-  jld j9, j1, WAT
-  jld j3, j9, 8
-  jcall hw
-@3
-  jldi j1, 0                    ; the third word into the frame
-  jld j9, j1, WAT
-  jld j3, j9, 16
-  jcall hw
-@4
-  jldi j1, 0                    ; the fourth word into the frame
-  jld j9, j1, WAT
-  jld j3, j9, 24
-  jcall hw
-@5
-  jldi j1, 0                    ; the hole: the first word
-  jld j9, j1, WAT
-  jld j3, j9, 0
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@6
-  jldi j1, 0                    ; the hole: the second word
-  jld j9, j1, WAT
-  jld j3, j9, 8
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@7
-  jldi j1, 0                    ; the hole: the third word
-  jld j9, j1, WAT
-  jld j3, j9, 16
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@8
-  jldi j1, 0                    ; the hole: the fourth word
-  jld j9, j1, WAT
-  jld j3, j9, 24
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@9
-  jldi j3, 0                    ; the hole empty: the frame said as it is
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
-  jld j2, j1, FNVO
-  jldi j3, 102h
-  jcall hw
-@f
-og_done:
-  jldi j1, 0
-  jret
+@d
+PDP/razar/lectura/pulso.datos
+@k
+PDP/razar/lectura/hijo.bin
+@e
+PDP/razar/lectura/hijo.datos

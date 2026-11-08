@@ -166,6 +166,20 @@ OGT2  = 1C60h                   ; (the audit's and the landscape's, never while 
 OGT3  = 1C68h                   ; niches)
 OGT4  = 1C70h
 OGLET2 = 1C78h
+ORGK  = 20h                     ; the organ, in its initial data (X.datos, where the label "p" leaves room): a candidate
+ORGG  = 28h                     ; (1) and the genome whose exam it sits; its letters (organo.inc); the audit's garbage
+ORGW  = 30h
+ORGF  = 38h
+OGH1  = 3808h                   ; a file copied: the two handles, the room it goes through, whether its organ is
+OGH2  = 3810h                   ; written into it and the four words, the bytes moved, whether it went well
+OGBUF = 3818h
+OGPAT = 3820h
+OGP0  = 3828h
+OGP1  = 3830h
+OGP2  = 3838h
+OGP3  = 3840h
+OGRD  = 3848h
+OGOK  = 3850h
 ROOMOP = 1900h                  ; the questions: where the place is said plain, and with the switch
 ROOMOW = 1908h
 LLAVE = 1C08h                   ; the board (on the host, a folder several Janax share): its key (from the file "llave"),
@@ -275,7 +289,7 @@ jcall shelf_print
 jldi j1, 0
 jst j2, j1, BOOKH
 rn_print:
-jldi j2, ORGAN_CANDIDATE        ; a candidate built by Razar: it sits its exam and says its score, nothing more
+jld j2, j1, ORGK               ; a candidate launched by Razar: it sits its exam and says its score, nothing more
 jjz j2, rn_razar
 jjmp candidate
 rn_razar:
@@ -2475,7 +2489,7 @@ ot_go:
   jcall og_r8
   jjmp flush
 ot_have:
-  jldi j2, ORGAN_CODE           ; the organ it has, and its exam without memory: what a new one has to beat
+  jld j2, j1, ORGW              ; the organ it has, and its exam without memory: what a new one has to beat
   jst j2, j1, OGCODE
   jld j2, j1, EVC
   jst j2, j1, EVCH
@@ -2508,9 +2522,7 @@ ot_have:
   jld j2, j1, OGN
   jwhile j2
     jcall og_next
-    jcall og_write
-    jldi j1, 0
-    jcall og_build
+    jcall og_kid
     jldi j1, 0
     jjz j2, ot_next
     jcall og_trial
@@ -2535,14 +2547,11 @@ ot_have:
   jwend
   jcall og_arch_save            ; its archive, for its next lives
   jldi j1, 0
-  jld j2, j1, OGCODE            ; it grew one: built again as itself (not a candidate), for its next life
-  jldi j3, ORGAN_CODE
+  jld j2, j1, OGCODE            ; it grew one: its letters into its own initial data, for its next life (the program
+  jld j3, j1, ORGW              ; is the same: nothing is built)
   jsub j2, j2, j3
   jjz j2, ot_done
-  jld j2, j1, OGCODE
-  jst j2, j1, OGTRY
-  jcall og_write0
-  jcall og_build
+  jcall og_self
   jldi j1, 0
   jjz j2, ot_done
   jldi j2, 0                    ; "se rehace": the same cabin, its new program (36), when it ends here
@@ -2995,7 +3004,7 @@ oa_at:
   jret
 
 ; The organ j2 sits the champion's exam as a candidate (OGFILL its garbage) -> OGSC (the lowest there is if it
-; could not be built). Uses j1-j14.
+; could not be launched). Uses j1-j14.
 oa_exam:
   jldi j1, 0
   jst j2, j1, OGTRY
@@ -3003,8 +3012,7 @@ oa_exam:
   jldi j3, 63
   jshl j2, j2, j3
   jst j2, j1, OGSC
-  jcall og_write
-  jcall og_build
+  jcall og_kid
   jldi j1, 0
   jjz j2, oe_done
   jcall og_trial
@@ -3183,7 +3191,8 @@ og_init:
   jldi j2, 31
   jst j2, j1, OGLET
 oi_own:
-  jldi j11, 4096                ; its room: as big as a molde may be (criterion: the one it has is 3 KB)
+  jldi j11, 4096                ; its room: as big as a molde may be (criterion: the one it has, only labels now, is
+                                ; 0.2 KB)
   jldi j2, 4
   jshl j11, j11, j2
   jcall room
@@ -3223,6 +3232,14 @@ oi_close:
   jor j10, j10, j2
   jcall ask
 oi_done:
+  jldi j11, 4096                ; the room a file goes through when it is copied, and its child: this same program
+  jcall room                    ; (pulso.bin -> hijo.bin, once: every candidate runs it, only its data changes)
+  jldi j1, 0
+  jst j13, j1, OGBUF
+  jst j1, j1, OGPAT
+  jldi j2, 112
+  jldi j3, 107
+  jcall og_copy
   jldi j1, 0
   jret
 
@@ -3574,117 +3591,6 @@ og_mutate:
   jwend
   jret
 
-; organo.inc written whole from the molde: as a candidate (og_write: it sits the exam and says its score) or as
-; Razar itself (og_write0), with the champion's genome and the organ OGTRY. Uses j1-j14.
-og_write:
-  jldi j2, 1
-  jjmp ow_go
-og_write0:
-  jldi j2, 0
-ow_go:
-  jldi j1, 0
-  jst j2, j1, OGKID
-  jcall flush                   ; (what it wrote is out: the text goes to the organ's file now)
-  jldi j2, 111                  ; its file, whole: the old one out, the new one open
-  jcall og_label
-  jldi j10, 12
-  jcall ask
-  jldi j2, 111
-  jcall og_label
-  jldi j10, 4
-  jcall ask
-  jldi j1, 0
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, ow_done
-  jst j13, j1, OGT
-  jldi j2, 1
-  jadd j2, j13, j2
-  jst j2, j1, SINK
-  jldi j2, 67                   ; ORGAN_CANDIDATE =
-  jcall og_put
-  jldi j1, 0
-  jld j2, j1, OGKID
-  jcall putnum
-  jldi j2, 10
-  jcall putch
-  jldi j2, 71                   ; ORGAN_GENOME =
-  jcall og_put
-  jldi j1, 0
-  jld j2, j1, EVC
-  jcall putnum
-  jldi j2, 10
-  jcall putch
-  jldi j2, 79                   ; ORGAN_CODE =
-  jcall og_put
-  jldi j1, 0
-  jld j2, j1, OGTRY
-  jcall putnum
-  jldi j2, 10
-  jcall putch
-  jldi j2, 70                   ; ORGAN_FILL = (the audit's garbage: 0 or 1)
-  jcall og_put
-  jldi j1, 0
-  jld j2, j1, OGFILL
-  jcall putnum
-  jldi j2, 10
-  jcall putch
-  jldi j2, 104                  ; the head, then its letters, then the foot
-  jcall og_line_put
-  jldi j1, 0
-  jld j2, j1, OGTRY
-  jst j2, j1, OGLET
-  jwhile j2
-    jldi j3, 15
-    jand j2, j2, j3
-    jldi j3, 48
-    jadd j2, j2, j3
-    jcall og_line_put
-    jldi j1, 0
-    jld j2, j1, OGLET
-    jldi j3, 4
-    jshr j2, j2, j3
-    jst j2, j1, OGLET
-  jwend
-  jldi j2, 102
-  jcall og_line_put
-  jcall flush                   ; (the rest, to it; the text goes to the console again)
-  jldi j1, 0
-  jst j1, j1, SINK
-  jld j10, j1, OGT
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 7
-  jor j10, j10, j2
-  jcall ask
-ow_done:
-  jldi j1, 0
-  jst j1, j1, POS
-  jret
-
-; The block named j2 of the molde into the text, and a line end after it. Uses j1-j10.
-og_line_put:
-  jcall og_put
-  jldi j2, 10
-  jjmp putch
-
-; The block named j2 of the molde into the text (TEXT + POS). Uses j1-j10.
-og_put:
-  jcall og_block
-  jwhile j6
-    jldb j2, j5, 0
-    jst j5, j1, EVT
-    jst j6, j1, EVT2
-    jcall putch
-    jldi j1, 0
-    jld j5, j1, EVT
-    jld j6, j1, EVT2
-    jldi j2, 1
-    jadd j5, j5, j2
-    jsub j6, j6, j2
-  jwend
-  jret
-
 ; The block named j2 (a byte) of the molde -> j5 where it starts, j6 its bytes (0 if there is none): after its line
 ; "@" and its name, up to the line end before the next block (that line end left out). Uses j1-j10.
 og_block:
@@ -3738,6 +3644,17 @@ og_block:
   ob_end:
     jsub j6, j7, j5
     jjz j6, ob_bare
+    jldi j3, -1                 ; (the last block's line end, at the end of the molde, is left out too)
+    jadd j4, j7, j3
+    jldb j4, j4, 0
+    jldi j3, 10
+    jsub j4, j4, j3
+    jjnz j4, ob_cr
+    jldi j3, 1
+    jsub j7, j7, j3
+    jsub j6, j6, j3
+    jjz j6, ob_bare
+  ob_cr:
     jldi j3, -1                 ; (a line end of the host, "\r\n", is a line end too: its "\r" left out)
     jadd j4, j7, j3
     jldb j4, j4, 0
@@ -3759,40 +3676,150 @@ og_block:
   jldi j1, 0
   jret
 
-; The PDP assembler launched as its child (the block "a": memory, reading and writing), everything it asks signed,
-; until nobody is left: -> j2 1 if it ended well. Uses j1-j14.
-og_build:
-  jldi j2, 97
-  jcall og_block
-  jldi j10, 14
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 16
-  jor j10, j10, j2
-  jadd j11, j5, j1
-  jadd j12, j6, j1
+; The candidate's letters (OGTRY), the genome whose exam it sits (EVC) and the audit's garbage (OGFILL) into the
+; initial data of its child, hijo.datos: its own pulso.datos with those four words (Capitan: "keep the child, but
+; without recompiling"; the child is this same program, hijo.bin) -> j2 1 if it went well. Uses j1-j14.
+og_kid:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, OGP0
+  jld j2, j1, EVC
+  jst j2, j1, OGP1
+  jld j2, j1, OGTRY
+  jst j2, j1, OGP2
+  jld j2, j1, OGFILL
+  jst j2, j1, OGP3
+  jldi j2, 1
+  jst j2, j1, OGPAT
+  jldi j2, 100                  ; pulso.datos -> hijo.datos
+  jldi j3, 101
+  jjmp og_copy
+
+; The organ OGCODE as its own: into its pulso.datos (by hijo.datos, a file is never read and written at once), for
+; its next life -> j2 1 if it went well. Uses j1-j14.
+og_self:
+  jldi j1, 0
+  jst j1, j1, OGP0
+  jst j1, j1, OGP1
+  jld j2, j1, OGCODE
+  jst j2, j1, OGP2
+  jst j1, j1, OGP3
+  jldi j2, 1
+  jst j2, j1, OGPAT
+  jldi j2, 100
+  jldi j3, 101
+  jcall og_copy
+  jjz j2, osf_done
+  jldi j1, 0
+  jst j1, j1, OGPAT
+  jldi j2, 101
+  jldi j3, 100
+  jcall og_copy
+osf_done:
+  jret
+
+; The file of the molde's block j2 copied whole into the one of block j3 (written new), 4096 bytes at a time through
+; OGBUF; with OGPAT 1 the four words of its organ (ORGK to ORGF) are OGP0 to OGP3 on the way -> j2 1 if all of it
+; went. Uses j1-j14.
+og_copy:
+  jldi j1, 0
+  jst j3, j1, OGH2              ; (the destination's block, for now)
+  jcall og_label
+  jldi j10, 4
   jcall ask
   jldi j1, 0
   jldi j2, 63
   jshr j2, j13, j2
-  jjnz j2, ob_bad
-  jst j13, j1, OGKID
-  jcall og_serve
-  jldi j1, 0
-  jldi j10, 19
-  jld j11, j1, OGKID
+  jjnz j2, ocp_bad
+  jst j13, j1, OGH1
+  jld j2, j1, OGH2
+  jcall og_label
+  jldi j10, 12                  ; the old one out, the new one open
+  jcall ask
+  jldi j10, 4
   jcall ask
   jldi j1, 0
+  jst j13, j1, OGH2
   jldi j2, 1
-  jjz j13, ob_ok
-ob_bad:
+  jst j2, j1, OGOK
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjz j2, ocp_go
+  jst j1, j1, OGOK
+  jjmp ocp_close
+ocp_go:
+  jldi j9, 1
+  jwhile j9
+    jldi j1, 0
+    jld j10, j1, OGH1
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, OGBUF
+    jldi j12, 4096
+    jcall ask
+    jldi j1, 0
+    jadd j9, j13, j1            ; the bytes read (0: the end)
+    jldi j2, 63
+    jshr j2, j9, j2
+    jjz j2, ocp_read
+    jst j1, j1, OGOK
+    jldi j9, 0
+  ocp_read:
+    jld j2, j1, OGPAT           ; (its organ: in the first 4096 bytes, once)
+    jjz j2, ocp_write
+    jst j1, j1, OGPAT
+    jld j3, j1, OGBUF
+    jld j2, j1, OGP0
+    jst j2, j3, ORGK
+    jld j2, j1, OGP1
+    jst j2, j3, ORGG
+    jld j2, j1, OGP2
+    jst j2, j3, ORGW
+    jld j2, j1, OGP3
+    jst j2, j3, ORGF
+  ocp_write:
+    jst j9, j1, OGRD
+    jld j10, j1, OGH2
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 6
+    jor j10, j10, j2
+    jld j11, j1, OGBUF
+    jadd j12, j9, j1
+    jcall ask
+    jldi j1, 0
+    jld j9, j1, OGRD
+    jsub j2, j13, j9
+    jjz j2, ocp_on
+    jst j1, j1, OGOK
+    jldi j9, 0
+  ocp_on:
+  jwend
+  jld j10, j1, OGH2
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+ocp_close:
   jldi j1, 0
+  jld j10, j1, OGH1
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, OGOK
+  jret
+ocp_bad:
   jldi j2, 0
-ob_ok:
   jret
 
-; The candidate launched as its child (the block "p": memory, reading and writing; its letters ask for nothing, so a
-; mutant can not touch a file), caged by its budget, everything it asks signed, its word heard -> OGSC its score
+; The candidate launched as its child (the block "k": this same program, its letters in its hijo.datos; memory,
+; reading and writing; its letters ask for nothing, so a mutant can not touch a file), caged by its budget, everything it asks signed, its word heard -> OGSC its score
 ; (the lowest there is if it said none: it broke or spent its budget). Uses j1-j14.
 og_trial:
   jldi j1, 0
@@ -3800,7 +3827,7 @@ og_trial:
   jldi j3, 63
   jshl j2, j2, j3
   jst j2, j1, OGSC
-  jldi j2, 112
+  jldi j2, 107
   jcall og_label
   jldi j10, 14
   jldi j2, 32
@@ -4034,14 +4061,14 @@ osg_pos:
   jld j2, j1, OGLET
   jjmp putmix
 
-; A candidate (ORGAN_CANDIDATE): it sits the exam of the genome it was built with, tells its parent its score (a word
+; A candidate (ORGK): it sits the exam of the genome it was launched with (ORGG), tells its parent its score (a word
 ; to -1, "my parent") and ends. Nothing written. Uses j1-j14.
 candidate:
   jcall distill_no
   jldi j1, 0
   jldi j2, 1
   jst j2, j1, FORMS
-  jldi j2, ORGAN_GENOME
+  jld j2, j1, ORGG
   jst j2, j1, EVC
   jcall ev_exam
   jldi j1, 0
@@ -4680,7 +4707,7 @@ lr_have:
   jst j2, j1, LSEEN
   jld j2, j1, LETB + 8          ; and its organ, to try first (if it is not the one it has)
   jst j2, j1, LSEEN + 8
-  jldi j3, ORGAN_CODE
+  jld j3, j1, ORGW
   jsub j3, j2, j3
   jjnz j3, lr_organ
   jldi j2, 0
@@ -5567,7 +5594,7 @@ letter_write:
   jld j2, j1, EVC
   jst j2, j1, CARTA
   jst j2, j1, LETB
-  jldi j2, ORGAN_CODE           ; and the organ it has: letters of its molde, no word of what it read
+  jld j2, j1, ORGW              ; and the organ it has: its letters, no word of what it read
   jst j2, j1, LETB + 8
   jldi j10, 12
   jldi j11, CARL
