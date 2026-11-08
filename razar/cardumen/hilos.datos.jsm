@@ -160,3 +160,25 @@ times 0A00h - $ db 0
 db ' siguen | ', 0
 times 0A20h - $ db 0
 db ' nuevos', 10, 0
+times 0A40h - $ db 0
+db 'instruccion: ', 0
+times 0A60h - $ db 0
+db ' | une iguales ', 0
+times 0A80h - $ db 0
+db ' (mezcladas ', 0
+times 0AA0h - $ db 0
+db 'instrucciones: ', 0
+times 0AC0h - $ db 0
+db ' | imagina ', 0
+times 0AE0h - $ db 0
+db ' (con parejas mezcladas: ', 0
+times 0B00h - $ db 0
+db 'imaginado', 0
+times 0B20h - $ db 0
+db 'confirma: ', 0
+times 0B40h - $ db 0
+db 'imaginado: ', 0
+times 0B60h - $ db 0
+db ' confirmadas de ', 0
+times 0B80h - $ db 0
+db ' comprobables | azar: ', 0

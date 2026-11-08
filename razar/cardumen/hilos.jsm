@@ -120,6 +120,17 @@ S_PENN   = 9C0h
 S_PVER   = 9E0h
 S_PSIG   = 0A00h
 S_PNUE   = 0A20h
+S_INSTR  = 0A40h
+S_UNEIG  = 0A60h
+S_MEZC   = 0A80h
+S_INSN   = 0AA0h
+S_INSI   = 0AC0h
+S_INSA   = 0AE0h
+S_IMAG   = 0B00h
+S_CONFI  = 0B20h
+S_IMGN   = 0B40h
+S_CONFS  = 0B60h
+S_AZAR   = 0B80h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -313,7 +324,45 @@ HQV   = 1CA8h
 HPDN  = 1CB0h
 HPDS  = 1CB8h
 HQA   = 1CD8h                   ; the pending ones whose two forms this book has {form, form, way} (a room), how many
-HQAN  = 1CE0h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HQAN  = 1CE0h
+HROL  = 1CE8h                   ; the instructions (hl_instr): roles, their lists, the imagined; the rest walking
+HWRH  = 1D08h
+HIMG  = 1D28h
+HRL   = 1D48h
+HRLN  = 1D50h
+HINS  = 1D58h
+HIC   = 1D60h
+HIC0  = 1D68h
+HIQ   = 1D70h
+HIP   = 1D78h
+HIN   = 1D80h
+HIPR  = 1D88h
+HIJ   = 1D90h
+HIS   = 1D98h
+HIJ0  = 1DA0h
+HIS0  = 1DA8h
+HIK   = 1DB0h
+HIA   = 1DB8h
+HIB   = 1DC0h
+HIB0  = 1DC8h
+HIB1  = 1DD0h
+HIF   = 1DD8h
+HIR   = 1DE0h
+HISD  = 1DE8h
+HIZ   = 1DF0h
+HIW   = 1DF8h
+HIL   = 1E00h
+HVB   = 1E08h
+HVN   = 1E10h
+HVT   = 1E18h
+HVC   = 1E20h
+HVT0  = 1E28h
+HVC0  = 1E30h
+HVU   = 1E38h
+HVL   = 1E40h
+HIML  = 1E48h
+HIMN  = 1E50h
+HIMC  = 1E58h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -425,6 +474,8 @@ jwhile j2                      ; while a turn joins something
   jadd j2, j2, j3
 jwend
 jcall hl_end
+jcall hl_icheck
+jcall hl_inventa
 jcall hl_ksave
 jcall hl_psave
 jjmp finish
@@ -6147,6 +6198,1002 @@ hp_order:
   jadd j5, j6, j8
   jadd j6, j7, j8
 hpo_done:
+  jret
+
+; What each form of grammar does, found by Razar itself in what it proved (Capitan: "'y' joins two things that are
+; alike: that is the instruction; joined to other gears they make a mechanism"; and the house's rule: Razar makes
+; its own rules, we do not give them). Its roles first: in every relation it proved (two forms or more), each word is
+; the B of its A or the A of its B. Two words are alike when they hold one same role (the same relation, the same
+; side, the same other word: "isaac" and "ismael", both sons of "abraham"). A form joins alike things when, of its
+; pairs whose two words both hold roles, more than half are alike, two at least, and more than its pairs crossed (each
+; A with the B of the next pair: what chance gives): "instruccion: y | une iguales 7 de 9 (mezcladas 1 de 9)". Then
+; it imagines with it: where "a y b" and a holds a role b does not, b holds it too ("imagina: abraham padre de ismael").
+; Each one imagined is an open vote, into the house's "imaginado" for the books after, and so is each one its crossed
+; pairs would imagine (chance's, to know how much of it is luck). Uses j1-j14.
+hl_instr:
+  jldi j2, HROL
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, HWRH
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, HIMG
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, HRLN
+  jst j1, j1, HINS
+  jst j1, j1, HIC
+  jst j1, j1, HIC0
+  jst j1, j1, HKI               ; the room for the roles: two for each pair of a relation it proved
+  jst j1, j1, HIQ
+  hin_c:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hin_cd
+    jcall hin_proved
+    jjz j6, hin_cn
+    jldi j1, 0
+    jld j2, j1, HKI
+    jcall hxr_of
+    jldi j1, 0
+    jld j2, j1, HIQ
+    jadd j2, j2, j10
+    jst j2, j1, HIQ
+  hin_cn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hin_c
+hin_cd:
+  jld j11, j1, HIQ
+  jadd j11, j11, j11
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 5
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HRL
+  jst j1, j1, HKI
+  hin_r:                        ; the roles
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hin_rd
+    jcall hin_proved
+    jjz j6, hin_rn
+    jldi j1, 0
+    jld j2, j1, HKI
+    jcall hxr_of
+    jldi j1, 0
+    jst j9, j1, HIP
+    jst j10, j1, HIN
+    hin_p:
+      jldi j1, 0
+      jld j10, j1, HIN
+      jjz j10, hin_rn
+      jld j9, j1, HIP
+      jld j2, j1, HKI           ; B is the B of A
+      jldi j3, 0
+      jld j4, j9, 0
+      jld j5, j9, 8
+      jcall hin_role
+      jldi j1, 0
+      jld j9, j1, HIP
+      jld j2, j1, HKI           ; A is the A of B
+      jldi j3, 1
+      jld j4, j9, 8
+      jld j5, j9, 0
+      jcall hin_role
+      jldi j1, 0
+      jld j9, j1, HIP
+      jldi j2, 16
+      jadd j9, j9, j2
+      jst j9, j1, HIP
+      jld j10, j1, HIN
+      jldi j2, 1
+      jsub j10, j10, j2
+      jst j10, j1, HIN
+      jjmp hin_p
+  hin_rn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hin_r
+hin_rd:
+  jld j11, j1, HNF              ; a form's pairs, as they are walked
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 4
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HIPR
+  jst j1, j1, HKI
+  hin_f:                        ; each form: does it join alike things?
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hin_done
+    jcall hk_deduced
+    jjnz j6, hin_fn
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 48
+    jmul j3, j2, j3
+    jld j4, j1, HMA
+    jadd j3, j3, j4
+    jld j5, j3, 32
+    jldi j6, 2
+    jsub j5, j5, j6
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjnz j5, hin_fn             ; (two pairs at least)
+    jld j2, j3, 40              ; its pairs, into HIPR
+    jst j1, j1, HIN
+    hin_l:
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, hin_ld
+      jldi j3, 5
+      jshl j3, j2, j3
+      jld j4, j1, HFL
+      jadd j3, j3, j4
+      jld j5, j1, HIN
+      jldi j6, 4
+      jshl j6, j5, j6
+      jld j7, j1, HIPR
+      jadd j6, j6, j7
+      jld j7, j3, 8
+      jst j7, j6, 0
+      jld j7, j3, 16
+      jst j7, j6, 8
+      jldi j7, 1
+      jadd j5, j5, j7
+      jst j5, j1, HIN
+      jld j2, j3, 24
+      jjmp hin_l
+  hin_ld:
+    jst j1, j1, HIJ
+    jst j1, j1, HIS
+    jst j1, j1, HIJ0
+    jst j1, j1, HIS0
+    jst j1, j1, HIK
+    hin_m:                      ; each pair, and the pair crossed (its A with the next one's B)
+      jldi j1, 0
+      jld j2, j1, HIK
+      jld j3, j1, HIN
+      jsub j3, j2, j3
+      jjz j3, hin_judge
+      jcall hin_pair
+      jldi j1, 0
+      jld j2, j1, HIA
+      jld j3, j1, HIB
+      jcall hin_alike
+      jldi j1, 0
+      jld j2, j1, HIJ
+      jadd j2, j2, j7
+      jst j2, j1, HIJ
+      jld j2, j1, HIS
+      jadd j2, j2, j6
+      jst j2, j1, HIS
+      jld j2, j1, HIA
+      jld j3, j1, HIB0
+      jcall hin_alike
+      jldi j1, 0
+      jld j2, j1, HIJ0
+      jadd j2, j2, j7
+      jst j2, j1, HIJ0
+      jld j2, j1, HIS0
+      jadd j2, j2, j6
+      jst j2, j1, HIS0
+      jld j2, j1, HIK
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HIK
+      jjmp hin_m
+  hin_judge:
+    jld j2, j1, HIS             ; two alike at least, more than half, more than chance
+    jldi j3, 2
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, hin_fn
+    jadd j3, j2, j2
+    jld j5, j1, HIJ
+    jsub j3, j5, j3
+    jsar j3, j3, j4
+    jjz j3, hin_fn
+    jld j3, j1, HIS0
+    jsub j3, j3, j2
+    jsar j3, j3, j4
+    jjz j3, hin_fn
+    jld j2, j1, HINS
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HINS
+    jldi j1, S_INSTR
+    jcall puts
+    jld j2, j1, HKI
+    jcall hl_sayform
+    jldi j1, S_UNEIG
+    jcall puts
+    jld j2, j1, HIS
+    jcall putnum
+    jldi j1, S_DE
+    jcall puts
+    jld j2, j1, HIJ
+    jcall putnum
+    jldi j1, S_MEZC
+    jcall puts
+    jld j2, j1, HIS0
+    jcall putnum
+    jldi j1, S_DE
+    jcall puts
+    jld j2, j1, HIJ0
+    jcall putnum
+    jldi j2, 41
+    jcall putch
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0                  ; and it imagines with it: with its pairs, and with its pairs crossed (chance)
+    jst j1, j1, HIK
+    hin_i:
+      jldi j1, 0
+      jld j2, j1, HIK
+      jld j3, j1, HIN
+      jsub j3, j2, j3
+      jjz j3, hin_fn
+      jcall hin_pair
+      jldi j1, 0
+      jldi j2, 105
+      jst j2, j1, HIF
+      jld j2, j1, HIA
+      jld j3, j1, HIB
+      jcall hin_imagine
+      jldi j1, 0
+      jld j2, j1, HIB
+      jld j3, j1, HIA
+      jcall hin_imagine
+      jldi j1, 0
+      jldi j2, 97
+      jst j2, j1, HIF
+      jld j2, j1, HIA
+      jld j3, j1, HIB0
+      jcall hin_imagine
+      jldi j1, 0
+      jld j2, j1, HIB0
+      jld j3, j1, HIA
+      jcall hin_imagine
+      jldi j1, 0
+      jld j2, j1, HIK
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HIK
+      jjmp hin_i
+  hin_fn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hin_f
+hin_done:
+  jldi j1, S_INSN
+  jcall puts
+  jld j2, j1, HINS
+  jcall putnum
+  jldi j1, S_INSI
+  jcall puts
+  jld j2, j1, HIC
+  jcall putnum
+  jldi j1, S_INSA
+  jcall puts
+  jld j2, j1, HIC0
+  jcall putnum
+  jldi j2, 41
+  jcall putch
+  jldi j2, 10
+  jcall putch
+  jldi j1, 0
+  jret
+
+; The one imagined now {HIR, HISD, HIZ, HIW, HIF} onto the list HIML (it grows to what it holds: full, a room twice as
+; big, what it had moved to it). Uses j1-j14.
+hin_push:
+  jldi j1, 0
+  jld j2, j1, HIMN
+  jld j3, j1, HIMC
+  jsub j3, j2, j3
+  jjnz j3, hpu_room
+  jld j11, j1, HIMC
+  jadd j11, j11, j11
+  jldi j2, 8
+  jadd j11, j11, j2
+  jst j11, j1, HIMC
+  jldi j2, 40
+  jmul j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jld j4, j1, HIML
+  jadd j5, j13, j1
+  jld j6, j1, HIMN
+  jldi j7, 40
+  jmul j6, j6, j7
+  hpu_c:
+    jjz j6, hpu_cd
+    jldb j7, j4, 0
+    jstb j7, j5, 0
+    jldi j7, 1
+    jadd j4, j4, j7
+    jadd j5, j5, j7
+    jsub j6, j6, j7
+    jjmp hpu_c
+hpu_cd:
+  jst j13, j1, HIML
+hpu_room:
+  jld j2, j1, HIMN
+  jldi j3, 40
+  jmul j3, j2, j3
+  jld j4, j1, HIML
+  jadd j3, j3, j4
+  jld j4, j1, HIR
+  jst j4, j3, 0
+  jld j4, j1, HISD
+  jst j4, j3, 8
+  jld j4, j1, HIZ
+  jst j4, j3, 16
+  jld j4, j1, HIW
+  jst j4, j3, 24
+  jld j4, j1, HIF
+  jst j4, j3, 32
+  jldi j4, 1
+  jadd j2, j2, j4
+  jst j2, j1, HIMN
+  jret
+
+; j6 = 1 if form HKI is a relation it proved: its own (not joined to another), of two forms or more, not deduced.
+; Uses j1-j8.
+hin_proved:
+  jldi j1, 0
+  jld j2, j1, HKI
+  jldi j6, 0
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j1, HCLS
+  jadd j4, j4, j3
+  jld j4, j4, 0
+  jsub j4, j4, j2
+  jjnz j4, hpr_no
+  jld j4, j1, HSIZE
+  jadd j4, j4, j3
+  jld j4, j4, 0
+  jldi j5, 2
+  jsub j4, j4, j5
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, hpr_no
+  jcall hk_deduced
+  jldi j7, 1
+  jxor j6, j6, j7
+  jret
+hpr_no:
+  jldi j6, 0
+  jret
+
+; Pair HIK of the form walked -> HIA, HIB, and HIB0 the B of the next (its crossed). Uses j1-j6.
+hin_pair:
+  jldi j1, 0
+  jld j2, j1, HIK
+  jldi j3, 4
+  jshl j3, j2, j3
+  jld j4, j1, HIPR
+  jadd j3, j3, j4
+  jld j5, j3, 0
+  jst j5, j1, HIA
+  jld j5, j3, 8
+  jst j5, j1, HIB
+  jldi j5, 1
+  jadd j2, j2, j5
+  jld j5, j1, HIN
+  jsub j5, j2, j5
+  jjnz j5, hpa_n
+  jldi j2, 0
+hpa_n:
+  jldi j3, 4
+  jshl j3, j2, j3
+  jadd j3, j3, j4
+  jld j5, j3, 8
+  jst j5, j1, HIB0
+  jret
+
+; Word j5 holds role {relation j2, side j3, other word j4}: in the table of roles (HROL) and in its list. Uses j1-j14.
+hin_role:
+  jldi j1, 0
+  jst j2, j1, HIR
+  jst j3, j1, HISD
+  jst j4, j1, HIZ
+  jst j5, j1, HIW
+  jcall hin_rkey
+  jldi j2, HROL
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, hrl_done
+  jld j5, j1, HIW               ; its list: the new role first
+  jldi j2, HWRH
+  jcall pl_take
+  jldi j1, 0
+  jld j6, j4, 8
+  jld j2, j1, HRLN
+  jldi j3, 5
+  jshl j3, j2, j3
+  jld j7, j1, HRL
+  jadd j3, j3, j7
+  jld j7, j1, HIR
+  jst j7, j3, 0
+  jld j7, j1, HISD
+  jst j7, j3, 8
+  jld j7, j1, HIZ
+  jst j7, j3, 16
+  jst j6, j3, 24
+  jldi j7, 1
+  jadd j2, j2, j7
+  jst j2, j1, HRLN
+  jst j2, j4, 8                 ; (the list's first: its place plus one)
+hrl_done:
+  jldi j1, 0
+  jret
+
+; The key of role {HIR, HISD, HIZ} of word HIW -> j5. Uses j1, j5-j7.
+hin_rkey:
+  jldi j1, 0
+  jld j5, j1, HIR
+  jld j6, j1, HISD
+  jcall hl_mix
+  jld j6, j1, HIZ
+  jcall hl_mix
+  jld j6, j1, HIW
+  jcall hl_mix
+  jjnz j5, hrk_k
+  jldi j5, 1
+hrk_k:
+  jret
+
+; Words j2 and j3: j7 = 1 if both hold roles (it can judge them), j6 = 1 if they hold one same role (alike).
+; Uses j1-j14.
+hin_alike:
+  jldi j1, 0
+  jst j3, j1, HIW
+  jst j3, j1, HIB1
+  jadd j5, j2, j1
+  jldi j2, HWRH
+  jcall pl_find
+  jldi j1, 0
+  jld j6, j4, 0
+  jjz j6, hal_no
+  jld j6, j4, 8
+  jst j6, j1, HIL
+  jld j5, j1, HIB1
+  jldi j2, HWRH
+  jcall pl_find
+  jldi j1, 0
+  jld j6, j4, 0
+  jjz j6, hal_no
+  hal_lap:
+    jldi j1, 0
+    jld j2, j1, HIL
+    jjz j2, hal_none
+    jldi j3, 1
+    jsub j2, j2, j3
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HRL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jst j4, j1, HIR
+    jld j4, j3, 8
+    jst j4, j1, HISD
+    jld j4, j3, 16
+    jst j4, j1, HIZ
+    jld j4, j3, 24
+    jst j4, j1, HIL
+    jld j4, j1, HIB1
+    jst j4, j1, HIW
+    jcall hin_rkey
+    jldi j2, HROL
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jsub j6, j6, j5
+    jjnz j6, hal_lap
+    jldi j7, 1
+    jldi j6, 1
+    jret
+hal_none:
+  jldi j7, 1
+  jldi j6, 0
+  jret
+hal_no:
+  jldi j7, 0
+  jldi j6, 0
+  jret
+
+; Where "a" and "b" (j2, j3) are alike by an instruction: each role a holds that b does not, b imagined to hold it
+; ("imagina: z <relation> b" for the instruction's own pairs; HIF says which: "i" imagined, "a" chance's), once each,
+; into the house's "imaginado". Uses j1-j14.
+hin_imagine:
+  jldi j1, 0
+  jst j3, j1, HIB1
+  jadd j5, j2, j1
+  jldi j2, HWRH
+  jcall pl_find
+  jldi j1, 0
+  jld j6, j4, 0
+  jjz j6, him_done
+  jld j6, j4, 8
+  jst j6, j1, HIL
+  him_lap:
+    jldi j1, 0
+    jld j2, j1, HIL
+    jjz j2, him_done
+    jldi j3, 1
+    jsub j2, j2, j3
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HRL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jst j4, j1, HIR
+    jld j4, j3, 8
+    jst j4, j1, HISD
+    jld j4, j3, 16
+    jst j4, j1, HIZ
+    jld j4, j3, 24
+    jst j4, j1, HIL
+    jld j4, j1, HIB1
+    jst j4, j1, HIW
+    jcall hin_rkey
+    jldi j2, HROL
+    jcall pl_find               ; b holds it already: nothing to imagine
+    jldi j1, 0
+    jld j6, j4, 0
+    jsub j6, j6, j5
+    jjz j6, him_lap
+    jcall hin_rkey              ; once each (and which it is)
+    jld j6, j1, HIF
+    jcall hl_mix
+    jjnz j5, him_k
+    jldi j5, 1
+  him_k:
+    jldi j2, HIMG
+    jcall pl_take
+    jldi j1, 0
+    jjz j6, him_lap
+    jld j2, j1, HIF
+    jldi j3, 105
+    jsub j3, j2, j3
+    jjnz j3, him_c0
+    jld j2, j1, HIC
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HIC
+    jjmp him_w
+  him_c0:
+    jld j2, j1, HIC0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HIC0
+  him_w:
+    jcall hin_push
+    jjmp him_lap
+him_done:
+  jldi j1, 0
+  jret
+
+; One imagined into the open "imaginado" (SINK): "<the relation's key> <side> <z> <b> <i|a> | z <relation> b". The
+; relation by the key of its own form, the words by their prints (both the same in every book). Uses j1-j14.
+hin_iwrite:
+  jldi j1, 0
+  jld j2, j1, HIR
+  jcall hk_key
+  jcall hk_puthex
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HISD
+  jldi j3, 48
+  jadd j2, j2, j3
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIZ
+  jcall hk_puthex
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIW
+  jcall hk_puthex
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIF
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j2, 124
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0                    ; (said as it reads: z relation b, or b relation z)
+  jld j2, j1, HISD
+  jjnz j2, hiw_ab
+  jld j5, j1, HIZ
+  jcall en_sayprint
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIR
+  jcall hl_sayform
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j5, j1, HIW
+  jcall en_sayprint
+  jjmp hiw_nl
+hiw_ab:
+  jld j5, j1, HIW
+  jcall en_sayprint
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIR
+  jcall hl_sayform
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j5, j1, HIZ
+  jcall en_sayprint
+hiw_nl:
+  jldi j2, 10
+  jjmp putch
+
+; What it imagined in the books before, against this one (Capitan: "an open vote to test it when it repeats: if one
+; that repeats explains what it imagined, there we have it, it works"): each line whose relation this book proved and
+; whose word z this book gives that relation on that side can be tested; it is confirmed if the relation says it so
+; ("confirma:"). Counted apart, imagined ("i") and chance's ("a"). Every line not confirmed is kept for the books after
+; (an open vote: never thrown away). Uses j1-j14.
+hl_icheck:
+  jldi j11, S_IMAG
+  jldi j12, 9
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, HVB
+  jld j2, j1, PRN
+  jst j2, j1, HVN
+  jst j1, j1, HVT
+  jst j1, j1, HVC
+  jst j1, j1, HVT0
+  jst j1, j1, HVC0
+  jst j1, j1, HVU
+  jldi j3, 16
+  jadd j11, j2, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HVL
+  jld j2, j1, HVB
+  jst j2, j1, HKP
+  jld j3, j1, HVN
+  jadd j3, j2, j3
+  jst j3, j1, HKE
+  hvc_lap:
+    jldi j1, 0
+    jld j4, j1, HKP
+    jld j5, j1, HKE
+    jsub j5, j5, j4
+    jjz j5, hvc_done
+    jadd j7, j4, j1
+    hvc_eol:
+      jld j5, j1, HKE
+      jsub j5, j5, j7
+      jjz j5, hvc_eold
+      jldb j5, j7, 0
+      jldi j6, 1
+      jadd j7, j7, j6
+      jldi j6, 10
+      jsub j5, j5, j6
+      jjnz j5, hvc_eol
+  hvc_eold:
+    jst j7, j1, HKX
+    jsub j5, j7, j4
+    jldi j6, 55
+    jsub j6, j5, j6
+    jldi j8, 63
+    jsar j6, j6, j8
+    jjnz j6, hvc_next
+    jcall hk_hex                ; the relation's key, its side, z, b, which
+    jldi j1, 0
+    jst j9, j1, HKKF
+    jld j4, j1, HKP
+    jldb j2, j4, 17
+    jldi j3, 48
+    jsub j2, j2, j3
+    jst j2, j1, HISD
+    jldi j2, 19
+    jadd j4, j4, j2
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HIZ
+    jld j4, j1, HKP
+    jldi j2, 36
+    jadd j4, j4, j2
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HIW
+    jld j4, j1, HKP
+    jldb j2, j4, 53
+    jst j2, j1, HIF
+    jld j5, j1, HKKF            ; the relation in this book
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKF
+    jsub j6, j6, j5
+    jjnz j6, hvc_keep
+    jld j2, j4, 8
+    jcall hl_find
+    jldi j1, 0
+    jld j4, j1, HISD            ; (its side as the relation is now)
+    jxor j4, j4, j3
+    jst j4, j1, HISD
+    jst j2, j1, HIR
+    jld j2, j1, HIR
+    jcall hxr_of
+    jldi j1, 0
+    jldi j8, 0                  ; walk its pairs: z on its side (testable), and z with b (confirmed)
+    hvc_p:
+      jjz j10, hvc_pd
+      jld j5, j9, 0
+      jld j6, j9, 8
+      jld j7, j1, HISD
+      jjz j7, hvc_so
+      jadd j7, j5, j1
+      jadd j5, j6, j1
+      jadd j6, j7, j1
+    hvc_so:
+      jld j7, j1, HIZ
+      jsub j7, j5, j7
+      jjnz j7, hvc_pn
+      jldi j8, 1
+      jld j7, j1, HIW
+      jsub j7, j6, j7
+      jjz j7, hvc_yes
+    hvc_pn:
+      jldi j7, 16
+      jadd j9, j9, j7
+      jldi j7, 1
+      jsub j10, j10, j7
+      jjmp hvc_p
+  hvc_pd:
+    jjz j8, hvc_keep            ; not testable here: kept
+    jld j2, j1, HIF             ; testable, not confirmed: counted, kept
+    jldi j3, 105
+    jsub j3, j2, j3
+    jjnz j3, hvc_t0
+    jld j2, j1, HVT
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVT
+    jjmp hvc_keep
+  hvc_t0:
+    jld j2, j1, HVT0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVT0
+    jjmp hvc_keep
+  hvc_yes:
+    jld j2, j1, HIF
+    jldi j3, 105
+    jsub j3, j2, j3
+    jjnz j3, hvc_y0
+    jld j2, j1, HVT
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVT
+    jld j2, j1, HVC
+    jadd j2, j2, j3
+    jst j2, j1, HVC
+    jldi j1, S_CONFI            ; it works: said, and not kept as a vote
+    jcall puts
+    jld j4, j1, HKP
+    jldi j2, 57
+    jadd j4, j4, j2
+    jld j5, j1, HKX
+    hvc_say:
+      jsub j6, j5, j4
+      jjz j6, hvc_next
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jjmp hvc_say
+  hvc_y0:
+    jld j2, j1, HVT0
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVT0
+    jld j2, j1, HVC0
+    jadd j2, j2, j3
+    jst j2, j1, HVC0
+    jjmp hvc_next
+  hvc_keep:
+    jldi j1, 0
+    jld j2, j1, HVU
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HVL
+    jadd j3, j3, j4
+    jld j4, j1, HKP
+    jst j4, j3, 0
+    jld j5, j1, HKX
+    jsub j5, j5, j4
+    jst j5, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVU
+  hvc_next:
+    jldi j1, 0
+    jld j2, j1, HKX
+    jst j2, j1, HKP
+    jjmp hvc_lap
+hvc_done:
+  jld j2, j1, HVN
+  jjz j2, hvc_quiet
+  jldi j1, S_IMGN               ; "imaginado: C confirmadas de T comprobables | azar: C0 de T0"
+  jcall puts
+  jld j2, j1, HVC
+  jcall putnum
+  jldi j1, S_CONFS
+  jcall puts
+  jld j2, j1, HVT
+  jcall putnum
+  jldi j1, S_AZAR
+  jcall puts
+  jld j2, j1, HVC0
+  jcall putnum
+  jldi j1, S_DE
+  jcall puts
+  jld j2, j1, HVT0
+  jcall putnum
+  jldi j2, 10
+  jcall putch
+hvc_quiet:
+  jldi j1, 0
+  jret
+
+; The house's "imaginado" written again: the votes still open (as they were), then this book's new ones (hl_instr
+; writes them as it imagines). Opens it, the old ones in; the caller writes on and closes it (hl_iclose). Uses j1-j14.
+hl_iopen:
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_IMAG
+  jldi j12, 9
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_IMAG
+  jldi j12, 9
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hio_no
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jst j1, j1, HKI
+  hio_o:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HVU
+    jsub j3, j2, j3
+    jjz j3, hio_yes
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HVL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jld j5, j3, 8
+    hio_b:
+      jjz j5, hio_bn
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jjmp hio_b
+  hio_bn:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hio_o
+hio_yes:
+  jldi j2, 1
+  jret
+hio_no:
+  jldi j2, 0
+  jret
+
+; "imaginado" closed, the text to the console again. Uses j1-j14.
+hl_iclose:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, 0
+  jret
+
+; The instructions found and what they imagined (to the console), then "imaginado" written: the votes still open
+; and the new ones. Uses j1-j14.
+hl_inventa:
+  jldi j1, 0
+  jst j1, j1, HIMN
+  jst j1, j1, HIMC
+  jst j1, j1, HIML
+  jcall hl_instr
+  jcall hl_iopen
+  jjz j2, hlv_done
+  jldi j1, 0
+  jst j1, j1, HKI
+  hlv_lap:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HIMN
+    jsub j3, j2, j3
+    jjz j3, hlv_close
+    jldi j3, 40
+    jmul j3, j2, j3
+    jld j4, j1, HIML
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jst j4, j1, HIR
+    jld j4, j3, 8
+    jst j4, j1, HISD
+    jld j4, j3, 16
+    jst j4, j1, HIZ
+    jld j4, j3, 24
+    jst j4, j1, HIW
+    jld j4, j3, 32
+    jst j4, j1, HIF
+    jcall hin_iwrite
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hlv_lap
+hlv_close:
+  jcall hl_iclose
+hlv_done:
+  jldi j1, 0
   jret
 
 ; The house's file named by the j12 bytes at j11 -> PRB, PRN (0: none). Uses j1-j14.

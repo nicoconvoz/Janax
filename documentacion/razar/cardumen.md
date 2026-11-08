@@ -2816,3 +2816,37 @@ Para eso alcanzan unos pocos órdenes, una sola vez, y decir entre qué valores 
   Razar de siempre es su número, y queda como está.
 - **Corregido en el camino:** la primera tanda dio números falsos (1, 101, 88, 4) porque Python en Windows le pegaba un
   `` a cada nombre de libro y no encontraba ninguno. Se borró y se volvió a correr.
+
+## Las instrucciones: qué hace cada palabra de gramática, e imaginar con ella (2026-11-08)
+
+El Capitán: lo que aparece una sola vez y nunca más duerme para siempre, y entender algo a la primera es la
+generalización fuerte. *"Que vea el mecanismo posible y deduzca su uso usando la creatividad de sus otros mecanismos
+aprendidos: eso es imaginar el mecanismo, y que quede abierto un voto para probarlo cuando se vuelva a repetir."* La
+pieza ya estaba en este Razar: las palabras son instrucciones (`lectura.md`, 7 de noviembre) y el encadenado (62 de
+62). *"Sabemos qué hacen: 'y' une dos cosas iguales; ésa es la instrucción, y unida a otros engranajes forman un
+mecanismo."* Por la regla de la casa (Razar crea sus propias reglas), lo que hace cada palabra lo descubre él.
+
+- **Cómo (`hl_instr`, `hl_icheck`):**
+  - **Los papeles:** en cada relación que probó (dos formas o más), cada palabra es la B de su A o la A de su B. Dos
+    palabras son iguales si tienen un mismo papel ("isaac" e "ismael", los dos hijos de "abraham").
+  - **La instrucción:** una forma une iguales si, de sus parejas cuyas dos palabras tienen papeles, más de la mitad
+    son iguales, dos por lo menos, y más que sus parejas cruzadas (cada A con la B de la pareja siguiente: lo que da el
+    azar).
+  - **Imaginar:** donde "a y b" y a tiene un papel que b no tiene, se imagina que b también lo tiene. Lo mismo con las
+    parejas cruzadas, como control del azar. Cada una queda en `imaginado` como un voto abierto.
+  - **Probar:** en los libros siguientes, al terminar, cada voto cuya relación está en el libro y cuya palabra z tiene
+    ahí ese papel se puede comprobar. Si la relación lo dice, `confirma:`. Los que no se confirman siguen abiertos y no
+    se tiran nunca.
+- **Prueba (`hilos_imagina_prueba.sh`):** con la familia probada y "eva y luz", "mar y sol", "mar y nube", descubre
+  `instruccion: y | une iguales 2 de 2`, imagina "eva padre de nube", y el libro siguiente lo confirma.
+- **En los libros de verdad (los once, con memoria): todavía no funciona.**
+  - Lo imaginado se confirma 113 de 83.552 veces (0,135 %). Con las parejas cruzadas, 84 de 85.238 (0,099 %). Es
+    1,36 veces el azar: poca señal.
+  - Las instrucciones que encuentra son flojas (`bautizado por`, `en fin`, `sé`, `para mí`) y pasan con números
+    chicos (2 de 2, o 6 de 10 contra 5 de 10). La `y` no aparece.
+  - El Quijote imagina 86.000 votos, y `imaginado` llega a 13,7 MB (solo en el scratch): un gasto que la regla de la
+    casa no permite.
+  - **Por qué:** los papeles salen de las relaciones probadas, y en los libros reales son casi todas de gramática
+    (`a`, `de la`, `en el`). "Iguales" termina queriendo decir "dichas después de `a`".
+- **Lo que hace falta:** papeles de relaciones que digan algo de las cosas (no de la gramática), y una vara que no se
+  conforme con 2 de 2.
