@@ -2158,3 +2158,12 @@ familia, del mismo tamaño"*, y *"¿qué otros bancos usaban esa misma comparaci
   ella da 4 de 9).
 - El cubo con el apellido solo no destruye la entrada: llega cerca de la cuenta (4 contra 6) y su nulo da 0. Lo que lo
   ahogaba antes era el gorro.
+- **Sobre las 9 que tienen apellido** (las 7 de Lucas no tienen entrada: no son errores de comparar, les falta qué
+  compartir; otro problema): cuenta **6 de 9**, cubo sólo apellido **4 de 9**, nulo de otra familia **0 de 9**,
+  apostar siempre por "y la" 4 de 9. Sacarle el gorro bajó el puntaje (5 → 4) y subió la señal (de 5 contra 4 a 4
+  contra 0): la señal se mide por la distancia al nulo, no por la altura.
+- **La regla que deja esto** (el otro chat): *la etiqueta y la medida no pueden tomar agua del mismo pozo*. Tercera
+  vez que aparece: el verbo de la pregunta en la respuesta (el 116/116), las vueltas que salían del presupuesto, el
+  pariente que define el apellido. Si lo que se predice se eligió con lo que se mide, el número sale lindo y hueco.
+- ⚠️ Falta: un apellido para las 7 de Lucas que no sean nombres de personas (la forma que las rodea en la cadena), y
+  ver si el 4 contra 0 se sostiene cuando las 9 crezcan.
