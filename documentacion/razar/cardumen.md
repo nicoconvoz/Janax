@@ -2170,3 +2170,15 @@ familia, del mismo tamaño"*, y *"¿qué otros bancos usaban esa misma comparaci
 - **Más vueltas no lo mueven:** 800, 3.200 y 12.800 vueltas dan lo mismo (aprendidas 100 %; nuevas con apellido 4 de
   9, nulo 0 de 9). Las vueltas afinan lo aprendido, no agregan nada de las nuevas: lo que falta es entrada (más
   apellido compartido), no práctica.
+
+**Marcos solo** (Capitán: *"dale de comer un solo evangelio, el de San Marcos, y aplicá lo aprendido"*). Los edificios
+de Marcos (1.093, 12.944 palabras; el texto queda fuera del repo), `hilos` con su while: la mitad son las dichas 31
+veces o más; **543 de 3.828 formas las dicen dos pares**; el while para en la vuelta 3 con **4 uniones**, todas de
+gramática y con 2 pares ("a su ~ a tu", "los ~ y los ~ y a los", "de ~ a"). Ningún agujero negro.
+
+- **Un evangelio solo casi no se repite**: lo que en el NT entero eran 6.439 formas dichas por dos acá son 543, y lo
+  que se une son las clases más chicas. "lo dicen dos" necesita que el libro diga dos veces.
+- Sin agujero negro, como se esperaba del diagnóstico: con pocas relaciones cada una se compara con pocas, y el azar
+  no alcanza a pasar.
+- Lo que Marcos sí trae es que **Mateo y Lucas cuentan lo mismo con otras palabras** (los sinópticos): es el "dos"
+  que le falta, de otro libro.
