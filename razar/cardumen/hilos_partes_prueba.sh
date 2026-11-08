@@ -3,7 +3,8 @@
 # ending, beginning does"). Words said twice each: rápido/rápidamente, lento/lentamente, claro/claramente, casa/casas,
 # mesa/mesas, hacer/rehacer, leer/releer, and two that share nothing (sol, nube). At their end "o" into "amente" works
 # for three roots and nothing into "s" for two; at their beginning nothing into "re" for two. Nothing is given: each
-# is found by cutting the words it read.
+# is found by cutting the words it read. And a letter anywhere (Capitan: "an é is the same in any place"): esta/está
+# and rapido/rápido give one piece, "a" into "á", for two roots, the place not counted.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -14,7 +15,8 @@ bash "$proyecto/so/herramientas/armar.sh" "$proyecto/so/build/janaxos.exe" "$d" 
 mkdir -p "$d/casa"
 for i in 1 2; do
   printf '%s\n' 'O: rápido y rápidamente.' 'O: lento y lentamente.' 'O: claro y claramente.' \
-    'O: casa y casas.' 'O: mesa y mesas.' 'O: sol y nube.' 'O: hacer y rehacer.' 'O: leer y releer.'
+    'O: casa y casas.' 'O: mesa y mesas.' 'O: sol y nube.' 'O: hacer y rehacer.' 'O: leer y releer.' \
+    'O: esta y está.' 'O: rapido y rápido.'
 done > "$d/casa/$(etiqueta pares)"
 printf 'si' > "$d/casa/$(etiqueta partes)"
 salida=$(JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$d/casa")" \
@@ -22,6 +24,7 @@ salida=$(JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$d/
 piezas="$d/casa/$(etiqueta piezas)"
 if grep -Pq '^3\t(amente\to|o\tamente)\t.*\tfin$' "$piezas" && grep -Pq '^2\t(_\ts|s\t_)\t.*\tfin$' "$piezas" &&
    grep -Pq '^2\t(_\tre|re\t_)\t.*\tinicio$' "$piezas" &&
+   grep -Pq '^2\t(a\tá|á\ta)\t.*\tletra$' "$piezas" &&
    printf '%s\n' "$salida" | grep -q '^pieza: 3	'; then
   echo "hilos_partes_prueba: bien"
 else

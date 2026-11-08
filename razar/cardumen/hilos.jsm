@@ -135,6 +135,7 @@ S_PARTES = 0BA0h
 S_PIEZ   = 0BC0h
 S_PIEZA  = 0BE0h
 S_SIGNS  = 0C40h
+S_PLET   = 0C60h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -387,7 +388,8 @@ HPBB  = 1F00h
 HPX   = 1F08h
 HPY   = 1F10h
 HPZ   = 1F18h
-HSIG  = 1F20h                   ; the reader keeps the signs (house "signos"): each a piece of its own, never thrown away                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HSIG  = 1F20h
+HPCL  = 1F28h                   ; (the bytes of the letter cut, a letter anywhere)                   ; the reader keeps the signs (house "signos"): each a piece of its own, never thrown away                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -7251,7 +7253,8 @@ hpm_no:
 ; root and the ending. Two words of one root that end differently are a change of ending ("rápid|o" and
 ; "rápid|amente": "o" into "amente"), and a change is a piece by how many roots it works for (none given: each found
 ; in the book). Into the house's "piezas", a line each {how many roots, one ending, the other, a root it works for};
-; the most said said. And the same at its beginning ("re|hacer", "in|útil"): each piece says which it is. Only when
+; the most said said. And the same at its beginning ("re|hacer", "in|útil"), and a letter anywhere ("est|a|" and
+; "est|á|": the place not counted): each piece says which it is. Only when
 ; the house asks ("partes"): then nothing else is done. Uses j1-j14.
 hl_partes:
   jldi j2, HPB
@@ -7282,7 +7285,7 @@ hl_partes:
     jsub j3, j3, j5
     jjmp hpt_n
 hpt_nd:
-  jldi j3, 112
+  jldi j3, 168
   jmul j11, j11, j3
   jcall room
   jldi j1, 0
@@ -7396,7 +7399,7 @@ hpt_nd:
       jsub j4, j3, j4
       jldi j5, 63
       jsar j4, j4, j5
-      jjnz j4, hpt_wn
+      jjnz j4, hpt_m0
       jst j3, j1, HPRN
       jld j4, j1, HPP
       jadd j4, j4, j2
@@ -7456,6 +7459,103 @@ hpt_nd:
       jadd j2, j2, j3
       jst j2, j1, HPL
       jjmp hpt_g
+  hpt_m0:                       ; a letter anywhere (Capitan: "an 'é' is the same in any place"): the word without it,
+    jldi j1, 0                  ; the part before and the part after, is the root; the place is not counted
+    jst j1, j1, HPL
+    hpt_m:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jld j3, j1, HPNN
+      jsub j3, j3, j2
+      jjz j3, hpt_wn
+      jld j4, j1, HPP
+      jadd j4, j4, j2
+      jst j4, j1, HPSP          ; (the letter)
+      jldb j5, j4, 0
+      jldi j6, 192
+      jand j6, j5, j6
+      jldi j7, 128
+      jsub j6, j6, j7
+      jjz j6, hpt_mn1           ; (inside a letter: on to the next byte)
+      jcall pc_len
+      jldi j1, 0
+      jst j7, j1, HPCL
+      jld j3, j1, HPNN          ; the root three bytes or more
+      jsub j3, j3, j7
+      jldi j4, 3
+      jsub j4, j3, j4
+      jldi j5, 63
+      jsar j4, j4, j5
+      jjnz j4, hpt_mn
+      jld j3, j1, HPP           ; the root's print: the part before, the part after, marked apart
+      jld j4, j1, HPL
+      jcall mp_print
+      jldi j1, 0
+      jst j5, j1, HPHB
+      jld j3, j1, HPSP
+      jld j4, j1, HPCL
+      jadd j3, j3, j4
+      jld j4, j1, HPNN
+      jld j6, j1, HPL
+      jsub j4, j4, j6
+      jld j6, j1, HPCL
+      jsub j4, j4, j6
+      jcall mp_print
+      jldi j1, 0
+      jadd j6, j5, j1
+      jld j5, j1, HPHB
+      jcall hl_mix
+      jldi j6, 3
+      jcall hl_mix
+      jldi j1, 0
+      jst j5, j1, HPHB
+      jld j3, j1, HPSP          ; the letter's print
+      jld j4, j1, HPCL
+      jcall mp_print
+      jldi j6, 3
+      jcall hl_mix
+      jldi j1, 0
+      jst j5, j1, HPHS
+      jld j5, j1, HPHB
+      jldi j2, HPB
+      jcall pl_take
+      jldi j1, 0
+      jld j6, j4, 8
+      jld j2, j1, HPEN
+      jldi j3, 56
+      jmul j3, j2, j3
+      jld j7, j1, HPE
+      jadd j3, j3, j7
+      jld j7, j1, HPHS
+      jst j7, j3, 0
+      jld j7, j1, HPSP          ; the piece: the letter
+      jst j7, j3, 8
+      jld j7, j1, HPCL
+      jst j7, j3, 16
+      jld j7, j1, HPP           ; the root: the word
+      jst j7, j3, 24
+      jld j7, j1, HPNN
+      jst j7, j3, 32
+      jst j6, j3, 40
+      jldi j7, 2
+      jst j7, j3, 48            ; (a letter anywhere)
+      jldi j7, 1
+      jadd j2, j2, j7
+      jst j2, j1, HPEN
+      jst j2, j4, 8
+    hpt_mn:
+      jldi j1, 0
+      jld j2, j1, HPL
+      jld j3, j1, HPCL
+      jadd j2, j2, j3
+      jst j2, j1, HPL
+      jjmp hpt_m
+    hpt_mn1:
+      jld j2, j1, HPL
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HPL
+      jjmp hpt_m
   hpt_wn:
     jldi j1, 0
     jld j4, j1, HPW
@@ -7727,10 +7827,32 @@ hps_pos:
   jldi j1, S_PFIN
   jjz j2, hpy_k
   jldi j1, S_PINI
+  jldi j3, 1
+  jsub j3, j2, j3
+  jjz j3, hpy_k
+  jldi j1, S_PLET
 hpy_k:
   jcall puts
   jldi j2, 10
   jjmp putch
+
+; How many bytes the letter whose first byte is j5 has -> j7. Uses j6, j7.
+pc_len:
+  jldi j7, 1
+  jldi j6, 128
+  jand j6, j5, j6
+  jjz j6, pcl_done
+  jldi j7, 2
+  jldi j6, 32
+  jand j6, j5, j6
+  jjz j6, pcl_done
+  jldi j7, 3
+  jldi j6, 16
+  jand j6, j5, j6
+  jjz j6, pcl_done
+  jldi j7, 4
+pcl_done:
+  jret
 
 ; The j10 bytes at j9 into the text ("_" if none). Uses j1-j3, j9, j10.
 hp_text:

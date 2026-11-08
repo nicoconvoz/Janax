@@ -2948,3 +2948,20 @@ está en `0C40h`.)
   (`bien , ~ mal ,`, `digo , ~ dije yo ,`, `, por lo ~ , con lo`). También ruido de números y direcciones
   (`8 . ~ 3 4`, `/ www . ~ www .`).
 - **El costo:** la imaginación crece a 615.510 votos (649.196 al azar): es demasiado y casi todo ruido.
+
+## Una letra en cualquier lugar (2026-11-08)
+
+El Capitán: *"no hace falta separar, pero una 'é' vale para cualquier posición"*; y antes, *"sin duplicados"*. Las
+piezas estaban atadas al lugar (solo finales y comienzos): una `é` en el medio no aparecía, y una al final y otra al
+principio eran dos piezas. Ahora hay un tercer corte: cada palabra, sin un carácter en cada lugar posible. La raíz es
+lo que queda antes y después de él (tres bytes o más), y **el lugar no entra en la cuenta**: `esta / está` y
+`rapido / rápido` suman a la misma pieza `a ~ á` (`letra`). La imaginación queda viva como estaba (Capitán: *"dejá la
+imaginación viva"*).
+
+- **Prueba (`hilos_partes_prueba.sh`):** esta/está y rapido/rápido dan `a ~ á`, de letra, en dos raíces.
+- **Sobre los once libros de personas** (435 piezas de letra): `o ~ ó` (341 raíces: adonde/adónde), `e ~ é` (139:
+  tome/tomé), `a ~ á` (133: encontrara/encontrará), `i ~ í` (56), `n ~ ñ` (27: canas/cañas), `u ~ ú` (9). Cada tilde
+  una sola pieza, en cualquier lugar. Las más grandes son de morfología (`a ~ o`, 3.407; `e ~ a`, 1.122) y también hay
+  vecinas de palabra sin más (`r ~ n`, `d ~ b`).
+- **El MATS no cambia** (flexiva 391 de 418, derivativa 219 de 233): esas parejas ya las explicaban los finales y los
+  comienzos.
