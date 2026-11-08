@@ -2485,3 +2485,33 @@ cubo) es de `memoria_pares` y `voluntad_semilla`: sigue vigente, porque esos arc
 - **Lo que no prueba:** es la cancha de `hilos`, porque la nueva comparte pares con una conocida. Una relación nueva de
   verdad, sin ningún par en común con nada, queda sola: se guarda como relación propia, pero no hay con qué
   entenderla.
+
+## La máquina entera, del NT a un libro distinto (2026-11-08)
+
+El Capitán: *"aumentá la potencia al máximo y aplicá al NT, veamos a dónde llega; luego pasale otro libro distinto"*.
+La potencia es la máquina entera de `hilos` (propiedades, coma, deducción, despertar) y `caminos.sh`, que la corre una
+vez por cada regla suspendida, de a 4. El libro distinto: *100 preguntas* de Asimov (ensayos de divulgación), armado
+como el NT (el texto corrido, cortado en oraciones, en minúscula: 3.192 oraciones). Ni el texto ni las salidas van al
+repo.
+
+| | NT | Asimov |
+|---|---|---|
+| vueltas del while | 23 | 7 |
+| uniones | 104 | 17 |
+| relaciones de dos formas o más (la más grande) | 49 (16: `hijo de`) | 10 (4: `más`) |
+| en coma / en espera | 68 / 33 | 10 / 6 |
+| reglas que frenan algo | 64 | 14 |
+| caminos | 65 | 15 |
+| uniones de todos los caminos | 96 | 17 (todas) |
+| de un camino nuevo | 31 | 1 |
+| mismo lugar (dos nombres, uno solo) | 3 | 0 |
+
+- **El NT sin el archivo `tanda` da lo mismo que con él**, unión por unión: esa diferencia de armado no cambia nada.
+  Los caminos del NT valen los de antes (`hilos` no cambió desde entonces).
+- **Lo que encontró en Asimov:** `cercano al ~ próximo al`, `con ~ contra`, `con ~ sobre`, `más ~ tan`,
+  `más ~ aún más`, `millones de ~ unos millones de`, `millones de ~ setenta millones de`, `disminuyendo ~ disminuyendo
+  poco a`, `la ~ o incluso` (al revés). Sinónimos y modificadores de un mismo lugar, no relaciones entre personas.
+- **Lo que dice:** la máquina es la misma y el libro manda. El NT repite parentescos con nombres propios (genealogías,
+  "hijo de", "padre de"), y por eso tiene relaciones que se confirman entre sí. Un ensayo casi no repite pares de
+  palabras de la misma forma. Encuentra menos, pero lo que encuentra es estable: las 17 están en todos los caminos.
+- **El camino nuevo de Asimov:** sin la regla de `millones de` (un B por cada A) aparece `millones de ~ cuarenta`.
