@@ -245,6 +245,10 @@ OBA   = 1940h
 OBEA  = 1948h
 HOA   = 1950h
 QCSV  = 1958h
+SDW   = 1960h                   ; the words the read seeds' answers say (ms_seedwords): by print {print, how many read
+SDWS  = 1980h                   ; seeds' answers say it, the last one + 1}; walking
+SDWN  = 1988h
+SDWI  = 1990h
 SQL   = 1840h                   ; (the question's places kept; a plain cost)
 SPL   = 1848h
 QPN   = 1828h
@@ -3061,9 +3065,10 @@ mpsp_done:
 ; sentence that says a word of its question, a line "M: seed sentence answers read t1 t2 t3 t4 t5" (answers: 1 if
 ; the sentence is of its answer; read: 1 if the seed is read, 0 if left out): the five words around the first place of
 ; what the question is about in it, as the song's tokens. 0 is past the sentence, 1 a word the question is not about
-; and not of the half; the rest numbered by first sight: a place k words from the question's end, or a word of the
-; half itself. Uses j1-j14.
+; and not of the half nor said by two read answers; the rest numbered by first sight: a place k words from the
+; question's end, or a word itself. Uses j1-j14.
 ms_frames:
+  jcall ms_seedwords
   jldi j2, TOK
   jldi j3, 16
   jcall pl_new
@@ -3473,8 +3478,8 @@ mfp_no:
   jldi j3, 0
   jret
 
-; The token of word j2 of the sentence in SWB (FWN words) -> j2: 0 past it, 1 a word the question is not about and not
-; of the half, else a place's or a word of the half's number (TOK, by first sight). Uses j1-j8.
+; The token of word j2 of the sentence in SWB (FWN words) -> j2: 0 past it, 1 a word the question is not about, not of
+; the half and not said by two read answers, else a place's or the word's number (TOK, by first sight). Uses j1-j8.
 mf_token:
   jldi j1, 0
   jldi j3, 63
@@ -3493,6 +3498,16 @@ mf_token:
   jjmp mft_key
 mft_word:
   jst j5, j1, FTR + 8           ; (its print kept)
+  jldi j2, SDW                  ; said by two read answers: it keeps who it is (a mechanism's, not one case's)
+  jcall pl_find
+  jldi j1, 0
+  jld j3, j4, 8
+  jldi j2, 2
+  jsub j3, j3, j2
+  jldi j2, 63
+  jsar j3, j3, j2
+  jjz j3, mft_name
+  jld j5, j1, FTR + 8
   jldi j2, VOC
   jcall pl_find
   jldi j1, 0
@@ -3502,6 +3517,7 @@ mft_word:
   jldi j2, 63
   jsar j3, j3, j2
   jjnz j3, mft1                 ; not of the half: a word the question is not about
+mft_name:
   jld j5, j1, FTR + 8
 mft_key:
   jldi j2, TOK
@@ -3522,6 +3538,85 @@ mft0:
   jret
 mft1:
   jldi j2, 1
+  jret
+
+; The words the read seeds' answers say (SDW): by word, how many read seeds' answers (their seed sentence) say it
+; (Capitan, 2026-11-08, kinship in miniature: "padre", "tio", "abuelo" are not of the half in a small book, and the
+; notes could not tell one relation from another). Said by two, a word is a mechanism's and keeps who it is in the
+; notes; by one, it is that case's. Uses j1-j14.
+ms_seedwords:
+  jldi j2, SDW
+  jldi j3, 24
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, SDWS
+  msw_lap:
+    jldi j1, 0
+    jld j2, j1, SDWS
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+    jjz j3, msw_done
+    jcall mp_out
+    jjnz j2, msw_next
+    jldi j1, 0
+    jld j2, j1, SDWS
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, SDQ
+    jadd j3, j3, j4
+    jld j3, j3, 24                ; its seed sentence
+    jldi j4, 24
+    jmul j3, j3, j4
+    jld j4, j1, SEN
+    jadd j3, j3, j4
+    jld j9, j3, 0
+    jld j10, j3, 8
+    jld j4, j1, PRB
+    jadd j9, j9, j4
+    jld j11, j1, SWB
+    jcall mp_wlist
+    jldi j1, 0
+    jst j12, j1, SDWN
+    jst j1, j1, SDWI
+    msw_w:
+      jldi j1, 0
+      jld j2, j1, SDWI
+      jld j3, j1, SDWN
+      jsub j3, j2, j3
+      jjz j3, msw_next
+      jldi j3, 24
+      jmul j3, j2, j3
+      jld j4, j1, SWB
+      jadd j3, j3, j4
+      jld j5, j3, 0
+      jldi j2, SDW
+      jcall pl_take
+      jldi j1, 0
+      jld j2, j1, SDWS
+      jldi j3, 1
+      jadd j2, j2, j3
+      jld j3, j4, 16
+      jsub j3, j3, j2
+      jjz j3, msw_wn              ; (this answer already said it)
+      jst j2, j4, 16
+      jld j3, j4, 8
+      jldi j5, 1
+      jadd j3, j3, j5
+      jst j3, j4, 8
+    msw_wn:
+      jld j2, j1, SDWI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, SDWI
+      jjmp msw_w
+  msw_next:
+    jldi j1, 0
+    jld j2, j1, SDWS
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, SDWS
+    jjmp msw_lap
+msw_done:
   jret
 
 ; Candidate sentence SK, SB bytes, sung after the question (CQ to SL0) against QLB -> j2 its cost (ms_fit).

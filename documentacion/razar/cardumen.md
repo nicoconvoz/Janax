@@ -1940,3 +1940,22 @@ Cuatro tramos sin leer:
   En las trampas con forma de respuesta no cambia (100-102 de 112).
 - Una relación nunca vista sigue sin salir (4 y 14 de 112, el azar ~21 %): la identidad deja aprender relaciones
   vistas, no inventar una nueva.
+
+**La regla, en el repo** (`ms_seedwords`, prueba `notas_prueba.sh`): una palabra conserva su identidad en las notas
+cuando la dicen las respuestas (la oración semilla) de **dos semillas leídas**; dicha por una, es de ese caso y no de un
+mecanismo, y sigue siendo "una palabra de la que no pregunta" (salvo que sea de la mitad). Es el mismo "lo dicen dos"
+del canto. Sólo cuentan las semillas leídas: lo aparte no entra.
+
+| libro | antes: memoria / cubo 4³ | con la regla: memoria / cubo 4³ |
+|---|---|---|
+| relaciones micro | 10 / 10 de 47 | **40 / 44 de 47** |
+| relaciones micro, nulo | 10 / 10 de 47 | 10 / 11 de 47 |
+| otras palabras | 105 / 103-104 de 116 | 116 / 114 de 116 |
+| trampas con forma de respuesta | 102 / 101-102 de 112 | 100 / 103 de 112 |
+| trampas, relación nunca vista | 4 / — de 112 | 4 / 13 de 112 |
+| Asimov (semillas 1001-1003) | 22 / 27, 18, 16 de 110 | 22 / 13, 22, 17 de 110 |
+
+- Da lo mismo que el diagnóstico de identidad total (41/45) sin darle identidad a lo que dice una sola respuesta.
+- Asimov no cambia más allá del ruido de semilla (cubo media 20,3 antes, 17,3 ahora; rangos que se pisan): sus
+  respuestas casi no repiten palabras entre semillas.
+- `semilla_prueba.sh` fallaba desde que el renglón `P:` dice si acertó (`canto: 1 ...`); ahora lo espera.

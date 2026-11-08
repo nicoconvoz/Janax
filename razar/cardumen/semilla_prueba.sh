@@ -18,7 +18,7 @@ printf '1\n' > "$d/casa/$(etiqueta semilla)"
 printf '3 3\n' > "$d/casa/$(etiqueta fuera)"
 salida=$(JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$d/casa")" \
   "$proyecto/so/build/janaxos.exe" "$(cygpath -m "$d/memoria_pares.bin")" | tr -d '\r')
-if printf '%s\n' "$salida" | grep -q '^P: que es marte? | canto: marte es una roca roja\. | '; then
+if printf '%s\n' "$salida" | grep -q '^P: que es marte? | canto: 1 marte es una roca roja\. | '; then
   echo "semilla_prueba: bien"
 else
   echo "semilla_prueba: MAL"; printf '%s\n' "$salida" | grep -Ev '^(modo|costo|remeros|nativo|ventanilla)'; exit 1
