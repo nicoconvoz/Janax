@@ -1684,3 +1684,29 @@ El 7³ barriendo vueltas (semilla 1001): 0 → 11, 3 → 18, 10 → 15, 30 → 2
 - **El tamaño tampoco lo cambia** dentro de lo medido (4³ a 20³).
 - Lo que sí deduce respuestas de Asimov sigue siendo el canto (25 %) y el buscador de palabras (32 %), en el núcleo.
 
+### La memoria del kernel: el cubo solo oye (Capitán, 2026-11-08)
+
+> *"Usá la memoria del kernel, es lo que queda; revisá el experimento del 7³ que llegaba a 100 % con 16 cosas."* —
+> *"Exacto, eso era: lo estábamos rompiendo."*
+
+El 7³ llegó al 100 % con 16 cosas porque cada cosa tenía su canción y su propio cajón en la voluntad. En la semilla le
+habíamos dado dos cajones ("contesta", "no") donde se mezclaban miles de marcos. `voluntad_semilla.jsm` con `memoria`
+(sexto parámetro): cada marco leído se canta una vez, solo oído, y **su melodía queda en la memoria del kernel** con lo
+que dice; por nota, la lista de los marcos donde sonó. Ante una oración nueva gana el lado del recuerdo más parecido
+(notas compartidas sobre notas de los dos, Jaccard). Controles sin cubo, como la cuenta escrita a mano de los
+acertijos: `memoria=2` da a la memoria las cinco fichas tal cual, `memoria=3` la oración entera vista desde la pregunta
+(línea "N:" de `memoria_pares.jsm`: cada lugar con las fichas a −2..+2, cuántas palabras de la pregunta dice y cuántas
+no).
+
+| 7³, sin practicar, tramos sin leer | acierta de 110 |
+|---|---|
+| memoria con la melodía del cubo (marco de 5) | 14 |
+| control, las 5 fichas sin cubo | 15 |
+| **control, la oración entera sin cubo** | **24** (7, 2, 9, 6) |
+| azar | ~15 |
+
+- Con cinco fichas ni la memoria perfecta acierta: **el marco era el que no alcanzaba**, no el cubo ni la memoria.
+- Con la oración entera la memoria le gana al azar (24 contra 15), cerca del canto (28) y debajo del buscador de
+  palabras (35). Sin cubo es determinista: no es suerte de una semilla.
+- Falta: que el cubo oiga la oración entera y la memoria guarde esa melodía.
+

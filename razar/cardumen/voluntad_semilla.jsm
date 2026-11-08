@@ -13,9 +13,10 @@
 ;   - right: it sings that frame once more (the school settles it). Wrong: one piece of one of its five words moves.
 ; Then each question it never read is asked, without anyone learning (the song only heard): of its sentences, the one
 ; whose melody says "it answers" the most (its share minus that of "it does not") is its answer, right when it is of
-; its answer. Its parameters are the file "p" (5 qwords): the seed, the side n, the rounds, 1 if the school is quiet
+; its answer. Its parameters are the file "p" (6 qwords): the seed, the side n, the rounds, 1 if the school is quiet
 ; (it never learns), 1 if a round is a pass (Capitan, 2026-11-08: "every round already has the examples of
-; everything": each frame that answers once, in order, each followed by one that does not, drawn). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
+; everything": each frame that answers once, in order, each followed by one that does not, drawn), 1 if the
+; kernel remembers (memorize, recall). Its dice: seed2 = seed * 7919 + 1, seed2 = (seed2 * 1103515245 + 12345) mod 2^31, a throw is
 ; seed2 >> 16. It writes how it went.
 ;
 ; Its initial data (voluntad_semilla.datos): the texts, one every 40h bytes.
@@ -29,6 +30,7 @@ S_SINL = 180h
 S_DE   = 1C0h
 S_AZAR = 200h
 S_MARC = 240h
+S_MEMO = 280h
 ; Room 0 (4000h bytes):
 QUEUE = 1000h                   ; its window: one request
 PLAB  = 1040h                   ; "p", the parameters file
@@ -39,7 +41,8 @@ NN    = 1088h
 VUELTAS = 1090h
 QUIET = 1098h
 PASADA = 10A0h                  ; 1: a round is a pass over every read frame that answers, each one followed by one that
-VEFF  = 10A8h                   ; does not (drawn): the rounds that makes
+VEFF  = 10B0h                   ; does not (drawn): the rounds that makes
+MEMO  = 10A8h                   ; 1: the kernel's memory (memorize, recall): the school only hears
 M48   = 1100h                   ; 2^48 - 1
 SEED2 = 1108h                   ; its dice
 CHILD = 1110h                   ; the school's number
@@ -86,6 +89,24 @@ TC    = 1288h
 TD    = 1290h
 TE    = 1298h
 HEARD = 1300h                   ; notes heard for each answer, in all (2 qwords)
+NTB   = 1310h                   ; the kernel's memory: the notes, how many, room for how many; by frame {its first
+NTN   = 1318h                   ; note, how many, whether it answers}, how many; by note where its frames start
+NTC   = 1320h                   ; (PCNT) and the frames (PST); note places; by frame a counter, the ones touched
+FRB   = 1328h
+FRN   = 1330h
+PCNT  = 1338h
+PST   = 1340h
+NID   = 1348h
+CNT   = 1350h
+TCH   = 1358h
+TCN   = 1360h
+BPOS  = 1368h                   ; recalling: the most alike that answered, that did not; the song's notes
+BNEG  = 1370h
+QNC   = 1378h
+FNB   = 1380h                   ; the whole sentence's notes ("N:" lines): all of them, how many; by frame {its
+FNBN  = 1388h                   ; first, how many} (ITX); the biggest note
+ITX   = 1390h
+FNMAX = 1398h
 SONGM = 2000h                   ; the song being said: the pieces of each greeting (5 qwords)
 TEXT  = 2100h                   ; the line it writes
 include '../../escalon0/janax.inc'
@@ -113,7 +134,7 @@ jshl j10, j13, j1
 jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
-jldi j12, 40
+jldi j12, 48
 jcall ask
 
 jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
@@ -449,6 +470,11 @@ p_next:
   jjmp p_lap
 p_done:
 
+jldi j1, 0
+jld j2, j1, MEMO
+jjz j2, p_nomemo
+jcall memorize
+p_nomemo:
 jcall asked                     ; the questions it never read
 
 jldi j1, 0
@@ -479,6 +505,12 @@ jjz j2, o_quiet
 jldi j1, S_QUIETO
 jcall puts
 o_quiet:
+jldi j1, 0
+jld j2, j1, MEMO
+jjz j2, o_memo
+jldi j1, S_MEMO
+jcall puts
+o_memo:
 jldi j1, S_MARC
 jcall puts
 jld j2, j1, ITN
@@ -619,6 +651,24 @@ fr_close:
   jcall ask
   jldi j1, 0
   jst j13, j1, ITB
+  jld j11, j1, FN               ; (the notes: two bytes of the file each at least; by frame 16 bytes)
+  jldi j2, 2
+  jshl j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, FNB
+  jld j11, j1, FN
+  jldi j2, 32
+  jadd j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, ITX
+  jst j1, j1, FNBN
+  jst j1, j1, FNMAX
   jst j1, j1, ITN
   jst j1, j1, NTOK
   jld j9, j1, FB                ; walking the file: j9 where, j10 bytes left
@@ -626,6 +676,9 @@ fr_close:
   fr_line:
     jjz j10, fr_parsed
     jldb j2, j9, 0
+    jldi j3, 78
+    jsub j3, j2, j3
+    jjz j3, fr_nline
     jldi j3, 77
     jsub j3, j2, j3
     jjnz j3, fr_skip
@@ -716,6 +769,63 @@ fr_close:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ITN
+  fr_nline:                     ; an "N:" line: the notes of the last "M:" frame (its four numbers again, how many, them)
+    jldb j2, j9, 1
+    jldi j3, 58
+    jsub j3, j2, j3
+    jjnz j3, fr_skip
+    jldi j2, 2
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jldi j12, 0
+    fr_nh:
+      jcall fr_getnum
+      jjz j2, fr_skip
+      jldi j3, 1
+      jadd j12, j12, j3
+      jldi j3, 5
+      jsub j3, j12, j3
+      jjnz j3, fr_nh
+    jldi j1, 0                  ; j6: how many
+    jld j2, j1, ITN
+    jjz j2, fr_skip
+    jldi j3, 1
+    jsub j2, j2, j3
+    jldi j3, 4
+    jshl j2, j2, j3
+    jld j3, j1, ITX
+    jadd j11, j2, j3
+    jld j2, j1, FNBN
+    jst j2, j11, 0
+    jst j1, j11, 8
+    jadd j12, j6, j1
+    fr_nn2:
+      jjz j12, fr_skip
+      jcall fr_getnum
+      jjz j2, fr_skip
+      jldi j1, 0
+      jld j2, j1, FNBN
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, FNB
+      jadd j3, j3, j4
+      jst j6, j3, 0
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, FNBN
+      jld j2, j11, 8
+      jadd j2, j2, j3
+      jst j2, j11, 8
+      jld j2, j1, FNMAX
+      jsub j2, j2, j6
+      jldi j3, 63
+      jsar j2, j2, j3
+      jjz j2, fr_nm
+      jst j6, j1, FNMAX
+    fr_nm:
+      jldi j2, 1
+      jsub j12, j12, j2
+      jjmp fr_nn2
   fr_skip:                      ; to the next line
     jjz j10, fr_parsed
     jldb j2, j9, 0
@@ -779,6 +889,59 @@ fr_parsed:
 fr_done:
   jret
 
+; The next number on this line (j9, j10 bytes left) -> j6, j2 = 1 (0: the line ended; j9 at its line feed). Uses
+; j2-j6.
+fr_getnum:
+  fgn_sp:
+    jjz j10, fgn_none
+    jldb j2, j9, 0
+    jldi j3, 10
+    jsub j3, j2, j3
+    jjz j3, fgn_none
+    jldi j3, 48
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j4, j3, j4
+    jjnz j4, fgn_n
+    jldi j4, 10
+    jsub j4, j3, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, fgn_dig
+  fgn_n:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp fgn_sp
+fgn_dig:
+  jldi j6, 0
+  fgn_l:
+    jjz j10, fgn_got
+    jldb j2, j9, 0
+    jldi j3, 48
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j4, j3, j4
+    jjnz j4, fgn_got
+    jldi j4, 10
+    jsub j4, j3, j4
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjz j4, fgn_got
+    jldi j4, 10
+    jmul j6, j6, j4
+    jadd j6, j6, j3
+    jldi j2, 1
+    jadd j9, j9, j2
+    jsub j10, j10, j2
+    jjmp fgn_l
+fgn_got:
+  jldi j2, 1
+  jret
+fgn_none:
+  jldi j2, 0
+  jret
+
 ; Each question left out asked, its frames in a row (the file keeps them together): the song only heard, the one with
 ; the most "it answers" is its answer. Uses j1-j14.
 asked:
@@ -826,7 +989,7 @@ asked:
   ak_same:
     jst j9, j1, TD
     jcall sing
-    jcall share
+    jcall judge
     jldi j1, 0
     jld j9, j1, TD
     jld j3, j1, GFN
@@ -963,6 +1126,513 @@ s_said:
     jsub j8, j8, j3
     jsub j6, j6, j3
   jwend
+  jret
+
+; What it says of the song just heard: the kernel's memory if it has one, else the two drawers. Uses j1-j14.
+judge:
+  jldi j1, 0
+  jld j2, j1, MEMO
+  jjz j2, share
+  jjmp recall
+
+; The kernel's memory (Capitan, 2026-11-08: "use the kernel's memory, it is what is left"; "that was it: we were breaking
+; it"): the school only hears. Every read frame is sung once, only heard, and its melody (the top pieces awake at each
+; step: piece and step, its notes) is kept with whether it answers: one memory a frame, as each of the 16 things had
+; its own, not two drawers where thousands mix. By note, the frames it sounded in (PCNT, PST). Uses j1-j14.
+memorize:
+  jldi j1, 0
+  jldi j2, 1
+  jst j2, j1, ONLY
+  jst j1, j1, NTN
+  jst j1, j1, NTC
+  jst j1, j1, FRN
+  jld j11, j1, ITN
+  jldi j2, 24
+  jmul j11, j11, j2
+  jldi j2, 24
+  jadd j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, FRB
+  jldi j9, 0
+  mz_lap:
+    jldi j1, 0
+    jld j2, j1, ITN
+    jsub j2, j9, j2
+    jjz j2, mz_index
+    jldi j3, 72
+    jmul j3, j9, j3
+    jld j4, j1, ITB
+    jadd j3, j3, j4
+    jld j4, j3, 24
+    jjz j4, mz_next             ; (left out: not remembered)
+    jst j3, j1, CUR
+    jcall sing
+    jldi j1, 0
+    jld j2, j1, NTN
+    jst j2, j1, TA
+    jcall notes_of
+    jldi j1, 0
+    jld j2, j1, FRN
+    jldi j3, 24
+    jmul j3, j2, j3
+    jld j4, j1, FRB
+    jadd j3, j3, j4
+    jld j4, j1, TA
+    jst j4, j3, 0
+    jld j5, j1, NTN
+    jsub j5, j5, j4
+    jst j5, j3, 8
+    jld j4, j1, LABEL
+    jst j4, j3, 16
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FRN
+  mz_next:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mz_lap
+mz_index:                       ; by note, the frames it sounded in: counted at PCNT[id + 2], summed, and filled walking
+                                ; PCNT[id + 1]: then note id's frames are PCNT[id] to PCNT[id + 1]
+  jldi j1, 0
+  jld j2, j1, TMAXW
+  jld j3, j1, N2
+  jmul j2, j2, j3
+  jld j3, j1, FNMAX             ; (or the biggest note of the sentences, and one)
+  jldi j4, 1
+  jadd j3, j3, j4
+  jsub j4, j2, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, mzi_nid
+  jadd j2, j3, j1
+mzi_nid:
+  jst j2, j1, NID
+  jldi j3, 2
+  jadd j11, j2, j3
+  jldi j3, 3
+  jshl j11, j11, j3
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, PCNT
+  jld j2, j1, NID
+  jldi j3, 2
+  jadd j2, j2, j3
+  jadd j3, j13, j1
+  mzi_z:
+    jjz j2, mzi_zd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jsub j2, j2, j4
+    jjmp mzi_z
+mzi_zd:
+  jld j2, j1, NTN               ; each note counted (at its id + 2)
+  jld j3, j1, NTB
+  mzi_c:
+    jjz j2, mzi_cd
+    jld j4, j3, 0
+    jldi j5, 2
+    jadd j4, j4, j5
+    jldi j5, 3
+    jshl j4, j4, j5
+    jld j5, j1, PCNT
+    jadd j4, j4, j5
+    jld j5, j4, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jst j5, j4, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jsub j2, j2, j4
+    jjmp mzi_c
+mzi_cd:
+  jld j2, j1, NID               ; summed: PCNT[id + 1] is where note id's frames start
+  jldi j3, 2
+  jadd j2, j2, j3
+  jld j3, j1, PCNT
+  jldi j4, 0
+  mzi_s:
+    jjz j2, mzi_sd
+    jld j5, j3, 0
+    jadd j4, j4, j5
+    jst j4, j3, 0
+    jldi j5, 8
+    jadd j3, j3, j5
+    jldi j5, 1
+    jsub j2, j2, j5
+    jjmp mzi_s
+mzi_sd:
+  jld j11, j1, NTN
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, PST
+  jldi j9, 0                    ; each frame into the lists of its notes (PCNT[id + 1] walks as it fills)
+  mzi_f:
+    jldi j1, 0
+    jld j2, j1, FRN
+    jsub j2, j9, j2
+    jjz j2, mzi_fd
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, FRB
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jld j6, j3, 8
+    jldi j7, 3
+    jshl j5, j5, j7
+    jld j7, j1, NTB
+    jadd j5, j5, j7
+    mzi_n:
+      jjz j6, mzi_nd
+      jld j7, j5, 0
+      jldi j8, 1
+      jadd j7, j7, j8
+      jldi j8, 3
+      jshl j7, j7, j8
+      jld j8, j1, PCNT
+      jadd j7, j7, j8
+      jld j8, j7, 0
+      jldi j10, 3
+      jshl j10, j8, j10
+      jld j11, j1, PST
+      jadd j10, j10, j11
+      jst j9, j10, 0
+      jldi j10, 1
+      jadd j8, j8, j10
+      jst j8, j7, 0
+      jldi j8, 8
+      jadd j5, j5, j8
+      jldi j8, 1
+      jsub j6, j6, j8
+      jjmp mzi_n
+  mzi_nd:
+    jldi j2, 1
+    jadd j9, j9, j2
+    jjmp mzi_f
+mzi_fd:
+  jld j11, j1, FRN              ; the counters by frame, and the ones touched
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jst j11, j1, TA
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, CNT
+  jld j2, j1, FRN
+  jadd j3, j13, j1
+  mzi_k:
+    jjz j2, mzi_kd
+    jst j1, j3, 0
+    jldi j4, 8
+    jadd j3, j3, j4
+    jldi j4, 1
+    jsub j2, j2, j4
+    jjmp mzi_k
+mzi_kd:
+  jld j11, j1, TA
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, TCH
+  jret
+
+; The notes of the song just heard (STEPB: the byte of step t, piece j at t*n^2 + j) appended to NTB as their places
+; (the room doubles to hold them). With MEMO 2 (the ruler, as the counting written by hand was for the riddles), the
+; frame's own tokens instead, with no school: token k of the five is note k * NTOK + token; with MEMO 3, the whole
+; sentence's notes ("N:"), with no school. Uses j1-j8, j10-j14 (keeps j9).
+notes_of:
+  jldi j1, 0
+  jld j2, j1, MEMO
+  jldi j3, 3
+  jsub j2, j2, j3
+  jjnz j2, no_m2
+  jld j2, j1, CUR               ; (MEMO 3: its own notes, the whole sentence's: room as for a song that long)
+  jld j3, j1, ITB
+  jsub j2, j2, j3
+  jldi j3, 72
+  jdiv j2, j2, j3
+  jldi j3, 4
+  jshl j2, j2, j3
+  jld j3, j1, ITX
+  jadd j2, j2, j3
+  jst j2, j1, TD + 8
+  jld j2, j2, 8
+  jst j2, j1, SLONG
+  jjmp no_go
+no_m2:
+  jld j2, j1, MEMO
+  jldi j3, 2
+  jsub j2, j2, j3
+  jjnz j2, no_song
+  jldi j2, 5                    ; (five notes: room as for a song of one step of five pieces)
+  jst j2, j1, SLONG + 0
+  jjmp no_go
+no_song:
+  jldi j1, 0
+no_go:
+  jld j2, j1, SLONG
+  jld j3, j1, N2
+  jmul j2, j2, j3
+  jld j3, j1, NTN
+  jadd j2, j2, j3
+  jld j4, j1, NTC
+  jsub j4, j4, j2
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjz j4, no_room
+  jld j11, j1, NTC              ; it doubles (or takes what it needs)
+  jadd j11, j11, j11
+  jsub j4, j11, j2
+  jsar j4, j4, j5
+  jjz j4, no_dbl
+  jadd j11, j2, j1
+no_dbl:
+  jst j11, j1, TB
+  jldi j4, 3
+  jshl j11, j11, j4
+  jldi j10, 2
+  jcall ask
+  jldi j1, 0
+  jld j3, j1, NTB
+  jld j4, j1, NTN
+  no_mv:
+    jjz j4, no_mvd
+    jld j5, j3, 0
+    jst j5, j13, 0
+    jldi j5, 8
+    jadd j3, j3, j5
+    jadd j13, j13, j5
+    jldi j5, 1
+    jsub j4, j4, j5
+    jjmp no_mv
+no_mvd:
+  jld j3, j1, NTN
+  jldi j4, 3
+  jshl j3, j3, j4
+  jsub j13, j13, j3
+  jst j13, j1, NTB
+  jld j2, j1, TB
+  jst j2, j1, NTC
+no_room:
+  jld j2, j1, MEMO
+  jldi j3, 3
+  jsub j2, j2, j3
+  jjnz j2, no_r2
+  jld j6, j1, NTN               ; its notes
+  jldi j7, 3
+  jshl j7, j6, j7
+  jld j8, j1, NTB
+  jadd j7, j7, j8
+  jld j5, j1, TD + 8
+  jld j4, j5, 8
+  jld j5, j5, 0
+  jldi j3, 3
+  jshl j5, j5, j3
+  jld j3, j1, FNB
+  jadd j5, j5, j3
+  no_cp:
+    jjz j4, no_done
+    jld j3, j5, 0
+    jst j3, j7, 0
+    jldi j3, 8
+    jadd j5, j5, j3
+    jadd j7, j7, j3
+    jldi j3, 1
+    jadd j6, j6, j3
+    jsub j4, j4, j3
+    jjmp no_cp
+no_r2:
+  jld j2, j1, MEMO
+  jldi j3, 2
+  jsub j2, j2, j3
+  jjnz j2, no_melody
+  jld j6, j1, NTN               ; the five tokens
+  jldi j7, 3
+  jshl j7, j6, j7
+  jld j8, j1, NTB
+  jadd j7, j7, j8
+  jld j5, j1, CUR
+  jldi j8, 0
+  no_tk:
+    jldi j3, 5
+    jsub j3, j8, j3
+    jjz j3, no_done
+    jldi j3, 3
+    jshl j3, j8, j3
+    jadd j3, j3, j5
+    jld j3, j3, 32
+    jld j4, j1, NTOK
+    jmul j4, j4, j8
+    jadd j3, j3, j4
+    jst j3, j7, 0
+    jldi j3, 8
+    jadd j7, j7, j3
+    jldi j3, 1
+    jadd j6, j6, j3
+    jadd j8, j8, j3
+    jjmp no_tk
+no_melody:
+  jld j2, j1, SLONG
+  jld j3, j1, N2
+  jmul j2, j2, j3
+  jld j5, j1, STEPB
+  jld j6, j1, NTN
+  jldi j7, 3
+  jshl j7, j6, j7
+  jld j8, j1, NTB
+  jadd j7, j7, j8
+  jldi j8, 0                    ; the note's place
+  no_lap:
+    jsub j3, j8, j2
+    jjz j3, no_done
+    jldb j3, j5, 0
+    jjz j3, no_next
+    jst j8, j7, 0
+    jldi j3, 8
+    jadd j7, j7, j3
+    jldi j3, 1
+    jadd j6, j6, j3
+  no_next:
+    jldi j3, 1
+    jadd j5, j5, j3
+    jadd j8, j8, j3
+    jjmp no_lap
+no_done:
+  jst j6, j1, NTN
+  jret
+
+; What the kernel remembers of the song just heard: of the frames it remembers, the most like it that answered and the
+; most like it that did not (alike: the notes they share over the notes of the two, in millionths); the first less
+; the second -> j2. Uses j1-j8, j10-j14 (keeps j9).
+recall:
+  jldi j1, 0
+  jld j2, j1, NTN
+  jst j2, j1, TC                ; (its notes, for now, past the remembered ones)
+  jcall notes_of
+  jldi j1, 0
+  jld j2, j1, NTN
+  jld j3, j1, TC
+  jsub j2, j2, j3
+  jst j2, j1, QNC
+  jst j1, j1, TCN
+  jst j1, j1, BPOS
+  jst j1, j1, BNEG
+  jld j10, j1, TC
+  jldi j2, 3
+  jshl j10, j10, j2
+  jld j2, j1, NTB
+  jadd j10, j10, j2             ; j10 its notes
+  jld j11, j1, QNC
+  rc_n:
+    jjz j11, rc_judge
+    jld j2, j10, 0
+    jld j3, j1, NID
+    jsub j3, j2, j3
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, rc_nn               ; (a note no remembered melody can have)
+    jldi j3, 3                  ; its frames: from PCNT[id] to PCNT[id + 1] (the lists, once filled)
+    jshl j2, j2, j3
+    jld j3, j1, PCNT
+    jadd j2, j2, j3
+    jld j4, j2, 0
+    jld j5, j2, 8
+  rc_have:
+    rc_p:
+      jsub j6, j4, j5
+      jjz j6, rc_nn
+      jldi j6, 3
+      jshl j6, j4, j6
+      jld j7, j1, PST
+      jadd j6, j6, j7
+      jld j6, j6, 0             ; a frame that has this note
+      jldi j7, 3
+      jshl j7, j6, j7
+      jld j8, j1, CNT
+      jadd j7, j7, j8
+      jld j8, j7, 0
+      jjnz j8, rc_inc
+      jld j3, j1, TCN
+      jldi j12, 3
+      jshl j12, j3, j12
+      jld j13, j1, TCH
+      jadd j12, j12, j13
+      jst j6, j12, 0
+      jldi j12, 1
+      jadd j3, j3, j12
+      jst j3, j1, TCN
+    rc_inc:
+      jldi j3, 1
+      jadd j8, j8, j3
+      jst j8, j7, 0
+      jadd j4, j4, j3
+      jjmp rc_p
+  rc_nn:
+    jldi j2, 8
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j11, j11, j2
+    jjmp rc_n
+rc_judge:
+  jld j11, j1, TCN
+  jld j10, j1, TCH
+  rc_t:
+    jjz j11, rc_done
+    jld j6, j10, 0
+    jldi j7, 3
+    jshl j7, j6, j7
+    jld j8, j1, CNT
+    jadd j7, j7, j8
+    jld j2, j7, 0               ; shared notes
+    jst j1, j7, 0
+    jldi j3, 24
+    jmul j3, j6, j3
+    jld j4, j1, FRB
+    jadd j3, j3, j4
+    jld j4, j3, 8
+    jld j5, j1, QNC
+    jadd j4, j4, j5
+    jsub j4, j4, j2             ; notes of the two
+    jldi j5, 0
+    jshi j5, 0Fh
+    jshi j5, 4240h
+    jmul j2, j2, j5
+    jdiv j2, j2, j4
+    jld j4, j3, 16
+    jldi j5, BNEG
+    jjz j4, rc_side
+    jldi j5, BPOS
+  rc_side:
+    jld j6, j5, 0
+    jsub j6, j6, j2
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjz j6, rc_tn
+    jst j2, j5, 0
+  rc_tn:
+    jldi j2, 8
+    jadd j10, j10, j2
+    jldi j2, 1
+    jsub j11, j11, j2
+    jjmp rc_t
+rc_done:
+  jld j2, j1, TC                ; its notes go: only the remembered ones stay
+  jst j2, j1, NTN
+  jld j2, j1, BPOS
+  jld j3, j1, BNEG
+  jsub j2, j2, j3
   jret
 
 ; What the melody heard says: its notes as heard for "it answers" over all heard for it, less the same for "it does

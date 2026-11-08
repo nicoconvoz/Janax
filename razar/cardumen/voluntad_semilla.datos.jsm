@@ -20,3 +20,5 @@ db ' (azar ', 0
 times 240h - $ db 0
 db ' marcos=', 0
 times 280h - $ db 0
+db ' memoria del kernel', 0
+times 2C0h - $ db 0

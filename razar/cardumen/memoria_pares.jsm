@@ -65,6 +65,7 @@ S_SD10  = 710h
 S_SD11  = 720h
 S_MARCOS = 730h
 S_MK    = 740h
+S_NK    = 750h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -229,6 +230,13 @@ FFP   = 18B0h
 FFI   = 18B8h
 FLAB  = 18C0h
 FTR   = 18C8h
+NTK   = 18D8h                   ; the notes of the whole sentence (ms_notes): by key {key, number}, how many; the
+NTKN  = 18F8h                   ; frame's notes (each once), how many; the question's words it says; walking
+FNL   = 1900h
+FNLN  = 1908h
+FOV   = 1910h
+FNI   = 1918h
+FND   = 1920h
 SQL   = 1840h                   ; (the question's places kept; a plain cost)
 SPL   = 1848h
 QPN   = 1828h
@@ -2977,7 +2985,21 @@ ms_frames:
   jldi j2, TOK
   jldi j3, 16
   jcall pl_new
+  jldi j2, NTK
+  jldi j3, 16
+  jcall pl_new
   jldi j1, 0
+  jst j1, j1, NTKN
+  jld j11, j1, MAXS             ; (a frame's notes: five a word at most, and two more)
+  jldi j2, 5
+  jmul j11, j11, j2
+  jldi j2, 16
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, FNL
   jldi j2, 2
   jst j2, j1, TOKN
   jst j1, j1, FSE
@@ -3032,6 +3054,7 @@ ms_frames:
       jcall ms_overlap
       jldi j1, 0
       jjz j2, mfr_sn
+      jst j2, j1, FOV
       jld j2, j1, FSJ
       jcall ms_isreg
       jldi j1, 0
@@ -3110,6 +3133,7 @@ ms_frames:
         jjnz j3, mfr_t
       jldi j2, 10
       jcall putch
+      jcall ms_notes
     mfr_sn:
       jldi j1, 0
       jld j2, j1, FSJ
@@ -3126,6 +3150,165 @@ ms_frames:
     jjmp mfr_lap
 mfr_done:
   jcall flush
+  jldi j1, 0
+  jret
+
+; The whole sentence seen from the question, as notes, its "N:" line after its "M:" (Capitan, 2026-11-08: the frame of
+; five words was too little; the ruler said so): around every place of what the question is about, the token at each
+; of -2..+2 of it; how many of the question's words it says; how many it does not. Each note once, numbered by first
+; sight (NTK). "N: seed sentence answers read how-many notes...". Uses j1-j14.
+ms_notes:
+  jldi j1, 0
+  jst j1, j1, FNLN
+  jst j1, j1, FNI
+  mno_w:
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FWN
+    jsub j3, j2, j3
+    jjz j3, mno_counts
+    jcall mf_place
+    jldi j1, 0
+    jjz j3, mno_wn
+    jldi j2, -2
+    jst j2, j1, FND
+    mno_d:
+      jldi j1, 0
+      jld j2, j1, FNI
+      jld j3, j1, FND
+      jadd j2, j2, j3
+      jcall mf_token
+      jldi j1, 0
+      jld j3, j1, FND
+      jldi j4, 3
+      jadd j3, j3, j4
+      jldi j4, 32
+      jshl j3, j3, j4
+      jldi j4, 1
+      jadd j2, j2, j4
+      jor j5, j3, j2
+      jcall mno_add
+      jldi j1, 0
+      jld j2, j1, FND
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, FND
+      jldi j3, 3
+      jsub j3, j2, j3
+      jjnz j3, mno_d
+  mno_wn:
+    jldi j1, 0
+    jld j2, j1, FNI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FNI
+    jjmp mno_w
+mno_counts:
+  jld j2, j1, FOV               ; how many it says, how many it does not
+  jldi j3, 1
+  jadd j2, j2, j3
+  jldi j3, 8
+  jldi j4, 32
+  jshl j3, j3, j4
+  jor j5, j3, j2
+  jcall mno_add
+  jldi j1, 0
+  jld j2, j1, QCN
+  jld j3, j1, FOV
+  jsub j2, j2, j3
+  jldi j3, 1
+  jadd j2, j2, j3
+  jldi j3, 9
+  jldi j4, 32
+  jshl j3, j3, j4
+  jor j5, j3, j2
+  jcall mno_add
+  jldi j1, S_NK
+  jcall puts
+  jld j2, j1, FSE
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, FSJ
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, FLAB
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, FTR
+  jcall putnum
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, FNLN
+  jcall putnum
+  jldi j1, 0
+  jst j1, j1, FNI
+  mno_p:
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FNLN
+    jsub j3, j2, j3
+    jjz j3, mno_done
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, FNI
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, FNL
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jcall putnum
+    jldi j1, 0
+    jld j2, j1, FNI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, FNI
+    jjmp mno_p
+mno_done:
+  jldi j2, 10
+  jjmp putch
+
+; Note key j5 into the frame's notes (FNL), numbered by first sight (NTK), once. Uses j1-j8.
+mno_add:
+  jldi j2, NTK
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, mna_old
+  jld j2, j1, NTKN
+  jst j2, j4, 8
+  jldi j3, 1
+  jadd j3, j2, j3
+  jst j3, j1, NTKN
+  jjmp mna_have
+mna_old:
+  jld j2, j4, 8
+mna_have:
+  jld j3, j1, FNLN
+  jld j4, j1, FNL
+  mna_l:
+    jjz j3, mna_put
+    jld j5, j4, 0
+    jsub j5, j5, j2
+    jjz j5, mna_done
+    jldi j5, 8
+    jadd j4, j4, j5
+    jldi j5, 1
+    jsub j3, j3, j5
+    jjmp mna_l
+mna_put:
+  jst j2, j4, 0
+  jld j3, j1, FNLN
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j1, FNLN
+mna_done:
   jldi j1, 0
   jret
 
