@@ -14,7 +14,10 @@
 ;     shares more than its null.
 ;   - the while (Capitan, 2026-11-08: "a chained while: my idea, everything in while, applied as a mechanism"): each
 ;     turn, a relation joins the one it relates to most (twice what they share read, minus what they share crossed),
-;     if that one chooses it too, and the joined ones are one relation from then on (their pairs together, turned
+;     if that one chooses it too and what they share read is more than the bar of both. A relation's bar is the most
+;     it shares with any other in the all-crossed world (both crossed): what chance alone gives it, at its best, among
+;     all it is compared with (a relation compared with hundreds gets a high bar: the pass "two against one" was chance
+;     once one is compared with enough, and the largest swallowed the rest, 727 forms of "de" in the NT), and the joined ones are one relation from then on (their pairs together, turned
 ;     when they relate the other way round). Then everything is measured again with what was joined. While a turn joins
 ;     something, there is another; when nothing new beats its null, the while ends by itself: no number of turns is
 ;     given. (One join a turn for each, the strongest chosen by both: what a turn joins is never carried by what it
@@ -147,6 +150,7 @@ HSC   = 17D0h
 HWX   = 17D8h                   ; the words a form's pairs say, by print {print, how many} (a growing table); the
 HSCUT = 17F8h                   ; fewest times a surname's word has; how many words it has
 HSWN  = 1800h
+HTMX  = 1860h                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
 HSUN  = 1818h                   ; by new one, the chosen one it relates to (a room); walking: the new one, how many
@@ -773,7 +777,7 @@ hg_done:
   jret
 
 ; Two forms that hold the same pair of words: the same way (1) or the other way round (2), as read or crossed (HAG:
-; how many read alike, how many with one of them crossed). Uses j1-j14.
+; how many read alike, how many with one of them crossed, how many with both crossed: what chance alone gives them). Uses j1-j14.
 hl_agree:
   jldi j2, HAG
   jcall hl_clear
@@ -832,10 +836,8 @@ hl_agree:
         jjz j12, ha_yn            ; one relation with itself
         jld j12, j6, 16
         jld j13, j9, 16
-        jand j14, j12, j13
-        jjnz j14, ha_yn           ; both crossed
-        jor j14, j12, j13
-        jst j14, j1, HTG          ; 1 if one is crossed
+        jadd j14, j12, j13
+        jst j14, j1, HTG          ; how many of the two are crossed (both: the all-crossed world)
         jld j12, j6, 8
         jld j13, j9, 8
         jsub j12, j12, j13
@@ -2367,9 +2369,17 @@ hl_rooms:
   jldi j3, 32
   jcall pl_new
   jldi j2, HAG
-  jldi j3, 48
+  jldi j3, 56
   jcall pl_new
   jldi j1, 0
+  jld j11, j1, HNM              ; by relation, the most chance gives it (the bar)
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HTMX
   jst j1, j1, HI
   hro_lap:                      ; every form its own relation, of one form
     jldi j1, 0
@@ -2482,11 +2492,51 @@ hl_merge:
     jld j4, j1, HBSE
     jadd j4, j4, j3
     jst j1, j4, 0
+    jld j4, j1, HTMX
+    jadd j4, j4, j3
+    jst j1, j4, 0
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, HI
     jjmp hm_z
 hm_zd:
+  jldi j2, HAG                  ; the bar: what the all-crossed world gives each relation at most
+  jld j3, j2, 8
+  jldi j5, 1
+  jadd j3, j3, j5
+  jld j4, j2, 0
+  jld j5, j2, 24
+  hm_t:
+    jjz j3, hm_td
+    jld j6, j4, 0
+    jjz j6, hm_tn
+    jld j6, j4, 48
+    jldi j9, 8
+    hm_tside:
+      jadd j7, j4, j9
+      jld j7, j7, 0
+      jldi j8, 3
+      jshl j7, j7, j8
+      jld j8, j1, HTMX
+      jadd j7, j7, j8
+      jld j8, j7, 0
+      jsub j8, j8, j6
+      jldi j10, 63
+      jsar j8, j8, j10
+      jjz j8, hm_tsn
+      jst j6, j7, 0
+    hm_tsn:
+      jldi j7, 16
+      jsub j7, j9, j7
+      jjz j7, hm_tn
+      jldi j9, 16
+      jjmp hm_tside
+  hm_tn:
+    jadd j4, j4, j5
+    jldi j6, 1
+    jsub j3, j3, j6
+    jjmp hm_t
+hm_td:
   jldi j2, HAG
   jld j3, j2, 8
   jldi j5, 1
@@ -2504,6 +2554,13 @@ hm_zd:
     jcall hl_score
     jldi j1, 0
     jjz j6, hm_an
+    jld j7, j4, 32                ; and over the bar of both: more than chance gives either with anyone
+    jld j8, j4, 8
+    jcall hm_bar
+    jjz j8, hm_an
+    jld j8, j4, 16
+    jcall hm_bar
+    jjz j8, hm_an
     jld j5, j1, HNACC
     jldi j7, 1
     jadd j5, j5, j7
@@ -2628,6 +2685,21 @@ hm_bd:
   jcall putnum
   jldi j2, 10
   jcall putch
+  jret
+
+; j8 = 1 if j7 (pairs read alike) is more than the bar of relation j8. Uses j8-j10.
+hm_bar:
+  jldi j9, 3
+  jshl j8, j8, j9
+  jldi j9, 0
+  jld j9, j9, HTMX
+  jadd j8, j8, j9
+  jld j8, j8, 0
+  jsub j8, j8, j7
+  jldi j9, 63
+  jsar j8, j8, j9
+  jldi j9, 1
+  jand j8, j8, j9
   jret
 
 ; "vuelta t une: <first> ~ <second> | misma | lo dicen n | nulo x" for the relation of relations at HT2. Uses j1-j14.

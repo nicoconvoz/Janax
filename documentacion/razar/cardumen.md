@@ -2200,3 +2200,22 @@ gramática y con 2 pares ("a su ~ a tu", "los ~ y los ~ y a los", "de ~ a"). Nin
 - ⚠️ Con más libro vuelve el agujero negro ("de" junta 146 formas en 103 vueltas): sigue faltando la vara sacada de un
   mundo todo cruzado. Y la mitad cambia con el tamaño (54, 31, 61, 144 veces), así que "sólo juntos" mezcla dos cosas:
   la repetición entre evangelios y que el libro es más grande.
+
+**La vara del mundo todo cruzado** (Capitán: *"sí, la vara"*). `hilos` cuenta ahora también lo que dos relaciones
+comparten con **las dos** cruzadas: lo que el azar solo les da. La vara de cada relación es lo más que comparte con
+cualquier otra en ese mundo; una unión vale si lo leído supera la vara de las dos (y lo de antes: dos pares, más que
+su nulo, elección mutua). Sin número elegido: la relación que se compara con cientos tiene, sola, una vara alta.
+
+| libro | antes: vueltas, uniones, la más grande | con la vara |
+|---|---|---|
+| NT entero | 652, 742, "de" 727 formas | **37, 134, "de" 86** |
+| sinópticos | 103, 160, "de" 146 | **21, 76, "de" 51** |
+| Marcos | 3, 4 | 3, 4 |
+
+- **La primera vuelta no pierde nada bueno:** siguen "hijo de ~ padre de", "cinco mil ~ cuatro mil", "piedad de ~
+  compasión de", "fue ~ había sido", "algún ~ ningún", "la multitud ~ pedro"; y en la segunda entra "hijo de ~ fue
+  padre de".
+- **"de" ya no traga por azar:** sus 35 uniones del NT tienen de 9 a 50 pares (antes 2); se junta con "en", "a", "por",
+  "con", "para", "de los", "este": es la clase de las preposiciones y compañía, gramática de verdad.
+- ⚠️ Falta una prueba chica que la vara frene una unión por azar (la de la familia no la toca: su mundo cruzado no
+  comparte nada).
