@@ -2092,3 +2092,22 @@ los", "y los", "y al", "y sus", "y mis", **"hijo de" (96 notas) y "padre de" (40
 - **Lo que enseña:** el juego de señales está hecho para **separar** las 16 cosas: nunca va a decir que dos son una
   mientras lo que entra no sea casi lo mismo. Para que el cubo una relaciones, la pregunta tiene que ser otra: que
   aprenda 16 y después oiga una que **no** aprendió, y ver a cuál de las 16 la lleva (contra el nulo).
+
+**Una relación que el cubo no aprendió** (Capitán: *"sí, una nueva"*). `voluntad_hilos` con canciones de más después
+de las k: no se aprenden, se oyen una vez al final, y `U: canción cosa` dice a cuál de las aprendidas la llevó (prueba:
+una canción hecha con 3 de las 5 notas de la 5 va a la 5). `hilos` con `tanda` agrega las nuevas: formas no elegidas
+que se relacionan con una elegida (`U: j r`, r la pariente), cantadas con sus pares (`V:`) o cruzados (`W:`); las 16
+aprendidas son las mismas en los dos. NT, 7³, 800 vueltas:
+
+| canciones nuevas (16) | las lleva a su pariente |
+|---|---|
+| con sus pares | 4 de 16 |
+| nulo: con sus pares cruzados | 5 de 16 |
+
+- **Igual que el nulo.** Las nuevas comparten 2 pares con su pariente (lo mínimo que pide hilos); el cubo las lleva
+  casi siempre a las mismas cuatro ("y sus", "y mis", "hijo de", "y al"), en el real y en el cruzado. "fue padre de"
+  va a "y al" (real) y a "hijo de" (nulo). Las de la cadena de Lucas ("sela hijo de", "hijo de cainán") van a "hijo de"
+  en los dos: comparten los nombres, no los pares.
+- **Lo que deja esta línea:** con lo que el NT tiene (relaciones que comparten 2 o 3 pares entre decenas), el cubo no
+  ve más que la cuenta de hilos, y ve menos: la cuenta contra el nulo los encuentra (nulo 0), el cubo no. Los 16 del
+  7³ eran 16 cosas distintas que separar; acá lo que hace falta es juntar lo poco que dos relaciones comparten.

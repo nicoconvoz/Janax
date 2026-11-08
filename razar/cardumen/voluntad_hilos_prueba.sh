@@ -4,7 +4,8 @@
 # things 0 and 1 are said with the same three pieces and the rest each with its own, the cube cannot tell them apart:
 # for 1 it keeps guessing 0 (more than half the last quarter); a thing with pieces of its own is guessed right more
 # than half of it. With "cantos", each thing a song of five notes, songs 0 and 1 the same and the rest each its own:
-# the same, for songs sung whole (which of 0 and 1 it keeps is the cube's).
+# the same, for songs sung whole (which of 0 and 1 it keeps is the cube's). And a new song, never learned, made of three
+# of the five notes of song 5: heard once at the end, it is taken for 5.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -44,6 +45,10 @@ for t in range(16):                          # song t: five notes, pieces from 3
     for i in range(5):
         x = (3 * (5 * b + i)) % 47
         out += bytes([x, x + 1, x + 2])
+out += bytes([3, 0])                         # the new one: notes 0, 2, 4 of song 5
+for i in (0, 2, 4):
+    x = (3 * (5 * 5 + i)) % 47
+    out += bytes([x, x + 1, x + 2])
 open(sys.argv[1], 'wb').write(out)" "$(cygpath -m "$d/casa/$(etiqueta cantos)")"
 cantadas=$(correr voluntad_hilos)
 set -- $(printf '%s\n' "$cantadas" | grep '^C: 1 '); ctodas1=$4; cotro1=$5; cveces1=$6
@@ -51,13 +56,14 @@ if [ "$cveces1" = 0 ]; then                  # (which of 0 and 1 it keeps is the
   set -- $(printf '%s\n' "$cantadas" | grep '^C: 0 '); ctodas1=$4; cotro1=$(( $5 == 1 ? 0 : $5 + 1 )); cveces1=$6
 fi
 set -- $(printf '%s\n' "$cantadas" | grep '^C: 5 '); cbien5=$3; ctodas5=$4
+set -- $(printf '%s\n' "$cantadas" | grep '^U: 0 '); nueva=${3:-}
 if [ "$(huella "$sola")" = "$(huella "$madre")" ] && [ "$otro1" = 0 ] && [ $((veces1 * 2)) -gt "$todas1" ] &&
    [ $((bien5 * 2)) -gt "$todas5" ] && [ "$cotro1" = 0 ] && [ $((cveces1 * 2)) -gt "$ctodas1" ] &&
-   [ $((cbien5 * 2)) -gt "$ctodas5" ]; then
+   [ $((cbien5 * 2)) -gt "$ctodas5" ] && [ "$nueva" = 5 ]; then
   echo "voluntad_hilos_prueba: bien"
 else
   echo "voluntad_hilos_prueba: MAL (huella $(huella "$sola") contra $(huella "$madre"); 1 confundida con $otro1" \
-    "$veces1 de $todas1; 5 bien $bien5 de $todas5; cantadas: 1 con $cotro1 $cveces1 de $ctodas1, 5 bien $cbien5 de $ctodas5)"
-  printf '%s\n' "$dadas" "$cantadas" | grep -E '^(C:|aciertos)'
+    "$veces1 de $todas1; 5 bien $bien5 de $todas5; cantadas: 1 con $cotro1 $cveces1 de $ctodas1, 5 bien $cbien5 de $ctodas5; la nueva: $nueva)"
+  printf '%s\n' "$dadas" "$cantadas" | grep -E '^(C:|U:|aciertos)'
   exit 1
 fi

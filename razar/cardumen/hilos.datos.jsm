@@ -64,3 +64,9 @@ times 4A0h - $ db 0
 db 'P: ', 0
 times 4B0h - $ db 0
 db 'Q: ', 0
+times 4C0h - $ db 0
+db 'U: ', 0
+times 4D0h - $ db 0
+db 'V: ', 0
+times 4E0h - $ db 0
+db 'W: ', 0

@@ -55,6 +55,9 @@ S_RT     = 480h
 S_BARR   = 490h
 S_PT     = 4A0h
 S_QT     = 4B0h
+S_UT     = 4C0h
+S_VT     = 4D0h
+S_WT     = 4E0h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -132,6 +135,10 @@ HP2   = 1798h
 HP3   = 17A0h
 HTI   = 17A8h
 HTJ   = 17B0h
+HTSAY = 17B8h                   ; (the number said for a form; how many new ones; the texts of a song, read and
+HNNEW = 17C0h                   ; crossed)
+HSR   = 17C8h
+HSC   = 17D0h
 
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
@@ -898,10 +905,13 @@ hl_sayform:
 ; And each form whole, as a song (Capitan, 2026-11-08: "that it hears it"): each of its pairs a note of three pieces
 ; (from its two words either way), "P: i p p p" a note, "Q: i p p p" a note of its pairs crossed. Only relations whose
 ; forms fit in a song are taken: 255 notes at most, what a melody holds (measured: a melody joins up to 255 greetings).
-; Uses j1-j14.
+; Then the new ones, for the cube to hear without learning them: forms not chosen that relate to a chosen one (the
+; strongest first, as many as the chosen at most), "U: j r way pairs | words" (r the chosen one it relates to), and
+; their songs, "V: j p p p" ("W:" crossed). Uses j1-j14.
 hl_tanda:
   jldi j1, 0
   jld j11, j1, HTK
+  jadd j11, j11, j11
   jldi j2, 2
   jadd j11, j11, j2
   jldi j2, 3
@@ -1096,6 +1106,10 @@ ht_picked:
     jst j3, j1, HTI
     jjmp ht_r
 ht_rd:
+  jldi j2, S_PT
+  jst j2, j1, HSR
+  jldi j2, S_QT
+  jst j2, j1, HSC
   jst j1, j1, HTI
   ht_c:                         ; each form's pieces, read and crossed
     jldi j1, 0
@@ -1103,6 +1117,7 @@ ht_rd:
     jld j3, j1, HNCH
     jsub j3, j2, j3
     jjz j3, ht_done
+    jst j2, j1, HTSAY
     jst j1, j1, HTG
     jcall ht_code
     jldi j1, S_TT
@@ -1138,6 +1153,167 @@ ht_rd:
     jst j2, j1, HTI
     jjmp ht_c
 ht_done:
+  jcall ht_news
+  jret
+
+; The new ones: forms not chosen that relate to a chosen one (the strongest first, as many as the chosen at most),
+; each said "U: j r way pairs | words" and sung ("V:", "W:" crossed). Uses j1-j14.
+ht_news:
+  jldi j1, 0
+  jst j1, j1, HNNEW
+  jldi j2, S_VT
+  jst j2, j1, HSR
+  jldi j2, S_WT
+  jst j2, j1, HSC
+  hn_pick:
+    jldi j1, 0
+    jld j2, j1, HNNEW
+    jld j3, j1, HNCH
+    jsub j3, j2, j3
+    jjz j3, hn_done
+    jst j1, j1, HTBEST
+    jst j1, j1, HTE
+    jldi j2, HAG
+    jld j3, j2, 8
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j1, HTI
+    jld j4, j2, 0
+    jst j4, j1, HTJ
+    hn_s:
+      jldi j1, 0
+      jld j3, j1, HTI
+      jjz j3, hn_sd
+      jld j4, j1, HTJ
+      jld j5, j4, 0
+      jjz j5, hn_sn
+      jcall hl_score
+      jldi j1, 0
+      jjz j6, hn_sn
+      jld j7, j1, HTBEST
+      jsub j7, j7, j6
+      jldi j8, 63
+      jsar j7, j7, j8
+      jjz j7, hn_sn
+      jld j7, j4, 8               ; one chosen, the other neither chosen nor new, and fitting in a song
+      jcall hn_flag
+      jadd j9, j7, j1
+      jld j7, j4, 16
+      jcall hn_flag
+      jadd j10, j7, j1
+      jadd j11, j9, j10
+      jldi j12, 1
+      jsub j11, j11, j12
+      jjnz j11, hn_sn
+      jjz j9, hn_c2
+      jld j7, j4, 16
+      jjmp hn_cf
+    hn_c2:
+      jld j7, j4, 8
+    hn_cf:
+      jcall ht_fits
+      jjz j7, hn_sn
+      jst j6, j1, HTBEST
+      jst j4, j1, HTE
+    hn_sn:
+      jldi j1, 0
+      jld j4, j1, HTJ
+      jldi j5, HAG
+      jld j5, j5, 24
+      jadd j4, j4, j5
+      jst j4, j1, HTJ
+      jld j3, j1, HTI
+      jldi j5, 1
+      jsub j3, j3, j5
+      jst j3, j1, HTI
+      jjmp hn_s
+  hn_sd:
+    jld j4, j1, HTE
+    jjz j4, hn_done
+    jld j7, j4, 8                 ; which is the new one, which the chosen
+    jcall hn_flag
+    jjz j7, hn_first
+    jld j2, j4, 16
+    jld j3, j4, 8
+    jjmp hn_put
+  hn_first:
+    jld j2, j4, 8
+    jld j3, j4, 16
+  hn_put:
+    jldi j5, 3
+    jshl j5, j2, j5
+    jld j6, j1, HBST
+    jadd j5, j5, j6
+    jldi j6, 2
+    jst j6, j5, 0                 ; (new now)
+    jld j5, j1, HNCH
+    jld j6, j1, HNNEW
+    jadd j5, j5, j6
+    jst j5, j1, HTI
+    jldi j6, 3
+    jshl j6, j5, j6
+    jld j7, j1, HCH
+    jadd j6, j6, j7
+    jst j2, j6, 0
+    jadd j2, j3, j1
+    jcall ht_index
+    jldi j1, 0
+    jst j6, j1, HP1
+    jldi j1, S_UT
+    jcall puts
+    jld j2, j1, HNNEW
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j2, j1, HP1
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j4, j1, HTE
+    jld j2, j4, 24
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jld j4, j1, HTE
+    jld j2, j4, 32
+    jcall putnum
+    jldi j1, S_BARR
+    jcall puts
+    jld j2, j1, HTI
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCH
+    jadd j3, j3, j4
+    jld j2, j3, 0
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HNNEW
+    jst j2, j1, HTSAY
+    jst j1, j1, HTG
+    jcall ht_song
+    jldi j1, 0
+    jldi j2, 1
+    jst j2, j1, HTG
+    jcall ht_song
+    jldi j1, 0
+    jld j2, j1, HNNEW
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HNNEW
+    jjmp hn_pick
+hn_done:
+  jret
+
+; j7 = the flag of form j7 (0 nothing, 1 chosen, 2 new). Uses j7, j8.
+hn_flag:
+  jldi j8, 3
+  jshl j7, j7, j8
+  jldi j8, 0
+  jld j8, j8, HBST
+  jadd j7, j7, j8
+  jld j7, j7, 0
   jret
 
 ; j7 = 1 if form j7 fits in a song (255 pairs at most). Uses j7, j8.
@@ -1241,10 +1417,11 @@ ht_song:
   hsg_3d:
     jst j12, j1, HP3
     jld j2, j1, HTG
-    jldi j1, S_PT
+    jld j3, j1, HSR
     jjz j2, hsg_say
-    jldi j1, S_QT
+    jld j3, j1, HSC
   hsg_say:
+    jadd j1, j3, j1
     jcall ht_say
     jldi j2, 10
     jcall putch
@@ -1288,7 +1465,7 @@ hti_no:
 ; The text at j1, then "i p p p" (HTI, HP1-HP3), then " | ". Uses j1-j14.
 ht_say:
   jcall puts
-  jld j2, j1, HTI
+  jld j2, j1, HTSAY
   jcall putnum
   jldi j2, 32
   jcall putch
