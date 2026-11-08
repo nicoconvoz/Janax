@@ -2792,3 +2792,27 @@ cambia es su lugar en la fila.
   había visto dentro de un libro, ahora entre libros. Medirlo bien pide recorrer varios órdenes.
 - **La curva puede bajar:** se durmieron 7 uniones en esta fila. La pendiente se mide sobre algo que puede perder, no
   es una suma que solo crece.
+
+## Cuánto del número pone el orden (2026-11-08)
+
+Una devolución pegada por el Capitán separó dos cosas. Una es el Razar que leyó los libros en un orden: su número es
+su historia y no se promedia (el individuo promedio no existe). La otra es el método: cuánto del número pone el orden.
+Para eso alcanzan unos pocos órdenes, una sola vez, y decir entre qué valores se mueve.
+
+- **Cinco órdenes sorteados** (semillas 1 a 5) de los mismos once libros, con memoria y pendientes, más los dos que ya
+  estaban:
+
+  | orden | sabe al final | dormidas |
+  |---|---|---|
+  | el de siempre (Wikipedia en el 11) | 496 | 6 |
+  | el cruce (Wikipedia en el 4, Quijote en el 11) | 451 | 7 |
+  | sorteo 1 | 517 | 0 |
+  | sorteo 2 | 460 | 4 |
+  | sorteo 3 | 477 | 6 |
+  | sorteo 4 | 507 | 9 |
+  | sorteo 5 | 485 | 4 |
+
+- **El método se mueve entre 451 y 517** con los mismos libros: unas 66 uniones (un 13 %) las pone el orden. El 496 del
+  Razar de siempre es su número, y queda como está.
+- **Corregido en el camino:** la primera tanda dio números falsos (1, 101, 88, 4) porque Python en Windows le pegaba un
+  `` a cada nombre de libro y no encontraba ninguno. Se borró y se volvió a correr.
