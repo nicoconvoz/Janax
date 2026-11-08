@@ -114,6 +114,12 @@ S_ENC    = 900h
 S_AFAV   = 920h
 S_DUER2  = 940h
 S_DESP2  = 960h
+S_PEND   = 980h
+S_VERIF  = 9A0h
+S_PENN   = 9C0h
+S_PVER   = 9E0h
+S_PSIG   = 0A00h
+S_PNUE   = 0A20h
 
 PRB   = 1200h                   ; the file: its bytes, how many, the room's size, a handle
 PRN   = 1208h
@@ -298,7 +304,14 @@ HKJ   = 1C60h
 HKJA  = 1C68h
 HKJB  = 1C70h
 HKD   = 1C78h
-HKWK  = 1C80h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
+HKWK  = 1C80h
+HQB   = 1C88h                   ; what was left to solve ("pendiente"): its bytes, how many, the lines kept {where,
+HQN   = 1C90h                   ; bytes} (a room) and how many, how many checked; the new ones written, and each two
+HQL   = 1C98h                   ; forms once (a growing table)
+HQU   = 1CA0h
+HQV   = 1CA8h
+HPDN  = 1CB0h
+HPDS  = 1CB8h                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
 HSUR  = 1810h                   ; by form of the tanda, its surname's words (256 a form, a room), how many (a room);
@@ -378,6 +391,7 @@ jcall hl_half
 jcall hl_facts
 jcall hl_rooms
 jcall hl_known
+jcall hl_pending
 jcall hl_say0
 jldi j1, 0
 jld j2, j1, HTANDA
@@ -409,6 +423,7 @@ jwhile j2                      ; while a turn joins something
 jwend
 jcall hl_end
 jcall hl_ksave
+jcall hl_psave
 jjmp finish
 
 ; Each word's times, the half (the words said most that make half of what the book says: HHC the fewest times one
@@ -5602,6 +5617,391 @@ hk_puthex:
     jsub j5, j5, j3
     jjmp hkp_lap
 hkp_done:
+  jret
+
+; What was left to solve (Capitan: "the ones without a partner, put them to sleep and look in the next book if they
+; have one: it leaves something on its mind to solve, and when it finds where to check it, it checks it"): the house's
+; "pendiente", two forms that held one pair alike in a book before (one confirmation: not enough to join), a line each
+; as in "sabido". Each line whose two forms this book has is judged by it: one more confirmation and none against make
+; two, from two books, and it is checked ("verifica:"), joined as a premise; otherwise it stays pending, as it is.
+; Uses j1-j14.
+hl_pending:
+  jldi j11, S_PEND
+  jldi j12, 9
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, HQB
+  jld j2, j1, PRN
+  jst j2, j1, HQN
+  jst j1, j1, HQU
+  jst j1, j1, HQV
+  jldi j3, 16
+  jadd j11, j2, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HQL
+  jld j2, j1, HQB
+  jst j2, j1, HKP
+  jld j3, j1, HQN
+  jadd j3, j2, j3
+  jst j3, j1, HKE
+  hq_lap:
+    jldi j1, 0
+    jld j4, j1, HKP
+    jld j5, j1, HKE
+    jsub j5, j5, j4
+    jjz j5, hq_done
+    jadd j7, j4, j1
+    hq_eol:
+      jld j5, j1, HKE
+      jsub j5, j5, j7
+      jjz j5, hq_eold
+      jldb j5, j7, 0
+      jldi j6, 1
+      jadd j7, j7, j6
+      jldi j6, 10
+      jsub j5, j5, j6
+      jjnz j5, hq_eol
+  hq_eold:
+    jst j7, j1, HKX
+    jsub j5, j7, j4
+    jldi j6, 36
+    jsub j6, j5, j6
+    jldi j8, 63
+    jsar j6, j6, j8
+    jjnz j6, hq_next
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HKKF
+    jld j4, j1, HKP
+    jldi j2, 17
+    jadd j4, j4, j2
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HKKP
+    jld j4, j1, HKP
+    jldb j2, j4, 34
+    jldi j3, 50
+    jsub j2, j2, j3
+    jldi j3, 1
+    jjz j2, hq_way
+    jldi j3, 0
+  hq_way:
+    jst j3, j1, HKW
+    jld j5, j1, HKKF
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKF
+    jsub j6, j6, j5
+    jjnz j6, hq_keep
+    jld j6, j4, 8
+    jst j6, j1, HKFF
+    jld j5, j1, HKKP
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKP
+    jsub j6, j6, j5
+    jjnz j6, hq_keep
+    jld j6, j4, 8
+    jst j6, j1, HKFP
+    jcall hk_judge
+    jldi j1, 0
+    jld j2, j1, HKXX            ; none against, one for at least: two, from two books
+    jjnz j2, hq_keep
+    jld j2, j1, HKC
+    jjz j2, hq_keep
+    jld j2, j1, HQV
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HQV
+    jldi j1, S_VERIF
+    jcall puts
+    jcall hk_join
+    jjmp hq_next
+  hq_keep:
+    jldi j1, 0
+    jld j2, j1, HQU
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HQL
+    jadd j3, j3, j4
+    jld j4, j1, HKP
+    jst j4, j3, 0
+    jld j5, j1, HKX
+    jsub j5, j5, j4
+    jst j5, j3, 8
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HQU
+  hq_next:
+    jldi j1, 0
+    jld j2, j1, HKX
+    jst j2, j1, HKP
+    jjmp hq_lap
+hq_done:
+  jldi j1, 0
+  jret
+
+; What is left to solve now, into "pendiente" for the next book: the lines still pending (one whose two forms joined in
+; this book is solved, and goes), then two forms of this book's last turn that held one pair alike and none crossed
+; (one confirmation), whose relations are not one. Each two forms once (Capitan: "do not keep duplicates"). Uses
+; j1-j14.
+hl_psave:
+  jldi j2, HPDS
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jst j1, j1, HPDN
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_PEND
+  jldi j12, 9
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_PEND
+  jldi j12, 9
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hps_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jst j1, j1, HKI
+  hps_old:                      ; the ones still pending
+    jldi j1, 0
+    jld j2, j1, HKI
+    jld j3, j1, HQU
+    jsub j3, j2, j3
+    jjz j3, hps_new
+    jldi j3, 4
+    jshl j3, j2, j3
+    jld j4, j1, HQL
+    jadd j3, j3, j4
+    jld j4, j3, 0
+    jst j4, j1, HKP
+    jld j5, j3, 8
+    jst j5, j1, HKX
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HKKF
+    jld j4, j1, HKP
+    jldi j2, 17
+    jadd j4, j4, j2
+    jcall hk_hex
+    jldi j1, 0
+    jst j9, j1, HKKP
+    jld j5, j1, HKKF            ; (once each, either way round)
+    jld j6, j1, HKKP
+    jcall hp_order
+    jcall hl_mix
+    jjnz j5, hps_k
+    jldi j5, 1
+  hps_k:
+    jldi j2, HPDS
+    jcall pl_take
+    jldi j1, 0
+    jjz j6, hps_on
+    jld j5, j1, HKKF            ; joined in this book: solved
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKF
+    jsub j6, j6, j5
+    jjnz j6, hps_put
+    jld j2, j4, 8
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HKRA
+    jld j5, j1, HKKP
+    jldi j2, HMID
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j5, j1, HKKP
+    jsub j6, j6, j5
+    jjnz j6, hps_put
+    jld j2, j4, 8
+    jcall hl_find
+    jldi j1, 0
+    jld j3, j1, HKRA
+    jsub j3, j3, j2
+    jjz j3, hps_on
+  hps_put:
+    jldi j1, 0
+    jld j4, j1, HKP
+    jld j5, j1, HKX
+    hps_b:
+      jjz j5, hps_on
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jjmp hps_b
+  hps_on:
+    jldi j1, 0
+    jld j2, j1, HKI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HKI
+    jjmp hps_old
+hps_new:                        ; this book's: one pair alike, none crossed
+  jldi j2, HAG
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HKI
+  jld j4, j2, 0
+  jst j4, j1, HKP
+  hps_n:
+    jldi j1, 0
+    jld j3, j1, HKI
+    jjz j3, hps_close
+    jld j4, j1, HKP
+    jld j5, j4, 0
+    jjz j5, hps_nn
+    jld j5, j4, 32
+    jldi j6, 1
+    jsub j5, j5, j6
+    jjnz j5, hps_nn
+    jld j5, j4, 40
+    jjnz j5, hps_nn
+    jld j2, j4, 8
+    jst j2, j1, HKFF
+    jld j2, j4, 16
+    jst j2, j1, HKFP
+    jld j2, j4, 24
+    jst j2, j1, HKW
+    jld j2, j1, HKFF
+    jcall hk_deduced
+    jjnz j6, hps_nn
+    jldi j1, 0
+    jld j2, j1, HKFP
+    jcall hk_deduced
+    jjnz j6, hps_nn
+    jldi j1, 0
+    jld j2, j1, HKFF
+    jcall hl_find
+    jldi j1, 0
+    jst j2, j1, HKRA
+    jld j2, j1, HKFP
+    jcall hl_find
+    jldi j1, 0
+    jld j3, j1, HKRA
+    jsub j3, j3, j2
+    jjz j3, hps_nn              ; (one relation already)
+    jld j2, j1, HKFF
+    jcall hk_key
+    jldi j1, 0
+    jst j2, j1, HKKF
+    jld j2, j1, HKFP
+    jcall hk_key
+    jldi j1, 0
+    jst j2, j1, HKKP
+    jld j5, j1, HKKF
+    jld j6, j1, HKKP
+    jcall hp_order
+    jcall hl_mix
+    jjnz j5, hps_k2
+    jldi j5, 1
+  hps_k2:
+    jldi j2, HPDS
+    jcall pl_take
+    jldi j1, 0
+    jjz j6, hps_nn
+    jld j2, j1, HPDN
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HPDN
+    jld j2, j1, HKKF
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKKP
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKW
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j2, 124
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j2, j1, HKFF
+    jcall hl_sayform
+    jldi j1, S_TIL
+    jcall puts
+    jld j2, j1, HKFP
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+  hps_nn:
+    jldi j1, 0
+    jld j4, j1, HKP
+    jldi j5, HAG
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HKP
+    jld j3, j1, HKI
+    jldi j5, 1
+    jsub j3, j3, j5
+    jst j3, j1, HKI
+    jjmp hps_n
+hps_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j1, S_PENN
+  jcall puts
+  jld j2, j1, HQV
+  jcall putnum
+  jldi j1, S_PVER
+  jcall puts
+  jld j2, j1, HQU
+  jcall putnum
+  jldi j1, S_PSIG
+  jcall puts
+  jld j2, j1, HPDN
+  jcall putnum
+  jldi j1, S_PNUE
+  jcall puts
+hps_done:
+  jldi j1, 0
+  jret
+
+; j5, j6 in order, the smaller first (two forms are the same two, either way round). Uses j5-j8.
+hp_order:
+  jsub j7, j6, j5
+  jldi j8, 63
+  jsar j7, j7, j8
+  jjz j7, hpo_done
+  jsub j8, j8, j8
+  jadd j7, j5, j8
+  jadd j5, j6, j8
+  jadd j6, j7, j8
+hpo_done:
   jret
 
 ; The house's file named by the j12 bytes at j11 -> PRB, PRN (0: none). Uses j1-j14.

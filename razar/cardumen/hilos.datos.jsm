@@ -148,3 +148,15 @@ times 940h - $ db 0
 db ' se duermen, ', 0
 times 960h - $ db 0
 db ' despiertan', 10, 0
+times 980h - $ db 0
+db 'pendiente', 0
+times 9A0h - $ db 0
+db 'verifica: ', 0
+times 9C0h - $ db 0
+db 'pendientes: ', 0
+times 9E0h - $ db 0
+db ' verificadas | ', 0
+times 0A00h - $ db 0
+db ' siguen | ', 0
+times 0A20h - $ db 0
+db ' nuevos', 10, 0

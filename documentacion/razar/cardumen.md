@@ -2678,3 +2678,42 @@ encabezados ni licencia de Gutenberg, armados como el NT. Ninguno va al repo.
   libro repite adentro.** `hilos` necesita dos confirmaciones dentro del mismo libro, y lo que se lleva entre libros
   son las conclusiones, no la evidencia. Un libro rico que dice cada cosa una vez casi no deja nada. Para que suba con
   los libros ricos, la evidencia también tiene que pasar de un libro al otro.
+
+## Lo pendiente: lo que le quedó por resolver se verifica en otro libro (2026-11-08)
+
+El Capitán: *"las que no tienen pareja dormilas y revisá en el próximo libro si tienen pareja; de esa forma deja algo
+que le quedó en la mente por resolver, y cuando encuentra algo donde comprobarlo lo verifica"*. Y: *"no guardes
+duplicado"*.
+
+- **`pendiente`** (un archivo de la casa, una línea como las de `sabido`): al terminar un libro, dos formas de la última
+  vuelta que dijeron un par igual (una confirmación, que no alcanza para unir) y ninguno cruzado, de relaciones
+  distintas, sin deducidas. Cada dos formas una sola vez, en cualquier orden. Al empezar el libro siguiente, cada
+  pendiente cuyas dos formas están ahí se juzga como lo sabido: con **una confirmación más y nada en contra** son dos,
+  de dos libros, y se verifica (`verifica: sabe: …`) y pasa a lo sabido. Las demás siguen pendientes, tal cual. Una
+  pendiente que el libro unió por su cuenta queda resuelta y no se vuelve a escribir.
+- **Prueba (`hilos_pendiente_prueba.sh`):** un libro donde `padre de` y `hijo de` comparten un solo par deja una
+  pendiente (una sola línea). Otro libro, con otra gente, igual de pobre, solo no une nada. Con la pendiente del
+  primero, `verifica: sabe: padre de ~ hijo de | al reves`.
+- **Los diez libros de personas, con memoria y pendientes:**
+
+  | libro | sabe | sin pendientes sabía | verificadas | siguen pendientes | pendiente (KB) |
+  |---|---|---|---|---|---|
+  | NT | 101 | 101 | 0 | 0 | 218 |
+  | Asimov | 141 | 118 | 31 | 3.992 | 243 |
+  | Lazarillo | 143 | 119 | 2 | 4.458 | 245 |
+  | Quijote | 469 | 315 | 213 | 4.295 | 746 |
+  | Palma | 472 | 316 | 2 | 13.428 | 750 |
+  | Bécquer | 488 | 330 | 11 | 13.491 | 768 |
+  | Darío | 489 | 331 | 1 | 13.833 | 770 |
+  | Quiroga | 494 | 336 | 2 | 13.867 | 774 |
+  | Unamuno | 508 | 343 | 9 | 13.939 | 788 |
+  | Baroja | 524 | 347 | 12 | 14.199 | 799 |
+
+  Sube más (524 contra 347), y los libros chicos suman un poco más (Asimov 40 en vez de 17, Baroja 16 en vez de 4).
+  Cada libro tarda lo mismo (el Quijote 42 s).
+- **Lo malo:** la mayoría de lo verificado es gramática unida por casualidad: `como ~ también`, `los ~ se`, `y ~ el`,
+  `que el ~ del`, `sin ~ es la`. Hay algunas buenas (`nuestras ~ sus`, `esta ~ aquella`, `en esa ~ en la`,
+  `que eres ~ que es`, `contra ~ con`). La verificación entre libros pide menos que una unión dentro de un libro: no
+  mira el nulo (los pares cruzados, lo que da el azar), ni que se elijan una a la otra, ni la regla de explicar. Las
+  formas de gramática comparten pares por suerte en todos los libros. Para que lo verificado valga, la verificación
+  tiene que pasar las mismas pruebas que una unión.
