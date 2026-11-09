@@ -145,6 +145,8 @@ S_SIGUE  = 0D20h
 S_HILOS  = 0D40h
 S_TEST   = 0D60h
 S_MECS   = 0D80h
+S_NITI   = 0DA0h
+S_NITO   = 0DC0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -187,6 +189,18 @@ HWK   = 13A8h                   ; "testigos" {key, relation, relation, which way
 HWX   = 13B0h                   ; one), the two forms that said it}; (walking: the hypothesis' key, where, how many
 HWN   = 13B8h                   ; left); by relation, 1 if it joined this turn (a room)
 HWF   = 13C0h
+HPLW  = 1400h                   ; how sharp (hl_nitidez): each place's word once {key, put}; the places {key, words,
+HPLC  = 1420h                   ; where they start, how many put}; the pairs of words {key, a word, the other, places
+HPAR  = 1440h                   ; shared} (growing tables); the places' words (a room); walking: a pair, its side,
+HPLR  = 1460h                   ; the pair, a word, a place, how many left, which pass; whether the house asks
+HPI   = 1468h
+HPJ   = 1470h
+HPQ   = 1478h
+HPU   = 1480h
+HPV   = 1488h
+HPN   = 1490h
+HPPS  = 1498h
+HNIT  = 14A0h
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -510,6 +524,12 @@ jcall en_read
 jldi j1, 0
 jld j2, j1, PRN
 jst j2, j1, HTODA
+jldi j11, S_NITI                ; how sharp two words are, if the house asks ("nitidez")
+jldi j12, 7
+jcall en_read
+jldi j1, 0
+jld j2, j1, PRN
+jst j2, j1, HNIT
 jldi j11, S_PARES
 jldi j12, 5
 jcall en_read
@@ -526,6 +546,7 @@ jcall hl_half
 jcall hl_pmaybe                 ; (the pieces of words, if the house asks: nothing else then)
 jjnz j2, finish
 jcall hl_facts
+jcall hl_nitidez
 jcall hl_rooms
 jcall hl_known
 jcall hl_pending
@@ -8163,6 +8184,432 @@ hms_close:
   jor j10, j10, j2
   jcall ask
 hms_done:
+  jldi j1, 0
+  jret
+
+; How sharp two words are: the places they share (Capitan: "if one 'speaks' and another 'says', it already knows both
+; speak… it becomes sharper until more information confirms it"), if the house asks ("nitidez"). A place: a form read
+; and its side (each pair the form holds puts its first word on side 0, its second on side 1); a form made only of
+; words of the half, and a word of the half, say nothing of anyone (what is said everywhere is glue) and do not count.
+; Each place's words once; every two words of a place share it; into "nitidas", after the pieces before: a line {a
+; word, another, how many places they share} for each two sharing two or more (what two say). Uses j1-j14.
+hl_nitidez:
+  jldi j1, 0
+  jld j2, j1, HNIT
+  jjz j2, hnz_done
+  jldi j2, HPLW
+  jldi j3, 16
+  jcall pl_new
+  jldi j2, HPLC
+  jldi j3, 32
+  jcall pl_new
+  jldi j2, HPAR
+  jldi j3, 32
+  jcall pl_new
+  jldi j1, 0                    ; each place's words, counted
+  jldi j2, 1
+  jst j2, j1, HPPS
+  jcall hnz_walk
+  jldi j1, 0                    ; where each place's words start
+  jst j1, j1, HPN
+  jldi j2, HPLC
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jld j4, j2, 0
+  jld j5, j2, 24
+  hnz_s:
+    jjz j3, hnz_sd
+    jld j6, j4, 0
+    jjz j6, hnz_sn
+    jld j6, j1, HPN
+    jst j6, j4, 16
+    jst j1, j4, 24
+    jld j7, j4, 8
+    jadd j6, j6, j7
+    jst j6, j1, HPN
+  hnz_sn:
+    jadd j4, j4, j5
+    jldi j6, 1
+    jsub j3, j3, j6
+    jjmp hnz_s
+hnz_sd:
+  jld j11, j1, HPN
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HPLR
+  jldi j2, 2                    ; each place's words, put
+  jst j2, j1, HPPS
+  jcall hnz_walk
+  jcall hnz_pairs
+  jcall hnz_save
+hnz_done:
+  jldi j1, 0
+  jret
+
+; Every pair read (HFL), each of its two words in its place (HPPS 1: counted in HPLC; 2: put in HPLR), each place's
+; word once (HPLW). Uses j1-j14.
+hnz_walk:
+  jldi j1, 0
+  jst j1, j1, HPI
+  hnw_lap:
+    jldi j1, 0
+    jld j2, j1, HPI
+    jld j3, j1, HNF
+    jsub j3, j2, j3
+    jjz j3, hnw_done
+    jldi j3, 5
+    jshl j3, j2, j3
+    jld j4, j1, HFL
+    jadd j3, j3, j4
+    jst j3, j1, HPQ
+    jld j2, j3, 0
+    jcall hnz_fhalf
+    jjnz j6, hnw_next
+    jldi j1, 0
+    jst j1, j1, HPJ
+    hnw_side:
+      jldi j1, 0
+      jld j2, j1, HPJ
+      jldi j3, 2
+      jsub j3, j2, j3
+      jjz j3, hnw_next
+      jld j3, j1, HPQ
+      jldi j4, 3
+      jshl j4, j2, j4
+      jadd j4, j4, j3
+      jld j5, j4, 8
+      jst j5, j1, HPU             ; the word
+      jcall hnz_whalf
+      jjnz j6, hnw_sn
+      jldi j1, 0
+      jld j3, j1, HPQ
+      jld j2, j3, 0
+      jadd j2, j2, j2
+      jld j4, j1, HPJ
+      jadd j2, j2, j4
+      jldi j4, 1
+      jadd j2, j2, j4
+      jst j2, j1, HPV             ; the place (its key: never 0)
+      jadd j5, j2, j1
+      jld j6, j1, HPU
+      jcall hl_mix
+      jjnz j5, hnw_k
+      jldi j5, 1
+    hnw_k:
+      jldi j2, HPLW
+      jcall pl_take
+      jldi j1, 0
+      jld j2, j1, HPPS
+      jldi j3, 1
+      jsub j2, j2, j3
+      jjnz j2, hnw_put
+      jjz j6, hnw_sn              ; (this place has it already)
+      jld j5, j1, HPV
+      jldi j2, HPLC
+      jcall pl_take
+      jldi j1, 0
+      jld j2, j4, 8
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j4, 8
+      jjmp hnw_sn
+    hnw_put:
+      jld j2, j4, 8
+      jjnz j2, hnw_sn
+      jldi j2, 1
+      jst j2, j4, 8
+      jld j5, j1, HPV
+      jldi j2, HPLC
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 16
+      jld j3, j4, 24
+      jadd j2, j2, j3
+      jldi j5, 1
+      jadd j3, j3, j5
+      jst j3, j4, 24
+      jldi j3, 3
+      jshl j2, j2, j3
+      jld j3, j1, HPLR
+      jadd j2, j2, j3
+      jld j3, j1, HPU
+      jst j3, j2, 0
+    hnw_sn:
+      jldi j1, 0
+      jld j2, j1, HPJ
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HPJ
+      jjmp hnw_side
+  hnw_next:
+    jldi j1, 0
+    jld j2, j1, HPI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HPI
+    jjmp hnw_lap
+hnw_done:
+  jret
+
+; j6 = 1 if the word whose print is HPU is of the half (said as often as the half's words). Uses j1-j8.
+hnz_whalf:
+  jldi j1, 0
+  jld j5, j1, HPU
+  jldi j2, HWC
+  jcall pl_find
+  jldi j1, 0
+  jld j6, j4, 0
+  jld j5, j1, HPU
+  jsub j6, j6, j5
+  jjnz j6, hwh_no
+  jld j5, j4, 8
+  jld j6, j1, HHC
+  jsub j5, j5, j6
+  jldi j6, 63
+  jsar j5, j5, j6
+  jldi j6, 1
+  jadd j6, j5, j6
+  jret
+hwh_no:
+  jldi j6, 0
+  jret
+
+; j6 = 1 if every word of form j2 is of the half. Uses j1-j10.
+hnz_fhalf:
+  jldi j1, 0
+  jldi j3, 48
+  jmul j3, j2, j3
+  jld j4, j1, HMA
+  jadd j3, j3, j4
+  jld j4, j3, 8
+  jld j9, j4, 8
+  jld j4, j3, 16
+  jadd j9, j9, j4               ; its first word's place in the book
+  jld j10, j3, 24
+  hfh_lap:
+    jjz j10, hfh_all
+    jldi j3, 24
+    jmul j3, j9, j3
+    jld j4, j1, ZWD
+    jadd j3, j3, j4
+    jld j5, j3, 0
+    jst j5, j1, HPU
+    jcall hnz_whalf
+    jjz j6, hfh_done
+    jldi j1, 0
+    jldi j3, 1
+    jadd j9, j9, j3
+    jsub j10, j10, j3
+    jjmp hfh_lap
+hfh_all:
+  jldi j6, 1
+hfh_done:
+  jldi j1, 0
+  jret
+
+; Every two words of a place share it (HPAR {key, a word, the other, how many places}). Uses j1-j14.
+hnz_pairs:
+  jldi j1, 0
+  jldi j2, HPLC
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPN
+  jld j4, j2, 0
+  jst j4, j1, HPQ
+  hnp_lap:
+    jldi j1, 0
+    jld j3, j1, HPN
+    jjz j3, hnp_done
+    jld j4, j1, HPQ
+    jld j5, j4, 0
+    jjz j5, hnp_next
+    jst j1, j1, HPI
+    hnp_x:
+      jldi j1, 0
+      jld j4, j1, HPQ
+      jld j2, j1, HPI
+      jld j3, j4, 8
+      jsub j3, j2, j3
+      jjz j3, hnp_next
+      jldi j3, 1
+      jadd j3, j2, j3
+      jst j3, j1, HPJ
+      hnp_y:
+        jldi j1, 0
+        jld j4, j1, HPQ
+        jld j3, j1, HPJ
+        jld j5, j4, 8
+        jsub j5, j3, j5
+        jjz j5, hnp_xn
+        jld j5, j4, 16
+        jld j2, j1, HPI
+        jadd j2, j2, j5
+        jadd j3, j3, j5
+        jldi j6, 3
+        jshl j2, j2, j6
+        jshl j3, j3, j6
+        jld j6, j1, HPLR
+        jadd j2, j2, j6
+        jadd j3, j3, j6
+        jld j10, j2, 0
+        jld j11, j3, 0
+        jsub j12, j10, j11        ; the smaller first, so a pair is one whatever place says it
+        jldi j13, 63
+        jsar j12, j12, j13
+        jjnz j12, hnp_ord
+        jadd j12, j10, j1
+        jadd j10, j11, j1
+        jadd j11, j12, j1
+      hnp_ord:
+        jst j10, j1, HPU
+        jst j11, j1, HPV
+        jadd j5, j10, j1
+        jadd j6, j11, j1
+        jcall hl_mix
+        jldi j6, 77h
+        jcall hl_mix
+        jjnz j5, hnp_k
+        jldi j5, 1
+      hnp_k:
+        jldi j2, HPAR
+        jcall pl_take
+        jldi j1, 0
+        jjz j6, hnp_old
+        jld j2, j1, HPU
+        jst j2, j4, 8
+        jld j2, j1, HPV
+        jst j2, j4, 16
+      hnp_old:
+        jld j2, j4, 24
+        jldi j3, 1
+        jadd j2, j2, j3
+        jst j2, j4, 24
+        jld j3, j1, HPJ
+        jldi j4, 1
+        jadd j3, j3, j4
+        jst j3, j1, HPJ
+        jjmp hnp_y
+    hnp_xn:
+      jldi j1, 0
+      jld j2, j1, HPI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HPI
+      jjmp hnp_x
+  hnp_next:
+    jldi j1, 0
+    jld j4, j1, HPQ
+    jldi j2, HPLC
+    jld j3, j2, 24
+    jadd j4, j4, j3
+    jst j4, j1, HPQ
+    jld j3, j1, HPN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HPN
+    jjmp hnp_lap
+hnp_done:
+  jret
+
+; The pairs that share two places or more into the house's "nitidas", after the pieces before. Uses j1-j14.
+hnz_save:
+  jldi j11, S_NITO
+  jldi j12, 7
+  jcall en_read
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_NITO
+  jldi j12, 7
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_NITO
+  jldi j12, 7
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hns_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j4, j1, PRB
+  jld j5, j1, PRN
+  hns_b:
+    jjz j5, hns_bd
+    jldb j2, j4, 0
+    jcall putch
+    jldi j3, 1
+    jadd j4, j4, j3
+    jsub j5, j5, j3
+    jjmp hns_b
+hns_bd:
+  jldi j1, 0
+  jldi j2, HPAR
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPN
+  jld j4, j2, 0
+  jst j4, j1, HPQ
+  hns_lap:
+    jldi j1, 0
+    jld j3, j1, HPN
+    jjz j3, hns_close
+    jld j9, j1, HPQ
+    jld j5, j9, 0
+    jjz j5, hns_next
+    jld j5, j9, 24
+    jldi j6, 2
+    jsub j5, j5, j6
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjnz j5, hns_next
+    jld j5, j9, 8
+    jcall en_sayprint
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jld j5, j9, 16
+    jcall en_sayprint
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jld j2, j9, 24
+    jcall putnum
+    jldi j2, 10
+    jcall putch
+  hns_next:
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jldi j2, HPAR
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HPQ
+    jld j3, j1, HPN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HPN
+    jjmp hns_lap
+hns_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hns_done:
   jldi j1, 0
   jret
 

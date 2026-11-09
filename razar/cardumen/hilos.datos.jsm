@@ -214,3 +214,7 @@ times 0D60h - $ db 0
 db 'testigos', 0
 times 0D80h - $ db 0
 db 'mecanismos', 0
+times 0DA0h - $ db 0
+db 'nitidez', 0
+times 0DC0h - $ db 0
+db 'nitidas', 0
