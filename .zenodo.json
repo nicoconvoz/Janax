@@ -1,13 +1,32 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system that thinks in melodies: a three-dimensional school of pieces where a signal starts a branching cascade, pieces that fire together learn to talk more, and harmony cuts what sounds wrong. A will listens to the melody and answers; starting with no shared language, the two invent one by talking. Version 0.2: on the Lewis signaling game with 16 things, Razar learns the whole language in 35-102 games on 5 of 5 seeds, while EGG (Facebook Research), the field's reference implementation, given richer messages and larger networks, reaches it on 0 of 5 within 320,000 games; the benchmark is public (razar/cardumen/convencional.sh). Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native translator. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial que piensa con melodías. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system. Version 0.3: with no one telling it what a synonym is, Razar groups words by the places they share in what it reads (a form around a word and its side), leaving out what is said everywhere (the half of the text it measures itself). On 20 MB of Spanish Wikipedia, a text that does not write synonyms, its pairs beat chance on MATS (ATILF, *SEM 2023) 451 to 117: exact synonyms 18 to 1, binary antonyms 28 to 1; on the Spanish Wiktionary 249 to 41. The places travel from piece to piece of the book and sleep on disk: 20 MB of text in 31 minutes and 205 MB of memory. An outside judge in Python, never read by Razar, computes the same idea on the whole corpus and agrees. Reproducible with one command (razar/cardumen/nitidez_reproducir.sh); the corpora are identified by sha256 and not redistributed. Version 0.2's result stands: on the Lewis signaling game with 16 things, Razar learns the whole language in 35-102 games on 5 of 5 seeds, while EGG reaches it on 0 of 5 within 320,000 games. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native translator. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial. v0.3: Razar encuentra sinónimos y antónimos por los lugares que las palabras comparten. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "0.2",
+  "version": "0.3",
   "creators": [
-    { "name": "Astorga, Nicolás", "affiliation": "Resources Open Doors S.A.S." }
+    {
+      "name": "Astorga, Nicolás",
+      "affiliation": "Resources Open Doors S.A.S."
+    }
   ],
   "license": "Apache-2.0",
-  "keywords": ["operating system", "assembly", "artificial intelligence", "neural model", "harmony", "emergent communication", "Lewis signaling game", "deterministic", "sistema operativo", "Razar", "Janax"],
+  "keywords": [
+    "operating system",
+    "assembly",
+    "artificial intelligence",
+    "neural model",
+    "harmony",
+    "emergent communication",
+    "Lewis signaling game",
+    "deterministic",
+    "sistema operativo",
+    "Razar",
+    "Janax",
+    "distributional semantics",
+    "synonyms",
+    "antonyms",
+    "MATS"
+  ],
   "language": "spa",
   "notes": "Contacto: ingenieriaaplicada@opendoors.com.ar"
 }
