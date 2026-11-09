@@ -3129,3 +3129,14 @@ distintos"*, y *"'el perro ladra' y 'el perro no ladra' no es contradicción: so
 - **Prueba (`hilos_imagina_prueba.sh`):** el libro 3 dice que el padre de nube es rio: el voto convive, nada lo refuta.
 - **No cambia lo que aprende:** NT con filtro y p320 sin filtro, todo idéntico, también la pantalla.
 - Ojo con `armar.sh`: la fuente va con su ruta entera; con la corta falla y deja el binario viejo.
+- **Los números de la réplica, cerrados** (dos cuentas distintas, no una que cambia): *en dirección* = de los que ganan
+  claro (z > 3) en el primer validador, cuántos ganan también en el segundo; *fuertes en los dos* = z > 3 en los dos.
+  Quijote como fuente (wikcionario + Wikipedia 20 MB): 26 de 26 en dirección, 19 fuertes en los dos. Wikipedia 600 KB
+  como fuente (los mismos dos): 20 de 20, 19. Con un tercer validador de otro siglo y otro tema, el Quijote (sin
+  "lizzie" ni "borden"): wikcionario + Quijote 17 de 20 en dirección, 2 fuertes; Wikipedia 20 MB + Quijote 43 de 47,
+  4 fuertes (el Quijote es chico y decide menos: z mediano 1,2 a 1,4). Correlación 0,59 a 0,60.
+- **"lizzie borden" no es el artículo colado** ("lizzie" aparece 0 veces en los tres validadores): como instrucción
+  ("une iguales 3 de 5") junta las palabras que rodean el nombre e imagina gramática ("en septiembre de la", "la base
+  en"). En el Quijote sigue arriba pero flojo (z 1,8), como *mañana* (2,7) y *cerro de* (1,9): el tercer libro baja a
+  todos por igual y no separa entidad de mecanismo. Es criterio, no medición: una instrucción armada con un nombre
+  propio que gana es un lugar de la gramática, no saber sobre la persona.
