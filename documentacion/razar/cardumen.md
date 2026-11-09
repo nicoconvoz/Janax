@@ -2984,3 +2984,21 @@ También se agregó `vuelca`: si la casa lo pide, `hl_vuelca` escribe `relacione
   vez.
 - **Juez de afuera** (Python, fuera de Janax): `memoria_rel.py` arma las relaciones de todos los libros con `sabido`
   (las uniones, sin las dormidas) y `ejemplos`, sin releer nada, y `juez_rel.py` las mide contra la semántica del MATS.
+
+### La semántica del MATS con la enciclopedia (2026-11-08)
+
+Los once libros de personas más 10 MB de la Wikipedia en castellano (18 MB, 2.823.128 palabras), en una casa vacía
+(fue la última corrida que empezó de cero): 101 vueltas, 523 relaciones de dos formas o más, 2.001 s. El juez
+(`juez_rel.py`, de afuera) cuenta un par del MATS cuando Razar lo tiene en una relación suya, en cualquier sentido; el
+azar, cada palabra con la respuesta del par siguiente de la misma relación del MATS.
+
+| familia | cubiertos | en una relación | en una de dos formas o más | azar (y de dos formas) |
+|---|---|---|---|---|
+| enciclopédica | 369 | 69 | 7 | 18 (2) |
+| lexicográfica | 458 | 123 | 18 | 23 (0) |
+
+Casi todo lo que tiene es de **una sola forma** (`_ y _` junta 13 antónimos, `_ de _` capitales e idiomas): es la
+co-ocurrencia, y llega al techo medido antes con 10 MB (76 y 118 pares dichos juntos tres veces o más). Lo que
+**aprendió como relación**, uniendo formas, tiene 7 y 18 pares, contra 2 y 0 del azar: es señal, pero chica. Este
+instrumento no es el de las piezas (40 de 289 y 36 de 406 medían otra cosa: qué pares explican los cortes de palabra), así
+que los números no se comparan directo.
