@@ -3021,3 +3021,33 @@ las reglas que deja la última vuelta (`hl_rules`).
 - **Tiempo:** Asimov sin filtro, de 199 a **49 s**; el libro chico sin filtro, de 13 a 6 s.
 - **Lo que queda, en Asimov sin filtro:** imaginar 30 % (una vez, al final), propiedades 22 %, cruce de pares 19 %,
   uniones 16 %.
+
+## El Quijote sin filtro, por pedazos (2026-11-09)
+
+Sin el filtro de la mitad (`toda`), el Quijote entero llegó a 3,7 GB y el guardián lo cortó. Medido por fuera
+(`grupos.py`, el mismo conteo de formas que hilos: 15.426 dichas por dos contra 15.537): la pared no son las formas
+(×4) sino el **cruce**, que va al cuadrado del tamaño de cada grupo de un par de palabras: *(de, y)* lo sostienen 1.263
+formas, y las parejas a cruzar pasan de 12 mil a **10,5 millones**. Sacar los grupos que el azar iguala solo lo baja
+a 6 millones. El tamaño de un grupo crece con el largo del texto: por pedazos, el cruce de cada uno es chico.
+
+Capitán: *"medilo sin filtro en pedazos de 100 kb"*. El Quijote en 22 pedazos cortados en fin de renglón, en cadena
+con la memoria (`sabido`, `pendiente`, `ejemplos`), en casa de prueba vacía:
+
+- **Con filtro:** 73 s en total, 71 uniones sabidas al final.
+- **Sin filtro:** 230 s en total, 8 a 14 s por pedazo, pico de **274 MB**; 4.094 uniones sabidas al final.
+
+Contra el MATS, palabras en **la misma relación** (`juez_formas.py`: llenan los mismos lugares), azar entre
+paréntesis:
+
+| | con filtro | sin filtro |
+|---|---|---|
+| hombre/mujer | 0 | **5** (0): duque~duquesa, hijo~hija, padre~madre, rey~reina, señor~señora |
+| antónimos binarios | 0 | **5** (1): amigo~enemigo, blanco~negro, después~antes, entrada~salida, entrar~salir |
+| sinónimos exactos | 0 | **3** (2): agujero~hueco, señora~dama, vestido~ropa |
+| sinónimos de intensidad | 0 | 4 (3): hora~tiempo, lago~mar, placer~amor, siesta~dormir |
+| lexicográfica total | 0 | **30** (18) |
+| flexiva total | 0 | 23 (6) |
+
+El azar es alto en algunas familias porque hay relaciones muy grandes (una junta muchas palabras, *hidalgo don*):
+la señal limpia está en hombre/mujer y antónimos binarios (10 contra 1). Como **par** sostenido por una forma (la
+co-ocurrencia, `juez_rel.py`) no cambia: lexicográfica 19 con filtro, 20 sin.
