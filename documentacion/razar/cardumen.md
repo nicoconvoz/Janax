@@ -3197,3 +3197,8 @@ dichas (criterio).
   `nitidas0` o `nitidas1` (se turnan con `lugares`). Cada pedazo lee el anterior de a 32 KB, le suma lo suyo a las
   parejas que ya estaban, copia el resto y agrega las nuevas. Antes cada pedazo escribía lo que sumaba y la misma
   pareja se repetía: 234 MB para 15 MB de Wikipedia.
+- **La Wikipedia grande entera (20 MB), con `nitidas` junto:** 199 pedazos en 1.873 s (31 min), sin cortes, pico de
+  **205 MB**; `lugares` 103 MB, `nitidas` 577 MB. Contra el MATS **451 contra 117**: semántica 140/44, flexión 195/27,
+  enciclopédica 75/39, derivación 41/7; sinónimos exactos **18 contra 1**, antónimos 21/7 y **28 contra 1**. Lo que
+  falta: el tiempo y el disco los pone `nitidas`, que cada pedazo recorre entero; casi todas sus parejas comparten un
+  solo lugar. Que duerman como los lugares y despierte solo lo de las palabras del pedazo.
