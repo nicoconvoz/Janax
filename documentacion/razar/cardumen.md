@@ -3140,3 +3140,22 @@ distintos"*, y *"'el perro ladra' y 'el perro no ladra' no es contradicción: so
   en"). En el Quijote sigue arriba pero flojo (z 1,8), como *mañana* (2,7) y *cerro de* (1,9): el tercer libro baja a
   todos por igual y no separa entidad de mecanismo. Es criterio, no medición: una instrucción armada con un nombre
   propio que gana es un lugar de la gramática, no saber sobre la persona.
+
+## La nitidez: el parecido por lugar predice la verdad (2026-11-09)
+
+El Capitán: *"si una persona 'habla' y en otro lugar dice 'dice', ya sabe que hablan las dos: entra en posible
+persona… se va reduciendo, volviéndose más nítido, hasta que haya más información"*. Jueces de afuera (scratch,
+Python; Razar no los lee); *lugar* = la forma alrededor de una palabra y su lado, sin los hechos solo de las 200 más
+dichas (criterio).
+
+- **Nombres** (juez: las mayúsculas del original, 600 KB de Wikipedia): de las palabras que comparten 1 lugar con
+  nombres, el 19 % son nombres; 3 lugares, 50 %; 7, 76 %; las que se cuelan temprano son *mujer, padre, personas,
+  sospechosa*. Con 8 o más baja (64 %): *de, la, fue* comparten todo, son cola.
+- **Lo imaginado** (2 millones de votos): lo que comparte 10 lugares o más con quienes ya tienen el papel se confirma
+  17 %, lo que no comparte ninguno 4 %; igual con mecanismo que sin él (17,2 % y 17,4 %). Acierta el lugar, no la
+  instrucción.
+- **El MATS** (un par cuenta cuando el par real comparte más lugares que el par del azar; empates aparte), en dos
+  corpus: wikcionario 15 MB y Wikipedia 20 MB. Semántica (L) 234 contra 51 y 164 contra 51; enciclopédica 67/25 y
+  104/46; flexión 155/17 y 239/39. Sinónimos exactos 32/2 y 18/3 (*agujero~hueco* 9 contra 0 y 2 contra 0);
+  antónimos 27/8, 30/3 y 23/6, 28/2 (*abajo~arriba* 42 contra 0). El wikcionario escribe sinónimos, la Wikipedia no, y
+  replica igual. La mitad semántica que faltaba aparece por lugar compartido.
