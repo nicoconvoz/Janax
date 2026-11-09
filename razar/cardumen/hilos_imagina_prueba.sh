@@ -6,9 +6,9 @@
 # (nothing is known of nube). "y" joins alike things (two of two, its pairs crossed fewer): an instruction found, not
 # given. With it, mar and nube alike: nube is imagined a child of eva ("eva padre de nube"), an open vote in
 # "imaginado", with the mechanism that imagined it ("# <its key> y"). Book 2 says "eva, padre de nube": "confirma:",
-# and which mechanism it confirms. Book 3, from book 1's house, says nube's father is rio, and each child has one
-# father there (two say so of nube and of flor): "refuta: eva padre de nube", and only there (Capitan: "only
-# refutation silences it, and only there"). Each book leaves its line in "mecanismos": the mechanism's map.
+# and which mechanism it confirms. Book 3, from book 1's house, says nube's father is rio: another event, not a
+# contradiction (Capitan: "the dog barks and the dog does not bark are two different events"): the vote lives along,
+# nothing refutes it. Each book leaves its line in "mecanismos": the mechanism's map.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -36,10 +36,9 @@ me="$d/tres/$(etiqueta mecanismos)"
 if grep -Eq '^instruccion: y \| une iguales 2 de 2 \(mezcladas [01] de [0-9]+\)$' "$d/uno.out" &&
    grep -Pq ' i \| eva padre de nube # [0-9a-f]{16} y$' "$d/uno/$(etiqueta imaginado)" &&
    grep -Pq '^confirma: eva padre de nube # [0-9a-f]{16} y$' "$d/dos.out" &&
-   grep -Pq '^refuta: eva padre de nube # [0-9a-f]{16} y$' "$d/tres.out" &&
-   ! grep -q '^refuta:' "$d/dos.out" &&
+   ! grep -q '^refuta:' "$d/tres.out" &&
    grep -Pq '^[0-9]+ [0-9a-f]{16} 1 0 \d+ \d+ \d+ \d+ \d+ \d+ \| y$' "$d/dos/$(etiqueta mecanismos)" &&
-   grep -Pq '^[0-9]+ [0-9a-f]{16} 0 1 \d+ \d+ \d+ \d+ \d+ \d+ \| y$' "$me"; then
+      grep -Pq '^[0-9]+ [0-9a-f]{16} 0 0 [1-9]\d* \d+ \d+ \d+ \d+ \d+ \| y$' "$me"; then
   echo "hilos_imagina_prueba: bien"
 else
   echo "hilos_imagina_prueba: MAL"

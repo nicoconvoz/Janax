@@ -3112,17 +3112,20 @@ la refutación"*, y *"no solo el mecanismo atómico: el formado por varios átom
   se decide, sus piezas sin la razón 0,8 %). La bolsa tapaba mecanismos que se repiten, y también los que eligen peor
   que el azar, que se repiten igual.
 
-### Solo la refutación lo calla, y solo ahí (2026-11-09)
+### Lo que convive no se refuta (2026-11-09)
 
-- **Cómo (`hl_icheck`):** cada voto comprobable queda en uno de cuatro lugares. **Confirmado:** el libro lo dice.
-  **Refutado:** el libro le da a z otro valor, o a b otro z, en una relación que según lo que Razar mismo probó
-  admite uno solo (`hp_is`: "cada hijo, un padre"); se dice `refuta:` y el voto sigue abierto para los libros que
-  vengan. **Dicho distinto:** el libro dice otra cosa, pero la relación admite varios. **En espera:** el libro no
-  habla de eso. Cada libro (o pedazo) deja en `mecanismos` un renglón por mecanismo, `{dónde empieza el pedazo, la
-  clave del mecanismo, imaginados: confirmados, refutados, dichos distinto, en espera; los del azar: igual | el
-  mecanismo}`: el mapa de cada uno, libro por libro.
-- **Prueba (`hilos_imagina_prueba.sh`):** el libro 3 dice que el padre de nube es rio, y ahí cada hijo tiene un padre:
-  `refuta: eva padre de nube # … y`; el libro 2, que lo confirma, no refuta nada.
-- **No cambia lo que aprende:** NT con filtro y p320 sin filtro, todo idéntico; p320 refuta 567 y deja 92 renglones de
-  mecanismos, el NT 35 y 10.
+El Capitán: *"decir 'hasta mañana' y decir 'mañana es el día' usa dos mecanismos distintos: no se refutan, solo son
+distintos"*, y *"'el perro ladra' y 'el perro no ladra' no es contradicción: son dos eventos distintos"*.
+
+- **El primer intento refutaba** cuando la relación, según lo probado (`hp_is`), admitía un solo valor y el libro daba
+  otro: en 600 KB de Wikipedia, 136.491 refutaciones contra 5.534 confirmaciones, y las palabras que más "refutaban"
+  eran *el*, *más*, *a*, *de* ("refuta: de guerra para" porque el libro dice "de guerra en"). Usos que conviven, no
+  contradicciones. Y decirlo al revés tampoco lo es: es otro evento.
+- **Cómo (`hl_icheck`):** cada voto que el libro puede juzgar queda **confirmado** (lo dice), **convive** (habla de
+  lo mismo de otra manera: otro valor, al revés, otro uso; no calla nada) o **en espera** (no habla de eso). Cada libro
+  (o pedazo) deja en `mecanismos` un renglón por mecanismo, `{dónde empieza el pedazo, la clave del mecanismo,
+  imaginados: confirmados, refutados, conviven, en espera; los del azar: igual | el mecanismo}`. **Refutado queda en
+  0** hasta que Razar sepa reconocer el mismo evento.
+- **Prueba (`hilos_imagina_prueba.sh`):** el libro 3 dice que el padre de nube es rio: el voto convive, nada lo refuta.
+- **No cambia lo que aprende:** NT con filtro y p320 sin filtro, todo idéntico, también la pantalla.
 - Ojo con `armar.sh`: la fuente va con su ruta entera; con la corta falla y deja el binario viejo.

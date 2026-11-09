@@ -145,7 +145,6 @@ S_SIGUE  = 0D20h
 S_HILOS  = 0D40h
 S_TEST   = 0D60h
 S_MECS   = 0D80h
-S_REFUT  = 0DA0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -165,7 +164,7 @@ ZEWL  = 12A8h
 HIMK  = 12B0h                   ; the instruction that imagined the one written now (the mechanism, with each vote)
 HMEC  = 12B8h                   ; by mechanism, this book's tally {key, its text, its bytes, imagined: confirmed,
 HMT   = 12D8h                   ; refuted, said otherwise, waiting; chance's: the same} (a growing table); the vote
-HMQ   = 12E0h                   ; walked: its place (0 confirmed 1 refuted 2 said otherwise 3 waiting, -1 none), its
+HMQ   = 12E0h                   ; walked: its place (0 confirmed 1 refuted 2 lives along 3 waiting, -1 none), its
 HMP   = 12E8h                   ; mechanism's key, where its text starts, its bytes
 HMN   = 12F0h
 HMJ   = 12F8h                   ; (z spoken of, while hp_is is asked)
@@ -7798,8 +7797,7 @@ hl_icheck:
     jcall hxr_of
     jldi j1, 0
     jldi j8, 0                  ; walk its pairs: z on its side (testable), and z with b (confirmed); z with
-    jldi j11, 0                 ; another (j12), b with another z (j11): what refutes it, where it allows one only
-    jldi j12, 0
+    jldi j11, 0                 ; b with another z (j11): spoken of otherwise
     hvc_p:
       jjz j10, hvc_pd
       jld j5, j9, 0
@@ -7825,7 +7823,6 @@ hl_icheck:
       jld j7, j1, HIW
       jsub j7, j6, j7
       jjz j7, hvc_yes
-      jldi j12, 1
     hvc_pn:
       jldi j7, 16
       jadd j9, j9, j7
@@ -7836,44 +7833,8 @@ hl_icheck:
     jst j8, j1, HMJ
     jor j7, j8, j11
     jjz j7, hvc_keep            ; not spoken of here: waiting, kept
-    jldi j2, 2                  ; said otherwise, or refuted: where it allows one only
-    jst j2, j1, HMT
-    jjz j12, hvc_rb
-    jld j2, j1, HIR
-    jld j3, j1, HISD
-    jcall hp_is
-    jldi j1, 0
-    jjnz j6, hvc_ref
-  hvc_rb:
-    jjz j11, hvc_rd
-    jld j2, j1, HIR
-    jld j3, j1, HISD
-    jldi j4, 1
-    jxor j3, j3, j4
-    jcall hp_is
-    jldi j1, 0
-    jjz j6, hvc_rd
-  hvc_ref:
-    jldi j2, 1
-    jst j2, j1, HMT
-    jld j2, j1, HIF
-    jldi j3, 105
-    jsub j3, j2, j3
-    jjnz j3, hvc_rd
-    jldi j1, S_REFUT            ; refuted here, and only here: said, and kept for the books after
-    jcall puts
-    jld j4, j1, HKP
-    jldi j2, 57
-    jadd j4, j4, j2
-    jld j5, j1, HKX
-    hvc_rsay:
-      jsub j6, j5, j4
-      jjz j6, hvc_rd
-      jldb j2, j4, 0
-      jcall putch
-      jldi j3, 1
-      jadd j4, j4, j3
-      jjmp hvc_rsay
+    jldi j2, 2                  ; spoken of otherwise (another value, the other way round, another use): it lives
+    jst j2, j1, HMT             ; along (Capitan: "two different events, not a contradiction"); nothing refutes it
   hvc_rd:
     jldi j1, 0
     jld j8, j1, HMJ
@@ -8070,7 +8031,9 @@ hvt_done:
 
 ; This book's map of each mechanism, after the books before in the house's "mecanismos" (Capitan: "only refutation
 ; silences it, and only there"): a line {where this piece starts, the mechanism's key, imagined: confirmed, refuted,
-; said otherwise, waiting; chance's: the same | the mechanism}. Nothing if no vote had a mechanism. Uses j1-j14.
+; living along (spoken of otherwise: another use, another event), waiting; chance's: the same | the mechanism}. Refuted
+; stays 0 until Razar can tell the same event apart: another value, or the other way round, is another event ("the
+; dog barks" and "the dog does not bark"), not a contradiction. Nothing if no vote had a mechanism. Uses j1-j14.
 hl_msave:
   jldi j1, 0
   jldi j2, HMEC
