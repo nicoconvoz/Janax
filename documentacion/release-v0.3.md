@@ -37,8 +37,9 @@ Todo en `documentacion/razar/nitidez.md`; los jueces de afuera en `razar/jueces/
 
 ### Lo que no está probado
 
-Muchas palabras todavía no comparten ningún lugar con nadie (empates); el 86 % de las parejas comparte uno solo. Que la
-nitidez sirva para razonar, no solo para agrupar, falta medirlo. El resultado de la v0.2 (el juego de Lewis contra EGG) sigue
+Muchas palabras todavía no comparten ningún lugar con nadie (empates); el 86 % de las parejas comparte uno solo. Razar ya
+razona (deduce relaciones que nadie escribió y elige reglas que nunca vio, medido en `cardumen.md`); lo que falta medir es que
+razone **con la nitidez**, usando las clases que encontró para deducir. El resultado de la v0.2 (el juego de Lewis contra EGG) sigue
 en pie.
 
 ---

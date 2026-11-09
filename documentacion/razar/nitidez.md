@@ -74,7 +74,10 @@ Los textos de Wikipedia y Wikcionario son CC BY-SA; no se redistribuyen acá, so
   una "o" de más. "o" es de la mitad y la nitidez la descarta; el script repite el mismo comando para que el número sea idéntico.
 - **El 86 % de las parejas comparte un solo lugar** (15,4 millones en 20 MB): son "posibles", y hacen grande a `nitidas`
   (577 MB). Próximo paso: que las parejas duerman en disco como los lugares.
-- **Que esto sirva para razonar** (usar la clase "persona" para imaginar) no está medido todavía.
+- **Que Razar razone con la nitidez** (use la clase "persona" que encontró para deducir) no está medido todavía. Razar ya
+  razona, y eso sí está medido (`cardumen.md`): deduce relaciones que nadie escribió ("abuelo de" como "padre de + padre de",
+  confirmada por el libro) y elige reglas en vez de memorizar (100 % de las sumas que nunca vio con 3 ejemplos, 20 de 20
+  semillas; control sorteado 6 %).
 
 ## Lo que se aprendió en el camino (y sigue en `cardumen.md`)
 
