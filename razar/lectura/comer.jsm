@@ -257,6 +257,9 @@ cm_strip:
   jsub j3, j3, j4
   jjmp cm_strip
 cm_stripped:
+jld j2, j1, PTHP                ; (a piece, if the line after the address says so)
+jcall come_piece
+jldi j1, 0
 jst j3, j1, PLEN
 jjz j3, no_come
 
@@ -336,6 +339,12 @@ jwhile j3
   jadd j4, j4, j5
   jsub j3, j3, j5
 jwend
+jld j3, j1, HOSTF               ; (a piece past the first: its start folded in, one index each)
+jjz j3, cm_whole
+jxor j2, j2, j3
+jld j3, j1, FNVP
+jmul j2, j2, j3
+cm_whole:
 jst j2, j1, PHASH
 jldi j2, PLAB
 jldi j3, S_TAB
@@ -348,61 +357,12 @@ jcall zw_hex
 
 jldi j1, 0                      ; the print of the book's bytes: its pieces' name (the same book anywhere, one copy)
 jld j2, j1, FNVO
-jst j2, j1, CHASH
-jldi j10, 37
 jld j11, j1, PTHP
 jld j12, j1, PLEN
-jcall ask
+jcall host_print
+jjnz j3, no_come
 jldi j1, 0
-jldi j2, 63
-jshr j2, j13, j2
-jjnz j2, no_come
-jst j13, j1, HND
-jldi j11, 1
-jshi j11, 0
-jcall room
-jldi j1, 0
-jst j13, j1, ZW1
-ch_read:
-  jld j10, j1, HND
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 5
-  jor j10, j10, j2
-  jld j11, j1, ZW1
-  jldi j12, 1
-  jshi j12, 0
-  jcall ask
-  jldi j1, 0
-  jldi j2, 1
-  jsub j2, j13, j2
-  jldi j3, 63
-  jsar j2, j2, j3
-  jjnz j2, ch_read_end
-  jld j2, j1, CHASH
-  jld j3, j1, ZW1
-  jld j6, j1, FNVP
-  jwhile j13
-    jldb j4, j3, 0
-    jxor j2, j2, j4
-    jmul j2, j2, j6
-    jldi j4, 1
-    jadd j3, j3, j4
-    jsub j13, j13, j4
-  jwend
-  jst j2, j1, CHASH
-  jjmp ch_read
-ch_read_end:
-jld j10, j1, HND
-jldi j2, 32
-jshl j10, j10, j2
-jldi j2, 7
-jor j10, j10, j2
-jcall ask
-jldi j1, 0
-jld j11, j1, ZW1
-jldi j10, 3
-jcall ask
+jst j2, j1, CHASH
 jldi j1, 0                      ; (and the format, folded into the print: pieces of another format never share a name)
 jld j2, j1, CHASH
 jldi j3, 7

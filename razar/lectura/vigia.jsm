@@ -31,6 +31,13 @@ TEXTN = 1000h
 PUTP  = 1080h                   ; the text written walked; the registers kept while it goes out (13 qwords)
 PCS   = 1088h
 DIG   = 3000h                   ; digits of a number being written
+FROM  = 1090h                   ; the piece being eaten: from that byte to that one (0: the end); what "come" says, its
+TO    = 1098h                   ; bytes (a room)
+CB    = 10A0h
+CBN   = 10A8h
+PIECE = 40h                     ; the bytes of a piece, in 64 KB (cut at the end of a renglon past them): criterion, not
+                                ; measurement; comer measured ~115 bytes of memory a byte of text (2 MB 243 MB, 4 MB
+                                ; 473 MB), so a piece of 4 MB costs about half a GB however long the book is
 PATHC = 98304                   ; a path of the host in UTF-8: 32768 UTF-16 units, 3 bytes each at most
 BUFC  = 65536                   ; (the bytes read at once: any number gives the same answer)
 include '../../escalon0/janax.inc'
@@ -50,6 +57,11 @@ jldi j11, 4096
 jcall room
 jldi j1, 0
 jst j13, j1, PEND
+jldi j11, 1
+jshi j11, 8040h
+jcall room
+jldi j1, 0
+jst j13, j1, CB
 
 vg_wait:                        ; what is new in the host
   jldi j1, 0
@@ -87,6 +99,11 @@ vg_text:
   jldi j1, S_EATS
   jcall puts
   jcall flush
+  jldi j1, 0                    ; a book longer than a piece goes by pieces, each eaten as a book (Capitan: "by
+  jst j1, j1, FROM              ; pieces"): what is learned goes from one to the next as from book to book
+vg_piece:
+  jcall vg_cut
+  jcall vg_say
   jldi j1, 0                    ; its address in "come", new
   jldi j10, 12
   jldi j11, S_COME
@@ -105,8 +122,8 @@ vg_text:
   jshl j10, j13, j2
   jldi j2, 6
   jor j10, j10, j2
-  jld j11, j1, PATH
-  jld j12, j1, PATHN
+  jld j11, j1, CB
+  jld j12, j1, CBN
   jcall ask
   jldi j1, 0
   jld j10, j1, HND
@@ -121,12 +138,179 @@ vg_text:
   jldi j11, S_SENT              ; then sentido, eating too: the turns of its skeletons, for every Razar
   jldi j12, 7
   jcall child
+  jldi j1, 0
+  jld j2, j1, TO
+  jjz j2, vg_eaten
+  jst j2, j1, FROM
+  jjmp vg_piece
+vg_eaten:
   jldi j1, 0                    ; ("come" goes: what it names is eaten)
   jldi j10, 12
   jldi j11, S_COME
   jldi j12, 4
   jcall ask
   jjmp vg_wait
+
+; Where the piece that starts at FROM ends -> TO: past the first line feed after PIECE bytes of it, or 0 if the book
+; ends before (SEENB its bytes; a renglon is never cut). Uses j1-j14.
+vg_cut:
+  jldi j1, 0
+  jst j1, j1, TO
+  jld j2, j1, FROM
+  jldi j3, PIECE
+  jshi j3, 0
+  jadd j2, j2, j3
+  jst j2, j1, NEED
+  jld j3, j1, SEENB
+  jsub j3, j2, j3
+  jldi j4, 63
+  jsar j3, j3, j4
+  jjz j3, vc_done
+  jldi j10, 37
+  jld j11, j1, PATH
+  jld j12, j1, PATHN
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, vc_done
+  jst j13, j1, HND
+  jldi j2, 32
+  jshl j10, j13, j2
+  jldi j2, 38
+  jor j10, j10, j2
+  jld j11, j1, NEED
+  jcall ask
+  vc_read:
+    jldi j1, 0
+    jld j10, j1, HND
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, BUF
+    jldi j12, 1
+    jshi j12, 0
+    jcall ask
+    jldi j1, 0
+    jldi j2, 1
+    jsub j2, j13, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, vc_close
+    jld j9, j1, BUF
+    vc_scan:
+      jjz j13, vc_more
+      jldb j2, j9, 0
+      jld j3, j1, NEED
+      jldi j4, 1
+      jadd j3, j3, j4
+      jst j3, j1, NEED
+      jadd j9, j9, j4
+      jsub j13, j13, j4
+      jldi j4, 10
+      jsub j2, j2, j4
+      jjnz j2, vc_scan
+    jld j2, j1, SEENB             ; (the last line feed of the book is no cut)
+    jsub j2, j2, j3
+    jjz j2, vc_close
+    jst j3, j1, TO
+    jjmp vc_close
+  vc_more:
+    jjmp vc_read
+vc_close:
+  jldi j1, 0
+  jld j10, j1, HND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+vc_done:
+  jldi j1, 0
+  jst j1, j1, NEED
+  jret
+
+; What "come" says into CB, CBN: the address and, for a piece, a line "<FROM> <TO>" (a whole book: the address
+; alone, as always). Uses j1-j8.
+vg_say:
+  jldi j1, 0
+  jld j2, j1, PATH
+  jld j3, j1, CB
+  jld j4, j1, PATHN
+  jldi j5, 0
+  vs_cp:
+    jsub j6, j5, j4
+    jjz j6, vs_cpd
+    jadd j6, j2, j5
+    jldb j6, j6, 0
+    jadd j7, j3, j5
+    jstb j6, j7, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+    jjmp vs_cp
+vs_cpd:
+  jst j4, j1, CBN
+  jld j2, j1, FROM
+  jld j3, j1, TO
+  jor j2, j2, j3
+  jjz j2, vs_done
+  jldi j2, 10
+  jcall vs_ch
+  jld j2, j1, FROM
+  jcall vs_num
+  jldi j2, 32
+  jcall vs_ch
+  jld j2, j1, TO
+  jcall vs_num
+vs_done:
+  jldi j1, 0
+  jret
+
+; Byte j2 at the end of CB. Uses j1, j3, j4.
+vs_ch:
+  jldi j1, 0
+  jld j3, j1, CB
+  jld j4, j1, CBN
+  jadd j3, j3, j4
+  jstb j2, j3, 0
+  jldi j3, 1
+  jadd j4, j4, j3
+  jst j4, j1, CBN
+  jret
+
+; Number j2 in decimal at the end of CB. Uses j1-j8.
+vs_num:
+  jldi j5, 0                    ; its digits, the lowest first, at DIG
+  vn_d:
+    jldi j3, 10
+    jdiv j4, j2, j3
+    jmul j6, j4, j3
+    jsub j6, j2, j6
+    jldi j3, 48
+    jadd j6, j6, j3
+    jldi j3, DIG
+    jadd j3, j3, j5
+    jstb j6, j3, 0
+    jldi j3, 1
+    jadd j5, j5, j3
+    jadd j2, j4, j1
+    jldi j1, 0
+    jjnz j2, vn_d
+  vn_put:
+    jjz j5, vn_done
+    jldi j3, 1
+    jsub j5, j5, j3
+    jldi j3, DIG
+    jadd j3, j3, j5
+    jldb j2, j3, 0
+    jadd j8, j5, j1
+    jcall vs_ch
+    jadd j5, j8, j1
+    jjmp vn_put
+vn_done:
+  jldi j1, 0
+  jret
 
 ; The program of the label at j11 (j12 bytes) launched as its child, with every right it has, and what it asks signed
 ; until it ends. Uses j1-j14.

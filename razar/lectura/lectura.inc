@@ -61,6 +61,8 @@ SHP   = 1198h
 HOSTB = 11A0h                   ; 1: the book is a file anywhere on the host, LABEL its address (opened with 37, no
 ROFF  = 11A8h                   ; shelf), and where each renglon starts is kept: at ROFF, ROFFN of them (the first at
 ROFFN = 11B0h                   ; 0, the last the end of the book: renglon k is from ROFF[k] to ROFF[k + 1])
+HOSTF = 1FE0h                   ; a piece of a book of the host: from that byte (0: its start) to that one (0: its end);
+HOSTE = 1FE8h                   ; its places, its renglones' starts and its bytes counted from the file's start
 AUTH  = 1168h                   ; the autopsy being written: its handle plus one (0: none)
 EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
@@ -241,6 +243,8 @@ jshl j11, j11, j2
 jcall room
 jldi j1, 0
 jst j13, j1, ROFF
+jld j2, j1, HOSTF               ; (the first renglon starts where the piece does)
+jst j2, j13, 0
 jldi j2, 1
 jst j2, j1, ROFFN
 rb_marks:
@@ -360,11 +364,178 @@ sb_done:
   jldi j1, 0
   jret
 
+; The print (FNV-1a from j2) of the bytes of a book of the host, the j12 bytes of its address at j11: of its piece
+; HOSTF to HOSTE when it is one. j2 the print, j3 = 1 if it did not open. Its state lives past its buffer (no place of
+; its own: every program has this). Uses j1-j14.
+host_print:
+  jldi j1, 0
+  jst j2, j1, PLS               ; (the print while the room is made: crece.inc's places, free now)
+  jst j11, j1, PLS + 8
+  jst j12, j1, PLS + 16
+  jldi j11, 1
+  jshi j11, 32
+  jcall room
+  jldi j1, 0
+  jld j2, j1, PLS
+  jst j2, j13, 16
+  jadd j9, j13, j1
+  jldi j10, 37
+  jld j11, j1, PLS + 8
+  jld j12, j1, PLS + 16
+  jcall ask
+  jldi j1, 0
+  jst j13, j9, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jldi j3, 1
+  jjnz j2, hpr_give
+  jld j2, j1, HOSTF
+  jst j2, j9, 8
+  jjz j2, hpr_lap
+  jldi j3, 32
+  jshl j10, j13, j3
+  jldi j3, 38
+  jor j10, j10, j3
+  jadd j11, j2, j1
+  jcall ask
+  hpr_lap:
+    jldi j1, 0
+    jld j10, j9, 0
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jldi j11, 32
+    jadd j11, j9, j11
+    jldi j12, 1
+    jshi j12, 0
+    jld j2, j1, HOSTE
+    jjz j2, hpr_read
+    jld j3, j9, 8
+    jsub j2, j2, j3
+    jsub j3, j2, j12
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, hpr_read
+    jadd j12, j2, j1
+  hpr_read:
+    jcall ask
+    jldi j1, 0
+    jldi j2, 1
+    jsub j2, j13, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, hpr_end
+    jld j2, j9, 8
+    jadd j2, j2, j13
+    jst j2, j9, 8
+    jld j2, j9, 16
+    jldi j3, 32
+    jadd j3, j9, j3
+    jld j6, j1, FNVP
+    jwhile j13
+      jldb j4, j3, 0
+      jxor j2, j2, j4
+      jmul j2, j2, j6
+      jldi j4, 1
+      jadd j3, j3, j4
+      jsub j13, j13, j4
+    jwend
+    jst j2, j9, 16
+    jjmp hpr_lap
+hpr_end:
+  jld j10, j9, 0
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j3, 0
+hpr_give:
+  jldi j1, 0
+  jld j2, j9, 16
+  jst j3, j1, PLS
+  jst j2, j1, PLS + 8
+  jldi j10, 3
+  jadd j11, j9, j1
+  jcall ask
+  jldi j1, 0
+  jld j3, j1, PLS
+  jld j2, j1, PLS + 8
+  jret
+
+; A piece of a book of the host: the j3 bytes at j2 are what "come" holds, its address and, if a line follows it,
+; "<from> <to>" (the bytes of the piece, in decimal; the one who launches cuts it) -> j3 the address's bytes, HOSTF
+; and HOSTE (0 and 0 without the line: the whole book). Uses j1-j8.
+come_piece:
+  jldi j1, 0
+  jst j1, j1, HOSTF
+  jst j1, j1, HOSTE
+  jldi j4, 0
+  cpc_nl:
+    jsub j5, j4, j3
+    jjz j5, cpc_done
+    jadd j5, j2, j4
+    jldb j5, j5, 0
+    jldi j6, 10
+    jsub j5, j5, j6
+    jjz j5, cpc_line
+    jldi j5, 1
+    jadd j4, j4, j5
+    jjmp cpc_nl
+cpc_line:
+  jadd j7, j4, j1               ; (the address ends there)
+  jldi j8, HOSTF
+  cpc_num:
+    jldi j6, 0
+    cpc_sp:                     ; (what is not a digit before it)
+      jldi j5, 1
+      jadd j4, j4, j5
+      jsub j5, j4, j3
+      jjz j5, cpc_put
+      jadd j5, j2, j4
+      jldb j5, j5, 0
+      jldi j1, 48
+      jsub j5, j5, j1
+      jldi j1, 63
+      jsar j1, j5, j1
+      jjnz j1, cpc_end
+      jldi j1, 10
+      jsub j1, j5, j1
+      jldi j5, 63
+      jsar j1, j1, j5
+      jjz j1, cpc_end
+      jadd j5, j2, j4
+      jldb j5, j5, 0
+      jldi j1, 48
+      jsub j5, j5, j1
+      jldi j1, 10
+      jmul j6, j6, j1
+      jadd j6, j6, j5
+      jjmp cpc_sp
+  cpc_end:
+    jldi j1, 0
+    jst j6, j8, 0
+    jldi j5, HOSTE
+    jsub j5, j8, j5
+    jjz j5, cpc_cut
+    jldi j8, HOSTE
+    jjmp cpc_num
+cpc_put:
+  jldi j1, 0
+  jst j6, j8, 0
+cpc_cut:
+  jadd j3, j7, j1
+cpc_done:
+  jldi j1, 0
+  jret
+
 ; Reads the book from its start, every byte through tok_byte, and ends its last word and renglon; the book is the
 ; shelf, every "libro" one after the other (each ends its renglon), when one was built. Uses j1-j14.
 scan:
   jldi j1, 0
-  jst j1, j1, NBYTES
+  jld j2, j1, HOSTF
+  jst j2, j1, NBYTES
   jst j1, j1, WLEN
   jst j1, j1, LEAD
   jldi j2, 1
@@ -426,6 +597,16 @@ sf_label:
   jcall puts
   jjmp finish
 sc_open:
+  jld j2, j1, HOSTF             ; (a piece: from its first byte, 38)
+  jjz j2, sc_from
+  jld j10, j1, HAND
+  jldi j3, 32
+  jshl j10, j10, j3
+  jldi j3, 38
+  jor j10, j10, j3
+  jadd j11, j2, j1
+  jcall ask
+sc_from:
   jldi j2, 1
   jwhile j2
     jldi j1, 0
@@ -438,6 +619,16 @@ sc_open:
     jshi j11, BUF
     jldi j12, 0
     jshi j12, BUFLEN
+    jld j2, j1, HOSTE           ; (a piece: up to its last byte)
+    jjz j2, sc_read
+    jld j3, j1, NBYTES
+    jsub j2, j2, j3
+    jsub j3, j2, j12
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, sc_read
+    jadd j12, j2, j1
+  sc_read:
     jcall ask
     jldi j1, 0                  ; (a failed read is the end)
     jldi j2, 63

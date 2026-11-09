@@ -3276,3 +3276,33 @@ El Capitán: *"que se separen por huella genética. Arreglá lo de los 64."*
   segunda corrida de A los tipos guardados rinden primero (`organo 5 = 208 (sin -3554) *`, después el `6`).
 - **Corregido en el camino:** al cambiar la cola se había ido `og_rec_block` (el que copia el código de cada letra), y
   `pulso` no armaba. Volvió del commit anterior.
+
+## Un libro grande se come por pedazos (2026-11-09)
+
+El vigía llegó a 3,9 GB comiéndose `E:\enciclopedia\texto.txt` (132 MB) y la PC se quedó sin memoria. Medido con
+contadores en una copia aparte: `comer` pide unos **115 bytes de memoria por byte de texto** (2 MB, 243 MB; 4 MB,
+473 MB), porque los pulsos cuelgan cada pedido del libro entero a la vez (la tabla de pedidos, 32 bytes cada uno, ocupa
+128 MB con 2 MB de texto; las demás, unos 70). Para 132 MB serían ~15 GB.
+
+El Capitán: *"por pedazos"*. Un libro más largo que un pedazo se come como varios libros seguidos, y lo aprendido pasa
+de uno al siguiente por el tablero, como de libro a libro:
+
+- **El vigía corta** (`vg_cut`): desde `FROM`, el pedazo termina pasado el primer fin de renglón después de `PIECE`
+  bytes (un renglón nunca se parte). Para cada pedazo escribe en `come` la dirección y una línea `<desde> <hasta>`, y
+  lanza `comer` y `sentido`, cada uno un proceso nuevo: la memoria empieza limpia en cada pedazo. `PIECE` es 4 MB:
+  **criterio, no medición**, elegido porque cuesta ~medio GB.
+- **`come_piece`** (lectura.inc) lee esa línea → `HOSTF`, `HOSTE`; sin la línea, el libro entero, como siempre.
+- **La lectura** va directo al byte `HOSTF` (pedido 38) y para en `HOSTE`; los lugares y el comienzo de cada renglón
+  se cuentan desde el principio del archivo, así una pregunta va al renglón justo.
+- **El nombre**: la huella de los bytes del pedazo (`host_print`) y, en el índice, la de la dirección con el comienzo
+  del pedazo mezclado (el primero, como siempre). Cada pedazo es un índice propio.
+
+Mediciones:
+- **Un libro chico, entero:** el tablero sale **idéntico byte por byte** al de antes.
+- **Prueba (`comer_pedazos_prueba.sh`):** seis renglones; enteros, 6 renglones y 12 pistas; en dos pedazos, 3 + 3 y
+  6 + 6, y las preguntas encuentran *rio*, *ana* y *mar* en el pedazo que corresponde.
+- **El vigía con 10 MB de enciclopedia:** tres pedazos (28.399, 27.111 y 10.427 renglones), 123 s, **pico de 599 MB**
+  para el proceso entero (antes, 10 MB de un saque habrían pedido ~1,2 GB, y 132 MB, ~15 GB).
+
+Lo que no se probó: que el resultado de los pulsos aprendidos por pedazos sea el mismo que de un saque; no lo es bit
+por bit (cada pedazo cuenta sus palabras por su cuenta), como no lo es leer dos libros por separado o juntos.

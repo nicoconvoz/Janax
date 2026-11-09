@@ -10097,6 +10097,9 @@ eat_mode:
     jsub j3, j3, j4
     jjmp em_strip
 em_stripped:
+  jld j2, j1, EATP              ; (a piece, if the line after the address says so)
+  jcall come_piece
+  jldi j1, 0
   jst j3, j1, EATN
   jjnz j3, em_book
   jldi j10, 12
@@ -10122,60 +10125,14 @@ em_done:
 ; bits (eb_encode); the first format's file of the same book goes. They are counts: they add up over every book.
 ; Uses j1-j14.
 eat_write:
-  jldi j1, 0                    ; the print of the book's bytes
+  jldi j1, 0                    ; the print of the book's bytes (of its piece, when it is one)
   jld j2, j1, FNVO
-  jst j2, j1, EATH
-  jldi j10, 37
   jld j11, j1, EATP
   jld j12, j1, EATN
-  jcall ask
+  jcall host_print
+  jjnz j3, ew_done
   jldi j1, 0
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, ew_done
-  jst j13, j1, EHND
-  jldi j11, 1
-  jshi j11, 0
-  jcall room
-  jldi j1, 0
-  jst j13, j1, ET1
-  ew_read:
-    jld j10, j1, EHND
-    jldi j2, 32
-    jshl j10, j10, j2
-    jldi j2, 5
-    jor j10, j10, j2
-    jld j11, j1, ET1
-    jldi j12, 1
-    jshi j12, 0
-    jcall ask
-    jldi j1, 0
-    jldi j2, 1
-    jsub j2, j13, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjnz j2, ew_read_end
-    jld j2, j1, EATH
-    jld j3, j1, ET1
-    jld j6, j1, FNVP
-    jwhile j13
-      jldb j4, j3, 0
-      jxor j2, j2, j4
-      jmul j2, j2, j6
-      jldi j4, 1
-      jadd j3, j3, j4
-      jsub j13, j13, j4
-    jwend
-    jst j2, j1, EATH
-    jjmp ew_read
-ew_read_end:
-  jld j10, j1, EHND
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 7
-  jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jst j2, j1, EATH
   jld j2, j1, EATH              ; (and the format, folded in: 2, in bits)
   jst j2, j1, EATB
   jldi j3, 2
