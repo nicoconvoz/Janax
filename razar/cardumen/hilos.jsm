@@ -173,11 +173,12 @@ HBK   = 1348h                   ; the whole book (house "pares"): where, its byt
 HBN   = 1350h
 HPFR  = 1358h
 HPTO  = 1360h
-HWIT  = 1368h                   ; this turn's witnesses: each pair said as a hypothesis deduces {key, the hypothesis'
-HTES  = 1388h                   ; key, the pair's two words (0: a pending one), the two forms that said it} (a growing
-HWK   = 13A8h                   ; table, made again every turn); the joins' ones, kept for "testigos" {key, relation,
-HWX   = 13B0h                   ; relation, which way, the two words, the two forms}; (walking: the hypothesis' key,
-HWN   = 13B8h                   ; where, how many left)
+HWIT  = 1368h                   ; this turn's pending witnesses {key, the hypothesis' key, 0, 0, the pending one's two
+HTES  = 1388h                   ; forms} (a growing table, made again every turn); the joins' witnesses, kept for
+HWK   = 13A8h                   ; "testigos" {key, relation, relation, which way, the pair's two words (0: a pending
+HWX   = 13B0h                   ; one), the two forms that said it}; (walking: the hypothesis' key, where, how many
+HWN   = 13B8h                   ; left); by relation, 1 if it joined this turn (a room)
+HWF   = 13C0h
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -1293,7 +1294,7 @@ hl_agree:
     jsub j2, j2, j4
     jjmp ha_z
 ha_zd:
-  jldi j2, HWIT                 ; (this turn's witnesses)
+  jldi j2, HWIT                 ; (this turn's pending witnesses)
   jcall hl_clear
   jldi j1, 0
   jldi j2, HGT
@@ -1394,7 +1395,6 @@ ha_zd:
         jjnz j5, ha_k
         jldi j5, 1
       ha_k:
-        jst j5, j1, HWK
         jldi j2, HAG
         jcall pl_take
         jldi j1, 0
@@ -1414,9 +1414,6 @@ ha_zd:
         jldi j9, 1
         jadd j8, j8, j9
         jst j8, j7, 32
-        jld j7, j1, HTG
-        jjnz j7, ha_yn
-        jcall hl_wit
       ha_yn:
         jldi j1, 0
         jld j3, j1, HJ
@@ -1446,48 +1443,6 @@ ha_zd:
 ha_done:
   jret
 
-; The witness of the confirmation hl_agree just counted: the pair (HT2) that the relations of its entries HI and HJ
-; hold alike, for the hypothesis HWK; once each (its key: the hypothesis, the two entries, the pair). Uses j1-j14.
-hl_wit:
-  jldi j1, 0
-  jld j5, j1, HWK
-  jld j6, j1, HI
-  jcall hl_mix
-  jld j6, j1, HJ
-  jcall hl_mix
-  jld j4, j1, HT2
-  jld j6, j4, 0
-  jcall hl_mix
-  jjnz j5, hwt_k
-  jldi j5, 1
-hwt_k:
-  jldi j2, HWIT
-  jcall pl_take
-  jldi j1, 0
-  jld j7, j1, HWK
-  jst j7, j4, 8
-  jld j8, j1, HT2
-  jld j7, j8, 32
-  jst j7, j4, 16
-  jld j7, j8, 40
-  jst j7, j4, 24
-  jld j7, j8, 16                ; the forms of the two entries
-  jldi j10, 32
-  jld j11, j1, HGE
-  jld j9, j1, HI
-  jadd j9, j9, j7
-  jmul j9, j9, j10
-  jadd j9, j9, j11
-  jld j12, j9, 24
-  jst j12, j4, 32
-  jld j9, j1, HJ
-  jadd j9, j9, j7
-  jmul j9, j9, j10
-  jadd j9, j9, j11
-  jld j12, j9, 24
-  jst j12, j4, 40
-  jret
-
 ; The witness of a pending one hl_pinject just counted for the hypothesis HWK: no words (the pair was another
 ; book's), the pending one's two forms (HKP). Uses j1-j14.
 hl_pwit:
@@ -1514,8 +1469,16 @@ hpw_k:
   jst j7, j4, 40
   jret
 
-; The witnesses of this turn's joins (their hypotheses marked at 56 by hl_merge), kept in HTES. Uses j1-j14.
+; The witnesses of this turn's joins (their hypotheses marked at 56 by hl_merge), kept in HTES: the pending ones
+; (HWIT), and the pairs the joined relations hold alike, found again only where a joined relation holds a pair (so
+; what is kept is what the joins used: the crossing is not stored). Uses j1-j14.
 hl_wkeep:
+  jcall hl_wflags
+  jjz j2, hwq_pend
+  jcall hl_wgroups
+  jldi j3, 0
+  jcall hl_wflag
+hwq_pend:
   jldi j1, 0
   jldi j2, HWIT
   jld j3, j2, 8
@@ -1581,6 +1544,228 @@ hl_wkeep:
     jst j3, j1, HWN
     jjmp hwq_lap
 hwq_done:
+  jret
+
+; Each relation of this turn's joins flagged in HWF with j3 (j2 = how many joins). Uses j1-j9.
+hl_wflags:
+  jldi j3, 1
+hl_wflag:
+  jldi j1, 0
+  jldi j2, 0
+  jldi j4, HAG
+  jld j5, j4, 8
+  jldi j6, 1
+  jadd j5, j5, j6
+  jld j6, j4, 0
+  jld j7, j4, 24
+  hwf_lap:
+    jjz j5, hwf_done
+    jld j8, j6, 0
+    jjz j8, hwf_next
+    jld j8, j6, 56
+    jjz j8, hwf_next
+    jldi j8, 1
+    jadd j2, j2, j8
+    jld j8, j6, 8
+    jldi j9, 3
+    jshl j8, j8, j9
+    jld j9, j1, HWF
+    jadd j8, j8, j9
+    jst j3, j8, 0
+    jld j8, j6, 16
+    jldi j9, 3
+    jshl j8, j8, j9
+    jld j9, j1, HWF
+    jadd j8, j8, j9
+    jst j3, j8, 0
+  hwf_next:
+    jadd j6, j6, j7
+    jldi j8, 1
+    jsub j5, j5, j8
+    jjmp hwf_lap
+hwf_done:
+  jret
+
+; The pairs (HGT) that two flagged relations hold alike, as hl_agree counted them: when their hypothesis joined, each
+; is a witness, into HTES. Uses j1-j14.
+hl_wgroups:
+  jldi j1, 0
+  jldi j2, HGT
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HT1
+  jld j4, j2, 0
+  jst j4, j1, HT2
+  hwg_g:
+    jldi j1, 0
+    jld j3, j1, HT1
+    jjz j3, hwg_done
+    jld j4, j1, HT2
+    jld j5, j4, 0
+    jjz j5, hwg_gn
+    jld j5, j4, 8
+    jldi j6, 2
+    jsub j6, j5, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, hwg_gn
+    jst j1, j1, HI
+    hwg_x:
+      jldi j1, 0
+      jld j4, j1, HT2
+      jld j2, j1, HI
+      jld j3, j4, 8
+      jsub j3, j2, j3
+      jjz j3, hwg_gn
+      jcall hwg_ent               ; x: flagged and read?
+      jjz j6, hwg_xn
+      jldi j1, 0
+      jld j2, j1, HI
+      jldi j3, 1
+      jadd j3, j2, j3
+      jst j3, j1, HJ
+      hwg_y:
+        jldi j1, 0
+        jld j4, j1, HT2
+        jld j2, j1, HJ
+        jld j3, j4, 8
+        jsub j3, j2, j3
+        jjz j3, hwg_xn
+        jcall hwg_ent
+        jjz j6, hwg_yn
+        jadd j9, j7, j1           ; y
+        jldi j1, 0
+        jld j2, j1, HI
+        jcall hwg_ent
+        jadd j8, j7, j1           ; x
+        jld j10, j8, 0
+        jld j11, j9, 0
+        jsub j12, j10, j11
+        jjz j12, hwg_yn
+        jld j12, j8, 8
+        jld j13, j9, 8
+        jsub j12, j12, j13
+        jldi j13, 1
+        jjz j12, hwg_same
+        jldi j13, 2
+      hwg_same:
+        jst j13, j1, HDIR
+        jsub j12, j10, j11
+        jldi j14, 63
+        jsar j12, j12, j14
+        jjnz j12, hwg_ord
+        jadd j12, j10, j1
+        jadd j10, j11, j1
+        jadd j11, j12, j1
+      hwg_ord:
+        jadd j5, j10, j1
+        jadd j6, j11, j1
+        jcall hl_mix
+        jld j6, j1, HDIR
+        jcall hl_mix
+        jjnz j5, hwg_k
+        jldi j5, 1
+      hwg_k:
+        jst j5, j1, HWK
+        jldi j2, HAG
+        jcall pl_find
+        jldi j1, 0
+        jld j6, j4, 0
+        jld j5, j1, HWK
+        jsub j6, j6, j5
+        jjnz j6, hwg_yn
+        jld j6, j4, 56
+        jjz j6, hwg_yn
+        jst j4, j1, HT5
+        jld j6, j1, HI
+        jcall hl_mix
+        jld j6, j1, HJ
+        jcall hl_mix
+        jld j4, j1, HT2
+        jld j6, j4, 0
+        jcall hl_mix
+        jld j6, j1, HTURN
+        jcall hl_mix
+        jjnz j5, hwg_t
+        jldi j5, 1
+      hwg_t:
+        jldi j2, HTES
+        jcall pl_take
+        jldi j1, 0
+        jld j10, j1, HT5
+        jld j7, j10, 8
+        jst j7, j4, 8
+        jld j7, j10, 16
+        jst j7, j4, 16
+        jld j7, j10, 24
+        jst j7, j4, 24
+        jld j10, j1, HT2
+        jld j7, j10, 32
+        jst j7, j4, 32
+        jld j7, j10, 40
+        jst j7, j4, 40
+        jst j4, j1, HT5
+        jld j2, j1, HI
+        jcall hwg_ent
+        jld j7, j7, 24
+        jld j4, j1, HT5
+        jst j7, j4, 48
+        jld j2, j1, HJ
+        jcall hwg_ent
+        jld j7, j7, 24
+        jld j4, j1, HT5
+        jst j7, j4, 56
+      hwg_yn:
+        jldi j1, 0
+        jld j3, j1, HJ
+        jldi j4, 1
+        jadd j3, j3, j4
+        jst j3, j1, HJ
+        jjmp hwg_y
+    hwg_xn:
+      jldi j1, 0
+      jld j2, j1, HI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HI
+      jjmp hwg_x
+  hwg_gn:
+    jldi j1, 0
+    jld j4, j1, HT2
+    jldi j5, HGT
+    jld j5, j5, 24
+    jadd j4, j4, j5
+    jst j4, j1, HT2
+    jld j3, j1, HT1
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HT1
+    jjmp hwg_g
+hwg_done:
+  jret
+
+; The entry j2 of the pair at HT2 -> j7 its place in HGE, j6 = 1 if its relation joined this turn and it was read
+; (not crossed). Uses j1, j3, j6, j7.
+hwg_ent:
+  jldi j1, 0
+  jld j3, j1, HT2
+  jld j7, j3, 16
+  jadd j7, j7, j2
+  jldi j3, 32
+  jmul j7, j7, j3
+  jld j3, j1, HGE
+  jadd j7, j7, j3
+  jldi j6, 0
+  jld j3, j7, 16
+  jjnz j3, hwe_done
+  jld j3, j7, 0
+  jldi j6, 3
+  jshl j3, j3, j6
+  jld j6, j1, HWF
+  jadd j3, j3, j6
+  jld j6, j3, 0
+hwe_done:
   jret
 
 ; The words of relation j2 (its own form: the first of it). Uses j1-j14.
@@ -4632,6 +4817,14 @@ hro_c2:
   jcall room
   jldi j1, 0
   jst j13, j1, HNANT
+  jld j11, j1, HNM
+  jldi j2, 1
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HWF
   jld j11, j1, HNM              ; what each relation is: rooms and tables
   jldi j2, 1
   jadd j11, j11, j2

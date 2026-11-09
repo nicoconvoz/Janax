@@ -2815,7 +2815,8 @@ Para eso alcanzan unos pocos órdenes, una sola vez, y decir entre qué valores 
 - **El método se mueve entre 451 y 517** con los mismos libros: unas 66 uniones (un 13 %) las pone el orden. El 496 del
   Razar de siempre es su número, y queda como está.
 - **Corregido en el camino:** la primera tanda dio números falsos (1, 101, 88, 4) porque Python en Windows le pegaba un
-  `` a cada nombre de libro y no encontraba ninguno. Se borró y se volvió a correr.
+  `
+` a cada nombre de libro y no encontraba ninguno. Se borró y se volvió a correr.
 
 ## Las instrucciones: qué hace cada palabra de gramática, e imaginar con ella (2026-11-08)
 
@@ -3060,14 +3061,20 @@ el lente *"como el del ojo humano"*. Medido antes: sin el filtro de la mitad, el
 que vale para una mitad se hereda a la otra sin examen. Para que cada verdad tenga su lugar, primero hay que saber
 dónde se la vio: hilos contaba los pares que confirman cada unión ("lo confirman 7") y los tiraba.
 
-- **Cómo:** `hl_agree` anota, por cada confirmación, su testigo (`hl_wit`: el par, sus dos palabras y las dos formas
-  que lo dijeron) en `HWIT`, que se rehace cada vuelta; una pendiente que suma (`hl_pinject`) anota el suyo sin
-  palabras (`hl_pwit`: el par era de otro libro). `hl_merge` marca la hipótesis que une (`HAG` 56) y `hl_wkeep` pasa
-  sus testigos a `HTES`. Al terminar, `hl_tsave` los agrega al archivo `testigos` de la casa, después de los de los
-  libros anteriores: una línea `{primera relación, segunda, 1 igual 2 al revés, las dos palabras ("-" una pendiente),
-  las dos formas}`. Para eso `HGT` guarda las dos palabras de cada par y `HGE` la forma que lo dijo (32 bytes).
+- **Cómo:** `hl_merge` marca la hipótesis que une (`HAG` 56). Después, `hl_wkeep` marca sus relaciones (`HWF`) y
+  `hl_wgroups` vuelve a mirar solo los pares donde está una relación unida en esta vuelta: cada par que dos de ellas
+  tienen igual, si su hipótesis se unió, es un testigo (`HTES`: las dos palabras y las dos formas que lo dijeron). Una
+  pendiente que suma (`hl_pinject`) anota el suyo sin palabras (`hl_pwit`: el par era de otro libro). Al terminar,
+  `hl_tsave` los agrega al archivo `testigos` de la casa, después de los de los libros anteriores: una línea
+  `{primera relación, segunda, 1 igual 2 al revés, las dos palabras ("-" una pendiente), las dos formas}`. Para eso
+  `HGT` guarda las dos palabras de cada par y `HGE` la forma que lo dijo (32 bytes).
+- **El primer intento guardaba el testigo de cada confirmación**, de todas las hipótesis: el Quijote sin filtro
+  llegó a 3,5 GB y 65 s por pedazo (antes 10 s) y se cortó con 281 MB libres en la PC. Cruzar millones de pares es el
+  costo de la vuelta; guardarlos todos para usar los de unas pocas uniones era el desperdicio. Ahora se guarda solo
+  lo que las uniones usaron.
 - **Prueba (`hilos_testigos_prueba.sh`):** cada `une:` tiene tantas líneas como dice "lo confirman"; *padre de ~ hijo
   de* por ana–eva, eva–luz, luz–mar; el segundo libro agrega las suyas (*padre de ~ madre de*, cuatro: dos por *hijo
   de*, dada vuelta) después de las del primero.
 - **No cambia lo que aprende:** NT con filtro y p320 sin filtro dan `sabido`, `pendiente` y `ejemplos` idénticos byte
-  a byte a antes; solo suben las instrucciones (NT +1,6 %). 287 y 2.424 testigos.
+  a byte a antes; solo suben las instrucciones (NT +2,4 %, p320 sin filtro +5 %). 287 y 2.424 testigos, los mismos que
+  guardando todo.
