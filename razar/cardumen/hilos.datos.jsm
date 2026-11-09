@@ -204,3 +204,9 @@ times 0CC0h - $ db 0
 db 'ejemplos', 0
 times 0CE0h - $ db 0
 db 'toda', 0
+times 0D00h - $ db 0
+db 'pedazo', 0
+times 0D20h - $ db 0
+db 'sigue', 0
+times 0D40h - $ db 0
+db 'hilos', 0

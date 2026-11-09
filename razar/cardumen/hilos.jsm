@@ -140,6 +140,9 @@ S_VUELCA = 0C80h
 S_RELS   = 0CA0h
 S_EJEM   = 0CC0h
 S_TODA   = 0CE0h
+S_PEDAZO = 0D00h
+S_SIGUE  = 0D20h
+S_HILOS  = 0D40h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -165,6 +168,10 @@ HXI   = 1328h
 HXE   = 1330h
 HXF   = 1338h
 HXT   = 1340h
+HBK   = 1348h                   ; the whole book (house "pares"): where, its bytes; the piece read now: from, to
+HBN   = 1350h
+HPFR  = 1358h
+HPTO  = 1360h
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -498,6 +505,7 @@ jldi j1, S_NOBOOK
 jcall puts
 jjmp finish
 hl_go:
+jcall hl_piece
 jcall en_lines
 jcall hl_half
 jcall hl_pmaybe                 ; (the pieces of words, if the house asks: nothing else then)
@@ -543,7 +551,136 @@ jcall hl_ksave
 jcall hl_psave
 jcall hl_esave
 jcall hl_vuelca
+jcall hl_next
 jjmp finish
+
+; A book longer than a piece is read by pieces (Capitan: "that it cuts them on its own"): each one as a book, with
+; what the one before left (sabido, pendiente, ejemplos), so its crossing stays the size of a piece (a pair of words
+; held by k forms is crossed k(k-1)/2 times, and k grows with the text). The piece: the house's "pedazo" (its bytes)
+; or 100 KB, criterion, not measurement (the Quijote by pieces of 100 KB without the half filter: 8 to 14 s and 274 MB
+; at most a piece; whole, past 3.7 GB). It starts where "sigue" says (0 if none) and ends past the first line end
+; PIECE bytes after its start; a book that fits is read whole, as always. -> PRB, PRN the piece. Uses j1-j14.
+hl_piece:
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, HBK
+  jld j2, j1, PRN
+  jst j2, j1, HBN
+  jst j1, j1, HPFR
+  jldi j2, 1                    ; (100 KB)
+  jshi j2, 9000h
+  jst j2, j1, HPTO
+  jldi j11, S_PEDAZO
+  jldi j12, 6
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRN
+  jjz j2, hpc_sigue
+  jcall hl_tread
+  jldi j1, 0
+  jld j2, j1, HTK
+  jjz j2, hpc_sigue
+  jst j2, j1, HPTO
+hpc_sigue:
+  jldi j11, S_SIGUE
+  jldi j12, 5
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRN
+  jjz j2, hpc_cut
+  jcall hl_tread
+  jldi j1, 0
+  jld j2, j1, HTK
+  jst j2, j1, HPFR
+hpc_cut:
+  jldi j1, 0                    ; where it ends
+  jld j2, j1, HPFR
+  jld j3, j1, HPTO
+  jadd j2, j2, j3
+  jld j3, j1, HBN
+  jsub j4, j2, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+  jjnz j4, hpc_nl
+  jst j3, j1, HPTO              ; (the rest of the book fits)
+  jjmp hpc_set
+hpc_nl:
+  jld j4, j1, HBK
+  hpc_scan:
+    jsub j5, j2, j3
+    jjz j5, hpc_end
+    jadd j5, j4, j2
+    jldb j5, j5, 0
+    jldi j6, 1
+    jadd j2, j2, j6
+    jldi j6, 10
+    jsub j5, j5, j6
+    jjnz j5, hpc_scan
+hpc_end:
+  jst j2, j1, HPTO
+hpc_set:
+  jld j2, j1, HBK
+  jld j3, j1, HPFR
+  jadd j2, j2, j3
+  jst j2, j1, PRB
+  jld j2, j1, HPTO
+  jsub j2, j2, j3
+  jst j2, j1, PRN
+  jret
+
+; After a piece: if the book goes on, "sigue" says where, and hilos remakes itself (36: its memory given back, it
+; starts again from its first order with what the house keeps; without the program "hilos" in the house, it only
+; stops, and "sigue" is there for whoever launches it again). After the last one "sigue" goes. Uses j1-j14.
+hl_next:
+  jldi j1, 0
+  jld j2, j1, HPTO
+  jld j3, j1, HBN
+  jsub j2, j2, j3
+  jjz j2, hnx_last
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_SIGUE
+  jldi j12, 5
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_SIGUE
+  jldi j12, 5
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hnx_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j2, j1, HPTO
+  jcall putnum
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jldi j10, 36
+  jldi j11, S_HILOS
+  jldi j12, 5
+  jcall ask
+  jjmp hnx_done
+hnx_last:
+  jld j2, j1, HPFR              ; (the last piece of a book read by pieces)
+  jjz j2, hnx_done
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_SIGUE
+  jldi j12, 5
+  jcall ask
+hnx_done:
+  jldi j1, 0
+  jret
 
 ; Each word's times, the half (the words said most that make half of what the book says: HHC the fewest times one
 ; of them has, as mp_head does) and, by word, if it is of the half (HHF). Uses j1-j14.
