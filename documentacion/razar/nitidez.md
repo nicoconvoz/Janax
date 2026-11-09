@@ -1,6 +1,6 @@
 # La nitidez: Razar encuentra sinónimos y antónimos por los lugares que las palabras comparten
 
-**v0.3 (2026-11-09).** Razar, sin que nadie le diga qué es un sinónimo, junta palabras que **ocupan los mismos lugares** en lo
+**v0.3 (2026-11-09), DOI [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510).** Razar, sin que nadie le diga qué es un sinónimo, junta palabras que **ocupan los mismos lugares** en lo
 que lee. En 20 MB de Wikipedia en castellano, un texto que no escribe sinónimos, sus parejas aciertan el MATS **451 veces
 contra 117** del azar: sinónimos exactos 18 contra 1, antónimos 28 contra 1. Corre en 31 minutos con 205 MB de RAM, y todo se
 reproduce con un comando.
