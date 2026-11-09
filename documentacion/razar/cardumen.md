@@ -3103,3 +3103,11 @@ la refutación"*, y *"no solo el mecanismo atómico: el formado por varios átom
 - **No cambia lo que aprende:** NT con filtro y p320 sin filtro, `sabido`, `pendiente`, `ejemplos` y `testigos`
   idénticos, la salida idéntica salvo el mecanismo de cada `confirma:`, e `imaginado` el mismo con el mecanismo al
   final. Un voto que imaginan dos mecanismos sigue guardado una vez, con el primero.
+- **Mecanismo por mecanismo (Quijote sin filtro, 820 KB, 5,5 millones de votos; jueces de afuera `puntaje_mec.py` y
+  `replica.py`):** todo junto empata (4,0 % contra 4,1 % sin mecanismo). Pero de 1.315 instrucciones medidas por
+  separado en el wikcionario y en 20 MB de Wikipedia, las 26 que le ganan claro a su propio sin-mecanismo en el
+  primero (z > 3) le ganan también en el segundo, 26 de 26; las 36 que pierden claro siguen perdiendo, 36 de 36; la
+  correlación entre los dos libros es 0,74. Ganan en los dos, entre otras: *hacía, vista de, ejemplo, materia de,
+  cuando, vida de, causa de, cinco, pena, señora, ninguno, andar, imaginaciones, señal* ("materia de": 40 % de lo que
+  se decide, sus piezas sin la razón 0,8 %). La bolsa tapaba mecanismos que se repiten, y también los que eligen peor
+  que el azar, que se repiten igual.
