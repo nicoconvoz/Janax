@@ -218,3 +218,9 @@ times 0DA0h - $ db 0
 db 'nitidez', 0
 times 0DC0h - $ db 0
 db 'nitidas', 0
+times 0DE0h - $ db 0
+db 'lugares0', 0
+times 0E00h - $ db 0
+db 'lugares1', 0
+times 0E20h - $ db 0
+db 'lugar', 0

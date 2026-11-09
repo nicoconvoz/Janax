@@ -147,6 +147,9 @@ S_TEST   = 0D60h
 S_MECS   = 0D80h
 S_NITI   = 0DA0h
 S_NITO   = 0DC0h
+S_LUG0   = 0DE0h
+S_LUG1   = 0E00h
+S_LUGI   = 0E20h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -201,6 +204,17 @@ HPV   = 1488h
 HPN   = 1490h
 HPPS  = 1498h
 HNIT  = 14A0h
+HLGH  = 14A8h                   ; the places that travel: the "lugares" written (its handle), the one read, the
+HLGR  = 14B0h                   ; records read (a room, how many bytes, where), which is the current one (0 or 1)
+HLGB  = 14B8h
+HLGN  = 14C0h
+HLGF  = 14C8h
+HLGC  = 14D0h
+HLGE  = 14D8h                   ; (a line's end; the room of texts that travel: where, bytes left; a text waiting)
+HLGT  = 14E0h
+HLGL  = 14E8h
+HLGX  = 14F0h
+HLGY  = 14F8h
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -8189,16 +8203,20 @@ hms_done:
 
 ; How sharp two words are: the places they share (Capitan: "if one 'speaks' and another 'says', it already knows both
 ; speak… it becomes sharper until more information confirms it"), if the house asks ("nitidez"). A place: a form read
-; and its side (each pair the form holds puts its first word on side 0, its second on side 1); a form made only of
-; words of the half, and a word of the half, say nothing of anyone (what is said everywhere is glue) and do not count.
-; Each place's words once; every two words of a place share it; into "nitidas", after the pieces before: a line {a
-; word, another, how many places they share} for each two sharing two or more (what two say). Uses j1-j14.
+; and its side (each pair the form holds puts its first word on side 0, its second on side 1), by a key the same in
+; every book (the form's and the side); a form made only of words of the half, and a word of the half, say nothing of
+; anyone (what is said everywhere is glue) and do not count. The places travel from piece to piece (Capitan: "that they
+; travel"): the house's "lugares0" or "lugares1" (which one, "lugar") holds every place's words; a piece wakes only the
+; places of its own forms and copies the rest as they were, a line at a time, never all of it in memory (the
+; organism's modules: what sleeps stays on disk). Each two words of a place share it, counted once: when the second of
+; them arrives (two that were there already were counted then). Into "nitidas", after the pieces before: a line {a
+; word, another, how many places this piece made them share}; summed, how many they share. Uses j1-j14.
 hl_nitidez:
   jldi j1, 0
   jld j2, j1, HNIT
   jjz j2, hnz_done
   jldi j2, HPLW
-  jldi j3, 16
+  jldi j3, 32
   jcall pl_new
   jldi j2, HPLC
   jldi j3, 32
@@ -8206,10 +8224,8 @@ hl_nitidez:
   jldi j2, HPAR
   jldi j3, 32
   jcall pl_new
-  jldi j1, 0                    ; each place's words, counted
-  jldi j2, 1
-  jst j2, j1, HPPS
-  jcall hnz_walk
+  jcall hnz_walk                ; this piece's places, counted
+  jcall hnz_wake                ; the ones before: woken if this piece has the place, copied as they were if not
   jldi j1, 0                    ; where each place's words start
   jst j1, j1, HPN
   jldi j2, HPLC
@@ -8237,22 +8253,21 @@ hnz_sd:
   jld j11, j1, HPN
   jldi j2, 1
   jadd j11, j11, j2
-  jldi j2, 3
+  jldi j2, 4
   jshl j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, HPLR
-  jldi j2, 2                    ; each place's words, put
-  jst j2, j1, HPPS
-  jcall hnz_walk
+  jcall hnz_put
   jcall hnz_pairs
+  jcall hnz_keep
   jcall hnz_save
 hnz_done:
   jldi j1, 0
   jret
 
-; Every pair read (HFL), each of its two words in its place (HPPS 1: counted in HPLC; 2: put in HPLR), each place's
-; word once (HPLW). Uses j1-j14.
+; Every pair read (HFL), each of its two words in its place: HPLW {key, 1 (new here), the place, the word} once, and
+; HPLC {the place, how many words} counted. Uses j1-j14.
 hnz_walk:
   jldi j1, 0
   jst j1, j1, HPI
@@ -8286,29 +8301,31 @@ hnz_walk:
       jst j5, j1, HPU             ; the word
       jcall hnz_whalf
       jjnz j6, hnw_sn
-      jldi j1, 0
+      jldi j1, 0                  ; the place: its form's key and its side
       jld j3, j1, HPQ
       jld j2, j3, 0
-      jadd j2, j2, j2
-      jld j4, j1, HPJ
-      jadd j2, j2, j4
-      jldi j4, 1
-      jadd j2, j2, j4
-      jst j2, j1, HPV             ; the place (its key: never 0)
-      jadd j5, j2, j1
-      jld j6, j1, HPU
+      jldi j3, 48
+      jmul j3, j2, j3
+      jld j4, j1, HMA
+      jadd j3, j3, j4
+      jld j5, j3, 0
+      jld j6, j1, HPJ
       jcall hl_mix
-      jjnz j5, hnw_k
+      jjnz j5, hnw_pk
       jldi j5, 1
-    hnw_k:
+    hnw_pk:
+      jst j5, j1, HPV
+      jcall hnz_member            ; (j5 its key)
       jldi j2, HPLW
       jcall pl_take
       jldi j1, 0
-      jld j2, j1, HPPS
-      jldi j3, 1
-      jsub j2, j2, j3
-      jjnz j2, hnw_put
       jjz j6, hnw_sn              ; (this place has it already)
+      jldi j2, 1
+      jst j2, j4, 8
+      jld j2, j1, HPV
+      jst j2, j4, 16
+      jld j2, j1, HPU
+      jst j2, j4, 24
       jld j5, j1, HPV
       jldi j2, HPLC
       jcall pl_take
@@ -8317,28 +8334,6 @@ hnz_walk:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j4, 8
-      jjmp hnw_sn
-    hnw_put:
-      jld j2, j4, 8
-      jjnz j2, hnw_sn
-      jldi j2, 1
-      jst j2, j4, 8
-      jld j5, j1, HPV
-      jldi j2, HPLC
-      jcall pl_find
-      jldi j1, 0
-      jld j2, j4, 16
-      jld j3, j4, 24
-      jadd j2, j2, j3
-      jldi j5, 1
-      jadd j3, j3, j5
-      jst j3, j4, 24
-      jldi j3, 3
-      jshl j2, j2, j3
-      jld j3, j1, HPLR
-      jadd j2, j2, j3
-      jld j3, j1, HPU
-      jst j3, j2, 0
     hnw_sn:
       jldi j1, 0
       jld j2, j1, HPJ
@@ -8354,6 +8349,434 @@ hnz_walk:
     jst j2, j1, HPI
     jjmp hnw_lap
 hnw_done:
+  jret
+
+; j5 = the key of word HPU in place HPV. Uses j1, j5-j7.
+hnz_member:
+  jldi j1, 0
+  jld j5, j1, HPV
+  jld j6, j1, HPU
+  jcall hl_mix
+  jjnz j5, hnm_k
+  jldi j5, 1
+hnm_k:
+  jret
+
+; The places before (the house's current "lugares"), a line {place, word, its text} at a time: one this piece has
+; is woken (HPLW 2: there before, counted then; counted in HPLC if it was not here); the rest is copied as it was
+; into the other "lugares", left open for hnz_keep. Uses j1-j14.
+hnz_wake:
+  jldi j1, 0
+  jst j1, j1, HLGC
+  jldi j11, S_LUGI
+  jldi j12, 5
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRN
+  jjz j2, hwk_c
+  jld j3, j1, PRB
+  jldb j2, j3, 0
+  jldi j3, 48
+  jsub j2, j2, j3
+  jst j2, j1, HLGC
+hwk_c:
+  jcall flush                   ; the other one, new
+  jcall hnz_other
+  jldi j10, 12
+  jldi j12, 8
+  jcall ask
+  jcall hnz_other
+  jldi j10, 4
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, HLGH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jcall hnz_current             ; the current one, read
+  jldi j10, 4
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, HLGR
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hwk_done
+  jldi j11, 1
+  jldi j2, 16
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HLGB
+  jst j1, j1, HLGN
+  jst j1, j1, HLGL
+  hwk_read:
+    jldi j1, 0
+    jld j10, j1, HLGR
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, HLGB
+    jld j2, j1, HLGN
+    jadd j11, j11, j2
+    jldi j12, 32300
+    jsub j12, j12, j2
+    jcall ask
+    jldi j1, 0
+    jldi j2, 63
+    jsar j2, j13, j2
+    jjnz j2, hwk_eof
+    jjz j13, hwk_eof
+    jld j2, j1, HLGN
+    jadd j2, j2, j13
+    jst j2, j1, HLGN
+    jst j1, j1, HLGF            ; the records read
+    hwk_rec:                      ; a line {place, word, its text}: up to its end, if it was read whole
+      jldi j1, 0
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+      jld j5, j1, HLGB
+      jld j6, j1, HLGN
+      jadd j5, j5, j6
+      jadd j7, j4, j1
+      hwk_eol:
+        jsub j6, j5, j7
+        jjz j6, hwk_carry
+        jldb j6, j7, 0
+        jldi j8, 10
+        jsub j6, j6, j8
+        jjz j6, hwk_eold
+        jldi j8, 1
+        jadd j7, j7, j8
+        jjmp hwk_eol
+    hwk_eold:
+      jldi j8, 1
+      jadd j7, j7, j8
+      jst j7, j1, HLGE            ; past its end
+      jcall hk_hex
+      jldi j1, 0
+      jst j9, j1, HPV
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+      jldi j2, 17
+      jadd j4, j4, j2
+      jcall hk_hex
+      jldi j1, 0
+      jst j9, j1, HPU
+      jld j5, j1, HPV
+      jldi j2, HPLC
+      jcall pl_find
+      jldi j1, 0
+      jld j6, j4, 0
+      jld j5, j1, HPV
+      jsub j6, j6, j5
+      jjnz j6, hwk_copy
+      jcall hnz_member            ; woken
+      jldi j2, HPLW
+      jcall pl_take
+      jldi j1, 0
+      jjz j6, hwk_was
+      jld j2, j1, HPV
+      jst j2, j4, 16
+      jld j2, j1, HPU
+      jst j2, j4, 24
+      jst j4, j1, HPQ
+      jld j5, j1, HPV
+      jldi j2, HPLC
+      jcall pl_find
+      jldi j1, 0
+      jld j2, j4, 8
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j4, 8
+      jld j4, j1, HPQ
+    hwk_was:
+      jldi j2, 2                  ; (there before: its pairs were counted then)
+      jst j2, j4, 8
+      jcall hnz_text              ; its text, if this book does not say it
+      jjmp hwk_next
+    hwk_copy:
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+      jld j5, j1, HLGE
+      hwk_cb:
+        jsub j6, j5, j4
+        jjz j6, hwk_next
+        jldb j2, j4, 0
+        jcall putch
+        jldi j3, 1
+        jadd j4, j4, j3
+        jld j5, j1, HLGE
+        jjmp hwk_cb
+    hwk_next:
+      jldi j1, 0
+      jld j3, j1, HLGE
+      jld j2, j1, HLGB
+      jsub j3, j3, j2
+      jst j3, j1, HLGF
+      jjmp hwk_rec
+  hwk_carry:                      ; a record cut by the read: to the start, and read on
+    jld j4, j1, HLGB
+    jld j3, j1, HLGF
+    jadd j5, j4, j3
+    jld j6, j1, HLGN
+    jsub j6, j6, j3
+    jst j6, j1, HLGN
+    hwk_mv:
+      jjz j6, hwk_read
+      jldb j2, j5, 0
+      jstb j2, j4, 0
+      jldi j3, 1
+      jadd j4, j4, j3
+      jadd j5, j5, j3
+      jsub j6, j6, j3
+      jjmp hwk_mv
+hwk_eof:
+  jld j10, j1, HLGR
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hwk_done:
+  jldi j1, 0
+  jret
+
+; The text of word HPU (the line at HLGF, past its end HLGE: from its 35th byte) known by its print, if it was not
+; (the word was in a book before): copied to a room of texts that grows. Uses j1-j8.
+hnz_text:
+  jldi j1, 0
+  jld j5, j1, HPU
+  jldi j2, ZWT
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, htx_done
+  jst j4, j1, HPQ
+  jld j3, j1, HLGB
+  jld j2, j1, HLGF
+  jadd j3, j3, j2
+  jldi j2, 34
+  jadd j3, j3, j2               ; its text
+  jld j5, j1, HLGE
+  jsub j5, j5, j3
+  jldi j2, 1
+  jsub j5, j5, j2               ; its bytes
+  jld j6, j1, HLGL
+  jsub j6, j6, j5
+  jldi j7, 63
+  jsar j6, j6, j7
+  jjz j6, htx_room
+  jst j3, j1, HLGX              ; full (or none): a new room
+  jst j5, j1, HLGY
+  jldi j11, 1
+  jldi j2, 16
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HLGT
+  jldi j11, 1
+  jldi j2, 16
+  jshl j11, j11, j2
+  jst j11, j1, HLGL
+  jld j3, j1, HLGX
+  jld j5, j1, HLGY
+htx_room:
+  jld j4, j1, HPQ
+  jld j6, j1, HLGT
+  jst j6, j4, 8
+  jst j5, j4, 16
+  jld j7, j1, HLGL
+  jsub j7, j7, j5
+  jst j7, j1, HLGL
+  htx_c:
+    jjz j5, htx_cd
+    jldb j7, j3, 0
+    jstb j7, j6, 0
+    jldi j7, 1
+    jadd j3, j3, j7
+    jadd j6, j6, j7
+    jsub j5, j5, j7
+    jjmp htx_c
+htx_cd:
+  jst j6, j1, HLGT
+htx_done:
+  jldi j1, 0
+  jret
+
+; j11 the name of the current "lugares" (HLGC), of the other one; j12 its bytes. Uses j1-j2, j11.
+hnz_current:
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jjmp hnc_n
+hnz_other:
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jldi j11, 1
+  jxor j2, j2, j11
+hnc_n:
+  jldi j11, S_LUG0
+  jjz j2, hnc_d
+  jldi j11, S_LUG1
+hnc_d:
+  jldi j12, 8
+  jret
+
+; Each place's words (HPLW, this piece's and the woken) at their place in HPLR {the word, 1 new here or 2 there
+; before}. Uses j1-j14.
+hnz_put:
+  jldi j1, 0
+  jldi j2, HPLW
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPN
+  jld j4, j2, 0
+  jst j4, j1, HPQ
+  hnu_lap:
+    jldi j1, 0
+    jld j3, j1, HPN
+    jjz j3, hnu_done
+    jld j9, j1, HPQ
+    jld j5, j9, 0
+    jjz j5, hnu_next
+    jld j5, j9, 16
+    jldi j2, HPLC
+    jcall pl_find
+    jldi j1, 0
+    jld j2, j4, 16
+    jld j3, j4, 24
+    jadd j2, j2, j3
+    jldi j5, 1
+    jadd j3, j3, j5
+    jst j3, j4, 24
+    jldi j3, 4
+    jshl j2, j2, j3
+    jld j3, j1, HPLR
+    jadd j2, j2, j3
+    jld j9, j1, HPQ
+    jld j3, j9, 24
+    jst j3, j2, 0
+    jld j3, j9, 8
+    jst j3, j2, 8
+  hnu_next:
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jldi j2, HPLW
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HPQ
+    jld j3, j1, HPN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HPN
+    jjmp hnu_lap
+hnu_done:
+  jret
+
+; The awake places' words written after the sleeping ones (the other "lugares", open), and it becomes the current one:
+; the old one deleted, "lugar" says which. Uses j1-j14.
+hnz_keep:
+  jldi j1, 0
+  jld j2, j1, HLGH
+  jldi j3, 63
+  jshr j3, j2, j3
+  jjnz j3, hnk_done
+  jldi j2, HPLW
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HPN
+  jld j4, j2, 0
+  jst j4, j1, HPQ
+  hnk_lap:
+    jldi j1, 0
+    jld j3, j1, HPN
+    jjz j3, hnk_close
+    jld j9, j1, HPQ
+    jld j5, j9, 0
+    jjz j5, hnk_next
+    jld j2, j9, 16
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jld j2, j9, 24
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jld j5, j9, 24
+    jcall en_sayprint
+    jldi j2, 10
+    jcall putch
+  hnk_next:
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jldi j2, HPLW
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HPQ
+    jld j3, j1, HPN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HPN
+    jjmp hnk_lap
+hnk_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HLGH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jcall hnz_current
+  jldi j10, 12
+  jcall ask
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jldi j3, 1
+  jxor j2, j2, j3
+  jst j2, j1, HLGC
+  jldi j10, 12
+  jldi j11, S_LUGI
+  jldi j12, 5
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_LUGI
+  jldi j12, 5
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hnk_done
+  jst j13, j1, HLGH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j2, j1, HLGC
+  jldi j3, 48
+  jadd j2, j2, j3
+  jcall putch
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HLGH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hnk_done:
+  jldi j1, 0
   jret
 
 ; j6 = 1 if the word whose print is HPU is of the half (said as often as the half's words). Uses j1-j8.
@@ -8451,12 +8874,18 @@ hnz_pairs:
         jld j2, j1, HPI
         jadd j2, j2, j5
         jadd j3, j3, j5
-        jldi j6, 3
+        jldi j6, 4
         jshl j2, j2, j6
         jshl j3, j3, j6
         jld j6, j1, HPLR
         jadd j2, j2, j6
         jadd j3, j3, j6
+        jld j10, j2, 8            ; (two that were there before were counted then)
+        jld j11, j3, 8
+        jand j10, j10, j11
+        jldi j11, 2
+        jsub j10, j10, j11
+        jjz j10, hnp_skip
         jld j10, j2, 0
         jld j11, j3, 0
         jsub j12, j10, j11        ; the smaller first, so a pair is one whatever place says it
@@ -8490,6 +8919,8 @@ hnz_pairs:
         jldi j3, 1
         jadd j2, j2, j3
         jst j2, j4, 24
+      hnp_skip:
+        jldi j1, 0
         jld j3, j1, HPJ
         jldi j4, 1
         jadd j3, j3, j4
@@ -8517,7 +8948,7 @@ hnz_pairs:
 hnp_done:
   jret
 
-; The pairs that share two places or more into the house's "nitidas", after the pieces before. Uses j1-j14.
+; The pairs this piece made share places into the house's "nitidas", after the pieces before. Uses j1-j14.
 hnz_save:
   jldi j11, S_NITO
   jldi j12, 7
@@ -8566,11 +8997,7 @@ hns_bd:
     jld j5, j9, 0
     jjz j5, hns_next
     jld j5, j9, 24
-    jldi j6, 2
-    jsub j5, j5, j6
-    jldi j6, 63
-    jsar j5, j5, j6
-    jjnz j5, hns_next
+    jjz j5, hns_next
     jld j5, j9, 8
     jcall en_sayprint
     jldi j2, 32

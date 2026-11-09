@@ -3169,3 +3169,15 @@ dichas (criterio).
   Contra el MATS, pocas pero limpias: 6 contra 0, *norte~sur* (8 lugares), *superior~inferior*, *derecha~izquierda*,
   *interno~externo*, *mes~marzo*, *política~políticas*. Poco texto y cada pedazo solo: dos palabras de pedazos
   distintos no se encuentran. Lo que falta es llevar los lugares de pedazo a pedazo (los módulos).
+- **Los lugares viajan (`hnz_wake`, `hnz_keep`, `hnz_text`):** cada lugar tiene una clave igual en todo libro (la de
+  su forma y su lado) y vive en `lugares0` o `lugares1` (cuál, lo dice `lugar`), una línea `{lugar, palabra, su
+  texto}`. Cada pedazo lee el archivo de a 32 KB: despierta los lugares de sus propias formas y copia el resto tal
+  cual al otro archivo, sin cargarlo entero (los módulos del organismo: lo que duerme queda en disco); después escribe
+  los despiertos y pasa a ser el actual. Una pareja se cuenta una vez, cuando la segunda palabra llega al lugar; las
+  dos que ya estaban se contaron entonces. El texto viaja con la palabra, para nombrar a la de otro libro. Prueba
+  `hilos_lugares_prueba.sh`: ana en un libro, eva en otro, comparten lugares sin que ningún libro diga las dos; rio no
+  se mezcla; repetir el libro de eva no las cuenta dos veces.
+- **Medido (Wikipedia 600 KB):** 69 s, el mismo pico (665 MB), `lugares` de 7 MB (unas 12 veces el texto), 97.916
+  parejas (antes, cada pedazo solo, 6.506). Contra el MATS **39 contra 0**: flexión 16 (*año~años, ley~leyes*),
+  semántica 20 (*ayuda~asistencia, retroceder~replegarse, día~lunes, después~antes, sencillo~difícil, familia~madre,
+  derecha~izquierda*), enciclopédica 2 (*napoleón~francés*). Sin el pedido, NT y p320 idénticos.
