@@ -196,3 +196,9 @@ times 0C40h - $ db 0
 db 'signos', 0
 times 0C60h - $ db 0
 db 'letra', 0
+times 0C80h - $ db 0
+db 'vuelca', 0
+times 0CA0h - $ db 0
+db 'relaciones', 0
+times 0CC0h - $ db 0
+db 'ejemplos', 0

@@ -136,6 +136,9 @@ S_PIEZ   = 0BC0h
 S_PIEZA  = 0BE0h
 S_SIGNS  = 0C40h
 S_PLET   = 0C60h
+S_VUELCA = 0C80h
+S_RELS   = 0CA0h
+S_EJEM   = 0CC0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -389,6 +392,14 @@ HPX   = 1F08h
 HPY   = 1F10h
 HPZ   = 1F18h
 HSIG  = 1F20h
+HVR   = 1F30h                   ; (the relation, its pairs and how many left, as they are written for the judge)
+HVP   = 1F38h
+HVK   = 1F40h
+HEJ   = 1F48h                   ; the pairs written to "ejemplos", each once (a growing table, its key only)
+HEI   = 1F68h                   ; (the form, its pair, the old lines walked, where they end)
+HEP   = 1F70h
+HEX   = 1F78h
+HEE   = 1F80h
 HPCL  = 1F28h                   ; (the bytes of the letter cut, a letter anywhere)                   ; the reader keeps the signs (house "signos"): each a piece of its own, never thrown away                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
@@ -513,6 +524,8 @@ jcall hl_icheck
 jcall hl_inventa
 jcall hl_ksave
 jcall hl_psave
+jcall hl_esave
+jcall hl_vuelca
 jjmp finish
 
 ; Each word's times, the half (the words said most that make half of what the book says: HHC the fewest times one
@@ -7868,6 +7881,307 @@ hp_text:
     jsub j10, j10, j1
     jjmp hpx_lap
 hpx_done:
+  jldi j1, 0
+  jret
+
+; The pairs each relation holds, into the house's "ejemplos" for the books after (Capitan: "do not restart it again"):
+; the lines of the books before as they were, and each pair of each form read here whose relation has two forms or
+; more, a line {the pair's key, the form's key, both in sixteen hexadecimal digits, its words, its two words} if no
+; line has it yet (the pair's key is its key in HFT, the same in every book). Uses j1-j14.
+hl_esave:
+  jldi j11, S_EJEM
+  jldi j12, 8
+  jcall en_read
+  jldi j2, HEJ
+  jldi j3, 16
+  jcall pl_new
+  jldi j1, 0
+  jld j2, j1, PRB
+  jst j2, j1, HEX
+  jld j3, j1, PRN
+  jadd j3, j2, j3
+  jst j3, j1, HEE
+  hes_old:                       ; the old lines' keys (a line is 34 bytes or more)
+    jldi j1, 0
+    jld j4, j1, HEX
+    jld j5, j1, HEE
+    jsub j5, j5, j4
+    jldi j6, 34
+    jsub j5, j5, j6
+    jldi j6, 63
+    jsar j5, j5, j6
+    jjnz j5, hes_open
+    jcall hk_hex
+    jldi j1, 0
+    jadd j5, j9, j1
+    jldi j2, HEJ
+    jcall pl_take
+    jldi j1, 0
+    jld j7, j1, HEX
+    hes_eol:
+      jld j5, j1, HEE
+      jsub j5, j5, j7
+      jjz j5, hes_eold
+      jldb j5, j7, 0
+      jldi j6, 1
+      jadd j7, j7, j6
+      jldi j6, 10
+      jsub j5, j5, j6
+      jjnz j5, hes_eol
+  hes_eold:
+    jst j7, j1, HEX
+    jjmp hes_old
+hes_open:
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_EJEM
+  jldi j12, 8
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_EJEM
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hes_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j4, j1, PRB
+  jld j5, j1, PRN
+  hes_b:
+    jjz j5, hes_bd
+    jldb j2, j4, 0
+    jcall putch
+    jldi j3, 1
+    jadd j4, j4, j3
+    jsub j5, j5, j3
+    jjmp hes_b
+hes_bd:
+  jldi j1, 0
+  jst j1, j1, HEI
+  hes_f:
+    jldi j1, 0
+    jld j2, j1, HEI
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hes_close
+    jcall hk_deduced
+    jjnz j6, hes_fn
+    jldi j1, 0
+    jld j2, j1, HEI
+    jcall hl_find
+    jldi j3, 3
+    jshl j3, j2, j3
+    jldi j1, 0
+    jld j4, j1, HSIZE
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jldi j5, 2
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+    jjnz j4, hes_fn
+    jld j2, j1, HEI
+    jldi j3, 48
+    jmul j3, j2, j3
+    jld j4, j1, HMA
+    jadd j3, j3, j4
+    jld j2, j3, 40
+    jst j2, j1, HEP
+    hes_p:
+      jldi j1, 0
+      jld j2, j1, HEP
+      jldi j3, 63
+      jsar j3, j2, j3
+      jjnz j3, hes_fn
+      jldi j3, 5
+      jshl j3, j2, j3
+      jld j4, j1, HFL
+      jadd j3, j3, j4
+      jld j2, j3, 24
+      jst j2, j1, HEP
+      jld j2, j3, 8
+      jst j2, j1, HKJA
+      jld j2, j3, 16
+      jst j2, j1, HKJB
+      jld j2, j1, HEI
+      jcall hk_key
+      jadd j5, j2, j1
+      jldi j1, 0
+      jld j6, j1, HKJA
+      jcall hl_mix
+      jld j6, j1, HKJB
+      jcall hl_mix
+      jjnz j5, hes_k
+      jldi j5, 1
+    hes_k:
+      jst j5, j1, HKEY
+      jldi j2, HEJ
+      jcall pl_take
+      jldi j1, 0
+      jjz j6, hes_p
+      jld j2, j1, HKEY
+      jcall hk_puthex
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, HEI
+      jcall hk_key
+      jcall hk_puthex
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, HEI
+      jcall hl_sayform
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j5, j1, HKJA
+      jcall en_sayprint
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j5, j1, HKJB
+      jcall en_sayprint
+      jldi j2, 10
+      jcall putch
+      jjmp hes_p
+  hes_fn:
+    jldi j1, 0
+    jld j2, j1, HEI
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HEI
+    jjmp hes_f
+hes_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hes_done:
+  jldi j1, 0
+  jret
+
+; What it learned, for an outside judge to read (only if the house asks, "vuelca"): into "relaciones", each pair of
+; each relation it holds (said by two pairs or more, not deduced), a line {how many forms it has, its first form, the
+; pair's two words}. Razar never reads the judge. Uses j1-j14.
+hl_vuelca:
+  jldi j11, S_VUELCA
+  jldi j12, 6
+  jcall en_read
+  jldi j1, 0
+  jld j2, j1, PRN
+  jjz j2, hvl_done
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_RELS
+  jldi j12, 10
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_RELS
+  jldi j12, 10
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hvl_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jst j1, j1, HVR
+  hvl_r:
+    jldi j1, 0
+    jld j2, j1, HVR
+    jld j3, j1, HNM
+    jsub j3, j2, j3
+    jjz j3, hvl_close
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HCLS
+    jadd j4, j4, j3
+    jld j4, j4, 0
+    jsub j4, j4, j2
+    jjnz j4, hvl_rn
+    jcall hk_deduced
+    jjnz j6, hvl_rn
+    jldi j1, 0
+    jld j2, j1, HVR
+    jcall hxr_of
+    jldi j1, 0
+    jldi j2, 2
+    jsub j2, j10, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+    jjnz j2, hvl_rn
+    jst j9, j1, HVP
+    jst j10, j1, HVK
+    hvl_p:
+      jldi j1, 0
+      jld j2, j1, HVK
+      jjz j2, hvl_rn
+      jld j2, j1, HVR
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, HSIZE
+      jadd j4, j4, j3
+      jld j2, j4, 0
+      jcall putnum
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, HVR
+      jcall hl_sayform
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j4, j1, HVP
+      jld j5, j4, 0
+      jcall en_sayprint
+      jldi j2, 9
+      jcall putch
+      jldi j1, 0
+      jld j4, j1, HVP
+      jld j5, j4, 8
+      jcall en_sayprint
+      jldi j2, 10
+      jcall putch
+      jldi j1, 0
+      jld j4, j1, HVP
+      jldi j2, 16
+      jadd j4, j4, j2
+      jst j4, j1, HVP
+      jld j2, j1, HVK
+      jldi j3, 1
+      jsub j2, j2, j3
+      jst j2, j1, HVK
+      jjmp hvl_p
+  hvl_rn:
+    jldi j1, 0
+    jld j2, j1, HVR
+    jldi j3, 1
+    jadd j2, j2, j3
+    jst j2, j1, HVR
+    jjmp hvl_r
+hvl_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hvl_done:
   jldi j1, 0
   jret
 

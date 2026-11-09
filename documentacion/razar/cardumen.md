@@ -2965,3 +2965,22 @@ imaginación viva"*).
   vecinas de palabra sin más (`r ~ n`, `d ~ b`).
 - **El MATS no cambia** (flexiva 391 de 418, derivativa 219 de 233): esas parejas ya las explicaban los finales y los
   comienzos.
+
+## Los ejemplos de cada relación viajan con ella (2026-11-08)
+
+El Capitán: *"que siga, pero no me la reinicies más"*. Las uniones ya pasaban de libro a libro en `sabido`, pero los
+**pares** que llenan cada relación (*padre de*: ana–eva, eva–luz) quedaban en el texto leído: para preguntar qué
+relaciones sabía de todos los libros había que releerlos todos (los once más 10 MB de enciclopedia, más de veinte
+minutos). Ahora, al terminar, `hl_esave` escribe en el archivo `ejemplos` de la casa cada par de cada forma leída cuya
+relación tiene dos formas o más, una línea `{clave del par, clave de la forma, sus palabras, las dos palabras}` (las
+claves en dieciséis hexadecimales). Las líneas de los libros anteriores quedan como estaban y un par que ya está no se
+vuelve a escribir: la clave del par es la de `HFT`, la misma en todo libro, así que no hay duplicados. Nada se tira.
+
+También se agregó `vuelca`: si la casa lo pide, `hl_vuelca` escribe `relaciones`, cada par de cada relación propia
+`{formas que tiene, su primera forma, el par}`, para un juez de afuera que Razar nunca lee.
+
+- **Prueba (`hilos_ejemplos_prueba.sh`):** el primer libro une *padre de ~ hijo de* y *padre ~ hijo* (doce líneas);
+  el segundo, en la misma casa, repite *ana, padre de eva* y trae seis pares nuevos: dieciocho líneas, cada una una
+  vez.
+- **Juez de afuera** (Python, fuera de Janax): `memoria_rel.py` arma las relaciones de todos los libros con `sabido`
+  (las uniones, sin las dormidas) y `ejemplos`, sin releer nada, y `juez_rel.py` las mide contra la semántica del MATS.
