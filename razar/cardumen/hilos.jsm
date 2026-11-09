@@ -156,6 +156,15 @@ ZEP   = 1290h                   ; (reading: where, the end, the line, a word's b
 ZEEND = 1298h
 ZELR  = 12A0h
 ZEWL  = 12A8h
+HXO   = 1300h                   ; by relation, where its words with one confirmed value start in HXL, where it is so (a
+HXL   = 1308h                   ; room each, made again every turn): what a hypothesis asks its contradictions with
+HXA   = 1310h                   ; (the two relations walked, which way, the place walked and its end)
+HXB   = 1318h
+HXW   = 1320h
+HXI   = 1328h
+HXE   = 1330h
+HXF   = 1338h
+HXT   = 1340h
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -2991,7 +3000,15 @@ hp_pd:
     jldi j2, 2
     jst j2, j1, HQ7
     jjmp hp_w
-hp_c:
+hp_c:                           ; the contradictions, only when a hypothesis asks (Capitan: "do not cross again what
+  jcall hp_index                ; you crossed already"): its words, by relation
+  jldi j1, 0
+  jret
+
+; Every contradiction, word by word, as the turns asked them, for the rules the last turn leaves (hl_rules). Uses
+; j1-j14.
+hp_cfull:
+  jldi j1, 0
   jldi j2, HWGT                 ; the contradictions, word by word
   jld j3, j2, 8
   jldi j4, 1
@@ -3146,6 +3163,231 @@ hp_c:
     jst j3, j1, HQ1
     jjmp hp_g
 hp_done:
+  jret
+
+; By relation, the words it gives one confirmed value on a side where it is so (what can be defended against another
+; relation): their entries of HFT2, one after another by relation (HXL), and where each relation's end (HXO). Uses
+; j1-j14.
+hp_index:
+  jldi j1, 0
+  jld j11, j1, HXO              ; (last turn's rooms given back)
+  jjz j11, hix_new
+  jldi j10, 3
+  jcall ask
+  jldi j1, 0
+  jld j11, j1, HXL
+  jldi j10, 3
+  jcall ask
+hix_new:
+  jldi j1, 0
+  jld j11, j1, HNM
+  jldi j2, 2
+  jadd j11, j11, j2
+  jldi j2, 3
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HXO
+  jld j2, j1, HNM
+  jldi j3, 2
+  jadd j2, j2, j3
+  hix_z:
+    jjz j2, hix_zd
+    jst j1, j13, 0
+    jldi j3, 8
+    jadd j13, j13, j3
+    jldi j3, 1
+    jsub j2, j2, j3
+    jjmp hix_z
+hix_zd:
+  jldi j2, HFT2
+  jld j11, j2, 16
+  jldi j3, 1
+  jadd j11, j11, j3
+  jldi j3, 3
+  jshl j11, j11, j3
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HXL
+  jst j1, j1, HXI               ; first how many each relation has (at its number plus one), then where they start
+  hix_pass:
+    jldi j1, 0
+    jldi j2, HFT2
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jst j3, j1, HXE
+    jld j4, j2, 0
+    jst j4, j1, HXA
+    hix_e:
+      jldi j1, 0
+      jld j3, j1, HXE
+      jjz j3, hix_ed
+      jld j4, j1, HXA
+      jld j5, j4, 0
+      jjz j5, hix_en
+      jld j5, j4, 40
+      jldi j6, 1
+      jsub j5, j5, j6
+      jjnz j5, hix_en
+      jld j2, j4, 8
+      jld j3, j4, 16
+      jcall hp_is
+      jjz j6, hix_en
+      jldi j1, 0
+      jld j4, j1, HXA
+      jld j2, j4, 8
+      jldi j3, 3
+      jshl j2, j2, j3
+      jld j3, j1, HXO
+      jadd j3, j3, j2
+      jld j2, j1, HXI
+      jjnz j2, hix_put
+      jld j5, j3, 8
+      jldi j6, 1
+      jadd j5, j5, j6
+      jst j5, j3, 8
+      jjmp hix_en
+    hix_put:
+      jld j5, j3, 0
+      jldi j6, 3
+      jshl j6, j5, j6
+      jld j7, j1, HXL
+      jadd j7, j7, j6
+      jst j4, j7, 0
+      jldi j6, 1
+      jadd j5, j5, j6
+      jst j5, j3, 0
+    hix_en:
+      jldi j1, 0
+      jld j4, j1, HXA
+      jldi j5, HFT2
+      jld j5, j5, 24
+      jadd j4, j4, j5
+      jst j4, j1, HXA
+      jld j3, j1, HXE
+      jldi j5, 1
+      jsub j3, j3, j5
+      jst j3, j1, HXE
+      jjmp hix_e
+  hix_ed:
+    jld j2, j1, HXI
+    jjnz j2, hix_done
+    jld j2, j1, HNM               ; where each starts: the counts summed
+    jld j3, j1, HXO
+    jldi j4, 0
+    hix_s:
+      jjz j2, hix_sd
+      jld j5, j3, 8
+      jadd j4, j4, j5
+      jst j4, j3, 8
+      jldi j5, 8
+      jadd j3, j3, j5
+      jldi j5, 1
+      jsub j2, j2, j5
+      jjmp hix_s
+  hix_sd:
+    jldi j2, 1
+    jst j2, j1, HXI
+    jjmp hix_pass
+hix_done:
+  jldi j1, 0
+  jret
+
+; Relations j2 and j3, j4 which way (1 the same, 2 the other way round): j6 = 1 if joining them is a contradiction,
+; as hp_cfull counts it: a word one of them gives one confirmed value, on a side where it is so, and the other gives
+; it another (on the same side if the same way, on the other if not). Uses j1-j14.
+hp_contra:
+  jldi j1, 0
+  jldi j6, 0
+  jsub j5, j2, j3
+  jjz j5, hcx_done              ; (one relation)
+  jst j2, j1, HXA
+  jst j3, j1, HXB
+  jst j4, j1, HXW
+  jldi j5, 2
+  jst j5, j1, HXE               ; (each of the two defends, in turn)
+  hcx_rel:
+    jldi j1, 0
+    jld j2, j1, HXA               ; where the defender's words start, where they end
+    jldi j3, 3
+    jshl j3, j2, j3
+    jld j4, j1, HXO
+    jadd j4, j4, j3
+    jldi j5, 0
+    jjz j2, hcx_st
+    jldi j5, 8
+    jsub j5, j4, j5
+    jld j5, j5, 0
+  hcx_st:
+    jld j6, j4, 0
+    jst j5, j1, HXI
+    jst j6, j1, HXF
+    hcx_w:
+      jldi j1, 0
+      jld j2, j1, HXI
+      jld j3, j1, HXF
+      jsub j3, j2, j3
+      jjz j3, hcx_next
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j4, j1, HXL
+      jadd j4, j4, j3
+      jld j4, j4, 0
+      jst j4, j1, HXT
+      jld j6, j4, 16                ; the other's side: the same if the same way
+      jld j7, j1, HXW
+      jldi j8, 1
+      jsub j7, j7, j8
+      jjz j7, hcx_side
+      jxor j6, j6, j8
+    hcx_side:
+      jld j5, j1, HXB
+      jcall hl_mix
+      jld j4, j1, HXT
+      jld j6, j4, 24
+      jcall hl_mix
+      jjnz j5, hcx_k
+      jldi j5, 1
+    hcx_k:
+      jldi j2, HFT2
+      jcall pl_find
+      jldi j1, 0
+      jld j7, j4, 0
+      jsub j7, j7, j5
+      jjnz j7, hcx_wn               ; (the other says nothing of it there)
+      jld j7, j4, 48
+      jldi j8, 1
+      jsub j7, j7, j8
+      jjnz j7, hcx_yes              ; more than one value: another for sure
+      jld j7, j4, 56
+      jld j8, j1, HXT
+      jld j8, j8, 32
+      jsub j7, j7, j8
+      jjnz j7, hcx_yes
+    hcx_wn:
+      jldi j1, 0
+      jld j2, j1, HXI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HXI
+      jjmp hcx_w
+  hcx_next:
+    jld j2, j1, HXA               ; the other one defends
+    jld j3, j1, HXB
+    jst j3, j1, HXA
+    jst j2, j1, HXB
+    jld j2, j1, HXE
+    jldi j3, 1
+    jsub j2, j2, j3
+    jst j2, j1, HXE
+    jjnz j2, hcx_rel
+  jldi j6, 0
+  jjmp hcx_done
+hcx_yes:
+  jldi j6, 1
+hcx_done:
+  jldi j1, 0
   jret
 
 ; Each relation's pairs, turned to it, in a row by relation (HCOFF where its own start, HCTRI {A, B}). Uses j1-j14.
@@ -4554,22 +4796,12 @@ hrs_k:
   jjnz j7, hrs_no2
 hrs_ok:
   jld j4, j1, HT5               ; and no property of either refutes it
-  jld j5, j4, 8
-  jld j6, j4, 16
-  jcall hl_mix
-  jld j6, j4, 24
-  jcall hl_mix
-  jjnz j5, hrs_k2
-  jldi j5, 1
-hrs_k2:
-  jldi j2, HCFT
-  jcall pl_find
+  jld j2, j4, 8
+  jld j3, j4, 16
+  jld j4, j4, 24
+  jcall hp_contra
   jldi j1, 0
-  jld j7, j4, 0
-  jsub j7, j7, j5
-  jjnz j7, hrs_yes
-  jld j7, j4, 8
-  jjnz j7, hrs_no2
+  jjnz j6, hrs_no2
 hrs_yes:
   jld j4, j1, HT5
   jld j6, j1, HT4
@@ -5024,6 +5256,7 @@ he_nl:
   jcall putnum
   jldi j2, 10
   jcall putch
+  jcall hp_cfull                ; (the rules the last turn leaves: every contradiction, once)
   jjmp hl_rules
 
 ; The rules that keep relations apart (Capitan: "suspend one and deduce again; the rule whose suspension frees the most

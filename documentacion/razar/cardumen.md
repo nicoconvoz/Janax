@@ -3002,3 +3002,22 @@ co-ocurrencia, y llega al techo medido antes con 10 MB (76 y 118 pares dichos ju
 **aprendió como relación**, uniendo formas, tiene 7 y 18 pares, contra 2 y 0 del azar: es señal, pero chica. Este
 instrumento no es el de las piezas (40 de 289 y 36 de 406 medían otra cosa: qué pares explican los cortes de palabra), así
 que los números no se comparan directo.
+
+## Las contradicciones, solo cuando una hipótesis pregunta (2026-11-09)
+
+El Capitán: *"no vuelvas a cruzar las mismas cosas que ya cruzaste"*. Medido con el contador de instrucciones del
+sistema (pedido 35, en una copia aparte): en cada vuelta, `hl_props` se llevaba del 65 al 78 % del tiempo, y adentro
+de él, el **82 %** era el cruce de contradicciones. Para cada palabra cruzaba cada relación que la nombra con cada
+otra (k² por palabra) y contaba todas, aunque las únicas que se consultan son las de las hipótesis de esa vuelta.
+
+Ahora cada vuelta arma solo un índice (`hp_index`): por relación, las palabras a las que da un valor confirmado en un
+lado donde es así. Una hipótesis pregunta su contradicción (`hp_contra`): para cada palabra de una de las dos
+relaciones del índice, busca directamente en `HFT2` qué dice la otra de esa palabra (en el mismo lado si van en el
+mismo sentido, en el otro si no), y al revés. El cruce completo (`hp_cfull`) se hace **una sola vez**, al final, para
+las reglas que deja la última vuelta (`hl_rules`).
+
+- **Idéntico bit por bit:** salida y archivos de la casa iguales línea por línea en cinco corridas (NT, dos libros
+  chicos y Asimov, con y sin `toda`), y las diecisiete pruebas de `cardumen` dan bien.
+- **Tiempo:** Asimov sin filtro, de 199 a **49 s**; el libro chico sin filtro, de 13 a 6 s.
+- **Lo que queda, en Asimov sin filtro:** imaginar 30 % (una vez, al final), propiedades 22 %, cruce de pares 19 %,
+  uniones 16 %.
