@@ -109,7 +109,19 @@ languages the literature describes. Conditions were fixed before running; the be
 
 ## Cómo citarlo
 
-Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
+Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.3 es [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510), la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
+
+## Donaciones
+
+Janax y Razar se hacen para donarlos al mundo, abiertos. Si querés ayudar a que sigan creciendo:
+
+| Red | Dirección | Qué mandar |
+|---|---|---|
+| **Bitcoin** (BTC) | `16HuYtsnx9AUcpr6i7z1VkC6atSvK8LGHy` | BTC por la red Bitcoin |
+| **BNB Smart Chain** (BEP20) | `0xe87b4589a53443d8ffed2e9b5a7ef58f261f087c` | **Solo** BTC en BEP20 (BTCB, el contrato que termina en `ead9c`) |
+
+> ⚠️ Mandá cada moneda **solo por su red**. Otro token u otra red se pierden y no se pueden recuperar. Las direcciones son
+> de depósito de Binance y pueden cambiar: antes de un envío grande, confirmá que siguen siendo estas en esta página.
 
 ## Licencia
 
