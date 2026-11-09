@@ -3181,3 +3181,9 @@ dichas (criterio).
   parejas (antes, cada pedazo solo, 6.506). Contra el MATS **39 contra 0**: flexión 16 (*año~años, ley~leyes*),
   semántica 20 (*ayuda~asistencia, retroceder~replegarse, día~lunes, después~antes, sencillo~difícil, familia~madre,
   derecha~izquierda*), enciclopédica 2 (*napoleón~francés*). Sin el pedido, NT y p320 idénticos.
+- **El wikcionario entero (15 MB, con el filtro de la mitad, los lugares viajando):** 150 pedazos en 194 s, pico de
+  **144 MB** (con "toda" pasaba de 1 GB por `imaginado`), `lugares` de 38 MB. Contra el MATS, **249 contra 41**:
+  semántica 131/24, flexión 63/5, enciclopédica 34/8, derivación 21/4; sinónimos exactos **18 contra 0**, antónimos
+  17/3 y 17/1, sinónimos de intensidad 12/3 (*automóvil~coche, limón~fruta, pastel~postre, burro~pollino,
+  madrid~españa, santander~cantabria, agradable~desagradable*). Ojo: el wikcionario escribe "sinónimos: …" en sus
+  líneas; que no es solo eso lo dice la Wikipedia, que no los escribe (39 contra 0 en 600 KB).
