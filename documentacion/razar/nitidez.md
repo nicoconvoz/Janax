@@ -62,7 +62,7 @@ Código: `hl_nitidez` y siguientes en `razar/cardumen/hilos.jsm`. Pruebas: `hilo
 | Wikipedia 20 MB | Los primeros 20.000.000 bytes de un extracto de la Wikipedia en castellano (ya en minúsculas y con `O: `; ver el aviso) | `d17a95594807375681628cf751b1d512af31d45cd59e663a57844c0a82786afc` |
 | Wikcionario 15 MB | Las definiciones del Wikcionario en castellano, texto plano | `ed1d8ba08be45cc07b77cb329c92fe82e3347792b45ee22c2663bb1adac96f96` |
 | Wikipedia 2,3 MB | Artículos de la Wikipedia en castellano, texto plano | `c2d6481cde4ead7af1661a53e5cec2d3e668ee4b3e6812a8e10d7e411d23ba80` |
-| MATS | Banco multilingüe de analogías del ATILF (UMR 7118), versión `7684515`; se usa la parte en castellano | `b9fadf4fcac25ee5fd49c265a78ecaaf65be2df4715678e8c7856b5f5830709b` (el zip) |
+| MATS | Banco multilingüe de analogías del ATILF (UMR 7118), <https://github.com/ATILF-UMR7118/MATS>, versión `7684515` (del trabajo de *SEM 2023 *„Mann" is to "Donna" as「国王」is to « Reine »*); se usa la parte en castellano | `b9fadf4fcac25ee5fd49c265a78ecaaf65be2df4715678e8c7856b5f5830709b` (el zip) |
 
 Los textos de Wikipedia y Wikcionario son CC BY-SA; no se redistribuyen acá, solo su huella.
 

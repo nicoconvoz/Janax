@@ -71,7 +71,42 @@
 
 <section>
   <div class="wrap">
-    <div class="kicker">El resultado · 2026-11-04</div>
+    <div class="kicker">El resultado de la v0.3 · 2026-11-09</div>
+    <h2>Sin que nadie le diga qué es un sinónimo, Razar los encuentra por los lugares que las palabras comparten.</h2>
+    <p class="sub">"Iglesia" y "capilla" casi nunca aparecen juntas, pero ocupan los mismos lugares en lo que se dice de ellas.
+      Razar cuenta esos lugares, deja afuera lo que se dice en todos lados (la mitad del texto que más se repite, medida por
+      él), y las parejas que comparten más lugares son las que se parecen. Se probó contra el
+      <a href="https://github.com/ATILF-UMR7118/MATS">MATS</a>, un banco de analogías que Razar nunca vio: un par cuenta cuando
+      sus dos palabras comparten más lugares que la palabra con la respuesta de otro par (el azar).</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Corpus</th><th>Real contra azar</th><th>Semántica</th><th>Sinónimos exactos</th><th>Antónimos</th><th>Tiempo y memoria</th></tr>
+      <tr><td><strong>Wikipedia, 20 MB</strong> (no escribe sinónimos)</td><td class="num"><strong>451 – 117</strong></td><td class="num">140 – 44</td><td class="num">18 – 1</td><td class="num">28 – 1</td><td class="num">31 min · 205 MB</td></tr>
+      <tr><td>Wikcionario, 15 MB</td><td class="num"><strong>249 – 41</strong></td><td class="num">131 – 24</td><td class="num">18 – 0</td><td class="num">17 – 1</td><td class="num">3 min · 144 MB</td></tr>
+    </table>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>Una foto que se revela</h3>
+        <p>Con un lugar compartido, una palabra es "posible persona"; con tres, ya es una moneda; con siete, tres de cada
+          cuatro son personas. Nadie vota: cada lugar compartido achica las posibilidades.</p></div>
+      <div class="card"><h3>La memoria duerme en disco</h3>
+        <p>Los lugares viajan de un pedazo del libro al siguiente: cada pedazo despierta solo los de sus palabras y el resto
+          queda en disco. 20 MB de texto, 205 MB de RAM.</p></div>
+      <div class="card"><h3>Lo mismo desde afuera</h3>
+        <p>Un juez en Python, que Razar nunca lee, calcula la misma idea sobre el corpus entero y da lo mismo: semántica
+          234 – 51 y 164 – 51 en los dos corpus.</p></div>
+      <div class="card"><h3>Se repite con un comando</h3>
+        <p><code>bash razar/cardumen/nitidez_reproducir.sh &lt;corpus&gt; &lt;mats_es&gt; &lt;casa&gt;</code>. Las fuentes,
+          con su huella sha256, están en <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/nitidez.md">el documento técnico</a>.</p></div>
+    </div>
+    <p class="sub" style="margin-top:20px"><strong>Lo que no está probado:</strong> muchas palabras todavía no comparten
+      ningún lugar con nadie (empates), y que esto sirva para razonar, no solo para agrupar, falta medirlo.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">El resultado de la v0.2 · 2026-11-04</div>
     <h2>Con 16 cosas, la red de referencia del campo no llega nunca. Razar llega siempre, en menos de 102 juegos.</h2>
     <p class="sub">El juego de señales de Lewis: uno dice una cosa, el otro la adivina, y los dos aprenden solo de si se
       entendieron. Nadie les da la respuesta correcta: el idioma lo inventan entre los dos. Contra
@@ -168,6 +203,8 @@
     <div class="scroll">
     <table>
       <tr><th>Qué</th><th>Resultado</th></tr>
+      <tr><td>La nitidez de Razar contra el MATS (un par cuenta cuando el par real comparte más lugares que el del azar), 20 MB de Wikipedia</td><td class="num">451 vs 117</td></tr>
+      <tr><td>Lo imaginado que comparte 10 lugares o más con quienes ya tienen el papel, contra lo que no comparte ninguno, confirmado en otros textos</td><td class="num">17 % vs 4 %</td></tr>
       <tr><td>La voluntad y el cardumen, sin idioma común, con armonía (4 cosas para decir; el azar es 25 %)</td><td class="num">→ 100 % de aciertos</td></tr>
       <tr><td>La voluntad que escucha el ritmo de la melodía (qué pieza y cuándo) contra la que solo mira qué piezas, 16 cosas en un cubo de 7, 20 semillas nuevas con la regla fijada antes; el control con el ritmo barajado da 0 de 20</td><td class="num">19 de 20 vs 6 de 20</td></tr>
       <tr><td>Razar en Janax contra el modelo de referencia en Perl (4.000 vueltas, misma huella)</td><td class="num">~70 veces más rápido</td></tr>
@@ -187,6 +224,7 @@
     <p class="sub">La documentación está en castellano; los comentarios del código, en inglés.</p>
     <div class="grid links">
       <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/ideas.md"><strong>Las ideas</strong><span>Con las palabras de quien las tuvo y la devolución de cada una.</span></a>
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/nitidez.md"><strong>La nitidez</strong><span>Sinónimos y antónimos por lugares compartidos: resultados y cómo reproducirlos.</span></a>
       <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/cardumen.md"><strong>El cardumen de Razar</strong><span>La neurona, la armonía y el idioma que nace.</span></a>
       <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/janaxos.md"><strong>Janax OS</strong><span>Lo construido, cómo se prueba y todo lo medido.</span></a>
       <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/idioma/especificacion-v0.md"><strong>El idioma Janax</strong><span>Instrucciones, codificación y reglas.</span></a>
@@ -206,7 +244,8 @@
 cd Janax
 perl razar/cardumen/lazo.pl nace=7 armonia=1 lee=ritmo                       # inventando un idioma
 perl razar/cardumen/lazo.pl n=7 k=16 nace=1005 armonia=1 lee=ritmo hasta=1   # 16 cosas en un cubo de 7
-FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh</pre>
+FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh
+bash razar/cardumen/nitidez_reproducir.sh corpus.txt MATS/es casa_nueva    # la nitidez (necesita Python para el juez)</pre>
   </div>
 </section>
 
@@ -226,7 +265,9 @@ FASM=/c/fasm/FASM.EXE INCLUDE=C:/fasm/INCLUDE bash so/pruebas/correr.sh</pre>
     <em>English:</em> a hand-written operating system, language and assembler built to host Razar, an artificial
     reasoning system that thinks in melodies. On the Lewis signaling game with 16 things, Razar learns the whole
     language in 35–102 games on 5 of 5 seeds; EGG, the field's reference implementation, reaches it on 0 of 5 within
-    320,000 games. Documentation is in Spanish.
+    320,000 games. Version 0.3: with no one telling it what a synonym is, Razar groups words by the places they share; on
+    20 MB of Spanish Wikipedia its pairs beat chance on MATS 451 to 117 (exact synonyms 18 to 1, antonyms 28 to 1), in 31
+    minutes and 205 MB, reproducible with one command. Documentation is in Spanish.
   </div>
 </footer>
 </body>
