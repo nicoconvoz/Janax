@@ -144,6 +144,8 @@ S_PEDAZO = 0D00h
 S_SIGUE  = 0D20h
 S_HILOS  = 0D40h
 S_TEST   = 0D60h
+S_MECS   = 0D80h
+S_REFUT  = 0DA0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -161,6 +163,12 @@ ZEEND = 1298h
 ZELR  = 12A0h
 ZEWL  = 12A8h
 HIMK  = 12B0h                   ; the instruction that imagined the one written now (the mechanism, with each vote)
+HMEC  = 12B8h                   ; by mechanism, this book's tally {key, its text, its bytes, imagined: confirmed,
+HMT   = 12D8h                   ; refuted, said otherwise, waiting; chance's: the same} (a growing table); the vote
+HMQ   = 12E0h                   ; walked: its place (0 confirmed 1 refuted 2 said otherwise 3 waiting, -1 none), its
+HMP   = 12E8h                   ; mechanism's key, where its text starts, its bytes
+HMN   = 12F0h
+HMJ   = 12F8h                   ; (z spoken of, while hp_is is asked)
 HXO   = 1300h                   ; by relation, where its words with one confirmed value start in HXL, where it is so (a
 HXL   = 1308h                   ; room each, made again every turn): what a hypothesis asks its contradictions with
 HXA   = 1310h                   ; (the two relations walked, which way, the place walked and its end)
@@ -7692,6 +7700,12 @@ hiw_nl:
 ; ("confirma:"). Counted apart, imagined ("i") and chance's ("a"). Every line not confirmed is kept for the books after
 ; (an open vote: never thrown away). Uses j1-j14.
 hl_icheck:
+  jldi j2, HMEC
+  jldi j3, 96
+  jcall pl_new
+  jldi j1, 0
+  jldi j2, -1
+  jst j2, j1, HMT
   jldi j11, S_IMAG
   jldi j12, 9
   jcall en_read
@@ -7740,6 +7754,9 @@ hl_icheck:
     jldi j8, 63
     jsar j6, j6, j8
     jjnz j6, hvc_next
+    jcall hvm_find              ; (its mechanism)
+    jldi j1, 0
+    jld j4, j1, HKP
     jcall hk_hex                ; the relation's key, its side, z, b, which
     jldi j1, 0
     jst j9, j1, HKKF
@@ -7780,7 +7797,9 @@ hl_icheck:
     jld j2, j1, HIR
     jcall hxr_of
     jldi j1, 0
-    jldi j8, 0                  ; walk its pairs: z on its side (testable), and z with b (confirmed)
+    jldi j8, 0                  ; walk its pairs: z on its side (testable), and z with b (confirmed); z with
+    jldi j11, 0                 ; another (j12), b with another z (j11): what refutes it, where it allows one only
+    jldi j12, 0
     hvc_p:
       jjz j10, hvc_pd
       jld j5, j9, 0
@@ -7791,6 +7810,14 @@ hl_icheck:
       jadd j5, j6, j1
       jadd j6, j7, j1
     hvc_so:
+      jld j7, j1, HIW
+      jsub j7, j6, j7
+      jjnz j7, hvc_sz
+      jld j7, j1, HIZ
+      jsub j7, j5, j7
+      jjz j7, hvc_sz
+      jldi j11, 1
+    hvc_sz:
       jld j7, j1, HIZ
       jsub j7, j5, j7
       jjnz j7, hvc_pn
@@ -7798,6 +7825,7 @@ hl_icheck:
       jld j7, j1, HIW
       jsub j7, j6, j7
       jjz j7, hvc_yes
+      jldi j12, 1
     hvc_pn:
       jldi j7, 16
       jadd j9, j9, j7
@@ -7805,7 +7833,51 @@ hl_icheck:
       jsub j10, j10, j7
       jjmp hvc_p
   hvc_pd:
-    jjz j8, hvc_keep            ; not testable here: kept
+    jst j8, j1, HMJ
+    jor j7, j8, j11
+    jjz j7, hvc_keep            ; not spoken of here: waiting, kept
+    jldi j2, 2                  ; said otherwise, or refuted: where it allows one only
+    jst j2, j1, HMT
+    jjz j12, hvc_rb
+    jld j2, j1, HIR
+    jld j3, j1, HISD
+    jcall hp_is
+    jldi j1, 0
+    jjnz j6, hvc_ref
+  hvc_rb:
+    jjz j11, hvc_rd
+    jld j2, j1, HIR
+    jld j3, j1, HISD
+    jldi j4, 1
+    jxor j3, j3, j4
+    jcall hp_is
+    jldi j1, 0
+    jjz j6, hvc_rd
+  hvc_ref:
+    jldi j2, 1
+    jst j2, j1, HMT
+    jld j2, j1, HIF
+    jldi j3, 105
+    jsub j3, j2, j3
+    jjnz j3, hvc_rd
+    jldi j1, S_REFUT            ; refuted here, and only here: said, and kept for the books after
+    jcall puts
+    jld j4, j1, HKP
+    jldi j2, 57
+    jadd j4, j4, j2
+    jld j5, j1, HKX
+    hvc_rsay:
+      jsub j6, j5, j4
+      jjz j6, hvc_rd
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jjmp hvc_rsay
+  hvc_rd:
+    jldi j1, 0
+    jld j8, j1, HMJ
+    jjz j8, hvc_keep            ; (testable as it was counted: z spoken of)
     jld j2, j1, HIF             ; testable, not confirmed: counted, kept
     jldi j3, 105
     jsub j3, j2, j3
@@ -7822,6 +7894,7 @@ hl_icheck:
     jst j2, j1, HVT0
     jjmp hvc_keep
   hvc_yes:
+    jst j1, j1, HMT
     jld j2, j1, HIF
     jldi j3, 105
     jsub j3, j2, j3
@@ -7872,6 +7945,7 @@ hl_icheck:
     jadd j2, j2, j3
     jst j2, j1, HVU
   hvc_next:
+    jcall hvm_tally
     jldi j1, 0
     jld j2, j1, HKX
     jst j2, j1, HKP
@@ -7898,6 +7972,234 @@ hvc_done:
   jldi j2, 10
   jcall putch
 hvc_quiet:
+  jcall hl_msave
+  jldi j1, 0
+  jret
+
+; The line HKP..HKX: its mechanism (after " # ": its key, its text) -> HMQ (0: none, an old line), HMP, HMN; its
+; place waiting (HMT 3) until it is spoken of. Uses j1-j9.
+hvm_find:
+  jldi j1, 0
+  jst j1, j1, HMQ
+  jldi j2, 3
+  jst j2, j1, HMT
+  jld j4, j1, HKP
+  jld j5, j1, HKX
+  hvf_lap:
+    jldi j6, 20
+    jadd j6, j4, j6
+    jsub j6, j5, j6
+    jldi j7, 63
+    jsar j6, j6, j7
+    jjnz j6, hvf_done
+    jldb j6, j4, 0
+    jldi j7, 32
+    jsub j6, j6, j7
+    jjnz j6, hvf_n
+    jldb j6, j4, 1
+    jldi j7, 35
+    jsub j6, j6, j7
+    jjnz j6, hvf_n
+    jldb j6, j4, 2
+    jldi j7, 32
+    jsub j6, j6, j7
+    jjz j6, hvf_at
+  hvf_n:
+    jldi j6, 1
+    jadd j4, j4, j6
+    jjmp hvf_lap
+hvf_at:
+  jldi j6, 3
+  jadd j4, j4, j6
+  jst j4, j1, HMP
+  jcall hk_hex
+  jldi j1, 0
+  jst j9, j1, HMQ
+  jld j4, j1, HMP
+  jldi j6, 17
+  jadd j4, j4, j6
+  jst j4, j1, HMP
+  jld j5, j1, HKX
+  jsub j5, j5, j4
+  jldi j6, 1
+  jsub j5, j5, j6
+  jst j5, j1, HMN
+hvf_done:
+  jldi j1, 0
+  jret
+
+; The vote walked counted for its mechanism (HMQ) in its place (HMT), imagined or chance's (HIF); then none walked.
+; Uses j1-j8.
+hvm_tally:
+  jldi j1, 0
+  jld j2, j1, HMT
+  jldi j3, 63
+  jsar j3, j2, j3
+  jjnz j3, hvt_done
+  jld j5, j1, HMQ
+  jjz j5, hvt_done
+  jldi j2, HMEC
+  jcall pl_take
+  jldi j1, 0
+  jjz j6, hvt_old
+  jld j7, j1, HMP
+  jst j7, j4, 8
+  jld j7, j1, HMN
+  jst j7, j4, 16
+hvt_old:
+  jld j2, j1, HMT
+  jld j3, j1, HIF
+  jldi j5, 105
+  jsub j3, j3, j5
+  jjz j3, hvt_i
+  jldi j3, 4
+  jadd j2, j2, j3
+hvt_i:
+  jldi j3, 3
+  jshl j2, j2, j3
+  jadd j2, j2, j4
+  jld j3, j2, 24
+  jldi j5, 1
+  jadd j3, j3, j5
+  jst j3, j2, 24
+hvt_done:
+  jldi j1, 0
+  jldi j2, -1
+  jst j2, j1, HMT
+  jret
+
+; This book's map of each mechanism, after the books before in the house's "mecanismos" (Capitan: "only refutation
+; silences it, and only there"): a line {where this piece starts, the mechanism's key, imagined: confirmed, refuted,
+; said otherwise, waiting; chance's: the same | the mechanism}. Nothing if no vote had a mechanism. Uses j1-j14.
+hl_msave:
+  jldi j1, 0
+  jldi j2, HMEC
+  jld j3, j2, 16
+  jjz j3, hms_done
+  jldi j11, S_MECS
+  jldi j12, 10
+  jcall en_read
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_MECS
+  jldi j12, 10
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_MECS
+  jldi j12, 10
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hms_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j4, j1, PRB
+  jld j5, j1, PRN
+  hms_b:
+    jjz j5, hms_bd
+    jldb j2, j4, 0
+    jcall putch
+    jldi j3, 1
+    jadd j4, j4, j3
+    jsub j5, j5, j3
+    jjmp hms_b
+hms_bd:
+  jldi j1, 0
+  jldi j2, HMEC
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HWN
+  jld j4, j2, 0
+  jst j4, j1, HWX
+  hms_lap:
+    jldi j1, 0
+    jld j3, j1, HWN
+    jjz j3, hms_close
+    jld j9, j1, HWX
+    jld j5, j9, 0
+    jjz j5, hms_next
+    jld j2, j1, HPFR
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j2, j9, 0
+    jcall hk_puthex
+    jldi j1, 0
+    jldi j2, 0
+    jst j2, j1, HKI
+    hms_n:
+      jldi j1, 0
+      jld j2, j1, HKI
+      jldi j3, 8
+      jsub j3, j2, j3
+      jjz j3, hms_t
+      jldi j2, 32
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, HKI
+      jldi j3, 3
+      jshl j3, j2, j3
+      jld j9, j1, HWX
+      jadd j3, j3, j9
+      jld j2, j3, 24
+      jcall putnum
+      jldi j1, 0
+      jld j2, j1, HKI
+      jldi j3, 1
+      jadd j2, j2, j3
+      jst j2, j1, HKI
+      jjmp hms_n
+  hms_t:
+    jldi j2, 32
+    jcall putch
+    jldi j2, 124
+    jcall putch
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j4, j9, 8
+    jld j5, j9, 16
+    hms_s:
+      jjz j5, hms_sd
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jsub j5, j5, j3
+      jjmp hms_s
+  hms_sd:
+    jldi j2, 10
+    jcall putch
+  hms_next:
+    jldi j1, 0
+    jld j9, j1, HWX
+    jldi j2, HMEC
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HWX
+    jld j3, j1, HWN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HWN
+    jjmp hms_lap
+hms_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hms_done:
   jldi j1, 0
   jret
 

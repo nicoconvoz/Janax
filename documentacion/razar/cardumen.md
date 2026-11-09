@@ -3111,3 +3111,18 @@ la refutación"*, y *"no solo el mecanismo atómico: el formado por varios átom
   cuando, vida de, causa de, cinco, pena, señora, ninguno, andar, imaginaciones, señal* ("materia de": 40 % de lo que
   se decide, sus piezas sin la razón 0,8 %). La bolsa tapaba mecanismos que se repiten, y también los que eligen peor
   que el azar, que se repiten igual.
+
+### Solo la refutación lo calla, y solo ahí (2026-11-09)
+
+- **Cómo (`hl_icheck`):** cada voto comprobable queda en uno de cuatro lugares. **Confirmado:** el libro lo dice.
+  **Refutado:** el libro le da a z otro valor, o a b otro z, en una relación que según lo que Razar mismo probó
+  admite uno solo (`hp_is`: "cada hijo, un padre"); se dice `refuta:` y el voto sigue abierto para los libros que
+  vengan. **Dicho distinto:** el libro dice otra cosa, pero la relación admite varios. **En espera:** el libro no
+  habla de eso. Cada libro (o pedazo) deja en `mecanismos` un renglón por mecanismo, `{dónde empieza el pedazo, la
+  clave del mecanismo, imaginados: confirmados, refutados, dichos distinto, en espera; los del azar: igual | el
+  mecanismo}`: el mapa de cada uno, libro por libro.
+- **Prueba (`hilos_imagina_prueba.sh`):** el libro 3 dice que el padre de nube es rio, y ahí cada hijo tiene un padre:
+  `refuta: eva padre de nube # … y`; el libro 2, que lo confirma, no refuta nada.
+- **No cambia lo que aprende:** NT con filtro y p320 sin filtro, todo idéntico; p320 refuta 567 y deja 92 renglones de
+  mecanismos, el NT 35 y 10.
+- Ojo con `armar.sh`: la fuente va con su ruta entera; con la corta falla y deja el binario viejo.

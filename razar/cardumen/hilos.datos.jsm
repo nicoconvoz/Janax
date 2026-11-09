@@ -212,3 +212,7 @@ times 0D40h - $ db 0
 db 'hilos', 0
 times 0D60h - $ db 0
 db 'testigos', 0
+times 0D80h - $ db 0
+db 'mecanismos', 0
+times 0DA0h - $ db 0
+db 'refuta: ', 0
