@@ -3187,3 +3187,9 @@ dichas (criterio).
   17/3 y 17/1, sinónimos de intensidad 12/3 (*automóvil~coche, limón~fruta, pastel~postre, burro~pollino,
   madrid~españa, santander~cantabria, agradable~desagradable*). Ojo: el wikcionario escribe "sinónimos: …" en sus
   líneas; que no es solo eso lo dice la Wikipedia, que no los escribe (39 contra 0 en 600 KB).
+- **La Wikipedia grande (20 MB, que no escribe sinónimos), con el filtro:** el vigía la cortó al 74 % (15,2 MB, 149
+  pedazos, 680 s; la PC bajó de 800 MB libres con janaxos en 706 MB). `lugares` 78 MB; `nitidas` 234 MB (cada pedazo
+  escribe lo que sumó, renglón por pareja: hay que juntarlo). Contra el MATS, **385 contra 96**: semántica 130/35,
+  flexión 162/25, enciclopédica 60/31, derivación 33/5; sinónimos exactos 14/2, antónimos 21/6 y 27/1 (*iglesia~capilla,
+  ferrocarril~metro, color~rojo, deporte~fútbol, roma~italia, madrid~españa, capaz~incapaz*). Sin que nadie escriba
+  "sinónimos", salen por lugar compartido.
