@@ -139,6 +139,7 @@ S_PLET   = 0C60h
 S_VUELCA = 0C80h
 S_RELS   = 0CA0h
 S_EJEM   = 0CC0h
+S_TODA   = 0CE0h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -400,6 +401,7 @@ HEI   = 1F68h                   ; (the form, its pair, the old lines walked, whe
 HEP   = 1F70h
 HEX   = 1F78h
 HEE   = 1F80h
+HTODA = 1F88h                   ; every word may hold a place (house "toda": none of the half is left out)
 HPCL  = 1F28h                   ; (the bytes of the letter cut, a letter anywhere)                   ; the reader keeps the signs (house "signos"): each a piece of its own, never thrown away                   ; how many say each value of each word, by relation and side {key, relation, side, word,
                                 ; value, how many} (a growing table)                   ; by relation, the most pairs it shares with another in the all-crossed world (a room)
 HSX   = 1808h                   ; (the text a cap or a surname is said with)
@@ -471,6 +473,12 @@ jcall en_read
 jldi j1, 0
 jld j2, j1, PRN
 jst j2, j1, HSIG
+jldi j11, S_TODA                ; every word may hold a place, if the house asks ("toda")
+jldi j12, 4
+jcall en_read
+jldi j1, 0
+jld j2, j1, PRN
+jst j2, j1, HTODA
 jldi j11, S_PARES
 jldi j12, 5
 jcall en_read
@@ -654,6 +662,10 @@ hh_cd:
     jsar j5, j5, j6
     jldi j6, 1
     jadd j5, j5, j6               ; 1 if its times reach the half's (0 if fewer)
+    jld j6, j1, HTODA             ; (with "toda", no word is left out of a place: what is said everywhere is
+    jjz j6, hh_kept               ; discounted by chance, the crossed world, as anything else)
+    jldi j5, 0
+  hh_kept:
     jld j2, j1, HI
     jld j3, j1, HHF
     jadd j3, j3, j2

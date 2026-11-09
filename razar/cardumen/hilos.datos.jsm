@@ -202,3 +202,5 @@ times 0CA0h - $ db 0
 db 'relaciones', 0
 times 0CC0h - $ db 0
 db 'ejemplos', 0
+times 0CE0h - $ db 0
+db 'toda', 0
