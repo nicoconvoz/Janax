@@ -3159,3 +3159,13 @@ dichas (criterio).
   104/46; flexión 155/17 y 239/39. Sinónimos exactos 32/2 y 18/3 (*agujero~hueco* 9 contra 0 y 2 contra 0);
   antónimos 27/8, 30/3 y 23/6, 28/2 (*abajo~arriba* 42 contra 0). El wikcionario escribe sinónimos, la Wikipedia no, y
   replica igual. La mitad semántica que faltaba aparece por lugar compartido.
+- **Adentro de Razar (`hl_nitidez`, si la casa pide `nitidez`):** después de leer, cada par leído pone sus dos palabras
+  en el lugar de su forma (lado 0 la primera, lado 1 la segunda); no cuentan las formas hechas solo de palabras de la
+  mitad ni las palabras de la mitad (las de `HWC` dichas tantas veces como `HHC`: lo que Razar ya mide, sin lista).
+  Cada dos palabras de un lugar lo comparten; a `nitidas`, después de los pedazos anteriores: `{palabra, otra, lugares
+  que comparten}` para las que comparten dos o más. Prueba `hilos_nitidez_prueba.sh` (ana y eva "dijo hola"; rio
+  ninguno; sin el pedido nada cambia). Sin el pedido, NT y p320 idénticos.
+- **Medido (Wikipedia 600 KB, sin filtro, en pedazos):** 71 s (68 sin nitidez), mismo pico de 661 MB, 6.506 parejas.
+  Contra el MATS, pocas pero limpias: 6 contra 0, *norte~sur* (8 lugares), *superior~inferior*, *derecha~izquierda*,
+  *interno~externo*, *mes~marzo*, *política~políticas*. Poco texto y cada pedazo solo: dos palabras de pedazos
+  distintos no se encuentran. Lo que falta es llevar los lugares de pedazo a pedazo (los módulos).
