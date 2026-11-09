@@ -210,3 +210,5 @@ times 0D20h - $ db 0
 db 'sigue', 0
 times 0D40h - $ db 0
 db 'hilos', 0
+times 0D60h - $ db 0
+db 'testigos', 0

@@ -3051,3 +3051,23 @@ paréntesis:
 El azar es alto en algunas familias porque hay relaciones muy grandes (una junta muchas palabras, *hidalgo don*):
 la señal limpia está en hombre/mujer y antónimos binarios (10 contra 1). Como **par** sostenido por una forma (la
 co-ocurrencia, `juez_rel.py`) no cambia: lexicográfica 19 con filtro, 20 sin.
+
+## Cada unión guarda sus testigos (2026-11-09)
+
+El Capitán: *"una verdad puede ser una verdad a medias… tiene que servir para ciertos contextos y para otros no"*, y
+el lente *"como el del ojo humano"*. Medido antes: sin el filtro de la mitad, el 93 % de las palabras con relación
+(wikcionario, 4,2 MB) y el 95 % (Quijote) caen en una sola relación, porque una unión funde las dos relaciones y lo
+que vale para una mitad se hereda a la otra sin examen. Para que cada verdad tenga su lugar, primero hay que saber
+dónde se la vio: hilos contaba los pares que confirman cada unión ("lo confirman 7") y los tiraba.
+
+- **Cómo:** `hl_agree` anota, por cada confirmación, su testigo (`hl_wit`: el par, sus dos palabras y las dos formas
+  que lo dijeron) en `HWIT`, que se rehace cada vuelta; una pendiente que suma (`hl_pinject`) anota el suyo sin
+  palabras (`hl_pwit`: el par era de otro libro). `hl_merge` marca la hipótesis que une (`HAG` 56) y `hl_wkeep` pasa
+  sus testigos a `HTES`. Al terminar, `hl_tsave` los agrega al archivo `testigos` de la casa, después de los de los
+  libros anteriores: una línea `{primera relación, segunda, 1 igual 2 al revés, las dos palabras ("-" una pendiente),
+  las dos formas}`. Para eso `HGT` guarda las dos palabras de cada par y `HGE` la forma que lo dijo (32 bytes).
+- **Prueba (`hilos_testigos_prueba.sh`):** cada `une:` tiene tantas líneas como dice "lo confirman"; *padre de ~ hijo
+  de* por ana–eva, eva–luz, luz–mar; el segundo libro agrega las suyas (*padre de ~ madre de*, cuatro: dos por *hijo
+  de*, dada vuelta) después de las del primero.
+- **No cambia lo que aprende:** NT con filtro y p320 sin filtro dan `sabido`, `pendiente` y `ejemplos` idénticos byte
+  a byte a antes; solo suben las instrucciones (NT +1,6 %). 287 y 2.424 testigos.

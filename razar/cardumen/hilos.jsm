@@ -143,6 +143,7 @@ S_TODA   = 0CE0h
 S_PEDAZO = 0D00h
 S_SIGUE  = 0D20h
 S_HILOS  = 0D40h
+S_TEST   = 0D60h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -172,6 +173,11 @@ HBK   = 1348h                   ; the whole book (house "pares"): where, its byt
 HBN   = 1350h
 HPFR  = 1358h
 HPTO  = 1360h
+HWIT  = 1368h                   ; this turn's witnesses: each pair said as a hypothesis deduces {key, the hypothesis'
+HTES  = 1388h                   ; key, the pair's two words (0: a pending one), the two forms that said it} (a growing
+HWK   = 13A8h                   ; table, made again every turn); the joins' ones, kept for "testigos" {key, relation,
+HWX   = 13B0h                   ; relation, which way, the two words, the two forms}; (walking: the hypothesis' key,
+HWN   = 13B8h                   ; where, how many left)
 ZSLR  = 13C8h                   ; (saying words: the line, walking, the first, the end, the place said "_")
 ZSLI  = 13D0h
 ZSLF  = 13D8h
@@ -533,6 +539,7 @@ jwhile j2                      ; while a turn joins something
   jcall hl_props
   jcall hl_derive
   jcall hl_merge
+  jcall hl_wkeep
   jldi j1, 0
   jld j2, j1, HTURN
   jldi j3, 1
@@ -550,6 +557,7 @@ jcall hl_inventa
 jcall hl_ksave
 jcall hl_psave
 jcall hl_esave
+jcall hl_tsave
 jcall hl_vuelca
 jcall hl_next
 jjmp finish
@@ -1100,6 +1108,16 @@ he_k:
   jldi j8, 1
   jadd j7, j7, j8
   jst j7, j4, 8
+  jld j7, j1, HA                ; its two words, the first first
+  jld j8, j1, HB
+  jld j9, j1, HDIR
+  jjnz j9, hek_w
+  jadd j9, j7, j1
+  jadd j7, j8, j1
+  jadd j8, j9, j1
+hek_w:
+  jst j7, j4, 32
+  jst j8, j4, 40
   jret
 he_put:
   jldi j2, HGT
@@ -1111,7 +1129,7 @@ he_put:
   jldi j9, 1
   jadd j8, j8, j9
   jst j8, j4, 24
-  jldi j8, 24
+  jldi j8, 32
   jmul j7, j7, j8
   jld j8, j1, HGE
   jadd j7, j7, j8
@@ -1121,6 +1139,9 @@ he_put:
   jst j8, j7, 8
   jld j8, j1, HTG
   jst j8, j7, 16
+  jld j8, j1, HT4               ; (the form that says it)
+  jld j8, j8, 0
+  jst j8, j7, 24
   jret
 
 ; Every pair of a form said by two, and its crossed one (the second word of the form's pair before it, the last for
@@ -1272,6 +1293,9 @@ hl_agree:
     jsub j2, j2, j4
     jjmp ha_z
 ha_zd:
+  jldi j2, HWIT                 ; (this turn's witnesses)
+  jcall hl_clear
+  jldi j1, 0
   jldi j2, HGT
   jld j3, j2, 8
   jldi j4, 1
@@ -1313,7 +1337,7 @@ ha_zd:
         jld j5, j4, 16
         jld j6, j1, HI
         jadd j6, j6, j5
-        jldi j7, 24
+        jldi j7, 32
         jmul j6, j6, j7
         jld j8, j1, HGE
         jadd j6, j6, j8           ; x
@@ -1370,6 +1394,7 @@ ha_zd:
         jjnz j5, ha_k
         jldi j5, 1
       ha_k:
+        jst j5, j1, HWK
         jldi j2, HAG
         jcall pl_take
         jldi j1, 0
@@ -1389,6 +1414,9 @@ ha_zd:
         jldi j9, 1
         jadd j8, j8, j9
         jst j8, j7, 32
+        jld j7, j1, HTG
+        jjnz j7, ha_yn
+        jcall hl_wit
       ha_yn:
         jldi j1, 0
         jld j3, j1, HJ
@@ -1416,6 +1444,143 @@ ha_zd:
     jst j3, j1, HT1
     jjmp ha_g
 ha_done:
+  jret
+
+; The witness of the confirmation hl_agree just counted: the pair (HT2) that the relations of its entries HI and HJ
+; hold alike, for the hypothesis HWK; once each (its key: the hypothesis, the two entries, the pair). Uses j1-j14.
+hl_wit:
+  jldi j1, 0
+  jld j5, j1, HWK
+  jld j6, j1, HI
+  jcall hl_mix
+  jld j6, j1, HJ
+  jcall hl_mix
+  jld j4, j1, HT2
+  jld j6, j4, 0
+  jcall hl_mix
+  jjnz j5, hwt_k
+  jldi j5, 1
+hwt_k:
+  jldi j2, HWIT
+  jcall pl_take
+  jldi j1, 0
+  jld j7, j1, HWK
+  jst j7, j4, 8
+  jld j8, j1, HT2
+  jld j7, j8, 32
+  jst j7, j4, 16
+  jld j7, j8, 40
+  jst j7, j4, 24
+  jld j7, j8, 16                ; the forms of the two entries
+  jldi j10, 32
+  jld j11, j1, HGE
+  jld j9, j1, HI
+  jadd j9, j9, j7
+  jmul j9, j9, j10
+  jadd j9, j9, j11
+  jld j12, j9, 24
+  jst j12, j4, 32
+  jld j9, j1, HJ
+  jadd j9, j9, j7
+  jmul j9, j9, j10
+  jadd j9, j9, j11
+  jld j12, j9, 24
+  jst j12, j4, 40
+  jret
+
+; The witness of a pending one hl_pinject just counted for the hypothesis HWK: no words (the pair was another
+; book's), the pending one's two forms (HKP). Uses j1-j14.
+hl_pwit:
+  jldi j1, 0
+  jld j5, j1, HWK
+  jld j6, j1, HKI
+  jcall hl_mix
+  jldi j6, 50h
+  jcall hl_mix
+  jjnz j5, hpw_k
+  jldi j5, 1
+hpw_k:
+  jldi j2, HWIT
+  jcall pl_take
+  jldi j1, 0
+  jld j7, j1, HWK
+  jst j7, j4, 8
+  jst j1, j4, 16
+  jst j1, j4, 24
+  jld j8, j1, HKP
+  jld j7, j8, 0
+  jst j7, j4, 32
+  jld j7, j8, 8
+  jst j7, j4, 40
+  jret
+
+; The witnesses of this turn's joins (their hypotheses marked at 56 by hl_merge), kept in HTES. Uses j1-j14.
+hl_wkeep:
+  jldi j1, 0
+  jldi j2, HWIT
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HWN
+  jld j4, j2, 0
+  jst j4, j1, HWX
+  hwq_lap:
+    jldi j1, 0
+    jld j3, j1, HWN
+    jjz j3, hwq_done
+    jld j9, j1, HWX
+    jld j5, j9, 0
+    jjz j5, hwq_next
+    jld j5, j9, 8
+    jldi j2, HAG
+    jcall pl_find
+    jldi j1, 0
+    jld j6, j4, 0
+    jld j9, j1, HWX
+    jld j5, j9, 8
+    jsub j6, j6, j5
+    jjnz j6, hwq_next
+    jld j6, j4, 56
+    jjz j6, hwq_next
+    jst j4, j1, HT5
+    jld j5, j9, 0
+    jld j6, j1, HTURN
+    jcall hl_mix
+    jjnz j5, hwq_k
+    jldi j5, 1
+  hwq_k:
+    jldi j2, HTES
+    jcall pl_take
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j10, j1, HT5
+    jld j7, j10, 8
+    jst j7, j4, 8
+    jld j7, j10, 16
+    jst j7, j4, 16
+    jld j7, j10, 24
+    jst j7, j4, 24
+    jld j7, j9, 16
+    jst j7, j4, 32
+    jld j7, j9, 24
+    jst j7, j4, 40
+    jld j7, j9, 32
+    jst j7, j4, 48
+    jld j7, j9, 40
+    jst j7, j4, 56
+  hwq_next:
+    jldi j1, 0
+    jld j9, j1, HWX
+    jldi j2, HWIT
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HWX
+    jld j3, j1, HWN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HWN
+    jjmp hwq_lap
+hwq_done:
   jret
 
 ; The words of relation j2 (its own form: the first of it). Uses j1-j14.
@@ -2406,7 +2571,7 @@ hsn_shared:
   jld j10, j4, 8
   hsh_lap:
     jjz j10, hsh_done
-    jldi j11, 24
+    jldi j11, 32
     jmul j11, j9, j11
     jld j12, j1, HGE
     jadd j11, j11, j12
@@ -4433,16 +4598,22 @@ hro_c2:
   jld j11, j1, HNF
   jldi j2, 1
   jadd j11, j11, j2
-  jldi j2, 48
+  jldi j2, 64
   jmul j11, j11, j2
   jcall room
   jldi j1, 0
   jst j13, j1, HGE
   jldi j2, HGT
-  jldi j3, 32
+  jldi j3, 48
   jcall pl_new
   jldi j2, HAG
-  jldi j3, 56
+  jldi j3, 64
+  jcall pl_new
+  jldi j2, HWIT
+  jldi j3, 48
+  jcall pl_new
+  jldi j2, HTES
+  jldi j3, 64
   jcall pl_new
   jldi j1, 0
   jld j11, j1, HNM              ; by relation, the most chance gives it (the bar)
@@ -4812,6 +4983,8 @@ hm_ad:
     jjmp hm_bn
   hm_expl:
     jld j4, j1, HT2             ; what the second brings is said about its people: they are touched
+    jldi j5, 1                  ; (joined: its witnesses are kept)
+    jst j5, j4, 56
     jld j2, j4, 16
     jcall hm_touchrel
     jldi j1, 0
@@ -6305,6 +6478,9 @@ hl_pinject:
     jldi j7, 1
     jadd j6, j6, j7
     jst j6, j4, 32
+    jld j5, j1, HKEY            ; (its witness: the pending one, no words)
+    jst j5, j1, HWK
+    jcall hl_pwit
   hpi_next:
     jldi j1, 0
     jld j2, j1, HKI
@@ -8451,6 +8627,130 @@ hes_close:
 hes_done:
   jldi j1, 0
   jret
+
+; The joins' witnesses, into the house's "testigos" (Capitan: "a truth has its place"), after the lines of the books
+; before: a line {the first relation, the second, 1 same way 2 the other, the pair's two words ("-" a pending one's),
+; the two forms that said it}. Uses j1-j14.
+hl_tsave:
+  jldi j11, S_TEST
+  jldi j12, 8
+  jcall en_read
+  jcall flush
+  jldi j10, 12
+  jldi j11, S_TEST
+  jldi j12, 8
+  jcall ask
+  jldi j10, 4
+  jldi j11, S_TEST
+  jldi j12, 8
+  jcall ask
+  jldi j1, 0
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hts_done
+  jst j13, j1, HKH
+  jldi j2, 1
+  jadd j2, j13, j2
+  jst j2, j1, SINK
+  jld j4, j1, PRB
+  jld j5, j1, PRN
+  hts_b:
+    jjz j5, hts_bd
+    jldb j2, j4, 0
+    jcall putch
+    jldi j3, 1
+    jadd j4, j4, j3
+    jsub j5, j5, j3
+    jjmp hts_b
+hts_bd:
+  jldi j1, 0
+  jldi j2, HTES
+  jld j3, j2, 8
+  jldi j4, 1
+  jadd j3, j3, j4
+  jst j3, j1, HWN
+  jld j4, j2, 0
+  jst j4, j1, HWX
+  hts_lap:
+    jldi j1, 0
+    jld j3, j1, HWN
+    jjz j3, hts_close
+    jld j9, j1, HWX
+    jld j5, j9, 0
+    jjz j5, hts_next
+    jld j2, j9, 8
+    jcall hl_sayform
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j2, j9, 16
+    jcall hl_sayform
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j2, j9, 24
+    jldi j3, 48
+    jadd j2, j2, j3
+    jcall putch
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j5, j9, 32
+    jcall hts_word
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j5, j9, 40
+    jcall hts_word
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j2, j9, 48
+    jcall hl_sayform
+    jldi j2, 9
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HWX
+    jld j2, j9, 56
+    jcall hl_sayform
+    jldi j2, 10
+    jcall putch
+  hts_next:
+    jldi j1, 0
+    jld j9, j1, HWX
+    jldi j2, HTES
+    jld j3, j2, 24
+    jadd j9, j9, j3
+    jst j9, j1, HWX
+    jld j3, j1, HWN
+    jldi j4, 1
+    jsub j3, j3, j4
+    jst j3, j1, HWN
+    jjmp hts_lap
+hts_close:
+  jcall flush
+  jldi j1, 0
+  jst j1, j1, SINK
+  jld j10, j1, HKH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+hts_done:
+  jldi j1, 0
+  jret
+
+; The word whose print is j5, "-" if 0. Uses j1-j10.
+hts_word:
+  jjnz j5, en_sayprint
+  jldi j2, 45
+  jjmp putch
 
 ; What it learned, for an outside judge to read (only if the house asks, "vuelca"): into "relaciones", each pair of
 ; each relation it holds (said by two pairs or more, not deduced), a line {how many forms it has, its first form, the
