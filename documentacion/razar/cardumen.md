@@ -3078,3 +3078,28 @@ dónde se la vio: hilos contaba los pares que confirman cada unión ("lo confirm
 - **No cambia lo que aprende:** NT con filtro y p320 sin filtro dan `sabido`, `pendiente` y `ejemplos` idénticos byte
   a byte a antes; solo suben las instrucciones (NT +2,4 %, p320 sin filtro +5 %). 287 y 2.424 testigos, los mismos que
   guardando todo.
+
+## Cada voto imaginado lleva su mecanismo (2026-11-09)
+
+El Capitán: *"lo que se confirme con un mecanismo de verdad lo da un validador que no sea el que le dimos de comer"*,
+*"un mecanismo que es basura para ese libro puede ser oro para otro: lo único que lo puede silenciar en ese libro es
+la refutación"*, y *"no solo el mecanismo atómico: el formado por varios átomos, desde el átomo al planeta"*.
+
+- **Medido antes, con jueces de afuera** (scratch, Python, Razar no los lee): de lo que imaginó el Quijote sin filtro
+  (12,3 millones de votos, `imaginado` de 939 MB), lo que el libro no decía, buscado palabra por palabra en el
+  wikcionario y en 20 MB de Wikipedia: con mecanismo 3,31 % (confirmados sobre confirmados más dichos distinto), las
+  mismas piezas sin mecanismo 3,41 %, el azar puro (cualquier palabra del vocabulario) 0,16 %. Arma lenguaje veinte
+  veces mejor que el azar puro, pero la razón ("a y b, entonces b también") todavía no suma sobre elegir b de otra
+  pareja; y no crece de un décimo de los votos al siguiente. Todo junto, en una bolsa: si un mecanismo es oro y
+  cuarenta no, la bolsa los tapa.
+- **Cómo:** el voto guarda la instrucción que lo imaginó (`HKI` al imaginar, en la lista `HIML`, ahora 48 bytes) y
+  `hin_iwrite` la escribe al final de la línea: `... | z <relación> b # <clave de la instrucción> <la instrucción>`.
+  La relación ya estaba (con su clave), y si es deducida Razar sabe de qué está hecha: el árbol del mecanismo,
+  instrucción sobre relación sobre sus partes, se puede recorrer de afuera. `hl_icheck` lee las líneas por posición y
+  copia las que siguen abiertas tal cual, así que las viejas, sin mecanismo, siguen valiendo; `confirma:` dice ahora
+  también qué mecanismo acertó.
+- **Prueba (`hilos_imagina_prueba.sh`):** "eva padre de nube # … y", y el libro siguiente `confirma: eva padre de nube
+  # … y`.
+- **No cambia lo que aprende:** NT con filtro y p320 sin filtro, `sabido`, `pendiente`, `ejemplos` y `testigos`
+  idénticos, la salida idéntica salvo el mecanismo de cada `confirma:`, e `imaginado` el mismo con el mecanismo al
+  final. Un voto que imaginan dos mecanismos sigue guardado una vez, con el primero.

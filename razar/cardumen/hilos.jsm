@@ -160,6 +160,7 @@ ZEP   = 1290h                   ; (reading: where, the end, the line, a word's b
 ZEEND = 1298h
 ZELR  = 12A0h
 ZEWL  = 12A8h
+HIMK  = 12B0h                   ; the instruction that imagined the one written now (the mechanism, with each vote)
 HXO   = 1300h                   ; by relation, where its words with one confirmed value start in HXL, where it is so (a
 HXL   = 1308h                   ; room each, made again every turn): what a hypothesis asks its contradictions with
 HXA   = 1310h                   ; (the two relations walked, which way, the place walked and its end)
@@ -7306,8 +7307,8 @@ hin_done:
   jldi j1, 0
   jret
 
-; The one imagined now {HIR, HISD, HIZ, HIW, HIF} onto the list HIML (it grows to what it holds: full, a room twice as
-; big, what it had moved to it). Uses j1-j14.
+; The one imagined now {HIR, HISD, HIZ, HIW, HIF, the instruction HKI} onto the list HIML (it grows to what it holds:
+; full, a room twice as big, what it had moved to it). Uses j1-j14.
 hin_push:
   jldi j1, 0
   jld j2, j1, HIMN
@@ -7319,14 +7320,14 @@ hin_push:
   jldi j2, 8
   jadd j11, j11, j2
   jst j11, j1, HIMC
-  jldi j2, 40
+  jldi j2, 48
   jmul j11, j11, j2
   jcall room
   jldi j1, 0
   jld j4, j1, HIML
   jadd j5, j13, j1
   jld j6, j1, HIMN
-  jldi j7, 40
+  jldi j7, 48
   jmul j6, j6, j7
   hpu_c:
     jjz j6, hpu_cd
@@ -7341,7 +7342,7 @@ hpu_cd:
   jst j13, j1, HIML
 hpu_room:
   jld j2, j1, HIMN
-  jldi j3, 40
+  jldi j3, 48
   jmul j3, j2, j3
   jld j4, j1, HIML
   jadd j3, j3, j4
@@ -7355,6 +7356,8 @@ hpu_room:
   jst j4, j3, 24
   jld j4, j1, HIF
   jst j4, j3, 32
+  jld j4, j1, HKI
+  jst j4, j3, 40
   jldi j4, 1
   jadd j2, j2, j4
   jst j2, j1, HIMN
@@ -7598,8 +7601,10 @@ him_done:
   jldi j1, 0
   jret
 
-; One imagined into the open "imaginado" (SINK): "<the relation's key> <side> <z> <b> <i|a> | z <relation> b". The
-; relation by the key of its own form, the words by their prints (both the same in every book). Uses j1-j14.
+; One imagined into the open "imaginado" (SINK): "<the relation's key> <side> <z> <b> <i|a> | z <relation> b # <the
+; instruction's key> <the instruction>": the relation by the key of its own form, the words by their prints (both the
+; same in every book), and the mechanism that imagined it, so each one is judged by itself (Capitan: "only refutation
+; silences it, and only there"). Uses j1-j14.
 hin_iwrite:
   jldi j1, 0
   jld j2, j1, HIR
@@ -7663,6 +7668,21 @@ hiw_ab:
   jld j5, j1, HIZ
   jcall en_sayprint
 hiw_nl:
+  jldi j2, 32                   ; its mechanism
+  jcall putch
+  jldi j2, 35
+  jcall putch
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIMK
+  jcall hk_key
+  jcall hk_puthex
+  jldi j2, 32
+  jcall putch
+  jldi j1, 0
+  jld j2, j1, HIMK
+  jcall hl_sayform
   jldi j2, 10
   jjmp putch
 
@@ -7968,7 +7988,7 @@ hl_inventa:
     jld j3, j1, HIMN
     jsub j3, j2, j3
     jjz j3, hlv_close
-    jldi j3, 40
+    jldi j3, 48
     jmul j3, j2, j3
     jld j4, j1, HIML
     jadd j3, j3, j4
@@ -7982,6 +8002,8 @@ hl_inventa:
     jst j4, j1, HIW
     jld j4, j3, 32
     jst j4, j1, HIF
+    jld j4, j3, 40
+    jst j4, j1, HIMK
     jcall hin_iwrite
     jldi j1, 0
     jld j2, j1, HKI

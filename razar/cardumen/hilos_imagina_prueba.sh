@@ -5,7 +5,8 @@
 # "hijo de", proved), and "y" between eva and luz (both children of ana), mar and sol (both of eva), and mar and nube
 # (nothing is known of nube). "y" joins alike things (two of two, its pairs crossed fewer): an instruction found, not
 # given. With it, mar and nube alike: nube is imagined a child of eva ("eva padre de nube"), an open vote in
-# "imaginado". Book 2 says "eva, padre de nube": "confirma:".
+# "imaginado", with the mechanism that imagined it ("# <its key> y"). Book 2 says "eva, padre de nube": "confirma:",
+# and which mechanism it confirms.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -26,8 +27,8 @@ corre "$d/uno" > "$d/uno.out"
 cp "$d/uno/$(etiqueta imaginado)" "$d/uno/$(etiqueta sabido)" "$d/dos/" 2>/dev/null
 corre "$d/dos" > "$d/dos.out"
 if grep -Eq '^instruccion: y \| une iguales 2 de 2 \(mezcladas [01] de [0-9]+\)$' "$d/uno.out" &&
-   grep -q ' i | eva padre de nube$' "$d/uno/$(etiqueta imaginado)" &&
-   grep -q '^confirma: eva padre de nube$' "$d/dos.out"; then
+   grep -Pq ' i \| eva padre de nube # [0-9a-f]{16} y$' "$d/uno/$(etiqueta imaginado)" &&
+   grep -Pq '^confirma: eva padre de nube # [0-9a-f]{16} y$' "$d/dos.out"; then
   echo "hilos_imagina_prueba: bien"
 else
   echo "hilos_imagina_prueba: MAL"
