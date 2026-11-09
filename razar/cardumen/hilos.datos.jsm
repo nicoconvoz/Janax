@@ -224,3 +224,7 @@ times 0E00h - $ db 0
 db 'lugares1', 0
 times 0E20h - $ db 0
 db 'lugar', 0
+times 0E40h - $ db 0
+db 'nitidas0', 0
+times 0E60h - $ db 0
+db 'nitidas1', 0

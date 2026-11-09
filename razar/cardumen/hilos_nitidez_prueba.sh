@@ -4,7 +4,8 @@
 # A place: a form "_ <one to three words> _" and its side; one made only of words of the half (what is said everywhere)
 # says nothing of anyone and does not count. With "nitidez" in the house, hilos writes "nitidas": a line {a word,
 # another, how many places they share} for each two sharing two or more. Ana and eva both "dijo hola" after "la": they
-# share places ("_ dijo _", "_ dijo hola _", "la _"...); rio, said once elsewhere, shares none with them.
+# share places ("_ dijo _", "_ dijo hola _", "la _"...); rio, said once elsewhere, shares none with them. The
+# file is "nitidas0" or "nitidas1", as "lugar" says: a line {the pair's key, places shared, a word, the other}.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -21,9 +22,9 @@ printf '%s\n' 'O: vino la ana dijo hola luego.' 'O: vino la eva dijo hola luego.
 cp "$d/casa/$(etiqueta pares)" "$d/sin/"
 printf si > "$d/casa/$(etiqueta nitidez)"
 corre "$d/casa" > "$d/casa.out"; corre "$d/sin" > "$d/sin.out"
-ni="$d/casa/$(etiqueta nitidas)"
-if grep -Eq '^(ana eva|eva ana) [2-9][0-9]*$' "$ni" 2>/dev/null && ! grep -Eq '(^| )rio ' "$ni" &&
-   [ ! -e "$d/sin/$(etiqueta nitidas)" ] && { cmp -s "$d/casa/$(etiqueta sabido)" "$d/sin/$(etiqueta sabido)" || [ ! -e "$d/sin/$(etiqueta sabido)" ]; }; then
+ni="$d/casa/$(etiqueta nitidas$(cat "$d/casa/$(etiqueta lugar)" 2>/dev/null))"
+if grep -Eq '^[0-9a-f]{16} [2-9][0-9]* (ana eva|eva ana)$' "$ni" 2>/dev/null && ! grep -Eq ' rio( |$)' "$ni" &&
+   [ ! -e "$d/sin/$(etiqueta lugar)" ] && { cmp -s "$d/casa/$(etiqueta sabido)" "$d/sin/$(etiqueta sabido)" || [ ! -e "$d/sin/$(etiqueta sabido)" ]; }; then
   echo "hilos_nitidez_prueba: bien ($(wc -l < "$ni") parejas)"
 else
   echo "hilos_nitidez_prueba: MAL"; cat "$ni" 2>/dev/null; exit 1

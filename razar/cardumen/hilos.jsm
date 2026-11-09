@@ -150,6 +150,8 @@ S_NITO   = 0DC0h
 S_LUG0   = 0DE0h
 S_LUG1   = 0E00h
 S_LUGI   = 0E20h
+S_NIT0   = 0E40h
+S_NIT1   = 0E60h
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -8209,8 +8211,8 @@ hms_done:
 ; travel"): the house's "lugares0" or "lugares1" (which one, "lugar") holds every place's words; a piece wakes only the
 ; places of its own forms and copies the rest as they were, a line at a time, never all of it in memory (the
 ; organism's modules: what sleeps stays on disk). Each two words of a place share it, counted once: when the second of
-; them arrives (two that were there already were counted then). Into "nitidas", after the pieces before: a line {a
-; word, another, how many places this piece made them share}; summed, how many they share. Uses j1-j14.
+; them arrives (two that were there already were counted then). Into "nitidas0" or "nitidas1" (turned with
+; "lugares"): a line {the pair's key, how many places they share, a word, the other}, one by pair. Uses j1-j14.
 hl_nitidez:
   jldi j1, 0
   jld j2, j1, HNIT
@@ -8948,39 +8950,183 @@ hnz_pairs:
 hnp_done:
   jret
 
-; The pairs this piece made share places into the house's "nitidas", after the pieces before. Uses j1-j14.
+; The pairs this piece made share places, added to what the pieces before left (Capitan: "put it together"): the
+; current "nitidas0" or "nitidas1" (the same as "lugares", the one before hnz_keep turned them) read a line {the pair's
+; key, how many places they share, a word, the other} at a time; a pair this piece also made gets its sum, the rest is
+; copied as it was; then the pairs that are new; into the other one, which becomes the current one. Uses j1-j14.
 hnz_save:
-  jldi j11, S_NITO
-  jldi j12, 7
-  jcall en_read
   jcall flush
+  jcall hnz_nnew
   jldi j10, 12
-  jldi j11, S_NITO
-  jldi j12, 7
   jcall ask
+  jcall hnz_nnew
   jldi j10, 4
-  jldi j11, S_NITO
-  jldi j12, 7
   jcall ask
   jldi j1, 0
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hns_done
-  jst j13, j1, HKH
+  jst j13, j1, HLGH
   jldi j2, 1
   jadd j2, j13, j2
   jst j2, j1, SINK
-  jld j4, j1, PRB
-  jld j5, j1, PRN
-  hns_b:
-    jjz j5, hns_bd
-    jldb j2, j4, 0
-    jcall putch
-    jldi j3, 1
-    jadd j4, j4, j3
-    jsub j5, j5, j3
-    jjmp hns_b
-hns_bd:
+  jcall hnz_nold
+  jldi j10, 4
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, HLGR
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hns_new
+  jldi j11, 1                   ; (its room: a piece with no places before had none)
+  jldi j2, 16
+  jshl j11, j11, j2
+  jcall room
+  jldi j1, 0
+  jst j13, j1, HLGB
+  jst j1, j1, HLGN
+  hns_read:
+    jldi j1, 0
+    jld j10, j1, HLGR
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, HLGB
+    jld j2, j1, HLGN
+    jadd j11, j11, j2
+    jldi j12, 32300
+    jsub j12, j12, j2
+    jcall ask
+    jldi j1, 0
+    jldi j2, 63
+    jsar j2, j13, j2
+    jjnz j2, hns_eof
+    jjz j13, hns_eof
+    jld j2, j1, HLGN
+    jadd j2, j2, j13
+    jst j2, j1, HLGN
+    jst j1, j1, HLGF
+    hns_rec:
+      jldi j1, 0
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+      jld j5, j1, HLGB
+      jld j6, j1, HLGN
+      jadd j5, j5, j6
+      jadd j7, j4, j1
+      hns_eol:
+        jsub j6, j5, j7
+        jjz j6, hns_carry
+        jldb j6, j7, 0
+        jldi j8, 10
+        jsub j6, j6, j8
+        jjz j6, hns_eold
+        jldi j8, 1
+        jadd j7, j7, j8
+        jjmp hns_eol
+    hns_eold:
+      jldi j8, 1
+      jadd j7, j7, j8
+      jst j7, j1, HLGE
+      jcall hk_hex                ; its key
+      jldi j1, 0
+      jst j9, j1, HPV
+      jldi j9, 0                  ; how many (from its 18th byte to the space)
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+      jldi j3, 17
+      jadd j4, j4, j3
+      hns_num:
+        jldb j2, j4, 0
+        jldi j3, 32
+        jsub j3, j2, j3
+        jjz j3, hns_numd
+        jldi j3, 10
+        jmul j9, j9, j3
+        jldi j3, 48
+        jsub j2, j2, j3
+        jadd j9, j9, j2
+        jldi j3, 1
+        jadd j4, j4, j3
+        jjmp hns_num
+    hns_numd:
+      jst j9, j1, HPU
+      jst j4, j1, HLGX            ; (the rest: " a b\n")
+      jld j5, j1, HPV
+      jldi j2, HPAR
+      jcall pl_find
+      jldi j1, 0
+      jld j6, j4, 0
+      jld j5, j1, HPV
+      jsub j6, j6, j5
+      jjnz j6, hns_copy
+      jld j6, j4, 24
+      jjz j6, hns_copy
+      jld j7, j1, HPU             ; this piece's too: its sum, and the pair is done
+      jadd j7, j7, j6
+      jst j7, j1, HPU
+      jst j1, j4, 24
+      jld j2, j1, HPV
+      jcall hk_puthex
+      jldi j2, 32
+      jcall putch
+      jldi j1, 0
+      jld j2, j1, HPU
+      jcall putnum
+      jldi j1, 0
+      jld j4, j1, HLGX
+      jjmp hns_cb
+    hns_copy:
+      jld j4, j1, HLGB
+      jld j3, j1, HLGF
+      jadd j4, j4, j3
+    hns_cb:
+      jld j5, j1, HLGE
+      jsub j6, j5, j4
+      jjz j6, hns_next
+      jldb j2, j4, 0
+      jcall putch
+      jldi j3, 1
+      jadd j4, j4, j3
+      jldi j1, 0
+      jjmp hns_cb
+    hns_next:
+      jldi j1, 0
+      jld j3, j1, HLGE
+      jld j2, j1, HLGB
+      jsub j3, j3, j2
+      jst j3, j1, HLGF
+      jjmp hns_rec
+  hns_carry:
+    jld j4, j1, HLGB
+    jld j3, j1, HLGF
+    jadd j5, j4, j3
+    jld j6, j1, HLGN
+    jsub j6, j6, j3
+    jst j6, j1, HLGN
+    hns_mv:
+      jjz j6, hns_read
+      jldb j2, j5, 0
+      jstb j2, j4, 0
+      jldi j3, 1
+      jadd j4, j4, j3
+      jadd j5, j5, j3
+      jsub j6, j6, j3
+      jjmp hns_mv
+hns_eof:
+  jld j10, j1, HLGR
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 7
+  jor j10, j10, j2
+  jcall ask
+  jcall hnz_nold
+  jldi j10, 12
+  jcall ask
+hns_new:                          ; the pairs that are new
   jldi j1, 0
   jldi j2, HPAR
   jld j3, j2, 8
@@ -8995,9 +9141,21 @@ hns_bd:
     jjz j3, hns_close
     jld j9, j1, HPQ
     jld j5, j9, 0
-    jjz j5, hns_next
+    jjz j5, hns_nx
     jld j5, j9, 24
-    jjz j5, hns_next
+    jjz j5, hns_nx
+    jld j2, j9, 0
+    jcall hk_puthex
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
+    jld j2, j9, 24
+    jcall putnum
+    jldi j2, 32
+    jcall putch
+    jldi j1, 0
+    jld j9, j1, HPQ
     jld j5, j9, 8
     jcall en_sayprint
     jldi j2, 32
@@ -9006,15 +9164,9 @@ hns_bd:
     jld j9, j1, HPQ
     jld j5, j9, 16
     jcall en_sayprint
-    jldi j2, 32
-    jcall putch
-    jldi j1, 0
-    jld j9, j1, HPQ
-    jld j2, j9, 24
-    jcall putnum
     jldi j2, 10
     jcall putch
-  hns_next:
+  hns_nx:
     jldi j1, 0
     jld j9, j1, HPQ
     jldi j2, HPAR
@@ -9030,7 +9182,7 @@ hns_close:
   jcall flush
   jldi j1, 0
   jst j1, j1, SINK
-  jld j10, j1, HKH
+  jld j10, j1, HLGH
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
@@ -9038,6 +9190,25 @@ hns_close:
   jcall ask
 hns_done:
   jldi j1, 0
+  jret
+
+; j11 the name of the "nitidas" this piece writes (HLGC, the current one since hnz_keep), of the one before it; j12
+; its bytes. Uses j1-j2, j11, j12.
+hnz_nnew:
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jjmp hnn_n
+hnz_nold:
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jldi j11, 1
+  jxor j2, j2, j11
+hnn_n:
+  jldi j11, S_NIT0
+  jjz j2, hnn_d
+  jldi j11, S_NIT1
+hnn_d:
+  jldi j12, 8
   jret
 
 ; The house's "imaginado" written again: the votes still open (as they were), then this book's new ones (hl_instr

@@ -3193,3 +3193,7 @@ dichas (criterio).
   flexión 162/25, enciclopédica 60/31, derivación 33/5; sinónimos exactos 14/2, antónimos 21/6 y 27/1 (*iglesia~capilla,
   ferrocarril~metro, color~rojo, deporte~fútbol, roma~italia, madrid~españa, capaz~incapaz*). Sin que nadie escriba
   "sinónimos", salen por lugar compartido.
+- **`nitidas`, junto (Capitán: "juntalo"):** una línea por pareja, `{clave, lugares que comparten, palabra, otra}`, en
+  `nitidas0` o `nitidas1` (se turnan con `lugares`). Cada pedazo lee el anterior de a 32 KB, le suma lo suyo a las
+  parejas que ya estaban, copia el resto y agrega las nuevas. Antes cada pedazo escribía lo que sumaba y la misma
+  pareja se repetía: 234 MB para 15 MB de Wikipedia.
