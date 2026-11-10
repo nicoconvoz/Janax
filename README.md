@@ -156,8 +156,12 @@ demás valores salen de una medición o están declarados como criterio en el pr
   arma FASM es el **núcleo x86** (ver abajo), no los programas Janax.
 - **Nadie de afuera lo corrió todavía.** Las mediciones son del autor, en su máquina. Eso lo deja
   en *replicable pendiente de réplica*, que no es lo mismo que *probado*.
-- Lo medido contra EGG es **ese juego** (señalización de Lewis con 16 cosas); la transferencia a
-  otras tareas no está medida.
+- **La transferencia está medida; la comparación cara a cara, no.** La misma arquitectura se midió
+  en cinco tareas distintas: señalización de Lewis (contra EGG), el traductor de Morse, acertijos de
+  palabras, deducción de relaciones sobre un libro entero y las analogías del MATS sobre 20 MB de
+  Wikipedia. Lo que existe **solo para el juego de Lewis** es la comparación contra una
+  implementación de referencia del campo con el presupuesto igualado; en las otras cuatro no hay
+  todavía un rival convencional medido al lado.
 
 ## Cómo se prueba
 
@@ -199,7 +203,7 @@ translator. Documentation is in Spanish.
 (81–278 messages) on 5 of 5 seeds; EGG (Facebook Research), the field's reference implementation, given richer
 messages and larger networks, reaches it on 0 of 5 within 320,000 games, stalling at 44–87 % in the partial
 languages the literature describes. Conditions were fixed before running; the benchmark is public
-(`razar/cardumen/convencional.sh`). What is proven is this game; transfer to other tasks is not yet measured.
+(`razar/cardumen/convencional.sh`). Transfer is measured: the same architecture was then run on Morse translation, word riddles, relation deduction over a whole book, and the Spanish MATS analogies over 20 MB of Wikipedia. What exists only for the Lewis game is the head-to-head against a reference implementation at matched compute.
 
 ## Cómo citarlo
 

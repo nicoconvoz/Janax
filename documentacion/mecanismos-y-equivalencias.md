@@ -907,9 +907,16 @@ Razar = 1 partida, un lote de EGG = 32.
 
 🟦 **Conocido, y es lo que hay que hacer.** Comparar contra la implementación de referencia del
 campo, igualando el presupuesto de cómputo, es el estándar metodológico. Sin la igualación, el
-número no dice nada; con ella, dice bastante. Vale aclarar en el documento —el autor ya lo
-hace en el README— que **lo probado es ese juego**, y que la transferencia a otras tareas no
-está medida.
+número no dice nada; con ella, dice bastante.
+
+Lo que conviene precisar es **qué alcanza esa comparación**: el juego de Lewis fue la
+**primera** tarea, no la única. La misma arquitectura se midió después en el traductor de Morse
+(05-nov), en acertijos de palabras resueltos por parecido con algo aprendido antes (06-nov), en
+la máquina entera corriendo sobre un libro distinto del que aprendió (08-nov) y en las
+analogías del MATS sobre 20 MB de Wikipedia (09-nov: 451 contra 117). **La transferencia está
+medida.** Lo que existe solo para el juego de Lewis es el **cara a cara contra una
+implementación de referencia a presupuesto igualado**; en las otras cuatro tareas todavía no hay
+un rival convencional medido al lado. Ésa es la distinción que corresponde hacer, y no la otra.
 
 ## 4.19 Los generadores de azar, nombrados
 `pulso.jsm` (xorshift 13/7/17), `sentido.jsm:3558` y `memoria_pares.jsm:1237` (splitmix64),
@@ -1020,8 +1027,11 @@ orden eligen lo mismo.
 - **Nadie de afuera lo corrió todavía.** Todas las mediciones son del autor, en su máquina.
   Esto no invalida nada: lo deja en *replicable pendiente de réplica*, que es un casillero
   distinto de *probado*.
-- **Lo medido contra EGG es un juego concreto** (señalización de Lewis con 16 cosas). La
-  transferencia a otras tareas no está medida, y el README ya lo aclara.
+- **La transferencia está medida; el cara a cara, no.** La misma arquitectura corrió en cinco
+  tareas: señalización de Lewis (contra EGG), Morse, acertijos de palabras, deducción sobre un
+  libro entero y las analogías del MATS sobre Wikipedia. Lo que existe **solo para el juego de
+  Lewis** es la comparación contra una implementación de referencia del campo con el presupuesto
+  igualado.
 - **El segmento ELF es RWX único**: simplicidad, no seguridad.
 - **Hay dos agrupamientos por enlace simple** (§3.3) donde el encadenamiento puede morder. El
   autor ya lo detectó y lo corrigió donde dolía (§3.9); vale revisar si el otro lo necesita.
