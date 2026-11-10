@@ -158,9 +158,18 @@ punto fijo". Además se compara contra la semilla en disco.
 *stage2* y *stage3* deben salir idénticos; y es el contexto de **«Reflections on Trusting
 Trust»** (Ken Thompson, 1984). Tenerlo automatizado en el arnés es lo correcto.
 
-⚠️ **Límite honesto que el documento debe decir:** lo probado por punto fijo es el
-autoalojamiento del **ensamblador del lenguaje**. Los tres motores de escalón 0 y el núcleo
-siguen ensamblándose con **FASM**. No hay, en este código, un traductor Janax escrito en Janax.
+⚠️ **El alcance exacto, para que no se lea de más ni de menos.** Lo probado por punto fijo es el
+autoalojamiento del **ensamblador del lenguaje**: arma sus propias fuentes, se arma a sí mismo y
+los dos binarios tienen que salir idénticos. Lo que FASM todavía construye es el **núcleo x86** y
+los motores de escalón 0 (`so/janaxos.asm`, `escalon0/janax.asm`, `traductor.asm`,
+`traductor_arm64.asm`), que están escritos en ensamblador x86-64 — y el ensamblador PDP arma
+`.jsm`, no `.asm`. El propio código lo dice (`escalon0/pruebas/correr.sh:19-20`): *"Janax OS itself
+is x86 and still built by FASM."*
+
+**Y la otra mitad, que no es lo mismo:** la comparación byte a byte contra FASM (§2.22) **no es una
+dependencia, es una verificación elegida**. Se puede sacar y el sistema sigue construyéndose igual;
+lo único que se pierde es la comprobación. Confundir las dos cosas hace creer que el proyecto
+depende de FASM mucho más de lo que depende.
 
 ## 1.11 La ventanita: catálogo de lo que el anfitrión ofrece
 `escalon0/ventanita.inc:1-101` — el pedido 0 devuelve **el catálogo**; un pedido que no se
@@ -1004,9 +1013,10 @@ orden eligen lo mismo.
 
 ## 5.4 Los límites, dichos de frente
 
-- **El autoalojamiento es parcial.** Lo verificado por punto fijo es el ensamblador del
-  lenguaje. Los tres motores de escalón 0 y el núcleo se siguen ensamblando con FASM. No hay
-  un traductor Janax escrito en Janax.
+- **El autoalojamiento llega hasta el ensamblador del lenguaje**, verificado por punto fijo. Lo
+  que todavía construye FASM es el **núcleo x86** y los motores de escalón 0, que están escritos
+  en ensamblador x86-64. La comparación byte a byte contra FASM es cosa aparte: **es una vara de
+  verificación elegida, no una dependencia** — se saca y el sistema se construye igual.
 - **Nadie de afuera lo corrió todavía.** Todas las mediciones son del autor, en su máquina.
   Esto no invalida nada: lo deja en *replicable pendiente de réplica*, que es un casillero
   distinto de *probado*.

@@ -134,10 +134,26 @@ el presupuesto igualado.
 El **único umbral de conteo de todo el sistema es 2** («una vez es anécdota, dos es patrón»). Los
 demás valores salen de una medición o están declarados como criterio en el propio comentario.
 
+### Qué hace FASM acá, y qué no
+
+**FASM se usa para dos cosas distintas, y conviene no confundirlas:**
+
+- **Como vara de verificación — es opcional.** Cada fuente que arma el ensamblador PDP debe salir
+  **byte por byte** igual a la de FASM, y `herramientas/combinaciones.awk` compara **toda
+  combinación de cada instrucción** (`so/pruebas/correr.sh:758-807`). Eso no lo necesita el sistema
+  para funcionar: se saca y no se rompe nada, solo se pierde la comprobación. Es una vara externa
+  elegida a propósito, no una dependencia.
+- **Como constructor del núcleo x86 — hoy sí hace falta.** `so/janaxos.asm`, `escalon0/janax.asm`,
+  `traductor.asm` y `traductor_arm64.asm` están escritos en ensamblador x86-64, y el ensamblador
+  PDP arma `.jsm`, no `.asm`. El propio código lo dice (`escalon0/pruebas/correr.sh:19-20`):
+  *"Janax OS itself is x86 and still built by FASM."* El día que el núcleo esté escrito en Janax,
+  esta dependencia desaparece.
+
 ### Los límites, dichos de frente
 
-- El autoalojamiento verificado por punto fijo es el del **ensamblador del lenguaje**; los motores
-  de escalón 0 y el núcleo se siguen ensamblando con FASM.
+- El autoalojamiento verificado por punto fijo es el del **ensamblador del lenguaje**: arma sus
+  propias fuentes, se arma a sí mismo y los dos binarios tienen que salir idénticos. Lo que todavía
+  arma FASM es el **núcleo x86** (ver abajo), no los programas Janax.
 - **Nadie de afuera lo corrió todavía.** Las mediciones son del autor, en su máquina. Eso lo deja
   en *replicable pendiente de réplica*, que no es lo mismo que *probado*.
 - Lo medido contra EGG es **ese juego** (señalización de Lewis con 16 cosas); la transferencia a

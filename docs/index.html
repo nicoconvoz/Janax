@@ -282,8 +282,14 @@
       es patrón.</p>
     <h2 style="margin-top:28px">Los límites, dichos de frente</h2>
     <ul class="sub">
-      <li>El autoalojamiento verificado por punto fijo es el del <strong>ensamblador del lenguaje</strong>; los motores
-        de escalón 0 y el núcleo se siguen ensamblando con FASM.</li>
+      <li>El autoalojamiento verificado por punto fijo es el del <strong>ensamblador del lenguaje</strong>: arma sus
+        propias fuentes, se arma a sí mismo y los dos binarios tienen que salir idénticos. Lo que todavía construye
+        FASM es el <strong>núcleo x86</strong> y los motores de escalón 0, escritos en ensamblador x86-64 (el
+        ensamblador propio arma <code>.jsm</code>, no <code>.asm</code>).</li>
+      <li><strong>La comparación byte a byte contra FASM no es una dependencia: es una verificación elegida.</strong>
+        Cada fuente armada por el ensamblador propio tiene que salir idéntica a la de FASM, y se comparan todas las
+        combinaciones de cada instrucción. Se puede sacar y el sistema se construye igual; lo único que se pierde es
+        la comprobación.</li>
       <li><strong>Nadie de afuera lo corrió todavía.</strong> Las mediciones son del autor, en su máquina: queda en
         <em>replicable pendiente de réplica</em>, que no es lo mismo que <em>probado</em>.</li>
       <li>Lo medido contra EGG es <strong>ese juego</strong>; la transferencia a otras tareas no está medida.</li>
