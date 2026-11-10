@@ -224,6 +224,77 @@
 
 <section>
   <div class="wrap">
+    <h2>Cada pieza, con su nombre en el oficio</h2>
+    <p class="sub">Un revisor no puede evaluar lo que no puede ubicar. El repositorio trae un inventario levantado
+      <strong>leyendo el código y nada más</strong>, sin consultar la documentación: cada mecanismo con su archivo y su
+      línea, lo que hace, y su nombre publicado con la cita &mdash; o la marca de que no se le encontró antecedente.</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Pieza del proyecto</th><th>Nombre en el oficio</th><th>Cita</th></tr>
+      <tr><td>El juez de Razar</td><td>Longitud mínima de descripción, código de dos partes</td><td>Rissanen 1978</td></tr>
+      <tr><td>El <code>log2(n)/2</code> por cada tasa</td><td>Penalización por parámetro / BIC</td><td>Schwarz 1978</td></tr>
+      <tr><td><code>(BL+½)/(NQ+1)</code></td><td>Estimador de Krichevsky&ndash;Trofimov</td><td>KT 1981</td></tr>
+      <tr><td>El pedido dormido</td><td>Voto de mayoría</td><td>Boyer&ndash;Moore 1981</td></tr>
+      <tr><td>El corte en dos</td><td>Método de Otsu / discriminante de Fisher</td><td>Otsu 1979</td></tr>
+      <tr><td>Los esqueletos</td><td>Patrones léxico-sintácticos aprendidos</td><td>Hearst 1992</td></tr>
+      <tr><td>Las nueve maneras</td><td>Marcos frecuentes</td><td>Mintz 2003</td></tr>
+      <tr><td>La nitidez</td><td>Similitud paradigmática sobre <em>slots</em></td><td>Harris 1954; Lin 1998</td></tr>
+      <tr><td>Las piezas de las palabras</td><td>Inducción morfológica por MDL</td><td>Goldsmith 2001</td></tr>
+      <tr><td>El coma y el despertador</td><td>Mantenimiento de la verdad (TMS)</td><td>Doyle 1979</td></tr>
+      <tr><td>«Una B por cada A»</td><td>Descubrimiento de dependencias funcionales</td><td>TANE 1999</td></tr>
+      <tr><td>El nulo por cruce</td><td>Datos sustitutos / prueba de permutación</td><td>Theiler et al. 1992</td></tr>
+      <tr><td>Las rondas hasta el punto fijo</td><td>Evaluación ascendente de Datalog</td><td>Semántica de punto fijo</td></tr>
+      <tr><td>Un solo lugar que cambia</td><td>Antiunificación</td><td>Plotkin 1970</td></tr>
+      <tr><td>Las plantillas parchadas</td><td>Copy-and-patch</td><td>Xu y Kjolstad 2021</td></tr>
+      <tr><td>El planificador reemplazable</td><td>Núcleo extensible acotado</td><td>VINO 1996; eBPF</td></tr>
+      <tr><td>El cobro por corrida</td><td>Medición de combustible</td><td>Wasmtime; gas de la EVM</td></tr>
+      <tr><td>El cartel de ambientes</td><td>Espacio de capacidades</td><td>Hydra 1974; seL4</td></tr>
+      <tr><td>Pesos que conservan el total</td><td>Escalado sináptico / regla de Oja</td><td>Turrigiano 1998</td></tr>
+      <tr><td>La ventana de ±1 paso</td><td>STDP</td><td>Bi y Poo 1998</td></tr>
+      <tr><td>El punto fijo del ensamblador</td><td>Bootstrap de tres etapas</td><td>GCC; Thompson 1984</td></tr>
+      <tr><td>La relajación de saltos</td><td>Instrucciones dependientes del alcance</td><td>Szymanski 1978</td></tr>
+    </table>
+    </div>
+    <p class="sub" style="margin-top:12px">Que tantas piezas tengan un equivalente correcto es una buena noticia:
+      significa que el camino, recorrido solo, dio con las soluciones que el oficio considera buenas. Ninguna de estas
+      convergencias reclama prioridad &mdash; los antecedentes son anteriores y están citados.</p>
+    <h2 style="margin-top:28px">Lo que no tiene equivalente conocido</h2>
+    <p class="sub">Cuatro piezas, con la advertencia de que «no se le encontró antecedente» habla de quien buscó, no de
+      la literatura.</p>
+    <ol class="sub">
+      <li><strong><code>asociar</code></strong> (<code>so/ambientes.inc:1274</code>) &mdash; álgebra de conjuntos
+        (intersección, diferencias, unión) sobre los espacios de capacidades de <strong>dos</strong> procesos,
+        materializada al nacer un tercero, con consentimiento bilateral obligatorio.</li>
+      <li><strong>«La última parte»</strong> (<code>so/remos.inc:428</code>) &mdash; terminar en vez de ceder el turno,
+        con el dato calculado del programa <strong>para que el programa no pueda mentir sobre él</strong>.</li>
+      <li><strong>La armonía de la ola</strong> (<code>cardumen_cubo.jsm:818</code>) &mdash; una pieza se ahoga si la
+        empujan desde demasiados lados; la acumulación es por pieza y compartida entre olas: ahí se encuentran dos
+        saludos.</li>
+      <li><strong>La forma canónica del órgano</strong> (<code>pulso.jsm:3090</code>) &mdash; usada como prueba nula de
+        que el órgano efectivamente leyó el libro.</li>
+    </ol>
+    <h2 style="margin-top:28px">Cómo se mide el proyecto a sí mismo</h2>
+    <p class="sub">Prueba diferencial de tres motores que deben coincidir <strong>hasta el momento del corte de
+      turno</strong>; prueba <strong>exhaustiva</strong> del ensamblador contra FASM; nulo por permutación dentro del
+      motor; un distractor puesto a propósito para comprobar que nunca gane; validación cruzada dejando uno afuera;
+      estudio de ablación de a una regla por vez; y comparación contra la implementación de referencia del campo con el
+      presupuesto igualado. El <strong>único umbral de conteo de todo el sistema es 2</strong>: una vez es anécdota, dos
+      es patrón.</p>
+    <h2 style="margin-top:28px">Los límites, dichos de frente</h2>
+    <ul class="sub">
+      <li>El autoalojamiento verificado por punto fijo es el del <strong>ensamblador del lenguaje</strong>; los motores
+        de escalón 0 y el núcleo se siguen ensamblando con FASM.</li>
+      <li><strong>Nadie de afuera lo corrió todavía.</strong> Las mediciones son del autor, en su máquina: queda en
+        <em>replicable pendiente de réplica</em>, que no es lo mismo que <em>probado</em>.</li>
+      <li>Lo medido contra EGG es <strong>ese juego</strong>; la transferencia a otras tareas no está medida.</li>
+    </ul>
+    <p class="sub" style="margin-top:16px"><a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/mecanismos-y-equivalencias.md">Leer
+      el inventario completo, mecanismo por mecanismo &rarr;</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <h2>Entrá al código y a los documentos</h2>
     <p class="sub">La documentación está en castellano; los comentarios del código, en inglés.</p>
     <div class="grid links">

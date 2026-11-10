@@ -65,6 +65,84 @@ Janax cuesta unas **70 veces menos**. El detalle y los límites medidos están e
   **armonía** corta lo que suena mal. Una **voluntad** escucha la melodía y le contesta. Arrancan sin idioma común e
   inventan uno conversando. Está en un modelo de referencia (Perl) y en Janax, con la misma huella bit por bit.
 
+## Cada pieza, con su nombre en el oficio
+
+Un revisor no puede evaluar lo que no puede ubicar. Por eso el repositorio trae un inventario
+levantado **leyendo el código y nada más**, sin consultar la documentación: cada mecanismo con su
+archivo y su línea, lo que hace, y su nombre publicado con la cita — o la marca de que no se le
+encontró antecedente.
+
+📄 **[Inventario de mecanismos y mapa de equivalencias](documentacion/mecanismos-y-equivalencias.md)**
+— las cuatro capas, mecanismo por mecanismo.
+
+### Lo que ya tiene nombre
+
+| Pieza del proyecto | Nombre en el oficio | Cita |
+|---|---|---|
+| El juez de Razar | Longitud mínima de descripción, código de dos partes | Rissanen 1978 |
+| El `log2(n)/2` por cada tasa | Penalización por parámetro / BIC | Schwarz 1978 |
+| `(BL+½)/(NQ+1)` | Estimador de Krichevsky–Trofimov | KT 1981 |
+| El pedido dormido | Voto de mayoría | Boyer–Moore 1981 |
+| El corte en dos | Método de Otsu / discriminante de Fisher | Otsu 1979 |
+| Los esqueletos | Patrones léxico-sintácticos aprendidos | Hearst 1992; Snow et al. 2004 |
+| Las nueve maneras | Marcos frecuentes | Mintz 2003 |
+| La nitidez | Similitud paradigmática sobre *slots* | Harris 1954; Lin 1998 |
+| Las piezas de las palabras | Inducción morfológica por MDL | Goldsmith 2001; Morfessor |
+| El coma y el despertador | Mantenimiento de la verdad (TMS) | Doyle 1979; de Kleer 1986 |
+| «Una B por cada A» | Descubrimiento de dependencias funcionales | Huhtala et al. 1999 (TANE) |
+| El nulo por cruce | Datos sustitutos / prueba de permutación | Theiler et al. 1992 |
+| Las rondas hasta el punto fijo | Evaluación ascendente de Datalog | Semántica de punto fijo |
+| Un solo lugar que cambia | Antiunificación / generalización menos general | Plotkin 1970 |
+| Las plantillas parchadas | Copy-and-patch | Xu y Kjolstad 2021 |
+| El planificador reemplazable | Núcleo extensible acotado | SPIN 1995; VINO 1996; eBPF |
+| El cobro por corrida | Medición de combustible | Wasmtime; gas de la EVM |
+| El cartel de ambientes | Espacio de capacidades | Hydra 1974; Mach; seL4 |
+| Pesos que conservan el total | Escalado sináptico / regla de Oja | Turrigiano 1998; Oja 1982 |
+| La ventana de ±1 paso | STDP | Bi y Poo 1998 |
+| El punto fijo del ensamblador | Bootstrap de tres etapas | GCC; Thompson 1984 |
+| La relajación de saltos | Instrucciones dependientes del alcance | Szymanski 1978 |
+
+Que tantas piezas tengan un equivalente correcto es una buena noticia, no una mala: significa que
+el camino, recorrido solo, dio con las soluciones que el oficio considera buenas. Ninguna de estas
+convergencias reclama prioridad — los antecedentes son anteriores y están citados.
+
+### Lo que no tiene equivalente conocido
+
+Cuatro piezas, con la advertencia de que «no se le encontró antecedente» habla de quien buscó, no
+de la literatura:
+
+1. **`asociar`** (`so/ambientes.inc:1274`) — álgebra de conjuntos (intersección, diferencias,
+   unión) sobre los espacios de capacidades de **dos** procesos, materializada al nacer un tercero,
+   con consentimiento bilateral obligatorio. Probado en `so/pruebas/asocia_{0,1,2,3}.jsm`.
+2. **«La última parte»** (`so/remos.inc:428`) — terminar en vez de ceder el turno, con el dato
+   calculado estáticamente del programa **para que el programa no pueda mentir sobre él**.
+3. **La armonía de la ola** (`cardumen_cubo.jsm:818`) — una pieza se ahoga si la empujan desde
+   demasiados lados, y la acumulación es por pieza, compartida entre olas: ahí se encuentran dos
+   saludos.
+4. **La forma canónica del órgano** (`pulso.jsm:3090`) — usada como prueba nula de que el órgano
+   efectivamente leyó el libro.
+
+### Cómo se mide el proyecto a sí mismo
+
+Prueba diferencial de tres motores que deben coincidir **hasta el momento del corte de turno**;
+prueba **exhaustiva** del ensamblador contra FASM (toda combinación de cada instrucción); nulo por
+permutación dentro del motor; un distractor puesto a propósito para comprobar que nunca gane;
+validación cruzada dejando uno afuera; estudio de ablación de a una regla por vez
+(`razar/cardumen/caminos.sh`); y comparación contra la implementación de referencia del campo con
+el presupuesto igualado.
+
+El **único umbral de conteo de todo el sistema es 2** («una vez es anécdota, dos es patrón»). Los
+demás valores salen de una medición o están declarados como criterio en el propio comentario.
+
+### Los límites, dichos de frente
+
+- El autoalojamiento verificado por punto fijo es el del **ensamblador del lenguaje**; los motores
+  de escalón 0 y el núcleo se siguen ensamblando con FASM.
+- **Nadie de afuera lo corrió todavía.** Las mediciones son del autor, en su máquina. Eso lo deja
+  en *replicable pendiente de réplica*, que no es lo mismo que *probado*.
+- Lo medido contra EGG es **ese juego** (señalización de Lewis con 16 cosas); la transferencia a
+  otras tareas no está medida.
+
 ## Cómo se prueba
 
 Hace falta Windows, Git Bash y [FASM 1.73.35](https://flatassembler.net/). Las pruebas toman FASM de `FASM=` e
