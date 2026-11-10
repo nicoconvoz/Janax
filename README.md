@@ -113,7 +113,15 @@ Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.52
 
 ## Donaciones
 
-Janax y Razar se hacen para donarlos al mundo, abiertos. Si querés ayudar a que sigan creciendo:
+Janax y Razar se hacen para donarlos al mundo, abiertos. El código es gratis y lo va a seguir siendo: la licencia Apache 2.0 no se puede retirar, y nadie necesita pagar nada para usarlo, estudiarlo o venderlo.
+
+Lo que se done tiene destino, y lo escribo acá para que quede comprometido:
+
+1. **Ayudar a los que menos tienen.**
+2. **Pagar el laboratorio**, para poder seguir construyendo y midiendo.
+3. **Fundar una escuela**, para que esto se reparta en personas y no solo en repositorios.
+
+Si eso te hace sentido y querés empujar:
 
 | Red | Dirección | Qué mandar |
 |---|---|---|

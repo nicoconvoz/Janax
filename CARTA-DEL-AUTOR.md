@@ -32,6 +32,12 @@ Las definiciones que leí dicen qué tendría que poder hacer, y eso no se puede
 
 Por eso no creo en los techos. El límite es infinito, y todo lo que se puede imaginar se puede hacer.
 
+Una última cosa, porque alguien la va a preguntar. En el repositorio hay una alcancía. No es un precio: el código es libre y lo va a seguir siendo, y el que quiera usarlo no me debe nada.
+
+Pero lo que entre por ahí tiene destino, y lo dejo escrito para quedar comprometido: ayudar a los que menos tienen, pagar el laboratorio para seguir construyendo y midiendo, y fundar una escuela.
+
+Lo de la escuela es lo que más quiero de los tres. Un repositorio se reparte solo; una escuela se reparte en personas, y eso dura más.
+
 Muchas gracias por todo navegante!
 
 Nico
