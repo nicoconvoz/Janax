@@ -161,6 +161,32 @@ y es la que sostiene que el sistema acumula en vez de empezar de nuevo.
 por puntaje, y fue el escalón del que llegó a 2649. Podando por nota se perdía el único camino
 hacia arriba.
 
+## Una estadística para poblaciones que nadie enumeró
+
+La estadística clásica necesita un **espacio muestral fijado de antemano**: el nulo se define
+contra «lo que habría pasado sin estructura», y eso exige saber cuál era el conjunto de cosas que
+podían pasar. Cuando lo que se busca es **un mecanismo**, y el espacio de mecanismos posibles no
+está enumerado, ese instrumento no se aplica.
+
+Las tres piezas que lo reemplazan están construidas y corriendo:
+
+1. **Un juez que no depende de la tarea** — bits ahorrados (MDL). Un mecanismo mejor lo es para
+   cualquier lectura, no para el banco con que se lo buscó: **el banco no participa de la
+   búsqueda**, y por eso no se puede sobreajustar.
+2. **Un nulo sobre mecanismos, no sobre datos** — el control clásico baraja los datos; acá se
+   sortea **otro mecanismo del mismo generador** y rinde el mismo examen, en su jaula y con
+   presupuesto.
+3. **El denominador** — no se reporta el ganador: se reportan el camino, el resultado y **lo que
+   costó en intentos**.
+
+| Estrategia de búsqueda | Camino | Final | Intentos |
+|---|---|---|---|
+| escalador de siempre | 8 → 18 → 186 → 16 → 516 | **11.144** | **80** (2 vidas) |
+| archivo por nichos | 6 → 5 → 16 → 716 → 516 | **11.144** | **160** (4 vidas) |
+
+Los dos llegan al mismo lugar y uno paga el doble. El archivo por nichos se conservó igual pese a
+empatar costando más — *"que no lo mida no significa que no lo quiera"*.
+
 ### Qué hace FASM acá, y qué no
 
 **FASM se usa para dos cosas distintas, y conviene no confundirlas:**

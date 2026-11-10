@@ -311,6 +311,31 @@
       basura por puntaje, y fue el escalón del que llegó a 2649. Podando por nota se perdía el único camino hacia
       arriba.</p>
 
+    <h2 style="margin-top:28px">Una estadística para poblaciones que nadie enumeró</h2>
+    <p class="sub">La estadística clásica necesita un <strong>espacio muestral fijado de antemano</strong>: el nulo se
+      define contra «lo que habría pasado sin estructura», y eso exige saber qué cosas podían pasar. Cuando lo que se
+      busca es <strong>un mecanismo</strong>, y el espacio de mecanismos posibles no está enumerado, ese instrumento no
+      se aplica. Las tres piezas que lo reemplazan están construidas:</p>
+    <ol class="sub">
+      <li><strong>Un juez que no depende de la tarea:</strong> bits ahorrados. Un mecanismo mejor lo es para cualquier
+        lectura, no para el banco con que se lo buscó &mdash; <strong>el banco no participa de la búsqueda</strong>, y por
+        eso no se puede sobreajustar.</li>
+      <li><strong>Un nulo sobre mecanismos, no sobre datos:</strong> el control clásico baraja los datos; acá se sortea
+        <strong>otro mecanismo del mismo generador</strong> y se lo hace rendir el mismo examen, en su jaula y con
+        presupuesto.</li>
+      <li><strong>El denominador:</strong> no se reporta el ganador, se reporta el camino, el resultado y lo que costó
+        en intentos.</li>
+    </ol>
+    <div class="scroll">
+    <table>
+      <tr><th>Estrategia de búsqueda</th><th>Camino</th><th>Final</th><th>Intentos</th></tr>
+      <tr><td>escalador de siempre</td><td>8 → 18 → 186 → 16 → 516</td><td class="num">11.144</td><td class="num">80</td></tr>
+      <tr><td>archivo por nichos</td><td>6 → 5 → 16 → 716 → 516</td><td class="num">11.144</td><td class="num">160</td></tr>
+    </table>
+    </div>
+    <p class="sub" style="margin-top:12px">Los dos llegan al mismo lugar y uno paga el doble. El archivo por nichos se
+      conservó igual, pese a empatar costando más: <em>"que no lo mida no significa que no lo quiera"</em>.</p>
+
     <h2 style="margin-top:28px">Cómo se mide el proyecto a sí mismo</h2>
     <p class="sub">Prueba diferencial de tres motores que deben coincidir <strong>hasta el momento del corte de
       turno</strong>; prueba <strong>exhaustiva</strong> del ensamblador contra FASM; nulo por permutación dentro del

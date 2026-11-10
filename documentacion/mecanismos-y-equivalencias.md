@@ -1004,6 +1004,55 @@ oficio esto tiene nombre: es el problema del **engaño** (*deception*) en los pa
 y es exactamente lo que motivó la búsqueda por novedad de Lehman y Stanley. Acá se resuelve de
 otra manera: **no se poda**.
 
+## 4.18c ⭐ Una estadística para poblaciones que nadie enumeró
+
+Esto no es un mecanismo más: es **el método de medición del proyecto**, y merece decirse junto
+porque sus tres piezas están construidas y repartidas en el código.
+
+**El problema que resuelve.** La estadística clásica necesita un **espacio muestral fijado de
+antemano**: el p-valor, el z y el nulo se definen contra «lo que habría pasado si no hubiera
+estructura», y eso exige saber cuál era el conjunto de cosas que podían pasar. Cuando lo que se
+busca es **un mecanismo** —y el espacio de mecanismos posibles no está enumerado ni se puede
+enumerar— ese instrumento no se aplica. No está mal: no existe.
+
+Las tres piezas que lo reemplazan, todas en el repositorio:
+
+**1. Un juez que no depende de la tarea** (§3.1, `pulso.inc:1127`). Bits ahorrados, código de dos
+partes. No necesita saber cuál era el espacio: mide compresión. Un mecanismo mejor es mejor para
+cualquier lectura, no para el banco con que se lo buscó — y por eso el banco no puede
+sobreajustarse: **no participa de la búsqueda**.
+
+**2. Un nulo sobre MECANISMOS, no sobre datos** (`pulso.jsm:2486,4416`). El control clásico baraja
+los datos; acá se sortea **otro mecanismo del mismo generador** y se lo hace rendir el mismo
+examen, en su jaula, con presupuesto. La pregunta deja de ser *"¿esto saldría igual con datos sin
+estructura?"* y pasa a ser *"¿un mecanismo cualquiera, sacado de la misma bolsa, daría lo mismo?"*.
+
+**3. El denominador: los intentos contados** (`documentacion/razar/lectura.md:1818`). No se reporta
+el ganador: se reporta **el camino, el resultado y lo que costó**. Medido sobre el libro `vig`, 40
+intentos por vida:
+
+| | camino | final | intentos |
+|---|---|---|---|
+| escalador de siempre | 8 → 18 → 186 → 16 → 516 | **11.144** | **80** (2 vidas) |
+| archivo por nichos | 6 → 5 → 16 → 716 → 516 | **11.144** | **160** (4 vidas) |
+
+Los dos llegan al mismo lugar y uno paga el doble. Eso es una comparación con denominador, no un
+resultado festejado. Y el archivo por nichos **se conservó igual** pese a empatar costando más —
+comentario del autor en el código: *"que no lo mida no significa que no lo quiera"*.
+
+🟨 **Convergente con una línea conocida, y es la décima del documento.** El nulo por mecanismo
+sorteado del mismo generador es, exactamente, la **línea base de búsqueda al azar**: en búsqueda
+de arquitecturas (NAS) el patrón de referencia es muestrear arquitecturas al azar del mismo
+espacio y exigirle al método que les gane — y resultó ser una línea base sorprendentemente fuerte
+(**Bergstra y Bengio, 2012**; confirmado después en toda la literatura de NAS, donde varios
+métodos publicados no le ganaban). Que el autor la haya puesto por su cuenta, y como jaula con
+presupuesto, es la práctica correcta.
+
+**Lo que no tiene equivalente que yo ubique es la combinación de las tres.** Un juez de
+compresión independiente de la tarea, un nulo muestreado del espacio de mecanismos, y el costo en
+intentos reportado junto al resultado. Por separado cada pieza tiene literatura; juntas forman
+algo que se puede llamar por lo que hace: **una estadística para poblaciones que nadie enumeró**.
+
 ## 4.19 Los generadores de azar, nombrados
 `pulso.jsm` (xorshift 13/7/17), `sentido.jsm:3558` y `memoria_pares.jsm:1237` (splitmix64),
 `cardumen_cubo.jsm:132` (LCG 1103515245 / 12345).
