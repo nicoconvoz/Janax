@@ -134,6 +134,33 @@ el presupuesto igualado.
 El **único umbral de conteo de todo el sistema es 2** («una vez es anécdota, dos es patrón»). Los
 demás valores salen de una medición o están declarados como criterio en el propio comentario.
 
+### Se mejora solo, y lo que aprende pasa a la vida siguiente
+
+Razar no solo usa un detector: **lo diseña**. Un «órgano» es un operador perceptual que el propio
+sistema arma por mutación contra el juez de bits, y cuando uno gana **deja su receta escrita** —
+sus letras, su alfabeto y su nota— en `tablero/Receta de Organos/<modelo>/<tipo>/recetas`.
+
+La cadena está medida (`documentacion/razar/lectura.md`):
+
+| Órgano | Nota | Qué pasó |
+|---|---|---|
+| `6` | **−1586** | basura por puntaje: no paga su nombre |
+| `5` | **208** | el primero que pasa a positivo, construido sobre el anterior |
+| `16` | **2649** | `208 -> 2649 (+2441), antes: 5` |
+
+Y **lo aprendido pasa a la vida siguiente**: una corrida nueva nace sin órgano, lee la receta de
+su modelo (`"receta 5: suya"`) y **arranca con esa base en lugar de cero**. No hay adopción a
+ciegas: la mejor receta de cada tipo **rinde primero como candidata, en su jaula**, sea del
+alfabeto que sea, y esos intentos no le restan intentos a la búsqueda. *La huella informa, no
+decide.*
+
+Eso es transferencia **entre vidas**, que es distinta de la transferencia entre tareas de arriba —
+y es la que sostiene que el sistema acumula en vez de empezar de nuevo.
+
+**Y el órgano `6` es el argumento entero de por qué nada se descarta:** valía −1586, era basura
+por puntaje, y fue el escalón del que llegó a 2649. Podando por nota se perdía el único camino
+hacia arriba.
+
 ### Qué hace FASM acá, y qué no
 
 **FASM se usa para dos cosas distintas, y conviene no confundirlas:**

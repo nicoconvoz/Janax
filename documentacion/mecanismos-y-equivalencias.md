@@ -918,6 +918,51 @@ medida.** Lo que existe solo para el juego de Lewis es el **cara a cara contra u
 implementación de referencia a presupuesto igualado**; en las otras cuatro tareas todavía no hay
 un rival convencional medido al lado. Ésa es la distinción que corresponde hacer, y no la otra.
 
+## 4.18b ⭐ El órgano que se diseña solo, y la receta que pasa a la vida siguiente
+`pulso.jsm:2486,4625,4416` (mutación y nichos) y `documentacion/razar/lectura.md:3168-3260` (las
+recetas). Un **órgano** es un operador perceptual de 1 a 9 letras que el sistema arma **por
+mutación contra el juez de bits** (§3.1) — no contra una tarea. Cuando uno gana, deja su receta
+escrita en `tablero/Receta de Organos/<modelo>/<tipo>/recetas`: sus letras, su alfabeto, su nota y
+su genoma.
+
+La cadena medida:
+
+| Órgano | Nota | Qué pasó |
+|---|---|---|
+| `6` | −1586 | basura por puntaje: no paga su nombre |
+| `5` | 208 | el primero positivo, construido sobre el anterior |
+| `16` | 2649 | `208 -> 2649 (+2441), antes: 5` |
+
+Y la vida siguiente **nace sin órgano, lee la receta de su modelo y arranca con esa base**. La
+adopción no es a ciegas: la mejor receta de cada tipo **rinde primero como candidata, en su
+jaula**, sea del alfabeto que sea, y esos intentos no le restan intentos a la búsqueda.
+
+🟨🟩 **Mitad convergente, mitad propia, y la mitad propia es la interesante.**
+
+La mitad conocida: buscar la **arquitectura** en vez de los parámetros es **neuroevolución** y
+**búsqueda de arquitecturas** (NEAT, Stanley y Miikkulainen 2002; NAS). Y conservar lo descubierto
+entre corridas, con elitismo y un archivo de los mejores, es el patrón de los algoritmos
+evolutivos con memoria y de la **búsqueda por novedad** (Lehman y Stanley, 2011).
+
+Lo que **no** es habitual son dos cosas, y conviene decirlas separadas:
+
+1. **El objetivo no es la tarea: es la compresión.** En neuroevolución y en NAS la aptitud es el
+   desempeño en el problema. Acá la aptitud son **bits ahorrados** — el mismo juez que mide todo
+   lo demás. Por eso un órgano mejor es mejor *para cualquier lectura*, no para el banco con que
+   se lo entrenó. Es la diferencia entre optimizar el puntaje y optimizar el entendimiento, y es
+   la razón de que no haya sobreajuste al banco: el banco no participa de la búsqueda.
+2. **La receta se guarda por modelo y por tipo, y la huella informa pero no decide.** Un
+   candidato de otro alfabeto **igual compite**, en su jaula y sin gastar intentos de la
+   búsqueda. La regla declarada del autor —*"los ingredientes nunca se descartan; lo que se mira
+   es qué hace y en qué es mejor"*— está implementada, no enunciada.
+
+**Y el órgano `6` es el caso que justifica la regla.** Valía **−1586**: basura por puntaje, lo que
+cualquier poda por aptitud habría tirado en la primera generación. Fue el escalón del que salió el
+`5` (208) y después el `16` (2649). Podando por nota se perdía el único camino hacia arriba. En el
+oficio esto tiene nombre: es el problema del **engaño** (*deception*) en los paisajes de aptitud,
+y es exactamente lo que motivó la búsqueda por novedad de Lehman y Stanley. Acá se resuelve de
+otra manera: **no se poda**.
+
 ## 4.19 Los generadores de azar, nombrados
 `pulso.jsm` (xorshift 13/7/17), `sentido.jsm:3558` y `memoria_pares.jsm:1237` (splitmix64),
 `cardumen_cubo.jsm:132` (LCG 1103515245 / 12345).
@@ -1032,6 +1077,10 @@ orden eligen lo mismo.
   libro entero y las analogías del MATS sobre Wikipedia. Lo que existe **solo para el juego de
   Lewis** es la comparación contra una implementación de referencia del campo con el presupuesto
   igualado.
+- **Y hay una segunda transferencia, entre vidas** (§4.18b): el órgano que una corrida descubre
+  queda escrito como receta y la corrida siguiente arranca con esa base en lugar de cero, con la
+  cadena de mejora medida (−1586 → 208 → 2649). Eso es lo que sostiene que el sistema **acumule**
+  en vez de empezar de nuevo.
 - **El segmento ELF es RWX único**: simplicidad, no seguridad.
 - **Hay dos agrupamientos por enlace simple** (§3.3) donde el encadenamiento puede morder. El
   autor ya lo detectó y lo corrigió donde dolía (§3.9); vale revisar si el otro lo necesita.
