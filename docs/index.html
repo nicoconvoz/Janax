@@ -267,12 +267,21 @@
         materializada al nacer un tercero, con consentimiento bilateral obligatorio.
         <br><em>Construido:</em> las cuatro regiones booleanas (modos 0-3), con prueba corriendo
         (<code>so/pruebas/asocia_{0,1,2,3}.jsm</code>).
-        <br><em>Imaginado y todavía no construido:</em> dos ejes más que convierten cuatro regiones en una familia
-        abierta &mdash; <strong>el orden de la mirada</strong> («lo que miro A primero» entrega la misma región en
-        otro orden, y el hijo las recibe como sus ambientes 1, 2, 3… en ese orden) y <strong>el ranking dentro de la
-        región</strong> («los más pequeños de B que no están en A»). Con esos dos, <code>asociar</code> deja de ser
-        álgebra de conjuntos y pasa a ser <strong>un lenguaje de consulta sobre dos espacios de capacidades</strong>.
-        Se anota acá separado a propósito: lo construido tiene prueba, lo imaginado todavía no.</li>
+        <br><em>Y el hallazgo conceptual, que vale aunque el código todavía no lo implemente:</em>
+        <strong>el Venn de población infinita.</strong> <code>asociar</code> entrega desde tres regiones, así que lo
+        booleano da <strong>2³ = 8</strong> estados y hay 4 construidos: es finito. Pero agregándole
+        <strong>el orden de la mirada</strong> («lo que miro A primero» entrega la misma región en otro orden, y con
+        <em>k</em> cajas son <em>k</em>! órdenes) y <strong>un criterio de ranking</strong> («los más pequeños de B que
+        no están en A», un predicado cualquiera sobre los campos del cartel), la cuenta pasa a ser
+        <strong>infinita</strong>. Y esos dos son <em>ejes que el autor nombró, no la lista</em>: se podría distinguir
+        también por procedencia, por antigüedad, por máscara de permisos, por composición de asociaciones previas.
+        Cada eje nuevo multiplica la población de vuelta.
+        <br><em>Dónde está el antecedente y dónde no:</em> el salto de álgebra de conjuntos a conjuntos con selección y
+        orden es el de <strong>Codd (1970)</strong>, el álgebra relacional. Lo que no tiene precedente conocido es
+        aplicarlo a <strong>capacidades</strong>: ahí los elementos no son filas, son derechos sobre memoria viva, y
+        entregarlos ordenados o filtrados cambia <em>lo que el hijo puede hacer</em>, no solo lo que puede leer.
+        <code>asociar</code> con los modos 4 en adelante no sería una consulta: sería
+        <strong>un lenguaje de consulta que reparte poder</strong>.</li>
       <li><strong>«La última parte»</strong> (<code>so/remos.inc:428</code>) &mdash; terminar en vez de ceder el turno,
         con el dato calculado del programa <strong>para que el programa no pueda mentir sobre él</strong>.</li>
       <li><strong>La armonía de la ola</strong> (<code>cardumen_cubo.jsm:818</code>) &mdash; una pieza se ahoga si la

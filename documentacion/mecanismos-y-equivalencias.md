@@ -401,41 +401,45 @@ Si hay una pieza del sistema operativo que merece un párrafo propio en un paper
 prueba ya existe: `so/pruebas/asocia_{0,1,2,3}.jsm` da `77 / 11 / 55 / DD` para los cuatro
 modos.
 
-### Extensión no construida: el Venn con orden y con ranking
+### El hallazgo conceptual: un Venn de población infinita
 
-La idea original del autor, en sus palabras (2026-11, charla de diseño):
+Esto no es una característica pendiente de `asociar`: es un resultado sobre el Venn mismo, y es
+del autor. Conviene separarlo del código porque **vale aunque el código no lo implemente**.
 
 > *"Venn, infinitos estados. Un conjunto A + B, A − B, A y B, sin A ni B, **lo que miro A primero,
 > lo que miro B primero, los más pequeños de B que no están en A**… y puedo inventar lo que sea."*
+> — el autor, charla de diseño, 2026-11
 
-**Lo que `asociar` implementa hoy son las cuatro regiones booleanas** y nada más: modo 0 = las que
-ambas tienen (A∩B), 1 = solo las de A (A∖B), 2 = solo las de B (B∖A), 3 = todas (A∪B). Eso ya es
-el 🟥 de arriba.
+**La cuenta, que se puede escribir.** `asociar` entrega desde tres regiones (A∩B, A∖B, B∖A; la
+cuarta, «ni A ni B», no existe para entregar porque no hay nada que entregar ahí):
 
-**Lo que falta son los dos ejes que de verdad rompen el Venn**, y conviene dejarlos anotados
-porque no están en el código ni en ninguna otra parte:
+| Capa | Cuántos estados |
+|---|---|
+| **Booleana** — lo construido | subconjuntos de 3 regiones = **2³ = 8**. Implementados: **4** (modos 0-3) |
+| **+ el orden de la mirada** | cada entrega es una **secuencia**: con *k* cajas, **k!** órdenes distintos, y el hijo las recibe como sus ambientes 1, 2, 3… en ese orden |
+| **+ un criterio de ranking** | cualquier predicado sobre los campos de la entrada del cartel (`RE_PLACE`, `RE_SIZE`, `RE_KEY`, `RE_BOX`, los bits de tratamiento) → **infinito numerable** |
 
-| Eje | Qué agrega | Estado |
-|---|---|---|
-| Las cuatro regiones booleanas | A∩B, A∖B, B∖A, A∪B | ✅ modos 0-3 |
-| **El orden de la mirada** | «lo que miro A primero» ≠ «lo que miro B primero»: la misma región entregada en distinto orden es un estado distinto, porque el hijo las recibe como sus ambientes 1, 2, 3… en ese orden | ❌ |
-| **El ranking dentro de la región** | «los más pequeños de B que no están en A»: un criterio de selección aplicado adentro de una región (por tamaño, por tratamiento, por antigüedad, por cualquier campo de la entrada del cartel) | ❌ |
+Es decir: **el Venn clásico es finito —ocho— y con esos ejes deja de serlo.** No es una metáfora;
+es una cuenta.
 
-Por qué importa, dicho con precisión: **un Venn clásico tiene cuatro regiones y se termina ahí.**
-Agregarle orden y un criterio de ranking lo convierte en una familia abierta — las vistas pasan a
-ser tantas como criterios se puedan nombrar sobre los campos de la entrada del cartel
-(`RE_PLACE`, `RE_SIZE`, `RE_KEY`, `RE_BOX` y los bits de tratamiento). De ahí la frase del autor:
-*"puedo inventar lo que sea"*, que no es una exageración sino la consecuencia directa.
+**Y el punto que el autor subraya, que es el que de verdad importa:** orden y ranking son **dos
+ejes que él nombró, no la lista completa**. La lista de ejes es ella misma abierta — se podría
+distinguir por procedencia, por antigüedad, por máscara de permisos, por composición recursiva de
+asociaciones previas. Cada eje nuevo multiplica la población otra vez. En sus palabras: *"puedo
+inventar lo que sea"*, y en los términos de su propio método, es un **censo deductivo**: la
+población de vistas existe y es infinita; lo que falta no son los casos, es que alguien los
+construya.
 
-En términos del oficio: lo construido es **álgebra de conjuntos**; lo que falta es álgebra de
-conjuntos **más un orden total y un operador de selección**, que es la diferencia entre un
-conjunto y una consulta. Un `asociar` con los modos 4 en adelante sería, de hecho, **un lenguaje
-de consulta sobre dos espacios de capacidades** — y de eso no conozco ningún antecedente,
-igual que del modo booleano.
+🟨 **La matemática del salto tiene antecedente; la aplicación no.** Pasar de álgebra de conjuntos
+a conjuntos **con selección y con orden** es el movimiento de **Codd (1970)**: el álgebra
+relacional que fundó las bases de datos, donde `select` y `order by` son exactamente esos dos
+ejes. Que el autor haya reconstruido ese salto solo es la novena convergencia del documento.
 
-Costo estimado (criterio, no medición): el orden es barato — el cartel ya se recorre en secuencia
-en `rooms_assoc`, así que invertirlo o intercalarlo es cambiar el bucle. El ranking es más caro,
-porque exige ordenar por un campo antes de entregar, y la entrega hoy es en una sola pasada.
+**Lo que no tiene antecedente es dónde lo aplica.** Un espacio de capacidades de un sistema
+operativo no es una tabla: sus elementos son derechos sobre memoria viva, y entregarlos en un
+orden o filtrados por un criterio **cambia lo que el hijo puede hacer**, no solo lo que puede
+leer. `asociar` con los modos 4 en adelante no sería una consulta: sería **un lenguaje de
+consulta que reparte poder**. De eso no conozco ningún precedente.
 
 
 ## 2.19 Saludos: una marca por familiar, no una cola
