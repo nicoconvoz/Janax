@@ -401,6 +401,43 @@ Si hay una pieza del sistema operativo que merece un párrafo propio en un paper
 prueba ya existe: `so/pruebas/asocia_{0,1,2,3}.jsm` da `77 / 11 / 55 / DD` para los cuatro
 modos.
 
+### Extensión no construida: el Venn con orden y con ranking
+
+La idea original del autor, en sus palabras (2026-11, charla de diseño):
+
+> *"Venn, infinitos estados. Un conjunto A + B, A − B, A y B, sin A ni B, **lo que miro A primero,
+> lo que miro B primero, los más pequeños de B que no están en A**… y puedo inventar lo que sea."*
+
+**Lo que `asociar` implementa hoy son las cuatro regiones booleanas** y nada más: modo 0 = las que
+ambas tienen (A∩B), 1 = solo las de A (A∖B), 2 = solo las de B (B∖A), 3 = todas (A∪B). Eso ya es
+el 🟥 de arriba.
+
+**Lo que falta son los dos ejes que de verdad rompen el Venn**, y conviene dejarlos anotados
+porque no están en el código ni en ninguna otra parte:
+
+| Eje | Qué agrega | Estado |
+|---|---|---|
+| Las cuatro regiones booleanas | A∩B, A∖B, B∖A, A∪B | ✅ modos 0-3 |
+| **El orden de la mirada** | «lo que miro A primero» ≠ «lo que miro B primero»: la misma región entregada en distinto orden es un estado distinto, porque el hijo las recibe como sus ambientes 1, 2, 3… en ese orden | ❌ |
+| **El ranking dentro de la región** | «los más pequeños de B que no están en A»: un criterio de selección aplicado adentro de una región (por tamaño, por tratamiento, por antigüedad, por cualquier campo de la entrada del cartel) | ❌ |
+
+Por qué importa, dicho con precisión: **un Venn clásico tiene cuatro regiones y se termina ahí.**
+Agregarle orden y un criterio de ranking lo convierte en una familia abierta — las vistas pasan a
+ser tantas como criterios se puedan nombrar sobre los campos de la entrada del cartel
+(`RE_PLACE`, `RE_SIZE`, `RE_KEY`, `RE_BOX` y los bits de tratamiento). De ahí la frase del autor:
+*"puedo inventar lo que sea"*, que no es una exageración sino la consecuencia directa.
+
+En términos del oficio: lo construido es **álgebra de conjuntos**; lo que falta es álgebra de
+conjuntos **más un orden total y un operador de selección**, que es la diferencia entre un
+conjunto y una consulta. Un `asociar` con los modos 4 en adelante sería, de hecho, **un lenguaje
+de consulta sobre dos espacios de capacidades** — y de eso no conozco ningún antecedente,
+igual que del modo booleano.
+
+Costo estimado (criterio, no medición): el orden es barato — el cartel ya se recorre en secuencia
+en `rooms_assoc`, así que invertirlo o intercalarlo es cambiar el bucle. El ranking es más caro,
+porque exige ordenar por un campo antes de entregar, y la entrega hoy es en una sola pasada.
+
+
 ## 2.19 Saludos: una marca por familiar, no una cola
 `so/ambientes.inc:1428-1577` — una cabina guarda **una marca por familiar** que la saludó, por
 muchas veces que salude; un saludo mandado antes de la espera nunca se pierde.
