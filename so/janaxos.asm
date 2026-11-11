@@ -521,6 +521,14 @@ section '.data' data readable writeable
   ; program decoded once), 0 = the interpreter, kept as the reference. JANAX_MOTOR names it; an unknown name
   ; starts nothing.
   motor      db 2
+  if defined PERFIL
+  ; Only in the measuring kernel (FASM -d PERFIL=1, with JANAX_MOTOR=interprete): how many times the
+  ; interpreter ran each word of the first program it ran, written to perfil.bin (a qword per word) at the end.
+  perfil_name db 'perfil.bin', 0
+  perfil_prog dq 0
+  perfil_file dq 0
+  perfil      rq 1 shl 20
+  end if
   motor_env  db 'JANAX_MOTOR', 0
   motor_names db 'interprete', 0, 'rutinas', 0, 'traductor', 0, 0
   calib_table dq 0
@@ -1098,6 +1106,12 @@ start:
         sub     rdi, rax
         invoke  WriteFile, [hout], line, rdi, written, 0
 .quit:
+  if defined PERFIL
+        invoke  CreateFileA, perfil_name, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0
+        mov     [perfil_file], rax
+        invoke  WriteFile, [perfil_file], perfil, 8 shl 20, written, 0
+        invoke  CloseHandle, [perfil_file]
+  end if
         invoke  ExitProcess, 0
 
 ; rsi = the text after "!": a fraction from 0 to 1 ("0.5", ".25", "1", up to 9 decimals) -> rax = it in
@@ -1734,6 +1748,20 @@ next:
         cmp     r12, [rbx + P_NWORDS]
         jae     fail_pc
         mov     eax, [r13 + r12*4]
+  if defined PERFIL
+        cmp     qword [rbx + P_HELPER], 0
+        jne     .perfil_off             ; not the kernel's helpers (the factory planner)
+        cmp     qword [perfil_prog], 0
+        jne     .perfil_known
+        mov     [perfil_prog], r13
+.perfil_known:
+        cmp     r13, [perfil_prog]
+        jne     .perfil_off
+        cmp     r12, 1 shl 20
+        jae     .perfil_off
+        inc     qword [perfil + r12*8]
+.perfil_off:
+  end if
         inc     r12                     ; jumps are relative to the next instruction
         dec     rbp
         movzx   ecx, al

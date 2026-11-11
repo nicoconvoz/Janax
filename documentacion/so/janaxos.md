@@ -1276,3 +1276,26 @@ las vueltas calientes del libro.
 Las tres dan el mismo código de salida, el mismo `j0` y el mismo `t=` en cada prueba, incluso con cinco procesos turnándose.
 Ojo con las pruebas de memoria del escalón 0 (46, 47, 49, 50): en el kernel un proceso nace sin memoria, y sin un
 `jfirst` adelante terminan con código 5 en la primera lectura.
+
+## El kernel de medición: cuántas veces corre cada palabra (2026-11-11)
+
+`FASM -d PERFIL=1 so/janaxos.asm perfil.exe` arma un kernel que, con `JANAX_MOTOR=interprete`, cuenta cuántas veces
+corre cada palabra del primer programa que no sea un ayudante del kernel, y al terminar lo deja en `perfil.bin` (una
+qword por palabra). Sin la bandera el kernel sale igual: solo cambian la fecha y la suma de control del encabezado.
+Se verificó con `while_suma` (1, 1, 1, 1, 10, 10, 11, 1 = las 36 instrucciones) y con el libro (la suma da el `t=`).
+
+**Lo que midió en hilos**, con la Wikipedia de 2,3 MB (13.055.693.102 instrucciones; el mapa palabra → línea cuadra con
+las 10.729 palabras del binario):
+
+| Rutina | Qué hace | Parte |
+|---|---|---|
+| `hk_hex` | escribe una clave en 16 cifras hexadecimales | 18,0 % |
+| `hwk_c` | lee una clave en hexadecimal, cifra por cifra | 17,0 % |
+| `pc_put` + `putch` | escribe un carácter (una llamada por letra) | 24,6 % |
+| `hnz_save` | copia `nitidas` entera en cada pedazo, línea por línea | 11,8 % |
+| `en_read` | lee un archivo de la casa | 6,8 % |
+| `pl_find` + `pl_grow` | busca y agranda las tablas | 6,1 % |
+
+Más del 80 % de lo que corre Razar es leer y escribir sus propios archivos como texto, de a un carácter, y reescribirlos
+enteros en cada pedazo. Lo que razona (`hl_groups` y las demás) no llega al 10 %. Ojo: esto cuenta instrucciones, no
+nanosegundos. Una llamada por carácter cuesta más en tiempo de lo que dice la cuenta, no menos.
