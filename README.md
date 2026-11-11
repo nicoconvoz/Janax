@@ -181,8 +181,14 @@ hacia arriba.
 hace el sistema. Desde la cubierta un diagrama de Venn son dos círculos; desde arriba se ve la
 población.
 
-*(Y un guiño, que es juego de letras y no una afirmación: **SOLUCIÓN** y **SOL ÚNICO** tienen
-exactamente las mismas ocho letras.)*
+Y el nombre que une las dos mitades del proyecto: **CORAZÓN** se parte exacto en **CO + RAZÓN**
+— *con razón*. La etimología dice otra cosa (viene de *cor*, corazón en latín, y no de *ratio*),
+así que es coincidencia de la escritura y no parentesco. Pero describe bien lo que se intentó
+acá: **un razonamiento que no deje afuera el motivo por el que se hace**. En palabras del autor,
+*"no compongo canciones: soy compositor de corazones"*.
+
+*(Y un guiño más, también juego de letras: **SOLUCIÓN** y **SOL ÚNICO** tienen exactamente las
+mismas ocho letras.)*
 
 ## Una estadística para poblaciones que nadie enumeró
 
