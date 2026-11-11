@@ -166,6 +166,24 @@ y es la que sostiene que el sistema acumula en vez de empezar de nuevo.
 por puntaje, y fue el escalón del que llegó a 2649. Podando por nota se perdía el único camino
 hacia arriba.
 
+## Los nombres
+
+**RAZAR** es **RAZ**onamiento **AR**tificial. Y tiene dos cosas más adentro, las dos exactas:
+
+- **R + AZAR.** El azar está metido en el propio nombre — y es contra el azar que se mide todo lo
+  que hace: cada relación tiene que ganarle a su par cruzado, cada órgano a un mecanismo sorteado
+  del mismo generador. Un juego que se gana **sacándole el azar** a lo que parecía azaroso.
+- **Es capicúa.** R-A-Z-A-R se lee igual en las dos direcciones.
+
+**JANAX** viene de *janax* / *hanaq*: en quechua y en aimara, **«arriba», el mundo de arriba**
+(*hanaq pacha*, el plano superior; en aimara *alax/janax pacha*). No significa tierra: significa
+**la vista desde arriba** — que es, sin que el nombre fuera elegido por eso, exactamente lo que
+hace el sistema. Desde la cubierta un diagrama de Venn son dos círculos; desde arriba se ve la
+población.
+
+*(Y un guiño, que es juego de letras y no una afirmación: **SOLUCIÓN** y **SOL ÚNICO** tienen
+exactamente las mismas ocho letras.)*
+
 ## Una estadística para poblaciones que nadie enumeró
 
 La estadística clásica necesita un **espacio muestral fijado de antemano**: el nulo se define
