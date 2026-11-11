@@ -5,6 +5,11 @@
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
 cada pieza tiene sus pruebas.
+
+> ⚠️ **Razar no es una red neuronal.** Sin redes, sin gradientes y sin pesos entrenados: **no es un modelo, es un
+> mecanismo**. Lo que busca no es acertar una tarea, es **decir lo mismo con menos bits** — y como el juez no
+> depende de la tarea, el banco con que se lo mide no participa de la búsqueda. Por eso entra en **5 MB** y corre
+> en **dos núcleos, sin GPU y sin nube**.
 📖 **[Carta del autor](CARTA-DEL-AUTOR.md)** — la otra mitad: el diario espiritual, en audio y con licencia libre.
 
 
@@ -244,6 +249,11 @@ Es un **prototipo de investigación**, no un producto terminado. Corre en Window
 ARM64 (Android). Cada número de la documentación dice de qué medición salió.
 
 ## English summary
+
+**Razar is not a neural network.** No networks, no gradients, no trained weights: it is not a model, it is a
+mechanism. What it optimises is not accuracy on a task but **description length** — saying the same with fewer
+bits — so the benchmark it is measured against takes no part in the search. That is why it fits in **5 MB** and
+runs on **two cores, with no GPU and no cloud**.
 
 Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built
 to host **Razar**, an artificial reasoning system that thinks in melodies: a three-dimensional "school" of pieces

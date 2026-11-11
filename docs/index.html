@@ -149,6 +149,10 @@
     <h2>Qué es, en una frase</h2>
     <p class="sub">Todo, desde el idioma hasta el sistema operativo, está hecho desde cero, y cada pieza tiene sus
       pruebas y sus números. Sin motores ni bibliotecas de terceros.</p>
+    <p class="sub"><strong>⚠️ Razar no es una red neuronal.</strong> Sin redes, sin gradientes y sin pesos entrenados:
+      <strong>no es un modelo, es un mecanismo</strong>. Lo que busca no es acertar una tarea, es <strong>decir lo mismo
+      con menos bits</strong> &mdash; y como el juez no depende de la tarea, el banco con que se lo mide no participa de
+      la búsqueda. Por eso entra en <strong>5 MB</strong> y corre en <strong>dos núcleos, sin GPU y sin nube</strong>.</p>
     <div class="grid">
       <div class="card"><span class="emoji">🔤</span><h3>El idioma Janax</h3>
         <p>Un assembler propio, diseñado para traducirse. Un intérprete de referencia y traductores a x86-64 y
@@ -436,8 +440,10 @@ bash razar/cardumen/nitidez_reproducir.sh corpus.txt MATS/es casa_nueva    # la 
     <a href="https://github.com/nicoconvoz/Janax/blob/master/LICENSE">Licencia Apache 2.0</a><br>
     Citar: Nicolás Astorga (2026). <em>Janax y Razar</em>. DOI <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a><br>
     Contacto: <a href="mailto:ingenieriaaplicada@opendoors.com.ar">ingenieriaaplicada@opendoors.com.ar</a><br>
-    <em>English:</em> a hand-written operating system, language and assembler built to host Razar, an artificial
-    reasoning system that thinks in melodies. On the Lewis signaling game with 16 things, Razar learns the whole
+    <em>English:</em> <strong>Razar is not a neural network</strong> &mdash; no networks, no gradients, no trained
+    weights; it optimises description length, not task accuracy, so the benchmark takes no part in the search. It fits
+    in 5 MB and runs on two cores. A hand-written operating system, language and assembler built to host Razar, an
+    artificial reasoning system that thinks in melodies. On the Lewis signaling game with 16 things, Razar learns the whole
     language in 35–102 games on 5 of 5 seeds; EGG, the field's reference implementation, reaches it on 0 of 5 within
     320,000 games. Version 0.3: with no one telling it what a synonym is, Razar groups words by the places they share; on
     20 MB of Spanish Wikipedia its pairs beat chance on MATS 451 to 117 (exact synonyms 18 to 1, antonyms 28 to 1), in 31

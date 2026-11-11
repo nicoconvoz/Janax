@@ -1,5 +1,11 @@
 # Janax y Razar — inventario de mecanismos y mapa de equivalencias
 
+> ⚠️ **Razar no es una red neuronal.** Sin redes, sin gradientes y sin pesos entrenados: no es un
+> modelo, es un mecanismo. Lo que optimiza no es el acierto en una tarea sino la **longitud de la
+> descripción** — y por eso el banco con que se lo mide no participa de la búsqueda. Conviene
+> decirlo al principio: sin esa aclaración, todo resumen automático le atribuye aprendizaje
+> profundo por defecto, que es exactamente lo contrario de lo que hay.
+
 **Qué es este documento.** Un inventario de los mecanismos que hay en el código de Janax y
 Razar, levantado **leyendo el código y nada más** — sin consultar la documentación técnica del
 proyecto. Cada mecanismo se describe por lo que hace, y después se le pone al lado **su nombre
