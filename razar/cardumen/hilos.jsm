@@ -8074,15 +8074,7 @@ hwk_c:
       jld j3, j1, HLGF
       jadd j4, j4, j3
       jld j5, j1, HLGE
-      jwhile j6
-        jldb j2, j4, 0
-        jcall putch
-        jldi j3, 1
-        jadd j4, j4, j3
-        jld j5, j1, HLGE
-      jwcheck
-        jsub j6, j5, j4
-      jwend
+      jcall put_span
     hwk_next:
       jldi j1, 0
       jld j3, j1, HLGE
@@ -8625,17 +8617,9 @@ hnz_save:
       jld j4, j1, HLGB
       jld j3, j1, HLGF
       jadd j4, j4, j3
-    jwhile j6
-      jldb j2, j4, 0
-      jcall putch
-      jldi j3, 1
-      jadd j4, j4, j3
-      jldi j1, 0
-    jwcheck
     hns_cb:
       jld j5, j1, HLGE
-      jsub j6, j5, j4
-    jwend
+      jcall put_span
     hns_next:
       jldi j1, 0
       jld j3, j1, HLGE
@@ -9531,13 +9515,8 @@ hes_open:
   jst j2, j1, SINK
   jld j4, j1, PRB
   jld j5, j1, PRN
-  jwhile j5
-    jldb j2, j4, 0
-    jcall putch
-    jldi j3, 1
-    jadd j4, j4, j3
-    jsub j5, j5, j3
-  jwend
+  jadd j5, j4, j5
+  jcall put_span
 hes_bd:
   jldi j1, 0
   jst j1, j1, HEI
@@ -10177,13 +10156,9 @@ en_sayprint:
   jcall0 j1, pl_find
   jld j9, j4, 8
   jld j10, j4, 16
-  jwhile j10
-    jldb j2, j9, 0
-    jcall putch
-    jldi j1, 1
-    jadd j9, j9, j1
-    jsub j10, j10, j1
-  jwend
+  jadd j5, j9, j10
+  jadd j4, j9, j1
+  jcall put_span
 esp_done:
   jldi j1, 0
   jret

@@ -1664,6 +1664,39 @@ pc_put:
   jst j3, j1, POS
   jret
 
+; The bytes from j4 up to j5 at TEXT + POS, in one go (Capitan: "a letter, a word or a sentence at once, it adjusts
+; itself"): as many as fit before the text is full, then it goes out and on, so what is written is byte for byte what
+; putch would write, without a call per letter. -> j4 = j5. Uses j1-j3, j6-j8 (j1 = 0 after).
+put_span:
+  jldi j8, 1
+  jwhile j6
+    jldi j1, 0
+    jld j3, j1, POS
+    jldi j7, TEXTN
+    jsub j7, j7, j3               ; room left in the text
+    jjnz j7, ps_room
+    jcall0 j3, pc_out             ; full: out first (POS is 0 after it)
+    jldi j7, TEXTN
+  ps_room:
+    jsub j2, j7, j6
+    jjn j2, ps_some               ; more than fits: as many as fit
+    jadd j7, j6, j1
+  ps_some:
+    jwhile j7
+      jldb j2, j4, 0
+      jstb j2, j3, TEXT
+      jadd j4, j4, j8
+      jadd j3, j3, j8
+      jsub j7, j7, j8
+    jwend
+    jldi j1, 0
+    jst j3, j1, POS
+  jwcheck
+    jsub j6, j5, j4
+  jwend
+  jldi j1, 0
+  jret
+
 ; The text out (flush), every register kept. Uses j1.
 pc_out:
   jldi j1, 0

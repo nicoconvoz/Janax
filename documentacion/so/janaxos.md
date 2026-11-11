@@ -1299,3 +1299,10 @@ las 10.729 palabras del binario):
 Más del 80 % de lo que corre Razar es leer y escribir sus propios archivos como texto, de a un carácter, y reescribirlos
 enteros en cada pedazo. Lo que razona (`hl_groups` y las demás) no llega al 10 %. Ojo: esto cuenta instrucciones, no
 nanosegundos. Una llamada por carácter cuesta más en tiempo de lo que dice la cuenta, no menos.
+
+**Primera palanca, escribir de un tirón (2026-11-11):** `put_span` (`razar/lectura/lectura.inc`) escribe "de acá hasta
+allá" sin una llamada por letra, y corta solo donde el texto se llena, igual que `putch`, así que lo escrito es el
+mismo byte por byte. Reemplazó las cuatro copias calientes de hilos (`hwk_copy`, `hns_copy`, la de los ejemplos y
+`en_sayprint`). Libro de 2,3 MB: casa idéntica, **13.055.693.102 → 9.953.261.322 instrucciones (−23,8 %)**, y Razar
+leyendo, medido solo con milisegundos y tres corridas de cada uno: **12,5 s → 10,8 s (−13,5 %)**. Quedan la lectura de
+las claves en hexadecimal (`hk_hex`) y la reescritura entera de los archivos en cada pedazo.
