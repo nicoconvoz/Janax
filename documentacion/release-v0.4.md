@@ -1,5 +1,7 @@
 ## Janax y Razar v0.4: la caja de cambios
 
+DOI: [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529)
+
 **Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.**
 
 Primero se midió dónde se le iba el tiempo: un kernel de medición (`FASM -d PERFIL=1`) contó cuántas veces corre cada
