@@ -68,7 +68,7 @@ campos es **criterio**, no medición: se revisa cuando el traductor muestre qué
 Las cinco de 18 a 1C son del 2026-11-11. Salieron de contar los modismos más escritos en Razar: `jldi r, 0` justo
 después de un `jcall` (1.693 veces), `jld`/`jldi 1`/`jadd`/`jst` (407), `jsub`/`jldi 63`/`jsar`/`jjz` (426) y
 `jldi 3`/`jshl`/`jld`/`jadd` (366). Ojo: se contó cuántas veces están escritas, no cuántas corren. Pruebas:
-`escalon0/pruebas/45` a `50`.
+`escalon0/pruebas/45` a `50`, que pasan en el intérprete, en el traductor x86 y en ARM64 en el teléfono.
 
 Memoria de datos: 1 MiB que arranca en cero (criterio); `j15` arranca en el tope y se usa como puntero de
 pila de datos. La pila de retorno está aparte y el programa no la puede leer ni pisar: así ningún error
