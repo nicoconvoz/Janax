@@ -48,9 +48,9 @@ corpus: semántica 234/51 (wikcionario) y 164/51 (Wikipedia 20 MB). Razar adentr
 | **Lugar** | Una forma leída `_ <una a tres palabras> _` y su lado: cada par que la forma sostiene pone su primera palabra en el lado 0 y la segunda en el lado 1. Su clave es la misma en todo libro (la de la forma y el lado). |
 | **Cola** | Una forma hecha solo de palabras de la mitad, y una palabra de la mitad, no cuentan: lo que se dice en todos lados no dice nada de nadie. La mitad es la que Razar ya mide (`HWC`, `HHC`), sin lista. |
 | **Nitidez** | Cada dos palabras de un lugar lo comparten. La nitidez de una pareja es cuántos lugares comparte. |
-| **Los lugares viajan** | `lugares0`/`lugares1` (cuál, lo dice `lugar`): una línea `{lugar, palabra, su texto}`. Cada pedazo lee de a 32 KB, despierta los lugares de sus propias formas y copia el resto tal cual, sin cargarlo entero. |
+| **Los lugares viajan** | `lugares0` (o `lugares1` en una casa de antes, según `lugar`): una línea `{lugar, palabra, su texto}`. Cada pedazo lee de a 32 KB y despierta los lugares de sus propias formas, sin cargarlo entero; al final **agrega solo los miembros nuevos** (desde el 2026-11-11: antes copiaba todo a otro archivo en cada pedazo). |
 | **Se cuenta una vez** | Una pareja suma un lugar cuando la segunda palabra llega a él; dos que ya estaban se contaron entonces. |
-| **`nitidas`** | `nitidas0`/`nitidas1`, una línea por pareja `{clave, lugares que comparten, palabra, otra}`; cada pedazo le suma lo suyo. |
+| **`nitidas`** | Un **diario** (desde el 2026-11-11): cada pedazo agrega al final una línea `{clave, lugares que compartió en ese pedazo, palabra, otra}` por pareja, y **una pareja es la suma de sus líneas**. Razar no lo vuelve a leer; el juez suma por clave. En la v0.3 eran `nitidas0`/`nitidas1`, una línea por pareja, reescritas en cada pedazo; una casa de esas convierte su archivo en el diario la primera vez, sin perder nada. |
 
 Se activa si la casa tiene `nitidez`. Sin el pedido, lo que Razar aprende es idéntico byte a byte (NT y p320 verificados).
 Código: `hl_nitidez` y siguientes en `razar/cardumen/hilos.jsm`. Pruebas: `hilos_nitidez_prueba.sh` y `hilos_lugares_prueba.sh`.

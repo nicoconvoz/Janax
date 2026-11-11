@@ -152,6 +152,7 @@ S_LUG1   = 0E00h
 S_LUGI   = 0E20h
 S_NIT0   = 0E40h
 S_NIT1   = 0E60h
+S_NITM   = 0E80h                ; "nitidas0nitidas": a house of before, its nitidas0 or nitidas1 renamed to the diary
 S_PFIN   = 0C00h
 S_PINI   = 0C20h
 
@@ -7796,11 +7797,12 @@ hms_done:
 ; and its side (each pair the form holds puts its first word on side 0, its second on side 1), by a key the same in
 ; every book (the form's and the side); a form made only of words of the half, and a word of the half, say nothing of
 ; anyone (what is said everywhere is glue) and do not count. The places travel from piece to piece (Capitan: "that they
-; travel"): the house's "lugares0" or "lugares1" (which one, "lugar") holds every place's words; a piece wakes only the
-; places of its own forms and copies the rest as they were, a line at a time, never all of it in memory (the
-; organism's modules: what sleeps stays on disk). Each two words of a place share it, counted once: when the second of
-; them arrives (two that were there already were counted then). Into "nitidas0" or "nitidas1" (turned with
-; "lugares"): a line {the pair's key, how many places they share, a word, the other}, one by pair. Uses j1-j14.
+; travel"): the house's "lugares0" (or "lugares1", as "lugar" says in a house of before) holds every place's words; a
+; piece wakes only the places of its own forms, never all of it in memory (the organism's modules: what sleeps stays
+; on disk), and writes only what it adds, after what is there (Capitan: "that it writes the diff"). Each two words of
+; a place share it, counted once: when the second of them arrives (two that were there already were counted then).
+; Into the diary "nitidas": a line {the pair's key, how many places they shared in this piece, a word, the other} by
+; pair and piece; a pair is the sum of its lines. Uses j1-j14.
 hl_nitidez:
   jldi j1, 0
   jld j2, j1, HNIT
@@ -7941,9 +7943,9 @@ hnz_member:
 hnm_k:
   jret
 
-; The places before (the house's current "lugares"), a line {place, word, its text} at a time: one this piece has
-; is woken (HPLW 2: there before, counted then; counted in HPLC if it was not here); the rest is copied as it was
-; into the other "lugares", left open for hnz_keep. Uses j1-j14.
+; The places before (the house's "lugares"), a line {place, word, its text} at a time: one this piece has is woken
+; (HPLW 2: there before, counted then; counted in HPLC if it was not here); the rest sleeps where it is: the file only
+; grows (Capitan: "that it writes the diff"), nothing is copied. Uses j1-j14.
 hnz_wake:
   jldi j1, 0
   jst j1, j1, HLGC
@@ -7958,20 +7960,7 @@ hnz_wake:
   jsub j2, j2, j3
   jst j2, j1, HLGC
 hwk_c:
-  jcall flush                   ; the other one, new
-  jcall hnz_other
-  jldi j10, 12
-  jldi j12, 8
-  jcall ask
-  jcall hnz_other
-  jldi j10, 4
-  jldi j12, 8
-  jcall0 j1, ask
-  jst j13, j1, HLGH
-  jldi j2, 1
-  jadd j2, j13, j2
-  jst j2, j1, SINK
-  jcall hnz_current             ; the current one, read
+  jcall hnz_current             ; the house's one, read
   jldi j10, 4
   jldi j12, 8
   jcall0 j1, ask
@@ -8069,12 +8058,7 @@ hwk_c:
       jst j2, j4, 8
       jcall hnz_text              ; its text, if this book does not say it
       jjmp hwk_next
-    hwk_copy:
-      jld j4, j1, HLGB
-      jld j3, j1, HLGF
-      jadd j4, j4, j3
-      jld j5, j1, HLGE
-      jcall put_span
+    hwk_copy:                     ; (asleep: it stays where it is)
     hwk_next:
       jldi j1, 0
       jld j3, j1, HLGE
@@ -8236,14 +8220,27 @@ hnz_put:
 hnu_done:
   jret
 
-; The awake places' words written after the sleeping ones (the other "lugares", open), and it becomes the current one:
-; the old one deleted, "lugar" says which. Uses j1-j14.
+; The words this piece brought to a place (HPLW 1, new here) written after what the house's "lugares" has: the diff
+; (Capitan), the woken ones are there already. Uses j1-j14.
 hnz_keep:
-  jldi j1, 0
+  jcall flush
+  jcall hnz_current
+  jldi j10, 4
+  jcall0 j1, ask
+  jldi j2, 63
+  jshr j2, j13, j2
+  jjnz j2, hnk_done
+  jst j13, j1, HLGH
+  jldi j2, 32                   ; to its end
+  jshl j10, j13, j2
+  jldi j2, 38
+  jor j10, j10, j2
+  jldi j11, -1
+  jcall0 j1, ask
   jld j2, j1, HLGH
-  jldi j3, 63
-  jshr j3, j2, j3
-  jjnz j3, hnk_done
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, SINK
   jldi j2, HPLW
   jld j3, j2, 8
   jldi j4, 1
@@ -8255,6 +8252,10 @@ hnz_keep:
     jld j9, j1, HPQ
     jld j5, j9, 0
     jjz j5, hnk_next
+    jld j5, j9, 8
+    jldi j6, 1
+    jsub j5, j5, j6
+    jjnz j5, hnk_next             ; (woken: there already)
     jld j2, j9, 16
     jcall hk_puthex
     jldi j2, 32
@@ -8285,40 +8286,6 @@ hnz_keep:
     jld j3, j1, HPN
   jwend
 hnk_close:
-  jcall0 j1, flush
-  jst j1, j1, SINK
-  jld j10, j1, HLGH
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 7
-  jor j10, j10, j2
-  jcall ask
-  jcall hnz_current
-  jldi j10, 12
-  jcall0 j1, ask
-  jld j2, j1, HLGC
-  jldi j3, 1
-  jxor j2, j2, j3
-  jst j2, j1, HLGC
-  jldi j10, 12
-  jldi j11, S_LUGI
-  jldi j12, 5
-  jcall ask
-  jldi j10, 4
-  jldi j11, S_LUGI
-  jldi j12, 5
-  jcall0 j1, ask
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, hnk_done
-  jst j13, j1, HLGH
-  jldi j2, 1
-  jadd j2, j13, j2
-  jst j2, j1, SINK
-  jld j2, j1, HLGC
-  jldi j3, 48
-  jadd j2, j2, j3
-  jcall putch
   jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HLGH
@@ -8491,169 +8458,44 @@ hnz_pairs:
 hnp_done:
   jret
 
-; The pairs this piece made share places, added to what the pieces before left (Capitan: "put it together"): the
-; current "nitidas0" or "nitidas1" (the same as "lugares", the one before hnz_keep turned them) read a line {the pair's
-; key, how many places they share, a word, the other} at a time; a pair this piece also made gets its sum, the rest is
-; copied as it was; then the pairs that are new; into the other one, which becomes the current one. Uses j1-j14.
+; The pairs this piece made share places, after what the pieces before left (Capitan: "put it together", and "that it
+; writes the diff"): "nitidas" is a diary, a line {the pair's key, how many places they shared in this piece, a word,
+; the other} by pair and piece, written at its end and never read back here; a pair is the sum of its lines. A house of
+; before keeps what it knew: its "nitidas0" or "nitidas1" (as "lugar" said) becomes the diary. Uses j1-j14.
 hnz_save:
   jcall flush
-  jcall hnz_nnew
-  jldi j10, 12
-  jcall ask
-  jcall hnz_nnew
+  jldi j1, 0
+  jld j2, j1, HLGC
+  jldi j3, 48
+  jadd j2, j2, j3
+  jstb j2, j1, S_NITM + 7
+  jldi j2, 32
+  jldi j10, 7
+  jshl j10, j10, j2
+  jldi j2, 13
+  jor j10, j10, j2
+  jldi j11, S_NITM
+  jldi j12, 8
+  jcall0 j1, ask                ; (-1: none from before, or the diary is there)
   jldi j10, 4
+  jldi j11, S_NITO
+  jldi j12, 7
   jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hns_done
   jst j13, j1, HLGH
-  jldi j2, 1
-  jadd j2, j13, j2
-  jst j2, j1, SINK
-  jcall hnz_nold
-  jldi j10, 4
-  jcall0 j1, ask
-  jst j13, j1, HLGR
-  jldi j2, 63
-  jshr j2, j13, j2
-  jjnz j2, hns_new
-  jldi j11, 1                   ; (its room: a piece with no places before had none)
-  jldi j2, 16
-  jshl j11, j11, j2
-  jcall0 j1, room
-  jst j13, j1, HLGB
-  jst j1, j1, HLGN
-  hns_read:
-    jldi j1, 0
-    jld j10, j1, HLGR
-    jldi j2, 32
-    jshl j10, j10, j2
-    jldi j2, 5
-    jor j10, j10, j2
-    jld j11, j1, HLGB
-    jld j2, j1, HLGN
-    jadd j11, j11, j2
-    jldi j12, 32300
-    jsub j12, j12, j2
-    jcall0 j1, ask
-    jldi j2, 63
-    jsar j2, j13, j2
-    jjnz j2, hns_eof
-    jjz j13, hns_eof
-    jld j2, j1, HLGN
-    jadd j2, j2, j13
-    jst j2, j1, HLGN
-    jst j1, j1, HLGF
-    hns_rec:
-      jldi j1, 0
-      jld j4, j1, HLGB
-      jld j3, j1, HLGF
-      jadd j4, j4, j3
-      jld j5, j1, HLGB
-      jld j6, j1, HLGN
-      jadd j5, j5, j6
-      jadd j7, j4, j1
-      jwhile j6
-        jldb j6, j7, 0
-        jldi j8, 10
-        jsub j6, j6, j8
-        jjz j6, hns_eold
-        jldi j8, 1
-        jadd j7, j7, j8
-      jwcheck
-        jsub j6, j5, j7
-      jwend
-      jjmp hns_carry
-    hns_eold:
-      jldi j8, 1
-      jadd j7, j7, j8
-      jst j7, j1, HLGE
-      jcall0 j1, hk_hex         ; its key
-      jst j9, j1, HPV
-      jldi j9, 0                  ; how many (from its 18th byte to the space)
-      jld j4, j1, HLGB
-      jld j3, j1, HLGF
-      jadd j4, j4, j3
-      jldi j3, 17
-      jadd j4, j4, j3
-      jwhile j3
-        jldi j3, 10
-        jmul j9, j9, j3
-        jldi j3, 48
-        jsub j2, j2, j3
-        jadd j9, j9, j2
-        jldi j3, 1
-        jadd j4, j4, j3
-      jwcheck
-        jldb j2, j4, 0
-        jldi j3, 32
-        jsub j3, j2, j3
-      jwend
-    hns_numd:
-      jst j9, j1, HPU
-      jst j4, j1, HLGX            ; (the rest: " a b\n")
-      jld j5, j1, HPV
-      jldi j2, HPAR
-      jcall0 j1, pl_find
-      jld j6, j4, 0
-      jld j5, j1, HPV
-      jsub j6, j6, j5
-      jjnz j6, hns_copy
-      jld j6, j4, 24
-      jjz j6, hns_copy
-      jld j7, j1, HPU             ; this piece's too: its sum, and the pair is done
-      jadd j7, j7, j6
-      jst j7, j1, HPU
-      jst j1, j4, 24
-      jld j2, j1, HPV
-      jcall hk_puthex
-      jldi j2, 32
-      jcall0 j1, putch
-      jld j2, j1, HPU
-      jcall0 j1, putnum
-      jld j4, j1, HLGX
-      jjmp hns_cb
-    hns_copy:
-      jld j4, j1, HLGB
-      jld j3, j1, HLGF
-      jadd j4, j4, j3
-    hns_cb:
-      jld j5, j1, HLGE
-      jcall put_span
-    hns_next:
-      jldi j1, 0
-      jld j3, j1, HLGE
-      jld j2, j1, HLGB
-      jsub j3, j3, j2
-      jst j3, j1, HLGF
-      jjmp hns_rec
-  hns_carry:
-    jld j4, j1, HLGB
-    jld j3, j1, HLGF
-    jadd j5, j4, j3
-    jld j6, j1, HLGN
-    jsub j6, j6, j3
-    jst j6, j1, HLGN
-    hns_mv:
-      jjz j6, hns_read
-      jldb j2, j5, 0
-      jstb j2, j4, 0
-      jldi j3, 1
-      jadd j4, j4, j3
-      jadd j5, j5, j3
-      jsub j6, j6, j3
-      jjmp hns_mv
-hns_eof:
-  jld j10, j1, HLGR
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 7
+  jldi j2, 32                   ; to its end
+  jshl j10, j13, j2
+  jldi j2, 38
   jor j10, j10, j2
-  jcall ask
-  jcall hnz_nold
-  jldi j10, 12
-  jcall ask
-hns_new:                          ; the pairs that are new
+  jldi j11, -1
+  jcall0 j1, ask
+  jld j2, j1, HLGH
+  jldi j3, 1
+  jadd j2, j2, j3
+  jst j2, j1, SINK
+hns_new:                          ; every pair this piece made
   jldi j1, 0
   jldi j2, HPAR
   jld j3, j2, 8

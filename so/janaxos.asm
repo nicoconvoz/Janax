@@ -2550,7 +2550,8 @@ serve_host_open:
         ret
 
 ; Screen tuned to "go to" (kind 38): the file of the handle in the type goes to byte a from its start, so a reader
-; follows a clue to where it read without passing through what is before. Answers the position, or -1.
+; follows a clue to where it read without passing through what is before; a = -1 is its end, so a writer adds after
+; what is there without reading it (a diary). Answers the position, or -1.
 serve_seek:
         push    r12 r13 r14 r15
         sub     rsp, 8
@@ -2566,9 +2567,15 @@ serve_seek:
         jz      .invalid
         mov     r14, rax
         mov     rsi, [rbp + r13 + 8]
+        cmp     rsi, -1
+        je      .end
         test    rsi, rsi
         js      .invalid
         invoke  SetFilePointerEx, r14, rsi, fio_pos, 0
+        jmp     .moved
+.end:
+        invoke  SetFilePointerEx, r14, 0, fio_pos, FILE_END
+.moved:
         inc     qword [hostcalls]
         test    eax, eax
         jz      .invalid

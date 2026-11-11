@@ -2,7 +2,9 @@
 # hilos_lugares_prueba.sh: the places travel from book to book (Capitan: "that they travel"): ana is read in one book,
 # eva in the next one, in the same house; the second book wakes the places of its own forms and finds ana there, so
 # ana and eva share places though no book says both ("nitidas": "ana eva k"). Rio's book wakes none of theirs. The
-# third book says eva's line again: ana and eva were counted already, and are not counted twice.
+# third book says eva's line again: ana and eva were counted already, and are not counted twice. "nitidas" is a diary
+# (a line per piece and pair: a pair is the sum of its lines) and "lugares0" only grows: what a book adds goes after
+# what was there.
 set -u
 aqui=$(cd "$(dirname "$0")" && pwd)
 proyecto=$(cd "$aqui/../.." && pwd)
@@ -19,12 +21,14 @@ libro() { printf '%s\n' "$@" "$relleno" > "$d/casa/$(etiqueta pares)"; corre "$d
 libro 'O: vino la ana dijo hola luego.'
 libro 'O: una rio paso por aca.'
 libro 'O: vino la eva dijo hola luego.'
-ni="$d/casa/$(etiqueta nitidas$(cat "$d/casa/$(etiqueta lugar)" 2>/dev/null))"
-cp "$ni" "$d/dos.ni" 2>/dev/null
+ni="$d/casa/$(etiqueta nitidas)"
+lu="$d/casa/$(etiqueta lugares0)"
+cp "$ni" "$d/dos.ni" 2>/dev/null; cp "$lu" "$d/dos.lu" 2>/dev/null
 libro 'O: vino la eva dijo hola luego.'
-ni="$d/casa/$(etiqueta nitidas$(cat "$d/casa/$(etiqueta lugar)"))"
-if grep -Eq '^[0-9a-f]{16} [2-9][0-9]* (ana eva|eva ana)$' "$d/dos.ni" && ! grep -Eq ' rio( |$)' "$ni" &&
-   [ "$(grep -Ec ' (ana eva|eva ana)$' "$ni")" = 1 ] && [ "$(grep -E ' (ana eva|eva ana)$' "$ni" | cut -d' ' -f2)" = "$(grep -E ' (ana eva|eva ana)$' "$d/dos.ni" | cut -d' ' -f2)" ] && [ -s "$d/casa/$(etiqueta lugar)" ]; then
+suma() { awk '/ (ana eva|eva ana)$/ {s += $2} END {print s + 0}' "$1"; }
+if grep -Eq '^[0-9a-f]{16} [0-9]+ (ana eva|eva ana)$' "$d/dos.ni" && [ "$(suma "$d/dos.ni")" -ge 2 ] &&
+   ! grep -Eq ' rio( |$)' "$ni" && [ "$(suma "$ni")" = "$(suma "$d/dos.ni")" ] &&
+   [ -s "$lu" ] && [ "$(head -c "$(wc -c < "$d/dos.lu")" "$lu" | cmp - "$d/dos.lu" && echo si)" = si ]; then
   echo "hilos_lugares_prueba: bien"
 else
   echo "hilos_lugares_prueba: MAL"; cat "$ni" 2>/dev/null; ls "$d/casa"; exit 1

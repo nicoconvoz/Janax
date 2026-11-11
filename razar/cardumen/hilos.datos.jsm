@@ -228,3 +228,5 @@ times 0E40h - $ db 0
 db 'nitidas0', 0
 times 0E60h - $ db 0
 db 'nitidas1', 0
+times 0E80h - $ db 0
+db 'nitidas0nitidas', 0

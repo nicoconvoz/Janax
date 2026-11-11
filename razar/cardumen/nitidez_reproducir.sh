@@ -23,5 +23,4 @@ t0=$(date +%s)
 JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$casa/casa")" "$proyecto/so/build/janaxos.exe" \
   "$(cygpath -m "$casa/bin/hilos.bin")" | tr -d '\r' > "$casa/salida.txt"
 echo "corpus $(cat "$casa/corpus.sha256") | $(grep -c '^palabras' "$casa/salida.txt") pedazos en $(( $(date +%s) - t0 )) s"
-c=$(cat "$casa/casa/$(etiqueta lugar)")
-python -I "$proyecto/razar/jueces/juez_nitidas.py" "$casa/casa/$(etiqueta nitidas$c)" "$mats" | tee "$casa/juez.txt"
+python -I "$proyecto/razar/jueces/juez_nitidas.py" "$casa/casa/$(etiqueta nitidas)" "$mats" | tee "$casa/juez.txt"

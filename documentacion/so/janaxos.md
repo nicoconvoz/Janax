@@ -1306,3 +1306,16 @@ mismo byte por byte. Reemplazó las cuatro copias calientes de hilos (`hwk_copy`
 `en_sayprint`). Libro de 2,3 MB: casa idéntica, **13.055.693.102 → 9.953.261.322 instrucciones (−23,8 %)**, y Razar
 leyendo, medido solo con milisegundos y tres corridas de cada uno: **12,5 s → 10,8 s (−13,5 %)**. Quedan la lectura de
 las claves en hexadecimal (`hk_hex`) y la reescritura entera de los archivos en cada pedazo.
+
+**Segunda palanca, escribir solo la diferencia (Capitán, 2026-11-11):** el pedido 38 ("andá al byte a") acepta
+`a = −1`, que quiere decir "andá al final", para que un programa agregue sin leer lo que hay. Hilos lo usa así:
+`lugares` solo crece (cada pedazo agrega los miembros nuevos y no copia los dormidos) y `nitidas` pasa a ser un diario
+que Razar no vuelve a leer (detalle en `documentacion/razar/nitidez.md`). Libro de 2,3 MB comparado con la versión
+anterior:
+- El juez da lo mismo; `lugares` tiene las mismas líneas, en otro orden; `nitidas` tiene los mismos totales en las
+  293.292 parejas, y pesa un 2,5 % más. El resto de la casa es idéntico.
+- Instrucciones: **9.953.261.322 → 6.767.642.469 (−32 %)**.
+- Razar leyendo: **10,5 s → 7,8 s de promedio en tres corridas** (−26 %).
+
+Sumando todo lo del día (los while rotados, las cinco instrucciones, `put_span` y la diferencia), el libro pasó de
+13.939.913.762 a 6.767.642.469 instrucciones: **la mitad**.
