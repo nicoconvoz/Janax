@@ -15,6 +15,36 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## El resultado (v0.3): la nitidez
+
+**Sin que nadie le diga qué es un sinónimo, Razar los encuentra por los lugares que las palabras
+comparten.**
+
+Un lugar es una forma leída (`_ <una a tres palabras> _`) y su lado. Dos palabras se parecen tanto
+como los lugares que comparten; lo que se dice en todos lados (la mitad del texto que más se
+repite, medida por Razar) no cuenta. Se probó contra el
+[MATS](https://github.com/ATILF-UMR7118/MATS), **un banco de analogías externo que Razar nunca
+vio**: un par cuenta cuando sus dos palabras comparten más lugares que la palabra con la respuesta
+de otro par — es decir, **le tiene que ganar a su propio azar**.
+
+| Corpus | Real – azar | Semántica | Sinónimos exactos | Antónimos binarios | Tiempo · memoria |
+|---|---|---|---|---|---|
+| **Wikipedia, 20 MB** (no escribe sinónimos) | **451 – 117** | 140 – 44 | 18 – 1 | 28 – 1 | 31 min · 205 MB |
+| Wikcionario, 15 MB | **249 – 41** | 131 – 24 | 18 – 0 | 17 – 1 | 3 min · 144 MB |
+
+- **Lo mismo desde afuera:** un juez en Python que Razar nunca lee calcula la misma idea sobre el
+  corpus entero y da semántica **234 – 51** y **164 – 51**.
+- **La memoria duerme en disco:** los lugares viajan de un pedazo del libro al siguiente; cada
+  pedazo despierta solo los de sus palabras. Por eso entra en 205 MB de RAM.
+- **Sin el pedido, nada cambia:** lo que Razar aprende es idéntico byte a byte.
+
+```bash
+bash razar/cardumen/nitidez_reproducir.sh <corpus> <mats_es> <casa_nueva>
+```
+
+Detalle completo y cómo reproducirlo: [`documentacion/razar/nitidez.md`](documentacion/razar/nitidez.md)
+y [`documentacion/release-v0.3.md`](documentacion/release-v0.3.md).
+
 ## El resultado (v0.2)
 
 **Con 16 cosas para decir, la red de referencia del campo no llega nunca. Razar llega siempre, en menos de 102
