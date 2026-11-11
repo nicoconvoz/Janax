@@ -15,6 +15,32 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Lo nuevo desde la v0.3 (2026-11-11, en el código, todavía sin versión en Zenodo)
+
+**Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.**
+
+Un kernel de medición contó cuántas veces corre cada palabra del programa. Más del 80 % no era pensar: era **escribir y
+leer su propio cuaderno**, letra por letra, pasándolo en limpio entero en cada pedazo del libro. Dos ideas del Capitán lo
+arreglaron: **escribir de un tirón** (del tamaño que haga falta) y **escribir solo la diferencia** (un diario).
+
+| Paso (Wikipedia de 2,3 MB) | Instrucciones | Cuánto bajó | Segundos leyendo |
+|---|---|---|---|
+| Al empezar | 13.939.913.762 | — | — |
+| Bucles hechos a mano → while rotado (`jwcheck`) | 13.140.899.149 | −5,7 % | — |
+| Cinco instrucciones nuevas (`jjn`/`jjnn`, `jldadd`, `jldx`, `jcall0`) | 13.055.693.102 | −0,65 % | 12,5 s |
+| **Escribir de un tirón** (`put_span`) | 9.953.261.322 | −23,8 % | 10,8 s |
+| **Escribir solo la diferencia** (el diario) | **6.767.642.469** | −32 % | **7,8 s** |
+| **Total** | **la mitad** | **−51,5 %** | **−38 %** |
+
+- **Lo mismo, bit por bit:** en cada paso el juez contra el MATS da idéntico. Con el diario, los lugares tienen las
+  mismas líneas (en otro orden) y las 293.292 parejas, los mismos totales.
+- **Cómo se midió:** segundos con milisegundos, en tres corridas de cada versión, desde las cinco instrucciones (antes,
+  con segundos enteros, no alcanzaba). Los 31 minutos de los 20 MB son de la v0.3 y todavía no se volvieron a medir.
+- **Una casa de antes no pierde nada:** su `nitidas0`/`nitidas1` se convierte en el diario `nitidas` la primera vez.
+
+Detalle: [`documentacion/so/janaxos.md`](documentacion/so/janaxos.md) y
+[`documentacion/razar/nitidez.md`](documentacion/razar/nitidez.md).
+
 ## El resultado (v0.3): la nitidez
 
 **Sin que nadie le diga qué es un sinónimo, Razar los encuentra por los lugares que las palabras

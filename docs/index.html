@@ -72,6 +72,42 @@
 
 <section>
   <div class="wrap">
+    <div class="kicker">Lo nuevo desde la v0.3 · 2026-11-11 · en el código, todavía sin versión en Zenodo</div>
+    <h2>Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.</h2>
+    <p class="sub">Primero se midió dónde se le iba el tiempo: un kernel de medición contó cuántas veces corre cada palabra
+      del programa. La sorpresa: más del 80 % no era pensar, era <strong>escribir y leer su propio cuaderno</strong>, letra
+      por letra, y pasarlo en limpio entero en cada pedazo del libro. Dos ideas del Capitán lo arreglaron: <em>escribir de un
+      tirón</em> (una letra, una palabra o una línea, del tamaño que haga falta) y <em>escribir solo la diferencia</em> (un
+      diario: cada pedazo anota al final lo que sumó, sin copiar lo viejo).</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Paso (Wikipedia de 2,3 MB)</th><th>Instrucciones que corre</th><th>Cuánto bajó</th><th>Segundos leyendo</th></tr>
+      <tr><td>Al empezar</td><td class="num">13.939.913.762</td><td class="num">—</td><td class="num">—</td></tr>
+      <tr><td>Los bucles hechos a mano pasan a while rotado (<code>jwcheck</code>)</td><td class="num">13.140.899.149</td><td class="num">−5,7 %</td><td class="num">—</td></tr>
+      <tr><td>Cinco instrucciones nuevas (<code>jjn</code>, <code>jldadd</code>, <code>jldx</code>, <code>jcall0</code>…)</td><td class="num">13.055.693.102</td><td class="num">−0,65 %</td><td class="num">12,5 s</td></tr>
+      <tr><td><strong>Escribir de un tirón</strong></td><td class="num">9.953.261.322</td><td class="num">−23,8 %</td><td class="num">10,8 s</td></tr>
+      <tr><td><strong>Escribir solo la diferencia</strong></td><td class="num"><strong>6.767.642.469</strong></td><td class="num">−32 %</td><td class="num"><strong>7,8 s</strong></td></tr>
+      <tr><td><strong>Total</strong></td><td class="num"><strong>la mitad</strong></td><td class="num"><strong>−51,5 %</strong></td><td class="num"><strong>−38 %</strong></td></tr>
+    </table>
+    </div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>Lo mismo, bit por bit</h3>
+        <p>En cada paso, el juez contra el MATS da idéntico. Con el diario, los lugares tienen las mismas líneas (en otro orden) y
+          las 293.292 parejas, los mismos totales.</p></div>
+      <div class="card"><h3>Medir antes de inventar</h3>
+        <p>Las dos primeras rondas acertaron en la forma y erraron en el lugar: juntas dieron un 6 %. Después de medir, dos ideas
+          se llevaron casi todo lo que se ganó.</p></div>
+      <div class="card"><h3>Una casa de antes no pierde nada</h3>
+        <p>La primera vez, su archivo de parejas se convierte en el diario y sigue creciendo desde ahí.</p></div>
+    </div>
+    <p class="sub" style="margin-top:20px">Los segundos se miden con milisegundos, en tres corridas de cada versión, desde las cinco
+      instrucciones; antes se medían en segundos enteros y no alcanzaba. Los 31 minutos de los 20 MB son de la v0.3 y todavía
+      no se volvieron a medir. Detalle: <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/so/janaxos.md">documentacion/so/janaxos.md</a>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="kicker">El resultado de la v0.3 · 2026-11-09</div>
     <h2>Sin que nadie le diga qué es un sinónimo, Razar los encuentra por los lugares que las palabras comparten.</h2>
     <p class="sub">"Iglesia" y "capilla" casi nunca aparecen juntas, pero ocupan los mismos lugares en lo que se dice de ellas.
