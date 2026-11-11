@@ -4,7 +4,7 @@
 ; The names it knows (instructions, registers, directives) come from its table, ensamblador.datos, which
 ; anyone can change. j0 at the end = sources built + (sources with errors << 32).
 ;
-; It understands: comments, labels, "name = expression", the instructions, jwhile/jwhilez/jwend, jfirst, dd,
+; It understands: comments, labels, "name = expression", the instructions, jwhile/jwhilez/jwcheck/jwend, jfirst, dd,
 ; expressions with numbers (decimal, hexadecimal ending in h), names, $, + - * / and parentheses, and the
 ; structures: include (janax.inc is the language itself and is not read; any other file is, relative to the
 ; source's folder), repeat ... end repeat, and macros with parameters, local names and <grouped, arguments>.
@@ -108,6 +108,7 @@ F_LOCAL   = 16
 F_DB      = 17
 F_DQ      = 18
 F_TIMES   = 19
+F_WCHECK  = 20
 
 start:
 jfirst j1, 640000h
@@ -665,6 +666,9 @@ jjz j1, op_while
 jldi j1, F_WEND
 jsub j1, j0, j1
 jjz j1, op_wend
+jldi j1, F_WCHECK
+jsub j1, j0, j1
+jjz j1, op_wcheck
 jldi j1, F_FIRST
 jsub j1, j0, j1
 jjz j1, op_first
@@ -825,12 +829,15 @@ jshl j2, j1, j2
 jldi j3, WSTACK
 jadd j2, j2, j3
 jld j3, j2, 24
+jadd j4, j3, j13
+jjz j4, owe_placed              ; a jwcheck already placed its condition
 jldi j4, 3
 jshl j3, j3, j4
 jldi j4, CHECKS
 jadd j3, j3, j4
 jld j4, j14, V_PC
 jst j4, j3, 0                   ; its condition is here
+owe_placed:
 jld j0, j2, 0
 jcall offset
 jld j1, j2, 16
@@ -838,6 +845,32 @@ jld j3, j2, 8
 jadd j2, j3, j14
 jldi j3, 0
 jcall emit
+jret
+op_wcheck:                      ; the condition of the open while starts here; its jwend only jumps back
+jld j1, j14, V_WDEPTH
+jjnz j1, owc_open
+jst j13, j14, V_ERR             ; a jwcheck outside a while
+jret
+owc_open:
+jsub j1, j1, j13
+jldi j2, 5
+jshl j2, j1, j2
+jldi j3, WSTACK
+jadd j2, j2, j3
+jld j3, j2, 24
+jadd j4, j3, j13
+jjnz j4, owc_first
+jst j13, j14, V_ERR             ; a second jwcheck in the same while
+jret
+owc_first:
+jldi j4, 3
+jshl j3, j3, j4
+jldi j4, CHECKS
+jadd j3, j3, j4
+jld j4, j14, V_PC
+jst j4, j3, 0                   ; its condition is here
+jsub j4, j14, j13
+jst j4, j2, 24                  ; placed (all ones): its jwend leaves it
 jret
 op_first:                       ; jldi (and jshi) of the size, then jsys
 jcall expr

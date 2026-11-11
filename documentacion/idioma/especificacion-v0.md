@@ -99,6 +99,29 @@ pagan 2 instrucciones más que con un bucle que pregunta al final: el salto de e
 Un bucle que tiene que dar al menos una vuelta (esperar a que algo pase) se escribe poniendo la condición
 antes de entrar: `jldi r, 0` / `jwhilez r` / … calcula `r` … / `jwend`.
 
+**La condición escrita a mano: `jwcheck`** (2026-11-11). Cuando la condición no es un registro solo (un Y,
+un O, una comparación), se escribe entre `jwcheck` y `jwend`, y deja su resultado en el registro del while:
+
+```
+jwhile r
+  ...cuerpo...
+jwcheck
+  jor r, a, b           ; la condición: corre antes de cada vuelta, la primera incluida
+jwend
+```
+
+`jwcheck` no escribe nada: solo marca dónde está `pregunta:`, y el `jwend` queda como el único salto hacia
+atrás. Sigue siendo un while rotado. Sin `jwcheck`, `jwend` es el de siempre. Dos `jwcheck` en el mismo
+while, o uno fuera de un while, son un error.
+
+- **O lógico:** `jor` es exacto (`a | b` es cero solo si los dos lo son).
+- **Y lógico: `jand` no sirve**, porque es bit a bit: `2 AND 1 = 0` con los dos distintos de cero. Hay
+  que pasar cada operando a máscara (todos unos si no es cero), con `jsub m, cero, a` / `jor m, m, a` /
+  `jsar m, m, sesenta_y_tres`, y después `jand` entre las máscaras. Otra forma es con saltos hacia adelante:
+  `jldi r, 0` / `jjz a, fuera` / `jjz b, fuera` / `jldi r, 1` / `fuera:`.
+
+Prueba: `escalon0/pruebas/44_while_check.jsm` (Y, O, anidado y cero vueltas).
+
 Los saltos `jjz`/`jjnz`/`jjmp` sueltos siguen existiendo para las decisiones ("si pasa esto, saltá"), no
 para bucles.
 

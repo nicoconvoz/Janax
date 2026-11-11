@@ -44,6 +44,8 @@ macro jshi rd, imm       { j_word 0Fh, rd, 0, imm }
 ;   jwhilez r ... jwend   repeats while r is zero
 ; Shape (a rotated while): jjmp check / body: ... / check: jjnz/jjz r, body
 ; It asks before the first lap like any while, but a lap costs the body + 1 instruction, not + 2.
+;   jwhile r ... jwcheck ... jwend   the condition is the code between jwcheck and jwend, which leaves it in r:
+;                                    it runs before every lap, the first one included (and, or, anything)
 macro j_while_open repeat_op, r {
   local check, body
   jjmp check
@@ -52,16 +54,24 @@ macro j_while_open repeat_op, r {
   j_while_body equ body
   j_while_reg equ r
   j_while_op equ repeat_op
+  j_while_placed equ 0
 }
 macro jwhile r  { j_while_open 0Eh, r }
 macro jwhilez r { j_while_open 0Dh, r }
-macro jwend {
+macro jwcheck {
+  match =1, j_while_placed \{ err \}
   j_while_check:
+  restore j_while_placed
+  j_while_placed equ 1
+}
+macro jwend {
+  match =0, j_while_placed \{ j_while_check: \}
   j_word j_while_op, j_while_reg, 0, ((j_while_body) - $ - 4) / 4
   restore j_while_check
   restore j_while_body
   restore j_while_reg
   restore j_while_op
+  restore j_while_placed
 }
 
 ; Memory: 64-bit accesses must be 8-byte aligned; byte accesses zero-extend on load.

@@ -24,6 +24,7 @@ F_LOCAL   = 16                  ; local names (inside a macro)
 F_DB      = 17                  ; bytes, and texts in quotes
 F_DQ      = 18                  ; 64-bit values
 F_TIMES   = 19                  ; times count statement
+F_WCHECK  = 20                  ; jwcheck: the condition of the open while starts here
 
 macro entry name, value, format {
   local start
@@ -60,6 +61,7 @@ entry 'jhost',   17h, F_RR
 entry 'jwhile',  0Eh, F_WHILE
 entry 'jwhilez', 0Dh, F_WHILE
 entry 'jwend',   0,   F_WEND
+entry 'jwcheck', 0,   F_WCHECK
 entry 'jfirst',  0,   F_FIRST
 entry 'dd',      0,   F_DD
 entry 'include', 0,   F_INCLUDE

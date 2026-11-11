@@ -77,7 +77,8 @@ BEGIN {
   for (d = 0; d < 16; d++) for (a = 0; a < 16; a++) line("jsys j" d ", j" a)
   for (d = 0; d < 16; d++) for (a = 0; a < 16; a++) line("jhost j" d ", j" a)
   line("jhalt"); line("jret")
-  for (d = 0; d < 16; d++) { line("jwhile j" d); line("jldi j0, 1"); line("jwend"); line("jwhilez j" d); line("jwend") }
+  for (d = 0; d < 16; d++) { line("jwhile j" d); line("jldi j0, 1"); line("jwend"); line("jwhilez j" d); line("jwend")
+    line("jwhile j" d); line("jldi j0, 1"); line("jwcheck"); line("jor j" d ", j0, j1"); line("jwend") }
   for (d = 0; d < 16; d++) for (k = 1; k <= ns; k++) line("jfirst j" d ", " sizes[k])
   for (k = 1; k <= nw; k++) line("dd " words[k])
   close_source()

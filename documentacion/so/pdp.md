@@ -23,7 +23,8 @@ Janax OS**: recorre la carpeta `PDP` del sistema y arma cada fuente `X.jsm` en `
   falta borrarla entre fuentes). `jwhile`/`jwend` usan una pila de whiles abiertos y recuerdan, por orden,
   dónde quedó cada condición.
 - **Entiende**: comentarios, etiquetas, `nombre = expresión`, las 23 instrucciones, `jwhile`/`jwhilez`/
-  `jwend`, `jfirst`, `dd`, expresiones con números (decimales, hexadecimales con `h`), nombres, `$`,
+  `jwcheck`/`jwend` (`jwcheck` anota la condición donde está y marca el while como puesto; su `jwend` ya
+  no la anota), `jfirst`, `dd`, expresiones con números (decimales, hexadecimales con `h`), nombres, `$`,
   `+ - * /` y paréntesis, y **las estructuras**: `include` (de `janax.inc` no lee nada: es el idioma mismo;
   cualquier otro archivo se lee relativo a la carpeta de la fuente, con `..`), `repeat` ... `end repeat`, y
   macros con parámetros, nombres `local` y argumentos agrupados entre `<` y `>`.
