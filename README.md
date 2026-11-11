@@ -15,7 +15,7 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
-## Lo nuevo desde la v0.3 (2026-11-11, en el código, todavía sin versión en Zenodo)
+## El resultado (v0.4): la caja de cambios
 
 **Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.**
 
@@ -25,7 +25,7 @@ arreglaron: **escribir de un tirón** (del tamaño que haga falta) y **escribir 
 
 | Paso (Wikipedia de 2,3 MB) | Instrucciones | Cuánto bajó | Segundos leyendo |
 |---|---|---|---|
-| Al empezar | 13.939.913.762 | — | — |
+| v0.3 | 13.939.913.762 | — | — |
 | Bucles hechos a mano → while rotado (`jwcheck`) | 13.140.899.149 | −5,7 % | — |
 | Cinco instrucciones nuevas (`jjn`/`jjnn`, `jldadd`, `jldx`, `jcall0`) | 13.055.693.102 | −0,65 % | 12,5 s |
 | **Escribir de un tirón** (`put_span`) | 9.953.261.322 | −23,8 % | 10,8 s |

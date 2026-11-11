@@ -448,3 +448,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-11 — La diferencia, idea del Capitán: lugares solo crece y nitidas es un diario (el pedido 38 aprendió a = −1, el final). Libro de 2,3 MB: mismo juez, mismas líneas y totales, −32 % de instrucciones, 10,5 s → 7,8 s. En el día, el libro bajó a la mitad de instrucciones (13.940 → 6.768 millones).
 2026-11-11 — Suite completa: SO 377 bien, 0 mal (833 s); escalón 0 161 bien, 0 mal. El ARM64 no corrió: adb no ve el teléfono. Página y README con lo nuevo desde la v0.3.
 2026-11-11 — ARM64 en el teléfono (Moto E7 Plus, adb): escalón 0 entero 210 bien, 0 mal; las 49 pruebas, las cinco instrucciones nuevas incluidas, dan lo mismo que el intérprete.
+2026-11-11 — v0.4, la caja de cambios: la mitad de las instrucciones y lo mismo aprendido. Notas: documentacion/release-v0.4.md.
