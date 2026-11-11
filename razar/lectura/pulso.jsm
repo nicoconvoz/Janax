@@ -305,23 +305,20 @@ include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
 jldi j11, 520                   ; the list of its rooms, to give them all back when it is reborn: 64 to start, and it
-jcall room                      ; doubles when it is full (room)
-jldi j1, 0
+jcall0 j1, room                 ; doubles when it is full (room)
 jldi j2, 64
 jst j2, j13, 0
 jst j13, j1, RLIST
 renace:
 jldi j0, 0                      ; the fingerprint
-jcall read_book
-jldi j1, 0                      ; awake for good, the fingerprint of what it read: the sentinel's word is checked
+jcall0 j1, read_book            ; awake for good, the fingerprint of what it read: the sentinel's word is checked
 jld j2, j1, NPAS                ; against it
 jldi j3, 32
 jshr j2, j2, j3
 jldi j3, 255
 jand j2, j2, j3
 jjz j2, rn_print
-jcall shelf_print
-jldi j1, 0
+jcall0 j1, shelf_print
 jst j2, j1, BOOKH
 rn_print:
 jld j2, j1, ORGK               ; a candidate launched by Razar: it sits its exam and says its score, nothing more
@@ -349,19 +346,16 @@ jldi j2, 10
 jcall putch
 jcall flush
 rn_first:
-jcall distill_no                ; the switch first (it needs no pulse): the forms kept are of its kind
-jldi j1, 0                      ; the forms seen are kept: the irregular is studied over them
+jcall0 j1, distill_no           ; the switch first (it needs no pulse): the forms kept are of its kind ; the forms seen are kept: the irregular is studied over them
 jldi j2, 1
 jst j2, j1, FORMS
-jcall evolve                    ; the instincts, built and recombined, if "p" asks for generations
-jldi j1, 0                      ; news woke it: reborn, its identity and its evolution kept, everything it read given
+jcall0 j1, evolve               ; the instincts, built and recombined, if "p" asks for generations ; news woke it: reborn, its identity and its evolution kept, everything it read given
 jld j2, j1, REBORN              ; back and read again, the new books with the old
 jjz j2, rn_no
 jcall reborn
 jjmp renace
 rn_no:
-jcall learn_pulses
-jldi j1, 0                      ; then what it never read knocks
+jcall0 j1, learn_pulses         ; then what it never read knocks
 jldi j2, 1
 jst j2, j1, TESTING
 jcall all_floors
@@ -399,8 +393,7 @@ jst j2, j1, CAT
 jldi j2, 4
 jst j2, j1, JLEFT
 jwhile j2
-  jcall kind_report
-  jldi j1, 0
+  jcall0 j1, kind_report
   jld j2, j1, CAT
   jldi j3, 1
   jadd j2, j2, j3
@@ -418,8 +411,7 @@ jldi j9, 1
 jldi j10, 4
 jwhile j10
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jldi j3, 3
   jshl j3, j9, j3
   jld j2, j3, SAVC              ; (in all: per pulse, over the pulses its line says)
@@ -448,18 +440,13 @@ jcall puts
 jld j2, j1, NP5
 jcall putmix
 jldi j1, S_NEG5
-jcall puts
-jldi j9, 0
+jcall0 j9, puts
 jld j10, j1, NNEG
 jwhile j10
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
-  jldi j2, 3
-  jshl j2, j9, j2
+  jcall0 j1, putch
   jld j3, j1, NEGL
-  jadd j2, j2, j3
-  jld j2, j2, 0
+  jldx j2, j3, j9
   jadd j12, j2, j1
   jcall mix
   jcall putword
@@ -535,8 +522,7 @@ questions:
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
-  jcall why_rooms               ; every exception: what it has that the rule never had, and a blind one beside it
-  jldi j1, 0
+  jcall0 j1, why_rooms          ; every exception: what it has that the rule never had, and a blind one beside it
   jst j1, j1, NQ
   jst j1, j1, QI
   jld j2, j1, SMSK
@@ -553,17 +539,13 @@ questions:
     jld j2, j11, 48
     jjz j2, qw_skip
     jcall q_load
-    jcall q_occ
-    jldi j1, 0
+    jcall0 j1, q_occ
     jldi j2, 1
     jst j2, j1, WMODE
     jcall q_whys
-    jcall q_blind
-    jldi j1, 0
-    jld j2, j1, NQ
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, NQ
+    jcall0 j1, q_blind
+    jldi j2, 1
+    jldadd j2, j1, NQ
   qw_skip:
     jldi j1, 0
     jld j2, j1, QI
@@ -614,8 +596,7 @@ questions:
     jadd j12, j2, j1
     jcall mix
     jcall q_write
-    jcall flush
-    jldi j1, 0
+    jcall0 j1, flush
     jld j2, j1, TOPN
     jldi j3, 1
     jsub j2, j2, j3
@@ -664,11 +645,8 @@ q_write:
   jldi j10, 3
   jwhile j10
     jldi j1, 0
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jcall putword
     jldi j2, 32
     jcall putch
@@ -715,8 +693,7 @@ qw_with:
   jldi j2, 10
   jcall putch
   jldi j1, S_Q6                 ; its renglon
-  jcall puts
-  jldi j1, 0
+  jcall0 j1, puts
   jwhile j9
     jldi j2, 3
     jshl j2, j9, j2
@@ -731,11 +708,8 @@ qw_start:
   jldi j10, 1
   jwhile j10
     jldi j1, 0
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jadd j10, j2, j1
     jjz j2, qw_end
     jcall putword
@@ -854,34 +828,25 @@ qf_found:
   jldi j1, S_BRINGS
   jcall puts
   jld j9, j1, FPOS              ; the door, then its words to the first mark
-  jldi j2, 3
-  jshl j2, j9, j2
   jld j3, j1, ROOMT
-  jadd j2, j2, j3
-  jld j2, j2, 0
+  jldx j2, j3, j9
   jcall putword
   jwhile j2
     jst j2, j1, CXW
     jcall w_mark
     jjnz j3, qf_done
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, CXW
     jadd j12, j2, j1
     jcall mix
     jcall putword
   jwcheck
     jldi j1, 0
-    jld j9, j1, FPOS
-    jldi j2, 1
-    jadd j9, j9, j2
-    jst j9, j1, FPOS
-    jldi j2, 3
-    jshl j2, j9, j2
+    jldi j9, 1
+    jldadd j9, j1, FPOS
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
   jwend
 qf_done:
   jret
@@ -896,11 +861,8 @@ door_find:
     jldi j2, 1
     jadd j9, j9, j2
   jwcheck
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
   jwend
   jjmp ff_none
 ff_yes:
@@ -949,11 +911,8 @@ neg_sil:
       jldi j2, 1
       jadd j11, j11, j2
     jwcheck
-      jldi j2, 3
-      jshl j2, j11, j2
       jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j11
     jwend
   ns_end:
     jld j2, j1, NREN            ; every renglon counts; the ones with a switch, again
@@ -965,11 +924,8 @@ neg_sil:
     jst j2, j1, NEGR
     jadd j13, j9, j1            ; each word once
     jwhile j2
-      jldi j2, 3
-      jshl j2, j13, j2
       jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j13
       jldi j3, 3
       jshl j7, j2, j3
       jld j3, j1, ROOMSN
@@ -1035,8 +991,7 @@ q_answer:
   jst j1, j1, NCAND
   jldi j2, 1                    ; first: how many pieces it could name
   jst j2, j1, WMODE
-  jcall q_xwalk
-  jldi j1, 0
+  jcall0 j1, q_xwalk
   jld j2, j1, NCAND
   jjz j2, qa_done
   jcall lg16
@@ -1086,19 +1041,15 @@ q_xwalk:
       jst j9, j1, OI2
       jst j2, j1, CXW
       jcall c_regular
-      jcall c_keep
-      jldi j1, 0
+      jcall0 j1, c_keep
       jld j9, j1, OI2
     xw_skip:
       jldi j2, 1
       jadd j9, j9, j2
     jwcheck
       jldi j1, 0
-      jldi j2, 3
-      jshl j2, j9, j2
       jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j9
     jwend
   xw_next:
     jldi j1, 0
@@ -1263,12 +1214,10 @@ why_rooms:
   jld j2, j1, ROOMOP
   jjnz j2, wr_have
   jldi j11, 128                 ; (each a list that grows with what it holds, from 16: they were made for every place
-  jcall room                    ; of the book, and hold the times one place is said)
-  jldi j1, 0
+  jcall0 j1, room               ; of the book, and hold the times one place is said)
   jst j13, j1, ROOMOP
   jldi j11, 128
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMOW
   jldi j2, 16
   jst j2, j1, OPCAP
@@ -1276,8 +1225,7 @@ why_rooms:
   jld j11, j1, NV
   jldi j2, 56
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMMK
   jld j2, j1, NV
   jldi j3, 3
@@ -1301,8 +1249,7 @@ wr_have:
 ; The place of the question at j11 (a form with the switch): its three words QA QB QC (as said plain) and the switch
 ; QW. Uses j1-j9.
 q_load:
-  jcall q_plain
-  jldi j1, 0
+  jcall0 j1, q_plain
   jld j9, j4, 32
   jldi j3, 3
   jshl j9, j9, j3
@@ -1334,8 +1281,7 @@ ql_grow:
   jld j11, j3, 0
   jldi j4, 4
   jshl j11, j11, j4
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j2, j1, PLD
   jld j3, j1, PLO
   jld j5, j2, 0                 ; the old room
@@ -1359,8 +1305,7 @@ ql_grow:
   jst j4, j3, 0
   jldi j10, 3
   jld j11, j1, PLN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j8, j1, PLK
   jld j9, j1, PLS
   jld j10, j1, PLS + 8
@@ -1407,8 +1352,7 @@ q_occ:
     jjnz j6, qo_room
     jldi j2, ROOMOP
     jldi j3, OPCAP
-    jcall ql_grow
-    jldi j1, 0
+    jcall0 j1, ql_grow
     jld j2, j1, NPL
   qo_room:
     jldi j6, 3
@@ -1440,8 +1384,7 @@ q_occ:
     jjnz j6, qo_room2
     jldi j2, ROOMOW
     jldi j3, OWCAP
-    jcall ql_grow
-    jldi j1, 0
+    jcall0 j1, ql_grow
     jld j2, j1, NWI
   qo_room2:
     jldi j6, 3
@@ -1500,8 +1443,7 @@ rs_done:
 
 ; Every piece of the renglon of the unit j9 marked with STAMP. Uses j1-j6, j9.
 r_mark:
-  jcall r_start
-  jldi j1, 0
+  jcall0 j1, r_start
   jld j5, j1, STAMP
   jldi j6, 1
   jwhile j6
@@ -1560,10 +1502,8 @@ r_why:
     jld j4, j1, ROOMBL
   rw_bump:
     jadd j4, j4, j7
-    jld j3, j4, 0
-    jldi j2, 1
-    jadd j3, j3, j2
-    jst j3, j4, 0
+    jldi j3, 1
+    jldadd j3, j4, 0
     jjmp rw_next
   rw_write:
     jst j9, j1, OI2
@@ -1584,15 +1524,11 @@ r_why:
   rw_plain:
     jldi j1, 0
     jld j9, j1, OI2
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jcall putword
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, OI2
     jldi j8, 1
   rw_next:
@@ -1604,8 +1540,7 @@ r_why:
 
 ; j3 = 1 if the word j2 is an association: it saves bits as one (c_bits above 0; its bits stay in CBT). Uses j1-j7.
 is_assoc:
-  jcall c_bits
-  jldi j1, 0
+  jcall0 j1, c_bits
   jst j2, j1, CBT
   jldi j3, 0
   jldi j4, 63
@@ -1703,14 +1638,11 @@ cb_no:
 ; (3). Uses j1-j14.
 q_whys:
   jldi j1, 0
-  jld j2, j1, STAMP
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, STAMP
+  jldi j2, 1
+  jldadd j2, j1, STAMP
   jld j2, j1, RL                ; the rule's renglones, marked
   jld j3, j1, NRL
-  jcall q_markall
-  jldi j1, 0                    ; what the exceptions have that the rule never had
+  jcall0 j1, q_markall          ; what the exceptions have that the rule never had
   jst j1, j1, OI
   jld j2, j1, NXL
   jst j2, j1, OL
@@ -1722,8 +1654,7 @@ q_whys:
     jld j3, j1, XL
     jadd j9, j9, j3
     jld j9, j9, 0
-    jcall r_why
-    jldi j1, 0
+    jcall0 j1, r_why
     jld j2, j1, OI
     jldi j3, 1
     jadd j2, j2, j3
@@ -1738,22 +1669,18 @@ q_whys:
 ; the rule's other renglones and the exceptions'). Uses j1-j14.
 q_blind:
   jldi j1, 0
-  jld j2, j1, STAMP
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, STAMP
+  jldi j2, 1
+  jldadd j2, j1, STAMP
   jld j2, j1, RL
   jldi j3, 8
   jadd j2, j2, j3
   jld j3, j1, NRL
   jldi j4, 1
   jsub j3, j3, j4
-  jcall q_markall
-  jldi j1, 0
+  jcall0 j1, q_markall
   jld j2, j1, XL
   jld j3, j1, NXL
-  jcall q_markall
-  jldi j1, 0
+  jcall0 j1, q_markall
   jldi j2, 2
   jst j2, j1, WMODE
   jld j9, j1, RL
@@ -1770,8 +1697,7 @@ q_markall:
     jldi j1, 0
     jld j9, j1, OI
     jld j9, j9, 0
-    jcall r_mark
-    jldi j1, 0
+    jcall0 j1, r_mark
     jld j2, j1, OI
     jldi j3, 8
     jadd j2, j2, j3
@@ -1861,8 +1787,7 @@ assoc_report:
     jld j2, j3, 0
     jcall putnum
     jldi j2, 41
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, OL
     jldi j3, 1
     jsub j2, j2, j3
@@ -2006,8 +1931,7 @@ concept_report:
     jadd j2, j11, j1
     jcall putnum
     jldi j2, 58
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jldi j2, 10
     jst j2, j1, CPB
     jldi j9, 0
@@ -2042,8 +1966,7 @@ concept_report:
     jwend
     jldi j2, 10
     jcall putch
-    jcall flush
-    jldi j1, 0
+    jcall0 j1, flush
     jld j2, j1, TOPN
     jldi j3, 1
     jsub j2, j2, j3
@@ -2071,16 +1994,14 @@ evolve:
 ev_go:
   jst j2, j1, EVG
   jst j2, j1, EVG0
-  jcall vg_who                  ; (awake for good: who it is among its siblings)
-  jldi j1, 0
+  jcall0 j1, vg_who             ; (awake for good: who it is among its siblings)
   jldi j2, 0                    ; the luck, the same every time (deterministic: a seed, xorshift)
   jshi j2, 9E37h
   jshi j2, 79B9h
   jshi j2, 7F4Ah
   jshi j2, 7C15h
   jst j2, j1, RNG
-  jcall nest_labels             ; (each one is born with its own luck: its number mixed in)
-  jldi j1, 0
+  jcall0 j1, nest_labels        ; (each one is born with its own luck: its number mixed in)
   jld j2, j1, RNG
   jld j3, j1, QUIEN
   jcall hw
@@ -2105,24 +2026,21 @@ ev_lect:
   jst j2, j1, EVC
   jcall autopsy_open            ; (its dissection, written as it goes)
   jcall mem_load                ; and what it learned in lives before: its best paths
-  jcall nest_load              ; it wakes with its own instincts, if it has lived before
-  jldi j1, 0
+  jcall0 j1, nest_load          ; it wakes with its own instincts, if it has lived before
   jjz j2, ev_born
   jld j2, j1, EVLIV
   jst j2, j1, EVI
   jld j2, j1, TMEM + 16         ; it remembers: its exams were paid in a coin without this memory, and exams of different
   jjz j2, ev_same               ; memories are not set against each other; the champion and the second sit it again
   jcall ev_exam
-  jcall mem_save                ; (what the champion reads, kept: the memory is always the champion's paths)
-  jldi j1, 0
+  jcall0 j1, mem_save           ; (what the champion reads, kept: the memory is always the champion's paths)
   jld j2, j1, EVS
   jst j2, j1, EVCS
   jld j2, j1, EVC
   jst j2, j1, EVKEEP
   jld j2, j1, EVR
   jst j2, j1, EVC
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jld j2, j1, EVKEEP
   jst j2, j1, EVC
   jld j2, j1, EVS
@@ -2151,8 +2069,7 @@ ev_same:
   jjmp ev_gens
 ev_born:
   jcall ev_exam
-  jcall mem_save                ; (born: its first paths kept)
-  jldi j1, 0
+  jcall0 j1, mem_save           ; (born: its first paths kept)
   jld j2, j1, EVS
   jst j2, j1, EVCS
   jld j2, j1, EVC
@@ -2166,8 +2083,7 @@ ev_gens:
   jldi j1, 0                    ; (who it is as this stretch begins: to know whether it made itself better)
   jld j2, j1, EVC
   jst j2, j1, EVJC
-  jcall letter_read            ; the other's letter: its genome is the one it crosses with (Capitan: "they agree, pass
-  jldi j1, 0                    ; each other the genome and build a new one with the best of each; the same Razar,
+  jcall0 j1, letter_read        ; the other's letter: its genome is the one it crosses with (Capitan: "they agree, pass ; each other the genome and build a new one with the best of each; the same Razar,
   jld j2, j1, PARTOK            ; remade better")
   jjz j2, ev_alone
   jld j2, j1, CARTA
@@ -2182,8 +2098,7 @@ ev_gens:
   jshi j2, 0061h
   jshi j2, 7472h
   jshi j2, 6163h
-  jcall put8
-  jldi j1, 0
+  jcall0 j1, put8
   jldi j2, 58
   jcall putch
   jld j2, j1, CARTA
@@ -2224,8 +2139,7 @@ ev_alone:
     jldi j10, 0
     jldi j11, 3
     jwhile j11
-      jcall ev_rand
-      jldi j1, 0
+      jcall0 j1, ev_rand
       jldi j3, 1
       jand j3, j2, j3
       jld j4, j1, EVC
@@ -2245,8 +2159,7 @@ ev_alone:
     jwend
     jst j9, j1, EVCH
     jcall ev_rand
-    jcall ev_mutate
-    jldi j1, 0
+    jcall0 j1, ev_mutate
     jld j2, j1, EVI
     jldi j3, 1
     jadd j2, j2, j3
@@ -2257,8 +2170,7 @@ ev_alone:
     jst j2, j1, EVKEEP
     jld j2, j1, EVCH
     jst j2, j1, EVC
-    jcall ev_exam
-    jldi j1, 0
+    jcall0 j1, ev_exam
     jld j2, j1, EVKEEP
     jst j2, j1, EVC
     jld j2, j1, EVS             ; better than the champion: it is the champion, the champion the second
@@ -2302,8 +2214,7 @@ ev_alone:
   jst j2, j1, EVLIV
   jcall nest_save
   jcall letter_write            ; and its letter for the other, with what it is now
-  jcall organ_trials            ; its organs, every stretch, if "p" asks for them (it may come back remade)
-  jldi j1, 0                    ; awake for good (Capitan: "that a Razar never turns off: its will always active,
+  jcall0 j1, organ_trials       ; its organs, every stretch, if "p" asks for them (it may come back remade) ; awake for good (Capitan: "that a Razar never turns off: its will always active,
   jld j2, j1, VIGIL             ; exploring, though it may choose to rest for a while"): it made itself better, it
   jjz j2, ev_end                ; tells the other and explores again; it did not, it rests on its doorbell (nothing
   jld j2, j1, EVC               ; spent) until the other has something new; nobody left who could wake it, it ends
@@ -2327,8 +2238,7 @@ ev_rest:
   jcall put8
   jldi j2, 10
   jcall putch
-  jcall flush
-  jldi j1, 0                    ; (someone rang while its organs were tried: that one woke it)
+  jcall0 j1, flush              ; (someone rang while its organs were tried: that one woke it)
   jld j13, j1, OGWAKE
   jjz j13, vg_bell
   jst j1, j1, OGWAKE
@@ -2336,8 +2246,7 @@ ev_rest:
   jsub j13, j13, j1
   jjmp vg_rang
 vg_bell:
-  jcall letter_new              ; before it sleeps, a look: the other's letter may have changed while it worked, and
-  jldi j1, 0                    ; the sentinel tells only what changes once it watches
+  jcall0 j1, letter_new         ; before it sleeps, a look: the other's letter may have changed while it worked, and ; the sentinel tells only what changes once it watches
   jjz j2, vg_sleep
   jldi j2, 0                    ; "carta"
   jshi j2, 0061h
@@ -2377,13 +2286,11 @@ vg_drain:
   jld j3, j1, PARTNER
   jsub j2, j2, j3
   jjz j2, vg_sib
-  jcall shelf_print             ; the sentinel tells a change, the shelf's fingerprint tells whether it is news (the
-  jldi j1, 0                    ; host tells one copy in several batches: the ones after the first are nothing new)
+  jcall0 j1, shelf_print        ; the sentinel tells a change, the shelf's fingerprint tells whether it is news (the ; host tells one copy in several batches: the ones after the first are nothing new)
   jld j3, j1, BOOKH
   jsub j3, j2, j3
   jjnz j3, vg_book
-  jcall letter_new              ; not a book: a letter of the other? it explores again with it (not reborn)
-  jldi j1, 0
+  jcall0 j1, letter_new         ; not a book: a letter of the other? it explores again with it (not reborn)
   jjz j2, vg_bell
   jldi j2, 0                    ; "carta"
   jshi j2, 0061h
@@ -2422,8 +2329,7 @@ ev_end:
   jldi j1, 0                    ; the champion's instincts stay, for the reading that counts
   jld j2, j1, EVC
   jst j2, j1, EVCH
-  jcall ev_set
-  jldi j1, 0
+  jcall0 j1, ev_set
   jst j1, j1, EXAMM
   jret
 
@@ -2444,8 +2350,7 @@ vg_who:
   jldi j10, 30
   jldi j11, 0
   jldi j12, 6F68h               ; "ho"
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1                    ; to cabin 0 it did not go: it is cabin 0
   jldi j3, 1
   jadd j4, j13, j3
@@ -2465,14 +2370,12 @@ vw_set:
   jshi j12, 7262h
   jshi j12, 696Ch
   jcall ask
-  jcall nest_labels             ; and so does the other's letter (only the other's: its own does not wake it)
-  jldi j1, 0
+  jcall0 j1, nest_labels        ; and so does the other's letter (only the other's: its own does not wake it)
   jldi j10, 32
   jldi j11, 6
   jld j12, j1, OTRL
   jcall ask
-  jcall board_init              ; and the board, if it has a key: where it finds other Razares of the same host
-  jldi j1, 0
+  jcall0 j1, board_init         ; and the board, if it has a key: where it finds other Razares of the same host
 vw_done:
   jret
 
@@ -2510,8 +2413,7 @@ ot_trials:
   jret
 ot_go:
   jst j2, j1, OGN
-  jcall og_init
-  jldi j1, 0
+  jcall0 j1, og_init
   jld j2, j1, OGML
   jjnz j2, ot_have
   jldi j2, 0                    ; "sin molde"
@@ -2519,14 +2421,12 @@ ot_go:
   jshi j2, 6E20h
   jshi j2, 6D6Fh
   jshi j2, 6C64h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 650Ah
   jcall og_r8
   jjmp flush
 ot_have:
-  jcall og_rec_queue            ; the kinds its model has: they sit the exam first, as candidates
-  jldi j1, 0
+  jcall0 j1, og_rec_queue       ; the kinds its model has: they sit the exam first, as candidates
 ot_own:
   jldi j1, 0
   jld j2, j1, ORGW              ; the organ it has, and its exam without memory: what a new one has to beat
@@ -2536,20 +2436,17 @@ ot_own:
   jld j2, j1, TMEM
   jst j2, j1, OGT
   jst j1, j1, TMEM
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jld j2, j1, OGT
   jst j2, j1, TMEM
   jld j2, j1, EVS
   jst j2, j1, OGBASE
   jldi j10, 35                  ; the cage: twice what this life cost it so far (a reading and its exams; a real organ
   jldi j11, -1                  ; measured +2 %: the 2 is criterion, not measurement)
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jadd j2, j13, j13
   jst j2, j1, OGBUD
-  jcall og_arch_load            ; its archive of niches, and the organ it has in its own, its score fresh
-  jldi j1, 0
+  jcall0 j1, og_arch_load       ; its archive of niches, and the organ it has in its own, its score fresh
   jld j2, j1, OGCODE
   jcall og_niche
   jcall og_arch_at
@@ -2562,13 +2459,11 @@ ot_own:
   jld j2, j1, OGN
   jwhile j2
     jcall og_next
-    jcall og_kid
-    jldi j1, 0
+    jcall0 j1, og_kid
     jjz j2, ot_next
     jcall og_trial
     jcall og_line
-    jcall og_niche_meet         ; it meets the champion of its niche (the best of each way of doing, not only one)
-    jldi j1, 0                  ; better: the new organ is its own
+    jcall0 j1, og_niche_meet    ; it meets the champion of its niche (the best of each way of doing, not only one) ; better: the new organ is its own
     jld j2, j1, OGSC
     jld j3, j1, OGBASE
     jsub j3, j3, j2
@@ -2593,14 +2488,12 @@ ot_own:
     jst j2, j1, OGN
   ot_kept:
   jwend
-  jcall og_arch_save            ; its archive, for its next lives
-  jldi j1, 0
+  jcall0 j1, og_arch_save       ; its archive, for its next lives
   jld j2, j1, OGCODE            ; it grew one: its letters into its own initial data, for its next life (the program
   jld j3, j1, ORGW              ; is the same: nothing is built)
   jsub j2, j2, j3
   jjz j2, ot_done
-  jcall og_self
-  jldi j1, 0
+  jcall0 j1, og_self
   jjz j2, ot_done
 ot_remake:
   jldi j2, 0                    ; "se rehace": the same cabin, its new program (36), when it ends here
@@ -2608,8 +2501,7 @@ ot_remake:
   jshi j2, 2072h
   jshi j2, 6568h
   jshi j2, 6163h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 650Ah
   jcall og_r8
   jcall flush
@@ -2625,8 +2517,7 @@ ot_done:
 ; The label of the block j2, a file of its own tree: "PDP/razar", its number after it if it has one (each Razar of
 ; a society writes, builds and launches only its own), and the rest -> j11 where, j12 its bytes. Uses j1-j10.
 og_label:
-  jcall og_block
-  jldi j1, 0
+  jcall0 j1, og_block
   jld j11, j1, OGPEND
   jldi j2, 4160
   jadd j11, j11, j2
@@ -2664,20 +2555,17 @@ og_label:
 organ_enum:
   jldi j1, 0
   jst j2, j1, AUDN
-  jcall og_init
-  jldi j1, 0
+  jcall0 j1, og_init
   jld j2, j1, OGML
   jjnz j2, oen_have
   jret
 oen_have:
-  jcall og_base
-  jldi j1, 0
+  jcall0 j1, og_base
   jld j2, j1, EVS
   jst j2, j1, OGBASE
   jldi j10, 35                  ; the cage, as for its organs
   jldi j11, -1
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jadd j2, j13, j13
   jst j2, j1, OGBUD
   jst j1, j1, OGFILL
@@ -2702,8 +2590,7 @@ oen_have:
       jldi j1, 0
       jld j2, j1, AUDC
       jcall oa_exam
-      jcall og_line
-      jldi j1, 0                ; the next: its lowest letter one more, a 9 back to 1 carrying to the next
+      jcall0 j1, og_line        ; the next: its lowest letter one more, a 9 back to 1 carrying to the next
       jst j1, j1, AUDOK2
       jldi j6, 1
       jwhile j6
@@ -2729,10 +2616,8 @@ oen_have:
         jshl j4, j4, j5
         jsub j2, j2, j4
         jst j2, j1, AUDC
-        jld j3, j1, AUDOK2
-        jldi j4, 1
-        jadd j3, j3, j4
-        jst j3, j1, AUDOK2
+        jldi j3, 1
+        jldadd j3, j1, AUDOK2
         jld j4, j1, AUDI
         jsub j4, j3, j4
         jjnz j4, oen_step
@@ -2742,10 +2627,8 @@ oen_have:
       jwend
       jld j2, j1, AUDOK1
     jwend
-    jld j2, j1, AUDI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AUDI
+    jldi j2, 1
+    jldadd j2, j1, AUDI
     jld j3, j1, AUDN
     jsub j3, j3, j2
     jldi j4, 63
@@ -2768,27 +2651,23 @@ oen_have:
 organ_audit:
   jldi j1, 0
   jst j2, j1, AUDN
-  jcall og_init
-  jldi j1, 0
+  jcall0 j1, og_init
   jld j2, j1, OGML
   jjnz j2, oa_have
   jret
 oa_have:
-  jcall og_base
-  jldi j1, 0
+  jcall0 j1, og_base
   jld j2, j1, EVS
   jst j2, j1, AUDB0
   jldi j10, 35                  ; the cage, as for its organs
   jldi j11, -1
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jadd j2, j13, j13
   jst j2, j1, OGBUD
   jld j11, j1, AUDN             ; its organs: {letters, in order, reversed, canonical}
   jldi j2, 5
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, AUD
   jst j1, j1, AUDI
   jld j2, j1, AUDN
@@ -2831,10 +2710,8 @@ oa_have:
     jcall oa_at
     jld j2, j1, OGTRY
     jst j2, j4, 0
-    jld j2, j1, AUDI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AUDI
+    jldi j2, 1
+    jldadd j2, j1, AUDI
     jld j3, j1, AUDN
     jsub j2, j3, j2
   jwend
@@ -2849,10 +2726,8 @@ oa_have:
     jcall oa_at
     jld j2, j1, OGSC
     jst j2, j4, 8
-    jld j2, j1, AUDI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AUDI
+    jldi j2, 1
+    jldadd j2, j1, AUDI
     jld j3, j1, AUDN
     jsub j2, j3, j2
   jwend
@@ -2878,8 +2753,7 @@ oa_have:
   jwhile j2
     jcall oa_at
     jld j2, j4, 0
-    jcall og_canon
-    jldi j1, 0
+    jcall0 j1, og_canon
     jst j2, j1, AUDC
     jcall oa_at
     jld j3, j4, 0
@@ -2898,15 +2772,12 @@ oa_have:
     jst j2, j4, 24
   oa_same:
     jldi j1, 0
-    jld j2, j1, AUDI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AUDI
+    jldi j2, 1
+    jldadd j2, j1, AUDI
     jld j3, j1, AUDN
     jsub j2, j3, j2
   jwend
-  jcall og_base                 ; the exam without organ, after them all
-  jldi j1, 0
+  jcall0 j1, og_base            ; the exam without organ, after them all
   jld j2, j1, EVS
   jst j2, j1, AUDB1
   jst j1, j1, AUDOK1            ; what moved, said; how many held
@@ -2919,18 +2790,14 @@ oa_have:
     jld j3, j4, 16
     jsub j3, j3, j2
     jjnz j3, oa_moved
-    jld j3, j1, AUDOK1
-    jldi j5, 1
-    jadd j3, j3, j5
-    jst j3, j1, AUDOK1
+    jldi j3, 1
+    jldadd j3, j1, AUDOK1
   oa_moved:
     jld j3, j4, 24
     jsub j3, j3, j2
     jjnz j3, oa_moved2
-    jld j3, j1, AUDOK2
-    jldi j5, 1
-    jadd j3, j3, j5
-    jst j3, j1, AUDOK2
+    jldi j3, 1
+    jldadd j3, j1, AUDOK2
   oa_moved2:
     jld j2, j4, 8
     jld j3, j4, 16
@@ -2969,10 +2836,8 @@ oa_have:
     jcall flush
   oa_quiet:
     jldi j1, 0
-    jld j2, j1, AUDI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, AUDI
+    jldi j2, 1
+    jldadd j2, j1, AUDI
     jld j3, j1, AUDN
     jsub j2, j3, j2
   jwend
@@ -2981,61 +2846,48 @@ oa_have:
   jshi j2, 6469h
   jshi j2, 746Fh
   jshi j2, 7269h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, AUDN
-  jcall putnum
-  jldi j2, 0
+  jcall0 j2, putnum
   jshi j2, 3A20h
   jshi j2, 6F72h
   jshi j2, 6465h
   jshi j2, 6E20h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 7920h
   jshi j2, 6261h
   jshi j2, 7375h
   jshi j2, 7261h
   jcall og_r8
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, AUDOK1
-  jcall putnum
-  jldi j2, 0
+  jcall0 j2, putnum
   jshi j2, 2C20h
   jshi j2, 6573h
   jshi j2, 6372h
   jshi j2, 6974h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 7572h
   jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, AUDOK2
-  jcall putnum
-  jldi j2, 0
+  jcall0 j2, putnum
   jshi j2, 2028h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, AUDNC
-  jcall putnum
-  jldi j2, 0
+  jcall0 j2, putnum
   jshi j2, 292Ch
   jshi j2, 2062h
   jshi j2, 6173h
   jshi j2, 6520h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, AUDB0
   jcall og_signed
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, AUDB1
   jcall og_signed
   jldi j2, 10
@@ -3061,8 +2913,7 @@ oa_exam:
   jldi j3, 63
   jshl j2, j2, j3
   jst j2, j1, OGSC
-  jcall og_kid
-  jldi j1, 0
+  jcall0 j1, og_kid
   jjz j2, oe_done
   jcall og_trial
 oe_done:
@@ -3077,8 +2928,7 @@ og_base:
   jld j2, j1, TMEM
   jst j2, j1, OGT
   jst j1, j1, TMEM
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jld j2, j1, OGT
   jst j2, j1, TMEM
   jret
@@ -3102,9 +2952,7 @@ og_canon:
     jshr j2, j2, j3
     jldi j3, 5
     jsub j3, j4, j3
-    jldi j5, 63
-    jsar j3, j3, j5
-    jjz j3, oc_hole
+    jjnn j3, oc_hole
     jldi j3, 1                  ; a mix: its word's bit
     jsub j4, j4, j3
     jshl j3, j3, j4
@@ -3190,8 +3038,7 @@ og_init:
   jldi j11, 4096                ; (and from 4352 its archive of niches: og_arch_load)
   jldi j2, 512
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGPEND
   jldi j2, 4096                 ; "PDP/razar/lectura/organo.molde"
   jadd j9, j13, j2
@@ -3244,16 +3091,14 @@ oi_own:
                                 ; 0.2 KB)
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGM
   jldi j10, 4
   jld j11, j1, OGPEND
   jldi j2, 4112
   jadd j11, j11, j2
   jld j12, j1, OGLET
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, oi_done
@@ -3266,8 +3111,7 @@ oi_own:
   jldi j12, 4096
   jldi j2, 4
   jshl j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, oi_close
@@ -3282,8 +3126,7 @@ oi_close:
   jcall ask
 oi_done:
   jldi j11, 4096                ; the room a file goes through when it is copied, and its child: this same program
-  jcall room                    ; (pulso.bin -> hijo.bin, once: every candidate runs it, only its data changes)
-  jldi j1, 0
+  jcall0 j1, room               ; (pulso.bin -> hijo.bin, once: every candidate runs it, only its data changes)
   jst j13, j1, OGBUF
   jst j1, j1, OGPAT
   jldi j2, 112
@@ -3292,18 +3135,15 @@ oi_done:
   jcall og_alphabet
   jldi j11, 4096                ; (the room a file of recipes is read into and the one a listing is: to start, criterion;
   jst j11, j1, OGRBC            ; they grow to what they hold), and its model
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGRB
   jldi j11, 4096
   jst j11, j1, OGLC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGLR
   jst j1, j1, OGQN
   jst j1, j1, OGQI
-  jcall shelf_print
-  jldi j1, 0
+  jcall0 j1, shelf_print
   jst j2, j1, OGBK
   jldi j1, 0
   jret
@@ -3315,16 +3155,14 @@ og_alphabet:
   jldi j11, 4096                ; (as big as an alphabet may be: criterion, as the molde's; the one it has is 7 KB)
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGALR
   jst j1, j1, OGALN
   jst j1, j1, OGALF
   jldi j2, 111
   jcall og_label
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, oab_done
@@ -3337,8 +3175,7 @@ og_alphabet:
   jldi j12, 4096
   jldi j2, 4
   jshl j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, oab_close
@@ -3349,8 +3186,7 @@ oab_close:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j5, j1, OGALN
   jjz j5, oab_done
   jld j2, j1, FNVO
@@ -3377,51 +3213,40 @@ oab_done:
 ; its head, what it improved, and below it the code of each of its letters, in the order they run, as its alphabet
 ; has it, with what each one does: read by anyone, and by Razar. Uses j1-j14.
 og_rec_text:
-  jcall og_rec_head
-  jldi j2, 0                    ; "  mejora: ", from the champion it beat to its own score, and which
+  jcall0 j2, og_rec_head        ; "  mejora: ", from the champion it beat to its own score, and which
   jshi j2, 0020h
   jshi j2, 206Dh
   jshi j2, 656Ah
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 6F72h
   jshi j2, 613Ah
   jshi j2, 2000h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGB0
-  jcall og_dec
-  jldi j2, 0                    ; " -> "
+  jcall0 j2, og_dec             ; " -> "
   jshi j2, 202Dh
   jshi j2, 3E20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGBASE
-  jcall og_dec
-  jldi j2, 0                    ; " (+"
+  jcall0 j2, og_dec             ; " (+"
   jshi j2, 2028h
   jshi j2, 2B00h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGBASE
   jld j3, j1, OGB0
   jsub j2, j2, j3
-  jcall og_dec
-  jldi j2, 0                    ; "), antes: "
+  jcall0 j2, og_dec             ; "), antes: "
   jshi j2, 292Ch
   jshi j2, 2061h
   jshi j2, 6E74h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 6573h
   jshi j2, 3A20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGBA
   jcall og_hex
   jldi j2, 10
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, OGCODE
   jst j2, j1, OGRI
   jwhile j2
@@ -3433,8 +3258,7 @@ og_rec_text:
     jshi j2, 6C65h
     jshi j2, 7472h
     jshi j2, 6120h
-    jcall og_r8
-    jldi j1, 0
+    jcall0 j1, og_r8
     jld j2, j1, OGRC
     jldi j3, 48
     jadd j2, j2, j3
@@ -3442,8 +3266,7 @@ og_rec_text:
     jldi j2, 58
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0                  ; what it does, as the molde says it (its block "1" to "9")
+    jcall0 j1, putch            ; what it does, as the molde says it (its block "1" to "9")
     jld j2, j1, OGRC
     jldi j3, 48
     jadd j2, j2, j3
@@ -3456,11 +3279,9 @@ og_rec_text:
       jsub j6, j6, j2
     jwend
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, OGRC
-    jcall og_rec_block
-    jldi j1, 0
+    jcall0 j1, og_rec_block
     jld j2, j1, OGRI
     jldi j3, 4
     jshr j2, j2, j3
@@ -3477,37 +3298,29 @@ og_rec_head:
   jshi j2, 6563h
   jshi j2, 6574h
   jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGCODE
-  jcall og_hex16
-  jldi j2, 0                    ; " alfabeto "
+  jcall0 j2, og_hex16           ; " alfabeto "
   jshi j2, 2061h
   jshi j2, 6C66h
   jshi j2, 6162h
-  jcall og_r8
-  jldi j2, 0
+  jcall0 j2, og_r8
   jshi j2, 6574h
   jshi j2, 6F20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGALF
-  jcall og_hex16
-  jldi j2, 0                    ; " nota "
+  jcall0 j2, og_hex16           ; " nota "
   jshi j2, 206Eh
   jshi j2, 6F74h
   jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGBASE
-  jcall og_dec
-  jldi j2, 0                    ; " genoma "
+  jcall0 j2, og_dec             ; " genoma "
   jshi j2, 2067h
   jshi j2, 656Eh
   jshi j2, 6F6Dh
   jshi j2, 6120h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, EVC
   jcall og_hex16
   jldi j2, 10
@@ -3544,8 +3357,7 @@ lb_str:
     jldi j3, 255
     jand j2, j2, j3
     jjz j2, lbs_end
-    jcall lb_ch
-    jldi j1, 0
+    jcall0 j1, lb_ch
     jld j2, j1, OGLW
     jldi j3, 8
     jshr j2, j2, j3
@@ -3575,8 +3387,7 @@ lb_hex16:
     jldi j4, 87
   lbx_dig:
     jadd j2, j2, j4
-    jcall lb_ch
-    jldi j1, 0
+    jcall0 j1, lb_ch
     jld j2, j1, OGLW
     jldi j3, 4
     jshl j2, j2, j3
@@ -3595,8 +3406,7 @@ lb_letters:
     jand j2, j2, j3
     jldi j3, 48
     jadd j2, j2, j3
-    jcall lb_ch
-    jldi j1, 0
+    jcall0 j1, lb_ch
     jld j2, j1, OGLW
     jldi j3, 4
     jshr j2, j2, j3
@@ -3614,8 +3424,7 @@ lb_model:
     jldb j2, j5, 0
     jst j5, j1, OGLE
     jst j6, j1, OGLF
-    jcall lb_ch
-    jldi j1, 0
+    jcall0 j1, lb_ch
     jld j5, j1, OGLE
     jld j6, j1, OGLF
     jldi j2, 1
@@ -3633,16 +3442,13 @@ og_type_label:
   jst j2, j1, OGLT
   jcall lb_model
   jldi j2, 47
-  jcall lb_ch
-  jldi j1, 0
+  jcall0 j1, lb_ch
   jld j2, j1, OGLT
   jcall lb_letters
   jldi j2, 47
-  jcall lb_ch
-  jldi j1, 0
+  jcall0 j1, lb_ch
   jld j2, j1, EVC
-  jcall lb_hex16
-  jldi j2, 0                    ; "/recetas"
+  jcall0 j2, lb_hex16           ; "/recetas"
   jshi j2, 7361h
   jshi j2, 7465h
   jshi j2, 6365h
@@ -3662,8 +3468,7 @@ og_readall:
   jldi j1, 0
   jst j1, j1, OGRBN
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ora_done
@@ -3675,8 +3480,7 @@ og_readall:
     jld j12, j1, OGRBC
     jsub j12, j12, j2
     jjnz j12, ora_read
-    jcall og_grow               ; full: twice the room, what it read moved to it
-    jldi j1, 0
+    jcall0 j1, og_grow          ; full: twice the room, what it read moved to it
     jld j2, j1, OGRBN
     jld j12, j1, OGRBC
     jsub j12, j12, j2
@@ -3688,8 +3492,7 @@ og_readall:
     jor j10, j10, j3
     jld j11, j1, OGRB
     jadd j11, j11, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jadd j9, j13, j1
     jldi j2, 63
     jshr j2, j9, j2
@@ -3716,8 +3519,7 @@ og_grow:
   jldi j1, 0
   jld j11, j1, OGRBC
   jadd j11, j11, j11
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, OGRB
   jadd j5, j13, j1
   jld j6, j1, OGRBN
@@ -3747,8 +3549,7 @@ og_list:
     jldi j10, 14
     jld j11, j1, OGLR
     jld j12, j1, OGLC
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j9, 0
     jldi j2, 63
     jsar j2, j13, j2
@@ -3779,8 +3580,7 @@ og_list:
     jld j11, j1, OGLC           ; more than half: twice the room, and again
     jadd j11, j11, j11
     jst j11, j1, OGLC
-    jcall room
-    jldi j1, 0
+    jcall0 j1, room
     jst j13, j1, OGLR
     jldi j9, 1
   ol_lap_end:
@@ -3793,15 +3593,13 @@ og_wopen:
   jldi j1, 0                    ; (flush takes j11 and j12: the label kept meanwhile)
   jst j11, j1, OGLE
   jst j12, j1, OGLF
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jld j11, j1, OGLE
   jld j12, j1, OGLF
   jldi j10, 12
   jcall ask
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, owo_no
@@ -3817,16 +3615,14 @@ owo_no:
 
 ; The text out to the file being written, closed, the text to the console again. Uses j1-j14.
 og_wclose:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, OGRH
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jret
 
 ; Where the line at j4 ends (after its line end, or at OGRE) -> j7. Uses j1, j7, j8.
@@ -3978,8 +3774,7 @@ og_rec_write:
   jldi j1, 0
   jld j2, j1, OGCODE
   jcall og_type_label
-  jcall og_readall
-  jldi j1, 0
+  jcall0 j1, og_readall
   jld j2, j1, OGCODE
   jcall og_type_label
   jcall og_wopen
@@ -3993,8 +3788,7 @@ og_rec_write:
   jst j2, j1, OGRE
   jwhile j2
     jst j4, j1, OGRP            ; a recipe: its head, up to the next head
-    jcall og_hdr
-    jldi j1, 0
+    jcall0 j1, og_hdr
     jld j2, j1, OGHS
     jst j2, j1, OGRS
     jld j2, j1, OGHA
@@ -4004,8 +3798,7 @@ og_rec_write:
     jadd j4, j7, j1
     jwhile j2
       jst j4, j1, OGRQ
-      jcall og_hdr
-      jldi j1, 0
+      jcall0 j1, og_hdr
       jld j4, j1, OGRQ
       jjnz j6, orw_blk
       jcall og_eol
@@ -4097,20 +3890,17 @@ og_rec_queue:
   jldi j1, 0
   jst j1, j1, OGQN
   jst j1, j1, OGQI
-  jcall og_list
-  jldi j1, 0
+  jcall0 j1, og_list
   jld j11, j1, OGLNN
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, OGQ
   jcall lb_model                ; its model's folder, and its "/"
   jldi j2, 47
-  jcall lb_ch
-  jldi j1, 0
+  jcall0 j1, lb_ch
   jld j2, j1, OGLN
   jst j2, j1, OGPFX
   jld j2, j1, OGLR
@@ -4169,14 +3959,12 @@ og_rec_queue:
     jldi j2, 8
     jadd j11, j4, j2
     jadd j12, j5, j1
-    jcall og_readall
-    jldi j1, 0
+    jcall0 j1, og_readall
     jld j4, j1, OGRB
     jld j2, j1, OGRBN
     jadd j2, j4, j2
     jst j2, j1, OGRE
-    jcall og_hdr
-    jldi j1, 0
+    jcall0 j1, og_hdr
     jjz j6, orq_next
     jld j2, j1, OGHL
     jjz j2, orq_next
@@ -4196,10 +3984,8 @@ og_rec_queue:
     jwend
   orq_put:
     jst j2, j5, 0
-    jld j3, j1, OGQN
-    jldi j5, 1
-    jadd j3, j3, j5
-    jst j3, j1, OGQN
+    jldi j3, 1
+    jldadd j3, j1, OGQN
   orq_next:
     jldi j1, 0
     jld j4, j1, OGLP
@@ -4301,8 +4087,7 @@ og_rec_block:
     jsub j7, j6, j7
     jjz j7, orb_next
     jadd j2, j6, j1
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
   orb_next:
     jadd j8, j6, j1
     jldi j7, 1
@@ -4330,8 +4115,7 @@ og_hex16:
     jldi j4, 87
   ox_dig:
     jadd j2, j2, j4
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, OGRI
     jldi j3, 4
     jshl j2, j2, j3
@@ -4349,8 +4133,7 @@ og_dec:
   jldi j1, 0
   jst j2, j1, OGRI
   jldi j2, 45
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, OGRI
   jldi j3, 0
   jsub j2, j3, j2
@@ -4403,8 +4186,7 @@ og_child:
   jld j2, j4, 0
   jst j2, j1, OGCODE
 oc_own:
-  jcall og_mutate
-  jldi j1, 0
+  jcall0 j1, og_mutate
   jld j2, j1, OGT2
   jst j2, j1, OGCODE
   jret
@@ -4474,8 +4256,7 @@ og_niche_meet:
   jsub j3, j3, j2
   jjz j3, nm_fresh
   jld j2, j4, 0                 ; (its champion, again, in this coin)
-  jcall oa_exam
-  jldi j1, 0
+  jcall0 j1, oa_exam
   jld j4, j1, OGT4
   jld j2, j1, OGSC
   jst j2, j4, 8
@@ -4530,8 +4311,7 @@ og_arch_load:
   jwend
   jcall og_arch_label
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, al_new
@@ -4544,8 +4324,7 @@ og_arch_load:
   jldi j2, 4352
   jadd j11, j11, j2
   jldi j12, 152
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, OGT4
   jldi j2, 32
   jshl j10, j10, j2
@@ -4570,8 +4349,7 @@ og_arch_save:
   jcall ask
   jcall og_arch_label
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, as_done
@@ -4584,8 +4362,7 @@ og_arch_save:
   jldi j2, 4352
   jadd j11, j11, j2
   jldi j12, 152
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, OGT4
   jldi j2, 32
   jshl j10, j10, j2
@@ -4655,8 +4432,7 @@ og_mutate:
     jldi j7, 1
   om_room:
     jst j7, j1, OGKID
-    jcall ev_rand               ; where: 0..n for in, 0..n-1 otherwise
-    jldi j1, 0
+    jcall0 j1, ev_rand          ; where: 0..n for in, 0..n-1 otherwise
     jld j6, j1, OGT
     jld j7, j1, OGKID
     jadd j3, j6, j1
@@ -4857,8 +4633,7 @@ og_copy:
   jst j3, j1, OGH2              ; (the destination's block, for now)
   jcall og_label
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ocp_bad
@@ -4868,8 +4643,7 @@ og_copy:
   jldi j10, 12                  ; the old one out, the new one open
   jcall ask
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, OGH2
   jldi j2, 1
   jst j2, j1, OGOK
@@ -4889,8 +4663,7 @@ ocp_go:
     jor j10, j10, j2
     jld j11, j1, OGBUF
     jldi j12, 4096
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jadd j9, j13, j1            ; the bytes read (0: the end)
     jldi j2, 63
     jshr j2, j9, j2
@@ -4919,8 +4692,7 @@ ocp_go:
     jor j10, j10, j2
     jld j11, j1, OGBUF
     jadd j12, j9, j1
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jld j9, j1, OGRD
     jsub j2, j13, j9
     jjz j2, ocp_on
@@ -4941,8 +4713,7 @@ ocp_close:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, OGOK
   jret
 ocp_bad:
@@ -4965,8 +4736,7 @@ og_trial:
   jshl j10, j10, j2
   jldi j2, 16
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, otr_done
@@ -5000,8 +4770,7 @@ og_serve:
     jst j13, j1, OGT
     jldi j10, 19
     jadd j11, j13, j1
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 2
     jadd j2, j13, j2
     jjnz j2, os_child
@@ -5014,8 +4783,7 @@ og_serve:
     jldi j10, 18                ; what waits: {its number, the child, its kind}
     jld j11, j1, OGPEND
     jldi j12, 4096
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jld j9, j1, OGPEND
     jadd j8, j13, j1
     jldi j2, 63                 ; (-1: nothing to sign)
@@ -5030,8 +4798,7 @@ og_serve:
       jldi j10, 17
       jld j11, j9, 0
       jldi j12, 1
-      jcall ask
-      jldi j1, 0
+      jcall0 j1, ask
       jld j9, j1, OGT
       jld j8, j1, OGLET
       jldi j2, 24
@@ -5046,8 +4813,7 @@ og_serve:
       jld j11, j1, OGPEND
       jldi j2, 4096
       jadd j11, j11, j2
-      jcall ask
-      jldi j1, 0
+      jcall0 j1, ask
       jldi j2, 1
       jsub j8, j13, j2
       jjnz j8, os_quiet
@@ -5090,28 +4856,22 @@ og_line:
   jshi j2, 7267h
   jshi j2, 616Eh
   jshi j2, 6F20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGTRY
-  jcall og_hex
-  jldi j2, 0
+  jcall0 j2, og_hex
   jshi j2, 0020h
   jshi j2, 3D20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGSC
-  jcall og_signed
-  jldi j2, 0
+  jcall0 j2, og_signed
   jshi j2, 2028h
   jshi j2, 7369h
   jshi j2, 6E20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, OGBASE
   jcall og_signed
   jldi j2, 41
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, OGSC
   jld j3, j1, OGBASE
   jsub j3, j3, j2
@@ -5165,8 +4925,7 @@ oh_some:
     jand j2, j2, j3
     jldi j3, 48
     jadd j2, j2, j3
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, OGLET
     jldi j3, 4
     jshr j2, j2, j3
@@ -5182,8 +4941,7 @@ og_signed:
   jsar j3, j2, j3
   jjz j3, osg_pos
   jldi j2, 45
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, OGLET
   jldi j3, 0
   jsub j2, j3, j2
@@ -5195,14 +4953,12 @@ osg_pos:
 ; A candidate (ORGK): it sits the exam of the genome it was launched with (ORGG), tells its parent its score (a word
 ; to -1, "my parent") and ends. Nothing written. Uses j1-j14.
 candidate:
-  jcall distill_no
-  jldi j1, 0
+  jcall0 j1, distill_no
   jldi j2, 1
   jst j2, j1, FORMS
   jld j2, j1, ORGG
   jst j2, j1, EVC
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jldi j10, 30
   jldi j11, -1
   jld j12, j1, EVS
@@ -5224,8 +4980,7 @@ mem_load:
   jldi j11, MEML
   jldi j1, 0
   jld j12, j1, MEMN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ml_done
@@ -5236,8 +4991,7 @@ mem_load:
   jor j10, j10, j2
   jldi j11, MCNT
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 8
   jsub j2, j13, j2
   jjnz j2, ml_close
@@ -5246,8 +5000,7 @@ mem_load:
   jldi j2, 48
   jmul j11, j11, j2
   jst j11, j1, MSZ
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, MBUFP
   jld j10, j1, MEMH
   jldi j2, 32
@@ -5256,8 +5009,7 @@ mem_load:
   jor j10, j10, j2
   jadd j11, j13, j1
   jld j12, j1, MSZ
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, MSZ               ; (all of it, or nothing: a memory cut short is no memory)
   jsub j2, j13, j2
   jjnz j2, ml_close
@@ -5307,8 +5059,7 @@ ml_done:
 ; kept only while that evidence still pays its name by the judge's own law. One it carried that this reading met and
 ; that did not pay falls out: it had its chance. Uses j1-j14.
 mem_save:
-  jcall mem_label
-  jldi j1, 0                    ; room for all of them: the pieces that pay now, and what it carried
+  jcall0 j1, mem_label          ; room for all of them: the pieces that pay now, and what it carried
   jld j11, j1, TMEM + 16
   jldi j9, 0
   jld j10, j1, ROOMD             ; (every place of the differences' table)
@@ -5340,8 +5091,7 @@ mem_save:
   jmul j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, MBUFP
   jst j1, j1, MCNT
   jst j1, j1, MHELP
@@ -5376,10 +5126,8 @@ mem_save:
     jldi j3, 63
     jsar j2, j2, j3
     jjz j2, ms_own
-    jld j2, j1, MHELP
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, MHELP
+    jldi j2, 1
+    jldadd j2, j1, MHELP
   ms_own:
     jld j6, j4, 40
     jld j7, j4, 48
@@ -5456,8 +5204,7 @@ mem_save:
   jldi j11, MEML
   jldi j1, 0
   jld j12, j1, MEMN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ms_free
@@ -5475,15 +5222,13 @@ mem_save:
   jmul j12, j12, j2
   jldi j2, 8
   jadd j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, MEMH
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0                    ; said: "memoria", how many it keeps, and how many of them come from lives before
+  jcall0 j1, ask                ; said: "memoria", how many it keeps, and how many of them come from lives before
   jldi j2, 0
   jshi j2, 0061h
   jshi j2, 6972h
@@ -5512,8 +5257,7 @@ ms_free:
   jldi j1, 0                    ; its room given back
   jldi j10, 3
   jld j11, j1, MBUFP
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jret
 
 ; A piece now into the memory being written: ROOMD entry j3 {key, low, high, floor, pairs, bits}, its evidence j6, its
@@ -5566,8 +5310,7 @@ mc_put:
 
 ; The label "memoria", with its number after it if it has one, at MEML (MEMN bytes). Uses j1-j5.
 mem_label:
-  jcall nest_labels
-  jldi j1, 0
+  jcall0 j1, nest_labels
   jldi j2, 0
   jshi j2, 0061h
   jshi j2, 6972h
@@ -5597,8 +5340,7 @@ nest_load:
   jldi j10, 4                   ; open (created if it is not there: then it reads nothing)
   jldi j11, NIDL
   jld j12, j1, NIDN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, nl_none
@@ -5609,16 +5351,14 @@ nest_load:
   jor j10, j10, j2
   jldi j11, NEST
   jldi j12, 56
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, EVT2
   jld j10, j1, EVT              ; closed
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, EVT2
   jldi j3, 56
   jsub j2, j2, j3
@@ -5671,8 +5411,7 @@ nest_save:
   jldi j10, 4
   jldi j11, NIDL
   jld j12, j1, NIDN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ns_done
@@ -5683,8 +5422,7 @@ nest_save:
   jor j10, j10, j2
   jldi j11, NEST
   jldi j12, 56
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
@@ -5706,8 +5444,7 @@ autopsy_open:
   jldi j10, 4
   jldi j11, AUTL
   jld j12, j1, AUTN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ao_done
@@ -5793,18 +5530,15 @@ letter_read:
   jldi j3, 255
   jand j2, j2, j3
   jjnz j2, lr_done
-  jcall board_find              ; on the board first (another Razar of this host), else the other's letter file
-  jldi j1, 0
+  jcall0 j1, board_find         ; on the board first (another Razar of this host), else the other's letter file
   jjz j2, lr_file
-  jcall sil_import              ; (and its silhouettes, tried if they changed)
-  jldi j1, 0
+  jcall0 j1, sil_import         ; (and its silhouettes, tried if they changed)
   jjmp lr_have
 lr_file:
   jldi j10, 4
   jldi j11, OTRL
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, lr_done
@@ -5816,16 +5550,14 @@ lr_file:
   jor j10, j10, j2
   jldi j11, LETB
   jldi j12, 16
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, EVT2
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, EVT2              ; eight bytes at least: its genome
   jldi j3, 8
   jsub j2, j2, j3
@@ -5897,11 +5629,8 @@ w_hash:
   jldi j4, 63
   jsar j3, j3, j4
   jjz j3, wh_done
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j2, j3, 0
 wh_done:
   jret
@@ -5956,8 +5685,7 @@ sil_export:
   jmul j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j2, j1, SILR
   jst j13, j2, 88               ; (its room)
   jst j1, j13, 0
@@ -6026,22 +5754,19 @@ sil_export:
     jsub j10, j10, j2
   jwend
   jldi j2, BLAB                 ; its file on the board, whole
-  jcall sil_label
-  jldi j1, 0
+  jcall0 j1, sil_label
   jld j3, j1, SILR
   jldi j2, 32
   jadd j11, j3, j2
   jldi j10, 12
   jldi j12, 33
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j3, j1, SILR
   jldi j2, 32
   jadd j11, j3, j2
   jldi j10, 4
   jldi j12, 33
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, se_free
@@ -6057,8 +5782,7 @@ sil_export:
   jmul j12, j12, j2
   jldi j2, 8
   jadd j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
@@ -6081,15 +5805,13 @@ sil_import:
   jldi j1, 0
   jld j2, j1, SILR
   jjz j2, si_done
-  jcall sil_label
-  jldi j1, 0
+  jcall0 j1, sil_label
   jld j3, j1, SILR
   jldi j2, 32
   jadd j11, j3, j2
   jldi j10, 4
   jldi j12, 33
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, si_done
@@ -6102,8 +5824,7 @@ sil_import:
   jldi j2, 80
   jadd j11, j3, j2
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 8
   jsub j2, j13, j2
   jjnz j2, si_close
@@ -6113,8 +5834,7 @@ sil_import:
   jldi j2, 40
   jmul j11, j11, j2
   jst j11, j1, EVT2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j3, j1, SILR
   jst j13, j3, 88
   jld j10, j1, EVT
@@ -6124,8 +5844,7 @@ sil_import:
   jor j10, j10, j2
   jadd j11, j13, j1
   jld j12, j1, EVT2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j9, j1, EVT2              ; (all of it, and the file closed now)
   jsub j9, j13, j9
   jld j10, j1, EVT
@@ -6133,8 +5852,7 @@ sil_import:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jjnz j9, si_free
   jld j3, j1, SILR              ; its fingerprint: the same as the last ones tried, nothing to do
   jld j9, j3, 88
@@ -6154,14 +5872,12 @@ sil_import:
   jjz j4, si_free
   jst j2, j3, 104
   jldi j11, 32                  ; what came, into a table like its memory, each one in its own numbers
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j3, j1, SILR
   jst j13, j3, 112
   jadd j2, j13, j1
   jldi j3, 48
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j3, j1, SILR
   jld j9, j3, 88
   jld j10, j3, 80
@@ -6219,8 +5935,7 @@ sil_import:
     jadd j5, j2, j1
     jld j3, j1, SILR
     jld j2, j3, 112
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, EVT2
     jld j2, j9, 24              ; {key, evidence (the larger), bits a pair, low, high, floor}
     jld j3, j4, 8
@@ -6256,15 +5971,13 @@ sil_import:
   jjz j2, si_drop
   jld j2, j1, EVC
   jst j2, j1, EVCH
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jld j2, j1, EVS
   jld j3, j1, SILR
   jst j2, j3, 80
   jld j2, j3, 112
   jst j2, j1, TFORP
-  jcall ev_exam
-  jldi j1, 0
+  jcall0 j1, ev_exam
   jst j1, j1, TFORP
   jldi j2, 0                    ; "siluetas <how many> = <with them> (sin <without>)", and " *" if they stay
   jshi j2, 7369h
@@ -6273,31 +5986,25 @@ sil_import:
   jshi j2, 6173h
   jcall og_r8
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j3, j1, SILR
   jld j2, j3, 112
   jld j2, j2, 16
-  jcall putnum
-  jldi j2, 0
+  jcall0 j2, putnum
   jshi j2, 0020h
   jshi j2, 3D20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j2, j1, EVS
-  jcall og_signed
-  jldi j2, 0
+  jcall0 j2, og_signed
   jshi j2, 2028h
   jshi j2, 7369h
   jshi j2, 6E20h
-  jcall og_r8
-  jldi j1, 0
+  jcall0 j1, og_r8
   jld j3, j1, SILR
   jld j2, j3, 80
   jcall og_signed
   jldi j2, 41
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j3, j1, SILR
   jld j2, j3, 80
   jld j4, j1, EVS
@@ -6320,8 +6027,7 @@ si_drop:
   jld j2, j3, 112
   jld j11, j2, 0
   jldi j10, 3
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j3, j1, SILR
   jld j11, j3, 112
   jldi j10, 3
@@ -6361,8 +6067,7 @@ sil_adopt:
     jld j5, j9, 0
     jjz j5, sa_next
     jldi j2, TMEM
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j9, 8
     jld j3, j4, 8
     jsub j3, j3, j2
@@ -6412,8 +6117,7 @@ board_init:
   jshi j2, 6C6Ch
   jst j2, j1, BLAB
   jldi j12, 5
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j1, j1, BLAB
   jldi j2, 63
   jshr j2, j13, j2
@@ -6425,16 +6129,14 @@ board_init:
   jor j10, j10, j2
   jldi j11, LLAVE
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, EVT2
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, EVT2
   jldi j3, 8
   jsub j2, j2, j3
@@ -6487,8 +6189,7 @@ bi_key:
   jld j2, j1, SILR              ; (the room of its silhouettes' traffic, once)
   jjnz j2, bi_room
   jldi j11, 128
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, SILR
 bi_room:
   jldi j10, 32                  ; the board watched: a letter there that changes wakes it
@@ -6507,13 +6208,11 @@ board_write:
   jldi j10, 12
   jldi j11, BLAB
   jld j12, j1, BLEN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j10, 4
   jldi j11, BLAB
   jld j12, j1, BLEN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, bw_done
@@ -6524,8 +6223,7 @@ board_write:
   jor j10, j10, j2
   jldi j11, LETB
   jldi j12, 16
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
@@ -6543,14 +6241,12 @@ board_find:
   jld j2, j1, LLAVE
   jjz j2, bf_none
   jldi j11, 8192                ; (a listing of the folder and the board: its labels, criterion for a board of a
-  jcall room                    ; few Razares)
-  jldi j1, 0
+  jcall0 j1, room               ; few Razares)
   jst j13, j1, BROOM
   jldi j10, 14
   jadd j11, j13, j1
   jldi j12, 8192
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jsar j2, j13, j2
   jjnz j2, bf_fail
@@ -6601,8 +6297,7 @@ board_find:
     jldi j2, 8
     jadd j11, j9, j2
     jldi j12, 30
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jshr j2, j13, j2
     jjnz j2, bf_fail
@@ -6613,16 +6308,14 @@ board_find:
     jor j10, j10, j2
     jldi j11, LETB
     jldi j12, 16
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jadd j9, j13, j1            ; (the bytes read, in a register a request keeps: ask overwrites j13 and j14)
     jld j10, j1, EVT
     jldi j2, 32
     jshl j10, j10, j2
     jldi j2, 7
     jor j10, j10, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 16                 ; (what comes from outside is checked before it is believed: a letter is sixteen
     jsub j2, j9, j2             ; bytes, and its genome a genome, its three instincts more than 0)
     jjnz j2, bf_fail
@@ -6657,8 +6350,7 @@ bf_free:
   jldi j1, 0                    ; its listing's room given back (j9 kept: found or not)
   jldi j10, 3
   jld j11, j1, BROOM
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jadd j2, j9, j1
   jret
 bf_none:
@@ -6671,14 +6363,12 @@ letter_new:
   jldi j1, 0
   jld j2, j1, QUIEN
   jjz j2, ln_none
-  jcall board_find              ; (the board's first)
-  jldi j1, 0
+  jcall0 j1, board_find         ; (the board's first)
   jjnz j2, ln_have
   jldi j10, 4
   jldi j11, OTRL
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ln_none
@@ -6691,15 +6381,13 @@ letter_new:
   jor j10, j10, j2
   jldi j11, LETB
   jldi j12, 16
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
 ln_have:
   jld j2, j1, LETB
   jjz j2, ln_none
@@ -6734,8 +6422,7 @@ letter_write:
   jldi j10, 4
   jldi j11, CARL
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, lw_done
@@ -6746,8 +6433,7 @@ letter_write:
   jor j10, j10, j2
   jldi j11, LETB
   jldi j12, 16
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EVT
   jldi j2, 32
   jshl j10, j10, j2
@@ -6862,18 +6548,15 @@ ev_exam:
   jldi j1, 0
   jld j2, j1, EVC
   jst j2, j1, EVCH
-  jcall ev_set
-  jldi j1, 0
+  jcall0 j1, ev_set
   jldi j2, 1
   jst j2, j1, EXAMM
-  jcall learn_pulses
-  jldi j1, 0
+  jcall0 j1, learn_pulses
   jldi j2, 2
   jst j2, j1, EXAMM
   jldi j2, 1
   jst j2, j1, TESTING
-  jcall all_floors
-  jldi j1, 0
+  jcall0 j1, all_floors
   jst j1, j1, TESTING
   jldi j1, 0                    ; the exam, in bits: what the pieces and the concepts tell of the exam renglones more
   jst j1, j1, EVS               ; than chance, each kind H log2((H + 1/2) / (B + 1/2)) (H its hits, B the blind's): many
@@ -7048,8 +6731,7 @@ put8:
     jand j2, j2, j4
     jjz j2, p8_done
     jst j3, j1, EVT2
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, EVT
     jldi j4, 8
     jshr j2, j2, j4
@@ -7075,8 +6757,7 @@ reborn:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j1, j1, AUTH
 rb_noaut:
   jldi j1, 0                    ; (one more life lived)
@@ -7093,8 +6774,7 @@ rb_noaut:
     jldi j1, 0
     jld j11, j9, 0
     jldi j10, 3
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 8
     jadd j9, j9, j2
     jld j10, j1, RLN
@@ -7120,8 +6800,7 @@ shelf_print:
   jst j2, j1, OGT
   jld j2, j1, SHN
   jst j2, j1, OGLET
-  jcall shelf_build
-  jldi j1, 0
+  jcall0 j1, shelf_build
   jld j2, j1, FNVO
   jst j2, j1, SPH
   jld j9, j1, SHELF
@@ -7148,8 +6827,7 @@ shelf_print:
     jldi j2, 8
     jadd j11, j9, j2
     jld j12, j9, 0
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jshr j2, j13, j2
     jjnz j2, sh_next
@@ -7166,8 +6844,7 @@ shelf_print:
       jshi j11, BUF
       jldi j12, 0
       jshi j12, BUFLEN
-      jcall ask
-      jldi j1, 0
+      jcall0 j1, ask
       jldi j2, 63
       jsar j2, j13, j2
       jldi j3, -1
@@ -7211,8 +6888,7 @@ shelf_print:
   jldi j1, 0                    ; its list's room given back, the one read kept
   jldi j10, 3
   jld j11, j1, SHELF
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, OGT
   jst j2, j1, SHELF
   jld j2, j1, OGLET
@@ -7352,8 +7028,7 @@ kind_report:
     jshr j2, j11, j2
     jcall putnum
     jldi j2, 44
-    jcall putch
-    jldi j2, 0
+    jcall0 j2, putch
     jshi j2, 0FFFFh
     jand j2, j11, j2
     jldi j3, 10
@@ -7378,8 +7053,7 @@ kind_report:
     jld j12, j1, RENT
     jcall d_print
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, TOPN
     jldi j3, 1
     jsub j2, j2, j3
@@ -7418,8 +7092,7 @@ putpct:
   jldi j2, 32
   jcall putch
   jldi j2, 40
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, GN
   jldi j3, 10
   jdiv j2, j2, j3
@@ -7526,15 +7199,13 @@ h_top:
     jcall mix
     jcall putword
     jldi j2, 40
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HK
     jldi j3, 16
     jshr j2, j2, j3
     jcall putnum
     jldi j2, 41
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, OL
     jldi j3, 1
     jsub j2, j2, j3
@@ -7554,25 +7225,21 @@ ht_done:
 skel_report:
   jldi j1, 0                    ; its rooms: the skeletons {key, fillings, different} and the forms seen, each a table
   jldi j11, 64                  ; that grows to what it holds (Capitan: "nothing wasted"; they were made for twice the
-  jcall room                    ; units, and held one in sixteen), and by word the openness summed and its places
-  jldi j1, 0
+  jcall0 j1, room               ; units, and held one in sixteen), and by word the openness summed and its places
   jst j13, j1, ROOMK1
   jldi j2, 32
   jadd j2, j13, j2
   jst j2, j1, ROOMK2
   jld j2, j1, ROOMK1
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j2, j1, ROOMK2
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMOP2
   jld j2, j1, NV
   jldi j3, 3
@@ -7585,24 +7252,20 @@ skel_report:
   jld j11, j1, NTOK              ; by place: its skeleton and its filling
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMPS
   jld j11, j1, NTOK
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMPF
   jldi j2, 1                    ; first: every place into its skeleton
   jst j2, j1, KMODE
   jcall k_walk
-  jcall k_point                 ; (what each place keeps, now that the tables stopped growing)
-  jldi j1, 0                    ; then: every word, how open its places are
+  jcall0 j1, k_point            ; (what each place keeps, now that the tables stopped growing) ; then: every word, how open its places are
   jldi j2, 2
   jst j2, j1, KMODE
-  jcall k_walk
-  jldi j1, 0                    ; where the words' openness parts in two (seen twice or more: the anecdote rule)
+  jcall0 j1, k_walk             ; where the words' openness parts in two (seen twice or more: the anecdote rule)
   jst j1, j1, NVL
   jldi j9, 1
   jld j10, j1, NV
@@ -7634,8 +7297,7 @@ skel_report:
   jldi j2, 1
   jcall k_top
   jldi j1, S_SKO
-  jcall puts
-  jldi j2, 0
+  jcall0 j2, puts
   jcall k_top
   jldi j2, 10
   jjmp putch
@@ -7684,8 +7346,7 @@ k_walk:
     jadd j5, j2, j1
     jst j5, j1, KKEY
     jld j2, j1, ROOMK1
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
   kw_old:
     jld j2, j1, KMODE
     jldi j3, 1
@@ -7704,13 +7365,10 @@ k_walk:
   kw_k2:
     jadd j5, j2, j1
     jld j2, j1, ROOMK2
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jst j6, j1, KNEW
-    jld j6, j4, 8               ; this filling in this skeleton, once more
-    jldi j7, 1
-    jadd j6, j6, j7
-    jst j6, j4, 8
+    jldi j6, 1                  ; this filling in this skeleton, once more
+    jldadd j6, j4, 8
     jld j6, j1, KI              ; the place keeps its skeleton and its filling there
     jldi j7, 3
     jshl j6, j6, j7
@@ -7765,11 +7423,8 @@ k_walk:
 k_elem:
   jldi j1, 0
   jjz j3, ke_done
-  jldi j4, 3
-  jshl j4, j3, j4
   jld j6, j1, ROOMSD
-  jadd j4, j4, j6
-  jld j4, j4, 0
+  jldx j4, j6, j3
   jldi j6, 63
   jsar j6, j4, j6
   jjnz j6, ke_hole
@@ -7899,12 +7554,10 @@ k_top:
     jcall mix
     jcall putword
     jld j9, j1, KI
-    jcall k_open
-    jldi j3, 0
+    jcall0 j3, k_open
     jshi j3, 1
     jshi j3, 0
-    jcall putpct
-    jldi j1, 0
+    jcall0 j1, putpct
     jld j2, j1, OL
     jldi j3, 1
     jsub j2, j2, j3
@@ -7923,8 +7576,7 @@ kin_report:
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMST
   jld j2, j1, NV
   jldi j3, 3
@@ -7973,8 +7625,7 @@ kn_round:
   jwend
   jldi j2, 1
   jst j2, j1, KMODE
-  jcall kn_walk
-  jldi j1, 0                    ; every word: its siblings, from nothing
+  jcall0 j1, kn_walk            ; every word: its siblings, from nothing
   jld j9, j1, ROOMSS
   jld j10, j1, NV
   jadd j10, j10, j10
@@ -7987,8 +7638,7 @@ kn_round:
   jwend
   jldi j2, 2
   jst j2, j1, KMODE
-  jcall kn_walk
-  jldi j1, 0                    ; most of its siblings structure: it is structure too
+  jcall0 j1, kn_walk            ; most of its siblings structure: it is structure too
   jst j1, j1, NKADD
   jldi j9, 1
   jld j10, j1, NV
@@ -8036,8 +7686,7 @@ kn_round:
   jld j2, j1, NKR
   jcall putmix
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jldi j9, 1
   jldi j11, 0
   jld j10, j1, NV
@@ -8105,8 +7754,7 @@ kn_round:
     jadd j2, j12, j1
     jadd j12, j2, j1
     jcall mix
-    jcall putword
-    jldi j1, 0
+    jcall0 j1, putword
     jld j2, j1, OL
     jldi j3, 1
     jsub j2, j2, j3

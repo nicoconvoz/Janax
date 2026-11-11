@@ -18,7 +18,7 @@ BEGIN {
   if (dir == "" || inc == "") { print "usage: awk -f combinaciones.awk -v dir=<folder> -v inc=<janax.inc>" > "/dev/stderr"; exit 1 }
   system("mkdir -p '" dir "'")
   # three registers
-  n = split("jadd jsub jmul jdiv jshl jshr jsar jand jor jxor", alu, " ")
+  n = split("jadd jsub jmul jdiv jshl jshr jsar jand jor jxor jldx", alu, " ")
   for (k = 1; k <= n; k++) {
     open_source("alu_" alu[k])
     for (d = 0; d < 16; d++) for (a = 0; a < 16; a++) for (b = 0; b < 16; b++) line(alu[k] " j" d ", j" a ", j" b)
@@ -37,8 +37,8 @@ BEGIN {
     close_source()
   }
   # memory: every register pair, then the immediates
-  split("jld jst jldb jstb", mem, " ")
-  for (k = 1; k <= 4; k++) {
+  split("jld jst jldb jstb jldadd", mem, " ")
+  for (k = 1; k <= 5; k++) {
     op = mem[k]
     open_source("mem_" op "_a")
     for (d = 0; d < 16; d++) for (a = 0; a < 16; a++) line(op " j" d ", j" a ", 0")
@@ -59,8 +59,8 @@ BEGIN {
     for (v = 0; v <= 32767; v++) line(op " " target(v))
     close_source()
   }
-  split("jjz jjnz", con, " ")
-  for (k = 1; k <= 2; k++) {
+  split("jjz jjnz jjn jjnn jcall0", con, " ")
+  for (k = 1; k <= 5; k++) {
     op = con[k]
     open_source("salto_" op "_a")
     for (d = 0; d < 16; d++) line(op " j" d ", $")

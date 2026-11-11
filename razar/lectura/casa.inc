@@ -30,8 +30,7 @@ house_decide:
   jld j11, j1, NV               ; its bits by word (above 0 foundation, below furniture), and its side kept
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMGB
   jld j2, j1, NV
   jldi j3, 3
@@ -40,8 +39,7 @@ house_decide:
   jst j2, j1, ROOMSD
   jst j1, j1, NRND
 hr_round:                       ; a round: counted again from the pulses, with the house of the round before
-  jcall h_recount
-  jldi j1, 0
+  jcall0 j1, h_recount
   jst j1, j1, NCHG
   jst j1, j1, SFX               ; the book's: all kept, all changed
   jst j1, j1, SVR
@@ -92,8 +90,7 @@ hr_round:                       ; a round: counted again from the pulses, with t
   jwhile j10
     jst j9, j1, HI
     jst j10, j1, HL
-    jcall h_bits
-    jldi j1, 0
+    jcall0 j1, h_bits
     jld j9, j1, HI
     jld j10, j1, HL
     jldi j3, 3
@@ -133,10 +130,8 @@ hr_round:                       ; a round: counted again from the pulses, with t
     jadd j9, j9, j2
     jsub j10, j10, j2
   jwend
-  jld j2, j1, NRND              ; until no word changes sides: the floor has stopped moving
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, NRND
+  jldi j2, 1                    ; until no word changes sides: the floor has stopped moving
+  jldadd j2, j1, NRND
   jld j3, j1, NCHG
   jjnz j3, hr_round
   jldi j1, 0                    ; the house decided: each side kept (the lists below take words out of the bits)
@@ -218,11 +213,8 @@ h_recount:
 ; j4 = 1 if the word j2 was foundation in the round before. Uses j1, j4, j5 (keeps j3).
 h_found:
   jldi j1, 0
-  jldi j4, 3
-  jshl j4, j2, j4
   jld j5, j1, ROOMGB
-  jadd j4, j4, j5
-  jld j4, j4, 0
+  jldx j4, j5, j2
   jldi j5, 63
   jsar j5, j4, j5
   jjnz j5, hf_no
@@ -239,10 +231,8 @@ h_bump:
   jldi j4, 3
   jshl j2, j2, j4
   jadd j2, j2, j3
-  jld j4, j2, 0
-  jldi j1, 1
-  jadd j4, j4, j1
-  jst j4, j2, 0
+  jldi j4, 1
+  jldadd j4, j2, 0
   jldi j1, 0
   jret
 

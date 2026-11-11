@@ -4,8 +4,8 @@
 ; Each program is decoded once into a table of 16-byte records, one per word, plus a final record:
 ;   +0  qword  address of the native routine for that instruction (compiled inside the kernel)
 ;   +8  byte   rd * 8      +9 byte ra * 8      +10 byte rb * 8
-;   +12 dword  operand: the immediate already extended (zero-extended for jshi), or, for jumps and
-;              jcall, the target as a byte offset into the table
+;   +12 dword  operand: the immediate already extended (zero-extended for jshi), or, for jumps,
+;              jcall and jcall0, the target as a byte offset into the table
 ; Running is jumping from routine to routine: nothing is decoded again and no machine code is generated
 ; (no new executable memory). A target outside the program points at the final record, which ends the
 ; process with code 2 like the interpreter's fetch check; an unknown opcode gets the routine that ends
@@ -16,7 +16,8 @@
 ; a few bytes anywhere before moved calculo by up to ~15 %.
 ;
 ; Registers while running: r12 = next record, r13 = table, r14 = Janax registers, r15 = data memory,
-; rsi = return stack (record addresses), rdi = depth, rbp = budget left, rbx = process, rdx = record
+; rsi = return stack (record addresses; one from a jcall0 has bit 63 set and its rd in the low 4 bits, free
+; since records are 16-byte aligned), rdi = depth, rbp = budget left, rbx = process, rdx = record
 ; being run. The interpreter stays as the reference (JANAX_MOTOR=interprete); the translated engine (the
 ; default, nativo.inc) points these records at native code; the tests compare the three.
 
@@ -75,6 +76,12 @@ decode_program:
         cmp     edx, 0Eh
         jbe     .target
         cmp     edx, 14h                ; jcall
+        je      .target
+        cmp     edx, 18h                ; jjn, jjnn
+        je      .target
+        cmp     edx, 19h
+        je      .target
+        cmp     edx, 1Ch                ; jcall0
         jne     .plain
 .target:
         lea     rax, [rax + rbx + 1]    ; relative to the next instruction
@@ -122,7 +129,7 @@ decode_program:
 .thread:
         cmp     rbx, r12
         jb      .thread_lap
-        ; An instruction followed by a jjz/jjnz decides that condition at its end. Every lap of a (rotated)
+        ; An instruction followed by a jjz/jjnz (or a jsub by a jjn/jjnn) decides that condition at its end. Every lap of a (rotated)
         ; while ends in its condition, so every lap pays one routine less. The condition keeps its own record:
         ; jumps that land on it still find it.
         mov     ebx, 1
@@ -137,6 +144,14 @@ decode_program:
         je      @f
         lea     r8, [ftable_jnz]
         lea     rdx, [t_jnz]
+        cmp     [rcx], rdx
+        je      @f
+        lea     r8, [ftable_jn]
+        lea     rdx, [t_jn]
+        cmp     [rcx], rdx
+        je      @f
+        lea     r8, [ftable_jnn]
+        lea     rdx, [t_jnn]
         cmp     [rcx], rdx
         jne     .fuse_next
 @@:     movzx   edx, byte [rcx - R_SIZE + 11]
@@ -242,12 +257,14 @@ t_ended:
         mov     qword [rbx + P_DONE], 1
         jmp     t_store
 
-; How a routine ends. T_NEXT runs the next record. T_JZ/T_JNZ also run the condition right after it (the
-; next record), counted as the instruction it is: if the turn ends there, the process stops at the
+; How a routine ends. T_NEXT runs the next record. T_JZ/T_JNZ/T_JN/T_JNN also run the condition right after
+; it (the next record), counted as the instruction it is: if the turn ends there, the process stops at the
 ; condition, exactly where the interpreter would.
 T_NEXT = 0
 T_JZ   = 1
 T_JNZ  = 2
+T_JN   = 3
+T_JNN  = 4
 
 macro t_end kind {
   local taken
@@ -260,8 +277,12 @@ macro t_end kind {
           cmp     qword [r14 + rcx], 0
     if kind = T_JZ
           je      taken
-    else
+    else if kind = T_JNZ
           jne     taken
+    else if kind = T_JN
+          jl      taken
+    else
+          jge     taken
     end if
           add     r12, R_SIZE
           t_next
@@ -305,6 +326,8 @@ macro t_binop name, kind, insn {
 
 t_fusable t_binop, t_add, add
 t_fusable t_binop, t_sub, sub
+t_binop t_sub_jn, T_JN, sub             ; a comparison and its signed condition
+t_binop t_sub_jnn, T_JNN, sub
 t_fusable t_binop, t_mul, imul
 t_fusable t_binop, t_and, and
 t_fusable t_binop, t_or,  or
@@ -405,6 +428,24 @@ macro t_jmp_cond name, exits_when {
 t_jmp_cond t_jmp_jz,  je
 t_jmp_cond t_jmp_jnz, jne
 
+        align 16
+t_jn:
+        movzx   ecx, byte [rdx + 8]
+        cmp     qword [r14 + rcx], 0
+        jge     @f
+        mov     eax, [rdx + 12]
+        lea     r12, [r13 + rax]
+@@:     t_next
+
+        align 16
+t_jnn:
+        movzx   ecx, byte [rdx + 8]
+        cmp     qword [r14 + rcx], 0
+        jl      @f
+        mov     eax, [rdx + 12]
+        lea     r12, [r13 + rax]
+@@:     t_next
+
 macro t_shi_r name, kind, unused {
   align 16
   name:
@@ -462,6 +503,63 @@ t_fusable t_memop, t_st,  8, 1, 0
 t_fusable t_memop, t_ldb, 1, 0, 1
 t_fusable t_memop, t_stb, 1, 0, 0
 
+; rd = the word at ra + rb * 8
+macro t_ldx_r name, kind, unused {
+  local translate, inside
+  align 16
+  name:
+          movzx   ecx, byte [rdx + 10]
+          mov     rax, [r14 + rcx]
+          shl     rax, 3
+          movzx   ecx, byte [rdx + 9]
+          add     rax, [r14 + rcx]
+          cmp     rax, [rbx + P_LIM8]     ; room 0, below its end: nothing to translate
+          jae     translate
+  inside:
+          test    al, 7
+          jnz     t_fail_align
+          movzx   r8d, byte [rdx + 8]
+          mov     rax, [r15 + rax]
+          mov     [r14 + r8], rax
+          t_end   kind
+  postpone \{
+  translate:
+          room_package 8, 48, t_fail_mem
+          jmp     inside
+  \}
+}
+t_fusable t_ldx_r, t_ldx
+
+; the word at ra + imm gets rd added, and rd keeps the sum
+macro t_ldadd_r name, kind, unused {
+  local translate, inside
+  align 16
+  name:
+          movsxd  rax, dword [rdx + 12]
+          movzx   ecx, byte [rdx + 9]
+          add     rax, [r14 + rcx]
+          cmp     rax, [rbx + P_LIM8]     ; room 0, below its end: nothing to translate
+          jae     translate
+  inside:
+          test    al, 7
+          jnz     t_fail_align
+          movzx   r8d, byte [rdx + 8]
+          mov     rcx, [r15 + rax]
+          add     rcx, [r14 + r8]
+          mov     [r15 + rax], rcx
+          mov     [r14 + r8], rcx
+          t_end   kind
+  postpone \{                     ; it reads (48) and writes (49): the package once for each
+  translate:
+          mov     r8, rax
+          room_package 8, 48, t_fail_mem
+          mov     rax, r8
+          room_package 8, 49, t_fail_mem
+          jmp     inside
+  \}
+}
+t_fusable t_ldadd_r, t_ldadd
+
         align 16
 t_call:
         cmp     rdi, [rbx + P_RETCAP]
@@ -473,12 +571,30 @@ t_call:
         lea     r12, [r13 + rax]
         t_next
 
+; a jcall whose jret leaves rd at zero: the record after it, with bit 63 and rd in the low 4 bits
+        align 16
+t_call0:
+        cmp     rdi, [rbx + P_RETCAP]
+        jae     .more
+.room:
+        movzx   ecx, byte [rdx + 8]
+        shr     ecx, 3
+        lea     rax, [r12 + rcx]
+        bts     rax, 63
+        mov     [rsi + rdi*8], rax
+        inc     rdi
+        mov     eax, [rdx + 12]
+        lea     r12, [r13 + rax]
+        t_next
+
         align 16
 t_ret:
         test    rdi, rdi
         jz      t_fail_ret
         dec     rdi
         mov     r12, [rsi + rdi*8]
+        test    r12, r12
+        js      .zero                   ; it came from a jcall0
         t_next
 
         align 16
@@ -534,4 +650,17 @@ t_call.more:                            ; the return stack is full: one more pag
         pop     rdx
         jc      t_fail_call
         jmp     t_call.room
+t_call0.more:
+        push    rdx
+        call    ret_grow
+        pop     rdx
+        jc      t_fail_call
+        jmp     t_call0.room
+t_ret.zero:
+        mov     ecx, r12d
+        and     ecx, 15
+        mov     qword [r14 + rcx*8], 0
+        btr     r12, 63
+        and     r12, -R_SIZE
+        t_next
 }

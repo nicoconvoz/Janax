@@ -99,8 +99,7 @@ jldi j1, 0                      ; the foundation and the furniture: by word, how
 jld j11, j1, NV
 jldi j2, 4
 jshl j11, j11, j2
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMFX
 jld j2, j1, NV
 jldi j3, 3
@@ -108,8 +107,7 @@ jshl j2, j2, j3
 jadd j2, j13, j2
 jst j2, j1, ROOMVR
 jldi j11, 640                    ; and every pulse of the same place with another word: its frame and its two fillings
-jcall room                       ; (40 bytes each; a list that grows with what it holds, from 16: it was made for three
-jldi j1, 0                       ; a unit, and held one in twenty)
+jcall0 j1, room                 ; (40 bytes each; a list that grows with what it holds, from 16: it was made for three ; a unit, and held one in twenty)
 jst j13, j1, ROOMHL
 jst j1, j1, NHL
 jldi j2, 16
@@ -118,8 +116,7 @@ jldi j1, 0                      ; the words read where it learns, by number: one
 jld j11, j1, NV                  ; every unit, and held one in eighteen)
 jldi j2, 3
 jshl j11, j11, j2
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMC
 lp_count:
 jldi j1, 0
@@ -170,8 +167,7 @@ jld j2, j1, LPDONE
 jjnz j2, lp_awake
 jldi j1, 0                      ; its three tables, each one growing to what it holds (Capitan: "nothing wasted"; they
 jldi j11, 96                    ; were reserved for every request it could ever hang, twice over: three in four places
-jcall room                      ; empty): where each one is, in a room of their own
-jldi j1, 0
+jcall0 j1, room                 ; empty): where each one is, in a room of their own
 jst j13, j1, ROOMR
 jldi j2, 32
 jadd j2, j13, j2
@@ -181,12 +177,10 @@ jadd j2, j13, j2
 jst j2, j1, ROOMD
 jld j2, j1, ROOMR
 jldi j3, 32
-jcall pl_new
-jldi j1, 0
+jcall0 j1, pl_new
 jld j2, j1, ROOMF
 jldi j3, 16
-jcall pl_new
-jldi j1, 0
+jcall0 j1, pl_new
 jld j2, j1, ROOMD
 jldi j3, 48
 jcall pl_new
@@ -223,8 +217,7 @@ jldi j2, 1
 lp_passes:
 jst j2, j1, PASL
 jwhile j2
-  jcall all_floors
-  jldi j1, 0
+  jcall0 j1, all_floors
   jld j2, j1, PASN
   jldi j3, 1
   jadd j2, j2, j3
@@ -325,8 +318,7 @@ hl_grow:
   jld j11, j1, HLCAP
   jldi j2, 80
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j9, j1, ROOMHL
   jst j13, j1, ROOMHL
   jld j3, j1, NHL
@@ -347,8 +339,7 @@ hl_grow:
   jst j2, j1, HLCAP
   jldi j10, 3
   jadd j11, j9, j1
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j9, j1, PLS
   jld j10, j1, PLS + 8
   jld j11, j1, PLS + 16
@@ -370,11 +361,8 @@ all_floors:
   jwhile j2
     jldi j1, 0
     jld j2, j1, WID
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j4, j1, ROOMC
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j2
     jld j4, j1, TESTING
     jjz j3, af_unread
     jjnz j4, af_next
@@ -410,11 +398,8 @@ letters:
   jadd j2, j2, j3
   jst j2, j1, OCCUR
   jld j2, j1, WID
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j4, j3, 16
   jst j4, j1, LLEN
   jld j3, j3, 8
@@ -429,8 +414,7 @@ letters:
     jldi j3, 1
     jcall hw
     jld j3, j1, LLEN
-    jcall hw
-    jldi j9, 0
+    jcall0 j9, hw
     jld j10, j1, LLEN
     jld j11, j1, LPTR
     jwhile j10
@@ -450,8 +434,7 @@ letters:
     jld j5, j1, WI
     jadd j3, j3, j5
     jldb j3, j3, 0
-    jcall post
-    jldi j1, 0
+    jcall0 j1, post
     jld j2, j1, WI
     jldi j3, 1
     jadd j2, j2, j3
@@ -493,8 +476,7 @@ windows:
     jst j4, j1, LINE
     jjmp wn_next
   wn_word:
-    jcall is_train
-    jldi j1, 0
+    jcall0 j1, is_train
     jld j3, j1, TESTING
     jjz j2, wn_kept
     jjnz j3, wn_next
@@ -533,10 +515,8 @@ windows:
     jld j3, j9, 8
     jcall hw
     jld j3, j9, 16
-    jcall hw
-    jldi j3, 0
-    jcall post
-    jldi j1, 0
+    jcall0 j3, hw
+    jcall0 j1, post
     jld j9, j1, WAT
     jld j3, j9, 24
     jjz j3, wn_next
@@ -556,8 +536,7 @@ windows:
     jld j3, j9, 24
     jcall hw
     jld j3, j9, 8
-    jcall post
-    jldi j1, 0
+    jcall0 j1, post
     jld j9, j1, WAT
     jld j3, j9, 0              ; the frame kept: three words
     jst j3, j1, KW1
@@ -576,8 +555,7 @@ windows:
     jcall hw
     jld j3, j9, 16
     jcall post
-    jcall organ                 ; and the mold it grew itself, if it has one (organo.inc)
-    jldi j1, 0                  ; the door: the pair of the ends without its order, filled by the two between
+    jcall0 j1, organ            ; and the mold it grew itself, if it has one (organo.inc) ; the door: the pair of the ends without its order, filled by the two between
     jldi j2, 3
     jst j2, j1, FLOOR
     jld j9, j1, WAT
@@ -723,8 +701,7 @@ po_req:
   jret
 po_old:
   jst j4, j1, RENT
-  jcall po_meet
-  jldi j1, 0                    ; and the silhouette is perfected: the same move weighs it more, another less, and
+  jcall0 j1, po_meet            ; and the silhouette is perfected: the same move weighs it more, another less, and
   jld j4, j1, RENT              ; when its weight is gone the move that came takes its place (the majority of all,
   jcall po_code                 ; with two numbers: Boyer and Moore)
   jld j2, j4, 8
@@ -823,8 +800,7 @@ pu_k:
   jjz j6, pl_done                ; said before: nothing new
   jld j5, j1, PDK               ; in how many readings this difference was met, k: the pulse weighs 1/k (what is
   jldi j2, TRD                  ; new to this reading teaches the most, even if it is the obvious)
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, pu_born               ; (a difference new: the reading it is born in)
   jld j7, j1, PASN
   jldi j8, 1
@@ -862,8 +838,7 @@ pu_any:
   jld j2, j1, ROOMD
   jld j7, j1, TESTING
   jjnz j7, pu_look
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jst j6, j1, DNEW
   jjmp pu_got
 pu_look:
@@ -876,26 +851,21 @@ pu_got:
   jshl j6, j6, j7
   jld j7, j1, TESTING
   jjz j7, pl_awake
-  jld j7, j6, TPULC
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j6, TPULC
+  jldi j7, 1
+  jldadd j7, j6, TPULC
   jld j7, j4, 40                ; a piece: it saves bits
   jldi j8, 63
   jsar j8, j7, j8
   jjnz j8, pl_blind
   jjz j7, pl_blind
-  jld j7, j6, TPCEC
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j6, TPCEC
+  jldi j7, 1
+  jldadd j7, j6, TPCEC
 pl_blind:                       ; the blind: the waiting filling against the one that arrived before, on this floor
   jld j7, j1, RC                ; (first: two associates of one concept?)
   jldi j8, 3
   jsub j7, j7, j8
   jjnz j7, pb_go
-  jcall cp_same
-  jldi j1, 0
+  jcall0 j1, cp_same
   jld j7, j1, TCOC
   jadd j7, j7, j3
   jst j7, j1, TCOC
@@ -921,8 +891,7 @@ pb_go:
   jsub j7, j7, j8
   jjnz j7, pb_key
   jst j5, j1, PDK
-  jcall cp_same
-  jldi j1, 0
+  jcall0 j1, cp_same
   jld j7, j1, TCOB
   jadd j7, j7, j3
   jst j7, j1, TCOB
@@ -952,15 +921,11 @@ pl_awake:
   jst j7, j4, 16
   jld j7, j1, DKT
   jst j7, j4, 24
-  jld j7, j6, NDIFC
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j6, NDIFC
+  jldi j7, 1
+  jldadd j7, j6, NDIFC
 pl_count:
-  jld j7, j4, 32
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j4, 32
+  jldi j7, 1
+  jldadd j7, j4, 32
   jld j7, j4, 40                ; (and weighed: until the judge, its bits' place holds its pairs weighed)
   jld j8, j1, PW
   jadd j7, j7, j8
@@ -1007,10 +972,8 @@ pl_fill:
   jld j5, j1, FLOOR
   jldi j7, 3
   jshl j5, j5, j7
-  jld j7, j5, NFL
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j5, NFL
+  jldi j7, 1
+  jldadd j7, j5, NFL
   jld j7, j5, NFLW
   jld j8, j1, PW
   jadd j7, j7, j8
@@ -1060,8 +1023,7 @@ dm_ordered:
   jshl j6, j5, j6
   jor j6, j6, j4
   jst j6, j1, DKT
-  jcall d_cat_of
-  jldi j1, 0
+  jcall0 j1, d_cat_of
   jst j5, j1, CAT
   jld j2, j1, FNVO
   jld j3, j1, DKT
@@ -1095,8 +1057,7 @@ ff_key:
 
 ; The filling j2 of the floor FLOOR took part in one more pulse. Uses j1-j8.
 f_bump:
-  jcall f_find
-  jldi j1, 0                    ; (and weighed)
+  jcall0 j1, f_find             ; (and weighed)
   jst j4, j1, FBP
   jldi j2, TFW
   jcall pl_take
@@ -1104,18 +1065,15 @@ f_bump:
   jld j7, j1, PW
   jadd j6, j6, j7
   jst j6, j4, 8
-  jcall tr_add                  ; (and in this reading)
-  jldi j1, 0
+  jcall0 j1, tr_add             ; (and in this reading)
   jld j4, j1, FBP
   jld j6, j4, 8
   jjnz j6, fb_old
   jld j5, j1, FLOOR
   jldi j7, 3
   jshl j5, j5, j7
-  jld j7, j5, UFL
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j5, UFL
+  jldi j7, 1
+  jldadd j7, j5, UFL
 fb_old:
   jldi j8, 1
   jadd j6, j6, j8
@@ -1261,10 +1219,8 @@ ju_pac:
     jcall d_cat_of
     jldi j3, 3
     jshl j5, j5, j3
-    jld j3, j5, NADC
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j5, NADC
+    jldi j3, 1
+    jldadd j3, j5, NADC
     jld j4, j1, GE              ; and the bits its kind's pieces save
     jld j4, j4, 40
     jld j3, j5, SAVC
@@ -1330,8 +1286,7 @@ concepts:
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMUF
 cp_room:
   jldi j1, 0
@@ -1382,8 +1337,7 @@ cp_room:
     jjnz j6, cp_next
     jld j2, j1, DLO
     jld j3, j1, DHI
-    jcall cp_best
-    jldi j1, 0
+    jcall0 j1, cp_best
     jld j2, j1, DHI
     jld j3, j1, DLO
     jcall cp_best
@@ -1558,8 +1512,7 @@ dp_switch:
   jsub j6, j5, j6
   jjnz j6, dp_mates
   jld j2, j1, DHI               ; interruptores: the word taken out, and if it is the switch distilled
-  jcall putword
-  jldi j1, 0
+  jcall0 j1, putword
   jld j2, j1, DHI
   jcall n_flags
   jldi j4, 1
@@ -1585,11 +1538,9 @@ dp_door:
   jldi j2, 47
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, DHI
-  jcall putpair
-  jldi j1, 0
+  jcall0 j1, putpair
   jld j2, j1, DKT
   jldi j3, 8
   jshr j2, j2, j3
@@ -1628,8 +1579,7 @@ putletter:
   jjnz j1, putch
   jst j2, j1, RENT
   jldi j2, 0C3h
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, RENT
   jjmp putch
 

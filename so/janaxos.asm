@@ -38,7 +38,7 @@ RET_DEPTH   = 4096              ; must match the interpreter
 ; The largest room: its position is the low half of an address (Capitan: "two of 32 make one of 64"). A room
 ; reserves only its own pages and one page of wall (ambientes.inc): no other ceiling than the machine's memory.
 ROOM_MAX    = 1 shl 32
-OP_COUNT    = 18h
+OP_COUNT    = 1Dh
 FOREVER     = 7FFFFFFFFFFFFFFFh
 
 ; process (cabin) layout
@@ -488,19 +488,34 @@ section '.data' data readable writeable
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
             dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, op_sys, op_jhost
+            dq op_jn, op_jnn, op_ldadd, op_ldx, op_call0
   ttable    dq t_halt, t_ldi, t_add, t_sub, t_mul, t_div, t_shl, t_shr
             dq t_sar, t_and, t_or, t_xor, t_jmp, t_jz, t_jnz, t_shi
             dq t_ld, t_st, t_ldb, t_stb, t_call, t_ret, t_sys, t_jhost
+            dq t_jn, t_jnn, t_ldadd, t_ldx, t_call0
   assert ($ - ttable) = OP_COUNT * 8
   ; the same instruction fused with the jjz / jjnz after it (0: it cannot be fused)
   ftable_jz  dq 0, t_ldi_jz, t_add_jz, t_sub_jz, t_mul_jz, t_div_jz, t_shl_jz, t_shr_jz
              dq t_sar_jz, t_and_jz, t_or_jz, t_xor_jz, 0, 0, 0, t_shi_jz
              dq t_ld_jz, t_st_jz, t_ldb_jz, t_stb_jz, 0, 0, 0, 0
+             dq 0, 0, t_ldadd_jz, t_ldx_jz, 0
   assert ($ - ftable_jz) = OP_COUNT * 8
   ftable_jnz dq 0, t_ldi_jnz, t_add_jnz, t_sub_jnz, t_mul_jnz, t_div_jnz, t_shl_jnz, t_shr_jnz
              dq t_sar_jnz, t_and_jnz, t_or_jnz, t_xor_jnz, 0, 0, 0, t_shi_jnz
              dq t_ld_jnz, t_st_jnz, t_ldb_jnz, t_stb_jnz, 0, 0, 0, 0
+             dq 0, 0, t_ldadd_jnz, t_ldx_jnz, 0
   assert ($ - ftable_jnz) = OP_COUNT * 8
+  ; the same with the jjn / jjnn after it: only jsub, the comparison a signed condition asks for
+  ftable_jn  dq 0, 0, 0, t_sub_jn, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0
+  assert ($ - ftable_jn) = OP_COUNT * 8
+  ftable_jnn dq 0, 0, 0, t_sub_jnn, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0, 0, 0, 0
+             dq 0, 0, 0, 0, 0
+  assert ($ - ftable_jnn) = OP_COUNT * 8
 
   ; engine: 2 = the routines translated to native code (nativo.inc, the default), 1 = the routines (each
   ; program decoded once), 0 = the interpreter, kept as the reference. JANAX_MOTOR names it; an unknown name
@@ -1868,6 +1883,22 @@ op_jnz:
         jmp     next
 
         align 16
+op_jn:
+        cmp     qword [r14 + r11*8], 0
+        jge     next
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+        align 16
+op_jnn:
+        cmp     qword [r14 + r11*8], 0
+        jl      next
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+        align 16
 op_shi:
         mov     rax, [r14 + r11*8]
         shl     rax, 16
@@ -1915,6 +1946,52 @@ memop op_st,  8, 1, 0, <mov [r15 + rax], rcx>
 memop op_ldb, 1, 0, 1, <movzx eax, byte [r15 + rax]>
 memop op_stb, 1, 0, 0, <mov [r15 + rax], cl>
 
+; rd = the word at ra + rb * 8
+        align 16
+op_ldx:
+        mov     rax, [r14 + r10*8]
+        shl     rax, 3
+        add     rax, [r14 + r8*8]
+        cmp     rax, [rbx + P_LIM8]     ; room 0, below its end: nothing to translate
+        jae     .translate
+.inside:
+        test    al, 7
+        jnz     fail_align
+        mov     rax, [r15 + rax]
+        mov     [r14 + r11*8], rax
+        jmp     next
+
+postpone {
+op_ldx.translate:
+        room_package 8, 48, fail_mem
+        jmp     op_ldx.inside
+}
+
+; the word at ra + imm gets rd added, and rd keeps the sum
+        align 16
+op_ldadd:
+        movsx   rax, r9w
+        add     rax, [r14 + r8*8]
+        cmp     rax, [rbx + P_LIM8]     ; room 0, below its end: nothing to translate
+        jae     .translate
+.inside:
+        test    al, 7
+        jnz     fail_align
+        mov     rcx, [r15 + rax]
+        add     rcx, [r14 + r11*8]
+        mov     [r15 + rax], rcx
+        mov     [r14 + r11*8], rcx
+        jmp     next
+
+postpone {
+op_ldadd.translate:                     ; it reads (48) and writes (49): the package once for each
+        mov     r10, rax
+        room_package 8, 48, fail_mem
+        mov     rax, r10
+        room_package 8, 49, fail_mem
+        jmp     op_ldadd.inside
+}
+
         align 16
 op_call:
         cmp     rdi, [rbx + P_RETCAP]
@@ -1935,13 +2012,50 @@ op_call.more:
         jmp     op_call.room
 }
 
+; a jcall whose jret leaves rd at zero: the return word carries bit 63 and rd in bits 32..35
+        align 16
+op_call0:
+        cmp     rdi, [rbx + P_RETCAP]
+        jae     .more
+.room:
+        mov     rax, r11
+        shl     rax, 32
+        or      rax, r12
+        bts     rax, 63
+        mov     [rsi + rdi*8], rax
+        inc     rdi
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+postpone {
+op_call0.more:
+        push    r9 r11
+        call    ret_grow
+        pop     r11 r9
+        jc      fail_call
+        jmp     op_call0.room
+}
+
         align 16
 op_ret:
         test    rdi, rdi
         jz      fail_ret
         dec     rdi
         mov     r12, [rsi + rdi*8]
+        test    r12, r12
+        js      .zero                   ; it came from a jcall0
         jmp     next
+
+postpone {
+op_ret.zero:
+        mov     rax, r12
+        shr     rax, 32
+        and     eax, 15
+        mov     qword [r14 + rax*8], 0
+        mov     r12d, r12d              ; the pc, below
+        jmp     next
+}
 
         align 16
 op_jhost:                                ; the window to the host (anfitrion.inc)

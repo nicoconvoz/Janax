@@ -70,8 +70,7 @@ jst j2, j2, HAVE
 
 jldi j15, 1                     ; it listens until the end
 jwhile j15
-  jcall hear                    ; the order, as a word (sleeping until it comes, costing nothing)
-  jldi j13, 0
+  jcall0 j13, hear              ; the order, as a word (sleeping until it comes, costing nothing)
   jld j2, j13, MAIL + 8
   jldi j1, 0FFh
   jand j1, j2, j1
@@ -98,8 +97,7 @@ jwhile j15
   jst j4, j13, SLEN
   jldi j5, 0
   jwhile j4
-    jcall hear
-    jldi j13, 0
+    jcall0 j13, hear
     jld j2, j13, MAIL + 8
     jst j2, j5, SONG
     jldi j3, 8
@@ -117,8 +115,7 @@ c_how:
   jcall how
   jjmp c_next
 c_end:
-  jcall fingerprint             ; the end: its fingerprint, as one word
-  jldi j13, 0
+  jcall0 j13, fingerprint       ; the end: its fingerprint, as one word
   jst j0, j13, WORD
   jcall say
   jhalt
@@ -217,14 +214,12 @@ born:
   jadd j12, j11, j1
 b_say:
   jst j12, j1, WORD
-  jcall say
-  jldi j1, 0
+  jcall0 j1, say
   jld j12, j1, WORD
   jjz j12, b_kept
   jcall hear                    ; she says it is here
   jldi j10, 25
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, ROOMB
   jld j2, j1, NEED
   jst j2, j1, HAVE
@@ -334,8 +329,7 @@ b_kept:
   jldi j13, 0
   jld j2, j13, PP
   jwhile j2
-    jcall total
-    jldi j13, 0
+    jcall0 j13, total
     jld j3, j13, ABORN
     jldi j4, 3
     jshl j4, j1, j4
@@ -385,8 +379,7 @@ tt_done:
 ; what it says in all is not what it said when born, each weight becomes w * born / now (rounded, at most 255), and
 ; what is left over goes one by one to the weights that can take it, in order. Uses j3-j14 (keeps j1, j2).
 conserve:
-  jcall total
-  jldi j13, 0
+  jcall0 j13, total
   jld j5, j13, ABORN
   jldi j8, 3
   jshl j8, j1, j8
@@ -479,8 +472,7 @@ how:
   jldi j13, 0
   jld j2, j13, PP
   jwhile j2
-    jcall total
-    jldi j13, 0
+    jcall0 j13, total
     jld j5, j13, ABORN
     jldi j8, 3
     jshl j8, j1, j8
@@ -525,8 +517,7 @@ how:
   jst j9, j13, WORD
   jst j10, j13, HW1
   jst j11, j13, HW2
-  jcall say
-  jldi j13, 0
+  jcall0 j13, say
   jld j2, j13, HW1
   jldi j3, 32
   jshl j2, j2, j3
@@ -620,22 +611,19 @@ sing:
   jld j1, j13, AFT
   jld j2, j13, PP
   jldi j3, 0FFFFh
-  jcall fillq
-  jldi j13, 0                   ; no wave yet
+  jcall0 j13, fillq             ; no wave yet
   jld j2, j13, PP
   jld j3, j13, SLEN
   jmul j2, j2, j3
   jld j1, j13, ANOW
   jldi j3, 0
-  jcall fillb
-  jldi j13, 0
+  jcall0 j13, fillb
   jld j2, j13, PP
   jld j3, j13, SLEN
   jmul j2, j2, j3
   jld j1, j13, AWOKE
   jldi j3, 0
-  jcall fillb
-  jldi j13, 0
+  jcall0 j13, fillb
   jst j13, j13, TCUR
   jcall press
 s_step:
@@ -715,18 +703,15 @@ s_go:
   jld j1, j13, AINP
   jld j2, j13, PP
   jldi j3, 0
-  jcall fillq
-  jldi j13, 0
+  jcall0 j13, fillq
   jld j1, j13, AMASK
   jld j2, j13, PP
   jldi j3, 0
-  jcall fillb
-  jldi j13, 0
+  jcall0 j13, fillb
   jld j1, j13, AORP
   jld j2, j13, PP
   jldi j3, 0
-  jcall fillb
-  jldi j15, 0                   ; each wave pushes: its awake pieces (not the top face) tell their neighbors that did
+  jcall0 j15, fillb             ; each wave pushes: its awake pieces (not the top face) tell their neighbors that did
 jwhile j1
   jld j1, j13, PP
   jmul j1, j1, j15
@@ -740,8 +725,7 @@ jwhile j1
   jadd j1, j2, j13
   jld j2, j13, PP
   jldi j3, 0
-  jcall fillb
-  jldi j13, 0                   ; (fillb took j1-j3: again)
+  jcall0 j13, fillb             ; (fillb took j1-j3: again)
   jld j1, j13, PP
   jmul j1, j1, j15
   jld j3, j13, ANOW
@@ -824,11 +808,8 @@ w_done:
     jadd j5, j5, j1
     jldb j5, j5, 0
     jjz j5, u_store
-    jldi j5, 3
-    jshl j5, j1, j5
     jld j6, j13, AINP
-    jadd j5, j5, j6
-    jld j7, j5, 0
+    jldx j7, j6, j1
     jldi j8, 100
     jsub j7, j7, j8
     jldi j8, 63
@@ -1006,8 +987,7 @@ answer:
   jldi j13, 0
   jld j1, j13, TCUR
   jst j1, j13, WORD
-  jcall say
-  jldi j13, 0
+  jcall0 j13, say
   jld j3, j13, TCUR
   jld j4, j13, N2
   jmul j3, j3, j4               ; how many bits
@@ -1027,8 +1007,7 @@ answer:
     jjnz j7, a_bit
     jldi j13, 0
     jst j5, j13, WORD
-    jcall say
-    jldi j5, 0
+    jcall0 j5, say
     jldi j6, 0
   a_bit:
   jwend

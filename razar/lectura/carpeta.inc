@@ -44,21 +44,18 @@ jwhilez j2
   jjz j3, pls_done
   jld j11, j1, PZLST            ; maybe cut: twice the room, listed again
   jldi j10, 3
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, PZLSC
   jadd j2, j2, j2
   jst j2, j1, PZLSC
 jwcheck
   jld j11, j1, PZLSC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZLST
   jldi j10, 14
   jadd j11, j13, j1
   jld j12, j1, PZLSC
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, PZLSTN
   jldi j2, 63
   jsar j2, j13, j2
@@ -72,8 +69,7 @@ pls_done:
 pz_file:
   jldi j1, 0
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, -1
   jst j2, j1, PZFRN
   jldi j2, 63
@@ -83,8 +79,7 @@ pz_file:
   jst j1, j1, PZFRN
   jldi j11, 4096
   jst j11, j1, PZFRC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZFR
 jwhilez j2
   jld j2, j1, PZFRN
@@ -95,8 +90,7 @@ jwhilez j2
   jjnz j3, pf_read
   jld j11, j1, PZFRC            ; full: a room twice as big, what it holds copied, the old one given back
   jadd j11, j11, j11
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, PZFR
   jadd j5, j13, j1
   jld j6, j1, PZFRN
@@ -114,8 +108,7 @@ jwhilez j2
   jadd j2, j2, j2
   jst j2, j1, PZFRC
   jldi j10, 3
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
 jwcheck
 pf_read:
   jld j10, j1, PZFH
@@ -128,8 +121,7 @@ pf_read:
   jadd j11, j11, j2
   jld j12, j1, PZFRC
   jsub j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1
   jsub j2, j13, j2
   jldi j3, 63

@@ -58,6 +58,11 @@ entry 'jcall',   14h, F_T
 entry 'jret',    15h, F_NONE
 entry 'jsys',    16h, F_RR
 entry 'jhost',   17h, F_RR
+entry 'jjn',     18h, F_RT
+entry 'jjnn',    19h, F_RT
+entry 'jldadd',  1Ah, F_RRI
+entry 'jldx',    1Bh, F_RRR
+entry 'jcall0',  1Ch, F_RT
 entry 'jwhile',  0Eh, F_WHILE
 entry 'jwhilez', 0Dh, F_WHILE
 entry 'jwend',   0,   F_WEND

@@ -1256,3 +1256,18 @@ de avisarles. Una regla tiene que valer en cualquier vista. Las carpetas conocid
 en las dos. **Probado en el peor caso:** el vigía lanzado desde adentro del paquete, vigilando `C:\Users\Nico`, ignoró un
 texto en `AppData` y comió uno en una carpeta del usuario; en 150 s no tocó nada más.
 
+
+## Cinco instrucciones nuevas en los tres motores (Capitán, 2026-11-11)
+
+`jjn`/`jjnn` (18h-19h), `jldadd` (1Ah), `jldx` (1Bh) y `jcall0` (1Ch); la definición está en
+`documentacion/idioma/especificacion-v0.md`.
+
+| Motor | Cómo las corre |
+|---|---|
+| Intérprete | `op_jn`, `op_jnn`, `op_ldadd`, `op_ldx`, `op_call0`. La vuelta de un `jcall0` se marca en la pila con el bit 63 y el registro en los bits 32 a 35; `op_ret` lo pone en cero al ver la marca. |
+| Rutinas | `t_jn`, `t_jnn`, `t_ldadd`, `t_ldx`, `t_call0`. La pila guarda direcciones de registro alineadas a 16, así que la marca es el bit 63 y el registro va en los 4 bits bajos. `jsub` seguido de `jjn`/`jjnn` se funde (`ftable_jn`, `ftable_jnn`), y cuenta como dos instrucciones. |
+| Nativo | `jjn`/`jjnn` y `jcall0` tienen código nativo; el `jret` nativo revisa la marca. **`jldadd` y `jldx` todavía van por su rutina**: son exactas pero más lentas que un `jld` nativo, y es lo próximo que conviene. |
+
+Las tres dan el mismo código de salida, el mismo `j0` y el mismo `t=` en cada prueba, incluso con cinco procesos turnándose.
+Ojo con las pruebas de memoria del escalón 0 (46, 47, 49, 50): en el kernel un proceso nace sin memoria, y sin un
+`jfirst` adelante terminan con código 5 en la primera lectura.

@@ -81,22 +81,18 @@ include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
 jldi j0, 0                      ; the fingerprint
-jcall read_book
-jldi j1, 0
+jcall0 j1, read_book
 jld j11, j1, NV                 ; its rooms: the words read (one place each word, by number), the pairs
 jldi j2, 3
 jshl j11, j11, j2
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMC
 jldi j11, 32                    ; (the pairs grow to what they hold: Capitan, "nothing wasted"; they were made for
-jcall room                      ; twice the units, and held one in nine)
-jldi j1, 0
+jcall0 j1, room                 ; twice the units, and held one in nine)
 jst j13, j1, ROOMB
 jadd j2, j13, j1
 jldi j3, 16
-jcall pl_new
-jldi j1, 0
+jcall0 j1, pl_new
 
 jldi j1, 0                      ; what it learns, from the renglones not kept apart: the pairs and the words read
 jst j1, j1, LINE
@@ -129,8 +125,7 @@ tr_same:
   jldi j1, 0
   jld j2, j1, CP
   jld j3, j1, CW
-  jcall bg_add
-  jldi j1, 0
+  jcall0 j1, bg_add
   jld j3, j1, CW
   jjz j3, tr_next
   jldi j4, 3
@@ -160,11 +155,8 @@ jld j8, j1, NV
 jldi j2, 1
 jsub j8, j8, j2
 jwhile j8
-  jldi j2, 3
-  jshl j2, j9, j2
   jld j3, j1, ROOMC
-  jadd j2, j2, j3
-  jld j2, j2, 0
+  jldx j2, j3, j9
   jsub j3, j6, j2
   jldi j4, 63
   jsar j3, j3, j4
@@ -185,11 +177,8 @@ jld j8, j1, NV
 jldi j2, 1
 jsub j8, j8, j2
 jwhile j8
-  jldi j2, 3
-  jshl j2, j9, j2
   jld j3, j1, ROOMC
-  jadd j2, j2, j3
-  jld j2, j2, 0
+  jldx j2, j3, j9
   jadd j6, j6, j2
   jldi j2, 1
   jadd j9, j9, j2
@@ -206,22 +195,19 @@ jldi j3, 1
 jadd j11, j2, j3
 jldi j3, 3
 jshl j11, j11, j3
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMS
 jld j11, j1, NV
 jldi j3, 3
 jshl j11, j11, j3
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMU
 jld j11, j1, NB
 jldi j3, 1
 jadd j11, j11, j3
 jldi j3, 4
 jshl j11, j11, j3
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOML
 jldi j9, 0                      ; how many after each p, at ROOMS[p + 1]
 jld j8, j1, ROOMB              ; (every place of its table)
@@ -324,16 +310,11 @@ te_word:
   jcall is_train
   jjnz j2, te_next
   jldi j1, 0
-  jld j2, j1, TESTS
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, TESTS
+  jldi j2, 1
+  jldadd j2, j1, TESTS
   jld j2, j1, CW
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMC
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jjnz j3, te_seen
   jld j3, j1, OOV
   jldi j4, 1
@@ -348,13 +329,11 @@ te_seen:
   jadd j3, j3, j4
   jst j3, j1, EHIT
 te_place:
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j12, j1, LBEST
   jcall mix
   jld j12, j1, BBEST
-  jcall mix
-  jldi j1, 0
+  jcall0 j1, mix
   jld j2, j1, CW
   jld j3, j1, LBEST
   jjnz j3, te_lsaid
@@ -371,8 +350,7 @@ te_lsaid:
   jadd j3, j3, j4
   jst j3, j1, LHIT
 te_both:
-  jcall lb_count                ; the two-part code of the covered word
-  jldi j1, 0
+  jcall0 j1, lb_count           ; the two-part code of the covered word
   jld j2, j1, CW
   jld j3, j1, BBEST
   jjnz j3, te_bsaid
@@ -478,13 +456,10 @@ bg_key:
 bg_add:
   jcall bg_key
   jld j2, j1, ROOMB
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, ba_old
-  jld j6, j1, NB
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NB
+  jldi j6, 1
+  jldadd j6, j1, NB
 ba_old:
   jld j6, j4, 8
   jldi j7, 1
@@ -572,11 +547,8 @@ guess:
     jld j7, j1, GC1
     jmul j6, j6, j7
     jld j2, j1, GX
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j7, j1, ROOMC
-    jadd j3, j3, j7
-    jld j7, j3, 0
+    jldx j7, j7, j2
     jld j3, j1, BDEN
     jmul j3, j6, j3
     jld j4, j1, BNUM
@@ -617,8 +589,7 @@ puthits:
   jldi j2, 32
   jcall putch
   jldi j2, 40
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, GX
   jldi j3, 1000
   jmul j2, j2, j3
@@ -629,8 +600,7 @@ puthits:
   jdiv j2, j2, j3
   jcall putnum
   jldi j2, 44
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, GX
   jldi j3, 10
   jdiv j4, j2, j3
@@ -650,11 +620,8 @@ puthits:
 lb_count:
   jldi j1, 0
   jld j2, j1, CW
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMC
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 1
   jadd j2, j2, j3
   jcall lg16
@@ -667,10 +634,8 @@ lb_count:
   jld j5, j1, BBEST
   jld j6, j1, CW
   jjnz j5, lb_said
-  jld j4, j1, BS                ; silent: it pays the word; forced, the eco says it
-  jldi j7, 1
-  jadd j4, j4, j7
-  jst j4, j1, BS
+  jldi j4, 1                    ; silent: it pays the word; forced, the eco says it
+  jldadd j4, j1, BS
   jld j4, j1, SBM
   jadd j4, j4, j3
   jst j4, j1, SBM
@@ -681,10 +646,8 @@ lb_count:
 lb_said:
   jsub j5, j5, j6
   jjnz j5, lb_wrong
-  jld j4, j1, BR
-  jldi j7, 1
-  jadd j4, j4, j7
-  jst j4, j1, BR
+  jldi j4, 1
+  jldadd j4, j1, BR
 lb_fright:
   jld j4, j1, FR
   jldi j7, 1
@@ -692,10 +655,8 @@ lb_fright:
   jst j4, j1, FR
   jret
 lb_wrong:
-  jld j4, j1, BW
-  jldi j7, 1
-  jadd j4, j4, j7
-  jst j4, j1, BW
+  jldi j4, 1
+  jldadd j4, j1, BW
   jld j4, j1, SBM
   jadd j4, j4, j3
   jst j4, j1, SBM
@@ -738,8 +699,7 @@ lb_report:
   jld j2, j1, SALL
   jld j3, j1, TESTS
   jdiv j2, j2, j3
-  jcall putq16
-  jldi j1, 0                    ; always saying: right or wrong
+  jcall0 j1, putq16             ; always saying: right or wrong
   jld j2, j1, SFM
   jld j3, j1, LGN
   jldi j4, 1
@@ -757,8 +717,7 @@ lb_report:
   jcall mix
   jld j3, j1, TESTS
   jdiv j2, j2, j3
-  jcall putq16
-  jldi j1, 0                    ; silent when it has nothing: right, wrong or silent
+  jcall0 j1, putq16             ; silent when it has nothing: right, wrong or silent
   jld j2, j1, SBM
   jld j3, j1, LGN
   jadd j2, j2, j3

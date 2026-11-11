@@ -5,12 +5,12 @@
 ; registers, r15 data, rsi return stack, rdi depth, rbp budget, rbx process), so it runs inside run_routines
 ; as it is:
 ;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory in any
-;    room run in native code. Room 0 is r15, below its limit; another room is found in the cartel (O(i)),
-;    with its size. How a box is treated (read only) the processor keeps (ambientes.inc): when it refuses,
+;    room run in native code (jldadd and jldx keep their routines). Room 0 is r15, below its limit; another
+;    room is found in the cartel (O(i)), with its size. How a box is treated (read only) the processor keeps (ambientes.inc): when it refuses,
 ;    native_fault sends the word on by its T(i).
 ;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, a misaligned access, a room not in the
-;    cartel, a call that needs more return stack, a jret without jcall) jumps to its own routine, which goes
-;    on through the table: back to native.
+;    cartel, a call that needs more return stack, a jret without jcall, a jret back to a jcall0) jumps to its
+;    own routine, which goes on through the table: back to native.
 ;  - The 4 Janax registers the native blocks use the most live also in r8-r11; every write goes to memory
 ;    too, so the routines always find them there, and whatever comes back from the table reads them (R).
 ;
@@ -187,6 +187,12 @@ native_runs:
         je      .set
         cmp     r8d, NK_RET
         je      .set
+        cmp     r8d, NK_JN
+        je      .set
+        cmp     r8d, NK_JNN
+        je      .set
+        cmp     r8d, NK_CALL0
+        je      .set
         lea     r9, [rbx + 1]
         cmp     r9, r12
         jae     .set                    ; the last word
@@ -282,7 +288,7 @@ native_cache:
 .picked:
         ret
 ; per native kind, the fields its block reads or writes: 1 rd, 2 ra, 4 rb
-native_uses db 0, 1, 7, 7, 0, 1, 1, 1, 3, 0, 0
+native_uses db 0, 1, 7, 7, 0, 1, 1, 1, 3, 0, 0, 1, 1, 0
 
 ; The cold area, for every word and the final record (see the header).
 native_cold:
@@ -540,12 +546,17 @@ NK_SHI   = 7
 NK_MEM   = 8
 NK_CALL  = 9
 NK_RET   = 10
+NK_JN    = 11
+NK_JNN   = 12
+NK_CALL0 = 13
 native_kind db 0, NK_LDI, NK_BIN, NK_BIN, NK_BIN, 0, NK_SHIFT, NK_SHIFT
             db NK_SHIFT, NK_BIN, NK_BIN, NK_BIN, NK_JMP, NK_JZ, NK_JNZ, NK_SHI
             db NK_MEM, NK_MEM, NK_MEM, NK_MEM, NK_CALL, NK_RET, 0, 0
+            db NK_JN, NK_JNN, 0, 0, NK_CALL0
 assert $ - native_kind = OP_COUNT
 align 8
 native_emitters dq nb_ldi, nb_bin, nb_shift, nb_jmp, nb_jz, nb_jnz, nb_shi, nb_mem, nb_call, nb_ret
+                dq nb_jn, nb_jnn, nb_call0
 ; the opcode byte of "op rax, r/m64" per binary opcode (0 = imul, which takes two)
 nb_bin_op   db 0, 0, 03h, 2Bh, 0, 0, 0, 0, 0, 23h, 0Bh, 33h
 nb_shift_op db 0E0h, 0E8h, 0F8h         ; the ModRM of shl, shr, sar rax, cl
@@ -614,6 +625,12 @@ nb_jz:                                  ; test rd / je the target's entry / on t
         jmp     nb_cond
 nb_jnz:                                 ; the same with jne
         mov     dl, 85h
+        jmp     nb_cond
+nb_jn:                                  ; the same with js
+        mov     dl, 88h
+        jmp     nb_cond
+nb_jnn:                                 ; the same with jns
+        mov     dl, 89h
 nb_cond:
         mov     cl, [r8 + 8]            ; test rK, rK, or cmp qword [r14 + rd], 0
         call    nb_cached
@@ -692,28 +709,40 @@ nb_back:
         ret
 
 nb_call:                                ; room in the return stack, the record after it there, then the jump
+        lea     rdx, [r8 + R_SIZE]      ; the return word: the record after it
+nb_call_word:
         emit    48h, 3Bh, 0BBh          ; cmp rdi, [rbx + P_RETCAP] / jae F(i): one more page, or past the limit
         mov     eax, P_RETCAP
         stosd
         emit    0Fh, 83h
         lea     rax, [r9 + C_F]
         call    nc_rel
-        emit    48h, 0B8h               ; mov rax, the record after it
-        lea     rax, [r8 + R_SIZE]
+        emit    48h, 0B8h               ; mov rax, the return word
+        mov     rax, rdx
         stosq
         emit    48h, 89h, 04h, 0FEh     ; mov [rsi + rdi*8], rax
         emit    48h, 0FFh, 0C7h         ; inc rdi
         emit    0E9h                    ; jmp to the target's entry
         call    nb_to_target
         ret
+nb_call0:                               ; the same with the return word of a jcall0: bit 63 and rd (rutinas.inc)
+        movzx   edx, byte [r8 + 8]
+        shr     edx, 3
+        lea     rdx, [r8 + rdx + R_SIZE]
+        bts     rdx, 63
+        jmp     nb_call_word
 
 nb_ret:                                 ; the record it comes back to, then straight to that word's entry
         emit    48h, 85h, 0FFh          ; test rdi, rdi / jz F(i): jret without jcall
         emit    0Fh, 84h
         lea     rax, [r9 + C_F]
         call    nc_rel
+        emit    48h, 8Bh, 54h, 0FEh, 0F8h   ; mov rdx, [rsi + rdi*8 - 8] / test rdx, rdx / js F(i): back to a
+        emit    48h, 85h, 0D2h              ;   jcall0, its routine clears rd (and the cache registers read it)
+        emit    0Fh, 88h
+        lea     rax, [r9 + C_F]
+        call    nc_rel
         emit    48h, 0FFh, 0CFh         ; dec rdi
-        emit    48h, 8Bh, 14h, 0FEh     ; mov rdx, [rsi + rdi*8]
         emit    48h, 0B8h               ; mov rax, -table / add rax, rdx: its word * 16
         mov     rax, r13
         neg     rax

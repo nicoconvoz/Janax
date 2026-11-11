@@ -71,8 +71,7 @@ jldi j1, 5
 jor j10, j10, j1
 jldi j11, NSV
 jldi j12, 32
-jcall ask
-jldi j13, 0                     ; its sizes
+jcall0 j13, ask                 ; its sizes
 jld j1, j13, NSV
 jmul j2, j1, j1
 jst j2, j13, NNV
@@ -86,8 +85,7 @@ jst j4, j13, GSZ
 jld j5, j13, KV                 ; what it learned: a room of k * GSZ bytes (request 2)
 jmul j11, j4, j5
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, RBASE
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -101,8 +99,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 jld j2, j1, NACEV               ; the school is born: order 2, side n, the seed
 jldi j3, 16
@@ -114,17 +111,14 @@ jor j2, j2, j3
 jldi j3, 2
 jor j2, j2, j3
 jst j2, j1, WORD
-jcall say
+jcall0 j7, say                  ; the line of hits: "aciertos cada 50 vueltas (el azar es " 100 / k "%):"
 
-jldi j7, 0                      ; the line of hits: "aciertos cada 50 vueltas (el azar es " 100 / k "%):"
-jcall f1
-jldi j1, 0
+jcall0 j1, f1
 jldi j2, 100
 jld j3, j1, KV
 jdiv j2, j2, j3
 jcall putnum
-jcall f2
-jldi j1, 0
+jcall0 j1, f2
 jst j7, j1, POS
 jst j1, j1, OKC
 
@@ -152,8 +146,7 @@ jwhile j15
   jsub j2, j2, j4
   jst j2, j1, THING             ; what it means, in turn
   jldi j3, 1                    ; the order: a signal, with its 3 pieces
-  jcall order
-  jldi j1, 0                    ; how many pieces the answer has
+  jcall0 j1, order              ; how many pieces the answer has
   jld j2, j1, ANS
   jldi j3, 0
   jld j5, j1, NNV
@@ -230,8 +223,7 @@ jwhile j15
   jldi j6, 63
   jsar j3, j2, j6
   jjz j3, guessed               ; something it learned helps
-  jcall rnd                     ; nothing yet: a guess, its dice mod k
-  jldi j1, 0
+  jcall0 j1, rnd                ; nothing yet: a guess, its dice mod k
   jld j6, j1, KV
   jdiv j2, j13, j6
   jmul j2, j2, j6
@@ -350,8 +342,7 @@ jadd j12, j4, j5
 jcall ask
 
 jldi j3, 3                      ; the end: the school's own fingerprint, mixed in
-jcall order
-jldi j1, 0
+jcall0 j1, order
 jld j12, j1, FP
 jcall mix
 jhalt
@@ -381,14 +372,12 @@ order:
   jldi j1, 3
   jsub j1, j3, j1
   jjnz j1, o_signal
-  jcall hear
-  jldi j1, 0
+  jcall0 j1, hear
   jld j2, j1, MAIL + 8
   jst j2, j1, FP
   jret
 o_signal:
-  jcall hear
-  jldi j1, 0
+  jcall0 j1, hear
   jld j2, j1, MAIL + 8
   jst j2, j1, ANS
   jld j5, j1, NNV               ; (n^2 + 7) / 8 words of steps
@@ -398,8 +387,7 @@ o_signal:
   jshr j5, j5, j2
   jldi j7, 0
   jwhile j5
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jst j2, j7, STB
     jldi j1, 8
@@ -554,8 +542,7 @@ fill:
   jldi j6, 3
   jsub j6, j6, j5               ; how many are missing
   jwhile j6
-    jcall rnd
-    jldi j7, 0
+    jcall0 j7, rnd
     jld j7, j7, NNV
     jdiv j14, j13, j7
     jmul j14, j14, j7

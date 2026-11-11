@@ -345,8 +345,7 @@ signal:
     jwend
   jwend
   jldi j12, 4096                ; between signals
-  jcall mix
-  jldi j1, 0                    ; the shape learns
+  jcall0 j1, mix                ; the shape learns
   jldi j2, 64
   jwhile j2
     jldb j5, j1, FT

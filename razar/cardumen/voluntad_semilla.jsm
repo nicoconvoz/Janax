@@ -171,9 +171,8 @@ jldi j11, NACE
 jldi j12, 88
 jcall ask
 
-jcall frames                    ; the frames, read (before the school is born: nothing to say to it yet)
+jcall0 j1, frames               ; the frames, read (before the school is born: nothing to say to it yet) ; "hijo" = 68 69 6A 6F, launched with every right
 
-jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
 jst j2, j1, HIJO
@@ -184,8 +183,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 
 jldi j13, 0                     ; the school is born (order 5: seed, side, quiet) and asks for the room its tables need
@@ -221,19 +219,16 @@ jldi j3, 5
 jor j2, j2, j3
 jst j2, j13, WORD
 jcall say
-jcall hear                      ; how much room its tables need: this cabin builds it (request 2), moves it there
-jldi j1, 0                      ; (request 23) and says so
+jcall0 j1, hear                 ; how much room its tables need: this cabin builds it (request 2), moves it there ; (request 23) and says so
 jld j11, j1, MAIL + 8
 jjz j11, b_roomed
 jldi j10, 2
-jcall ask
-jldi j11, 0
+jcall0 j11, ask
 jadd j11, j11, j13
 jldi j10, 23
 jldi j1, 0
 jld j12, j1, CHILD
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j1, j1, WORD
 jcall say
 b_roomed:
@@ -252,8 +247,7 @@ jadd j11, j11, j4
 jldi j4, 0FFF8h
 jand j11, j11, j4
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, RBASE
 jadd j4, j13, j3
 jst j4, j1, STEPB
@@ -298,14 +292,12 @@ jmul j11, j11, j2
 jldi j2, 8
 jadd j11, j11, j2
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, SAYB
 jldi j9, 0
 jwhile j1
 w_draw:
-  jcall rnd2
-  jldi j1, 0
+  jcall0 j1, rnd2
   jld j2, j1, N2
   jdiv j3, j13, j2
   jmul j3, j3, j2
@@ -314,11 +306,8 @@ w_draw:
   jdiv j5, j9, j4
   jmul j5, j5, j4
 jwhile j6
-  jldi j6, 3
-  jshl j6, j5, j6
   jld j7, j1, SAYB
-  jadd j6, j6, j7
-  jld j6, j6, 0
+  jldx j6, j7, j5
   jsub j6, j6, j3
   jjz j6, w_draw
   jldi j6, 1
@@ -374,18 +363,14 @@ jwhile j3
   jdiv j5, j2, j4
   jmul j5, j5, j4
   jsub j3, j2, j5
-  jldi j4, 3
-  jshl j3, j3, j4
   jld j5, j1, POSL
-  jadd j3, j3, j5
-  jld j3, j3, 0
+  jldx j3, j5, j3
   jjmp p_frame
 p_odd:
   jldi j2, 0
   jjmp p_side
 p_draw:
-  jcall rnd2                    ; which of the two
-  jldi j1, 0
+  jcall0 j1, rnd2               ; which of the two
   jldi j2, 1
   jand j2, j13, j2
 p_side:
@@ -399,17 +384,13 @@ p_list:
   jld j6, j4, 0
   jst j5, j1, TE
   jst j6, j1, TA
-  jcall rnd2
-  jldi j1, 0
+  jcall0 j1, rnd2
   jld j6, j1, TA
   jdiv j3, j13, j6
   jmul j3, j3, j6
   jsub j3, j13, j3
-  jldi j4, 3
-  jshl j3, j3, j4
-  jld j5, j1, TE
-  jadd j3, j3, j5
-  jld j3, j3, 0                 ; the frame's number
+  jld j5, j1, TE                ; the frame's number
+  jldx j3, j5, j3
 p_frame:
   jldi j1, 0
   jldi j4, 72
@@ -418,8 +399,7 @@ p_frame:
   jadd j3, j3, j4
   jst j3, j1, CUR
   jcall sing
-  jcall share                   ; -> j2 its "it answers" minus "it does not"
-  jldi j1, 0
+  jcall0 j1, share              ; -> j2 its "it answers" minus "it does not"
   jldi j3, 63                   ; guessed: it answers when more than not
   jsar j3, j2, j3
   jldi j4, 1
@@ -428,11 +408,9 @@ p_frame:
   jldi j3, 0                    ; (a tie, or nothing heard: it does not)
 p_g:
   jst j3, j1, TB
-  jcall learn
-  jldi j1, 0
+  jcall0 j1, learn
   jld j12, j1, TB
-  jcall mix
-  jldi j1, 0                    ; the last quarter: rounds * 4 >= VUELTAS * 3
+  jcall0 j1, mix                ; the last quarter: rounds * 4 >= VUELTAS * 3
   jld j2, j1, ROUND
   jldi j3, 4
   jmul j2, j2, j3
@@ -444,10 +422,8 @@ p_g:
   jsar j2, j2, j4
   jst j2, j1, TC         ; (-1: not in it)
   jjnz j2, p_judge
-  jld j2, j1, TAILN
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, TAILN
+  jldi j2, 1
+  jldadd j2, j1, TAILN
 p_judge:
   jld j2, j1, TB
   jld j3, j1, LABEL
@@ -487,8 +463,7 @@ p_wrong:                        ; wrong: one piece of one of its five words move
   jadd j7, j7, j4
   jst j7, j1, WORD
 p_place:
-  jcall rnd2                    ; its new place: not one the word has
-  jldi j1, 0
+  jcall0 j1, rnd2               ; its new place: not one the word has
   jld j2, j1, N2
   jdiv j3, j13, j2
   jmul j3, j3, j2
@@ -499,11 +474,8 @@ p_place:
   jmul j5, j5, j4
   jldi j6, 3
 p_check:
-  jldi j8, 3
-  jshl j8, j5, j8
   jld j9, j1, SAYB
-  jadd j8, j8, j9
-  jld j8, j8, 0
+  jldx j8, j9, j5
   jsub j8, j8, j3
   jjz j8, p_place
   jldi j8, 1
@@ -517,10 +489,8 @@ p_check:
   jst j3, j8, 0
 p_next:
   jldi j1, 0
-  jld j2, j1, ROUND
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, ROUND
+  jldi j2, 1
+  jldadd j2, j1, ROUND
 jwcheck
   jldi j1, 0
   jld j2, j1, ROUND
@@ -543,23 +513,19 @@ jld j2, j1, PRECIO
 jjz j2, p_noself
 jcall selftest
 p_noself:
-jcall asked                     ; the questions it never read
+jcall0 j1, asked                ; the questions it never read
 
-jldi j1, 0
 jld j12, j1, HITS
 jcall mix
 jld j12, j1, QRIGHT
-jcall mix
-jldi j1, 0                      ; how the school is (order 7): pieces off their total, weights at the ceiling
+jcall0 j1, mix                  ; how the school is (order 7): pieces off their total, weights at the ceiling
 jldi j2, 7
 jst j2, j1, WORD
 jcall say
-jcall hear
-jldi j1, 0
+jcall0 j1, hear
 jld j2, j1, MAIL + 8
 jst j2, j1, HOWA
-jcall hear
-jldi j1, 0
+jcall0 j1, hear
 jld j2, j1, MAIL + 8
 jst j2, j1, HOWB
 jldi j1, 0                      ; the school ends (order 3: it says its fingerprint, not mixed here)
@@ -636,8 +602,7 @@ jcall puts
 jld j2, j1, ITN
 jcall putnum
 jldi j1, S_PRACT
-jcall puts
-jldi j1, 0
+jcall0 j1, puts
 jld j2, j1, HITS
 jldi j3, 100
 jmul j2, j2, j3
@@ -686,8 +651,7 @@ jld j3, j1, QASK
 jjz j3, o_noch
 jdiv j2, j2, j3
 o_noch:
-jcall putnum
-jldi j1, 0
+jcall0 j1, putnum
 jld j4, j1, POS
 jldi j2, 37
 jstb j2, j4, TEXT
@@ -716,8 +680,7 @@ frames:
   jldi j10, 4
   jldi j11, MLAB
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, FH
   jst j1, j1, FN
   jldi j11, 1
@@ -725,15 +688,13 @@ frames:
   jshl j11, j11, j2
   jst j11, j1, FC
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, FB
   jwhilez j3
     jld j11, j1, FC
     jadd j11, j11, j11
     jldi j10, 2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jld j3, j1, FB
     jld j4, j1, FN
     jldi j5, 0
@@ -764,8 +725,7 @@ frames:
     jadd j11, j11, j2
     jld j12, j1, FC
     jsub j12, j12, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jsar j2, j13, j2
     jldi j3, -1
@@ -783,16 +743,14 @@ fr_close:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0                    ; the frames' rooms: a frame takes ten bytes of the file at least
+  jcall0 j1, ask                ; the frames' rooms: a frame takes ten bytes of the file at least
   jld j11, j1, FN
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 80
   jadd j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, ITB
   jld j11, j1, FN               ; (the notes: two bytes of the file each at least; by frame 16 bytes)
   jldi j2, 2
@@ -800,15 +758,13 @@ fr_close:
   jldi j2, 16
   jadd j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, FNB
   jld j11, j1, FN
   jldi j2, 32
   jadd j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, ITX
   jst j1, j1, FNBN
   jst j1, j1, FNMAX
@@ -906,10 +862,8 @@ fr_close:
     jwend
   fr_got:
     jldi j1, 0
-    jld j2, j1, ITN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, ITN
+    jldi j2, 1
+    jldadd j2, j1, ITN
   fr_nline:                     ; an "N:" line: the notes of the last "M:" frame (its four numbers again, how many, them)
     jldb j2, j9, 1
     jldi j3, 58
@@ -985,13 +939,11 @@ fr_parsed:
   jadd j11, j11, j2
   jst j11, j1, TE
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, POSL
   jld j11, j1, TE
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, NEGL
   jst j1, j1, POSN
   jst j1, j1, NEGN
@@ -1116,8 +1068,7 @@ asked:
     jsub j5, j4, j5
     jjz j5, ak_same
     jst j9, j1, TD       ; a new question: the one before judged
-    jcall ak_judge
-    jldi j1, 0
+    jcall0 j1, ak_judge
     jld j9, j1, TD
     jld j3, j1, CUR
     jld j4, j3, 0
@@ -1134,13 +1085,10 @@ asked:
   ak_same:
     jst j9, j1, TD
     jcall sing
-    jcall judge
-    jldi j1, 0
+    jcall0 j1, judge
     jld j9, j1, TD
-    jld j3, j1, GFN
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, GFN
+    jldi j3, 1
+    jldadd j3, j1, GFN
     jld j3, j1, GFP
     jld j4, j1, LABEL
     jadd j3, j3, j4
@@ -1182,8 +1130,7 @@ selftest:
   jldi j2, 16
   jadd j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, LOOB
   jst j1, j1, LOON
   jldi j2, 1
@@ -1191,8 +1138,7 @@ selftest:
   jld j2, j1, VER
   jst j2, j1, TE
   jst j1, j1, VER
-  jcall asked
-  jldi j1, 0
+  jcall0 j1, asked
   jst j1, j1, SELF
   jld j2, j1, TE
   jst j2, j1, VER
@@ -1233,8 +1179,7 @@ selftest:
   jwend
 st_sorted:
   jldi j1, S_CURVA              ; the curve: at each right one's how-alike, the right ones below it and the wrong ones
-  jcall puts
-  jldi j9, 0                    ; (the right ones seen so far, the wrong ones)
+  jcall0 j9, puts               ; (the right ones seen so far, the wrong ones)
   jldi j10, 0
   jldi j11, 0
   jldi j12, 0                   ; the cut, once the price is reached
@@ -1274,8 +1219,7 @@ st_sorted:
     jldi j2, 47
     jcall putc1
     jld j2, j1, TC
-    jcall putnum
-    jldi j1, 0
+    jcall0 j1, putnum
     jld j9, j1, TB
     jld j10, j1, TC
     jld j11, j1, TD
@@ -1332,10 +1276,8 @@ akj_cut:
   jldi j4, 63
   jsar j3, j3, j4
   jjz j3, akj_ans
-  jld j2, j1, QABS
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, QABS
+  jldi j2, 1
+  jldadd j2, j1, QABS
   jld j2, j1, QABSR
   jld j3, j1, GBL
   jadd j2, j2, j3
@@ -1344,15 +1286,11 @@ akj_cut:
 akj_ans:
   jld j2, j1, GBL
   jjnz j2, akj_ok
-  jld j2, j1, QWRONG
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, QWRONG
+  jldi j2, 1
+  jldadd j2, j1, QWRONG
 akj_ok:
-  jld j2, j1, QASK
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, QASK
+  jldi j2, 1
+  jldadd j2, j1, QASK
   jld j2, j1, QRIGHT
   jld j3, j1, GBL
   jadd j2, j2, j3
@@ -1367,8 +1305,7 @@ akj_ok:
   jadd j2, j3, j2
   jst j2, j1, QCH
   jld j12, j1, GBL
-  jcall mix
-  jldi j1, 0                    ; (each one: right, its winner's share, how alike to the most alike that answered)
+  jcall0 j1, mix                ; (each one: right, its winner's share, how alike to the most alike that answered)
   jld j2, j1, VER
   jjz j2, akj_una
   jldi j2, 90                   ; "Z: question right share alike" (a share less than 0 said as 0)
@@ -1409,8 +1346,7 @@ akj_una:
   jldi j1, S_UNA2
   jcall puts
   jld j2, j1, GBI
-  jcall putnum
-  jldi j1, 0
+  jcall0 j1, putnum
   jld j2, j1, GBL
   jldi j1, S_UNA3
   jjnz j2, akj_si
@@ -1484,8 +1420,7 @@ s_said:
   jshl j3, j3, j4
   jor j2, j2, j3
   jst j2, j1, WORD
-  jcall say
-  jldi j4, 0
+  jcall0 j4, say
   jld j5, j1, SGN
   jwhile j5
     jld j2, j4, SONGM
@@ -1497,8 +1432,7 @@ s_said:
     jldi j1, 1
     jsub j5, j5, j1
   jwend
-  jcall hear                    ; how many steps it lasted
-  jldi j1, 0
+  jcall0 j1, hear               ; how many steps it lasted
   jld j2, j1, MAIL + 8
   jst j2, j1, SLONG
   jld j6, j1, N2                ; then its top faces: SLONG * n^2 bits, 64 per word
@@ -1507,8 +1441,7 @@ s_said:
   jldi j8, 0
   jwhile j6
     jjnz j8, s_bit
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jldi j8, 64
   s_bit:
@@ -1580,8 +1513,7 @@ mz_rec:
   jldi j2, 32
   jadd j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, FRB
   jldi j9, 0
   jwhile j2
@@ -1592,12 +1524,10 @@ mz_rec:
     jld j4, j3, 24
     jjz j4, mz_next             ; (left out: not remembered)
     jst j3, j1, CUR
-    jcall sing
-    jldi j1, 0
+    jcall0 j1, sing
     jld j2, j1, NTN
     jst j2, j1, TA
-    jcall notes_of
-    jldi j1, 0
+    jcall0 j1, notes_of
     jld j2, j1, FRN
     jldi j3, 32
     jmul j3, j2, j3
@@ -1645,8 +1575,7 @@ mzi_nid:
   jldi j3, 3
   jshl j11, j11, j3
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, PCNT
   jld j2, j1, NID
   jldi j3, 2
@@ -1701,8 +1630,7 @@ mzi_sd:
   jldi j2, 3
   jshl j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, PST
   jldi j9, 0                    ; each frame into the lists of its notes (PCNT[id + 1] walks as it fills)
   jwhile j2
@@ -1754,8 +1682,7 @@ mzi_fd:
   jshl j11, j11, j2
   jst j11, j1, TA
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, CNT
   jld j2, j1, FRN
   jadd j3, j13, j1
@@ -1769,8 +1696,7 @@ mzi_fd:
 mzi_kd:
   jld j11, j1, TA
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, TCH
   jret
 
@@ -1829,8 +1755,7 @@ no_dbl:
   jldi j4, 3
   jshl j11, j11, j4
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j3, j1, NTB
   jld j4, j1, NTN
   jwhile j4
@@ -1946,8 +1871,7 @@ recall:
   jldi j1, 0
   jld j2, j1, NTN
   jst j2, j1, TC                ; (its notes, for now, past the remembered ones)
-  jcall notes_of
-  jldi j1, 0
+  jcall0 j1, notes_of
   jld j2, j1, NTN
   jld j3, j1, TC
   jsub j2, j2, j3
@@ -1976,11 +1900,8 @@ recall:
     jld j5, j2, 8
   rc_have:
     jwhile j6
-      jldi j6, 3
-      jshl j6, j4, j6
-      jld j7, j1, PST
-      jadd j6, j6, j7
-      jld j6, j6, 0             ; a frame that has this note
+      jld j7, j1, PST           ; a frame that has this note
+      jldx j6, j7, j4
       jld j7, j1, SELF          ; (asking itself: not one of its own question)
       jjz j7, rc_mine
       jldi j7, 5
@@ -2091,9 +2012,7 @@ s_notes:
   jld j7, j2, 0
   jldi j3, 255
   jsub j3, j6, j3
-  jldi j4, 63
-  jsar j3, j3, j4
-  jjnz j3, sn_few
+  jjn j3, sn_few
   jldi j6, 255
 sn_few:
   jst j6, j1, SGN
@@ -2129,12 +2048,10 @@ sn_few:
 ; not" (in millionths) -> j2. Uses j1-j8, j10-j14 (keeps j9, j15).
 share:
   jldi j8, 1
-  jcall sh_one
-  jldi j1, 0
+  jcall0 j1, sh_one
   jst j2, j1, SC1
   jldi j8, 0
-  jcall sh_one
-  jldi j1, 0
+  jcall0 j1, sh_one
   jld j3, j1, SC1
   jsub j2, j3, j2
   jret

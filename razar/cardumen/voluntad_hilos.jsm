@@ -108,8 +108,7 @@ jldi j1, 5
 jor j10, j10, j1
 jldi j11, NSV
 jldi j12, 32
-jcall ask
-jldi j13, 0                     ; its sizes
+jcall0 j13, ask                 ; its sizes
 jld j1, j13, NSV
 jmul j2, j1, j1
 jst j2, j13, NNV
@@ -123,8 +122,7 @@ jst j4, j13, GSZ
 jld j5, j13, KV                 ; what it learned: a room of k * GSZ bytes (request 2)
 jmul j11, j4, j5
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, RBASE
 
 jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
@@ -138,8 +136,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 jld j2, j1, NACEV               ; the school is born: order 2, side n, the seed
 jldi j3, 16
@@ -151,17 +148,14 @@ jor j2, j2, j3
 jldi j3, 2
 jor j2, j2, j3
 jst j2, j1, WORD
-jcall say
+jcall0 j7, say                  ; the line of hits: "aciertos cada 50 vueltas (el azar es " 100 / k "%):"
 
-jldi j7, 0                      ; the line of hits: "aciertos cada 50 vueltas (el azar es " 100 / k "%):"
-jcall f1
-jldi j1, 0
+jcall0 j1, f1
 jldi j2, 100
 jld j3, j1, KV
 jdiv j2, j2, j3
 jcall putnum
-jcall f2
-jldi j1, 0
+jcall0 j1, f2
 jst j7, j1, POS
 jst j1, j1, OKC
 
@@ -186,8 +180,7 @@ jst j2, j1, CLAB
 jldi j10, 4
 jldi j11, CLAB
 jldi j12, 5
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jldi j2, 63
 jshr j2, j13, j2
 jjnz j2, c_none
@@ -199,8 +192,7 @@ jldi j11, SAY
 jld j12, j1, KV
 jldi j2, 4
 jmul j12, j12, j2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jld j2, j1, KV                  ; (all of them read, or none given: an empty "cosas" is none)
 jldi j3, 4
 jmul j2, j2, j3
@@ -214,12 +206,10 @@ jmul j11, j11, j11
 jldi j2, 3
 jshl j11, j11, j2
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CONF
 
-jcall songs_read                ; the songs, if the house has "cantos"
-jldi j1, 0
+jcall0 j1, songs_read           ; the songs, if the house has "cantos"
 jld j2, j1, SONGS
 jjnz j2, s_main
 
@@ -235,8 +225,7 @@ jwhile j15
   jsub j2, j2, j4
   jst j2, j1, THING             ; what it means, in turn
   jldi j3, 1                    ; the order: a signal, with its 3 pieces
-  jcall order
-  jldi j1, 0                    ; how many pieces the answer has
+  jcall0 j1, order              ; how many pieces the answer has
   jld j2, j1, ANS
   jldi j3, 0
   jld j5, j1, NNV
@@ -313,8 +302,7 @@ jwhile j15
   jldi j6, 63
   jsar j3, j2, j6
   jjz j3, guessed               ; something it learned helps
-  jcall rnd                     ; nothing yet: a guess, its dice mod k
-  jldi j1, 0
+  jcall0 j1, rnd                ; nothing yet: a guess, its dice mod k
   jld j6, j1, KV
   jdiv j2, j13, j6
   jmul j2, j2, j6
@@ -457,9 +445,8 @@ jldi j10, 1
 jldi j11, TEXT
 jldi j5, 1
 jadd j12, j4, j5
-jcall ask
+jcall0 j1, ask                  ; what it guessed for each thing: "C: thing right all other times"
 
-jldi j1, 0                      ; what it guessed for each thing: "C: thing right all other times"
 jldi j7, 0
 jst j1, j1, THING
 jld j15, j1, KV
@@ -545,11 +532,8 @@ jwhile j15
   jld j2, j1, SXI
   jcall c_num
   jld j2, j1, SXI
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, SUG
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 63
   jsar j3, j2, j3
   jjz j3, u_some
@@ -578,8 +562,7 @@ jadd j12, j7, j1
 jcall ask
 
 jldi j3, 3                      ; the end: the school's own fingerprint, mixed in
-jcall order
-jldi j1, 0
+jcall0 j1, order
 jld j12, j1, FP
 jcall mix
 jhalt
@@ -609,14 +592,12 @@ order:
   jldi j1, 3
   jsub j1, j3, j1
   jjnz j1, o_signal
-  jcall hear
-  jldi j1, 0
+  jcall0 j1, hear
   jld j2, j1, MAIL + 8
   jst j2, j1, FP
   jret
 o_signal:
-  jcall hear
-  jldi j1, 0
+  jcall0 j1, hear
   jld j2, j1, MAIL + 8
   jst j2, j1, ANS
   jld j5, j1, NNV               ; (n^2 + 7) / 8 words of steps
@@ -626,8 +607,7 @@ o_signal:
   jshr j5, j5, j2
   jldi j7, 0
   jwhile j5
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jst j2, j7, STB
     jldi j1, 8
@@ -690,8 +670,7 @@ songs_read:
   jldi j10, 4
   jldi j11, CLAB2
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, sr_none
@@ -700,8 +679,7 @@ songs_read:
   jldi j2, 16
   jshl j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SNG
   jld j10, j1, STH
   jldi j2, 32
@@ -712,8 +690,7 @@ songs_read:
   jldi j12, 1
   jldi j2, 16
   jshl j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SBYT
   jld j11, j1, KV
   jldi j2, 256
@@ -721,8 +698,7 @@ songs_read:
   jldi j2, 3
   jshl j11, j11, j2
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SOFF
   jldi j2, 0                    ; where each starts
   jldi j3, 0
@@ -802,15 +778,13 @@ sr_xd:
   jshl j11, j11, j6
   jst j2, j1, STH
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SUG
   jld j11, j1, KV
   jldi j6, 3
   jshl j11, j11, j6
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SRR
   jld j2, j1, STH
   jld j6, j1, SBYT
@@ -825,13 +799,11 @@ sr_xd:
   jshl j11, j11, j2
   jst j11, j1, STH
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SH
   jld j11, j1, STH
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, SHL
   jldi j2, 1
   jst j2, j1, SONGS
@@ -855,8 +827,7 @@ song_note:
   jldi j2, 191
   jst j2, j1, THING
   jldi j3, 1
-  jcall order
-  jldi j1, 0
+  jcall0 j1, order
   jld j2, j1, STH
   jst j2, j1, THING
   jld j2, j1, ANS
@@ -907,11 +878,8 @@ s_hear:
   jld j2, j1, THING
     jst j1, j1, SHN
   jst j1, j1, CNTS
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, SOFF
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j4, j1, SNG
   jadd j3, j3, j4
   jldb j5, j3, 0
@@ -924,8 +892,7 @@ s_hear:
   jadd j3, j3, j6
   jst j3, j1, SNP
   jwhile j2
-    jcall song_note
-    jldi j1, 0
+    jcall0 j1, song_note
     jld j2, j1, SNP
     jldi j3, 3
     jadd j2, j2, j3
@@ -954,8 +921,7 @@ s_hear:
     jadd j3, j3, j2
     jld j2, j3, 0
     jjz j2, sg_next
-    jcall isqrt
-    jldi j1, 0
+    jcall0 j1, isqrt
     jadd j10, j2, j1
     jld j4, j1, GSZ
     jmul j4, j8, j4
@@ -1012,14 +978,12 @@ s_main:
     jmul j4, j4, j3
     jsub j2, j2, j4
     jst j2, j1, THING
-    jcall s_hear
-    jldi j1, 0
+    jcall0 j1, s_hear
     jld j2, j1, BEST
     jldi j6, 63
     jsar j3, j2, j6
     jjz j3, s_guessed
-    jcall rnd
-    jldi j1, 0
+    jcall0 j1, rnd
     jld j6, j1, KV
     jdiv j2, j13, j6
     jmul j2, j2, j6
@@ -1131,8 +1095,7 @@ s_main:
     jld j3, j1, KV
     jadd j2, j2, j3
     jst j2, j1, THING
-    jcall s_hear
-    jldi j1, 0
+    jcall0 j1, s_hear
     jld j2, j1, SXI
     jldi j3, 3
     jshl j3, j2, j3
@@ -1154,10 +1117,8 @@ s_main:
       jldi j3, 1
       jsub j5, j5, j3
     jwend
-    jld j2, j1, SXI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SXI
+    jldi j2, 1
+    jldadd j2, j1, SXI
   jwcheck
     jldi j1, 0
     jld j2, j1, SXI
@@ -1319,8 +1280,7 @@ fill:
   jldi j6, 3
   jsub j6, j6, j5               ; how many are missing
   jwhile j6
-    jcall rnd
-    jldi j7, 0
+    jcall0 j7, rnd
     jld j7, j7, NNV
     jdiv j14, j13, j7
     jmul j14, j14, j7

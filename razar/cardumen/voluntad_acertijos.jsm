@@ -241,9 +241,8 @@ jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
 jldi j12, 144
-jcall ask
+jcall0 j1, ask                  ; "hijo" = 68 69 6A 6F, launched with every right
 
-jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
 jst j2, j1, HIJO
@@ -254,8 +253,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 
 jldi j1, 0                      ; its words: the numbers, or (TIPO 3, logic) six siblings, mayor, menor, es at 0B00h
@@ -388,8 +386,7 @@ z_wider:
   jadd j1, j1, j2
   jcall born_n
   jcall learn_words
-  jcall tried
-  jldi j1, 0
+  jcall0 j1, tried
   jld j2, j1, MISS
   jld j3, j1, PREV
   jsub j2, j2, j3               ; wider and not fewer mistakes: back to the best, learned the same way
@@ -400,12 +397,10 @@ z_wider:
   jld j1, j1, NN
   jldi j2, 1
   jsub j1, j1, j2
-  jcall born_n
-  jldi j1, 0
+  jcall0 j1, born_n
   jld j2, j1, MISS
   jst j2, j1, PREV
-  jcall learn_words
-  jldi j1, 0
+  jcall0 j1, learn_words
   jld j2, j1, PREV
   jst j2, j1, MISS
 z_done:
@@ -413,10 +408,9 @@ jldi j1, 0
 jld j12, j1, NN
 jcall mix
 jld j12, j1, MISS
-jcall mix
+jcall0 j1, mix                  ; heard as a melody (MODO): the numbers fed as one song, the count, CUENTAS times;
 
 ; 2. Counting.
-jldi j1, 0                      ; heard as a melody (MODO): the numbers fed as one song, the count, CUENTAS times;
 jst j1, j1, COUNTOK             ; the school hears their order, the will remembers nothing of it
 jld j2, j1, MODO
 jldi j3, 1
@@ -437,8 +431,7 @@ jwhile j15
   jldi j1, 0
   jldi j2, 6
   jst j2, j1, SENTN
-  jcall song
-  jldi j1, 0
+  jcall0 j1, song
   jst j1, j1, SENTN
   jldi j1, 1
   jsub j15, j15, j1
@@ -466,8 +459,7 @@ jwhile j15
   jst j1, j1, THING
   jldi j9, 6
   jwhile j9
-    jcall hear_w
-    jldi j1, 0
+    jcall0 j1, hear_w
     jld j2, j1, BEST
     jld j3, j1, PREV
     jldi j4, 63
@@ -689,8 +681,7 @@ jsub j3, j2, j3
 jjz j3, r_menos
 jldi j3, 6
 jst j3, j1, OPC
-jcall riddles_of
-jldi j1, 0
+jcall0 j1, riddles_of
 jld j2, j1, TIPO
 jjz j2, r_drawn
 r_menos:
@@ -749,15 +740,13 @@ t_true:
   jsub j2, j2, j3
   jldi j3, 0
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW
   jld j1, j3, PREV
   jld j2, j1, 8                 ; the operator
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 8
   jld j1, j3, PREV
@@ -765,22 +754,19 @@ t_true:
   jldi j4, 1
   jsub j2, j2, j4
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 16
   jldi j2, 8                    ; es
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 24
   jld j2, j3, PC                ; c
   jldi j4, 1
   jsub j2, j2, j4
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 32
   jld j1, j3, GW                ; the places: walks from the start to a, b, c
@@ -856,15 +842,13 @@ jwhile j15
   jldi j4, 1
   jsub j2, j2, j4
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW
   jld j1, j3, PREV
   jld j2, j1, 8                 ; the operator
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 8
   jld j1, j3, PREV
@@ -872,23 +856,19 @@ jwhile j15
   jldi j4, 1
   jsub j2, j2, j4
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0
+  jcall0 j3, hear_w
   jld j2, j3, BEST
   jst j2, j3, GW + 16
   jldi j2, 8                    ; es
   jst j2, j3, THING
-  jcall hear_w
-  jldi j3, 0                    ; no votes yet
+  jcall0 j3, hear_w             ; no votes yet
   jst j3, j3, NUMV
   jld j1, j3, GW
-  jcall walk_to
-  jldi j3, 0
+  jcall0 j3, walk_to
   jst j2, j3, GW                ; pa
   jjz j2, q_count
   jld j1, j3, GW + 16
-  jcall walk_to
-  jldi j3, 0
+  jcall0 j3, walk_to
   jst j2, j3, GW + 16           ; pb
   jjz j2, q_count
   jldi j10, 0                   ; the most examples fit by a candidate that says where c is
@@ -959,10 +939,8 @@ jwhile j15
   q_new:
     jst j7, j12, 0
     jst j3, j12, 8
-    jld j11, j3, NUMV
-    jldi j13, 1
-    jadd j11, j11, j13
-    jst j11, j3, NUMV
+    jldi j11, 1
+    jldadd j11, j3, NUMV
   q_add:
     jld j13, j12, 8
     jldi j11, 1
@@ -1035,8 +1013,7 @@ q_notright:
   jadd j4, j4, j5
   jst j4, j3, NONE
 q_answered:
-  jcall mixsym
-  jldi j1, 0
+  jcall0 j1, mixsym
   jld j2, j1, PREV
   jldi j3, 32
   jadd j2, j2, j3
@@ -1084,22 +1061,18 @@ mt_true:
   jldi j1, 0
   jst j2, j1, PC
   jcall m_sing
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j2, j1, PC
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, THING
   jcall m_mix
-  jcall learnw
-  jldi j1, 0
+  jcall0 j1, learnw
   jld j2, j1, PC
   jldi j3, 3
   jshl j2, j2, j3
-  jld j3, j2, BASEC
-  jldi j4, 1
-  jadd j3, j3, j4
-  jst j3, j2, BASEC
+  jldi j3, 1
+  jldadd j3, j2, BASEC
   jld j2, j1, PREV
   jldi j3, 32
   jadd j2, j2, j3
@@ -1141,14 +1114,12 @@ jwhile j15
   jld j2, j3, 24
   jst j2, j1, PC
   jcall m_sing
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j2, j1, PC
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, THING
-  jcall m_mix
-  jldi j1, 0
+  jcall0 j1, m_mix
   jldi j5, 1
   jld j4, j1, ASKED
   jadd j4, j4, j5
@@ -1212,8 +1183,7 @@ m_sing:
   jst j2, j1, SENTL + 24
   jldi j2, 4
   jst j2, j1, SENTN
-  jcall song
-  jldi j1, 0
+  jcall0 j1, song
   jst j1, j1, SENTN
   jret
 
@@ -1270,14 +1240,12 @@ st_true:
   jldi j1, 0
   jst j2, j1, PC
   jld j2, j1, ENSENA
-  jcall s_hear4
-  jldi j1, 0                    ; and the answer
+  jcall0 j1, s_hear4            ; and the answer
   jld j2, j1, PC
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, THING
-  jcall hear_w
-  jldi j1, 0
+  jcall0 j1, hear_w
   jld j2, j1, BEST
   jst j2, j1, GC
   jcall s_roles
@@ -1360,8 +1328,7 @@ jst j2, j1, PREV
 jwhile j15
   jldi j1, 0
   jld j2, j1, PREGUNTA
-  jcall s_hear4
-  jldi j1, 0
+  jcall0 j1, s_hear4
   jst j1, j1, NUMV
   jcall s_roles
   jjz j2, sq_count
@@ -1369,14 +1336,12 @@ jwhile j15
   jst j1, j1, BNUM
   jldi j2, 1
   jst j2, j1, BDEN
-  jcall s_best
-  jldi j1, 0
+  jcall0 j1, s_best
   jld j2, j1, BNUM
   jjz j2, sq_count
   jcall s_vote
 sq_count:
-  jcall s_answer
-  jldi j1, 0
+  jcall0 j1, s_answer
   jld j2, j1, PREV
   jldi j3, 32
   jadd j2, j2, j3
@@ -1414,8 +1379,7 @@ jwhile j3
   jsub j6, j6, j7               ; a number: its word
 sh_word:
   jst j6, j1, THING
-  jcall hear_w
-  jldi j1, 0
+  jcall0 j1, hear_w
   jld j2, j1, SLOTI
   jldi j3, 3
   jshl j3, j2, j3
@@ -1487,10 +1451,8 @@ sr_add:
   jst j3, j1, NCORE
 sr_next:
   jldi j1, 0
-  jld j2, j1, SLOTI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, SLOTI
+  jldi j2, 1
+  jldadd j2, j1, SLOTI
 jwcheck
   jldi j1, 0
   jld j2, j1, SLOTI
@@ -1619,10 +1581,8 @@ jwend
 sv_new:
   jst j7, j12, 0
   jst j1, j12, 8
-  jld j11, j1, NUMV
-  jldi j13, 1
-  jadd j11, j11, j13
-  jst j11, j1, NUMV
+  jldi j11, 1
+  jldadd j11, j1, NUMV
 sv_add:
   jld j13, j12, 8
   jldi j11, 1
@@ -1764,14 +1724,12 @@ jwhile j2
     jldi j1, 0
     jst j2, j1, PC
     jldi j2, 0                  ; heard in order 0, then the answer
-    jcall s_hear4
-    jldi j1, 0
+    jcall0 j1, s_hear4
     jld j2, j1, PC
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, THING
-    jcall hear_w
-    jldi j1, 0
+    jcall0 j1, hear_w
     jld j2, j1, BEST
     jst j2, j1, GC
     jcall g_index               ; j2 = where (op, a, b) is remembered, or -1
@@ -1848,17 +1806,13 @@ gf_b:
   jst j3, j1, NFACT
 gf_bnext:
   jldi j1, 0
-  jld j3, j1, PB
-  jldi j4, 1
-  jadd j3, j3, j4
-  jst j3, j1, PB
+  jldi j3, 1
+  jldadd j3, j1, PB
   jldi j4, 10
   jsub j4, j3, j4
   jjnz j4, gf_b
-  jld j3, j1, PA
-  jldi j4, 1
-  jadd j3, j3, j4
-  jst j3, j1, PA
+  jldi j3, 1
+  jldadd j3, j1, PA
   jldi j4, 10
   jsub j4, j3, j4
   jjnz j4, gf_a
@@ -1895,8 +1849,7 @@ jwhile j15
   jadd j4, j4, j5
   jldi j5, 10
   jmul j4, j4, j5
-  jcall g_recall
-  jldi j1, 0
+  jcall0 j1, g_recall
   jld j3, j1, PREV
   jld j3, j3, 24
   jsub j3, j2, j3
@@ -1929,14 +1882,12 @@ jjz j3, m6_choose
 jldi j3, 5
 jsub j3, j2, j3
 jjz j3, d_only
-jcall tw_make
-jldi j1, 0
+jcall0 j1, tw_make
 jldi j2, 1
 jst j2, j1, CHOSEN
 jjmp u_test
 d_only:
-jcall door_make
-jldi j1, 0
+jcall0 j1, door_make
 jldi j2, 2
 jst j2, j1, CHOSEN
 jjmp u_test
@@ -2155,8 +2106,7 @@ jst j2, j1, PREV
 jwhile j15
   jldi j1, 0
   jldi j2, 0
-  jcall s_hear4
-  jldi j1, 0
+  jcall0 j1, s_hear4
   jst j1, j1, NUMV
   jcall s_roles
   jjz j2, ut_count
@@ -2193,8 +2143,7 @@ ut_eco:
   jjz j3, ut_count
   jcall eco_vote
 ut_count:
-  jcall s_answer
-  jldi j1, 0
+  jcall0 j1, s_answer
   jld j2, j1, PREV
   jldi j3, 32
   jadd j2, j2, j3
@@ -2222,34 +2171,28 @@ jst j1, j1, LOOI
 jwhile j3
   jst j2, j1, EXCL
   jcall tw_make
-  jcall m6_fact
-  jldi j1, 0
+  jcall0 j1, m6_fact
   jst j1, j1, NUMV
   jcall tw_vote
   jcall v_pick
   jldi j10, TWH
   jcall m6_score
   jcall door_make
-  jcall m6_fact
-  jldi j1, 0
+  jcall0 j1, m6_fact
   jst j1, j1, NUMV
   jcall door_vote
   jcall v_pick
   jldi j10, DRH
   jcall m6_score
   jcall eco_make
-  jcall m6_fact
-  jldi j1, 0
+  jcall0 j1, m6_fact
   jst j1, j1, NUMV
   jcall eco_vote
   jcall v_pick
   jldi j10, ECH
-  jcall m6_score
-  jldi j1, 0
-  jld j2, j1, LOOI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, LOOI
+  jcall0 j1, m6_score
+  jldi j2, 1
+  jldadd j2, j1, LOOI
 jwcheck
   jldi j1, 0
   jld j2, j1, LOOI
@@ -2261,18 +2204,15 @@ jldi j1, 0                      ; nothing left out any more: all built from all 
 jldi j2, 1                      ; doors and the switch; the echo's answers)
 jsub j2, j1, j2
 jst j2, j1, EXCL
-jcall tw_make
-jldi j1, 0
+jcall0 j1, tw_make
 jld j2, j1, ADOPT
 jst j2, j1, TWP
-jcall door_make
-jldi j1, 0
+jcall0 j1, door_make
 jld j2, j1, ADOPT
 jld j3, j1, SWITCH
 jadd j2, j2, j3
 jst j2, j1, DRP
-jcall eco_make
-jldi j1, 0                      ; harmony (D39): describing the same with less, still accounting for all of it: what
+jcall0 j1, eco_make             ; harmony (D39): describing the same with less, still accounting for all of it: what
 jst j1, j1, CHOSEN              ; each explains of its own memory (hits - misses) per piece; no pieces, nothing explained.
 jldi j9, 0                      ; The best, and every one tied with it
 jwhile j2
@@ -2435,10 +2375,8 @@ em_one:
   jadd j4, j4, j5
   jst j4, j1, ECP
 em_next:
-  jld j2, j1, OPI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, OPI
+  jldi j2, 1
+  jldadd j2, j1, OPI
 jwcheck
   jldi j1, 0
   jld j2, j1, OPI
@@ -2569,8 +2507,7 @@ jwhile j3
   jldi j2, 5
   jst j2, j1, SENTN
   jcall song
-  jcall c_notes
-  jldi j1, 0
+  jcall0 j1, c_notes
   jst j1, j1, SENTN
   jldi j3, 3
   jshl j3, j9, j3
@@ -2626,8 +2563,7 @@ jwhile j2
     jcall c_cue
     jldi j2, 5
     jst j2, j1, SENTN
-    jcall song
-    jldi j1, 0
+    jcall0 j1, song
     jst j1, j1, SENTN
     jld j2, j1, PREV
     jldi j3, 32
@@ -2662,8 +2598,7 @@ jwhile j3
   jldi j2, 5
   jst j2, j1, SENTN
   jcall song
-  jcall c_notes
-  jldi j1, 0
+  jcall0 j1, c_notes
   jst j2, j1, CNOTES
   jld j2, j1, PREV              ; how it sounded before practice (CBASE): the change is the trace
   jldi j3, TRAIN
@@ -2695,15 +2630,11 @@ cr_new:
   jst j2, j1, CTIES
   jjmp cr_xnext
 cr_tie:
-  jld j2, j1, CTIES
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, CTIES
+  jldi j2, 1
+  jldadd j2, j1, CTIES
 cr_xnext:
-  jld j2, j1, CX
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, CX
+  jldi j2, 1
+  jldadd j2, j1, CX
 jwcheck
   jldi j1, 0
   jld j2, j1, CX
@@ -2722,10 +2653,8 @@ cr_chosen:
   jld j4, j1, CWORD
   jsub j2, j2, j4
   jjnz j2, cr_wrong
-  jld j2, j1, MEMOK
-  jldi j4, 1
-  jadd j2, j2, j4
-  jst j2, j1, MEMOK
+  jldi j2, 1
+  jldadd j2, j1, MEMOK
 cr_wrong:
   jld j3, j1, PREV              ; the fact: operator, a, b, c as places in the song
   jld j2, j3, 8
@@ -2845,10 +2774,8 @@ jwend
 gv_new:
   jst j7, j12, 0
   jst j1, j12, 8
-  jld j11, j1, NUMV
-  jldi j13, 1
-  jadd j11, j11, j13
-  jst j11, j1, NUMV
+  jldi j11, 1
+  jldadd j11, j1, NUMV
 gv_add:
   jld j13, j12, 8
   jldi j11, 1
@@ -3110,8 +3037,7 @@ pg_listed:
   jshl j2, j2, j3               ; DOOR offset of the operator (4 qwords)
   jld j3, j2, DOOR
   jld j4, j2, DOOR + 8
-  jcall p_max
-  jldi j10, 0
+  jcall0 j10, p_max
   jadd j10, j10, j3
   jld j3, j2, DOOR + 16
   jld j4, j2, DOOR + 24
@@ -3138,8 +3064,7 @@ jwhile j2
   jcall p_rolerow
   jldi j2, 1
   jand j12, j6, j2
-  jcall rnd2                    ; the orden of any memory of the operator
-  jldi j1, 0
+  jcall0 j1, rnd2               ; the orden of any memory of the operator
   jld j2, j1, NOP1
   jdiv j4, j13, j2
   jmul j4, j4, j2
@@ -3173,17 +3098,14 @@ pg_judge:                       ; m > blind m, else the gate is shut
   jldi j1, 0
   jld j3, j1, BLC
   jld j4, j1, BLC + 8
-  jcall p_max
-  jldi j9, 0
+  jcall0 j9, p_max
   jadd j9, j9, j3
   jld j3, j1, BLC + 16
   jld j4, j1, BLC + 24
   jcall p_max
   jadd j9, j9, j3
   jsub j9, j9, j10
-  jldi j2, 63
-  jsar j9, j9, j2
-  jjz j9, pg_fail
+  jjnn j9, pg_fail
   jldi j2, 1
   jsub j15, j15, j2
 jwend
@@ -3199,10 +3121,8 @@ pg_fail:
   jst j1, j2, DOOR + 24
 pg_next:
   jldi j1, 0
-  jld j2, j1, OPI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, OPI
+  jldi j2, 1
+  jldadd j2, j1, OPI
 jwcheck
   jldi j1, 0                    ; dice); if not, its doors are not adopted (its counts are emptied)
   jld j2, j1, OPI
@@ -3345,8 +3265,7 @@ jwhile j2
   jjnz j2, pb_fnext
   jldi j2, 1
   jand j12, j6, j2              ; its papel
-  jcall rnd2                    ; any memory of the second operator
-  jldi j1, 0
+  jcall0 j1, rnd2               ; any memory of the second operator
   jld j2, j1, NOP1
   jdiv j4, j13, j2
   jmul j4, j4, j2
@@ -3564,9 +3483,8 @@ jcall mix
 jld j12, j1, RIGHT
 jcall mix
 jld j12, j1, ASKED
-jcall mix
+jcall0 j1, mix                  ; the school ends (order 3: it says its fingerprint, not mixed here)
 
-jldi j1, 0                      ; the school ends (order 3: it says its fingerprint, not mixed here)
 jldi j2, 3
 jst j2, j1, WORD
 jcall say
@@ -3581,8 +3499,7 @@ jcall puts
 jld j2, j1, DESLIZ
 jcall putnum
 jldi j1, S_TIPO
-jcall puts
-jldi j1, 0
+jcall0 j1, puts
 jld j2, j1, TIPO
 jldi j3, 6
 jshl j1, j2, j3
@@ -3845,8 +3762,7 @@ jcall puts
 jld j2, j1, NN
 jcall putnum
 jldi j1, S_PROBO
-jcall puts
-jldi j1, 0
+jcall0 j1, puts
 jld j15, j1, NTRIED
 jldi j9, 0
 jwhile j15
@@ -3894,8 +3810,7 @@ jcall puts
 jld j2, j1, NONE
 jcall putnum
 jldi j1, S_SINR
-jcall puts
-jldi j1, 0                      ; heard as a melody: the baseline too
+jcall0 j1, puts                 ; heard as a melody: the baseline too
 jld j2, j1, MODO
 jldi j3, 1
 jsub j2, j2, j3
@@ -3953,8 +3868,7 @@ jcall puts
 jld j2, j1, NTRAIN
 jcall putnum
 jldi j1, S_INTER
-jcall puts
-jldi j1, 0
+jcall0 j1, puts
 jld j2, j1, SWITCH
 jldi j1, S_NO
 jjz j2, o_sw
@@ -4265,19 +4179,16 @@ born_n:
   jor j2, j2, j3
   jst j2, j13, WORD
   jcall say
-  jcall hear                    ; how much room its tables need (0: it has enough). A child's request for memory would
-  jldi j1, 0                    ; wait for this cabin's signature, so this cabin builds the room (request 2), moves it
+  jcall0 j1, hear               ; how much room its tables need (0: it has enough). A child's request for memory would ; wait for this cabin's signature, so this cabin builds the room (request 2), moves it
   jld j11, j1, MAIL + 8         ; there (request 23) and says so
   jjz j11, bn_roomed
   jldi j10, 2
-  jcall ask
-  jldi j11, 0
+  jcall0 j11, ask
   jadd j11, j11, j13
   jldi j10, 23
   jldi j1, 0
   jld j12, j1, CHILD
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j1, j1, WORD
   jcall say
 bn_roomed:
@@ -4319,8 +4230,7 @@ bn_fresh:
   jldi j4, 0FFF8h
   jand j11, j11, j4
   jldi j10, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, RBASE
   jadd j4, j13, j3
   jst j4, j1, STEPB
@@ -4365,8 +4275,7 @@ learn_words:
     jld j9, j1, NWORDS
     jwhile j9
       jcall song
-      jcall guess
-      jldi j1, 0
+      jcall0 j1, guess
       jld j2, j1, BEST
       jld j3, j1, THING
       jsub j2, j2, j3
@@ -4376,8 +4285,7 @@ learn_words:
       jadd j2, j2, j3
       jst j2, j1, MISS
     lw_right:
-      jcall learnw
-      jldi j1, 0
+      jcall0 j1, learnw
       jld j2, j1, THING
       jldi j3, 1
       jadd j2, j2, j3
@@ -4393,8 +4301,7 @@ learn_words:
 ; j1-j8, j10-j14 (keeps j9, j15).
 hear_w:
   jcall song
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j12, j1, THING
   jldi j2, 4
   jshl j12, j12, j2
@@ -4530,10 +4437,8 @@ g_sent:
   jst j1, j1, WSTART
   jldi j5, 0                    ; greeting k (of the whole song)
 jwhilez j2
-  jld j2, j1, SWI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, SWI
+  jldi j2, 1
+  jldadd j2, j1, SWI
   jld j3, j1, SNW
   jsub j3, j2, j3
   jjz j3, g_coded
@@ -4660,8 +4565,7 @@ g_coded:
   jshl j3, j3, j4
   jor j2, j2, j3
   jst j2, j1, WORD
-  jcall say
-  jldi j4, 0
+  jcall0 j4, say
   jwhile j5
     jld j2, j4, SONGM
     jldi j1, 0
@@ -4672,8 +4576,7 @@ g_coded:
     jldi j1, 1
     jsub j5, j5, j1
   jwend
-  jcall hear                    ; how many steps it lasted
-  jldi j1, 0
+  jcall0 j1, hear               ; how many steps it lasted
   jld j2, j1, MAIL + 8
   jst j2, j1, SLONG
   jld j6, j1, N2                ; then its top faces: SLONG * n^2 bits, 64 per word
@@ -4682,8 +4585,7 @@ g_coded:
   jldi j8, 0                    ; bits left in the word
   jwhile j6
     jjnz j8, s_bit
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jldi j8, 64
   s_bit:

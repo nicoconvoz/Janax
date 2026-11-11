@@ -23,8 +23,8 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; must match the interpreter
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-OP_COUNT    = 18h
-MAX_INSNS   = 9                 ; most ARM64 instructions one Janax word becomes (jld/jst); checked per word
+OP_COUNT    = 1Dh
+MAX_INSNS   = 11                ; most ARM64 instructions one Janax word becomes (jldadd); checked per word
 MAX_PATH_BYTES = 1024
 
 BASE        = 400000h
@@ -37,6 +37,7 @@ PROLOGUE_INSNS = 26
 K_B_WORD  = 0                   ; B rel26 to a word (or the outside exit)
 K_CB_WORD = 1                   ; CBZ/CBNZ rel19 to a word
 K_B_STUB  = 2                   ; B rel26 to a stub
+K_TB_WORD = 3                   ; TBZ/TBNZ rel14 to a word
 FIXUP_SIZE = 32                 ; position, kind, target, word
 ; stubs
 S_FINISH  = 0
@@ -76,6 +77,7 @@ section '.data' data readable writeable
   emit_table dq e_halt, e_ldi, e_rrr, e_rrr, e_rrr, e_rrr, e_rrr, e_rrr
              dq e_rrr, e_rrr, e_rrr, e_rrr, e_jmp, e_jz, e_jnz, e_shi
              dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret, e_bad, e_host   ; 16h jsys exists only in Janax OS
+             dq e_jn, e_jnn, e_ldadd, e_ldx, e_call0
 
   ; halt routine: x0 (= j0) in hex on stdout, then exit(0)
   finish:
@@ -248,23 +250,32 @@ e_jmp:
 
 e_jz:
         mov     eax, 0B4000000h         ; CBZ xD
+        mov     ecx, K_CB_WORD
         jmp     cb
 e_jnz:
         mov     eax, 0B5000000h         ; CBNZ xD
-cb:
+        mov     ecx, K_CB_WORD
+        jmp     cb
+e_jn:
+        mov     eax, 0B7F80000h         ; TBNZ xD, #63 (the sign bit)
+        mov     ecx, K_TB_WORD
+        jmp     cb
+e_jnn:
+        mov     eax, 0B6F80000h         ; TBZ xD, #63
+        mov     ecx, K_TB_WORD
+cb:                                     ; eax = the test branch, ecx = its fixup kind (rel19 or rel14)
         or      eax, r11d
         mov     rdx, [longcb]
         cmp     byte [rdx + r12], 0
         jne     .long
         push    rax
         call    jump_target
-        mov     ecx, K_CB_WORD
         call    add_fixup
         pop     rax
         stosd
         ret
-.long:                                  ; target beyond +-1 MiB: the opposite test skips a B (+-128 MiB)
-        xor     eax, 01000000h          ; CBZ <-> CBNZ
+.long:                                  ; target beyond its reach: the opposite test skips a B (+-128 MiB)
+        xor     eax, 01000000h          ; CBZ <-> CBNZ, TBZ <-> TBNZ
         or      eax, 2 shl 5            ; +8: over the B
         stosd
         jmp     e_jmp
@@ -293,6 +304,7 @@ address_checked:
         or      eax, 8B110010h
         stosd
         pop     rax
+range_checked:                          ; the address already in x16; eax = the CMP instruction
         stosd                           ; cmp x16, limit
         mov     eax, 54000049h          ; b.ls +8
         stosd
@@ -326,6 +338,38 @@ e_memop e_st,  0EB16021Fh, 1, 0F8306A60h        ; str  xD, [x19, x16]
 e_memop e_ldb, 0EB17021Fh, 0, 38706A60h         ; ldrb wD, [x19, x16]
 e_memop e_stb, 0EB17021Fh, 0, 38306A60h         ; strb wD, [x19, x16]
 
+e_ldadd:                                ; the word gets xD added; xD keeps the sum
+        mov     eax, 0EB16021Fh         ; cmp x16, x22
+        call    address_checked
+        call    aligned_check
+        mov     eax, 0F8706A71h         ; ldr x17, [x19, x16]
+        stosd
+        mov     eax, r11d               ; add xD, xD, x17
+        shl     eax, 5
+        or      eax, r11d
+        or      eax, 8B110000h
+        stosd
+        mov     eax, 0F8306A60h         ; str xD, [x19, x16]
+        or      eax, r11d
+        stosd
+        ret
+
+e_ldx:                                  ; add x16, xA, xB, lsl #3, then the checks of jld
+        mov     eax, r10d
+        shl     eax, 16
+        mov     edx, r8d
+        shl     edx, 5
+        or      eax, edx
+        or      eax, 8B000C10h
+        stosd
+        mov     eax, 0EB16021Fh         ; cmp x16, x22
+        call    range_checked
+        call    aligned_check
+        mov     eax, 0F8706A60h         ; ldr xD, [x19, x16]
+        or      eax, r11d
+        stosd
+        ret
+
 e_call:
         mov     eax, 0F14006BFh         ; cmp x21, #4096
         stosd
@@ -341,7 +385,14 @@ e_call:
         stosd
         jmp     e_jmp
 
-e_host:                                 ; mov x16, xA / bl host / mov xD, x17
+e_call0:                                ; a jcall whose return lands on the zeroing of xD
+        call    e_call                  ; its adr x16, +16 points right past its B: the movz below
+        mov     eax, 0D2800000h         ; movz xD, #0
+        or      eax, r11d
+        stosd
+        ret
+
+e_host:                                ; mov x16, xA / bl host / mov xD, x17
         mov     eax, r8d
         shl     eax, 16
         or      eax, 0AA0003F0h
@@ -495,7 +546,7 @@ start:
         test    rax, rax
         jz      fail_file
         mov     [fixups], rax
-        mov     rdx, [nwords]           ; one flag per word: its CBZ/CBNZ needs the long form
+        mov     rdx, [nwords]           ; one flag per word: its CBZ/CBNZ/TBZ/TBNZ needs the long form
         inc     rdx
         invoke  VirtualAlloc, 0, rdx, MEM_COMMIT + MEM_RESERVE, PAGE_READWRITE
         test    rax, rax
@@ -663,6 +714,8 @@ start:
         sar     rax, 2
         cmp     ecx, K_CB_WORD
         je      .rel19
+        cmp     ecx, K_TB_WORD
+        je      .rel14
         and     eax, 3FFFFFFh
         or      [r13 + r8], eax
         jmp     .next_fixup
@@ -675,7 +728,16 @@ start:
         shl     eax, 5
         or      [r13 + r8], eax
         jmp     .next_fixup
-.too_far:                               ; mark it and translate again; lengths only grow, so it ends
+.rel14:
+        cmp     rax, -(1 shl 13)
+        jl      .too_far
+        cmp     rax, 1 shl 13
+        jge     .too_far
+        and     eax, 3FFFh
+        shl     eax, 5
+        or      [r13 + r8], eax
+        jmp     .next_fixup
+.too_far:                              ; mark it and translate again; lengths only grow, so it ends
         mov     rax, [rsi + 24]
         mov     rdx, [longcb]
         mov     byte [rdx + rax], 1

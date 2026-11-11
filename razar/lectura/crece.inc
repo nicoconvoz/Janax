@@ -31,8 +31,7 @@ pl_new:
   jst j4, j2, 8
   jst j2, j1, PLD
   jadd j11, j3, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j2, j1, PLD
   jst j13, j2, 0
   jret
@@ -81,8 +80,7 @@ plt_new:
   jsar j7, j7, j8
   jjz j7, plt_put
   jst j5, j1, PLK
-  jcall pl_grow
-  jldi j1, 0
+  jcall0 j1, pl_grow
   jld j2, j1, PLD
   jld j5, j1, PLK
   jcall pl_find
@@ -117,8 +115,7 @@ pl_grow:
   jst j5, j2, 8
   jld j5, j2, 24
   jmul j11, j4, j5
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j2, j1, PLD
   jst j13, j2, 0
   jld j9, j1, PLO
@@ -151,8 +148,7 @@ pl_grow:
   jldi j10, 3                   ; the old copy given back (request 3): a table that grew does not leave its past behind
   jldi j1, 0
   jld j11, j1, PLO
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j9, j1, PLS
   jld j10, j1, PLS + 8
   jld j11, j1, PLS + 16

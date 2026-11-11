@@ -13,14 +13,12 @@ include '../../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
 jldi j11, 520
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jldi j2, 64
 jst j2, j13, 0
 jst j13, j1, RLIST
 jldi j11, 2400                  ; (300 direcciones, para comparar: no se anota, la lista todavia esta vacia)
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, HT1
 jst j1, j1, RLN
 jldi j2, 300
@@ -31,8 +29,7 @@ jwhile j2
   jsub j2, j2, j3
   jst j2, j1, HT2
   jldi j11, 16
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j2, j1, HT1
   jadd j2, j2, j9
   jst j13, j2, 0

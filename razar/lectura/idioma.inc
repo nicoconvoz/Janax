@@ -32,8 +32,7 @@ LTB   = 35E0h
 ln_scan:
   jldi j2, EDG
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jldi j9, 1
   jwhile j2
     jldi j3, 3
@@ -65,8 +64,7 @@ ln_scan:
     jldi j5, 1
   lne_key:
     jldi j2, EDG
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j1, LN1
     jst j2, j4, 8
     jld j2, j1, LN2
@@ -89,26 +87,22 @@ lne_done:
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNA
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNW
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNT
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNG
   jldi j9, 0
   jld j10, j1, NV
@@ -122,8 +116,7 @@ lne_done:
     jsub j10, j10, j2
   jwend
   jldi j2, 0                    ; (the count of each one's neighbours)
-  jcall ln_edges
-  jldi j1, 0                    ; (where they start: the counts summed)
+  jcall0 j1, ln_edges           ; (where they start: the counts summed)
   jldi j9, 0
   jldi j11, 0
   jld j10, j1, NV
@@ -160,12 +153,10 @@ lne_done:
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNB
   jldi j2, 1                    ; (the neighbours)
-  jcall ln_edges
-  jldi j1, 0                    ; (the cursors back to 0: LNW is the weights' now)
+  jcall0 j1, ln_edges           ; (the cursors back to 0: LNW is the weights' now)
   jld j10, j1, NV
   jld j9, j1, LNW
   jwhile j10
@@ -182,8 +173,7 @@ lne_done:
     jldi j9, 1
     jwhile j2
       jst j9, j1, LN1
-      jcall ln_word
-      jldi j1, 0
+      jcall0 j1, ln_word
       jld j9, j1, LN1
       jldi j2, 1
       jadd j9, j9, j2
@@ -193,10 +183,8 @@ lne_done:
       jsub j2, j9, j2
     jwend
   lnp_passed:
-    jld j2, j1, LNPS
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LNPS
+    jldi j2, 1
+    jldadd j2, j1, LNPS
     jld j3, j1, LNCH
     jjz j3, lns_done
     jld j3, j1, NV              ; (a pass more while some word changes; never more passes than words)
@@ -371,8 +359,7 @@ ln_units:
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNU
   jld j9, j1, ROOMT
   jld j10, j1, NTOK
@@ -412,26 +399,17 @@ ln_ask:
   jldi j2, 2
   jst j2, j1, PASS
   jst j1, j1, QN
-  jcall scan
-  jldi j1, 0
+  jcall0 j1, scan
   jst j1, j1, LNTN
   jldi j9, 0
   jwhile j2
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, QBP
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jldi j3, 1
-    jsub j3, j2, j3
-    jldi j4, 63
-    jsar j3, j3, j4
-    jjnz j3, lna_next           ; (a hole, a word the reading never had)
-    jldi j3, 3
-    jshl j3, j2, j3
+    jsub j3, j2, j3             ; (a hole, a word the reading never had)
+    jjn j3, lna_next
     jld j4, j1, LNG
-    jadd j3, j3, j4
-    jld j8, j3, 0
+    jldx j8, j4, j2
     jldi j3, 3
     jshl j3, j8, j3
     jld j4, j1, LNW
@@ -508,19 +486,13 @@ lna_have:
     jldi j10, 0                 ; (its units, and those of the question's language)
     jldi j11, 0
     jwhile j2
-      jldi j3, 3
-      jshl j3, j9, j3
       jld j4, j1, ROOMT
-      jadd j3, j3, j4
-      jld j2, j3, 0
+      jldx j2, j4, j9
       jjz j2, lnk_end
       jldi j3, 1
       jadd j10, j10, j3
-      jldi j3, 3
-      jshl j3, j2, j3
       jld j4, j1, LNG
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j2
       jld j4, j1, LNQ
       jsub j3, j3, j4
       jjnz j3, lnk_other

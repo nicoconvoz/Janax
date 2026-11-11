@@ -59,6 +59,16 @@ campos es **criterio**, no medición: se revisa cuando el traductor muestre qué
 | 14 | `jcall destino` | guarda la vuelta en la **pila de retorno separada** y salta |
 | 15 | `jret` | vuelve a la última llamada |
 | 16 | `jsys rd, ra` | **solo dentro de Janax OS**: toca la ventanilla con la cola de pedidos en `ra`; `rd` = atendidos (ver `documentacion/so/janaxos.md`) |
+| 17 | `jhost rd, ra` | la ventanita al anfitrión (abajo) |
+| 18–19 | `jjn`/`jjnn rd, destino` | salta si `rd` es / no es negativo (el cero no es negativo). *La diferencia es la respuesta* (Capitán): `jsub` + `jjn` compara en dos instrucciones, sin `jldi 63` ni `jsar` |
+| 1A | `jldadd rd, ra, imm` | la palabra en `ra + imm` suma `rd`, y `rd` queda con la suma (*el álbum que suma mirando*). Mismas verificaciones que `jld`; la dirección se calcula antes de escribir |
+| 1B | `jldx rd, ra, rb` | `rd` = la palabra en `ra + rb·8` (*la cuenta mientras lee*, profundidad 1). Mismas verificaciones que `jld` |
+| 1C | `jcall0 rd, destino` | un `jcall` que deja `rd` en cero cuando la rutina vuelve (*el cero nace con la vuelta*). Un `jcall` común adentro no borra nada |
+
+Las cinco de 18 a 1C son del 2026-11-11. Salieron de contar los modismos más escritos en Razar: `jldi r, 0` justo
+después de un `jcall` (1.693 veces), `jld`/`jldi 1`/`jadd`/`jst` (407), `jsub`/`jldi 63`/`jsar`/`jjz` (426) y
+`jldi 3`/`jshl`/`jld`/`jadd` (366). Ojo: se contó cuántas veces están escritas, no cuántas corren. Pruebas:
+`escalon0/pruebas/45` a `50`.
 
 Memoria de datos: 1 MiB que arranca en cero (criterio); `j15` arranca en el tope y se usa como puntero de
 pila de datos. La pila de retorno está aparte y el programa no la puede leer ni pisar: así ningún error

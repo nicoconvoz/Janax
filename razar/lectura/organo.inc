@@ -49,8 +49,7 @@ og_some:
   jst j2, j1, FLOOR
   jld j2, j1, FNVO
   jldi j3, 102h
-  jcall hw
-  jldi j1, 0
+  jcall0 j1, hw
   jld j13, j1, ORGW
   jst j13, j1, ORGL
 jwhile j13
@@ -121,8 +120,7 @@ og_l5:
   jldi j1, 0                    ; the hole: the first word
   jld j9, j1, WAT
   jld j3, j9, 0
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
   jcall hw
@@ -131,8 +129,7 @@ og_l6:
   jldi j1, 0                    ; the hole: the second word
   jld j9, j1, WAT
   jld j3, j9, 8
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
   jcall hw
@@ -141,8 +138,7 @@ og_l7:
   jldi j1, 0                    ; the hole: the third word
   jld j9, j1, WAT
   jld j3, j9, 16
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
   jcall hw
@@ -151,16 +147,14 @@ og_l8:
   jldi j1, 0                    ; the hole: the fourth word
   jld j9, j1, WAT
   jld j3, j9, 24
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
   jcall hw
   jjmp og_lap
 og_l9:
   jldi j3, 0                    ; the hole empty: the frame said as it is
-  jcall post
-  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
   jcall hw

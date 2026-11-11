@@ -598,9 +598,8 @@ jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
 jldi j12, 32
-jcall ask
+jcall0 j1, ask                  ; "hijo" = 68 69 6A 6F, launched with every right
 
-jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
 jst j2, j1, HIJO
@@ -611,8 +610,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 
 jldi j1, 0                      ; the school is born from the seed, quiet or not (order 5)
@@ -643,8 +641,7 @@ jwhile j15
     jldi j1, 0
     jst j1, j1, CLEAN
     jcall sing
-    jcall guess
-    jldi j1, 0                  ; right, and said
+    jcall0 j1, guess            ; right, and said
     jld j2, j1, ALLN
     jldi j3, 1
     jadd j2, j2, j3
@@ -658,8 +655,7 @@ jwhile j15
     jst j2, j1, OKN
   l_counted:
     jcall hg
-    jcall learn
-    jldi j1, 0
+    jcall0 j1, learn
     jld j2, j1, THING
     jldi j3, 1
     jadd j2, j2, j3
@@ -703,8 +699,7 @@ jwhile j2
   jst j1, j1, CLEAN
   jcall sing
   jcall guess
-  jcall hg
-  jldi j1, 0
+  jcall0 j1, hg
   jld j2, j1, WALL
   jldi j3, 1
   jadd j2, j2, j3
@@ -747,13 +742,11 @@ jwhile j9
   jldi j2, 1
   jst j2, j1, CLEAN
   jcall sing
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j12, j1, BEST
   jldi j2, 1
   jadd j12, j12, j2
-  jcall mix
-  jldi j1, 0
+  jcall0 j1, mix
   jld j2, j1, THING
   jldi j3, 1
   jadd j2, j2, j3
@@ -771,9 +764,8 @@ jcall mix
 jld j12, j1, WALL
 jcall mix
 jld j12, j1, SW
-jcall mix
+jcall0 j1, mix                  ; the confusions (Capitan, 2026-11-07: "translate the sentence into the songs it
 
-jldi j1, 0                      ; the confusions (Capitan, 2026-11-07: "translate the sentence into the songs it
 jld j2, j1, CONFN               ; already knows, recombined"): each of the 30 words sung CONFN times, its fingers
 jjz j2, c_done                  ; slipping as DESLIZ says, and what it heard counted; the table into the file "cf".
 jst j1, j1, CWD                 ; (after the counts: the fingerprint stays oraciones.pl's)
@@ -785,8 +777,7 @@ jwhile j3
     jst j2, j1, THING
     jst j1, j1, CLEAN
     jcall sing
-    jcall guess
-    jldi j1, 0
+    jcall0 j1, guess
     jld j2, j1, CWD
     jldi j3, 31
     jmul j2, j2, j3
@@ -807,10 +798,8 @@ jwhile j3
     jld j2, j1, CRP
   jwend
   c_wnext:
-    jld j2, j1, CWD
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, CWD
+    jldi j2, 1
+    jldadd j2, j1, CWD
 jwcheck
   jldi j1, 0
   jld j2, j1, CWD
@@ -827,8 +816,7 @@ c_write:
   jldi j10, 4
   jldi j11, CFL
   jldi j12, 2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, c_done
@@ -839,8 +827,7 @@ c_write:
   jor j10, j10, j1
   jldi j11, CONF
   jldi j12, 7440
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, CRP
   jldi j2, 32
   jshl j10, j10, j2
@@ -853,27 +840,23 @@ jldi j1, 0                      ; the school ends (order 3: it says its fingerpr
 jldi j2, 3
 jst j2, j1, WORD
 jcall say
-jcall hear
+jcall0 j7, hear                 ; how it went, as oraciones.pl says it
 
-jldi j7, 0                      ; how it went, as oraciones.pl says it
-jcall f1
-jldi j1, 0
+jcall0 j1, f1
 jld j2, j1, OKN
 jldi j3, 100
 jmul j2, j2, j3
 jld j3, j1, ALLN
 jdiv j2, j2, j3
 jcall putnum
-jcall f2
-jldi j1, 0
+jcall0 j1, f2
 jld j2, j1, WOK
 jldi j3, 100
 jmul j2, j2, j3
 jld j3, j1, WALL
 jdiv j2, j2, j3
 jcall putnum
-jcall f3
-jldi j1, 0
+jcall0 j1, f3
 jld j2, j1, SW
 jcall putnum
 jcall f4
@@ -1008,8 +991,7 @@ g_coded:
   jldi j3, 6
   jor j2, j2, j3
   jst j2, j1, WORD
-  jcall say
-  jldi j4, 0
+  jcall0 j4, say
   jwhile j5
     jld j2, j4, SONGM
     jldi j1, 0
@@ -1020,8 +1002,7 @@ g_coded:
     jldi j1, 1
     jsub j5, j5, j1
   jwend
-  jcall hear                    ; how many steps it lasted
-  jldi j1, 0
+  jcall0 j1, hear               ; how many steps it lasted
   jld j2, j1, MAIL + 8
   jst j2, j1, SLONG
   jldi j1, 0                    ; no step heard yet
@@ -1043,8 +1024,7 @@ g_coded:
   jshr j6, j6, j2
   jldi j7, 0
   jwhile j6
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jldi j4, 1                  ; 16 bits: 0FFFFh
     jldi j5, 16

@@ -79,10 +79,20 @@ macro jld rd, ra, imm    { j_word 10h, rd, ra, imm }
 macro jst rd, ra, imm    { j_word 11h, rd, ra, imm }
 macro jldb rd, ra, imm   { j_word 12h, rd, ra, imm }
 macro jstb rd, ra, imm   { j_word 13h, rd, ra, imm }
+; The album that adds while it looks (Capitan): the word at ra + imm gets rd added, and rd keeps the sum.
+macro jldadd rd, ra, imm { j_word 1Ah, rd, ra, imm }
+; The count made while it reads (Capitan): rd = the word at ra + rb * 8.
+macro jldx rd, ra, rb    { j_word 1Bh, rd, ra, rb }
+
+; The difference is the answer (Capitan): jump when rd is negative (jjn) or when it is not (jjnn, zero included).
+macro jjn rd, target     { j_word 18h, rd, 0, ((target) - $ - 4) / 4 }
+macro jjnn rd, target    { j_word 19h, rd, 0, ((target) - $ - 4) / 4 }
 
 ; Calls use a separate return stack the program cannot read or overwrite.
 macro jcall target       { j_word 14h, 0, 0, ((target) - $ - 4) / 4 }
 macro jret               { j_word 15h, 0, 0, 0 }
+; The zero is born with the return (Capitan): a jcall that leaves rd at zero when the routine comes back.
+macro jcall0 rd, target  { j_word 1Ch, rd, 0, ((target) - $ - 4) / 4 }
 
 ; Janax OS window: rd = requests attended; ra = address of the request queue in the cabin.
 ; Queue: count (8 bytes), then count entries of 32 bytes: type, a, b, result. Only inside Janax OS.

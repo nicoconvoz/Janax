@@ -460,6 +460,10 @@ end_table:
         jb      .none                   ; jumps
         cmp     eax, 13h
         jbe     .falls                  ; memory
+        cmp     eax, 1Ah
+        jb      .none                   ; calls, returns, the windows, jjn, jjnn
+        cmp     eax, 1Bh
+        jbe     .falls                  ; jldadd, jldx: memory too
 .none:                                  ; calls, returns, the windows, anything else: not a straight way
         mov     dword [rdi + rcx*4], 0
         jmp     .word

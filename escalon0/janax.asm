@@ -13,7 +13,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; bytes; criterion, not a measurement
 DATA_SIZE   = 1 shl 20          ; bytes of data memory; criterion, not a measurement
 RET_DEPTH   = 4096              ; nested calls; criterion, not a measurement
-OP_COUNT    = 18h
+OP_COUNT    = 1Dh
 
 section '.data' data readable writeable
 
@@ -29,6 +29,7 @@ section '.data' data readable writeable
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
             dq op_ld, op_st, op_ldb, op_stb, op_call, op_ret, fail_op, op_host   ; 16h jsys exists only in Janax OS
+            dq op_jn, op_jnn, op_ldadd, op_ldx, op_call0
 
   retstack  dq RET_DEPTH dup 0
   include 'ventanita_datos.inc'
@@ -291,7 +292,68 @@ op_ret:
         test    rbx, rbx
         jz      fail_ret
         dec     rbx
-        mov     r12, [retstack + rbx*8]
+        mov     rax, [retstack + rbx*8]
+        test    rax, rax
+        js      .zero                   ; it came from a jcall0
+        mov     r12, rax
+        jmp     next
+.zero:                                  ; the return word: bit 63 set, the register in bits 32..35, the pc below
+        mov     r12d, eax
+        shr     rax, 32
+        and     eax, 15
+        mov     qword [r14 + rax*8], 0
+        jmp     next
+
+op_call0:                               ; a jcall whose return leaves rd at zero
+        cmp     rbx, RET_DEPTH
+        jae     fail_call
+        mov     rax, r11
+        shl     rax, 32
+        or      rax, r12
+        bts     rax, 63
+        mov     [retstack + rbx*8], rax
+        inc     rbx
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+op_jn:
+        cmp     qword [r14 + r11*8], 0
+        jge     next
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+op_jnn:
+        cmp     qword [r14 + r11*8], 0
+        jl      next
+        movsx   rax, r9w
+        add     r12, rax
+        jmp     next
+
+op_ldadd:                               ; the word at ra + imm gets rd added; rd keeps the sum
+        movsx   rax, r9w
+        add     rax, [r14 + r8*8]
+        cmp     rax, DATA_SIZE - 8
+        ja      fail_mem
+        test    al, 7
+        jnz     fail_align
+        mov     rcx, [r15 + rax]
+        add     rcx, [r14 + r11*8]
+        mov     [r15 + rax], rcx
+        mov     [r14 + r11*8], rcx
+        jmp     next
+
+op_ldx:                                 ; rd = the word at ra + rb * 8
+        mov     rax, [r14 + r10*8]
+        shl     rax, 3
+        add     rax, [r14 + r8*8]
+        cmp     rax, DATA_SIZE - 8
+        ja      fail_mem
+        test    al, 7
+        jnz     fail_align
+        mov     rax, [r15 + rax]
+        mov     [r14 + r11*8], rax
         jmp     next
 
 op_host:                                ; the window to the host (ventanita.inc)

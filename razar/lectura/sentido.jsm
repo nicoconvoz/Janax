@@ -449,12 +449,10 @@ GFP   = 1D48h
 include '../../escalon0/janax.inc'
 jfirst j1, 10000h              ; first order: room 0
 
-jcall eat_mode                  ; a book to eat, if "come" names one: read there, and its skeletons kept for every Razar
-jldi j0, 0
+jcall0 j0, eat_mode             ; a book to eat, if "come" names one: read there, and its skeletons kept for every Razar
 jcall read_book
 jcall ort_load                  ; the spelling the books proved: a word that keeps no rule is read as its well written one
-jcall ort_fix
-jldi j1, 0                      ; its languages, by context; asked, it is read with the question's own
+jcall0 j1, ort_fix              ; its languages, by context; asked, it is read with the question's own
 jld j2, j1, EATON
 jjnz j2, ln_eating
 jcall ln_scan
@@ -486,12 +484,10 @@ jldi j3, 8
 jcall pl_new
 jldi j2, TMM
 jldi j3, 40
-jcall pl_new
-jldi j1, 0                      ; the book read once: every fact proves what it proves, and is forgotten
+jcall0 j1, pl_new               ; the book read once: every fact proves what it proves, and is forgotten
 jldi j2, 1
 jst j2, j1, GMODE
-jcall gather
-jldi j1, 0                      ; eaten: what it proved between skeletons goes to the library, and nothing is asked
+jcall0 j1, gather               ; eaten: what it proved between skeletons goes to the library, and nothing is asked
 jld j2, j1, EATON
 jjz j2, not_eating
 jcall arrows_calc               ; and what its own questions taught, and its compositions
@@ -522,8 +518,7 @@ jcall puts
 jld j2, j1, NNG
 jcall putmix
 jldi j1, S_MEM                  ; what the silhouettes take, in bytes
-jcall puts
-jldi j11, 0
+jcall0 j11, puts
 jldi j2, TMI
 jcall pl_bytes
 jldi j2, TPM
@@ -593,12 +588,9 @@ gather:
     jldi j2, 1
     jst j2, j1, WM
     jwhile j3
-      jcall g_window
-      jldi j1, 0
-      jld j2, j1, WM
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, WM
+      jcall0 j1, g_window
+      jldi j2, 1
+      jldadd j2, j1, WM
     jwcheck
       jldi j1, 0
       jld j2, j1, WM
@@ -733,11 +725,8 @@ g_core:
   jjnz j3, gc_no
   jldi j1, 0
   jld j2, j1, PMT
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMSD
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jldi j4, 63
   jsar j4, j3, j4
   jjnz j4, gc_yes
@@ -796,10 +785,8 @@ fl_ord:
   jsub j7, j7, j8
   jjz j7, fl_done
   jld j3, j1, FLS
-  jld j7, j3, 56
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j3, 56
+  jldi j7, 1
+  jldadd j7, j3, 56
   jjmp fl_keep
 fl_sym:
   jld j7, j4, 24                ; the same skeleton the other way, both affirmed
@@ -807,10 +794,8 @@ fl_sym:
   jor j7, j7, j8
   jjnz j7, fl_keep
   jld j3, j1, FLS
-  jld j7, j3, 40
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j3, 40
+  jldi j7, 1
+  jldadd j7, j3, 40
   jjmp fl_keep
 fl_other:
   jld j7, j4, 24                ; another skeleton, both affirmed: one pair more between the two, both ways
@@ -826,8 +811,7 @@ fl_t:
   jst j12, j1, FLT
   jld j11, j1, WK
   jld j10, j4, 8
-  jcall mm_add
-  jldi j1, 0
+  jcall0 j1, mm_add
   jld j4, j1, FLP
   jld j11, j4, 8
   jld j10, j1, WK
@@ -890,8 +874,7 @@ fc_keep:
   jldi j4, 1
   jcall k_side
   jldi j2, TLF
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, WK
   jld j3, j1, WB
   jldi j4, 2
@@ -949,8 +932,7 @@ f_key:
   jst j4, j1, FI2
   jcall hw
   jld j3, j1, FI2
-  jcall hw
-  jldi j3, 0
+  jcall0 j3, hw
   jcall hw
   jjnz j2, fk_k
   jldi j2, 1
@@ -1027,15 +1009,13 @@ sk_report:
     jwend
     jjz j12, sr_done
     jst j12, j1, FE
-    jcall sk_line
-    jldi j1, 0
+    jcall0 j1, sk_line
     jld j12, j1, FE
     jldi j2, 0                  ; written: out of the count (its pairs kept negative)
     jld j3, j12, 8
     jsub j2, j2, j3
     jst j2, j12, 8
-    jcall flush
-    jldi j1, 0
+    jcall0 j1, flush
     jld j2, j1, TOPN2
     jldi j3, 1
     jsub j2, j2, j3
@@ -1183,8 +1163,7 @@ best_partner:
     jjnz j6, bp2_next
     jld j2, j3, 16              ; a door is the same skeleton with one difference: else no partner
     jcall find_mid
-    jcall one_diff
-    jldi j1, 0
+    jcall0 j1, one_diff
     jld j3, j1, FI3
     jjz j2, bp2_next
     jld j2, j1, FI4
@@ -1204,13 +1183,11 @@ best_partner:
 ; Uses j1-j8, j13.
 one_diff:
   jldi j13, MB2
-  jcall m_collect
-  jldi j1, 0
+  jcall0 j1, m_collect
   jst j2, j1, MN2
   jld j12, j1, FE
   jldi j13, MB1
-  jcall m_collect
-  jldi j1, 0
+  jcall0 j1, m_collect
   jld j3, j1, MN2
   jsub j3, j2, j3
   jjnz j3, od_no
@@ -1254,11 +1231,8 @@ m_collect:
     jldi j1, 0
     jldi j2, 1
     jadd j7, j7, j2
-    jldi j2, 3
-    jshl j2, j7, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j7
     jst j2, j1, PMT
     jcall n_flags
     jldi j4, 1
@@ -1294,8 +1268,7 @@ put_mid:
   jldi j2, 34
   jcall putch
   jldi j2, 95
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jldi j11, 1
   jwhile j10
     jldi j1, 0
@@ -1340,8 +1313,7 @@ cores:
   jldi j2, 2
   jst j2, j1, PASS
   jst j1, j1, QN
-  jcall scan
-  jldi j1, 0
+  jcall0 j1, scan
   jst j1, j1, QSI
   jld j2, j1, QN
   jwhile j2
@@ -1417,12 +1389,10 @@ core_one:
   jcall putch
   jldi j2, TSN
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jldi j2, 2
   jst j2, j1, GMODE
-  jcall gather
-  jldi j1, 0
+  jcall0 j1, gather
   jldi j2, 3
   jst j2, j1, GMODE
   jcall gather
@@ -1487,8 +1457,7 @@ fm_deduce:
   jld j2, j1, WSK               ; a skeleton that turns
   jst j2, j1, FE
   jldi j12, 1
-  jcall best_partner
-  jldi j1, 0
+  jcall0 j1, best_partner
   jld j2, j1, TBEST
   jjz j2, fm_done
   jld j3, j1, WB                ; the turned fact: not said in the book, and deduced once
@@ -1497,8 +1466,7 @@ fm_deduce:
   jldi j2, TSN
   jcall pl_take
   jjz j6, fm_done
-  jcall fm_gender               ; its two cores where it puts them: of the gender of what is next to them?
-  jldi j1, 0
+  jcall0 j1, fm_gender          ; its two cores where it puts them: of the gender of what is next to them?
   jld j2, j1, GST
   jldi j1, S_DED
   jjz j2, fm_say
@@ -1568,8 +1536,7 @@ fm_gender:
   jld j2, j1, TBEST
   jcall find_mid
   jldi j13, MB1
-  jcall m_collect
-  jldi j1, 0
+  jcall0 j1, m_collect
   jjz j2, fg_done
   jldi j3, 1
   jsub j2, j2, j3
@@ -1578,8 +1545,7 @@ fm_gender:
   jld j2, j2, MB1               ; the last piece, before WA
   jld j3, j1, WA
   jldi j4, 4
-  jcall fg_one
-  jldi j1, 0
+  jcall0 j1, fg_one
   jld j2, j1, MB1               ; the first, after WB
   jld j3, j1, WB
   jldi j4, 16
@@ -1591,19 +1557,13 @@ fg_done:
 ; not seen with. Uses j1-j8.
 fg_one:
   jldi j1, 0
-  jldi j5, 3
-  jshl j5, j2, j5
   jld j6, j1, ROOMGN
-  jadd j5, j5, j6
-  jld j5, j5, 0
+  jldx j5, j6, j2
   jldi j6, 3
   jand j5, j5, j6               ; its gender
   jjz j5, fo_done
-  jldi j6, 3
-  jshl j6, j3, j6
-  jld j7, j1, ROOMGN
-  jadd j6, j6, j7
-  jld j6, j6, 0                 ; what the core was seen next to
+  jld j7, j1, ROOMGN            ; what the core was seen next to
+  jldx j6, j7, j3
   jmul j7, j5, j4
   jand j7, j6, j7
   jjnz j7, fo_done
@@ -1634,8 +1594,7 @@ genders:
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMGN
   jldi j2, 2                    ; (a word looked up, never added)
   jst j2, j1, PASS
@@ -1645,11 +1604,8 @@ genders:
   jsub j10, j10, j2
   jwhile j10
     jldi j1, 0
-    jldi j3, 3
-    jshl j3, j9, j3
     jld j4, j1, ROOMI
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j9
     jld j5, j3, 16
     jld j3, j3, 8
     jld j4, j1, ROOMA
@@ -1675,8 +1631,7 @@ genders:
   gn_end:
     jst j8, j1, GNG
     jst j5, j1, WBN
-    jcall wb_need
-    jldi j4, 0                  ; its twin: the same, the other ending
+    jcall0 j4, wb_need          ; its twin: the same, the other ending
     jadd j7, j5, j1
     jwhile j7
       jldb j6, j3, 0
@@ -1698,8 +1653,7 @@ genders:
     jstb j6, j8, 0
     jst j9, j1, GNW
     jst j10, j1, GNL
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jld j9, j1, GNW
     jld j10, j1, GNL
     jldi j3, 1
@@ -1730,8 +1684,7 @@ fl_gender:
   jadd j2, j2, j3
   jld j3, j1, WA
   jldi j4, 16
-  jcall fg_mark
-  jldi j1, 0
+  jcall0 j1, fg_mark
   jld j2, j1, WJ
   jld j3, j1, WM
   jadd j2, j2, j3
@@ -1742,11 +1695,8 @@ fl_gender:
 ; The piece at unit j2 next to the core j3 on side j4: its gender, if it has one, marked on the core. Uses j1-j8.
 fg_mark:
   jldi j1, 0
-  jldi j5, 3
-  jshl j5, j2, j5
   jld j6, j1, ROOMT
-  jadd j5, j5, j6
-  jld j5, j5, 0
+  jldx j5, j6, j2
   jldi j6, 3
   jshl j5, j5, j6
   jld j6, j1, ROOMGN
@@ -1808,29 +1758,23 @@ arrows_calc:
   jld j11, j1, NV
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMAR
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMCN
   jst j1, j1, NBLD
   jldi j2, 1
   jst j2, j1, AMODE
-  jcall ar_walk
-  jldi j1, 0                    ; (the book's ordinary end: the limit that closes the most buildings, the first of
+  jcall0 j1, ar_walk            ; (the book's ordinary end: the limit that closes the most buildings, the first of
   jst j1, j1, ARML              ; equals)
   jldi j11, 0
   jldi j9, 1
   jwhile j2
-    jldi j3, 3
-    jshl j3, j9, j3
     jld j4, j1, ROOMCN
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j9
     jsub j4, j11, j3
     jldi j5, 63
     jsar j4, j4, j5
@@ -1860,8 +1804,7 @@ arm_d:
   jjmp ar_walk
 ar_write:
   jldi j1, S_ARROW              ; written, the most said first
-  jcall puts
-  jldi j2, 0
+  jcall0 j2, puts
   jst j2, j1, FI2
   ar_print:
     jldi j1, 0
@@ -1876,8 +1819,7 @@ ar_write:
       jadd j2, j9, j1
       jst j9, j1, FI3
       jst j10, j1, FI4
-      jcall is_arrow
-      jldi j1, 0
+      jcall0 j1, is_arrow
       jld j9, j1, FI3
       jld j10, j1, FI4
       jjz j2, arp_next
@@ -1923,17 +1865,14 @@ ar_write:
     jld j2, j3, 0
     jcall putnum
     jldi j2, 41
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j3, j1, FI4             ; (not again: its count goes negative, it is no arrow while it is written)
     jld j2, j3, 16
     jldi j4, 0
     jsub j2, j4, j2
     jst j2, j3, 16
-    jld j2, j1, FI2
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, FI2
+    jldi j2, 1
+    jldadd j2, j1, FI2
     jldi j3, 20                 ; (twenty written: criterion, the report's size; the rest stay arrows)
     jsub j2, j2, j3
     jjnz j2, ar_print
@@ -1977,11 +1916,8 @@ ar_walk:
   jand j10, j10, j3
   jwhile j10
     jldi j1, 0
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jjz j2, aw_next
     jldi j3, 24
     jmul j3, j2, j3
@@ -1999,10 +1935,8 @@ ar_walk:
     jldi j7, 1
     jsub j6, j6, j7
     jjnz j6, aw_words
-    jld j6, j1, NBLD
-    jldi j7, 1
-    jadd j6, j6, j7
-    jst j6, j1, NBLD
+    jldi j6, 1
+    jldadd j6, j1, NBLD
     jldi j6, 3
     jshl j6, j2, j6
     jld j7, j1, ROOMCN
@@ -2012,11 +1946,8 @@ ar_walk:
     jadd j7, j7, j8
     jst j7, j6, 0
   jwhile j6
-    jldi j2, 3
-    jshl j2, j5, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j5
     jldi j3, 1
     jadd j5, j5, j3
     jst j5, j1, AST
@@ -2095,8 +2026,7 @@ qa_scan:
   jcall qa_pairs_on             ; (the pairs said, when asked for: the cardumen's food)
   jldi j2, QLT
   jldi j3, 24
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, QLN
   jst j1, j1, QAN
   jst j1, j1, QAM
@@ -2106,11 +2036,8 @@ qa_scan:
   jldi j9, 1
   jwhile j2
     jst j9, j1, QAI
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jjz j2, qa_next
     jldi j3, 24
     jmul j3, j2, j3
@@ -2124,14 +2051,12 @@ qa_scan:
     jjz j6, qa_empty
     jld j2, j1, QAQ             ; the one before asked: this one answers it
     jjz j2, qa_ask
-    jcall qa_pair_say
-    jldi j1, 0
+    jcall0 j1, qa_pair_say
     jld j2, j1, QAN
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, QAN
-    jcall qa_shared
-    jldi j1, 0
+    jcall0 j1, qa_shared
     jjz j2, qa_ask
     jld j2, j1, QAM
     jldi j3, 1
@@ -2141,11 +2066,9 @@ qa_scan:
     jjnz j2, qa_ask             ; library's books teach it, lib_load)
     jcall qa_learn
   qa_ask:
-    jcall qa_asks               ; does this one ask?
-    jldi j1, 0
+    jcall0 j1, qa_asks          ; does this one ask?
     jst j2, j1, QAQ
-    jcall qa_line_say           ; (every building said, when asked for)
-    jldi j1, 0
+    jcall0 j1, qa_line_say      ; (every building said, when asked for)
     jld j3, j1, QAS             ; (the one before it, its context)
     jst j3, j1, QACS
     jld j2, j1, QAT
@@ -2195,8 +2118,7 @@ qa_pairs_on:
   jldi j10, 4
   jldi j11, S_PARES
   jldi j12, 5
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, qpo_done
@@ -2208,16 +2130,14 @@ qa_pairs_on:
   jor j10, j10, j2
   jldi j11, QAWH + 8
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, QAWP + 16
   jld j10, j1, QAWH
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, QAWP + 16         ; (nothing read: the open made it, and it goes)
   jldi j3, 63
   jsar j3, j2, j3
@@ -2245,8 +2165,7 @@ qa_pair_say:
   jldi j2, 58
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j9, j1, QACS
   jld j10, j1, QAS
   jldi j2, 1
@@ -2259,8 +2178,7 @@ qa_pair_say:
   jldi j2, 58
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j9, j1, QAS
   jld j10, j1, QAE
   jcall qps_units
@@ -2271,8 +2189,7 @@ qa_pair_say:
   jldi j2, 58
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j9, j1, QAT
   jld j10, j1, QAI
   jcall qps_units
@@ -2297,8 +2214,7 @@ qls_put:
   jldi j2, 58
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j9, j1, QAT
   jld j10, j1, QAI
   jcall qps_units
@@ -2347,8 +2263,7 @@ qa_learn:
   jwhile j3
     jcall tok_at
     jst j2, j1, QLC
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jjz j3, ql_pnext
     jld j2, j1, QLC             ; said in the question?
     jcall q_in
@@ -2369,8 +2284,7 @@ qa_learn:
       jjz j3, ql_left
       jadd j2, j9, j1
       jcall tok_at
-      jcall g_core
-      jldi j1, 0
+      jcall0 j1, g_core
       jjz j3, ql_rnext
       jld j9, j1, QLP             ; the hook: the first word after the core
       ql_rh:
@@ -2389,17 +2303,14 @@ qa_learn:
         jjz j2, ql_rnext
         jst j2, j1, QLH
         jst j9, j1, QLK
-        jcall w_mark
-        jldi j1, 0
+        jcall0 j1, w_mark
         jld j9, j1, QLK
         jjnz j3, ql_rh
       jcall ql_note
     ql_rnext:
       jldi j1, 0
-      jld j2, j1, QLW
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, QLW
+      jldi j2, 1
+      jldadd j2, j1, QLW
     jwcheck
       jldi j1, 0
       jld j2, j1, QLW
@@ -2423,8 +2334,7 @@ qa_learn:
       jjnz j3, ql_pnext
       jadd j2, j9, j1
       jcall tok_at
-      jcall g_core
-      jldi j1, 0
+      jcall0 j1, g_core
       jjz j3, ql_lnext
       jld j9, j1, QLP             ; the hook: the last word before the core
       ql_lh:
@@ -2443,17 +2353,14 @@ qa_learn:
         jjz j2, ql_lnext
         jst j2, j1, QLH
         jst j9, j1, QLK
-        jcall w_mark
-        jldi j1, 0
+        jcall0 j1, w_mark
         jld j9, j1, QLK
         jjnz j3, ql_lh
       jcall ql_note
     ql_lnext:
       jldi j1, 0
-      jld j2, j1, QLW
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, QLW
+      jldi j2, 1
+      jldadd j2, j1, QLW
     jwcheck
       jldi j1, 0
       jld j2, j1, QLW
@@ -2462,10 +2369,8 @@ qa_learn:
     jwend
   ql_pnext:
     jldi j1, 0
-    jld j2, j1, QLP
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QLP
+    jldi j2, 1
+    jldadd j2, j1, QLP
   jwcheck
     jldi j1, 0
     jld j2, j1, QLP
@@ -2490,8 +2395,7 @@ ql_note:
   jld j5, j1, QLH
   jcall ql_key
   jldi j2, QLT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, QLS
   jldi j3, 3
   jshl j2, j2, j3
@@ -2518,8 +2422,7 @@ ql_decide:
   jld j2, j1, QLK
   jcall ql_key
   jldi j2, QLT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, qld_yes
   jld j5, j4, 8
@@ -2561,11 +2464,8 @@ q_in:
   jldi j1, 0
   jld j4, j1, QAS
   jwhile j3
-    jldi j3, 3
-    jshl j3, j4, j3
     jld j5, j1, ROOMT
-    jadd j3, j3, j5
-    jld j3, j3, 0
+    jldx j3, j5, j4
     jsub j3, j3, j2
     jjz j3, qi_yes
     jldi j3, 1
@@ -2599,8 +2499,7 @@ ql_report:
   jldi j1, S_QAL
   jcall puts
   jld j2, j1, QLN
-  jcall putnum
-  jldi j1, 0
+  jcall0 j1, putnum
   jld j9, j1, QLT
   jld j10, j1, QLT + 8
   jldi j2, 1
@@ -2625,8 +2524,7 @@ ql_report:
     jldi j3, 1
     jsub j2, j2, j3
     jshr j2, j2, j3
-    jcall putword
-    jldi j1, 0
+    jcall0 j1, putword
     jld j9, j1, QLK
     jld j2, j9, 0
     jldi j3, 1
@@ -2645,8 +2543,7 @@ ql_report:
     jcall putch
     jld j9, j1, QLK
     jld j2, j9, 16
-    jcall putnum
-    jldi j1, 0
+    jcall0 j1, putnum
     jld j9, j1, QLK
     jld j10, j1, QLW
   qlr_next:
@@ -2676,11 +2573,9 @@ qa_eat:
   jst j2, j1, QLW
   jst j1, j1, QLN
   jst j1, j1, QLS
-  jcall qe_walk
-  jldi j1, 0
+  jcall0 j1, qe_walk
   jld j11, j1, QLW
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, QLC
   jldi j2, 1
   jst j2, j13, 0
@@ -2691,11 +2586,9 @@ qa_eat:
   jst j2, j1, QLP
   jldi j2, 1
   jst j2, j1, QLS
-  jcall qe_walk                 ; written
-  jldi j1, 0
+  jcall0 j1, qe_walk            ; written
   jldi j11, 64
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ELAB
   jld j5, j1, EATB
   jldi j3, 3
@@ -2707,15 +2600,13 @@ qa_eat:
   jldi j10, 12
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, QLN
   jjz j2, qe_done               ; (nothing taught: no file)
   jldi j10, 4
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, qe_done
@@ -2726,8 +2617,7 @@ qa_eat:
   jor j10, j10, j2
   jld j11, j1, QLC
   jld j12, j1, QLW
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -2852,8 +2742,7 @@ pq_file:
     jst j9, j1, QLP
     jst j4, j1, WLEN
     jst j4, j1, WBN
-    jcall wb_need
-    jldi j6, 0
+    jcall0 j6, wb_need
     jwhile j3
       jadd j3, j2, j6
       jldb j3, j3, 0
@@ -2866,8 +2755,7 @@ pq_file:
       jsub j3, j6, j4
     jwend
   pqf_letters:
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -2880,8 +2768,7 @@ pq_file:
     jand j2, j2, j3
     jcall ql_key
     jldi j2, QLT
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, QLP
     jld j2, j4, 8
     jld j3, j9, 8
@@ -2920,8 +2807,7 @@ glue_scan:
   jmul j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, GFL
   jst j1, j1, GFN
   jldi j2, 6
@@ -2932,8 +2818,7 @@ glue_scan:
   jcall pl_new
   jldi j2, GKT
   jldi j3, 48
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, GLN
   jst j1, j1, GI
   jwhile j3
@@ -2992,12 +2877,9 @@ glue_scan:
       jst j4, j1, GJ              ; (how far: 0 the same core, 1 right after, 2 and 3 with glue)
       jld j2, j3, 16
       jst j2, j1, GK2
-      jcall gc_pair
-      jldi j1, 0
-      jld j2, j1, GT1
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, GT1
+      jcall0 j1, gc_pair
+      jldi j2, 1
+      jldadd j2, j1, GT1
     jwcheck
       jldi j1, 0
       jld j2, j1, GT1
@@ -3006,10 +2888,8 @@ glue_scan:
     jwend
   gc_nextf:
     jldi j1, 0
-    jld j2, j1, GI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, GI
+    jldi j2, 1
+    jldadd j2, j1, GI
   jwcheck
     jldi j1, 0
     jld j2, j1, GI
@@ -3055,8 +2935,7 @@ gcp_key:
 gcp_k:
   jst j5, j1, GT3
   jldi j2, GLT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -3082,8 +2961,7 @@ gcp_k:
   jldi j5, 1
 gcp_k2:
   jldi j2, GKT                  ; {key, times, the first skeleton, the glue's print, the other skeleton, how far}
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -3115,8 +2993,7 @@ glue_report:
   jcall putch
   jldi j2, GKT
   jcall gl_proved
-  jcall putnum
-  jldi j1, 0
+  jcall0 j1, putnum
   jst j1, j1, GI
   jwhile j3
     jldi j11, 0                 ; the glue not written yet that joins the most
@@ -3145,8 +3022,7 @@ glue_report:
     jjz j12, glr_done
     jst j12, j1, GP
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j12, j1, GP
     jld j2, j12, 24
     jjnz j2, glr_far
@@ -3176,10 +3052,8 @@ glue_report:
       jcall putword
     glr_put:
       jldi j1, 0
-      jld j2, j1, GT1
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, GT1
+      jldi j2, 1
+      jldadd j2, j1, GT1
       jld j12, j1, GP
       jld j3, j12, 16
       jld j4, j12, 24
@@ -3199,23 +3073,19 @@ glue_report:
     jwend
   glr_count:
     jldi j2, 40
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j12, j1, GP
     jld j2, j12, 8
     jcall putnum
     jldi j2, 41
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j12, j1, GP             ; (not again: its count goes negative while it is written)
     jld j2, j12, 8
     jldi j3, 0
     jsub j2, j3, j2
     jst j2, j12, 8
-    jld j2, j1, GI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, GI
+    jldi j2, 1
+    jldadd j2, j1, GI
   jwcheck
     jldi j1, 0
     jld j2, j1, GI
@@ -3263,8 +3133,7 @@ f_glue:
   jjnz j2, fgl_done
   jld j5, j1, WK
   jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, fgl_done
   jld j2, j4, 8
@@ -3314,36 +3183,29 @@ th_ready:
   jcall th_seed
   jldi j2, TCS                  ; the question is a recipe: what the answer already used of its furniture (its core and
   jldi j3, 8                    ; its middle's) is spent
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j5, j1, QCW
   jldi j2, TCS
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j12, j1, WSK
   jcall th_spend
   jldi j2, TVT
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, NV               ; the row: a word at most once
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, THQ
   jst j1, j1, THQH
   jst j1, j1, THQT
   jld j2, j1, THX
   jcall th_push
   jwhile j3
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j4, j1, THQ
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j2
     jst j3, j1, THX
     jldi j3, 1
     jadd j2, j2, j3
@@ -3351,19 +3213,16 @@ th_ready:
     jst j1, j1, THW             ; its branches weighed: each fact that may go on votes with the times the books went
     jst j1, j1, THWG            ; on with its structure (a pair said n times votes n times); those that ask what the
     jst j1, j1, THPS            ; question asks apart
-    jcall th_branches
-    jldi j1, 0
+    jcall0 j1, th_branches
     jld j2, j1, THWG            ; no branch of the question's: the question still points there, read it again
     jjnz j2, th_some
     jld j2, j1, THX
-    jcall want_word
-    jldi j1, 0
+    jcall0 j1, want_word
   th_some:
     jld j2, j1, THW
     jjz j2, th_lap              ; (none at all: a word it ran out of facts on)
   th_pick:
-    jcall th_rand               ; its choice: the seed's lottery over the votes (what it does not choose it does not say)
-    jldi j1, 0
+    jcall0 j1, th_rand          ; its choice: the seed's lottery over the votes (what it does not choose it does not say)
     jldi j3, 1
     jshr j2, j2, j3
     jld j3, j1, THWG            ; (the question guides: among its own branches first, if it has some)
@@ -3376,8 +3235,7 @@ th_ready:
     jst j2, j1, THP
     jldi j2, 1
     jst j2, j1, THPS
-    jcall th_branches
-    jldi j1, 0
+    jcall0 j1, th_branches
   jwcheck
   th_lap:
     jldi j1, 0                  ; the next word of the row
@@ -3416,11 +3274,8 @@ th_twice:
     jmul j3, j7, j3
     jld j4, j1, GFL
     jadd j9, j3, j4
-    jldi j3, 3
-    jshl j3, j7, j3
     jld j4, j1, THN
-    jadd j3, j3, j4
-    jld j7, j3, 0
+    jldx j7, j4, j7
     jld j3, j9, 16
     jld j4, j1, THC
     jsub j3, j3, j4
@@ -3450,8 +3305,7 @@ thw_no:
 th_branches:
   jldi j2, THSN
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j2, j1, THX
   jldi j3, 3
   jshl j2, j2, j3
@@ -3463,11 +3317,8 @@ th_branches:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, THG             ; (the fact's number)
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j4, j1, THN
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j2
     jst j3, j1, THI
     jld j2, j1, THG
     jldi j3, 24
@@ -3479,8 +3330,7 @@ th_branches:
     jst j2, j1, THY
     jld j5, j1, THY             ; a word not thought on yet
     jldi j2, TVT
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjnz j2, thb_lap
     jld j2, j1, THG             ; its skeleton: the books went on with it, two times at least
@@ -3491,8 +3341,7 @@ th_branches:
     jld j5, j9, 16
     jst j5, j1, THC
     jldi j2, KCT
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjz j2, thb_lap
     jld j2, j4, 8
@@ -3504,16 +3353,14 @@ th_branches:
     jjnz j2, thb_lap
     jld j5, j1, THC             ; and a word in its middle
     jldi j2, TMI
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjz j2, thb_lap
     jst j4, j1, THE
     jadd j12, j4, j1
     jcall sk_word
     jjz j2, thb_lap
-    jcall th_goal               ; the question guides it? (said once is enough then, as for an answer the book says)
-    jldi j1, 0
+    jcall0 j1, th_goal          ; the question guides it? (said once is enough then, as for an answer the book says)
     jst j2, j1, THGO
     jjnz j2, thb_guided
     jcall th_twice              ; free: the fact itself said twice at least (the anecdote rule)
@@ -3552,8 +3399,7 @@ th_branches:
     jsar j4, j4, j5
     jjz j4, thb_lap
     jcall th_note               ; chosen: thought once more (its diary)
-    jcall th_line               ; woven into the sentence, or an answer it thought
-    jldi j1, 0
+    jcall0 j1, th_line          ; woven into the sentence, or an answer it thought
     jld j2, j1, THY
     jjmp th_push
 thb_done:
@@ -3597,11 +3443,8 @@ th_rand:
 ; The print of word j2's letters folded into j5 (FNV-1a). Uses j1, j3-j8.
 th_wprint:
   jldi j1, 0
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j7, j3, 16
   jld j3, j3, 8
   jld j4, j1, ROOMA
@@ -3717,8 +3560,7 @@ th_genome:
 thg_hdone:
   jldi j11, S_GEN               ; its genome
   jldi j12, 6
-  jcall sx_read
-  jldi j1, 0
+  jcall0 j1, sx_read
   jld j2, j1, SXN
   jldi j3, 8
   jsub j2, j2, j3
@@ -3763,8 +3605,7 @@ thg_qdone:
   jldi j10, 4
   jldi j11, S_GEN
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, thg_done
@@ -3775,8 +3616,7 @@ thg_qdone:
   jor j10, j10, j2
   jldi j11, GEN
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -3827,13 +3667,11 @@ th_votes:
   jst j2, j1, THVV
   jcall th_tkey
   jldi j2, THSN
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, thv_done
   jld j5, j1, THK2
   jldi j2, DRC
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, thv_done
   jld j2, j4, 8
@@ -3862,8 +3700,7 @@ th_note:
 thn_k:
   jst j5, j1, THCH
   jldi j2, DIA
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -3873,8 +3710,7 @@ thn_k:
   jld j5, j1, THK2              ; a new route to it
   jst j5, j4, 16
   jldi j2, DRC
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -3892,14 +3728,12 @@ dia_load:
   jcall pl_new
   jldi j2, DRC
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, DIAH
   jst j1, j1, DIAW
   jldi j11, S_DIA
   jldi j12, 6
-  jcall sx_read
-  jldi j1, 0
+  jcall0 j1, sx_read
   jld j2, j1, SXN
   jldi j3, 16
   jsub j2, j2, j3
@@ -3931,8 +3765,7 @@ dl_n:
     jst j9, j1, TI
     jst j10, j1, TJ
     jldi j2, DIA
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, TI
     jld j10, j1, TJ
     jld j2, j9, 16
@@ -3946,8 +3779,7 @@ dl_n:
     jjz j6, dl_next
     jld j5, j9, 8
     jldi j2, DRC
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, TI
     jld j10, j1, TJ
     jld j2, j4, 8
@@ -3979,8 +3811,7 @@ dia_write:
   jldi j2, 16
   jadd j11, j11, j2
   jst j11, j1, DIAN
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DIAB
   jldi j2, 2
   jst j2, j13, 0
@@ -4016,8 +3847,7 @@ dw_file:
   jldi j10, 4
   jldi j11, S_DIA
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, dw_done
@@ -4028,8 +3858,7 @@ dw_file:
   jor j10, j10, j2
   jld j11, j1, DIAB
   jld j12, j1, DIAN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -4059,8 +3888,7 @@ th_goal:
     jadd j2, j9, j11
     jcall tok_at
     jst j2, j1, QWL
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jjz j3, thgo_next
     jld j2, j1, QWL
     jcall q_has
@@ -4068,8 +3896,7 @@ th_goal:
     jldi j1, 0
     jld j5, j1, QWL             ; (and not spent yet by the thought)
     jldi j2, TCS
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjnz j2, thgo_next
     jldi j2, 1
@@ -4096,8 +3923,7 @@ th_spend:
     jadd j2, j9, j11
     jcall tok_at
     jst j2, j1, QWL
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jjz j3, ths2_next
     jld j5, j1, QWL
     jldi j2, TCS
@@ -4169,12 +3995,10 @@ q_struct:
     jsar j3, j3, j4
     jjnz j3, qs_back
     jst j2, j1, QSW
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, qs_back
   jld j2, j1, QSW               ; a foundation, no arrow
-  jcall g_core
-  jldi j1, 0
+  jcall0 j1, g_core
   jjnz j3, qs_done
   jld j2, j1, QSW
   jcall is_arrow
@@ -4240,15 +4064,13 @@ qs_k:
   jst j2, j1, QSK
   jadd j5, j2, j1
   jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, qs_done
   jst j4, j1, QSE
   jldi j2, QST                  ; the fact of it the reading says the most
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, QSB
   jst j1, j1, QSN
   jwhile j3
@@ -4275,12 +4097,9 @@ qs_k:
     jldi j5, 1
   qs_fk:
     jldi j2, QST
-    jcall pl_take
-    jldi j1, 0
-    jld j2, j4, 8
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j4, 8
+    jcall0 j1, pl_take
+    jldi j2, 1
+    jldadd j2, j4, 8
     jld j3, j1, QSB
     jsub j3, j3, j2
     jldi j4, 63
@@ -4293,10 +4112,8 @@ qs_k:
     jst j2, j1, QSZ
   qs_fnext:
     jldi j1, 0
-    jld j2, j1, QSN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QSN
+    jldi j2, 1
+    jldadd j2, j1, QSN
   jwcheck
     jldi j1, 0
     jld j2, j1, QSN
@@ -4376,8 +4193,7 @@ qa2_done:
 qa2_most:
   jldi j2, QST
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, QSB
   jst j1, j1, QSN
   jwhile j3
@@ -4405,8 +4221,7 @@ qa2_most:
     jld j5, j9, 16
     jst j5, j1, QSK
     jldi j2, TMI
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjz j2, qa2_fnext
     jst j4, j1, QSZ
@@ -4426,12 +4241,9 @@ qa2_most:
     jldi j5, 1
   qa2_fk:
     jldi j2, QST
-    jcall pl_take
-    jldi j1, 0
-    jld j2, j4, 8
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j4, 8
+    jcall0 j1, pl_take
+    jldi j2, 1
+    jldadd j2, j4, 8
     jld j3, j1, QSB
     jsub j3, j3, j2
     jldi j4, 63
@@ -4446,10 +4258,8 @@ qa2_most:
     jst j2, j1, QSL
   qa2_fnext:
     jldi j1, 0
-    jld j2, j1, QSN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QSN
+    jldi j2, 1
+    jldadd j2, j1, QSN
   jwcheck
     jldi j1, 0
     jld j2, j1, QSN
@@ -4472,8 +4282,7 @@ qa2_said:
   jld j12, j1, QSL
   jcall put_plain
   jld j2, j1, QSO
-  jcall putword
-  jldi j1, 0                    ; thought on from its other end, as an answer the book says
+  jcall0 j1, putword            ; thought on from its other end, as an answer the book says
   jld j2, j1, QSL
   jst j2, j1, WSK
   jldi j2, 1
@@ -4512,8 +4321,7 @@ ins_room:
   jld j11, j1, NV
   jldi j2, INSQ
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, INS
   jld j2, j1, NV
   jldi j3, INSQ
@@ -4528,20 +4336,17 @@ ins_room:
 insr_done:
   jldi j2, PRT                  ; (and the contexts two instructions share)
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jret
 
 ; The unit at j2's kind: 0 furniture, 1 foundation, 2 a limit, a mark or an edge. Uses j1-j5.
 ins_kind:
   jjz j2, ik_l
   jst j2, j1, INSW2
-  jcall w_mark
-  jldi j1, 0
+  jcall0 j1, w_mark
   jjnz j3, ik_l
   jld j2, j1, INSW2
-  jcall g_core
-  jldi j1, 0
+  jcall0 j1, g_core
   jjz j3, ik_e
   jldi j2, 0
   jret
@@ -4563,12 +4368,10 @@ ins_scan:
     jcall tok_at
     jjz j2, is_next
     jst j2, j1, INSW
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, is_next
     jld j2, j1, INSW
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jjnz j3, is_next            ; (furniture: no instruction)
     jld j2, j1, INSI            ; its way: left kind * 3 + right kind
     jldi j3, 1
@@ -4640,8 +4443,7 @@ is_swaps:
   iss_k:
     jadd j5, j2, j1
     jldi j2, TMI
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j9, j1, INSI
     jld j10, j1, INSK
     jld j2, j4, 0
@@ -4670,11 +4472,9 @@ ins_eat:
   jst j1, j1, QLS
   jcall ie_walk
   jcall ie_pairs
-  jcall sk_sect
-  jldi j1, 0
+  jcall0 j1, sk_sect
   jld j11, j1, QLW
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, QLC
   jldi j2, 3
   jst j2, j13, 0
@@ -4687,11 +4487,9 @@ ins_eat:
   jst j2, j1, QLS
   jcall ie_walk
   jcall ie_pairs
-  jcall sk_sect
-  jldi j1, 0
+  jcall0 j1, sk_sect
   jldi j11, 64
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ELAB
   jld j5, j1, EATB
   jldi j3, 9
@@ -4703,16 +4501,14 @@ ins_eat:
   jldi j10, 12
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, QLC
   jld j2, j2, 8
   jjz j2, ie_done
   jldi j10, 4
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ie_done
@@ -4723,8 +4519,7 @@ ins_eat:
   jor j10, j10, j2
   jld j11, j1, QLC
   jld j12, j1, QLW
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -4749,11 +4544,8 @@ ie_walk:
     jadd j8, j3, j4
     jld j2, j8, 0
     jjz j2, iew_next
-    jldi j3, 3                  ; its letters
-    jshl j3, j9, j3
-    jld j4, j1, ROOMI
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jld j4, j1, ROOMI           ; its letters
+    jldx j3, j4, j9
     jld j5, j3, 16
     jld j6, j3, 8
     jld j4, j1, ROOMA
@@ -4842,10 +4634,8 @@ iep_go:
     jjnz j3, iep_next
     jst j9, j1, FT3
     jst j10, j1, FT4
-    jld j3, j1, FT1
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, FT1
+    jldi j3, 1
+    jldadd j3, j1, FT1
     jld j3, j1, QLS
     jjz j3, iep_size
     jld j3, j1, QLP
@@ -4865,8 +4655,7 @@ iep_go:
     jcall iep_word
     jld j9, j1, FT3
     jld j2, j9, 16
-    jcall iep_word
-    jldi j1, 0
+    jcall0 j1, iep_word
     jld j9, j1, FT3
     jld j10, j1, FT4
   iep_next:
@@ -4890,11 +4679,8 @@ iep_out:
 ; Word j2 ({its bytes, its letters padded}) counted (QLW) or written at QLP. Uses j1-j8.
 iep_word:
   jldi j1, 0
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j5, j3, 16
   jld j6, j3, 8
   jld j4, j1, ROOMA
@@ -4982,8 +4768,7 @@ pff_v:
     jst j9, j1, QLP
     jst j4, j1, WLEN
     jst j4, j1, WBN
-    jcall wb_need
-    jldi j6, 0
+    jcall0 j6, wb_need
     jwhile j3
       jadd j3, j2, j6
       jldb j3, j3, 0
@@ -4996,8 +4781,7 @@ pff_v:
       jsub j3, j6, j4
     jwend
   pff_letters:
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -5095,8 +4879,7 @@ ppr_word:
   jst j5, j1, QLS
   jst j4, j1, WLEN
   jst j4, j1, WBN
-  jcall wb_need
-  jldi j6, 0
+  jcall0 j6, wb_need
   jwhile j3
     jadd j3, j2, j6
     jldb j3, j3, 0
@@ -5109,8 +4892,7 @@ ppr_word:
     jsub j3, j6, j4
   jwend
 ppw_ld:
-  jcall word_id
-  jldi j1, 0
+  jcall0 j1, word_id
   jadd j3, j2, j1
   jldi j4, 1
   jsub j4, j3, j4
@@ -5214,10 +4996,8 @@ ins_report:
       jcall putch
     irw_next:
       jldi j1, 0
-      jld j2, j1, INSI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, INSI
+      jldi j2, 1
+      jldadd j2, j1, INSI
     jwcheck
       jldi j1, 0
       jld j2, j1, INSI
@@ -5241,8 +5021,7 @@ ins_report:
     jldi j2, 60
     jcall putch
     jldi j2, 62
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j3, j1, INSW
     jldi j4, INSQ
     jmul j3, j3, j4
@@ -5278,10 +5057,8 @@ ins_report:
     jldi j4, 0
     jsub j2, j4, j2
     jst j2, j3, 0
-    jld j2, j1, INSK
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, INSK
+    jldi j2, 1
+    jldadd j2, j1, INSK
   jwcheck
     jldi j1, 0
     jld j2, j1, INSK
@@ -5342,11 +5119,8 @@ irk_put:
 ; oe_pair), j2 the pair's key. Uses j1-j8, keeps j9-j14.
 ort_pairs:
   jldi j1, 0
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j7, j3, 16
   jld j3, j3, 8
   jld j4, j1, ROOMA
@@ -5431,11 +5205,9 @@ ops_yes:
 ort_load:
   jldi j2, ORT
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, ORS
-  jcall pz_listx
-  jldi j1, 0
+  jcall0 j1, pz_listx
   jld j10, j1, LSTN
   jldi j2, 63
   jsar j2, j10, j2
@@ -5465,8 +5237,7 @@ ort_load:
     jldi j11, 8
     jadd j11, j9, j11
     jld j12, j9, 0
-    jcall sx_read
-    jldi j1, 0
+    jcall0 j1, sx_read
     jld j2, j1, SXN
     jldi j3, 16
     jsub j2, j2, j3
@@ -5498,8 +5269,7 @@ ort_load:
       jst j9, j1, ORA
       jst j10, j1, ORB
       jldi j2, ORT
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jld j9, j1, ORA
       jld j10, j1, ORB
       jld j2, j4, 8
@@ -5571,14 +5341,12 @@ pz_listx:
     jst j2, j1, LSTC
   jwcheck
     jld j11, j1, LSTC
-    jcall room
-    jldi j1, 0
+    jcall0 j1, room
     jst j13, j1, LSTR
     jldi j10, 14
     jadd j11, j13, j1
     jld j12, j1, LSTC
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jst j13, j1, LSTN
     jldi j2, 63
     jsar j2, j13, j2
@@ -5593,8 +5361,7 @@ ort_keeps:
   jldi j3, 1
   jst j3, j1, ORK
   jst j1, j1, ORF
-  jcall ort_pairs
-  jldi j1, 0
+  jcall0 j1, ort_pairs
   jld j2, j1, ORK
   jret
 ok_pair:
@@ -5610,8 +5377,7 @@ ok_pair:
   jjnz j4, okp_yes
   jadd j5, j2, j1
   jldi j2, ORT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, okp_no
   jld j2, j4, 8
@@ -5646,8 +5412,7 @@ okd_no:
 ot_pair:
   jadd j5, j2, j1
   jldi j2, ORT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -5666,8 +5431,7 @@ ort_fix:
   jwhile j2
     jst j9, j1, ORW
     jadd j2, j9, j1
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, of_onext
     jld j2, j1, ORW
     jcall ort_pairs
@@ -5685,8 +5449,7 @@ of_owned:
   jld j11, j1, NV               ; how many times each word is in the reading
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ORC
   jld j2, j1, NV
   jldi j3, 3
@@ -5720,15 +5483,11 @@ of_zd:
   jwhile j2
     jst j9, j1, ORW
     jadd j2, j9, j1
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, of_wnext
     jld j2, j1, ORW             ; (said twice or more it is meant: a term, not a slip)
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j4, j1, ORC
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j2
     jldi j4, 2
     jsub j3, j3, j4
     jldi j4, 63
@@ -5742,11 +5501,8 @@ of_zd:
     jldi j10, 1
     jwhile j2
       jst j10, j1, ORV
-      jldi j3, 3
-      jshl j3, j10, j3
       jld j4, j1, ORC
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j10
       jst j3, j1, ORVN
       jldi j4, 2
       jsub j4, j3, j4
@@ -5827,11 +5583,8 @@ of_done:
 ; The letters of word j2 -> j3 where, j4 how many. Uses j1, j3, j4.
 ort_lt:
   jldi j1, 0
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j4, j3, 16
   jld j3, j3, 8
   jld j1, j1, ROOMA
@@ -5969,16 +5722,14 @@ ort_eat:
   jjz j2, oe_done
   jldi j2, ORE
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jldi j3, 1
   jst j3, j1, ORF
   jldi j9, 1
   jwhile j2
     jst j9, j1, ORW
     jadd j2, j9, j1
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, oe_wnext
     jld j2, j1, ORW
     jcall ort_pairs
@@ -5999,8 +5750,7 @@ oe_write:
   jldi j2, 16
   jadd j11, j11, j2
   jst j11, j1, QLW
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, QLC
   jldi j2, 1
   jst j2, j13, 0
@@ -6028,8 +5778,7 @@ oe_write:
   jwend
 oe_file:
   jldi j11, 64
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ELAB
   jld j5, j1, EATB
   jldi j3, 11
@@ -6045,8 +5794,7 @@ oe_file:
   jldi j10, 4
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, oe_done
@@ -6057,8 +5805,7 @@ oe_file:
   jor j10, j10, j2
   jld j11, j1, QLC
   jld j12, j1, QLW
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -6071,8 +5818,7 @@ oe_done:
 oe_pair:                        ; (a pair of a word: one more word has it)
   jadd j5, j2, j1
   jldi j2, ORE
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jldi j3, 1
   jadd j2, j2, j3
@@ -6128,8 +5874,7 @@ qsu_one:
   jst j2, j1, QCW
   jldi j2, QST                  ; its facts: by (one end, skeleton, other end) {key, times, the fact}
   jldi j3, 24
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, QSN
   jwhile j3
     jldi j3, 24
@@ -6167,20 +5912,15 @@ qsu_one:
     jldi j5, 1
   qsu_k:
     jldi j2, QST
-    jcall pl_take
-    jldi j1, 0
-    jld j2, j4, 8
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j4, 8
+    jcall0 j1, pl_take
+    jldi j2, 1
+    jldadd j2, j4, 8
     jld j2, j1, QSE
     jst j2, j4, 16
   qsu_fnext:
     jldi j1, 0
-    jld j2, j1, QSN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QSN
+    jldi j2, 1
+    jldadd j2, j1, QSN
   jwcheck
     jldi j1, 0
     jld j2, j1, QSN
@@ -6212,8 +5952,7 @@ qp_seeded:
   jcall th_seed
   jldi j2, QPK                  ; by kind (skeleton) {key, votes, guided by the question's instruction}
   jldi j3, 24
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, QPTI              ; (first what is proven)
 qpk_again:
   jldi j1, 0
@@ -6230,8 +5969,7 @@ qpk_again:
     jld j5, j9, 16
     jld j5, j5, 16
     jldi j2, QPK
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, QPA
     jld j2, j4, 8
     jld j3, j9, 8
@@ -6341,8 +6079,7 @@ qpn_kinds:
   qpc_summed:
     jjz j11, qp_end
     jst j11, j1, QPV
-    jcall th_rand
-    jldi j1, 0
+    jcall0 j1, th_rand
     jldi j3, 1
     jshr j2, j2, j3
     jld j3, j1, QPV
@@ -6386,8 +6123,7 @@ qpn_kinds:
     jldi j3, 0                  ; (taken)
     jsub j2, j3, j2
     jst j2, j12, 8
-    jcall th_rand               ; its fact: the seed's place among the kind's votes
-    jldi j1, 0
+    jcall0 j1, th_rand          ; its fact: the seed's place among the kind's votes
     jldi j3, 1
     jshr j2, j2, j3
     jld j3, j1, QPV
@@ -6457,8 +6193,7 @@ qp_takes:
   jld j9, j9, 16
   jld j5, j9, 16
   jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, qpt_no
   jst j4, j1, QPRA
@@ -6511,16 +6246,12 @@ qp_adds:
     jcall tok_at
     jjz j2, qad_next
     jst j2, j1, QPAW
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, qad_next
     jld j8, j1, QQS             ; in the question?
     jwhile j2
-      jldi j2, 3
-      jshl j2, j8, j2
       jld j3, j1, QBP
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j8
       jld j3, j1, QPAW
       jsub j2, j2, j3
       jjz j2, qad_next
@@ -6533,10 +6264,8 @@ qp_adds:
     jjmp qad_yes
   qad_next:
     jldi j1, 0
-    jld j2, j1, QPAS
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QPAS
+    jldi j2, 1
+    jldadd j2, j1, QPAS
   jwcheck
     jldi j1, 0
     jld j2, j1, QPAS
@@ -6573,8 +6302,7 @@ qp_guided:
     jst j11, j1, QPGB
     jcall tok_at
     jst j2, j1, QPGW
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, qgd_mnext
     jld j8, j1, QQS             ; each structure word of the question
     jwhile j2
@@ -6645,8 +6373,7 @@ qp_clause:
   jcall tok_at
   jadd j5, j2, j1
   jldi j2, TSN
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjnz j6, qpcl_fresh
   jret
 qpcl_fresh:
@@ -6669,8 +6396,7 @@ qpcl_fresh:
   jld j3, j1, SK4
   jcall sk_hash
   jldi j2, SKD
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, qpcl_new
   jret
@@ -6678,14 +6404,12 @@ qpcl_new:
   jld j2, j1, QPI
   jjnz j2, qpcl_glue
   jldi j1, S_ANS
-  jcall puts
-  jldi j1, 0
+  jcall0 j1, puts
   jld j9, j1, QPA               ; its first word: the subject, or the one before it when it comes last
   jld j9, j9, 16
   jld j2, j9, 0
   jcall tok_at
-  jcall putword
-  jldi j1, 0
+  jcall0 j1, putword
   jldi j2, 32
   jcall putch
   jjmp qpcl_body
@@ -6701,8 +6425,7 @@ qpcl_glue:
 qpcl_put:
   jjz j2, qpcl_mid
   jst j2, j1, QPB
-  jcall w_mark                  ; a mark goes against the word before; a word, after a space
-  jldi j1, 0
+  jcall0 j1, w_mark             ; a mark goes against the word before; a word, after a space
   jjnz j3, qpcl_mark
   jldi j2, 32
   jcall putch
@@ -6726,8 +6449,7 @@ qpcl_mid2:
   jld j3, j1, QCW
   jsub j3, j2, j3
   jjz j3, qpcl_body
-  jcall putword
-  jldi j1, 0
+  jcall0 j1, putword
   jldi j2, 32
   jcall putch
 qpcl_body:
@@ -6738,8 +6460,7 @@ qpcl_body:
   jldi j2, 1
   jst j2, j1, SKH
   jcall sk_say
-  jcall qp_rest                 ; and what it says there, to the end of its building
-  jldi j1, 0
+  jcall0 j1, qp_rest            ; and what it says there, to the end of its building
   jld j2, j1, QPI
   jldi j3, 1
   jadd j2, j2, j3
@@ -6762,8 +6483,7 @@ qp_rest:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, QPRP
-  jcall qr_span                 ; to its limit, each fact in its building said in Razar's own way
-  jldi j1, 0
+  jcall0 j1, qr_span            ; to its limit, each fact in its building said in Razar's own way
   jld j2, j1, QPRL
   jjz j2, qr_done
   jcall qr_arrow                ; an arrow's limit: what it announces
@@ -6786,10 +6506,8 @@ qp_rest:
   jwcheck
   qr_skip:                      ; (the next building that says something: limits in a row are skipped, said)
     jldi j1, 0
-    jld j2, j1, QPRP
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QPRP
+    jldi j2, 1
+    jldadd j2, j1, QPRP
     jld j3, j1, NTOK
     jsub j3, j2, j3
     jldi j4, 63
@@ -6826,13 +6544,11 @@ qr_span:
   jst j2, j1, SKFR
   jldi j2, 1
   jst j2, j1, SKQ
-  jcall qr_walk
-  jldi j1, 0
+  jcall0 j1, qr_walk
   jst j1, j1, SKQ
   jld j2, j1, QPRP
   jst j2, j1, SKT
-  jcall sk_span
-  jldi j1, 0
+  jcall0 j1, sk_span
   jret
 
 ; From place QPRP, every unit said (a mark against the word before) until a limit (SKQ 1: in silence): QPRL that limit (0: the end of
@@ -6860,10 +6576,8 @@ qr_walk:
     jcall put_glue
   qrw_next:
     jldi j1, 0
-    jld j2, j1, QPRP
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QPRP
+    jldi j2, 1
+    jldadd j2, j1, QPRP
   jwcheck
     jldi j1, 0
     jld j2, j1, QPRP
@@ -6932,15 +6646,13 @@ sk_scan:
   jcall pl_new
   jldi j2, SKD
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, GFN              ; the lists {skeleton, next}, one a fact at most
   jldi j2, 4
   jshl j11, j11, j2
   jldi j2, 16
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, SKL
   jldi j2, 1
   jst j2, j1, SKLN
@@ -6967,23 +6679,18 @@ sk_scan:
     jld j3, j1, SK4
     jcall sk_hash
     jldi j2, SKC
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jjz j6, sks_next
     jld j5, j1, SKS               ; its pairs, one more
     jldi j2, SKN
-    jcall pl_take
-    jldi j1, 0
-    jld j2, j4, 8
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j4, 8
+    jcall0 j1, pl_take
+    jldi j2, 1
+    jldadd j2, j4, 8
     jld j2, j1, SK3               ; and into its pair's list
     jld j3, j1, SK4
     jcall sk_hash
     jldi j2, SKG
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j1, SKLN
     jldi j3, 4
     jshl j3, j2, j3
@@ -6999,10 +6706,8 @@ sk_scan:
     jst j2, j1, SKLN
   sks_next:
     jldi j1, 0
-    jld j2, j1, SKU
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SKU
+    jldi j2, 1
+    jldadd j2, j1, SKU
   jwcheck
     jldi j1, 0
     jld j2, j1, SKU
@@ -7037,8 +6742,7 @@ sks_pairs:                      ; each pair: every two skeletons of its list sha
         jadd j3, j3, j4
         jld j3, j3, 0
         jld j2, j1, SK2
-        jcall sk_share
-        jldi j1, 0
+        jcall0 j1, sk_share
         jld j8, j1, SK8
         jldi j3, 4
         jshl j3, j8, j3
@@ -7094,8 +6798,7 @@ skh_ord:
   jst j3, j1, SKO
   jcall sk_hash
   jldi j2, SKP
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, SK9
   jst j2, j4, 8
   jld j2, j1, SKO
@@ -7127,8 +6830,7 @@ sk_pick:
   jldi j1, 0
   jld j5, j1, SKS
   jldi j2, SKN
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 8
   jst j2, j1, SKNS
   jldi j2, 1000
@@ -7168,8 +6870,7 @@ skk_pass:
     jst j10, j1, SK6
     jadd j5, j3, j1
     jldi j2, SKN
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j3, j4, 8
     jld j2, j1, SKNS
     jadd j3, j3, j2
@@ -7209,8 +6910,7 @@ skk_pass:
 skk_end:
   jld j2, j1, SKM
   jjnz j2, skk_out
-  jcall th_rand
-  jldi j1, 0
+  jcall0 j1, th_rand
   jldi j3, 1
   jshr j2, j2, j3
   jld j3, j1, SKW
@@ -7254,8 +6954,7 @@ sk_say:
   jld j3, j1, SK4
   jcall sk_hash
   jldi j2, SKD
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjnz j6, sky_new
   jldi j2, 0
   jret
@@ -7285,10 +6984,8 @@ sky_new:
     jcall put_glue
   sky_gnext:
     jldi j1, 0
-    jld j2, j1, SKU
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SKU
+    jldi j2, 1
+    jldadd j2, j1, SKU
   jwcheck
     jldi j1, 0
     jld j2, j1, SKU
@@ -7309,12 +7006,10 @@ sky_word:
   jjz j3, sky_mid               ; the subject again: tacit
   jcall put_glue
 sky_mid:
-  jcall sk_pick
-  jldi j1, 0
+  jcall0 j1, sk_pick
   jld j5, j1, SKS
   jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, sky_lib
   jadd j12, j4, j1
@@ -7323,15 +7018,13 @@ sky_mid:
 sky_lib:                        ; (a way the reading never saw: by the letters a book kept)
   jld j5, j1, SKS
   jldi j2, SKN
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 16
   jcall sk_lit
 sky_end:
   jldi j1, 0
   jld j2, j1, SK4
-  jcall put_glue
-  jldi j1, 0
+  jcall0 j1, put_glue
   jld j9, j1, SKF
   jld j2, j9, 8
   jst j2, j1, SKE
@@ -7383,10 +7076,8 @@ sk_span:
     jst j9, j1, SKBF
   skn_next:
     jldi j1, 0
-    jld j2, j1, SKU
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SKU
+    jldi j2, 1
+    jldadd j2, j1, SKU
   jwcheck
     jldi j1, 0
     jld j2, j1, SKU
@@ -7398,8 +7089,7 @@ skn_have:
   jjz j2, skn_done
   jst j2, j1, SKF
   jst j1, j1, SKH
-  jcall sk_say
-  jldi j1, 0
+  jcall0 j1, sk_say
   jjz j2, skn_left
   jld j2, j1, SKE
   jst j2, j1, SKFR
@@ -7455,15 +7145,13 @@ sk_sect:
     jst j10, j1, SK6
     jld j5, j9, 8
     jldi j2, SKN
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jldi j2, 1
     jst j2, j4, 24
     jld j9, j1, SK5
     jld j5, j9, 16
     jldi j2, SKN
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jldi j2, 1
     jst j2, j4, 24
     jld j2, j1, SK9
@@ -7484,8 +7172,7 @@ sks2_marked:
   jst j1, j1, SKW               ; numbered, and their bytes
   jst j1, j1, SKM
   jst j1, j1, SKO
-  jcall ske_walk
-  jldi j1, 0
+  jcall0 j1, ske_walk
   jld j2, j1, SK9
   jldi j3, 24
   jmul j2, j2, j3
@@ -7508,8 +7195,7 @@ sks2_write:
   jst j2, j1, SKU
   jldi j2, 1
   jst j2, j1, SKM
-  jcall ske_walk                ; the structures written
-  jldi j1, 0
+  jcall0 j1, ske_walk           ; the structures written
   jld j9, j1, SKP               ; and the pairs
   jld j10, j1, SKP + 8
   jldi j2, 1
@@ -7529,8 +7215,7 @@ sks2_write:
     jst j2, j3, 0
     jld j5, j9, 8
     jldi j2, SKN
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 16
     jldi j3, 1
     jsub j2, j2, j3
@@ -7539,8 +7224,7 @@ sks2_write:
     jld j9, j1, SK5
     jld j5, j9, 16
     jldi j2, SKN
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 16
     jldi j3, 1
     jsub j2, j2, j3
@@ -7573,8 +7257,7 @@ sk_kinrep:
   jld j2, j1, SKP + 16
   jjz j2, skr_done
   jldi j1, S_SKH
-  jcall puts
-  jldi j1, 0
+  jcall0 j1, puts
   jldi j2, 1001
   jst j2, j1, SKRP
   jst j1, j1, SKRQ
@@ -7596,8 +7279,7 @@ sk_kinrep:
       jldi j4, 63
       jsar j3, j3, j4
       jjnz j3, skr_next
-      jcall skr_share
-      jldi j1, 0
+      jcall0 j1, skr_share
       jld j3, j1, SKRP            ; below the last said (by share, then by key)
       jsub j4, j2, j3
       jjz j4, skr_tie
@@ -7653,16 +7335,14 @@ sk_kinrep:
     jldi j2, 32
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, SKRE
     jld j5, j9, 8
     jcall sk_put
     jldi j2, 126
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, SKRE
     jld j5, j9, 16
     jcall sk_put
@@ -7686,12 +7366,9 @@ sk_kinrep:
     jsub j2, j2, j3
     jcall putnum
     jldi j2, 41
-    jcall putch
-    jldi j1, 0
-    jld j2, j1, SKRN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SKRN
+    jcall0 j1, putch
+    jldi j2, 1
+    jldadd j2, j1, SKRN
   jwcheck
     jldi j1, 0
     jld j2, j1, SKRN
@@ -7730,15 +7407,13 @@ skr_share:
   jst j9, j1, SKX0
   jld j5, j9, 8
   jldi j2, SKN
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 8
   jst j2, j1, SKX1
   jld j9, j1, SKX0
   jld j5, j9, 16
   jldi j2, SKN
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 8
   jst j2, j1, SKX2
   jld j9, j1, SKX0
@@ -7761,8 +7436,7 @@ sk_put:
   jldi j1, 0
   jst j5, j1, SKX3
   jldi j2, TMI
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, skpt_lib
   jadd j12, j4, j1
@@ -7770,8 +7444,7 @@ sk_put:
 skpt_lib:
   jld j5, j1, SKX3
   jldi j2, SKN
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 16
   jjmp sk_lit
 
@@ -7791,21 +7464,17 @@ ske_walk:
     jst j9, j1, SK5
     jst j10, j1, SK6
     jld j2, j9, 0
-    jcall find_mid
-    jldi j1, 0
+    jcall0 j1, find_mid
     jld j2, j12, 0
     jjz j2, skw2_back
     jldi j13, EBUF
-    jcall m_collect
-    jldi j1, 0
+    jcall0 j1, m_collect
     jst j2, j1, SK2
     jld j3, j1, SKM
     jjnz j3, skw2_head
     jld j9, j1, SK5             ; numbered
-    jld j3, j1, SKO
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, SKO
+    jldi j3, 1
+    jldadd j3, j1, SKO
     jst j3, j9, 16
     jld j3, j1, SKW
     jldi j4, 16
@@ -7827,11 +7496,8 @@ ske_walk:
       jldi j3, 3
       jshl j3, j2, j3
       jld j2, j3, EBUF
-      jldi j3, 3
-      jshl j3, j2, j3
       jld j4, j1, ROOMI
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j2
       jld j5, j3, 16            ; its bytes, its letters
       jld j6, j3, 8
       jld j4, j1, ROOMA
@@ -7864,10 +7530,8 @@ ske_walk:
         jsub j5, j5, j3
       jwend
     skw2_pnext:
-      jld j2, j1, SK3
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, SK3
+      jldi j2, 1
+      jldadd j2, j1, SK3
     jwcheck
       jldi j1, 0
       jld j2, j1, SK3
@@ -7917,8 +7581,7 @@ sk_sread:
   jshl j11, j11, j3
   jldi j3, 8
   jadd j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, SKMP
   jld j9, j1, SKU
   jldi j2, 16
@@ -8001,8 +7664,7 @@ sk_sread:
       jwend
     skf_letters:
       jst j7, j1, SKR
-      jcall word_id
-      jldi j1, 0
+      jcall0 j1, word_id
       jldi j3, 1
       jsub j3, j2, j3
       jldi j4, 63
@@ -8043,8 +7705,7 @@ sk_sread:
     jld j2, j9, 0
     jst j2, j1, SKCN
     jldi j2, SKN
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j4, 8
     jld j3, j1, SKCN
     jadd j2, j2, j3
@@ -8054,10 +7715,8 @@ sk_sread:
     jld j2, j1, SKF
     jst j2, j4, 16
   skf_snext:
-    jld j2, j1, SK3
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, SK3
+    jldi j2, 1
+    jldadd j2, j1, SK3
   jwcheck
     jldi j1, 0
     jld j2, j1, SK3
@@ -8092,8 +7751,7 @@ jwhile j2
   jadd j3, j2, j1
   jld j2, j1, SK9
   jld j4, j1, SKCN
-  jcall sk_sharen
-  jldi j1, 0
+  jcall0 j1, sk_sharen
 jwcheck
   jld j2, j1, SK7
 jwend
@@ -8149,8 +7807,7 @@ sk_lit:
     jadd j5, j9, j5
     jst j5, j1, SKLP
     jst j4, j1, WBN
-    jcall wb_need
-    jldi j6, 0
+    jcall0 j6, wb_need
     jwhile j3
       jadd j3, j9, j6
       jldb j3, j3, 8
@@ -8163,8 +7820,7 @@ sk_lit:
       jsub j3, j6, j4
     jwend
   skl_letters:
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -8185,8 +7841,7 @@ sk_lit:
       jld j5, j1, WBP
       jadd j5, j5, j6
       jldb j2, j5, 0
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j6, j1, SKO
       jld j4, j1, WLEN
       jldi j3, 1
@@ -8219,12 +7874,9 @@ mkr_counted:
     jadd j3, j3, j4
     jld j2, j3, 0
     jst j2, j1, MK3
-    jcall mk_say
-    jldi j1, 0
-    jld j2, j1, MK4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, MK4
+    jcall0 j1, mk_say
+    jldi j2, 1
+    jldadd j2, j1, MK4
   jwcheck
     jldi j1, 0
     jld j2, j1, MK4
@@ -8259,8 +7911,7 @@ mk_say:
   jcall putch
   jcall mk_name
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j3, j1, MK5
   jld j2, j3, 0
   jcall putnum
@@ -8294,11 +7945,8 @@ mks_opens:
   jjmp mks_glue
 mks_close:                      ; else it closes (a pair kept, as a stack) or it separates
   jld j2, j1, MK3
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, MKQ
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jjz j3, mks_sep
   jldi j4, 1
   jsub j3, j3, j4
@@ -8359,8 +8007,7 @@ ln_report:
   jld j11, j1, NV               ; by language: its units (then minus, once said)
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LN6
   jldi j9, 1
   jwhile j2
@@ -8394,11 +8041,8 @@ lnr_summed:
     jldi j12, 0
     jldi j9, 1
     jwhile j2
-      jldi j3, 3
-      jshl j3, j9, j3
       jld j4, j1, LN6
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j9
       jsub j4, j11, j3
       jldi j5, 63
       jsar j4, j4, j5
@@ -8435,8 +8079,7 @@ lnr_summed:
     jldi j2, 58
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, LN4
     jcall putnum
     jldi j1, S_LNU
@@ -8455,12 +8098,9 @@ lnr_summed:
     jldi j2, 8                  ; its words
     jst j2, j1, LN2
     jst j1, j1, LN1
-    jcall lnr_words
-    jldi j1, 0
-    jld j2, j1, LN5
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LN5
+    jcall0 j1, lnr_words
+    jldi j2, 1
+    jldadd j2, j1, LN5
   jwcheck
     jldi j1, 0
     jld j2, j1, LN5
@@ -8481,11 +8121,8 @@ lnr_count:
   jldi j8, 0
   jldi j9, 1
   jwhile j2
-    jldi j3, 3
-    jshl j3, j9, j3
     jld j4, j1, LNG
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j9
     jld j4, j1, LN3
     jsub j3, j3, j4
     jjnz j3, lnc_next
@@ -8533,8 +8170,7 @@ lnr_words:
       jjz j2, lnrw_said
       jst j4, j1, LNX
       jadd j2, j9, j1
-      jcall w_mark
-      jldi j1, 0
+      jcall0 j1, w_mark
       jjz j3, lnrw_word
       jldi j3, 1
     lnrw_word:
@@ -8684,15 +8320,13 @@ fam_scan:
   jcall pl_new
   jldi j2, PRT
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, NTOK             ; the lists: {instruction, next} (two contexts a unit at most)
   jldi j2, 5
   jshl j11, j11, j2
   jldi j2, 16
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LNK
   jldi j2, 1
   jst j2, j1, LNKN
@@ -8703,17 +8337,14 @@ fam_scan:
     jcall tok_at
     jjz j2, fs_next
     jst j2, j1, FT2
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, fs_next
     jld j2, j1, FT2
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jjnz j3, fs_next            ; (an instruction)
     jldi j2, -1
     jst j2, j1, FT3
-    jcall fs_side
-    jldi j1, 0
+    jcall0 j1, fs_side
     jldi j2, 1
     jst j2, j1, FT3
     jcall fs_side
@@ -8757,8 +8388,7 @@ fs_pairs:                       ; each (side, partner): every two instructions o
         jadd j3, j3, j4
         jld j3, j3, 0
         jld j2, j1, FT2
-        jcall fam_add1
-        jldi j1, 0
+        jcall0 j1, fam_add1
         jld j8, j1, FT3
         jldi j3, 4
         jshl j3, j8, j3
@@ -8805,8 +8435,7 @@ fs_side:
   jcall tok_at
   jjz j2, fss_no
   jst j2, j1, FT4
-  jcall g_core
-  jldi j1, 0
+  jcall0 j1, g_core
   jjz j3, fss_no
   jld j5, j1, FT4               ; (side, partner): its group's key
   jld j6, j1, FNVP
@@ -8825,8 +8454,7 @@ fss_g:
   jldi j5, 1
 fss_k:
   jldi j2, CTX
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, fss_no
   jld j2, j1, FT2               ; its contexts, one more
   jldi j3, INSQ
@@ -8839,8 +8467,7 @@ fss_k:
   jst j3, j2, 88
   jld j5, j1, FT5               ; and into its group's list
   jldi j2, GRP
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, LNKN
   jldi j3, 4
   jshl j3, j2, j3
@@ -8886,8 +8513,7 @@ fa_ord:
   jldi j5, 1
 fa_k:
   jldi j2, PRT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, FT8
   jst j2, j4, 8
   jld j2, j1, FT9
@@ -8908,8 +8534,7 @@ fam_build:
   jld j11, j1, NV
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, NEAR             ; by word {its kin, the share}
   jld j2, j1, NV
   jldi j3, 4
@@ -8925,8 +8550,7 @@ fb_zd:
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, FAM
   jldi j9, 0
   jld j10, j1, NV
@@ -8955,8 +8579,7 @@ fb_zd:
     jjnz j3, fb_next
     jld j2, j9, 8
     jld j3, j9, 16
-    jcall fb_note
-    jldi j1, 0
+    jcall0 j1, fb_note
     jld j2, j9, 16
     jld j3, j9, 8
     jcall fb_note
@@ -9068,8 +8691,7 @@ th_push:
   jst j3, j1, THQT
   jld j5, j1, THF
   jldi j2, TVT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jret
 
 ; The branch chosen said (Capitan: "build me the sentence, not the walk"): it starts on the word the sentence being
@@ -9102,8 +8724,7 @@ ths_on:
   jld j12, j1, THE
   jcall put_plain
   jld j2, j1, THY
-  jcall putword
-  jldi j1, 0
+  jcall0 j1, putword
   jldi j2, 1
   jst j2, j1, LINEO
   jjmp flush
@@ -9120,16 +8741,14 @@ th_build:
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, THH
   jld j11, j1, GFN
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, THN
   jld j9, j1, GFN               ; each fact, from the last, at the head of its word's list
   jwhile j9
@@ -9160,8 +8779,7 @@ th_build:
 thx_done:
   jldi j2, KCT
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, GKT
   jld j10, j1, GKT + 8
   jldi j2, 1
@@ -9175,8 +8793,7 @@ thx_done:
     jst j10, j1, TJ
     jld j5, j9, 32
     jldi j2, KCT
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, TI
     jld j10, j1, TJ
     jld j2, j4, 8
@@ -9204,26 +8821,20 @@ want_word:
   jjnz j2, ww_ready
   jldi j2, WNT
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jldi j11, 4096
   jst j11, j1, PNC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PNB
   jst j1, j1, PNN
 ww_ready:
   jld j5, j1, THG
   jldi j2, WNT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, ww_done
   jld j2, j1, THG               ; its letters
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j5, j3, 16
   jld j6, j3, 8
   jld j4, j1, ROOMA
@@ -9243,8 +8854,7 @@ ww_ready:
   jadd j11, j11, j11
   jadd j11, j11, j5
   jst j11, j1, PNC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, PNB
   jadd j5, j13, j1
   jld j6, j1, PNN
@@ -9288,15 +8898,13 @@ want_write:
   jldi j10, 12
   jldi j11, S_PENS
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, PNN
   jjz j2, wwr_done
   jldi j10, 4
   jldi j11, S_PENS
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, wwr_done
@@ -9307,8 +8915,7 @@ want_write:
   jor j10, j10, j2
   jld j11, j1, PNB
   jld j12, j1, PNN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -9329,8 +8936,7 @@ sk_word:
     jldi j1, 0
     jadd j2, j9, j11
     jcall tok_at
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, skw_next
     jldi j2, 1
     jret
@@ -9355,8 +8961,7 @@ eng_eat:
   jjz j2, ee2_done
   jldi j2, CKT                  ; by skeleton, summed over what came before
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, GKT
   jld j10, j1, GKT + 8
   jldi j2, 1
@@ -9370,8 +8975,7 @@ eng_eat:
     jst j10, j1, TJ
     jld j5, j9, 32
     jldi j2, CKT
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, TI
     jld j10, j1, TJ
     jld j2, j4, 8
@@ -9391,11 +8995,9 @@ ee2_summed:
   jst j2, j1, QLW
   jst j1, j1, QLN
   jst j1, j1, QLS
-  jcall ee2_walk
-  jldi j1, 0
+  jcall0 j1, ee2_walk
   jld j11, j1, QLW
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, QLC
   jldi j2, 1
   jst j2, j13, 0
@@ -9406,8 +9008,7 @@ ee2_summed:
   jst j2, j1, QLP
   jldi j2, 1
   jst j2, j1, QLS
-  jcall ee2_walk                ; written
-  jldi j1, 0                    ; in bits, as the turns: each piece once, the entries by their indexes
+  jcall0 j1, ee2_walk           ; written ; in bits, as the turns: each piece once, the entries by their indexes
   jld j2, j1, QLC
   jst j2, j1, EOUT
   jld j2, j1, QLW
@@ -9417,15 +9018,13 @@ ee2_summed:
   jst j2, j1, ECNT
   jldi j2, 1
   jst j2, j1, DKIND
-  jcall eb_encode
-  jldi j1, 0
+  jcall0 j1, eb_encode
   jld j2, j1, EOUT
   jst j2, j1, QLC
   jld j2, j1, EOSZ
   jst j2, j1, QLW
   jldi j11, 64
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ELAB
   jld j5, j1, EATB
   jldi j3, 5
@@ -9437,15 +9036,13 @@ ee2_summed:
   jldi j10, 12
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, QLN
   jjz j2, ee2_done
   jldi j10, 4
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ee2_done
@@ -9456,8 +9053,7 @@ ee2_summed:
   jor j10, j10, j2
   jld j11, j1, QLC
   jld j12, j1, QLW
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -9481,13 +9077,11 @@ ee2_walk:
     jst j9, j1, TI
     jst j10, j1, TJ
     jld j2, j9, 0               ; its pieces
-    jcall find_mid
-    jldi j1, 0
+    jcall0 j1, find_mid
     jld j2, j12, 0
     jjz j2, ee2w_back
     jldi j13, EBUF
-    jcall m_collect
-    jldi j1, 0
+    jcall0 j1, m_collect
     jst j2, j1, EN2
     jjz j2, ee2w_back
     jld j3, j1, QLS
@@ -9507,20 +9101,15 @@ ee2_walk:
     jadd j3, j3, j4
     jst j3, j1, QLW
   ee2w_pieces:
-    jld j2, j1, QLN
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, QLN
+    jldi j2, 1
+    jldadd j2, j1, QLN
     jst j1, j1, EK
     jwhile j3
       jldi j3, 3
       jshl j3, j2, j3
       jld j2, j3, EBUF
-      jldi j3, 3
-      jshl j3, j2, j3
       jld j4, j1, ROOMI
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j2
       jld j5, j3, 16            ; its bytes, its letters
       jld j6, j3, 8
       jld j4, j1, ROOMA
@@ -9553,10 +9142,8 @@ ee2_walk:
         jsub j5, j5, j3
       jwend
     ee2w_pnext:
-      jld j2, j1, EK
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, EK
+      jldi j2, 1
+      jldadd j2, j1, EK
     jwcheck
       jldi j1, 0
       jld j2, j1, EK
@@ -9653,8 +9240,7 @@ pe_file:
       jst j5, j1, QLK
       jst j4, j1, WLEN
       jst j4, j1, WBN
-      jcall wb_need
-      jldi j6, 0
+      jcall0 j6, wb_need
       jwhile j3
         jadd j3, j2, j6
         jldb j3, j3, 0
@@ -9667,8 +9253,7 @@ pe_file:
         jsub j3, j6, j4
       jwend
     pef_letters:
-      jcall word_id
-      jldi j1, 0
+      jcall0 j1, word_id
       jldi j3, 1
       jsub j3, j2, j3
       jldi j4, 63
@@ -9706,8 +9291,7 @@ pe_file:
     jldi j5, 1
   pef_k2:
     jldi j2, GKT
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j4, 8
     jld j3, j1, QLP
     jadd j2, j2, j3
@@ -9730,15 +9314,11 @@ qa_asks:
   jldi j1, 0
   jld j9, j1, QAT
   jwhile j2
-    jldi j2, 3
-    jshl j2, j9, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j9
     jjz j2, qas_next
     jst j2, j1, PMT
-    jcall is_arrow
-    jldi j1, 0
+    jcall0 j1, is_arrow
     jjz j2, qas_next
     jld j2, j1, PMT
     jldi j3, 24
@@ -9770,24 +9350,17 @@ qa_shared:
   jldi j1, 0
   jld j7, j1, QAT
   jwhile j2
-    jldi j2, 3
-    jshl j2, j7, j2
     jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
+    jldx j2, j3, j7
     jst j2, j1, QWL
     jst j7, j1, QNBP
-    jcall g_core
-    jldi j1, 0
+    jcall0 j1, g_core
     jld j7, j1, QNBP
     jjz j3, qsh_next
     jld j8, j1, QAS             ; said in the question too?
     jwhile j2
-      jldi j2, 3
-      jshl j2, j8, j2
       jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j8
       jld j3, j1, QWL
       jsub j2, j2, j3
       jjz j2, qsh_yes
@@ -9870,8 +9443,7 @@ sil_load:
   jldi j10, 4
   jldi j11, S_SILS
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, sl_done
@@ -9879,8 +9451,7 @@ sil_load:
   jst j1, j1, SILN
   jldi j11, 4096
   jst j11, j1, SILC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, SILR
 jwhilez j2
   jld j2, j1, SILN
@@ -9891,8 +9462,7 @@ jwhilez j2
   jjnz j3, sl_read
   jld j11, j1, SILC             ; full: twice the room, what it holds copied
   jadd j11, j11, j11
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, SILR
   jadd j5, j13, j1
   jld j6, j1, SILN
@@ -9920,8 +9490,7 @@ sl_read:
   jadd j11, j11, j2
   jld j12, j1, SILC
   jsub j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1
   jsub j2, j13, j2
   jldi j3, 63
@@ -9933,8 +9502,7 @@ sl_close:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, SILN
   jjnz j2, sl_some
   jldi j10, 12                  ; (nothing there: the empty file opening made goes)
@@ -9946,8 +9514,7 @@ sl_some:
   jld j11, j1, NV
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMAX
   jld j2, j1, PASS
   jst j2, j1, SILPS
@@ -9975,8 +9542,7 @@ sl_some:
       jsub j7, j6, j4
     jwend
     sl_letters:
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jld j9, j1, SILP
     jld j4, j9, 0
     jldi j5, 7
@@ -10070,15 +9636,13 @@ eat_mode:
   jldi j10, 4
   jldi j11, S_COME
   jldi j12, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, em_done
   jst j13, j1, EHND
   jldi j11, 4096                ; (an address of the host: the longest is under that)
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, EATP
   jld j10, j1, EHND
   jldi j2, 32
@@ -10087,8 +9651,7 @@ eat_mode:
   jor j10, j10, j2
   jld j11, j1, EATP
   jldi j12, 4095
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jsar j2, j13, j2
   jldi j3, -1
@@ -10100,8 +9663,7 @@ eat_mode:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j3, j1, EATN              ; (without the line feed, spaces or controls after it)
   jwhile j3
     jld j4, j1, EATP
@@ -10119,8 +9681,7 @@ eat_mode:
   jwend
 em_stripped:
   jld j2, j1, EATP              ; (a piece, if the line after the address says so)
-  jcall come_piece
-  jldi j1, 0
+  jcall0 j1, come_piece
   jst j3, j1, EATN
   jjnz j3, em_book
   jldi j10, 12
@@ -10165,13 +9726,11 @@ eat_write:
   jldi j2, 16
   jst j2, j1, EOSZ
   jst j1, j1, EOUT
-  jcall ew_walk
-  jldi j1, 0
+  jcall0 j1, ew_walk
   jld j11, j1, EOSZ
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, EOUT
   jldi j2, 1
   jst j2, j13, 0
@@ -10181,14 +9740,11 @@ eat_write:
   jadd j2, j13, j2
   jst j2, j1, EPOS
   jst j1, j1, ECNT
-  jcall ew_walk                 ; and written
-  jldi j1, 0
+  jcall0 j1, ew_walk            ; and written
   jst j1, j1, DKIND
-  jcall eb_encode               ; in bits
-  jldi j1, 0
+  jcall0 j1, eb_encode          ; in bits
   jldi j11, 64                  ; its label: "tablero/esqueletos" and sixteen hex digits
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ELAB
   jld j5, j1, EATB              ; the first format's file of this book goes: the bits say the same
   jldi j3, 1
@@ -10200,8 +9756,7 @@ eat_write:
   jldi j10, 12
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j5, j1, EATH
   jldi j6, S_ESQ
   jcall ew_label
@@ -10213,8 +9768,7 @@ eat_write:
   jldi j1, 0
   jld j11, j1, ELAB
   jldi j12, 34
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, ew_done
@@ -10225,8 +9779,7 @@ eat_write:
   jor j10, j10, j2
   jld j11, j1, EOUT
   jld j12, j1, EOSZ
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, EHND
   jldi j2, 32
   jshl j10, j10, j2
@@ -10265,21 +9818,18 @@ ew_walk:
     jld j2, j3, 8               ; the first middle's pieces
     jcall find_mid
     jldi j13, EBUF
-    jcall m_collect
-    jldi j1, 0
+    jcall0 j1, m_collect
     jst j2, j1, ET1
     jjz j2, ewk_next
     jld j3, j1, ET2             ; and the other's, right after
     jld j2, j3, 16
-    jcall find_mid
-    jldi j1, 0
+    jcall0 j1, find_mid
     jld j13, j1, ET1
     jldi j2, 3
     jshl j13, j13, j2
     jldi j2, EBUF
     jadd j13, j13, j2
-    jcall m_collect
-    jldi j1, 0
+    jcall0 j1, m_collect
     jst j2, j1, EN2
     jjz j2, ewk_next
     jld j4, j1, ECNT
@@ -10289,10 +9839,8 @@ ew_walk:
     jcall ew_entry
   ewk_next:
     jldi j1, 0
-    jld j9, j1, EI
-    jldi j2, 1
-    jadd j9, j9, j2
-    jst j9, j1, EI
+    jldi j9, 1
+    jldadd j9, j1, EI
   jwcheck
     jldi j1, 0
     jld j9, j1, EI
@@ -10336,11 +9884,8 @@ ee_pieces:
     jldi j6, 3
     jshl j6, j5, j6
     jld j2, j6, EBUF
-    jldi j3, 3                  ; its letters
-    jshl j3, j2, j3
-    jld j4, j1, ROOMI
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jld j4, j1, ROOMI           ; its letters
+    jldx j3, j4, j2
     jld j5, j3, 16
     jld j3, j3, 8
     jld j4, j1, ROOMA
@@ -10378,10 +9923,8 @@ ee_pieces:
     jadd j3, j3, j5
     jst j3, j1, EOSZ
   ee_next:
-    jld j5, j1, EK
-    jldi j6, 1
-    jadd j5, j5, j6
-    jst j5, j1, EK
+    jldi j5, 1
+    jldadd j5, j1, EK
   jwcheck
     jldi j1, 0
     jld j5, j1, EK
@@ -10445,11 +9988,9 @@ eb_encode:
   jldi j1, 0
   jldi j2, DTAB
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, EOSZ             ; (a piece takes 16 bytes at least: an index of 8 for each fits)
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DLST
   jst j1, j1, DNP
   jld j9, j1, EOUT              ; each piece, once in the dictionary
@@ -10487,8 +10028,7 @@ eb_encode:
       jst j2, j1, DT3
       jcall ed_key
       jldi j2, DTAB
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jjz j6, ebd_old
       jld j2, j1, DNP
       jldi j3, 1
@@ -10522,8 +10062,7 @@ ebd_abok:
   jldi j2, 64
   jadd j11, j11, j2
   jst j11, j1, DSZ
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DOUT
   jld j2, j1, DSZ
   jadd j3, j13, j1
@@ -10576,10 +10115,8 @@ ebd_abok:
       jld j2, j1, DT3
     jwend
     ebw_lettered:
-    jld j2, j1, DT2
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, DT2
+    jldi j2, 1
+    jldadd j2, j1, DT2
   jwcheck
     jldi j1, 0
     jld j2, j1, DT2
@@ -10638,8 +10175,7 @@ ebw_rels:
       jst j2, j1, DT3
       jcall ed_key
       jldi j2, DTAB
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j2, j4, 8
       jldi j3, 1
       jsub j2, j2, j3
@@ -10865,16 +10401,14 @@ ed_decode:
   jshl j11, j11, j2
   jld j2, j1, SXN
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DT1
   jld j11, j1, DNP
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DLST
   jst j1, j1, DT2
   jwhile j3
@@ -10926,10 +10460,8 @@ ed_decode:
     jld j9, j1, DT1
     jcall ed_next
     jst j9, j1, DT1
-    jld j2, j1, DT2
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, DT2
+    jldi j2, 1
+    jldadd j2, j1, DT2
   jwcheck
     jldi j1, 0
     jld j2, j1, DT2
@@ -10945,8 +10477,7 @@ edd_dicted:
   jcall edd_walk
   jjz j2, edd_bad
   jld j11, j1, DSZ
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, DOUT
   jldi j2, 1
   jst j2, j13, 0
@@ -11176,8 +10707,7 @@ put_plain:
 put_glue:
   jldi j1, 0
   jst j2, j1, QWL
-  jcall w_mark
-  jldi j1, 0
+  jcall0 j1, w_mark
   jjz j3, pg_put
   jld j3, j1, POS
   jjz j3, pg_put
@@ -11205,10 +10735,8 @@ put_lpcp:
     jcall put_glue
   plp_next:
     jldi j1, 0
-    jld j2, j1, LT4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LT4
+    jldi j2, 1
+    jldadd j2, j1, LT4
   jwcheck
     jldi j1, 0
     jld j2, j1, LT4
@@ -11226,8 +10754,7 @@ lib_turn:
   jjz j2, lt_no
   jld j12, j1, WSK              ; the skeleton's print, by its pieces' letters
   jldi j13, LPC
-  jcall m_collect
-  jldi j1, 0
+  jcall0 j1, m_collect
   jst j2, j1, LT1
   jld j5, j1, FNVO
   jst j5, j1, LT2
@@ -11236,21 +10763,15 @@ lib_turn:
     jldi j3, 3
     jshl j3, j2, j3
     jld j2, j3, LPC
-    jldi j3, 3
-    jshl j3, j2, j3
     jld j4, j1, ROOMI
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j2
     jld j4, j3, 16
     jld j3, j3, 8
     jld j6, j1, ROOMA
     jadd j3, j3, j6
-    jcall lp_letters
-    jldi j1, 0
-    jld j2, j1, LT3
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LT3
+    jcall0 j1, lp_letters
+    jldi j2, 1
+    jldadd j2, j1, LT3
   jwcheck
     jldi j1, 0
     jld j2, j1, LT3
@@ -11263,8 +10784,7 @@ lt_printed:
   jldi j5, 1
 lt_key:
   jldi j2, LBEST
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, lt_no
   jld j2, j4, 8                 ; proved twice at least
@@ -11303,8 +10823,7 @@ lt_key:
       jsub j7, j6, j4
     jwend
     lt_letters:
-    jcall word_id
-    jldi j1, 0
+    jcall0 j1, word_id
     jldi j3, 1
     jsub j3, j2, j3
     jldi j4, 63
@@ -11324,10 +10843,8 @@ lt_key:
     jldi j3, 8
     jadd j2, j2, j3
     jadd j9, j9, j2
-    jld j2, j1, LT3
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LT3
+    jldi j2, 1
+    jldadd j2, j1, LT3
   jwcheck
     jldi j1, 0
     jld j2, j1, LT3
@@ -11404,14 +10921,12 @@ lib_load:
     jst j2, j1, LSTC
   jwcheck
     jld j11, j1, LSTC
-    jcall room
-    jldi j1, 0
+    jcall0 j1, room
     jst j13, j1, LSTR
     jldi j10, 14
     jadd j11, j13, j1
     jld j12, j1, LSTC
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jst j13, j1, LSTN
     jldi j2, 63
     jsar j2, j13, j2
@@ -11420,8 +10935,7 @@ lib_load:
 ll_listed:
   jldi j2, LREL
   jldi j3, 40
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, LSTR
   jst j9, j1, LP
   jld j2, j1, LSTN
@@ -11474,8 +10988,7 @@ ll_listed:
     jldi j11, 8
     jadd j11, j9, j11
     jld j12, j9, 0
-    jcall sx_read
-    jldi j1, 0
+    jcall0 j1, sx_read
     jld j2, j1, SXN
     jldi j3, 16
     jsub j2, j2, j3
@@ -11532,8 +11045,7 @@ ll_best:
   jjz j2, ll_done
   jldi j2, LBEST
   jldi j3, 32
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, LREL              ; each relation: the best of its skeleton
   jld j10, j1, LREL + 8
   jldi j2, 1
@@ -11545,8 +11057,7 @@ ll_best:
     jst j10, j1, LT3
     jld j5, j9, 32
     jldi j2, LBEST
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, LT1
     jld j10, j1, LT3
     jld j2, j9, 8
@@ -11598,14 +11109,12 @@ ll_file:
     jadd j9, j9, j2
     jst j9, j1, EOUT
     jld j10, j1, EI
-    jcall lf_walk
-    jldi j1, 0
+    jcall0 j1, lf_walk
     jld j2, j1, LT2
     jst j2, j1, EOSZ
     jst j9, j1, EPOS
     jld j10, j1, EN2
-    jcall lf_walk
-    jldi j1, 0
+    jcall0 j1, lf_walk
     jld j2, j1, LT2
     jst j2, j1, ECNT
     jst j9, j1, EK
@@ -11615,14 +11124,12 @@ ll_file:
     jld j3, j1, ECNT
     jld j5, j1, EPOS
     jld j6, j1, EN2
-    jcall lf_add
-    jldi j1, 0
+    jcall0 j1, lf_add
     jld j2, j1, ECNT              ; and back
     jld j3, j1, EOSZ
     jld j5, j1, EOUT
     jld j6, j1, EI
-    jcall lf_add
-    jldi j1, 0
+    jcall0 j1, lf_add
     jld j2, j1, LNR
     jldi j3, 1
     jadd j2, j2, j3
@@ -11648,8 +11155,7 @@ lf_walk:
     jld j4, j9, 0
     jldi j3, 8
     jadd j3, j9, j3
-    jcall lp_letters
-    jldi j1, 0
+    jcall0 j1, lp_letters
     jld j9, j1, LT1
     jld j10, j1, LT3
     jld j2, j9, 0
@@ -11681,8 +11187,7 @@ lf_add:
   jldi j5, 1
 lfa_key:
   jldi j2, LREL
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j4, 8
   jld j3, j1, ET2
   jadd j2, j2, j3
@@ -11703,8 +11208,7 @@ lfa_print:
 sx_read:
   jldi j1, 0
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, -1
   jst j2, j1, SXN
   jldi j2, 63
@@ -11714,8 +11218,7 @@ sx_read:
   jst j1, j1, SXN
   jldi j11, 4096
   jst j11, j1, SXC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, SXR
 jwhilez j2
   jld j2, j1, SXN
@@ -11726,8 +11229,7 @@ jwhilez j2
   jjnz j3, sxr_read
   jld j11, j1, SXC
   jadd j11, j11, j11
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, SXR
   jadd j5, j13, j1
   jld j6, j1, SXN
@@ -11755,8 +11257,7 @@ sxr_read:
   jadd j11, j11, j2
   jld j12, j1, SXC
   jsub j12, j12, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1
   jsub j2, j13, j2
   jldi j3, 63
@@ -11798,8 +11299,7 @@ question_one:
     jst j9, j1, QP
     jcall putword
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, QP
   qo_skip:
     jldi j2, 1
@@ -11811,16 +11311,14 @@ question_one:
   jwend
   qo_said:
   jldi j2, 10
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jst j1, j1, QNA
   jst j1, j1, QBEST
   jst j1, j1, QPASS
 qo_pass:
   jldi j2, TSN                  ; (each answer once)
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, QQS
   jwhile j2
     jldi j2, 3
@@ -11845,8 +11343,7 @@ qo_pass:
     jldi j1, 0
     jldi j2, 4
     jst j2, j1, GMODE
-    jcall gather
-    jldi j1, 0
+    jcall0 j1, gather
     jldi j2, 5
     jst j2, j1, GMODE
     jcall gather
@@ -11868,16 +11365,13 @@ qo_pass:
   jst j2, j1, QPASS
   jjmp qo_pass
 qo_said2:
-  jcall q_subject               ; a question about one subject: its whole thread
-  jldi j1, 0
+  jcall0 j1, q_subject          ; a question about one subject: its whole thread
   jld j2, j1, QNA
   jjnz j2, qo_done
-  jcall q_struct                ; nothing fits its furniture: is it asking about a structure?
-  jldi j1, 0
+  jcall0 j1, q_struct           ; nothing fits its furniture: is it asking about a structure?
   jld j2, j1, QNA
   jjnz j2, qo_done
-  jcall q_about                 ; no: what the book says the most of its furniture
-  jldi j1, 0
+  jcall0 j1, q_about            ; no: what the book says the most of its furniture
   jld j2, j1, QNA
   jjnz j2, qo_done
   jldi j1, S_NOFIT
@@ -11888,8 +11382,7 @@ qo_done:
 
 ; The window WA WK WB met by a core of a question (GMODE 4: what the book says; 5: what it deduces). Uses j1-j14.
 q_meet:
-  jcall fm_two
-  jldi j1, 0
+  jcall0 j1, fm_two
   jjz j6, qm_done
   jld j2, j1, GMODE
   jldi j3, 4
@@ -11924,8 +11417,7 @@ qm_oth2:
   jld j12, j1, WSK
   jcall put_plain
   jld j2, j1, WB
-  jcall putword
-  jldi j1, 0                    ; and it thinks on from what it just learned, the answer: its thought goes on in the
+  jcall0 j1, putword            ; and it thinks on from what it just learned, the answer: its thought goes on in the
   jldi j2, 1                    ; same sentence when the sentence ends on it (LINEO), as the books go on from a word
   jst j2, j1, LINEO             ; a fact ended on; when not, the sentence closes here
   jld j2, j1, QOTH
@@ -11946,12 +11438,10 @@ qm_turned:
   jld j2, j1, WSK               ; deduced: the skeleton that turns, its fact turned (WB «TBEST» WA)
   jst j2, j1, FE
   jldi j12, 1
-  jcall best_partner
-  jldi j1, 0
+  jcall0 j1, best_partner
   jld j2, j1, TBEST
   jjz j2, qm_done
-  jcall find_mid
-  jldi j1, 0
+  jcall0 j1, find_mid
   jld j2, j1, WA                ; the core's side in the turned fact
   jld j3, j1, QCW
   jsub j2, j2, j3
@@ -12009,8 +11499,7 @@ q_fit_mb:                       ; (a middle's pieces already at MB1, j2 of them)
     jshl j3, j2, j3
     jld j2, j3, MB1
     jst j2, j1, QWL
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, qf_wnext
     jld j2, j1, QWL
     jcall is_arrow
@@ -12024,10 +11513,8 @@ q_fit_mb:                       ; (a middle's pieces already at MB1, j2 of them)
     jadd j2, j2, j3
     jst j2, j1, FI2
   qf_wnext:
-    jld j2, j1, FI4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, FI4
+    jldi j2, 1
+    jldadd j2, j1, FI4
   jwcheck
     jldi j1, 0
     jld j2, j1, FI4
@@ -12048,10 +11535,8 @@ qf_counted:
     jcall q_has
     jjz j2, qf_no
     jldi j1, 0
-    jld j2, j1, FI4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, FI4
+    jldi j2, 1
+    jldadd j2, j1, FI4
   jwcheck
     jldi j1, 0
     jld j2, j1, FI4
@@ -12144,16 +11629,13 @@ qf_other:
       jldi j1, 0
       jld j2, j1, QPOS
       jld j3, j1, QDIR
-      jcall q_nb
-      jldi j1, 0
+      jcall0 j1, q_nb
     jwend
     jjmp qf_yes
   qf_pnext:
     jldi j1, 0
-    jld j9, j1, QPOS
-    jldi j2, 1
-    jadd j9, j9, j2
-    jst j9, j1, QPOS
+    jldi j9, 1
+    jldadd j9, j1, QPOS
   jwcheck
     jldi j1, 0
     jld j9, j1, QPOS
@@ -12194,8 +11676,7 @@ q_nb:
     jjnz j4, qnb_skip
     jst j3, j1, QNBW
     jadd j2, j3, j1
-    jcall w_mark
-    jldi j1, 0
+    jcall0 j1, w_mark
     jjnz j3, qnb_skip2
     jld j2, j1, QNBW
     jret
@@ -12253,8 +11734,7 @@ qh_no:
 q_best:
   jldi j1, 0                    ; (an answer the question says already is no answer: it cannot be the best either)
   jld j2, j1, QOTH
-  jcall q_has
-  jldi j1, 0
+  jcall0 j1, q_has
   jjnz j2, qb_no
   jld j2, j1, QCV
   jld j3, j1, QPASS
@@ -12313,8 +11793,7 @@ qn_new:
   jadd j2, j2, j3
   jst j2, j1, QNA
   jldi j1, S_ANS
-  jcall puts
-  jldi j1, 0
+  jcall0 j1, puts
   jldi j2, 1
   jret
 qn_no:

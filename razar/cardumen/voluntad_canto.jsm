@@ -200,8 +200,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 
 jldi j15, 3                     ; 3 passes over the 30 words
@@ -210,8 +209,7 @@ jwhile j15
   jst j1, j1, THING
   jldi j9, 30
   jwhile j9
-    jcall song
-    jldi j1, 0
+    jcall0 j1, song
     jld j2, j1, THING
     jldi j3, 1
     jadd j2, j2, j3
@@ -226,8 +224,7 @@ jldi j1, 0                      ; the end: order 3, and the school's fingerprint
 jldi j2, 3
 jst j2, j1, WORD
 jcall say
-jcall hear
-jldi j1, 0
+jcall0 j1, hear
 jld j12, j1, MAIL + 8
 jcall mix
 jhalt
@@ -242,8 +239,7 @@ song:
   jld j4, j3, VOCW
   jst j4, j1, WORD
   jcall say
-  jcall hear                    ; how many steps it lasted
-  jldi j1, 0
+  jcall0 j1, hear               ; how many steps it lasted
   jld j2, j1, MAIL + 8
   jst j2, j1, SLONG
   jldi j1, 0                    ; no step heard yet
@@ -265,8 +261,7 @@ song:
   jshr j6, j6, j2
   jldi j7, 0                    ; STEPM offset of the first step of this word
   jwhile j6
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jldi j4, 1                  ; 16 bits: 0FFFFh
     jldi j5, 16

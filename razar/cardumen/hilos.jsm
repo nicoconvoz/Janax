@@ -482,27 +482,23 @@ jfirst j1, 10000h              ; first order: room 0
 
 jldi j11, S_CRUCE               ; how the world is crossed, if the house says ("cruce": how many pairs back)
 jldi j12, 5
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jldi j2, 1
 jst j2, j1, HCRS
 jld j2, j1, PRN
 jjz j2, hl_cr
-jcall hl_tread
-jldi j1, 0
+jcall0 j1, hl_tread
 jld j2, j1, HTK
 jjz j2, hl_cr
 jst j2, j1, HCRS
 hl_cr:
 jldi j11, S_SUSP                ; a rule suspended, if the house says ("suspende": its number, as the rules are said)
 jldi j12, 8
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jst j1, j1, HSUSF
 jld j2, j1, PRN
 jjz j2, hl_su
-jcall hl_tread
-jldi j1, 0
+jcall0 j1, hl_tread
 jld j2, j1, HTK
 jldi j3, 1
 jadd j2, j2, j3
@@ -518,38 +514,32 @@ jcall putch
 hl_su:
 jldi j11, S_TANDA               ; a tanda for the cube, if the house asks for one
 jldi j12, 5
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jst j1, j1, HTANDA
 jld j2, j1, PRN
 jjz j2, hl_book
-jcall hl_tread
-jldi j1, 0
+jcall0 j1, hl_tread
 jldi j2, 1
 jst j2, j1, HTANDA
 hl_book:
 jldi j11, S_SIGNS               ; the signs kept, if the house asks (Capitan: "help the context so that it deduces the
 jldi j12, 6                     ; rules"): the reader stops throwing away what is not a letter
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jld j2, j1, PRN
 jst j2, j1, HSIG
 jldi j11, S_TODA                ; every word may hold a place, if the house asks ("toda")
 jldi j12, 4
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jld j2, j1, PRN
 jst j2, j1, HTODA
 jldi j11, S_NITI                ; how sharp two words are, if the house asks ("nitidez")
 jldi j12, 7
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jld j2, j1, PRN
 jst j2, j1, HNIT
 jldi j11, S_PARES
 jldi j12, 5
-jcall en_read
-jldi j1, 0
+jcall0 j1, en_read
 jld j2, j1, PRN
 jjnz j2, hl_go
 jldi j1, S_NOBOOK
@@ -566,8 +556,7 @@ jcall hl_nitidez
 jcall hl_rooms
 jcall hl_known
 jcall hl_pending
-jcall hl_say0
-jldi j1, 0
+jcall0 j1, hl_say0
 jld j2, j1, HTANDA
 jjz j2, hl_while
 jcall hl_groups
@@ -585,12 +574,9 @@ jwhile j2                      ; while a turn joins something
   jcall hl_props
   jcall hl_derive
   jcall hl_merge
-  jcall hl_wkeep
-  jldi j1, 0
-  jld j2, j1, HTURN
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, HTURN
+  jcall0 j1, hl_wkeep
+  jldi j2, 1
+  jldadd j2, j1, HTURN
   jld j2, j1, HNMRG
   jld j3, j1, HNDER
   jadd j2, j2, j3
@@ -626,24 +612,20 @@ hl_piece:
   jst j2, j1, HPTO
   jldi j11, S_PEDAZO
   jldi j12, 6
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRN
   jjz j2, hpc_sigue
-  jcall hl_tread
-  jldi j1, 0
+  jcall0 j1, hl_tread
   jld j2, j1, HTK
   jjz j2, hpc_sigue
   jst j2, j1, HPTO
 hpc_sigue:
   jldi j11, S_SIGUE
   jldi j12, 5
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRN
   jjz j2, hpc_cut
-  jcall hl_tread
-  jldi j1, 0
+  jcall0 j1, hl_tread
   jld j2, j1, HTK
   jst j2, j1, HPFR
 hpc_cut:
@@ -699,8 +681,7 @@ hl_next:
   jldi j10, 4
   jldi j11, S_SIGUE
   jldi j12, 5
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hnx_done
@@ -710,8 +691,7 @@ hl_next:
   jst j2, j1, SINK
   jld j2, j1, HPTO
   jcall putnum
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -741,8 +721,7 @@ hnx_done:
 hl_half:
   jldi j2, HWC
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, HMAX
   jst j1, j1, HI
   jwhile j3
@@ -752,12 +731,9 @@ hl_half:
     jadd j3, j3, j4
     jld j5, j3, 0
     jldi j2, HWC
-    jcall pl_take
-    jldi j1, 0
-    jld j7, j4, 8
-    jldi j8, 1
-    jadd j7, j7, j8
-    jst j7, j4, 8
+    jcall0 j1, pl_take
+    jldi j7, 1
+    jldadd j7, j4, 8
     jld j8, j1, HMAX
     jsub j8, j8, j7
     jldi j6, 63
@@ -765,10 +741,8 @@ hl_half:
     jjz j8, hh_n
     jst j7, j1, HMAX
   hh_n:
-    jld j2, j1, HI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HI
+    jldi j2, 1
+    jldadd j2, j1, HI
   jwcheck
     jldi j1, 0
     jld j2, j1, HI
@@ -783,8 +757,7 @@ hh_his:
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HHIS
   jldi j2, HWC                  ; how many words are said each number of times
   jld j3, j2, 8
@@ -814,11 +787,8 @@ hh_wd:
   jldi j3, 0
   jst j2, j1, HHC
   jwhile j2
-    jldi j4, 3
-    jshl j4, j2, j4
     jld j5, j1, HHIS
-    jadd j4, j4, j5
-    jld j4, j4, 0
+    jldx j4, j5, j2
     jmul j4, j4, j2
     jadd j3, j3, j4
     jst j2, j1, HHC
@@ -835,8 +805,7 @@ hh_cd:
   jld j11, j1, ZNWD
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HHF
   jst j1, j1, HI
   jwhile j3
@@ -846,8 +815,7 @@ hh_cd:
     jadd j3, j3, j4
     jld j5, j3, 0
     jldi j2, HWC
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j5, j4, 8
     jld j6, j1, HHC
     jsub j5, j5, j6
@@ -909,28 +877,24 @@ hl_facts:
   jst j11, j1, HT1
   jldi j2, 48
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HMA
   jld j11, j1, HT1
   jldi j2, 32
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HFL
   jldi j2, HMID
   jldi j3, 16
   jcall pl_new
   jldi j2, HFT
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, HNM
   jst j1, j1, HNF
   jst j1, j1, HL
   jwhile j3
-    jcall en_rec
-    jldi j1, 0
+    jcall0 j1, en_rec
     jst j3, j1, HT2               ; the line's record
     jst j1, j1, HI
     jwhile j4
@@ -974,15 +938,12 @@ hl_facts:
           jldi j3, 1
           jadd j2, j2, j3
           jst j5, j1, HKEY
-          jcall hl_wd
-          jldi j1, 0
+          jcall0 j1, hl_wd
           jld j5, j1, HKEY
           jadd j6, j2, j1
           jcall hl_mix
-          jld j2, j1, HJ
-          jldi j3, 1
-          jadd j2, j2, j3
-          jst j2, j1, HJ
+          jldi j2, 1
+          jldadd j2, j1, HJ
         jwcheck
           jldi j1, 0
           jld j2, j1, HJ
@@ -995,8 +956,7 @@ hl_facts:
       hf_mk:
         jst j5, j1, HKEY
         jldi j2, HMID
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jjz j6, hf_old
         jld j6, j1, HNM           ; a new form: its number, where it is
         jst j6, j4, 8
@@ -1032,8 +992,7 @@ hl_facts:
         jldi j5, 1
       hf_fk:
         jldi j2, HFT
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jjz j6, hf_knext          ; (said already by this form)
         jld j6, j1, HNF
         jldi j7, 5
@@ -1061,10 +1020,8 @@ hl_facts:
         jst j6, j1, HNF
       hf_knext:
         jldi j1, 0
-        jld j2, j1, HK
-        jldi j3, 1
-        jadd j2, j2, j3
-        jst j2, j1, HK
+        jldi j2, 1
+        jldadd j2, j1, HK
       jwcheck
         jldi j1, 0
         jld j2, j1, HK
@@ -1073,10 +1030,8 @@ hl_facts:
       jwend
     hf_inext:
       jldi j1, 0
-      jld j2, j1, HI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HI
+      jldi j2, 1
+      jldadd j2, j1, HI
     jwcheck
       jldi j1, 0
       jld j2, j1, HI
@@ -1086,10 +1041,8 @@ hl_facts:
     jwend
   hf_lnext:
     jldi j1, 0
-    jld j2, j1, HL
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HL
+    jldi j2, 1
+    jldadd j2, j1, HL
   jwcheck
     jldi j1, 0
     jld j2, j1, HL
@@ -1146,12 +1099,9 @@ he_k:
   jsub j2, j2, j3
   jjnz j2, he_put
   jldi j2, HGT
-  jcall pl_take
-  jldi j1, 0
-  jld j7, j4, 8
-  jldi j8, 1
-  jadd j7, j7, j8
-  jst j7, j4, 8
+  jcall0 j1, pl_take
+  jldi j7, 1
+  jldadd j7, j4, 8
   jld j7, j1, HA                ; its two words, the first first
   jld j8, j1, HB
   jld j9, j1, HDIR
@@ -1165,8 +1115,7 @@ hek_w:
   jret
 he_put:
   jldi j2, HGT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j7, j4, 16
   jld j8, j4, 24
   jadd j7, j7, j8
@@ -1192,8 +1141,7 @@ he_put:
 ; the first one), by its two words: counted, given their places, put (HGT, HGE). Uses j1-j14.
 hl_groups:
   jldi j2, HGT
-  jcall hl_clear
-  jldi j1, 0
+  jcall0 j1, hl_clear
   jldi j2, 1
   jst j2, j1, HPASS
   hg_pass:
@@ -1219,8 +1167,7 @@ hl_groups:
       jsar j7, j7, j8
       jjnz j7, hg_next            ; said by one: a memory
       jld j2, j1, HM              ; its relation, and if it is turned against it
-      jcall hl_find
-      jldi j1, 0
+      jcall0 j1, hl_find
       jst j2, j1, HM
       jst j3, j1, HT1
       jld j3, j1, HT4
@@ -1235,8 +1182,7 @@ hl_groups:
       jst j7, j1, HA
       jst j8, j1, HB
       jst j1, j1, HTG
-      jcall hl_entry
-      jldi j1, 0
+      jcall0 j1, hl_entry
       jld j2, j1, HTANDA
       jjz j2, hg_next             ; (crossed pairs only for the tanda: the while does not shuffle)
       jldi j1, 0                  ; crossed: the second word of the pair HCRS before it (round its form's pairs)
@@ -1276,10 +1222,8 @@ hl_groups:
       jcall hl_entry
     hg_next:
       jldi j1, 0
-      jld j2, j1, HI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HI
+      jldi j2, 1
+      jldadd j2, j1, HI
     jwcheck
       jldi j1, 0
       jld j2, j1, HI
@@ -1322,8 +1266,7 @@ hg_done:
 ; how many read alike, how many with one of them crossed, how many with both crossed: what chance alone gives them). Uses j1-j14.
 hl_agree:
   jldi j2, HAG
-  jcall hl_clear
-  jldi j1, 0
+  jcall0 j1, hl_clear
   jld j2, j1, HNM               ; (no relation is glue until it says a pair both ways)
   jld j3, j1, HNANT
   jwhile j2
@@ -1335,8 +1278,7 @@ hl_agree:
   jwend
 ha_zd:
   jldi j2, HWIT                 ; (this turn's pending witnesses)
-  jcall hl_clear
-  jldi j1, 0
+  jcall0 j1, hl_clear
   jldi j2, HGT
   jld j3, j2, 8
   jldi j4, 1
@@ -1421,8 +1363,7 @@ ha_zd:
         jldi j5, 1
       ha_k:
         jldi j2, HAG
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jjz j6, ha_old
         jld j7, j1, HA
         jst j7, j4, 8
@@ -1441,10 +1382,8 @@ ha_zd:
         jst j8, j7, 32
       ha_yn:
         jldi j1, 0
-        jld j3, j1, HJ
-        jldi j4, 1
-        jadd j3, j3, j4
-        jst j3, j1, HJ
+        jldi j3, 1
+        jldadd j3, j1, HJ
       jwcheck
         jldi j1, 0
         jld j4, j1, HT2
@@ -1454,10 +1393,8 @@ ha_zd:
       jwend
     ha_xn:
       jldi j1, 0
-      jld j2, j1, HI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HI
+      jldi j2, 1
+      jldadd j2, j1, HI
     jwcheck
       jldi j1, 0
       jld j4, j1, HT2
@@ -1496,8 +1433,7 @@ hl_pwit:
   jldi j5, 1
 hpw_k:
   jldi j2, HWIT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j7, j1, HWK
   jst j7, j4, 8
   jst j1, j4, 16
@@ -1515,8 +1451,7 @@ hpw_k:
 hl_wkeep:
   jcall hl_wflags
   jjz j2, hwq_pend
-  jcall hl_wgroups
-  jldi j3, 0
+  jcall0 j3, hl_wgroups
   jcall hl_wflag
 hwq_pend:
   jldi j1, 0
@@ -1533,8 +1468,7 @@ hwq_pend:
     jjz j5, hwq_next
     jld j5, j9, 8
     jldi j2, HAG
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j9, j1, HWX
     jld j5, j9, 8
@@ -1550,8 +1484,7 @@ hwq_pend:
     jldi j5, 1
   hwq_k:
     jldi j2, HTES
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, HWX
     jld j10, j1, HT5
     jld j7, j10, 8
@@ -1693,8 +1626,7 @@ hl_wgroups:
       hwg_k:
         jst j5, j1, HWK
         jldi j2, HAG
-        jcall pl_find
-        jldi j1, 0
+        jcall0 j1, pl_find
         jld j6, j4, 0
         jld j5, j1, HWK
         jsub j6, j6, j5
@@ -1715,8 +1647,7 @@ hl_wgroups:
         jldi j5, 1
       hwg_t:
         jldi j2, HTES
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jld j10, j1, HT5
         jld j7, j10, 8
         jst j7, j4, 8
@@ -1742,10 +1673,8 @@ hl_wgroups:
         jst j7, j4, 56
       hwg_yn:
         jldi j1, 0
-        jld j3, j1, HJ
-        jldi j4, 1
-        jadd j3, j3, j4
-        jst j3, j1, HJ
+        jldi j3, 1
+        jldadd j3, j1, HJ
       jwcheck
         jldi j1, 0
         jld j4, j1, HT2
@@ -1755,10 +1684,8 @@ hl_wgroups:
       jwend
     hwg_xn:
       jldi j1, 0
-      jld j2, j1, HI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HI
+      jldi j2, 1
+      jldadd j2, j1, HI
     jwcheck
       jldi j1, 0
       jld j4, j1, HT2
@@ -1880,12 +1807,10 @@ hl_tanda:
   jldi j2, 3
   jshl j11, j11, j2
   jst j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCH
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HUS
   jld j11, j1, HTN
   jmul j11, j11, j11
@@ -1893,8 +1818,7 @@ hl_tanda:
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCNT
   jld j11, j1, HTK              ; the surnames: 256 words by form, how many; the relative by new one
   jadd j11, j11, j11
@@ -1903,20 +1827,17 @@ hl_tanda:
   jst j11, j1, HT1
   jldi j2, 11
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HSUR
   jld j11, j1, HT1
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HSUN
   jld j11, j1, HT1
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HRELS
   jst j1, j1, HNCH
   jst j1, j1, HNUS
@@ -1939,8 +1860,7 @@ hl_tanda:
       jld j4, j1, HTJ
       jld j5, j4, 0
       jjz j5, ht_sn
-      jcall hl_score
-      jldi j1, 0
+      jcall0 j1, hl_score
       jjz j6, ht_sn
       jld j7, j4, 8               ; (both forms fit in a song)
       jcall ht_fits
@@ -2038,8 +1958,7 @@ ht_picked:
     jld j4, j1, HTJ
     jld j5, j4, 0
     jjz j5, ht_rn
-    jcall hl_score
-    jldi j1, 0
+    jcall0 j1, hl_score
     jjz j6, ht_rn
     jld j2, j4, 8
     jcall ht_index
@@ -2109,31 +2028,25 @@ ht_rd:
     jld j2, j3, 0
     jcall hl_sayform
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jldi j2, 1
     jst j2, j1, HTG
     jcall ht_code
     jldi j1, S_NT
     jcall ht_say
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jst j1, j1, HTG
-    jcall ht_song
-    jldi j1, 0
+    jcall0 j1, ht_song
     jldi j2, 1
     jst j2, j1, HTG
     jcall ht_song
     jldi j1, S_GT
     jcall ht_cap
     jldi j1, S_AT
-    jcall ht_surname
-    jldi j1, 0
-    jld j2, j1, HTI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HTI
+    jcall0 j1, ht_surname
+    jldi j2, 1
+    jldadd j2, j1, HTI
   jwcheck
     jldi j1, 0
     jld j2, j1, HTI
@@ -2171,8 +2084,7 @@ ht_family:
       jadd j12, j9, j1
       jadd j13, j10, j1
       jld j2, j1, HFI
-      jcall hf2_list            ; the chosen one's: j9, j10
-      jldi j14, 0               ; plain
+      jcall0 j14, hf2_list      ; the chosen one's: j9, j10 ; plain
       jst j1, j1, HT1           ; weighted
       jwhile j13
         jld j5, j12, 0
@@ -2196,8 +2108,7 @@ ht_family:
         jst j12, j1, HT4
         jst j13, j1, HT5
         jst j14, j1, HDIR
-        jcall hf2_weight        ; j5's weight -> j2
-        jldi j1, 0
+        jcall0 j1, hf2_weight   ; j5's weight -> j2
         jld j3, j1, HT1
         jadd j3, j3, j2
         jst j3, j1, HT1
@@ -2215,9 +2126,7 @@ ht_family:
     hf2_wd:
       jld j3, j1, HFSP          ; the most names
       jsub j3, j3, j14
-      jldi j4, 63
-      jsar j3, j3, j4
-      jjz j3, hf2_pw
+      jjnn j3, hf2_pw
       jst j14, j1, HFSP
       jld j2, j1, HFI
       jst j2, j1, HFBP
@@ -2232,10 +2141,8 @@ ht_family:
       jld j2, j1, HFI
       jst j2, j1, HFBW
     hf2_in2:
-      jld j2, j1, HFI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HFI
+      jldi j2, 1
+      jldadd j2, j1, HFI
     jwcheck
       jldi j1, 0
       jld j2, j1, HFI
@@ -2269,12 +2176,9 @@ ht_family:
     jld j2, j1, HFSW
     jcall putnum
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
-    jld j2, j1, HFJ
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HFJ
+    jcall0 j1, putch
+    jldi j2, 1
+    jldadd j2, j1, HFJ
   jwcheck
     jldi j1, 0
     jld j2, j1, HFJ
@@ -2371,8 +2275,7 @@ ht_news:
       jld j4, j1, HTJ
       jld j5, j4, 0
       jjz j5, hn_sn
-      jcall hl_score
-      jldi j1, 0
+      jcall0 j1, hl_score
       jjz j6, hn_sn
       jld j7, j1, HTBEST
       jsub j7, j7, j6
@@ -2443,8 +2346,7 @@ ht_news:
     jadd j6, j6, j7
     jst j2, j6, 0
     jadd j2, j3, j1
-    jcall ht_index
-    jldi j1, 0
+    jcall0 j1, ht_index
     jst j6, j1, HP1
     jld j2, j1, HNNEW
     jldi j3, 3
@@ -2480,25 +2382,20 @@ ht_news:
     jld j2, j3, 0
     jcall hl_sayform
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HNNEW
     jst j2, j1, HTSAY
     jst j1, j1, HTG
-    jcall ht_song
-    jldi j1, 0
+    jcall0 j1, ht_song
     jldi j2, 1
     jst j2, j1, HTG
     jcall ht_song
     jldi j1, S_HT
     jcall ht_cap
     jldi j1, S_BT
-    jcall ht_surname
-    jldi j1, 0
-    jld j2, j1, HNNEW
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HNNEW
+    jcall0 j1, ht_surname
+    jldi j2, 1
+    jldadd j2, j1, HNNEW
   jwcheck
     jldi j1, 0
     jld j2, j1, HNNEW
@@ -2557,11 +2454,8 @@ ht_cap:
   jst j1, j2, HSX
   jldi j1, 0
   jld j2, j1, HTI
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, HCH
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 48
   jmul j3, j2, j3
   jld j4, j1, HMA
@@ -2578,12 +2472,9 @@ ht_cap:
     jld j1, j1, HSX
     jcall ht_say
     jldi j2, 10
-    jcall putch
-    jldi j1, 0
-    jld j2, j1, HTJ
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HTJ
+    jcall0 j1, putch
+    jldi j2, 1
+    jldadd j2, j1, HTJ
   jwcheck
     jldi j1, 0
     jld j3, j1, HT3
@@ -2611,11 +2502,8 @@ hsn_have:
 hsn_count:
   jldi j1, 0
   jld j2, j1, HTI
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, HCH
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 48
   jmul j3, j2, j3
   jld j4, j1, HMA
@@ -2632,8 +2520,7 @@ hsn_count:
     jld j4, j1, HFL
     jadd j3, j3, j4
     jld j5, j3, 8
-    jcall hsn_one
-    jldi j1, 0
+    jcall0 j1, hsn_one
     jld j2, j1, HTJ
     jldi j3, 5
     jshl j3, j2, j3
@@ -2695,10 +2582,8 @@ hsn_pd:
     jldi j3, 63
     jsar j2, j2, j3
     jjnz j2, hsn_say
-    jld j2, j1, HSCUT
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HSCUT
+    jldi j2, 1
+    jldadd j2, j1, HSCUT
     jjmp hsn_c
 hsn_say:
   jldi j2, HWX
@@ -2780,8 +2665,7 @@ hsn_shared:
   jst j5, j1, HB
   jcall hl_pkey
   jldi j2, HGT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jldi j6, 0
   jld j7, j4, 0
   jld j8, j1, HKEY
@@ -2814,8 +2698,7 @@ hsh_done:
 ; Word j5 of a pair counted in HWX. Uses j1-j8.
 hsn_one:
   jldi j2, HWX
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j7, j4, 8
   jldi j8, 1
   jadd j7, j7, j8
@@ -2856,11 +2739,8 @@ ht_song:
   jmul j2, j2, j2
   jst j2, j1, HT2
   jld j2, j1, HTI
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, HCH
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 48
   jmul j3, j2, j3
   jld j4, j1, HMA
@@ -3017,11 +2897,8 @@ ht_code:
   jwend
 htz_d:
   jld j2, j1, HTI
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, HCH
-  jadd j3, j3, j4
-  jld j2, j3, 0
+  jldx j2, j4, j2
   jldi j3, 48
   jmul j3, j2, j3
   jld j4, j1, HMA
@@ -3087,11 +2964,8 @@ htp_d:
       jadd j2, j14, j1
       jcall ht_taken
       jjnz j6, htx_n
-      jldi j2, 3
-      jshl j2, j14, j2
       jld j3, j1, HCNT
-      jadd j2, j2, j3
-      jld j2, j2, 0
+      jldx j2, j3, j14
       jsub j3, j13, j2
       jldi j4, 63
       jsar j3, j3, j4
@@ -3209,8 +3083,7 @@ hl_props:
   jldi j2, HWGT
   jcall hl_clear
   jldi j2, HCFT
-  jcall hl_clear
-  jldi j1, 0
+  jcall0 j1, hl_clear
   jld j2, j1, HNM
   jadd j2, j2, j2
   jld j3, j1, HSUPP
@@ -3238,8 +3111,7 @@ hp_zd:
   jand j4, j2, j3
   jst j4, j1, HSUSS
   jshr j2, j2, j3
-  jcall hl_find
-  jldi j1, 0
+  jcall0 j1, hl_find
   jst j2, j1, HSUSR
   jld j4, j1, HSUSS
   jxor j4, j4, j3
@@ -3274,8 +3146,7 @@ hp_czd:
     jldi j5, 63
     jsar j4, j4, j5
     jjnz j4, hp_fn
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HQ3               ; its relation
     jld j4, j1, HQ2
     jld j5, j4, 8
@@ -3299,8 +3170,7 @@ hp_czd:
     jst j1, j1, HQ6
     jadd j7, j5, j1
     jadd j8, j6, j1
-    jcall hp_val
-    jldi j1, 0
+    jcall0 j1, hp_val
     jldi j2, 1
     jst j2, j1, HQ6
     jld j7, j1, HQ5
@@ -3308,10 +3178,8 @@ hp_czd:
     jcall hp_val
   hp_fn:
     jldi j1, 0
-    jld j2, j1, HQ1
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HQ1
+    jldi j2, 1
+    jldadd j2, j1, HQ1
   jwcheck
     jldi j1, 0
     jld j2, j1, HQ1
@@ -3319,8 +3187,7 @@ hp_czd:
     jsub j3, j2, j3
   jwend
 hp_fd:
-  jcall hp_place
-  jldi j1, 0
+  jcall0 j1, hp_place
   jldi j2, HFV                  ; what each relation says of each word: its values, the confirmed ones
   jld j3, j2, 8
   jldi j4, 1
@@ -3341,8 +3208,7 @@ hp_fd:
     jldi j5, 1
   hp_vk:
     jldi j2, HFT2
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j8, j1, HQ2
     jjz j6, hp_vold
     jld j7, j8, 8
@@ -3354,10 +3220,8 @@ hp_fd:
     jld j7, j8, 32
     jst j7, j4, 56                ; a value it says
   hp_vold:
-    jld j7, j4, 48                ; one value more
-    jldi j9, 1
-    jadd j7, j7, j9
-    jst j7, j4, 48
+    jldi j7, 1                  ; one value more
+    jldadd j7, j4, 48
     jld j7, j8, 40
     jldi j9, 2
     jsub j7, j7, j9
@@ -3445,8 +3309,7 @@ hp_pd:
       jsub j6, j6, j7
       jjnz j6, hp_wput
       jldi j2, HWGT
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jld j7, j4, 8
       jldi j8, 1
       jadd j7, j7, j8
@@ -3454,8 +3317,7 @@ hp_pd:
       jjmp hp_wn
     hp_wput:
       jldi j2, HWGT
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j7, j4, 16
       jld j8, j4, 24
       jadd j7, j7, j8
@@ -3516,8 +3378,7 @@ hp_pd:
     jst j2, j1, HQ7
     jjmp hp_w
 hp_c:                           ; the contradictions, only when a hypothesis asks (Capitan: "do not cross again what
-  jcall hp_index                ; you crossed already"): its words, by relation
-  jldi j1, 0
+  jcall0 j1, hp_index           ; you crossed already"): its words, by relation
   jret
 
 ; Every contradiction, word by word, as the turns asked them, for the rules the last turn leaves (hl_rules). Uses
@@ -3610,8 +3471,7 @@ hp_cfull:
         jldi j5, 1
       hp_ck:
         jldi j2, HCFT
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jld j7, j4, 8
         jldi j8, 1
         jadd j7, j7, j8
@@ -3638,10 +3498,8 @@ hp_cfull:
         jst j12, j11, 0
       hp_yn:
         jldi j1, 0
-        jld j3, j1, HQ4
-        jldi j4, 1
-        jadd j3, j3, j4
-        jst j3, j1, HQ4
+        jldi j3, 1
+        jldadd j3, j1, HQ4
       jwcheck
         jldi j1, 0
         jld j4, j1, HQ2
@@ -3651,10 +3509,8 @@ hp_cfull:
       jwend
     hp_xn:
       jldi j1, 0
-      jld j2, j1, HQ3
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HQ3
+      jldi j2, 1
+      jldadd j2, j1, HQ3
     jwcheck
       jldi j1, 0
       jld j4, j1, HQ2
@@ -3688,8 +3544,7 @@ hp_index:
   jld j11, j1, HXO              ; (last turn's rooms given back)
   jjz j11, hix_new
   jldi j10, 3
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j11, j1, HXL
   jldi j10, 3
   jcall ask
@@ -3700,8 +3555,7 @@ hix_new:
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HXO
   jld j2, j1, HNM
   jldi j3, 2
@@ -3720,8 +3574,7 @@ hix_zd:
   jadd j11, j11, j3
   jldi j3, 3
   jshl j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HXL
   jst j1, j1, HXI               ; first how many each relation has (at its number plus one), then where they start
   hix_pass:
@@ -3859,8 +3712,7 @@ hp_contra:
       jldi j5, 1
     hcx_k:
       jldi j2, HFT2
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j7, j4, 0
       jsub j7, j7, j5
       jjnz j7, hcx_wn               ; (the other says nothing of it there)
@@ -3875,10 +3727,8 @@ hp_contra:
       jjnz j7, hcx_yes
     hcx_wn:
       jldi j1, 0
-      jld j2, j1, HXI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HXI
+      jldi j2, 1
+      jldadd j2, j1, HXI
     jwcheck
       jldi j1, 0
       jld j2, j1, HXI
@@ -3940,8 +3790,7 @@ hpl_od:
     jldi j5, 63
     jsar j4, j4, j5
     jjnz j4, hpl_n
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j4, j1, HQ2
     jld j5, j4, 8
     jld j6, j4, 16
@@ -3970,10 +3819,8 @@ hpl_od:
     jst j6, j10, 8
   hpl_n:
     jldi j1, 0
-    jld j2, j1, HQ1
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HQ1
+    jldi j2, 1
+    jldadd j2, j1, HQ1
   jwcheck
     jldi j1, 0
     jld j2, j1, HQ1
@@ -3993,8 +3840,7 @@ hl_explains:
   jld j2, j4, 8
   jld j3, j4, 16
   jld j5, j4, 24
-  jcall hex_dir                 ; the second's, of the first's people
-  jldi j1, 0
+  jcall0 j1, hex_dir            ; the second's, of the first's people
   jld j2, j1, HCXTN
   jst j2, j1, HCXT1
   jjz j6, hex_no
@@ -4002,8 +3848,7 @@ hl_explains:
   jld j2, j4, 16
   jld j3, j4, 8
   jld j5, j4, 24
-  jcall hex_dir                 ; the first's, of the second's people
-  jldi j1, 0
+  jcall0 j1, hex_dir            ; the first's, of the second's people
   jld j4, j1, HEW
   jret
 hex_no:
@@ -4058,8 +3903,7 @@ hex_dir:
     jldi j5, 1
   hxd_k1:
     jldi j2, HFT2
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j7, j4, 0
     jsub j7, j7, j5
     jjnz j7, hxd_next
@@ -4072,8 +3916,7 @@ hex_dir:
     jldi j5, 1
   hxd_k2:
     jldi j2, HFT2
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j7, j4, 0
     jsub j7, j7, j5
     jjnz j7, hxd_next
@@ -4088,36 +3931,26 @@ hex_dir:
     jldi j5, 1
   hxd_k3:
     jldi j2, HFV
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j7, j4, 0
     jsub j7, j7, j5
     jjnz j7, hxd_un
-    jld j7, j1, HEX
-    jldi j8, 1
-    jadd j7, j7, j8
-    jst j7, j1, HEX
+    jldi j7, 1
+    jldadd j7, j1, HEX
     jjmp hxd_next
   hxd_un:
-    jcall hx_rescue             ; two names for one place?
-    jldi j1, 0
+    jcall0 j1, hx_rescue        ; two names for one place?
     jjz j6, hxd_un2
-    jld j7, j1, HEX
-    jldi j8, 1
-    jadd j7, j7, j8
-    jst j7, j1, HEX
+    jldi j7, 1
+    jldadd j7, j1, HEX
     jjmp hxd_next
   hxd_un2:
     jld j5, j1, HQ4
-    jcall hx_ctx
-    jldi j1, 0
+    jcall0 j1, hx_ctx
     jld j5, j1, HQ5
-    jcall hx_ctx
-    jldi j1, 0
-    jld j7, j1, HEU
-    jldi j8, 1
-    jadd j7, j7, j8
-    jst j7, j1, HEU
+    jcall0 j1, hx_ctx
+    jldi j7, 1
+    jldadd j7, j1, HEU
   hxd_next:
     jldi j1, 0
     jld j7, j1, HQ8
@@ -4150,13 +3983,11 @@ hxd_done:
 hx_rescue:
   jldi j1, 0
   jld j2, j1, HER
-  jcall hxr_of
-  jldi j1, 0
+  jcall0 j1, hxr_of
   jst j9, j1, HAP
   jst j10, j1, HAN
   jld j2, j1, HES
-  jcall hxr_of
-  jldi j1, 0
+  jcall0 j1, hxr_of
   jst j9, j1, HAQ
   jst j10, j1, HAS
   jst j1, j1, HAI               ; the second word: what HER pairs HQ4 with
@@ -4187,10 +4018,8 @@ hx_rescue:
       jjmp hxr_yes
     hxr_bsn:
       jldi j1, 0
-      jld j3, j1, HAJ
-      jldi j4, 1
-      jadd j3, j3, j4
-      jst j3, j1, HAJ
+      jldi j3, 1
+      jldadd j3, j1, HAJ
     jwcheck
       jldi j1, 0
       jld j3, j1, HAJ
@@ -4199,10 +4028,8 @@ hx_rescue:
     jwend
   hxr_bn:
     jldi j1, 0
-    jld j3, j1, HAI
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, HAI
+    jldi j3, 1
+    jldadd j3, j1, HAI
   jwcheck
     jldi j1, 0
     jld j3, j1, HAI
@@ -4239,10 +4066,8 @@ hxr_a0:
       jjmp hxr_yes
     hxr_asn:
       jldi j1, 0
-      jld j3, j1, HAJ
-      jldi j4, 1
-      jadd j3, j3, j4
-      jst j3, j1, HAJ
+      jldi j3, 1
+      jldadd j3, j1, HAJ
     jwcheck
       jldi j1, 0
       jld j3, j1, HAJ
@@ -4251,10 +4076,8 @@ hxr_a0:
     jwend
   hxr_an:
     jldi j1, 0
-    jld j3, j1, HAI
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, HAI
+    jldi j3, 1
+    jldadd j3, j1, HAI
   jwcheck
     jldi j1, 0
     jld j3, j1, HAI
@@ -4335,8 +4158,7 @@ hxr_says:
   jldi j5, 1
 hxs_k:
   jldi j2, HFV
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j7, j4, 0
   jsub j7, j7, j5
   jldi j6, 0
@@ -4397,8 +4219,7 @@ hp_val:
   jldi j5, 1
 hpv_k:
   jldi j2, HFV
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, hpv_old
   jld j7, j1, HQ3
   jst j7, j4, 8
@@ -4520,10 +4341,8 @@ hd_deadd:
     jcall hd_chain
   hd_next:
     jldi j1, 0
-    jld j2, j1, HDC
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HDC
+    jldi j2, 1
+    jldadd j2, j1, HDC
   jwcheck
     jldi j1, 0
     jld j2, j1, HDC
@@ -4565,22 +4384,19 @@ hdc_k:
   jldi j4, -1
   jst j4, j3, 40
   jld j2, j1, HDC
-  jcall hxr_of
-  jldi j1, 0
+  jcall0 j1, hxr_of
   jst j9, j1, HAP
   jst j10, j1, HAN
   jst j1, j1, HAI
   jwhile j4
     jld j2, j1, HAP
-    jcall hxr_get
-    jldi j1, 0
+    jcall0 j1, hxr_get
     jst j5, j1, HQ4             ; a
     jst j6, j1, HQ5             ; b
     jst j1, j1, HAJ
     jwhile j4
       jld j2, j1, HAP
-      jcall hxr_get
-      jldi j1, 0
+      jcall0 j1, hxr_get
       jld j7, j1, HQ5
       jsub j7, j5, j7
       jjnz j7, hdc_jn             ; b with c?
@@ -4591,10 +4407,8 @@ hdc_k:
       jcall hdc_put
     hdc_jn:
       jldi j1, 0
-      jld j3, j1, HAJ
-      jldi j4, 1
-      jadd j3, j3, j4
-      jst j3, j1, HAJ
+      jldi j3, 1
+      jldadd j3, j1, HAJ
     jwcheck
       jldi j1, 0
       jld j3, j1, HAJ
@@ -4603,10 +4417,8 @@ hdc_k:
     jwend
   hdc_in:
     jldi j1, 0
-    jld j3, j1, HAI
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, HAI
+    jldi j3, 1
+    jldadd j3, j1, HAI
   jwcheck
     jldi j1, 0
     jld j3, j1, HAI
@@ -4669,8 +4481,7 @@ hdc_put:
   jldi j5, 1
 hdp_k:
   jldi j2, HFT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, hdp_done              ; (said already)
   jld j6, j1, HNF
   jldi j7, 5
@@ -4720,10 +4531,8 @@ hl_say0:
     jadd j3, j3, j4
     jst j3, j1, HT1
   hs_mn:
-    jld j2, j1, HI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HI
+    jldi j2, 1
+    jldadd j2, j1, HI
   jwcheck
     jldi j1, 0
     jld j2, j1, HI
@@ -4786,32 +4595,26 @@ hro_c2:
   jldi j2, 3
   jshl j11, j11, j2
   jst j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCLS
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HPAR
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HSIZE
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HBST
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HBSE
   jld j11, j1, HNF
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 64
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HGE
   jldi j2, HGT
   jldi j3, 48
@@ -4824,31 +4627,27 @@ hro_c2:
   jcall pl_new
   jldi j2, HTES
   jldi j3, 64
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, HNM              ; by relation, the most chance gives it (the bar)
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HTMX
   jld j11, j1, HNM
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HNANT
   jld j11, j1, HNM
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HWF
   jld j11, j1, HNM              ; what each relation is: rooms and tables
   jldi j2, 1
@@ -4856,20 +4655,16 @@ hro_c2:
   jldi j2, 4
   jshl j11, j11, j2
   jst j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HSUPP
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HBROK
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HPBP
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HPBW
   jld j11, j1, HNF
   jadd j11, j11, j11
@@ -4877,8 +4672,7 @@ hro_c2:
   jadd j11, j11, j2
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HWGE
   jldi j2, HFT2
   jldi j3, 64
@@ -4891,15 +4685,13 @@ hro_c2:
   jcall pl_new
   jldi j2, HWT
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, HNF
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCXT
   jld j11, j1, HNF
   jldi j2, 1
@@ -4907,8 +4699,7 @@ hro_c2:
   jst j11, j1, HCXCAP
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCXW
   jst j1, j1, HCXWN
   jldi j1, 0
@@ -4918,28 +4709,24 @@ hro_c2:
   jldi j2, 3
   jshl j11, j11, j2
   jst j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCCNT
   jld j11, j1, HT1
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCOFF
   jld j11, j1, HNF
   jldi j2, 1
   jadd j11, j11, j2
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HCTRI
   jldi j2, HWGT
   jldi j3, 32
   jcall pl_new
   jldi j2, HCFT
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, HI
   jwhile j3
     jldi j3, 3
@@ -4966,8 +4753,7 @@ hro_done:
   jadd j11, j11, j2
   jldi j2, 3
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HDVER
   jld j2, j1, HNM0
   jst j2, j1, HNM
@@ -5086,13 +4872,10 @@ hm_zd:
     jld j4, j1, HT2
     jld j5, j4, 0
     jjz j5, hm_an
-    jcall hl_reason
-    jldi j1, 0
+    jcall0 j1, hl_reason
     jjz j6, hm_an
-    jld j5, j1, HNACC
-    jldi j7, 1
-    jadd j5, j5, j7
-    jst j5, j1, HNACC
+    jldi j5, 1
+    jldadd j5, j1, HNACC
     jldi j9, 8
     hm_side:                    ; (its first relation, then its second)
       jadd j10, j4, j9
@@ -5159,8 +4942,7 @@ hm_ad:
     jld j7, j7, 0
     jsub j7, j7, j4
     jjnz j7, hm_bn
-    jcall hl_explains           ; it must explain the same people, both ways
-    jldi j1, 0
+    jcall0 j1, hl_explains      ; it must explain the same people, both ways
     jjnz j6, hm_expl
     jld j4, j1, HT2             ; refuted for good: never again
     jld j5, j4, 8
@@ -5172,8 +4954,7 @@ hm_ad:
     jldi j5, 1
   hm_rk:
     jldi j2, HREF
-    jcall pl_take
-    jldi j1, 0                  ; when it fell, and its context: what it left unexplained
+    jcall0 j1, pl_take          ; when it fell, and its context: what it left unexplained
     jst j6, j1, HQ6             ; (refuted for the first time: the turn changed who chooses whom)
     jld j5, j1, HTURN
     jst j5, j4, 8
@@ -5185,11 +4966,9 @@ hm_ad:
     jld j6, j5, 24
     jst j6, j4, 48
     jst j4, j1, HAE
-    jcall hm_absurd
-    jldi j1, 0
+    jcall0 j1, hm_absurd
     jld j4, j1, HAE
-    jcall hm_keepctx
-    jldi j1, 0
+    jcall0 j1, hm_keepctx
     jld j6, j1, HQ6
     jld j5, j1, HNREF
     jadd j5, j5, j6
@@ -5200,8 +4979,7 @@ hm_ad:
     jldi j5, 1                  ; (joined: its witnesses are kept)
     jst j5, j4, 56
     jld j2, j4, 16
-    jcall hm_touchrel
-    jldi j1, 0
+    jcall0 j1, hm_touchrel
     jld j4, j1, HT2
     jld j5, j4, 8               ; the second into the first
     jld j6, j4, 16
@@ -5278,13 +5056,11 @@ hl_reason:
   jldi j5, 1
 hrs_r:
   jldi j2, HREF
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j7, j4, 0
   jsub j7, j7, j5
   jjnz j7, hrs_awake            ; never refuted
-  jcall hrs_wakes               ; refuted: in a coma unless its people came back
-  jldi j1, 0
+  jcall0 j1, hrs_wakes          ; refuted: in a coma unless its people came back
   jjz j6, hrs_coma
 hrs_awake:
   jldi j1, 0
@@ -5314,8 +5090,7 @@ hrs_awake:
   jldi j5, 1
 hrs_k:
   jldi j2, HAG
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j7, j4, 0
   jsub j7, j7, j5
   jjnz j7, hrs_ok               ; (no such entry: nothing says it the other way)
@@ -5326,8 +5101,7 @@ hrs_ok:
   jld j2, j4, 8
   jld j3, j4, 16
   jld j4, j4, 24
-  jcall hp_contra
-  jldi j1, 0
+  jcall0 j1, hp_contra
   jjnz j6, hrs_no2
 hrs_yes:
   jld j4, j1, HT5
@@ -5360,8 +5134,7 @@ hrs_wakes:
     jadd j3, j3, j5
     jld j5, j3, 0
     jldi j2, HWT
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j7, j4, 0
     jsub j7, j7, j5
     jjnz j7, hwk_n
@@ -5424,27 +5197,23 @@ hxc_t:
 ; Word j5 touched in this turn. Uses j1-j8.
 hm_touch:
   jldi j2, HWT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j7, j1, HTURN
   jst j7, j4, 8
   jret
 
 ; The pairs of relation j2 (as this turn's props hold them): their words touched. Uses j1-j14.
 hm_touchrel:
-  jcall hxr_of
-  jldi j1, 0
+  jcall0 j1, hxr_of
   jst j9, j1, HQ8
   jst j10, j1, HE1
   jwhile j10
     jld j9, j1, HQ8
     jld j5, j9, 0
-    jcall hm_touch
-    jldi j1, 0
+    jcall0 j1, hm_touch
     jld j9, j1, HQ8
     jld j5, j9, 8
-    jcall hm_touch
-    jldi j1, 0
+    jcall0 j1, hm_touch
     jld j9, j1, HQ8
     jldi j10, 16
     jadd j9, j9, j10
@@ -5490,8 +5259,7 @@ hm_absurd:
     jldi j8, 1
     jadd j7, j7, j8
     jst j7, j1, HHOL
-    jcall hab_one
-    jldi j1, 0
+    jcall0 j1, hab_one
     jjz j6, hab_next
     jld j7, j1, HABS
     jldi j8, 1
@@ -5534,14 +5302,12 @@ hab_one:
     jsar j6, j5, j6
     jjnz j6, hbo_n              ; awake: not sleeping
     jld j2, j4, 32              ; its two, as relations now, and which way they are
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HAC
     jst j3, j1, HAP
     jld j4, j1, HAB
     jld j2, j4, 40
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j4, j1, HAB
     jld j5, j4, 48
     jldi j6, 2
@@ -5576,8 +5342,7 @@ hab_one:
     jld j9, j1, HER
     jst j9, j1, HAN
     jst j2, j1, HER
-    jcall hxr_says
-    jldi j1, 0
+    jcall0 j1, hxr_says
     jld j9, j1, HAN
     jst j9, j1, HER
     jjnz j6, hbo_yes
@@ -5613,9 +5378,7 @@ hm_keepctx:
   jld j7, j1, HCXCAP
   jsub j7, j7, j5
   jsub j8, j7, j6
-  jldi j9, 63
-  jsar j8, j8, j9
-  jjz j8, hkc_fit
+  jjnn j8, hkc_fit
   jadd j6, j7, j1               ; (what fits)
 hkc_fit:
   jst j6, j4, 24
@@ -5673,8 +5436,7 @@ hl_sayjoin:
   jcall puts
   jld j4, j1, HT2
   jld j2, j4, 16
-  jcall hl_sayform
-  jldi j1, 0
+  jcall0 j1, hl_sayform
   jld j4, j1, HT2
   jld j2, j4, 24
   jldi j3, 1
@@ -5726,10 +5488,8 @@ hl_end:
     jldi j6, 63
     jsar j5, j5, j6
     jjnz j5, he_next
-    jld j5, j1, HT1
-    jldi j6, 1
-    jadd j5, j5, j6
-    jst j5, j1, HT1
+    jldi j5, 1
+    jldadd j5, j1, HT1
     jld j5, j1, HT3
     jsub j5, j5, j4
     jldi j6, 63
@@ -5738,10 +5498,8 @@ hl_end:
     jst j4, j1, HT3
     jst j2, j1, HT4
   he_next:
-    jld j2, j1, HI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HI
+    jldi j2, 1
+    jldadd j2, j1, HI
   jwcheck
     jldi j1, 0
     jld j2, j1, HI
@@ -5807,13 +5565,11 @@ hl_rules:
     jldi j2, 58
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HPI
     jldi j3, 1
     jshr j2, j2, j3
-    jcall hl_sayform
-    jldi j1, 0
+    jcall0 j1, hl_sayform
     jld j2, j1, HPI
     jldi j3, 1
     jand j2, j2, j3
@@ -5844,10 +5600,8 @@ hl_rules:
     jcall puts
   hru_next:
     jldi j1, 0
-    jld j2, j1, HPI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HPI
+    jldi j2, 1
+    jldadd j2, j1, HPI
   jwcheck
     jldi j1, 0
     jld j2, j1, HPI
@@ -5866,8 +5620,7 @@ hru_done:
 hl_known:
   jldi j11, S_SABIDO
   jldi j12, 6
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRB
   jst j2, j1, HKB
   jld j2, j1, PRN
@@ -5876,14 +5629,12 @@ hl_known:
   jst j1, j1, HKU
   jldi j3, 16                   ; (the lines not used: {where, bytes}; a line is 36 bytes or more)
   jadd j11, j2, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HKL
   jld j11, j1, HKN
   jldi j3, 16
   jadd j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HKZ
   jst j1, j1, HKZN
   jst j1, j1, HKD
@@ -5913,14 +5664,12 @@ hl_known:
     jldi j8, 63
     jsar j6, j6, j8
     jjnz j6, hk_next
-    jcall hk_hex                ; the form, the one it joined, which way
-    jldi j1, 0
+    jcall0 j1, hk_hex           ; the form, the one it joined, which way
     jst j9, j1, HKKF
     jld j4, j1, HKP
     jldi j2, 17
     jadd j4, j4, j2
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HKKP
     jld j4, j1, HKP
     jldb j2, j4, 34
@@ -5947,8 +5696,7 @@ hl_known:
     jst j3, j1, HKAS
     jld j5, j1, HKKF            ; its two forms in this book
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKF
     jsub j6, j6, j5
@@ -5957,16 +5705,14 @@ hl_known:
     jst j6, j1, HKFF
     jld j5, j1, HKKP
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKP
     jsub j6, j6, j5
     jjnz j6, hk_keep
     jld j6, j4, 8
     jst j6, j1, HKFP
-    jcall hk_judge              ; what this book says of it
-    jldi j1, 0
+    jcall0 j1, hk_judge         ; what this book says of it
     jld j2, j1, HKAS
     jjnz j2, hk_asleep
     jld j2, j1, HKXX            ; awake: more against it than for it, it sleeps (Capitan: "pruning is sleeping for a
@@ -6111,13 +5857,10 @@ hk_judge:
   hkg_so:
     jst j5, j1, HKJA
     jst j6, j1, HKJB
-    jcall hkg_has               ; the second says it so: it confirms
-    jldi j1, 0
+    jcall0 j1, hkg_has          ; the second says it so: it confirms
     jjz j6, hkg_rev
-    jld j2, j1, HKC
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKC
+    jldi j2, 1
+    jldadd j2, j1, HKC
   jwcheck
   hkg_lap:
     jldi j1, 0
@@ -6131,13 +5874,10 @@ hk_judge:
     jld j6, j1, HKJA
     jst j5, j1, HKJA
     jst j6, j1, HKJB
-    jcall hkg_has
-    jldi j1, 0
+    jcall0 j1, hkg_has
     jjz j6, hkg_lap
-    jld j2, j1, HKXX
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKXX
+    jldi j2, 1
+    jldadd j2, j1, HKXX
     jjmp hkg_lap
 hkg_done:
   jldi j1, 0
@@ -6161,8 +5901,7 @@ hkg_has:
 hkh_k:
   jst j5, j1, HKEY
   jldi j2, HFT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j6, j4, 0
   jld j5, j1, HKEY
   jsub j6, j6, j5
@@ -6204,13 +5943,11 @@ hkh_done:
 hk_join:
   jldi j1, 0
   jld j2, j1, HKFP
-  jcall hl_find
-  jldi j1, 0
+  jcall0 j1, hl_find
   jst j2, j1, HKRA
   jst j3, j1, HKPA
   jld j2, j1, HKFF
-  jcall hl_find
-  jldi j1, 0
+  jcall0 j1, hl_find
   jld j4, j1, HKRA
   jsub j4, j4, j2
   jjz j4, hkj_done              ; (together already)
@@ -6250,8 +5987,7 @@ hk_join:
   jldi j1, S_TIL
   jcall puts
   jld j2, j1, HKRB
-  jcall hl_sayform
-  jldi j1, 0
+  jcall0 j1, hl_sayform
   jld j2, j1, HKPB
   jldi j1, S_MISMA
   jjz j2, hkj_way
@@ -6276,8 +6012,7 @@ hl_ksave:
   jldi j10, 4
   jldi j11, S_SABIDO
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hks_done
@@ -6311,14 +6046,12 @@ hl_ksave:
     jcall hk_key
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKFP
     jcall hk_key
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKW
     jldi j3, 49
     jadd j2, j2, j3
@@ -6328,8 +6061,7 @@ hl_ksave:
     jldi j2, 124
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKI
     jcall hl_sayform
     jldi j1, S_TIL
@@ -6340,10 +6072,8 @@ hl_ksave:
     jcall putch
   hks_next:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6369,10 +6099,8 @@ hks_old:
     jwend
   hks_bn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6410,10 +6138,8 @@ hks_close:
     jwend
   hks_zn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6421,8 +6147,7 @@ hks_close:
     jsub j3, j2, j3
   jwend
 hks_end:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -6478,8 +6203,7 @@ hk_puthex:
     jldi j4, 87
   hkp_dig:
     jadd j2, j2, j4
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKKF
     jldi j3, 4
     jshl j2, j2, j3
@@ -6499,8 +6223,7 @@ hkp_done:
 hl_pending:
   jldi j11, S_PEND
   jldi j12, 9
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRB
   jst j2, j1, HQB
   jld j2, j1, PRN
@@ -6509,14 +6232,12 @@ hl_pending:
   jst j1, j1, HQV
   jldi j3, 16
   jadd j11, j2, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HQL
   jld j11, j1, HQN              ; (24 bytes each, a line is 36 or more)
   jldi j3, 24
   jadd j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HQA
   jst j1, j1, HQAN
   jld j2, j1, HQB
@@ -6544,14 +6265,12 @@ hl_pending:
     jldi j8, 63
     jsar j6, j6, j8
     jjnz j6, hq_next
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HKKF
     jld j4, j1, HKP
     jldi j2, 17
     jadd j4, j4, j2
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HKKP
     jld j4, j1, HKP
     jldb j2, j4, 34
@@ -6564,8 +6283,7 @@ hl_pending:
     jst j3, j1, HKW
     jld j5, j1, HKKF
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKF
     jsub j6, j6, j5
@@ -6574,8 +6292,7 @@ hl_pending:
     jst j6, j1, HKFF
     jld j5, j1, HKKP
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKP
     jsub j6, j6, j5
@@ -6638,14 +6355,12 @@ hl_pinject:
     jadd j3, j3, j4
     jst j3, j1, HKP
     jld j2, j3, 0
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HKRA
     jst j3, j1, HKPA
     jld j4, j1, HKP
     jld j2, j4, 8
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j4, j1, HKRA
     jsub j4, j4, j2
     jjz j4, hpi_next            ; (one relation already)
@@ -6677,8 +6392,7 @@ hl_pinject:
   hpi_k:
     jst j5, j1, HKEY
     jldi j2, HAG
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKEY
     jsub j6, j6, j5
@@ -6692,10 +6406,8 @@ hl_pinject:
     jcall hl_pwit
   hpi_next:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6718,13 +6430,11 @@ hl_pchecked:
     jadd j3, j3, j4
     jst j3, j1, HKP
     jld j2, j3, 0
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HKRA
     jld j4, j1, HKP
     jld j2, j4, 8
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j4, j1, HKRA
     jsub j4, j4, j2
     jjnz j4, hpc_next
@@ -6746,10 +6456,8 @@ hl_pchecked:
     jcall putch
   hpc_next:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6768,8 +6476,7 @@ hl_psave:
   jcall hl_pchecked
   jldi j2, HPDS
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, HPDN
   jcall flush
   jldi j10, 12
@@ -6779,8 +6486,7 @@ hl_psave:
   jldi j10, 4
   jldi j11, S_PEND
   jldi j12, 9
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hps_done
@@ -6798,14 +6504,12 @@ hl_psave:
     jst j4, j1, HKP
     jld j5, j3, 8
     jst j5, j1, HKX
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HKKF
     jld j4, j1, HKP
     jldi j2, 17
     jadd j4, j4, j2
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HKKP
     jld j5, j1, HKKF            ; (once each, either way round)
     jld j6, j1, HKKP
@@ -6815,32 +6519,27 @@ hl_psave:
     jldi j5, 1
   hps_k:
     jldi j2, HPDS
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jjz j6, hps_on
     jld j5, j1, HKKF            ; joined in this book: solved
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKF
     jsub j6, j6, j5
     jjnz j6, hps_put
     jld j2, j4, 8
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HKRA
     jld j5, j1, HKKP
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKP
     jsub j6, j6, j5
     jjnz j6, hps_put
     jld j2, j4, 8
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j3, j1, HKRA
     jsub j3, j3, j2
     jjz j3, hps_on
@@ -6857,10 +6556,8 @@ hl_psave:
     jwend
   hps_on:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -6900,22 +6597,18 @@ hps_new:                        ; this book's: one pair alike, none crossed
     jjnz j6, hps_nn
     jldi j1, 0
     jld j2, j1, HKFF
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jst j2, j1, HKRA
     jld j2, j1, HKFP
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j3, j1, HKRA
     jsub j3, j3, j2
     jjz j3, hps_nn              ; (one relation already)
     jld j2, j1, HKFF
-    jcall hk_key
-    jldi j1, 0
+    jcall0 j1, hk_key
     jst j2, j1, HKKF
     jld j2, j1, HKFP
-    jcall hk_key
-    jldi j1, 0
+    jcall0 j1, hk_key
     jst j2, j1, HKKP
     jld j5, j1, HKKF
     jld j6, j1, HKKP
@@ -6925,8 +6618,7 @@ hps_new:                        ; this book's: one pair alike, none crossed
     jldi j5, 1
   hps_k2:
     jldi j2, HPDS
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jjz j6, hps_nn
     jld j2, j1, HPDN
     jldi j3, 1
@@ -6935,13 +6627,11 @@ hps_new:                        ; this book's: one pair alike, none crossed
     jld j2, j1, HKKF
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKKP
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKW
     jldi j3, 48
     jadd j2, j2, j3
@@ -6951,8 +6641,7 @@ hps_new:                        ; this book's: one pair alike, none crossed
     jldi j2, 124
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j2, j1, HKFF
     jcall hl_sayform
     jldi j1, S_TIL
@@ -6977,8 +6666,7 @@ hps_new:                        ; this book's: one pair alike, none crossed
     jld j3, j1, HKI
   jwend
 hps_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -7038,8 +6726,7 @@ hl_instr:
   jcall pl_new
   jldi j2, HIMG
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, HRLN
   jst j1, j1, HINS
   jst j1, j1, HIC
@@ -7051,17 +6738,14 @@ hl_instr:
     jjz j6, hin_cn
     jldi j1, 0
     jld j2, j1, HKI
-    jcall hxr_of
-    jldi j1, 0
+    jcall0 j1, hxr_of
     jld j2, j1, HIQ
     jadd j2, j2, j10
     jst j2, j1, HIQ
   hin_cn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -7075,8 +6759,7 @@ hin_cd:
   jadd j11, j11, j2
   jldi j2, 5
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HRL
   jst j1, j1, HKI
   jwhile j3
@@ -7084,8 +6767,7 @@ hin_cd:
     jjz j6, hin_rn
     jldi j1, 0
     jld j2, j1, HKI
-    jcall hxr_of
-    jldi j1, 0
+    jcall0 j1, hxr_of
     jst j9, j1, HIP
     jst j10, j1, HIN
     jwhile j10
@@ -7094,15 +6776,13 @@ hin_cd:
       jldi j3, 0
       jld j4, j9, 0
       jld j5, j9, 8
-      jcall hin_role
-      jldi j1, 0
+      jcall0 j1, hin_role
       jld j9, j1, HIP
       jld j2, j1, HKI           ; A is the A of B
       jldi j3, 1
       jld j4, j9, 8
       jld j5, j9, 0
-      jcall hin_role
-      jldi j1, 0
+      jcall0 j1, hin_role
       jld j9, j1, HIP
       jldi j2, 16
       jadd j9, j9, j2
@@ -7117,10 +6797,8 @@ hin_cd:
     jwend
   hin_rn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -7133,8 +6811,7 @@ hin_rd:
   jadd j11, j11, j2
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HIPR
   jst j1, j1, HKI
   jwhile j3
@@ -7183,12 +6860,10 @@ hin_rd:
     jst j1, j1, HIS0
     jst j1, j1, HIK
     jwhile j3
-      jcall hin_pair
-      jldi j1, 0
+      jcall0 j1, hin_pair
       jld j2, j1, HIA
       jld j3, j1, HIB
-      jcall hin_alike
-      jldi j1, 0
+      jcall0 j1, hin_alike
       jld j2, j1, HIJ
       jadd j2, j2, j7
       jst j2, j1, HIJ
@@ -7197,18 +6872,15 @@ hin_rd:
       jst j2, j1, HIS
       jld j2, j1, HIA
       jld j3, j1, HIB0
-      jcall hin_alike
-      jldi j1, 0
+      jcall0 j1, hin_alike
       jld j2, j1, HIJ0
       jadd j2, j2, j7
       jst j2, j1, HIJ0
       jld j2, j1, HIS0
       jadd j2, j2, j6
       jst j2, j1, HIS0
-      jld j2, j1, HIK
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HIK
+      jldi j2, 1
+      jldadd j2, j1, HIK
     jwcheck
       jldi j1, 0
       jld j2, j1, HIK
@@ -7258,36 +6930,28 @@ hin_rd:
     jldi j2, 41
     jcall putch
     jldi j2, 10
-    jcall putch
-    jldi j1, 0                  ; and it imagines with it: with its pairs, and with its pairs crossed (chance)
+    jcall0 j1, putch            ; and it imagines with it: with its pairs, and with its pairs crossed (chance)
     jst j1, j1, HIK
     jwhile j3
-      jcall hin_pair
-      jldi j1, 0
+      jcall0 j1, hin_pair
       jldi j2, 105
       jst j2, j1, HIF
       jld j2, j1, HIA
       jld j3, j1, HIB
-      jcall hin_imagine
-      jldi j1, 0
+      jcall0 j1, hin_imagine
       jld j2, j1, HIB
       jld j3, j1, HIA
-      jcall hin_imagine
-      jldi j1, 0
+      jcall0 j1, hin_imagine
       jldi j2, 97
       jst j2, j1, HIF
       jld j2, j1, HIA
       jld j3, j1, HIB0
-      jcall hin_imagine
-      jldi j1, 0
+      jcall0 j1, hin_imagine
       jld j2, j1, HIB0
       jld j3, j1, HIA
-      jcall hin_imagine
-      jldi j1, 0
-      jld j2, j1, HIK
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HIK
+      jcall0 j1, hin_imagine
+      jldi j2, 1
+      jldadd j2, j1, HIK
     jwcheck
       jldi j1, 0
       jld j2, j1, HIK
@@ -7296,10 +6960,8 @@ hin_rd:
     jwend
   hin_fn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -7322,8 +6984,7 @@ hin_done:
   jldi j2, 41
   jcall putch
   jldi j2, 10
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jret
 
 ; The one imagined now {HIR, HISD, HIZ, HIW, HIF, the instruction HKI} onto the list HIML (it grows to what it holds:
@@ -7341,8 +7002,7 @@ hin_push:
   jst j11, j1, HIMC
   jldi j2, 48
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, HIML
   jadd j5, j13, j1
   jld j6, j1, HIMN
@@ -7445,13 +7105,11 @@ hin_role:
   jst j5, j1, HIW
   jcall hin_rkey
   jldi j2, HROL
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, hrl_done
   jld j5, j1, HIW               ; its list: the new role first
   jldi j2, HWRH
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j6, j4, 8
   jld j2, j1, HRLN
   jldi j3, 5
@@ -7496,16 +7154,14 @@ hin_alike:
   jst j3, j1, HIB1
   jadd j5, j2, j1
   jldi j2, HWRH
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j6, j4, 0
   jjz j6, hal_no
   jld j6, j4, 8
   jst j6, j1, HIL
   jld j5, j1, HIB1
   jldi j2, HWRH
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j6, j4, 0
   jjz j6, hal_no
   hal_lap:
@@ -7530,8 +7186,7 @@ hin_alike:
     jst j4, j1, HIW
     jcall hin_rkey
     jldi j2, HROL
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jsub j6, j6, j5
     jjnz j6, hal_lap
@@ -7555,8 +7210,7 @@ hin_imagine:
   jst j3, j1, HIB1
   jadd j5, j2, j1
   jldi j2, HWRH
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j6, j4, 0
   jjz j6, him_done
   jld j6, j4, 8
@@ -7580,8 +7234,7 @@ hin_imagine:
     jst j4, j1, HIW
     jcall hin_rkey
     jldi j2, HROL
-    jcall pl_find               ; b holds it already: nothing to imagine
-    jldi j1, 0
+    jcall0 j1, pl_find          ; b holds it already: nothing to imagine
     jld j6, j4, 0
     jsub j6, j6, j5
     jjz j6, him_lap
@@ -7592,8 +7245,7 @@ hin_imagine:
     jldi j5, 1
   him_k:
     jldi j2, HIMG
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jjz j6, him_lap
     jld j2, j1, HIF
     jldi j3, 105
@@ -7630,25 +7282,21 @@ hin_iwrite:
   jcall hk_key
   jcall hk_puthex
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HISD
   jldi j3, 48
   jadd j2, j2, j3
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIZ
   jcall hk_puthex
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIW
   jcall hk_puthex
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIF
   jcall putch
   jldi j2, 32
@@ -7656,20 +7304,17 @@ hin_iwrite:
   jldi j2, 124
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0                    ; (said as it reads: z relation b, or b relation z)
+  jcall0 j1, putch              ; (said as it reads: z relation b, or b relation z)
   jld j2, j1, HISD
   jjnz j2, hiw_ab
   jld j5, j1, HIZ
   jcall en_sayprint
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIR
   jcall hl_sayform
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j5, j1, HIW
   jcall en_sayprint
   jjmp hiw_nl
@@ -7677,13 +7322,11 @@ hiw_ab:
   jld j5, j1, HIW
   jcall en_sayprint
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIR
   jcall hl_sayform
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j5, j1, HIZ
   jcall en_sayprint
 hiw_nl:
@@ -7692,14 +7335,12 @@ hiw_nl:
   jldi j2, 35
   jcall putch
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIMK
   jcall hk_key
   jcall hk_puthex
   jldi j2, 32
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j2, j1, HIMK
   jcall hl_sayform
   jldi j2, 10
@@ -7713,14 +7354,12 @@ hiw_nl:
 hl_icheck:
   jldi j2, HMEC
   jldi j3, 96
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jldi j2, -1
   jst j2, j1, HMT
   jldi j11, S_IMAG
   jldi j12, 9
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRB
   jst j2, j1, HVB
   jld j2, j1, PRN
@@ -7732,8 +7371,7 @@ hl_icheck:
   jst j1, j1, HVU
   jldi j3, 16
   jadd j11, j2, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HVL
   jld j2, j1, HVB
   jst j2, j1, HKP
@@ -7760,11 +7398,9 @@ hl_icheck:
     jldi j8, 63
     jsar j6, j6, j8
     jjnz j6, hvc_next
-    jcall hvm_find              ; (its mechanism)
-    jldi j1, 0
+    jcall0 j1, hvm_find         ; (its mechanism)
     jld j4, j1, HKP
-    jcall hk_hex                ; the relation's key, its side, z, b, which
-    jldi j1, 0
+    jcall0 j1, hk_hex           ; the relation's key, its side, z, b, which
     jst j9, j1, HKKF
     jld j4, j1, HKP
     jldb j2, j4, 17
@@ -7773,36 +7409,31 @@ hl_icheck:
     jst j2, j1, HISD
     jldi j2, 19
     jadd j4, j4, j2
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HIZ
     jld j4, j1, HKP
     jldi j2, 36
     jadd j4, j4, j2
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jst j9, j1, HIW
     jld j4, j1, HKP
     jldb j2, j4, 53
     jst j2, j1, HIF
     jld j5, j1, HKKF            ; the relation in this book
     jldi j2, HMID
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jld j5, j1, HKKF
     jsub j6, j6, j5
     jjnz j6, hvc_keep
     jld j2, j4, 8
-    jcall hl_find
-    jldi j1, 0
+    jcall0 j1, hl_find
     jld j4, j1, HISD            ; (its side as the relation is now)
     jxor j4, j4, j3
     jst j4, j1, HISD
     jst j2, j1, HIR
     jld j2, j1, HIR
-    jcall hxr_of
-    jldi j1, 0
+    jcall0 j1, hxr_of
     jldi j8, 0                  ; walk its pairs: z on its side (testable), and z with b (confirmed); z with
     jldi j11, 0                 ; b with another z (j11): spoken of otherwise
     jwhile j10
@@ -7849,16 +7480,12 @@ hl_icheck:
     jldi j3, 105
     jsub j3, j2, j3
     jjnz j3, hvc_t0
-    jld j2, j1, HVT
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HVT
+    jldi j2, 1
+    jldadd j2, j1, HVT
     jjmp hvc_keep
   hvc_t0:
-    jld j2, j1, HVT0
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HVT0
+    jldi j2, 1
+    jldadd j2, j1, HVT0
     jjmp hvc_keep
   hvc_yes:
     jst j1, j1, HMT
@@ -7913,8 +7540,7 @@ hl_icheck:
     jadd j2, j2, j3
     jst j2, j1, HVU
   hvc_next:
-    jcall hvm_tally
-    jldi j1, 0
+    jcall0 j1, hvm_tally
     jld j2, j1, HKX
     jst j2, j1, HKP
   jwcheck
@@ -7945,8 +7571,7 @@ hvc_done:
   jldi j2, 10
   jcall putch
 hvc_quiet:
-  jcall hl_msave
-  jldi j1, 0
+  jcall0 j1, hl_msave
   jret
 
 ; The line HKP..HKX: its mechanism (after " # ": its key, its text) -> HMQ (0: none, an old line), HMP, HMN; its
@@ -7986,8 +7611,7 @@ hvf_at:
   jldi j6, 3
   jadd j4, j4, j6
   jst j4, j1, HMP
-  jcall hk_hex
-  jldi j1, 0
+  jcall0 j1, hk_hex
   jst j9, j1, HMQ
   jld j4, j1, HMP
   jldi j6, 17
@@ -8013,8 +7637,7 @@ hvm_tally:
   jld j5, j1, HMQ
   jjz j5, hvt_done
   jldi j2, HMEC
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, hvt_old
   jld j7, j1, HMP
   jst j7, j4, 8
@@ -8063,8 +7686,7 @@ hl_msave:
   jldi j10, 4
   jldi j11, S_MECS
   jldi j12, 10
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hms_done
@@ -8097,30 +7719,24 @@ hms_bd:
     jld j2, j1, HPFR
     jcall putnum
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j2, j9, 0
-    jcall hk_puthex
-    jldi j1, 0
+    jcall0 j1, hk_puthex
     jldi j2, 0
     jst j2, j1, HKI
     jwhile j3
       jldi j2, 32
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j2, j1, HKI
       jldi j3, 3
       jshl j3, j2, j3
       jld j9, j1, HWX
       jadd j3, j3, j9
       jld j2, j3, 24
-      jcall putnum
-      jldi j1, 0
-      jld j2, j1, HKI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HKI
+      jcall0 j1, putnum
+      jldi j2, 1
+      jldadd j2, j1, HKI
     jwcheck
       jldi j1, 0
       jld j2, j1, HKI
@@ -8133,8 +7749,7 @@ hms_bd:
     jldi j2, 124
     jcall putch
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j4, j9, 8
     jld j5, j9, 16
@@ -8164,8 +7779,7 @@ hms_bd:
     jld j3, j1, HWN
   jwend
 hms_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -8201,8 +7815,7 @@ hl_nitidez:
   jldi j3, 32
   jcall pl_new
   jcall hnz_walk                ; this piece's places, counted
-  jcall hnz_wake                ; the ones before: woken if this piece has the place, copied as they were if not
-  jldi j1, 0                    ; where each place's words start
+  jcall0 j1, hnz_wake           ; the ones before: woken if this piece has the place, copied as they were if not ; where each place's words start
   jst j1, j1, HPN
   jldi j2, HPLC
   jld j3, j2, 8
@@ -8230,8 +7843,7 @@ hnz_sd:
   jadd j11, j11, j2
   jldi j2, 4
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HPLR
   jcall hnz_put
   jcall hnz_pairs
@@ -8282,8 +7894,7 @@ hnz_walk:
       jst j5, j1, HPV
       jcall hnz_member            ; (j5 its key)
       jldi j2, HPLW
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jjz j6, hnw_sn              ; (this place has it already)
       jldi j2, 1
       jst j2, j4, 8
@@ -8293,18 +7904,13 @@ hnz_walk:
       jst j2, j4, 24
       jld j5, j1, HPV
       jldi j2, HPLC
-      jcall pl_take
-      jldi j1, 0
-      jld j2, j4, 8
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j4, 8
+      jcall0 j1, pl_take
+      jldi j2, 1
+      jldadd j2, j4, 8
     hnw_sn:
       jldi j1, 0
-      jld j2, j1, HPJ
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HPJ
+      jldi j2, 1
+      jldadd j2, j1, HPJ
     jwcheck
       jldi j1, 0
       jld j2, j1, HPJ
@@ -8313,10 +7919,8 @@ hnz_walk:
     jwend
   hnw_next:
     jldi j1, 0
-    jld j2, j1, HPI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HPI
+    jldi j2, 1
+    jldadd j2, j1, HPI
   jwcheck
     jldi j1, 0
     jld j2, j1, HPI
@@ -8345,8 +7949,7 @@ hnz_wake:
   jst j1, j1, HLGC
   jldi j11, S_LUGI
   jldi j12, 5
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRN
   jjz j2, hwk_c
   jld j3, j1, PRB
@@ -8363,8 +7966,7 @@ hwk_c:
   jcall hnz_other
   jldi j10, 4
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, HLGH
   jldi j2, 1
   jadd j2, j13, j2
@@ -8372,8 +7974,7 @@ hwk_c:
   jcall hnz_current             ; the current one, read
   jldi j10, 4
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, HLGR
   jldi j2, 63
   jshr j2, j13, j2
@@ -8381,8 +7982,7 @@ hwk_c:
   jldi j11, 1
   jldi j2, 16
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HLGB
   jst j1, j1, HLGN
   jst j1, j1, HLGL
@@ -8398,8 +7998,7 @@ hwk_c:
     jadd j11, j11, j2
     jldi j12, 32300
     jsub j12, j12, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jsar j2, j13, j2
     jjnz j2, hwk_eof
@@ -8432,29 +8031,25 @@ hwk_c:
       jldi j8, 1
       jadd j7, j7, j8
       jst j7, j1, HLGE            ; past its end
-      jcall hk_hex
-      jldi j1, 0
+      jcall0 j1, hk_hex
       jst j9, j1, HPV
       jld j4, j1, HLGB
       jld j3, j1, HLGF
       jadd j4, j4, j3
       jldi j2, 17
       jadd j4, j4, j2
-      jcall hk_hex
-      jldi j1, 0
+      jcall0 j1, hk_hex
       jst j9, j1, HPU
       jld j5, j1, HPV
       jldi j2, HPLC
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j6, j4, 0
       jld j5, j1, HPV
       jsub j6, j6, j5
       jjnz j6, hwk_copy
       jcall hnz_member            ; woken
       jldi j2, HPLW
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jjz j6, hwk_was
       jld j2, j1, HPV
       jst j2, j4, 16
@@ -8463,8 +8058,7 @@ hwk_c:
       jst j4, j1, HPQ
       jld j5, j1, HPV
       jldi j2, HPLC
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j2, j4, 8
       jldi j3, 1
       jadd j2, j2, j3
@@ -8529,8 +8123,7 @@ hnz_text:
   jldi j1, 0
   jld j5, j1, HPU
   jldi j2, ZWT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, htx_done
   jst j4, j1, HPQ
   jld j3, j1, HLGB
@@ -8552,8 +8145,7 @@ hnz_text:
   jldi j11, 1
   jldi j2, 16
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HLGT
   jldi j11, 1
   jldi j2, 16
@@ -8618,8 +8210,7 @@ hnz_put:
     jjz j5, hnu_next
     jld j5, j9, 16
     jldi j2, HPLC
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 16
     jld j3, j4, 24
     jadd j2, j2, j3
@@ -8675,14 +8266,12 @@ hnz_keep:
     jld j2, j9, 16
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HPQ
     jld j2, j9, 24
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HPQ
     jld j5, j9, 24
     jcall en_sayprint
@@ -8704,8 +8293,7 @@ hnz_keep:
     jld j3, j1, HPN
   jwend
 hnk_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HLGH
   jldi j2, 32
@@ -8715,8 +8303,7 @@ hnk_close:
   jcall ask
   jcall hnz_current
   jldi j10, 12
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, HLGC
   jldi j3, 1
   jxor j2, j2, j3
@@ -8728,8 +8315,7 @@ hnk_close:
   jldi j10, 4
   jldi j11, S_LUGI
   jldi j12, 5
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hnk_done
@@ -8741,8 +8327,7 @@ hnk_close:
   jldi j3, 48
   jadd j2, j2, j3
   jcall putch
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HLGH
   jldi j2, 32
@@ -8759,8 +8344,7 @@ hnz_whalf:
   jldi j1, 0
   jld j5, j1, HPU
   jldi j2, HWC
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j6, j4, 0
   jld j5, j1, HPU
   jsub j6, j6, j5
@@ -8866,24 +8450,19 @@ hnz_pairs:
         jldi j5, 1
       hnp_k:
         jldi j2, HPAR
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jjz j6, hnp_old
         jld j2, j1, HPU
         jst j2, j4, 8
         jld j2, j1, HPV
         jst j2, j4, 16
       hnp_old:
-        jld j2, j4, 24
-        jldi j3, 1
-        jadd j2, j2, j3
-        jst j2, j4, 24
+        jldi j2, 1
+        jldadd j2, j4, 24
       hnp_skip:
         jldi j1, 0
-        jld j3, j1, HPJ
-        jldi j4, 1
-        jadd j3, j3, j4
-        jst j3, j1, HPJ
+        jldi j3, 1
+        jldadd j3, j1, HPJ
       jwcheck
         jldi j1, 0
         jld j4, j1, HPQ
@@ -8893,10 +8472,8 @@ hnz_pairs:
       jwend
     hnp_xn:
       jldi j1, 0
-      jld j2, j1, HPI
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HPI
+      jldi j2, 1
+      jldadd j2, j1, HPI
     jwcheck
       jldi j1, 0
       jld j4, j1, HPQ
@@ -8933,8 +8510,7 @@ hnz_save:
   jcall ask
   jcall hnz_nnew
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hns_done
@@ -8944,8 +8520,7 @@ hnz_save:
   jst j2, j1, SINK
   jcall hnz_nold
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, HLGR
   jldi j2, 63
   jshr j2, j13, j2
@@ -8953,8 +8528,7 @@ hnz_save:
   jldi j11, 1                   ; (its room: a piece with no places before had none)
   jldi j2, 16
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HLGB
   jst j1, j1, HLGN
   hns_read:
@@ -8969,8 +8543,7 @@ hnz_save:
     jadd j11, j11, j2
     jldi j12, 32300
     jsub j12, j12, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jsar j2, j13, j2
     jjnz j2, hns_eof
@@ -9003,8 +8576,7 @@ hnz_save:
       jldi j8, 1
       jadd j7, j7, j8
       jst j7, j1, HLGE
-      jcall hk_hex                ; its key
-      jldi j1, 0
+      jcall0 j1, hk_hex         ; its key
       jst j9, j1, HPV
       jldi j9, 0                  ; how many (from its 18th byte to the space)
       jld j4, j1, HLGB
@@ -9030,8 +8602,7 @@ hnz_save:
       jst j4, j1, HLGX            ; (the rest: " a b\n")
       jld j5, j1, HPV
       jldi j2, HPAR
-      jcall pl_find
-      jldi j1, 0
+      jcall0 j1, pl_find
       jld j6, j4, 0
       jld j5, j1, HPV
       jsub j6, j6, j5
@@ -9045,11 +8616,9 @@ hnz_save:
       jld j2, j1, HPV
       jcall hk_puthex
       jldi j2, 32
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j2, j1, HPU
-      jcall putnum
-      jldi j1, 0
+      jcall0 j1, putnum
       jld j4, j1, HLGX
       jjmp hns_cb
     hns_copy:
@@ -9118,20 +8687,17 @@ hns_new:                          ; the pairs that are new
     jld j2, j9, 0
     jcall hk_puthex
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HPQ
     jld j2, j9, 24
     jcall putnum
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HPQ
     jld j5, j9, 8
     jcall en_sayprint
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HPQ
     jld j5, j9, 16
     jcall en_sayprint
@@ -9153,8 +8719,7 @@ hns_new:                          ; the pairs that are new
     jld j3, j1, HPN
   jwend
 hns_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HLGH
   jldi j2, 32
@@ -9196,8 +8761,7 @@ hl_iopen:
   jldi j10, 4
   jldi j11, S_IMAG
   jldi j12, 9
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hio_no
@@ -9222,10 +8786,8 @@ hl_iopen:
     jwend
   hio_bn:
     jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -9241,16 +8803,14 @@ hio_no:
 
 ; "imaginado" closed, the text to the console again. Uses j1-j14.
 hl_iclose:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jret
 
 ; The instructions found and what they imagined (to the console), then "imaginado" written: the votes still open
@@ -9282,12 +8842,9 @@ hl_inventa:
     jst j4, j1, HIF
     jld j4, j3, 40
     jst j4, j1, HIMK
-    jcall hin_iwrite
-    jldi j1, 0
-    jld j2, j1, HKI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HKI
+    jcall0 j1, hin_iwrite
+    jldi j2, 1
+    jldadd j2, j1, HKI
   jwcheck
     jldi j1, 0
     jld j2, j1, HKI
@@ -9305,8 +8862,7 @@ hlv_done:
 hl_pmaybe:
   jldi j11, S_PARTES
   jldi j12, 6
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRN
   jjz j2, hpm_no
   jcall hl_partes
@@ -9331,8 +8887,7 @@ hl_partes:
   jcall pl_new
   jldi j2, HPS
   jldi j3, 72
-  jcall pl_new
-  jldi j1, 0                    ; (two cuts, an end and a beginning, for each byte of its words, 56 bytes each: counted
+  jcall0 j1, pl_new             ; (two cuts, an end and a beginning, for each byte of its words, 56 bytes each: counted
                                 ; first)
   jldi j2, ZWT
   jld j3, j2, 8
@@ -9355,8 +8910,7 @@ hl_partes:
 hpt_nd:
   jldi j3, 168
   jmul j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, HPE
   jst j1, j1, HPEN
   jldi j2, ZWT
@@ -9371,8 +8925,7 @@ hpt_nd:
     jld j5, j4, 0
     jjz j5, hpt_wn
     jldi j2, HWC                ; said twice or more
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j6, j4, 0
     jjz j6, hpt_wn
     jld j6, j4, 8
@@ -9402,18 +8955,15 @@ hpt_nd:
     hpt_ok:
       jld j3, j1, HPP           ; the root's print, the ending's
       jld j4, j1, HPRN
-      jcall mp_print
-      jldi j1, 0
+      jcall0 j1, mp_print
       jst j5, j1, HPHB
       jld j3, j1, HPSP
       jld j4, j1, HPL
-      jcall mp_print
-      jldi j1, 0
+      jcall0 j1, mp_print
       jst j5, j1, HPHS
       jld j5, j1, HPHB          ; onto the root's list
       jldi j2, HPB
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jld j6, j4, 8
       jld j2, j1, HPEN
       jldi j3, 56
@@ -9438,10 +8988,8 @@ hpt_nd:
       jst j2, j4, 8
     hpt_cn:
       jldi j1, 0
-      jld j2, j1, HPL
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HPL
+      jldi j2, 1
+      jldadd j2, j1, HPL
     jwcheck
       jldi j1, 0
       jld j2, j1, HPL
@@ -9472,20 +9020,17 @@ hpt_nd:
       jld j4, j1, HPRN
       jcall mp_print
       jldi j6, 2
-      jcall hl_mix
-      jldi j1, 0
+      jcall0 j1, hl_mix
       jst j5, j1, HPHB
       jld j3, j1, HPP
       jld j4, j1, HPL
       jcall mp_print
       jldi j6, 2
-      jcall hl_mix
-      jldi j1, 0
+      jcall0 j1, hl_mix
       jst j5, j1, HPHS
       jld j5, j1, HPHB
       jldi j2, HPB
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jld j6, j4, 8
       jld j2, j1, HPEN
       jldi j3, 56
@@ -9510,10 +9055,8 @@ hpt_nd:
       jst j2, j4, 8
     hpt_gn:
       jldi j1, 0
-      jld j2, j1, HPL
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HPL
+      jldi j2, 1
+      jldadd j2, j1, HPL
     jwcheck
       jldi j1, 0
       jld j2, j1, HPL
@@ -9537,8 +9080,7 @@ hpt_nd:
       jldi j7, 128
       jsub j6, j6, j7
       jjz j6, hpt_mn1           ; (inside a letter: on to the next byte)
-      jcall pc_len
-      jldi j1, 0
+      jcall0 j1, pc_len
       jst j7, j1, HPCL
       jld j3, j1, HPNN          ; the root three bytes or more
       jsub j3, j3, j7
@@ -9549,8 +9091,7 @@ hpt_nd:
       jjnz j4, hpt_mn
       jld j3, j1, HPP           ; the root's print: the part before, the part after, marked apart
       jld j4, j1, HPL
-      jcall mp_print
-      jldi j1, 0
+      jcall0 j1, mp_print
       jst j5, j1, HPHB
       jld j3, j1, HPSP
       jld j4, j1, HPCL
@@ -9560,26 +9101,22 @@ hpt_nd:
       jsub j4, j4, j6
       jld j6, j1, HPCL
       jsub j4, j4, j6
-      jcall mp_print
-      jldi j1, 0
+      jcall0 j1, mp_print
       jadd j6, j5, j1
       jld j5, j1, HPHB
       jcall hl_mix
       jldi j6, 3
-      jcall hl_mix
-      jldi j1, 0
+      jcall0 j1, hl_mix
       jst j5, j1, HPHB
       jld j3, j1, HPSP          ; the letter's print
       jld j4, j1, HPCL
       jcall mp_print
       jldi j6, 3
-      jcall hl_mix
-      jldi j1, 0
+      jcall0 j1, hl_mix
       jst j5, j1, HPHS
       jld j5, j1, HPHB
       jldi j2, HPB
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jld j6, j4, 8
       jld j2, j1, HPEN
       jldi j3, 56
@@ -9618,10 +9155,8 @@ hpt_nd:
     jwend
     jjmp hpt_wn
     hpt_mn1:
-      jld j2, j1, HPL
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, HPL
+      jldi j2, 1
+      jldadd j2, j1, HPL
       jjmp hpt_m
   hpt_wn:
     jldi j1, 0
@@ -9690,8 +9225,7 @@ hpt_wd:
         jldi j5, 1
       hpt_k:
         jldi j2, HPS
-        jcall pl_take
-        jldi j1, 0
+        jcall0 j1, pl_take
         jjz j6, hpt_old
         jld j5, j1, HPX         ; new: its two endings, a root (from the first)
         jld j6, j1, HPY
@@ -9749,8 +9283,7 @@ hpt_out:                        ; into "piezas": the changes of two roots or mor
   jldi j10, 4
   jldi j11, S_PIEZ
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hpt_top
@@ -9792,8 +9325,7 @@ hpt_out:                        ; into "piezas": the changes of two roots or mor
     jld j3, j1, HPK
   jwend
 hpt_fd:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -9836,8 +9368,7 @@ hpt_top:                        ; to the console: the twenty that work for the m
     jldi j1, S_PIEZA
     jcall puts
     jld j4, j1, HPW
-    jcall hp_say
-    jldi j1, 0
+    jcall0 j1, hp_say
     jld j4, j1, HPW             ; (said: out of the race)
     jld j5, j4, 8
     jldi j6, 0
@@ -9868,29 +9399,25 @@ hp_say:
 hps_pos:
   jcall putnum
   jldi j2, 9
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j4, j1, HPZ
   jld j9, j4, 16
   jld j10, j4, 24
   jcall hp_text
   jldi j2, 9
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j4, j1, HPZ
   jld j9, j4, 32
   jld j10, j4, 40
   jcall hp_text
   jldi j2, 9
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j4, j1, HPZ
   jld j9, j4, 48
   jld j10, j4, 56
   jcall hp_text
   jldi j2, 9
-  jcall putch
-  jldi j1, 0
+  jcall0 j1, putch
   jld j4, j1, HPZ
   jld j2, j4, 64
   jldi j1, S_PFIN
@@ -9951,20 +9478,17 @@ hl_esave:
   jcall en_read
   jldi j2, HEJ
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j2, j1, PRB
   jst j2, j1, HEX
   jld j3, j1, PRN
   jadd j3, j2, j3
   jst j3, j1, HEE
   jwhilez j5
-    jcall hk_hex
-    jldi j1, 0
+    jcall0 j1, hk_hex
     jadd j5, j9, j1
     jldi j2, HEJ
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j7, j1, HEX
     hes_eol:
       jld j5, j1, HEE
@@ -9997,8 +9521,7 @@ hes_open:
   jldi j10, 4
   jldi j11, S_EJEM
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hes_done
@@ -10066,30 +9589,25 @@ hes_bd:
     hes_k:
       jst j5, j1, HKEY
       jldi j2, HEJ
-      jcall pl_take
-      jldi j1, 0
+      jcall0 j1, pl_take
       jjz j6, hes_p
       jld j2, j1, HKEY
       jcall hk_puthex
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j2, j1, HEI
       jcall hk_key
       jcall hk_puthex
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j2, j1, HEI
       jcall hl_sayform
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j5, j1, HKJA
       jcall en_sayprint
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j5, j1, HKJB
       jcall en_sayprint
       jldi j2, 10
@@ -10103,10 +9621,8 @@ hes_bd:
     jwend
   hes_fn:
     jldi j1, 0
-    jld j2, j1, HEI
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HEI
+    jldi j2, 1
+    jldadd j2, j1, HEI
   jwcheck
     jldi j1, 0
     jld j2, j1, HEI
@@ -10114,8 +9630,7 @@ hes_bd:
     jsub j3, j2, j3
   jwend
 hes_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -10142,8 +9657,7 @@ hl_tsave:
   jldi j10, 4
   jldi j11, S_TEST
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hts_done
@@ -10176,40 +9690,34 @@ hts_bd:
     jld j2, j9, 8
     jcall hl_sayform
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j2, j9, 16
     jcall hl_sayform
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j2, j9, 24
     jldi j3, 48
     jadd j2, j2, j3
     jcall putch
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j5, j9, 32
     jcall hts_word
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j5, j9, 40
     jcall hts_word
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j2, j9, 48
     jcall hl_sayform
     jldi j2, 9
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j9, j1, HWX
     jld j2, j9, 56
     jcall hl_sayform
@@ -10231,8 +9739,7 @@ hts_bd:
     jld j3, j1, HWN
   jwend
 hts_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -10256,8 +9763,7 @@ hts_word:
 hl_vuelca:
   jldi j11, S_VUELCA
   jldi j12, 6
-  jcall en_read
-  jldi j1, 0
+  jcall0 j1, en_read
   jld j2, j1, PRN
   jjz j2, hvl_done
   jcall flush
@@ -10268,8 +9774,7 @@ hl_vuelca:
   jldi j10, 4
   jldi j11, S_RELS
   jldi j12, 10
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, hvl_done
@@ -10290,13 +9795,10 @@ hl_vuelca:
     jjnz j6, hvl_rn
     jldi j1, 0
     jld j2, j1, HVR
-    jcall hxr_of
-    jldi j1, 0
+    jcall0 j1, hxr_of
     jldi j2, 2
     jsub j2, j10, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjnz j2, hvl_rn
+    jjn j2, hvl_rn
     jst j9, j1, HVP
     jst j10, j1, HVK
     jwhile j2
@@ -10308,25 +9810,21 @@ hl_vuelca:
       jld j2, j4, 0
       jcall putnum
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j2, j1, HVR
       jcall hl_sayform
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j4, j1, HVP
       jld j5, j4, 0
       jcall en_sayprint
       jldi j2, 9
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j4, j1, HVP
       jld j5, j4, 8
       jcall en_sayprint
       jldi j2, 10
-      jcall putch
-      jldi j1, 0
+      jcall0 j1, putch
       jld j4, j1, HVP
       jldi j2, 16
       jadd j4, j4, j2
@@ -10341,10 +9839,8 @@ hl_vuelca:
     jwend
   hvl_rn:
     jldi j1, 0
-    jld j2, j1, HVR
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, HVR
+    jldi j2, 1
+    jldadd j2, j1, HVR
   jwcheck
     jldi j1, 0
     jld j2, j1, HVR
@@ -10352,8 +9848,7 @@ hl_vuelca:
     jsub j3, j2, j3
   jwend
 hvl_close:
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jst j1, j1, SINK
   jld j10, j1, HKH
   jldi j2, 32
@@ -10370,8 +9865,7 @@ en_read:
   jldi j1, 0
   jst j1, j1, PRN
   jldi j10, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, enr_done
@@ -10380,14 +9874,12 @@ en_read:
   jldi j2, 16
   jshl j11, j11, j2
   jst j11, j1, PRC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PRB
   jwhilez j3
     jld j11, j1, PRC
     jadd j11, j11, j11
-    jcall room
-    jldi j1, 0
+    jcall0 j1, room
     jld j3, j1, PRB
     jld j4, j1, PRN
     jldi j5, 0
@@ -10417,8 +9909,7 @@ en_read:
     jadd j11, j11, j2
     jld j12, j1, PRC
     jsub j12, j12, j2
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jsar j2, j13, j2
     jldi j3, -1
@@ -10450,21 +9941,18 @@ en_lines:
   jadd j11, j11, j2
   jldi j2, 5
   jshl j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ZLN
   jld j11, j1, PRN
   jldi j2, 2
   jadd j11, j11, j2
   jldi j2, 24
   jmul j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ZWD
   jldi j2, ZWT
   jldi j3, 24
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, ZNLN
   jst j1, j1, ZNWD
   jld j2, j1, PRB
@@ -10506,10 +9994,8 @@ el_typed:
   jst j4, j3, 8
   jst j1, j3, 16
   jst j2, j3, 24
-  jld j4, j1, ZNLN
-  jldi j5, 1
-  jadd j4, j4, j5
-  jst j4, j1, ZNLN
+  jldi j4, 1
+  jldadd j4, j1, ZNLN
   jldi j5, 2
   jadd j2, j2, j5
   jst j2, j1, ZEP
@@ -10561,8 +10047,7 @@ el_wh:
   jst j8, j1, ZEWL
   jadd j3, j9, j1
   jadd j4, j8, j1
-  jcall mp_print
-  jldi j1, 0
+  jcall0 j1, mp_print
   jld j2, j1, ZNWD
   jldi j3, 24
   jmul j3, j2, j3
@@ -10582,8 +10067,7 @@ el_wh:
   jadd j4, j4, j6
   jst j4, j3, 16
   jldi j2, ZWT
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jjz j6, el_wnext
   jld j9, j1, ZEP
   jst j9, j4, 8
@@ -10661,8 +10145,7 @@ en_saywords:
     jsub j4, j3, j4
     jjz j4, esw_ns
     jldi j2, 32
-    jcall putch
-    jldi j1, 0
+    jcall0 j1, putch
     jld j3, j1, ZSLI
   esw_ns:
     jld j4, j1, ZSLS
@@ -10677,10 +10160,8 @@ en_saywords:
     jcall en_sayprint
   esw_next:
     jldi j1, 0
-    jld j3, j1, ZSLI
-    jldi j4, 1
-    jadd j3, j3, j4
-    jst j3, j1, ZSLI
+    jldi j3, 1
+    jldadd j3, j1, ZSLI
   jwcheck
     jldi j1, 0
     jld j3, j1, ZSLI
@@ -10693,8 +10174,7 @@ esw_done:
 ; The text of the word whose print is j5. Uses j1-j10.
 en_sayprint:
   jldi j2, ZWT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j9, j4, 8
   jld j10, j4, 16
   jwhile j10

@@ -29,7 +29,7 @@ include 'win64a.inc'
 MAX_PROGRAM = 1 shl 20          ; bytes; criterion, not a measurement
 DATA_SIZE   = 1 shl 20          ; must match the interpreter
 RET_DEPTH   = 4096              ; must match the interpreter
-OP_COUNT    = 18h
+OP_COUNT    = 1Dh
 MAX_LEN     = 255               ; bytes per translated instruction: the cache stores lengths in one byte
 
 CACHE_MAGIC = 'JX65'
@@ -99,9 +99,11 @@ section '.data' data readable writeable
   NATIVE_COUNT = $ - natives
   ; which register fields each instruction reads or writes: 1 = rd, 2 = ra, 4 = rb
   usage_masks db 0, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 0, 1, 1, 1, 3, 3, 3, 3, 0, 0, 0, 3
+              db 1, 1, 3, 7, 1
   emit_table dq e_halt, e_ldi, e_add, e_sub, e_mul, e_div, e_shl, e_shr
              dq e_sar, e_and, e_or, e_xor, e_jmp, e_jz, e_jnz, e_shi
              dq e_ld, e_st, e_ldb, e_stb, e_call, e_ret, e_bad, e_host   ; 16h jsys exists only in Janax OS
+             dq e_jn, e_jnn, e_ldadd, e_ldx, e_call0
   hashed_end:
 
 STUB_BYTES = NATIVE_COUNT * 7 * 2 + 5 + 1   ; loads, call, saves, ret
@@ -142,10 +144,15 @@ template t_div
 .store:
 end_template
 
-macro memtemplate name, size, align_check, body {
+; address: rax = ra + DISP (the offset), or rax = ra + rcx*8 when indexed (wraps like Janax)
+macro memtemplate name, size, align_check, indexed, body {
   template name
+    if indexed
+          lea     rax, [rax + rcx*8]
+    else
           add     rax, DISP
           name#.i = $ - 4 - name
+    end if
           cmp     rax, DATA_SIZE - size
           ja      .out
     if align_check
@@ -165,10 +172,17 @@ macro memtemplate name, size, align_check, body {
   end_template
 }
 
-memtemplate t_ld,  8, 1, <mov rax, [rdx + rax]>
-memtemplate t_st,  8, 1, <mov [rdx + rax], rcx>
-memtemplate t_ldb, 1, 0, <movzx eax, byte [rdx + rax]>
-memtemplate t_stb, 1, 0, <mov [rdx + rax], cl>
+memtemplate t_ld,    8, 1, 0, <mov rax, [rdx + rax]>
+memtemplate t_st,    8, 1, 0, <mov [rdx + rax], rcx>
+memtemplate t_ldb,   1, 0, 0, <movzx eax, byte [rdx + rax]>
+memtemplate t_stb,   1, 0, 0, <mov [rdx + rax], cl>
+macro ldadd_body {                      ; rcx = rd: the sum goes to memory and to rax
+          add     rcx, [rdx + rax]
+          mov     [rdx + rax], rcx
+          mov     rax, rcx
+}
+memtemplate t_ldadd, 8, 1, 0, ldadd_body
+memtemplate t_ldx,   8, 1, 1, <mov rax, [rdx + rax]>                                     ; rcx = rb
 
 template t_call
         mov     rdx, [rbp + C_DEPTH]
@@ -439,6 +453,8 @@ macro e_branch name, cc {
 
 e_branch e_jz,  84h
 e_branch e_jnz, 85h
+e_branch e_jn,  88h                     ; js: the sign of rd (cmp with 0 leaves OF clear)
+e_branch e_jnn, 89h                     ; jns
 
 e_shi:
         mov     edx, r11d
@@ -483,6 +499,36 @@ e_call:
         call    copy_template
         lea     rsi, [r15 + t_call.j]
         jmp     mark_jump
+
+e_call0:                                ; a jcall whose return address is "rd = 0", right after it
+        call    e_call
+        mov     ax, 0C031h              ; xor eax, eax
+        stosw
+        mov     edx, r11d
+        jmp     store_rax
+
+e_ldadd:                                ; the word at ra + imm gets rd added; rd keeps the sum
+        mov     edx, r8d
+        call    load_rax
+        mov     edx, r11d
+        call    load_rcx
+        lea     rsi, [t_ldadd]
+        mov     ecx, t_ldadd.size
+        call    copy_template
+        mov     [r15 + t_ldadd.i], r9d  ; offset
+        mov     edx, r11d
+        jmp     store_rax
+
+e_ldx:                                  ; rd = the word at ra + rb * 8
+        mov     edx, r8d
+        call    load_rax
+        mov     edx, r10d
+        call    load_rcx
+        lea     rsi, [t_ldx]
+        mov     ecx, t_ldx.size
+        call    copy_template
+        mov     edx, r11d
+        jmp     store_rax
 
 e_host:
         mov     edx, r8d

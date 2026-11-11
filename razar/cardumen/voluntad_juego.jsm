@@ -99,9 +99,8 @@ jldi j1, 5
 jor j10, j10, j1
 jldi j11, NACE
 jldi j12, 48
-jcall ask
+jcall0 j1, ask                  ; "hijo" = 68 69 6A 6F, launched with every right
 
-jldi j1, 0                      ; "hijo" = 68 69 6A 6F, launched with every right
 jldi j2, 6F6Ah
 jshi j2, 6968h
 jst j2, j1, HIJO
@@ -112,8 +111,7 @@ jldi j3, 16
 jor j10, j10, j3
 jldi j11, HIJO
 jldi j12, 4
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, CHILD
 
 jldi j13, 0                     ; the school is born (order 5: seed, side, quiet) and asks for the room its tables need
@@ -139,19 +137,16 @@ jldi j3, 5
 jor j2, j2, j3
 jst j2, j13, WORD
 jcall say
-jcall hear                      ; how much room its tables need: this cabin builds it (request 2), moves it there
-jldi j1, 0                      ; (request 23) and says so (a child's request for memory would wait for a signature)
+jcall0 j1, hear                 ; how much room its tables need: this cabin builds it (request 2), moves it there ; (request 23) and says so (a child's request for memory would wait for a signature)
 jld j11, j1, MAIL + 8
 jjz j11, b_roomed
 jldi j10, 2
-jcall ask
-jldi j11, 0
+jcall0 j11, ask
 jadd j11, j11, j13
 jldi j10, 23
 jldi j1, 0
 jld j12, j1, CHILD
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j1, j1, WORD
 jcall say
 b_roomed:
@@ -170,8 +165,7 @@ jadd j11, j11, j4
 jldi j4, 0FFF8h
 jand j11, j11, j4
 jldi j10, 2
-jcall ask
-jldi j1, 0
+jcall0 j1, ask
 jst j13, j1, RBASE
 jadd j4, j13, j3
 jst j4, j1, STEPB
@@ -206,8 +200,7 @@ jst j2, j1, SEED2
 jldi j9, 0                      ; its invented words: 3 distinct pieces of the bottom face each, by dice
 jwhile j1
 w_draw:
-  jcall rnd2
-  jldi j1, 0
+  jcall0 j1, rnd2
   jld j2, j1, N2
   jdiv j3, j13, j2
   jmul j3, j3, j2
@@ -243,8 +236,7 @@ jst j1, j1, NTRAIN
 jst j1, j1, NTEST
 jldi j2, 6
 jst j2, j1, OPC
-jcall riddles_of
-jldi j1, 0
+jcall0 j1, riddles_of
 jld j2, j1, TIPO
 jjz j2, r_drawn
 jldi j2, 7
@@ -259,8 +251,7 @@ jst j1, j1, ROUND
 jwhile j3
   jld j2, j1, NTRAIN
   jjz j2, p_done
-  jcall rnd2                    ; the riddle
-  jldi j1, 0
+  jcall0 j1, rnd2               ; the riddle
   jld j2, j1, NTRAIN
   jdiv j3, j13, j2
   jmul j3, j3, j2
@@ -272,15 +263,13 @@ jwhile j3
   jst j3, j1, CUR
   jcall sing
   jcall guess
-  jcall learn
-  jldi j1, 0
+  jcall0 j1, learn
   jld j12, j1, LABEL
   jldi j2, 4
   jshl j12, j12, j2
   jld j2, j1, BEST
   jadd j12, j12, j2
-  jcall mix
-  jldi j1, 0                    ; the last quarter: rounds * 4 >= VUELTAS * 3
+  jcall0 j1, mix                ; the last quarter: rounds * 4 >= VUELTAS * 3
   jld j2, j1, ROUND
   jldi j3, 4
   jmul j2, j2, j3
@@ -291,10 +280,8 @@ jwhile j3
   jldi j4, 63
   jsar j2, j2, j4
   jjnz j2, p_judge
-  jld j2, j1, TAILN
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, TAILN
+  jldi j2, 1
+  jldadd j2, j1, TAILN
 p_judge:
   jld j2, j1, BEST
   jld j3, j1, LABEL
@@ -348,8 +335,7 @@ p_isword:
   jadd j7, j7, j4
   jst j7, j1, WORD              ; (WORD: the slot that moves)
 p_place:
-  jcall rnd2                    ; its new place: not one the word has
-  jldi j1, 0
+  jcall0 j1, rnd2               ; its new place: not one the word has
   jld j2, j1, N2
   jdiv j3, j13, j2
   jmul j3, j3, j2
@@ -374,10 +360,8 @@ p_check:
   jst j3, j8, SAY
 p_next:
   jldi j1, 0
-  jld j2, j1, ROUND
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, ROUND
+  jldi j2, 1
+  jldadd j2, j1, ROUND
 jwcheck
   jldi j1, 0
   jld j2, j1, ROUND
@@ -396,8 +380,7 @@ jldi j2, TRAIN
 jst j2, j1, CUR
 jwhile j15
   jcall sing
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j2, j1, MASKED
   jldi j3, 1
   jadd j2, j2, j3
@@ -421,11 +404,9 @@ jldi j2, TEST
 jst j2, j1, CUR
 jwhile j15
   jcall sing
-  jcall guess
-  jldi j1, 0
+  jcall0 j1, guess
   jld j12, j1, BEST
-  jcall mix
-  jldi j1, 0
+  jcall0 j1, mix
   jld j2, j1, ASKED
   jldi j3, 1
   jadd j2, j2, j3
@@ -450,9 +431,8 @@ jcall mix
 jld j12, j1, MRIGHT
 jcall mix
 jld j12, j1, RIGHT
-jcall mix
+jcall0 j1, mix                  ; the school ends (order 3: it says its fingerprint, not mixed here)
 
-jldi j1, 0                      ; the school ends (order 3: it says its fingerprint, not mixed here)
 jldi j2, 3
 jst j2, j1, WORD
 jcall say
@@ -486,8 +466,7 @@ jldi j1, S_QUIETO
 jcall puts
 o_quiet:
 jldi j1, S_PRACT
-jcall puts
-jldi j1, 0                      ; the share of the last quarter, in percent
+jcall0 j1, puts                 ; the share of the last quarter, in percent
 jld j2, j1, HITS
 jldi j3, 100
 jmul j2, j2, j3
@@ -683,8 +662,7 @@ s_said:
   jldi j1, 0                    ; order 6: how many, then each greeting
   jldi j2, 306h
   jst j2, j1, WORD
-  jcall say
-  jldi j4, 0
+  jcall0 j4, say
   jldi j5, 3
   jwhile j5
     jld j2, j4, SONGM
@@ -696,8 +674,7 @@ s_said:
     jldi j1, 1
     jsub j5, j5, j1
   jwend
-  jcall hear                    ; how many steps it lasted
-  jldi j1, 0
+  jcall0 j1, hear               ; how many steps it lasted
   jld j2, j1, MAIL + 8
   jst j2, j1, SLONG
   jld j6, j1, N2                ; then its top faces: SLONG * n^2 bits, 64 per word
@@ -706,8 +683,7 @@ s_said:
   jldi j8, 0
   jwhile j6
     jjnz j8, s_bit
-    jcall hear
-    jldi j1, 0
+    jcall0 j1, hear
     jld j2, j1, MAIL + 8
     jldi j8, 64
   s_bit:

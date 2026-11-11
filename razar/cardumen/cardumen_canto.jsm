@@ -111,8 +111,7 @@ jcall born
 
 jldi j15, 1                     ; it listens until the end
 jwhile j15
-  jcall hear                    ; the order, as a word (sleeping until it comes, costing nothing)
-  jldi j13, 0
+  jcall0 j13, hear              ; the order, as a word (sleeping until it comes, costing nothing)
   jld j2, j13, MAIL + 8
   jldi j1, 0FFh
   jand j1, j2, j1
@@ -177,8 +176,7 @@ c_masks:                        ; order 6: a song with the exact pieces of each 
   jst j4, j13, SLEN
   jldi j5, 0
   jwhile j4
-    jcall hear
-    jldi j13, 0
+    jcall0 j13, hear
     jld j2, j13, MAIL + 8
     jst j2, j5, SONGM
     jldi j3, 8
@@ -190,8 +188,7 @@ c_masks:                        ; order 6: a song with the exact pieces of each 
   jcall answer
   jjmp c_next
 c_end:
-  jcall fingerprint             ; the end: its fingerprint, as one word
-  jldi j13, 0
+  jcall0 j13, fingerprint       ; the end: its fingerprint, as one word
   jst j0, j13, WORD
   jcall say
   jhalt
@@ -205,8 +202,7 @@ answer:
   jldi j13, 0
   jld j1, j13, TCUR
   jst j1, j13, WORD
-  jcall say
-  jldi j13, 0
+  jcall0 j13, say
   jld j9, j13, TCUR             ; words: (steps + 3) / 4
   jldi j1, 3
   jadd j9, j9, j1

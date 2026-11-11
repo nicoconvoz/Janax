@@ -160,8 +160,7 @@ pz_out:
   jor j10, j10, j11
   jadd j11, j3, j1
   jadd j12, j2, j1
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jret
 
 ; A round begins: if there are nests, its "libro" is written (the question, the first round; then the renglones of
@@ -170,8 +169,7 @@ clue_round:
   jldi j1, 0
   jst j1, j1, PZON
   jst j1, j1, PZNEWN
-  jcall pz_list                 ; its folder's labels: is there a nest?
-  jldi j1, 0
+  jcall0 j1, pz_list            ; its folder's labels: is there a nest?
   jld j13, j1, PZLSTN
   jldi j2, 63
   jsar j2, j13, j2
@@ -201,8 +199,7 @@ clue_round:
   jjz j2, cr_none
   jldi j11, S_CAMINO            ; the walk so far
   jldi j12, 6
-  jcall pz_file
-  jldi j1, 0
+  jcall0 j1, pz_file
   jld j2, j1, PZFR
   jst j2, j1, PZCAM
   jld j2, j1, PZFRN
@@ -219,15 +216,13 @@ clue_round:
   jldi j10, 4
   jldi j11, S_LIBRO
   jldi j12, 5
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, PZOUT
   jld j2, j1, PZCAMN
   jjnz j2, cr_walk
   jldi j11, S_Q                 ; the first round: the question
   jldi j12, 1
-  jcall pz_file
-  jldi j1, 0
+  jcall0 j1, pz_file
   jld j2, j1, PZFRN
   jldi j3, 63
   jsar j3, j2, j3
@@ -248,8 +243,7 @@ cr_walk:
   jcall pl_new
   jldi j2, PZLG
   jldi j3, 24
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jst j1, j1, PZNBL
   jldi j1, 0
   jst j1, j1, PZNTOK
@@ -312,8 +306,7 @@ lg_tot:
   jjz j2, lgt_done
   jldi j2, LTB
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j9, j1, PZWL
   jld j10, j1, PZWL + 8
   jldi j2, 1
@@ -325,8 +318,7 @@ lg_tot:
     jst j10, j1, LN2
     jld j5, j9, 16              ; its word's language
     jldi j2, PLB
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j9, j1, LN1
     jld j10, j1, LN2
     jld j2, j4, 0
@@ -341,8 +333,7 @@ lg_tot:
     jst j3, j1, LTN
     jld j5, j9, 24
     jldi j2, LTB
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, LN1
     jld j10, j1, LN2
     jld j2, j4, 8
@@ -369,8 +360,7 @@ lg_closes:
   jjz j2, lgc_lib
   jld j5, j9, 0
   jldi j2, LTB
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, lgc_none
   jld j2, j4, 8
@@ -392,13 +382,11 @@ lg_print:
   jjnz j2, lgp_have
   jldi j2, PLB
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j5, j1, LNY
 lgp_have:
   jldi j2, PLB
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j2, j1, PZK
   jldi j3, 3
   jshl j2, j2, j3
@@ -428,8 +416,7 @@ lg_scan:
   jmul j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LGR
   jld j9, j1, PZLST
   jld j10, j1, PZLSTN
@@ -472,16 +459,14 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LGM
   jld j11, j1, LGN
   jldi j2, 3
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LGW
   jst j1, j1, LGT3
   jwhile j3
@@ -490,8 +475,7 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
       jld j3, j1, LGT3
       jsub j3, j2, j3
       jjz j3, lgn_jnext
-      jcall lg_share
-      jldi j1, 0
+      jcall0 j1, lg_share
       jld j3, j1, LGT3
       jld j4, j1, LGN
       jmul j3, j3, j4
@@ -504,10 +488,8 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
       jst j2, j3, 0
     lgn_jnext:
       jldi j1, 0
-      jld j2, j1, LGT4
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, LGT4
+      jldi j2, 1
+      jldadd j2, j1, LGT4
     jwcheck
       jldi j1, 0
       jld j2, j1, LGT4
@@ -515,10 +497,8 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
       jsub j3, j2, j3
     jwend
   lgn_inext:
-    jld j2, j1, LGT3
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LGT3
+    jldi j2, 1
+    jldadd j2, j1, LGT3
   jwcheck
     jldi j1, 0
     jld j2, j1, LGT3
@@ -606,10 +586,8 @@ lgs_cw:                         ; each book takes the language that weighs the m
       jst j2, j1, LGC
     lgc_inext:
       jldi j1, 0
-      jld j2, j1, LGT3
-      jldi j3, 1
-      jadd j2, j2, j3
-      jst j2, j1, LGT3
+      jldi j2, 1
+      jldadd j2, j1, LGT3
     jwcheck
       jldi j1, 0
       jld j2, j1, LGT3
@@ -617,10 +595,8 @@ lgs_cw:                         ; each book takes the language that weighs the m
       jsub j3, j2, j3
     jwend
   lgc_passed:
-    jld j2, j1, LGP
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, LGP
+    jldi j2, 1
+    jldadd j2, j1, LGP
     jld j3, j1, LGC
     jjz j3, lgs_ask
     jld j3, j1, LGN             ; (never more passes than books)
@@ -632,8 +608,7 @@ lgs_ask:                        ; the walk's words: each language, how many of t
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, LGS              ; by root {how many words, the last word counted}
   jld j2, j1, PZCAM
   jst j2, j1, LGT1
@@ -658,8 +633,7 @@ lgs_ask:                        ; the walk's words: each language, how many of t
     jsub j4, j4, j5
     jst j9, j1, LGT6
     jjz j4, lga_byte
-    jcall pz_printraw
-    jldi j1, 0
+    jcall0 j1, pz_printraw
     jst j5, j1, LGT8
     jld j2, j1, LGT7
     jldi j3, 1
@@ -877,8 +851,7 @@ lg_vocab:
   jst j12, j1, LGT7
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j12, j1, LGT7
   jst j13, j12, 8
   jld j10, j1, LGT6
@@ -952,8 +925,7 @@ pz_read_it:
   jldi j5, 1
 pri_key:
   jldi j2, PZRD
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, pri_no
 pri_yes:
@@ -1016,8 +988,7 @@ pz_read:
   jst j2, j1, PZNR
   jldi j3, 8
   jadd j11, j2, j3
-  jcall room                    ; by renglon, 1 if it is read again
-  jldi j1, 0
+  jcall0 j1, room               ; by renglon, 1 if it is read again
   jst j13, j1, PZMAP
   jld j9, j1, PZIX              ; the marks of one page at a time
   jld j11, j9, 96
@@ -1025,15 +996,13 @@ pz_read:
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZMC
   jldi j2, -1
   jst j2, j1, PZMCP
   jldi j2, PZHT
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j2, j1, PZCAM             ; each word walked: the piece where it is, and its hidden bytes known
   jst j2, j1, PZK
 jwhile j4
@@ -1070,8 +1039,7 @@ jwend
 prd_found:
   jldi j2, 1                    ; those pieces: the renglones of the words walked
   jst j2, j1, PZMODE
-  jcall pz_visit
-  jldi j1, 0                    ; the bytes to read again (and a line feed a renglon, at most)
+  jcall0 j1, pz_visit           ; the bytes to read again (and a line feed a renglon, at most)
   jst j1, j1, PZTOT
   jst j1, j1, PZK
 jwhile j3
@@ -1081,12 +1049,10 @@ jwhile j3
   jjz j3, pt_next
   jldi j3, 1
   jadd j2, j2, j3
-  jcall zm_mark
-  jldi j1, 0
+  jcall0 j1, zm_mark
   jst j2, j1, PZA
   jld j2, j1, PZK
-  jcall zm_mark
-  jldi j1, 0
+  jcall0 j1, zm_mark
   jld j3, j1, PZA
   jsub j3, j3, j2
   jldi j4, 1
@@ -1095,10 +1061,8 @@ jwhile j3
   jadd j4, j4, j3
   jst j4, j1, PZTOT
 pt_next:
-  jld j2, j1, PZK
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, PZK
+  jldi j2, 1
+  jldadd j2, j1, PZK
 jwcheck
   jldi j1, 0
   jld j2, j1, PZK
@@ -1112,8 +1076,7 @@ pt_done:
   jjz j11, prd_done
   jldi j2, 1                    ; (and a page break when the book ends)
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZBUF
   jst j1, j1, PZOFF
   jldi j10, 37                  ; its book, where it is
@@ -1122,8 +1085,7 @@ pt_done:
   jadd j11, j11, j2
   jld j12, j1, PZIX
   jld j12, j12, 48
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, prd_done              ; (the book is not there any more: what was read there is lost, as in us)
@@ -1164,12 +1126,10 @@ pt_done:
     pr_cut:
     jst j2, j1, PZK
     jld j2, j1, PZA             ; the run: from its first mark to the mark after it
-    jcall zm_mark
-    jldi j1, 0
+    jcall0 j1, zm_mark
     jst j2, j1, PZTN
     jld j2, j1, PZK
-    jcall zm_mark
-    jldi j1, 0
+    jcall0 j1, zm_mark
     jld j3, j1, PZTN
     jsub j2, j2, j3
     jst j2, j1, PZTB
@@ -1180,8 +1140,7 @@ pt_done:
     jor j10, j10, j3
     jld j11, j1, PZTN
     jldi j12, 0
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jld j10, j1, PZBH
     jldi j3, 32
     jshl j10, j10, j3
@@ -1191,8 +1150,7 @@ pt_done:
     jld j3, j1, PZOFF
     jadd j11, j11, j3
     jld j12, j1, PZTB
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 63
     jsar j2, j13, j2
     jldi j3, -1
@@ -1214,8 +1172,7 @@ pt_done:
   jshl j10, j10, j2
   jldi j2, 7
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0                    ; the book ends: a page break, so the reading knows where each book starts (each one a
+  jcall0 j1, ask                ; the book ends: a page break, so the reading knows where each book starts (each one a
   jld j2, j1, PZOFF             ; world of its own: Capitan, "it choked on the project's data")
   jld j3, j1, PZBUF
   jadd j3, j3, j2
@@ -1225,8 +1182,7 @@ pt_done:
   jadd j2, j2, j4
   jst j2, j1, PZOFF
   jld j3, j1, PZBUF
-  jcall pz_out
-  jldi j1, 0                    ; (a book this round reads: its silhouettes are this reading's rules)
+  jcall0 j1, pz_out             ; (a book this round reads: its silhouettes are this reading's rules)
   jld j9, j1, PZIX
   jld j5, j9, 152
   jjnz j5, prd_key
@@ -1254,8 +1210,7 @@ clue_gather:
     jld j2, j2, 0
     jld j3, j1, QBT
     jst j9, j1, PZK
-    jcall pz_add
-    jldi j1, 0
+    jcall0 j1, pz_add
     jld j9, j1, PZK
     jldi j2, 1
     jadd j9, j9, j2
@@ -1281,8 +1236,7 @@ clue_gather:
       jst j9, j1, PZK
       jst j10, j1, PZTOT
       jld j2, j9, 0
-      jcall pz_add
-      jldi j1, 0
+      jcall0 j1, pz_add
       jld j9, j1, PZK
       jldi j2, 40
       jadd j9, j9, j2
@@ -1290,10 +1244,8 @@ clue_gather:
       jldi j2, 1
       jsub j10, j10, j2
     jwend
-    jld j2, j1, PZA
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZA
+    jldi j2, 1
+    jldadd j2, j1, PZA
   jwcheck
     jldi j1, 0
     jld j2, j1, PZA
@@ -1312,11 +1264,8 @@ pz_add:
   jldi j4, 63
   jsar j3, j3, j4
   jjnz j3, pa_done              ; (a hole, an unknown word, the renglon)
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j5, j3, 16
   jst j5, j1, PZHN
   jld j3, j3, 8
@@ -1350,8 +1299,7 @@ pz_add:
   jldi j3, 4096
   jadd j11, j11, j3
   jst j11, j1, PZNEWC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, PZNEW
   jadd j5, j13, j1
   jld j6, j1, PZNEWN
@@ -1409,8 +1357,7 @@ ce_again:
   jldi j10, 4                   ; the walk, longer
   jldi j11, S_CAMINO
   jldi j12, 6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j13, j1, PZOUT
   jld j10, j1, PZOUT            ; (at its end: what it walked stays, the new after it)
   jldi j2, 32
@@ -1419,8 +1366,7 @@ ce_again:
   jor j10, j10, j2
   jld j11, j1, PZCAMN
   jldi j12, 0
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j2, j1, PZNEWN
   jld j3, j1, PZNEW
   jcall pz_out
@@ -1433,8 +1379,7 @@ ce_again:
   jldi j10, 36                  ; again, as itself, saying nothing of this round
   jldi j11, S_SELF
   jldi j12, S_SELFN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j1, j1, POS
 ce_done:
   jldi j1, 0
@@ -1521,12 +1466,10 @@ pz_printraw:
 
 ; The word at PZHP (PZHN bytes), just read in a piece, adds its times (PZEO). Uses j1-j8.
 pz_count:
-  jcall pz_print
-  jldi j1, 0
+  jcall0 j1, pz_print
   jst j5, j1, PZT1
   jldi j2, PZOCC
-  jcall pl_take
-  jldi j1, 0
+  jcall0 j1, pl_take
   jld j3, j1, PZEO
   jld j2, j4, 8
   jadd j2, j2, j3
@@ -1568,8 +1511,7 @@ pzk_noswitch:
     jld j2, j1, PZT1
     jcall pz_wlkey
     jldi j2, PZWL
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j2, j1, PZT1
     jst j2, j4, 16
     jld j2, j1, LNL
@@ -1578,10 +1520,8 @@ pzk_noswitch:
     jld j3, j1, PZT3
     jadd j2, j2, j3
     jst j2, j4, 8
-    jld j2, j1, PZT2
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZT2
+    jldi j2, 1
+    jldadd j2, j1, PZT2
   jwcheck
     jldi j1, 0
     jld j2, j1, PZT2
@@ -1617,16 +1557,14 @@ pz_blims:
   jshl j11, j2, j3
   jldi j3, 16
   jadd j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZEL
   jld j11, j1, PZBLN
   jldi j3, 3
   jshl j11, j11, j3
   jldi j3, 8
   jadd j11, j11, j3
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZBLM
   jld j9, j1, PZIX
   jld j2, j9, 144
@@ -1641,8 +1579,7 @@ pz_blims:
     jldi j3, 16
     jadd j3, j9, j3
     jst j3, j1, PZHP
-    jcall pz_print
-    jldi j1, 0
+    jcall0 j1, pz_print
     jld j2, j1, PZT4
     jldi j3, 3
     jshl j3, j2, j3
@@ -1658,10 +1595,8 @@ pz_blims:
     jldi j3, 16
     jadd j2, j2, j3
     jadd j9, j9, j2
-    jld j2, j1, PZT4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZT4
+    jldi j2, 1
+    jldadd j2, j1, PZT4
   jwcheck
     jldi j1, 0
     jld j2, j1, PZT4
@@ -1693,8 +1628,7 @@ pz_lsum:
     jadd j3, j3, j4
     jld j5, j3, 0
     jldi j2, PZLG
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
     jld j9, j1, PZT5
     jld j2, j4, 8
     jld j3, j9, 0
@@ -1708,10 +1642,8 @@ pz_lsum:
     jldi j3, 16
     jadd j2, j2, j3
     jadd j9, j9, j2
-    jld j2, j1, PZT4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZT4
+    jldi j2, 1
+    jldadd j2, j1, PZT4
   jwcheck
     jldi j1, 0
     jld j2, j1, PZT4
@@ -1748,8 +1680,7 @@ clue_counts:
     jjz j2, cct_skip
     jcall pz_read_it              ; (only the books it reads again: each reading with its own books' rules)
     jjz j2, cct_skip
-    jcall pz_lsum
-    jldi j1, 0
+    jcall0 j1, pz_lsum
     jld j2, j1, PZIX
     jld j2, j2, 80
     jjz j2, cct_skip
@@ -1760,19 +1691,15 @@ clue_counts:
       jldi j1, 0
       jst j9, j1, PZK
       jst j10, j1, PZA
-      jldi j3, 3
-      jshl j3, j9, j3
       jld j4, j1, ROOMI
-      jadd j3, j3, j4
-      jld j3, j3, 0
+      jldx j3, j4, j9
       jld j5, j3, 16
       jst j5, j1, PZHN
       jld j3, j3, 8
       jld j4, j1, ROOMA
       jadd j3, j3, j4
       jst j3, j1, PZHP
-      jcall pz_find
-      jldi j1, 0
+      jcall0 j1, pz_find
       jld j9, j1, PZK
       jld j10, j1, PZA
       jldi j2, 1
@@ -1806,11 +1733,8 @@ clue_counts:
     jldi j1, 0
     jst j9, j1, PZK
     jst j10, j1, PZA
-    jldi j3, 3
-    jshl j3, j9, j3
     jld j4, j1, ROOMI
-    jadd j3, j3, j4
-    jld j3, j3, 0
+    jldx j3, j4, j9
     jld j5, j3, 16
     jst j5, j1, PZHN
     jld j3, j3, 8
@@ -1820,8 +1744,7 @@ clue_counts:
     jcall pz_hprint
     jcall lg_print              ; (its language, by its print)
     jldi j2, PZOCC
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j2, j4, 0
     jjz j2, cc_next             ; (a word of no book: what it read is all it has)
     jld j2, j4, 8
@@ -1840,8 +1763,7 @@ clue_counts:
     jsub j10, j10, j2
   jwend
   jld j2, j1, PZNTOK
-  jcall lg16
-  jldi j1, 0
+  jcall0 j1, lg16
   jst j2, j1, LGT
   jcall lg_tot                  ; (the rules counted in the question's language)
   jcall pz_silwrite             ; and the reading's silhouettes, decided over the library, for the meaning
@@ -1870,8 +1792,7 @@ pz_index:
   jshl j11, j11, j2
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZPP
   jld j9, j1, PZIX
   jld j10, j9, 80
@@ -1896,8 +1817,7 @@ pz_index:
   jld j11, j9, 80
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZNEED
   jcall pz_blims
   jldi j2, 1
@@ -1910,8 +1830,7 @@ pzi_no:
 ; The piece where the word at PZHP (PZHN bytes) is, if it is in the book: the last whose first word is not after it
 ; (halving the list) -> j2, and marked needed. Uses j1-j8.
 pz_find:
-  jcall pz_hide
-  jldi j1, 0
+  jcall0 j1, pz_hide
   jst j1, j1, PZLO
   jld j2, j1, PZIX
   jld j2, j2, 80
@@ -1920,16 +1839,12 @@ jwhile j4
   jadd j4, j2, j3
   jshr j4, j4, j5
   jst j4, j1, PZX
-  jldi j5, 3
-  jshl j5, j4, j5
   jld j6, j1, PZPP
-  jadd j5, j5, j6
-  jld j5, j5, 0
+  jldx j5, j6, j4
   jld j6, j5, 8
   jldi j7, 16
   jadd j5, j5, j7
-  jcall pz_less
-  jldi j1, 0
+  jcall0 j1, pz_less
   jld j3, j1, PZX
   jjnz j2, pzf_hi
   jst j3, j1, PZLO
@@ -1992,8 +1907,7 @@ pz_label:
   jld j3, j1, PZLBR
   jjnz j3, pzb_room
   jldi j11, 64
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZLBR
 pzb_room:
   jld j3, j1, PZLBR
@@ -2079,18 +1993,13 @@ jwhile j3
   jadd j3, j3, j2
   jldb j3, j3, 0
   jjz j3, pzv_next
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, PZPP
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j2, j3, 0
-  jcall pz_label
-  jldi j1, 0
+  jcall0 j1, pz_label
   jadd j12, j2, j1
   jld j11, j1, PZLBR
-  jcall pz_file
-  jldi j1, 0
+  jcall0 j1, pz_file
   jld j2, j1, PZFRN
   jldi j3, 63
   jsar j2, j2, j3
@@ -2115,8 +2024,7 @@ jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZPE
-  jcall pz_entry
-  jldi j1, 0
+  jcall0 j1, pz_entry
   jld j2, j1, PZWB
   jst j2, j1, PZHP
   jld j2, j1, PZWN
@@ -2127,8 +2035,7 @@ jwhile j2
   jjnz j2, pzv_times
   jcall pz_print                ; (a word of the piece is its hidden bytes: walked if a word walked hides so)
   jldi j2, PZHT
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, pzv_walked
   jldi j2, 1
@@ -2141,8 +2048,7 @@ pzv_entry:
 jwend
 jjmp pzv_give
 pzv_times:
-  jcall pz_count
-  jldi j2, 0
+  jcall0 j2, pz_count
   jcall pz_clues
   jjmp pzv_entry
 pzv_give:
@@ -2151,10 +2057,8 @@ pzv_give:
   jcall ask
 pzv_next:
   jldi j1, 0
-  jld j2, j1, PZPI
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, PZPI
+  jldi j2, 1
+  jldadd j2, j1, PZPI
 jwcheck
   jldi j1, 0
   jld j2, j1, PZPI
@@ -2169,13 +2073,11 @@ pzv_done:
 ; The next word of the piece being read: its letters at PZWB (PZWN bytes; the room grows to hold them), its times
 ; PZEO, in how many renglones PZEN (those renglones are next: pz_clues). Uses j1-j14.
 pz_entry:
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZX               ; (what it shares with the word before)
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jld j3, j1, PZX
@@ -2190,8 +2092,7 @@ pz_entry:
   jldi j3, 4096
   jadd j11, j11, j3
   jst j11, j1, PZWC
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jld j4, j1, PZWB
   jadd j5, j13, j1
   jld j6, j1, PZX
@@ -2207,8 +2108,7 @@ pz_entry:
 jwhile j3
   jld j9, j1, PZIX
   jld j3, j9, 72
-  jcall zr_get
-  jldi j1, 0
+  jcall0 j1, zr_get
   jld j9, j1, PZIX
   jld j3, j9, 112
   jadd j3, j3, j9
@@ -2229,22 +2129,18 @@ pze_room:
   jsub j3, j2, j3
 jwend
 pze_said:
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEO
   jldi j3, 2                    ; its silhouettes (comer.jsm): the house's verdict, its buildings, and each limit that
-  jcall zr_get                  ; closes some of them with how many (each passed by here)
-  jldi j1, 0
+  jcall0 j1, zr_get             ; closes some of them with how many (each passed by here)
   jst j2, j1, PZEV
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEB
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEK
@@ -2253,8 +2149,7 @@ pze_said:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, PZEK
-    jcall zr_gamma
-    jldi j1, 0
+    jcall0 j1, zr_gamma
     jldi j3, 1
     jsub j2, j2, j3
     jld j3, j1, PZELN
@@ -2263,8 +2158,7 @@ pze_said:
     jld j4, j1, PZEL
     jadd j3, j3, j4
     jst j2, j3, 0
-    jcall zr_gamma
-    jldi j1, 0
+    jcall0 j1, zr_gamma
     jld j3, j1, PZELN
     jldi j4, 4
     jshl j3, j3, j4
@@ -2280,8 +2174,7 @@ pze_said:
     jld j2, j1, PZEK
   jwend
   pze_limd:
-  jcall zr_gamma
-  jldi j1, 0
+  jcall0 j1, zr_gamma
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEN
@@ -2294,8 +2187,7 @@ pz_clues:
   jld j2, j1, PZEN
   jjz j2, pzc_done
   jldi j3, 4
-  jcall zr_get
-  jldi j1, 0
+  jcall0 j1, zr_get
   jst j2, j1, PZRK
   jldi j2, -1
   jst j2, j1, PZX
@@ -2303,8 +2195,7 @@ jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEN
-  jcall zr_rice
-  jldi j1, 0
+  jcall0 j1, zr_rice
   jld j3, j1, PZX
   jadd j3, j3, j2
   jldi j2, 1
@@ -2368,15 +2259,13 @@ zmm_count:
   jsub j6, j6, j7
   jst j6, j1, PZPE
   jldi j3, 4
-  jcall zr_get
-  jldi j1, 0
+  jcall0 j1, zr_get
   jst j2, j1, PZRK
 jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZPE
-  jcall zr_rice
-  jldi j1, 0
+  jcall0 j1, zr_rice
   jld j3, j1, PZEO
   jadd j3, j3, j2
   jst j3, j1, PZEO
@@ -2454,12 +2343,10 @@ zru_done:
 
 ; A number in Elias gamma -> j2. Uses j1-j7.
 zr_gamma:
-  jcall zr_unary
-  jldi j1, 0
+  jcall0 j1, zr_unary
   jst j2, j1, PZV2
   jadd j3, j2, j1
-  jcall zr_get
-  jldi j1, 0
+  jcall0 j1, zr_get
   jld j3, j1, PZV2
   jldi j4, 1
   jshl j4, j4, j3
@@ -2468,12 +2355,10 @@ zr_gamma:
 
 ; A number in Rice of PZRK -> j2. Uses j1-j7.
 zr_rice:
-  jcall zr_unary
-  jldi j1, 0
+  jcall0 j1, zr_unary
   jst j2, j1, PZV2
   jld j3, j1, PZRK
-  jcall zr_get
-  jldi j1, 0
+  jcall0 j1, zr_get
   jld j3, j1, PZV2
   jld j4, j1, PZRK
   jshl j3, j3, j4
@@ -2505,10 +2390,8 @@ pz_silwrite:
     jadd j3, j3, j2
     jst j3, j1, PZT6
   psw_snext:
-    jld j2, j1, PZT4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZT4
+    jldi j2, 1
+    jldadd j2, j1, PZT4
   jwcheck
     jldi j1, 0
     jld j2, j1, PZT4
@@ -2519,8 +2402,7 @@ psw_sized:
   jld j11, j1, PZT6
   jldi j2, 8
   jadd j11, j11, j2
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, PZT5
   jst j13, j1, PZT3
   jldi j2, 1
@@ -2564,8 +2446,7 @@ psw_sized:
     jldi j3, -1
   psw_house:
     jst j3, j9, 0
-    jcall pz_warrow
-    jldi j1, 0
+    jcall0 j1, pz_warrow
     jld j9, j1, PZT3
     jst j2, j9, 8
     jld j4, j1, PZT2              ; its switch of the no: most of its times, the books took it for one
@@ -2581,10 +2462,8 @@ psw_sized:
     jst j9, j1, PZT3
   psw_wnext:
     jldi j1, 0
-    jld j2, j1, PZT4
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, PZT4
+    jldi j2, 1
+    jldadd j2, j1, PZT4
   jwcheck
     jldi j1, 0
     jld j2, j1, PZT4
@@ -2599,8 +2478,7 @@ psw_file:
   jldi j10, 4
   jldi j11, S_SIL
   jldi j12, 8
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, psw_done
@@ -2611,8 +2489,7 @@ psw_file:
   jor j10, j10, j2
   jld j11, j1, PZT5
   jld j12, j1, PZT6
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, PZT4
   jldi j2, 32
   jshl j10, j10, j2
@@ -2628,23 +2505,18 @@ psw_done:
 pz_wfound:
   jldi j1, 0
   jld j2, j1, PZT4
-  jldi j3, 3
-  jshl j3, j2, j3
   jld j4, j1, ROOMI
-  jadd j3, j3, j4
-  jld j3, j3, 0
+  jldx j3, j4, j2
   jld j5, j3, 16
   jst j5, j1, PZHN
   jld j3, j3, 8
   jld j4, j1, ROOMA
   jadd j3, j3, j4
   jst j3, j1, PZHP
-  jcall pz_hprint
-  jldi j1, 0
+  jcall0 j1, pz_hprint
   jst j5, j1, PZT1
   jldi j2, PZOCC
-  jcall pl_find
-  jldi j1, 0
+  jcall0 j1, pl_find
   jld j2, j4, 0
   jjz j2, pwf_no
   jst j4, j1, PZT2
@@ -2667,8 +2539,7 @@ pz_mend:
   jwhile j10
     jld j2, j9, 0
     jjz j2, pzm_n
-    jcall lg_closes
-    jldi j1, 0
+    jcall0 j1, lg_closes
     jld j3, j1, PZMB
     jsub j3, j3, j2
     jldi j4, 63
@@ -2708,8 +2579,7 @@ pz_warrow:
     jld j2, j1, PZT1
     jcall pz_wlkey
     jldi j2, PZWL
-    jcall pl_find
-    jldi j1, 0
+    jcall0 j1, pl_find
     jld j9, j1, PZT6 + 24
     jld j10, j1, PZT6 + 32
     jld j2, j4, 0

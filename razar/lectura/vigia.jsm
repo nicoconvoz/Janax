@@ -45,22 +45,18 @@ jfirst j1, 4000h
 
 jldi j11, 1                     ; its rooms
 jshi j11, 8000h
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, PATH
 jldi j11, 1
 jshi j11, 0
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, BUF
 jldi j11, 4096
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, PEND
 jldi j11, 1
 jshi j11, 8040h
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, CB
 
 jwhile j2
@@ -74,8 +70,7 @@ vg_wait:                        ; what is new in the host
   jld j11, j1, PATH
   jldi j12, 1
   jshi j12, 8000h
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1
   jadd j2, j13, j2
 jwend
@@ -88,8 +83,7 @@ vg_new:
   jldi j1, S_SEEN
   jcall puts
   jcall put_path
-  jcall is_text
-  jldi j1, 0
+  jcall0 j1, is_text
   jld j2, j1, BIN
   jjz j2, vg_text
   jldi j1, S_NOTXT
@@ -99,13 +93,11 @@ vg_new:
 vg_text:
   jldi j1, S_EATS
   jcall puts
-  jcall flush
-  jldi j1, 0                    ; a book longer than a piece goes by pieces, each eaten as a book (Capitan: "by
+  jcall0 j1, flush              ; a book longer than a piece goes by pieces, each eaten as a book (Capitan: "by
   jst j1, j1, FROM              ; pieces"): what is learned goes from one to the next as from book to book
 vg_piece:
   jcall vg_cut
-  jcall vg_say
-  jldi j1, 0                    ; its address in "come", new
+  jcall0 j1, vg_say             ; its address in "come", new
   jldi j10, 12
   jldi j11, S_COME
   jldi j12, 4
@@ -113,8 +105,7 @@ vg_piece:
   jldi j10, 4
   jldi j11, S_COME
   jldi j12, 4
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, vg_wait
@@ -125,8 +116,7 @@ vg_piece:
   jor j10, j10, j2
   jld j11, j1, CB
   jld j12, j1, CBN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j10, j1, HND
   jldi j2, 32
   jshl j10, j10, j2
@@ -138,8 +128,7 @@ vg_piece:
   jcall child
   jldi j11, S_SENT              ; then sentido, eating too: the turns of its skeletons, for every Razar
   jldi j12, 7
-  jcall child
-  jldi j1, 0
+  jcall0 j1, child
   jld j2, j1, TO
   jjz j2, vg_eaten
   jst j2, j1, FROM
@@ -170,8 +159,7 @@ vg_cut:
   jldi j10, 37
   jld j11, j1, PATH
   jld j12, j1, PATHN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, vc_done
@@ -212,8 +200,7 @@ vg_cut:
     jld j11, j1, BUF
     jldi j12, 1
     jshi j12, 0
-    jcall ask
-    jldi j1, 0
+    jcall0 j1, ask
     jldi j2, 1
     jsub j2, j13, j2
     jldi j3, 63
@@ -321,8 +308,7 @@ child:
   jshl j10, j10, j2
   jldi j2, 16
   jor j10, j10, j2
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, vg_nokid
@@ -331,8 +317,7 @@ jwhilez j2
   jldi j10, 29
   jcall ask
 jwcheck
-  jcall sign_all
-  jldi j1, 0
+  jcall0 j1, sign_all
   jldi j10, 19
   jld j11, j1, KID
   jcall ask
@@ -345,8 +330,7 @@ ch_done:
 vg_nokid:
   jldi j1, S_NOKID
   jcall puts
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jret
 
 ; Every request of its child that waits for its signature, signed (17). Uses j1-j14.
@@ -355,8 +339,7 @@ sign_all:
   jldi j10, 18                  ; what waits: {its number, the child, its kind}
   jld j11, j1, PEND
   jldi j12, 4096
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jld j9, j1, PEND
   jadd j8, j13, j1
   jldi j2, 63
@@ -388,8 +371,7 @@ is_text:
   jldi j10, 37
   jld j11, j1, PATH
   jld j12, j1, PATHN
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 63
   jshr j2, j13, j2
   jjnz j2, it_out
@@ -454,8 +436,7 @@ jwcheck
   jld j11, j1, BUF
   jldi j12, 1
   jshi j12, 0
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jldi j2, 1
   jsub j2, j13, j2
   jldi j3, 63
@@ -525,8 +506,7 @@ flush:
   jldi j11, TEXT
   jldi j1, 0
   jld j12, j1, POS
-  jcall ask
-  jldi j1, 0
+  jcall0 j1, ask
   jst j1, j1, POS
   jret
 
@@ -558,8 +538,7 @@ putch:
   jldi j1, TEXTN
   jsub j1, j3, j1
   jjnz j1, pc_put
-  jcall pc_out
-  jldi j3, 0
+  jcall0 j3, pc_out
 pc_put:
   jldi j1, 0
   jstb j2, j3, TEXT
@@ -585,8 +564,7 @@ pc_out:
   jst j12, j1, PCS + 80
   jst j13, j1, PCS + 88
   jst j14, j1, PCS + 96
-  jcall flush
-  jldi j1, 0
+  jcall0 j1, flush
   jld j2, j1, PCS
   jld j3, j1, PCS + 8
   jld j4, j1, PCS + 16

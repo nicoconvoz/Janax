@@ -96,8 +96,7 @@ jldi j0, 0
 jcall clue_round                ; (with nests: what this round reads again, as its book)
 jcall read_book
 jcall ln_scan                   ; its languages, by context, and the question read with its own
-jcall ln_ask
-jldi j1, 0                      ; the whole book, none kept apart (one renglon in more than any book has)
+jcall0 j1, ln_ask               ; the whole book, none kept apart (one renglon in more than any book has)
 jldi j2, 0
 jshi j2, 4000h
 jshi j2, 0
@@ -105,9 +104,8 @@ jshi j2, 0
 jshi j2, 0
 jst j2, j1, PK
 jcall learn_pulses
-jcall distill_no
+jcall0 j1, distill_no           ; its pieces that pay: the switches and the doors
 
-jldi j1, 0                      ; its pieces that pay: the switches and the doors
 jld j2, j1, NADC + 16
 jld j3, j1, NADC + 32
 jadd j11, j2, j3
@@ -115,8 +113,7 @@ jldi j4, 1
 jadd j11, j11, j4
 jldi j4, 5
 jshl j11, j11, j4
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMP
 jst j1, j1, NPC
 jst j1, j1, NSWP
@@ -164,10 +161,8 @@ jwhile j10
   jand j6, j3, j4
   jld j4, j1, AT2
   jst j6, j4, 24
-  jld j6, j1, NSWP
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NSWP
+  jldi j6, 1
+  jldadd j6, j1, NSWP
   jjmp pc_add
 pc_door:
   jldi j6, 4
@@ -183,10 +178,8 @@ pc_door:
   jldi j7, 8
   jshr j6, j6, j7
   jst j6, j4, 24
-  jld j6, j1, NDRP
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j1, NDRP
+  jldi j6, 1
+  jldadd j6, j1, NDRP
 pc_add:
   jld j6, j1, NPC
   jldi j7, 1
@@ -202,8 +195,7 @@ jldi j1, 0                      ; the judge: how often each word is in the book,
 jld j11, j1, NV
 jldi j2, 3
 jshl j11, j11, j2
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMF2
 jld j9, j1, ROOMT
 jld j10, j1, NTOK
@@ -229,9 +221,8 @@ jldi j3, 1
 jadd j2, j2, j3
 jcall lg16
 jst j2, j1, PCOST
-jcall clue_counts               ; (asking by the clues: the counts of the whole books)
+jcall0 j1, clue_counts          ; (asking by the clues: the counts of the whole books) ; the facts: places for two per word for each of the three lengths, twice over
 
-jldi j1, 0                      ; the facts: places for two per word for each of the three lengths, twice over
 jld j2, j1, NTOK
 jldi j3, 12
 jmul j2, j2, j3
@@ -241,15 +232,13 @@ jsub j4, j3, j4
 jst j4, j1, XMASK
 jldi j4, 24
 jmul j11, j3, j4
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMX
 jst j1, j1, JJ
 jld j2, j1, NTOK
 jst j2, j1, JLEFT
 jwhile j2
-  jcall hang_at
-  jldi j1, 0
+  jcall0 j1, hang_at
   jld j2, j1, JJ
   jldi j3, 1
   jadd j2, j2, j3
@@ -287,9 +276,8 @@ jcall putnum
 jldi j2, 41
 jcall putch
 jldi j2, 10
-jcall putch
+jcall0 j1, putch                ; the most holes in one question: the room of answers
 
-jldi j1, 0                      ; the most holes in one question: the room of answers
 jst j1, j1, MAXH
 jldi j3, 0
 jldi j9, 0
@@ -327,16 +315,14 @@ jld j3, j1, NV
 jmul j11, j2, j3
 jldi j3, 40
 jmul j11, j11, j3
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMK
 jld j11, j1, MAXH
 jldi j2, 1
 jadd j11, j11, j2
 jldi j2, 32
 jmul j11, j11, j2
-jcall room
-jldi j1, 0
+jcall0 j1, room
 jst j13, j1, ROOMN
 q_none:
 
@@ -439,8 +425,7 @@ hang_at:
     jshl j3, j3, j4
     jadd j3, j3, j10
     jld j6, j3, 0
-    jcall x_add
-    jldi j1, 0                  ; "? middle B" filled by A
+    jcall0 j1, x_add            ; "? middle B" filled by A
     jldi j3, 1
     jadd j3, j3, j11
     jldi j4, 3
@@ -586,8 +571,7 @@ answer:
   jld j3, j1, QE
   jcall put_units
   jldi j2, 10
-  jcall putch
-  jldi j1, 0                    ; a word the book never had: it cannot answer
+  jcall0 j1, putch              ; a word the book never had: it cannot answer
   jld j9, j1, QS
   jwhile j2
     jldi j2, 3
@@ -651,8 +635,7 @@ answer:
   jldi j1, S_NONE
   jjmp puts
 an_cut:
-  jcall cut
-  jldi j1, 0                    ; the walk: rounds while something new is answered
+  jcall0 j1, cut                ; the walk: rounds while something new is answered
   jldi j2, -1
   jst j2, j1, LASTH
   jldi j2, 1
@@ -663,8 +646,7 @@ an_cut:
     jst j1, j1, CI
     jld j12, j1, NC
     jwhile j12
-      jcall walk_one
-      jldi j1, 0
+      jcall0 j1, walk_one
       jld j2, j1, CI
       jldi j3, 1
       jadd j2, j2, j3
@@ -718,8 +700,7 @@ an_cut:
     jjz j5, an_done
     jst j8, j1, AI
     jst j7, j1, KB
-    jcall write_one
-    jldi j1, 0                  ; written: out of the count
+    jcall0 j1, write_one        ; written: out of the count
     jld j2, j1, LASTH
     jld j4, j1, NV
     jmul j4, j2, j4
@@ -786,9 +767,7 @@ ct_mid:
     jjz j4, ct_pnext
     jldi j5, 4
     jsub j5, j4, j5
-    jldi j6, 63
-    jsar j5, j5, j6
-    jjz j5, ct_pnext
+    jjnn j5, ct_pnext
     jldi j5, 1
     jadd j3, j2, j5
     jadd j5, j9, j5
@@ -991,12 +970,9 @@ jwhile j4
   jst j5, j1, SVB
   jld j4, j4, 0
   jst j4, j1, SV
-  jcall wf_ask
-  jldi j1, 0
-  jld j2, j1, SK
-  jldi j3, 1
-  jadd j2, j2, j3
-  jst j2, j1, SK
+  jcall0 j1, wf_ask
+  jldi j2, 1
+  jldadd j2, j1, SK
 jwcheck
 wf_hole:
   jldi j1, 0
@@ -1031,8 +1007,7 @@ wf_ask:
   jld j2, j1, QBP
   jadd j10, j10, j2
   jld j11, j1, CMN
-  jcall wf_look
-  jldi j1, 0
+  jcall0 j1, wf_look
   jld j9, j1, ROOMP
   jld j12, j1, NPC
   jwhile j12
@@ -1066,8 +1041,7 @@ wf_ask:
       jld j11, j1, CMN
       jldi j2, 1
       jadd j11, j11, j2
-      jcall wf_look
-      jldi j1, 0
+      jcall0 j1, wf_look
       jld j2, j1, MPOS
       jldi j3, 1
       jadd j2, j2, j3
@@ -1260,8 +1234,7 @@ wl_counted:
     jld j4, j1, ROOMX
     jadd j3, j3, j4
     jld j2, j3, 8
-    jcall k_add
-    jldi j1, 0
+    jcall0 j1, k_add
     jld j6, j1, AT2
   wl_next:
     jldi j7, 1
@@ -1300,10 +1273,8 @@ k_add:
     jsub j6, j6, j7
   jwend
   jst j2, j4, 0
-  jld j6, j5, HCNT
-  jldi j7, 1
-  jadd j6, j6, j7
-  jst j6, j5, HCNT
+  jldi j6, 1
+  jldadd j6, j5, HCNT
 ka_way:
   jld j7, j1, SV
   jst j7, j4, 8
@@ -1355,8 +1326,7 @@ write_one:
     jld j5, j4, 24
     jst j5, j3, VIAS
     jadd j12, j2, j1
-    jcall mix
-    jldi j1, 0
+    jcall0 j1, mix
     jld j2, j4, 16              ; from a hole?
     jldi j3, 63
     jsar j3, j2, j3
@@ -1397,8 +1367,7 @@ wr_filled:
   jjnz j2, wr_say
   jldi j1, S_INFER
 wr_say:
-  jcall puts
-  jldi j1, 0                    ; the pieces its way used
+  jcall0 j1, puts               ; the pieces its way used
   jld j9, j1, NH
   jldi j10, 0
   jwhile j9

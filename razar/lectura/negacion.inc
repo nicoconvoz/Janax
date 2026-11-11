@@ -45,37 +45,31 @@ NC2   = 18C8h
 distill_no:
   jldi j1, 0                    ; its rooms: the threes and the twos, each a table that grows to what it holds (Capitan:
   jldi j11, 64                  ; "nothing wasted"; they were made for twice the units, and held one in eight)
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMTRI
   jldi j2, 32
   jadd j2, j13, j2
   jst j2, j1, ROOMBG
   jld j2, j1, ROOMTRI
   jldi j3, 8
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j2, j1, ROOMBG
   jldi j3, 16
-  jcall pl_new
-  jldi j1, 0
+  jcall0 j1, pl_new
   jld j11, j1, NV
   jldi j4, 6
   jshl j11, j11, j4
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMW
   jld j11, j1, NV
   jldi j4, 3
   jshl j11, j11, j4
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, ROOMVL
   jld j11, j1, NV
   jldi j4, 3
   jshl j11, j11, j4
-  jcall room
-  jldi j1, 0
+  jcall0 j1, room
   jst j13, j1, NEGL
   jst j1, j1, NNEG
 
@@ -105,8 +99,7 @@ distill_no:
     jjz j2, nb_next
     jcall n_trikey
     jld j2, j1, ROOMTRI         ; (said: into the threes)
-    jcall pl_take
-    jldi j1, 0
+    jcall0 j1, pl_take
   nb_next:
     jcall n_step
   jwend
@@ -159,10 +152,8 @@ distill_no:
     jld j2, j9, 0
     jldi j3, 1
     jcall n_wbump
-    jld j2, j1, ALLR
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, ALLR
+    jldi j2, 1
+    jldadd j2, j1, ALLR
   n1_pair:
     jld j9, j1, NI              ; before and next stand together somewhere?
     jldi j3, 3
@@ -220,10 +211,8 @@ distill_no:
     jjz j2, c1_next
     jldi j2, 2
     jst j2, j8, 56
-    jld j2, j1, NP1
-    jldi j3, 1
-    jadd j2, j2, j3
-    jst j2, j1, NP1
+    jldi j2, 1
+    jldadd j2, j1, NP1
     jld j2, j1, C1S
     jld j3, j8, 24
     jadd j2, j2, j3
