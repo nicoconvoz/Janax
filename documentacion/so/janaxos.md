@@ -1266,7 +1266,12 @@ texto en `AppData` y comió uno en una carpeta del usuario; en 150 s no tocó na
 |---|---|
 | Intérprete | `op_jn`, `op_jnn`, `op_ldadd`, `op_ldx`, `op_call0`. La vuelta de un `jcall0` se marca en la pila con el bit 63 y el registro en los bits 32 a 35; `op_ret` lo pone en cero al ver la marca. |
 | Rutinas | `t_jn`, `t_jnn`, `t_ldadd`, `t_ldx`, `t_call0`. La pila guarda direcciones de registro alineadas a 16, así que la marca es el bit 63 y el registro va en los 4 bits bajos. `jsub` seguido de `jjn`/`jjnn` se funde (`ftable_jn`, `ftable_jnn`), y cuenta como dos instrucciones. |
-| Nativo | `jjn`/`jjnn` y `jcall0` tienen código nativo; el `jret` nativo revisa la marca. **`jldadd` y `jldx` todavía van por su rutina**: son exactas pero más lentas que un `jld` nativo, y es lo próximo que conviene. |
+| Nativo | Las cinco tienen código nativo; el `jret` nativo revisa la marca. `jldadd` y `jldx` van nativas en la sala 0, debajo de su límite rápido y alineadas; cualquier otro caso devuelve lo cobrado y sigue por su rutina (T(i)), que conoce las salas y los errores. |
+
+**Medido con el libro de 2,3 MB:** con `jldadd`/`jldx` nativas corren nativas 10.715 de 10.729 palabras (antes
+10.621), con las mismas 13.055.693.102 instrucciones y la casa idéntica. En segundos no se nota: 26,5 s contra 26,5 s de
+promedio en tres corridas de cada uno (script completo, con un ruido de ±0,6 s). Esas dos instrucciones no están en
+las vueltas calientes del libro.
 
 Las tres dan el mismo código de salida, el mismo `j0` y el mismo `t=` en cada prueba, incluso con cinco procesos turnándose.
 Ojo con las pruebas de memoria del escalón 0 (46, 47, 49, 50): en el kernel un proceso nace sin memoria, y sin un

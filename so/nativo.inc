@@ -5,7 +5,7 @@
 ; registers, r15 data, rsi return stack, rdi depth, rbp budget, rbx process), so it runs inside run_routines
 ; as it is:
 ;  - ldi, the arithmetic but jdiv, the shifts, jshi, the jumps, the calls and returns, and memory in any
-;    room run in native code (jldadd and jldx keep their routines). Room 0 is r15, below its limit; another
+;    room run in native code (jldadd and jldx only in room 0, below its fast limit). Room 0 is r15, below its limit; another
 ;    room is found in the cartel (O(i)), with its size. How a box is treated (read only) the processor keeps (ambientes.inc): when it refuses,
 ;    native_fault sends the word on by its T(i).
 ;  - Anything else (jhalt, jdiv, the windows, an unknown opcode, a misaligned access, a room not in the
@@ -549,14 +549,16 @@ NK_RET   = 10
 NK_JN    = 11
 NK_JNN   = 12
 NK_CALL0 = 13
+NK_LDADD = 14
+NK_LDX   = 15
 native_kind db 0, NK_LDI, NK_BIN, NK_BIN, NK_BIN, 0, NK_SHIFT, NK_SHIFT
             db NK_SHIFT, NK_BIN, NK_BIN, NK_BIN, NK_JMP, NK_JZ, NK_JNZ, NK_SHI
             db NK_MEM, NK_MEM, NK_MEM, NK_MEM, NK_CALL, NK_RET, 0, 0
-            db NK_JN, NK_JNN, 0, 0, NK_CALL0
+            db NK_JN, NK_JNN, NK_LDADD, NK_LDX, NK_CALL0
 assert $ - native_kind = OP_COUNT
 align 8
 native_emitters dq nb_ldi, nb_bin, nb_shift, nb_jmp, nb_jz, nb_jnz, nb_shi, nb_mem, nb_call, nb_ret
-                dq nb_jn, nb_jnn, nb_call0
+                dq nb_jn, nb_jnn, nb_call0, nb_ldadd, nb_ldx
 ; the opcode byte of "op rax, r/m64" per binary opcode (0 = imul, which takes two)
 nb_bin_op   db 0, 0, 03h, 2Bh, 0, 0, 0, 0, 0, 23h, 0Bh, 33h
 nb_shift_op db 0E0h, 0E8h, 0F8h         ; the ModRM of shl, shr, sar rax, cl
@@ -700,6 +702,45 @@ nb_mem:                                 ; the address, the alignment, the room, 
         emit    41h, 88h, 0Ch, 07h      ; mov [r15 + rax], cl
         call    nb_back
         jmp     nb_next
+; jldadd and jldx: room 0 below its fast limit, aligned, in native code; anything else (another room, past the
+; limit, misaligned) gives back what the run charged after it and goes by its routine, T(i), which knows rooms
+; and errors. No O(i): they leave no E_BACK.
+nb_ldadd:                               ; rax = ra + imm / its checks / rcx = rd + [r15 + rax] / store it / rd = it
+        nb_load_rax 9
+        emit    48h, 05h
+        mov     eax, [r8 + 12]
+        stosd
+        call    nb_room0
+        mov     cl, [r8 + 8]
+        call    nb_get_rcx
+        emit    49h, 03h, 0Ch, 07h      ; add rcx, [r15 + rax]
+        emit    49h, 89h, 0Ch, 07h      ; mov [r15 + rax], rcx
+        emit    48h, 89h, 0C8h          ; mov rax, rcx
+        nb_store_rax
+        jmp     nb_next
+nb_ldx:                                 ; rax = rb / shl rax, 3 / add rax, ra / its checks / rd = [r15 + rax]
+        nb_load_rax 10
+        emit    48h, 0C1h, 0E0h, 03h
+        emit    49h, 03h
+        mov     cl, [r8 + 9]
+        call    nb_modrm
+        call    nb_room0
+        emit    49h, 8Bh, 04h, 07h      ; mov rax, [r15 + rax]
+        nb_store_rax
+        jmp     nb_next
+; cmp rax, [rbx + P_LIM8] / jae T(i) / test al, 7 / jnz T(i)
+nb_room0:
+        emit    48h, 3Bh, 83h
+        mov     eax, P_LIM8
+        stosd
+        emit    0Fh, 83h
+        lea     rax, [r9 + C_T]
+        call    nc_rel
+        emit    0A8h, 07h
+        emit    0Fh, 85h
+        lea     rax, [r9 + C_T]
+        jmp     nc_rel
+
 ; The block of word rbx goes on at rdi after its access: O(i) comes back here.
 nb_back:
         mov     rax, rbx
