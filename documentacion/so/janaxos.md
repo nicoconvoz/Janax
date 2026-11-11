@@ -510,6 +510,17 @@ Los bucles del núcleo x86 tienen la misma forma única que los de Janax:
   y `rutinas.inc`: 61 + 2 bucles, todos while rotado.
 - `so/herramientas/rotar.pl` es la regla mecánica que convirtió 28 de esos bucles (los que preguntaban
   arriba con una sola comparación); los otros 35 se reescribieron a mano.
+- **Los fuentes Janax también** (2026-11-11): `bucles.awk` solo mira x86, y Razar tenía **921 bucles hechos a mano**
+  (`jjmp` hacia atrás), que nadie veía. `so/herramientas/bucles_janax.awk` los lista (todo salto hacia atrás a una
+  etiqueta es un bucle, porque `jwhile` no deja etiquetas). `so/herramientas/rotar_janax.py` (herramienta de texto,
+  Razar no la corre) convirtió 681 con una sola regla: el cuerpo va en `jwhile r`, la condición después de
+  `jwcheck`, y la etiqueta queda en la pregunta, así que los "continue" siguen cayendo en el mismo lugar. Las
+  instrucciones que no son saltos corren en el mismo orden: lo que Razar aprende es idéntico bit por bit, y cada
+  vuelta paga un salto menos. Quedan 209 con otras formas (el salto atrás condicional, la salida arriba, etc.).
+- **Lo medido:** hilos sobre la Wikipedia de 2,3 MB: la casa entera idéntica (`nitidas`, el juez, todo menos el
+  programa mismo), y el reloj `t=` (instrucciones Janax ejecutadas) bajó de 13.939.913.762 a 13.140.925.905:
+  **−5,7 %**. Los segundos dieron 13 → 11, pero se miden de a uno y la máquina hace otras cosas: el número
+  que vale es el de instrucciones.
 - Verificado además: el núcleo da **exactamente la misma salida** que antes del cambio en seis
   escenarios de planificación; nombre del programa entre comillas (carpeta con un espacio); calibración
   visible con `JANAX_CALIBRACION`.

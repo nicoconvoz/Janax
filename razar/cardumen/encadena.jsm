@@ -149,7 +149,30 @@ en_read:
   jcall room
   jldi j1, 0
   jst j13, j1, PRB
-  enr_lap:
+  jwhilez j3
+    jld j11, j1, PRC
+    jadd j11, j11, j11
+    jcall room
+    jldi j1, 0
+    jld j3, j1, PRB
+    jld j4, j1, PRN
+    jldi j5, 0
+    jwhile j6
+      jadd j6, j3, j5
+      jldb j6, j6, 0
+      jadd j7, j13, j5
+      jstb j6, j7, 0
+      jldi j6, 1
+      jadd j5, j5, j6
+    jwcheck
+      jsub j6, j5, j4
+    jwend
+    enr_moved:
+    jst j13, j1, PRB
+    jld j2, j1, PRC
+    jadd j2, j2, j2
+    jst j2, j1, PRC
+  jwcheck
     jld j10, j1, PRH
     jldi j2, 32
     jshl j10, j10, j2
@@ -172,30 +195,7 @@ en_read:
     jst j2, j1, PRN
     jld j3, j1, PRC
     jsub j3, j2, j3
-    jjnz j3, enr_close
-    jld j11, j1, PRC
-    jadd j11, j11, j11
-    jcall room
-    jldi j1, 0
-    jld j3, j1, PRB
-    jld j4, j1, PRN
-    jldi j5, 0
-    enr_mv:
-      jsub j6, j5, j4
-      jjz j6, enr_moved
-      jadd j6, j3, j5
-      jldb j6, j6, 0
-      jadd j7, j13, j5
-      jstb j6, j7, 0
-      jldi j6, 1
-      jadd j5, j5, j6
-      jjmp enr_mv
-    enr_moved:
-    jst j13, j1, PRB
-    jld j2, j1, PRC
-    jadd j2, j2, j2
-    jst j2, j1, PRC
-    jjmp enr_lap
+  jwend
 enr_close:
   jld j10, j1, PRH
   jldi j2, 32
@@ -238,12 +238,7 @@ en_lines:
   jld j3, j1, PRN
   jadd j3, j2, j3
   jst j3, j1, ZEEND
-el_line:
-  jldi j1, 0
-  jld j2, j1, ZEP
-  jld j3, j1, ZEEND
-  jsub j4, j2, j3
-  jjz j4, el_done
+jwhile j4
   jldi j5, 1
   jadd j5, j2, j5
   jsub j6, j5, j3
@@ -284,12 +279,7 @@ el_typed:
   jldi j5, 2
   jadd j2, j2, j5
   jst j2, j1, ZEP
-el_word:
-  jldi j1, 0
-  jld j9, j1, ZEP
-  jld j10, j1, ZEEND
-  jsub j2, j9, j10
-  jjz j2, el_done
+jwhile j2
   jldb j3, j9, 0
   jldi j2, 10
   jsub j2, j3, j2
@@ -300,19 +290,26 @@ el_word:
   jadd j9, j9, j2
   jldi j1, 0
   jst j9, j1, ZEP
-  jjmp el_word
+jwcheck
+el_word:
+  jldi j1, 0
+  jld j9, j1, ZEP
+  jld j10, j1, ZEEND
+  jsub j2, j9, j10
+jwend
+jjmp el_done
 el_w:
   jldi j8, 0
-  el_wl:
-    jadd j2, j9, j8
-    jsub j4, j2, j10
-    jjz j4, el_wh
+  jwhile j4
     jldb j3, j2, 0
     jcall mp_isletter
     jjz j2, el_wh
     jldi j2, 1
     jadd j8, j8, j2
-    jjmp el_wl
+  jwcheck
+    jadd j2, j9, j8
+    jsub j4, j2, j10
+  jwend
 el_wh:
   jldi j1, 0
   jst j8, j1, ZEWL
@@ -357,7 +354,14 @@ el_nl:
   jadd j9, j9, j2
   jldi j1, 0
   jst j9, j1, ZEP
-  jjmp el_line
+jwcheck
+el_line:
+  jldi j1, 0
+  jld j2, j1, ZEP
+  jld j3, j1, ZEEND
+  jsub j4, j2, j3
+jwend
+jjmp el_done
 el_skip:
   jldi j1, 0
   jld j9, j1, ZEP
@@ -401,16 +405,17 @@ en_word:
 ; The first place of print j8 in the line at record j2 -> j6 (-1: not there). Uses j3-j6.
 en_has:
   jldi j3, 0
-  eh_lap:
-    jld j6, j2, 16
-    jsub j6, j3, j6
-    jjz j6, eh_no
+  jwhile j6
     jcall en_word
     jsub j5, j5, j8
     jjz j5, eh_yes
     jldi j6, 1
     jadd j3, j3, j6
-    jjmp eh_lap
+  jwcheck
+    jld j6, j2, 16
+    jsub j6, j3, j6
+  jwend
+  jjmp eh_no
 eh_yes:
   jldi j6, 0
   jadd j6, j3, j6
@@ -424,9 +429,7 @@ eh_no:
 en_same:
   jldi j12, 0
   jadd j14, j3, j12
-  esm_lap:
-    jsub j6, j12, j11
-    jjz j6, esm_yes
+  jwhile j6
     jadd j3, j14, j12
     jcall en_word
     jldi j6, 0
@@ -440,7 +443,9 @@ en_same:
     jjnz j5, esm_no
     jldi j6, 1
     jadd j12, j12, j6
-    jjmp esm_lap
+  jwcheck
+    jsub j6, j12, j11
+  jwend
 esm_yes:
   jldi j6, 1
   jret
@@ -451,9 +456,7 @@ esm_no:
 ; j6 = 1 if print j8 is one of the j11 prints at j10. Uses j6, j7, j12.
 en_in:
   jldi j12, 0
-  ein_lap:
-    jsub j6, j12, j11
-    jjz j6, ein_no
+  jwhile j6
     jldi j6, 3
     jshl j7, j12, j6
     jadd j7, j7, j10
@@ -462,7 +465,10 @@ en_in:
     jjz j7, ein_yes
     jldi j6, 1
     jadd j12, j12, j6
-    jjmp ein_lap
+  jwcheck
+    jsub j6, j12, j11
+  jwend
+  jjmp ein_no
 ein_yes:
   jldi j6, 1
   jret
@@ -484,12 +490,7 @@ en_learn:
   jst j13, j1, ZTP
   jst j1, j1, ZNTP
   jst j1, j1, ZLI
-ln_lap:
-  jldi j1, 0
-  jld j2, j1, ZLI
-  jld j3, j1, ZNLN
-  jsub j3, j2, j3
-  jjz j3, ln_kinds
+jwhile j3
   jcall en_rec
   jld j4, j3, 0
   jldi j5, 1
@@ -500,14 +501,7 @@ ln_lap:
   jadd j2, j2, j5
   jst j2, j1, ZOR0
   jst j1, j1, ZOM
-  ln_om:                        ; its "O:" lines
-    jldi j1, 0
-    jld j2, j1, ZOR0
-    jld j5, j1, ZOM
-    jadd j2, j2, j5
-    jld j5, j1, ZNLN
-    jsub j5, j2, j5
-    jjz j5, ln_omd
+  jwhile j5
     jcall en_rec
     jld j4, j3, 0
     jldi j5, 2
@@ -517,31 +511,27 @@ ln_lap:
     jldi j4, 1
     jadd j5, j5, j4
     jst j5, j1, ZOM
-    jjmp ln_om
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZOR0
+    jld j5, j1, ZOM
+    jadd j2, j2, j5
+    jld j5, j1, ZNLN
+    jsub j5, j2, j5
+  jwend
 ln_omd:
   jld j5, j1, ZOM
   jjz j5, ln_next               ; (no answer: a composed question, asked later)
   jst j1, j1, ZT1               ; its entity: the word said by the most sentences of its answer (one only)
   jst j1, j1, ZT2               ; (how many say the best, and if another says as many)
   jst j1, j1, ZT6
-  ln_ent:
-    jldi j1, 0
-    jld j3, j1, ZT1
-    jld j2, j1, ZQR
-    jld j4, j2, 16
-    jsub j4, j3, j4
-    jjz j4, ln_entd
+  jwhile j4
     jcall en_word
     jldi j1, 0
     jst j5, j1, ZT3
     jst j1, j1, ZT4
     jst j1, j1, ZT5               ; how many say it
-    ln_eo:
-      jldi j1, 0
-      jld j2, j1, ZT4
-      jld j4, j1, ZOM
-      jsub j4, j2, j4
-      jjz j4, ln_eall
+    jwhile j4
       jld j4, j1, ZOR0
       jadd j2, j2, j4
       jcall en_rec
@@ -561,7 +551,12 @@ ln_omd:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, ZT4
-      jjmp ln_eo
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, ZT4
+      jld j4, j1, ZOM
+      jsub j4, j2, j4
+    jwend
     ln_eall:
       jld j2, j1, ZT5
       jjz j2, ln_enext
@@ -587,7 +582,13 @@ ln_omd:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, ZT1
-      jjmp ln_ent
+  jwcheck
+    jldi j1, 0
+    jld j3, j1, ZT1
+    jld j2, j1, ZQR
+    jld j4, j2, 16
+    jsub j4, j3, j4
+  jwend
 ln_entd:
   jld j2, j1, ZT2
   jjz j2, ln_next               ; none, or two alike: not a case
@@ -595,13 +596,7 @@ ln_entd:
   jjnz j2, ln_next
   jldi j9, 1                    ; its kind: its words, the entity's place as 1
   jst j1, j1, ZT1
-  ln_key:
-    jldi j1, 0
-    jld j3, j1, ZT1
-    jld j2, j1, ZQR
-    jld j4, j2, 16
-    jsub j4, j3, j4
-    jjz j4, ln_keyd
+  jwhile j4
     jcall en_word
     jldi j1, 0
     jld j4, j1, ZSLP
@@ -616,19 +611,20 @@ ln_entd:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j1, ZT1
-    jjmp ln_key
+  jwcheck
+    jldi j1, 0
+    jld j3, j1, ZT1
+    jld j2, j1, ZQR
+    jld j4, j2, 16
+    jsub j4, j3, j4
+  jwend
 ln_keyd:
   jjnz j9, ln_kok
   jldi j9, 1
 ln_kok:
   jst j9, j1, ZKEY
   jst j1, j1, ZT1
-  ln_find:
-    jldi j1, 0
-    jld j2, j1, ZT1
-    jld j3, j1, ZNTP
-    jsub j3, j2, j3
-    jjz j3, ln_new
+  jwhile j3
     jldi j3, 96
     jmul j3, j2, j3
     jld j4, j1, ZTP
@@ -640,7 +636,12 @@ ln_kok:
     jldi j4, 1
     jadd j2, j2, j4
     jst j2, j1, ZT1
-    jjmp ln_find
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZT1
+    jld j3, j1, ZNTP
+    jsub j3, j2, j3
+  jwend
 ln_new:
   jldi j3, 96
   jmul j3, j2, j3
@@ -659,7 +660,11 @@ ln_new:
   jst j2, j3, 80
   jst j3, j1, ZTPA
   jld j2, j1, ZOR0
-  ln_first:                     ; (the first sentence of the answer that says the entity)
+  jwhile j6
+    jld j2, j1, ZT4
+    jldi j4, 1
+    jadd j2, j2, j4
+  jwcheck
     jst j2, j1, ZT4
     jcall en_rec
     jldi j1, 0
@@ -671,11 +676,7 @@ ln_new:
     jld j3, j1, ZT5
     jldi j4, 63
     jsar j6, j6, j4
-    jjz j6, ln_firstd
-    jld j2, j1, ZT4
-    jldi j4, 1
-    jadd j2, j2, j4
-    jjmp ln_first
+  jwend
 ln_firstd:
   jld j4, j1, ZTPA
   jst j3, j4, 48
@@ -694,12 +695,7 @@ ln_firstd:
 ln_have:
   jst j3, j1, ZTPA
   jst j1, j1, ZT4
-  ln_cmp:                       ; each sentence of its answer against the kind's first one
-    jldi j1, 0
-    jld j2, j1, ZT4
-    jld j4, j1, ZOM
-    jsub j4, j2, j4
-    jjz j4, ln_cnt
+  jwhile j4
     jld j4, j1, ZOR0
     jadd j2, j2, j4
     jcall en_rec
@@ -722,13 +718,7 @@ ln_have:
     jsub j5, j5, j6
     jjnz j5, ln_bad
     jst j1, j1, ZT6
-    ln_pos:
-      jldi j1, 0
-      jld j3, j1, ZT6
-      jld j4, j1, ZTPA
-      jld j5, j4, 24
-      jsub j5, j3, j5
-      jjz j5, ln_cnext
+    jwhile j5
       jld j2, j1, ZT5
       jcall en_word
       jadd j7, j5, j1
@@ -748,7 +738,14 @@ ln_have:
       jldi j4, 1
       jadd j3, j3, j4
       jst j3, j1, ZT6
-      jjmp ln_pos
+    jwcheck
+      jldi j1, 0
+      jld j3, j1, ZT6
+      jld j4, j1, ZTPA
+      jld j5, j4, 24
+      jsub j5, j3, j5
+    jwend
+    jjmp ln_cnext
   ln_bad:
     jldi j1, 0
     jld j4, j1, ZTPA
@@ -760,7 +757,12 @@ ln_have:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZT4
-    jjmp ln_cmp
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZT4
+    jld j4, j1, ZOM
+    jsub j4, j2, j4
+  jwend
 ln_cnt:
   jld j4, j1, ZTPA
   jld j5, j4, 56
@@ -773,15 +775,15 @@ ln_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZLI
-  jjmp ln_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZLI
+  jld j3, j1, ZNLN
+  jsub j3, j2, j3
+jwend
 ln_kinds:
   jst j1, j1, ZT1
-  lk_lap:
-    jldi j1, 0
-    jld j2, j1, ZT1
-    jld j3, j1, ZNTP
-    jsub j3, j2, j3
-    jjz j3, lk_done
+  jwhile j3
     jldi j3, 96
     jmul j3, j2, j3
     jld j4, j1, ZTP
@@ -817,14 +819,14 @@ ln_kinds:
     jand j6, j6, j4
     jjnz j6, lk_say             ; more than one: no one place for the answer
     jldi j5, 0
-    lk_bit:
-      jldi j6, 1
-      jand j6, j4, j6
-      jjnz j6, lk_bitd
+    jwhilez j6
       jldi j6, 1
       jshr j4, j4, j6
       jadd j5, j5, j6
-      jjmp lk_bit
+    jwcheck
+      jldi j6, 1
+      jand j6, j4, j6
+    jwend
     lk_bitd:
     jst j5, j3, 40
     jldi j5, 1
@@ -836,7 +838,12 @@ ln_kinds:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZT1
-    jjmp lk_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZT1
+    jld j3, j1, ZNTP
+    jsub j3, j2, j3
+  jwend
 lk_done:
   jret
 
@@ -888,12 +895,7 @@ en_saywords:
   jst j3, j1, ZSLF
   jst j4, j1, ZSLE
   jst j5, j1, ZSLS
-  esw_lap:
-    jldi j1, 0
-    jld j3, j1, ZSLI
-    jld j4, j1, ZSLE
-    jsub j4, j3, j4
-    jjz j4, esw_done
+  jwhile j4
     jld j4, j1, ZSLF
     jsub j4, j3, j4
     jjz j4, esw_ns
@@ -918,7 +920,12 @@ en_saywords:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j1, ZSLI
-    jjmp esw_lap
+  jwcheck
+    jldi j1, 0
+    jld j3, j1, ZSLI
+    jld j4, j1, ZSLE
+    jsub j4, j3, j4
+  jwend
 esw_done:
   jret
 
@@ -929,14 +936,13 @@ en_sayprint:
   jldi j1, 0
   jld j9, j4, 8
   jld j10, j4, 16
-  esp_lap:
-    jjz j10, esp_done
+  jwhile j10
     jldb j2, j9, 0
     jcall putch
     jldi j1, 1
     jadd j9, j9, j1
     jsub j10, j10, j1
-    jjmp esp_lap
+  jwend
 esp_done:
   jldi j1, 0
   jret
@@ -996,12 +1002,7 @@ en_outer:
   jldi j2, -1
   jst j2, j1, ZOUTH
   jst j1, j1, ZETI
-  eo_lap:
-    jldi j1, 0
-    jld j2, j1, ZETI
-    jld j3, j1, ZNTP
-    jsub j3, j2, j3
-    jjz j3, eo_done
+  jwhile j3
     jldi j3, 96
     jmul j3, j2, j3
     jld j4, j1, ZTP
@@ -1037,7 +1038,12 @@ en_outer:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZETI
-    jjmp eo_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZETI
+    jld j3, j1, ZNTP
+    jsub j3, j2, j3
+  jwend
 eo_done:
   jret
 
@@ -1047,12 +1053,7 @@ en_inner:
   jldi j1, 0
   jst j1, j1, ZINS
   jst j1, j1, ZETI
-  ei_lap:
-    jldi j1, 0
-    jld j2, j1, ZETI
-    jld j3, j1, ZNTP
-    jsub j3, j2, j3
-    jjz j3, ei_done
+  jwhile j3
     jldi j3, 96
     jmul j3, j2, j3
     jld j4, j1, ZTP
@@ -1066,10 +1067,7 @@ en_inner:
     jldi j5, 1
     jsub j4, j4, j5
     jst j4, j1, ZES
-    ei_s:
-      jldi j1, 0
-      jld j11, j1, ZES
-      jjz j11, ei_next
+    jwhile j11
       jld j5, j1, ZINS
       jsub j5, j5, j11
       jldi j6, 63
@@ -1098,14 +1096,22 @@ en_inner:
       jldi j5, 1
       jsub j11, j11, j5
       jst j11, j1, ZES
-      jjmp ei_s
+    jwcheck
+      jldi j1, 0
+      jld j11, j1, ZES
+    jwend
   ei_next:
     jldi j1, 0
     jld j2, j1, ZETI
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZETI
-    jjmp ei_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZETI
+    jld j3, j1, ZNTP
+    jsub j3, j2, j3
+  jwend
 ei_done:
   jret
 
@@ -1113,12 +1119,7 @@ ei_done:
 en_full:
   jldi j1, 0
   jst j1, j1, ZETI
-  ef_lap:
-    jldi j1, 0
-    jld j2, j1, ZETI
-    jld j3, j1, ZNTP
-    jsub j3, j2, j3
-    jjz j3, ef_no
+  jwhile j3
     jldi j3, 96
     jmul j3, j2, j3
     jld j4, j1, ZTP
@@ -1144,7 +1145,13 @@ en_full:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZETI
-    jjmp ef_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZETI
+    jld j3, j1, ZNTP
+    jsub j3, j2, j3
+  jwend
+  jjmp ef_no
 ef_yes:
   jldi j6, 1
   jret
@@ -1161,12 +1168,7 @@ en_gaps:
   jcall pl_new
   jldi j1, 0
   jst j1, j1, ZLI
-  eg_lap:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLN
-    jsub j3, j2, j3
-    jjz j3, eg_pick
+  jwhile j3
     jcall en_iscomp
     jjz j6, eg_next
     jcall en_outer
@@ -1196,12 +1198,7 @@ en_gaps:
     jst j5, j1, ZT2
     jldi j9, 1
     jst j1, j1, ZT3
-    eg_k:
-      jldi j1, 0
-      jld j3, j1, ZT3
-      jld j5, j1, ZT2
-      jsub j5, j3, j5
-      jjz j5, eg_kd
+    jwhile j5
       jld j4, j1, ZT1
       jadd j3, j3, j4
       jld j2, j1, ZQR
@@ -1214,7 +1211,12 @@ en_gaps:
       jldi j4, 1
       jadd j3, j3, j4
       jst j3, j1, ZT3
-      jjmp eg_k
+    jwcheck
+      jldi j1, 0
+      jld j3, j1, ZT3
+      jld j5, j1, ZT2
+      jsub j5, j3, j5
+    jwend
   eg_kd:
     jjnz j9, eg_kok
     jldi j9, 1
@@ -1240,20 +1242,17 @@ en_gaps:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp eg_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLN
+    jsub j3, j2, j3
+  jwend
 eg_pick:
   jst j1, j1, ZOPC
   jst j1, j1, ZGB
   jst j1, j1, ZGI
-  eg_p:
-    jldi j1, 0
-    jldi j2, ZGAP
-    jld j3, j2, 8
-    jldi j4, 1
-    jadd j3, j3, j4
-    jld j4, j1, ZGI
-    jsub j3, j4, j3
-    jjz j3, eg_pd
+  jwhile j3
     jld j5, j2, 24
     jmul j5, j4, j5
     jld j6, j2, 0
@@ -1289,7 +1288,15 @@ eg_pick:
     jldi j5, 1
     jadd j4, j4, j5
     jst j4, j1, ZGI
-    jjmp eg_p
+  jwcheck
+    jldi j1, 0
+    jldi j2, ZGAP
+    jld j3, j2, 8
+    jldi j4, 1
+    jadd j3, j3, j4
+    jld j4, j1, ZGI
+    jsub j3, j4, j3
+  jwend
 eg_pd:
   jldi j2, -1
   jst j2, j1, ZOPL
@@ -1358,10 +1365,7 @@ en_parse:
   jcall en_word
   jldi j1, 0
   jst j5, j1, ZENT
-  ep_lap:
-    jldi j1, 0
-    jld j2, j1, ZEPOS
-    jjz j2, ep_no
+  jwhile j2
     jcall en_full
     jjz j6, ep_inner
     jldi j1, 0
@@ -1398,7 +1402,10 @@ en_parse:
     jldi j1, 0
     jld j3, j1, ZT1
     jst j3, j1, ZEPOS
-    jjmp ep_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZEPOS
+  jwend
 ep_no:
   jldi j6, 0
   jret
@@ -1410,12 +1417,7 @@ en_step:
   jldi j1, 0
   jst j1, j1, ZSBN
   jst j1, j1, ZLK
-  es_lap:
-    jldi j1, 0
-    jld j2, j1, ZLK
-    jld j3, j1, ZNLN
-    jsub j3, j2, j3
-    jjz j3, es_done
+  jwhile j3
     jcall en_rec
     jldi j1, 0
     jld j4, j3, 0
@@ -1429,13 +1431,7 @@ en_step:
     jjnz j5, es_next
     jst j3, j1, ZT5
     jst j1, j1, ZT6
-    es_pos:
-      jldi j1, 0
-      jld j3, j1, ZT6
-      jld j4, j1, ZTPA
-      jld j5, j4, 24
-      jsub j5, j3, j5
-      jjz j5, es_frame
+    jwhile j5
       jld j5, j4, 32
       jsub j5, j3, j5
       jjz j5, es_pn
@@ -1455,7 +1451,13 @@ en_step:
       jldi j4, 1
       jadd j3, j3, j4
       jst j3, j1, ZT6
-      jjmp es_pos
+    jwcheck
+      jldi j1, 0
+      jld j3, j1, ZT6
+      jld j4, j1, ZTPA
+      jld j5, j4, 24
+      jsub j5, j3, j5
+    jwend
   es_frame:
     jld j4, j1, ZTPA
     jld j3, j4, 32
@@ -1488,7 +1490,12 @@ en_step:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLK
-    jjmp es_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLK
+    jld j3, j1, ZNLN
+    jsub j3, j2, j3
+  jwend
 es_done:
   jret
 
@@ -1502,12 +1509,7 @@ en_eval:
   jldi j2, 1
   jst j2, j1, ZSAN
   jst j1, j1, ZT2
-  ev_lap:
-    jldi j1, 0
-    jld j2, j1, ZT2
-    jld j3, j1, ZSTN
-    jsub j3, j2, j3
-    jjz j3, ev_done
+  jwhile j3
     jldi j3, 3
     jshl j3, j2, j3
     jld j4, j1, ZSTP
@@ -1526,7 +1528,12 @@ en_eval:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZT2
-    jjmp ev_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZT2
+    jld j3, j1, ZSTN
+    jsub j3, j2, j3
+  jwend
 ev_done:
   jret
 
@@ -1542,11 +1549,7 @@ ej_cnt:
   jsub j6, j6, j7
   jjnz j6, ej_no
   jst j1, j1, ZT6
-  ej_lap:
-    jldi j1, 0
-    jld j3, j1, ZT6
-    jld j2, j1, ZTRR
-    jjz j2, ej_yes
+  jwhile j2
     jld j4, j2, 16
     jsub j4, j3, j4
     jjz j4, ej_yes
@@ -1560,7 +1563,11 @@ ej_cnt:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j1, ZT6
-    jjmp ej_lap
+  jwcheck
+    jldi j1, 0
+    jld j3, j1, ZT6
+    jld j2, j1, ZTRR
+  jwend
 ej_yes:
   jldi j6, 1
   jret
@@ -1578,12 +1585,7 @@ en_saysa:
   jret
 esa_go:
   jst j1, j1, ZT6
-  esa_lap:
-    jldi j1, 0
-    jld j3, j1, ZT6
-    jld j2, j1, ZSAN
-    jsub j2, j3, j2
-    jjz j2, esa_done
+  jwhile j2
     jjz j3, esa_ns
     jldi j2, 32
     jcall putch
@@ -1601,7 +1603,12 @@ esa_go:
     jldi j2, 1
     jadd j3, j3, j2
     jst j3, j1, ZT6
-    jjmp esa_lap
+  jwcheck
+    jldi j1, 0
+    jld j3, j1, ZT6
+    jld j2, j1, ZSAN
+    jsub j2, j3, j2
+  jwend
 esa_done:
   jret
 
@@ -1632,12 +1639,7 @@ en_tries:
   jldi j1, 0
   jst j1, j1, ZGN
   jst j1, j1, ZLI
-  etr_lap:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLN
-    jsub j3, j2, j3
-    jjz j3, etr_done
+  jwhile j3
     jcall en_iscomp
     jjz j6, etr_next
     jcall en_parse
@@ -1651,7 +1653,12 @@ en_tries:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp etr_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLN
+    jsub j3, j2, j3
+  jwend
 etr_done:
   jld j2, j1, ZGN
   jret
@@ -1664,12 +1671,7 @@ en_answer:
   jst j1, j1, ZNRT
   jst j1, j1, ZNSD
   jst j1, j1, ZLI
-  ea_lap:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLN
-    jsub j3, j2, j3
-    jjz j3, ea_done
+  jwhile j3
     jcall en_iscomp
     jjz j6, ea_next
     jldi j1, 0
@@ -1763,7 +1765,12 @@ en_answer:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp ea_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLN
+    jsub j3, j2, j3
+  jwend
 ea_done:
   jldi j1, S_COMP
   jcall puts
@@ -1796,15 +1803,14 @@ mp_print:
   jshi j6, 100h
   jshi j6, 0
   jshi j6, 1B3h
-  mpf_lap:
-    jjz j4, mpf_done
+  jwhile j4
     jldb j7, j3, 0
     jxor j5, j5, j7
     jmul j5, j5, j6
     jldi j7, 1
     jadd j3, j3, j7
     jsub j4, j4, j7
-    jjmp mpf_lap
+  jwend
 mpf_done:
   jjnz j5, mpf_out
   jldi j5, 1

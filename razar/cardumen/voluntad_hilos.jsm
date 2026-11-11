@@ -727,8 +727,7 @@ songs_read:
   jldi j2, 0                    ; where each starts
   jldi j3, 0
   jld j4, j1, KV
-  sr_lap:
-    jjz j4, sr_all
+  jwhile j4
     jldi j5, 3
     jshl j5, j3, j5
     jld j6, j1, SOFF
@@ -754,14 +753,10 @@ songs_read:
     jldi j5, 1
     jadd j3, j3, j5
     jsub j4, j4, j5
-    jjmp sr_lap
+  jwend
 sr_all:
   jst j1, j1, SEXT              ; the new songs after them, whole ones only
-  sr_x:
-    jld j6, j1, SEXT
-    jldi j7, 256
-    jsub j6, j6, j7
-    jjz j6, sr_xd
+  jwhile j6
     jldi j5, 2
     jadd j5, j2, j5
     jld j6, j1, SBYT
@@ -796,7 +791,11 @@ sr_all:
     jldi j6, 1
     jadd j9, j9, j6
     jst j9, j1, SEXT
-    jjmp sr_x
+  jwcheck
+    jld j6, j1, SEXT
+    jldi j7, 256
+    jsub j6, j6, j7
+  jwend
 sr_xd:
   jldi j11, 256                 ; what it takes each new one for
   jldi j6, 3
@@ -924,10 +923,7 @@ s_hear:
   jldi j6, 2
   jadd j3, j3, j6
   jst j3, j1, SNP
-  sm_n:
-    jldi j1, 0
-    jld j2, j1, SNN
-    jjz j2, sm_nd
+  jwhile j2
     jcall song_note
     jldi j1, 0
     jld j2, j1, SNP
@@ -938,7 +934,10 @@ s_hear:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, SNN
-    jjmp sm_n
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SNN
+  jwend
   sm_nd:
   jldi j2, -1                 ; what it guesses: the thing whose answers that resembles most
   jst j2, j1, BEST
@@ -1128,12 +1127,7 @@ s_main:
   jwend
   jldi j1, 0
   jst j1, j1, SXI
-  s_x:
-    jldi j1, 0
-    jld j2, j1, SXI
-    jld j3, j1, SEXT
-    jsub j3, j2, j3
-    jjz j3, s_xd
+  jwhile j3
     jld j3, j1, KV
     jadd j2, j2, j3
     jst j2, j1, THING
@@ -1164,7 +1158,12 @@ s_main:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SXI
-    jjmp s_x
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SXI
+    jld j3, j1, SEXT
+    jsub j3, j2, j3
+  jwend
 s_xd:
   jjmp v_end
 
@@ -1182,8 +1181,7 @@ isqrt:
     jldi j6, 2
     jshr j4, j4, j6
     jjnz j4, isq_top
-isq_lap:
-  jjz j4, isq_done
+jwhile j4
   jadd j5, j3, j4
   jsub j6, j2, j5
   jldi j5, 63
@@ -1200,7 +1198,9 @@ isq_small:
 isq_next:
   jldi j5, 2
   jshr j4, j4, j5
-  jjmp isq_lap
+jwcheck
+isq_lap:
+jwend
 isq_done:
   jldi j5, 0
   jadd j2, j3, j5
@@ -1267,6 +1267,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -1274,13 +1281,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

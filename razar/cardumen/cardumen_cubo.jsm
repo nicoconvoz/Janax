@@ -360,10 +360,7 @@ total:
   jadd j4, j4, j5
   jldi j6, 0
   jldi j7, 0
-  tt_lap:
-    jldi j8, 6
-    jsub j8, j7, j8
-    jjz j8, tt_done
+  jwhile j8
     jldi j8, 3
     jshl j8, j7, j8
     jadd j8, j8, j4
@@ -377,7 +374,10 @@ total:
   tt_next:
     jldi j8, 1
     jadd j7, j7, j8
-    jjmp tt_lap
+  jwcheck
+    jldi j8, 6
+    jsub j8, j7, j8
+  jwend
 tt_done:
   jret
 
@@ -397,10 +397,7 @@ conserve:
   jjz j8, cv_done
   jadd j9, j5, j13              ; left
   jldi j7, 0
-  cv_a:
-    jldi j8, 6
-    jsub j8, j7, j8
-    jjz j8, cv_b0
+  jwhile j8
     jldi j8, 3
     jshl j8, j7, j8
     jadd j8, j8, j4
@@ -427,11 +424,13 @@ conserve:
   cv_an:
     jldi j8, 1
     jadd j7, j7, j8
-    jjmp cv_a
+  jwcheck
+    jldi j8, 6
+    jsub j8, j7, j8
+  jwend
 cv_b0:
   jldi j7, 0
-  cv_b:
-    jjz j9, cv_done
+  jwhile j9
     jldi j8, 6
     jsub j8, j7, j8
     jjz j8, cv_done
@@ -466,7 +465,7 @@ cv_b0:
   cv_bn:
     jldi j8, 1
     jadd j7, j7, j8
-    jjmp cv_b
+  jwend
 cv_done:
   jret
 
@@ -493,10 +492,7 @@ how:
     jadd j9, j9, j5
   hw_on:
     jldi j7, 0
-    hw_d:
-      jldi j8, 6
-      jsub j8, j7, j8
-      jjz j8, hw_dd
+    jwhile j8
       jldi j8, 3
       jshl j8, j7, j8
       jadd j8, j8, j4
@@ -516,7 +512,10 @@ how:
     hw_dn:
       jldi j8, 1
       jadd j7, j7, j8
-      jjmp hw_d
+    jwcheck
+      jldi j8, 6
+      jsub j8, j7, j8
+    jwend
   hw_dd:
     jldi j3, 1
     jadd j1, j1, j3
@@ -728,11 +727,7 @@ s_go:
   jldi j3, 0
   jcall fillb
   jldi j15, 0                   ; each wave pushes: its awake pieces (not the top face) tell their neighbors that did
-w_lap:                          ; not wake in it yet (j15 = the wave)
-  jldi j13, 0
-  jld j1, j13, SLEN
-  jsub j1, j15, j1
-  jjz j1, w_done
+jwhile j1
   jld j1, j13, PP
   jmul j1, j1, j15
   jld j2, j13, APUSH
@@ -766,10 +761,7 @@ w_lap:                          ; not wake in it yet (j15 = the wave)
     jshl j12, j1, j5
     jld j5, j13, AW
     jadd j12, j12, j5           ; what it says to them
-  d_lap:
-    jldi j5, 6
-    jsub j5, j10, j5
-    jjz j5, i_next
+  jwhile j5
     jld j7, j11, 0              ; the neighbor
     jldi j5, 63
     jsar j5, j7, j5
@@ -806,7 +798,10 @@ w_lap:                          ; not wake in it yet (j15 = the wave)
     jadd j11, j11, j5
     jldi j5, 1
     jadd j12, j12, j5
-    jjmp d_lap
+  jwcheck
+    jldi j5, 6
+    jsub j5, j10, j5
+  jwend
   i_next:
     jldi j5, 1
     jadd j1, j1, j5
@@ -814,7 +809,11 @@ w_lap:                          ; not wake in it yet (j15 = the wave)
   jwend
   jldi j5, 1
   jadd j15, j15, j5
-  jjmp w_lap
+jwcheck
+  jldi j13, 0
+  jld j1, j13, SLEN
+  jsub j1, j15, j1
+jwend
 w_done:
   jldi j13, 0                   ; who wakes: pushed by some wave, told 100 in all, and in harmony
   jldi j1, 0
@@ -1082,6 +1081,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -1089,13 +1095,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

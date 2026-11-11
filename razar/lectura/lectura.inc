@@ -472,9 +472,7 @@ come_piece:
   jst j1, j1, HOSTF
   jst j1, j1, HOSTE
   jldi j4, 0
-  cpc_nl:
-    jsub j5, j4, j3
-    jjz j5, cpc_done
+  jwhile j5
     jadd j5, j2, j4
     jldb j5, j5, 0
     jldi j6, 10
@@ -482,17 +480,16 @@ come_piece:
     jjz j5, cpc_line
     jldi j5, 1
     jadd j4, j4, j5
-    jjmp cpc_nl
+  jwcheck
+    jsub j5, j4, j3
+  jwend
+  jjmp cpc_done
 cpc_line:
   jadd j7, j4, j1               ; (the address ends there)
   jldi j8, HOSTF
   cpc_num:
     jldi j6, 0
-    cpc_sp:                     ; (what is not a digit before it)
-      jldi j5, 1
-      jadd j4, j4, j5
-      jsub j5, j4, j3
-      jjz j5, cpc_put
+    jwhile j5
       jadd j5, j2, j4
       jldb j5, j5, 0
       jldi j1, 48
@@ -512,7 +509,12 @@ cpc_line:
       jldi j1, 10
       jmul j6, j6, j1
       jadd j6, j6, j5
-      jjmp cpc_sp
+    jwcheck
+      jldi j5, 1
+      jadd j4, j4, j5
+      jsub j5, j4, j3
+    jwend
+    jjmp cpc_put
   cpc_end:
     jldi j1, 0
     jst j6, j8, 0
@@ -887,30 +889,31 @@ bfn_grow:
   jadd j11, j11, j11
   jjnz j11, bfn_twice
   jldi j11, 256
+jwhile j2
+  jadd j11, j11, j11
+jwcheck
 bfn_twice:
   jld j2, j9, 16
   jsub j2, j11, j2
   jldi j3, 63
   jsar j2, j2, j3
-  jjz j2, bfn_room
-  jadd j11, j11, j11
-  jjmp bfn_twice
+jwend
 bfn_room:
   jst j11, j9, 24
   jcall room
   jld j3, j9, 0                 ; (what it held, to the new room)
   jld j4, j9, 8
   jldi j5, 0
-  bfn_copy:
-    jsub j6, j5, j4
-    jjz j6, bfn_moved
+  jwhile j6
     jadd j6, j3, j5
     jldb j6, j6, 0
     jadd j7, j13, j5
     jstb j6, j7, 0
     jldi j6, 1
     jadd j5, j5, j6
-    jjmp bfn_copy
+  jwcheck
+    jsub j6, j5, j4
+  jwend
 bfn_moved:
   jst j13, j9, 0
   jld j2, j9, 24
@@ -1532,14 +1535,13 @@ room:
   jldi j12, 3
   jshl j11, j11, j12
   jldi j14, 8
-  rm_move:
-    jjz j11, rm_moved
+  jwhile j11
     jadd j10, j10, j14
     jadd j13, j13, j14
     jld j12, j10, 0
     jst j12, j13, 0
     jsub j11, j11, j14
-    jjmp rm_move
+  jwend
   rm_moved:
   jld j11, j1, RLIST            ; the old one given back
   jldi j10, 3
@@ -1681,17 +1683,17 @@ fl_out:
 puts:
   jldi j3, 0
   jst j1, j3, PUTP
-pu_lap:
-  jldi j1, 0
-  jld j3, j1, PUTP
-  jldb j2, j3, 0
-  jjz j2, pu_done
+jwhile j2
   jldi j1, 1
   jadd j3, j3, j1
   jldi j1, 0
   jst j3, j1, PUTP
   jcall putch
-  jjmp pu_lap
+jwcheck
+  jldi j1, 0
+  jld j3, j1, PUTP
+  jldb j2, j3, 0
+jwend
 pu_done:
   jldi j1, 0
   jret
@@ -1972,11 +1974,7 @@ mk_learn:
   jst j13, j1, MKL
   jst j1, j1, MKLN
   jldi j9, 1
-  mkl_unit:
-    jldi j1, 0
-    jld j2, j1, NTOK
-    jsub j2, j9, j2
-    jjz j2, mkl_counted
+  jwhile j2
     jst j9, j1, MK1
     jldi j3, 3
     jshl j3, j9, j3
@@ -2010,7 +2008,11 @@ mk_learn:
     jld j9, j1, MK1
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mkl_unit
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+  jwend
 mkl_counted:
   jcall mk_stack                ; (its pairs, as a stack)
 mkl_done:
@@ -2132,12 +2134,7 @@ mkc_pairs:                      ; every mark seen since this one's last time goe
   jadd j2, j2, j4
   jst j2, j3, 32
   jst j1, j1, MK7
-  mkc_o:
-    jldi j1, 0
-    jld j2, j1, MK7
-    jld j3, j1, MKLN
-    jsub j3, j2, j3
-    jjz j3, mkc_done
+  jwhile j3
     jldi j3, 3
     jshl j3, j2, j3
     jld j4, j1, MKL
@@ -2180,7 +2177,12 @@ mkc_pairs:                      ; every mark seen since this one's last time goe
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, MK7
-    jjmp mkc_o
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, MK7
+    jld j3, j1, MKLN
+    jsub j3, j2, j3
+  jwend
 mkc_done:
   jldi j1, 0
   jret
@@ -2265,9 +2267,7 @@ mk_stack:
     jld j10, j1, MKP + 8
     jldi j2, 1
     jadd j10, j10, j2
-    mks2_c:
-      jldi j1, 0
-      jjz j10, mks2_got
+    jwhile j10
       jld j2, j9, 0
       jjz j2, mks2_cnext
       jld j2, j9, 24
@@ -2312,7 +2312,9 @@ mk_stack:
       jadd j9, j9, j2
       jldi j2, 1
       jsub j10, j10, j2
-      jjmp mks2_c
+    jwcheck
+      jldi j1, 0
+    jwend
   mks2_got:
     jld j9, j1, MKBE
     jjz j9, mks2_done
@@ -2392,11 +2394,7 @@ mk_run:
   jst j1, j1, MKHIT
   jst j1, j1, MKALL
   jldi j9, 1
-  mkrn_lap:
-    jldi j1, 0
-    jld j2, j1, NTOK
-    jsub j2, j9, j2
-    jjz j2, mkrn_end
+  jwhile j2
     jldi j3, 3
     jshl j3, j9, j3
     jld j4, j1, ROOMT
@@ -2454,7 +2452,11 @@ mk_run:
   mkrn_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mkrn_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+  jwend
 mkrn_end:
   jld j2, j1, MKHIT
   jadd j2, j2, j2
@@ -2539,8 +2541,7 @@ mk_limits:
   jldi j1, 0
   jld j9, j1, MKPN
   jld j10, j1, MKPR
-  mkm_lap:
-    jjz j9, mkm_done
+  jwhile j9
     jld j2, j10, 0
     jldi j3, 24
     jmul j2, j2, j3
@@ -2560,7 +2561,7 @@ mk_limits:
     jadd j10, j10, j2
     jldi j2, 1
     jsub j9, j9, j2
-    jjmp mkm_lap
+  jwend
 mkm_done:
   jret
 

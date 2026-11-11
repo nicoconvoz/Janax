@@ -346,10 +346,7 @@ jld j2, j1, QN
 jwhile j2
   jldi j1, 0
   jld j9, j1, QS
-  qe_find:
-    jld j2, j1, QN
-    jsub j2, j9, j2
-    jjz j2, qe_found
+  jwhile j2
     jldi j2, 3
     jshl j2, j9, j2
     jst j3, j1, QBT
@@ -360,7 +357,10 @@ jwhile j2
     jjz j2, qe_found
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp qe_find
+  jwcheck
+    jld j2, j1, QN
+    jsub j2, j9, j2
+  jwend
   qe_found:
   jst j9, j1, QE
   jld j2, j1, QS
@@ -589,10 +589,7 @@ answer:
   jcall putch
   jldi j1, 0                    ; a word the book never had: it cannot answer
   jld j9, j1, QS
-  an_unk:
-    jld j2, j1, QE
-    jsub j2, j9, j2
-    jjz j2, an_known
+  jwhile j2
     jldi j2, 3
     jshl j2, j9, j2
     jst j3, j1, QBT
@@ -608,14 +605,14 @@ answer:
   an_unext:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp an_unk
+  jwcheck
+    jld j2, j1, QE
+    jsub j2, j9, j2
+  jwend
   an_known:
   jst j1, j1, NH                ; its holes
   jld j9, j1, QS
-  an_hole:
-    jld j2, j1, QE
-    jsub j2, j9, j2
-    jjz j2, an_holes
+  jwhile j2
     jldi j2, 3
     jshl j2, j9, j2
     jst j3, j1, QBT
@@ -644,7 +641,10 @@ answer:
   an_hnext:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp an_hole
+  jwcheck
+    jld j2, j1, QE
+    jsub j2, j9, j2
+  jwend
   an_holes:
   jld j2, j1, NH
   jjnz j2, an_cut
@@ -775,13 +775,7 @@ ct_h1:
   jcall c_add
 ct_mid:
   jldi j9, 0                    ; between holes
-  ct_pair:
-    jldi j1, 0
-    jld j2, j1, NH
-    jldi j3, 1
-    jsub j2, j2, j3
-    jsub j2, j9, j2
-    jjz j2, ct_tail
+  jwhile j2
     jldi j3, 3
     jshl j3, j9, j3
     jld j2, j3, HPOS
@@ -808,7 +802,13 @@ ct_mid:
   ct_pnext:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp ct_pair
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NH
+    jldi j3, 1
+    jsub j2, j2, j3
+    jsub j2, j9, j2
+  jwend
 ct_tail:
   jldi j1, 0                    ; after the last hole
   jld j2, j1, NH
@@ -979,19 +979,7 @@ walk_from:
   jst j1, j1, SVB
   jcall wf_ask
   jret
-wf_hole:
-  jldi j1, 0
-  jld j2, j1, SRC
-  jldi j3, 0
-  jsub j2, j3, j2
-  jldi j3, 1
-  jsub j2, j2, j3
-  jldi j3, 3
-  jshl j3, j2, j3
-  jld j4, j3, HCNT
-  jld j5, j1, SK
-  jsub j4, j5, j4
-  jjz j4, wf_done
+jwhile j4
   jld j4, j1, NV                ; its answer SK
   jmul j4, j2, j4
   jadd j4, j4, j5
@@ -1009,7 +997,20 @@ wf_hole:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, SK
-  jjmp wf_hole
+jwcheck
+wf_hole:
+  jldi j1, 0
+  jld j2, j1, SRC
+  jldi j3, 0
+  jsub j2, j3, j2
+  jldi j3, 1
+  jsub j2, j2, j3
+  jldi j3, 3
+  jshl j3, j2, j3
+  jld j4, j3, HCNT
+  jld j5, j1, SK
+  jsub j4, j5, j4
+jwend
 wf_done:
   jret
 
@@ -1375,8 +1376,7 @@ write_one:
     jmul j4, j4, j6
     jld j6, j1, ROOMK
     jadd j4, j4, j6
-    wr_find:
-      jjz j5, wr_filled
+    jwhile j5
       jld j6, j4, 0
       jsub j6, j6, j11
       jjz j6, wr_back
@@ -1385,7 +1385,7 @@ write_one:
       jldi j6, 1
       jadd j10, j10, j6
       jsub j5, j5, j6
-      jjmp wr_find
+    jwend
 wr_filled:
   jldi j1, S_ARROW
   jcall puts

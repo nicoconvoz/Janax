@@ -12,8 +12,7 @@ jfirst j1, 10000h              ; first order: room 0
 jldi j9, 10000
 jldi j10, 0                     ; (la letra: 0..25)
 jldi j12, 777                   ; (un registro que putch no toca)
-tl_lap:
-  jjz j9, tl_done
+jwhile j9
   jldi j2, 97
   jadd j2, j2, j10
   jcall putch
@@ -26,7 +25,7 @@ tl_lap:
 tl_keep:
   jldi j2, 1
   jsub j9, j9, j2
-  jjmp tl_lap
+jwend
 tl_done:
 jldi j2, 777
 jsub j2, j12, j2

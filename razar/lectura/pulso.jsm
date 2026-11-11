@@ -717,8 +717,7 @@ qw_with:
   jldi j1, S_Q6                 ; its renglon
   jcall puts
   jldi j1, 0
-  qw_back:
-    jjz j9, qw_start
+  jwhile j9
     jldi j2, 3
     jshl j2, j9, j2
     jld j3, j1, ROOMT
@@ -727,7 +726,7 @@ qw_with:
     jjz j2, qw_start
     jldi j2, 1
     jsub j9, j9, j2
-    jjmp qw_back
+  jwend
 qw_start:
   jldi j10, 1
   jwhile j10
@@ -823,10 +822,7 @@ q_follow:
   jst j2, j1, FSTART
   jld j2, j1, NXL
   jst j2, j1, OL
-  qf_each:
-    jldi j1, 0
-    jld j2, j1, OL
-    jjz j2, qf_done
+  jwhile j2
     jld j9, j1, FSTART
     jld j9, j9, 0
     jst j9, j1, FPOS
@@ -846,7 +842,11 @@ q_follow:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, OL
-    jjmp qf_each
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, OL
+  jwend
+  jjmp qf_done
 qf_found:
   jst j9, j1, FPOS
   jldi j2, 10
@@ -860,18 +860,7 @@ qf_found:
   jadd j2, j2, j3
   jld j2, j2, 0
   jcall putword
-  qf_word:
-    jldi j1, 0
-    jld j9, j1, FPOS
-    jldi j2, 1
-    jadd j9, j9, j2
-    jst j9, j1, FPOS
-    jldi j2, 3
-    jshl j2, j9, j2
-    jld j3, j1, ROOMT
-    jadd j2, j2, j3
-    jld j2, j2, 0
-    jjz j2, qf_done
+  jwhile j2
     jst j2, j1, CXW
     jcall w_mark
     jjnz j3, qf_done
@@ -882,7 +871,18 @@ qf_found:
     jadd j12, j2, j1
     jcall mix
     jcall putword
-    jjmp qf_word
+  jwcheck
+    jldi j1, 0
+    jld j9, j1, FPOS
+    jldi j2, 1
+    jadd j9, j9, j2
+    jst j9, j1, FPOS
+    jldi j2, 3
+    jshl j2, j9, j2
+    jld j3, j1, ROOMT
+    jadd j2, j2, j3
+    jld j2, j2, 0
+  jwend
 qf_done:
   jret
 
@@ -890,18 +890,19 @@ qf_done:
 door_find:
   jldi j1, 0
   jld j4, j1, B1W
-  ff_look:
+  jwhile j2
+    jsub j3, j2, j4
+    jjz j3, ff_yes
+    jldi j2, 1
+    jadd j9, j9, j2
+  jwcheck
     jldi j2, 3
     jshl j2, j9, j2
     jld j3, j1, ROOMT
     jadd j2, j2, j3
     jld j2, j2, 0
-    jjz j2, ff_none
-    jsub j3, j2, j4
-    jjz j3, ff_yes
-    jldi j2, 1
-    jadd j9, j9, j2
-    jjmp ff_look
+  jwend
+  jjmp ff_none
 ff_yes:
   jldi j2, 1
   jret
@@ -940,20 +941,20 @@ neg_sil:
     jldi j1, 0
     jadd j11, j9, j1            ; to its end, and is there a switch?
     jldi j12, 0
-    ns_scan:
-      jldi j2, 3
-      jshl j2, j11, j2
-      jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
-      jjz j2, ns_end
+    jwhile j2
       jcall n_flags
       jldi j4, 1
       jand j3, j3, j4
       jor j12, j12, j3
       jldi j2, 1
       jadd j11, j11, j2
-      jjmp ns_scan
+    jwcheck
+      jldi j2, 3
+      jshl j2, j11, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+    jwend
   ns_end:
     jld j2, j1, NREN            ; every renglon counts; the ones with a switch, again
     jldi j3, 1
@@ -963,9 +964,7 @@ neg_sil:
     jadd j2, j2, j12
     jst j2, j1, NEGR
     jadd j13, j9, j1            ; each word once
-    ns_count:
-      jsub j2, j13, j11
-      jjz j2, ns_next
+    jwhile j2
       jldi j2, 3
       jshl j2, j13, j2
       jld j3, j1, ROOMT
@@ -993,7 +992,9 @@ neg_sil:
     ns_seen:
       jldi j2, 1
       jadd j13, j13, j2
-      jjmp ns_count
+    jwcheck
+      jsub j2, j13, j11
+    jwend
   ns_next:
     jldi j1, 0                  ; the next renglon
     jldi j2, 1
@@ -1063,14 +1064,7 @@ q_xwalk:
     jld j9, j1, OI
     jld j9, j9, 0
     jcall r_start
-    xw_word:
-      jldi j1, 0
-      jldi j2, 3
-      jshl j2, j9, j2
-      jld j3, j1, ROOMT
-      jadd j2, j2, j3
-      jld j2, j2, 0
-      jjz j2, xw_next
+    jwhile j2
       jldi j3, 3
       jshl j7, j2, j3
       jld j3, j1, ROOMON
@@ -1098,7 +1092,14 @@ q_xwalk:
     xw_skip:
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp xw_word
+    jwcheck
+      jldi j1, 0
+      jldi j2, 3
+      jshl j2, j9, j2
+      jld j3, j1, ROOMT
+      jadd j2, j2, j3
+      jld j2, j2, 0
+    jwend
   xw_next:
     jldi j1, 0
     jld j2, j1, OI
@@ -3958,14 +3959,15 @@ ohd_hex:
   jret
 
 ; The bytes from j4 to j7 into the text being written. Uses j1-j3 (j4 moved to j7).
-og_copytext:
-  jsub j3, j7, j4
-  jjz j3, oct_done
+jwhile j3
   jldb j2, j4, 0
   jcall putch
   jldi j3, 1
   jadd j4, j4, j3
-  jjmp og_copytext
+jwcheck
+og_copytext:
+  jsub j3, j7, j4
+jwend
 oct_done:
   jret
 
@@ -3989,11 +3991,7 @@ og_rec_write:
   jld j2, j1, OGRBN
   jadd j2, j4, j2
   jst j2, j1, OGRE
-  orw_lap:
-    jldi j1, 0
-    jld j2, j1, OGRE
-    jsub j2, j2, j4
-    jjz j2, orw_tail
+  jwhile j2
     jst j4, j1, OGRP            ; a recipe: its head, up to the next head
     jcall og_hdr
     jldi j1, 0
@@ -4004,11 +4002,7 @@ og_rec_write:
     jld j4, j1, OGRP
     jcall og_eol
     jadd j4, j7, j1
-    orw_body:
-      jldi j1, 0
-      jld j2, j1, OGRE
-      jsub j2, j2, j4
-      jjz j2, orw_blk
+    jwhile j2
       jst j4, j1, OGRQ
       jcall og_hdr
       jldi j1, 0
@@ -4016,7 +4010,11 @@ og_rec_write:
       jjnz j6, orw_blk
       jcall og_eol
       jadd j4, j7, j1
-      jjmp orw_body
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, OGRE
+      jsub j2, j2, j4
+    jwend
   orw_blk:
     jldi j1, 0
     jst j4, j1, OGRQ
@@ -4057,7 +4055,11 @@ og_rec_write:
   orw_skip:
     jldi j1, 0
     jld j4, j1, OGRQ
-    jjmp orw_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, OGRE
+    jsub j2, j2, j4
+  jwend
 orw_tail:
   jldi j1, 0
   jld j2, j1, OGINS
@@ -4115,10 +4117,7 @@ og_rec_queue:
   jst j2, j1, OGLP
   jld j2, j1, OGLNN
   jst j2, j1, OGLK
-  orq_lap:
-    jldi j1, 0
-    jld j2, j1, OGLK
-    jjz j2, orq_done
+  jwhile j2
     jld j4, j1, OGLP
     jld j5, j4, 0               ; longer than its folder and "/recetas"
     jld j6, j1, OGPFX
@@ -4133,8 +4132,7 @@ og_rec_queue:
     jadd j7, j7, j8
     jldi j8, 8
     jadd j8, j4, j8
-    orq_pfx:
-      jjz j6, orq_sfx
+    jwhile j6
       jldb j9, j7, 0
       jldb j10, j8, 0
       jsub j9, j9, j10
@@ -4143,7 +4141,7 @@ og_rec_queue:
       jadd j7, j7, j9
       jadd j8, j8, j9
       jsub j6, j6, j9
-      jjmp orq_pfx
+    jwend
   orq_sfx:
     jldi j9, 0                  ; and "/recetas" at its end
     jshi j9, 7361h
@@ -4155,8 +4153,7 @@ og_rec_queue:
     jadd j8, j8, j5
     jldi j7, 8
     jsub j8, j8, j7
-    orq_s:
-      jjz j7, orq_read
+    jwhile j7
       jldb j10, j8, 0
       jldi j6, 255
       jand j6, j9, j6
@@ -4167,7 +4164,7 @@ og_rec_queue:
       jldi j6, 1
       jadd j8, j8, j6
       jsub j7, j7, j6
-      jjmp orq_s
+    jwend
   orq_read:
     jldi j2, 8
     jadd j11, j4, j2
@@ -4188,8 +4185,7 @@ og_rec_queue:
     jjz j3, orq_next
     jld j5, j1, OGQ             ; (each organ once)
     jld j6, j1, OGQN
-    orq_dup:
-      jjz j6, orq_put
+    jwhile j6
       jld j7, j5, 0
       jsub j7, j7, j2
       jjz j7, orq_next
@@ -4197,7 +4193,7 @@ og_rec_queue:
       jadd j5, j5, j7
       jldi j7, 1
       jsub j6, j6, j7
-      jjmp orq_dup
+    jwend
   orq_put:
     jst j2, j5, 0
     jld j3, j1, OGQN
@@ -4220,7 +4216,10 @@ og_rec_queue:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, OGLK
-    jjmp orq_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, OGLK
+  jwend
 orq_done:
   jldi j1, 0
   jret

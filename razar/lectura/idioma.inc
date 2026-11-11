@@ -35,11 +35,7 @@ ln_scan:
   jcall pl_new
   jldi j1, 0
   jldi j9, 1
-  lne_lap:
-    jldi j1, 0
-    jld j2, j1, NTOK
-    jsub j2, j9, j2
-    jjz j2, lne_done
+  jwhile j2
     jldi j3, 3
     jshl j3, j9, j3
     jld j4, j1, ROOMT
@@ -82,7 +78,11 @@ ln_scan:
   lne_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp lne_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+  jwend
 lne_done:
   jld j11, j1, NV               ; by word: its neighbours' count, then where they start
   jldi j2, 1
@@ -180,18 +180,18 @@ lne_done:
     jldi j1, 0
     jst j1, j1, LNCH
     jldi j9, 1
-    lnp_word:
-      jldi j1, 0
-      jld j2, j1, NV
-      jsub j2, j9, j2
-      jjz j2, lnp_passed
+    jwhile j2
       jst j9, j1, LN1
       jcall ln_word
       jldi j1, 0
       jld j9, j1, LN1
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp lnp_word
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, NV
+      jsub j2, j9, j2
+    jwend
   lnp_passed:
     jld j2, j1, LNPS
     jldi j3, 1
@@ -214,9 +214,7 @@ ln_edges:
   jld j10, j1, EDG + 8
   jldi j2, 1
   jadd j10, j10, j2
-  lnx_lap:
-    jldi j1, 0
-    jjz j10, lnx_done
+  jwhile j10
     jld j2, j9, 0
     jjz j2, lnx_next
     jld j2, j9, 8
@@ -233,7 +231,9 @@ ln_edges:
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp lnx_lap
+  jwcheck
+    jldi j1, 0
+  jwend
 lnx_done:
   jret
 
@@ -279,9 +279,7 @@ ln_word:
   jsub j7, j6, j5
   jjz j7, lnw_done
   jst j1, j1, LNTN
-  lnw_n:
-    jsub j7, j6, j5
-    jjz j7, lnw_best
+  jwhile j7
     jldi j7, 4
     jshl j7, j5, j7
     jld j8, j1, LNB
@@ -314,14 +312,15 @@ ln_word:
     jst j2, j7, 0
     jldi j7, 1
     jadd j5, j5, j7
-    jjmp lnw_n
+  jwcheck
+    jsub j7, j6, j5
+  jwend
 lnw_best:
   jldi j5, 0                    ; (the most; its language)
   jldi j6, 0
   jld j3, j1, LNTN
   jld j4, j1, LNT
-  lnw_b:
-    jjz j3, lnw_have
+  jwhile j3
     jld j8, j4, 0
     jldi j7, 3
     jshl j7, j8, j7
@@ -348,7 +347,7 @@ lnw_best:
     jadd j4, j4, j7
     jldi j7, 1
     jsub j3, j3, j7
-    jjmp lnw_b
+  jwend
 lnw_have:
   jldi j2, 3
   jshl j2, j9, j2
@@ -417,11 +416,7 @@ ln_ask:
   jldi j1, 0
   jst j1, j1, LNTN
   jldi j9, 0
-  lna_unit:
-    jldi j1, 0
-    jld j2, j1, QN
-    jsub j2, j9, j2
-    jjz j2, lna_counted
+  jwhile j2
     jldi j2, 3
     jshl j2, j9, j2
     jld j3, j1, QBP
@@ -459,14 +454,17 @@ ln_ask:
   lna_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp lna_unit
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, QN
+    jsub j2, j9, j2
+  jwend
 lna_counted:
   jldi j5, 0                    ; the most (the smaller of equals)
   jldi j6, 0
   jld j3, j1, LNTN
   jld j4, j1, LNT
-  lna_b:
-    jjz j3, lna_have
+  jwhile j3
     jld j8, j4, 0
     jldi j7, 3
     jshl j7, j8, j7
@@ -493,7 +491,7 @@ lna_counted:
     jadd j4, j4, j7
     jldi j7, 1
     jsub j3, j3, j7
-    jjmp lna_b
+  jwend
 lna_have:
   jst j6, j1, LNQ
   jld j2, j1, LN4               ; (the reading as it was)
@@ -505,22 +503,11 @@ lna_have:
   jst j1, j1, QN
   jjz j6, lna_done
   jldi j9, 1                    ; each renglon: of its language, or out
-  lnk_ren:
-    jldi j1, 0
-    jld j2, j1, NTOK
-    jsub j2, j9, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, lna_done
+  jwhile j2
     jst j9, j1, LN1
     jldi j10, 0                 ; (its units, and those of the question's language)
     jldi j11, 0
-    lnk_unit:
-      jld j2, j1, NTOK
-      jsub j2, j9, j2
-      jldi j3, 63
-      jsar j2, j2, j3
-      jjz j2, lnk_end
+    jwhile j2
       jldi j3, 3
       jshl j3, j9, j3
       jld j4, j1, ROOMT
@@ -542,7 +529,12 @@ lna_have:
     lnk_other:
       jldi j3, 1
       jadd j9, j9, j3
-      jjmp lnk_unit
+    jwcheck
+      jld j2, j1, NTOK
+      jsub j2, j9, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+    jwend
   lnk_end:
     jjz j10, lnk_next
     jadd j3, j11, j11           ; most of it its language: kept
@@ -551,9 +543,7 @@ lna_have:
     jsar j3, j3, j4
     jjnz j3, lnk_next
     jld j5, j1, LN1             ; else out
-    lnk_out:
-      jsub j3, j5, j9
-      jjz j3, lnk_next
+    jwhile j3
       jldi j3, 3
       jshl j3, j5, j3
       jld j4, j1, ROOMT
@@ -561,11 +551,19 @@ lna_have:
       jst j1, j3, 0
       jldi j3, 1
       jadd j5, j5, j3
-      jjmp lnk_out
+    jwcheck
+      jsub j3, j5, j9
+    jwend
   lnk_next:
     jldi j3, 1
     jadd j9, j9, j3
-    jjmp lnk_ren
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NTOK
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 lna_done:
   jldi j1, 0
   jret

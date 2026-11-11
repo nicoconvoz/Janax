@@ -107,18 +107,16 @@ pz_has:
   jld j3, j1, PZTB
   jld j4, j1, PZTN
   jadd j4, j3, j4               ; the text's end
-ph_line:
-  jsub j5, j4, j3
-  jjz j5, ph_no
+jwhile j5
   jadd j5, j3, j1               ; the line: to its line feed
-ph_end:
+jwhile j6
+  jldi j6, 1
+  jadd j5, j5, j6
+jwcheck
   jldb j6, j5, 0
   jldi j7, 10
   jsub j6, j6, j7
-  jjz j6, ph_cmp
-  jldi j6, 1
-  jadd j5, j5, j6
-  jjmp ph_end
+jwend
 ph_cmp:
   jsub j6, j5, j3
   jld j7, j1, PZHN
@@ -126,9 +124,7 @@ ph_cmp:
   jjnz j6, ph_next
   jld j6, j1, PZHP
   jadd j7, j3, j1
-ph_byte:
-  jsub j8, j5, j7
-  jjz j8, ph_yes
+jwhile j8
   jldb j8, j7, 0
   jldb j2, j6, 0
   jsub j8, j8, j2
@@ -136,11 +132,17 @@ ph_byte:
   jldi j8, 1
   jadd j6, j6, j8
   jadd j7, j7, j8
-  jjmp ph_byte
+jwcheck
+  jsub j8, j5, j7
+jwend
+jjmp ph_yes
 ph_next:
   jldi j6, 1
   jadd j3, j5, j6
-  jjmp ph_line
+jwcheck
+  jsub j5, j4, j3
+jwend
+jjmp ph_no
 ph_yes:
   jldi j2, 1
   jret
@@ -316,9 +318,7 @@ lg_tot:
   jld j10, j1, PZWL + 8
   jldi j2, 1
   jadd j10, j10, j2
-  lgt_lap:
-    jldi j1, 0
-    jjz j10, lgt_done
+  jwhile j10
     jld j2, j9, 0
     jjz j2, lgt_next
     jst j9, j1, LN1
@@ -354,7 +354,9 @@ lg_tot:
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp lgt_lap
+  jwcheck
+    jldi j1, 0
+  jwend
 lgt_done:
   jldi j1, 0
   jret
@@ -433,10 +435,7 @@ lg_scan:
   jld j10, j1, PZLSTN
   jst j9, j1, LGT1
   jst j10, j1, LGT2
-  lgs_nest:
-    jldi j1, 0
-    jld j10, j1, LGT2
-    jjz j10, lgs_near
+  jwhile j10
     jld j9, j1, LGT1
     jcall pz_nest
     jjz j2, lgs_next
@@ -462,7 +461,10 @@ lg_scan:
     jldi j2, 1
     jsub j10, j10, j2
     jst j10, j1, LGT2
-    jjmp lgs_nest
+  jwcheck
+    jldi j1, 0
+    jld j10, j1, LGT2
+  jwend
 lgs_near:                       ; every two books' share, once (LGM, by two of them)
   jld j11, j1, LGN
   jmul j11, j11, j11
@@ -482,19 +484,9 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
   jldi j1, 0
   jst j13, j1, LGW
   jst j1, j1, LGT3
-  lgn_i:
-    jldi j1, 0
-    jld j2, j1, LGT3
-    jld j3, j1, LGN
-    jsub j3, j2, j3
-    jjz j3, lgs_cw
+  jwhile j3
     jst j1, j1, LGT4
-    lgn_j:
-      jldi j1, 0
-      jld j2, j1, LGT4
-      jld j3, j1, LGN
-      jsub j3, j2, j3
-      jjz j3, lgn_inext
+    jwhile j3
       jld j3, j1, LGT3
       jsub j3, j2, j3
       jjz j3, lgn_jnext
@@ -516,30 +508,32 @@ lgs_near:                       ; every two books' share, once (LGM, by two of t
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, LGT4
-      jjmp lgn_j
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, LGT4
+      jld j3, j1, LGN
+      jsub j3, j2, j3
+    jwend
   lgn_inext:
     jld j2, j1, LGT3
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, LGT3
-    jjmp lgn_i
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, LGT3
+    jld j3, j1, LGN
+    jsub j3, j2, j3
+  jwend
 lgs_cw:                         ; each book takes the language that weighs the most among the books it shares with
   jst j1, j1, LGP               ; (Chinese Whispers over books: a book speaks one language), until none changes
   lgc_pass:
     jldi j1, 0
     jst j1, j1, LGC
     jst j1, j1, LGT3
-    lgc_i:
-      jldi j1, 0
-      jld j2, j1, LGT3
-      jld j3, j1, LGN
-      jsub j3, j2, j3
-      jjz j3, lgc_passed
+    jwhile j3
       jldi j9, 0                ; (its neighbours' weights by language, at LGW)
-      lgc_j:
-        jld j3, j1, LGN
-        jsub j3, j9, j3
-        jjz j3, lgc_best
+      jwhile j3
         jld j2, j1, LGT3
         jld j4, j1, LGN
         jmul j2, j2, j4
@@ -565,15 +559,15 @@ lgs_cw:                         ; each book takes the language that weighs the m
       lgc_jnext:
         jldi j2, 1
         jadd j9, j9, j2
-        jjmp lgc_j
+      jwcheck
+        jld j3, j1, LGN
+        jsub j3, j9, j3
+      jwend
     lgc_best:
       jldi j9, 0                ; (the most, the smaller of equals; LGW back to 0)
       jldi j11, 0
       jldi j12, -1
-      lgc_b:
-        jld j3, j1, LGN
-        jsub j3, j9, j3
-        jjz j3, lgc_have
+      jwhile j3
         jldi j3, 3
         jshl j3, j9, j3
         jld j4, j1, LGW
@@ -589,7 +583,10 @@ lgs_cw:                         ; each book takes the language that weighs the m
       lgc_bnext:
         jldi j2, 1
         jadd j9, j9, j2
-        jjmp lgc_b
+      jwcheck
+        jld j3, j1, LGN
+        jsub j3, j9, j3
+      jwend
     lgc_have:
       jldi j3, 63
       jsar j3, j12, j3
@@ -613,7 +610,12 @@ lgs_cw:                         ; each book takes the language that weighs the m
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, LGT3
-      jjmp lgc_i
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, LGT3
+      jld j3, j1, LGN
+      jsub j3, j2, j3
+    jwend
   lgc_passed:
     jld j2, j1, LGP
     jldi j3, 1
@@ -639,10 +641,7 @@ lgs_ask:                        ; the walk's words: each language, how many of t
   jld j2, j1, PZCAMN
   jst j2, j1, LGT2
   jst j1, j1, LGT7              ; (its number)
-  lga_byte:
-    jldi j1, 0
-    jld j2, j1, LGT2
-    jjz j2, lga_pick
+  jwhile j2
     jld j9, j1, LGT1
     jldb j3, j9, 0
     jldi j4, 1
@@ -667,15 +666,18 @@ lgs_ask:                        ; the walk's words: each language, how many of t
     jadd j2, j2, j3
     jst j2, j1, LGT7
     jcall lg_word
-    jjmp lga_byte
+  jwcheck
+  lga_byte:
+    jldi j1, 0
+    jld j2, j1, LGT2
+  jwend
 lga_pick:
   jldi j2, -1
   jst j2, j1, LGQ
   jldi j11, 0
   jldi j9, 0
   jld j10, j1, LGN
-  lgp_lap:
-    jjz j10, lgs_done
+  jwhile j10
     jldi j3, 4
     jshl j3, j9, j3
     jld j4, j1, LGS
@@ -691,7 +693,7 @@ lga_pick:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp lgp_lap
+  jwend
 lgs_done:
   jldi j1, 0
   jret
@@ -700,11 +702,7 @@ lgs_done:
 lg_word:
   jldi j1, 0
   jldi j9, 0
-  lgw_lap:
-    jldi j1, 0
-    jld j2, j1, LGN
-    jsub j2, j9, j2
-    jjz j2, lgw_done
+  jwhile j2
     jldi j3, 48
     jmul j3, j9, j3
     jld j4, j1, LGR
@@ -712,8 +710,7 @@ lg_word:
     jld j5, j3, 8
     jld j6, j3, 16
     jld j7, j1, LGT8
-    lgw_v:
-      jjz j6, lgw_next
+    jwhile j6
       jld j8, j5, 0
       jsub j8, j8, j7
       jjz j8, lgw_has
@@ -721,7 +718,8 @@ lg_word:
       jadd j5, j5, j8
       jldi j8, 1
       jsub j6, j6, j8
-      jjmp lgw_v
+    jwend
+    jjmp lgw_next
   lgw_has:
     jadd j2, j9, j1
     jcall lg_root
@@ -741,7 +739,11 @@ lg_word:
   lgw_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp lgw_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, LGN
+    jsub j2, j9, j2
+  jwend
 lgw_done:
   jldi j1, 0
   jret
@@ -775,13 +777,11 @@ lg_share:
   jjz j9, lgsh_zero
   jldi j10, 0                   ; (in common)
   jst j7, j1, LGT5
-  lgsh_a:
-    jjz j7, lgsh_count
+  jwhile j7
     jld j2, j6, 0
     jadd j3, j8, j1
     jadd j4, j9, j1
-    lgsh_b:
-      jjz j4, lgsh_anext
+    jwhile j4
       jld j5, j3, 0
       jsub j5, j5, j2
       jjz j5, lgsh_hit
@@ -789,7 +789,8 @@ lg_share:
       jadd j3, j3, j5
       jldi j5, 1
       jsub j4, j4, j5
-      jjmp lgsh_b
+    jwend
+    jjmp lgsh_anext
     lgsh_hit:
       jldi j5, 1
       jadd j10, j10, j5
@@ -798,7 +799,7 @@ lg_share:
     jadd j6, j6, j5
     jldi j5, 1
     jsub j7, j7, j5
-    jjmp lgsh_a
+  jwend
 lgsh_count:
   jjz j10, lgsh_zero
   jld j2, j1, LGT5
@@ -883,8 +884,7 @@ lg_vocab:
   jld j10, j1, LGT6
   jst j10, j12, 16
   jld j9, j1, LGT5
-  lgv_copy:
-    jjz j10, lgv_done
+  jwhile j10
     jld j2, j9, 0
     jst j2, j13, 0
     jldi j2, 8
@@ -892,7 +892,7 @@ lg_vocab:
     jadd j13, j13, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp lgv_copy
+  jwend
 lgv_done:
   jldi j1, 0
   jret
@@ -908,10 +908,7 @@ lg_ok:
   jld j9, j1, PZFR
   jld j5, j9, 152
   jldi j6, 0
-  lgo_find:
-    jld j2, j1, LGN
-    jsub j2, j6, j2
-    jjz j2, lgo_yes
+  jwhile j2
     jldi j3, 48
     jmul j3, j6, j3
     jld j4, j1, LGR
@@ -921,7 +918,11 @@ lg_ok:
     jjz j4, lgo_have
     jldi j2, 1
     jadd j6, j6, j2
-    jjmp lgo_find
+  jwcheck
+    jld j2, j1, LGN
+    jsub j2, j6, j2
+  jwend
+  jjmp lgo_yes
 lgo_have:
   jld j4, j3, 16
   jjz j4, lgo_yes
@@ -1035,24 +1036,17 @@ pz_read:
   jldi j1, 0
   jld j2, j1, PZCAM             ; each word walked: the piece where it is, and its hidden bytes known
   jst j2, j1, PZK
-prd_word:
-  jldi j1, 0
-  jld j3, j1, PZK
-  jld j4, j1, PZCAM
-  jld j5, j1, PZCAMN
-  jadd j4, j4, j5
-  jsub j4, j4, j3
-  jjz j4, prd_found
+jwhile j4
   jst j3, j1, PZHP
   jadd j5, j3, j1
-prd_end:
+jwhile j6
+  jldi j6, 1
+  jadd j5, j5, j6
+jwcheck
   jldb j6, j5, 0
   jldi j7, 10
   jsub j6, j6, j7
-  jjz j6, prd_line
-  jldi j6, 1
-  jadd j5, j5, j6
-  jjmp prd_end
+jwend
 prd_line:
   jsub j6, j5, j3
   jst j6, j1, PZHN
@@ -1065,7 +1059,14 @@ prd_line:
   jcall pz_printat
   jldi j2, PZHT
   jcall pl_take
-  jjmp prd_word
+jwcheck
+  jldi j1, 0
+  jld j3, j1, PZK
+  jld j4, j1, PZCAM
+  jld j5, j1, PZCAMN
+  jadd j4, j4, j5
+  jsub j4, j4, j3
+jwend
 prd_found:
   jldi j2, 1                    ; those pieces: the renglones of the words walked
   jst j2, j1, PZMODE
@@ -1073,14 +1074,7 @@ prd_found:
   jldi j1, 0                    ; the bytes to read again (and a line feed a renglon, at most)
   jst j1, j1, PZTOT
   jst j1, j1, PZK
-pt_lap:
-  jldi j1, 0
-  jld j2, j1, PZK
-  jld j3, j1, PZNR
-  jldi j4, 1
-  jsub j3, j3, j4
-  jsub j3, j3, j2
-  jjz j3, pt_done
+jwhile j3
   jld j3, j1, PZMAP
   jadd j3, j3, j2
   jldb j3, j3, 0
@@ -1105,7 +1099,14 @@ pt_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, PZK
-  jjmp pt_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, PZK
+  jld j3, j1, PZNR
+  jldi j4, 1
+  jsub j3, j3, j4
+  jsub j3, j3, j2
+jwend
 pt_done:
   jld j11, j1, PZTOT
   jjz j11, prd_done
@@ -1128,14 +1129,7 @@ pt_done:
   jjnz j2, prd_done              ; (the book is not there any more: what was read there is lost, as in us)
   jst j13, j1, PZBH
   jst j1, j1, PZK
-  pr_run:
-    jldi j1, 0
-    jld j2, j1, PZK
-    jld j3, j1, PZNR
-    jldi j4, 1
-    jsub j3, j3, j4
-    jsub j3, j3, j2
-    jjz j3, pr_ran
+  jwhile j3
     jld j3, j1, PZMAP
     jadd j3, j3, j2
     jldb j3, j3, 0
@@ -1143,7 +1137,16 @@ pt_done:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZK
-    jjmp pr_run
+  jwcheck
+  pr_run:
+    jldi j1, 0
+    jld j2, j1, PZK
+    jld j3, j1, PZNR
+    jldi j4, 1
+    jsub j3, j3, j4
+    jsub j3, j3, j2
+  jwend
+  jjmp pr_ran
   pr_start:
     jst j2, j1, PZA
     pr_more:
@@ -1242,11 +1245,7 @@ clue_gather:
   jld j2, j1, PZON
   jjz j2, cg_done
   jld j9, j1, QS
-  cg_q:
-    jldi j1, 0
-    jld j2, j1, QE
-    jsub j2, j9, j2
-    jjz j2, cg_holes
+  jwhile j2
     jldi j2, 3
     jshl j2, j9, j2
     jst j3, j1, QBT
@@ -1260,15 +1259,14 @@ clue_gather:
     jld j9, j1, PZK
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp cg_q
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, QE
+    jsub j2, j9, j2
+  jwend
   cg_holes:
   jst j1, j1, PZA               ; every hole, every answer it has
-  cg_hole:
-    jldi j1, 0
-    jld j2, j1, PZA
-    jld j3, j1, NH
-    jsub j3, j2, j3
-    jjz j3, cg_done
+  jwhile j3
     jldi j3, 3
     jshl j3, j2, j3
     jld j10, j3, HCNT
@@ -1296,7 +1294,12 @@ clue_gather:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZA
-    jjmp cg_hole
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZA
+    jld j3, j1, NH
+    jsub j3, j2, j3
+  jwend
 cg_done:
   jldi j1, 0
   jret
@@ -1548,12 +1551,7 @@ pzk_noswitch:
   jadd j2, j2, j3
   jst j2, j4, 24
   jst j1, j1, PZT2              ; and each limit's
-  pzk_lim:
-    jldi j1, 0
-    jld j2, j1, PZT2
-    jld j3, j1, PZELN
-    jsub j3, j2, j3
-    jjz j3, pzk_done
+  jwhile j3
     jldi j3, 4
     jshl j3, j2, j3
     jld j4, j1, PZEL
@@ -1584,7 +1582,12 @@ pzk_noswitch:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZT2
-    jjmp pzk_lim
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZT2
+    jld j3, j1, PZELN
+    jsub j3, j2, j3
+  jwend
 pzk_done:
   jldi j1, 0
   jret
@@ -1631,12 +1634,7 @@ pz_blims:
   jldi j2, 16
   jadd j9, j9, j2
   jst j1, j1, PZT4
-  pzb_lim:
-    jldi j1, 0
-    jld j2, j1, PZT4
-    jld j3, j1, PZBLN
-    jsub j3, j2, j3
-    jjz j3, pzb_lims
+  jwhile j3
     jst j9, j1, PZT5
     jld j2, j9, 8
     jst j2, j1, PZHN
@@ -1664,7 +1662,12 @@ pz_blims:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZT4
-    jjmp pzb_lim
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, PZBLN
+    jsub j3, j2, j3
+  jwend
 pzb_lims:
   jldi j1, 0
   jret
@@ -1682,12 +1685,7 @@ pz_lsum:
   jldi j2, 16
   jadd j9, j9, j2
   jst j1, j1, PZT4
-  pzl_lim:
-    jldi j1, 0
-    jld j2, j1, PZT4
-    jld j3, j1, PZBLN
-    jsub j3, j2, j3
-    jjz j3, pzl_done
+  jwhile j3
     jst j9, j1, PZT5
     jldi j3, 3
     jshl j3, j2, j3
@@ -1714,7 +1712,12 @@ pz_lsum:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZT4
-    jjmp pzl_lim
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, PZBLN
+    jsub j3, j2, j3
+  jwend
 pzl_done:
   jldi j1, 0
   jret
@@ -1913,14 +1916,7 @@ pz_find:
   jld j2, j1, PZIX
   jld j2, j2, 80
   jst j2, j1, PZHI2
-pzf_lap:
-  jldi j1, 0
-  jld j2, j1, PZLO
-  jld j3, j1, PZHI2
-  jsub j4, j3, j2
-  jldi j5, 1
-  jsub j4, j4, j5
-  jjz j4, pzf_done
+jwhile j4
   jadd j4, j2, j3
   jshr j4, j4, j5
   jst j4, j1, PZX
@@ -1937,7 +1933,16 @@ pzf_lap:
   jld j3, j1, PZX
   jjnz j2, pzf_hi
   jst j3, j1, PZLO
-  jjmp pzf_lap
+jwcheck
+pzf_lap:
+  jldi j1, 0
+  jld j2, j1, PZLO
+  jld j3, j1, PZHI2
+  jsub j4, j3, j2
+  jldi j5, 1
+  jsub j4, j4, j5
+jwend
+jjmp pzf_done
 pzf_hi:
   jst j3, j1, PZHI2
   jjmp pzf_lap
@@ -1955,8 +1960,7 @@ pz_less:
   jldi j1, 0
   jldi j3, PZHB
   jldi j4, 8
-pzl_lap:
-  jjz j6, pzl_no
+jwhile j6
   jjz j4, pzl_yes
   jldb j7, j3, 0
   jldb j8, j5, 0
@@ -1967,7 +1971,8 @@ pzl_lap:
   jadd j5, j5, j7
   jsub j4, j4, j7
   jsub j6, j6, j7
-  jjmp pzl_lap
+jwend
+jjmp pzl_no
 pzl_diff:
   jldi j8, 63
   jsar j7, j7, j8
@@ -2069,13 +2074,7 @@ pzb_put:
 pz_visit:
   jldi j1, 0
   jst j1, j1, PZPI
-pzv_piece:
-  jldi j1, 0
-  jld j2, j1, PZPI
-  jld j9, j1, PZIX
-  jld j3, j9, 80
-  jsub j3, j2, j3
-  jjz j3, pzv_done
+jwhile j3
   jld j3, j1, PZNEED
   jadd j3, j3, j2
   jldb j3, j3, 0
@@ -2112,10 +2111,7 @@ pzv_piece:
   jadd j4, j3, j1
 pzv_count:
   jst j4, j1, PZPE
-pzv_entry:
-  jldi j1, 0
-  jld j2, j1, PZPE
-  jjz j2, pzv_give
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZPE
@@ -2138,7 +2134,12 @@ pzv_entry:
   jldi j2, 1
 pzv_walked:
   jcall pz_clues
-  jjmp pzv_entry
+jwcheck
+pzv_entry:
+  jldi j1, 0
+  jld j2, j1, PZPE
+jwend
+jjmp pzv_give
 pzv_times:
   jcall pz_count
   jldi j2, 0
@@ -2154,7 +2155,13 @@ pzv_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, PZPI
-  jjmp pzv_piece
+jwcheck
+  jldi j1, 0
+  jld j2, j1, PZPI
+  jld j9, j1, PZIX
+  jld j3, j9, 80
+  jsub j3, j2, j3
+jwend
 pzv_done:
   jldi j1, 0
   jret
@@ -2197,12 +2204,7 @@ pz_entry:
     jsub j6, j6, j7
   jwend
   jst j13, j1, PZWB
-pze_room:
-  jldi j1, 0
-  jld j2, j1, PZX
-  jld j3, j1, PZWN
-  jsub j3, j2, j3
-  jjz j3, pze_said
+jwhile j3
   jld j9, j1, PZIX
   jld j3, j9, 72
   jcall zr_get
@@ -2219,7 +2221,13 @@ pze_room:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, PZX
-  jjmp pze_room
+jwcheck
+pze_room:
+  jldi j1, 0
+  jld j2, j1, PZX
+  jld j3, j1, PZWN
+  jsub j3, j2, j3
+jwend
 pze_said:
   jcall zr_gamma
   jldi j1, 0
@@ -2241,10 +2249,7 @@ pze_said:
   jsub j2, j2, j3
   jst j2, j1, PZEK
   jst j1, j1, PZELN
-  pze_lims:
-    jldi j1, 0
-    jld j2, j1, PZEK
-    jjz j2, pze_limd
+  jwhile j2
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, PZEK
@@ -2270,7 +2275,10 @@ pze_said:
     jldi j4, 1
     jadd j3, j3, j4
     jst j3, j1, PZELN
-    jjmp pze_lims
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZEK
+  jwend
   pze_limd:
   jcall zr_gamma
   jldi j1, 0
@@ -2291,10 +2299,7 @@ pz_clues:
   jst j2, j1, PZRK
   jldi j2, -1
   jst j2, j1, PZX
-pzc_lap:
-  jldi j1, 0
-  jld j2, j1, PZEN
-  jjz j2, pzc_done
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZEN
@@ -2311,7 +2316,11 @@ pzc_lap:
   jadd j4, j4, j3
   jldi j2, 1
   jstb j2, j4, 0
-  jjmp pzc_lap
+jwcheck
+pzc_lap:
+  jldi j1, 0
+  jld j2, j1, PZEN
+jwend
 pzc_done:
   jldi j1, 0
   jret
@@ -2362,10 +2371,7 @@ zmm_count:
   jcall zr_get
   jldi j1, 0
   jst j2, j1, PZRK
-zmm_lap:
-  jldi j1, 0
-  jld j2, j1, PZPE
-  jjz j2, zmm_have
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, PZPE
@@ -2379,7 +2385,10 @@ zmm_lap:
   jadd j4, j4, j5
   jst j4, j1, PZLO
   jst j3, j4, 0
-  jjmp zmm_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, PZPE
+jwend
 zmm_have:
   jldi j1, 0
   jld j9, j1, PZIX
@@ -2433,12 +2442,12 @@ zr_get:
 ; A number in unary (ones to a zero) -> j2. Uses j1-j5.
 zr_unary:
   jldi j5, 0
-zru_lap:
-  jcall zr_bit
-  jjz j2, zru_done
+jwhile j2
   jldi j2, 1
   jadd j5, j5, j2
-  jjmp zru_lap
+jwcheck
+  jcall zr_bit
+jwend
 zru_done:
   jadd j2, j5, j1
   jret
@@ -2482,12 +2491,7 @@ pz_silwrite:
   jst j2, j1, PZT6              ; its bytes, then each word written
   jldi j2, 1
   jst j2, j1, PZT4
-  psw_size:
-    jldi j1, 0
-    jld j2, j1, PZT4
-    jld j3, j1, NV
-    jsub j3, j2, j3
-    jjz j3, psw_sized
+  jwhile j3
     jcall pz_wfound
     jjz j2, psw_snext
     jld j2, j1, PZHN
@@ -2505,7 +2509,12 @@ pz_silwrite:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZT4
-    jjmp psw_size
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, NV
+    jsub j3, j2, j3
+  jwend
 psw_sized:
   jld j11, j1, PZT6
   jldi j2, 8
@@ -2516,12 +2525,7 @@ psw_sized:
   jst j13, j1, PZT3
   jldi j2, 1
   jst j2, j1, PZT4
-  psw_word:
-    jldi j1, 0
-    jld j2, j1, PZT4
-    jld j3, j1, NV
-    jsub j3, j2, j3
-    jjz j3, psw_file
+  jwhile j3
     jcall pz_wfound
     jjz j2, psw_wnext
     jld j9, j1, PZT3
@@ -2581,7 +2585,12 @@ psw_sized:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, PZT4
-    jjmp psw_word
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PZT4
+    jld j3, j1, NV
+    jsub j3, j2, j3
+  jwend
 psw_file:
   jldi j10, 12
   jldi j11, S_SIL
@@ -2655,9 +2664,7 @@ pz_mend:
   jld j10, j1, PZLG + 8
   jldi j2, 1
   jadd j10, j10, j2
-  pzm_l:
-    jldi j1, 0
-    jjz j10, pzm_d
+  jwhile j10
     jld j2, j9, 0
     jjz j2, pzm_n
     jcall lg_closes
@@ -2675,7 +2682,9 @@ pz_mend:
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp pzm_l
+  jwcheck
+    jldi j1, 0
+  jwend
 pzm_d:
   jldi j1, 0
   jret
@@ -2691,8 +2700,7 @@ pz_warrow:
   jld j10, j1, PZLG + 8
   jldi j2, 1
   jadd j10, j10, j2
-  pwa_lim:
-    jjz j10, pwa_decide
+  jwhile j10
     jld j3, j9, 0
     jjz j3, pwa_next
     jst j9, j1, PZT6 + 24
@@ -2722,7 +2730,7 @@ pz_warrow:
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp pwa_lim
+  jwend
 pwa_decide:
   jld j2, j1, PZT6 + 8          ; two at least
   jldi j3, 2

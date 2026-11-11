@@ -280,30 +280,30 @@ jwhile j9
   jldi j1, 5
   jshl j3, j8, j1               ; its greetings: WCODE + w*32
   jldi j4, 0                    ; how many
-wc_letter:
-  jldb j5, j2, WTXT
-  jjz j5, wc_done
+jwhile j5
   jldi j1, 97
   jsub j5, j5, j1
   jldi j1, 3
   jshl j5, j5, j1
   jld j6, j5, MORSE             ; its marks, then 2, then 3
-wc_mark:
-  jldi j1, 3
-  jand j7, j6, j1
-  jsub j1, j7, j1
-  jjz j1, wc_next
+jwhile j1
   jadd j1, j3, j4
   jstb j7, j1, WCODE
   jldi j1, 1
   jadd j4, j4, j1
   jldi j1, 2
   jshr j6, j6, j1
-  jjmp wc_mark
+jwcheck
+  jldi j1, 3
+  jand j7, j6, j1
+  jsub j1, j7, j1
+jwend
 wc_next:
   jldi j1, 1
   jadd j2, j2, j1
-  jjmp wc_letter
+jwcheck
+  jldb j5, j2, WTXT
+jwend
 wc_done:
   jldi j1, 3
   jshl j1, j8, j1
@@ -947,8 +947,7 @@ jwhile j15
     jsub j7, j3, j7             ; the value: -rest / c
     jld j11, j3, NUMV           ; one more vote for it
     jldi j12, VOTE
-  q_find:
-    jjz j11, q_new
+  jwhile j11
     jld j13, j12, 0
     jsub j13, j13, j7
     jjz j13, q_add
@@ -956,7 +955,7 @@ jwhile j15
     jadd j12, j12, j13
     jldi j13, 1
     jsub j11, j11, j13
-    jjmp q_find
+  jwend
   q_new:
     jst j7, j12, 0
     jst j3, j12, 8
@@ -1290,11 +1289,7 @@ st_true:
   jldi j1, 0
   jst j2, j1, PC                ; (PC now: the place of c)
   jldi j9, 0                    ; each core: seen once more, and the rules that held
-st_core:
-  jldi j1, 0
-  jld j2, j1, NCORE
-  jsub j2, j9, j2
-  jjz j2, st_next
+jwhile j2
   jldi j2, 3
   jshl j2, j9, j2
   jld j10, j2, CORES            ; the word
@@ -1305,11 +1300,7 @@ st_core:
   jadd j3, j3, j4
   jst j3, j2, SEEN
   jldi j8, 0
-st_cand:
-  jldi j1, 0
-  jld j2, j1, NCAND
-  jsub j2, j8, j2
-  jjz j2, st_cnext
+jwhile j2
   jldi j2, 5
   jshl j4, j8, j2
   jld j5, j4, CAND + 8
@@ -1336,11 +1327,19 @@ st_cand:
 st_nofit:
   jldi j2, 1
   jadd j8, j8, j2
-  jjmp st_cand
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+jwend
 st_cnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp st_core
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+jwend
 st_next:
   jldi j1, 0
   jld j2, j1, PREV
@@ -1395,12 +1394,7 @@ s_hear4:
   jshl j2, j2, j3
   jst j2, j1, SLOT              ; ORDT offset of the order
   jst j1, j1, SLOTI
-sh_lap:
-  jldi j1, 0
-  jld j2, j1, SLOTI
-  jldi j3, 4
-  jsub j3, j2, j3
-  jjz j3, sh_done
+jwhile j3
   jld j3, j1, SLOT
   jadd j3, j3, j2
   jldb j4, j3, ORDT             ; the role in this slot
@@ -1430,7 +1424,12 @@ sh_word:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, SLOTI
-  jjmp sh_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 4
+  jsub j3, j2, j3
+jwend
 sh_done:
   jret
 
@@ -1441,12 +1440,7 @@ s_roles:
   jst j1, j1, PNUM
   jst j1, j1, NCORE
   jst j1, j1, SLOTI
-sr_lap:
-  jldi j1, 0
-  jld j2, j1, SLOTI
-  jldi j3, 4
-  jsub j3, j2, j3
-  jjz j3, sr_done
+jwhile j3
   jldi j3, 3
   jshl j3, j2, j3
   jld j9, j3, GW                ; the word
@@ -1476,8 +1470,7 @@ sr_core:
   jldi j1, 0                    ; a candidate core, if not one already
   jld j10, j1, NCORE
   jldi j11, CORES
-sr_seen:
-  jjz j10, sr_add
+jwhile j10
   jld j3, j11, 0
   jsub j3, j3, j9
   jjz j3, sr_next
@@ -1485,7 +1478,7 @@ sr_seen:
   jadd j11, j11, j3
   jldi j3, 1
   jsub j10, j10, j3
-  jjmp sr_seen
+jwend
 sr_add:
   jst j9, j11, 0
   jld j3, j1, NCORE
@@ -1498,7 +1491,12 @@ sr_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, SLOTI
-  jjmp sr_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, SLOTI
+  jldi j3, 4
+  jsub j3, j2, j3
+jwend
 sr_done:
   jldi j1, 0
   jld j3, j1, PNUM
@@ -1540,17 +1538,9 @@ ss_done:
 ; The best share over every core and candidate: BNUM / BDEN. Uses j1-j9.
 s_best:
   jldi j9, 0
-sb_core:
-  jldi j1, 0
-  jld j2, j1, NCORE
-  jsub j2, j9, j2
-  jjz j2, sb_done
+jwhile j2
   jldi j8, 0
-sb_cand:
-  jldi j1, 0
-  jld j2, j1, NCAND
-  jsub j2, j8, j2
-  jjz j2, sb_cnext
+jwhile j2
   jcall s_share
   jjz j6, sb_not
   jjz j5, sb_not
@@ -1568,28 +1558,28 @@ sb_cand:
 sb_not:
   jldi j2, 1
   jadd j8, j8, j2
-  jjmp sb_cand
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+jwend
 sb_cnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp sb_core
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+jwend
 sb_done:
   jret
 
 ; Every core's candidate with the best share votes: c = -(a*pa + b*pb) / c, when it divides. Uses j1-j14.
 s_vote:
   jldi j9, 0
-sv_core:
-  jldi j1, 0
-  jld j2, j1, NCORE
-  jsub j2, j9, j2
-  jjz j2, sv_done
+jwhile j2
   jldi j8, 0
-sv_cand:
-  jldi j1, 0
-  jld j2, j1, NCAND
-  jsub j2, j8, j2
-  jjz j2, sv_cnext
+jwhile j2
   jcall s_share
   jjz j6, sv_not
   jjz j5, sv_not
@@ -1617,8 +1607,7 @@ sv_cand:
   jsub j7, j1, j7               ; the value: -rest / c
   jld j11, j1, NUMV             ; one more vote for it
   jldi j12, VOTE
-sv_find:
-  jjz j11, sv_new
+jwhile j11
   jld j13, j12, 0
   jsub j13, j13, j7
   jjz j13, sv_add
@@ -1626,7 +1615,7 @@ sv_find:
   jadd j12, j12, j13
   jldi j13, 1
   jsub j11, j11, j13
-  jjmp sv_find
+jwend
 sv_new:
   jst j7, j12, 0
   jst j1, j12, 8
@@ -1642,11 +1631,19 @@ sv_add:
 sv_not:
   jldi j2, 1
   jadd j8, j8, j2
-  jjmp sv_cand
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCAND
+  jsub j2, j8, j2
+jwend
 sv_cnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp sv_core
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NCORE
+  jsub j2, j9, j2
+jwend
 sv_done:
   jret
 
@@ -1743,10 +1740,7 @@ jwhile j2
 jwend
 jld j2, j1, REPS
 jst j2, j1, REPLEFT
-gt_rep:
-  jldi j1, 0
-  jld j2, j1, REPLEFT
-  jjz j2, gt_mem
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, REPLEFT
@@ -1807,17 +1801,15 @@ gt_rep:
     jldi j3, 1
     jsub j15, j15, j3
   jwend
-  jjmp gt_rep
+jwcheck
+  jldi j1, 0
+  jld j2, j1, REPLEFT
+jwend
 gt_mem:
 jldi j1, 0                      ; the firm memories, as facts (operator, a, b, c)
 jst j1, j1, NFACT
 jst j1, j1, OPI
-gf_op:
-  jldi j1, 0
-  jld j2, j1, OPI
-  jldi j3, 2
-  jsub j3, j2, j3
-  jjz j3, gf_done
+jwhile j3
   jldi j3, 1
   jst j3, j1, PA
 gf_a:
@@ -1874,7 +1866,12 @@ gf_bnext:
   jldi j4, 1
   jadd j3, j3, j4
   jst j3, j1, OPI
-  jjmp gf_op
+jwcheck
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+jwend
 gf_done:
 
 jldi j1, 0                      ; the shown riddles its memory keeps right
@@ -1958,20 +1955,12 @@ jwhile j2
 jwend
 jst j1, j1, NTWIN
 jldi j9, 0                      ; fact i
-tw_i:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, tw_done
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, tw_inext
   jldi j10, 0                   ; fact j
-tw_j:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j10, j2
-  jjz j2, tw_inext
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j10, j2
   jjz j2, tw_jnext
@@ -2050,19 +2039,24 @@ tw_count:
 tw_jnext:
   jldi j2, 1
   jadd j10, j10, j2
-  jjmp tw_j
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j10, j2
+jwend
 tw_inext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp tw_i
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 tw_done:
 jldi j1, 0                      ; how many properties were adopted (operator, number, d with an e)
 jst j1, j1, ADOPT
 jldi j9, 0
-ga_lap:
-  jldi j2, 76                   ; 2 operators * 2 numbers * 19 d
-  jsub j2, j9, j2
-  jjz j2, ga_done
+jwhile j2
   jldi j2, 19
   jdiv j3, j9, j2
   jmul j4, j3, j2
@@ -2083,7 +2077,10 @@ ga_lap:
 ga_next:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp ga_lap
+jwcheck
+  jldi j2, 76                   ; 2 operators * 2 numbers * 19 d
+  jsub j2, j9, j2
+jwend
 ga_done:
   jret
 
@@ -2091,11 +2088,7 @@ ga_done:
 ; out), its answer moved by the property; the same riddle remembered votes its answer. Uses j1-j13.
 tw_vote:
   jldi j9, 0
-gq_fact:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, tv_done
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, gq_fnext
@@ -2142,7 +2135,11 @@ gq_use:
 gq_fnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp gq_fact
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 tv_done:
   jret
 
@@ -2222,12 +2219,7 @@ jst j1, j1, DRM
 jst j1, j1, ECH
 jst j1, j1, ECM
 jst j1, j1, LOOI
-m6_lap:
-  jldi j1, 0
-  jld j2, j1, LOOI
-  jld j3, j1, NFACT
-  jsub j3, j2, j3
-  jjz j3, m6_pick
+jwhile j3
   jst j2, j1, EXCL
   jcall tw_make
   jcall m6_fact
@@ -2258,7 +2250,12 @@ m6_lap:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, LOOI
-  jjmp m6_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, LOOI
+  jld j3, j1, NFACT
+  jsub j3, j2, j3
+jwend
 m6_pick:
 jldi j1, 0                      ; nothing left out any more: all built from all of it, and their pieces (properties;
 jldi j2, 1                      ; doors and the switch; the echo's answers)
@@ -2278,11 +2275,7 @@ jcall eco_make
 jldi j1, 0                      ; harmony (D39): describing the same with less, still accounting for all of it: what
 jst j1, j1, CHOSEN              ; each explains of its own memory (hits - misses) per piece; no pieces, nothing explained.
 jldi j9, 0                      ; The best, and every one tied with it
-m6_each:
-  jldi j1, 0
-  jldi j2, 2                    ; the twins and the door (the echo is the null model, below)
-  jsub j2, j9, j2
-  jjz j2, m6_go
+jwhile j2
   jldi j2, 4                    ; its hits and misses: TWH + k*16
   jshl j2, j9, j2
   jld j3, j2, TWH
@@ -2320,7 +2313,11 @@ m6_tie:
 m6_next:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp m6_each
+jwcheck
+  jldi j1, 0
+  jldi j2, 2                    ; the twins and the door (the echo is the null model, below)
+  jsub j2, j9, j2
+jwend
 m6_go:
 jldi j1, 0                      ; the null model of MDL: what is chosen has to explain more per piece than the echo, the
 jld j2, j1, CHOSEN              ; answers' own frequency; if it does not, nothing is chosen and it is silent (added after
@@ -2352,12 +2349,7 @@ eco_make:
   jldi j1, 0
   jst j1, j1, ECP
   jst j1, j1, OPI
-em_op:
-  jldi j1, 0
-  jld j2, j1, OPI
-  jldi j3, 2
-  jsub j3, j2, j3
-  jjz j3, em_done
+jwhile j3
   jldi j3, 10                   ; counts per answer: BLC is too small, the votes' room is free here
   jldi j4, VOTE
 em_clear:
@@ -2368,11 +2360,7 @@ em_clear:
   jsub j3, j3, j5
   jjnz j3, em_clear
   jldi j9, 0
-em_fact:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, em_pick
+jwhile j2
   jld j2, j1, EXCL
   jsub j2, j9, j2
   jjz j2, em_fnext
@@ -2394,17 +2382,18 @@ em_fact:
 em_fnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp em_fact
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 em_pick:
   jldi j1, 0
   jldi j2, 0                    ; the answer
   jldi j3, 0                    ; its count
   jldi j6, 0                    ; how many have it
   jldi j9, 1
-em_c:
-  jldi j4, 10
-  jsub j4, j9, j4
-  jjz j4, em_set
+jwhile j4
   jldi j4, 3
   jshl j4, j9, j4
   jld j4, j4, VOTE
@@ -2426,7 +2415,10 @@ em_tie:
 em_cnext:
   jldi j7, 1
   jadd j9, j9, j7
-  jjmp em_c
+jwcheck
+  jldi j4, 10
+  jsub j4, j9, j4
+jwend
 em_set:
   jldi j7, 1
   jsub j7, j6, j7
@@ -2447,7 +2439,12 @@ em_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, OPI
-  jjmp em_op
+jwcheck
+  jldi j1, 0
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+jwend
 em_done:
   jldi j1, 0
   jst j1, j1, NUMV              ; (the votes' room was borrowed)
@@ -2566,12 +2563,7 @@ jldi j9, 0                      ; CBASE slot
 jwhile j15
   jldi j1, 0
   jst j1, j1, CX
-cb_x:
-  jldi j1, 0
-  jld j2, j1, CX
-  jldi j3, 6
-  jsub j3, j2, j3
-  jjz j3, cb_next
+jwhile j3
   jst j2, j1, SENTL + 32
   jcall c_cue
   jldi j2, 5
@@ -2588,7 +2580,12 @@ cb_x:
   jld j2, j1, CX
   jadd j2, j2, j3
   jst j2, j1, CX
-  jjmp cb_x
+jwcheck
+  jldi j1, 0
+  jld j2, j1, CX
+  jldi j3, 6
+  jsub j3, j2, j3
+jwend
 cb_next:
   jld j2, j1, PREV
   jldi j3, 32
@@ -2601,10 +2598,7 @@ jldi j1, 0
 jst j1, j1, SQUIET
 jld j2, j1, REPS
 jst j2, j1, REPLEFT
-ct_rep:
-  jldi j1, 0
-  jld j2, j1, REPLEFT
-  jjz j2, ct_recall
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, REPLEFT
@@ -2642,7 +2636,10 @@ ct_rep:
     jldi j3, 1
     jsub j15, j15, j3
   jwend
-  jjmp ct_rep
+jwcheck
+  jldi j1, 0
+  jld j2, j1, REPLEFT
+jwend
 ct_recall:
 jldi j1, 0                      ; what the school remembers: for each riddle practiced, the most familiar ending
 jst j1, j1, NFACT
@@ -2659,12 +2656,7 @@ jwhile j15
   jst j2, j1, CWORD
   jst j1, j1, CTIES
   jst j1, j1, CX
-cr_x:
-  jldi j1, 0
-  jld j2, j1, CX
-  jldi j3, 6
-  jsub j3, j2, j3
-  jjz j3, cr_chosen
+jwhile j3
   jst j2, j1, SENTL + 32        ; a op b es X, heard
   jcall c_cue
   jldi j2, 5
@@ -2712,7 +2704,12 @@ cr_xnext:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, CX
-  jjmp cr_x
+jwcheck
+  jldi j1, 0
+  jld j2, j1, CX
+  jldi j3, 6
+  jsub j3, j2, j3
+jwend
 cr_chosen:
   jld j2, j1, CTIES             ; one ending alone: a memory (as places), else nothing
   jldi j3, 1
@@ -2836,8 +2833,7 @@ g_vote:
   jldi j1, 0
   jld j11, j1, NUMV
   jldi j12, VOTE
-gv_find:
-  jjz j11, gv_new
+jwhile j11
   jld j13, j12, 0
   jsub j13, j13, j7
   jjz j13, gv_add
@@ -2845,7 +2841,7 @@ gv_find:
   jadd j12, j12, j13
   jldi j13, 1
   jsub j11, j11, j13
-  jjmp gv_find
+jwend
 gv_new:
   jst j7, j12, 0
   jst j1, j12, 8
@@ -2887,10 +2883,7 @@ g_prop:
   jldi j3, 0                    ; the most, and how many e have it
   jldi j6, 0
   jldi j1, 0                    ; e + 9
-gp_e:
-  jldi j5, 19
-  jsub j5, j1, j5
-  jjz j5, gp_end
+jwhile j5
   jld j5, j4, 0
   jjz j5, gp_next
   jsub j8, j3, j5
@@ -2913,7 +2906,10 @@ gp_next:
   jadd j4, j4, j8
   jldi j8, 1
   jadd j1, j1, j8
-  jjmp gp_e
+jwcheck
+  jldi j5, 19
+  jsub j5, j1, j5
+jwend
 gp_end:
   jldi j2, 0                    ; at least two pairs, and alone
   jldi j8, 2
@@ -2975,10 +2971,7 @@ g_recall:
   jldi j5, 0                    ; the most heard
   jldi j6, 0                    ; how many c have that many
   jldi j1, 1                    ; c
-gr_c:
-  jldi j3, 10
-  jsub j3, j1, j3
-  jjz j3, gr_end
+jwhile j3
   jadd j3, j4, j1
   jldi j7, 3
   jshl j3, j3, j7
@@ -3001,7 +2994,10 @@ gr_tie:
 gr_next:
   jldi j7, 1
   jadd j1, j1, j7
-  jjmp gr_c
+jwcheck
+  jldi j3, 10
+  jsub j3, j1, j3
+jwend
 gr_end:
   jldi j7, 1
   jsub j7, j6, j7
@@ -3044,11 +3040,7 @@ jwhile j2
   jsub j2, j2, j4
 jwend
 jldi j9, 0
-pd_fact:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, pd_switch
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, pd_next
@@ -3069,23 +3061,18 @@ pd_fact:
 pd_next:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pd_fact
-pd_switch:
-jldi j1, 0                      ; the gate of P36 for the doors: for each operator, how much its orden tells its papel
-jst j1, j1, OPI                 ; (each orden's most said papel, summed) must be more than in each of eight blind
-pg_op:                          ; versions, where each memory gets the orden of any memory of that operator (its
-  jldi j1, 0                    ; dice); if not, its doors are not adopted (its counts are emptied)
-  jld j2, j1, OPI
-  jldi j3, 2
-  jsub j3, j2, j3
-  jjz j3, pd_switch2
-  jst j1, j1, NOP1              ; its memories with a papel: their list
-  jldi j9, 0
-pg_list:
+jwcheck
   jldi j1, 0
   jld j2, j1, NFACT
   jsub j2, j9, j2
-  jjz j2, pg_listed
+jwend
+pd_switch:
+jldi j1, 0                      ; the gate of P36 for the doors: for each operator, how much its orden tells its papel
+jst j1, j1, OPI                 ; (each orden's most said papel, summed) must be more than in each of eight blind
+jwhile j3
+  jst j1, j1, NOP1              ; its memories with a papel: their list
+  jldi j9, 0
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, pg_lnext
@@ -3111,7 +3098,11 @@ pg_list:
 pg_lnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pg_list
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 pg_listed:
   jldi j1, 0                    ; how much the orden tells: m of n
   jld j2, j1, OPI
@@ -3129,19 +3120,14 @@ pg_listed:
   jld j11, j1, NOP1             ; n
   jjz j11, pg_fail
   jldi j15, 8
-pg_blind:
-  jjz j15, pg_next              ; passed
+jwhile j15
   jldi j1, 0                    ; blind counts: BLC + (orden*2 + papel)*8
   jst j1, j1, BLC
   jst j1, j1, BLC + 8
   jst j1, j1, BLC + 16
   jst j1, j1, BLC + 24
   jldi j9, 0
-pg_fact:
-  jldi j1, 0
-  jld j2, j1, NOP1
-  jsub j2, j9, j2
-  jjz j2, pg_judge
+jwhile j2
   jldi j2, 3                    ; its papel
   jshl j2, j9, j2
   jld j2, j2, OP1L
@@ -3178,7 +3164,11 @@ pg_fact:
   jadd j7, j7, j2
   jst j7, j6, BLC
   jadd j9, j9, j2
-  jjmp pg_fact
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NOP1
+  jsub j2, j9, j2
+jwend
 pg_judge:                       ; m > blind m, else the gate is shut
   jldi j1, 0
   jld j3, j1, BLC
@@ -3196,7 +3186,8 @@ pg_judge:                       ; m > blind m, else the gate is shut
   jjz j9, pg_fail
   jldi j2, 1
   jsub j15, j15, j2
-  jjmp pg_blind
+jwend
+jjmp pg_next
 pg_fail:
   jldi j1, 0                    ; shut: its doors are emptied
   jld j2, j1, OPI
@@ -3212,26 +3203,23 @@ pg_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, OPI
-  jjmp pg_op
+jwcheck
+  jldi j1, 0                    ; dice); if not, its doors are not adopted (its counts are emptied)
+  jld j2, j1, OPI
+  jldi j3, 2
+  jsub j3, j2, j3
+jwend
 pd_switch2:
 jldi j1, 0                      ; is one operator word the switch of the other? the pairs both remember: turned or kept
 jst j1, j1, FLIPS
 jst j1, j1, KEEPS
 jldi j9, 0
-ps_i:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, ps_done
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, ps_inext
   jldi j10, 0
-ps_j:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j10, j2
-  jjz j2, ps_inext
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j10, j2
   jjz j2, ps_jnext
@@ -3283,11 +3271,19 @@ ps_kept:
 ps_jnext:
   jldi j2, 1
   jadd j10, j10, j2
-  jjmp ps_j
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j10, j2
+jwend
 ps_inext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp ps_i
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 ps_done:
 jldi j1, 0                      ; a switch: turned in at least two pairs, and in a larger share of the pairs both remember
 jst j1, j1, SWITCH              ; than in each of eight blind pairings (the gate of P36): each memory of the first
@@ -3299,11 +3295,7 @@ jsar j3, j3, j4
 jjnz j3, pw_none
 jst j1, j1, NOP1                ; the memories of the second operator
 jldi j9, 0
-pb_list:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, pb_listed
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, pb_lnext
@@ -3323,22 +3315,21 @@ pb_list:
 pb_lnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pb_list
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 pb_listed:
 jldi j1, 0
 jld j2, j1, NOP1
 jjz j2, pw_none
 jldi j15, 8                     ; eight blind pairings
-pb_blind:
-  jjz j15, pb_passed
+jwhile j15
   jldi j10, 0                   ; turned
   jldi j11, 0                   ; looked at
   jldi j9, 0
-pb_fact:
-  jldi j1, 0
-  jld j2, j1, NFACT
-  jsub j2, j9, j2
-  jjz j2, pb_judge
+jwhile j2
   jld j2, j1, EXCL              ; the memory left out (leave-one-out), if any
   jsub j2, j9, j2
   jjz j2, pb_fnext
@@ -3380,7 +3371,11 @@ pb_fact:
 pb_fnext:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pb_fact
+jwcheck
+  jldi j1, 0
+  jld j2, j1, NFACT
+  jsub j2, j9, j2
+jwend
 pb_judge:                       ; FLIPS / (FLIPS + KEEPS) > turned / looked at, else no switch
   jjz j11, pb_bnext
   jldi j1, 0
@@ -3397,16 +3392,13 @@ pb_judge:                       ; FLIPS / (FLIPS + KEEPS) > turned / looked at, 
 pb_bnext:
   jldi j2, 1
   jsub j15, j15, j2
-  jjmp pb_blind
+jwend
 pb_passed:
 jldi j1, 0
 jldi j2, 1
 jst j2, j1, SWITCH
 jldi j9, 0                      ; closed doors: each operator knows the other's doors, turned around
-pw_lap:
-  jldi j2, 4                    ; (orden, papel) of the first operator into the second, and back
-  jsub j2, j9, j2
-  jjz j2, pw_none
+jwhile j2
   jldi j3, 3
   jshl j3, j9, j3               ; first operator's cell
   jldi j4, 1
@@ -3425,31 +3417,31 @@ pw_lap:
   jst j8, j3, DOOR + 64
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pw_lap
+jwcheck
+  jldi j2, 4                    ; (orden, papel) of the first operator into the second, and back
+  jsub j2, j9, j2
+jwend
 pw_none:
 jldi j1, 0                      ; no switch: each operator keeps its own doors
 jld j2, j1, SWITCH
 jjnz j2, pw_count
 jldi j9, 0
-pn_lap:
-  jldi j2, 8
-  jsub j2, j9, j2
-  jjz j2, pw_count
+jwhile j2
   jldi j3, 3
   jshl j3, j9, j3
   jld j4, j3, DOOR
   jst j4, j3, DOOR + 64
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pn_lap
+jwcheck
+  jldi j2, 8
+  jsub j2, j9, j2
+jwend
 pw_count:
 jldi j1, 0                      ; the doors adopted: (op, orden) with a papel
 jst j1, j1, ADOPT
 jldi j9, 0
-pa_lap:
-  jldi j2, 4
-  jsub j2, j9, j2
-  jjz j2, pa_done
+jwhile j2
   jcall p_doorof
   jjz j2, pa_next
   jldi j1, 0
@@ -3460,7 +3452,10 @@ pa_lap:
 pa_next:
   jldi j2, 1
   jadd j9, j9, j2
-  jjmp pa_lap
+jwcheck
+  jldi j2, 4
+  jsub j2, j9, j2
+jwend
 pa_done:
   jret
 
@@ -4137,8 +4132,7 @@ ro_notlogic:
   jld j9, j13, NALL             ; shuffled: i from the last down to 1, swapped with a throw mod (i + 1)
   jldi j1, 1
   jsub j9, j9, j1
-ro_shuffle:
-  jjz j9, ro_take
+jwhile j9
   jcall rnd2
   jldi j1, 1
   jadd j2, j9, j1
@@ -4162,7 +4156,7 @@ ro_shuffle:
   jwend
   jldi j1, 1
   jsub j9, j9, j1
-  jjmp ro_shuffle
+jwend
 ro_take:                        ; the first EJEM are shown (j9 = 0 here: riddle i)
   jldi j13, 0
   jld j10, j13, NALL
@@ -4433,10 +4427,7 @@ most:
   jldi j2, 9
   jldi j3, 0                    ; the best count
   jldi j4, 0                    ; symbol
-mo_lap:
-  jldi j5, 10
-  jsub j5, j4, j5
-  jjz j5, mo_done
+jwhile j5
   jld j6, j1, 0
   jsub j5, j3, j6
   jldi j11, 63
@@ -4451,7 +4442,10 @@ mo_next:
   jadd j4, j4, j5
   jldi j5, 8
   jadd j1, j1, j5
-  jjmp mo_lap
+jwcheck
+  jldi j5, 10
+  jsub j5, j4, j5
+jwend
 mo_done:
   jret
 
@@ -4463,10 +4457,7 @@ walk_to:
   jldi j1, FIRST
   jcall most
   jldi j8, 1                    ; k
-wt_lap:
-  jldi j3, 9
-  jsub j3, j2, j3
-  jjz j3, wt_never
+jwhile j3
   jldi j3, 10
   jsub j3, j8, j3
   jjz j3, wt_never              ; k <= 9 words
@@ -4479,7 +4470,11 @@ wt_lap:
   jcall most
   jldi j3, 1
   jadd j8, j8, j3
-  jjmp wt_lap
+jwcheck
+  jldi j3, 9
+  jsub j3, j2, j3
+jwend
+jjmp wt_never
 wt_found:
   jadd j2, j8, j0
   jsub j2, j2, j0
@@ -4500,8 +4495,7 @@ word_at:
   jsub j8, j8, j0               ; k - 1 steps more
   jldi j1, FIRST
   jcall most
-wa_lap:
-  jjz j8, wa_done
+jwhile j8
   jldi j3, 9
   jsub j3, j2, j3
   jjz j3, wa_done
@@ -4512,7 +4506,7 @@ wa_lap:
   jcall most
   jldi j3, 1
   jsub j8, j8, j3
-  jjmp wa_lap
+jwend
 wa_done:
   jret
 
@@ -4535,13 +4529,7 @@ g_sent:
   jst j1, j1, SCNT
   jst j1, j1, WSTART
   jldi j5, 0                    ; greeting k (of the whole song)
-g_code:
-  jldi j1, 0
-  jld j2, j1, SCNT              ; this word done: the next one, or the end of the song
-  jld j3, j1, WSTART
-  jsub j4, j5, j3
-  jsub j2, j4, j2
-  jjnz j2, g_greet
+jwhilez j2
   jld j2, j1, SWI
   jldi j3, 1
   jadd j2, j2, j3
@@ -4559,7 +4547,14 @@ g_code:
   jld j2, j3, WLEN
   jst j2, j1, SCNT              ; how many greetings
   jst j5, j1, WSTART
-  jjmp g_code
+jwcheck
+g_code:
+  jldi j1, 0
+  jld j2, j1, SCNT              ; this word done: the next one, or the end of the song
+  jld j3, j1, WSTART
+  jsub j4, j5, j3
+  jsub j2, j4, j2
+jwend
 g_greet:
   jadd j4, j8, j4
   jldb j6, j4, WCODE            ; its key
@@ -4712,10 +4707,7 @@ guess:
   jldi j2, 1
   jst j2, j1, BTOT
   jldi j8, 0                    ; word g
-gw_lap:
-  jldi j1, 9
-  jsub j1, j8, j1
-  jjz j1, gw_done
+jwhile j1
   jldi j1, 3
   jshl j1, j8, j1
   jld j10, j1, HEARD            ; what it heard for g
@@ -4761,7 +4753,10 @@ gw_lap:
 gw_next:
   jldi j1, 1
   jadd j8, j8, j1
-  jjmp gw_lap
+jwcheck
+  jldi j1, 9
+  jsub j1, j8, j1
+jwend
 gw_done:
   jret
 
@@ -4826,14 +4821,14 @@ rnd2:
 puts:
   jldi j3, 0
   jld j2, j3, POS
-pu_lap:
-  jldb j3, j1, 0
-  jjz j3, pu_done
+jwhile j3
   jstb j3, j2, TEXT
   jldi j3, 1
   jadd j1, j1, j3
   jadd j2, j2, j3
-  jjmp pu_lap
+jwcheck
+  jldb j3, j1, 0
+jwend
 pu_done:
   jldi j1, 0
   jst j2, j1, POS
@@ -4895,6 +4890,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -4902,13 +4904,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

@@ -26,10 +26,7 @@ jst j1, j1, RLN
 jldi j2, 300
 jst j2, j1, HT2
 jldi j9, 0
-hb_lap:
-  jldi j1, 0
-  jld j2, j1, HT2
-  jjz j2, hb_check
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, HT2
@@ -41,7 +38,10 @@ hb_lap:
   jst j13, j2, 0
   jldi j2, 8
   jadd j9, j9, j2
-  jjmp hb_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, HT2
+jwend
 hb_check:
 jld j2, j1, RLN                 ; 300 anotadas
 jldi j3, 300
@@ -54,8 +54,7 @@ jsub j2, j2, j3
 jjnz j2, hb_bad
 jld j11, j1, HT1                ; cada una la que se dio
 jldi j12, 300
-hb_cmp:
-  jjz j12, hb_good
+jwhile j12
   jldi j2, 8
   jadd j10, j10, j2
   jld j2, j10, 0
@@ -66,7 +65,7 @@ hb_cmp:
   jadd j11, j11, j2
   jldi j2, 1
   jsub j12, j12, j2
-  jjmp hb_cmp
+jwend
 hb_good:
 jldi j1, S_BIEN
 jcall puts

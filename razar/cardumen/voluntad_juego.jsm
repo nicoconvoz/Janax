@@ -204,10 +204,7 @@ jadd j2, j2, j3
 jst j2, j1, SEED2
 
 jldi j9, 0                      ; its invented words: 3 distinct pieces of the bottom face each, by dice
-w_lap:
-jldi j1, 24
-jsub j1, j9, j1
-jjz j1, w_done
+jwhile j1
 w_draw:
   jcall rnd2
   jldi j1, 0
@@ -218,9 +215,7 @@ w_draw:
   jldi j4, 3                    ; not one this word has already
   jdiv j5, j9, j4
   jmul j5, j5, j4               ; the word's first slot
-w_check:
-  jsub j6, j5, j9
-  jjz j6, w_take
+jwhile j6
   jldi j6, 3
   jshl j6, j5, j6
   jld j6, j6, SAY
@@ -228,14 +223,19 @@ w_check:
   jjz j6, w_draw
   jldi j6, 1
   jadd j5, j5, j6
-  jjmp w_check
+jwcheck
+  jsub j6, j5, j9
+jwend
 w_take:
   jldi j6, 3
   jshl j6, j9, j6
   jst j3, j6, SAY
   jldi j6, 1
   jadd j9, j9, j6
-  jjmp w_lap
+jwcheck
+jldi j1, 24
+jsub j1, j9, j1
+jwend
 w_done:
 
 jldi j1, 0                      ; the riddles: of mas (6), and of menos (7) if TIPO; shuffled; the first EJEM practiced
@@ -256,12 +256,7 @@ jldi j1, 0                      ; it practices: VUELTAS rounds, a riddle drawn b
 jst j1, j1, HITS
 jst j1, j1, TAILN
 jst j1, j1, ROUND
-p_lap:
-  jldi j1, 0
-  jld j2, j1, ROUND
-  jld j3, j1, VUELTAS
-  jsub j3, j2, j3
-  jjz j3, p_done
+jwhile j3
   jld j2, j1, NTRAIN
   jjz j2, p_done
   jcall rnd2                    ; the riddle
@@ -383,7 +378,12 @@ p_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ROUND
-  jjmp p_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ROUND
+  jld j3, j1, VUELTAS
+  jsub j3, j2, j3
+jwend
 p_done:
 
 jldi j1, 0                      ; asked, without learning: the practiced ones, then the ones it never practiced
@@ -571,8 +571,7 @@ ro_bnext:
   jld j9, j13, NALL
   jldi j1, 1
   jsub j9, j9, j1
-ro_shuffle:
-  jjz j9, ro_take
+jwhile j9
   jcall rnd2
   jldi j1, 1
   jadd j2, j9, j1
@@ -596,7 +595,7 @@ ro_shuffle:
   jwend
   jldi j1, 1
   jsub j9, j9, j1
-  jjmp ro_shuffle
+jwend
 ro_take:
   jldi j13, 0
   jld j10, j13, NALL
@@ -648,10 +647,7 @@ sing:
   jsub j3, j3, j4
   jst j3, j1, LABEL
   jldi j5, 0                    ; greeting k: a, op, b
-s_greet:
-  jldi j3, 3
-  jsub j3, j5, j3
-  jjz j3, s_said
+jwhile j3
   jldi j1, 0
   jld j2, j1, CUR
   jldi j3, 3
@@ -679,7 +675,10 @@ s_word:
   jst j6, j4, SONGM
   jldi j3, 1
   jadd j5, j5, j3
-  jjmp s_greet
+jwcheck
+  jldi j3, 3
+  jsub j3, j5, j3
+jwend
 s_said:
   jldi j1, 0                    ; order 6: how many, then each greeting
   jldi j2, 306h
@@ -732,10 +731,7 @@ guess:
   jldi j2, 1
   jst j2, j1, BTOT
   jldi j8, 0
-gw_lap:
-  jldi j1, 6
-  jsub j1, j8, j1
-  jjz j1, gw_done
+jwhile j1
   jldi j1, 3
   jshl j1, j8, j1
   jld j10, j1, HEARD
@@ -781,7 +777,10 @@ gw_lap:
 gw_next:
   jldi j1, 1
   jadd j8, j8, j1
-  jjmp gw_lap
+jwcheck
+  jldi j1, 6
+  jsub j1, j8, j1
+jwend
 gw_done:
   jret
 
@@ -846,14 +845,14 @@ rnd2:
 puts:
   jldi j3, 0
   jld j2, j3, POS
-pu_lap:
-  jldb j3, j1, 0
-  jjz j3, pu_done
+jwhile j3
   jstb j3, j2, TEXT
   jldi j3, 1
   jadd j1, j1, j3
   jadd j2, j2, j3
-  jjmp pu_lap
+jwcheck
+  jldb j3, j1, 0
+jwend
 pu_done:
   jldi j1, 0
   jst j2, j1, POS
@@ -904,6 +903,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -911,13 +917,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

@@ -53,10 +53,7 @@ og_some:
   jldi j1, 0
   jld j13, j1, ORGW
   jst j13, j1, ORGL
-og_lap:
-  jldi j1, 0
-  jld j13, j1, ORGL
-  jjz j13, og_done
+jwhile j13
   jldi j14, 15
   jand j14, j13, j14
   jldi j1, 4
@@ -90,7 +87,12 @@ og_lap:
   jldi j13, 9
   jsub j13, j14, j13
   jjz j13, og_l9
-  jjmp og_lap
+jwcheck
+og_lap:
+  jldi j1, 0
+  jld j13, j1, ORGL
+jwend
+jjmp og_done
 og_l1:
   jldi j1, 0                    ; the first word into the frame
   jld j9, j1, WAT

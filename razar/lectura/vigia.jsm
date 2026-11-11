@@ -63,6 +63,11 @@ jcall room
 jldi j1, 0
 jst j13, j1, CB
 
+jwhile j2
+  jjnz j13, vg_new
+  jldi j10, 29                  ; nothing yet: asleep until something is
+  jcall ask
+jwcheck
 vg_wait:                        ; what is new in the host
   jldi j1, 0
   jldi j10, 39
@@ -73,11 +78,7 @@ vg_wait:                        ; what is new in the host
   jldi j1, 0
   jldi j2, 1
   jadd j2, j13, j2
-  jjz j2, vg_none
-  jjnz j13, vg_new
-  jldi j10, 29                  ; nothing yet: asleep until something is
-  jcall ask
-  jjmp vg_wait
+jwend
 vg_none:
   jldi j1, S_NOVIG
   jcall puts
@@ -181,23 +182,7 @@ vg_cut:
   jor j10, j10, j2
   jld j11, j1, NEED
   jcall ask
-  vc_read:
-    jldi j1, 0
-    jld j10, j1, HND
-    jldi j2, 32
-    jshl j10, j10, j2
-    jldi j2, 5
-    jor j10, j10, j2
-    jld j11, j1, BUF
-    jldi j12, 1
-    jshi j12, 0
-    jcall ask
-    jldi j1, 0
-    jldi j2, 1
-    jsub j2, j13, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjnz j2, vc_close
+  jwhilez j2
     jld j9, j1, BUF
     vc_scan:
       jjz j13, vc_more
@@ -217,7 +202,23 @@ vg_cut:
     jst j3, j1, TO
     jjmp vc_close
   vc_more:
-    jjmp vc_read
+  jwcheck
+    jldi j1, 0
+    jld j10, j1, HND
+    jldi j2, 32
+    jshl j10, j10, j2
+    jldi j2, 5
+    jor j10, j10, j2
+    jld j11, j1, BUF
+    jldi j12, 1
+    jshi j12, 0
+    jcall ask
+    jldi j1, 0
+    jldi j2, 1
+    jsub j2, j13, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 vc_close:
   jldi j1, 0
   jld j10, j1, HND
@@ -239,16 +240,16 @@ vg_say:
   jld j3, j1, CB
   jld j4, j1, PATHN
   jldi j5, 0
-  vs_cp:
-    jsub j6, j5, j4
-    jjz j6, vs_cpd
+  jwhile j6
     jadd j6, j2, j5
     jldb j6, j6, 0
     jadd j7, j3, j5
     jstb j6, j7, 0
     jldi j6, 1
     jadd j5, j5, j6
-    jjmp vs_cp
+  jwcheck
+    jsub j6, j5, j4
+  jwend
 vs_cpd:
   jst j4, j1, CBN
   jld j2, j1, FROM
@@ -297,8 +298,7 @@ vs_num:
     jadd j2, j4, j1
     jldi j1, 0
     jjnz j2, vn_d
-  vn_put:
-    jjz j5, vn_done
+  jwhile j5
     jldi j3, 1
     jsub j5, j5, j3
     jldi j3, DIG
@@ -307,7 +307,7 @@ vs_num:
     jadd j8, j5, j1
     jcall vs_ch
     jadd j5, j8, j1
-    jjmp vn_put
+  jwend
 vn_done:
   jldi j1, 0
   jret
@@ -327,7 +327,10 @@ child:
   jshr j2, j13, j2
   jjnz j2, vg_nokid
   jst j13, j1, KID
-ch_serve:                       ; what it asks, signed, until it ends
+jwhilez j2
+  jldi j10, 29
+  jcall ask
+jwcheck
   jcall sign_all
   jldi j1, 0
   jldi j10, 19
@@ -335,10 +338,7 @@ ch_serve:                       ; what it asks, signed, until it ends
   jcall ask
   jldi j1, 1
   jadd j2, j13, j1
-  jjnz j2, ch_done              ; (-1 while it runs)
-  jldi j10, 29
-  jcall ask
-  jjmp ch_serve
+jwend
 ch_done:
   jldi j1, 0
   jret
@@ -395,23 +395,7 @@ is_text:
   jjnz j2, it_out
   jst j13, j1, HND
   jst j1, j1, BIN
-it_read:
-  jldi j1, 0
-  jld j10, j1, HND
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 5
-  jor j10, j10, j2
-  jld j11, j1, BUF
-  jldi j12, 1
-  jshi j12, 0
-  jcall ask
-  jldi j1, 0
-  jldi j2, 1
-  jsub j2, j13, j2
-  jldi j3, 63
-  jsar j2, j2, j3
-  jjnz j2, it_end
+jwhilez j2
   jld j2, j1, SEENB
   jadd j2, j2, j13
   jst j2, j1, SEENB
@@ -460,7 +444,24 @@ it_read:
     jsub j13, j13, j3
   jwend
   jst j8, j1, NEED
-  jjmp it_read
+jwcheck
+  jldi j1, 0
+  jld j10, j1, HND
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, BUF
+  jldi j12, 1
+  jshi j12, 0
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jsub j2, j13, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+jwend
+jjmp it_end
 it_bin:
   jldi j1, 0
   jldi j2, 1
@@ -533,17 +534,17 @@ flush:
 puts:
   jldi j3, 0
   jst j1, j3, PUTP
-pu_lap:
-  jldi j1, 0
-  jld j3, j1, PUTP
-  jldb j2, j3, 0
-  jjz j2, pu_done
+jwhile j2
   jldi j1, 1
   jadd j3, j3, j1
   jldi j1, 0
   jst j3, j1, PUTP
   jcall putch
-  jjmp pu_lap
+jwcheck
+  jldi j1, 0
+  jld j3, j1, PUTP
+  jldb j2, j3, 0
+jwend
 pu_done:
   jldi j1, 0
   jret

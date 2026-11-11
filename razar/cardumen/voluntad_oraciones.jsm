@@ -697,13 +697,7 @@ jwhile j15                      ; mod 30), then each one heard
   jldi j2, 1
   jst j2, j1, SRIGHT
   jldi j9, 0                    ; SENT offset of the word
-s_word:
-  jldi j1, 0
-  jld j2, j1, SLENW
-  jldi j3, 3
-  jshl j2, j2, j3
-  jsub j2, j9, j2
-  jjz j2, s_read
+jwhile j2
   jld j4, j9, SENT
   jst j4, j1, THING
   jst j1, j1, CLEAN
@@ -728,7 +722,13 @@ s_wrong:
 s_on:
   jldi j1, 8
   jadd j9, j9, j1
-  jjmp s_word
+jwcheck
+  jldi j1, 0
+  jld j2, j1, SLENW
+  jldi j3, 3
+  jshl j2, j2, j3
+  jsub j2, j9, j2
+jwend
 s_read:
   jld j2, j1, SRIGHT
   jld j3, j1, SW
@@ -777,18 +777,10 @@ jldi j1, 0                      ; the confusions (Capitan, 2026-11-07: "translat
 jld j2, j1, CONFN               ; already knows, recombined"): each of the 30 words sung CONFN times, its fingers
 jjz j2, c_done                  ; slipping as DESLIZ says, and what it heard counted; the table into the file "cf".
 jst j1, j1, CWD                 ; (after the counts: the fingerprint stays oraciones.pl's)
-c_word:
-  jldi j1, 0
-  jld j2, j1, CWD
-  jldi j3, 30
-  jsub j3, j2, j3
-  jjz j3, c_write
+jwhile j3
   jld j2, j1, CONFN
   jst j2, j1, CRP
-  c_rep:
-    jldi j1, 0
-    jld j2, j1, CRP
-    jjz j2, c_wnext
+  jwhile j2
     jld j2, j1, CWD
     jst j2, j1, THING
     jst j1, j1, CLEAN
@@ -810,13 +802,21 @@ c_word:
     jld j2, j1, CRP
     jsub j2, j2, j4
     jst j2, j1, CRP
-    jjmp c_rep
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, CRP
+  jwend
   c_wnext:
     jld j2, j1, CWD
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, CWD
-    jjmp c_word
+jwcheck
+  jldi j1, 0
+  jld j2, j1, CWD
+  jldi j3, 30
+  jsub j3, j2, j3
+jwend
 c_write:
   jldi j2, 6663h                ; "cf"
   jst j2, j1, CFL
@@ -894,21 +894,7 @@ sing:
   jldi j3, 4
   jshl j8, j2, j3               ; VOC offset of the word
   jldi j5, 0                    ; greeting k
-g_code:
-  jldi j3, 5                    ; code k: (VOC[w*16 + (k >> 5)*8] >> ((k & 31)*2)) & 3
-  jshr j4, j5, j3
-  jldi j3, 3
-  jshl j4, j4, j3
-  jadd j4, j4, j8
-  jld j6, j4, VOC
-  jldi j3, 31
-  jand j4, j5, j3
-  jadd j4, j4, j4
-  jshr j6, j6, j4
-  jldi j3, 3
-  jand j6, j6, j3
-  jsub j4, j6, j3
-  jjz j4, g_coded               ; 3: the end of the song
+jwhile j4
   jldi j3, 2
   jshl j4, j6, j3               ; its key's 3 pieces
   jldi j3, 0
@@ -999,7 +985,21 @@ g_mask:
   jst j6, j4, SONGM
   jldi j3, 1
   jadd j5, j5, j3
-  jjmp g_code
+jwcheck
+  jldi j3, 5                    ; code k: (VOC[w*16 + (k >> 5)*8] >> ((k & 31)*2)) & 3
+  jshr j4, j5, j3
+  jldi j3, 3
+  jshl j4, j4, j3
+  jadd j4, j4, j8
+  jld j6, j4, VOC
+  jldi j3, 31
+  jand j4, j5, j3
+  jadd j4, j4, j4
+  jshr j6, j6, j4
+  jldi j3, 3
+  jand j6, j6, j3
+  jsub j4, j6, j3
+jwend
 g_coded:
   jldi j1, 0                    ; order 6: how many, then each greeting
   jst j5, j1, NSONG
@@ -1136,6 +1136,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -1143,13 +1150,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:
@@ -1185,10 +1186,7 @@ guess:
   jldi j2, 1
   jst j2, j1, BTOT
   jldi j8, 0                    ; word g
-gw_lap:
-  jldi j1, 30
-  jsub j1, j8, j1
-  jjz j1, gw_done
+jwhile j1
   jldi j1, 3
   jshl j1, j8, j1
   jld j10, j1, HEARD            ; what it heard for g
@@ -1243,7 +1241,10 @@ gw_lap:
 gw_next:
   jldi j1, 1
   jadd j8, j8, j1
-  jjmp gw_lap
+jwcheck
+  jldi j1, 30
+  jsub j1, j8, j1
+jwend
 gw_done:
   jret
 

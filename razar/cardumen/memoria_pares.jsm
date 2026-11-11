@@ -342,16 +342,10 @@ mp_cube:
   jldi j1, 0
   jst j13, j1, CFS
   jldi j9, 0
-  mpc_w:
-    jldi j2, 30
-    jsub j2, j9, j2
-    jjz j2, mpc_on
+  jwhile j2
     jldi j10, 0
     jldi j11, 0
-    mpc_g:
-      jldi j2, 31
-      jsub j2, j11, j2
-      jjz j2, mpc_sum
+    jwhile j2
       jldi j2, 31
       jmul j2, j9, j2
       jadd j2, j2, j11
@@ -363,7 +357,10 @@ mp_cube:
       jadd j10, j10, j2
       jldi j2, 1
       jadd j11, j11, j2
-      jjmp mpc_g
+    jwcheck
+      jldi j2, 31
+      jsub j2, j11, j2
+    jwend
     mpc_sum:
       jldi j3, 3
       jshl j3, j9, j3
@@ -372,7 +369,10 @@ mp_cube:
       jst j10, j3, 0
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mpc_w
+  jwcheck
+    jldi j2, 30
+    jsub j2, j9, j2
+  jwend
 mpc_on:
   jldi j2, 1
   jst j2, j1, CFON
@@ -401,7 +401,30 @@ mp_read:
   jcall room
   jldi j1, 0
   jst j13, j1, PRB
-  mpr_lap:
+  jwhilez j3
+    jld j11, j1, PRC
+    jadd j11, j11, j11
+    jcall room
+    jldi j1, 0
+    jld j3, j1, PRB
+    jld j4, j1, PRN
+    jldi j5, 0
+    jwhile j6
+      jadd j6, j3, j5
+      jldb j6, j6, 0
+      jadd j7, j13, j5
+      jstb j6, j7, 0
+      jldi j6, 1
+      jadd j5, j5, j6
+    jwcheck
+      jsub j6, j5, j4
+    jwend
+    mpr_moved:
+    jst j13, j1, PRB
+    jld j2, j1, PRC
+    jadd j2, j2, j2
+    jst j2, j1, PRC
+  jwcheck
     jld j10, j1, PRH
     jldi j2, 32
     jshl j10, j10, j2
@@ -424,30 +447,7 @@ mp_read:
     jst j2, j1, PRN
     jld j3, j1, PRC
     jsub j3, j2, j3
-    jjnz j3, mpr_close
-    jld j11, j1, PRC
-    jadd j11, j11, j11
-    jcall room
-    jldi j1, 0
-    jld j3, j1, PRB
-    jld j4, j1, PRN
-    jldi j5, 0
-    mpr_mv:
-      jsub j6, j5, j4
-      jjz j6, mpr_moved
-      jadd j6, j3, j5
-      jldb j6, j6, 0
-      jadd j7, j13, j5
-      jstb j6, j7, 0
-      jldi j6, 1
-      jadd j5, j5, j6
-      jjmp mpr_mv
-    mpr_moved:
-    jst j13, j1, PRB
-    jld j2, j1, PRC
-    jadd j2, j2, j2
-    jst j2, j1, PRC
-    jjmp mpr_lap
+  jwend
 mpr_close:
   jld j10, j1, PRH
   jldi j2, 32
@@ -490,14 +490,7 @@ mp_pairs:
   jst j1, j1, CXL
   jst j1, j1, PPN
   jst j1, j1, TT1               ; the place walked
-  mpp_line:
-    jldi j1, 0
-    jld j9, j1, TT1
-    jld j2, j1, PRN
-    jsub j2, j9, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, mpp_done
+  jwhile j2
     jcall mp_lineat             ; this line: j9 its start, j10 its end (the line feed's place)
     jldi j1, 0
     jld j2, j1, PRB
@@ -593,7 +586,16 @@ mp_pairs:
     jldi j2, 1
     jadd j2, j10, j2
     jst j2, j1, TT1
-    jjmp mpp_line
+  jwcheck
+  mpp_line:
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j2, j1, PRN
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
+  jjmp mpp_done
   mpp_noans:                    ; a question with no answer line: the line looked at is read again as its own (it may
     jldi j1, 0                  ; be the next question, or its context), and this question's context goes
     jst j9, j1, TT1
@@ -607,12 +609,7 @@ mpp_done:
 mp_lineat:
   jldi j1, 0
   jadd j10, j9, j1
-  mpl_lap:
-    jld j2, j1, PRN
-    jsub j2, j10, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, mpl_done
+  jwhile j2
     jld j2, j1, PRB
     jadd j2, j2, j10
     jldb j2, j2, 0
@@ -621,7 +618,12 @@ mp_lineat:
     jjz j2, mpl_done
     jldi j2, 1
     jadd j10, j10, j2
-    jjmp mpl_lap
+  jwcheck
+    jld j2, j1, PRN
+    jsub j2, j10, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 mpl_done:
   jret
 
@@ -636,15 +638,14 @@ mp_print:
   jshi j6, 100h
   jshi j6, 0
   jshi j6, 1B3h
-  mpf_lap:
-    jjz j4, mpf_done
+  jwhile j4
     jldb j7, j3, 0
     jxor j5, j5, j7
     jmul j5, j5, j6
     jldi j7, 1
     jadd j3, j3, j7
     jsub j4, j4, j7
-    jjmp mpf_lap
+  jwend
 mpf_done:
   jjnz j5, mpf_out
   jldi j5, 1
@@ -687,11 +688,7 @@ mp_alphabet:
   jst j13, j1, ALI
   jst j1, j1, ALN
   jldi j9, 0
-  mpa_lap:
-    jldi j1, 0
-    jld j2, j1, PRN
-    jsub j2, j9, j2
-    jjz j2, mpa_done
+  jwhile j2
     jld j2, j1, PRB
     jadd j2, j2, j9
     jldb j3, j2, 0
@@ -720,7 +717,11 @@ mp_alphabet:
   mpa_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mpa_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, PRN
+    jsub j2, j9, j2
+  jwend
 mpa_done:
   jldi j1, 0
   jret
@@ -742,12 +743,7 @@ mp_index:
   jldi j2, 1
   jst j2, j1, LNKN
   jst j1, j1, TT5
-  mpx_pair:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, mpx_done
+  jwhile j3
     jldi j3, 5
     jshl j3, j2, j3
     jld j4, j1, PPR
@@ -785,7 +781,12 @@ mp_index:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mpx_pair
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 mpx_done:
   jldi j1, 0
   jret
@@ -795,28 +796,30 @@ mpx_done:
 mp_words:
   jldi j1, 0
   jst j2, j1, TT7
-  mpw_lap:
-    jldi j1, 0
-    jjz j10, mpw_done
+  jwhile j10
     jldb j3, j9, 0
     jcall mp_isletter
     jjnz j2, mpw_word
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mpw_lap
+  jwcheck
+  mpw_lap:
+    jldi j1, 0
+  jwend
+  jjmp mpw_done
   mpw_word:
     jldi j8, 0                  ; its letters, to the first no letter
-    mpw_end:
-      jsub j2, j8, j10
-      jjz j2, mpw_have
+    jwhile j2
       jadd j2, j9, j8
       jldb j3, j2, 0
       jcall mp_isletter
       jjz j2, mpw_have
       jldi j2, 1
       jadd j8, j8, j2
-      jjmp mpw_end
+    jwcheck
+      jsub j2, j8, j10
+    jwend
   mpw_have:
     jadd j3, j9, j1
     jadd j4, j8, j1
@@ -881,8 +884,7 @@ mp_score:
   jld j2, j4, 0
   jjz j2, mps_done
   jld j6, j4, 8
-  mps_lap:
-    jjz j6, mps_done
+  jwhile j6
     jldi j3, 4
     jshl j3, j6, j3
     jld j4, j1, LNK
@@ -908,7 +910,7 @@ mp_score:
     jldi j8, 1
     jadd j4, j4, j8
     jst j4, j3, 0
-    jjmp mps_lap
+  jwend
 mps_done:
   jldi j1, 0
   jret
@@ -946,23 +948,17 @@ mp_round:
   jst j13, j1, NBF
   jldi j9, 0
   jldi j10, 6
-  mpr0:
-    jjz j10, mpr0d
+  jwhile j10
     jldi j3, 3
     jshl j3, j9, j3
     jst j1, j3, BKT
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mpr0
+  jwend
 mpr0d:
   jst j1, j1, TT5
-  mpq_lap:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, mpq_said
+  jwhile j3
     jcall mp_hear               ; heard (NBF, NBN)
     jldi j1, 0
     jst j1, j1, TOUN
@@ -1017,7 +1013,12 @@ mpr0d:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mpq_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 mpq_said:
   jldi j1, S_PROB
   jcall puts
@@ -1026,11 +1027,7 @@ mpq_said:
   jldi j1, S_OK
   jcall puts
   jldi j9, 0
-  mpq_s:
-    jldi j1, 0
-    jldi j2, 3
-    jsub j2, j9, j2
-    jjz j2, mpq_end
+  jwhile j2
     jldi j3, 4
     jshl j3, j9, j3
     jld j2, j3, BKT + 8
@@ -1047,7 +1044,11 @@ mpq_said:
     jldi j1, 0
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mpq_s
+  jwcheck
+    jldi j1, 0
+    jldi j2, 3
+    jsub j2, j9, j2
+  jwend
 mpq_end:
   jldi j1, S_LEN
   jcall puts
@@ -1095,9 +1096,7 @@ mph_q:
 
 ; The j10 bytes at j9 heard into j11 (moved past them). Uses j1-j14.
 mp_hspan:
-  mph_lap:
-    jldi j1, 0
-    jjz j10, mph_done
+  jwhile j10
     jldb j3, j9, 0
     jldi j4, 3
     jshl j4, j3, j4
@@ -1158,7 +1157,9 @@ mp_hspan:
     jadd j9, j9, j2
     jadd j11, j11, j2
     jsub j10, j10, j2
-    jjmp mph_lap
+  jwcheck
+    jldi j1, 0
+  jwend
 mph_done:
   jldi j1, 0
   jret
@@ -1189,17 +1190,17 @@ mp_tremble:
   jld j4, j1, CFT
   jadd j3, j3, j4
   jldi j5, 0
-  mpt_row:
-    jld j4, j3, 0
-    jsub j2, j2, j4
-    jldi j6, 63
-    jsar j6, j2, j6
-    jjnz j6, mpt_got
+  jwhilez j6
     jldi j4, 8
     jadd j3, j3, j4
     jldi j4, 1
     jadd j5, j5, j4
-    jjmp mpt_row
+  jwcheck
+    jld j4, j3, 0
+    jsub j2, j2, j4
+    jldi j6, 63
+    jsar j6, j2, j6
+  jwend
 mpt_got:
   jldi j4, 1
   jsub j2, j5, j4
@@ -1277,8 +1278,7 @@ mp_best:
   jldi j12, 0
   jld j9, j1, TOUN
   jld j10, j1, TOU
-  mpb_lap:
-    jjz j9, mpb_done
+  jwhile j9
     jld j2, j10, 0
     jldi j3, 3
     jshl j3, j2, j3
@@ -1308,7 +1308,7 @@ mp_best:
     jadd j10, j10, j2
     jldi j2, 1
     jsub j9, j9, j2
-    jjmp mpb_lap
+  jwend
 mpb_done:
   jadd j2, j12, j1
   jret
@@ -1398,10 +1398,7 @@ msg_read:
   jst j1, j1, CQC
   jldi j9, 0                    ; the row for the longest stretch: as long as the longest answer
   jldi j12, 0
-  msg_mx:
-    jld j2, j1, PPN
-    jsub j2, j9, j2
-    jjz j2, msg_mxd
+  jwhile j2
     jldi j3, 4
     jshl j3, j9, j3
     jld j4, j1, PAN
@@ -1415,7 +1412,10 @@ msg_read:
   msg_mxn:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp msg_mx
+  jwcheck
+    jld j2, j1, PPN
+    jsub j2, j9, j2
+  jwend
 msg_mxd:
   jldi j2, 2
   jadd j11, j12, j2
@@ -1431,21 +1431,9 @@ msg_mxd:
   jshi j2, 0DEF1h
   jst j2, j1, RNG
   jst j1, j1, TT1
-  msg_line:                     ; each question of "canta"
-    jldi j1, 0
-    jld j9, j1, TT1
-    jld j2, j1, CNN
-    jsub j2, j9, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, msg_all
+  jwhile j2
     jadd j10, j9, j1
-    msg_le:
-      jld j2, j1, CNN
-      jsub j2, j10, j2
-      jldi j3, 63
-      jsar j2, j2, j3
-      jjz j2, msg_led
+    jwhile j2
       jld j2, j1, CNB
       jadd j2, j2, j10
       jldb j2, j2, 0
@@ -1454,7 +1442,12 @@ msg_mxd:
       jjz j2, msg_led
       jldi j2, 1
       jadd j10, j10, j2
-      jjmp msg_le
+    jwcheck
+      jld j2, j1, CNN
+      jsub j2, j10, j2
+      jldi j3, 63
+      jsar j2, j2, j3
+    jwend
   msg_led:
     jst j10, j1, TT2
     jsub j2, j10, j9
@@ -1497,10 +1490,7 @@ msg_mxd:
     jldi j1, S_CANL
     jcall puts
     jld j9, j1, TT1
-    msg_q:
-      jld j2, j1, TT2
-      jsub j2, j9, j2
-      jjz j2, msg_qd
+    jwhile j2
       jld j2, j1, CNB
       jadd j2, j2, j9
       jldb j2, j2, 0
@@ -1511,7 +1501,10 @@ msg_mxd:
     msg_qn:
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp msg_q
+    jwcheck
+      jld j2, j1, TT2
+      jsub j2, j9, j2
+    jwend
   msg_qd:
     jldi j1, S_ARROW
     jcall puts
@@ -1524,7 +1517,14 @@ msg_mxd:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT1
-    jjmp msg_line
+  jwcheck
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j2, j1, CNN
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 msg_all:                        ; over the pairs asked (all, or those left out)
   jldi j1, 0
   jst j1, j1, CSW
@@ -1543,12 +1543,7 @@ msg_all:                        ; over the pairs asked (all, or those left out)
   jst j2, j1, TT5
   jldi j1, S_CH15
   jcall puts
-  msg_p:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, EVE
-    jsub j3, j2, j3
-    jjz j3, msg_say
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, PSY
@@ -1570,15 +1565,14 @@ msg_all:                        ; over the pairs asked (all, or those left out)
     jadd j9, j9, j2
     jld j11, j1, CQ
     jst j10, j1, CQN
-    msg_cp:
-      jjz j10, msg_cpd
+    jwhile j10
       jldb j3, j9, 0
       jstb j3, j11, 0
       jldi j3, 1
       jadd j9, j9, j3
       jadd j11, j11, j3
       jsub j10, j10, j3
-      jjmp msg_cp
+    jwend
   msg_cpd:
     jldi j1, 0
     jld j2, j1, GON             ; (its question's words, for the places it repeats)
@@ -1685,7 +1679,12 @@ msg_all:                        ; over the pairs asked (all, or those left out)
     jld j2, j1, TT5
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp msg_p
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, EVE
+    jsub j3, j2, j3
+  jwend
 msg_say:
   jldi j2, 10
   jcall putch
@@ -1818,8 +1817,7 @@ mp_nums:
   jldi j5, 0                    ; numbers found, the one being read, 1 while in it
   jldi j6, 0
   jldi j7, 0
-  mnu_lap:
-    jjz j10, mnu_end
+  jwhile j10
     jldb j2, j9, 0
     jldi j3, 48
     jsub j2, j2, j3
@@ -1842,7 +1840,7 @@ mp_nums:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mnu_lap
+  jwend
 mnu_end:
   jjz j7, mnu_done
   jcall mnu_keep
@@ -1936,12 +1934,7 @@ mp_encode:
   jldi j1, 0
   jst j12, j1, SYAN
   jst j1, j1, SYA
-  mas_lap:
-    jldi j1, 0
-    jld j2, j1, SYA
-    jld j3, j1, SYAN
-    jsub j3, j2, j3
-    jjz j3, mas_done
+  jwhile j3
     jjz j2, mas_nosil
     jld j11, j1, RG3            ; a silence between two words
     jld j3, j1, BASE
@@ -1957,9 +1950,7 @@ mp_encode:
     jld j5, j8, 0
     jld j6, j1, QLN
     jldi j7, 0
-    mas_q:
-      jsub j2, j7, j6
-      jjz j2, mas_songs
+    jwhile j2
       jsub j2, j6, j7
       jldi j3, 1
       jsub j2, j2, j3
@@ -1972,7 +1963,10 @@ mp_encode:
       jjz j2, mas_echo
       jldi j3, 1
       jadd j7, j7, j3
-      jjmp mas_q
+    jwcheck
+      jsub j2, j7, j6
+    jwend
+    jjmp mas_songs
   mas_echo:
     jld j2, j1, BASE
     jldi j3, 3
@@ -2008,7 +2002,12 @@ mp_encode:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SYA
-    jjmp mas_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SYA
+    jld j3, j1, SYAN
+    jsub j3, j2, j3
+  jwend
 mas_done:
   jld j11, j1, RG3
   jret
@@ -2021,12 +2020,7 @@ mp_qlfilter:
   jjz j2, mqf_done
   jst j1, j1, QFI
   jst j1, j1, QFO
-  mqf_lap:
-    jldi j1, 0
-    jld j2, j1, QFI
-    jld j3, j1, QLN
-    jsub j3, j2, j3
-    jjz j3, mqf_end
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, QLB
@@ -2065,7 +2059,12 @@ mp_qlfilter:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, QFI
-    jjmp mqf_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, QFI
+    jld j3, j1, QLN
+    jsub j3, j2, j3
+  jwend
 mqf_end:
   jld j2, j1, QFO
   jst j2, j1, QLN
@@ -2076,28 +2075,30 @@ mqf_done:
 ; The words of the j10 bytes at j9 into the list at j11 ({print, where, bytes} each) -> j12 how many. Uses j1-j12.
 mp_wlist:
   jldi j12, 0
-  mwl_lap:
-    jldi j1, 0
-    jjz j10, mwl_done
+  jwhile j10
     jldb j3, j9, 0
     jcall mp_isletter
     jjnz j2, mwl_word
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mwl_lap
+  jwcheck
+  mwl_lap:
+    jldi j1, 0
+  jwend
+  jjmp mwl_done
   mwl_word:
     jldi j8, 0
-    mwl_end:
-      jsub j2, j8, j10
-      jjz j2, mwl_have
+    jwhile j2
       jadd j2, j9, j8
       jldb j3, j2, 0
       jcall mp_isletter
       jjz j2, mwl_have
       jldi j2, 1
       jadd j8, j8, j2
-      jjmp mwl_end
+    jwcheck
+      jsub j2, j8, j10
+    jwend
   mwl_have:
     jldi j2, 24
     jmul j2, j12, j2
@@ -2148,9 +2149,7 @@ mqw_room:
   jld j12, j1, QLN
   jst j1, j1, QMW
   jldi j9, 0
-  mqw_lap:
-    jsub j2, j9, j12
-    jjz j2, mqw_done
+  jwhile j2
     jldi j3, 24
     jmul j3, j9, j3
     jld j4, j1, QLB
@@ -2165,7 +2164,9 @@ mqw_room:
   mqw_n:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mqw_lap
+  jwcheck
+    jsub j2, j9, j12
+  jwend
 mqw_done:
   jret
 
@@ -2322,14 +2323,7 @@ ms_lines:
   jst j1, j1, SENN
   jst j1, j1, MAXS
   jst j1, j1, TT1
-  msl_lap:
-    jldi j1, 0
-    jld j9, j1, TT1
-    jld j2, j1, PRN
-    jsub j2, j9, j2
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, msl_done
+  jwhile j2
     jcall mp_lineat
     jldi j1, 0
     jst j10, j1, TT2
@@ -2384,7 +2378,14 @@ ms_lines:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT1
-    jjmp msl_lap
+  jwcheck
+    jldi j1, 0
+    jld j9, j1, TT1
+    jld j2, j1, PRN
+    jsub j2, j9, j2
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 msl_done:
   jld j11, j1, MAXS
   jldi j2, 2
@@ -2435,12 +2436,7 @@ ms_vocab:
   jst j1, j1, F0
   jst j1, j1, WMODE
   jst j1, j1, TT5
-  msv_lap:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, SENN
-    jsub j3, j2, j3
-    jjz j3, msv_done
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, SEN
@@ -2455,7 +2451,12 @@ ms_vocab:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp msv_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, SENN
+    jsub j3, j2, j3
+  jwend
 msv_done:
   jjmp mp_head
 
@@ -2468,12 +2469,7 @@ ms_qset:
   jst j12, j1, QJ
   jst j1, j1, QCN
   jst j1, j1, QI
-  mqs_lap:
-    jldi j1, 0
-    jld j2, j1, QI
-    jld j3, j1, QJ
-    jsub j3, j2, j3
-    jjz j3, mqs_done
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, SWB
@@ -2495,8 +2491,7 @@ ms_qset:
     jld j5, j1, QK
     jld j6, j1, QCN
     jld j7, j1, QCS
-    mqs_d:
-      jjz j6, mqs_add
+    jwhile j6
       jld j8, j7, 0
       jsub j8, j8, j5
       jjz j8, mqs_next
@@ -2504,7 +2499,7 @@ ms_qset:
       jadd j7, j7, j8
       jldi j8, 1
       jsub j6, j6, j8
-      jjmp mqs_d
+    jwend
   mqs_add:
     jst j5, j7, 0
     jld j6, j1, QCN
@@ -2516,7 +2511,12 @@ ms_qset:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, QI
-    jjmp mqs_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, QI
+    jld j3, j1, QJ
+    jsub j3, j2, j3
+  jwend
 mqs_done:
   jret
 
@@ -2528,19 +2528,16 @@ ms_overlap:
   jldi j1, 0
   jld j2, j1, QCN
   jld j3, j1, QHB
-  mov_z:
-    jjz j2, mov_zd
+  jwhile j2
     jstb j1, j3, 0
     jldi j4, 1
     jadd j3, j3, j4
     jsub j2, j2, j4
-    jjmp mov_z
+  jwend
 mov_zd:
   jldi j9, 0
   jldi j8, 0
-  mov_lap:
-    jsub j2, j9, j12
-    jjz j2, mov_done
+  jwhile j2
     jldi j3, 24
     jmul j3, j9, j3
     jld j4, j1, SWB
@@ -2549,9 +2546,7 @@ mov_zd:
     jld j6, j1, QCN
     jld j7, j1, QCS
     jldi j10, 0
-    mov_f:
-      jsub j2, j10, j6
-      jjz j2, mov_next
+    jwhile j2
       jld j2, j7, 0
       jsub j2, j2, j5
       jjz j2, mov_hit
@@ -2559,7 +2554,10 @@ mov_zd:
       jadd j7, j7, j2
       jldi j2, 1
       jadd j10, j10, j2
-      jjmp mov_f
+    jwcheck
+      jsub j2, j10, j6
+    jwend
+    jjmp mov_next
     mov_hit:
       jld j2, j1, QHB
       jadd j2, j2, j10
@@ -2571,7 +2569,9 @@ mov_zd:
     mov_next:
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mov_lap
+  jwcheck
+    jsub j2, j9, j12
+  jwend
 mov_done:
   jadd j2, j8, j1
   jret
@@ -2584,12 +2584,7 @@ ms_seeds:
   jst j1, j1, PPN
   jst j1, j1, NQS
   jst j1, j1, SA
-  mse_lap:
-    jldi j1, 0
-    jld j2, j1, SA
-    jld j3, j1, SENN
-    jsub j3, j2, j3
-    jjz j3, mse_done
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, SEN
@@ -2613,12 +2608,7 @@ ms_seeds:
     jst j1, j1, SBV
     jldi j2, -1
     jst j2, j1, SBB
-    mse_r:
-      jldi j1, 0
-      jld j2, j1, SB
-      jld j3, j1, SENN
-      jsub j3, j2, j3
-      jjz j3, mse_rd
+    jwhile j3
       jldi j3, 24
       jmul j3, j2, j3
       jld j4, j1, SEN
@@ -2644,7 +2634,12 @@ ms_seeds:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, SB
-      jjmp mse_r
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, SB
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+    jwend
   mse_rd:
     jld j2, j1, SBB
     jldi j3, 63
@@ -2699,7 +2694,12 @@ ms_seeds:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SA
-    jjmp mse_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SA
+    jld j3, j1, SENN
+    jsub j3, j2, j3
+  jwend
 mse_done:
   jldi j1, 0
   jret
@@ -2739,12 +2739,7 @@ ms_eval:
   jst j1, j1, NCAND
   jld j2, j1, EVS
   jst j2, j1, SEV
-  mev_lap:
-    jldi j1, 0
-    jld j2, j1, SEV
-    jld j3, j1, EVE
-    jsub j3, j2, j3
-    jjz j3, mev_done
+  jwhile j3
     jldi j3, 5
     jshl j3, j2, j3
     jld j4, j1, PPR
@@ -2799,15 +2794,14 @@ ms_eval:
     jadd j9, j9, j2
     jld j10, j1, SL0
     jld j11, j1, CQ
-    mev_cp:
-      jjz j10, mev_cpd
+    jwhile j10
       jldb j3, j9, 0
       jstb j3, j11, 0
       jldi j3, 1
       jadd j9, j9, j3
       jadd j11, j11, j3
       jsub j10, j10, j3
-      jjmp mev_cp
+    jwend
   mev_cpd:
     jldi j2, -1
     jst j2, j1, SBEST
@@ -2823,12 +2817,7 @@ ms_eval:
     jst j1, j1, OBA
     jldi j2, -1
     jst j2, j1, OBEA
-    mev_c:
-      jldi j1, 0
-      jld j2, j1, SJJ
-      jld j3, j1, SENN
-      jsub j3, j2, j3
-      jjz j3, mev_judge
+    jwhile j3
       jldi j3, 24
       jmul j3, j2, j3
       jld j4, j1, SEN
@@ -2916,7 +2905,12 @@ ms_eval:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, SJJ
-      jjmp mev_c
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, SJJ
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+    jwend
   mev_judge:
     jld j2, j1, NEV
     jldi j3, 1
@@ -2981,7 +2975,12 @@ ms_eval:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SEV
-    jjmp mev_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SEV
+    jld j3, j1, EVE
+    jsub j3, j2, j3
+  jwend
 mev_done:
   jldi j1, 0
   jret
@@ -3045,8 +3044,7 @@ mps_s:
   jadd j9, j9, j4
 ; The j10 bytes at j9 said (no line ends). Uses j1-j3, j9, j10.
 ms_putspan:
-  mpsp_lap:
-    jjz j10, mpsp_done
+  jwhile j10
     jldb j2, j9, 0
     jldi j3, 13
     jsub j3, j2, j3
@@ -3056,7 +3054,7 @@ ms_putspan:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mpsp_lap
+  jwend
 mpsp_done:
   jldi j1, 0
   jret
@@ -3090,12 +3088,7 @@ ms_frames:
   jldi j2, 2
   jst j2, j1, TOKN
   jst j1, j1, FSE
-  mfr_lap:
-    jldi j1, 0
-    jld j2, j1, FSE
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, mfr_done
+  jwhile j3
     jcall mp_out
     jldi j1, 0
     jldi j3, 1
@@ -3120,12 +3113,7 @@ ms_frames:
     jcall mp_qwords
     jldi j1, 0
     jst j1, j1, FSJ
-    mfr_s:
-      jldi j1, 0
-      jld j2, j1, FSJ
-      jld j3, j1, SENN
-      jsub j3, j2, j3
-      jjz j3, mfr_next
+    jwhile j3
       jldi j3, 24
       jmul j3, j2, j3
       jld j4, j1, SEN
@@ -3155,12 +3143,7 @@ ms_frames:
       jldi j2, -1
       jst j2, j1, FFP
       jst j1, j1, FFI
-      mfr_f:
-        jldi j1, 0
-        jld j2, j1, FFI
-        jld j3, j1, FWN
-        jsub j3, j2, j3
-        jjz j3, mfr_fd
+      jwhile j3
         jcall mf_place
         jldi j1, 0
         jjnz j3, mfr_fhit
@@ -3168,7 +3151,13 @@ ms_frames:
         jldi j3, 1
         jadd j2, j2, j3
         jst j2, j1, FFI
-        jjmp mfr_f
+      jwcheck
+        jldi j1, 0
+        jld j2, j1, FFI
+        jld j3, j1, FWN
+        jsub j3, j2, j3
+      jwend
+      jjmp mfr_fd
       mfr_fhit:
         jld j2, j1, FFI
         jst j2, j1, FFP
@@ -3227,14 +3216,24 @@ ms_frames:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, FSJ
-      jjmp mfr_s
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, FSJ
+      jld j3, j1, SENN
+      jsub j3, j2, j3
+    jwend
   mfr_next:
     jldi j1, 0
     jld j2, j1, FSE
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, FSE
-    jjmp mfr_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, FSE
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 mfr_done:
   jcall flush
   jldi j1, 0
@@ -3249,12 +3248,7 @@ ms_notes:
   jldi j1, 0
   jst j1, j1, FNLN
   jst j1, j1, FNI
-  mno_w:
-    jldi j1, 0
-    jld j2, j1, FNI
-    jld j3, j1, FWN
-    jsub j3, j2, j3
-    jjz j3, mno_counts
+  jwhile j3
     jcall mf_place
     jldi j1, 0
     jjz j3, mno_wn
@@ -3290,7 +3284,12 @@ ms_notes:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, FNI
-    jjmp mno_w
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FWN
+    jsub j3, j2, j3
+  jwend
 mno_counts:
   jld j9, j1, QP                ; the question's words that are not a place: what it asks (Capitan, 2026-11-08: the
   jld j10, j1, QPN              ; notes said nothing of the question, so "what does the cow eat?" took "the cow is an
@@ -3299,12 +3298,7 @@ mno_counts:
   jldi j1, 0
   jst j12, j1, FND
   jst j1, j1, FNI
-  mno_q:
-    jldi j1, 0
-    jld j2, j1, FNI
-    jld j3, j1, FND
-    jsub j3, j2, j3
-    jjz j3, mno_qd
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, ALB
@@ -3312,8 +3306,7 @@ mno_counts:
     jld j5, j3, 0
     jld j6, j1, QLN             ; (a place of the question: said already)
     jld j7, j1, QLB
-    mno_ql:
-      jjz j6, mno_qk
+    jwhile j6
       jld j8, j7, 0
       jsub j8, j8, j5
       jjz j8, mno_qn
@@ -3321,7 +3314,7 @@ mno_counts:
       jadd j7, j7, j8
       jldi j8, 1
       jsub j6, j6, j8
-      jjmp mno_ql
+    jwend
   mno_qk:
     jldi j7, 10
     jcall mp_mix
@@ -3332,7 +3325,12 @@ mno_counts:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, FNI
-    jjmp mno_q
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FND
+    jsub j3, j2, j3
+  jwend
 mno_qd:
   jldi j1, 0
   jld j2, j1, FOV               ; how many it says, how many it does not
@@ -3380,12 +3378,7 @@ mno_qd:
   jcall putnum
   jldi j1, 0
   jst j1, j1, FNI
-  mno_p:
-    jldi j1, 0
-    jld j2, j1, FNI
-    jld j3, j1, FNLN
-    jsub j3, j2, j3
-    jjz j3, mno_done
+  jwhile j3
     jldi j2, 32
     jcall putch
     jldi j1, 0
@@ -3401,7 +3394,12 @@ mno_qd:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, FNI
-    jjmp mno_p
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, FNI
+    jld j3, j1, FNLN
+    jsub j3, j2, j3
+  jwend
 mno_done:
   jldi j2, 10
   jjmp putch
@@ -3423,8 +3421,7 @@ mna_old:
 mna_have:
   jld j3, j1, FNLN
   jld j4, j1, FNL
-  mna_l:
-    jjz j3, mna_put
+  jwhile j3
     jld j5, j4, 0
     jsub j5, j5, j2
     jjz j5, mna_done
@@ -3432,7 +3429,7 @@ mna_have:
     jadd j4, j4, j5
     jldi j5, 1
     jsub j3, j3, j5
-    jjmp mna_l
+  jwend
 mna_put:
   jst j2, j4, 0
   jld j3, j1, FNLN
@@ -3454,9 +3451,7 @@ mf_place:
   jld j5, j3, 0
   jld j6, j1, QLN
   jldi j7, 0
-  mfp_lap:
-    jsub j3, j7, j6
-    jjz j3, mfp_no
+  jwhile j3
     jsub j3, j6, j7
     jldi j4, 1
     jsub j3, j3, j4
@@ -3469,7 +3464,10 @@ mf_place:
     jjz j3, mfp_yes
     jldi j3, 1
     jadd j7, j7, j3
-    jjmp mfp_lap
+  jwcheck
+    jsub j3, j7, j6
+  jwend
+  jjmp mfp_no
 mfp_yes:
   jldi j3, 1
   jadd j4, j7, j1
@@ -3550,12 +3548,7 @@ ms_seedwords:
   jcall pl_new
   jldi j1, 0
   jst j1, j1, SDWS
-  msw_lap:
-    jldi j1, 0
-    jld j2, j1, SDWS
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, msw_done
+  jwhile j3
     jcall mp_out
     jjnz j2, msw_next
     jldi j1, 0
@@ -3578,12 +3571,7 @@ ms_seedwords:
     jldi j1, 0
     jst j12, j1, SDWN
     jst j1, j1, SDWI
-    msw_w:
-      jldi j1, 0
-      jld j2, j1, SDWI
-      jld j3, j1, SDWN
-      jsub j3, j2, j3
-      jjz j3, msw_next
+    jwhile j3
       jldi j3, 24
       jmul j3, j2, j3
       jld j4, j1, SWB
@@ -3608,14 +3596,24 @@ ms_seedwords:
       jldi j3, 1
       jadd j2, j2, j3
       jst j2, j1, SDWI
-      jjmp msw_w
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, SDWI
+      jld j3, j1, SDWN
+      jsub j3, j2, j3
+    jwend
   msw_next:
     jldi j1, 0
     jld j2, j1, SDWS
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SDWS
-    jjmp msw_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SDWS
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 msw_done:
   jret
 
@@ -3643,22 +3641,12 @@ ms_fit:
   jst j1, j1, SSC
   jld j2, j1, SL0
   jst j2, j1, SPOS
-  mft_lap:
-    jldi j1, 0
-    jld j9, j1, SPOS
-    jld j2, j1, CQN
-    jsub j2, j9, j2
-    jjz j2, mft_done
+  jwhile j2
     jld j5, j1, CS0
     jld j12, j1, CHN
     jst j5, j12, 0
     jldi j10, 1
-    mft_c:
-      jldi j1, 0
-      jsub j3, j9, j10
-      jldi j4, 63
-      jsar j4, j3, j4
-      jjnz j4, mft_have
+    jwhilez j4
       jld j4, j1, CQ
       jadd j3, j3, j4
       jldb j7, j3, 0
@@ -3677,7 +3665,12 @@ ms_fit:
       jst j5, j3, 0
       jldi j2, 1
       jadd j10, j10, j2
-      jjmp mft_c
+    jwcheck
+      jldi j1, 0
+      jsub j3, j9, j10
+      jldi j4, 63
+      jsar j4, j3, j4
+    jwend
   mft_have:
     jldi j1, 0
     jld j2, j1, CQ
@@ -3685,7 +3678,11 @@ ms_fit:
     jldb j11, j2, 0
     jldi j2, 1
     jsub j10, j10, j2
-    mft_b:
+    jwhilez j13
+      jjz j10, mft_none
+      jldi j2, 1
+      jsub j10, j10, j2
+    jwcheck
       jldi j1, 0
       jldi j3, 3
       jshl j3, j10, j3
@@ -3698,11 +3695,8 @@ ms_fit:
       jcall pl_find
       jldi j1, 0
       jld j13, j4, 8
-      jjnz j13, mft_cost
-      jjz j10, mft_none
-      jldi j2, 1
-      jsub j10, j10, j2
-      jjmp mft_b
+    jwend
+    jjmp mft_cost
   mft_none:
     jld j5, j1, CS0
     jldi j2, CXT
@@ -3733,7 +3727,12 @@ ms_fit:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, SPOS
-    jjmp mft_lap
+  jwcheck
+    jldi j1, 0
+    jld j9, j1, SPOS
+    jld j2, j1, CQN
+    jsub j2, j9, j2
+  jwend
 mft_done:
   jld j2, j1, SSC
   jld j3, j1, CQN
@@ -3751,12 +3750,12 @@ mft_z:
 mp_lg:
   jldi j3, 0
   jadd j4, j2, j3
-  mlg_l:
+  jwhile j4
+    jadd j3, j3, j5
+  jwcheck
     jldi j5, 1
     jshr j4, j4, j5
-    jjz j4, mlg_d
-    jadd j3, j3, j5
-    jjmp mlg_l
+  jwend
 mlg_d:
   jldi j4, 8
   jshl j2, j2, j4
@@ -3795,18 +3794,18 @@ mpt10_out:
 ; What it sang (CT, CTN), out. Uses j1-j3, j9.
 mp_puttext:
   jldi j9, 0
-  mpu_lap:
-    jldi j1, 0
-    jld j2, j1, CTN
-    jsub j2, j9, j2
-    jjz j2, mpu_done
+  jwhile j2
     jld j2, j1, CT
     jadd j2, j2, j9
     jldb j2, j2, 0
     jcall putch
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mpu_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, CTN
+    jsub j2, j9, j2
+  jwend
 mpu_done:
   jldi j1, 0
   jret
@@ -3842,8 +3841,7 @@ mp_span:
   jldi j1, 0
   jldi j12, 0                   ; a letter sung already
   jldi j13, 0                   ; a silence owed
-  msp_lap:
-    jjz j10, msp_done
+  jwhile j10
     jldb j3, j9, 0
     jldi j4, 3
     jshl j4, j3, j4
@@ -3876,7 +3874,7 @@ mp_span:
     jldi j5, 1
     jadd j9, j9, j5
     jsub j10, j10, j5
-    jjmp msp_lap
+  jwend
 msp_done:
   jret
 
@@ -3905,10 +3903,7 @@ mp_syms:
   jst j2, j1, NSY
   jldi j9, 0                    ; the lists of a question's and an answer's words: as long as the longest
   jldi j12, 0
-  msy_mx:
-    jld j2, j1, PPN
-    jsub j2, j9, j2
-    jjz j2, msy_mxd
+  jwhile j2
     jldi j3, 5
     jshl j3, j9, j3
     jld j4, j1, PPR
@@ -3933,7 +3928,10 @@ mp_syms:
   msy_n:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp msy_mx
+  jwcheck
+    jld j2, j1, PPN
+    jsub j2, j9, j2
+  jwend
 msy_mxd:
   jldi j2, 2
   jadd j11, j12, j2
@@ -3970,12 +3968,7 @@ msy_mxd:
   jst j13, j1, PSY
   jst j1, j1, MAXA
   jst j1, j1, TT5
-  mss_lap:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, mss_done
+  jwhile j3
     jldi j3, 24
     jmul j3, j2, j3
     jld j4, j1, PSY
@@ -4041,7 +4034,12 @@ msy_mxd:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mss_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 mss_done:
   jldi j1, 0
   jret
@@ -4066,15 +4064,14 @@ mp_learn:
   jst j13, j1, HPX
   jld j2, j1, SYN               ; every place starts at the empty context
   jld j3, j1, CS0
-  mle_f:
-    jjz j2, mle_fd
+  jwhile j2
     jldi j4, 1
     jsub j2, j2, j4
     jldi j4, 3
     jshl j4, j2, j4
     jadd j4, j4, j13
     jst j3, j4, 0
-    jjmp mle_f
+  jwend
 mle_fd:
   jldi j2, CXT
   jldi j3, 32
@@ -4088,11 +4085,7 @@ mle_fd:
     jldi j1, 0
     jst j1, j1, ALIVE
     jldi j9, 0
-    mle_pair:
-      jldi j1, 0
-      jld j2, j1, PPN
-      jsub j2, j9, j2
-      jjz j2, mle_pdone
+    jwhile j2
       jadd j2, j9, j1           ; (the pairs left out are not read)
       jcall mp_out
       jjnz j2, mle_pnext
@@ -4105,12 +4098,7 @@ mle_fd:
       jld j11, j3, 16
       jld j2, j1, ORD
       jadd j10, j10, j2         ; (the first place with a context this long)
-      mle_at:
-        jldi j1, 0
-        jsub j2, j10, j11
-        jldi j3, 63
-        jsar j2, j2, j3
-        jjz j2, mle_pnext
+      jwhile j2
         jldi j3, 3
         jshl j3, j10, j3
         jld j4, j1, HPX
@@ -4177,11 +4165,20 @@ mle_fd:
       mle_next:
         jldi j2, 1
         jadd j10, j10, j2
-        jjmp mle_at
+      jwcheck
+        jldi j1, 0
+        jsub j2, j10, j11
+        jldi j3, 63
+        jsar j2, j2, j3
+      jwend
     mle_pnext:
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mle_pair
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, PPN
+      jsub j2, j9, j2
+    jwend
   mle_pdone:
     jld j2, j1, ALIVE
     jjz j2, mle_done
@@ -4202,26 +4199,11 @@ mp_compose:
   jld j2, j1, CQN
   jst j2, j1, CQ0
   jst j1, j1, CRMAX
-  mco_step:
-    jldi j1, 0
-    jld j2, j1, CQN
-    jld j3, j1, CQ0
-    jsub j2, j2, j3
-    jld j3, j1, MAXA
-    jsub j2, j2, j3
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, mco_done
+  jwhile j2
     jld j5, j1, CS0
     jst j5, j1, CBEST
     jldi j9, 1
-    mco_ctx:
-      jldi j1, 0
-      jld j2, j1, CQN
-      jsub j3, j2, j9
-      jldi j4, 63
-      jsar j4, j3, j4
-      jjnz j4, mco_have
+    jwhilez j4
       jld j4, j1, CQ
       jadd j3, j3, j4
       jldb j7, j3, 0
@@ -4238,7 +4220,13 @@ mp_compose:
       jst j5, j1, CBEST
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mco_ctx
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, CQN
+      jsub j3, j2, j9
+      jldi j4, 63
+      jsar j4, j3, j4
+    jwend
   mco_have:
     jldi j1, 0                  ; (a context of k songs and a song after it: k + 1 songs as they are in the books read,
     jld j2, j1, CQN             ; but no more than it sang)
@@ -4255,11 +4243,7 @@ mp_compose:
     jst j2, j1, CRC
     jst j1, j1, CTOT
     jldi j9, 0
-    mco_sum:
-      jldi j1, 0
-      jld j2, j1, NSY
-      jsub j2, j9, j2
-      jjz j2, mco_draw
+    jwhile j2
       jld j5, j1, CBEST
       jadd j7, j9, j1
       jcall mp_mix
@@ -4272,7 +4256,11 @@ mp_compose:
       jst j3, j1, CTOT
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mco_sum
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, NSY
+      jsub j2, j9, j2
+    jwend
   mco_draw:
     jld j2, j1, CTOT
     jjz j2, mco_done
@@ -4284,7 +4272,10 @@ mp_compose:
     jsub j2, j2, j4
     jst j2, j1, CDRAW
     jldi j9, 0
-    mco_pick:
+    jwhilez j3
+      jldi j2, 1
+      jadd j9, j9, j2
+    jwcheck
       jldi j1, 0
       jld j5, j1, CBEST
       jadd j7, j9, j1
@@ -4298,10 +4289,7 @@ mp_compose:
       jst j3, j1, CDRAW
       jldi j4, 63
       jsar j3, j3, j4
-      jjnz j3, mco_got
-      jldi j2, 1
-      jadd j9, j9, j2
-      jjmp mco_pick
+    jwend
   mco_got:
     jld j2, j1, BASE            ; a turn or an end: the song is over
     jldi j3, 1
@@ -4325,7 +4313,17 @@ mp_compose:
     jsar j3, j3, j4
     jjz j3, mco_step
     jst j2, j1, CRMAX
-    jjmp mco_step
+  jwcheck
+  mco_step:
+    jldi j1, 0
+    jld j2, j1, CQN
+    jld j3, j1, CQ0
+    jsub j2, j2, j3
+    jld j3, j1, MAXA
+    jsub j2, j2, j3
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 mco_done:
   jldi j1, 0
   jret
@@ -4338,10 +4336,7 @@ mp_text:
   jld j9, j1, CQ0
   jld j10, j1, CT
   jldi j11, -1
-  mtx_lap:
-    jld j2, j1, CQN
-    jsub j2, j9, j2
-    jjz j2, mtx_done
+  jwhile j2
     jld j2, j1, CQ
     jadd j2, j2, j9
     jldb j3, j2, 0
@@ -4375,15 +4370,15 @@ mp_text:
     jst j6, j1, CEW
     jld j6, j5, 8
     jld j7, j5, 16
-    mtx_cp:
-      jjz j7, mtx_next
+    jwhile j7
       jldb j8, j6, 0
       jstb j8, j10, 0
       jldi j8, 1
       jadd j6, j6, j8
       jadd j10, j10, j8
       jsub j7, j7, j8
-      jjmp mtx_cp
+    jwend
+    jjmp mtx_next
   mtx_plain:
     jld j4, j1, BASE
     jsub j4, j3, j4
@@ -4421,7 +4416,10 @@ mp_text:
   mtx_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mtx_lap
+  jwcheck
+    jld j2, j1, CQN
+    jsub j2, j9, j2
+  jwend
 mtx_done:
   jld j2, j1, CT
   jsub j2, j10, j2
@@ -4453,12 +4451,7 @@ mp_vocab:
   jldi j1, 0
   jst j13, j1, PNUL
   jst j1, j1, TT5
-  mvo_lap:
-    jldi j1, 0
-    jld j2, j1, TT5
-    jld j3, j1, PPN
-    jsub j3, j2, j3
-    jjz j3, mvo_head
+  jwhile j3
     jst j2, j1, WPR
     jldi j2, 1
     jst j2, j1, WMODE
@@ -4488,17 +4481,17 @@ mp_vocab:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mvo_lap
-mvo_head:
-  jcall mp_head
-  jldi j1, 0
-  jst j1, j1, TT5
-  mvo_n:
+  jwcheck
     jldi j1, 0
     jld j2, j1, TT5
     jld j3, j1, PPN
     jsub j3, j2, j3
-    jjz j3, mvo_done
+  jwend
+mvo_head:
+  jcall mp_head
+  jldi j1, 0
+  jst j1, j1, TT5
+  jwhile j3
     jst j2, j1, WPR
     jldi j2, 3
     jst j2, j1, WMODE
@@ -4509,7 +4502,12 @@ mvo_head:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, TT5
-    jjmp mvo_n
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TT5
+    jld j3, j1, PPN
+    jsub j3, j2, j3
+  jwend
 mvo_done:
   jldi j1, 0
   jret
@@ -4525,16 +4523,7 @@ mp_head:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, HHI
-  mhd_lap:
-    jldi j1, 0
-    jld j2, j1, HHI
-    jld j3, j1, HLO
-    jsub j4, j2, j3
-    jldi j5, 2
-    jsub j4, j4, j5
-    jldi j5, 63
-    jsar j4, j4, j5
-    jjnz j4, mhd_done
+  jwhilez j4
     jadd j11, j2, j3
     jldi j4, 1
     jshr j11, j11, j4
@@ -4549,7 +4538,18 @@ mp_head:
     jld j2, j1, HMID
     jjnz j12, mhd_hi
     jst j2, j1, HLO
-    jjmp mhd_lap
+  jwcheck
+  mhd_lap:
+    jldi j1, 0
+    jld j2, j1, HHI
+    jld j3, j1, HLO
+    jsub j4, j2, j3
+    jldi j5, 2
+    jsub j4, j4, j5
+    jldi j5, 63
+    jsar j4, j4, j5
+  jwend
+  jjmp mhd_done
   mhd_hi:
     jst j2, j1, HHI
     jjmp mhd_lap
@@ -4571,8 +4571,7 @@ mp_mass:
   jld j10, j1, VOC + 8
   jldi j2, 1
   jadd j10, j10, j2
-  mms_lap:
-    jjz j10, mms_done
+  jwhile j10
     jld j2, j9, 0
     jjz j2, mms_next
     jld j3, j9, 8
@@ -4588,7 +4587,7 @@ mp_mass:
     jadd j9, j9, j2
     jldi j2, 1
     jsub j10, j10, j2
-    jjmp mms_lap
+  jwend
 mms_done:
   jret
 
@@ -4611,28 +4610,30 @@ mp_ansat:
 ; not of the half (CSW, CSR, CSO, CSWC, CSOC; one no book has is said once, after "inventadas:"); 3 of pair WPR's
 ; answer, each once, its times into PNUL. Uses j1-j14.
 mp_wwalk:
-  mww_lap:
-    jldi j1, 0
-    jjz j10, mww_done
+  jwhile j10
     jldb j3, j9, 0
     jcall mp_isletter
     jjnz j2, mww_word
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp mww_lap
+  jwcheck
+  mww_lap:
+    jldi j1, 0
+  jwend
+  jjmp mww_done
   mww_word:
     jldi j8, 0
-    mww_end:
-      jsub j2, j8, j10
-      jjz j2, mww_have
+    jwhile j2
       jadd j2, j9, j8
       jldb j3, j2, 0
       jcall mp_isletter
       jjz j2, mww_have
       jldi j2, 1
       jadd j8, j8, j2
-      jjmp mww_end
+    jwcheck
+      jsub j2, j8, j10
+    jwend
   mww_have:
     jadd j3, j9, j1
     jadd j4, j8, j1
@@ -4688,14 +4689,15 @@ mp_wwalk:
     jldi j1, 0
     jld j3, j1, WLEN
     jsub j11, j9, j3
-    mww_pw:
-      jsub j2, j11, j9
-      jjz j2, mww_cont
+    jwhile j2
       jldb j2, j11, 0
       jcall putch
       jldi j2, 1
       jadd j11, j11, j2
-      jjmp mww_pw
+    jwcheck
+      jsub j2, j11, j9
+    jwend
+    jjmp mww_cont
   mww_known:
     jst j3, j1, WTIM
     jld j2, j1, CSR
@@ -4781,31 +4783,27 @@ mp_copy:
   jldi j1, 0
   jld j11, j1, CROW
   jldi j2, 0
-  mcp_z:
-    jsub j3, j10, j2
-    jldi j4, 63
-    jsar j3, j3, j4
-    jjnz j3, mcp_zd
+  jwhilez j3
     jldi j3, 3
     jshl j3, j2, j3
     jadd j3, j3, j11
     jst j1, j3, 0
     jldi j3, 1
     jadd j2, j2, j3
-    jjmp mcp_z
+  jwcheck
+    jsub j3, j10, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+  jwend
 mcp_zd:
   jldi j12, 0
   jldi j13, 0
-  mcp_i:
-    jld j2, j1, CTN
-    jsub j2, j13, j2
-    jjz j2, mcp_done
+  jwhile j2
     jld j2, j1, CT
     jadd j2, j2, j13
     jldb j8, j2, 0
     jadd j14, j10, j1
-    mcp_j:
-      jjz j14, mcp_inext
+    jwhile j14
       jldi j3, 1
       jsub j2, j14, j3
       jadd j2, j2, j9
@@ -4832,11 +4830,14 @@ mcp_zd:
     mcp_jnext:
       jldi j2, 1
       jsub j14, j14, j2
-      jjmp mcp_j
+    jwend
   mcp_inext:
     jldi j2, 1
     jadd j13, j13, j2
-    jjmp mcp_i
+  jwcheck
+    jld j2, j1, CTN
+    jsub j2, j13, j2
+  jwend
 mcp_done:
   jadd j2, j12, j1
   jret

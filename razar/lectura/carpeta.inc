@@ -18,20 +18,7 @@ pz_list:
   jldi j1, 0
   jldi j2, 4096
   jst j2, j1, PZLSC
-pls_again:
-  jld j11, j1, PZLSC
-  jcall room
-  jldi j1, 0
-  jst j13, j1, PZLST
-  jldi j10, 14
-  jadd j11, j13, j1
-  jld j12, j1, PZLSC
-  jcall ask
-  jldi j1, 0
-  jst j13, j1, PZLSTN
-  jldi j2, 63
-  jsar j2, j13, j2
-  jjnz j2, pls_done
+jwhilez j2
   jld j9, j1, PZLST             ; the bytes it wrote
   jadd j10, j13, j1
   jwhile j10
@@ -62,7 +49,20 @@ pls_again:
   jld j2, j1, PZLSC
   jadd j2, j2, j2
   jst j2, j1, PZLSC
-  jjmp pls_again
+jwcheck
+  jld j11, j1, PZLSC
+  jcall room
+  jldi j1, 0
+  jst j13, j1, PZLST
+  jldi j10, 14
+  jadd j11, j13, j1
+  jld j12, j1, PZLSC
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, PZLSTN
+  jldi j2, 63
+  jsar j2, j13, j2
+jwend
 pls_done:
   jldi j1, 0
   jret
@@ -86,24 +86,7 @@ pz_file:
   jcall room
   jldi j1, 0
   jst j13, j1, PZFR
-pf_read:
-  jld j10, j1, PZFH
-  jldi j2, 32
-  jshl j10, j10, j2
-  jldi j2, 5
-  jor j10, j10, j2
-  jld j11, j1, PZFR
-  jld j2, j1, PZFRN
-  jadd j11, j11, j2
-  jld j12, j1, PZFRC
-  jsub j12, j12, j2
-  jcall ask
-  jldi j1, 0
-  jldi j2, 1
-  jsub j2, j13, j2
-  jldi j3, 63
-  jsar j2, j2, j3
-  jjnz j2, pf_close             ; (nothing more, or a failed read: the end)
+jwhilez j2
   jld j2, j1, PZFRN
   jadd j2, j2, j13
   jst j2, j1, PZFRN
@@ -133,7 +116,25 @@ pf_read:
   jldi j10, 3
   jcall ask
   jldi j1, 0
-  jjmp pf_read
+jwcheck
+pf_read:
+  jld j10, j1, PZFH
+  jldi j2, 32
+  jshl j10, j10, j2
+  jldi j2, 5
+  jor j10, j10, j2
+  jld j11, j1, PZFR
+  jld j2, j1, PZFRN
+  jadd j11, j11, j2
+  jld j12, j1, PZFRC
+  jsub j12, j12, j2
+  jcall ask
+  jldi j1, 0
+  jldi j2, 1
+  jsub j2, j13, j2
+  jldi j3, 63
+  jsar j2, j2, j3
+jwend
 pf_close:
   jld j10, j1, PZFH
   jldi j2, 32

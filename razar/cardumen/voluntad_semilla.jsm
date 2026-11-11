@@ -302,13 +302,7 @@ jcall ask
 jldi j1, 0
 jst j13, j1, SAYB
 jldi j9, 0
-w_lap:
-jldi j1, 0
-jld j2, j1, NTOK
-jldi j3, 3
-jmul j2, j2, j3
-jsub j1, j9, j2
-jjz j1, w_done
+jwhile j1
 w_draw:
   jcall rnd2
   jldi j1, 0
@@ -319,9 +313,7 @@ w_draw:
   jldi j4, 3                    ; not one this word has already
   jdiv j5, j9, j4
   jmul j5, j5, j4
-w_check:
-  jsub j6, j5, j9
-  jjz j6, w_take
+jwhile j6
   jldi j6, 3
   jshl j6, j5, j6
   jld j7, j1, SAYB
@@ -331,7 +323,9 @@ w_check:
   jjz j6, w_draw
   jldi j6, 1
   jadd j5, j5, j6
-  jjmp w_check
+jwcheck
+  jsub j6, j5, j9
+jwend
 w_take:
   jldi j6, 3
   jshl j6, j9, j6
@@ -340,7 +334,13 @@ w_take:
   jst j3, j6, 0
   jldi j6, 1
   jadd j9, j9, j6
-  jjmp w_lap
+jwcheck
+jldi j1, 0
+jld j2, j1, NTOK
+jldi j3, 3
+jmul j2, j2, j3
+jsub j1, j9, j2
+jwend
 w_done:
 
 jldi j1, 0                      ; it practices: VUELTAS rounds, a read frame each, half that answer, half not
@@ -356,12 +356,7 @@ jadd j3, j3, j3
 jmul j2, j2, j3
 p_eff:
 jst j2, j1, VEFF
-p_lap:
-  jldi j1, 0
-  jld j2, j1, ROUND
-  jld j3, j1, VEFF
-  jsub j3, j2, j3
-  jjz j3, p_done
+jwhile j3
   jld j2, j1, POSN
   jjz j2, p_done
   jld j2, j1, NEGN
@@ -526,7 +521,12 @@ p_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ROUND
-  jjmp p_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ROUND
+  jld j3, j1, VEFF
+  jsub j3, j2, j3
+jwend
 p_done:
 
 jldi j1, 0
@@ -728,7 +728,31 @@ frames:
   jcall ask
   jldi j1, 0
   jst j13, j1, FB
-  fr_read:
+  jwhilez j3
+    jld j11, j1, FC
+    jadd j11, j11, j11
+    jldi j10, 2
+    jcall ask
+    jldi j1, 0
+    jld j3, j1, FB
+    jld j4, j1, FN
+    jldi j5, 0
+    jwhile j6
+      jadd j6, j3, j5
+      jldb j6, j6, 0
+      jadd j7, j13, j5
+      jstb j6, j7, 0
+      jldi j6, 1
+      jadd j5, j5, j6
+    jwcheck
+      jsub j6, j5, j4
+    jwend
+    fr_moved:
+    jst j13, j1, FB
+    jld j2, j1, FC
+    jadd j2, j2, j2
+    jst j2, j1, FC
+  jwcheck
     jldi j1, 0
     jld j10, j1, FH
     jldi j2, 32
@@ -752,31 +776,7 @@ frames:
     jst j2, j1, FN
     jld j3, j1, FC
     jsub j3, j2, j3
-    jjnz j3, fr_close
-    jld j11, j1, FC
-    jadd j11, j11, j11
-    jldi j10, 2
-    jcall ask
-    jldi j1, 0
-    jld j3, j1, FB
-    jld j4, j1, FN
-    jldi j5, 0
-    fr_mv:
-      jsub j6, j5, j4
-      jjz j6, fr_moved
-      jadd j6, j3, j5
-      jldb j6, j6, 0
-      jadd j7, j13, j5
-      jstb j6, j7, 0
-      jldi j6, 1
-      jadd j5, j5, j6
-      jjmp fr_mv
-    fr_moved:
-    jst j13, j1, FB
-    jld j2, j1, FC
-    jadd j2, j2, j2
-    jst j2, j1, FC
-    jjmp fr_read
+  jwend
 fr_close:
   jld j10, j1, FH
   jldi j2, 32
@@ -816,8 +816,7 @@ fr_close:
   jst j1, j1, NTOK
   jld j9, j1, FB                ; walking the file: j9 where, j10 bytes left
   jld j10, j1, FN
-  fr_line:
-    jjz j10, fr_parsed
+  jwhile j10
     jldb j2, j9, 0
     jldi j3, 78
     jsub j3, j2, j3
@@ -839,12 +838,8 @@ fr_close:
     jldi j2, 2
     jadd j9, j9, j2
     jsub j10, j10, j2
-    fr_num:
-      jldi j2, 9
-      jsub j2, j12, j2
-      jjz j2, fr_got
-      fr_sp:                    ; to the next digit
-        jjz j10, fr_parsed
+    jwhile j2
+      jwhile j10
         jldb j2, j9, 0
         jldi j3, 48
         jsub j3, j2, j3
@@ -860,11 +855,11 @@ fr_close:
         jldi j2, 1
         jadd j9, j9, j2
         jsub j10, j10, j2
-        jjmp fr_sp
+      jwend
+      jjmp fr_parsed
     fr_dig:
       jldi j6, 0
-      fr_dl:
-        jjz j10, fr_dd
+      jwhile j10
         jldb j2, j9, 0
         jldi j3, 48
         jsub j3, j2, j3
@@ -882,7 +877,7 @@ fr_close:
         jldi j2, 1
         jadd j9, j9, j2
         jsub j10, j10, j2
-        jjmp fr_dl
+      jwend
     fr_dd:
       jldi j3, 3
       jshl j3, j12, j3
@@ -905,7 +900,10 @@ fr_close:
     fr_nn:
       jldi j2, 1
       jadd j12, j12, j2
-      jjmp fr_num
+    jwcheck
+      jldi j2, 9
+      jsub j2, j12, j2
+    jwend
   fr_got:
     jldi j1, 0
     jld j2, j1, ITN
@@ -942,8 +940,7 @@ fr_close:
     jst j2, j11, 0
     jst j1, j11, 8
     jadd j12, j6, j1
-    fr_nn2:
-      jjz j12, fr_skip
+    jwhile j12
       jcall fr_getnum
       jjz j2, fr_skip
       jldi j1, 0
@@ -968,7 +965,7 @@ fr_close:
     fr_nm:
       jldi j2, 1
       jsub j12, j12, j2
-      jjmp fr_nn2
+    jwend
   fr_skip:                      ; to the next line
     jjz j10, fr_parsed
     jldb j2, j9, 0
@@ -978,7 +975,7 @@ fr_close:
     jldi j3, 10
     jsub j2, j2, j3
     jjnz j2, fr_skip
-    jjmp fr_line
+  jwend
 fr_parsed:
   jldi j1, 0                    ; the read ones, by what they say
   jld j11, j1, ITN
@@ -999,10 +996,7 @@ fr_parsed:
   jst j1, j1, POSN
   jst j1, j1, NEGN
   jldi j9, 0
-  fr_split:
-    jld j2, j1, ITN
-    jsub j2, j9, j2
-    jjz j2, fr_done
+  jwhile j2
     jldi j3, 72
     jmul j3, j9, j3
     jld j4, j1, ITB
@@ -1028,15 +1022,17 @@ fr_parsed:
   fr_sn:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp fr_split
+  jwcheck
+    jld j2, j1, ITN
+    jsub j2, j9, j2
+  jwend
 fr_done:
   jret
 
 ; The next number on this line (j9, j10 bytes left) -> j6, j2 = 1 (0: the line ended; j9 at its line feed). Uses
 ; j2-j6.
 fr_getnum:
-  fgn_sp:
-    jjz j10, fgn_none
+  jwhile j10
     jldb j2, j9, 0
     jldi j3, 10
     jsub j3, j2, j3
@@ -1055,11 +1051,11 @@ fr_getnum:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp fgn_sp
+  jwend
+  jjmp fgn_none
 fgn_dig:
   jldi j6, 0
-  fgn_l:
-    jjz j10, fgn_got
+  jwhile j10
     jldb j2, j9, 0
     jldi j3, 48
     jsub j3, j2, j3
@@ -1077,7 +1073,7 @@ fgn_dig:
     jldi j2, 1
     jadd j9, j9, j2
     jsub j10, j10, j2
-    jjmp fgn_l
+  jwend
 fgn_got:
   jldi j2, 1
   jret
@@ -1097,11 +1093,7 @@ asked:
   jldi j2, -1
   jst j2, j1, GQ
   jldi j9, 0
-  ak_lap:
-    jldi j1, 0
-    jld j2, j1, ITN
-    jsub j2, j9, j2
-    jjz j2, ak_end
+  jwhile j2
     jldi j3, 72
     jmul j3, j9, j3
     jld j4, j1, ITB
@@ -1169,7 +1161,11 @@ asked:
   ak_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp ak_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ITN
+    jsub j2, j9, j2
+  jwend
 ak_end:
   jjmp ak_judge
 
@@ -1202,21 +1198,14 @@ selftest:
   jst j2, j1, VER
   jld j9, j1, LOON              ; sorted by how alike, least first (a few hundred at most: one by one)
   jldi j10, 1
-  st_i:
-    jsub j2, j10, j9
-    jldi j3, 63
-    jsar j2, j2, j3
-    jjz j2, st_sorted
+  jwhile j2
     jldi j11, 4
     jshl j11, j10, j11
     jld j3, j1, LOOB
     jadd j11, j11, j3
     jld j5, j11, 0
     jld j6, j11, 8
-    st_j:
-      jld j3, j1, LOOB
-      jsub j3, j11, j3
-      jjz j3, st_put
+    jwhile j3
       jldi j3, 16
       jsub j12, j11, j3
       jld j7, j12, 0
@@ -1228,13 +1217,20 @@ selftest:
       jld j7, j12, 8
       jst j7, j11, 8
       jadd j11, j12, j1
-      jjmp st_j
+    jwcheck
+      jld j3, j1, LOOB
+      jsub j3, j11, j3
+    jwend
     st_put:
       jst j5, j11, 0
       jst j6, j11, 8
       jldi j3, 1
       jadd j10, j10, j3
-      jjmp st_i
+  jwcheck
+    jsub j2, j10, j9
+    jldi j3, 63
+    jsar j2, j2, j3
+  jwend
 st_sorted:
   jldi j1, S_CURVA              ; the curve: at each right one's how-alike, the right ones below it and the wrong ones
   jcall puts
@@ -1242,11 +1238,7 @@ st_sorted:
   jldi j10, 0
   jldi j11, 0
   jldi j12, 0                   ; the cut, once the price is reached
-  st_c:
-    jldi j1, 0
-    jld j2, j1, LOON
-    jsub j2, j11, j2
-    jjz j2, st_cd
+  jwhile j2
     jldi j3, 4
     jshl j3, j11, j3
     jld j4, j1, LOOB
@@ -1298,7 +1290,11 @@ st_sorted:
   st_cn:
     jldi j2, 1
     jadd j11, j11, j2
-    jjmp st_c
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, LOON
+    jsub j2, j11, j2
+  jwend
 st_cd:
   jldi j1, 0
   jst j12, j1, THR
@@ -1448,10 +1444,7 @@ sing:
   jsub j3, j3, j4
   jjz j3, s_notes
   jldi j5, 0
-s_greet:
-  jldi j3, 5
-  jsub j3, j5, j3
-  jjz j3, s_said
+jwhile j3
   jldi j1, 0
   jld j2, j1, CUR
   jldi j3, 3
@@ -1475,7 +1468,10 @@ s_greet:
   jst j6, j4, SONGM
   jldi j3, 1
   jadd j5, j5, j3
-  jjmp s_greet
+jwcheck
+  jldi j3, 5
+  jsub j3, j5, j3
+jwend
 s_said:
   jldi j1, 0                    ; order 6: how many (SGN), only heard if asked, then each greeting
   jld j2, j1, SGN
@@ -1542,16 +1538,9 @@ memorize:
   jst j1, j1, ONLY              ; every read frame REPS times, learning, and settles; then, quiet, it is remembered)
   jld j2, j1, REPS
   jst j2, j1, TB
-  mz_rep:
-    jldi j1, 0
-    jld j2, j1, TB
-    jjz j2, mz_rec
+  jwhile j2
     jldi j9, 0
-    mz_rf:
-      jldi j1, 0
-      jld j2, j1, ITN
-      jsub j2, j9, j2
-      jjz j2, mz_rd
+    jwhile j2
       jldi j3, 72
       jmul j3, j9, j3
       jld j4, j1, ITB
@@ -1563,14 +1552,21 @@ memorize:
     mz_rn:
       jldi j2, 1
       jadd j9, j9, j2
-      jjmp mz_rf
+    jwcheck
+      jldi j1, 0
+      jld j2, j1, ITN
+      jsub j2, j9, j2
+    jwend
   mz_rd:
     jldi j1, 0
     jld j2, j1, TB
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, TB
-    jjmp mz_rep
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, TB
+  jwend
 mz_rec:
   jldi j1, 0
   jldi j2, 1
@@ -1588,11 +1584,7 @@ mz_rec:
   jldi j1, 0
   jst j13, j1, FRB
   jldi j9, 0
-  mz_lap:
-    jldi j1, 0
-    jld j2, j1, ITN
-    jsub j2, j9, j2
-    jjz j2, mz_index
+  jwhile j2
     jldi j3, 72
     jmul j3, j9, j3
     jld j4, j1, ITB
@@ -1627,7 +1619,11 @@ mz_rec:
   mz_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mz_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ITN
+    jsub j2, j9, j2
+  jwend
 mz_index:                       ; by note, the frames it sounded in: counted at PCNT[id + 2], summed, and filled walking
                                 ; PCNT[id + 1]: then note id's frames are PCNT[id] to PCNT[id + 1]
   jldi j1, 0
@@ -1656,19 +1652,17 @@ mzi_nid:
   jldi j3, 2
   jadd j2, j2, j3
   jadd j3, j13, j1
-  mzi_z:
-    jjz j2, mzi_zd
+  jwhile j2
     jst j1, j3, 0
     jldi j4, 8
     jadd j3, j3, j4
     jldi j4, 1
     jsub j2, j2, j4
-    jjmp mzi_z
+  jwend
 mzi_zd:
   jld j2, j1, NTN               ; each note counted (at its id + 2)
   jld j3, j1, NTB
-  mzi_c:
-    jjz j2, mzi_cd
+  jwhile j2
     jld j4, j3, 0
     jldi j5, 2
     jadd j4, j4, j5
@@ -1684,15 +1678,14 @@ mzi_zd:
     jadd j3, j3, j4
     jldi j4, 1
     jsub j2, j2, j4
-    jjmp mzi_c
+  jwend
 mzi_cd:
   jld j2, j1, NID               ; summed: PCNT[id + 1] is where note id's frames start
   jldi j3, 2
   jadd j2, j2, j3
   jld j3, j1, PCNT
   jldi j4, 0
-  mzi_s:
-    jjz j2, mzi_sd
+  jwhile j2
     jld j5, j3, 0
     jadd j4, j4, j5
     jst j4, j3, 0
@@ -1700,7 +1693,7 @@ mzi_cd:
     jadd j3, j3, j5
     jldi j5, 1
     jsub j2, j2, j5
-    jjmp mzi_s
+  jwend
 mzi_sd:
   jld j11, j1, NTN
   jldi j2, 1
@@ -1712,11 +1705,7 @@ mzi_sd:
   jldi j1, 0
   jst j13, j1, PST
   jldi j9, 0                    ; each frame into the lists of its notes (PCNT[id + 1] walks as it fills)
-  mzi_f:
-    jldi j1, 0
-    jld j2, j1, FRN
-    jsub j2, j9, j2
-    jjz j2, mzi_fd
+  jwhile j2
     jldi j3, 32
     jmul j3, j9, j3
     jld j4, j1, FRB
@@ -1727,8 +1716,7 @@ mzi_sd:
     jshl j5, j5, j7
     jld j7, j1, NTB
     jadd j5, j5, j7
-    mzi_n:
-      jjz j6, mzi_nd
+    jwhile j6
       jld j7, j5, 0
       jldi j8, 1
       jadd j7, j7, j8
@@ -1749,11 +1737,15 @@ mzi_sd:
       jadd j5, j5, j8
       jldi j8, 1
       jsub j6, j6, j8
-      jjmp mzi_n
+    jwend
   mzi_nd:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp mzi_f
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, FRN
+    jsub j2, j9, j2
+  jwend
 mzi_fd:
   jld j11, j1, FRN              ; the counters by frame, and the ones touched
   jldi j2, 1
@@ -1767,14 +1759,13 @@ mzi_fd:
   jst j13, j1, CNT
   jld j2, j1, FRN
   jadd j3, j13, j1
-  mzi_k:
-    jjz j2, mzi_kd
+  jwhile j2
     jst j1, j3, 0
     jldi j4, 8
     jadd j3, j3, j4
     jldi j4, 1
     jsub j2, j2, j4
-    jjmp mzi_k
+  jwend
 mzi_kd:
   jld j11, j1, TA
   jldi j10, 2
@@ -1842,8 +1833,7 @@ no_dbl:
   jldi j1, 0
   jld j3, j1, NTB
   jld j4, j1, NTN
-  no_mv:
-    jjz j4, no_mvd
+  jwhile j4
     jld j5, j3, 0
     jst j5, j13, 0
     jldi j5, 8
@@ -1851,7 +1841,7 @@ no_dbl:
     jadd j13, j13, j5
     jldi j5, 1
     jsub j4, j4, j5
-    jjmp no_mv
+  jwend
 no_mvd:
   jld j3, j1, NTN
   jldi j4, 3
@@ -1877,8 +1867,7 @@ no_room:
   jshl j5, j5, j3
   jld j3, j1, FNB
   jadd j5, j5, j3
-  no_cp:
-    jjz j4, no_done
+  jwhile j4
     jld j3, j5, 0
     jst j3, j7, 0
     jldi j3, 8
@@ -1887,7 +1876,8 @@ no_room:
     jldi j3, 1
     jadd j6, j6, j3
     jsub j4, j4, j3
-    jjmp no_cp
+  jwend
+  jjmp no_done
 no_r2:
   jld j2, j1, MEMO
   jldi j3, 2
@@ -1900,10 +1890,7 @@ no_r2:
   jadd j7, j7, j8
   jld j5, j1, CUR
   jldi j8, 0
-  no_tk:
-    jldi j3, 5
-    jsub j3, j8, j3
-    jjz j3, no_done
+  jwhile j3
     jldi j3, 3
     jshl j3, j8, j3
     jadd j3, j3, j5
@@ -1917,7 +1904,11 @@ no_r2:
     jldi j3, 1
     jadd j6, j6, j3
     jadd j8, j8, j3
-    jjmp no_tk
+  jwcheck
+    jldi j3, 5
+    jsub j3, j8, j3
+  jwend
+  jjmp no_done
 no_melody:
   jld j2, j1, SLONG
   jld j3, j1, N2
@@ -1929,9 +1920,7 @@ no_melody:
   jld j8, j1, NTB
   jadd j7, j7, j8
   jldi j8, 0                    ; the note's place
-  no_lap:
-    jsub j3, j8, j2
-    jjz j3, no_done
+  jwhile j3
     jldb j3, j5, 0
     jjz j3, no_next
     jst j8, j7, 0
@@ -1943,7 +1932,9 @@ no_melody:
     jldi j3, 1
     jadd j5, j5, j3
     jadd j8, j8, j3
-    jjmp no_lap
+  jwcheck
+    jsub j3, j8, j2
+  jwend
 no_done:
   jst j6, j1, NTN
   jret
@@ -1970,8 +1961,7 @@ recall:
   jld j2, j1, NTB
   jadd j10, j10, j2             ; j10 its notes
   jld j11, j1, QNC
-  rc_n:
-    jjz j11, rc_judge
+  jwhile j11
     jld j2, j10, 0
     jld j3, j1, NID
     jsub j3, j2, j3
@@ -1985,9 +1975,7 @@ recall:
     jld j4, j2, 0
     jld j5, j2, 8
   rc_have:
-    rc_p:
-      jsub j6, j4, j5
-      jjz j6, rc_nn
+    jwhile j6
       jldi j6, 3
       jshl j6, j4, j6
       jld j7, j1, PST
@@ -2005,7 +1993,11 @@ recall:
       jjnz j7, rc_mine
       jldi j3, 1
       jadd j4, j4, j3
-      jjmp rc_p
+    jwcheck
+    rc_p:
+      jsub j6, j4, j5
+    jwend
+    jjmp rc_nn
     rc_mine:
       jldi j7, 3
       jshl j7, j6, j7
@@ -2033,12 +2025,11 @@ recall:
     jadd j10, j10, j2
     jldi j2, 1
     jsub j11, j11, j2
-    jjmp rc_n
+  jwend
 rc_judge:
   jld j11, j1, TCN
   jld j10, j1, TCH
-  rc_t:
-    jjz j11, rc_done
+  jwhile j11
     jld j6, j10, 0
     jldi j7, 3
     jshl j7, j6, j7
@@ -2075,7 +2066,7 @@ rc_judge:
     jadd j10, j10, j2
     jldi j2, 1
     jsub j11, j11, j2
-    jjmp rc_t
+  jwend
 rc_done:
   jld j2, j1, TC                ; its notes go: only the remembered ones stay
   jst j2, j1, NTN
@@ -2258,14 +2249,14 @@ rnd2:
 puts:
   jldi j3, 0
   jld j2, j3, POS
-pu_lap:
-  jldb j3, j1, 0
-  jjz j3, pu_done
+jwhile j3
   jstb j3, j2, TEXT
   jldi j3, 1
   jadd j1, j1, j3
   jadd j2, j2, j3
-  jjmp pu_lap
+jwcheck
+  jldb j3, j1, 0
+jwend
 pu_done:
   jldi j1, 0
   jst j2, j1, POS
@@ -2316,6 +2307,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -2323,13 +2321,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

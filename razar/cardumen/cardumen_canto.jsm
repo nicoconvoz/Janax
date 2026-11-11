@@ -128,17 +128,17 @@ jwhile j15
   jldi j3, 8                    ; a song: its greetings, 2 bits each, until a 3
   jshr j2, j2, j3
   jldi j4, 0                    ; how many
-c_code:
-  jldi j3, 3
-  jand j5, j2, j3
-  jsub j6, j5, j3
-  jjz j6, c_coded
+jwhile j6
   jstb j5, j4, SEQ
   jldi j3, 1
   jadd j4, j4, j3
   jldi j3, 2
   jshr j2, j2, j3
-  jjmp c_code
+jwcheck
+  jldi j3, 3
+  jand j5, j2, j3
+  jsub j6, j5, j3
+jwend
 c_coded:
   jldi j13, 0
   jst j4, j13, SLEN
@@ -310,6 +310,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -317,13 +324,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

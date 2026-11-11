@@ -789,8 +789,7 @@ n_split:
     jadd j2, j2, j12
     jld j3, j2, 0               ; the one to place
     jadd j11, j9, j1
-    sp_in:
-      jjz j11, sp_put
+    jwhile j11
       jld j4, j2, -8
       jsub j5, j3, j4
       jldi j6, 63
@@ -801,7 +800,7 @@ n_split:
       jsub j2, j2, j5
       jldi j5, 1
       jsub j11, j11, j5
-      jjmp sp_in
+    jwend
   sp_put:
     jst j3, j2, 0
     jldi j2, 1

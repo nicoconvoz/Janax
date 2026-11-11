@@ -1439,14 +1439,7 @@ cb_done:
 ; The root of the word j2 (each step halves the path) -> j2. Uses j1, j3, j4.
 uf_find:
   jldi j1, 0
-uf_step:
-  jldi j3, 24
-  jmul j3, j2, j3
-  jld j4, j1, ROOMUF
-  jadd j3, j3, j4
-  jld j4, j3, 0
-  jsub j4, j4, j2
-  jjz j4, uf_done
+jwhile j4
   jld j4, j3, 0                 ; its parent's parent becomes its parent
   jldi j2, 24
   jmul j2, j4, j2
@@ -1455,7 +1448,14 @@ uf_step:
   jldi j1, 0
   jld j2, j2, 0
   jst j2, j3, 0
-  jjmp uf_step
+jwcheck
+  jldi j3, 24
+  jmul j3, j2, j3
+  jld j4, j1, ROOMUF
+  jadd j3, j3, j4
+  jld j4, j3, 0
+  jsub j4, j4, j2
+jwend
 uf_done:
   jret
 

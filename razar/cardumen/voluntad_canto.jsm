@@ -295,10 +295,7 @@ song:
   jldi j2, 1
   jst j2, j1, BTOT
   jldi j8, 0                    ; word g
-gw_lap:
-  jldi j1, 30
-  jsub j1, j8, j1
-  jjz j1, gw_done
+jwhile j1
   jldi j1, 3
   jshl j1, j8, j1
   jld j10, j1, HEARD            ; what it heard for g
@@ -353,7 +350,10 @@ gw_lap:
 gw_next:
   jldi j1, 1
   jadd j8, j8, j1
-  jjmp gw_lap
+jwcheck
+  jldi j1, 30
+  jsub j1, j8, j1
+jwend
 gw_done:
   jldi j1, 0                    ; it knows what it said: it learns what that sounded like
   jld j8, j1, THING
@@ -433,6 +433,13 @@ ask:
 
 ; The next letter from its mailbox (request 31) into MAIL; while it is empty it sleeps until the doorbell (29), and
 ; looks again. If nobody is left who could greet it, it ends. Uses j1, j10-j14.
+jwhile j1
+  jldi j10, 29
+  jcall ask
+  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
+  jadd j1, j13, j1
+  jjz j1, h_alone
+jwcheck
 hear:
   jldi j10, 31
   jldi j11, MAIL
@@ -440,13 +447,7 @@ hear:
   jcall ask
   jldi j1, 1
   jsub j1, j13, j1
-  jjz j1, h_got
-  jldi j10, 29
-  jcall ask
-  jldi j1, 1                    ; nobody is left who could greet it (-1): waiting again would spin for nothing
-  jadd j1, j13, j1
-  jjz j1, h_alone
-  jjmp hear
+jwend
 h_got:
   jret
 h_alone:

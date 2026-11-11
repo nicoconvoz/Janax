@@ -189,7 +189,30 @@ jcall room
 jldi j1, 0
 jst j13, j1, PTHP
 jst j1, j1, PLEN
-cm_read:
+jwhilez j3
+  jld j11, j1, PTHC
+  jadd j11, j11, j11
+  jcall room
+  jldi j1, 0
+  jld j3, j1, PTHP
+  jld j4, j1, PLEN
+  jldi j5, 0
+  jwhile j6
+    jadd j6, j3, j5
+    jldb j6, j6, 0
+    jadd j7, j13, j5
+    jstb j6, j7, 0
+    jldi j6, 1
+    jadd j5, j5, j6
+  jwcheck
+    jsub j6, j5, j4
+  jwend
+  cm_moved:
+  jst j13, j1, PTHP
+  jld j2, j1, PTHC
+  jadd j2, j2, j2
+  jst j2, j1, PTHC
+jwcheck
   jld j10, j1, PTHK
   jld j11, j1, PTHP
   jld j2, j1, PLEN
@@ -208,30 +231,7 @@ cm_read:
   jst j2, j1, PLEN
   jld j3, j1, PTHC
   jsub j3, j2, j3
-  jjnz j3, cm_readd             ; (less than it had room for: the file ended)
-  jld j11, j1, PTHC
-  jadd j11, j11, j11
-  jcall room
-  jldi j1, 0
-  jld j3, j1, PTHP
-  jld j4, j1, PLEN
-  jldi j5, 0
-  cm_mv:
-    jsub j6, j5, j4
-    jjz j6, cm_moved
-    jadd j6, j3, j5
-    jldb j6, j6, 0
-    jadd j7, j13, j5
-    jstb j6, j7, 0
-    jldi j6, 1
-    jadd j5, j5, j6
-    jjmp cm_mv
-  cm_moved:
-  jst j13, j1, PTHP
-  jld j2, j1, PTHC
-  jadd j2, j2, j2
-  jst j2, j1, PTHC
-  jjmp cm_read
+jwend
 cm_readd:
 jld j10, j1, HND
 jldi j2, 32
@@ -241,8 +241,7 @@ jor j10, j10, j2
 jcall ask
 jldi j1, 0                      ; (without the line feed, spaces or controls after it)
 jld j3, j1, PLEN
-cm_strip:
-  jjz j3, cm_stripped
+jwhile j3
   jld j4, j1, PTHP
   jadd j4, j4, j3
   jldi j5, 1
@@ -255,7 +254,7 @@ cm_strip:
   jjz j5, cm_stripped
   jldi j4, 1
   jsub j3, j3, j4
-  jjmp cm_strip
+jwend
 cm_stripped:
 jld j2, j1, PTHP                ; (a piece, if the line after the address says so)
 jcall come_piece
@@ -494,23 +493,9 @@ jwhile j10
 jwend
 jldi j2, 1
 jst j2, j1, ZWID
-ms_pass:
-  jldi j1, 0
-  jld j2, j1, ZWID
-  jld j3, j1, ZNW
-  jsub j2, j2, j3
-  jldi j3, 63
-  jsar j2, j2, j3
-  jjz j2, ms_done
+jwhile j2
   jst j1, j1, ZLO
-ms_run:
-  jldi j1, 0
-  jld j2, j1, ZLO
-  jld j3, j1, ZNW
-  jsub j4, j2, j3
-  jldi j5, 63
-  jsar j4, j4, j5
-  jjz j4, ms_swap
+jwhile j4
   jst j2, j1, ZA
   jst j2, j1, ZO
   jld j4, j1, ZWID
@@ -522,12 +507,7 @@ ms_run:
   jadd j2, j2, j4
   jcall zs_min
   jst j2, j1, ZHI
-ms_take:
-  jldi j1, 0
-  jld j2, j1, ZO
-  jld j3, j1, ZHI
-  jsub j2, j2, j3
-  jjz j2, ms_next
+jwhile j2
   jld j2, j1, ZA
   jld j3, j1, ZMID
   jsub j2, j2, j3
@@ -578,14 +558,26 @@ ms_put:
   jldi j4, 1
   jadd j3, j3, j4
   jst j3, j1, ZO
-  jjmp ms_take
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZO
+  jld j3, j1, ZHI
+  jsub j2, j2, j3
+jwend
 ms_next:
   jld j2, j1, ZLO
   jld j3, j1, ZWID
   jadd j2, j2, j3
   jadd j2, j2, j3
   jst j2, j1, ZLO
-  jjmp ms_run
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZLO
+  jld j3, j1, ZNW
+  jsub j4, j2, j3
+  jldi j5, 63
+  jsar j4, j4, j5
+jwend
 ms_swap:
   jld j2, j1, ZORD
   jld j3, j1, ZTMP
@@ -594,7 +586,14 @@ ms_swap:
   jld j2, j1, ZWID
   jadd j2, j2, j2
   jst j2, j1, ZWID
-  jjmp ms_pass
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZWID
+  jld j3, j1, ZNW
+  jsub j2, j2, j3
+  jldi j3, 63
+  jsar j2, j2, j3
+jwend
 ms_done:
 
 jldi j1, 0                      ; the letters it uses: each byte its number among them, in the bits that name them
@@ -700,12 +699,7 @@ jst j1, j1, ZBP
 
 jst j1, j1, ZP                  ; each piece: its words, each after the one before (what they share said once)
 jst j1, j1, ZI
-pw_piece:
-  jldi j1, 0
-  jld j2, j1, ZP
-  jld j3, j1, ZNP
-  jsub j2, j2, j3
-  jjz j2, pw_done
+jwhile j2
   jld j2, j1, ZBP
   jldi j3, 3
   jshr j2, j2, j3
@@ -727,10 +721,7 @@ pw_piece:
   jadd j2, j3, j1
 pw_count:
   jst j2, j1, ZCNT
-pw_word:
-  jldi j1, 0
-  jld j2, j1, ZCNT
-  jjz j2, pw_end
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, ZCNT
@@ -755,9 +746,7 @@ pw_word:
   jldi j2, 0                    ; what it shares with the one before
   jld j6, j1, ZPA
   jld j7, j1, ZPL
-pw_share:
-  jsub j8, j2, j5
-  jjz j8, pw_shared
+jwhile j8
   jsub j8, j2, j7
   jjz j8, pw_shared
   jadd j8, j4, j2
@@ -768,7 +757,9 @@ pw_share:
   jjnz j8, pw_shared
   jldi j8, 1
   jadd j2, j2, j8
-  jjmp pw_share
+jwcheck
+  jsub j8, j2, j5
+jwend
 pw_shared:
   jst j2, j1, ZS
   jldi j3, 1
@@ -781,12 +772,7 @@ pw_shared:
   jldi j3, 1
   jadd j2, j2, j3
   jcall zb_gamma
-  pw_letter:                    ; the rest of its letters
-    jldi j1, 0
-    jld j2, j1, ZS
-    jld j3, j1, ZLL
-    jsub j3, j2, j3
-    jjz j3, pw_said
+  jwhile j3
     jldi j3, 1
     jadd j3, j2, j3
     jst j3, j1, ZS
@@ -798,7 +784,12 @@ pw_shared:
     jld j2, j2, ZCODE
     jld j3, j1, ZAB
     jcall zb_put
-    jjmp pw_letter
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZS
+    jld j3, j1, ZLL
+    jsub j3, j2, j3
+  jwend
   pw_said:
   jld j2, j1, ZID               ; how many times it is in the book, in how many renglones
   jldi j3, 3
@@ -847,14 +838,22 @@ pw_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZI
-  jjmp pw_word
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZCNT
+jwend
 pw_end:
   jcall zb_align
   jld j2, j1, ZP
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZP
-  jjmp pw_piece
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZP
+  jld j3, j1, ZNP
+  jsub j2, j2, j3
+jwend
 pw_done:
 jld j2, j1, ZBP
 jldi j3, 3
@@ -867,12 +866,7 @@ jadd j3, j3, j4
 jst j2, j3, 0
 
 jst j1, j1, ZP                  ; each mark page: how long each renglon is, from its first mark
-mk_page:
-  jldi j1, 0
-  jld j2, j1, ZP
-  jld j3, j1, ZNMP
-  jsub j3, j2, j3
-  jjz j3, mk_done
+jwhile j3
   jld j3, j1, ZBP
   jldi j4, 3
   jshr j3, j3, j4
@@ -911,7 +905,12 @@ mk_count:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZP
-  jjmp mk_page
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZP
+  jld j3, j1, ZNMP
+  jsub j3, j2, j3
+jwend
 mk_done:
 jld j2, j1, ZBP
 jldi j3, 3
@@ -956,12 +955,7 @@ jcall zs_pad
 jadd j11, j11, j2
 jst j11, j1, ZOP
 jst j1, j1, ZP
-ix_size:
-  jldi j1, 0
-  jld j2, j1, ZP
-  jld j3, j1, ZNP
-  jsub j3, j2, j3
-  jjz j3, ix_sized
+jwhile j3
   jcall zs_first
   jld j2, j1, ZLL
   jcall zs_pad
@@ -974,7 +968,12 @@ ix_size:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZP
-  jjmp ix_size
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZP
+  jld j3, j1, ZNP
+  jsub j3, j2, j3
+jwend
 ix_sized:
 jld j3, j1, ZOP                 ; (ZOP held the end: the list starts after the letters)
 jst j3, j1, ZOM
@@ -1078,12 +1077,7 @@ jld j2, j1, OUTR
 jld j3, j1, ZOP
 jadd j2, j2, j3
 jst j2, j1, ZW1
-ix_piece:
-  jldi j1, 0
-  jld j2, j1, ZP
-  jld j3, j1, ZNP
-  jsub j3, j2, j3
-  jjz j3, ix_marks
+jwhile j3
   jcall zs_first
   jld j9, j1, ZW1
   jld j2, j1, ZP
@@ -1108,7 +1102,12 @@ ix_piece:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZP
-  jjmp ix_piece
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZP
+  jld j3, j1, ZNP
+  jsub j3, j2, j3
+jwend
 ix_marks:
 jld j9, j1, OUTR                ; each mark page: where its bits start (from the first page), its first mark
 jld j2, j1, ZOM
@@ -1154,12 +1153,7 @@ jldi j1, 0                      ; the pieces: one already there with the same by
 jst j1, j1, ZP                  ; written
 jst j1, j1, ZNEW
 jst j1, j1, ZSAME
-wp_piece:
-  jldi j1, 0
-  jld j2, j1, ZP
-  jld j3, j1, ZNP
-  jsub j3, j2, j3
-  jjz j3, wp_done
+jwhile j3
   jldi j3, 1
   jadd j2, j2, j3
   jld j3, j1, CHASH
@@ -1185,8 +1179,7 @@ wp_piece:
   jsub j5, j5, j3
   jjnz j5, wp_new
   jld j5, j1, PZFR
-  wp_cmp:
-    jjz j3, wp_same
+  jwhile j3
     jldb j6, j2, 0
     jldb j7, j5, 0
     jsub j6, j6, j7
@@ -1195,7 +1188,7 @@ wp_piece:
     jadd j2, j2, j6
     jadd j5, j5, j6
     jsub j3, j3, j6
-    jjmp wp_cmp
+  jwend
 wp_same:
   jld j2, j1, ZSAME
   jldi j3, 1
@@ -1225,7 +1218,12 @@ wp_next:
   jldi j3, 1
   jadd j2, j2, j3
   jst j2, j1, ZP
-  jjmp wp_piece
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZP
+  jld j3, j1, ZNP
+  jsub j3, j2, j3
+jwend
 wp_done:
 jldi j2, ZLAB                   ; then the index: once it is there the book is eaten
 jldi j3, PLAB
@@ -1278,8 +1276,7 @@ jldi j2, 63
 jsar j2, j10, j2
 jjnz j2, old_gone
 jld j9, j1, PZLST
-og_label:
-  jjz j10, og_free
+jwhile j10
   jst j9, j1, ZW1
   jst j10, j1, ZW2
   jcall zw_index
@@ -1317,7 +1314,7 @@ og_next:
   jld j10, j1, ZW2
   jldi j2, 1
   jsub j10, j10, j2
-  jjmp og_label
+jwend
 og_free:
 jld j9, j1, ZOLD
 jld j10, j9, 80
@@ -1537,10 +1534,7 @@ zb_put:
   jldi j1, 0
   jst j2, j1, ZV
   jst j3, j1, ZW
-zbp_lap:
-  jldi j1, 0
-  jld j3, j1, ZW
-  jjz j3, zbp_done
+jwhile j3
   jldi j4, 1
   jsub j3, j3, j4
   jst j3, j1, ZW
@@ -1549,7 +1543,10 @@ zbp_lap:
   jst j5, j1, ZV
   jand j2, j2, j4
   jcall zb_bit
-  jjmp zbp_lap
+jwcheck
+  jldi j1, 0
+  jld j3, j1, ZW
+jwend
 zbp_done:
   jret
 
@@ -1557,16 +1554,16 @@ zbp_done:
 zb_unary:
   jldi j1, 0
   jst j2, j1, ZQ
-zbu_lap:
-  jldi j1, 0
-  jld j2, j1, ZQ
-  jjz j2, zbu_end
+jwhile j2
   jldi j3, 1
   jsub j2, j2, j3
   jst j2, j1, ZQ
   jldi j2, 1
   jcall zb_bit
-  jjmp zbu_lap
+jwcheck
+  jldi j1, 0
+  jld j2, j1, ZQ
+jwend
 zbu_end:
   jldi j2, 0
   jjmp zb_bit
@@ -1665,10 +1662,7 @@ zk_write:
   jld j2, j1, ZK
   jldi j3, 4
   jcall zb_put
-zkw_lap:
-  jldi j1, 0
-  jld j4, j1, ZRN
-  jjz j4, zkw_done
+jwhile j4
   jldi j2, 1
   jsub j4, j4, j2
   jst j4, j1, ZRN
@@ -1683,7 +1677,10 @@ zkw_lap:
   jld j3, j1, ZRD
   jsub j2, j2, j3
   jcall zb_rice
-  jjmp zkw_lap
+jwcheck
+  jldi j1, 0
+  jld j4, j1, ZRN
+jwend
 zkw_done:
   jret
 
@@ -1691,15 +1688,15 @@ zkw_done:
 zq_sqrt:
   jldi j1, 0
   jldi j3, 0
-zq_lap:
+jwhile j4
+  jldi j1, 1
+  jadd j3, j3, j1
+jwcheck
   jmul j4, j3, j3
   jsub j4, j4, j2
   jldi j1, 63
   jsar j4, j4, j1
-  jjz j4, zq_done
-  jldi j1, 1
-  jadd j3, j3, j1
-  jjmp zq_lap
+jwend
 zq_done:
   jldi j1, 0
   jadd j2, j3, j1
@@ -1727,8 +1724,7 @@ zs_less:
   jld j6, j3, 8
   jld j8, j1, ROOMA
   jadd j6, j6, j8
-zsl_lap:
-  jjz j7, zsl_no
+jwhile j7
   jjz j5, zsl_yes
   jldb j2, j4, 0
   jldb j3, j6, 0
@@ -1739,7 +1735,8 @@ zsl_lap:
   jadd j6, j6, j8
   jsub j5, j5, j8
   jsub j7, j7, j8
-  jjmp zsl_lap
+jwend
+jjmp zsl_no
 zsl_diff:
   jldi j2, 63
   jsar j8, j8, j2
@@ -1828,10 +1825,7 @@ lib_sweep:
   jst j2, j1, SWN               ; the names every index gives
   jld j2, j1, PZLST
   jst j2, j1, SWI
-  swp_ix:
-    jldi j1, 0
-    jld j2, j1, SWN
-    jjz j2, swp_named
+  jwhile j2
     jld j9, j1, SWI
     jcall zw_index
     jjz j2, swp_ixnext
@@ -1898,16 +1892,16 @@ lib_sweep:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, SWN
-    jjmp swp_ix
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SWN
+  jwend
 swp_named:
   jld j2, j1, PZLSTN            ; every file of those kinds, against them
   jst j2, j1, SWN
   jld j2, j1, PZLST
   jst j2, j1, SWI
-  swp_f:
-    jldi j1, 0
-    jld j2, j1, SWN
-    jjz j2, swp_done
+  jwhile j2
     jld j9, j1, SWI
     jld j2, j9, 0
     jldi j3, 34
@@ -1991,7 +1985,10 @@ swp_named:
     jldi j3, 1
     jsub j2, j2, j3
     jst j2, j1, SWN
-    jjmp swp_f
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, SWN
+  jwend
 swp_done:
   jldi j1, 0
   jret
@@ -2013,11 +2010,7 @@ vc_base:
   jst j1, j1, VCT                ; (its words' units, and the most a word is said)
   jst j1, j1, VCM
   jldi j9, 1
-  vcb_sum:
-    jldi j1, 0
-    jld j2, j1, NV
-    jsub j2, j9, j2
-    jjz j2, vcb_summed
+  jwhile j2
     jadd j2, j9, j1
     jcall w_mark
     jldi j1, 0
@@ -2039,7 +2032,11 @@ vc_base:
   vcb_snext:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp vcb_sum
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+  jwend
 vcb_summed:
   jld j2, j1, VCT                ; half of them, rounded up
   jldi j3, 1
@@ -2051,12 +2048,7 @@ vcb_summed:
   jst j2, j1, VCLO
   jld j2, j1, VCM
   jst j2, j1, VCHI
-  vcb_half:
-    jldi j1, 0
-    jld j2, j1, VCLO
-    jld j3, j1, VCHI
-    jsub j4, j3, j2
-    jjz j4, vcb_found
+  jwhile j4
     jadd j2, j2, j3
     jldi j4, 1
     jadd j2, j2, j4
@@ -2071,7 +2063,14 @@ vcb_summed:
     jjnz j2, vcb_low
     jld j2, j1, VCMD
     jst j2, j1, VCLO
-    jjmp vcb_half
+  jwcheck
+  vcb_half:
+    jldi j1, 0
+    jld j2, j1, VCLO
+    jld j3, j1, VCHI
+    jsub j4, j3, j2
+  jwend
+  jjmp vcb_found
   vcb_low:
     jld j2, j1, VCMD
     jldi j3, 1
@@ -2093,11 +2092,7 @@ vcb_found:
   jst j13, j1, VCP
   jst j1, j1, VCN
   jldi j9, 1                    ; their prints
-  vcb_put:
-    jldi j1, 0
-    jld j2, j1, NV
-    jsub j2, j9, j2
-    jjz j2, vcb_done
+  jwhile j2
     jadd j2, j9, j1
     jcall w_mark
     jldi j1, 0
@@ -2128,15 +2123,14 @@ vcb_found:
   jshi j6, 100h
   jshi j6, 0
   jshi j6, 1B3h
-    vcb_letter:
-      jjz j4, vcb_print
+    jwhile j4
       jldb j7, j3, 0
       jxor j5, j5, j7
       jmul j5, j5, j6
       jldi j7, 1
       jadd j3, j3, j7
       jsub j4, j4, j7
-      jjmp vcb_letter
+    jwend
   vcb_print:
     jjnz j5, vcb_pk
     jldi j5, 1
@@ -2153,7 +2147,11 @@ vcb_found:
   vcb_pnext:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp vcb_put
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+  jwend
 vcb_done:
   jldi j1, 0
   jret
@@ -2164,11 +2162,7 @@ vc_from:
   jst j1, j1, VCN
   jldi j8, 0
   jldi j9, 1
-  vcf_lap:
-    jldi j1, 0
-    jld j2, j1, NV
-    jsub j2, j9, j2
-    jjz j2, vcf_done
+  jwhile j2
     jadd j2, j9, j1
     jcall w_mark
     jldi j1, 0
@@ -2191,7 +2185,11 @@ vc_from:
   vcf_next:
     jldi j2, 1
     jadd j9, j9, j2
-    jjmp vcf_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, NV
+    jsub j2, j9, j2
+  jwend
 vcf_done:
   jadd j2, j8, j1
   jret
@@ -2482,12 +2480,7 @@ zs_buildings:
     jst j7, j6, 0
     jst j9, j1, ZW1
     jst j10, j1, ZW2
-    zbw_word:
-      jldi j1, 0
-      jld j5, j1, ZAST
-      jld j9, j1, ZW1
-      jsub j6, j9, j5
-      jjz j6, zbw_done
+    jwhile j6
       jldi j2, 3
       jshl j2, j5, j2
       jld j3, j1, ROOMT
@@ -2521,7 +2514,13 @@ zs_buildings:
       jld j5, j4, 0
       jadd j5, j5, j6
       jst j5, j4, 0
-      jjmp zbw_word
+    jwcheck
+    zbw_word:
+      jldi j1, 0
+      jld j5, j1, ZAST
+      jld j9, j1, ZW1
+      jsub j6, j9, j5
+    jwend
     zbw_done:
     jld j10, j1, ZW2
   zbw_closed:
@@ -2576,12 +2575,7 @@ zse_v:
   jldi j1, 0                      ; how many limits close some of its buildings
   jst j1, j1, ZKL
   jst j1, j1, ZLI
-  zse_count:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLIM
-    jsub j3, j2, j3
-    jjz j3, zse_counted
+  jwhile j3
     jcall zs_cell
     jjz j2, zse_cnext
     jld j2, j1, ZKL
@@ -2593,7 +2587,12 @@ zse_v:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp zse_count
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+  jwend
 zse_counted:
   jld j2, j1, ZKL
   jldi j3, 1
@@ -2601,12 +2600,7 @@ zse_counted:
   jcall zb_gamma
   jldi j1, 0
   jst j1, j1, ZLI
-  zse_each:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLIM
-    jsub j3, j2, j3
-    jjz j3, zse_done
+  jwhile j3
     jcall zs_cell
     jjz j2, zse_enext
     jst j2, j1, ZKL
@@ -2623,7 +2617,12 @@ zse_counted:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp zse_each
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+  jwend
 zse_done:
   jldi j1, 0
   jret
@@ -2764,12 +2763,7 @@ zs_limwrite:
   jldi j2, 16
   jadd j9, j9, j2
   jst j1, j1, ZLI
-  zlw_lap:
-    jldi j1, 0
-    jld j2, j1, ZLI
-    jld j3, j1, ZNLIM
-    jsub j3, j2, j3
-    jjz j3, zlw_done
+  jwhile j3
     jldi j3, 3
     jshl j3, j2, j3
     jld j4, j1, ZLC
@@ -2805,7 +2799,12 @@ zs_limwrite:
     jldi j3, 1
     jadd j2, j2, j3
     jst j2, j1, ZLI
-    jjmp zlw_lap
+  jwcheck
+    jldi j1, 0
+    jld j2, j1, ZLI
+    jld j3, j1, ZNLIM
+    jsub j3, j2, j3
+  jwend
 zlw_done:
   jret
 
