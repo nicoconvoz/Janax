@@ -2,6 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.5:** [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774)
+
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
 cada pieza tiene sus pruebas.
@@ -389,15 +391,44 @@ sounds wrong. A "will" listens to the melody and answers; starting with no share
 talking. Everything is deterministic and verified bit for bit across an interpreter, a routine engine and a native
 translator. Documentation is in Spanish.
 
-**Result (v0.2):** on the Lewis signaling game with 16 things, Razar learns the whole language in 35–102 games
-(81–278 messages) on 5 of 5 seeds; EGG (Facebook Research), the field's reference implementation, given richer
-messages and larger networks, reaches it on 0 of 5 within 320,000 games, stalling at 44–87 % in the partial
-languages the literature describes. Conditions were fixed before running; the benchmark is public
-(`razar/cardumen/convencional.sh`). Transfer is measured: the same architecture was then run on Morse translation, word riddles, relation deduction over a whole book, and the Spanish MATS analogies over 20 MB of Wikipedia. What exists only for the Lewis game is the head-to-head against a reference implementation at matched compute.
+**Result (v0.5):** Razar reads 20 MB of Spanish Wikipedia in 400 s instead of version 0.3's 1,873 s (82% fewer
+instructions), and the 15 MB Spanish Wiktionary in 106 s instead of 194 s. It learns exactly the same thing: the MATS
+result is identical (451 to 117; 249 to 41), and the deduced relations, what it imagined, the pending hypotheses, the
+mechanisms and the witnesses are byte-identical to version 0.3's. The gain grows with the size of the book.
+
+**How (v0.4):** a measuring kernel counted how many times each word of the program runs. Over 80% of the run was Razar
+writing and reading its own notebook one character at a time, rewriting it whole on every piece of the book. Writing
+in spans and writing only the difference (an append-only diary) removed it. The language also gained `jwcheck` and
+five instructions (`jjn`/`jjnn`, `jldadd`, `jldx`, `jcall0`) in all five engines, tested on x86 and on a real ARM64
+phone.
+
+**The Venn (v0.5):** the author's Venn ("A + B, A − B, A and B, what I look at A first, the smallest of B that are not
+in A… and I can invent anything") became part of the kernel's architecture. It is an engine that knows no boxes or
+files. It takes two sets through a five-question port and a Venn word, with one field per axis (regions, which side is
+looked at first, a criterion, direction, scope, how many), and gives the selection in order. Its first user is the
+association request, where a child is born with part of two processes' capabilities.
+
+**Earlier results stand:**
+- **v0.3:** with no one telling it what a synonym is, Razar groups words by the places they share; on 20 MB of
+  Wikipedia its pairs beat chance on MATS 451 to 117 (exact synonyms 18 to 1, binary antonyms 28 to 1).
+- **v0.2:** on the Lewis signaling game with 16 things, Razar learns the whole language in 35–102 games on 5 of 5
+  seeds. EGG (Facebook Research), the field's reference implementation, reaches it on 0 of 5 within 320,000 games.
+  Conditions were fixed before running, and the benchmark is public (`razar/cardumen/convencional.sh`).
 
 ## Cómo citarlo
 
-Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.5 es [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774), la v0.4 es [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529), la v0.3 es [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510), la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
+Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S.
+
+| Qué citar | DOI |
+|---|---|
+| **El proyecto** (todas las versiones; siempre lleva a la última) | [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) |
+| v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
+| v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
+| v0.3, la nitidez | [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510) |
+| v0.2 | [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615) |
+| v0.1 | [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884) |
+
+Para un resultado concreto, citá la versión que lo trae; para el proyecto en general, el DOI del proyecto.
 
 ## Donaciones
 

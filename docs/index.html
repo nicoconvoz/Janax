@@ -61,7 +61,7 @@
 <body>
 <header>
   <div class="wrap">
-    <div class="kicker">Código abierto · Apache 2.0 · <a href="https://doi.org/10.5281/zenodo.23933883">DOI 10.5281/zenodo.23933883</a></div>
+    <div class="kicker">Código abierto · Apache 2.0 · DOI del proyecto (todas las versiones) <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a> · versión actual, v0.5: <a href="https://doi.org/10.5281/zenodo.24148774">10.5281/zenodo.24148774</a></div>
     <h1>Janax y Razar</h1>
     <p class="lead">Un sistema operativo, un idioma y un ensamblador <strong>propios</strong>, escritos a mano en
       assembler, hechos para alojar a <strong>Razar</strong>: un razonamiento artificial que piensa con melodías.</p>
@@ -77,7 +77,7 @@
 
 <section>
   <div class="wrap">
-    <div class="kicker">El resultado de la v0.5 · 2026-11-11 · <a href="https://doi.org/10.5281/zenodo.24148774">DOI 10.5281/zenodo.24148774</a></div>
+    <div class="kicker">El resultado de la v0.5 · 2026-11-11 · DOI de esta versión: <a href="https://doi.org/10.5281/zenodo.24148774">10.5281/zenodo.24148774</a></div>
     <h2>20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31, aprendiendo exactamente lo mismo.</h2>
     <div class="scroll">
     <table>
@@ -104,7 +104,7 @@
 
 <section>
   <div class="wrap">
-    <div class="kicker">El resultado de la v0.4 · 2026-11-11 · <a href="https://doi.org/10.5281/zenodo.24147529">DOI 10.5281/zenodo.24147529</a></div>
+    <div class="kicker">El resultado de la v0.4 · 2026-11-11 · DOI de esta versión: <a href="https://doi.org/10.5281/zenodo.24147529">10.5281/zenodo.24147529</a></div>
     <h2>Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.</h2>
     <p class="sub">Primero se midió dónde se le iba el tiempo: un kernel de medición contó cuántas veces corre cada palabra
       del programa. La sorpresa: más del 80 % no era pensar, era <strong>escribir y leer su propio cuaderno</strong>, letra
@@ -541,16 +541,20 @@ bash razar/cardumen/nitidez_reproducir.sh corpus.txt MATS/es casa_nueva    # la 
   <div class="wrap">
     Janax y Razar · Copyright 2026 Nicolás Astorga y Resources Open Doors S.A.S. ·
     <a href="https://github.com/nicoconvoz/Janax/blob/master/LICENSE">Licencia Apache 2.0</a><br>
-    Citar: Nicolás Astorga (2026). <em>Janax y Razar</em>. DOI <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a><br>
+    Citar el proyecto: Nicolás Astorga (2026). <em>Janax y Razar</em>. DOI <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a> (todas las versiones). Esta versión, v0.5: <a href="https://doi.org/10.5281/zenodo.24148774">10.5281/zenodo.24148774</a><br>
     Contacto: <a href="mailto:ingenieriaaplicada@opendoors.com.ar">ingenieriaaplicada@opendoors.com.ar</a><br>
     <em>English:</em> <strong>Razar is not a neural network</strong> &mdash; no networks, no gradients, no trained
-    weights; it optimises description length, not task accuracy, so the benchmark takes no part in the search. It fits
-    in 5 MB and runs on two cores. A hand-written operating system, language and assembler built to host Razar, an
-    artificial reasoning system that thinks in melodies. On the Lewis signaling game with 16 things, Razar learns the whole
-    language in 35–102 games on 5 of 5 seeds; EGG, the field's reference implementation, reaches it on 0 of 5 within
-    320,000 games. Version 0.3: with no one telling it what a synonym is, Razar groups words by the places they share; on
-    20 MB of Spanish Wikipedia its pairs beat chance on MATS 451 to 117 (exact synonyms 18 to 1, antonyms 28 to 1), in 31
-    minutes and 205 MB, reproducible with one command. Documentation is in Spanish.
+    weights; it optimises description length, not task accuracy, so the benchmark takes no part in the search. Janax is
+    a hand-written operating system, language and assembler built to host Razar, an artificial reasoning system.
+    <strong>Version 0.5:</strong> Razar reads 20 MB of Spanish Wikipedia in 400 s instead of version 0.3's 1,873 s (82%
+    fewer instructions), and it learns exactly the same thing: the MATS result is identical (451 to 117), and so is every
+    file of what it learned. A measuring kernel showed that most of the run was Razar rewriting its own notebook one
+    character at a time; writing in spans and writing only the difference (an append-only diary) removed it
+    (<strong>v0.4</strong>). The author's Venn became part of the kernel's architecture: an engine that takes two sets and
+    a Venn word (regions, which side is looked at first, a criterion, direction, scope, how many) and gives the
+    selection in order. Earlier results stand: v0.3, synonyms and antonyms found by the places words share (451 to 117
+    on MATS); v0.2, the Lewis signaling game with 16 things learned in 35&ndash;102 games on 5 of 5 seeds, where EGG
+    reaches it on 0 of 5 within 320,000. Documentation is in Spanish.
   </div>
 </footer>
 </body>
