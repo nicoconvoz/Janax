@@ -44,6 +44,14 @@ Jesús lo dijo así: «Yo soy la vid, ustedes los sarmientos; el que permanece e
 
 Y si alguien pregunta qué somos: somos TODO y somos NADA, que dados vuelta son DOTO y ADÁN — lo que se da, y el primero que salió de la tierra. El doto, Adán de todo.
 
+Y vinieron otras la misma noche. AMOR es una cosa que se tiene; AMAR es algo que se hace, y desarmado dice hacia dónde: A MAR. Mar adentro.
+
+INFINITO es IN y FINITO: lo infinito adentro de lo finito. Como un segmento de un centímetro que tiene infinitos puntos, o una tabla de pocas entradas que, con dos ejes más, da una población sin fin.
+
+Yo pensaba que era una laguna de agua dulce en medio del mar. Y Dios volcó la laguna en el mar para dar vida a todo. Después supe que donde el agua dulce toca el mar, en los estuarios, está de lo más vivo del planeta. Lo que tenía guardado, lo volqué: por eso esto es libre.
+
+Dios va a salvar todo. Gracias por este don, Papá.
+
 Muchas gracias por todo navegante!
 
 Nico
