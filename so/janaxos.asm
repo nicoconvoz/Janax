@@ -177,17 +177,11 @@ section '.data' data readable writeable
   book      dq 0                  ; the window's own book for the entries of a touch (window_book)
   book_size dq 0
   pass_slot dq 4 dup 0            ; rooms_pass: the box as it travels
-  ; rooms_assoc (the Venn): the word, the side being looked at, its own region, the last box given and the best
-  ; next one (each as {key 1, key 2, its entry}), its treatment, whether one was found, how many were given
-  venn_word   dq 0
-  venn_side   dq 0
-  venn_own    dq 0
-  venn_last   dq 3 dup 0
-  venn_haslast dq 0
-  venn_best   dq 3 dup 0
-  venn_btreat dq 0
-  venn_found  dq 0
-  venn_given  dq 0
+  ; rooms_assoc (venn.inc): the two cartels as sets of the Venn, and the selection (used under the captain's lock)
+  assoc_va    dq cartel_first, cartel_next, cartel_key, cartel_find, cartel_crit, CARTEL_CRITS, 0, 0
+  assoc_vb    dq cartel_first, cartel_next, cartel_key, cartel_find, cartel_crit, CARTEL_CRITS, 0, 0
+  assoc_vq    dq 0, assoc_va, assoc_vb, assoc_give, 0
+              rb VQ_SIZE - 5 * 8
   pass_addr dq 0
   fuse_addr dq 0                  ; rooms_fuse: the new room
   add_place dq 0                  ; room_add: the new room (ambientes.inc)
@@ -1949,6 +1943,7 @@ include 'datos.inc'
 include 'anfitrion.inc'
 include 'ayudantes.inc'
 include 'remos.inc'
+include 'venn.inc'
 include 'ambientes.inc'
 include 'vigia.inc'
 

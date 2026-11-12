@@ -1268,23 +1268,11 @@ rooms_fuse:
 
 ; 27 associate (Capitan: "by association they can create one with the boxes they share, with the ones only
 ; A has, or with the ones only B has"): this cabin's next child is born with part of the boxes of this
-; cabin (A) and of the family cabin number rax (B), as the Venn word rdx asks. The Capitan's Venn: "A + B,
-; A - B, A and B, neither, what I look at A first, what I look at B first, the smallest of B that are not in A...
-; and I can invent anything": the classic Venn has 8 states, and with the order of the look and a criterion
-; it has no end. The word, an axis per field (plastic: a new axis is a new field):
-;   bits 0-2   the regions: 1 the boxes both hold, 2 A's only, 4 B's only (0 none, 7 all)
-;   bit 3      the look: 0 A first, 1 B first (a shared box is given from the side looked at first)
-;   bits 4-7   the criterion: 0 the order of each cartel, 1 the size, 2 the box's number, 3 its treatment
-;   bit 8      descending; bit 9 the criterion over the whole child (0: inside each side, in the look's order)
-;   bits 16-31 how many (0 all)
-; Any other bit must be 0 (an axis not invented yet: it answers -1, so a new axis never changes what an old
-; program asked). It takes both: the child gets them only if B associated with A too (each one names the
-; other). -> rax = 0, or -1. Keeps every register but rax, rcx, rdx.
-VENN_B_FIRST = 8
-VENN_DESC    = 100h
-VENN_WHOLE   = 200h
-VENN_KNOWN   = 0FFFF03FFh
-VENN_CRITS   = 4                ; criteria known: 0-3
+; cabin (A) and of the family cabin number rax (B), as the Venn word rdx asks (the Capitan's Venn, venn.inc:
+; the regions, the look, a criterion of a cartel's, the direction, the scope, how many). A bit no axis has yet, or a
+; criterion a cartel does not know, answers -1, so a new axis never changes what an old program asked. It takes
+; both: the child gets them only if B associated with A too (each one names the other). -> rax = 0, or -1.
+; Keeps every register but rax, rcx, rdx.
 rooms_associate:
         mov     rcx, VENN_KNOWN
         not     rcx
@@ -1293,8 +1281,11 @@ rooms_associate:
         mov     rcx, rdx
         shr     rcx, 4
         and     ecx, 15
-        cmp     ecx, VENN_CRITS
-        jae     .invalid
+        push    rax
+        mov     eax, CARTEL_CRITS
+        bt      eax, ecx
+        pop     rax
+        jnc     .invalid
         push    rdx
         call    cabin_family
         pop     rdx
@@ -1358,160 +1349,99 @@ box_give:
         ret
 
 ; The child rbx, just made, is born with the part its mother r12 chose of her boxes and her partner's (if
-; the partner named her too and still runs), in the order her Venn word asks: each box of the regions asked
-; has a key {the criterion and the side in the look's order (the side first, or the criterion first over the whole
-; child), its place in its cartel}, and the child gets them from the smallest key up, as many as asked. With no
-; criterion and A looked at first that is hers in the order of her cartel, then the partner's. A box both hold is
-; given treated as both allow. The mother's association is used once. Each box given looks at every box again:
-; O(n^2) in the boxes of the two cabins, once per birth (criterion, not measurement: cartels are small).
-; Keeps rbx, rbp, r12-r15.
+; the partner named her too and still runs), as her Venn word asks (venn.inc): her cartel is set A, the partner's set
+; B, a box's key its number. With no criterion and A looked at first that is hers in the order of her cartel, then the
+; partner's. A box both hold is given treated as both allow. The mother's association is used once. Keeps rbx,
+; rbp, r12-r15.
 rooms_assoc:
-        push    rsi rdi r13 r14 r15
-        mov     r13, [r12 + P_PARTNER]
-        test    r13, r13
+        push    rsi rdi
+        mov     rax, [r12 + P_PARTNER]
+        test    rax, rax
         jz      .done
         mov     qword [r12 + P_PARTNER], 0
-        cmp     [r13 + P_PARTNER], r12
+        cmp     [rax + P_PARTNER], r12
         jne     .done                   ; it did not name her: no association
-        cmp     qword [r13 + P_DONE], 0
+        cmp     qword [rax + P_DONE], 0
         jne     .done
         cmp     qword [r12 + P_ROOMS], 0
+        je      .done                   ; a cabin with no cartel gives no part
+        cmp     qword [rax + P_ROOMS], 0
         je      .done
-        cmp     qword [r13 + P_ROOMS], 0
-        je      .done
+        lea     rdi, [assoc_vb]
+        mov     [rdi + VS_DATA], rax
+        lea     rdi, [assoc_va]
+        mov     [rdi + VS_DATA], r12
+        lea     rdi, [assoc_vq]
         mov     rax, [r12 + P_ASSOC]
-        mov     [venn_word], rax
-        mov     qword [venn_given], 0
-        mov     qword [venn_haslast], 0
-        jmp     .pick
-.pick_lap:                              ; the smallest key past the last one: given
-        mov     rax, [venn_best + 16]
-        mov     rdx, [venn_btreat]
-        call    box_give
-        mov     rax, [venn_best]
-        mov     [venn_last], rax
-        mov     rax, [venn_best + 8]
-        mov     [venn_last + 8], rax
-        mov     rax, [venn_best + 16]
-        mov     [venn_last + 16], rax
-        mov     qword [venn_haslast], 1
-        inc     qword [venn_given]
-        mov     rax, [venn_word]
-        shr     rax, 16
-        and     eax, 0FFFFh
-        jz      .pick                   ; (0: all of them)
-        cmp     rax, [venn_given]
-        je      .done                   ; as many as asked
-.pick:                                  ; while a box is left past the last one given
-        mov     qword [venn_found], 0
-        xor     ecx, ecx                ; her side: 0 if she is looked at first
-        test    qword [venn_word], VENN_B_FIRST
-        setnz   cl
-        mov     rsi, r12
-        mov     rdi, r13
-        mov     eax, 2
-        call    venn_scan
-        xor     ecx, ecx                ; the partner's side
-        test    qword [venn_word], VENN_B_FIRST
-        setz    cl
-        mov     rsi, r13
-        mov     rdi, r12
-        mov     eax, 4
-        call    venn_scan
-        cmp     qword [venn_found], 0
-        jne     .pick_lap
+        mov     [rdi + VQ_WORD], rax
+        call    venn_run
 .done:
-        pop     r15 r14 r13 rdi rsi
+        pop     rdi rsi
         ret
 
-; The boxes of the cabin rsi (the other one: rdi), its side rcx (0 looked at first), its own region eax (2 or 4):
-; each one in a region the word asks, with a key past the last one given and smaller than the best found, becomes
-; the best. Uses rax, rcx, rdx, r8-r11; keeps the rest.
-venn_scan:
-        push    r14 r15
-        mov     [venn_own], rax
-        mov     [venn_side], rcx
-        mov     r15, [rsi + P_ROOMS]
-        mov     r14, [rsi + P_NROOMS]
-        shl     r14, ROOM_ESHIFT
-        add     r14, r15                ; its end
+; Given to the child rbx: the box of the entry rax, treated as its cartel says and, if the partner rdx holds it too,
+; as both allow.
+assoc_give:
+        mov     rcx, [rax + RE_PLACE]
+        shr     rcx, 48
+        and     ecx, 3
+        test    rdx, rdx
+        jz      @f
+        mov     rdx, [rdx + RE_PLACE]
+        shr     rdx, 48
+        and     rcx, rdx
+@@:     mov     rdx, rcx
+        jmp     box_give
+
+; A cabin's cartel as a set of the Venn (VS_DATA = the cabin): its boxes in the order of its cartel, the destroyed
+; ones skipped; a box's key is its number; its criteria 1 the size, 2 the number, 3 its treatment (0: none).
+CARTEL_CRITS = 0Fh
+cartel_first:
+        mov     r8, [rsi + VS_DATA]
+        mov     rax, [r8 + P_ROOMS]
+        jmp     cartel_live
+cartel_next:
+        add     rax, ROOM_ENTRY
+; rax = an entry of the cabin's cartel or past it -> rax = that one or the next one not destroyed, 0 past the end.
+cartel_live:
+        mov     r8, [rsi + VS_DATA]
+        mov     rcx, [r8 + P_NROOMS]
+        shl     rcx, ROOM_ESHIFT
+        add     rcx, [r8 + P_ROOMS]     ; its end
         jmp     .one
 .one_lap:
-        cmp     qword [r15 + RE_SIZE], 0
-        je      .next                   ; destroyed
-        mov     r9, [r15 + RE_BOX]
-        shl     r9, 16
-        shr     r9, 16
-        mov     r8, rdi
-        call    box_find
-        mov     r10, [r15 + RE_PLACE]   ; its treatment
-        shr     r10, 48
-        and     r10d, 3
-        mov     r11, [venn_own]
-        test    rax, rax
-        jz      .region
-        cmp     qword [venn_side], 0
-        jne     .next                   ; shared: given from the side looked at first
-        mov     rcx, [rax + RE_PLACE]   ; treated as both allow
-        shr     rcx, 48
-        and     r10, rcx
-        mov     r11d, 1
-.region:
-        test    r11, [venn_word]
-        jz      .next                   ; a region not asked
-        mov     rcx, [venn_word]        ; its criterion
-        shr     rcx, 4
-        and     ecx, 15
+        cmp     qword [rax + RE_SIZE], 0
+        jne     .found
+        add     rax, ROOM_ENTRY
+.one:                                   ; while entries are left
+        cmp     rax, rcx
+        jb      .one_lap
         xor     eax, eax
+.found:
+        ret
+cartel_key:
+        mov     rax, [rax + RE_BOX]
+        shl     rax, 16
+        shr     rax, 16
+        ret
+cartel_find:
+        mov     r9, rax
+        mov     r8, [rsi + VS_DATA]
+        jmp     box_find
+cartel_crit:
         cmp     ecx, 1
         jne     @f
-        mov     rax, [r15 + RE_SIZE]
+        mov     rax, [rax + RE_SIZE]
+        ret
 @@:     cmp     ecx, 2
+        je      cartel_key
+        cmp     ecx, 3
         jne     @f
-        mov     rax, r9
-@@:     cmp     ecx, 3
-        jne     @f
-        mov     rax, r10
-@@:     test    qword [venn_word], VENN_DESC
-        jz      @f
-        not     rax
-@@:     mov     rdx, [venn_side]        ; the key: {criterion, side} over the whole child, else {side, criterion}
-        test    qword [venn_word], VENN_WHOLE
-        jnz     @f
-        xchg    rax, rdx
-@@:     cmp     qword [venn_haslast], 0
-        je      .best
-        cmp     rax, [venn_last]        ; past the last one given
-        ja      .best
-        jb      .next
-        cmp     rdx, [venn_last + 8]
-        ja      .best
-        jb      .next
-        cmp     r15, [venn_last + 16]
-        jbe     .next
-.best:
-        cmp     qword [venn_found], 0
-        je      .take
-        cmp     rax, [venn_best]        ; smaller than the best found
-        jb      .take
-        ja      .next
-        cmp     rdx, [venn_best + 8]
-        jb      .take
-        ja      .next
-        cmp     r15, [venn_best + 16]
-        jae     .next
-.take:
-        mov     [venn_best], rax
-        mov     [venn_best + 8], rdx
-        mov     [venn_best + 16], r15
-        mov     [venn_btreat], r10
-        mov     qword [venn_found], 1
-.next:
-        add     r15, ROOM_ENTRY
-.one:                                   ; while its entries are left
-        cmp     r15, r14
-        jb      .one_lap
-        pop     r15 r14
+        mov     rax, [rax + RE_PLACE]
+        shr     rax, 48
+        and     eax, 3
+        ret
+@@:     xor     eax, eax
         ret
 
 ; ---------------------------------------------------------------- greetings (Capitan)
