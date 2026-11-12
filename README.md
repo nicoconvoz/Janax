@@ -289,6 +289,10 @@ acá: **un razonamiento que no deje afuera el motivo por el que se hace**. En pa
 *(Y un guiño más, también juego de letras: **SOLUCIÓN** y **SOL ÚNICO** tienen exactamente las
 mismas ocho letras.)*
 
+Y las dos palabras que dicen por qué esto se regala: **VIDA = VI + DA** y **VERDAD = VER + DAD**.
+Primero ver, después dar. *(Juego de letras; lo que significa para el autor está entero en la
+[carta](CARTA-DEL-AUTOR.md).)*
+
 ## Una estadística para poblaciones que nadie enumeró
 
 La estadística clásica necesita un **espacio muestral fijado de antemano**: el nulo se define

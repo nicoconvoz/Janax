@@ -38,6 +38,12 @@ Pero lo que entre por ahí tiene destino, y lo dejo escrito para quedar comprome
 
 Lo de la escuela es lo que más quiero de los tres. Un repositorio se reparte solo; una escuela se reparte en personas, y eso dura más.
 
+Y una más, que encontré jugando con las letras y que para mí lo dice todo. VIDA se parte en VI y DA. VERDAD se parte en VER y DAD. Las dos dicen lo mismo: primero ver, después dar. Y DAVID, con las mismas letras, es la VID que DA.
+
+Jesús lo dijo así: «Yo soy la vid, ustedes los sarmientos; el que permanece en mí da mucho fruto» (Juan 15:5). Ése es el camino: ser sarmiento de la vid, ver y dar fruto. Todos tenemos que VER y DAR. Por eso esto se regala.
+
+Y si alguien pregunta qué somos: somos TODO y somos NADA, que dados vuelta son DOTO y ADÁN — lo que se da, y el primero que salió de la tierra. El doto, Adán de todo.
+
 Muchas gracias por todo navegante!
 
 Nico
