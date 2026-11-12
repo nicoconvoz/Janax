@@ -400,6 +400,33 @@ P0 codigo=0 j0=0000000000000000 t=945
 P1 codigo=0 j0=0000000000000000 t=948
 ventanilla: pantallas=1 resintonias=39 llamadas al anfitrion=8 pedidos=42" asocia_3
 
+# The Capitan's Venn on the same family: the order of the look, a criterion, how many, and a bit no axis has yet.
+familia familia_venn hijo_orden
+cp "$salida/socio.bin" "$salida/familia_venn/736f63696f"
+caso "venn: mirando primero al socio" 0 0 "$fijo0
+P2 codigo=0 j0=0000000077550011 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+P1 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" asocia_4
+
+caso "venn: la mas chica de todas" 0 0 "$fijo0
+P2 codigo=0 j0=0000000000000055 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+P1 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" asocia_5
+
+caso "venn: las cuatro mas grandes, el empate como mira la madre" 0 0 "$fijo0
+P2 codigo=0 j0=0000000000007711 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+P1 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" asocia_6
+
+caso "venn: un eje que no existe todavia" 0 0 "$fijo0
+P2 codigo=0 j0=0000000000000000 t=*
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+P1 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" asocia_7
+
 carpeta=
 
 # Greetings (Capitan): one mark per family member that greets, kept until taken; -1 when nobody is left.

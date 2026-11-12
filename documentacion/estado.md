@@ -450,3 +450,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-11 — ARM64 en el teléfono (Moto E7 Plus, adb): escalón 0 entero 210 bien, 0 mal; las 49 pruebas, las cinco instrucciones nuevas incluidas, dan lo mismo que el intérprete.
 2026-11-11 — v0.4, la caja de cambios: la mitad de las instrucciones y lo mismo aprendido. Notas: documentacion/release-v0.4.md.
 2026-11-11 — v0.4 en Zenodo: DOI 10.5281/zenodo.24147529.
+2026-11-11 — El Venn del Capitán en el kernel: el pedido 27 recibe una palabra Venn (regiones, la mirada, un criterio, la dirección, el alcance, cuántas; los bits sin eje responden −1). Los modos viejos son casos de la regla. asocia_0..7 en los tres motores: 32 de 32.

@@ -1,6 +1,7 @@
 ; Association (Capitan): the mother holds X (77h) and Y (11h); her partner "socio" holds X (linked) and Z
 ; (55h). Both name each other, and her child "hijo" is born with the part she chose (request 27, b):
-; 0 the ones both hold, 1 hers only, 2 its only, 3 all. j0 = the association's answer (0).
+; the Venn word (Capitan's Venn: the regions, the order of the look, a criterion, how many). Here regions 1 the
+; ones both hold, 2 hers only, 4 its only, 7 all. j0 = the association's answer (0).
 include '../../escalon0/janax.inc'
 jfirst j1, 1000h               ; first order: room 0 (it uses addresses below 1000h)
 jldi j3, 100h
@@ -39,7 +40,7 @@ jwhilez j1                      ; until it is ready (signing what it asks)
 jwend
 jldi j10, 27                    ; the association
 jadd j11, j2, j9
-jldi j12, 0
+jldi j12, 1
 jcall tocar
 jadd j0, j13, j9
 jldi j1, 200h                   ; "hijo" = 68 69 6A 6F

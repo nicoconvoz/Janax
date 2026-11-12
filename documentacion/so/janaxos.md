@@ -871,7 +871,7 @@ de su padre):
 | 24 enlazar | 🔗 se enlaza | La caja `a` también la tiene `b`, con el trato de la mitad alta del tipo |
 | 25 recibir | 📬 | La próxima caja que llegó por 23 o 24, o −1 |
 | 26 fusionar | 🔀 | Las cajas `a` y `b` se vuelven una nueva, con lo de `a` y después lo de `b` (**se copia**); las dos direcciones mueren acá |
-| 27 asociar | 🧩 | El próximo hijo nace con parte de mis cajas y las de `b`: 0 las que comparten, 1 solo mías, 2 solo suyas, 3 todas; vale solo si `b` también me nombró |
+| 27 asociar | 🧩 | El próximo hijo nace con parte de mis cajas y las de `a`, como pide **la palabra Venn** `b` (abajo); vale solo si `a` también me nombró |
 
 Reglas generales, sin casos especiales:
 - **Quien recibe nunca tiene más trato que quien da**; en la asociación, una caja de los dos va con el trato que
@@ -1319,3 +1319,36 @@ anterior:
 
 Sumando todo lo del día (los while rotados, las cinco instrucciones, `put_span` y la diferencia), el libro pasó de
 13.939.913.762 a 6.767.642.469 instrucciones: **la mitad**.
+
+## El Venn del Capitán en el kernel: `asociar` con la mirada, un criterio y cuántas (2026-11-11)
+
+> *"Venn, infinitos estados. A + B, A − B, A y B, sin A ni B, lo que miro A primero, lo que miro B primero, los más
+> pequeños de B que no están en A… y puedo inventar lo que sea."* — el Capitán
+
+El pedido 27 ya no recibe un modo del 0 al 3: recibe **una palabra Venn** de 64 bits, un eje por campo. Es plástica:
+un eje nuevo es un campo nuevo.
+
+| Bits | Eje | Valores |
+|---|---|---|
+| 0–2 | las regiones | 1 = las que tienen las dos (A∩B), 2 = solo las de A, 4 = solo las de B (0 ninguna, 7 todas) |
+| 3 | la mirada | 0 = A primero, 1 = B primero (una caja compartida se da desde el lado que se mira primero) |
+| 4–7 | el criterio | 0 = el orden de cada cartel, 1 = el tamaño, 2 = el número de caja, 3 = el trato |
+| 8 | la dirección | 0 = de menor a mayor, 1 = de mayor a menor |
+| 9 | el alcance | 0 = el criterio adentro de cada lado, en el orden de la mirada; 1 = sobre todo el hijo |
+| 16–31 | cuántas | 0 = todas; *k* = las primeras *k* |
+| el resto | ejes por inventar | tienen que venir en 0: si no, responde −1, así que un eje nuevo nunca cambia lo que pedía un programa viejo |
+
+Cada caja de las regiones pedidas tiene una clave `{criterio y lado (en el orden que pide el alcance), su lugar en el
+cartel}`, y el hijo las recibe de la más chica a la más grande, hasta llegar a *cuántas*. Los cuatro modos de antes son
+casos de la regla: 0, 1, 2 y 3 pasan a ser 1, 2, 4 y 7, con criterio 0 y mirando a A primero, y dan exactamente el orden
+de antes. *"Los más pequeños de B que no están en A"* es: regiones 4, criterio 1, de menor a mayor, cuántas *k*.
+
+**El costo:** cada caja que se da vuelve a mirar todas, O(n²) en las cajas de las dos cabinas, una vez por nacimiento.
+Es criterio, no medición: los carteles son chicos.
+
+**Las pruebas, en los tres motores:**
+- `asocia_0..3`: los modos de siempre, con sus máscaras; dan lo mismo que antes.
+- `asocia_4`: mirando primero al socio, `hijo_orden` dice `00 77 55 00 11`. Cada cabina tiene también su sala 0.
+- `asocia_5`: la más chica de todas: Z.
+- `asocia_6`: las cuatro más grandes. El empate de las dos salas 0 lo gana la madre, que se mira primero.
+- `asocia_7`: un bit que ningún eje usa todavía responde −1.

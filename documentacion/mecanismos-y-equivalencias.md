@@ -409,7 +409,8 @@ modos.
 
 ### El hallazgo conceptual: un Venn de población infinita
 
-Esto no es una característica pendiente de `asociar`: es un resultado sobre el Venn mismo, y es
+Desde el 2026-11-11 `asociar` lo implementa: regiones, la mirada, un criterio y cuántas, en una sola palabra
+plástica (detalle en `documentacion/so/janaxos.md`). Pero el resultado no depende de eso: es sobre el Venn mismo, y es
 del autor. Conviene separarlo del código porque **vale aunque el código no lo implemente**.
 
 > *"Venn, infinitos estados. Un conjunto A + B, A − B, A y B, sin A ni B, **lo que miro A primero,
