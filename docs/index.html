@@ -72,6 +72,33 @@
 
 <section>
   <div class="wrap">
+    <div class="kicker">El resultado de la v0.5 · 2026-11-11 · el Venn</div>
+    <h2>20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31, aprendiendo exactamente lo mismo.</h2>
+    <div class="scroll">
+    <table>
+      <tr><th>Libro</th><th>v0.3</th><th>v0.5</th><th>Instrucciones</th><th>MATS, real contra azar</th></tr>
+      <tr><td><strong>Wikipedia, 20 MB</strong></td><td class="num">1.873 s</td><td class="num"><strong>400 s</strong></td><td class="num">−82 %</td><td class="num">451 – 117, idéntico</td></tr>
+      <tr><td>Wikcionario, 15 MB</td><td class="num">194 s</td><td class="num"><strong>106 s</strong></td><td class="num">−54 %</td><td class="num">249 – 41, idéntico</td></tr>
+    </table>
+    </div>
+    <p class="sub" style="margin-top:12px">Las relaciones deducidas, lo imaginado, las hipótesis en espera, los mecanismos y
+      los testigos salen <strong>idénticos byte por byte</strong> a los de la v0.3. Cuanto más grande el libro, más gana.</p>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h3>El Venn, en la arquitectura</h3>
+        <p><em>"A + B, A − B, A y B, lo que miro A primero, los más pequeños de B que no están en A… y puedo inventar lo
+          que sea."</em> Un motor del kernel que no sabe de cajas ni de archivos: dos conjuntos y una palabra Venn.</p></div>
+      <div class="card"><h3>Un eje por campo</h3>
+        <p>Las regiones, a quién se mira primero, un criterio, la dirección, el alcance y cuántas. Un bit sin eje todavía
+          dice que no: un eje nuevo nunca cambia lo que pedía un programa viejo.</p></div>
+      <div class="card"><h3>El primero enchufado</h3>
+        <p><code>asociar</code>: el hijo nace con las cajas que pide el Venn de dos cabinas. Probado en los tres motores,
+          32 de 32.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="kicker">El resultado de la v0.4 · 2026-11-11 · <a href="https://doi.org/10.5281/zenodo.24147529">DOI 10.5281/zenodo.24147529</a></div>
     <h2>Razar hace el mismo trabajo con la mitad de las instrucciones, y aprende exactamente lo mismo.</h2>
     <p class="sub">Primero se midió dónde se le iba el tiempo: un kernel de medición contó cuántas veces corre cada palabra
@@ -293,6 +320,17 @@
       <tr><td>La ventana de ±1 paso</td><td>STDP</td><td>Bi y Poo 1998</td></tr>
       <tr><td>El punto fijo del ensamblador</td><td>Bootstrap de tres etapas</td><td>GCC; Thompson 1984</td></tr>
       <tr><td>La relajación de saltos</td><td>Instrucciones dependientes del alcance</td><td>Szymanski 1978</td></tr>
+      <tr><td>El motor Venn del kernel (<code>venn.inc</code>)</td><td>Álgebra relacional (selección, orden, límite) sobre iteradores</td><td>Codd 1970; Graefe 1994 (Volcano)</td></tr>
+      <tr><td>El diario de <code>nitidas</code> y <code>lugares</code> que solo crece</td><td>Registro de solo agregado / árbol LSM</td><td>O'Neil et al. 1996</td></tr>
+      <tr><td>«Andá al final» (<code>a = −1</code> en el pedido 38)</td><td>Escritura al final del archivo</td><td><code>O_APPEND</code> / <code>SEEK_END</code> de Unix</td></tr>
+      <tr><td>Escribir de un tirón (<code>put_span</code>)</td><td>E/S con búfer: bloques en vez de caracteres</td><td>stdio de Unix V7, 1979</td></tr>
+      <tr><td>El kernel de medición (<code>PERFIL</code>)</td><td>Perfilado por conteo exacto de instrucciones</td><td>gprof 1982; ATOM 1994</td></tr>
+      <tr><td><code>jwcheck</code> y los bucles rotados</td><td>Inversión de bucles</td><td>Muchnick 1997</td></tr>
+      <tr><td><code>modismos_janax.py</code></td><td>Optimización de mirilla con análisis de vida</td><td>McKeeman 1965; Kildall 1973</td></tr>
+      <tr><td><code>jjn</code> / <code>jjnn</code></td><td>Salto por signo</td><td><code>bltz</code>/<code>bgez</code> de MIPS; <code>tbnz</code> de ARM</td></tr>
+      <tr><td><code>jldadd</code></td><td>Lectura-modificación-escritura (<em>fetch-and-add</em>)</td><td>Gottlieb et al. 1983</td></tr>
+      <tr><td><code>jldx</code></td><td>Direccionamiento indexado con escala</td><td>Intel 80386, 1985</td></tr>
+      <tr><td><code>jcall0</code></td><td>Pariente: el registro que el llamado deja sucio y se limpia al volver</td><td>Convención de llamada System V</td></tr>
     </table>
     </div>
     <p class="sub" style="margin-top:12px">Que tantas piezas tengan un equivalente correcto es una buena noticia:
@@ -305,11 +343,13 @@
       <li><strong><code>asociar</code></strong> (<code>so/ambientes.inc:1274</code>) &mdash; álgebra de conjuntos
         (intersección, diferencias, unión) sobre los espacios de capacidades de <strong>dos</strong> procesos,
         materializada al nacer un tercero, con consentimiento bilateral obligatorio.
-        <br><em>Construido:</em> las cuatro regiones booleanas (modos 0-3), con prueba corriendo
-        (<code>so/pruebas/asocia_{0,1,2,3}.jsm</code>).
-        <br><em>Y el hallazgo conceptual, que vale aunque el código todavía no lo implemente:</em>
+        <br><em>Construido (v0.5):</em> una <strong>palabra Venn</strong> con un eje por campo (las regiones, a quién
+        se mira primero, un criterio, la dirección, el alcance y cuántas), resuelta por un motor que es una pieza aparte de
+        la arquitectura (<code>so/venn.inc</code>) y que cualquier conjunto puede usar. Pruebas en los tres motores:
+        <code>so/pruebas/asocia_{0..7}.jsm</code>.
+        <br><em>Y el hallazgo conceptual, que vale más allá del código:</em>
         <strong>el Venn de población infinita.</strong> <code>asociar</code> entrega desde tres regiones, así que lo
-        booleano da <strong>2³ = 8</strong> estados y hay 4 construidos: es finito. Pero agregándole
+        booleano da <strong>2³ = 8</strong> estados: es finito. Pero agregándole
         <strong>el orden de la mirada</strong> («lo que miro A primero» entrega la misma región en otro orden, y con
         <em>k</em> cajas son <em>k</em>! órdenes) y <strong>un criterio de ranking</strong> («los más pequeños de B que
         no están en A», un predicado cualquiera sobre los campos del cartel), la cuenta pasa a ser
@@ -320,7 +360,7 @@
         orden es el de <strong>Codd (1970)</strong>, el álgebra relacional. Lo que no tiene precedente conocido es
         aplicarlo a <strong>capacidades</strong>: ahí los elementos no son filas, son derechos sobre memoria viva, y
         entregarlos ordenados o filtrados cambia <em>lo que el hijo puede hacer</em>, no solo lo que puede leer.
-        <code>asociar</code> con los modos 4 en adelante no sería una consulta: sería
+        Con la palabra Venn, <code>asociar</code> ya no es una consulta: es
         <strong>un lenguaje de consulta que reparte poder</strong>.</li>
       <li><strong>«La última parte»</strong> (<code>so/remos.inc:428</code>) &mdash; terminar en vez de ceder el turno,
         con el dato calculado del programa <strong>para que el programa no pueda mentir sobre él</strong>.</li>

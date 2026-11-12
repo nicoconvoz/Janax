@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system. Version 0.4: Razar does the same work with half the instructions, and it learns exactly the same thing. A measuring kernel counted how many times each word of the program runs: over 80% of the run was Razar writing and reading its own notebook one character at a time, rewriting it whole on every piece of the book. Writing in spans and writing only the difference (an append-only diary) took the 2.3 MB Spanish Wikipedia run from 13.94 to 6.77 billion instructions. The time Razar spends reading went from 12.5 s to 7.8 s. At every step, the MATS judge gives identical results, the places keep the same lines and the 293,292 pairs the same totals. The language gains jwcheck (a hand-written while condition) and five instructions (jjn/jjnn, jldadd, jldx, jcall0) in all five engines, tested on x86 and on a real ARM64 phone; the full suites pass (377 and 210). Version 0.3's result stands: on 20 MB of Spanish Wikipedia Razar's pairs beat chance on MATS 451 to 117. Everything is deterministic and verified bit for bit across engines. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial. v0.4: la mitad de las instrucciones, lo mismo aprendido. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system. Version 0.5: Razar reads 20 MB of Spanish Wikipedia in 400 s instead of version 0.3's 1,873 s (82% fewer instructions), and the 15 MB Spanish Wiktionary in 106 s instead of 194 s. It learns exactly the same thing: the MATS result is identical (451 to 117; 249 to 41), and the deduced relations, what it imagined, the pending hypotheses, the mechanisms and the witnesses are byte-identical to version 0.3's. The gain grows with the size of the book, because what was removed (rewriting its notebook whole on every piece) grew with it. The author's Venn becomes part of Janax's architecture: a kernel engine that knows no boxes or files. It takes two sets through a five-question port and a Venn word, with one field per axis (regions, which side is looked at first, a criterion, direction, scope, how many), and gives the selection in order; a bit with no axis yet is refused, so a new axis never changes an old program. The association request (a child born with part of two processes' capabilities) is its first user, tested on the three kernel engines. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar, un razonamiento artificial. v0.5: 20 MB de Wikipedia en 400 s, lo mismo aprendido, y el Venn del autor en la arquitectura. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "0.4",
+  "version": "0.5",
   "creators": [
     {
       "name": "Astorga, Nicolás",
@@ -27,7 +27,10 @@
     "antonyms",
     "MATS",
     "performance profiling",
-    "append-only log"
+    "append-only log",
+    "Venn diagram",
+    "relational algebra",
+    "capability systems"
   ],
   "language": "spa",
   "notes": "Contacto: ingenieriaaplicada@opendoors.com.ar"

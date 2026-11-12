@@ -15,6 +15,30 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## El resultado (v0.5): el Venn
+
+**20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31 minutos, aprendiendo exactamente lo mismo.**
+
+| Libro | v0.3 | v0.5 | Instrucciones | MATS, real contra azar |
+|---|---|---|---|---|
+| **Wikipedia, 20 MB** | 1.873 s | **400 s** | 2,42 → 0,43 billones (**−82 %**) | 451 – 117, idéntico |
+| Wikcionario, 15 MB | 194 s | **106 s** | −54 % | 249 – 41, idéntico |
+
+Las relaciones deducidas, lo imaginado, las hipótesis en espera, los mecanismos y los testigos salen **idénticos byte
+por byte** a los de la v0.3. Cuanto más grande el libro, más gana.
+
+**Y el Venn del Capitán pasa a ser una pieza de la arquitectura de Janax:**
+
+> *"Venn, infinitos estados. A + B, A − B, A y B, sin A ni B, lo que miro A primero, lo que miro B primero, los más
+> pequeños de B que no están en A… y puedo inventar lo que sea."*
+
+Es un motor del kernel (`so/venn.inc`) que no sabe de cajas ni de archivos. Recibe dos conjuntos y una **palabra Venn**
+con un eje por campo: las regiones, a quién se mira primero, un criterio, la dirección, el alcance y cuántas. Con eso
+entrega la selección en orden. Un bit sin eje todavía responde −1. El primer conjunto enchufado es el cartel de una
+cabina: `asociar`, probado en los tres motores (32 de 32).
+
+Notas: [`documentacion/release-v0.5.md`](documentacion/release-v0.5.md).
+
 ## El resultado (v0.4): la caja de cambios
 
 DOI de esta versión: [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529).
@@ -164,6 +188,17 @@ encontró antecedente.
 | La ventana de ±1 paso | STDP | Bi y Poo 1998 |
 | El punto fijo del ensamblador | Bootstrap de tres etapas | GCC; Thompson 1984 |
 | La relajación de saltos | Instrucciones dependientes del alcance | Szymanski 1978 |
+| El motor Venn del kernel (`venn.inc`) | Álgebra relacional (selección, orden, límite) sobre iteradores | Codd 1970; Graefe 1994 (Volcano) |
+| El diario de `nitidas` y `lugares` que solo crece | Registro de solo agregado / árbol LSM | O'Neil et al. 1996 |
+| «Andá al final» (`a = −1` en el pedido 38) | Escritura al final del archivo | `O_APPEND` / `SEEK_END` de Unix |
+| Escribir de un tirón (`put_span`) | E/S con búfer: bloques en vez de caracteres | stdio de Unix V7, 1979 |
+| El kernel de medición (`PERFIL`) | Perfilado por conteo exacto de instrucciones | gprof 1982; ATOM 1994 |
+| `jwcheck` y los bucles rotados | Inversión de bucles | Muchnick 1997 |
+| `modismos_janax.py` | Optimización de mirilla con análisis de vida | McKeeman 1965; Kildall 1973 |
+| `jjn` / `jjnn` | Salto por signo | `bltz`/`bgez` de MIPS; `tbnz` de ARM |
+| `jldadd` | Lectura-modificación-escritura (*fetch-and-add*) | Gottlieb et al. 1983 |
+| `jldx` | Direccionamiento indexado con escala | Intel 80386, 1985 |
+| `jcall0` | Pariente: el registro que el llamado deja sucio y se limpia al volver | Convención de llamada System V |
 
 Que tantas piezas tengan un equivalente correcto es una buena noticia, no una mala: significa que
 el camino, recorrido solo, dio con las soluciones que el oficio considera buenas. Ninguna de estas
@@ -174,9 +209,13 @@ convergencias reclama prioridad — los antecedentes son anteriores y están cit
 Cuatro piezas, con la advertencia de que «no se le encontró antecedente» habla de quien buscó, no
 de la literatura:
 
-1. **`asociar`** (`so/ambientes.inc:1274`) — álgebra de conjuntos (intersección, diferencias,
-   unión) sobre los espacios de capacidades de **dos** procesos, materializada al nacer un tercero,
-   con consentimiento bilateral obligatorio. Probado en `so/pruebas/asocia_{0,1,2,3}.jsm`.
+1. **`asociar` con el Venn del Capitán** (`so/ambientes.inc`, `so/venn.inc`) — álgebra de conjuntos
+   sobre los espacios de capacidades de **dos** procesos, materializada al nacer un tercero, con
+   consentimiento bilateral obligatorio. Desde la v0.5 la elección va en una **palabra Venn** con un
+   eje por campo: las regiones, a quién se mira primero, un criterio, la dirección, el alcance y
+   cuántas. El motor que la resuelve es una pieza aparte de la arquitectura, que cualquier conjunto
+   puede usar. La selección y el orden tienen antecedente (Codd); **repartir poder sobre memoria viva
+   con ese lenguaje, adentro del kernel, no**. Probado en `so/pruebas/asocia_{0..7}.jsm`.
 2. **«La última parte»** (`so/remos.inc:428`) — terminar en vez de ceder el turno, con el dato
    calculado estáticamente del programa **para que el programa no pueda mentir sobre él**.
 3. **La armonía de la ola** (`cardumen_cubo.jsm:818`) — una pieza se ahoga si la empujan desde
