@@ -1,5 +1,7 @@
 ## Janax y Razar v0.5: el Venn
 
+DOI: [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774)
+
 **20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31 minutos, aprendiendo exactamente lo mismo. Y el Venn
 del Capitán pasa a ser una pieza de la arquitectura de Janax.**
 

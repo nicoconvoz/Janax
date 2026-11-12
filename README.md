@@ -17,6 +17,8 @@ cada pieza tiene sus pruebas.
 
 ## El resultado (v0.5): el Venn
 
+DOI de esta versión: [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774).
+
 **20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31 minutos, aprendiendo exactamente lo mismo.**
 
 | Libro | v0.3 | v0.5 | Instrucciones | MATS, real contra azar |
@@ -391,7 +393,7 @@ languages the literature describes. Conditions were fixed before running; the be
 
 ## Cómo citarlo
 
-Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.4 es [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529), la v0.3 es [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510), la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
+Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S. DOI [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) (todas las versiones; la v0.5 es [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774), la v0.4 es [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529), la v0.3 es [10.5281/zenodo.24093510](https://doi.org/10.5281/zenodo.24093510), la v0.2 es [10.5281/zenodo.23962615](https://doi.org/10.5281/zenodo.23962615), la v0.1 es [10.5281/zenodo.23933884](https://doi.org/10.5281/zenodo.23933884)).
 
 ## Donaciones
 
