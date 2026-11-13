@@ -149,6 +149,22 @@ Sin saber qué es una instrucción, separó solo dos clases: **cabezas** (`48 8d
 - **No es Razar.** Es su principio (MDL de dos partes) en Python. Llevarlo a un órgano, y ver si la
   nitidez se engancha **sobre estas palabras** en vez de sobre los bytes, está sin hacer.
 
+## Tarea para la casa
+
+Queda abierto, a propósito, para quien quiera agarrarlo:
+
+1. **Otro compilador.** Correr `segmentar_mdl.py` sobre código que no salió de FASM (un ejecutable de
+   GCC, de MSVC, de Rust). ¿Siguen cayendo las palabras adentro de las instrucciones?
+2. **Otra arquitectura.** ARM tiene instrucciones de largo fijo (4 bytes). ¿El enfoque de cerca
+   elige 32 bits en vez de 8?
+3. **La nitidez sobre estas palabras.** En bytes sueltos no se engancha. ¿Se engancha sobre las
+   palabras que el segmentador inventó? ¿Quedan `74`/`75` o `0f 84`/`0f 85` como vecinos nítidos?
+4. **Otros chorros sin idioma.** Audio, imágenes sin comprimir, ADN. El juez es el mismo; la
+   pregunta también: ¿encuentra solo sus piezas?
+
+Si alguno da en contra, también es un resultado. Y vale igual: que la predicción quede escrita
+antes de correr.
+
 ## Cómo reproducirlo
 
 ```bash
