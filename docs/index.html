@@ -77,6 +77,25 @@
 
 <section>
   <div class="wrap">
+    <div class="kicker">Novedad · 2026-11-13</div>
+    <h2>Sin decirle cuánto mide una palabra, encuentra solo el byte — y después, las instrucciones del procesador.</h2>
+    <p class="sub">Sobre los 48.060 bytes del núcleo, sin desensamblar, con el principio de Razar (MDL de dos partes):</p>
+    <div class="scroll">
+    <table>
+      <tr><th>Enfoque</th><th>Qué encontró</th><th>Real</th><th>Bytes barajados</th><th>Azar</th></tr>
+      <tr><td><strong>De cerca</strong></td><td>el tamaño de palabra</td><td><strong>8 bits, alineado al byte</strong></td><td>ninguno gana</td><td>—</td></tr>
+      <tr><td><strong>De lejos</strong></td><td>dónde termina cada instrucción (F1)</td><td class="num"><strong>0,369</strong></td><td class="num">0,255</td><td class="num">0,235</td></tr>
+    </table>
+    </div>
+    <p class="sub" style="margin-top:12px">Se armó solo 85 palabras, y el <strong>98,7%</strong> cae adentro de una sola
+      instrucción: <code>48 8d</code> es <em>lea</em>, <code>48 8b</code> es <em>mov</em>, <code>0f 84</code> es <em>jz</em>.
+      Dos reglas que le decían cómo es un borde fallaron y están contadas; lo que pasó fue no decírselo.
+      <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/enfoque-en-bits.md">Pre-registrado, con sus límites &rarr;</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="kicker">El resultado de la v0.5 · 2026-11-11 · DOI de esta versión: <a href="https://doi.org/10.5281/zenodo.24148774">10.5281/zenodo.24148774</a></div>
     <h2>20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31, aprendiendo exactamente lo mismo.</h2>
     <div class="scroll">

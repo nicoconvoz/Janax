@@ -17,6 +17,21 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-13): el enfoque en los unos y los ceros
+
+**Sin decirle cuánto mide una palabra, el principio de Razar encuentra solo el byte — y después, las
+instrucciones del procesador.** Sobre los 48.060 bytes del núcleo, sin desensamblar:
+
+| Enfoque | Qué encontró | Real | Bytes barajados | Azar |
+|---|---|---|---|---|
+| **De cerca** | el tamaño de palabra | **8 bits, alineado al byte** | ninguno gana | — |
+| **De lejos** | dónde termina cada instrucción (F1) | **0,369** | 0,255 | 0,235 |
+
+Se armó solo 85 palabras, y el **98,7%** cae adentro de una sola instrucción: `48 8d` es *lea*,
+`48 8b` es *mov*, `0f 84` es *jz*. Dos reglas que le decían cómo es un borde fallaron y están
+contadas; lo que pasó fue no decírselo. Pre-registrado, con sus límites:
+[`documentacion/razar/enfoque-en-bits.md`](documentacion/razar/enfoque-en-bits.md).
+
 ## El resultado (v0.5): el Venn
 
 DOI de esta versión: [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774).
