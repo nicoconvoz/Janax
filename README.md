@@ -349,6 +349,10 @@ empatar costando más — *"que no lo mida no significa que no lo quiera"*.
   Wikipedia. Lo que existe **solo para el juego de Lewis** es la comparación contra una
   implementación de referencia del campo con el presupuesto igualado; en las otras cuatro no hay
   todavía un rival convencional medido al lado.
+- **Fuera de los idiomas naturales:** en **código fuente C** (el driver de openrazer) la nitidez
+  gana 8 de 8 antónimos pre-registrados y cae a azar cuando se barajan las palabras; en **código
+  máquina x86-64 crudo** no se engancha, ni con 4,2 MB. Los dos resultados, con sus claves y sus
+  nulos: [`documentacion/razar/nitidez-en-codigo.md`](documentacion/razar/nitidez-en-codigo.md).
 
 ## Cómo se prueba
 
