@@ -10,6 +10,9 @@ no el mecanismo. Leen los archivos que Razar deja en su casa y los comparan con 
 | `nitidez.py` | Lo imaginado por Razar (`imaginado`), por nitidez: cuánto se confirma en otros textos según cuántos lugares comparte | `python -I nitidez.py <imaginado> <fuente> <validador>...` |
 | `puntaje_mec.py` | Lo imaginado, mecanismo por mecanismo (átomo, molécula, planeta), contra su propio sin-mecanismo | `python -I puntaje_mec.py <imaginado> <fuente> <validador>...` |
 | `replica.py` | Si un mecanismo que gana en un validador gana también en otro | `python -I replica.py <imaginado> <fuente> <validador_1> <validador_2>` |
+| `enfoque_bits.py` | De cerca: qué tamaño y arranque de palabra elige el MDL sobre los bits de un ejecutable, sin decírselo | `python -I enfoque_bits.py <exe> real\|corrido3\|barajado` |
+| `segmentar_mdl.py` | De lejos: segmentación de código máquina que se ajusta sola, contra las instrucciones de un listado de FASM | `python -I segmentar_mdl.py <exe> <lst>` |
+| `medir_lexico.py` | Las palabras que inventó `segmentar_mdl.py`, y cuántas caen adentro de una sola instrucción | `python -I medir_lexico.py <exe> <lst>` |
 | `moldes.py` | Si los nombres de personas comparten lugares de persona (juez: las mayúsculas del texto original) | `python -I moldes.py <texto_original> <bytes> [n_cola]` |
 
 `<mats_es>` es la carpeta con las cuatro familias del MATS en castellano (`1_Inflectional_morphology` … `4_Lexicographic_semantics`),

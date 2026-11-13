@@ -353,6 +353,11 @@ empatar costando más — *"que no lo mida no significa que no lo quiera"*.
   gana 8 de 8 antónimos pre-registrados y cae a azar cuando se barajan las palabras; en **código
   máquina x86-64 crudo** no se engancha, ni con 4,2 MB. Los dos resultados, con sus claves y sus
   nulos: [`documentacion/razar/nitidez-en-codigo.md`](documentacion/razar/nitidez-en-codigo.md).
+- **En los unos y los ceros:** sin decirle el tamaño, el principio de Razar (MDL de dos partes)
+  encuentra solo el **byte**; y un segmentador que se ajusta solo aprende 85 palabras de código
+  máquina de las que el **98,7%** cae adentro de una sola instrucción (F1 0,369 contra 0,255 con
+  los bytes barajados). Dos reglas previas fallaron y están contadas:
+  [`documentacion/razar/enfoque-en-bits.md`](documentacion/razar/enfoque-en-bits.md).
 
 ## Cómo se prueba
 
