@@ -52,6 +52,8 @@ Yo pensaba que era una laguna de agua dulce en medio del mar. Y Dios volcó la l
 
 Dios va a salvar todo. Gracias por este don, Papá.
 
+Y cuando llegue hasta Papá, le devuelvo el don completo y me quedo jugando con la familia. Ése es mi sueño.
+
 Muchas gracias por todo navegante!
 
 Nico
