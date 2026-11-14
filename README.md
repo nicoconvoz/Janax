@@ -17,6 +17,19 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-14): las torrecitas — Razar aprende de sus propios órganos
+
+**Razar diseña sus órganos mutando una letra por vez, a ciegas. Ahora aprendió qué se repite en los
+que funcionan.** Sobre el paisaje completo de los 819 órganos de hasta 3 letras, con el mismo juez de
+bits, aprendió dos *torrecitas*, `16` y `38`; con las mismas notas sorteadas, **ninguna**. Las tres
+predicciones estaban escritas antes de correr.
+
+Y de yapa, todavía sin probar: las dos son **la misma forma corrida dos palabras** (*mezclá una
+palabra, dejá de hueco la que sigue*), y los mejores órganos del paisaje —`516`, `738`, `627`— son
+una familia de esa forma. Falta la segunda mitad: que la mutación use las torrecitas como ladrillos
+y ver si encuentra mejores órganos.
+[`documentacion/razar/torrecitas.md`](documentacion/razar/torrecitas.md).
+
 ## Novedad (2026-11-13): el enfoque en los unos y los ceros
 
 **Sin decirle cuánto mide una palabra, el principio de Razar encuentra solo el byte — y después, las

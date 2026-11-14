@@ -13,6 +13,7 @@ no el mecanismo. Leen los archivos que Razar deja en su casa y los comparan con 
 | `enfoque_bits.py` | De cerca: qué tamaño y arranque de palabra elige el MDL sobre los bits de un ejecutable, sin decírselo | `python -I enfoque_bits.py <exe> real\|corrido3\|barajado` |
 | `segmentar_mdl.py` | De lejos: segmentación de código máquina que se ajusta sola, contra las instrucciones de un listado de FASM | `python -I segmentar_mdl.py <exe> <lst>` |
 | `medir_lexico.py` | Las palabras que inventó `segmentar_mdl.py`, y cuántas caen adentro de una sola instrucción | `python -I medir_lexico.py <exe> <lst>` |
+| `torrecitas.py` | Las torrecitas: los pedazos de letras que se repiten en los órganos que le ganan a la base, por MDL, contra las notas sorteadas | `python -I torrecitas.py <paisaje>` |
 | `moldes.py` | Si los nombres de personas comparten lugares de persona (juez: las mayúsculas del texto original) | `python -I moldes.py <texto_original> <bytes> [n_cola]` |
 
 `<mats_es>` es la carpeta con las cuatro familias del MATS en castellano (`1_Inflectional_morphology` … `4_Lexicographic_semantics`),

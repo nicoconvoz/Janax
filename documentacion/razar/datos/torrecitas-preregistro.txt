@@ -1,0 +1,16 @@
+TORRECITAS (Capitan, 2026-11-14): aprender de los organos que funcionan los pedazos de letras que se repiten,
+para que sean ladrillos de la mutacion. Material: el paisaje completo de hasta 3 letras (819 organos) sobre el
+Nuevo Testamento (972.802 bytes, el mismo libro de lo medido: base -3554, '5'=208, '6'=-1586, '8'=-3358 reproducidos).
+Metodo, fijado antes de ver el paisaje: corpus = cada organo que le gana a la base, repetido en proporcion a lo que
+gana (round((nota-base)/100) veces). Sobre ese corpus, el mismo segmentador MDL de enfoque-en-bits (pegar el par
+vecino mas frecuente mientras baje datos+diccionario; letras de log2(9) bits; separador entre organos, que no se pega).
+Prediccion 1: aprende al menos una torrecita (un pedazo de 2+ letras que paga su nombre).
+Prediccion 2 (nulo): las mismas notas sorteadas entre los mismos 819 organos (semilla 2026) -> menos torrecitas, o ninguna.
+Prediccion 3: la torrecita que mas pesa contiene '16' o '61' (dato YA conocido: 16 es el mejor de 2 letras; no cuenta como evidencia nueva).
+fijado 2026-11-14T18:43:24Z
+
+RESULTADO (paisaje de 819, instrumento reproduce 16=2649 y 516=11144):
+P1 PASA: 2 torrecitas, '16' (837 usos) y '38' (814). P2 PASA: nulo 0 torrecitas. P3 PASA (dato ya conocido).
+POST-HOC, no pre-registrado: 16 y 38 son la misma forma corrida dos palabras (mezcla la n, hueco la n+1);
+516/627/738 (hueco n, mezcla n, hueco n+1) son 1ro, 7mo y 2do del paisaje. 27 (=forma con n=2) da -1407.
+registrado 2026-11-14T19:11:09Z
