@@ -1,5 +1,7 @@
 ## Janax y Razar v0.6: el mismo juez, en otros mares
 
+DOI: [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578)
+
 **El juez de Razar es uno solo: decir lo mismo con menos bits. Esta versión mide hasta dónde llega
 sin tocarlo — en código C, en los unos y los ceros del código máquina, y sobre los propios órganos
 de Razar.** Todas las predicciones se escribieron antes de correr, y lo que falló va contado.

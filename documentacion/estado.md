@@ -454,3 +454,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-11 — Con todo lo del día (v0.4 + el Venn), libros completos contra sus corridas de la v0.3, aprendiendo lo mismo byte por byte (sabido, imaginado, pendiente, mecanismos, testigos) y el mismo MATS: Wikcionario 15 MB 194 s → 106 s (−54 % de instrucciones), Wikipedia 20 MB 1.873 s → 400 s (2,42 → 0,43 billones de instrucciones, −82 %). Cuanto más grande el libro, más gana: lo que se sacó crecía con el cuaderno.
 2026-11-11 — v0.5, el Venn: suite del SO 389 bien, 0 mal; escalón 0 161 bien, 0 mal. Cada pieza nueva con su nombre en el oficio en el README y la página. Notas: documentacion/release-v0.5.md.
 2026-11-11 — v0.5 en Zenodo: DOI 10.5281/zenodo.24148774.
+2026-11-14 — v0.6, el mismo juez en otros mares (las torrecitas, el enfoque en los bits, la nitidez en código), sin cambios de código: DOI 10.5281/zenodo.24227578. Notas: documentacion/release-v0.6.md.
