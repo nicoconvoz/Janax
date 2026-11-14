@@ -454,7 +454,7 @@ association request, where a child is born with part of two processes' capabilit
 
 ## Cómo citarlo
 
-Nicolás Astorga (2026). *Janax y Razar*. Resources Open Doors S.A.S.
+Nicolás Astorga (2026). *Janax y Razar*.
 
 | Qué citar | DOI |
 |---|---|
