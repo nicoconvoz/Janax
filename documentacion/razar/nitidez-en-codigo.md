@@ -76,7 +76,23 @@ Quince de dieciséis es **p ≈ 0,0003** (prueba del signo, una cola). Ganan, en
 **Lo que dice el barajado, sin estirarlo:** al barajar casi no queda qué juzgar (2 pares); 2 a 0 no es
 significativo para ningún lado. Lo que cae es la cantidad de opuestos que se enganchan: de 16 a 2.
 
-**Límites:** como en el driver, un solo corpus. Es la segunda vez en C, con otra mano y otra época.
+**La réplica en Godot, y las dos juntas** (Capitán: *"no pierdas GEM, uní todo"*). La interfaz de
+[Godot](https://github.com/godotengine/godot) (`scene/gui`, MIT, commit `4d0d43b`, 130 archivos C++, 3,4 MB),
+con **la misma clave sin tocar** (misma huella `5648050c…`), pre-registrada a las 22:01 UTC; y la unión
+de GEM y Godot (4,2 MB), a las 22:02 UTC:
+
+| Corpus | Real | Palabras barajadas |
+|---|---|---|
+| GEM (738 KB) | **15 · 1 · 0** (p ≈ 0,0003) | 2 · 0 · 0 |
+| Godot (3,4 MB) | **16 · 2 · 0** (p ≈ 0,0007) | 9 · 6 · 1 (no significativo) |
+| **GEM + Godot (4,2 MB)** | **19 · 2 · 0** (p ≈ 0,0001) | 11 · 6 · 0 (p ≈ 0,17) |
+
+(real · azar · empate). La unión juzga más pares que cualquiera de los dos solos (21, contra 18 y 16),
+como se predijo, y sigue ganando casi todos. Dos interfaces gráficas escritas con treinta años de
+diferencia, en C y en C++, dan lo mismo con la misma clave.
+
+**Límites:** el barajado de Godot y de la unión no cae a cero sino a un empate flojo (9 a 6, 11 a 6):
+en C++ quedan pares que se enganchan aun sin orden. Lo que separa al real es la diferencia, no el cero.
 
 ## 2. Código máquina x86-64 crudo: no se engancha
 
