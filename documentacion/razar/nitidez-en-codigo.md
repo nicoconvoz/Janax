@@ -55,6 +55,29 @@ saltea. Hay pegamento gramatical, igual que en castellano: *struct ~ not*, *for 
 barajado tiene el triple de parejas nítidas (120.318 contra 41.900): **la cantidad de parejas no
 es señal**, lo que cuenta es que las correctas ganen.
 
+## 1b. Otra mano, otra época: la interfaz gráfica de GEM (2026-11-15)
+
+**Corpus:** el corazón gráfico de [OpenGEM](https://github.com/shanecoughlan/OpenGEM), la interfaz libre
+para DOS que desciende del GEM de Digital Research: el AES (ventanas, menús, eventos) y el VDI (el que
+dibuja), 68 archivos `.c`/`.h`/`.asm`, 738 KB. Es **GPL-2.0**, por eso no está en este repositorio.
+
+**Clave pre-registrada** (2026-11-15T21:47:26Z, sha256 `5648050c6fa64014…`), escrita sin mirar el
+contenido de los fuentes: 22 opuestos de interfaz gráfica y de C (open/close, show/hide, min/max,
+width/height, top/bottom, left/right, get/set, selected/normal, x/y, …).
+
+| | Opuestos pre-registrados |
+|---|---|
+| **Código real** | **15 real · 1 azar · 0 empate** (de 16 juzgados) |
+| **Mismo código, palabras barajadas** | 2 real · 0 azar · 0 empate (de 2 juzgados) |
+
+Quince de dieciséis es **p ≈ 0,0003** (prueba del signo, una cola). Ganan, entre otros, *open~close*,
+*width~height*, *top~bottom*, *left~right*, *get~set* y *selected~normal*.
+
+**Lo que dice el barajado, sin estirarlo:** al barajar casi no queda qué juzgar (2 pares); 2 a 0 no es
+significativo para ningún lado. Lo que cae es la cantidad de opuestos que se enganchan: de 16 a 2.
+
+**Límites:** como en el driver, un solo corpus. Es la segunda vez en C, con otra mano y otra época.
+
 ## 2. Código máquina x86-64 crudo: no se engancha
 
 **Corpus:** las secciones ejecutables, en hexadecimal, 16 bytes por renglón, **sin desensamblar**
