@@ -596,6 +596,15 @@ caso "pantalla: sin permiso de pantalla no muestra" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 ventanilla: *
 porteros: *" pantalla_mostrar@m
+# Waiting for an event of the screen (41) with no window ever opened: 0 at once, never a sleep; a record outside the
+# cabin answers -1; without the screen right, denied.
+caso "pantalla: esperar un evento sin ventana responde 0 enseguida" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000000 t=45
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=3" pantalla_esperar
+caso "pantalla: sin permiso de pantalla no espera" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=45
+ventanilla: pantallas=0 resintonias=0 llamadas al anfitrion=0 pedidos=3
+porteros: nodos=7 negados=3" pantalla_esperar@m
 
 caso "archivo: etiqueta que no es UTF-8" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=20

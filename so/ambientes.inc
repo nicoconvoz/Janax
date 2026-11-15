@@ -1669,12 +1669,14 @@ gate_watch:
         ret
 
 ; Nobody rows: while a cabin that watches waits for a greeting, the kernel sleeps on its folder until a file of a
-; prefix someone watches changes, and wakes them. -> eax = 1 if it woke someone, 0 if nobody watches (or the host
+; prefix someone watches changes, and wakes them. While a cabin sleeps on the screen (41), on the screen's bell too,
+; and no longer than its time. -> eax = 1 if it woke someone, 0 if nobody watches (or the host
 ; cannot tell it). Called with the kernel's lock; it leaves it while it sleeps. Keeps every register but rax, rcx, rdx, r8-r11.
 watch_wait:
         push    rbx rsi rdi rbp r12 r13 r14 r15
         mov     rbp, rsp                ; (the host is called with the stack aligned, as kern_sleep does)
         and     rsp, -16
+        mov     qword [watch_in], 1     ; one rower at a time sleeps on the bells (run_all)
         call    watch_any
         test    eax, eax
         jz      .none
@@ -1687,7 +1689,7 @@ watch_wait:
         xor     ebx, ebx                ; its own folder, and the board's if there is one: each one read for its next
         call    watch_read              ; change, both waited on at once
         test    eax, eax
-        jz      .none
+        jz      .unread
         mov     r12d, 1
         cmp     qword [board_len], 0
         je      .host
@@ -1711,16 +1713,40 @@ watch_wait:
         cmp     rbx, rax
         jb      .host_lap
         mov     r12, rbx
+        jmp     .wait
+.unread:                                ; its folder cannot be read: only the screen's bell, if someone sleeps on it
+        xor     r12d, r12d
+        cmp     qword [scr_nwait], 0
+        je      .none
 .wait:
         call    hw_wait_ms              ; (forever while nothing told waits to be quiet)
+        call    screen_wait_ms          ; (and no longer than the first one sleeping on the screen may wait)
         mov     r14, rax
+        lea     rsi, [watch_event]
+        mov     r13, r12
+        mov     qword [watch_scr], -1
+        cmp     qword [scr_nwait], 0
+        je      .bells
+        mov     rcx, r12                ; the bells, and the screen's last
+        lea     rdi, [watch_set]
+        rep     movsq
+        mov     rax, [scr_event]
+        mov     [rdi], rax
+        mov     [watch_scr], r12
+        lea     r13, [r12 + 1]
+        lea     rsi, [watch_set]
+.bells:
         call    kern_leave
-        invoke  WaitForMultipleObjects, r12, watch_event, 0, r14
+        invoke  WaitForMultipleObjects, r13, rsi, 0, r14
         mov     rbx, rax
         call    kern_enter
         inc     qword [hostcalls]
-        cmp     rbx, 102h               ; WAIT_TIMEOUT: what was told is quiet now
+        cmp     rbx, [watch_scr]
+        je      .screen
+        cmp     rbx, 102h               ; WAIT_TIMEOUT: what was told is quiet now, or a time on the screen ran out
         jne     .rang
+        call    screen_due
+        or      r15d, eax
         call    hw_mature
         test    eax, eax
         jz      .woke
@@ -1771,6 +1797,10 @@ watch_wait:
 .host_entries:
         test    r14d, r14d
         jnz     .host_entry
+        jmp     .woke
+.screen:                                ; the screen rang: whoever sleeps on it and has something wakes
+        call    screen_due
+        or      r15d, eax
 .woke:
         test    r15d, r15d
         jz      .again
@@ -1779,6 +1809,7 @@ watch_wait:
 .none:
         xor     eax, eax
 .out:
+        mov     qword [watch_in], 0
         mov     rsp, rbp
         pop     r15 r14 r13 r12 rbp rdi rsi rbx
         ret
@@ -1845,7 +1876,8 @@ watch_all:
         pop     rbx
         ret
 
-; eax = 1 if some cabin that has not ended waits for a greeting and watches. Keeps every register but rax, rcx, rsi.
+; eax = 1 if some cabin that has not ended waits for a greeting and watches, or sleeps on the screen. Keeps every
+; register but rax, rcx, rsi.
 watch_any:
         xor     ecx, ecx
         jmp     .one
@@ -1854,6 +1886,8 @@ watch_any:
         mov     rsi, [rsi + rcx*8]
         cmp     qword [rsi + P_DONE], 0
         jne     .next
+        cmp     qword [rsi + P_SCRW], 1
+        je      .yes                    ; it sleeps on the screen (41)
         cmp     qword [rsi + P_GWAIT], 1
         jne     .next
         cmp     qword [rsi + P_WATCHN], 0

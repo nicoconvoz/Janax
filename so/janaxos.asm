@@ -107,7 +107,9 @@ P_LIMIT  = 616                  ; the instructions it may row in all (34; 0 = no
 P_REMAKE = 624                  ; 36: the program it asked to be remade with (its own copy), and its words; 0 = none
 P_REMAKEN = 632
 P_HOSTW  = 640                  ; 1 = it asked for what is new in the host (39): a new one wakes it while it waits
-PROC_SIZE = 648
+P_SCRW   = 648                  ; 41: 1 = it sleeps until the screen has an event or its time runs out, 2 = woken
+P_SCRDL  = 656                  ; 41: when its time runs out (GetTickCount64 ms; FOREVER = never)
+PROC_SIZE = 664
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -153,11 +155,11 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 40                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 41                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
-                                ; open on the host, go to, what is new in the host, show
+                                ; open on the host, go to, what is new in the host, show, wait for an event
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -202,19 +204,20 @@ section '.data' data readable writeable
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
-              dq serve_host_open, serve_seek, serve_hostnew, serve_show
+              dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
-             db 3, 1
+             db 3, 1, 1
+  assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
-             db R_READ, R_READ, R_READ, R_SCREEN
+             db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
                  db 0, 0, 0             ; (the host door only reads: it changes nothing)
-                 db 0                   ; (show only draws)
+                 db 0, 0                ; (show only draws, and waiting for an event only listens)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -273,14 +276,18 @@ section '.data' data readable writeable
   watch_dir dq 2 + HW_MAX dup 0 ; reading is pending, what the host told and its bytes, the event it rings and the
   watch_pend dq 2 + HW_MAX dup 0 ; reading itself (OVERLAPPED); from 2 on, the host's folders (vigia.inc)
   watch_event dq 2 + HW_MAX dup 0
+  watch_set dq 3 + HW_MAX dup 0 ; what the sentinel sleeps on: the bells above and, last, the screen's (41)
+  watch_scr dq -1               ; the screen's place in it (-1: not there)
+  watch_in  dq 0                ; 1: a rower sleeps on the bells (watch_wait); the others sleep until there is work
+  scr_nwait dq 0                ; cabins sleeping on the screen (41)
   watch_ov  dq 4 * (2 + HW_MAX) dup 0
   watch_got dd 2 + HW_MAX dup 0
   align 8
   watch_buf rb 2 * WATCH_BUF
   ; the host's watch (vigia.inc): the folders named in JANAX_VIGIA, each with all it holds
   vigia_env du 'JANAX_VIGIA', 0
-  HW_MAX    = 62                ; WaitForMultipleObjects waits on 64 at most (the host's bound): its own folder, the
-                                ; board and these
+  HW_MAX    = 61                ; WaitForMultipleObjects waits on 64 at most (the host's bound): its own folder, the
+                                ; board, these and the screen
   HW_RAW    = 32768             ; JANAX_VIGIA, and a path, in UTF-16: the longest the host has (UNICODE_STRING)
   HW_PATH   = 32768
   HW_U8     = 3 * HW_PATH       ; (a UTF-16 unit is at most 3 bytes of UTF-8)
@@ -578,7 +585,7 @@ section '.idata' import data readable writeable
          GetCurrentThread, 'GetCurrentThread',\
          SetThreadAffinityMask, 'SetThreadAffinityMask',\
          GetThreadPriority, 'GetThreadPriority',\
-         SetThreadPriority, 'SetThreadPriority',\
+         SetThreadPriority, 'SetThreadPriority',         SetEvent, 'SetEvent',\
          GetStdHandle, 'GetStdHandle',\
          WriteFile, 'WriteFile',\
          ExitProcess, 'ExitProcess',\
@@ -622,7 +629,7 @@ section '.idata' import data readable writeable
          GetClientRect, 'GetClientRect',\
          AdjustWindowRectEx, 'AdjustWindowRectEx',\
          SystemParametersInfoW, 'SystemParametersInfoW',\
-         LoadCursorW, 'LoadCursorW'
+         LoadCursorW, 'LoadCursorW',         SetCapture, 'SetCapture',         ReleaseCapture, 'ReleaseCapture'
 
   import gdi32,\
          StretchDIBits, 'StretchDIBits',\
@@ -2266,6 +2273,12 @@ ventanilla:
         test    r8d, r8d
         jnz     .waits
 .not_greeting:
+        cmp     edx, 41
+        jne     .not_event
+        call    event_must_wait         ; r8d = 1: the screen has nothing yet and it may wait: it sleeps
+        test    r8d, r8d
+        jnz     .waits
+.not_event:
         cmp     byte [kind_important + rdx], 0
         je      .go                     ; it only looks: no signature
         cmp     qword [rbx + P_PARENT], 0
@@ -2663,6 +2676,201 @@ serve_show:
 .done:
         add     rsp, 8
         pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "wait for an event" (kind 41): a = an event record of 32 bytes (kind, x, y, extra), b = the longest
+; wait in ms (0: no wait; 0FFFFFFFFh or more: for ever). The window made it sleep while the screen had nothing
+; (event_must_wait). Answers 1 with the oldest event written, 0 if the time ran out with none (or no window lives),
+; -1 if the record is not in its rooms. b comes back with the ms left of the wait, as select does: 0 when none came;
+; with an event, as it was if it never slept or waits for ever.
+serve_wait_event:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 41
+        jne     .next
+        mov     r14, [rbx + P_SCRW]     ; did it sleep? (2: woken)
+        mov     qword [rbx + P_SCRW], 0
+        mov     rax, [rbp + r13 + 8]
+        mov     edx, 32
+        call    cabin_at                ; all of it inside one room
+        jc      .invalid
+        mov     rdi, rax
+        call    screen_take
+        mov     [rbp + r13 + 24], rax
+        test    eax, eax
+        jz      .none
+        test    r14, r14
+        jz      .next                   ; it never slept: b as it was
+        mov     rax, [rbx + P_SCRDL]
+        mov     rcx, FOREVER
+        cmp     rax, rcx
+        je      .next
+        mov     r14, rax
+        call    now_ms
+        sub     r14, rax                ; what was left
+        jns     @f
+        xor     r14d, r14d
+@@:     mov     [rbp + r13 + 16], r14
+        jmp     .next
+.none:
+        mov     qword [rbp + r13 + 16], 0
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
+.done:
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; While the window marks a touch, for the 41 at [rbp + rax]: r8d = 1 if rbx has to sleep until the screen has an
+; event or its time runs out: its record is in its rooms, b is not 0, the window lives and has nothing kept. Its time
+; starts counting here. Keeps every other register but r9, r10.
+event_must_wait:
+        xor     r8d, r8d
+        cmp     qword [rbx + P_SCRW], 2
+        je      .done                   ; woken: it is served
+        push    rax rdx
+        mov     r9, rax
+        cmp     qword [rbx + P_SCRW], 1
+        je      .again
+        mov     rax, [rbp + r9 + 8]
+        mov     edx, 32
+        call    cabin_at
+        jc      .no                     ; (served: -1)
+        cmp     qword [rbp + r9 + 16], 0
+        je      .no                     ; it does not wait
+        call    screen_waitable
+        test    eax, eax
+        jz      .no                     ; something kept already, or no window to wait on
+        mov     rax, FOREVER
+        mov     rdx, [rbp + r9 + 16]
+        mov     r10d, -1
+        cmp     rdx, r10
+        jae     .until
+        call    now_ms
+        add     rax, rdx
+.until:
+        mov     [rbx + P_SCRDL], rax
+        mov     qword [rbx + P_SCRW], 1
+        inc     qword [scr_nwait]
+        mov     r8d, 1
+        jmp     .no
+.again:                                 ; (woken by something else: it sleeps on, unless its time is up)
+        call    screen_waitable
+        test    eax, eax
+        jz      .woken
+        call    now_ms
+        cmp     rax, [rbx + P_SCRDL]
+        jae     .woken
+        mov     r8d, 1
+        jmp     .no
+.woken:
+        mov     qword [rbx + P_SCRW], 2
+        dec     qword [scr_nwait]
+.no:
+        pop     rdx rax
+.done:
+        ret
+
+; The cabins sleeping on the screen wake when it has something for them (an event kept, or no window any more),
+; when their time ran out, or when they ended. With the kernel's lock. -> eax = 1 if one woke. Keeps every other
+; register; callable with any stack alignment.
+screen_due:
+        push    rcx rdx rsi r8 r9 r10
+        call    screen_waitable
+        mov     r10d, eax               ; 0: every one wakes
+        call    now_ms
+        mov     rdx, rax
+        xor     r9d, r9d
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     r8, [rsi + rcx*8]
+        cmp     qword [r8 + P_SCRW], 1
+        jne     .next
+        test    r10d, r10d
+        jz      .wake
+        cmp     qword [r8 + P_DONE], 0
+        jne     .wake
+        cmp     rdx, [r8 + P_SCRDL]
+        jb      .next
+.wake:
+        call    event_wake
+        mov     r9d, 1
+.next:
+        inc     rcx
+.one:                                   ; while there are cabins
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        mov     eax, r9d
+        pop     r10 r9 r8 rsi rdx rcx
+        ret
+
+; rax = how long the sentinel may sleep (ms, -1 for ever) -> rax = no longer than until the first cabin sleeping on
+; the screen runs out of time. Keeps every other register; callable with any stack alignment.
+screen_wait_ms:
+        cmp     qword [scr_nwait], 0
+        je      .out
+        push    rcx rdx rsi r8 r9
+        mov     r9, rax
+        call    now_ms
+        mov     rdx, rax
+        xor     ecx, ecx
+        jmp     .one
+.one_lap:
+        mov     rsi, [procs]
+        mov     r8, [rsi + rcx*8]
+        cmp     qword [r8 + P_SCRW], 1
+        jne     .next
+        mov     rax, [r8 + P_SCRDL]
+        mov     rsi, FOREVER
+        cmp     rax, rsi
+        je      .next
+        sub     rax, rdx                ; what is left of its time
+        jns     @f
+        xor     eax, eax
+@@:     cmp     rax, r9
+        jae     .next
+        mov     r9, rax
+.next:
+        inc     rcx
+.one:                                   ; while there are cabins
+        cmp     rcx, [nprocs]
+        jb      .one_lap
+        mov     rax, r9
+        pop     r9 r8 rsi rdx rcx
+.out:
+        ret
+
+; r8 = a cabin sleeping on the screen (41): it wakes, and its request is served when it runs again. With the
+; kernel's lock. Keeps every register.
+event_wake:
+        mov     qword [r8 + P_SCRW], 2
+        dec     qword [scr_nwait]
+        dec     qword [r8 + P_WAITING]
+        call    q_wake
+        ret
+
+; rax = the host's milliseconds (GetTickCount64). Keeps every other register; callable with any stack alignment.
+now_ms:
+        push    rcx rdx r8 r9 r10 r11 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 32
+        call    [GetTickCount64]
+        mov     rsp, rbp
+        pop     rbp r11 r10 r9 r8 rdx rcx
         ret
 
 ; ---------------------------------------------------------------- files

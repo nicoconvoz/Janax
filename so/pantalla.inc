@@ -1,6 +1,8 @@
 ; Janax's own screen, on the host: the Windows implementation. Another host provides its own pantalla.inc with
 ; the same entry points (screen_show, screen_end) and the same answers; the kernel's "show" (kind 40) only calls them.
 ; Included twice: with PANTALLA_PARTE = 0 in the data section (its state), with 1 in the code section.
+; What happens on the window (the pointer, its buttons, the keys, a new size, its closing) is kept in a ring for the
+; programs (41, screen_take); each one rings the host's bell scr_event, and the kernel wakes whoever sleeps on it.
 ; The window lives in a host thread of its own (its message loop), started by the first show; the kernel and that
 ; thread share the pixels under scr_lock. JANAX_SIN_VENTANA (any value): the same decoding and answers, no window.
 
@@ -36,6 +38,17 @@ if PANTALLA_PARTE = 0
   scr_crect dd 4 dup 0          ; RECT of the client area, when it paints
   scr_msg   rb 48               ; MSG
   scr_ps    rb 80               ; PAINTSTRUCT
+  SCR_RING  = 256               ; events kept until a program takes them: a power of two. Moves that follow each
+                                ; other are one, so it fills only with clicks and keys nobody takes (then the oldest goes)
+  scr_live  db 0                ; 1: the window was opened and is not closed yet (someone may sleep on it)
+  align 8
+  scr_event dq 0                ; the host's bell (auto-reset) that rings at each event kept
+  scr_head  dq 0                ; the oldest event kept, and how many
+  scr_count dq 0
+  scr_lastx dq -1               ; the pointer's last cell (a key says where it was)
+  scr_lasty dq -1
+  scr_erect dd 4 dup 0          ; RECT of the client area, when an event arrives
+  scr_ring  rb SCR_RING * 32    ; {kind, x, y, extra} each
 
 else
 
@@ -172,6 +185,9 @@ screen_show:
         jne     .done
         cmp     qword [scr_thread], 0
         jne     .repaint
+        invoke  CreateEventA, 0, 0, 0, 0       ; the bell of its events
+        mov     [scr_event], rax
+        mov     byte [scr_live], 1
         invoke  CreateThread, 0, 0, screen_thread, 0, 0, 0
         inc     qword [hostcalls]
         mov     [scr_thread], rax
@@ -278,6 +294,8 @@ screen_thread:
         test    eax, eax
         jg      .message_lap
 .out:
+        mov     byte [scr_live], 0      ; the window is gone (or was never built): nobody may sleep on it
+        invoke  SetEvent, [scr_event]   ; (and whoever sleeps on it wakes)
         xor     eax, eax
         add     rsp, 8
         pop     r12 rdi rsi rbx
@@ -296,8 +314,20 @@ screen_proc:
         je      .paint
         cmp     edx, WM_DESTROY
         je      .destroy
+        cmp     edx, WM_MOUSEMOVE       ; the pointer and its buttons, the keys, a new size: kept for the programs
+        jb      @f
+        cmp     edx, WM_RBUTTONUP
+        jbe     .note
+@@:     cmp     edx, WM_KEYDOWN
+        je      .note
+        cmp     edx, WM_SIZE
+        je      .note
+        jmp     [DefWindowProcW]
+.note:
+        call    screen_note
         jmp     [DefWindowProcW]
 .destroy:
+        call    screen_note             ; closed: the programs are told
         sub     rsp, 8
         invoke  PostQuitMessage, 0
         add     rsp, 8
@@ -352,4 +382,249 @@ screen_proc:
         pop     r15 r14 r13 r12 rdi rsi rbx
         ret
 
+; The window's thread: the message edx (wParam r8, lParam r9) of window rcx, kept in the ring as an event
+; {kind, x, y, extra}: 1 the pointer moved (extra: the buttons held, 1 left, 2 right), 2 a button went down and 3 up
+; (extra 1 left, 2 right), 4 a key went down (extra: its virtual-key code; x, y where the pointer was), 5 the window
+; closed (x, y = -1), 6 a new size (x, y: the client area in pixels). The pointer's x, y are cells of the cloud shown,
+; through the same proportions and centring the painting uses; -1, -1 outside the picture. A move right after
+; another kept move takes its place. Then the bell rings: the kernel, asleep on it while nobody rows, wakes whoever
+; sleeps on the screen (and a rower that ends a turn looks too). This thread never takes the kernel's lock: a rower
+; asleep on the bells is only woken by them. Keeps every register; callable with any stack alignment.
+screen_note:
+        push    rax rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 r13 r14 r15 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        mov     rbx, rcx                ; the window
+        mov     r12d, edx               ; the message
+        mov     r13, r8                 ; wParam
+        mov     r14, r9                 ; lParam
+        cmp     r12d, WM_LBUTTONDOWN    ; a button held keeps the pointer's moves, even outside the window
+        je      .capture
+        cmp     r12d, WM_RBUTTONDOWN
+        jne     @f
+.capture:
+        invoke  SetCapture, rbx
+        jmp     .rect
+@@:     cmp     r12d, WM_LBUTTONUP
+        je      .release
+        cmp     r12d, WM_RBUTTONUP
+        jne     .rect
+.release:
+        invoke  ReleaseCapture
+.rect:
+        invoke  GetClientRect, rbx, scr_erect
+        invoke  EnterCriticalSection, scr_lock
+        mov     r15, -1                 ; x
+        mov     rsi, -1                 ; y
+        xor     edi, edi                ; extra
+        cmp     r12d, WM_MOUSEMOVE
+        je      .move
+        cmp     r12d, WM_LBUTTONDOWN
+        je      .left_down
+        cmp     r12d, WM_LBUTTONUP
+        je      .left_up
+        cmp     r12d, WM_RBUTTONDOWN
+        je      .right_down
+        cmp     r12d, WM_RBUTTONUP
+        je      .right_up
+        cmp     r12d, WM_KEYDOWN
+        je      .key
+        cmp     r12d, WM_SIZE
+        je      .size
+        cmp     r12d, WM_DESTROY
+        je      .gone
+        jmp     .unlock                 ; (another button message: not kept)
+.move:
+        mov     edi, r13d
+        and     edi, 3                  ; MK_LBUTTON = 1, MK_RBUTTON = 2
+        mov     r12d, 1
+        jmp     .cell
+.left_down:
+        mov     edi, 1
+        mov     r12d, 2
+        jmp     .cell
+.left_up:
+        mov     edi, 1
+        mov     r12d, 3
+        jmp     .cell
+.right_down:
+        mov     edi, 2
+        mov     r12d, 2
+        jmp     .cell
+.right_up:
+        mov     edi, 2
+        mov     r12d, 3
+        jmp     .cell
+.key:
+        mov     rdi, r13
+        mov     r12d, 4
+        mov     r15, [scr_lastx]
+        mov     rsi, [scr_lasty]
+        jmp     .put
+.size:
+        movzx   r15d, r14w
+        mov     esi, r14d
+        shr     esi, 16
+        mov     r12d, 6
+        jmp     .put
+.gone:
+        mov     byte [scr_live], 0      ; from here on nobody sleeps on it
+        mov     r12d, 5
+        jmp     .put
+.cell:
+        movsx   rax, r14w               ; the pixel, signed (with a button held it may be outside)
+        mov     r10, r14
+        shr     r10, 16
+        movsx   r10, r10w
+        call    screen_cell
+        mov     [scr_lastx], r15
+        mov     [scr_lasty], rsi
+.put:
+        mov     rax, [scr_count]
+        cmp     r12d, 1
+        jne     .new
+        test    rax, rax
+        jz      .new
+        mov     rcx, [scr_head]         ; the last one kept is a move too: this one takes its place
+        add     rcx, rax
+        dec     rcx
+        and     ecx, SCR_RING - 1
+        shl     rcx, 5
+        cmp     qword [scr_ring + rcx], 1
+        je      .write
+.new:
+        cmp     rax, SCR_RING
+        jb      .room
+        mov     rcx, [scr_head]         ; full: the oldest one is lost
+        inc     rcx
+        and     ecx, SCR_RING - 1
+        mov     [scr_head], rcx
+        dec     rax
+.room:
+        lea     rcx, [rax + 1]
+        mov     [scr_count], rcx
+        add     rax, [scr_head]
+        and     eax, SCR_RING - 1
+        shl     rax, 5
+        mov     rcx, rax
+.write:
+        mov     qword [scr_ring + rcx], r12
+        mov     qword [scr_ring + rcx + 8], r15
+        mov     qword [scr_ring + rcx + 16], rsi
+        mov     qword [scr_ring + rcx + 24], rdi
+        invoke  LeaveCriticalSection, scr_lock
+        invoke  SetEvent, [scr_event]   ; the kernel wakes whoever sleeps on the screen (screen_due)
+        jmp     .out
+.unlock:
+        invoke  LeaveCriticalSection, scr_lock
+.out:
+        mov     rsp, rbp
+        pop     rbp r15 r14 r13 r12 r11 r10 r9 r8 rdi rsi rdx rcx rbx rax
+        ret
+
+; The pixel rax, r10 of the client area (scr_erect) -> r15, rsi = its cell of the cloud shown, as screen_proc paints
+; it; -1, -1 if it falls outside the picture. With the screen's lock. Uses rax, rcx, rdx, r8-r11.
+screen_cell:
+        mov     r15, -1
+        mov     rsi, -1
+        mov     r8, [scr_w]
+        test    r8, r8
+        jz      .out
+        mov     r9, [scr_h]
+        push    rax r10
+        mov     eax, [scr_erect + 8]    ; width * h against height * w: which side runs out first
+        imul    rax, r9
+        mov     ecx, [scr_erect + 12]
+        imul    rcx, r8
+        cmp     rax, rcx
+        jbe     .by_width
+        mov     r11d, [scr_erect + 12]  ; the height fills; the width follows the proportions
+        mov     rax, r8
+        imul    rax, r11
+        xor     edx, edx
+        div     r9
+        mov     rcx, rax
+        jmp     .place
+.by_width:
+        mov     ecx, [scr_erect + 8]    ; the width fills; the height follows
+        mov     rax, r9
+        imul    rax, rcx
+        xor     edx, edx
+        div     r8
+        mov     r11, rax
+.place:                                 ; rcx, r11 = the picture's width and height
+        pop     r10 rax
+        mov     edx, [scr_erect + 8]    ; centred
+        sub     rdx, rcx
+        shr     rdx, 1
+        sub     rax, rdx
+        js      .out
+        cmp     rax, rcx
+        jae     .out
+        mov     edx, [scr_erect + 12]
+        sub     rdx, r11
+        shr     rdx, 1
+        sub     r10, rdx
+        js      .out
+        cmp     r10, r11
+        jae     .out
+        imul    rax, r8                 ; its cell
+        xor     edx, edx
+        div     rcx
+        mov     r15, rax
+        mov     rax, r10
+        imul    rax, r9
+        xor     edx, edx
+        div     r11
+        mov     rsi, rax
+.out:
+        ret
+
+; 41: eax = 1 if a cabin may sleep on the screen: the window lives and has no event kept. Read without the screen's
+; lock: an event kept after this look rings the bell, and the kernel looks again. Keeps every other register.
+screen_waitable:
+        xor     eax, eax
+        cmp     byte [scr_live], 0
+        je      .out
+        cmp     qword [scr_count], 0
+        jne     .out
+        inc     eax
+.out:
+        ret
+
+; 41: rdi = 32 bytes of the program's -> eax = 1 and the oldest event kept written there, out of the ring; 0 if none
+; is kept. Keeps every other register; callable with any stack alignment.
+screen_take:
+        xor     eax, eax
+        cmp     byte [scr_ready], 0
+        je      .none                   ; (never shown: no lock, no events)
+        push    rbx rcx rdx rsi rdi r8 r9 r10 r11 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 32
+        lea     rcx, [scr_lock]
+        call    [EnterCriticalSection]
+        xor     ebx, ebx
+        cmp     qword [scr_count], 0
+        je      .unlock
+        dec     qword [scr_count]
+        mov     rsi, [scr_head]
+        lea     rax, [rsi + 1]
+        and     eax, SCR_RING - 1
+        mov     [scr_head], rax
+        shl     rsi, 5
+        add     rsi, scr_ring
+        mov     ecx, 4
+        rep     movsq
+        inc     ebx
+.unlock:
+        lea     rcx, [scr_lock]
+        call    [LeaveCriticalSection]
+        mov     eax, ebx
+        mov     rsp, rbp
+        pop     rbp r11 r10 r9 r8 rdi rsi rdx rcx rbx
+.none:
+        ret
+
 end if
+

@@ -1191,7 +1191,8 @@ estén en la PC.
 > del Capitán viven en C: y en E:, no en una carpeta; copiarlos sería duplicarlos.
 
 - **`JANAX_VIGIA`** nombra carpetas del anfitrión separadas por `;` (por ejemplo `C:\;E:\`), cada una con todo lo que
-  tiene adentro. Hasta 62: `WaitForMultipleObjects` espera 64 avisos como mucho, y dos son la carpeta propia y el tablero.
+  tiene adentro. Hasta 61: `WaitForMultipleObjects` espera 64 avisos como mucho, y tres son la carpeta propia, el tablero
+  y la pantalla (pedido 41; antes eran 62).
 - **39 lo nuevo del anfitrión** (`a` = dónde escribir, `b` = lugar): el archivo más viejo que quedó nuevo y tranquilo,
   su dirección en UTF-8, fuera de la fila → sus bytes; 0 si todavía no hay (y desde ahí cuenta como que pregunta: si
   espera un saludo (29), uno nuevo lo despierta); −1 si no puede salir al anfitrión (un prefijo en el camino, como la
@@ -1380,3 +1381,74 @@ ninguna otra aplicación.
 - **Pruebas:** `pantalla_mostrar` (una nube de 3×2 con 3 partículas responde 3; otra versión, un byte de menos y una
   dirección fuera del camarote responden −1) y el mismo programa sin permiso de pantalla (todo −1, negados).
   `razar/cuerpo/pantalla.jsm` graba `pantalla.nube` y la muestra: responde 16000.
+
+## La pantalla escucha: pedido 41, "esperar un evento" (2026-11-15)
+
+La ventana de Janax ya no solo muestra: cuenta lo que le pasa, y un programa puede dormir hasta que algo pase.
+
+- **41 esperar un evento** (`a` = la dirección de un registro de 32 bytes en el camarote, `b` = la espera más larga
+  en ms; 0 = no esperar, `0FFFFFFFFh` o más —también −1— = para siempre): responde **1** y escribe el evento más
+  viejo, **0** si se acabó el tiempo sin ninguno, **−1** si el registro no está entero en un ambiente. Puerta 1
+  (pantalla), permiso `p`. No es importante: solo escucha.
+- **El registro** (cuatro qwords): tipo, `x`, `y`, extra.
+  - 1 el puntero se movió (extra: los botones apretados, 1 izquierdo, 2 derecho); 2 un botón bajó y 3 subió (extra
+    1 izquierdo, 2 derecho). `x`, `y` son **celdas de la nube mostrada**, con la misma proporción y el mismo centrado
+    con que se pinta (`screen_cell` hace la cuenta de `screen_proc` al revés); −1, −1 fuera del dibujo. Con un botón
+    apretado la ventana sigue al puntero aunque salga de ella.
+  - 4 una tecla bajó (extra: su código de tecla virtual; `x`, `y`: dónde estaba el puntero).
+  - 5 la ventana se cerró (`x`, `y` = −1). La espera del sistema al terminar sigue igual: cerrar la ventana lo termina.
+  - 6 un tamaño nuevo (`x`, `y`: el área en píxeles).
+- **`b` vuelve con lo que quedaba de la espera** (como `select` en Linux): 0 si no llegó nada; con un evento, los ms
+  que faltaban (o como estaba, si no durmió o espera para siempre). Así un programa que dibuja cuadros cada 33 ms
+  atiende los eventos que lleguen en el medio sin correr el próximo cuadro: no hay reloj, y no hace falta.
+- **Sin ventana** (`JANAX_SIN_VENTANA`, antes de la primera 40, o ya cerrada y sin nada guardado): responde 0 en el
+  acto, sin dormir.
+- **El anillo**: el hilo de la ventana guarda cada evento en un anillo de 256 bajo el candado de la pantalla. Un
+  movimiento que sigue a otro movimiento guardado ocupa su lugar: el puntero nunca lo llena. Si se llenara (clics y
+  teclas que nadie toma), se pierde el más viejo. Cada evento toca una campana del anfitrión (`SetEvent`).
+- **Cómo espera, sin bucles**: como la 29. Si la pantalla no tiene nada y la espera no es 0, el camarote **duerme**
+  (la ventanilla devuelve "esperá" y la orden se repite al despertar) y los demás camarotes siguen remando. Cuando
+  nadie rema, el núcleo duerme en `WaitForMultipleObjects` con las campanas del centinela **y la de la pantalla**, y
+  como mucho hasta que se acabe el tiempo del primero que espera (`GetTickCount64`). Si alguien rema, el remero que
+  termina un turno mira (una cuenta, solo si alguien espera la pantalla). El hilo de la ventana **nunca toma el
+  candado del núcleo**: solo toca la campana. Así no hay orden de candados que trabar y nadie duerme en una campana
+  que ya sonó.
+- **Un solo remero duerme en las campanas** (`watch_in`): con 4 remeros, uno despertado de más llegaba a "nadie
+  rema" mientras otro ya dormía en las campanas, y dormían dos; una campana despierta a uno solo, y al terminar el
+  otro quedaba dormido para siempre y el proceso no salía. Medido: el sistema no terminaba al cerrar la ventana.
+  Ahora el segundo duerme hasta que haya trabajo, como cualquier remero sin cabina. La suite corre con un remero, así
+  que no lo veía.
+- **El costo de esperar**: `GetTickCount64` y las esperas de Windows van de a ~15,6 ms, así que "33 ms" son 31 o 47.
+- **Pruebas:** `pantalla_esperar` (sin ventana: para siempre responde 0 en el acto con `b` en 0, un registro fuera
+  del camarote −1, y 0 ms responde igual) y el mismo programa sin permiso de pantalla (todo −1, negados).
+
+## El escritorio vivo: `razar/cuerpo/vivo.jsm` (2026-11-15)
+
+> *"El bucle tiene vida: siempre explora, pero nunca es la repetición de lo mismo."* (Capitán)
+
+`gen_vivo.py` escribe `vivo.jsm`; `vivo.sh <carpeta> [janaxos.exe]` lo arma y lo corre. La pantalla de
+`pantalla.jsm` deja de ser una imagen: **cada pieza es una nube de partículas** (la ventana de Razar con sus dos
+torrecitas, la de Luma, la barra de tareas con su botón de inicio: 10.428 partículas, una por celda). Cada partícula
+tiene su celda de casa en la pieza, una posición y una velocidad (×256), y un resorte a su casa:
+`v += k(casa − p) >> 8; v −= 40v >> 8; p += v`. Cada cuadro arma la nube `.nube` v3 (160×100, todas las celdas) y la
+muestra con la 40.
+
+- **Arrastrar** una barra de título mueve el origen de su ventana; cerca del punto agarrado los resortes son más duros
+  (`k = 8 + 672/(12 + d)`, `d` en celdas): la ventana se estira como gelatina y se acomoda al soltarla.
+- **Cerrar** (botón rojo): sus partículas salen volando hacia afuera y se van de la pantalla. **Inicio**: las
+  ventanas cerradas vuelven volando a su lugar. **Una torrecita**: un golpe y vuelve. Un clic trae la ventana al frente.
+- **Explora su cuerpo** cuando nadie hace nada (balbuceo motor): un empujón chico por vez entre **96 combinaciones**
+  (6 partes × empujar, latir, girar, cizallar × 4 direcciones o fuerzas), elegido por un generador con semilla **entre
+  las que no probó en esta ronda** (una tabla de un byte por combinación): nunca repite una. Probadas todas, **descansa
+  y espera para siempre** (41 con −1). Un clic abre una ronda nueva: la tabla se limpia (el generador sigue, así que el
+  orden es otro).
+- **Los números** (criterio, no medición): `k` = 20 (un período de ~22 cuadros), amortiguación 40 (razón ~0,28: tiembla
+  dos veces y se calma), quieta bajo 1/8 de celda en distancia y velocidad (la amortiguación entera no puede matar
+  velocidades menores a 6,4, y lo que queda oscila menos de 25: cabe), 33 ms por cuadro, 300 ms de pausa entre dos
+  exploraciones.
+- **Medido** (ventana abierta, manejada con mensajes de Windows): ~925.000 instrucciones por cuadro; explorando,
+  **~125 ms de procesador cada 10 s** (1,25 % de un núcleo, ciclos con `QueryProcessCycleTime`); calmado, **0 ciclos en
+  10 s**. Una ronda entera de exploración tarda ~115 s. Cerrar la ventana lo termina (j0 = los cuadros dibujados).
+- ⚠️ **Un instrumento mintió**: `Get-Process .CPU` (tiempos por muestreo de 15,6 ms) daba 0 ms explorando, porque
+  cada cuadro dura menos que una muestra. Los ciclos (`QueryProcessCycleTime`) dicen la verdad. Hay ~1 despertar en
+  vano de un remero por cuadro (con 4 remeros): entra en el 1,25 %.

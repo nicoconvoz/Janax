@@ -168,6 +168,16 @@ run_all:
         call    kern_wake_special
         jmp     .turn
 .nobody:
+        cmp     qword [watch_in], 0     ; another rower sleeps on the bells already: this one waits for work (two
+        je      .watch                  ; asleep on the same bells, one of them would never wake)
+        cmp     qword [rsp + 24], ROW_SPECIAL
+        je      .idle_special
+        call    kern_sleep
+        jmp     .turn
+.idle_special:
+        call    kern_sleep_special
+        jmp     .turn
+.watch:
         call    watch_wait              ; someone waits and watches: the kernel sleeps on its folder until there is news
         test    eax, eax
         jnz     .turn
@@ -191,6 +201,10 @@ run_all:
         call    kern_leave
         call    run_process             ; outside the lock: the cabins row side by side
         call    kern_enter
+        cmp     qword [scr_nwait], 0    ; someone sleeps on the screen (41): an event or its time may have come meanwhile
+        je      @f
+        call    screen_due
+@@:
         mov     qword [rbx + P_RUNNING], 0
         dec     qword [rowing]
         add     [rbx + P_SERVED], rax
