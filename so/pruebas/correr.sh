@@ -22,6 +22,8 @@ bin() { cygpath -m "$salida/$1.bin"; }
 # One rower: every case below expects the exact order and clock of a single rower. The rowers in parallel
 # have their own cases (each cabin's result, whatever the order).
 export JANAX_REMOS=1
+# Janax's own window (pantalla.inc) never opens in the tests: nothing would close it.
+export JANAX_SIN_VENTANA=1
 archivos="$salida/archivos"           # the system's own folder for files, empty at every run
 export JANAX_ARCHIVOS="$(cygpath -m "$archivos")"
 
@@ -585,6 +587,16 @@ caso "anfitrion: la puerta del anfitrion solo lee" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=64
 ventanilla: pantallas=1 resintonias=3 llamadas al anfitrion=4 pedidos=4" anfitrion_no_escribe
 
+# Janax's own screen (40, show): a 3x2 cloud, 3 particles; malformed or outside the cabin answers -1. The suite
+# runs with JANAX_SIN_VENTANA: the same decoding and answers, no window to wait for.
+caso "pantalla: muestra una nube de 3x2" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000003 t=285
+ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=4" pantalla_mostrar
+caso "pantalla: sin permiso de pantalla no muestra" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
+ventanilla: *
+porteros: *" pantalla_mostrar@m
+
 caso "archivo: etiqueta que no es UTF-8" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=20
 ventanilla: pantallas=1 resintonias=0 llamadas al anfitrion=0 pedidos=1" archivo_etiqueta_invalida
@@ -883,7 +895,7 @@ unset carpeta
 done
 
 # The while is Janax's only loop, also inside the kernel: every loop must be a rotated while.
-for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc nativo.inc; do
+for f in janaxos.asm rutinas.inc ambientes.inc datos.inc anfitrion.inc ayudantes.inc remos.inc nativo.inc pantalla.inc; do
   if r=$(awk -f "$raiz/herramientas/bucles.awk" "$raiz/$f"); then
     ok=$((ok + 1))
   else

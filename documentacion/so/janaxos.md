@@ -1352,3 +1352,31 @@ Es criterio, no medición: los carteles son chicos.
 - `asocia_5`: la más chica de todas: Z.
 - `asocia_6`: las cuatro más grandes. El empate de las dos salas 0 lo gana la madre, que se mira primero.
 - `asocia_7`: un bit que ningún eje usa todavía responde −1.
+
+## La pantalla propia: pedido 40, "mostrar" (2026-11-15)
+
+Janax tiene su propia ventana, dibujada con los controladores del anfitrión: un programa muestra su pantalla sin
+ninguna otra aplicación.
+
+- **40 mostrar** (`a` = la dirección de una nube de partículas `.nube` versión 3 en el camarote, `b` = sus bytes):
+  dibuja el **primer nivel** de la nube, la celda `j` en el píxel (`j % ancho`, `j / ancho`), negro donde no hay
+  partícula. Responde **cuántas partículas dibujó**, o −1 si la dirección no está entera en un ambiente o la nube
+  está mal: otra marca u otra versión, sin niveles, un tamaño que se pasa de `b`, un lado 0 o de más de 4096. Puerta 1
+  (pantalla), permiso `p`. No es importante: solo dibuja.
+- **El formato** (el de Gotching, little-endian): `NUBE`, versión (1 byte), paso fino (f32), huesos (u16) de 46
+  bytes cada uno, niveles (1 byte); por nivel: paso (f32), `k0x` e `k0y` (i32), ancho y alto (u16), un bit por celda
+  (la celda `j` es el byte `j >> 3`, bit `j & 7`) y 3 bytes RGB por partícula en el orden de lectura.
+- **Lo del anfitrión vive aparte**, en `so/pantalla.inc` (la versión de Windows; otro anfitrión trae la suya con las
+  mismas entradas, `screen_show` y `screen_end`). Decodifica la nube a un mapa de 32 bits de arriba hacia abajo
+  (`VirtualAlloc`, que se cambia solo cuando una nube más grande no entra). La **primera** vez que muestra arranca un
+  hilo del anfitrión con su propia ventana "Janax" y su propio bucle de mensajes: el área mide ancho×escala por
+  alto×escala, con la escala entera más grande que entra en 1280×800 (al menos 1), y se pinta con `StretchDIBits`
+  sin suavizar (vecino más cercano). Las siguientes copian los píxeles nuevos bajo un candado y la invalidan. Cuentan
+  como llamadas al anfitrión las que atienden el pedido (abrir la ventana, invalidarla), no la memoria del mapa, igual
+  que el lote de escribir.
+- **Al terminar**, si se abrió la ventana, el sistema espera a que el usuario la cierre.
+- **`JANAX_SIN_VENTANA`** (cualquier valor no vacío): decodifica y responde lo mismo, pero nunca abre la ventana ni
+  espera. La suite corre así.
+- **Pruebas:** `pantalla_mostrar` (una nube de 3×2 con 3 partículas responde 3; otra versión, un byte de menos y una
+  dirección fuera del camarote responden −1) y el mismo programa sin permiso de pantalla (todo −1, negados).
+  `razar/cuerpo/pantalla.jsm` graba `pantalla.nube` y la muestra: responde 16000.
