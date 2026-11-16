@@ -1,0 +1,56 @@
+VIDA: los dialogos entre las criaturas de Gotching, sobre piezas IMAGINADAS
+Escrito ANTES de construirlo y de correrlo. Hora UTC: 2026-11-16T14:10:38Z
+
+La idea del Capitan: "lo que ve lo sabe, pero lo que imaginan no lo saben: mezcla conocido con
+imaginacion". En vida.jsm mirar el cuerpo del otro ya dice todo (medido: en 33 de 36 encuentros el
+maestro mostraba una sola pieza nueva), asi que un idioma no tenia nada que nombrar. Ahora cada
+criatura suena piezas que nadie ve, y el dialogo es la unica forma de que otra las tenga.
+
+Mundo: el mismo de vida.jsm (236 criaturas, vista adelante, misma semilla, mismo juez MDL). Lo que
+ya hacia sigue igual: aprender mirando el cuerpo del otro cuando se tocan.
+
+Suenos (criterio, no medicion): cada criatura guarda 4. Un sueno es una pieza de su marcha (como su
+modelo la dice) con una mutacion: el codigo de amplitud +-1, la fase +-1 dieciseisavo, o las dos
+(8 vecinas, elegidas por su generador). Nunca una que ya tiene en su modelo, en su cuerpo o entre sus
+suenos (hasta 16 intentos; si no encuentra, el lugar queda vacio). Se suena solo por un evento: al
+llegar (los 4) y despues de cada dialogo (el sueno que se nombro, y el del oyente si lo uso). Nunca
+por reloj. Los suenos no se ven: no entran a lo que el cuerpo muestra.
+
+Melodias: 3 senales de 4 (las 4^3 = 64 del banco de cardumen). Cada criatura tiene su lexico
+propio de 32 entradas (criterio): melodia, pieza, puntaje.
+
+Dialogo: cuando dos se tocan y no hablaron en este toque, cada una le habla a la otra una vez (en
+los dos sentidos). La que habla nombra su primer sueno: la melodia de mayor puntaje que tiene para
+esa pieza, o una al azar nueva (la agrega con puntaje 1). La que oye busca en su lexico la pieza de
+mayor puntaje para esa melodia; si no tiene ninguna, imagina: pone su propio primer sueno (y lo
+agrega con puntaje 1). Prueba esa pieza en su cuerpo con el juez: la guarda solo si su descripcion
+se acorta. Exito: las dos entradas usadas suben 1. Fracaso: bajan 1 (con 0 o menos, el lugar queda
+libre). Toda pieza probada va al archivo con su motivo ("dreamt" guardada, "unfit" no acorta).
+
+Control (misma semilla, mismo reloj, misma cantidad de mensajes): la melodia que llega al oyente
+se reemplaza por una al azar de su generador. Las melodias no significan nada; todo lo demas igual.
+
+Medidas, sobre el archivo "dialogos" (una linea por dialogo) y el "lexico" al calmarse:
+  dialogos, piezas guardadas por dialogo, bits ahorrados por dialogos, reconstruccion exacta
+  (la pieza que probo el oyente es el sueno que se nombro), y lexico compartido.
+
+APUESTAS (se dicen antes; mi prediccion al lado, para que se pueda ver si me equivoque):
+ C1. Efecto: la fraccion de dialogos cuya pieza el oyente guarda es en el real al menos 1,5 veces
+     la del control.                                     Prediccion: FALLA (casi igual).
+ C2. Reconstruccion: la fraccion de dialogos con reconstruccion exacta es en el real >= 5 % y al
+     menos el doble que en el control.                   Prediccion: FALLA.
+ C3. Bits: los bits ahorrados por dialogos en el real son al menos 1,5 veces los del control.
+                                                         Prediccion: FALLA.
+ C4. Convergencia: al calmarse, la fraccion de asociaciones (melodia -> pieza, puntaje > 0) que
+     tienen al menos dos criaturas es en el real al menos el doble que en el control.
+                                                         Prediccion: FALLA.
+ C5. Con el tiempo: en el real, la fraccion de exitos del ultimo tercio de los dialogos supera a la
+     del primer tercio.                                  Prediccion: FALLA.
+Por que predigo que fallan: el oyente que no conoce la melodia imagina con SU sueno, igual en el
+real y en el control; y una melodia que ya funciono apunta a una pieza que el oyente ya guardo, que
+no vuelve a acortar. El idioma solo serviria si las mismas piezas se nombran muchas veces entre
+criaturas distintas, y con 236 criaturas y suenos propios eso no es obvio.
+Si una apuesta falla, se publica que fallo. Si gana, tambien.
+
+Lo que esto NO prueba aunque gane: que sea un idioma en sentido humano. Prueba, a lo sumo, que una
+senal sin otra via cambia lo que el otro hace mas que la misma senal barajada.
