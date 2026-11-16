@@ -764,3 +764,38 @@ ladrillos** con la que el oyente **construye una pieza que nunca soñó**. Prere
 
 **Lo que haría falta (no probado):** que la que habla sueñe *para* la otra (una variante de lo que ve en el cuerpo de
 la otra, no de la suya), con el mismo código.
+
+## Los escenarios: universo, cielo, tierra y suelo bajo (2026-11-16)
+
+**La orden del Capitán:** que las criaturas tengan un mundo con fondo — *"tierra, mar, cielo, universo, escenarios"* —,
+como el esqueleto de una oración: **el escenario es la sintaxis, las criaturas son las palabras**.
+
+- **Los estratos** (solo en Luma, la mitad de las criaturas): arriba el **universo** (un marco de un décimo del alto,
+  criterio; nadie vive ahí), y debajo el **cielo**, la **tierra** y el **suelo bajo** (agua y tierra baja). Cada estrato
+  ocupa una parte del alto **según cuántas criaturas viven en él** (como el mundo se mide por cuántas son), con un
+  mínimo de dos cuerpos. Una criatura camina libre pero se queda en su estrato (se envuelve ahí, como el mundo se
+  envuelve).
+- **Quién vive dónde sale de lo que oyó el murciélago**, nunca de las etiquetas del juego: la regla de Gotching
+  (`razar/jueces/marcha_regla.py`) sobre los miembros como los lee `luma.jsm`. Los dos grupos (los que pisan y los que
+  no), manda el que pesa más; sus dos miembros más fuertes del mismo período (10 %) dan la fase: separados (≥ 0,15
+  vuelta) con el grupo que pisa → **camina** (tierra); juntos (< 0,15) sin él → **vuela** (cielo); lo demás → **repta**
+  (suelo bajo).
+- **Los colores son la paleta propia de Razar** (la de sus formas), atenuada. **La atenuación salió de una medición**:
+  los cuerpos recordados son oscuros (brillo mediano 26 de 255) y la parte de sus celdas que se separa al menos 40 del
+  fondo sube 0,28 (×0,3), 0,66 (×0,4), 0,68 (×0,5) y después despacio: ×0,5 es el codo. El universo queda oscuro.
+- **Calma = 0:** el fondo se pinta solo dentro de un cuadro; calmada no hay cuadros.
+
+**Medido** (`habitats_vida.py`, las 236 de la casa propia):
+
+- **Vuelan 44, caminan 78, reptan 114.** El modelo en Python de la regla da el mismo modo que `luma.jsm` en las 236.
+- **Acuerdo con el modo que les da el juego:** 131 de 236 (**55,5 %**); la regla sobre los valores crudos, 57,6 %. **No
+  supera a decir siempre "Caminar" (57,2 % en estas 236).** Por clase: de las 69 que el juego hace volar, la regla pone
+  **26** en el cielo (38 %) y 43 en el suelo bajo; de las 135 que caminan, 78 en tierra; de las 32 que reptan, 27 abajo.
+  **Volar es la clase débil**, como ya había dicho la marcha.
+- **Legibilidad:** la parte de las celdas de cada cuerpo que se distingue de su estrato (≥ 40 de brillo): mediana **1,00**
+  por criatura (sobre el fondo plano oscuro de antes, 0,00), y la peor 0,00 (un cuerpo del color de su estrato).
+- **CPU con ventana:** ~3.000 millones de ciclos cada 10 s mientras llegan y caminan (~8 % de un núcleo); **calmada, 0**
+  (con algún resto de pocos millones por el puntero sobre la ventana).
+
+**Lo que no está:** los cuerpos que nacen cerca del borde de un estrato asoman sobre el de al lado (el cuerpo mide B); los
+estratos son franjas, no formas: el universo no tiene estrellas ni el suelo relieve.
