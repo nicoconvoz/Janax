@@ -325,7 +325,9 @@ setg("REMAIN", FRAME_MS); st("j14", "FOREVER"); J("jjmp main")
 o("frame_forever:                  ; at rest, nothing left to try: wait for ever (nothing is spent)")
 if COMER:
     J("jcall r_hungry", "jjnz j0, frame_go")
-if LUMA:
+if LUMA and getattr(LUMA, "always", False):
+    J("jcall r_gesture                ; always alive (luma): a new round of longer jumps, and on", "jjmp frame_go")
+elif LUMA:
     J("jcall v_alive", "jjnz j0, frame_go", "jcall v_calm")
 setg("FOREVER", 1); J("jjmp main")
 o("main_bad:")

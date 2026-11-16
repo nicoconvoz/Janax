@@ -799,3 +799,28 @@ como el esqueleto de una oración: **el escenario es la sintaxis, las criaturas 
 
 **Lo que no está:** los cuerpos que nacen cerca del borde de un estrato asoman sobre el de al lado (el cuerpo mide B); los
 estratos son franjas, no formas: el universo no tiene estrellas ni el suelo relieve.
+
+## Luma siempre viva (2026-11-16)
+
+**La decisión del Capitán**, que deja de lado para Luma la regla de calmarse a 0: *"aunque cueste lo que sea, el amor no
+tiene precio"*. Mientras su ventana está abierta, Luma **no se duerme nunca**: las criaturas caminan siempre con su
+marcha y siempre imaginan, y sus formas siempre exploran. Sigue leyendo cada gesto.
+
+- **Las criaturas:** caminan en cada cuadro, haya o no lección pendiente. Un sueño que se nombró no se vuelve a soñar:
+  cada criatura tiene la tabla de lo que ya probó (2^18 lugares, criterio; a medio llenar deja de escribir y sigue
+  leyendo). Cuando su vecindario se agota (16 intentos sin un sueño nuevo), sus mutaciones se ensanchan un paso de
+  amplitud y fase, hasta la vuelta entera de la fase.
+- **Las formas:** cuando no les queda nada por probar, en lugar de esperar un gesto abren solas la ronda siguiente de
+  saltos más largos (la misma que abría un gesto).
+- **Solo `luma.jsm`:** `vida.jsm`, `formas.jsm` y `comer_nubes.jsm` siguen iguales byte por byte. `LUMA_CALMA=1 python
+  razar/cuerpo/gen_luma.py` arma la versión anterior, la que se calma.
+
+**El costo, medido** (casa propia, 236 criaturas, ventana abierta, ventanas de 30 s después del primer minuto):
+
+- **~9.000 millones de ciclos cada 30 s: ~300 millones por segundo, ~8 % de un núcleo** (1,3–1,9 s de procesador cada
+  30 s), estable: no crece con el tiempo.
+- **Lo que escribe:** en ~4 minutos, 26.000 diálogos y **4,8 MB** más en la casa (los diálogos y el archivo de las
+  criaturas): **~70 MB por hora**. Nada se descarta, así que crece mientras la ventana esté abierta. Es el costo que más
+  pesa, más que el procesador.
+- **No repite:** en 43.000 diálogos seguidos, ninguna criatura nombró dos veces el mismo sueño. El repaso da **0
+  diferencias** (290.930 líneas).

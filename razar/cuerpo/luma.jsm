@@ -796,9 +796,8 @@ frame_go:
 frame_forever:                  ; at rest, nothing left to try: wait for ever (nothing is spent)
   jcall r_hungry
   jjnz j0, frame_go
-  jcall v_alive
-  jjnz j0, frame_go
-  jcall v_calm
+  jcall r_gesture                ; always alive (luma): a new round of longer jumps, and on
+  jjmp frame_go
   jldi j10, 1
   jst j10, j14, 0208h
   jjmp main
@@ -9188,6 +9187,7 @@ v_fr_pend_bad:                    ; it could not come in (not there, not a cloud
 v_fr_walk:
   ; a lesson is searched for while something new happened within the time the average walker here needs to
   ; cross the world (W / mean speed): longer than that with nothing new, the ones left live apart
+  jjmp v_fr_go                    ; always alive: they never stop walking
   jcall v_r_searching
   jjnz j0, v_fr_go
   jld j1, j14, 02300h
@@ -9284,9 +9284,10 @@ v_vs_show:
   jcall v_r_tocar
   jret
 v_alive:                        ; j0 = nonzero while the creatures have something new
-  jldi j0, 0
+  jldi j0, 1
   jld j1, j14, 02228h
   jjz j1, v_va_ret
+  jret
   jcall v_r_coming
   jadd j1, j0, j14
   jst j1, j14, 02338h
@@ -10765,6 +10766,7 @@ v_av_acc_done:
   jldi j1, 1
   jst j1, j9, 8
   jst j1, j9, 176
+  jst j1, j9, 280
   jldi j1, -1
   jst j1, j9, 232
   jldi j0, 1
@@ -12871,6 +12873,27 @@ v_dm_lap:
   jst j1, j3, 8
   jjmp v_dm_check
 v_dm_mut:
+  ; a mutation of radius R (its own): dq, ds in [-R, R], not both 0
+  jld j9, j14, 02380h
+  jld j1, j9, 280
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j14, 026F0h
+  jcall v_r_randmod
+  jld j9, j14, 02380h
+  jld j10, j9, 280
+  jsub j0, j0, j10
+  jst j0, j14, 026E8h
+  jld j1, j14, 026F0h
+  jcall v_r_randmod
+  jld j9, j14, 02380h
+  jld j10, j9, 280
+  jsub j2, j0, j10
+  jld j1, j14, 026E8h
+  jor j10, j1, j2
+  jjz j10, v_dm_lap
+  jjmp v_dm_apply
   jcall v_r_rand
   jldi j11, 7
   jand j10, j10, j11
@@ -12880,6 +12903,7 @@ v_dm_mut:
   jadd j10, j10, j11
   jld j1, j10, 0
   jld j2, j10, 8
+v_dm_apply:
   jldi j3, 04800h
   jld j4, j3, 8
   jadd j4, j4, j1
@@ -12920,6 +12944,9 @@ v_dm_check:
   jldi j3, 4
   jcall v_r_inlist
   jjnz j0, v_dm_lap
+  jldi j1, 0
+  jcall v_r_tried
+  jjnz j0, v_dm_lap
   jld j9, j14, 02380h
   jld j2, j9, 0
   jldi j10, 128
@@ -12937,6 +12964,19 @@ v_dm_check:
   jcall v_r_copym
   jret
 v_dm_empty:
+  ; its neighbourhood is used up: wider mutations, and it dreams again (up to the whole phase circle)
+  jld j9, j14, 02380h
+  jld j1, j9, 280
+  jldi j10, 16
+  jsub j10, j1, j10
+  jjnn j10, v_dm_none
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j9, 280
+  jldi j10, 010h
+  jst j10, j14, 025F8h
+  jjmp v_dm_lap
+v_dm_none:
   jld j9, j14, 02380h
   jld j2, j9, 0
   jldi j10, 128
@@ -12948,6 +12988,73 @@ v_dm_empty:
   jmul j1, j1, j10
   jadd j2, j2, j1
   jst j14, j2, 0
+  jret
+v_r_tried:                        ; TI and the piece TMPD: j1 = 0 look, 1 write -> j0 = 1 it was tried (uses j1..j7)
+  jld j2, j14, 026D8h
+  jjnz j2, v_tr_have
+  jst j1, j14, 026F0h
+  jldi j1, 020h
+  jshi j1, 0
+  jcall v_r_alloc
+  jst j0, j14, 026D8h
+  jld j1, j14, 026F0h
+v_tr_have:
+  jld j9, j14, 02380h
+  jld j3, j9, 0
+  jldi j4, 04800h
+  jld j5, j4, 0
+  jldi j10, 16
+  jshl j3, j3, j10
+  jxor j3, j3, j5
+  jld j5, j4, 8
+  jldi j10, 16
+  jshl j3, j3, j10
+  jxor j3, j3, j5
+  jld j5, j4, 16
+  jldi j10, 8
+  jshl j3, j3, j10
+  jxor j3, j3, j5
+  jldi j10, 1
+  jor j3, j3, j10
+  jldi j10, -25033
+  jshi j10, 079B9h
+  jshi j10, 07F4Ah
+  jshi j10, 07C15h
+  jmul j4, j3, j10
+  jldi j10, 46
+  jshr j4, j4, j10
+v_tr_probe:
+  jldi j10, 3
+  jshl j5, j4, j10
+  jld j10, j14, 026D8h
+  jadd j5, j5, j10
+  jld j6, j5, 0
+  jjz j6, v_tr_empty
+  jsub j7, j6, j3
+  jjz j7, v_tr_yes
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j10, 3
+  jshi j10, 0FFFFh
+  jand j4, j4, j10
+  jjmp v_tr_probe
+v_tr_empty:
+  jjz j1, v_tr_no
+  jld j6, j14, 026E0h
+  jldi j10, 2
+  jshi j10, 0
+  jsub j10, j6, j10
+  jjnn j10, v_tr_no
+  jst j3, j5, 0
+  jld j10, j14, 026E0h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 026E0h
+v_tr_no:
+  jldi j0, 0
+  jret
+v_tr_yes:
+  jldi j0, 1
   jret
 v_r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address
   jld j2, j9, 0
@@ -13090,6 +13197,14 @@ v_r_dialogue:                     ; DSP names one of its dreams to DLIS with a m
   jst j10, j14, 025F0h
   jst j2, j14, 02618h
 v_dg_named:
+  jld j9, j14, 025B8h
+  jst j9, j14, 02380h
+  jld j1, j14, 02618h
+  jldi j2, 04800h
+  jldi j3, 1
+  jcall v_r_copym
+  jldi j1, 1
+  jcall v_r_tried
   jld j1, j14, 02670h
   jjnz j1, v_dg_code
   jld j9, j14, 025B8h

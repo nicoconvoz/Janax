@@ -27,6 +27,10 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 COMER_SRC = os.path.join(AQUI, "gen_comer.py")
 VIDA_SRC = os.path.join(AQUI, "gen_vida.py")
 
+# Always alive (the Capitan's decision, 2026-11-16: "aunque cueste lo que sea, el amor no tiene precio"): while her
+# window is open the creatures never stop walking and imagining, and the forms never stop exploring; it never sleeps
+# for ever (it still reads every gesture). Its cost is measured in the doc. LUMA_CALMA=1 builds the old calm version.
+ALWAYS = not os.environ.get("LUMA_CALMA")
 FW, FH = 160, 100            # the forms' own screen (gen_formas: 4 x 2 rooms of 40 x 50)
 ZOOM = 2                     # criterion: drawn at twice its size, so it is as tall as the creatures' world
 SW, SH = FW * ZOOM + 320, 200   # the shared screen: the forms (320 x 200) beside the creatures' world (320 x 200)
@@ -58,7 +62,8 @@ def init(g):
 def routines(g):
     L = g["L"]
     n0 = len(L)
-    cfg = {"off": OFF, "sw": SW, "sh": SH, "wx0": WX0, "cloud": ST["scloud"], "init_tail": init_tail, "routines": vida_routines}
+    cfg = {"off": OFF, "sw": SW, "sh": SH, "wx0": WX0, "cloud": ST["scloud"], "init_tail": init_tail, "routines": vida_routines,
+           "siempre": ALWAYS}
     ns = {"__file__": VIDA_SRC, "__name__": "gen_vida_en_luma", "VIDA_MOD": cfg, "__doc__": None}
     exec(compile(open(VIDA_SRC, encoding="utf-8").read(), VIDA_SRC, "exec"), ns)
     lines = ns["L"]
@@ -125,7 +130,9 @@ def vida_routines(v):
     o("vs_show:")
     J("jldi j10, 40"); li("j11", v["CLOUD"]); li("j12", v["TOTAL"]); J("jcall r_tocar", "jret")
     o("v_alive:                        ; j0 = nonzero while the creatures have something new")
-    J("jldi j0, 0"); ld("j1", "N"); J("jjz j1, va_ret")
+    J("jldi j0, %d" % (1 if ALWAYS else 0)); ld("j1", "N"); J("jjz j1, va_ret")
+    if ALWAYS:
+        J("jret")
     v["alive_body"]()
     J("jadd j0, j1, j14")
     o("va_ret:")
@@ -237,6 +244,6 @@ def remember(v):
     o("vr_done:")
     J("jldi j0, 1", "jret")
 
-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm")
+LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS)
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})

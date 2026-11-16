@@ -117,6 +117,11 @@ assert DUMMY + 48 < 0x8000
 # (10 %) give the phase relation: apart (>= 0.15 turn) with the floor group -> walks (land); together (< 0.15 turn)
 # without it -> flies (sky); anything else, or no such pair -> crawls (low ground). Never the game's mode labels.
 HAB = bool(MOD)
+# ---- always alive (luma.jsm only, the Capitan's decision of 2026-11-16, its cost measured in the doc): the creatures
+# never stop walking and never stop imagining. A dream that was named is never dreamed again by the same creature (a
+# table of what each one tried), and when its neighbourhood is used up (DREAM_TRIES misses) its mutations widen.
+ALWAYS = bool(MOD and MOD.get("siempre"))
+TRIED_BITS = 18                    # criterion: 2^18 places (2 MB); at half full it stops writing (it still reads)
 UNIV = H // 10                     # criterion: the universe, a frame of a tenth of the world's height
 LBL_H = 0x29E0 + OFF               # "vida-habitat": the mode of each creature and the strata, written at the start
 HLINE = 0x29F0 + OFF               # a line of it (24 bytes)
@@ -150,8 +155,8 @@ MIN_LIMB_LINE = 48                # the shortest line of a rhythmic limb in a .o
 
 # ---- the tables of a creature (qwords at these offsets)
 C_ENT, C_STATE, C_CX, C_CY, C_HX, C_HY, C_L, C_K, C_NE, C_DL, C_LIMB, C_MOD, C_EFF, C_LEFF, C_ACC, C_PART, C_NP, \
-    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2, C_MODE = \
-    [8 * k for k in range(35)]
+    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2, C_MODE, C_DRAD = \
+    [8 * k for k in range(36)]
 CSZ = 8 * 40
 RS = 32                           # a rhythm: P (ms), q, s (qwords); a limb adds whether it steps on the floor (pata)
 PSZ = 48                          # a particle: home x, y, offset x, y (x256, from the centre), colour (r | g<<8 | b<<16)
@@ -183,7 +188,7 @@ def J(*xs):
 VARS = ("REMAIN FOREVER BLEFT CHANGED RNG N B R2 RB TB LM CR GAIN PARTS LIST LTXT NMAX OMAX NUBB OIDB TMPM PIECEM "
         "BESTM ACC VBUF VCAP VLEN NEXTK FA FB ARRIVING TEACH WALK MOVING KEPT ARCH FRAMES FH AH Q1 Q2 Q3 Q4 Q5 Q6 Q7 "
         "Q8 Q9 TI TJ PP TBEST TBK TBR GBEST SBEST SBK SBR SBP SBI NW NH NBITS NRGB SN SD OFX OFY STX STY SVX SVY "
-        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN NMODE0 NMODE1 NMODE2 BY1 BY2 BY3 BY0 HABOK").split()
+        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN NMODE0 NMODE1 NMODE2 BY1 BY2 BY3 BY0 HABOK TRIED TRIEDN DRR DRQ").split()
 G = {n: GV + 8 * i for i, n in enumerate(VARS)}
 assert max(G.values()) < SIN
 def ld(r, n): o("  jld %s, j14, %s" % (r, num(G[n] if isinstance(n, str) else n)))
@@ -322,6 +327,8 @@ def frame_body():
     o("fr_walk:")
     o("  ; a lesson is searched for while something new happened within the time the average walker here needs to")
     o("  ; cross the world (W / mean speed): longer than that with nothing new, the ones left live apart")
+    if ALWAYS:
+        J("jjmp fr_go                    ; always alive: they never stop walking")
     J("jcall r_searching", "jjnz j0, fr_go"); ld("j1", "WALK"); J("jjnz j1, fr_go")
     o("  ; while the world is awake anyway (some fall, some still to come) every one here walks by its gait")
     J("jcall r_coming", "jjz j0, fr_parts")
@@ -615,7 +622,7 @@ J("jjz j2, av_acc_done", "jst j14, j3, 0", "jld j4, j1, 0"); ld("j5", "PMAXF"); 
 o("av_acc_next:")
 J("jldi j10, %d" % RS, "jadd j1, j1, j10", "jldi j10, 8", "jadd j3, j3, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp av_acc")
 o("av_acc_done:")
-J("jldi j1, 1", "jst j1, j9, %d" % C_STATE, "jst j1, j9, %d" % C_UNSET, "jldi j1, -1", "jst j1, j9, %d" % C_TIDX, "jldi j0, 1", "jret")
+J("jldi j1, 1", "jst j1, j9, %d" % C_STATE, "jst j1, j9, %d" % C_UNSET, *(["jst j1, j9, %d" % C_DRAD] if ALWAYS else []), "jldi j1, -1", "jst j1, j9, %d" % C_TIDX, "jldi j0, 1", "jret")
 o("av_bad_close:")
 J("jldi j10, 7", "jcall r_file")
 o("av_bad:")
@@ -1187,7 +1194,15 @@ ld("j9", "NEWC"); J("jld j1, j9, %d" % C_NE, "jjz j1, dm_empty", "jcall r_randmo
 li("j2", TMPD); J("jldi j3, 1", "jcall r_copym")
 ld("j9", "TI"); J("jld j1, j9, %d" % C_NE, "jjz j1, dm_check", "jcall r_randmod", "jldi j10, %d" % RS, "jmul j0, j0, j10"); ld("j9", "TI"); J("jld j1, j9, %d" % C_EFF, "jadd j1, j1, j0", "jld j1, j1, 8"); li("j3", TMPD); J("jst j1, j3, 8", "jjmp dm_check")
 o("dm_mut:")
+if ALWAYS:
+    o("  ; a mutation of radius R (its own): dq, ds in [-R, R], not both 0")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_DRAD, "jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10"); st("j1", "DRQ")
+    J("jcall r_randmod"); ld("j9", "TI"); J("jld j10, j9, %d" % C_DRAD, "jsub j0, j0, j10"); st("j0", "DRR")
+    ld("j1", "DRQ"); J("jcall r_randmod"); ld("j9", "TI"); J("jld j10, j9, %d" % C_DRAD, "jsub j2, j0, j10"); ld("j1", "DRR")
+    J("jor j10, j1, j2", "jjz j10, dm_lap", "jjmp dm_apply")
 J("jcall r_rand", "jldi j11, 7", "jand j10, j10, j11", "jldi j11, 4", "jshl j10, j10, j11"); li("j11", MUTT); J("jadd j10, j10, j11", "jld j1, j10, 0", "jld j2, j10, 8")
+if ALWAYS:
+    o("dm_apply:")
 li("j3", TMPD); J("jld j4, j3, 8", "jadd j4, j4, j1", "jjnn j4, dm_q0", "jldi j4, 0")
 o("dm_q0:")
 J("jldi j10, %d" % QMAX, "jsub j10, j10, j4", "jjnn j10, dm_q1", "jldi j4, %d" % QMAX)
@@ -1197,9 +1212,31 @@ o("dm_check:")
 ld("j9", "TI"); li("j1", TMPD); J("jld j2, j9, %d" % C_MOD, "jld j3, j9, %d" % C_K, "jcall r_inlist", "jjnz j0, dm_lap")
 ld("j9", "TI"); li("j1", TMPD); J("jld j2, j9, %d" % C_EFF, "jld j3, j9, %d" % C_NE, "jcall r_inlist", "jjnz j0, dm_lap")
 ld("j9", "TI"); dream_base("j2", "j9"); li("j1", TMPD); J("jldi j3, %d" % DN, "jcall r_inlist", "jjnz j0, dm_lap")
+if ALWAYS:
+    J("jldi j1, 0", "jcall r_tried", "jjnz j0, dm_lap")
 ld("j9", "TI"); dream_base("j2", "j9"); ld("j1", "DSLOT"); J("jldi j10, %d" % RS, "jmul j1, j1, j10", "jadd j2, j2, j1"); ld("j10", "MIXED"); J("jst j10, j2, 24"); li("j1", TMPD); J("jldi j3, 1", "jcall r_copym", "jret")
 o("dm_empty:")
+if ALWAYS:
+    o("  ; its neighbourhood is used up: wider mutations, and it dreams again (up to the whole phase circle)")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_DRAD, "jldi j10, 16", "jsub j10, j1, j10", "jjnn j10, dm_none", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j9, %d" % C_DRAD); setg("DTRY", DREAM_TRIES); J("jjmp dm_lap")
+    o("dm_none:")
 ld("j9", "TI"); dream_base("j2", "j9"); ld("j1", "DSLOT"); J("jldi j10, %d" % RS, "jmul j1, j1, j10", "jadd j2, j2, j1", "jst j14, j2, 0", "jret")
+if ALWAYS:
+    o("r_tried:                        ; TI and the piece TMPD: j1 = 0 look, 1 write -> j0 = 1 it was tried (uses j1..j7)")
+    ld("j2", "TRIED"); J("jjnz j2, tr_have")
+    st("j1", "DRQ"); li("j1", (1 << TRIED_BITS) * 8); J("jcall r_alloc"); st("j0", "TRIED"); ld("j1", "DRQ")
+    o("tr_have:")
+    ld("j9", "TI"); J("jld j3, j9, %d" % C_ENT); li("j4", TMPD); J("jld j5, j4, 0", "jldi j10, 16", "jshl j3, j3, j10", "jxor j3, j3, j5", "jld j5, j4, 8", "jldi j10, 16", "jshl j3, j3, j10", "jxor j3, j3, j5", "jld j5, j4, 16", "jldi j10, 8", "jshl j3, j3, j10", "jxor j3, j3, j5", "jldi j10, 1", "jor j3, j3, j10")
+    li("j10", 0x9E3779B97F4A7C15); J("jmul j4, j3, j10", "jldi j10, %d" % (64 - TRIED_BITS), "jshr j4, j4, j10")
+    o("tr_probe:")
+    J("jldi j10, 3", "jshl j5, j4, j10"); ld("j10", "TRIED"); J("jadd j5, j5, j10", "jld j6, j5, 0", "jjz j6, tr_empty", "jsub j7, j6, j3", "jjz j7, tr_yes")
+    J("jldi j10, 1", "jadd j4, j4, j10"); li("j10", (1 << TRIED_BITS) - 1); J("jand j4, j4, j10", "jjmp tr_probe")
+    o("tr_empty:")
+    J("jjz j1, tr_no"); ld("j6", "TRIEDN"); li("j10", 1 << (TRIED_BITS - 1)); J("jsub j10, j6, j10", "jjnn j10, tr_no", "jst j3, j5, 0"); incg("TRIEDN")
+    o("tr_no:")
+    J("jldi j0, 0", "jret")
+    o("tr_yes:")
+    J("jldi j0, 1", "jret")
 o("r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address")
 dream_base("j2", "j9"); J("jldi j0, 0")
 o("fd_lap:")
@@ -1246,6 +1283,8 @@ o("  ; to the newcomer it went to meet, it names the dream that newcomer inspire
 ld("j9", "DSP"); J("jld j1, j9, %d" % C_GOAL, "jjz j1, dg_named", "jldi j10, 1", "jsub j1, j1, j10"); ld("j8", "DLIS"); J("jld j2, j8, %d" % C_ENT, "jsub j1, j1, j2", "jjnz j1, dg_named")
 dream_base("j2", "j9"); J("jldi j10, %d" % ((DN - 1) * RS), "jadd j2, j2, j10", "jld j1, j2, 0", "jjz j1, dg_named", "jld j1, j2, 24", "jjz j1, dg_named"); setg("DSLOT", DN - 1); st("j2", "DD0")
 o("dg_named:")
+if ALWAYS:
+    ld("j9", "DSP"); st("j9", "TI"); ld("j1", "DD0"); li("j2", TMPD); J("jldi j3, 1", "jcall r_copym", "jldi j1, 1", "jcall r_tried")
 ld("j1", "CODE"); J("jjnz j1, dg_code")
 ld("j9", "DSP"); lex_base("j1", "j9"); ld("j2", "DD0"); J("jcall r_lex_piece", "jjnz j0, dg_has")
 J("jcall r_rand", "jldi j11, %d" % (MELS - 1), "jand j2, j10, j11"); ld("j9", "DSP"); lex_base("j1", "j9"); ld("j3", "DD0"); J("jcall r_lex_add")
