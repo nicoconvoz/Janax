@@ -325,7 +325,14 @@ def food_load():
     J("jldb j3, j2, 0", "jldi j10, 10", "jsub j10, j3, j10", "jjz j10, fl_eol_found", "jldi j10, 1", "jadd j2, j2, j10", "jjmp fl_eol")
     o("fl_eol_found:")
     J("jsub j3, j2, j1", "jst j3, j9, 8", "jldi j10, 1", "jadd j2, j2, j10"); st("j2", "Q1")
-    J("jadd j2, j3, j14", "jcall r_fnv"); ld("j9", "Q3"); J("jst j0, j9, 24")
+    if NS["LUMA"]:
+        o("  ; a self-contained casa names a meal by its print alone (\"#\" and 16 hex): no path on the host")
+        J("jldb j4, j1, 0", "jldi j10, 35", "jsub j10, j4, j10", "jjnz j10, fl_fnv", "jldi j10, 1", "jadd j1, j1, j10", "jldi j2, 16", "jcall r_get_hex", "jjmp fl_print")
+        o("fl_fnv:")
+    J("jadd j2, j3, j14", "jcall r_fnv")
+    if NS["LUMA"]:
+        o("fl_print:")
+    ld("j9", "Q3"); J("jst j0, j9, 24")
     incg("Q2"); J("jjmp fl_line")
     o("fl_lines_done:")
     ld("j9", "Q2"); st("j9", "NPAN")

@@ -105,6 +105,7 @@ CONTROL = bool(os.environ.get("VIDA_CONTROL"))   # the control build: the melody
 DLINE, DLLEN = 0x2780 + OFF, 104
 TMPD, TMPP = 0x2800 + OFF, 0x2820 + OFF
 LBL_D, LBL_X = 0x2840 + OFF, 0x2850 + OFF
+LBL_M = 0x28E0 + OFF              # "vida-memoria" (module only)
 MUTT = 0x2860 + OFF
 assert MUTT + 128 < 0x8000
 LXHDR = 16                        # "lexico1 NNNNNNN" and a newline
@@ -125,9 +126,9 @@ MIN_LIMB_LINE = 48                # the shortest line of a rhythmic limb in a .o
 
 # ---- the tables of a creature (qwords at these offsets)
 C_ENT, C_STATE, C_CX, C_CY, C_HX, C_HY, C_L, C_K, C_NE, C_DL, C_LIMB, C_MOD, C_EFF, C_LEFF, C_ACC, C_PART, C_NP, \
-    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL = \
-    [8 * k for k in range(31)]
-CSZ = 8 * 32
+    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2 = \
+    [8 * k for k in range(34)]
+CSZ = 8 * 40
 RS = 32                           # a rhythm: P (ms), q, s (qwords); a limb adds whether it steps on the floor (pata)
 PSZ = 48                          # a particle: home x, y, offset x, y (x256, from the centre), colour (r | g<<8 | b<<16)
 
@@ -158,7 +159,7 @@ def J(*xs):
 VARS = ("REMAIN FOREVER BLEFT CHANGED RNG N B R2 RB TB LM CR GAIN PARTS LIST LTXT NMAX OMAX NUBB OIDB TMPM PIECEM "
         "BESTM ACC VBUF VCAP VLEN NEXTK FA FB ARRIVING TEACH WALK MOVING KEPT ARCH FRAMES FH AH Q1 Q2 Q3 Q4 Q5 Q6 Q7 "
         "Q8 Q9 TI TJ PP TBEST TBK TBR GBEST SBEST SBK SBR SBP SBI NW NH NBITS NRGB SN SD OFX OFY STX STY SVX SVY "
-        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR").split()
+        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM").split()
 G = {n: GV + 8 * i for i, n in enumerate(VARS)}
 assert max(G.values()) < SIN
 def ld(r, n): o("  jld %s, j14, %s" % (r, num(G[n] if isinstance(n, str) else n)))
@@ -201,6 +202,8 @@ for i, v in enumerate(VERDICTS):
     put_string(VERD + 16 * i, v, 8)
 setg("RNG", SEED); st("j14", "ARRIVING")
 put_string(LBL_D, PFX + "dialogos", 16); put_string(LBL_X, PFX + "lexico", 16)
+if MOD:
+    put_string(LBL_M, PFX + "memoria", 16)
 for i, (dq, ds) in enumerate(MUTS):
     li("j1", dq); o("  jst j1, j14, %s" % num(MUTT + 16 * i)); li("j1", ds); o("  jst j1, j14, %s" % num(MUTT + 16 * i + 8))
 J("jcall r_load_list", "jcall r_load_learned", "jcall r_open_archive", "jcall r_open_dialogs")
@@ -322,9 +325,19 @@ else:
 o("; ---- the list (\"lista\", written by vida.sh): a header and a line per creature,")
 o(";      \"<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>\"; every table sized from it (plastic)")
 o("r_load_list:")
-st("j14", "N")
+st("j14", "N"); st("j14", "MEM")
+if MOD:
+    o("  ; her own record first (\"vida-memoria\": each creature's body as she remembers it and its gait, inside the")
+    o("  ; casa); without it, the list of paths on the host")
+    li("j11", LBL_M); J("jldi j12, %d" % len(PFX + "memoria"), "jcall r_open"); ld("j9", "FH"); J("jjn j9, ll_paths")
+    J("jldi j10, 5"); li("j11", HDRB); J("jldi j12, %d" % LHDR, "jcall r_file", "jldi j10, %d" % LHDR, "jsub j10, j13, j10", "jjnz j10, ll_mem_close")
+    setg("MEM", 1); J("jjmp ll_header")
+    o("ll_mem_close:")
+    J("jldi j10, 7", "jcall r_file")
+    o("ll_paths:")
 li("j11", LBL_L); J("jldi j12, %d" % len(PFX + "lista"), "jcall r_open"); ld("j9", "FH"); J("jjn j9, ll_none")
 J("jldi j10, 5"); li("j11", HDRB); J("jldi j12, %d" % LHDR, "jcall r_file", "jldi j10, %d" % LHDR, "jsub j10, j13, j10", "jjnz j10, ll_close")
+o("ll_header:")
 for at, dig, name in ((7, 6, "N"), (14, 9, "NMAX"), (24, 9, "OMAX"), (34, 9, "LTXT")):
     li("j1", HDRB + at); J("jldi j2, %d" % dig, "jcall r_get_num"); st("j0", name)
 ld("j1", "LTXT"); J("jcall r_alloc"); st("j0", "LIST")
@@ -377,6 +390,17 @@ for off, sz, nm in ((C_LIMB, RS, "BLIMB"), (C_MOD, RS, "BMOD"), (C_EFF, RS, "BEF
     ld("j1", "LM"); ld("j2", "Q1"); J("jmul j1, j1, j2", "jldi j10, %d" % sz, "jmul j1, j1, j10"); ld("j10", nm); J("jadd j1, j1, j10", "jst j1, j9, %d" % off)
 ld("j1", "B"); J("jmul j1, j1, j1", "jldi j10, %d" % PSZ, "jmul j1, j1, j10"); ld("j2", "Q1"); J("jmul j1, j1, j2")
 ld("j10", "PARTS"); J("jadd j1, j1, j10"); ld("j9", "Q3"); J("jst j1, j9, %d" % C_PART)
+if MOD:
+    ld("j1", "MEM"); J("jjz j1, ll_pathline")
+    o("  ; a line of her memory: <print 16> <recipe 31> <colour 6> <colour 6> <gait bytes 9>, a newline, the gait's text")
+    ld("j1", "Q2"); J("jldi j2, 16", "jcall r_get_hex"); ld("j9", "Q3"); J("jst j0, j9, %d" % C_FNV)
+    ld("j1", "Q2"); J("jldi j10, 17", "jadd j1, j1, j10", "jst j1, j9, %d" % C_REC)
+    for at, fld in ((49, C_C1), (56, C_C2)):
+        ld("j1", "Q2"); J("jldi j10, %d" % at, "jadd j1, j1, j10", "jldi j2, 6", "jcall r_get_hex"); ld("j9", "Q3"); J("jst j0, j9, %d" % fld)
+    ld("j1", "Q2"); J("jldi j10, 63", "jadd j1, j1, j10", "jldi j2, 9", "jcall r_get_num"); ld("j9", "Q3"); J("jst j0, j9, %d" % C_BOID)
+    ld("j1", "Q2"); J("jldi j10, 73", "jadd j1, j1, j10", "jst j1, j9, %d" % C_POID, "jadd j1, j1, j0"); st("j1", "Q2")
+    incg("Q1"); J("jjmp ll_lap")
+    o("ll_pathline:")
 ld("j1", "Q2"); J("jldi j2, 9", "jcall r_get_num"); ld("j9", "Q3"); J("jst j0, j9, %d" % C_BNUB)
 ld("j1", "Q2"); J("jldi j10, 10", "jadd j1, j1, j10", "jldi j2, 9", "jcall r_get_num"); ld("j9", "Q3"); J("jst j0, j9, %d" % C_BOID)
 ld("j1", "Q2"); J("jldi j10, 20", "jadd j1, j1, j10", "jst j1, j9, %d" % C_PNUB, "jadd j2, j1, j14")
@@ -516,6 +540,15 @@ J("jret")
 o("; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1")
 o("r_arrive:")
 ld("j1", "IDX"); rec("j9", "j1"); st("j9", "TI")
+if MOD:
+    ld("j1", "MEM"); J("jjz j1, av_host")
+    o("  ; from her memory: the gait's text from the record, the body from the recipe she kept (her own cloud)")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_POID, "jld j2, j9, %d" % C_BOID); ld("j3", "OMAX"); J("jsub j10, j3, j2", "jjn j10, av_bad"); ld("j3", "OIDB")
+    o("av_mcopy:")
+    J("jjz j2, av_mcopied", "jldb j4, j1, 0", "jstb j4, j3, 0", "jldi j10, 1", "jadd j1, j1, j10", "jadd j3, j3, j10", "jsub j2, j2, j10", "jjmp av_mcopy")
+    o("av_mcopied:")
+    J("jstb j14, j3, 0", "jcall r_parse_oido", "jcall v_remember", "jjz j0, av_bad", "jjmp av_body")
+    o("av_host:")
 J("jld j11, j9, %d" % C_POID, "jld j12, j9, %d" % C_LOID, "jldi j10, 37", "jcall r_tocar"); st("j13", "FH"); J("jjn j13, av_bad")
 ld("j9", "TI"); J("jld j12, j9, %d" % C_BOID); ld("j10", "OMAX"); J("jsub j10, j10, j12", "jjn j10, av_bad_close")
 ld("j11", "OIDB"); J("jcall r_read_all"); st("j0", "Q1"); J("jldi j10, 7", "jcall r_file")
@@ -524,6 +557,7 @@ ld("j9", "TI"); J("jld j11, j9, %d" % C_PNUB, "jld j12, j9, %d" % C_LNUB, "jldi 
 ld("j9", "TI"); J("jld j12, j9, %d" % C_BNUB); ld("j10", "NMAX"); J("jsub j10, j10, j12", "jjn j10, av_bad_close")
 ld("j11", "NUBB"); J("jcall r_read_all"); st("j0", "Q1"); J("jldi j10, 7", "jcall r_file")
 ld("j9", "TI"); J("jld j12, j9, %d" % C_BNUB); ld("j0", "Q1"); J("jsub j10, j0, j12", "jjnz j10, av_bad")
+o("av_body:")
 J("jcall r_body", "jjz j0, av_bad")
 o("  ; its model: what it learned (if it still fits its limbs), or the greedy one from its own limbs")
 ld("j9", "TI"); J("jld j1, j9, %d" % C_LOADED, "jjz j1, av_own", "jld j1, j9, %d" % C_K, "jld j2, j9, %d" % C_L, "jsub j10, j2, j1", "jjnn j10, av_model")

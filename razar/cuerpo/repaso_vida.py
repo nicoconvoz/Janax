@@ -117,14 +117,24 @@ def fnv(s):
 
 def main():
     casa = sys.argv[1]
-    lista = read(casa, "lista").decode()
     C = {}
-    for ln in lista.split("\n")[1:]:
-        if not ln.strip():
-            continue
-        nube, oido = ln[20:].split("\t")
-        Ls = parse(open(oido, encoding="utf-8").read())
-        C[fnv(nube)] = {"name": os.path.basename(nube), "L": Ls, "M": own(Ls)}
+    mem = read(casa, "memoria")
+    if mem:
+        # a self-contained casa: the gaits are in her own record, nothing is read from the host
+        n = int(mem[7:13]); at = 44
+        for _ in range(n):
+            p = int(mem[at:at + 16], 16); olen = int(mem[at + 63:at + 72])
+            Ls = parse(mem[at + 73:at + 73 + olen].decode("utf-8"))
+            C[p] = {"name": "%016x" % p, "L": Ls, "M": own(Ls)}
+            at += 73 + olen
+    else:
+        lista = read(casa, "lista").decode()
+        for ln in lista.split("\n")[1:]:
+            if not ln.strip():
+                continue
+            nube, oido = ln[20:].split("\t")
+            Ls = parse(open(oido, encoding="utf-8").read())
+            C[fnv(nube)] = {"name": os.path.basename(nube), "L": Ls, "M": own(Ls)}
     for c in C.values():
         c["E0"] = eff(c["M"], c["L"])
     if "--desde-cero" not in sys.argv:

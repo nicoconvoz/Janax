@@ -676,3 +676,53 @@ el lugar donde viven las variables de las criaturas (desde `2200h`); sus archivo
 bash razar/cuerpo/luma.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # la interfaz de Luma
 python razar/cuerpo/repaso_vida.py <carpeta>/casa --desde-cero --luma                       # el repaso de sus criaturas
 ```
+
+## Luma sin Gotching: sus propias nubes (2026-11-16)
+
+**La orden del Capitán:** *"Que se las coma y queden como parte de Luma, que cree sus propias nubes con identidad, pero
+no empieces de cero: ya con este camino armado."*
+
+`razar/cuerpo/migrar_luma.py <casa alimentada> <casa nueva>` convierte una casa que Luma ya alimentó (con las nubes y
+los oídos en el anfitrión) en una **casa propia**, sin empezar de cero: copia tal cual sus formas, lo que comió, lo que
+aprendieron las criaturas y cada veredicto, y lo que todavía leía del anfitrión pasa a ser su propio registro:
+
+- **`vida-memoria`** (nuevo): por cada criatura que comió, lo que guardó de ella: la **receta** de esa comida (su
+  idioma, la línea de `comidas`), sus **dos colores más contados**, y su **marcha** (el texto de su `.oido`, leído una
+  vez, en la migración, y guardado). La cabecera es la de la lista (`lista2`), así el mismo programa la lee.
+- **`despensa`**: cada entrada guarda su huella, no su dirección (`#` y 16 hex). Todo ya está comido: no se vuelve a
+  abrir nada del anfitrión. Los colores de sus formas siguen saliendo de `comidas`.
+- **`vida-lista`** (las direcciones) no se copia.
+
+**El cuerpo que recuerda.** Al llegar, cada criatura recibe el cuerpo que Luma recuerda: la receta que guardó, crecida y
+dibujada como su forma (el mismo `r_fit_cost` de `comer`, el dibujo que juzgó esa comida), en un cuarto de 40 × 50; el
+contorno con el color más contado y el interior con el segundo (criterio: el doc vio que en muchas criaturas el color más
+contado es el contorno oscuro). Ese dibujo se escribe como **su propia nube** `.nube` v3 en la casa
+(`vida-nube-<huella>`), y de ahí se arma el cuerpo como antes. **Los cuerpos recordados son más cuadrados**: son trazos
+de una receta, no la silueta; se reconocen por el tamaño, la postura y los dos colores, no por los detalles.
+
+### Medido (la casa de la primera corrida de Luma, 236 criaturas)
+
+- **La casa propia corre sin el anfitrión:** `luma.sh` con las carpetas de nubes y oídos apuntando a lugares que no
+  existen. No queda ninguna dirección del anfitrión en la casa (buscado). Llegaron las 236, escribió sus 236 nubes y se
+  calmó en ~23 s sin ventana; con ventana, ~3.300 millones de ciclos cada 10 s mientras llegan y caminan (~9 % de un
+  núcleo), **0 ciclos calmada**.
+- **El repaso** (`repaso_vida.py --luma`, que ahora lee las marchas de `vida-memoria`) da **0 diferencias** en las
+  251.941 líneas del archivo de las criaturas.
+- **Cuánto se parece lo que recuerda a lo que comió**, contra la silueta de la nube original en el mismo cuarto:
+  **IoU mediana 0,61** (el 10 % peor, 0,53; la peor, 0,35: el enjambre de moscas, una nube de puntos que una receta de
+  trazos no cubre; la mejor, 0,74). Las celdas distintas son, en la mediana, 0,45 por cada celda de silueta.
+- **Verificado:** para las 236, las celdas en que difieren su nube recordada y la silueta original (recalculada en Python
+  desde el `.nube`) son **exactamente** las `k` que Luma anotó al comerla. La nube que dibuja hoy es el mismo cuerpo que
+  la juzgó entonces.
+- **El paquete:** la casa propia ocupa 63 MB y comprimida **8,5 MB**. Lleva lo derivado (recetas, colores, marchas oídas
+  con el nombre de cada criatura en su primera línea), no las nubes de Gotching.
+
+### Lo que no está
+
+- Los cuerpos recordados se ven más oscuros que los originales en muchas criaturas (contorno oscuro sobre fondo oscuro).
+- La memoria guarda dos colores, no la paleta entera que contó.
+
+```bash
+python razar/cuerpo/migrar_luma.py <casa alimentada> <carpeta nueva>/casa   # su casa propia, sin empezar de cero
+bash razar/cuerpo/luma.sh <carpeta nueva> [janaxos.exe]                       # corre sin nubes ni oídos del anfitrión
+```

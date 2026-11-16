@@ -6,6 +6,7 @@
 #   "despensa"   every .nube of the clouds folder (default E:/Gotching/Gotching.Godot/nubes), as comer_nubes.sh;
 #   "vida-lista" every creature with its cloud and its gait (<gaits folder>/<name>.oido, default E:/tmp/marcha-oido),
 #                view "-adelante", as vida.sh.
+# A casa made self-contained by migrar_luma.py needs neither folder (luma.sh <folder> [janaxos.exe] is enough).
 # Nothing is copied: every file is opened where it lives (request 37, read only). Her forms, what she ate, what the
 # creatures learned and every verdict stay in <folder>/casa, so the next run continues.
 set -u
@@ -16,6 +17,12 @@ nubes=${3:-E:/Gotching/Gotching.Godot/nubes}
 oidos=${4:-E:/tmp/marcha-oido}
 mkdir -p "$carpeta/bin" "$carpeta/casa"
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
+# a casa made self-contained by migrar_luma.py ("vida-memoria" in it) needs neither folder: no list is written
+if [ -f "$carpeta/casa/$(etiqueta vida-memoria)" ]; then
+  echo "luma: casa propia, sin nubes ni oidos del anfitrion" >&2
+  bash "$proyecto/so/herramientas/armar.sh" "$janaxos" "$carpeta/bin" "$aqui/luma.jsm" > /dev/null || exit 1
+  JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
+fi
 # the pantry
 lineas=$(mktemp); max=8; n=0
 for f in "$nubes"/*.nube; do

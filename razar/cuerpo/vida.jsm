@@ -1382,7 +1382,7 @@ fr_land:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, fr_next
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -1517,6 +1517,7 @@ fr_calm:                        ; nothing new: the lexicons to the folder (calmi
 ;      "<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>"; every table sized from it (plastic)
 r_load_list:
   jst j14, j14, 0228h
+  jst j14, j14, 0668h
   jldi j11, 01400h
   jldi j12, 5
   jcall r_open
@@ -1529,6 +1530,7 @@ r_load_list:
   jldi j10, 44
   jsub j10, j13, j10
   jjnz j10, ll_close
+ll_header:
   jldi j1, 01507h
   jldi j2, 6
   jcall r_get_num
@@ -1657,7 +1659,7 @@ gh_ok:
   jadd j1, j1, j10
   jst j1, j14, 0250h
   jld j1, j14, 0228h
-  jldi j10, 256
+  jldi j10, 320
   jmul j1, j1, j10
   jcall r_alloc
   jst j0, j14, 0258h
@@ -1749,7 +1751,7 @@ ll_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, ll_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -1938,7 +1940,7 @@ la_find:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, la_skip
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -2054,7 +2056,7 @@ sl_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, sl_head
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -2342,7 +2344,7 @@ ar_done:
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
 r_arrive:
   jld j1, j14, 0460h
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -2390,6 +2392,7 @@ r_arrive:
   jld j0, j14, 0338h
   jsub j10, j0, j12
   jjnz j10, av_bad
+av_body:
   jcall r_body
   jjz j0, av_bad
   ; its model: what it learned (if it still fits its limbs), or the greedy one from its own limbs
@@ -3458,7 +3461,7 @@ rc_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, rc_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -3521,7 +3524,7 @@ ct_i:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, ct_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -3537,7 +3540,7 @@ ct_j:
   jjnn j10, ct_inext
   jsub j10, j1, j2
   jjz j10, ct_jnext
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j2, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -3745,7 +3748,7 @@ wl_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, wl_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -3761,7 +3764,7 @@ wl_lap:
   jsub j10, j0, j1
   jjnn j10, wl_next
   jld j1, j14, 0600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -3773,7 +3776,7 @@ wl_lap:
   jcall r_dream
   jst j14, j14, 0658h
   jld j1, j14, 0600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -3785,7 +3788,7 @@ wl_lap:
   jst j10, j14, 0648h
 wl_goal:
   jld j1, j14, 0600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -3896,7 +3899,7 @@ wa_b:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, wa_b_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -3929,7 +3932,7 @@ wa_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, wa_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -4117,7 +4120,7 @@ r_steer:                        ; TI looks at those within its radius: drawn to 
   jjz j1, st_nogoal
   jldi j10, 1
   jsub j1, j1, j10
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -4213,7 +4216,7 @@ st_col:
 st_lap:
   jld j1, j14, 0480h
   jjn j1, st_col_next
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -4313,7 +4316,7 @@ st_touch:
   jld j9, j14, 0380h
   jst j9, j14, 05B8h
   jld j1, j14, 0480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -4349,7 +4352,7 @@ st_lesson:
   jld j9, j14, 0380h
   jld j6, j9, 48
   jld j1, j14, 0480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -4364,7 +4367,7 @@ st_lesson:
   jld j4, j14, 0488h
   jjz j4, st_toward
   jld j1, j14, 0480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 0258h
   jadd j8, j8, j10
@@ -5178,7 +5181,7 @@ sx_cr:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, sx_head
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -5596,7 +5599,7 @@ pa_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, pa_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
@@ -5737,7 +5740,7 @@ dr_lap:
   jld j2, j14, 0228h
   jsub j10, j1, j2
   jjnn j10, dr_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10

@@ -168,6 +168,74 @@ def vida_routines(v):
     J("jldi j10, 1", "jadd j1, j1, j10", "jjmp vm_lap")
     o("vm_ret:")
     J("jret")
+    remember(v)
+
+SAVE, MBMP, NLBL = 0x5000, 0x5E00, 0x5F80   # free room 0 above the creatures' region: a saved state, a body, a label
+SAVES = ((0x200, 0x800), (0x1A00, 0x1F80))  # the forms' and the meals' variables, kept while a body is remembered
+
+def remember(v):
+    """v_remember: TI's body as Luma remembers it. The recipe she kept for that meal (its line in her memory) is
+    grown and drawn as its form would be, in a room of 40 x 50 (comer's r_fit_cost, the same drawing that judged the
+    meal), and that drawing becomes the creature's own cloud: a .nube v3 of 40 x 50 cells, the contour in the meal's
+    most counted colour and the inside in its second (criterion: the doc saw many creatures' most counted colour is
+    their dark contour). The cloud is written into the casa ("vida-nube-<print>") and given to r_body -> j0 = 1."""
+    o, J, ld, st, li, num = v["o"], v["J"], v["ld"], v["st"], v["li"], v["num"]
+    g = ST["g"]
+    C_REC, C_C1, C_C2, C_FNV, C_BNUB = v["C_REC"], v["C_C1"], v["C_C2"], v["C_FNV"], v["C_BNUB"]
+    TMPP = v["TMPP"]
+    def copyq(src, dst, n, tag):
+        li("j1", src); li("j2", dst); li("j3", n // 8)
+        o("%s:" % tag)
+        J("jld j4, j1, 0", "jst j4, j2, 0", "jldi j10, 8", "jadd j1, j1, j10", "jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, %s" % tag)
+    o("v_remember:")
+    at = SAVE
+    for i, (a0, a1) in enumerate(SAVES):
+        copyq(a0, at, a1 - a0, "vr_sv%d" % i); at += a1 - a0
+    copyq(g["DBMP"], at, 512, "vr_svb")
+    o("  ; the recipe she kept, grown and drawn as its form (the drawing that judged the meal)")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_REC); li("j3", TMPP); J("jcall r_get_rec")
+    li("j1", TMPP); o("  jst j1, j14, %s" % num(g["G"]["GREC"])); J("jcall r_fit_cost")
+    copyq(g["DBMP"], MBMP, 400, "vr_cpb")
+    at = SAVE
+    for i, (a0, a1) in enumerate(SAVES):
+        copyq(at, a0, a1 - a0, "vr_rs%d" % i); at += a1 - a0
+    copyq(at, g["DBMP"], 512, "vr_rsb")
+    o("  ; her own cloud: the header, then a bit per cell and a colour per particle")
+    cab = b"NUBE" + bytes([3, 0, 0, 0x80, 0x3F, 0, 0, 1, 0, 0, 0x80, 0x3F]) + bytes(8) + (40).to_bytes(2, "little") + (50).to_bytes(2, "little")
+    ld("j9", "NUBB")
+    for i, bt in enumerate(cab):
+        J("jldi j1, %d" % bt, "jstb j1, j9, %d" % i)
+    J("jldi j1, 0")
+    o("vr_clr:")
+    J("jadd j2, j9, j1", "jstb j14, j2, 28", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 250", "jsub j10, j1, j10", "jjnz j10, vr_clr")
+    J("jldi j10, 278", "jadd j8, j9, j10", "jldi j5, 0", "jldi j6, 0")   # j8 the next colour, j5 = y, j6 = the cell
+    o("vr_row:")
+    J("jldi j7, 0")                                                      # j7 = x
+    o("vr_cell:")
+    li("j10", MBMP); J("jldi j11, 3", "jshl j11, j5, j11", "jadd j11, j11, j10", "jld j12, j11, 0", "jshr j13, j12, j7", "jldi j10, 1", "jand j13, j13, j10", "jjz j13, vr_next")
+    o("  ; a body cell: its bit; the contour (an edge of the room or a neighbour outside) or the inside")
+    J("jldi j10, 3", "jshr j1, j6, j10", "jadd j1, j1, j9", "jldb j2, j1, 28", "jldi j10, 7", "jand j3, j6, j10", "jldi j10, 1", "jshl j10, j10, j3", "jor j2, j2, j10", "jstb j2, j1, 28")
+    J("jjz j7, vr_edge", "jjz j5, vr_edge", "jldi j10, 39", "jsub j10, j7, j10", "jjz j10, vr_edge", "jldi j10, 49", "jsub j10, j5, j10", "jjz j10, vr_edge")
+    J("jldi j10, 1", "jsub j3, j7, j10", "jshr j4, j12, j3", "jand j4, j4, j10", "jjz j4, vr_edge", "jadd j3, j7, j10", "jshr j4, j12, j3", "jand j4, j4, j10", "jjz j4, vr_edge")
+    J("jld j4, j11, -8", "jshr j4, j4, j7", "jand j4, j4, j10", "jjz j4, vr_edge", "jld j4, j11, 8", "jshr j4, j4, j7", "jand j4, j4, j10", "jjz j4, vr_edge")
+    ld("j9", "TI"); J("jld j4, j9, %d" % C_C2, "jjmp vr_paint")
+    o("vr_edge:")
+    ld("j9", "TI"); J("jld j4, j9, %d" % C_C1)
+    o("vr_paint:")
+    J("jldi j10, 16", "jshr j3, j4, j10", "jstb j3, j8, 0", "jldi j10, 8", "jshr j3, j4, j10", "jstb j3, j8, 1", "jstb j4, j8, 2", "jldi j10, 3", "jadd j8, j8, j10")
+    ld("j9", "NUBB")
+    o("vr_next:")
+    J("jldi j10, 1", "jadd j6, j6, j10", "jadd j7, j7, j10", "jldi j10, 40", "jsub j10, j7, j10", "jjnz j10, vr_cell")
+    J("jldi j10, 1", "jadd j5, j5, j10", "jldi j10, 50", "jsub j10, j5, j10", "jjnz j10, vr_row")
+    J("jsub j8, j8, j9"); ld("j9", "TI"); J("jst j8, j9, %d" % C_BNUB)
+    o("  ; written into the casa as one of her own clouds: \"vida-nube-<print>\"")
+    for i, bt in enumerate(b"vida-nube-"):
+        J("jldi j1, %d" % bt); o("  jstb j1, j14, %s" % num(NLBL + i))
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_FNV, "jldi j2, 16"); li("j3", NLBL + 10); J("jcall r_put_hex")
+    li("j11", NLBL); J("jldi j12, 26", "jcall r_open"); ld("j9", "FH"); J("jjn j9, vr_done")
+    J("jldi j10, 6"); ld("j11", "NUBB"); ld("j9", "TI"); J("jld j12, j9, %d" % C_BNUB, "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("vr_done:")
+    J("jldi j0, 1", "jret")
 
 LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm")
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),

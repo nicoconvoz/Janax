@@ -4597,8 +4597,20 @@ fl_eol_found:
   jldi j10, 1
   jadd j2, j2, j10
   jst j2, j14, 01BC8h
+  ; a self-contained casa names a meal by its print alone ("#" and 16 hex): no path on the host
+  jldb j4, j1, 0
+  jldi j10, 35
+  jsub j10, j4, j10
+  jjnz j10, fl_fnv
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j2, 16
+  jcall r_get_hex
+  jjmp fl_print
+fl_fnv:
   jadd j2, j3, j14
   jcall r_fnv
+fl_print:
   jld j9, j14, 01BD8h
   jst j0, j9, 24
   jld j10, j14, 01BD0h
@@ -8886,6 +8898,38 @@ v_init_bits:
   jstb j1, j14, 0485Eh
   jldi j1, 020h
   jstb j1, j14, 0485Fh
+  jldi j1, 076h
+  jstb j1, j14, 048E0h
+  jldi j1, 069h
+  jstb j1, j14, 048E1h
+  jldi j1, 064h
+  jstb j1, j14, 048E2h
+  jldi j1, 061h
+  jstb j1, j14, 048E3h
+  jldi j1, 02Dh
+  jstb j1, j14, 048E4h
+  jldi j1, 06Dh
+  jstb j1, j14, 048E5h
+  jldi j1, 065h
+  jstb j1, j14, 048E6h
+  jldi j1, 06Dh
+  jstb j1, j14, 048E7h
+  jldi j1, 06Fh
+  jstb j1, j14, 048E8h
+  jldi j1, 072h
+  jstb j1, j14, 048E9h
+  jldi j1, 069h
+  jstb j1, j14, 048EAh
+  jldi j1, 061h
+  jstb j1, j14, 048EBh
+  jldi j1, 020h
+  jstb j1, j14, 048ECh
+  jldi j1, 020h
+  jstb j1, j14, 048EDh
+  jldi j1, 020h
+  jstb j1, j14, 048EEh
+  jldi j1, 020h
+  jstb j1, j14, 048EFh
   jldi j1, -1
   jst j1, j14, 04860h
   jldi j1, 0
@@ -8931,7 +8975,7 @@ v_vt_cr:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_vt_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9003,7 +9047,7 @@ v_fr_land:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_fr_next
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9039,7 +9083,7 @@ v_fr_pend:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_fr_walk
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9069,7 +9113,7 @@ v_fr_pend_go:
   jjmp v_fr_walk
 v_fr_pend_bad:                    ; it could not come in (not there, not a cloud): marked, never tried again
   jld j1, j14, 02460h
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9270,7 +9314,7 @@ v_vm_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_vm_ret
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9293,10 +9337,320 @@ v_vm_next:
   jjmp v_vm_lap
 v_vm_ret:
   jret
+v_remember:
+  jldi j1, 0200h
+  jldi j2, 05000h
+  jldi j3, 0C0h
+v_vr_sv0:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_sv0
+  jldi j1, 01A00h
+  jldi j2, 05600h
+  jldi j3, 0B0h
+v_vr_sv1:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_sv1
+  jldi j1, 02Fh
+  jshi j1, 0EA00h
+  jldi j2, 05B80h
+  jldi j3, 040h
+v_vr_svb:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_svb
+  ; the recipe she kept, grown and drawn as its form (the drawing that judged the meal)
+  jld j9, j14, 02380h
+  jld j1, j9, 248
+  jldi j3, 04820h
+  jcall r_get_rec
+  jldi j1, 04820h
+  jst j1, j14, 02F0h
+  jcall r_fit_cost
+  jldi j1, 02Fh
+  jshi j1, 0EA00h
+  jldi j2, 05E00h
+  jldi j3, 032h
+v_vr_cpb:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_cpb
+  jldi j1, 05000h
+  jldi j2, 0200h
+  jldi j3, 0C0h
+v_vr_rs0:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_rs0
+  jldi j1, 05600h
+  jldi j2, 01A00h
+  jldi j3, 0B0h
+v_vr_rs1:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_rs1
+  jldi j1, 05B80h
+  jldi j2, 02Fh
+  jshi j2, 0EA00h
+  jldi j3, 040h
+v_vr_rsb:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_rsb
+  ; her own cloud: the header, then a bit per cell and a colour per particle
+  jld j9, j14, 02290h
+  jldi j1, 78
+  jstb j1, j9, 0
+  jldi j1, 85
+  jstb j1, j9, 1
+  jldi j1, 66
+  jstb j1, j9, 2
+  jldi j1, 69
+  jstb j1, j9, 3
+  jldi j1, 3
+  jstb j1, j9, 4
+  jldi j1, 0
+  jstb j1, j9, 5
+  jldi j1, 0
+  jstb j1, j9, 6
+  jldi j1, 128
+  jstb j1, j9, 7
+  jldi j1, 63
+  jstb j1, j9, 8
+  jldi j1, 0
+  jstb j1, j9, 9
+  jldi j1, 0
+  jstb j1, j9, 10
+  jldi j1, 1
+  jstb j1, j9, 11
+  jldi j1, 0
+  jstb j1, j9, 12
+  jldi j1, 0
+  jstb j1, j9, 13
+  jldi j1, 128
+  jstb j1, j9, 14
+  jldi j1, 63
+  jstb j1, j9, 15
+  jldi j1, 0
+  jstb j1, j9, 16
+  jldi j1, 0
+  jstb j1, j9, 17
+  jldi j1, 0
+  jstb j1, j9, 18
+  jldi j1, 0
+  jstb j1, j9, 19
+  jldi j1, 0
+  jstb j1, j9, 20
+  jldi j1, 0
+  jstb j1, j9, 21
+  jldi j1, 0
+  jstb j1, j9, 22
+  jldi j1, 0
+  jstb j1, j9, 23
+  jldi j1, 40
+  jstb j1, j9, 24
+  jldi j1, 0
+  jstb j1, j9, 25
+  jldi j1, 50
+  jstb j1, j9, 26
+  jldi j1, 0
+  jstb j1, j9, 27
+  jldi j1, 0
+v_vr_clr:
+  jadd j2, j9, j1
+  jstb j14, j2, 28
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 250
+  jsub j10, j1, j10
+  jjnz j10, v_vr_clr
+  jldi j10, 278
+  jadd j8, j9, j10
+  jldi j5, 0
+  jldi j6, 0
+v_vr_row:
+  jldi j7, 0
+v_vr_cell:
+  jldi j10, 05E00h
+  jldi j11, 3
+  jshl j11, j5, j11
+  jadd j11, j11, j10
+  jld j12, j11, 0
+  jshr j13, j12, j7
+  jldi j10, 1
+  jand j13, j13, j10
+  jjz j13, v_vr_next
+  ; a body cell: its bit; the contour (an edge of the room or a neighbour outside) or the inside
+  jldi j10, 3
+  jshr j1, j6, j10
+  jadd j1, j1, j9
+  jldb j2, j1, 28
+  jldi j10, 7
+  jand j3, j6, j10
+  jldi j10, 1
+  jshl j10, j10, j3
+  jor j2, j2, j10
+  jstb j2, j1, 28
+  jjz j7, v_vr_edge
+  jjz j5, v_vr_edge
+  jldi j10, 39
+  jsub j10, j7, j10
+  jjz j10, v_vr_edge
+  jldi j10, 49
+  jsub j10, j5, j10
+  jjz j10, v_vr_edge
+  jldi j10, 1
+  jsub j3, j7, j10
+  jshr j4, j12, j3
+  jand j4, j4, j10
+  jjz j4, v_vr_edge
+  jadd j3, j7, j10
+  jshr j4, j12, j3
+  jand j4, j4, j10
+  jjz j4, v_vr_edge
+  jld j4, j11, -8
+  jshr j4, j4, j7
+  jand j4, j4, j10
+  jjz j4, v_vr_edge
+  jld j4, j11, 8
+  jshr j4, j4, j7
+  jand j4, j4, j10
+  jjz j4, v_vr_edge
+  jld j9, j14, 02380h
+  jld j4, j9, 264
+  jjmp v_vr_paint
+v_vr_edge:
+  jld j9, j14, 02380h
+  jld j4, j9, 256
+v_vr_paint:
+  jldi j10, 16
+  jshr j3, j4, j10
+  jstb j3, j8, 0
+  jldi j10, 8
+  jshr j3, j4, j10
+  jstb j3, j8, 1
+  jstb j4, j8, 2
+  jldi j10, 3
+  jadd j8, j8, j10
+  jld j9, j14, 02290h
+v_vr_next:
+  jldi j10, 1
+  jadd j6, j6, j10
+  jadd j7, j7, j10
+  jldi j10, 40
+  jsub j10, j7, j10
+  jjnz j10, v_vr_cell
+  jldi j10, 1
+  jadd j5, j5, j10
+  jldi j10, 50
+  jsub j10, j5, j10
+  jjnz j10, v_vr_row
+  jsub j8, j8, j9
+  jld j9, j14, 02380h
+  jst j8, j9, 200
+  ; written into the casa as one of her own clouds: "vida-nube-<print>"
+  jldi j1, 118
+  jstb j1, j14, 05F80h
+  jldi j1, 105
+  jstb j1, j14, 05F81h
+  jldi j1, 100
+  jstb j1, j14, 05F82h
+  jldi j1, 97
+  jstb j1, j14, 05F83h
+  jldi j1, 45
+  jstb j1, j14, 05F84h
+  jldi j1, 110
+  jstb j1, j14, 05F85h
+  jldi j1, 117
+  jstb j1, j14, 05F86h
+  jldi j1, 98
+  jstb j1, j14, 05F87h
+  jldi j1, 101
+  jstb j1, j14, 05F88h
+  jldi j1, 45
+  jstb j1, j14, 05F89h
+  jld j9, j14, 02380h
+  jld j1, j9, 136
+  jldi j2, 16
+  jldi j3, 05F8Ah
+  jcall v_r_put_hex
+  jldi j11, 05F80h
+  jldi j12, 26
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_vr_done
+  jldi j10, 6
+  jld j11, j14, 02290h
+  jld j9, j14, 02380h
+  jld j12, j9, 200
+  jcall v_r_file
+  jldi j10, 7
+  jcall v_r_file
+v_vr_done:
+  jldi j0, 1
+  jret
 ; ---- the list ("lista", written by vida.sh): a header and a line per creature,
 ;      "<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>"; every table sized from it (plastic)
 v_r_load_list:
   jst j14, j14, 02228h
+  jst j14, j14, 02668h
+  ; her own record first ("vida-memoria": each creature's body as she remembers it and its gait, inside the
+  ; casa); without it, the list of paths on the host
+  jldi j11, 048E0h
+  jldi j12, 12
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_ll_paths
+  jldi j10, 5
+  jldi j11, 03500h
+  jldi j12, 44
+  jcall v_r_file
+  jldi j10, 44
+  jsub j10, j13, j10
+  jjnz j10, v_ll_mem_close
+  jldi j10, 1
+  jst j10, j14, 02668h
+  jjmp v_ll_header
+v_ll_mem_close:
+  jldi j10, 7
+  jcall v_r_file
+v_ll_paths:
   jldi j11, 03400h
   jldi j12, 10
   jcall v_r_open
@@ -9309,6 +9663,7 @@ v_r_load_list:
   jldi j10, 44
   jsub j10, j13, j10
   jjnz j10, v_ll_close
+v_ll_header:
   jldi j1, 03507h
   jldi j2, 6
   jcall v_r_get_num
@@ -9436,7 +9791,7 @@ v_gh_ok:
   jadd j1, j1, j10
   jst j1, j14, 02250h
   jld j1, j14, 02228h
-  jldi j10, 256
+  jldi j10, 320
   jmul j1, j1, j10
   jcall v_r_alloc
   jst j0, j14, 02258h
@@ -9528,7 +9883,7 @@ v_ll_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_ll_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9585,6 +9940,51 @@ v_ll_lap:
   jadd j1, j1, j10
   jld j9, j14, 02348h
   jst j1, j9, 120
+  jld j1, j14, 02668h
+  jjz j1, v_ll_pathline
+  ; a line of her memory: <print 16> <recipe 31> <colour 6> <colour 6> <gait bytes 9>, a newline, the gait's text
+  jld j1, j14, 02340h
+  jldi j2, 16
+  jcall v_r_get_hex
+  jld j9, j14, 02348h
+  jst j0, j9, 136
+  jld j1, j14, 02340h
+  jldi j10, 17
+  jadd j1, j1, j10
+  jst j1, j9, 248
+  jld j1, j14, 02340h
+  jldi j10, 49
+  jadd j1, j1, j10
+  jldi j2, 6
+  jcall v_r_get_hex
+  jld j9, j14, 02348h
+  jst j0, j9, 256
+  jld j1, j14, 02340h
+  jldi j10, 56
+  jadd j1, j1, j10
+  jldi j2, 6
+  jcall v_r_get_hex
+  jld j9, j14, 02348h
+  jst j0, j9, 264
+  jld j1, j14, 02340h
+  jldi j10, 63
+  jadd j1, j1, j10
+  jldi j2, 9
+  jcall v_r_get_num
+  jld j9, j14, 02348h
+  jst j0, j9, 224
+  jld j1, j14, 02340h
+  jldi j10, 73
+  jadd j1, j1, j10
+  jst j1, j9, 208
+  jadd j1, j1, j0
+  jst j1, j14, 02340h
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_ll_lap
+v_ll_pathline:
   jld j1, j14, 02340h
   jldi j2, 9
   jcall v_r_get_num
@@ -9716,7 +10116,7 @@ v_la_find:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_la_skip
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9832,7 +10232,7 @@ v_sl_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_sl_head
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -10120,11 +10520,37 @@ v_ar_done:
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
 v_r_arrive:
   jld j1, j14, 02460h
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
   jst j9, j14, 02380h
+  jld j1, j14, 02668h
+  jjz j1, v_av_host
+  ; from her memory: the gait's text from the record, the body from the recipe she kept (her own cloud)
+  jld j9, j14, 02380h
+  jld j1, j9, 208
+  jld j2, j9, 224
+  jld j3, j14, 02288h
+  jsub j10, j3, j2
+  jjn j10, v_av_bad
+  jld j3, j14, 02298h
+v_av_mcopy:
+  jjz j2, v_av_mcopied
+  jldb j4, j1, 0
+  jstb j4, j3, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jadd j3, j3, j10
+  jsub j2, j2, j10
+  jjmp v_av_mcopy
+v_av_mcopied:
+  jstb j14, j3, 0
+  jcall v_r_parse_oido
+  jcall v_remember
+  jjz j0, v_av_bad
+  jjmp v_av_body
+v_av_host:
   jld j11, j9, 208
   jld j12, j9, 216
   jldi j10, 37
@@ -10168,6 +10594,7 @@ v_r_arrive:
   jld j0, j14, 02338h
   jsub j10, j0, j12
   jjnz j10, v_av_bad
+v_av_body:
   jcall v_r_body
   jjz j0, v_av_bad
   ; its model: what it learned (if it still fits its limbs), or the greedy one from its own limbs
@@ -11236,7 +11663,7 @@ v_rc_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_rc_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11299,7 +11726,7 @@ v_ct_i:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_ct_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11315,7 +11742,7 @@ v_ct_j:
   jjnn j10, v_ct_inext
   jsub j10, j1, j2
   jjz j10, v_ct_jnext
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j2, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11523,7 +11950,7 @@ v_wl_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wl_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11539,7 +11966,7 @@ v_wl_lap:
   jsub j10, j0, j1
   jjnn j10, v_wl_next
   jld j1, j14, 02600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11551,7 +11978,7 @@ v_wl_lap:
   jcall v_r_dream
   jst j14, j14, 02658h
   jld j1, j14, 02600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11563,7 +11990,7 @@ v_wl_lap:
   jst j10, j14, 02648h
 v_wl_goal:
   jld j1, j14, 02600h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11672,7 +12099,7 @@ v_wa_b:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wa_b_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11705,7 +12132,7 @@ v_wa_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wa_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11893,7 +12320,7 @@ v_r_steer:                        ; TI looks at those within its radius: drawn t
   jjz j1, v_st_nogoal
   jldi j10, 1
   jsub j1, j1, j10
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11989,7 +12416,7 @@ v_st_col:
 v_st_lap:
   jld j1, j14, 02480h
   jjn j1, v_st_col_next
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12089,7 +12516,7 @@ v_st_touch:
   jld j9, j14, 02380h
   jst j9, j14, 025B8h
   jld j1, j14, 02480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12125,7 +12552,7 @@ v_st_lesson:
   jld j9, j14, 02380h
   jld j6, j9, 48
   jld j1, j14, 02480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12140,7 +12567,7 @@ v_st_lesson:
   jld j4, j14, 02488h
   jjz j4, v_st_toward
   jld j1, j14, 02480h
-  jldi j10, 256
+  jldi j10, 320
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12954,7 +13381,7 @@ v_sx_cr:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_sx_head
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -13372,7 +13799,7 @@ v_pa_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_pa_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -13513,7 +13940,7 @@ v_dr_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_dr_done
-  jldi j10, 256
+  jldi j10, 320
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
