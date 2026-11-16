@@ -26,6 +26,12 @@ its own); it keeps the best only if its description gets shorter. Every other pi
 reason (nothing is discarded) and so does a motif it replaced; its motion changes with its new model, and with nothing
 left to teach each other, they part.
 
+DREAMS AND DIALOGUES (Capitan: "what it sees it knows, but what they imagine they do not know"). Each creature dreams
+pieces nobody sees (mutations of its own gait, only on events). When two touch, each names its first dream to the other
+with a melody of 3 signals of 4; the listener rebuilds a piece from the melody alone (its lexicon, or its own dream),
+tries it with the judge and keeps it only if its description gets shorter. VIDA_CONTROL=1 builds the control: the
+melody that arrives is a random one. The bets were written before: documentacion/razar/datos/vida-dialogos-*.txt.
+
 NO WASTEFUL LOOP. It lives while something new happens: an arrival, a share, a gesture. A pending lesson is searched
 for (they walk) while something new happened within the time the average walker needs to cross the world (W / mean
 speed); after that the pairs left live apart. With every creature arrived and no search left, it calms and waits for
@@ -55,7 +61,7 @@ AMPTH = 0x1200                    # 64 qwords: the thresholds, ceil(2^((q + 0.5)
 QMAX = 63
 LBL_L, LBL_A, LBL_R = 0x1400, 0x1410, 0x1420      # "lista", "aprendido", "archivo"
 VERD = 0x1440                     # the verdicts, 16 bytes each
-VERDICTS = ["kept", "replaced", "longer", "beaten"]
+VERDICTS = ["kept", "replaced", "longer", "beaten", "dreamt", "unfit"]
 HDRB = 0x1500                     # the list's header
 ALINE = 0x1580                    # an archive line
 RECLEN = 80
@@ -79,7 +85,22 @@ LERP_SHIFT = 2                    # a particle covers 1/4 of the way to its plac
                                   #   ~4-frame time constant)
 NPACK = 64                        # criterion: at most 64 packets of an exchange in the air at once (a share sends 2)
 PK = 3                            # criterion: a packet is drawn 3 x 3 cells, seen at B = 8
-PSZK = 80                         # a packet: active, x0, y0, dx, dy (x256), t, dur, P, s, colour (qwords)
+PSZK = 88                         # a packet: active, x0, y0, dx, dy (x256), t, dur, P (or melody), s, colour, kind
+# ---- the dialogues over imagined pieces (documentacion/razar/datos/vida-dialogos-preregistro.txt, written before)
+DN = 4                            # criterion: the dreams a creature keeps
+LEXN = 32                         # criterion: the entries of its lexicon (melody, piece, score)
+LSZ = 40                          # an entry: melody, P, q, s, score (qwords; the piece is a rhythm at +8)
+MELS = 64                         # a melody: 3 signals of 4 (the 4^3 of the cardumen bench)
+MEL_SLOT = 8                      # criterion: a signal lasts 8 frames in the window, lit 2 sig + 2 of them
+DREAM_TRIES = 16                  # criterion: tries to dream a piece it does not hold before leaving the place empty
+MUTS = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]   # a dream: q +-1, s +-1, or both
+CONTROL = bool(os.environ.get("VIDA_CONTROL"))   # the control build: the melody that arrives is a random one
+DLINE, DLLEN = 0x2780, 104
+TMPD, TMPP = 0x2800, 0x2820
+LBL_D, LBL_X = 0x2840, 0x2850
+MUTT = 0x2860
+LXHDR = 16                        # "lexico1 NNNNNNN" and a newline
+LXL = 37                          # "<print 16> <m 2> <P 5> <q 2> <s 2> <score 4>" and a newline
 REST = 32                         # 1/8 cell: closer than that a particle snaps to its place (as vivo.jsm)
 # speed: a limb of length B/2 swinging with amplitude A (rad) and period P moves its tip at (B/2) A (2 pi / P) |cos|;
 # the body advances at that speed, summed over the limbs of the group that moves it (see r_gait). Per frame, in
@@ -129,7 +150,7 @@ def J(*xs):
 VARS = ("REMAIN FOREVER BLEFT CHANGED RNG N B R2 RB TB LM CR GAIN PARTS LIST LTXT NMAX OMAX NUBB OIDB TMPM PIECEM "
         "BESTM ACC VBUF VCAP VLEN NEXTK FA FB ARRIVING TEACH WALK MOVING KEPT ARCH FRAMES FH AH Q1 Q2 Q3 Q4 Q5 Q6 Q7 "
         "Q8 Q9 TI TJ PP TBEST TBK TBR GBEST SBEST SBK SBR SBP SBI NW NH NBITS NRGB SN SD OFX OFY STX STY SVX SVY "
-        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE").split()
+        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND").split()
 G = {n: GV + 8 * i for i, n in enumerate(VARS)}
 assert max(G.values()) < SIN
 def ld(r, n): o("  jld %s, j14, %s" % (r, num(G[n] if isinstance(n, str) else n)))
@@ -168,7 +189,10 @@ put_string(LBL_L, "lista", 5); put_string(LBL_A, "aprendido", 9); put_string(LBL
 for i, v in enumerate(VERDICTS):
     put_string(VERD + 16 * i, v, 8)
 setg("RNG", SEED); setg("ARRIVING", -1)
-J("jcall r_load_list", "jcall r_load_learned", "jcall r_open_archive")
+put_string(LBL_D, "dialogos", 8); put_string(LBL_X, "lexico", 6)
+for i, (dq, ds) in enumerate(MUTS):
+    li("j1", dq); o("  jst j1, j14, %s" % num(MUTT + 16 * i)); li("j1", ds); o("  jst j1, j14, %s" % num(MUTT + 16 * i + 8))
+J("jcall r_load_list", "jcall r_load_learned", "jcall r_open_archive", "jcall r_open_dialogs")
 o("; ---- the order of the arrivals: a start and a stride coprime to N, from its own generator (each one once)")
 ld("j1", "N"); J("jjz j1, order_done")
 setg("RNG", ORDER_SEED)
@@ -197,7 +221,7 @@ o("main_bad:")
 J("jldi j0, 0BADh", "jhalt")
 o("r_handle:                       ; 5 closed: the end. A button down or a key: a gesture")
 ld("j9", EV); J("jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, hd_open")
-ld("j0", "KEPT"); J("jhalt")
+J("jcall r_save_lex"); ld("j0", "KEPT"); J("jhalt")
 o("hd_open:")
 J("jldi j10, 2", "jsub j10, j9, j10", "jjz j10, hd_gesture", "jldi j10, 4", "jsub j10, j9, j10", "jjz j10, hd_gesture", "jret")
 o("hd_gesture:                     ; they walk one period of the slowest gait among those here")
@@ -245,8 +269,8 @@ st("j1", "Q1"); J("jcall r_searching"); ld("j1", "Q1"); J("jor j1, j1, j0")
 ld("j2", "WALK"); J("jor j1, j1, j2"); ld("j2", "MOVING"); J("jor j1, j1, j2"); ld("j2", "FLIVE"); J("jor j1, j1, j2")
 J("jjz j1, fr_calm")
 setg("REMAIN", int(os.environ.get("VIDA_ESPERA", FRAME_MS))); st("j14", "FOREVER"); J("jjmp main")   # VIDA_ESPERA=0: a test build that does not wait between frames
-o("fr_calm:                        ; nothing new: wait for ever (nothing is spent)")
-setg("FOREVER", 1); J("jjmp main")
+o("fr_calm:                        ; nothing new: the lexicons to the folder (calming is an event), then wait for ever")
+J("jcall r_save_lex"); setg("FOREVER", 1); J("jjmp main")
 
 # =====================================================================================================================
 o("; ---- the list (\"lista\", written by vida.sh): a header and a line per creature,")
@@ -280,6 +304,10 @@ for g, gc, size in (("GW", "GCW", W), ("GH", "GCH", H)):
 ld("j1", "GW"); ld("j2", "GH"); J("jmul j1, j1, j2", "jldi j10, 3", "jshl j1, j1, j10", "jcall r_alloc"); st("j0", "HEAD")
 ld("j1", "N"); J("jldi j10, 3", "jshl j1, j1, j10", "jcall r_alloc"); st("j0", "NEXT")
 li("j1", NPACK * PSZK); J("jcall r_alloc"); st("j0", "PACK")
+ld("j1", "N"); J("jldi j10, %d" % (DN * RS), "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "DREAMS")
+ld("j1", "N"); J("jldi j10, %d" % (LEXN * LSZ), "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "LEX")
+ld("j1", "N"); J("jmul j1, j1, j1", "jcall r_alloc"); st("j0", "TALK")
+ld("j1", "N"); J("jldi j10, %d" % (LEXN * LXL), "jmul j1, j1, j10", "jldi j10, %d" % LXHDR, "jadd j1, j1, j10"); st("j1", "LXCAP")
 o("  ; the limbs a creature can have: its .oido cannot hold more rhythmic limbs than lines of the shortest such line")
 ld("j1", "OMAX"); J("jldi j10, %d" % MIN_LIMB_LINE, "jdiv j1, j1, j10", "jldi j10, 1", "jadd j1, j1, j10"); st("j1", "LM")
 ld("j1", "N"); J("jldi j10, %d" % CSZ, "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "CR")
@@ -457,6 +485,9 @@ J("jcall r_own")
 o("av_model:")
 ld("j9", "TI"); J("jld j1, j9, %d" % C_MOD, "jld j2, j9, %d" % C_K, "jld j3, j9, %d" % C_LIMB, "jld j4, j9, %d" % C_L, "jcall r_dl")
 ld("j9", "TI"); J("jst j0, j9, %d" % C_DL, "jcall r_eff")
+o("  ; it dreams: an arrival is an event")
+for k in range(DN):
+    setg("DSLOT", k); J("jcall r_dream")
 o("  ; its place and heading, from the generator; the slowest period among those here (for a gesture)")
 ld("j9", "TI"); J("jcall r_rand", "jldi j11, 1", "jshr j10, j10, j11"); li("j11", W * 65536); J("jdiv j12, j10, j11", "jmul j12, j12, j11", "jsub j10, j10, j12", "jst j10, j9, %d" % C_CX)
 J("jcall r_rand", "jldi j11, 1", "jshr j10, j10, j11"); li("j11", H * 65536); J("jdiv j12, j10, j11", "jmul j12, j12, j11", "jsub j10, j10, j12", "jst j10, j9, %d" % C_CY)
@@ -925,6 +956,13 @@ for ax, c, size in (("DX", C_CX, W), ("DY", C_CY, H)):
     ld("j2", "RB"); J("jsub j10, j1, j2", "jjnn j10, st_next", "jadd j10, j1, j2", "jjn j10, st_next")
 ld("j1", "DX"); ld("j2", "DY"); J("jmul j1, j1, j1", "jmul j2, j2, j2", "jadd j1, j1, j2"); ld("j2", "R2"); J("jsub j10, j1, j2", "jjnn j10, st_next")
 J("jcall r_isqrt", "jjz j0, st_next"); st("j0", "DD")
+o("  ; touching: they talk once per touch (each speaks to the other from its own side); apart again: they may again")
+ld("j9", "TI"); J("jld j1, j9, %d" % C_ENT); ld("j2", "N"); J("jmul j1, j1, j2"); ld("j2", "SJ"); J("jadd j1, j1, j2"); ld("j10", "TALK"); J("jadd j1, j1, j10")
+ld("j2", "DD"); ld("j3", "TB"); J("jsub j10, j2, j3", "jjn j10, st_touch", "jstb j14, j1, 0", "jjmp st_talked")
+o("st_touch:")
+J("jldb j2, j1, 0", "jjnz j2, st_talked", "jldi j2, 1", "jstb j2, j1, 0")
+ld("j9", "TI"); st("j9", "DSP"); ld("j1", "SJ"); rec("j8", "j1"); st("j8", "DLIS"); J("jcall r_dialogue"); ld("j9", "DSP"); st("j9", "TI")
+o("st_talked:")
 o("  ; the lessons between them, either way")
 ld("j9", "TI"); J("jld j1, j9, %d" % C_ENT); ld("j2", "SJ"); J("jcall r_gaddr", "jld j4, j3, 0")
 ld("j9", "TI"); J("jld j2, j9, %d" % C_ENT); ld("j1", "SJ"); J("jcall r_gaddr", "jld j5, j3, 0"); st("j4", "SG")
@@ -970,6 +1008,184 @@ for c, hh, size in ((C_CX, C_HX, W), (C_CY, C_HY, H)):
     J("jst j2, j9, %d" % c)
 J("jret")
 
+o("; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)")
+def dream_base(r, recreg):
+    J("jld %s, %s, %d" % (r, recreg, C_ENT), "jldi j10, %d" % (DN * RS), "jmul %s, %s, j10" % (r, r)); ld("j10", "DREAMS"); J("jadd %s, %s, j10" % (r, r))
+def lex_base(r, recreg):
+    J("jld %s, %s, %d" % (r, recreg, C_ENT), "jldi j10, %d" % (LEXN * LSZ), "jmul %s, %s, j10" % (r, r)); ld("j10", "LEX"); J("jadd %s, %s, j10" % (r, r))
+o("r_dream:                        ; TI dreams into its slot DSLOT: a piece of its body, mutated, that it does not hold")
+setg("DTRY", DREAM_TRIES)
+o("dm_lap:")
+ld("j1", "DTRY"); J("jjz j1, dm_empty"); incg("DTRY", -1)
+ld("j9", "TI"); J("jld j1, j9, %d" % C_NE, "jjz j1, dm_empty", "jcall r_randmod", "jldi j10, %d" % RS, "jmul j0, j0, j10")
+ld("j9", "TI"); J("jld j1, j9, %d" % C_EFF, "jadd j1, j1, j0")
+li("j2", TMPD); J("jldi j3, 1", "jcall r_copym")
+J("jcall r_rand", "jldi j11, 7", "jand j10, j10, j11", "jldi j11, 4", "jshl j10, j10, j11"); li("j11", MUTT); J("jadd j10, j10, j11", "jld j1, j10, 0", "jld j2, j10, 8")
+li("j3", TMPD); J("jld j4, j3, 8", "jadd j4, j4, j1", "jjnn j4, dm_q0", "jldi j4, 0")
+o("dm_q0:")
+J("jldi j10, %d" % QMAX, "jsub j10, j10, j4", "jjnn j10, dm_q1", "jldi j4, %d" % QMAX)
+o("dm_q1:")
+J("jst j4, j3, 8", "jld j4, j3, 16", "jadd j4, j4, j2", "jldi j10, 15", "jand j4, j4, j10", "jst j4, j3, 16")
+ld("j9", "TI"); li("j1", TMPD); J("jld j2, j9, %d" % C_MOD, "jld j3, j9, %d" % C_K, "jcall r_inlist", "jjnz j0, dm_lap")
+ld("j9", "TI"); li("j1", TMPD); J("jld j2, j9, %d" % C_EFF, "jld j3, j9, %d" % C_NE, "jcall r_inlist", "jjnz j0, dm_lap")
+ld("j9", "TI"); dream_base("j2", "j9"); li("j1", TMPD); J("jldi j3, %d" % DN, "jcall r_inlist", "jjnz j0, dm_lap")
+ld("j9", "TI"); dream_base("j2", "j9"); ld("j1", "DSLOT"); J("jldi j10, %d" % RS, "jmul j1, j1, j10", "jadd j2, j2, j1"); li("j1", TMPD); J("jldi j3, 1", "jcall r_copym", "jret")
+o("dm_empty:")
+ld("j9", "TI"); dream_base("j2", "j9"); ld("j1", "DSLOT"); J("jldi j10, %d" % RS, "jmul j1, j1, j10", "jadd j2, j2, j1", "jst j14, j2, 0", "jret")
+o("r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address")
+dream_base("j2", "j9"); J("jldi j0, 0")
+o("fd_lap:")
+J("jldi j10, %d" % DN, "jsub j10, j0, j10", "jjnn j10, fd_none", "jld j10, j2, 0", "jjnz j10, fd_done", "jldi j10, %d" % RS, "jadd j2, j2, j10", "jldi j10, 1", "jadd j0, j0, j10", "jjmp fd_lap")
+o("fd_none:")
+J("jldi j0, -1")
+o("fd_done:")
+J("jret")
+o("r_lex_piece:                    ; j1 = a lexicon, j2 = a piece -> j0 = its entry of highest score > 0 (0: none)")
+J("jldi j0, 0", "jldi j3, 0", "jldi j4, %d" % LEXN)
+o("lp_lap:")
+J("jjz j4, lp_done", "jld j5, j1, 32", "jsub j10, j5, j3", "jjn j10, lp_next", "jjz j10, lp_next")
+for k in range(3):
+    J("jld j6, j1, %d" % (8 + 8 * k), "jld j7, j2, %d" % (8 * k), "jsub j6, j6, j7", "jjnz j6, lp_next")
+J("jadd j0, j1, j14", "jadd j3, j5, j14")
+o("lp_next:")
+J("jldi j10, %d" % LSZ, "jadd j1, j1, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjmp lp_lap")
+o("lp_done:")
+J("jret")
+o("r_lex_mel:                      ; j1 = a lexicon, j2 = a melody -> j0 = its entry of highest score > 0 (0: none)")
+J("jldi j0, 0", "jldi j3, 0", "jldi j4, %d" % LEXN)
+o("lm_lap:")
+J("jjz j4, lm_done", "jld j5, j1, 32", "jsub j10, j5, j3", "jjn j10, lm_next", "jjz j10, lm_next", "jld j6, j1, 0", "jsub j6, j6, j2", "jjnz j6, lm_next", "jadd j0, j1, j14", "jadd j3, j5, j14")
+o("lm_next:")
+J("jldi j10, %d" % LSZ, "jadd j1, j1, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjmp lm_lap")
+o("lm_done:")
+J("jret")
+o("r_lex_add:                      ; j1 = a lexicon, j2 = a melody, j3 = a piece -> j0 = the new entry, score 1, in the")
+o("                                ; place of the lowest score (a free place has score 0 or less)")
+J("jadd j8, j1, j14", "jldi j0, 0"); li("j7", 1 << 40); J("jldi j4, %d" % LEXN)
+o("la2_lap:")
+J("jjz j4, la2_put", "jld j5, j8, 32", "jsub j10, j5, j7", "jjnn j10, la2_next", "jadd j7, j5, j14", "jadd j0, j8, j14")
+o("la2_next:")
+J("jldi j10, %d" % LSZ, "jadd j8, j8, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjmp la2_lap")
+o("la2_put:")
+J("jst j2, j0, 0")
+for k in range(3):
+    J("jld j5, j3, %d" % (8 * k), "jst j5, j0, %d" % (8 + 8 * k))
+J("jldi j5, 1", "jst j5, j0, 32", "jret")
+o("r_dialogue:                     ; DSP names one of its dreams to DLIS with a melody; DLIS rebuilds a piece from the")
+o("                                ; melody alone, tries it on its body (MDL), keeps it only if it shortens its description")
+ld("j9", "DSP"); J("jcall r_first_dream", "jjn j0, dg_ret"); st("j0", "DSLOT"); st("j2", "DD0")
+ld("j9", "DSP"); lex_base("j1", "j9"); ld("j2", "DD0"); J("jcall r_lex_piece", "jjnz j0, dg_has")
+J("jcall r_rand", "jldi j11, %d" % (MELS - 1), "jand j2, j10, j11"); ld("j9", "DSP"); lex_base("j1", "j9"); ld("j3", "DD0"); J("jcall r_lex_add")
+o("dg_has:")
+st("j0", "DE1"); J("jld j1, j0, 0"); st("j1", "DMEL"); st("j1", "DSENT")
+o("  ; the control's melody is drawn in both builds, so both worlds use their generator the same")
+J("jcall r_rand", "jldi j11, %d" % (MELS - 1), "jand j10, j10, j11")
+if CONTROL:
+    st("j10", "DSENT")
+ld("j9", "DLIS"); lex_base("j1", "j9"); ld("j2", "DSENT"); J("jcall r_lex_mel"); st("j0", "DE2"); setg("DGSLOT", -1); ld("j0", "DE2"); J("jjnz j0, dg_guess")
+o("  ; a melody it does not know: it imagines, with its own first dream")
+ld("j9", "DLIS"); J("jcall r_first_dream", "jjn j0, dg_none"); st("j0", "DGSLOT"); J("jadd j3, j2, j14")
+ld("j9", "DLIS"); lex_base("j1", "j9"); ld("j2", "DSENT"); J("jcall r_lex_add"); st("j0", "DE2")
+o("dg_guess:")
+ld("j1", "DE2"); J("jldi j10, 8", "jadd j1, j1, j10"); li("j2", TMPP); J("jldi j3, 1", "jcall r_copym")
+o("  ; exact: the piece it rebuilt is the dream that was named")
+setg("DEX", 1); li("j1", TMPP); ld("j2", "DD0")
+for k in range(3):
+    J("jld j3, j1, %d" % (8 * k), "jld j4, j2, %d" % (8 * k), "jsub j3, j3, j4", "jjz j3, dg_eq%d" % k); st("j14", "DEX")
+    o("dg_eq%d:" % k)
+ld("j9", "DLIS"); st("j9", "TI"); ld("j9", "DSP"); st("j9", "TJ"); li("j1", TMPP); st("j1", "PP"); J("jcall r_try")
+ld("j9", "TI"); J("jld j1, j9, %d" % C_DL); st("j1", "DNOW"); ld("j2", "TBEST"); st("j2", "DWITH"); J("jsub j10, j2, j1", "jjn j10, dg_kept")
+o("  ; it does not shorten: archived with its reason; the two entries lose a point")
+li("j1", TMPP); J("jldi j2, 5"); ld("j3", "TBEST"); J("jcall r_archive"); incg("ARCH"); setg("DVER", 85)
+for e in ("DE1", "DE2"):
+    ld("j1", e); J("jld j2, j1, 32", "jldi j10, 1", "jsub j2, j2, j10", "jst j2, j1, 32")
+J("jjmp dg_log")
+o("dg_kept:                        ; kept: its body changes, the melody flies there and its answer back")
+li("j1", TMPP); J("jldi j2, 4"); ld("j3", "TBEST"); J("jcall r_archive")
+ld("j9", "TI"); ld("j1", "PIECEM"); J("jld j2, j9, %d" % C_MOD); ld("j3", "TBK"); J("jcall r_copym")
+ld("j9", "TI"); ld("j1", "TBK"); J("jst j1, j9, %d" % C_K); ld("j1", "TBEST"); J("jst j1, j9, %d" % C_DL, "jldi j1, 1", "jst j1, j9, %d" % C_LEARN)
+for e in ("DE1", "DE2"):
+    ld("j1", e); J("jld j2, j1, 32", "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j1, 32")
+incg("KEPT"); incg("DKEPT"); ld("j1", "DNOW"); ld("j2", "DWITH"); J("jsub j1, j1, j2"); ld("j2", "DBITS"); J("jadd j2, j2, j1"); st("j2", "DBITS")
+J("jcall r_eff", "jcall r_rowcol", "jcall r_save_learned"); setg("DVER", 75)
+setg("PKIND", 1); ld("j8", "DSP"); ld("j9", "DLIS"); J("jldi j3, 0", "jcall r_spawn"); ld("j8", "DLIS"); ld("j9", "DSP"); J("jldi j3, 1", "jcall r_spawn"); st("j14", "PKIND")
+J("jjmp dg_log")
+o("dg_none:                        ; no dream and no word for it: nothing to try")
+setg("DVER", 78); li("j1", TMPP); J("jst j14, j1, 0", "jst j14, j1, 8", "jst j14, j1, 16"); st("j14", "DEX"); st("j14", "DNOW"); st("j14", "DWITH")
+o("dg_log:")
+J("jcall r_dlog"); incg("DTALK"); ld("j1", "DEX"); ld("j2", "DEXACT"); J("jadd j2, j2, j1"); st("j2", "DEXACT")
+o("  ; they dream again: the dream named, and the listener's if it used one")
+ld("j9", "DSP"); st("j9", "TI"); J("jcall r_dream")
+ld("j1", "DGSLOT"); J("jjn j1, dg_done"); st("j1", "DSLOT"); ld("j9", "DLIS"); st("j9", "TI"); J("jcall r_dream")
+o("dg_done:")
+ld("j9", "DSP"); st("j9", "TI"); ld("j9", "DLIS"); st("j9", "TJ")
+o("dg_ret:")
+J("jret")
+o("r_dlog:                         ; \"dialogos\": frame speaker listener dream(P q s) spoken sent guess(P q s) K/U/N exact DL DL")
+li("j1", DLINE); li("j2", 0x2020202020202020); J("jldi j3, %d" % (DLLEN // 8))
+o("dl2_blank:")
+J("jst j2, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, dl2_blank")
+ld("j1", "FRAMES"); J("jldi j2, 9"); li("j3", DLINE); J("jcall r_put_num")
+ld("j9", "DSP"); J("jld j1, j9, %d" % C_FNV, "jldi j2, 16"); li("j3", DLINE + 10); J("jcall r_put_hex")
+ld("j9", "DLIS"); J("jld j1, j9, %d" % C_FNV, "jldi j2, 16"); li("j3", DLINE + 27); J("jcall r_put_hex")
+for base, at in (("DD0", 44), (None, 62)):
+    for fld, dig, off in ((0, 5, 0), (8, 2, 6), (16, 2, 9)):
+        if base:
+            ld("j9", base)
+        else:
+            li("j9", TMPP)
+        J("jld j1, j9, %d" % fld, "jldi j2, %d" % dig); li("j3", DLINE + at + off); J("jcall r_put_num")
+ld("j1", "DMEL"); J("jldi j2, 2"); li("j3", DLINE + 56); J("jcall r_put_num")
+ld("j1", "DSENT"); J("jldi j2, 2"); li("j3", DLINE + 59); J("jcall r_put_num")
+ld("j1", "DVER"); o("  jstb j1, j14, %s" % num(DLINE + 74))
+ld("j1", "DEX"); J("jldi j2, 1"); li("j3", DLINE + 76); J("jcall r_put_num")
+ld("j1", "DNOW"); J("jldi j2, 6"); li("j3", DLINE + 78); J("jcall r_put_num")
+ld("j1", "DWITH"); J("jldi j2, 6"); li("j3", DLINE + 85); J("jcall r_put_num")
+J("jldi j1, 10"); o("  jstb j1, j14, %s" % num(DLINE + DLLEN - 1))
+ld("j9", "DH"); J("jjn j9, dl2_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", DLINE); li("j12", DLLEN); J("jcall r_file")
+o("dl2_done:")
+J("jret")
+o("r_open_dialogs:                 ; \"dialogos\" kept open at its end; \"lexico\": its length, to pad over it")
+li("j11", LBL_D); J("jldi j12, 8", "jcall r_open"); ld("j9", "FH"); st("j9", "DH"); J("jjn j9, od_lex", "jcall r_fsize")
+o("od_lex:")
+st("j14", "LXLEN"); li("j11", LBL_X); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, od_done", "jcall r_fsize")
+st("j0", "LXLEN"); J("jldi j10, 7", "jcall r_file")
+o("od_done:")
+J("jret")
+o("r_save_lex:                     ; \"lexico\": every entry with score > 0 of every creature, rewritten whole, padded")
+ld("j1", "LXCAP"); ld("j2", "LXLEN"); J("jsub j10, j2, j1", "jjn j10, sx_cap", "jadd j1, j2, j14"); st("j1", "LXCAP")
+o("sx_cap:")
+ld("j1", "LXBUF"); J("jjnz j1, sx_have"); ld("j1", "LXCAP"); J("jcall r_alloc"); st("j0", "LXBUF")
+o("sx_have:")
+ld("j3", "LXBUF"); J("jldi j10, %d" % LXHDR, "jadd j3, j3, j10"); st("j3", "DQ1"); st("j14", "DQ2"); st("j14", "DQ3")
+o("sx_cr:")
+ld("j1", "DQ3"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, sx_head"); rec("j9", "j1"); lex_base("j8", "j9"); J("jldi j7, %d" % LEXN)
+o("sx_e:")
+J("jjz j7, sx_cr_next", "jld j1, j8, 32", "jsub j10, j14, j1", "jjnn j10, sx_e_next")
+ld("j3", "DQ1"); J("jld j1, j9, %d" % C_FNV, "jldi j2, 16", "jcall r_put_hex")
+for fld, dig, at in ((0, 2, 17), (8, 5, 20), (16, 2, 26), (24, 2, 29), (32, 4, 32)):
+    ld("j3", "DQ1"); J("jldi j10, %d" % (at - 1), "jadd j3, j3, j10", "jldi j1, 32", "jstb j1, j3, 0", "jldi j10, 1", "jadd j3, j3, j10", "jld j1, j8, %d" % fld, "jldi j2, %d" % dig, "jcall r_put_num")
+ld("j3", "DQ1"); J("jldi j1, 10", "jstb j1, j3, %d" % (LXL - 1), "jldi j10, %d" % LXL, "jadd j3, j3, j10"); st("j3", "DQ1"); incg("DQ2")
+o("sx_e_next:")
+J("jldi j10, %d" % LSZ, "jadd j8, j8, j10", "jldi j10, 1", "jsub j7, j7, j10", "jjmp sx_e")
+o("sx_cr_next:")
+incg("DQ3"); J("jjmp sx_cr")
+o("sx_head:")
+ld("j3", "LXBUF")
+for i, b in enumerate(b"lexico1 "):
+    J("jldi j1, %d" % b, "jstb j1, j3, %d" % i)
+ld("j1", "DQ2"); J("jldi j2, 7", "jldi j10, 8", "jadd j3, j3, j10", "jcall r_put_num"); ld("j3", "LXBUF"); J("jldi j1, 10", "jstb j1, j3, %d" % (LXHDR - 1))
+ld("j1", "DQ1"); ld("j2", "LXBUF"); J("jsub j1, j1, j2"); st("j1", "DQ3")
+o("sx_pad:")
+ld("j1", "DQ3"); ld("j2", "LXLEN"); J("jsub j10, j1, j2", "jjnn j10, sx_write"); ld("j2", "LXCAP"); J("jsub j10, j1, j2", "jjnn j10, sx_write")
+ld("j2", "LXBUF"); J("jadd j2, j2, j1", "jldi j3, 32", "jstb j3, j2, 0"); incg("DQ3"); J("jjmp sx_pad")
+o("sx_write:")
+ld("j1", "DQ3"); ld("j2", "LXLEN"); J("jsub j10, j1, j2", "jjn j10, sx_keep"); st("j1", "LXLEN")
+o("sx_keep:")
+li("j11", LBL_X); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, sx_done")
+J("jldi j10, 6"); ld("j11", "LXBUF"); ld("j12", "DQ3"); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+o("sx_done:")
+J("jret")
 o("r_spawn:                        ; a packet from j8 to j9 (records) with the piece PP; j3 = 1: it waits one flight")
 ld("j1", "PACK"); J("jldi j2, %d" % NPACK)
 o("sp_find:")
@@ -988,6 +1204,9 @@ ld("j4", "PP"); J("jld j5, j4, 0", "jst j5, j1, 56", "jld j5, j4, 16", "jst j5, 
 J("jld j5, j4, 0", "jldi j10, %d" % FRAME_MS, "jdiv j5, j5, j10", "jjnz j5, sp_dur", "jldi j5, 1")
 o("sp_dur:")
 J("jst j5, j1, 48", "jmul j5, j5, j3", "jsub j5, j14, j5", "jst j5, j1, 40", "jld j4, j8, %d" % C_PART, "jld j5, j4, 32", "jst j5, j1, 72")
+ld("j5", "PKIND"); J("jst j5, j1, 80", "jjz j5, sp_none")
+o("  ; a melody: its 3 signals, MEL_SLOT frames each")
+ld("j5", "DMEL"); J("jst j5, j1, 56", "jldi j5, %d" % (3 * MEL_SLOT), "jst j5, j1, 48", "jmul j5, j5, j3", "jsub j5, j14, j5", "jst j5, j1, 40")
 o("sp_none:")
 J("jret")
 o("r_packets:                      ; every packet one frame on; FLIVE = how many fly")
@@ -1004,9 +1223,14 @@ o("r_draw_packets:                 ; at its place on the path, lit while the pie
 ld("j1", "PACK"); J("jldi j2, %d" % NPACK); li("j8", RGB)
 o("dk_lap:")
 J("jjz j2, dk_done", "jld j10, j1, 0", "jjz j10, dk_next", "jld j3, j1, 40", "jjn j3, dk_next")
+J("jld j10, j1, 80", "jjz j10, dk_piece")
+o("  ; a melody: lit the first 2 sig + 2 frames of each signal's slot")
+J("jldi j10, %d" % MEL_SLOT, "jdiv j4, j3, j10", "jmul j5, j4, j10", "jsub j5, j3, j5", "jadd j4, j4, j4", "jld j6, j1, 56", "jshr j6, j6, j4", "jldi j10, 3", "jand j6, j6, j10", "jadd j6, j6, j6", "jldi j10, 2", "jadd j6, j6, j10", "jsub j10, j5, j6", "jjnn j10, dk_next", "jjmp dk_pos")
+o("dk_piece:")
 o("  ; the piece's phase: t frames of FRAME_MS ms over its period, plus its sector")
 J("jldi j10, %d" % (65536 * FRAME_MS // 256), "jmul j4, j3, j10", "jldi j10, 256", "jmul j4, j4, j10", "jld j10, j1, 56", "jdiv j4, j4, j10", "jld j10, j1, 64", "jldi j11, 12", "jshl j10, j10, j11", "jadd j4, j4, j10", "jldi j10, 8", "jshr j4, j4, j10", "jldi j10, 255", "jand j4, j4, j10")
 J("jldi j10, 3", "jshl j4, j4, j10"); li("j10", SIN); J("jadd j4, j4, j10", "jld j4, j4, 0", "jjn j4, dk_next")
+o("dk_pos:")
 for off0, offd, reg, size in ((8, 24, "j5", W), (16, 32, "j6", H)):
     J("jld %s, j1, %d" % (reg, offd), "jmul %s, %s, j3" % (reg, reg), "jld j10, j1, 48", "jdiv %s, %s, j10" % (reg, reg), "jld j10, j1, %d" % off0, "jadd %s, %s, j10" % (reg, reg), "jldi j10, 8", "jsar %s, %s, j10" % (reg, reg))
 J("jldi j11, 0")

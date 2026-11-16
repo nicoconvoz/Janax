@@ -26,6 +26,12 @@
 ; reason (nothing is discarded) and so does a motif it replaced; its motion changes with its new model, and with nothing
 ; left to teach each other, they part.
 ;
+; DREAMS AND DIALOGUES (Capitan: "what it sees it knows, but what they imagine they do not know"). Each creature dreams
+; pieces nobody sees (mutations of its own gait, only on events). When two touch, each names its first dream to the other
+; with a melody of 3 signals of 4; the listener rebuilds a piece from the melody alone (its lexicon, or its own dream),
+; tries it with the judge and keeps it only if its description gets shorter. VIDA_CONTROL=1 builds the control: the
+; melody that arrives is a random one. The bets were written before: documentacion/razar/datos/vida-dialogos-*.txt.
+;
 ; NO WASTEFUL LOOP. It lives while something new happens: an arrival, a share, a gesture. A pending lesson is searched
 ; for (they walk) while something new happened within the time the average walker needs to cross the world (W / mean
 ; speed); after that the pairs left live apart. With every creature arrived and no search left, it calms and waits for
@@ -1055,6 +1061,38 @@ init_bits:
   jstb j1, j14, 01476h
   jldi j1, 020h
   jstb j1, j14, 01477h
+  jldi j1, 064h
+  jstb j1, j14, 01480h
+  jldi j1, 072h
+  jstb j1, j14, 01481h
+  jldi j1, 065h
+  jstb j1, j14, 01482h
+  jldi j1, 061h
+  jstb j1, j14, 01483h
+  jldi j1, 06Dh
+  jstb j1, j14, 01484h
+  jldi j1, 074h
+  jstb j1, j14, 01485h
+  jldi j1, 020h
+  jstb j1, j14, 01486h
+  jldi j1, 020h
+  jstb j1, j14, 01487h
+  jldi j1, 075h
+  jstb j1, j14, 01490h
+  jldi j1, 06Eh
+  jstb j1, j14, 01491h
+  jldi j1, 066h
+  jstb j1, j14, 01492h
+  jldi j1, 069h
+  jstb j1, j14, 01493h
+  jldi j1, 074h
+  jstb j1, j14, 01494h
+  jldi j1, 020h
+  jstb j1, j14, 01495h
+  jldi j1, 020h
+  jstb j1, j14, 01496h
+  jldi j1, 020h
+  jstb j1, j14, 01497h
   jldi j10, 02545h
   jshi j10, 0F491h
   jshi j10, 04F6Ch
@@ -1062,9 +1100,70 @@ init_bits:
   jst j10, j14, 0220h
   jldi j10, -1
   jst j10, j14, 02F0h
+  jldi j1, 064h
+  jstb j1, j14, 02840h
+  jldi j1, 069h
+  jstb j1, j14, 02841h
+  jldi j1, 061h
+  jstb j1, j14, 02842h
+  jldi j1, 06Ch
+  jstb j1, j14, 02843h
+  jldi j1, 06Fh
+  jstb j1, j14, 02844h
+  jldi j1, 067h
+  jstb j1, j14, 02845h
+  jldi j1, 06Fh
+  jstb j1, j14, 02846h
+  jldi j1, 073h
+  jstb j1, j14, 02847h
+  jldi j1, 06Ch
+  jstb j1, j14, 02850h
+  jldi j1, 065h
+  jstb j1, j14, 02851h
+  jldi j1, 078h
+  jstb j1, j14, 02852h
+  jldi j1, 069h
+  jstb j1, j14, 02853h
+  jldi j1, 063h
+  jstb j1, j14, 02854h
+  jldi j1, 06Fh
+  jstb j1, j14, 02855h
+  jldi j1, -1
+  jst j1, j14, 02860h
+  jldi j1, 0
+  jst j1, j14, 02868h
+  jldi j1, 1
+  jst j1, j14, 02870h
+  jldi j1, 0
+  jst j1, j14, 02878h
+  jldi j1, 0
+  jst j1, j14, 02880h
+  jldi j1, -1
+  jst j1, j14, 02888h
+  jldi j1, 0
+  jst j1, j14, 02890h
+  jldi j1, 1
+  jst j1, j14, 02898h
+  jldi j1, -1
+  jst j1, j14, 028A0h
+  jldi j1, -1
+  jst j1, j14, 028A8h
+  jldi j1, -1
+  jst j1, j14, 028B0h
+  jldi j1, 1
+  jst j1, j14, 028B8h
+  jldi j1, 1
+  jst j1, j14, 028C0h
+  jldi j1, -1
+  jst j1, j14, 028C8h
+  jldi j1, 1
+  jst j1, j14, 028D0h
+  jldi j1, 1
+  jst j1, j14, 028D8h
   jcall r_load_list
   jcall r_load_learned
   jcall r_open_archive
+  jcall r_open_dialogs
 ; ---- the order of the arrivals: a start and a stride coprime to N, from its own generator (each one once)
   jld j1, j14, 0228h
   jjz j1, order_done
@@ -1125,6 +1224,7 @@ r_handle:                       ; 5 closed: the end. A button down or a key: a g
   jldi j10, 5
   jsub j10, j9, j10
   jjnz j10, hd_open
+  jcall r_save_lex
   jld j0, j14, 0310h
   jhalt
 hd_open:
@@ -1267,7 +1367,8 @@ fr_alive:                       ; alive while one arrives, one waits to, a lesso
   jst j10, j14, 0200h
   jst j14, j14, 0208h
   jjmp main
-fr_calm:                        ; nothing new: wait for ever (nothing is spent)
+fr_calm:                        ; nothing new: the lexicons to the folder (calming is an event), then wait for ever
+  jcall r_save_lex
   jldi j10, 1
   jst j10, j14, 0208h
   jjmp main
@@ -1384,9 +1485,29 @@ gh_ok:
   jshl j1, j1, j10
   jcall r_alloc
   jst j0, j14, 04F0h
-  jldi j1, 01400h
+  jldi j1, 01600h
   jcall r_alloc
   jst j0, j14, 0550h
+  jld j1, j14, 0228h
+  jldi j10, 128
+  jmul j1, j1, j10
+  jcall r_alloc
+  jst j0, j14, 0560h
+  jld j1, j14, 0228h
+  jldi j10, 1280
+  jmul j1, j1, j10
+  jcall r_alloc
+  jst j0, j14, 0568h
+  jld j1, j14, 0228h
+  jmul j1, j1, j1
+  jcall r_alloc
+  jst j0, j14, 0570h
+  jld j1, j14, 0228h
+  jldi j10, 1184
+  jmul j1, j1, j10
+  jldi j10, 16
+  jadd j1, j1, j10
+  jst j1, j14, 0588h
   ; the limbs a creature can have: its .oido cannot hold more rhythmic limbs than lines of the shortest such line
   jld j1, j14, 0288h
   jldi j10, 48
@@ -2151,6 +2272,19 @@ av_model:
   jld j9, j14, 0380h
   jst j0, j9, 72
   jcall r_eff
+  ; it dreams: an arrival is an event
+  jldi j10, 0
+  jst j10, j14, 05F0h
+  jcall r_dream
+  jldi j10, 1
+  jst j10, j14, 05F0h
+  jcall r_dream
+  jldi j10, 2
+  jst j10, j14, 05F0h
+  jcall r_dream
+  jldi j10, 3
+  jst j10, j14, 05F0h
+  jcall r_dream
   ; its place and heading, from the generator; the slowest period among those here (for a gesture)
   jld j9, j14, 0380h
   jcall r_rand
@@ -3862,6 +3996,38 @@ dy_ok:
   jcall r_isqrt
   jjz j0, st_next
   jst j0, j14, 0450h
+  ; touching: they talk once per touch (each speaks to the other from its own side); apart again: they may again
+  jld j9, j14, 0380h
+  jld j1, j9, 0
+  jld j2, j14, 0228h
+  jmul j1, j1, j2
+  jld j2, j14, 0480h
+  jadd j1, j1, j2
+  jld j10, j14, 0570h
+  jadd j1, j1, j10
+  jld j2, j14, 0450h
+  jld j3, j14, 0248h
+  jsub j10, j2, j3
+  jjn j10, st_touch
+  jstb j14, j1, 0
+  jjmp st_talked
+st_touch:
+  jldb j2, j1, 0
+  jjnz j2, st_talked
+  jldi j2, 1
+  jstb j2, j1, 0
+  jld j9, j14, 0380h
+  jst j9, j14, 05B8h
+  jld j1, j14, 0480h
+  jldi j10, 256
+  jmul j8, j1, j10
+  jld j10, j14, 0258h
+  jadd j8, j8, j10
+  jst j8, j14, 05C0h
+  jcall r_dialogue
+  jld j9, j14, 05B8h
+  jst j9, j14, 0380h
+st_talked:
   ; the lessons between them, either way
   jld j9, j14, 0380h
   jld j1, j9, 0
@@ -4066,6 +4232,733 @@ wrap_lo_3:
 wrap_hi_4:
   jst j2, j9, 24
   jret
+; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)
+r_dream:                        ; TI dreams into its slot DSLOT: a piece of its body, mutated, that it does not hold
+  jldi j10, 010h
+  jst j10, j14, 05F8h
+dm_lap:
+  jld j1, j14, 05F8h
+  jjz j1, dm_empty
+  jld j10, j14, 05F8h
+  jldi j11, -1
+  jadd j10, j10, j11
+  jst j10, j14, 05F8h
+  jld j9, j14, 0380h
+  jld j1, j9, 64
+  jjz j1, dm_empty
+  jcall r_randmod
+  jldi j10, 32
+  jmul j0, j0, j10
+  jld j9, j14, 0380h
+  jld j1, j9, 96
+  jadd j1, j1, j0
+  jldi j2, 02800h
+  jldi j3, 1
+  jcall r_copym
+  jcall r_rand
+  jldi j11, 7
+  jand j10, j10, j11
+  jldi j11, 4
+  jshl j10, j10, j11
+  jldi j11, 02860h
+  jadd j10, j10, j11
+  jld j1, j10, 0
+  jld j2, j10, 8
+  jldi j3, 02800h
+  jld j4, j3, 8
+  jadd j4, j4, j1
+  jjnn j4, dm_q0
+  jldi j4, 0
+dm_q0:
+  jldi j10, 63
+  jsub j10, j10, j4
+  jjnn j10, dm_q1
+  jldi j4, 63
+dm_q1:
+  jst j4, j3, 8
+  jld j4, j3, 16
+  jadd j4, j4, j2
+  jldi j10, 15
+  jand j4, j4, j10
+  jst j4, j3, 16
+  jld j9, j14, 0380h
+  jldi j1, 02800h
+  jld j2, j9, 88
+  jld j3, j9, 56
+  jcall r_inlist
+  jjnz j0, dm_lap
+  jld j9, j14, 0380h
+  jldi j1, 02800h
+  jld j2, j9, 96
+  jld j3, j9, 64
+  jcall r_inlist
+  jjnz j0, dm_lap
+  jld j9, j14, 0380h
+  jld j2, j9, 0
+  jldi j10, 128
+  jmul j2, j2, j10
+  jld j10, j14, 0560h
+  jadd j2, j2, j10
+  jldi j1, 02800h
+  jldi j3, 4
+  jcall r_inlist
+  jjnz j0, dm_lap
+  jld j9, j14, 0380h
+  jld j2, j9, 0
+  jldi j10, 128
+  jmul j2, j2, j10
+  jld j10, j14, 0560h
+  jadd j2, j2, j10
+  jld j1, j14, 05F0h
+  jldi j10, 32
+  jmul j1, j1, j10
+  jadd j2, j2, j1
+  jldi j1, 02800h
+  jldi j3, 1
+  jcall r_copym
+  jret
+dm_empty:
+  jld j9, j14, 0380h
+  jld j2, j9, 0
+  jldi j10, 128
+  jmul j2, j2, j10
+  jld j10, j14, 0560h
+  jadd j2, j2, j10
+  jld j1, j14, 05F0h
+  jldi j10, 32
+  jmul j1, j1, j10
+  jadd j2, j2, j1
+  jst j14, j2, 0
+  jret
+r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address
+  jld j2, j9, 0
+  jldi j10, 128
+  jmul j2, j2, j10
+  jld j10, j14, 0560h
+  jadd j2, j2, j10
+  jldi j0, 0
+fd_lap:
+  jldi j10, 4
+  jsub j10, j0, j10
+  jjnn j10, fd_none
+  jld j10, j2, 0
+  jjnz j10, fd_done
+  jldi j10, 32
+  jadd j2, j2, j10
+  jldi j10, 1
+  jadd j0, j0, j10
+  jjmp fd_lap
+fd_none:
+  jldi j0, -1
+fd_done:
+  jret
+r_lex_piece:                    ; j1 = a lexicon, j2 = a piece -> j0 = its entry of highest score > 0 (0: none)
+  jldi j0, 0
+  jldi j3, 0
+  jldi j4, 32
+lp_lap:
+  jjz j4, lp_done
+  jld j5, j1, 32
+  jsub j10, j5, j3
+  jjn j10, lp_next
+  jjz j10, lp_next
+  jld j6, j1, 8
+  jld j7, j2, 0
+  jsub j6, j6, j7
+  jjnz j6, lp_next
+  jld j6, j1, 16
+  jld j7, j2, 8
+  jsub j6, j6, j7
+  jjnz j6, lp_next
+  jld j6, j1, 24
+  jld j7, j2, 16
+  jsub j6, j6, j7
+  jjnz j6, lp_next
+  jadd j0, j1, j14
+  jadd j3, j5, j14
+lp_next:
+  jldi j10, 40
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjmp lp_lap
+lp_done:
+  jret
+r_lex_mel:                      ; j1 = a lexicon, j2 = a melody -> j0 = its entry of highest score > 0 (0: none)
+  jldi j0, 0
+  jldi j3, 0
+  jldi j4, 32
+lm_lap:
+  jjz j4, lm_done
+  jld j5, j1, 32
+  jsub j10, j5, j3
+  jjn j10, lm_next
+  jjz j10, lm_next
+  jld j6, j1, 0
+  jsub j6, j6, j2
+  jjnz j6, lm_next
+  jadd j0, j1, j14
+  jadd j3, j5, j14
+lm_next:
+  jldi j10, 40
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjmp lm_lap
+lm_done:
+  jret
+r_lex_add:                      ; j1 = a lexicon, j2 = a melody, j3 = a piece -> j0 = the new entry, score 1, in the
+                                ; place of the lowest score (a free place has score 0 or less)
+  jadd j8, j1, j14
+  jldi j0, 0
+  jldi j7, 0100h
+  jshi j7, 0
+  jshi j7, 0
+  jldi j4, 32
+la2_lap:
+  jjz j4, la2_put
+  jld j5, j8, 32
+  jsub j10, j5, j7
+  jjnn j10, la2_next
+  jadd j7, j5, j14
+  jadd j0, j8, j14
+la2_next:
+  jldi j10, 40
+  jadd j8, j8, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjmp la2_lap
+la2_put:
+  jst j2, j0, 0
+  jld j5, j3, 0
+  jst j5, j0, 8
+  jld j5, j3, 8
+  jst j5, j0, 16
+  jld j5, j3, 16
+  jst j5, j0, 24
+  jldi j5, 1
+  jst j5, j0, 32
+  jret
+r_dialogue:                     ; DSP names one of its dreams to DLIS with a melody; DLIS rebuilds a piece from the
+                                ; melody alone, tries it on its body (MDL), keeps it only if it shortens its description
+  jld j9, j14, 05B8h
+  jcall r_first_dream
+  jjn j0, dg_ret
+  jst j0, j14, 05F0h
+  jst j2, j14, 0618h
+  jld j9, j14, 05B8h
+  jld j1, j9, 0
+  jldi j10, 1280
+  jmul j1, j1, j10
+  jld j10, j14, 0568h
+  jadd j1, j1, j10
+  jld j2, j14, 0618h
+  jcall r_lex_piece
+  jjnz j0, dg_has
+  jcall r_rand
+  jldi j11, 63
+  jand j2, j10, j11
+  jld j9, j14, 05B8h
+  jld j1, j9, 0
+  jldi j10, 1280
+  jmul j1, j1, j10
+  jld j10, j14, 0568h
+  jadd j1, j1, j10
+  jld j3, j14, 0618h
+  jcall r_lex_add
+dg_has:
+  jst j0, j14, 05C8h
+  jld j1, j0, 0
+  jst j1, j14, 05D8h
+  jst j1, j14, 05E0h
+  ; the control's melody is drawn in both builds, so both worlds use their generator the same
+  jcall r_rand
+  jldi j11, 63
+  jand j10, j10, j11
+  jld j9, j14, 05C0h
+  jld j1, j9, 0
+  jldi j10, 1280
+  jmul j1, j1, j10
+  jld j10, j14, 0568h
+  jadd j1, j1, j10
+  jld j2, j14, 05E0h
+  jcall r_lex_mel
+  jst j0, j14, 05D0h
+  jldi j10, -1
+  jst j10, j14, 05E8h
+  jld j0, j14, 05D0h
+  jjnz j0, dg_guess
+  ; a melody it does not know: it imagines, with its own first dream
+  jld j9, j14, 05C0h
+  jcall r_first_dream
+  jjn j0, dg_none
+  jst j0, j14, 05E8h
+  jadd j3, j2, j14
+  jld j9, j14, 05C0h
+  jld j1, j9, 0
+  jldi j10, 1280
+  jmul j1, j1, j10
+  jld j10, j14, 0568h
+  jadd j1, j1, j10
+  jld j2, j14, 05E0h
+  jcall r_lex_add
+  jst j0, j14, 05D0h
+dg_guess:
+  jld j1, j14, 05D0h
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j2, 02820h
+  jldi j3, 1
+  jcall r_copym
+  ; exact: the piece it rebuilt is the dream that was named
+  jldi j10, 1
+  jst j10, j14, 0620h
+  jldi j1, 02820h
+  jld j2, j14, 0618h
+  jld j3, j1, 0
+  jld j4, j2, 0
+  jsub j3, j3, j4
+  jjz j3, dg_eq0
+  jst j14, j14, 0620h
+dg_eq0:
+  jld j3, j1, 8
+  jld j4, j2, 8
+  jsub j3, j3, j4
+  jjz j3, dg_eq1
+  jst j14, j14, 0620h
+dg_eq1:
+  jld j3, j1, 16
+  jld j4, j2, 16
+  jsub j3, j3, j4
+  jjz j3, dg_eq2
+  jst j14, j14, 0620h
+dg_eq2:
+  jld j9, j14, 05C0h
+  jst j9, j14, 0380h
+  jld j9, j14, 05B8h
+  jst j9, j14, 0388h
+  jldi j1, 02820h
+  jst j1, j14, 0390h
+  jcall r_try
+  jld j9, j14, 0380h
+  jld j1, j9, 72
+  jst j1, j14, 0630h
+  jld j2, j14, 0398h
+  jst j2, j14, 0638h
+  jsub j10, j2, j1
+  jjn j10, dg_kept
+  ; it does not shorten: archived with its reason; the two entries lose a point
+  jldi j1, 02820h
+  jldi j2, 5
+  jld j3, j14, 0398h
+  jcall r_archive
+  jld j10, j14, 0318h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0318h
+  jldi j10, 055h
+  jst j10, j14, 0628h
+  jld j1, j14, 05C8h
+  jld j2, j1, 32
+  jldi j10, 1
+  jsub j2, j2, j10
+  jst j2, j1, 32
+  jld j1, j14, 05D0h
+  jld j2, j1, 32
+  jldi j10, 1
+  jsub j2, j2, j10
+  jst j2, j1, 32
+  jjmp dg_log
+dg_kept:                        ; kept: its body changes, the melody flies there and its answer back
+  jldi j1, 02820h
+  jldi j2, 4
+  jld j3, j14, 0398h
+  jcall r_archive
+  jld j9, j14, 0380h
+  jld j1, j14, 02A8h
+  jld j2, j9, 88
+  jld j3, j14, 03A0h
+  jcall r_copym
+  jld j9, j14, 0380h
+  jld j1, j14, 03A0h
+  jst j1, j9, 56
+  jld j1, j14, 0398h
+  jst j1, j9, 72
+  jldi j1, 1
+  jst j1, j9, 160
+  jld j1, j14, 05C8h
+  jld j2, j1, 32
+  jldi j10, 1
+  jadd j2, j2, j10
+  jst j2, j1, 32
+  jld j1, j14, 05D0h
+  jld j2, j1, 32
+  jldi j10, 1
+  jadd j2, j2, j10
+  jst j2, j1, 32
+  jld j10, j14, 0310h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0310h
+  jld j10, j14, 05A0h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 05A0h
+  jld j1, j14, 0630h
+  jld j2, j14, 0638h
+  jsub j1, j1, j2
+  jld j2, j14, 05B0h
+  jadd j2, j2, j1
+  jst j2, j14, 05B0h
+  jcall r_eff
+  jcall r_rowcol
+  jcall r_save_learned
+  jldi j10, 04Bh
+  jst j10, j14, 0628h
+  jldi j10, 1
+  jst j10, j14, 0640h
+  jld j8, j14, 05B8h
+  jld j9, j14, 05C0h
+  jldi j3, 0
+  jcall r_spawn
+  jld j8, j14, 05C0h
+  jld j9, j14, 05B8h
+  jldi j3, 1
+  jcall r_spawn
+  jst j14, j14, 0640h
+  jjmp dg_log
+dg_none:                        ; no dream and no word for it: nothing to try
+  jldi j10, 04Eh
+  jst j10, j14, 0628h
+  jldi j1, 02820h
+  jst j14, j1, 0
+  jst j14, j1, 8
+  jst j14, j1, 16
+  jst j14, j14, 0620h
+  jst j14, j14, 0630h
+  jst j14, j14, 0638h
+dg_log:
+  jcall r_dlog
+  jld j10, j14, 0598h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0598h
+  jld j1, j14, 0620h
+  jld j2, j14, 05A8h
+  jadd j2, j2, j1
+  jst j2, j14, 05A8h
+  ; they dream again: the dream named, and the listener's if it used one
+  jld j9, j14, 05B8h
+  jst j9, j14, 0380h
+  jcall r_dream
+  jld j1, j14, 05E8h
+  jjn j1, dg_done
+  jst j1, j14, 05F0h
+  jld j9, j14, 05C0h
+  jst j9, j14, 0380h
+  jcall r_dream
+dg_done:
+  jld j9, j14, 05B8h
+  jst j9, j14, 0380h
+  jld j9, j14, 05C0h
+  jst j9, j14, 0388h
+dg_ret:
+  jret
+r_dlog:                         ; "dialogos": frame speaker listener dream(P q s) spoken sent guess(P q s) K/U/N exact DL DL
+  jldi j1, 02780h
+  jldi j2, 02020h
+  jshi j2, 02020h
+  jshi j2, 02020h
+  jshi j2, 02020h
+  jldi j3, 13
+dl2_blank:
+  jst j2, j1, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, dl2_blank
+  jld j1, j14, 0320h
+  jldi j2, 9
+  jldi j3, 02780h
+  jcall r_put_num
+  jld j9, j14, 05B8h
+  jld j1, j9, 136
+  jldi j2, 16
+  jldi j3, 0278Ah
+  jcall r_put_hex
+  jld j9, j14, 05C0h
+  jld j1, j9, 136
+  jldi j2, 16
+  jldi j3, 0279Bh
+  jcall r_put_hex
+  jld j9, j14, 0618h
+  jld j1, j9, 0
+  jldi j2, 5
+  jldi j3, 027ACh
+  jcall r_put_num
+  jld j9, j14, 0618h
+  jld j1, j9, 8
+  jldi j2, 2
+  jldi j3, 027B2h
+  jcall r_put_num
+  jld j9, j14, 0618h
+  jld j1, j9, 16
+  jldi j2, 2
+  jldi j3, 027B5h
+  jcall r_put_num
+  jldi j9, 02820h
+  jld j1, j9, 0
+  jldi j2, 5
+  jldi j3, 027BEh
+  jcall r_put_num
+  jldi j9, 02820h
+  jld j1, j9, 8
+  jldi j2, 2
+  jldi j3, 027C4h
+  jcall r_put_num
+  jldi j9, 02820h
+  jld j1, j9, 16
+  jldi j2, 2
+  jldi j3, 027C7h
+  jcall r_put_num
+  jld j1, j14, 05D8h
+  jldi j2, 2
+  jldi j3, 027B8h
+  jcall r_put_num
+  jld j1, j14, 05E0h
+  jldi j2, 2
+  jldi j3, 027BBh
+  jcall r_put_num
+  jld j1, j14, 0628h
+  jstb j1, j14, 027CAh
+  jld j1, j14, 0620h
+  jldi j2, 1
+  jldi j3, 027CCh
+  jcall r_put_num
+  jld j1, j14, 0630h
+  jldi j2, 6
+  jldi j3, 027CEh
+  jcall r_put_num
+  jld j1, j14, 0638h
+  jldi j2, 6
+  jldi j3, 027D5h
+  jcall r_put_num
+  jldi j1, 10
+  jstb j1, j14, 027E7h
+  jld j9, j14, 0578h
+  jjn j9, dl2_done
+  jst j9, j14, 0328h
+  jldi j10, 6
+  jldi j11, 02780h
+  jldi j12, 068h
+  jcall r_file
+dl2_done:
+  jret
+r_open_dialogs:                 ; "dialogos" kept open at its end; "lexico": its length, to pad over it
+  jldi j11, 02840h
+  jldi j12, 8
+  jcall r_open
+  jld j9, j14, 0328h
+  jst j9, j14, 0578h
+  jjn j9, od_lex
+  jcall r_fsize
+od_lex:
+  jst j14, j14, 0590h
+  jldi j11, 02850h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 0328h
+  jjn j9, od_done
+  jcall r_fsize
+  jst j0, j14, 0590h
+  jldi j10, 7
+  jcall r_file
+od_done:
+  jret
+r_save_lex:                     ; "lexico": every entry with score > 0 of every creature, rewritten whole, padded
+  jld j1, j14, 0588h
+  jld j2, j14, 0590h
+  jsub j10, j2, j1
+  jjn j10, sx_cap
+  jadd j1, j2, j14
+  jst j1, j14, 0588h
+sx_cap:
+  jld j1, j14, 0580h
+  jjnz j1, sx_have
+  jld j1, j14, 0588h
+  jcall r_alloc
+  jst j0, j14, 0580h
+sx_have:
+  jld j3, j14, 0580h
+  jldi j10, 16
+  jadd j3, j3, j10
+  jst j3, j14, 0600h
+  jst j14, j14, 0608h
+  jst j14, j14, 0610h
+sx_cr:
+  jld j1, j14, 0610h
+  jld j2, j14, 0228h
+  jsub j10, j1, j2
+  jjnn j10, sx_head
+  jldi j10, 256
+  jmul j9, j1, j10
+  jld j10, j14, 0258h
+  jadd j9, j9, j10
+  jld j8, j9, 0
+  jldi j10, 1280
+  jmul j8, j8, j10
+  jld j10, j14, 0568h
+  jadd j8, j8, j10
+  jldi j7, 32
+sx_e:
+  jjz j7, sx_cr_next
+  jld j1, j8, 32
+  jsub j10, j14, j1
+  jjnn j10, sx_e_next
+  jld j3, j14, 0600h
+  jld j1, j9, 136
+  jldi j2, 16
+  jcall r_put_hex
+  jld j3, j14, 0600h
+  jldi j10, 16
+  jadd j3, j3, j10
+  jldi j1, 32
+  jstb j1, j3, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jld j1, j8, 0
+  jldi j2, 2
+  jcall r_put_num
+  jld j3, j14, 0600h
+  jldi j10, 19
+  jadd j3, j3, j10
+  jldi j1, 32
+  jstb j1, j3, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jld j1, j8, 8
+  jldi j2, 5
+  jcall r_put_num
+  jld j3, j14, 0600h
+  jldi j10, 25
+  jadd j3, j3, j10
+  jldi j1, 32
+  jstb j1, j3, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jld j1, j8, 16
+  jldi j2, 2
+  jcall r_put_num
+  jld j3, j14, 0600h
+  jldi j10, 28
+  jadd j3, j3, j10
+  jldi j1, 32
+  jstb j1, j3, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jld j1, j8, 24
+  jldi j2, 2
+  jcall r_put_num
+  jld j3, j14, 0600h
+  jldi j10, 31
+  jadd j3, j3, j10
+  jldi j1, 32
+  jstb j1, j3, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jld j1, j8, 32
+  jldi j2, 4
+  jcall r_put_num
+  jld j3, j14, 0600h
+  jldi j1, 10
+  jstb j1, j3, 36
+  jldi j10, 37
+  jadd j3, j3, j10
+  jst j3, j14, 0600h
+  jld j10, j14, 0608h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0608h
+sx_e_next:
+  jldi j10, 40
+  jadd j8, j8, j10
+  jldi j10, 1
+  jsub j7, j7, j10
+  jjmp sx_e
+sx_cr_next:
+  jld j10, j14, 0610h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0610h
+  jjmp sx_cr
+sx_head:
+  jld j3, j14, 0580h
+  jldi j1, 108
+  jstb j1, j3, 0
+  jldi j1, 101
+  jstb j1, j3, 1
+  jldi j1, 120
+  jstb j1, j3, 2
+  jldi j1, 105
+  jstb j1, j3, 3
+  jldi j1, 99
+  jstb j1, j3, 4
+  jldi j1, 111
+  jstb j1, j3, 5
+  jldi j1, 49
+  jstb j1, j3, 6
+  jldi j1, 32
+  jstb j1, j3, 7
+  jld j1, j14, 0608h
+  jldi j2, 7
+  jldi j10, 8
+  jadd j3, j3, j10
+  jcall r_put_num
+  jld j3, j14, 0580h
+  jldi j1, 10
+  jstb j1, j3, 15
+  jld j1, j14, 0600h
+  jld j2, j14, 0580h
+  jsub j1, j1, j2
+  jst j1, j14, 0610h
+sx_pad:
+  jld j1, j14, 0610h
+  jld j2, j14, 0590h
+  jsub j10, j1, j2
+  jjnn j10, sx_write
+  jld j2, j14, 0588h
+  jsub j10, j1, j2
+  jjnn j10, sx_write
+  jld j2, j14, 0580h
+  jadd j2, j2, j1
+  jldi j3, 32
+  jstb j3, j2, 0
+  jld j10, j14, 0610h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0610h
+  jjmp sx_pad
+sx_write:
+  jld j1, j14, 0610h
+  jld j2, j14, 0590h
+  jsub j10, j1, j2
+  jjn j10, sx_keep
+  jst j1, j14, 0590h
+sx_keep:
+  jldi j11, 02850h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 0328h
+  jjn j9, sx_done
+  jldi j10, 6
+  jld j11, j14, 0580h
+  jld j12, j14, 0610h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+sx_done:
+  jret
 r_spawn:                        ; a packet from j8 to j9 (records) with the piece PP; j3 = 1: it waits one flight
   jld j1, j14, 0550h
   jldi j2, 64
@@ -4073,7 +4966,7 @@ sp_find:
   jjz j2, sp_none
   jld j10, j1, 0
   jjz j10, sp_found
-  jldi j10, 80
+  jldi j10, 88
   jadd j1, j1, j10
   jldi j10, 1
   jsub j2, j2, j10
@@ -4145,6 +5038,17 @@ sp_dur:
   jld j4, j8, 120
   jld j5, j4, 32
   jst j5, j1, 72
+  jld j5, j14, 0640h
+  jst j5, j1, 80
+  jjz j5, sp_none
+  ; a melody: its 3 signals, MEL_SLOT frames each
+  jld j5, j14, 05D8h
+  jst j5, j1, 56
+  jldi j5, 24
+  jst j5, j1, 48
+  jmul j5, j5, j3
+  jsub j5, j14, j5
+  jst j5, j1, 40
 sp_none:
   jret
 r_packets:                      ; every packet one frame on; FLIVE = how many fly
@@ -4170,7 +5074,7 @@ pk_live:
   jadd j10, j10, j11
   jst j10, j14, 0558h
 pk_next:
-  jldi j10, 80
+  jldi j10, 88
   jadd j1, j1, j10
   jldi j10, 1
   jsub j2, j2, j10
@@ -4188,6 +5092,25 @@ dk_lap:
   jjz j10, dk_next
   jld j3, j1, 40
   jjn j3, dk_next
+  jld j10, j1, 80
+  jjz j10, dk_piece
+  ; a melody: lit the first 2 sig + 2 frames of each signal's slot
+  jldi j10, 8
+  jdiv j4, j3, j10
+  jmul j5, j4, j10
+  jsub j5, j3, j5
+  jadd j4, j4, j4
+  jld j6, j1, 56
+  jshr j6, j6, j4
+  jldi j10, 3
+  jand j6, j6, j10
+  jadd j6, j6, j6
+  jldi j10, 2
+  jadd j6, j6, j10
+  jsub j10, j5, j6
+  jjnn j10, dk_next
+  jjmp dk_pos
+dk_piece:
   ; the piece's phase: t frames of FRAME_MS ms over its period, plus its sector
   jldi j10, 8448
   jmul j4, j3, j10
@@ -4209,6 +5132,7 @@ dk_lap:
   jadd j4, j4, j10
   jld j4, j4, 0
   jjn j4, dk_next
+dk_pos:
   jld j5, j1, 24
   jmul j5, j5, j3
   jld j10, j1, 48
@@ -4277,7 +5201,7 @@ dk_y_hi:
   jsub j10, j11, j10
   jjnz j10, dk_row
 dk_next:
-  jldi j10, 80
+  jldi j10, 88
   jadd j1, j1, j10
   jldi j10, 1
   jsub j2, j2, j10

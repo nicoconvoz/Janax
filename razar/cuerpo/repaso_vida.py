@@ -145,6 +145,18 @@ def main():
             if piece not in pupil["M"]:
                 bad += 1; print("replaced motif not in the model", x)
             continue
+        if verdict in ("dreamt", "unfit"):
+            # a piece rebuilt from a melody: nobody's body showed it; it must be judged the same
+            d, M2, rep = tryp(pupil["M"], pupil["L"], piece)
+            if d != with_:
+                bad += 1; print("DL with the dreamt piece differs", x, d)
+            if verdict == "dreamt":
+                if not d < now:
+                    bad += 1; print("dreamt piece kept without shortening", x)
+                pupil["M"] = M2; kept += 1
+            elif d < now:
+                bad += 1; print("unfit piece would shorten", x)
+            continue
         if piece not in eff(teacher["M"], teacher["L"]):
             bad += 1; print("the teacher's body does not show that piece", x)
         d, M2, rep = tryp(pupil["M"], pupil["L"], piece)
