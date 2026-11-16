@@ -155,9 +155,9 @@ MIN_LIMB_LINE = 48                # the shortest line of a rhythmic limb in a .o
 
 # ---- the tables of a creature (qwords at these offsets)
 C_ENT, C_STATE, C_CX, C_CY, C_HX, C_HY, C_L, C_K, C_NE, C_DL, C_LIMB, C_MOD, C_EFF, C_LEFF, C_ACC, C_PART, C_NP, \
-    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2, C_MODE, C_DRAD = \
-    [8 * k for k in range(36)]
-CSZ = 8 * 40
+    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2, C_MODE, C_DRAD, C_BREC, C_SIZE, C_BITS, C_LAST, \
+    C_IDB, C_BCOST, C_IDOK = [8 * k for k in range(43)]
+CSZ = 8 * (48 if globals().get("VIDA_MOD") else 40)
 RS = 32                           # a rhythm: P (ms), q, s (qwords); a limb adds whether it steps on the floor (pata)
 PSZ = 48                          # a particle: home x, y, offset x, y (x256, from the centre), colour (r | g<<8 | b<<16)
 
@@ -188,7 +188,7 @@ def J(*xs):
 VARS = ("REMAIN FOREVER BLEFT CHANGED RNG N B R2 RB TB LM CR GAIN PARTS LIST LTXT NMAX OMAX NUBB OIDB TMPM PIECEM "
         "BESTM ACC VBUF VCAP VLEN NEXTK FA FB ARRIVING TEACH WALK MOVING KEPT ARCH FRAMES FH AH Q1 Q2 Q3 Q4 Q5 Q6 Q7 "
         "Q8 Q9 TI TJ PP TBEST TBK TBR GBEST SBEST SBK SBR SBP SBI NW NH NBITS NRGB SN SD OFX OFY STX STY SVX SVY "
-        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN NMODE0 NMODE1 NMODE2 BY1 BY2 BY3 BY0 HABOK TRIED TRIEDN DRR DRQ").split()
+        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN NMODE0 NMODE1 NMODE2 BY1 BY2 BY3 BY0 HABOK TRIED TRIEDN DRR DRQ BB CAMX CAMY ZOOM TX TY INT LBITS BLKB BLKI XC XF XN XI XBEST XBC LASTW XREAL XCNT CUB CUCAP CULEN XH").split()
 G = {n: GV + 8 * i for i, n in enumerate(VARS)}
 assert max(G.values()) < SIN
 def ld(r, n): o("  jld %s, j14, %s" % (r, num(G[n] if isinstance(n, str) else n)))
@@ -198,6 +198,15 @@ def incg(n, by=1): ld("j10", n); li("j11", by); J("jadd j10, j10, j11"); st("j10
 def rec(r, idx):
     """r = the record of creature idx (a register); uses j10."""
     J("jldi j10, %d" % CSZ, "jmul %s, %s, j10" % (r, idx)); ld("j10", "CR"); J("jadd %s, %s, j10" % (r, r))
+def cam_xy(xr, yr):
+    """xr, yr = a world place (cells x 256) -> the screen cell through the camera, in xr, yr (uses j10, j13)"""
+    for r, size in ((xr, W), (yr, H)):
+        a, b = lab("cw_lo"), lab("cw_ok")
+        ld("j10", "CAMX" if r == xr else "CAMY"); J("jsub %s, %s, j10" % (r, r)); li("j10", size * 128); J("jsub j13, %s, j10" % r, "jjn j13, %s" % a); li("j10", size * 256); J("jsub %s, %s, j10" % (r, r))
+        o("%s:" % a)
+        li("j10", -size * 128); J("jsub j13, %s, j10" % r, "jjnn j13, %s" % b); li("j10", size * 256); J("jadd %s, %s, j10" % (r, r))
+        o("%s:" % b)
+        ld("j10", "ZOOM"); J("jmul %s, %s, j10" % (r, r), "jldi j10, 8", "jsar %s, %s, j10" % (r, r)); li("j10", size * 128); J("jadd %s, %s, j10" % (r, r), "jldi j10, 8", "jsar %s, %s, j10" % (r, r))
 def put_string(addr, s, width):
     for i, b in enumerate(s.encode().ljust(width, b" ")):
         J("jldi j1, %s" % num(b), "jstb j1, j14, %s" % num(addr + i))
@@ -302,6 +311,8 @@ def frame_body():
     J("jld j2, j9, %d" % C_STATE, "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, fr_land_next", "jld j2, j9, %d" % C_UNSET, "jjnz j2, fr_land_next")
     J("jldi j2, 2", "jst j2, j9, %d" % C_STATE); st("j9", "TI"); J("jcall r_rowcol"); incg("ARRIVING", -1); st("j14", "QUIET")
     J("jcall r_welcome")
+    if MOD:
+        J("jcall v_born")
     o("fr_land_next:")
     incg("WI"); J("jjmp fr_land")
     o("fr_next:")
@@ -407,8 +418,8 @@ o("  ; the limbs a creature can have: its .oido cannot hold more rhythmic limbs 
 ld("j1", "OMAX"); J("jldi j10, %d" % MIN_LIMB_LINE, "jdiv j1, j1, j10", "jldi j10, 1", "jadd j1, j1, j10"); st("j1", "LM")
 ld("j1", "N"); J("jldi j10, %d" % CSZ, "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "CR")
 ld("j1", "N"); J("jmul j1, j1, j1", "jldi j10, 3", "jshl j1, j1, j10", "jcall r_alloc"); st("j0", "GAIN")
-ld("j1", "B"); J("jmul j1, j1, j1"); ld("j2", "N"); J("jmul j1, j1, j2", "jldi j10, %d" % PSZ, "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "PARTS")
-ld("j1", "B"); J("jmul j1, j1, j1", "jldi j10, 40", "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "ACC")
+ld("j1", "B"); J(*(["jadd j1, j1, j1"] if MOD else []), "jmul j1, j1, j1"); ld("j2", "N"); J("jmul j1, j1, j2", "jldi j10, %d" % PSZ, "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "PARTS")
+ld("j1", "B"); J(*(["jadd j1, j1, j1"] if MOD else []), "jmul j1, j1, j1", "jldi j10, 40", "jmul j1, j1, j10", "jcall r_alloc"); st("j0", "ACC")
 ld("j1", "NMAX"); J("jcall r_alloc"); st("j0", "NUBB")
 ld("j1", "OMAX"); J("jldi j10, 8", "jadd j1, j1, j10", "jcall r_alloc"); st("j0", "OIDB")
 for nm in ("TMPM", "PIECEM", "BESTM"):
@@ -423,7 +434,7 @@ ld("j1", "Q1"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, ll_done")
 rec("j9", "j1"); st("j9", "Q3"); ld("j1", "Q1"); J("jst j1, j9, %d" % C_ENT)
 for off, sz, nm in ((C_LIMB, RS, "BLIMB"), (C_MOD, RS, "BMOD"), (C_EFF, RS, "BEFF"), (C_LEFF, RS, "BLEFF"), (C_ACC, 8, "BACC")):
     ld("j1", "LM"); ld("j2", "Q1"); J("jmul j1, j1, j2", "jldi j10, %d" % sz, "jmul j1, j1, j10"); ld("j10", nm); J("jadd j1, j1, j10", "jst j1, j9, %d" % off)
-ld("j1", "B"); J("jmul j1, j1, j1", "jldi j10, %d" % PSZ, "jmul j1, j1, j10"); ld("j2", "Q1"); J("jmul j1, j1, j2")
+ld("j1", "B"); J(*(["jadd j1, j1, j1"] if MOD else []), "jmul j1, j1, j1", "jldi j10, %d" % PSZ, "jmul j1, j1, j10"); ld("j2", "Q1"); J("jmul j1, j1, j2")
 ld("j10", "PARTS"); J("jadd j1, j1, j10"); ld("j9", "Q3"); J("jst j1, j9, %d" % C_PART)
 if MOD:
     ld("j1", "MEM"); J("jjz j1, ll_pathline")
@@ -576,6 +587,7 @@ o("; ---- an arrival: creature IDX reads its gait and its cloud where they live 
 o("r_arrive:")
 ld("j1", "IDX"); rec("j9", "j1"); st("j9", "TI")
 if MOD:
+    J("jcall v_size")
     ld("j1", "MEM"); J("jjz j1, av_host")
     o("  ; from her memory: the gait's text from the record, the body from the recipe she kept (her own cloud)")
     ld("j9", "TI"); J("jld j1, j9, %d" % C_POID, "jld j2, j9, %d" % C_BOID); ld("j3", "OMAX"); J("jsub j10, j3, j2", "jjn j10, av_bad"); ld("j3", "OIDB")
@@ -715,7 +727,7 @@ J("jldb j3, j2, -2", "jldb j4, j2, -1", "jshl j4, j4, j10", "jor j3, j3, j4"); s
 ld("j3", "NW"); J("jjz j3, bd_bad"); ld("j4", "NH"); J("jjz j4, bd_bad", "jmul j3, j3, j4", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, 3", "jshr j3, j3, j10", "jadd j3, j3, j1"); st("j3", "NRGB")
 ld("j9", "TI"); J("jld j10, j9, %d" % C_BNUB, "jsub j10, j10, j3", "jjn j10, bd_bad")
 o("  ; the scale that fits B x B, never above 1; centred")
-ld("j1", "B"); ld("j3", "NW"); ld("j4", "NH")
+ld("j1", ("BB" if MOD else "B")); ld("j3", "NW"); ld("j4", "NH")
 J("jmul j7, j1, j4", "jmul j8, j1, j3", "jsub j10, j8, j7", "jjn j10, bd_h", "jadd j5, j1, j14", "jadd j6, j3, j14", "jjmp bd_cap")
 o("bd_h:")
 J("jadd j5, j1, j14", "jadd j6, j4, j14")
@@ -724,8 +736,8 @@ J("jsub j10, j6, j5", "jjnn j10, bd_ok", "jldi j5, 1", "jldi j6, 1")
 o("bd_ok:")
 st("j5", "SN"); st("j6", "SD")
 for off, size in (("OFX", "NW"), ("OFY", "NH")):
-    ld("j1", size); J("jmul j1, j1, j5", "jdiv j1, j1, j6"); ld("j2", "B"); J("jsub j1, j2, j1", "jldi j10, 1", "jsar j1, j1, j10"); st("j1", off)
-ld("j1", "ACC"); ld("j2", "B"); J("jmul j2, j2, j2", "jldi j10, 5", "jmul j2, j2, j10")
+    ld("j1", size); J("jmul j1, j1, j5", "jdiv j1, j1, j6"); ld("j2", ("BB" if MOD else "B")); J("jsub j1, j2, j1", "jldi j10, 1", "jsar j1, j1, j10"); st("j1", off)
+ld("j1", "ACC"); ld("j2", ("BB" if MOD else "B")); J("jmul j2, j2, j2", "jldi j10, 5", "jmul j2, j2, j10")
 o("bd_clr:")
 J("jjz j2, bd_clr_done", "jst j14, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bd_clr")
 o("bd_clr_done:")
@@ -733,7 +745,7 @@ o("  ; every cell of the cloud, in reading order: its body cell counts it (area)
 ld("j9", "NUBB"); ld("j10", "NRGB"); J("jadd j8, j9, j10"); ld("j10", "NBITS"); J("jadd j7, j9, j10", "jldi j6, 0"); st("j14", "Q1")
 o("bd_row:")
 ld("j1", "Q1"); ld("j10", "NH"); J("jsub j10, j1, j10", "jjnn j10, bd_rows_done")
-ld("j2", "SN"); J("jmul j1, j1, j2"); ld("j2", "SD"); J("jdiv j1, j1, j2"); ld("j10", "OFY"); J("jadd j1, j1, j10"); ld("j10", "B"); J("jmul j1, j1, j10"); st("j1", "Q2")
+ld("j2", "SN"); J("jmul j1, j1, j2"); ld("j2", "SD"); J("jdiv j1, j1, j2"); ld("j10", "OFY"); J("jadd j1, j1, j10"); ld("j10", ("BB" if MOD else "B")); J("jmul j1, j1, j10"); st("j1", "Q2")
 J("jldi j5, 0")
 o("bd_cell:")
 ld("j1", "SN"); J("jmul j1, j1, j5"); ld("j2", "SD"); J("jdiv j1, j1, j2"); ld("j10", "OFX"); J("jadd j1, j1, j10"); ld("j10", "Q2"); J("jadd j1, j1, j10")
@@ -749,7 +761,7 @@ J("jadd j6, j6, j13", "jadd j5, j5, j13"); ld("j10", "NW"); J("jsub j10, j5, j10
 incg("Q1"); J("jjmp bd_row")
 o("bd_rows_done:")
 o("  ; the particles: home at the cell's centre relative to the body's (x256), born FALL_B bodies above it")
-ld("j9", "TI"); J("jld j2, j9, %d" % C_PART); ld("j1", "ACC"); J("jldi j3, 0", "jldi j4, 0", "jldi j0, 0"); ld("j13", "B")
+ld("j9", "TI"); J("jld j2, j9, %d" % C_PART); ld("j1", "ACC"); J("jldi j3, 0", "jldi j4, 0", "jldi j0, 0"); ld("j13", ("BB" if MOD else "B"))
 o("bd_prow:")
 J("jldi j5, 0")
 o("bd_pcell:")
@@ -967,6 +979,8 @@ o("  ; the winner: the motif it replaces goes to the archive, the piece is kept,
 ld("j1", "SBR"); J("jjn j1, sh_kept", "jldi j10, %d" % RS, "jmul j1, j1, j10"); ld("j9", "TI"); J("jld j2, j9, %d" % C_MOD, "jadd j1, j1, j2")
 J("jldi j2, 1"); ld("j3", "SBEST"); J("jcall r_archive"); incg("ARCH")
 o("sh_kept:")
+if MOD:
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_DL); ld("j2", "SBEST"); J("jsub j1, j1, j2"); st("j1", "LBITS")
 ld("j1", "SBP"); J("jldi j10, %d" % RS, "jmul j1, j1, j10"); ld("j9", "TJ"); J("jld j2, j9, %d" % C_EFF, "jadd j1, j1, j2")
 J("jldi j2, 0"); ld("j3", "SBEST"); J("jcall r_archive")
 o("  ; the exchange is shown: the piece flies from the teacher to the pupil blinking with its own rhythm, and the")
@@ -977,6 +991,8 @@ ld("j8", "TI"); ld("j9", "TJ"); J("jldi j3, 1", "jcall r_spawn")
 ld("j9", "TI"); ld("j1", "BESTM"); J("jld j2, j9, %d" % C_MOD); ld("j3", "SBK"); J("jcall r_copym")
 ld("j9", "TI"); ld("j1", "SBK"); J("jst j1, j9, %d" % C_K); ld("j1", "SBEST"); J("jst j1, j9, %d" % C_DL, "jldi j1, 1", "jst j1, j9, %d" % C_LEARN)
 incg("KEPT"); ld("j9", "TJ"); st("j9", "SHJ"); J("jcall r_eff", "jcall r_rowcol", "jcall r_save_learned"); ld("j9", "SHJ"); st("j9", "TJ")
+if MOD:
+    J("jcall v_learned")
 o("sh_done:")
 J("jret")
 
@@ -1321,6 +1337,8 @@ for e in ("DE1", "DE2"):
     ld("j1", e); J("jld j2, j1, 32", "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j1, 32")
 incg("KEPT"); incg("DKEPT"); ld("j1", "DNOW"); ld("j2", "DWITH"); J("jsub j1, j1, j2"); ld("j2", "DBITS"); J("jadd j2, j2, j1"); st("j2", "DBITS")
 J("jcall r_eff", "jcall r_rowcol", "jcall r_save_learned"); setg("DVER", 75)
+if MOD:
+    ld("j1", "DNOW"); ld("j2", "DWITH"); J("jsub j1, j1, j2"); st("j1", "LBITS"); J("jcall v_learned"); ld("j9", "DSP"); st("j9", "TJ")
 setg("PKIND", 1); ld("j1", "CODE"); J("jjz j1, dg_pk"); setg("PKIND", 2)
 o("dg_pk:")
 ld("j8", "DSP"); ld("j9", "DLIS"); J("jldi j3, 0", "jcall r_spawn"); ld("j8", "DLIS"); ld("j9", "DSP"); J("jldi j3, 1", "jcall r_spawn"); st("j14", "PKIND")
@@ -1522,7 +1540,11 @@ J("jldi j10, %d" % (65536 * FRAME_MS // 256), "jmul j4, j3, j10", "jldi j10, 256
 J("jldi j10, 3", "jshl j4, j4, j10"); li("j10", SIN); J("jadd j4, j4, j10", "jld j4, j4, 0", "jjn j4, dk_next")
 o("dk_pos:")
 for off0, offd, reg, size in ((8, 24, "j5", W), (16, 32, "j6", H)):
-    J("jld %s, j1, %d" % (reg, offd), "jmul %s, %s, j3" % (reg, reg), "jld j10, j1, 48", "jdiv %s, %s, j10" % (reg, reg), "jld j10, j1, %d" % off0, "jadd %s, %s, j10" % (reg, reg), "jldi j10, 8", "jsar %s, %s, j10" % (reg, reg))
+    J("jld %s, j1, %d" % (reg, offd), "jmul %s, %s, j3" % (reg, reg), "jld j10, j1, 48", "jdiv %s, %s, j10" % (reg, reg), "jld j10, j1, %d" % off0, "jadd %s, %s, j10" % (reg, reg))
+    if not MOD:
+        J("jldi j10, 8", "jsar %s, %s, j10" % (reg, reg))
+if MOD:
+    cam_xy("j5", "j6")
 J("jldi j11, 0")
 o("dk_row:")
 J("jldi j12, 0")
@@ -1541,7 +1563,11 @@ J("jldi j10, 1", "jadd j11, j11, j10", "jldi j10, %d" % PK, "jsub j10, j11, j10"
 J("jjmp dk_next")
 o("dk_glyph:                       ; the message as one of Razar's forms: each brick an arm of 2 cells, east south west north")
 for off0, offd, reg in ((8, 24, "j5"), (16, 32, "j6")):
-    J("jld %s, j1, %d" % (reg, offd), "jmul %s, %s, j3" % (reg, reg), "jld j10, j1, 48", "jdiv %s, %s, j10" % (reg, reg), "jld j10, j1, %d" % off0, "jadd %s, %s, j10" % (reg, reg), "jldi j10, 8", "jsar %s, %s, j10" % (reg, reg))
+    J("jld %s, j1, %d" % (reg, offd), "jmul %s, %s, j3" % (reg, reg), "jld j10, j1, 48", "jdiv %s, %s, j10" % (reg, reg), "jld j10, j1, %d" % off0, "jadd %s, %s, j10" % (reg, reg))
+    if not MOD:
+        J("jldi j10, 8", "jsar %s, %s, j10" % (reg, reg))
+if MOD:
+    cam_xy("j5", "j6")
 J("jld j11, j1, 56", "jld j12, j1, 64")
 o("dg_arm:")
 J("jjz j12, dk_next", "jldi j10, 3", "jand j4, j11, j10", "jldi j10, 8", "jshr j11, j11, j10", "jldi j13, 2")
@@ -1614,7 +1640,14 @@ if HAB:
     o("  ; the strata over the creatures' world, row by row (drawn only in a frame: calm costs nothing)")
     J("jldi j1, 0")
     o("fb_row:")
-    J("jldi j10, %d" % H, "jsub j10, j1, j10", "jjnn j10, fb_done", "jldi j10, 16", "jshl j2, j1, j10")
+    J("jldi j10, %d" % H, "jsub j10, j1, j10", "jjnn j10, fb_done")
+    o("  ; the world height of this row through the camera: CAMY + (row - H/2) / zoom (x65536)")
+    J("jldi j10, 8", "jshl j2, j1, j10", "jldi j10, %d" % (H * 128), "jsub j2, j2, j10", "jldi j10, 8", "jshl j2, j2, j10"); ld("j10", "ZOOM"); J("jdiv j2, j2, j10"); ld("j10", "CAMY"); J("jadd j2, j2, j10")
+    J("jjnn j2, fb_wlo"); li("j10", H * 256); J("jadd j2, j2, j10")
+    o("fb_wlo:")
+    li("j10", H * 256); J("jsub j10, j2, j10", "jjn j10, fb_whi", "jadd j2, j10, j14")
+    o("fb_whi:")
+    J("jldi j10, 8", "jshl j2, j2, j10")
     for k, nm in enumerate(("BY1", "BY2", "BY3")):
         ld("j10", nm); J("jsub j10, j2, j10", "jjn j10, fb_c%d" % k)
     c = STRATA[3]; J("jldi j3, %d" % c[0], "jldi j4, %d" % c[1], "jldi j5, %d" % c[2], "jjmp fb_paint")
@@ -1726,7 +1759,32 @@ if HAB:
     J("jldi j10, 7", "jcall r_file")
     o("hb_done:")
     J("jret")
-o("r_draw:                         ; every body that is here (later ones in front), on the torus")
+if MOD:
+    o("r_draw:                         ; every body that is here, through the camera (a particle is a block as big as the")
+    o("                                ; zoom), later ones in front")
+    st("j14", "Q1"); ld("j1", "ZOOM"); J("jldi j10, 255", "jadd j1, j1, j10", "jldi j10, 8", "jshr j1, j1, j10"); st("j1", "BLKB")
+    o("dz_lap:")
+    ld("j1", "Q1"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, dz_done"); rec("j9", "j1"); J("jld j10, j9, %d" % C_STATE, "jjz j10, dz_next")
+    J("jld j1, j9, %d" % C_PART, "jld j2, j9, %d" % C_NP)
+    o("dz_p:")
+    J("jjz j2, dz_next"); st("j1", "Q2"); st("j2", "Q3")
+    ld("j9", "Q1"); rec("j9", "j9"); J("jld j3, j9, %d" % C_CX, "jldi j10, 8", "jsar j3, j3, j10", "jld j10, j1, 16", "jadd j3, j3, j10", "jld j4, j9, %d" % C_CY, "jldi j10, 8", "jsar j4, j4, j10", "jld j10, j1, 24", "jadd j4, j4, j10")
+    cam_xy("j3", "j4")
+    J("jld j7, j1, 32"); ld("j8", "BLKB"); J("jadd j11, j8, j14")
+    o("dz_row:")
+    J("jadd j12, j8, j14")
+    o("dz_col:")
+    J("jadd j5, j3, j12", "jldi j10, 1", "jsub j5, j5, j10", "jadd j6, j4, j11", "jsub j6, j6, j10", "jjn j5, dz_c_next", "jjn j6, dz_c_next", "jldi j10, %d" % W, "jsub j10, j5, j10", "jjnn j10, dz_c_next", "jldi j10, %d" % H, "jsub j10, j6, j10", "jjnn j10, dz_c_next")
+    J("jldi j10, %d" % SW, "jmul j6, j6, j10", "jadd j6, j6, j5", "jldi j10, %d" % WX0, "jadd j6, j6, j10", "jldi j10, 3", "jmul j6, j6, j10"); li("j10", RGB); J("jadd j6, j6, j10")
+    J("jstb j7, j6, 0", "jldi j10, 8", "jshr j13, j7, j10", "jstb j13, j6, 1", "jshr j13, j13, j10", "jstb j13, j6, 2")
+    o("dz_c_next:")
+    J("jldi j10, 1", "jsub j12, j12, j10", "jjnz j12, dz_col", "jsub j11, j11, j10", "jjnz j11, dz_row")
+    ld("j1", "Q2"); ld("j2", "Q3"); J("jldi j10, %d" % PSZ, "jadd j1, j1, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp dz_p")
+    o("dz_next:")
+    incg("Q1"); J("jjmp dz_lap")
+    o("dz_done:")
+    J("jret")
+o("r_draw%s:                         ; every body that is here (later ones in front), on the torus" % ("_flat" if MOD else ""))
 st("j14", "Q1")
 o("dr_lap:")
 ld("j1", "Q1"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, dr_done"); rec("j9", "j1"); J("jld j10, j9, %d" % C_STATE, "jjz j10, dr_next")

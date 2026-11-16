@@ -7648,6 +7648,19 @@ sb_close:
   jcall r_file
 sb_done:
   jret
+; ---- the forms' routines the creatures call (their own names would be renamed with v_)
+f_hash:
+  jcall r_hash
+  jret
+f_tried:
+  jcall r_tried
+  jret
+f_judge:
+  jcall r_judge
+  jret
+f_put_rec:
+  jcall r_put_rec
+  jret
 ; Generates vida.jsm: Gotching's creatures living together, as in Conway's game of Life (Capitan: "that LUMA learns
 ; to treat the creatures as in the game of LIFE: that each one moves freely, that they meet, that they part, that they
 ; share").
@@ -9040,7 +9053,7 @@ v_vt_cr:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_vt_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9074,6 +9087,197 @@ v_vt_next:
   jst j10, j14, 02338h
   jjmp v_vt_cr
 v_vt_done:
+  ; the camera: the whole world, nothing to look at yet
+  jldi j10, 0100h
+  jst j10, j14, 02710h
+  jldi j10, 0
+  jshi j10, 0A000h
+  jst j10, j14, 02700h
+  jldi j10, 06400h
+  jst j10, j14, 02708h
+  jldi j10, 0
+  jshi j10, 0A000h
+  jst j10, j14, 02718h
+  jldi j10, 06400h
+  jst j10, j14, 02720h
+  jst j14, j14, 02728h
+  jld j1, j14, 0280h
+  jst j1, j14, 02778h
+  jld j1, j14, 02228h
+  jjz j1, v_vt_end
+  ; every creature's body recipe (48 bytes) and identity (50 rows), and the bodies' file
+  jld j1, j14, 02228h
+  jldi j10, 48
+  jmul j1, j1, j10
+  jcall v_r_alloc
+  jst j0, j14, 02748h
+  jld j1, j14, 02228h
+  jldi j10, 400
+  jmul j1, j1, j10
+  jcall v_r_alloc
+  jst j0, j14, 02750h
+  jst j14, j14, 02338h
+v_vt_b:
+  jld j1, j14, 02338h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_vt_b_done
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jldi j10, 48
+  jmul j2, j1, j10
+  jld j10, j14, 02748h
+  jadd j2, j2, j10
+  jst j2, j9, 288
+  jldi j10, 400
+  jmul j2, j1, j10
+  jld j10, j14, 02750h
+  jadd j2, j2, j10
+  jst j2, j9, 320
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_vt_b
+v_vt_b_done:
+  jld j1, j14, 02228h
+  jldi j10, 56
+  jmul j1, j1, j10
+  jldi j10, 16
+  jadd j1, j1, j10
+  jst j1, j14, 02798h
+  jcall v_r_alloc
+  jst j0, j14, 02790h
+  jldi j1, 118
+  jstb j1, j14, 065A0h
+  jldi j1, 105
+  jstb j1, j14, 065A1h
+  jldi j1, 100
+  jstb j1, j14, 065A2h
+  jldi j1, 97
+  jstb j1, j14, 065A3h
+  jldi j1, 45
+  jstb j1, j14, 065A4h
+  jldi j1, 99
+  jstb j1, j14, 065A5h
+  jldi j1, 117
+  jstb j1, j14, 065A6h
+  jldi j1, 101
+  jstb j1, j14, 065A7h
+  jldi j1, 114
+  jstb j1, j14, 065A8h
+  jldi j1, 112
+  jstb j1, j14, 065A9h
+  jldi j1, 111
+  jstb j1, j14, 065AAh
+  jldi j1, 115
+  jstb j1, j14, 065ABh
+  jldi j1, 118
+  jstb j1, j14, 065C0h
+  jldi j1, 105
+  jstb j1, j14, 065C1h
+  jldi j1, 100
+  jstb j1, j14, 065C2h
+  jldi j1, 97
+  jstb j1, j14, 065C3h
+  jldi j1, 45
+  jstb j1, j14, 065C4h
+  jldi j1, 105
+  jstb j1, j14, 065C5h
+  jldi j1, 110
+  jstb j1, j14, 065C6h
+  jldi j1, 116
+  jstb j1, j14, 065C7h
+  jldi j1, 101
+  jstb j1, j14, 065C8h
+  jldi j1, 114
+  jstb j1, j14, 065C9h
+  jldi j1, 99
+  jstb j1, j14, 065CAh
+  jldi j1, 97
+  jstb j1, j14, 065CBh
+  jldi j1, 109
+  jstb j1, j14, 065CCh
+  jldi j1, 98
+  jstb j1, j14, 065CDh
+  jldi j1, 105
+  jstb j1, j14, 065CEh
+  jldi j1, 111
+  jstb j1, j14, 065CFh
+  jldi j1, 115
+  jstb j1, j14, 065D0h
+  jldi j11, 065A0h
+  jldi j12, 12
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_vt_x
+  jld j11, j14, 02790h
+  jld j12, j14, 02798h
+  jcall v_r_read_all
+  jst j0, j14, 02340h
+  jldi j10, 7
+  jcall v_r_file
+  jld j1, j14, 02340h
+  jld j2, j14, 02798h
+  jsub j10, j1, j2
+  jjnz j10, v_vt_x
+  jst j14, j14, 02338h
+v_vt_l:                           ; line i is creature i (same memory, same order); its print must match
+  jld j1, j14, 02338h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_vt_x
+  jldi j10, 56
+  jmul j8, j1, j10
+  jld j10, j14, 02790h
+  jadd j8, j8, j10
+  jldi j10, 16
+  jadd j8, j8, j10
+  jst j8, j14, 02348h
+  jadd j1, j8, j14
+  jldi j2, 16
+  jcall v_r_get_hex
+  jld j1, j14, 02338h
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j2, j9, 136
+  jsub j2, j2, j0
+  jjnz j2, v_vt_l_next
+  jld j8, j14, 02348h
+  jldi j10, 17
+  jadd j1, j8, j10
+  jld j3, j9, 288
+  jcall r_get_rec
+  jld j8, j14, 02348h
+  jldi j10, 49
+  jadd j1, j8, j10
+  jldi j2, 6
+  jcall v_r_get_num
+  jld j1, j14, 02338h
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jst j0, j9, 304
+v_vt_l_next:
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_vt_l
+v_vt_x:                           ; the exchanges' file, kept open at its end
+  jldi j11, 065C0h
+  jldi j12, 17
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jst j9, j14, 027A8h
+  jjn j9, v_vt_end
+  jcall v_r_fsize
+v_vt_end:
 ; ---- the order of the arrivals: a start and a stride coprime to N, from its own generator (each one once)
   jld j1, j14, 02228h
   jjz j1, v_order_done
@@ -9112,7 +9316,7 @@ v_fr_land:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_fr_next
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9132,6 +9336,7 @@ v_fr_land:
   jst j10, j14, 022F0h
   jst j14, j14, 02528h
   jcall v_r_welcome
+  jcall v_born
 v_fr_land_next:
   jld j10, j14, 02478h
   jldi j11, 1
@@ -9148,7 +9353,7 @@ v_fr_pend:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_fr_walk
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9178,7 +9383,7 @@ v_fr_pend_go:
   jjmp v_fr_walk
 v_fr_pend_bad:                    ; it could not come in (not there, not a cloud): marked, never tried again
   jld j1, j14, 02460h
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9226,6 +9431,9 @@ v_fr_q:
 v_fr_parts:
   jcall v_r_packets
   jcall v_r_particles
+  jcall v_camera
+  jcall v_offer_creature
+  jcall v_shrink
   jld j1, j14, 02300h
   jjz j1, v_vf_ret
   jldi j10, 1
@@ -9381,7 +9589,7 @@ v_vm_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_vm_ret
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9405,54 +9613,57 @@ v_vm_next:
 v_vm_ret:
   jret
 v_remember:
-  jldi j1, 0200h
-  jldi j2, 05000h
-  jldi j3, 0C0h
-v_vr_sv0:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_sv0
-  jldi j1, 01A00h
-  jldi j2, 05600h
-  jldi j3, 0B0h
-v_vr_sv1:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_sv1
-  jldi j1, 02Fh
-  jshi j1, 0EA00h
-  jldi j2, 05B80h
-  jldi j3, 040h
-v_vr_svb:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_svb
-  ; the recipe she kept, grown and drawn as its form (the drawing that judged the meal)
+  jcall v_save
+  ; its identity, once: the recipe she kept for that meal, drawn as its form (the drawing that judged the meal)
   jld j9, j14, 02380h
+  jld j1, j9, 336
+  jjnz j1, v_vr_body
   jld j1, j9, 248
   jldi j3, 04820h
   jcall r_get_rec
   jldi j1, 04820h
   jst j1, j14, 02F0h
   jcall r_fit_cost
+  jld j9, j14, 02380h
+  jld j2, j9, 320
   jldi j1, 02Fh
   jshi j1, 0EA00h
-  jldi j2, 05E00h
+  jldi j3, 50
+v_vr_idc:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_idc
+  jld j9, j14, 02380h
+  jldi j1, 1
+  jst j1, j9, 336
+  jld j2, j9, 288
+  jldb j1, j2, 0
+  jjnz j1, v_vr_body
+  jldi j1, 04820h
+  jldi j3, 4
+v_vr_brc:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vr_brc
+v_vr_body:                        ; the body it has now, and its cost against its identity (comer's judge)
+  jld j9, j14, 02380h
+  jld j1, j9, 288
+  jcall v_bcost_raw
+  jld j9, j14, 02380h
+  jst j0, j9, 328
+  jldi j1, 02Fh
+  jshi j1, 0EA00h
+  jldi j2, 06200h
   jldi j3, 032h
 v_vr_cpb:
   jld j4, j1, 0
@@ -9463,43 +9674,7 @@ v_vr_cpb:
   jldi j10, 1
   jsub j3, j3, j10
   jjnz j3, v_vr_cpb
-  jldi j1, 05000h
-  jldi j2, 0200h
-  jldi j3, 0C0h
-v_vr_rs0:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_rs0
-  jldi j1, 05600h
-  jldi j2, 01A00h
-  jldi j3, 0B0h
-v_vr_rs1:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_rs1
-  jldi j1, 05B80h
-  jldi j2, 02Fh
-  jshi j2, 0EA00h
-  jldi j3, 040h
-v_vr_rsb:
-  jld j4, j1, 0
-  jst j4, j2, 0
-  jldi j10, 8
-  jadd j1, j1, j10
-  jadd j2, j2, j10
-  jldi j10, 1
-  jsub j3, j3, j10
-  jjnz j3, v_vr_rsb
+  jcall v_restore
   ; her own cloud: the header, then a bit per cell and a colour per particle
   jld j9, j14, 02290h
   jldi j1, 78
@@ -9574,7 +9749,7 @@ v_vr_clr:
 v_vr_row:
   jldi j7, 0
 v_vr_cell:
-  jldi j10, 05E00h
+  jldi j10, 06200h
   jldi j11, 3
   jshl j11, j5, j11
   jadd j11, j11, j10
@@ -9653,31 +9828,31 @@ v_vr_next:
   jst j8, j9, 200
   ; written into the casa as one of her own clouds: "vida-nube-<print>"
   jldi j1, 118
-  jstb j1, j14, 05F80h
+  jstb j1, j14, 06400h
   jldi j1, 105
-  jstb j1, j14, 05F81h
+  jstb j1, j14, 06401h
   jldi j1, 100
-  jstb j1, j14, 05F82h
+  jstb j1, j14, 06402h
   jldi j1, 97
-  jstb j1, j14, 05F83h
+  jstb j1, j14, 06403h
   jldi j1, 45
-  jstb j1, j14, 05F84h
+  jstb j1, j14, 06404h
   jldi j1, 110
-  jstb j1, j14, 05F85h
+  jstb j1, j14, 06405h
   jldi j1, 117
-  jstb j1, j14, 05F86h
+  jstb j1, j14, 06406h
   jldi j1, 98
-  jstb j1, j14, 05F87h
+  jstb j1, j14, 06407h
   jldi j1, 101
-  jstb j1, j14, 05F88h
+  jstb j1, j14, 06408h
   jldi j1, 45
-  jstb j1, j14, 05F89h
+  jstb j1, j14, 06409h
   jld j9, j14, 02380h
   jld j1, j9, 136
   jldi j2, 16
-  jldi j3, 05F8Ah
+  jldi j3, 0640Ah
   jcall v_r_put_hex
-  jldi j11, 05F80h
+  jldi j11, 06400h
   jldi j12, 26
   jcall v_r_open
   jld j9, j14, 02328h
@@ -9691,6 +9866,919 @@ v_vr_next:
   jcall v_r_file
 v_vr_done:
   jldi j0, 1
+  jret
+v_save:                         ; the forms' and the meals' state, kept while the creatures draw with their tools
+  jldi j1, 0200h
+  jldi j2, 05000h
+  jldi j3, 0C0h
+v_vsv0:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vsv0
+  jldi j1, 01A00h
+  jldi j2, 05600h
+  jldi j3, 0B0h
+v_vsv1:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vsv1
+  jldi j1, 02Fh
+  jshi j1, 0EA00h
+  jldi j2, 05B80h
+  jldi j3, 040h
+v_vsvb:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vsvb
+  jldi j1, 02Fh
+  jshi j1, 0EC00h
+  jldi j2, 05D80h
+  jldi j3, 040h
+v_vsvt:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vsvt
+  jret
+v_restore:
+  jldi j1, 05000h
+  jldi j2, 0200h
+  jldi j3, 0C0h
+v_vrs0:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vrs0
+  jldi j1, 05600h
+  jldi j2, 01A00h
+  jldi j3, 0B0h
+v_vrs1:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vrs1
+  jldi j1, 05B80h
+  jldi j2, 02Fh
+  jshi j2, 0EA00h
+  jldi j3, 040h
+v_vrsb:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vrsb
+  jldi j1, 05D80h
+  jldi j2, 02Fh
+  jshi j2, 0EC00h
+  jldi j3, 040h
+v_vrst:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vrst
+  jret
+v_bcost_raw:                    ; j1 = a recipe -> j0 = its cost against TI's identity (bits x100; DBMP = its drawing)
+  jst j1, j14, 02748h
+  jld j9, j14, 02380h
+  jld j1, j9, 320
+  jldi j2, 02Fh
+  jshi j2, 0EC00h
+  jldi j3, 50
+v_vb_cp:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vb_cp
+  jld j1, j14, 02748h
+  jst j1, j14, 02F0h
+  jcall r_fit_cost
+  jret
+v_size:                         ; TI's side from what it learned: isqrt(B^2 + B bits), at most 2B (each bit learned
+                                ; adds a row of B cells to its area; criterion)
+  jld j9, j14, 02380h
+  jld j1, j14, 02230h
+  jmul j2, j1, j1
+  jld j3, j9, 304
+  jmul j3, j3, j1
+  jadd j1, j2, j3
+  jcall v_r_isqrt
+  jld j1, j14, 02230h
+  jadd j1, j1, j1
+  jsub j10, j0, j1
+  jjn j10, v_vz_ok
+  jadd j0, j1, j14
+v_vz_ok:
+  jld j9, j14, 02380h
+  jst j0, j9, 296
+  jst j0, j14, 026F8h
+  jret
+v_attend:                       ; news of j1 bits (x100) at TI: stronger news (or as strong) takes the camera
+  jld j2, j14, 02728h
+  jsub j10, j1, j2
+  jjn j10, v_va2_ret
+  jst j1, j14, 02728h
+  jld j9, j14, 02380h
+  jld j2, j9, 16
+  jldi j10, 8
+  jsar j2, j2, j10
+  jst j2, j14, 02718h
+  jld j2, j9, 24
+  jsar j2, j2, j10
+  jst j2, j14, 02720h
+v_va2_ret:
+  jret
+v_camera:                       ; a frame of the camera: interest decays, zoom and place ease towards the news
+  jld j1, j14, 02728h
+  jldi j10, 7
+  jsar j2, j1, j10
+  jsub j1, j1, j2
+  jst j1, j14, 02728h
+  jldi j10, 256
+  jmul j2, j1, j10
+  jldi j10, 400
+  jdiv j2, j2, j10
+  jldi j10, 512
+  jsub j10, j2, j10
+  jjn j10, v_vcm_z
+  jldi j2, 512
+v_vcm_z:
+  jldi j10, 256
+  jadd j2, j2, j10
+  jld j1, j14, 02710h
+  jsub j2, j2, j1
+  jldi j10, 3
+  jsar j2, j2, j10
+  jadd j1, j1, j2
+  jldi j10, 256
+  jsub j10, j1, j10
+  jjnn j10, v_vcm_z1
+  jldi j1, 256
+v_vcm_z1:
+  jst j1, j14, 02710h
+  ; across: the shortest way round the world
+  jld j1, j14, 02718h
+  jld j2, j14, 02700h
+  jsub j1, j1, j2
+  jldi j10, 0
+  jshi j10, 0A000h
+  jsub j3, j1, j10
+  jjn j3, v_vcm_x1
+  jldi j10, 1
+  jshi j10, 04000h
+  jsub j1, j1, j10
+v_vcm_x1:
+  jldi j10, -1
+  jshi j10, 06000h
+  jsub j3, j1, j10
+  jjnn j3, v_vcm_x2
+  jldi j10, 1
+  jshi j10, 04000h
+  jadd j1, j1, j10
+v_vcm_x2:
+  jldi j10, 3
+  jsar j1, j1, j10
+  jadd j2, j2, j1
+  jjnn j2, v_vcm_x3
+  jldi j10, 1
+  jshi j10, 04000h
+  jadd j2, j2, j10
+v_vcm_x3:
+  jldi j10, 1
+  jshi j10, 04000h
+  jsub j3, j2, j10
+  jjn j3, v_vcm_x4
+  jadd j2, j3, j14
+v_vcm_x4:
+  jst j2, j14, 02700h
+  ; up and down: towards the news, but the view never leaves the world (the strata stay in place)
+  jld j1, j14, 02720h
+  jld j2, j14, 02708h
+  jsub j1, j1, j2
+  jldi j10, 3
+  jsar j1, j1, j10
+  jadd j2, j2, j1
+  jldi j3, 064h
+  jshi j3, 0
+  jld j10, j14, 02710h
+  jdiv j3, j3, j10
+  jsub j10, j2, j3
+  jjnn j10, v_vcm_y1
+  jadd j2, j3, j14
+v_vcm_y1:
+  jldi j4, 0
+  jshi j4, 0C800h
+  jsub j4, j4, j3
+  jsub j10, j4, j2
+  jjnn j10, v_vcm_y2
+  jadd j2, j4, j14
+v_vcm_y2:
+  jst j2, j14, 02708h
+  jret
+v_born:                         ; TI landed: news (its description / 16), a body offered to the forms
+  jld j9, j14, 02380h
+  jld j1, j9, 72
+  jldi j10, 100
+  jmul j1, j1, j10
+  jldi j10, 16
+  jdiv j1, j1, j10
+  jcall v_attend
+  jld j1, j14, 02320h
+  jld j9, j14, 02380h
+  jst j1, j9, 312
+  jld j1, j14, 02668h
+  jjz j1, v_vbo_ret
+  jcall v_offer_forms
+v_vbo_ret:
+  jret
+v_learned:                      ; TI kept a piece of gait worth LBITS: it grows, its body may change, the forms hear
+  jld j9, j14, 02380h
+  jld j1, j9, 304
+  jld j2, j14, 02730h
+  jadd j1, j1, j2
+  jst j1, j9, 304
+  jld j1, j14, 02320h
+  jst j1, j9, 312
+  jld j1, j14, 02730h
+  jldi j10, 100
+  jmul j1, j1, j10
+  jcall v_attend
+  jld j1, j14, 02668h
+  jjz j1, v_vl_ret
+  jcall v_morph
+  jcall v_rebody
+  jcall v_save_bodies
+  jcall v_offer_forms
+v_vl_ret:
+  jret
+v_morph:                        ; every one-letter mutation of its body (change, delete, insert), the best kept if its
+                                ; cost against its identity does not go up (it keeps or shortens its description)
+  jcall v_save
+  jldi j10, 0100h
+  jshi j10, 0
+  jshi j10, 0
+  jst j10, j14, 02770h
+  jst j14, j14, 02758h
+  jld j9, j14, 02380h
+  jld j1, j9, 288
+  jldb j2, j1, 0
+  jst j2, j14, 02750h
+  jst j14, j14, 02760h
+v_vmo_i:                          ; XI = 0..3n+? : the position and the kind, every letter for each
+  jld j1, j14, 02760h
+  jld j2, j14, 02750h
+  jldi j10, 3
+  jmul j3, j2, j10
+  jldi j10, 1
+  jadd j3, j3, j10
+  jsub j10, j1, j3
+  jjnn j10, v_vmo_done
+  jldi j4, 1
+v_vmo_l:                          ; letter j4 = 1..9
+  jldi j10, 10
+  jsub j10, j4, j10
+  jjnn j10, v_vmo_i_next
+  jst j4, j14, 02758h
+  jcall v_mut_build
+  jjz j0, v_vmo_l_next
+  jldi j1, 06440h
+  jcall v_bcost_raw
+  jld j2, j14, 02770h
+  jsub j10, j0, j2
+  jjnn j10, v_vmo_l_next
+  jst j0, j14, 02770h
+  jldi j1, 06440h
+  jldi j2, 06480h
+  jldi j3, 6
+v_vmo_cp:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vmo_cp
+v_vmo_l_next:
+  jld j4, j14, 02758h
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp v_vmo_l
+v_vmo_i_next:
+  jld j10, j14, 02760h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02760h
+  jjmp v_vmo_i
+v_vmo_done:
+  jcall v_restore
+  jst j14, j14, 02750h
+  jld j1, j14, 02770h
+  jld j9, j14, 02380h
+  jld j2, j9, 328
+  jsub j10, j2, j1
+  jjn j10, v_vmo_lost
+  ; kept: its body is the mutation
+  jld j9, j14, 02380h
+  jst j1, j9, 328
+  jld j2, j9, 288
+  jldi j1, 06480h
+  jldi j3, 6
+v_vmo_ap:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vmo_ap
+  jldi j1, 77
+  jldi j2, 75
+  jldi j3, 06480h
+  jcall v_xlog
+  jret
+v_vmo_lost:
+  jldi j1, 77
+  jldi j2, 76
+  jldi j3, 06480h
+  jcall v_xlog
+  jret
+v_mut_build:                    ; XI (position x kind) and XN (a letter) on TI's body -> TMPB; j0 = 0 if no candidate
+  jld j9, j14, 02380h
+  jld j1, j9, 288
+  jldb j2, j1, 0
+  jld j3, j14, 02760h
+  jldi j10, 3
+  jdiv j4, j3, j10
+  jmul j5, j4, j10
+  jsub j5, j3, j5
+  jldi j6, 0
+  jldi j7, 0
+v_vmb_lap:
+  jsub j10, j6, j2
+  jjnn j10, v_vmb_tail
+  jsub j10, j6, j4
+  jjnz j10, v_vmb_copy
+  ; the position: kind 0 change, 1 delete, 2 insert before
+  jjnz j5, v_vmb_k1
+  jld j8, j14, 02758h
+  jadd j10, j1, j6
+  jldb j11, j10, 1
+  jsub j11, j11, j8
+  jjz j11, v_vmb_none
+  jadd j10, j7, j14
+  jldi j11, 06440h
+  jadd j10, j10, j11
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j6, j6, j10
+  jadd j7, j7, j10
+  jjmp v_vmb_lap
+v_vmb_k1:
+  jldi j10, 1
+  jsub j10, j5, j10
+  jjnz j10, v_vmb_k2
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjn j10, v_vmb_none
+  jld j8, j14, 02758h
+  jldi j10, 1
+  jsub j10, j8, j10
+  jjnz j10, v_vmb_none
+  jldi j10, 1
+  jadd j6, j6, j10
+  jjmp v_vmb_lap
+v_vmb_k2:
+  jldi j10, 31
+  jsub j10, j2, j10
+  jjnn j10, v_vmb_none
+  jld j8, j14, 02758h
+  jldi j11, 06440h
+  jadd j10, j7, j11
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j7, j7, j10
+v_vmb_copy:
+  jadd j10, j1, j6
+  jldb j11, j10, 1
+  jldi j12, 06440h
+  jadd j10, j7, j12
+  jstb j11, j10, 1
+  jldi j10, 1
+  jadd j6, j6, j10
+  jadd j7, j7, j10
+  jjmp v_vmb_lap
+v_vmb_tail:                       ; insert at the end
+  jsub j10, j4, j2
+  jjnz j10, v_vmb_end
+  jldi j10, 2
+  jsub j10, j5, j10
+  jjnz j10, v_vmb_none
+  jldi j10, 31
+  jsub j10, j2, j10
+  jjnn j10, v_vmb_none
+  jld j8, j14, 02758h
+  jldi j11, 06440h
+  jadd j10, j7, j11
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j7, j7, j10
+v_vmb_end:
+  jjz j7, v_vmb_none
+  jldi j11, 06440h
+  jstb j7, j11, 0
+  jldi j0, 1
+  jret
+v_vmb_none:
+  jldi j0, 0
+  jret
+v_rebody:                       ; TI's body drawn again at its size (her own cloud rewritten), growing from its centre
+  jcall v_size
+  jcall v_remember
+  jjz j0, v_vrb_ret
+  jcall v_r_body
+  jjz j0, v_vrb_ret
+  jld j9, j14, 02380h
+  jld j1, j9, 120
+  jld j2, j9, 128
+v_vrb_p:
+  jjz j2, v_vrb_set
+  jst j14, j1, 16
+  jst j14, j1, 24
+  jldi j10, 48
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp v_vrb_p
+v_vrb_set:
+  jld j9, j14, 02380h
+  jldi j1, 1
+  jst j1, j9, 176
+  jldi j1, -1
+  jst j1, j9, 232
+v_vrb_ret:
+  jret
+v_shrink:                       ; a frame: who learned nothing for a world-crossing time forgets a bit and shrinks
+  jld j1, j14, 02668h
+  jjz j1, v_vsh_ret
+  jld j1, j14, 02538h
+  jjz j1, v_vsh_ret
+  jst j14, j14, 02760h
+v_vsh_lap:
+  jld j1, j14, 02760h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_vsh_ret
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j1, j9, 8
+  jldi j10, 2
+  jsub j1, j1, j10
+  jjnz j1, v_vsh_next
+  jld j1, j9, 304
+  jjz j1, v_vsh_next
+  jld j2, j14, 02320h
+  jld j3, j9, 312
+  jsub j2, j2, j3
+  jld j3, j14, 02538h
+  jsub j2, j2, j3
+  jjn j2, v_vsh_next
+  jldi j10, 1
+  jsub j1, j1, j10
+  jst j1, j9, 304
+  jld j1, j14, 02320h
+  jst j1, j9, 312
+  jst j9, j14, 02380h
+  jld j4, j9, 296
+  jst j4, j14, 02750h
+  jcall v_size
+  jld j1, j14, 02750h
+  jld j2, j14, 026F8h
+  jsub j1, j1, j2
+  jjz j1, v_vsh_next
+  jcall v_rebody
+  jcall v_save_bodies
+v_vsh_next:
+  jld j10, j14, 02760h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02760h
+  jjmp v_vsh_lap
+v_vsh_ret:
+  jret
+v_shuffle:                      ; j1 = a recipe -> SHUF: its letters shuffled by the generator (used by the control)
+  jldb j2, j1, 0
+  jstb j2, j14, 064C0h
+  jldi j3, 0
+v_vsf_cp:
+  jsub j10, j3, j2
+  jjnn j10, v_vsf_mix
+  jadd j10, j1, j3
+  jldb j4, j10, 1
+  jldi j10, 064C1h
+  jadd j10, j10, j3
+  jstb j4, j10, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_vsf_cp
+v_vsf_mix:
+  jldb j2, j14, 064C0h
+v_vsf_lap:                        ; Fisher-Yates from the end
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjn j10, v_vsf_done
+  jst j2, j14, 02780h
+  jadd j1, j2, j14
+  jcall v_r_randmod
+  jld j2, j14, 02780h
+  jldi j10, 064C0h
+  jadd j5, j10, j2
+  jldb j6, j5, 0
+  jadd j7, j10, j0
+  jldb j8, j7, 1
+  jstb j8, j5, 0
+  jstb j6, j7, 1
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp v_vsf_lap
+v_vsf_done:
+  jret
+v_offer_forms:                  ; TI's body offered to a form at random: its first letters to a cut, then the body
+  jldi j1, 8
+  jcall v_r_randmod
+  jst j0, j14, 02750h
+  jld j9, j14, 02380h
+  jld j1, j9, 288
+  jcall v_shuffle
+  jld j9, j14, 02380h
+  jld j1, j9, 288
+  jst j1, j14, 02748h
+  jld j1, j14, 02750h
+  jldi j10, 256
+  jmul j1, j1, j10
+  jldi j10, 08C0h
+  jadd j1, j1, j10
+  jst j1, j14, 02780h
+  jldb j1, j1, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall v_r_randmod
+  jadd j4, j0, j14
+  jldi j5, 01400h
+  jld j6, j14, 02780h
+  jld j7, j14, 02748h
+  jldi j3, 0
+v_vof_a:
+  jsub j10, j3, j4
+  jjnn j10, v_vof_b
+  jadd j10, j6, j3
+  jldb j8, j10, 1
+  jadd j10, j5, j3
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_vof_a
+v_vof_b:
+  jldb j2, j7, 0
+  jsub j10, j3, j2
+  jjnn j10, v_vof_c
+  jldi j10, 31
+  jsub j10, j3, j10
+  jjnn j10, v_vof_c
+  jadd j10, j7, j3
+  jldb j8, j10, 1
+  jadd j10, j5, j3
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_vof_b
+v_vof_c:
+  jstb j3, j5, 0
+  jjz j3, v_vof_ret
+  jldi j1, 01400h
+  jcall f_hash
+  jcall f_tried
+  jjnz j0, v_vof_ret
+  jld j1, j14, 02750h
+  jst j1, j14, 0388h
+  jcall f_judge
+  jldi j2, 80
+  jldi j10, 2
+  jsub j10, j0, j10
+  jjnz j10, v_vof_lost
+  jldi j2, 87
+  jld j1, j14, 02778h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j14, 02778h
+v_vof_lost:
+  jldi j1, 70
+  jldi j3, 01400h
+  jcall v_xlog
+v_vof_ret:
+  jret
+v_offer_creature:               ; a form won: its recipe offered to a creature at random (the body to a cut, then it)
+  jld j1, j14, 0280h
+  jld j2, j14, 02778h
+  jsub j10, j1, j2
+  jjz j10, v_voc_ret
+  jst j1, j14, 02778h
+  jld j1, j14, 02668h
+  jjz j1, v_voc_ret
+  jldi j6, 8
+v_voc_pick:
+  jjz j6, v_voc_ret
+  jst j6, j14, 02758h
+  jld j1, j14, 02228h
+  jcall v_r_randmod
+  jldi j10, 384
+  jmul j9, j0, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j6, j14, 02758h
+  jldi j10, 1
+  jsub j6, j6, j10
+  jld j1, j9, 8
+  jldi j10, 2
+  jsub j1, j1, j10
+  jjnz j1, v_voc_pick
+  jst j9, j14, 02380h
+  jld j1, j14, 0388h
+  jst j1, j14, 02750h
+  jld j1, j14, 0388h
+  jldi j10, 256
+  jmul j1, j1, j10
+  jldi j10, 08C0h
+  jadd j1, j1, j10
+  jst j1, j14, 02780h
+  jcall v_shuffle
+  jld j1, j14, 02780h
+  jst j1, j14, 02748h
+  jld j9, j14, 02380h
+  jld j6, j9, 288
+  jldb j1, j6, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall v_r_randmod
+  jadd j4, j0, j14
+  jldi j5, 06440h
+  jld j9, j14, 02380h
+  jld j6, j9, 288
+  jld j7, j14, 02748h
+  jldi j3, 0
+v_voc_a:
+  jsub j10, j3, j4
+  jjnn j10, v_voc_b
+  jadd j10, j6, j3
+  jldb j8, j10, 1
+  jadd j10, j5, j3
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_voc_a
+v_voc_b:
+  jldb j2, j7, 0
+  jsub j10, j3, j2
+  jjnn j10, v_voc_c
+  jldi j10, 31
+  jsub j10, j3, j10
+  jjnn j10, v_voc_c
+  jadd j10, j7, j3
+  jldb j8, j10, 1
+  jadd j10, j5, j3
+  jstb j8, j10, 1
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_voc_b
+v_voc_c:
+  jstb j3, j5, 0
+  jjz j3, v_voc_ret
+  jcall v_save
+  jldi j1, 06440h
+  jcall v_bcost_raw
+  jst j0, j14, 02770h
+  jcall v_restore
+  jld j1, j14, 02770h
+  jld j9, j14, 02380h
+  jld j2, j9, 328
+  jsub j10, j2, j1
+  jjn j10, v_voc_lost
+  jld j9, j14, 02380h
+  jst j1, j9, 328
+  jld j2, j9, 288
+  jldi j1, 06440h
+  jldi j3, 6
+v_voc_ap:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_voc_ap
+  jldi j1, 400
+  jcall v_attend
+  jcall v_rebody
+  jcall v_save_bodies
+  jldi j1, 67
+  jldi j2, 75
+  jldi j3, 06440h
+  jcall v_xlog
+  jret
+v_voc_lost:
+  jldi j1, 67
+  jldi j2, 76
+  jldi j3, 06440h
+  jcall v_xlog
+v_voc_ret:
+  jret
+v_xlog:                         ; "vida-intercambios": frame, F (to a form) / C (to a creature) / M (a mutation),
+                                ; the creature, the form, the candidate, W won / L lost / K kept (65 bytes)
+  jst j1, j14, 02758h
+  jst j2, j14, 02760h
+  jst j3, j14, 02748h
+  jldi j1, 06500h
+  jldi j2, 02020h
+  jshi j2, 02020h
+  jshi j2, 02020h
+  jshi j2, 02020h
+  jldi j3, 9
+v_vx_bl:
+  jst j2, j1, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, v_vx_bl
+  jld j1, j14, 02320h
+  jldi j2, 9
+  jldi j3, 06500h
+  jcall v_r_put_num
+  jld j1, j14, 02758h
+  jstb j1, j14, 0650Ah
+  jld j9, j14, 02380h
+  jld j1, j9, 136
+  jldi j2, 16
+  jldi j3, 0650Ch
+  jcall v_r_put_hex
+  jld j1, j14, 02750h
+  jldi j2, 1
+  jldi j3, 0651Dh
+  jcall v_r_put_num
+  jld j1, j14, 02748h
+  jldi j3, 0651Fh
+  jcall f_put_rec
+  jld j1, j14, 02760h
+  jstb j1, j14, 0653Fh
+  jldi j1, 10
+  jstb j1, j14, 06540h
+  jld j9, j14, 027A8h
+  jjn j9, v_vx_done
+  jst j9, j14, 02328h
+  jldi j10, 6
+  jldi j11, 06500h
+  jldi j12, 65
+  jcall v_r_file
+v_vx_done:
+  jret
+v_save_bodies:                  ; "vida-cuerpos": every creature's body recipe and the bits it learned (rewritten whole)
+  jld j1, j14, 02790h
+  jjz j1, v_vsb_ret
+  jst j14, j14, 02760h
+v_vsb_lap:
+  jld j1, j14, 02760h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_vsb_w
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jldi j10, 56
+  jmul j8, j1, j10
+  jld j10, j14, 02790h
+  jadd j8, j8, j10
+  jldi j10, 16
+  jadd j8, j8, j10
+  jst j8, j14, 02748h
+  jld j1, j9, 136
+  jldi j2, 16
+  jadd j3, j8, j14
+  jcall v_r_put_hex
+  jld j8, j14, 02748h
+  jldi j1, 32
+  jstb j1, j8, 16
+  jld j1, j14, 02760h
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j1, j9, 288
+  jldi j10, 17
+  jadd j3, j8, j10
+  jcall f_put_rec
+  jld j8, j14, 02748h
+  jldi j1, 32
+  jstb j1, j8, 48
+  jld j1, j14, 02760h
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j1, j9, 304
+  jldi j2, 6
+  jldi j10, 49
+  jadd j3, j8, j10
+  jcall v_r_put_num
+  jld j8, j14, 02748h
+  jldi j1, 10
+  jstb j1, j8, 55
+  jld j10, j14, 02760h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02760h
+  jjmp v_vsb_lap
+v_vsb_w:
+  jld j3, j14, 02790h
+  jldi j1, 99
+  jstb j1, j3, 0
+  jldi j1, 117
+  jstb j1, j3, 1
+  jldi j1, 101
+  jstb j1, j3, 2
+  jldi j1, 114
+  jstb j1, j3, 3
+  jldi j1, 112
+  jstb j1, j3, 4
+  jldi j1, 111
+  jstb j1, j3, 5
+  jldi j1, 115
+  jstb j1, j3, 6
+  jldi j1, 49
+  jstb j1, j3, 7
+  jldi j1, 32
+  jstb j1, j3, 8
+  jld j1, j14, 02228h
+  jldi j2, 6
+  jldi j10, 9
+  jadd j3, j3, j10
+  jcall v_r_put_num
+  jld j3, j14, 02790h
+  jldi j1, 10
+  jstb j1, j3, 15
+  jldi j11, 065A0h
+  jldi j12, 12
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_vsb_ret
+  jldi j10, 6
+  jld j11, j14, 02790h
+  jld j12, j14, 02798h
+  jcall v_r_file
+  jldi j10, 7
+  jcall v_r_file
+v_vsb_ret:
   jret
 ; ---- the list ("lista", written by vida.sh): a header and a line per creature,
 ;      "<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>"; every table sized from it (plastic)
@@ -9858,7 +10946,7 @@ v_gh_ok:
   jadd j1, j1, j10
   jst j1, j14, 02250h
   jld j1, j14, 02228h
-  jldi j10, 320
+  jldi j10, 384
   jmul j1, j1, j10
   jcall v_r_alloc
   jst j0, j14, 02258h
@@ -9869,6 +10957,7 @@ v_gh_ok:
   jcall v_r_alloc
   jst j0, j14, 02260h
   jld j1, j14, 02230h
+  jadd j1, j1, j1
   jmul j1, j1, j1
   jld j2, j14, 02228h
   jmul j1, j1, j2
@@ -9877,6 +10966,7 @@ v_gh_ok:
   jcall v_r_alloc
   jst j0, j14, 02268h
   jld j1, j14, 02230h
+  jadd j1, j1, j1
   jmul j1, j1, j1
   jldi j10, 40
   jmul j1, j1, j10
@@ -9950,7 +11040,7 @@ v_ll_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_ll_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -9998,6 +11088,7 @@ v_ll_lap:
   jadd j1, j1, j10
   jst j1, j9, 112
   jld j1, j14, 02230h
+  jadd j1, j1, j1
   jmul j1, j1, j1
   jldi j10, 48
   jmul j1, j1, j10
@@ -10183,7 +11274,7 @@ v_la_find:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_la_skip
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -10299,7 +11390,7 @@ v_sl_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_sl_head
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -10587,11 +11678,12 @@ v_ar_done:
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
 v_r_arrive:
   jld j1, j14, 02460h
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
   jst j9, j14, 02380h
+  jcall v_size
   jld j1, j14, 02668h
   jjz j1, v_av_host
   ; from her memory: the gait's text from the record, the body from the recipe she kept (her own cloud)
@@ -11085,7 +12177,7 @@ v_r_body:                         ; NUBB -> TI's body: its finest level fitted r
   jsub j10, j10, j3
   jjn j10, v_bd_bad
   ; the scale that fits B x B, never above 1; centred
-  jld j1, j14, 02230h
+  jld j1, j14, 026F8h
   jld j3, j14, 023E0h
   jld j4, j14, 023E8h
   jmul j7, j1, j4
@@ -11109,7 +12201,7 @@ v_bd_ok:
   jld j1, j14, 023E0h
   jmul j1, j1, j5
   jdiv j1, j1, j6
-  jld j2, j14, 02230h
+  jld j2, j14, 026F8h
   jsub j1, j2, j1
   jldi j10, 1
   jsar j1, j1, j10
@@ -11117,13 +12209,13 @@ v_bd_ok:
   jld j1, j14, 023E8h
   jmul j1, j1, j5
   jdiv j1, j1, j6
-  jld j2, j14, 02230h
+  jld j2, j14, 026F8h
   jsub j1, j2, j1
   jldi j10, 1
   jsar j1, j1, j10
   jst j1, j14, 02418h
   jld j1, j14, 022B8h
-  jld j2, j14, 02230h
+  jld j2, j14, 026F8h
   jmul j2, j2, j2
   jldi j10, 5
   jmul j2, j2, j10
@@ -11155,7 +12247,7 @@ v_bd_row:
   jdiv j1, j1, j2
   jld j10, j14, 02418h
   jadd j1, j1, j10
-  jld j10, j14, 02230h
+  jld j10, j14, 026F8h
   jmul j1, j1, j10
   jst j1, j14, 02340h
   jldi j5, 0
@@ -11221,7 +12313,7 @@ v_bd_rows_done:
   jldi j3, 0
   jldi j4, 0
   jldi j0, 0
-  jld j13, j14, 02230h
+  jld j13, j14, 026F8h
 v_bd_prow:
   jldi j5, 0
 v_bd_pcell:
@@ -11733,7 +12825,7 @@ v_rc_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_rc_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11796,7 +12888,7 @@ v_ct_i:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_ct_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -11812,7 +12904,7 @@ v_ct_j:
   jjnn j10, v_ct_inext
   jsub j10, j1, j2
   jjz j10, v_ct_jnext
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j2, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -11958,6 +13050,11 @@ v_sh_apply:
   jadd j10, j10, j11
   jst j10, j14, 02318h
 v_sh_kept:
+  jld j9, j14, 02380h
+  jld j1, j9, 72
+  jld j2, j14, 023B8h
+  jsub j1, j1, j2
+  jst j1, j14, 02730h
   jld j1, j14, 023D0h
   jldi j10, 32
   jmul j1, j1, j10
@@ -12007,6 +13104,7 @@ v_sh_kept:
   jcall v_r_save_learned
   jld j9, j14, 02498h
   jst j9, j14, 02388h
+  jcall v_learned
 v_sh_done:
   jret
 ; ---- the walk: every creature here steps by its gait and steers by its neighbours (local rules only)
@@ -12020,7 +13118,7 @@ v_wl_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wl_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12036,7 +13134,7 @@ v_wl_lap:
   jsub j10, j0, j1
   jjnn j10, v_wl_next
   jld j1, j14, 02600h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12048,7 +13146,7 @@ v_wl_lap:
   jcall v_r_dream
   jst j14, j14, 02658h
   jld j1, j14, 02600h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12060,7 +13158,7 @@ v_wl_lap:
   jst j10, j14, 02648h
 v_wl_goal:
   jld j1, j14, 02600h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12169,7 +13267,7 @@ v_wa_b:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wa_b_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -12202,7 +13300,7 @@ v_wa_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_wa_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -12390,7 +13488,7 @@ v_r_steer:                        ; TI looks at those within its radius: drawn t
   jjz j1, v_st_nogoal
   jldi j10, 1
   jsub j1, j1, j10
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -12486,7 +13584,7 @@ v_st_col:
 v_st_lap:
   jld j1, j14, 02480h
   jjn j1, v_st_col_next
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12586,7 +13684,7 @@ v_st_touch:
   jld j9, j14, 02380h
   jst j9, j14, 025B8h
   jld j1, j14, 02480h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12622,7 +13720,7 @@ v_st_lesson:
   jld j9, j14, 02380h
   jld j6, j9, 48
   jld j1, j14, 02480h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -12637,7 +13735,7 @@ v_st_lesson:
   jld j4, j14, 02488h
   jjz j4, v_st_toward
   jld j1, j14, 02480h
-  jldi j10, 320
+  jldi j10, 384
   jmul j8, j1, j10
   jld j10, j14, 02258h
   jadd j8, j8, j10
@@ -13377,6 +14475,13 @@ v_dg_kept:                        ; kept: its body changes, the melody flies the
   jcall v_r_save_learned
   jldi j10, 04Bh
   jst j10, j14, 02628h
+  jld j1, j14, 02630h
+  jld j2, j14, 02638h
+  jsub j1, j1, j2
+  jst j1, j14, 02730h
+  jcall v_learned
+  jld j9, j14, 025B8h
+  jst j9, j14, 02388h
   jldi j10, 1
   jst j10, j14, 02640h
   jld j1, j14, 02670h
@@ -13956,7 +15061,7 @@ v_sx_cr:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_sx_head
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -14333,13 +15438,60 @@ v_dk_pos:
   jdiv j5, j5, j10
   jld j10, j1, 8
   jadd j5, j5, j10
-  jldi j10, 8
-  jsar j5, j5, j10
   jld j6, j1, 32
   jmul j6, j6, j3
   jld j10, j1, 48
   jdiv j6, j6, j10
   jld j10, j1, 16
+  jadd j6, j6, j10
+  jld j10, j14, 02700h
+  jsub j5, j5, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jsub j13, j5, j10
+  jjn j13, v_cw_lo_13
+  jldi j10, 1
+  jshi j10, 04000h
+  jsub j5, j5, j10
+v_cw_lo_13:
+  jldi j10, -1
+  jshi j10, 06000h
+  jsub j13, j5, j10
+  jjnn j13, v_cw_ok_14
+  jldi j10, 1
+  jshi j10, 04000h
+  jadd j5, j5, j10
+v_cw_ok_14:
+  jld j10, j14, 02710h
+  jmul j5, j5, j10
+  jldi j10, 8
+  jsar j5, j5, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jadd j5, j5, j10
+  jldi j10, 8
+  jsar j5, j5, j10
+  jld j10, j14, 02708h
+  jsub j6, j6, j10
+  jldi j10, 06400h
+  jsub j13, j6, j10
+  jjn j13, v_cw_lo_15
+  jldi j10, 0
+  jshi j10, 0C800h
+  jsub j6, j6, j10
+v_cw_lo_15:
+  jldi j10, -25600
+  jsub j13, j6, j10
+  jjnn j13, v_cw_ok_16
+  jldi j10, 0
+  jshi j10, 0C800h
+  jadd j6, j6, j10
+v_cw_ok_16:
+  jld j10, j14, 02710h
+  jmul j6, j6, j10
+  jldi j10, 8
+  jsar j6, j6, j10
+  jldi j10, 06400h
   jadd j6, j6, j10
   jldi j10, 8
   jsar j6, j6, j10
@@ -14404,13 +15556,60 @@ v_dk_glyph:                       ; the message as one of Razar's forms: each br
   jdiv j5, j5, j10
   jld j10, j1, 8
   jadd j5, j5, j10
-  jldi j10, 8
-  jsar j5, j5, j10
   jld j6, j1, 32
   jmul j6, j6, j3
   jld j10, j1, 48
   jdiv j6, j6, j10
   jld j10, j1, 16
+  jadd j6, j6, j10
+  jld j10, j14, 02700h
+  jsub j5, j5, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jsub j13, j5, j10
+  jjn j13, v_cw_lo_17
+  jldi j10, 1
+  jshi j10, 04000h
+  jsub j5, j5, j10
+v_cw_lo_17:
+  jldi j10, -1
+  jshi j10, 06000h
+  jsub j13, j5, j10
+  jjnn j13, v_cw_ok_18
+  jldi j10, 1
+  jshi j10, 04000h
+  jadd j5, j5, j10
+v_cw_ok_18:
+  jld j10, j14, 02710h
+  jmul j5, j5, j10
+  jldi j10, 8
+  jsar j5, j5, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jadd j5, j5, j10
+  jldi j10, 8
+  jsar j5, j5, j10
+  jld j10, j14, 02708h
+  jsub j6, j6, j10
+  jldi j10, 06400h
+  jsub j13, j6, j10
+  jjn j13, v_cw_lo_19
+  jldi j10, 0
+  jshi j10, 0C800h
+  jsub j6, j6, j10
+v_cw_lo_19:
+  jldi j10, -25600
+  jsub j13, j6, j10
+  jjnn j13, v_cw_ok_20
+  jldi j10, 0
+  jshi j10, 0C800h
+  jadd j6, j6, j10
+v_cw_ok_20:
+  jld j10, j14, 02710h
+  jmul j6, j6, j10
+  jldi j10, 8
+  jsar j6, j6, j10
+  jldi j10, 06400h
   jadd j6, j6, j10
   jldi j10, 8
   jsar j6, j6, j10
@@ -14502,7 +15701,7 @@ v_pa_lap:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_pa_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -14560,37 +15759,37 @@ v_pa_p:
   jsub j8, j6, j4
   jldi j13, 0
   jadd j10, j7, j15
-  jjn j10, v_pa_ax_13_m
+  jjn j10, v_pa_ax_21_m
   jsub j10, j15, j7
-  jjn j10, v_pa_ax_13_m
+  jjn j10, v_pa_ax_21_m
   jst j5, j1, 16
-  jjmp v_pa_ax_13
-v_pa_ax_13_m:
+  jjmp v_pa_ax_21
+v_pa_ax_21_m:
   jldi j10, 2
   jsar j7, j7, j10
-  jjnz j7, v_pa_ax_13_s
+  jjnz j7, v_pa_ax_21_s
   jldi j7, 1
-v_pa_ax_13_s:
+v_pa_ax_21_s:
   jadd j3, j3, j7
   jst j3, j1, 16
   jldi j13, 1
-v_pa_ax_13:
+v_pa_ax_21:
   jadd j10, j8, j15
-  jjn j10, v_pa_ax_14_m
+  jjn j10, v_pa_ax_22_m
   jsub j10, j15, j8
-  jjn j10, v_pa_ax_14_m
+  jjn j10, v_pa_ax_22_m
   jst j6, j1, 24
-  jjmp v_pa_ax_14
-v_pa_ax_14_m:
+  jjmp v_pa_ax_22
+v_pa_ax_22_m:
   jldi j10, 2
   jsar j8, j8, j10
-  jjnz j8, v_pa_ax_14_s
+  jjnz j8, v_pa_ax_22_s
   jldi j8, 1
-v_pa_ax_14_s:
+v_pa_ax_22_s:
   jadd j4, j4, j8
   jst j4, j1, 24
   jldi j13, 1
-v_pa_ax_14:
+v_pa_ax_22:
   jadd j0, j0, j13
   jldi j10, 48
   jadd j1, j1, j10
@@ -14641,8 +15840,30 @@ v_fb_row:
   jldi j10, 200
   jsub j10, j1, j10
   jjnn j10, v_fb_done
-  jldi j10, 16
+  ; the world height of this row through the camera: CAMY + (row - H/2) / zoom (x65536)
+  jldi j10, 8
   jshl j2, j1, j10
+  jldi j10, 25600
+  jsub j2, j2, j10
+  jldi j10, 8
+  jshl j2, j2, j10
+  jld j10, j14, 02710h
+  jdiv j2, j2, j10
+  jld j10, j14, 02708h
+  jadd j2, j2, j10
+  jjnn j2, v_fb_wlo
+  jldi j10, 0
+  jshi j10, 0C800h
+  jadd j2, j2, j10
+v_fb_wlo:
+  jldi j10, 0
+  jshi j10, 0C800h
+  jsub j10, j2, j10
+  jjn j10, v_fb_whi
+  jadd j2, j10, j14
+v_fb_whi:
+  jldi j10, 8
+  jshl j2, j2, j10
   jld j10, j14, 026B0h
   jsub j10, j2, j10
   jjn j10, v_fb_c0
@@ -14875,7 +16096,7 @@ v_hb_cr:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_hb_sized
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -14978,7 +16199,7 @@ v_hb_w:
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_hb_wdone
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -14989,7 +16210,7 @@ v_hb_w:
   jldi j1, 32
   jstb j1, j14, 04A00h
   jld j9, j14, 02338h
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j9, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
@@ -15013,14 +16234,162 @@ v_hb_wdone:
   jcall v_r_file
 v_hb_done:
   jret
-v_r_draw:                         ; every body that is here (later ones in front), on the torus
+v_r_draw:                         ; every body that is here, through the camera (a particle is a block as big as the
+                                ; zoom), later ones in front
+  jst j14, j14, 02338h
+  jld j1, j14, 02710h
+  jldi j10, 255
+  jadd j1, j1, j10
+  jldi j10, 8
+  jshr j1, j1, j10
+  jst j1, j14, 02738h
+v_dz_lap:
+  jld j1, j14, 02338h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_dz_done
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j10, j9, 8
+  jjz j10, v_dz_next
+  jld j1, j9, 120
+  jld j2, j9, 128
+v_dz_p:
+  jjz j2, v_dz_next
+  jst j1, j14, 02340h
+  jst j2, j14, 02348h
+  jld j9, j14, 02338h
+  jldi j10, 384
+  jmul j9, j9, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j3, j9, 16
+  jldi j10, 8
+  jsar j3, j3, j10
+  jld j10, j1, 16
+  jadd j3, j3, j10
+  jld j4, j9, 24
+  jldi j10, 8
+  jsar j4, j4, j10
+  jld j10, j1, 24
+  jadd j4, j4, j10
+  jld j10, j14, 02700h
+  jsub j3, j3, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jsub j13, j3, j10
+  jjn j13, v_cw_lo_23
+  jldi j10, 1
+  jshi j10, 04000h
+  jsub j3, j3, j10
+v_cw_lo_23:
+  jldi j10, -1
+  jshi j10, 06000h
+  jsub j13, j3, j10
+  jjnn j13, v_cw_ok_24
+  jldi j10, 1
+  jshi j10, 04000h
+  jadd j3, j3, j10
+v_cw_ok_24:
+  jld j10, j14, 02710h
+  jmul j3, j3, j10
+  jldi j10, 8
+  jsar j3, j3, j10
+  jldi j10, 0
+  jshi j10, 0A000h
+  jadd j3, j3, j10
+  jldi j10, 8
+  jsar j3, j3, j10
+  jld j10, j14, 02708h
+  jsub j4, j4, j10
+  jldi j10, 06400h
+  jsub j13, j4, j10
+  jjn j13, v_cw_lo_25
+  jldi j10, 0
+  jshi j10, 0C800h
+  jsub j4, j4, j10
+v_cw_lo_25:
+  jldi j10, -25600
+  jsub j13, j4, j10
+  jjnn j13, v_cw_ok_26
+  jldi j10, 0
+  jshi j10, 0C800h
+  jadd j4, j4, j10
+v_cw_ok_26:
+  jld j10, j14, 02710h
+  jmul j4, j4, j10
+  jldi j10, 8
+  jsar j4, j4, j10
+  jldi j10, 06400h
+  jadd j4, j4, j10
+  jldi j10, 8
+  jsar j4, j4, j10
+  jld j7, j1, 32
+  jld j8, j14, 02738h
+  jadd j11, j8, j14
+v_dz_row:
+  jadd j12, j8, j14
+v_dz_col:
+  jadd j5, j3, j12
+  jldi j10, 1
+  jsub j5, j5, j10
+  jadd j6, j4, j11
+  jsub j6, j6, j10
+  jjn j5, v_dz_c_next
+  jjn j6, v_dz_c_next
+  jldi j10, 320
+  jsub j10, j5, j10
+  jjnn j10, v_dz_c_next
+  jldi j10, 200
+  jsub j10, j6, j10
+  jjnn j10, v_dz_c_next
+  jldi j10, 640
+  jmul j6, j6, j10
+  jadd j6, j6, j5
+  jldi j10, 320
+  jadd j6, j6, j10
+  jldi j10, 3
+  jmul j6, j6, j10
+  jldi j10, 0157h
+  jshi j10, 03EA0h
+  jadd j6, j6, j10
+  jstb j7, j6, 0
+  jldi j10, 8
+  jshr j13, j7, j10
+  jstb j13, j6, 1
+  jshr j13, j13, j10
+  jstb j13, j6, 2
+v_dz_c_next:
+  jldi j10, 1
+  jsub j12, j12, j10
+  jjnz j12, v_dz_col
+  jsub j11, j11, j10
+  jjnz j11, v_dz_row
+  jld j1, j14, 02340h
+  jld j2, j14, 02348h
+  jldi j10, 48
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp v_dz_p
+v_dz_next:
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_dz_lap
+v_dz_done:
+  jret
+v_r_draw_flat:                         ; every body that is here (later ones in front), on the torus
   jst j14, j14, 02338h
 v_dr_lap:
   jld j1, j14, 02338h
   jld j2, j14, 02228h
   jsub j10, j1, j2
   jjnn j10, v_dr_done
-  jldi j10, 320
+  jldi j10, 384
   jmul j9, j1, j10
   jld j10, j14, 02258h
   jadd j9, j9, j10
