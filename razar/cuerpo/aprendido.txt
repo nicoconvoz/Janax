@@ -1,0 +1,25 @@
+# What Razar learned, gathered as the seed of its own forms (2026-11-15). Every line comes from a measured run;
+# nothing here was chosen by taste. The forms generator reads this file.
+#
+# organs: every organ of up to 3 letters with its score (Razar's landscape over the New Testament, base -3554).
+#   source: documentacion/razar/datos/paisaje-3-letras-nt.txt (organos.sh ... 0 0 3)
+organos documentacion/razar/datos/paisaje-3-letras-nt.txt
+#
+# towers: the letter chunks Razar learned from its own winning organs (documentacion/razar/torrecitas.md);
+#   with the scores shuffled it learns none. Number = times used in the weighted corpus.
+torrecita 16 837
+torrecita 38 814
+#
+# opposites: pairs Razar's sharpness joined while reading GEM + Godot's GUI sources (union run, 19 real / 2 chance;
+#   documentacion/razar/nitidez-en-codigo.md). Number = places the two words share.
+opuesto open close 37
+opuesto show hide 23
+opuesto min max 83
+opuesto width height 102
+opuesto begin end 71
+opuesto up down 85
+opuesto left right 189
+opuesto top bottom 90
+opuesto enable disable 5
+opuesto push pop 2
+opuesto first last 58
