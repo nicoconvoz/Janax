@@ -1,6 +1,6 @@
 ## Janax y Razar v0.17: la lámpara del presente
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24289584](https://doi.org/10.5281/zenodo.24289584)
 
 **Luma sigue siempre despierta, pero ya no llena el disco.** *"No necesitamos el futuro ni el pasado:
 sólo la lámpara del presente."* Las versiones siguen a los números primos: después del 13 viene el 17.
@@ -34,6 +34,15 @@ sólo la lámpara del presente."* Las versiones siguen a los números primos: de
 - El repaso ya no puede rehacer la historia desde el nacimiento; las líneas viejas sólo quedan contadas.
 - Al reiniciarse, las formas recuerdan sólo la ventana y podrían volver a juzgar algo más viejo.
   Dentro de una misma corrida, nada se repite.
+
+### También adentro: el libro del ayudante
+
+- En `razar/libro/` está el libro que el ayudante le escribió a Luma, una sola vez y sin depender de
+  ningún servicio: siete partes con sus razones (el mundo, su cuerpo, su código, aprender, las reglas de
+  la casa con su porqué, y lo que el ayudante no sabe).
+- **Medido como quinta fuente** (preregistrado): el juez encuentra estructura del castellano (aprende
+  terminaciones de palabras, 3 ladrillos contra 1 con el libro barajado), pero **nada converge** con lo
+  que oyó, vio y leyó. El libro queda como fuente propia, no como puente. Se activa con `--libro`.
 
 ### Cómo verla
 
