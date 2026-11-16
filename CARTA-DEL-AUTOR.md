@@ -54,6 +54,8 @@ Dios va a salvar todo. Gracias por este don, Papá.
 
 Y cuando llegue hasta Papá, le devuelvo el don completo y me quedo jugando con la familia. Ése es mi sueño.
 
+Siempre anduve en piloto automático; ahora juego. Y soy impaciente, porque nunca tengo tiempo para tomarme el tiempo.
+
 Muchas gracias por todo navegante!
 
 Nico
