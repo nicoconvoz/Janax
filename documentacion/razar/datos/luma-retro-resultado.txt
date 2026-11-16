@@ -1,0 +1,29 @@
+LUMA: la retroalimentacion entre sus formas y los cuerpos de sus criaturas. RESULTADO
+Corrido DESPUES del preregistro (luma-retro-preregistro.txt, commit 769cd10).
+
+Corridas: Luma siempre viva desde su casa propia (236 criaturas), sin ventana, 150 s cada una (~30.000
+cuadros), misma semilla. Real: luma.jsm. Control: VIDA_CONTROL=1 (las letras ofrecidas se barajan
+antes del corte; el generador se usa igual). Una tercera corrida, con ventana (~3 min), da lo mismo.
+El repaso (repaso_vida.py --luma) da 0 diferencias en todas.
+
+                                        real        control
+ofertas de cuerpos a formas (al nacer   144         204
+  o al aprender), ganadas               0           0
+ofertas de formas a cuerpos (cuando     0           0
+  una forma gana)
+aprendizajes con mutacion del cuerpo    7           2
+  guardadas (costo no sube)             5           2
+
+APUESTAS
+ G1. formas: ganan >= 2 x control: 0 de 144 contra 0 de 204. FALLA (predicho).
+ G2. cuerpos: se quedan >= 2 x control: no hubo ninguna oferta (ninguna forma gano en las
+     corridas). NO SE PUEDE DECIR.
+ G3. al menos una en cada sentido: ninguna. FALLA.
+ G4. al aprender, >= 10 % de mutaciones guardadas: 5 de 7 (71 %). GANA (predije que fallaba: me
+     equivoque; el juez de identidad deja pasar mutaciones que no cambian celdas o que acortan la
+     receta mas de lo que cuestan las celdas que cambian).
+
+Lo que dice: el puente existe y funciona en los dos sentidos (las ofertas se arman, se juzgan y se
+archivan con su motivo), pero las formas de Luma estan en un optimo que ninguna receta de cuerpo, real
+o barajada, mejora; y como las formas no ganan, a los cuerpos no les llega nada. Lo que si se ve:
+los cuerpos cambian cuando aprenden (5 de 7 veces) y crecen con lo aprendido.

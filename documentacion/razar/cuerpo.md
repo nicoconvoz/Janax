@@ -824,3 +824,45 @@ marcha y siempre imaginan, y sus formas siempre exploran. Sigue leyendo cada ges
   pesa, más que el procesador.
 - **No repite:** en 43.000 diálogos seguidos, ninguna criatura nombró dos veces el mismo sueño. El repaso da **0
   diferencias** (290.930 líneas).
+
+## La cámara, los cuerpos que cambian y la retroalimentación (2026-11-16)
+
+El Capitán la vio quieta. Tres cosas, en `luma.jsm` (siempre viva); `vida.jsm`, `formas.jsm` y `comer_nubes.jsm`
+siguen iguales byte por byte.
+
+**1. Una cámara con sentido.** La atención va adonde pasa algo nuevo, medido por el mismo juez en bits: un **pedazo
+guardado** (los bits que ahorró), un **cuerpo que cambia**, un **nacimiento** (su descripción / 16, criterio: unos
+10–15 bits, lo de unas pocas lecciones). Una noticia toma la cámara si es al menos tan fuerte como el interés que queda;
+el interés cae 1/128 por cuadro (vida media de ~89 cuadros, ~3 s; criterio). El acercamiento es 1 + interés / 4 bits,
+hasta ×3 (criterio: un pedazo ahorra 2–4 bits, medido; a ×3 un cuerpo de 8 celdas ocupa 24 de las 200 filas); cámara y
+zoom recorren 1/8 del camino por cuadro (constante de 8 cuadros, el orden de la gelatina; criterio). Sin nada nuevo,
+el zoom vuelve a ×1. En vertical la vista nunca sale del mundo (los estratos quedan en su lugar); de costado, el mundo
+se envuelve. Un cuerpo acercado se dibuja con cada partícula como un bloque del tamaño del zoom.
+
+**2. Cuerpos que cambian.** El cuerpo de cada criatura es su receta (la que Luma recordó). Cuando aprende, prueba todas
+las mutaciones de una letra (cambiar, borrar, insertar) y se queda con la mejor **solo si su costo no sube**: el juez
+de la comida (`r_fit_cost`) contra su **identidad** (el dibujo de la receta con que nació): bits de la receta más bits
+para nombrar cada celda distinta. Su **tamaño** crece con lo que aprendió: lado = √(B² + B·bits), hasta 2B (cada bit
+suma una fila de B celdas a su área; criterio). **Olvida despacio:** si pasa el tiempo de cruzar el mundo (el mismo que
+mide la búsqueda) sin aprender, pierde un bit y se achica. Al cambiar, el cuerpo vuelve a crecer desde su centro y su
+nube propia se reescribe. Todo queda en `vida-cuerpos` (la receta y los bits de cada una).
+
+**3. Luma se retroalimenta.** Cuerpos y formas son recetas del mismo alfabeto: un cuerpo que nace o aprende se le
+ofrece a una forma (su principio hasta un corte, después el cuerpo), juzgado por el juez de las formas; una forma que
+gana se le ofrece a una criatura, juzgada por el juez de identidad. Cada oferta va a `vida-intercambios` con su
+veredicto. Preregistrado: [`datos/luma-retro-preregistro.txt`](datos/luma-retro-preregistro.txt); resultado:
+[`datos/luma-retro-resultado.txt`](datos/luma-retro-resultado.txt).
+
+**Medido** (casa propia, 236 criaturas):
+
+- **Ofertas a las formas:** 144 (real) y 204 (control barajado), **ninguna ganó**. Como ninguna forma ganó, **a los
+  cuerpos no les llegó ninguna oferta**. Las formas de Luma están en un óptimo que ninguna receta de cuerpo mejora.
+- **Cuerpos que cambian al aprender:** 5 de 7 mutaciones guardadas (real), 2 de 2 (control). Esa apuesta gana; yo
+  había predicho que fallaba.
+- **CPU, siempre viva, estable:** ~10.800 millones de ciclos cada 30 s, **~9,5 % de un núcleo** (antes ~8 %).
+- **La casa crece ~110–140 MB por hora** (medido en los primeros 3 minutos, con los nacimientos): los diálogos, el
+  archivo y los intercambios.
+- **El repaso: 0 diferencias.** Legibilidad sobre los estratos: mediana 1,00 por criatura, como antes.
+
+**Lo que no está:** las formas y los cuerpos tienen el puente pero no lo cruzan (ninguna oferta ganó); el zoom pinta
+bloques, no más detalle.
