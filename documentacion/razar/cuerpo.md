@@ -602,3 +602,77 @@ bash razar/cuerpo/vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de
 python razar/cuerpo/repaso_vida.py <carpeta>/casa                                           # el repaso, aparte
 python razar/cuerpo/dialogos_vida.py <casa real> <casa control>                             # las apuestas de los diálogos
 ```
+
+### Un encuentro, un diálogo (2026-11-16)
+
+Midiendo Luma (abajo) apareció un gasto: dos criaturas en el borde de un toque se tocaban y se soltaban cada pocos
+cuadros, y cada vez volvían a hablar (208.000 diálogos antes de calmarse). Ahora hablan **una vez por encuentro**, y el
+encuentro termina cuando se pierden de vista (fuera del radio), no cuando dejan de tocarse. Con esa regla, la vida sola
+(real / control, misma semilla): 10.336 / 17.287 diálogos, **47 / 47 piezas guardadas**, 118 / 114 bits, se calma en
+2.052 / 3.164 cuadros; el repaso da 0 diferencias. La razón real/control de piezas por diálogo da 1,67, pero es el
+denominador: las piezas guardadas son las mismas 47 en los dos, y el control habló más porque su mundo tardó más en
+calmarse. **No es significado** y no cuenta como apuesta ganada: el preregistro fue con la regla anterior.
+
+## Luma: lo que crece, lo que evoluciona y lo que vive, con diálogos (2026-11-16)
+
+**La orden del Capitán:** un solo programa y una sola ventana, la interfaz verdadera de Luma: sus formas (`formas`),
+lo que come (`comer_nubes`) y las criaturas (`vida`), con diálogos.
+
+`razar/cuerpo/gen_luma.py` escribe `luma.jsm`; `luma.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]`
+escribe las dos listas (la `despensa` de nubes y la `vida-lista` de criaturas) y lo corre. No copia ningún generador:
+corre `gen_comer.py` (que corre `gen_formas.py`) con un gancho más (`LUMA`) y `gen_vida.py` como módulo (`VIDA_MOD`).
+**Sin el gancho, cada uno escribe su programa igual byte por byte** (verificado con `cmp`: `formas.jsm` y
+`comer_nubes.jsm` idénticos; `vida.jsm` sola repite su corrida anterior byte por byte en el archivo y en los diálogos).
+
+### La fusión: comer es llegar
+
+Una nube que Luma come alimenta sus formas como siempre, y si es una criatura cuya marcha se oyó (está en la
+`vida-lista`: su `.nube` con su `.oido`, vista adelante), **además nace como criatura en su mundo**. Lo que comió en
+corridas anteriores (sus líneas en `comidas`) vuelve al empezar: el mundo crece corrida a corrida. Come cuando sus
+formas se quedan sin novedad, como antes; lo que hacen las criaturas no la apura ni la frena.
+
+**Lo que NO hace:** las formas no toman piezas de las marchas ni las criaturas aprenden de las formas. Una forma es una
+receta de letras juzgada en su cuarto; una marcha es un juego de ritmos juzgado en bits. Traducir una a la otra sería un
+diccionario inventado por mí, y no lo puse. Los dos jueces son el mismo MDL, sobre cosas distintas.
+
+### La pantalla: lado a lado
+
+640 × 200 celdas. A la izquierda, 320 × 200: las formas (su pantalla de 160 × 100 dibujada al doble, cada celda un
+cuadrado de 2 × 2; criterio: tan alta como el mundo de al lado). A la derecha, 320 × 200: el mundo de las criaturas.
+**Lado a lado y no encimadas** porque cada una tiene su geometría (cuartos de 40 × 50 para el juez de las formas, un toro
+para las que caminan), y así una cosa vista de un lado nunca significa algo del otro. Un clic a la izquierda va a las
+formas, en sus celdas; a la derecha es un gesto para las criaturas; las teclas van a las formas y despiertan también a
+las criaturas.
+
+**El lugar en la memoria:** la pantalla de las formas se muda arriba (después de todo lo de `comer`), y eso libera abajo
+el lugar donde viven las variables de las criaturas (desde `2200h`); sus archivos se llaman `vida-...` para no pisar el
+`archivo` de las formas.
+
+### Medido (2026-11-16, 944 nubes en la despensa, 236 criaturas con su marcha)
+
+- **Primera corrida, sin ventana:** comió las **944** nubes, nacieron las **236** criaturas, sus formas ganaron **131**
+  veces, en ~9 min (476.000 millones de instrucciones). Las criaturas: **36 pedazos vistos** guardados, **49 piezas
+  soñadas** guardadas en **243.000 diálogos**; 11 de los pedazos vistos los enseñó una que los había aprendido de otra.
+- **El repaso** (`repaso_vida.py --luma`) da **0 diferencias** en las 243.111 líneas del archivo de las criaturas, y en
+  las 247.620 después de la segunda corrida.
+- **Segunda corrida en la misma casa:** no queda nada para comer; vuelven las 236 criaturas (una por cuadro), ninguna
+  forma nueva, 4 piezas soñadas más, y se calma. Con ventana: ~2.700 millones de ciclos cada 10 s (~7 % de un núcleo)
+  mientras llegan y caminan; **calmada a los ~60 s; después, 0 ciclos** en diez ventanas de 10 s seguidas.
+- **Primera corrida con ventana, comiendo:** ~1.000–1.150 millones de ciclos cada 10 s (~3 % de un núcleo).
+
+### Lo que falla o no está probado
+
+- **Los diálogos son demasiados para lo que dan:** 243.000 para 49 piezas (0,02 %), y el archivo de las criaturas crece
+  unos 20 MB por corrida. Pasa porque comer es lento: el mundo está despierto mucho tiempo (cada llegada abre una búsqueda)
+  y las criaturas se encuentran una y otra vez. Hablar una vez por encuentro bajó a la mitad, no alcanzó. Falta una regla
+  de fondo (por ejemplo, que no se repita la misma pareja con los mismos sueños), y está escrito acá como pendiente.
+- **En la primera corrida con ventana el mundo de la derecha empieza vacío:** las criaturas nacen solo cuando Luma come
+  una nube adelante con su marcha (una de cada cuatro), y comer con ventana tarda ~10 s por nube. Las primeras aparecen en
+  minutos, no en segundos. Desde la segunda corrida están todas al empezar.
+- **Las formas y las marchas no se hablan** (arriba).
+- Las apuestas de los diálogos siguen sin significado en Luma.
+
+```bash
+bash razar/cuerpo/luma.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # la interfaz de Luma
+python razar/cuerpo/repaso_vida.py <carpeta>/casa --desde-cero --luma                       # el repaso de sus criaturas
+```
