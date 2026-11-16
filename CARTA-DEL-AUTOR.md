@@ -68,6 +68,8 @@ Y el README, leído en criollo, dice RE-DAME: dame otra vez. Cada novedad que se
 
 Me hace acordar a Indiana Jones, que cruza el puente camuflado y le tira arena para que los demás lo vean. Uno da el paso a ciegas; después escribe lo que encontró, y ésa es la arena. A propósito, con algunos huecos: para que el que viene también aprenda a dar su paso.
 
+Todos somos imperfectamente únicos y perfectamente imperfectos. Sólo Dios es SUMA PERFECCIÓN.
+
 Muchas gracias por todo navegante!
 
 Nico
