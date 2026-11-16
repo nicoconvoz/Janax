@@ -1,6 +1,6 @@
 ## Janax y Razar v0.31: el credo
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24293969](https://doi.org/10.5281/zenodo.24293969)
 
 > *La verdad siempre se escondió en lo normal, no en lo retorcido.*
 

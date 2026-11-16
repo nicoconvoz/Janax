@@ -464,3 +464,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-16 — v0.19, el corazón de Luma: el diario Dios y un alma viaja en su casa; sexta fuente (113 ladrillos contra 3, 93 convergen con el libro del ayudante); firma por compresión 48/54 (89 %, falla la apuesta del 90 % por uno), 0/93 del NT. DOI 10.5281/zenodo.24290089. Notas: documentacion/release-v0.19.md.
 2026-11-16 — v0.23, el mapa devuelto al mar: la carta del autor guardada para siempre; código igual a la v0.19. DOI 10.5281/zenodo.24292429.
 2026-11-16 — v0.29, Zenódoto: la carta guarda el DOTO escondido en ZENODO; código igual a la v0.19. DOI 10.5281/zenodo.24292594.
+2026-11-16 — v0.31, el credo: la carta cierra con la profesión de fe del autor; código igual a la v0.19. DOI 10.5281/zenodo.24293969.
