@@ -62,3 +62,35 @@ El error que se le declara al murciélago es una regla tomada de Gotching (un cu
 de la serie), no una medición. Con un error fijo de 1 radián, en la primera prueba no oyó nada, ni
 siquiera en los datos reales. Ese fue un instrumento mal usado, y se corrigió antes de la corrida
 completa.
+
+## Marcha 2: la regla de Gotching
+
+La respuesta ya estaba en Gotching. Sus commits del 2026-10-14 deducen el modo con geometría, no con
+ritmo: *un ala no toca el piso* (`ea80a25`), *lo que apoya en el piso no aletea* (`c18f82e`), *al
+volar las patas cuelgan casi en fase* (`b62020b`), *el aleteo es la firma del que vuela* (`1344ab5`).
+La fusión correcta es que el **esqueleto** decida qué grupo se escucha (lo que pisa o lo que no) y
+que el **movimiento** de ese grupo diga el modo.
+
+Se preregistró antes de calcular ([datos/marcha-preregistro-2.txt](datos/marcha-preregistro-2.txt),
+commit `4102f4a`), declarando que ya se había visto el resultado de la marcha 1. Se calcula sobre los
+mismos `.oido`, sin volver a escuchar ([razar/jueces/marcha_regla.py](../../razar/jueces/marcha_regla.py)).
+
+| Apuesta | Resultado | Veredicto |
+|---|---|---|
+| B1. Acierta más que la mayoritaria (57,2 %) | **570 de 944 (60,4 %)** | ✅ cumplida, por poco |
+| B2. El barajado sigue en 0 | 0: barajado no se oyó ningún ritmo | ✅ cumplida |
+
+| Modo | n | Caminar | Volar | Reptar |
+|---|---|---|---|---|
+| Caminar | 540 | **353** | 29 | 158 |
+| Reptar | 128 | 1 | 24 | **103** |
+| Volar | 276 | 0 | **114** | 162 |
+
+**Cómo leerlo, sin inflarlo.** El margen sobre la mayoritaria es chico (z ≈ 2), y las cuatro vistas de
+una criatura no son independientes, así que B1 se cumple pero no sobra. Fuera de lo apostado: la
+mayoritaria acierta 100 % de un modo y 0 % de los otros dos; la regla acierta 65 % de los que caminan,
+80 % de los que reptan y 41 % de los que vuelan (promedio 62 % contra 33 %). Ésa es la diferencia real:
+ahora distingue los tres modos en vez de decir siempre lo mismo.
+
+Lo que falla es **volar**: 162 de 276 se leen como reptar. Queda como pregunta abierta, sin arreglo a
+ojo.

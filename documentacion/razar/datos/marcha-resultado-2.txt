@@ -1,0 +1,7 @@
+MARCHA 2 (regla de Gotching) en 944 grabaciones
+B1 acierta 570 (60.4 %)   la mayoritaria 540 (57.2 %)
+B2 barajado: la marcha 1 no oyo ningun ritmo barajado (0 de 944): la regla no tiene con que decir -> 0 aciertos
+modo del juego -> lo que dijo la regla
+  Caminar  n=540  Caminar 353  Volar 29  Reptar 158  - 0
+  Reptar   n=128  Caminar 1  Volar 24  Reptar 103  - 0
+  Volar    n=276  Caminar 0  Volar 114  Reptar 162  - 0
