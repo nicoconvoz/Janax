@@ -67,8 +67,8 @@ screen_show:
         jne     .bad
         cmp     byte [r14 + 4], 3
         jne     .bad
-        movzx   eax, word [r14 + 9]     ; the bones, 46 bytes each
-        imul    rax, 46
+        movzx   eax, word [r14 + 9]     ; the bones, 42 bytes each
+        imul    rax, 42
         lea     r8, [rax + 11]          ; where the number of levels is
         lea     rax, [r8 + 17]          ; and the end of the first level's header
         cmp     rax, r15

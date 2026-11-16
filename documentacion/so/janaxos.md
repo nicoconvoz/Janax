@@ -1364,7 +1364,7 @@ ninguna otra aplicación.
   partícula. Responde **cuántas partículas dibujó**, o −1 si la dirección no está entera en un ambiente o la nube
   está mal: otra marca u otra versión, sin niveles, un tamaño que se pasa de `b`, un lado 0 o de más de 4096. Puerta 1
   (pantalla), permiso `p`. No es importante: solo dibuja.
-- **El formato** (el de Gotching, little-endian): `NUBE`, versión (1 byte), paso fino (f32), huesos (u16) de 46
+- **El formato** (el de Gotching, little-endian): `NUBE`, versión (1 byte), paso fino (f32), huesos (u16) de 42
   bytes cada uno, niveles (1 byte); por nivel: paso (f32), `k0x` e `k0y` (i32), ancho y alto (u16), un bit por celda
   (la celda `j` es el byte `j >> 3`, bit `j & 7`) y 3 bytes RGB por partícula en el orden de lectura.
 - **Lo del anfitrión vive aparte**, en `so/pantalla.inc` (la versión de Windows; otro anfitrión trae la suya con las

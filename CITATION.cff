@@ -10,8 +10,8 @@ contact:
   - name: "Resources Open Doors S.A.S."
     email: "ingenieriaaplicada@opendoors.com.ar"
 license: Apache-2.0
-version: "0.6"
-date-released: "2026-11-14"
+version: "0.7"
+date-released: "2026-11-15"
 doi: "10.5281/zenodo.23933883"
 repository-code: "https://github.com/nicoconvoz/Janax"
 keywords:

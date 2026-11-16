@@ -17,6 +17,29 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-15, v0.7): Razar tiene cuerpo
+
+**Janax abre su propia ventana, con los drivers del anfitrión, y adentro no hay un escritorio copiado
+de Windows: hay formas que Razar hace crecer desde lo que aprendió.**
+
+![Las formas propias de Razar](documentacion/razar/img/formas-propias.png)
+
+- **Lo que leyó primero:** la interfaz gráfica de GEM y la de Godot, con la misma clave de opuestos
+  escrita antes de mirar: **19 de 21** juntas (p ≈ 0,0001). Juntó *open~close*, *show~hide*,
+  *top~bottom*, *width~height*.
+- **Su ventana (pedidos 40 y 41):** el programa le da su pantalla al kernel como **nube de
+  partículas** —el formato de Gotching— y Janax la dibuja; el mouse y el teclado le llegan sin frenar
+  a nadie. Se ajusta sola a cualquier pantalla. Suite: **402 bien, 0 mal**.
+- **Sus formas:** recetas en el alfabeto de sus órganos; las primeras son sus 8 mejores órganos, los
+  ladrillos son sus torrecitas y los gestos son los opuestos que aprendió. Crecen y mutan con el mismo
+  juez de bits —corto y nuevo— y archivan cada perdedora con su motivo: de 8 a 89 formas.
+- **Su comida:** cuando se le acaba la novedad tiene hambre, y come las nubes de partículas de los
+  bichos de Gotching. Las digiere describiéndolas en su propio lenguaje y crea con eso: **27 formas
+  nuevas** de 944 comidas.
+- **Nada quieto, nada que gaste por nada:** pensando, ~1–2,5 % de un núcleo; en calma, **0 ciclos**.
+
+[`documentacion/razar/cuerpo.md`](documentacion/razar/cuerpo.md)
+
 ## Novedad (2026-11-14): las torrecitas — Razar aprende de sus propios órganos
 
 **Razar diseña sus órganos mutando una letra por vez, a ciegas. Ahora aprendió qué se repite en los

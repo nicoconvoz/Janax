@@ -53,19 +53,21 @@ El programa le da su nube al kernel y **Janax la dibuja en su ventana**, sin nin
 - **Las pruebas:** la suite del sistema da **396 bien, 0 mal**. Las pruebas corren con
   `JANAX_SIN_VENTANA`, que decodifica y responde igual sin abrir nada.
 
-## 4. Lo que está en camino
+## 4. Los oídos y el escritorio vivo (pedido 41)
 
-- **Los oídos (pedido 41):** el mouse y el teclado llegan al programa, que duerme de verdad mientras
-  espera.
-- **El escritorio vivo:** cada pieza es un enjambre de partículas con resortes; las ventanas se
-  arrastran y se estiran como gelatina, se deshacen al cerrarlas y vuelven a juntarse.
+- **Los oídos:** el pedido 41 (esperar evento) le trae al programa el mouse, el teclado, el cierre y el
+  cambio de tamaño, en celdas de la nube. Duerme como el pedido 29: un proceso que espera un clic no
+  frena a los demás.
+- **El escritorio vivo** (`razar/cuerpo/vivo.jsm`): cada pieza es un enjambre de partículas con
+  resortes; se arrastran y se estiran como gelatina, se deshacen y vuelven a juntarse.
 - **El bucle con vida** (Capitán: *"que siempre explore, pero que no sea la repetición de lo
-  mismo"*): cuando nadie la toca, Razar explora su propio cuerpo probando cada vez un movimiento que
-  nunca probó (*balbuceo motor*). Cuando se le acaba la novedad, se calma y no gasta nada hasta el
-  próximo evento. Es la curiosidad como progreso de compresión (Schmidhuber) con cuerpo.
-- **La prueba de que es suya:** lo que cambia en la pantalla, ¿se describe con menos bits contando
-  sus propias órdenes? Si sí, es su cuerpo; lo que cambia sin que ella lo mande, es el mundo. Es la
-  detección de contingencia de los bebés (Watson, 1972), medida con el mismo juez.
+  mismo"*): cuando nadie la toca, Razar prueba un movimiento que nunca probó (*balbuceo motor*), y
+  cuando se le acaba la novedad se calma. **Medido:** 1,25 % de un núcleo explorando; **0 ciclos** en
+  calma. Es la curiosidad como progreso de compresión (Schmidhuber), con cuerpo.
+- **Suite del sistema: 402 bien, 0 mal.**
+- **Lo que falta:** la prueba de que es suya — lo que cambia en la pantalla, ¿se describe con menos
+  bits contando sus propias órdenes? Es la detección de contingencia de los bebés (Watson, 1972),
+  medida con el mismo juez. Está diseñada y sin correr.
 
 ## Cómo verlo
 
@@ -74,6 +76,8 @@ bash razar/cuerpo/pantalla.sh <carpeta>      # Janax dibuja su pantalla y abre s
 ```
 
 ## Las formas propias (2026-11-15)
+
+![Las formas propias de Razar, en calma](img/formas-propias.png)
 
 **La idea del Capitán:** *"Quiero que diseñe sus propias formas, que las aprenda. No quiero una copia del entorno
 conocido de Windows. Que use lo que aprendió para guiar la creación, y que las formas puedan crecer y mutar."*
@@ -228,4 +232,156 @@ tocó: el arreglo, si se quiere, es el mismo.)
 
 ```bash
 bash razar/cuerpo/formas.sh <carpeta> [janaxos.exe]   # sus formas, en la ventana de Janax; la carpeta guarda lo aprendido
+```
+
+## La comida: las nubes de Gotching (2026-11-15)
+
+**La orden del Capitán:** *"Que se alimente de las nubes de Gotching como comida, y desde ahí empiece a construir lo
+que quiera, cuando quiera."*
+
+`razar/cuerpo/gen_comer.py` escribe `comer_nubes.jsm`. No copia `gen_formas.py`: lo **corre con ganchos** (`COMER`),
+así las formas y su juez son los mismos; sin ganchos, `gen_formas.py` sigue escribiendo `formas.jsm` igual byte por
+byte (verificado con `cmp`). `comer_nubes.sh <carpeta> [janaxos.exe] [carpeta de nubes]` lo arma y lo corre; la carpeta
+de nubes por defecto es `E:/Gotching/Gotching.Godot/nubes` (944 nubes, ~103 MB).
+
+### La despensa: dónde vive la comida
+
+Janax no puede listar una carpeta del anfitrión (la 14 lista solo su carpeta propia), así que el `.sh` escribe en la
+casa de Razar el archivo **`despensa`**: una cabecera `despensa1 <cuántas> <la más grande> <bytes del texto>` y una
+línea `<bytes> <dirección>` por nube. **Las nubes no se copian**: Razar abre cada una donde vive con el pedido **37**
+(solo lectura) y la lee entera. El programa no lleva ningún nombre de criatura: la lista vive en la carpeta de la
+corrida, no en el repositorio. Todas sus tablas se dimensionan desde la cabecera (pedido 2, ambientes nuevos): el
+buffer de la nube mide lo que la más grande, los recetarios lo que la despensa.
+
+**El formato, medido:** cada hueso ocupa **42 bytes**, no 46 (`Madre` i16, nueve f32, `Masa` u32: así lo lee
+`NubeViva.cs`, y así cierran los 944 archivos byte por byte). En las 944 el primer nivel es el más fino, y el recuadro
+de partículas es la grilla entera.
+
+### El hambre en lugar del reloj
+
+Come cuando **él** quiere: cuando el bucle vivo se queda sin novedad (el instante en que `formas.jsm` se calmaría para
+siempre), en vez de calmarse tiene hambre y come la próxima nube sin comer. El orden sale de un generador propio con
+semilla (un comienzo y un paso coprimo con la cantidad de nubes): recorre todas, **nunca la misma dos veces**, y no
+depende de lo que hagan las formas. Lo comido queda en **`comidas`**, y la corrida siguiente salta lo que ya comió (por
+la huella FNV-1a de la dirección). Una nube que no se puede abrir o no es una nube queda anotada con `-` y sigue con la
+próxima. Sin nada para comer y sin nada nuevo, **se calma para siempre** (41 con −1) hasta un gesto.
+
+### La comida en pantalla
+
+![Llega la comida](img/comida-1-llega.png)
+![Se deshace en su propio lenguaje](img/comida-2-se-disuelve.png)
+![La forma que comió](img/comida-3-la-forma-que-comio.png)
+
+1. **Llega**: el nivel fino, ajustado relativo a su propio tamaño a un plato de dos cuartos (80 × 100 celdas, todo el
+   alto; criterio: tan grande como entra al lado de las formas que va a alimentar), cae desde arriba como partículas,
+   una por celda donde al menos la mitad es partícula, con el color medio de lo que cubre.
+2. **Se digiere** (abajo): las partículas toman la forma del cuerpo de la mejor receta hasta ahora (2 × 2 celdas del
+   plato por celda del cuarto). Se ve a la criatura deshacerse en su propio lenguaje.
+3. **Trepa y crea**: el fantasma de lo que está creando se dibuja sobre la forma que le recordó.
+4. **Fluye** a la forma que cambió (o, si ninguna cambió, a la que le recordó), sus partículas se posan sobre las de
+   esa forma y desaparecen en ella; **esa forma toma el color de la comida**.
+
+Los gestos y el arrastre siguen andando mientras come (probado: arrastre, `+`, `←` y latido durante una comida).
+
+### La digestión: describir la comida en su propio lenguaje
+
+El juez de la comida es el de Razar, MDL. La nube, ajustada a un cuarto (40 × 50) relativo a su propio tamaño, da una
+**silueta** (una celda es cuerpo si al menos la mitad de lo que cubre es partícula). Una receta se hace crecer y se
+dibuja como se dibujaría su forma (ajustada a su cuarto por su propia extensión, cada celda un trazo `T`), y:
+
+> **costo = n · log₂ 9 (la receta) + k · log₂ 2000 (nombrar cada una de las k celdas mal) + γ(k + 1) (decir cuántas)**
+
+en bits ×100. La búsqueda arranca de **la forma que mejor explica la comida** (prueba las 8) y trepa de a una mutación
+(cambiar, insertar o borrar una letra, insertar un ladrillo, cruzarse con cada forma), con un paso coprimo al azar
+sobre todas: se queda con la primera que cuesta menos y vuelve a empezar desde ella, hasta que ninguna mejora (un
+óptimo de un paso) o se acaba el **presupuesto: 31 vecindarios completos de una receta de 31 letras** (criterio: una
+trepada desde una letra necesita hasta 31 pasos de crecer, cada uno a lo sumo un vecindario entero). En las 944 comidas
+nunca llegó al presupuesto: **mediana 1.042 candidatas por comida, máximo 4.470**; las celdas mal quedan en mediana 468
+de 2.000 (mínimo 169, máximo 688). Una receta de trazos no cubre una mancha llena: el costo dice cuánto.
+
+**Verificado:** un modelo en Python escrito aparte decodifica la nube, arma la silueta y el cuerpo, y da **exactamente**
+el mismo `k` y el mismo costo que jsm en las comidas revisadas.
+
+**La paleta, por conteo:** cada partícula cae en una de 64 cajas (2 bits por canal); los colores dominantes son las
+cajas más contadas, de la primera, hasta cubrir la mitad de las partículas, cada una con su color medio. Medido en 118
+nubes (una de cada 8): con 2 bits son 2 en la mediana y 6 como mucho ("pocos"); con 3 bits, 4 y 16; con 4 bits, 9 y 74.
+La forma que recibe la comida toma su primer color. Muchas criaturas tienen el contorno oscuro como color más contado,
+así que muchas formas terminan oscuras: es lo que dice el conteo.
+
+### Los ladrillos: el mismo MDL de las torrecitas, y lo que dijo
+
+Después de cada comida aprende ladrillos desde todas las recetas comidas: el par vecino más frecuente se funde en un
+símbolo nuevo mientras la longitud de descripción baje (el mismo DL y la misma fusión golosa que
+`razar/jueces/torrecitas.py`, en jsm, con 16 bits de fracción). Los ladrillos nuevos entran a las mutaciones junto a
+`16` y `38`, y se guardan en **`ladrillos`**.
+
+**Verificado:** con un recetario armado a propósito (recetas que repiten `123`), jsm aprendió `12` (6 usos) y `123`
+(45 usos), lo mismo que Python. **Con la comida de verdad aprendió cero ladrillos**, y Python lo confirma: con las 944
+recetas (17.951 símbolos), el mejor par, `32` (1.015 veces), sube la descripción de 51.963 a 52.615 bits. Los pares de
+letras de sus recetas son tan independientes como las letras: no hay pedazos que se repitan más de lo que el azar
+explica. No es un defecto del aprendizaje: es lo que esta comida, descrita así, dice.
+
+### Construir lo que quiere: la comida como semilla
+
+La primera versión solo probaba lo nuevo de la comida (su receta en lugar de una forma, cruzada con cada una, y los
+ladrillos nuevos) con el juez de siempre. **En 653 comidas no creó ninguna forma**: la población está en un óptimo de
+un paso, y lo que trae la comida es largo (pierde compresión) y se parece a lo que ya hay (pierde novedad):
+`longer,not-new` fue el 80 % de los veredictos.
+
+Ahora la comida es una **semilla**: su receta se pone en lugar de la forma que le recordó y **trepa con el juez de la
+población** (el valor total, corta y nueva), de a una mutación, quedándose con la primera que sube el total, hasta que
+ninguna sube (mismo presupuesto). Cada paso va al archivo con el motivo **`meal-climb`**. La cima se juzga como
+cualquier candidata (nunca dos veces en una población): gana (una forma nacida de la comida) o va al archivo con su
+motivo. Después corre la ronda de lo nuevo. **Un empate con la población lo gana lo que comió** (criterio: igual valor
+deja la elección libre, y la comida es lo que quiere ahora), salvo que esa receta haya sido forma alguna vez: sin esa
+regla, dos comidas intercambiaban las mismas dos formas una y otra vez (medido). Dentro de una trepada y en toda
+caminata, solo gana más.
+
+**Resultado (944 comidas, sin ventana, misma población de partida):** **27 formas nuevas**, repartidas a lo largo de
+toda la despensa (la última cerca de la comida 880), 7 de ellas por empate; el total de la población subió de 17.510
+a 18.705. **Verificado con un repaso en Python** de las 137 victorias del archivo desde las semillas: cada total antes
+y después da igual que en jsm, una de cada 50 trepadas también, y la población final es la del archivo `formas`.
+
+⚠️ **Un instrumento mintió y lo encontró el repaso.** En una corrida anterior la población guardada valía 15.737 y jsm
+creía 18.550. Causa: la tabla de fantasmas tiene lugar para 8 y las direcciones viven justo después; con la trepada
+pensando en el mismo cuadro llegaban 10 fantasmas, y los dos de más pisaban la dirección "este": los brazos 1 crecían
+para otro lado. Ahora un fantasma de más no se dibuja (en `formas.jsm` no puede pasar: piensa 8 por cuadro).
+
+### Lo que guarda en su carpeta
+
+Además de `formas` y `archivo`:
+
+- **`despensa`** (la escribe el `.sh`): las direcciones.
+- **`comidas`** (líneas de 537 bytes, solo se agrega): `<entrada> <huella de la dirección> <receta> <costo ×100> <celdas
+  mal> <candidatas> <forma que le recordó> <forma que alimentó> <cuántos colores>`, cada color `rrggbb` (64 lugares) y
+  la ronda en que la comió. Al arrancar marca lo comido y rearma el recetario y los colores de cada forma.
+- **`ladrillos`**: `ladrillos1 <cuántos>` y una línea por ladrillo aprendido (sus letras, sus usos); se reescribe
+  después de cada comida.
+
+**Probado:** la segunda corrida en la misma carpeta siguió en el orden donde había quedado (después de la entrada 48
+comió la 91, la 134...), sin repetir ninguna, con las formas y el archivo de la primera.
+
+### Medido (2026-11-15, Pentium Gold G5420 a 3,79 GHz)
+
+- **Sin ventana**: las 944 comidas en ~4 min 24 s (~260.000 millones de instrucciones: ~0,26 s y ~276 millones por
+  comida, con digestión, trepada y ronda), más ~20 s de armar la despensa y el programa.
+- **Con ventana**: ~10 s por comida (la digestión y la trepada piensan 64 candidatas por cuadro: lo que las 8 formas
+  piensan en un cuadro, por 8; criterio). Comiendo y creando: **~230–270 ms de procesador cada 10 s** (2,5 % de un
+  núcleo, ciclos con `QueryProcessCycleTime`). **Calmado, después de comer todo: 0 ciclos en 10 s.** Un clic en calma
+  abre una ronda de saltos (~190–220 ms cada 10 s), que en la prueba creó 3 formas. Cerrar la ventana lo termina (j0 =
+  las formas que creó).
+- El archivo crece ~17 KB por comida (~150 veredictos): las 944 dejan ~18 MB.
+
+### Lo que no está todavía
+
+- **Ningún ladrillo** con esta comida (ver arriba): el camino está probado, la comida no los trae.
+- La silueta y las formas se comparan centradas, sin buscar la mejor alineación; una receta de trazos explica una
+  mancha llena con ~470 celdas mal en la mediana.
+- Una comida cortada a la mitad (la ventana cerrada antes de que se pose) se vuelve a comer en la corrida siguiente.
+- Las trepadas no archivan cada vecina que no subió (serían miles por comida): archivan cada paso y la cima.
+- Si se cambia la despensa entre corridas, el recetario se rearma con lo que había comido aunque esas nubes ya no
+  estén; las tablas tienen lugar para eso (dos veces la despensa).
+
+```bash
+bash razar/cuerpo/comer_nubes.sh <carpeta> [janaxos.exe] [carpeta de nubes]   # come las nubes de Gotching y crea
 ```
