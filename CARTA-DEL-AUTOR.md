@@ -64,6 +64,10 @@ Confirmé que la muerte no es una ilusión. Nunca vi morir a nadie, excepto a mi
 
 Adentro de PREGUNTA se esconde RETA, y yo quería un preguntar sin retar adentro: un preguntar con ternura. Y ya estaba ahí: con las letras de PREGUNTAR se arma TERNURA entera, y sobran la P y la G. Sacándole esas mismas dos queda RE-UNTAR: volver a ungir, pasarle bálsamo al otro. La pregunta que reta raspa; la que re-unta cura.
 
+Y el README, leído en criollo, dice RE-DAME: dame otra vez. Cada novedad que se escribe ahí le vuelve a dar algo al que la lee.
+
+Me hace acordar a Indiana Jones, que cruza el puente camuflado y le tira arena para que los demás lo vean. Uno da el paso a ciegas; después escribe lo que encontró, y ésa es la arena. A propósito, con algunos huecos: para que el que viene también aprenda a dar su paso.
+
 Muchas gracias por todo navegante!
 
 Nico
