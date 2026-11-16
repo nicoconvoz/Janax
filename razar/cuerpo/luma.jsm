@@ -8931,6 +8931,38 @@ v_init_bits:
   jldi j1, 020h
   jstb j1, j14, 048EFh
   jldi j1, 076h
+  jstb j1, j14, 049E0h
+  jldi j1, 069h
+  jstb j1, j14, 049E1h
+  jldi j1, 064h
+  jstb j1, j14, 049E2h
+  jldi j1, 061h
+  jstb j1, j14, 049E3h
+  jldi j1, 02Dh
+  jstb j1, j14, 049E4h
+  jldi j1, 068h
+  jstb j1, j14, 049E5h
+  jldi j1, 061h
+  jstb j1, j14, 049E6h
+  jldi j1, 062h
+  jstb j1, j14, 049E7h
+  jldi j1, 069h
+  jstb j1, j14, 049E8h
+  jldi j1, 074h
+  jstb j1, j14, 049E9h
+  jldi j1, 061h
+  jstb j1, j14, 049EAh
+  jldi j1, 074h
+  jstb j1, j14, 049EBh
+  jldi j1, 020h
+  jstb j1, j14, 049ECh
+  jldi j1, 020h
+  jstb j1, j14, 049EDh
+  jldi j1, 020h
+  jstb j1, j14, 049EEh
+  jldi j1, 020h
+  jstb j1, j14, 049EFh
+  jldi j1, 076h
   jstb j1, j14, 048F0h
   jldi j1, 069h
   jstb j1, j14, 048F1h
@@ -8999,6 +9031,7 @@ v_init_bits:
   jcall v_r_open_archive
   jcall v_r_open_dialogs
   jcall v_r_load_code
+  jcall v_r_habitats
   ; what Luma ate in earlier runs comes back: every creature whose cloud is eaten in her pantry waits to arrive
   jld j1, j14, 02228h
   jjz j1, v_vt_done
@@ -10630,6 +10663,7 @@ v_av_host:
 v_av_body:
   jcall v_r_body
   jjz j0, v_av_bad
+  jcall v_r_mode
   ; its model: what it learned (if it still fits its limbs), or the greedy one from its own limbs
   jld j9, j14, 02380h
   jld j1, j9, 168
@@ -10684,6 +10718,7 @@ v_av_model:
   jmul j12, j12, j11
   jsub j10, j10, j12
   jst j10, j9, 24
+  jcall v_r_in_band
   jcall v_r_rand
   jldi j11, 255
   jand j10, j10, j11
@@ -12782,6 +12817,7 @@ v_wrap_lo_7:
   jadd j2, j11, j14
 v_wrap_hi_8:
   jst j2, j9, 24
+  jcall v_r_in_band
   jret
 ; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)
 v_r_dream:                        ; TI dreams into its slot DSLOT: a piece of its body, mutated, that it does not hold
@@ -14484,6 +14520,383 @@ v_dr_fill:
   jadd j1, j1, j6
   jsub j7, j2, j1
   jjnz j7, v_dr_fill
+  ; the strata over the creatures' world, row by row (drawn only in a frame: calm costs nothing)
+  jldi j1, 0
+v_fb_row:
+  jldi j10, 200
+  jsub j10, j1, j10
+  jjnn j10, v_fb_done
+  jldi j10, 16
+  jshl j2, j1, j10
+  jld j10, j14, 026B0h
+  jsub j10, j2, j10
+  jjn j10, v_fb_c0
+  jld j10, j14, 026B8h
+  jsub j10, j2, j10
+  jjn j10, v_fb_c1
+  jld j10, j14, 026C0h
+  jsub j10, j2, j10
+  jjn j10, v_fb_c2
+  jldi j3, 38
+  jldi j4, 104
+  jldi j5, 100
+  jjmp v_fb_paint
+v_fb_c0:
+  jldi j3, 27
+  jldi j4, 22
+  jldi j5, 45
+  jjmp v_fb_paint
+v_fb_c1:
+  jldi j3, 38
+  jldi j4, 75
+  jldi j5, 127
+  jjmp v_fb_paint
+v_fb_c2:
+  jldi j3, 53
+  jldi j4, 101
+  jldi j5, 59
+  jjmp v_fb_paint
+v_fb_paint:
+  jldi j10, 1920
+  jmul j6, j1, j10
+  jldi j10, 0157h
+  jshi j10, 04260h
+  jadd j6, j6, j10
+  jldi j7, 320
+v_fb_cell:
+  jstb j3, j6, 0
+  jstb j4, j6, 1
+  jstb j5, j6, 2
+  jldi j10, 3
+  jadd j6, j6, j10
+  jldi j10, 1
+  jsub j7, j7, j10
+  jjnz j7, v_fb_cell
+  jldi j10, 1
+  jadd j1, j1, j10
+  jjmp v_fb_row
+v_fb_done:
+  jret
+v_r_mode:                         ; TI's mode from its limbs (Gotching's rule): 0 flies, 1 walks, 2 crawls
+  ; the two groups' amplitude sums
+  jld j9, j14, 02380h
+  jld j1, j9, 80
+  jld j2, j9, 48
+  jldi j3, 0
+  jldi j4, 0
+v_md_sum:
+  jjz j2, v_md_summed
+  jld j5, j1, 8
+  jldi j10, 3
+  jshl j5, j5, j10
+  jldi j10, 03000h
+  jadd j5, j5, j10
+  jld j5, j5, 0
+  jld j6, j1, 24
+  jjz j6, v_md_air
+  jadd j4, j4, j5
+  jjmp v_md_next
+v_md_air:
+  jadd j3, j3, j5
+v_md_next:
+  jldi j10, 32
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp v_md_sum
+v_md_summed:                      ; j7 = the group that moves (1: the floor, only if it weighs more)
+  jldi j7, 0
+  jsub j10, j4, j3
+  jjn j10, v_md_pair
+  jjz j10, v_md_pair
+  jldi j7, 1
+v_md_pair:
+  ; its two strongest limbs of the same period: the pair with the strongest first, then the strongest second
+  jldi j8, -1
+  jldi j11, -1
+  jldi j12, 0
+  jldi j13, 0
+  jld j9, j14, 02380h
+  jld j1, j9, 80
+  jld j2, j9, 48
+  jldi j3, 0
+v_md_i:
+  jsub j10, j3, j2
+  jjnn j10, v_md_found
+  jldi j10, 32
+  jmul j5, j3, j10
+  jadd j5, j5, j1
+  jld j10, j5, 24
+  jsub j10, j10, j7
+  jjnz j10, v_md_i_next
+  jldi j4, 0
+v_md_j:
+  jsub j10, j4, j2
+  jjnn j10, v_md_i_next
+  jsub j10, j4, j3
+  jjz j10, v_md_j_next
+  jldi j10, 32
+  jmul j6, j4, j10
+  jadd j6, j6, j1
+  jld j10, j6, 24
+  jsub j10, j10, j7
+  jjnz j10, v_md_j_next
+  ; same period (10 %): 10 |Pa - Pb| <= max
+  jld j10, j5, 0
+  jld j15, j6, 0
+  jsub j0, j10, j15
+  jjnn j0, v_md_abs
+  jsub j0, j14, j0
+v_md_abs:
+  jsub j15, j10, j15
+  jjnn j15, v_md_max
+  jld j10, j6, 0
+v_md_max:
+  jldi j15, 10
+  jmul j0, j0, j15
+  jsub j0, j10, j0
+  jjn j0, v_md_j_next
+  ; amplitudes: a = limb i, b = limb j; the pair is (strongest, other)
+  jld j0, j5, 8
+  jld j15, j6, 8
+  jsub j10, j0, j15
+  jjnn j10, v_md_ord
+  jadd j10, j0, j14
+  jadd j0, j15, j14
+  jadd j15, j10, j14
+v_md_ord:
+  jsub j10, j0, j12
+  jjn j10, v_md_j_next
+  jjnz j10, v_md_take
+  jsub j10, j15, j13
+  jjn j10, v_md_j_next
+  jjz j10, v_md_j_next
+v_md_take:
+  jadd j12, j0, j14
+  jadd j13, j15, j14
+  jadd j8, j3, j14
+  jadd j11, j4, j14
+v_md_j_next:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp v_md_j
+v_md_i_next:
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp v_md_i
+v_md_found:
+  jldi j0, 2
+  jjn j8, v_md_store
+  ; the phase relation: sectors apart, folded to half a turn; together under 0.15 turn (2 of 16)
+  jldi j10, 32
+  jmul j5, j8, j10
+  jadd j5, j5, j1
+  jmul j6, j11, j10
+  jadd j6, j6, j1
+  jld j5, j5, 16
+  jld j6, j6, 16
+  jsub j5, j5, j6
+  jldi j10, 15
+  jand j5, j5, j10
+  jldi j10, 8
+  jsub j10, j5, j10
+  jjn j10, v_md_fold
+  jjz j10, v_md_fold
+  jldi j10, 16
+  jsub j5, j10, j5
+v_md_fold:
+  jldi j10, 3
+  jsub j10, j5, j10
+  jjnz j7, v_md_floor
+  jjnn j10, v_md_store
+  jldi j0, 0
+  jjmp v_md_store
+v_md_floor:
+  jjn j10, v_md_store
+  jldi j0, 1
+v_md_store:
+  jld j9, j14, 02380h
+  jst j0, j9, 272
+  jret
+v_r_in_band:                      ; TI's height kept inside its stratum (it wraps there, as the world wraps)
+  jld j9, j14, 02380h
+  jld j1, j14, 026D0h
+  jjz j1, v_ib_ret
+  jld j1, j9, 272
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j10, 026B0h
+  jadd j1, j1, j10
+  jld j2, j1, 0
+  jld j3, j1, 8
+  jsub j4, j3, j2
+  jjz j4, v_ib_ret
+  jld j5, j9, 24
+v_ib_lo:
+  jsub j10, j5, j2
+  jjnn j10, v_ib_hi
+  jadd j5, j5, j4
+  jjmp v_ib_lo
+v_ib_hi:
+  jsub j10, j5, j3
+  jjn j10, v_ib_set
+  jsub j5, j5, j4
+  jjmp v_ib_hi
+v_ib_set:
+  jst j5, j9, 24
+v_ib_ret:
+  jret
+v_r_habitats:                     ; at the start, with her memory: every creature's mode, the strata sized by how
+                                ; many live in each (as the world was sized by how many there are), written down
+  jst j14, j14, 02698h
+  jst j14, j14, 026A0h
+  jst j14, j14, 026A8h
+  jst j14, j14, 026D0h
+  jld j1, j14, 02668h
+  jjz j1, v_hb_equal
+  jst j14, j14, 02338h
+v_hb_cr:
+  jld j1, j14, 02338h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_hb_sized
+  jldi j10, 320
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jst j9, j14, 02380h
+  jld j1, j9, 208
+  jld j2, j9, 224
+  jld j3, j14, 02298h
+v_hb_copy:
+  jjz j2, v_hb_copied
+  jldb j4, j1, 0
+  jstb j4, j3, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jadd j3, j3, j10
+  jsub j2, j2, j10
+  jjmp v_hb_copy
+v_hb_copied:
+  jstb j14, j3, 0
+  jcall v_r_parse_oido
+  jcall v_r_mode
+  jld j9, j14, 02380h
+  jld j1, j9, 272
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j10, 02698h
+  jadd j1, j1, j10
+  jld j2, j1, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jst j2, j1, 0
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_hb_cr
+v_hb_equal:                       ; without her memory the modes come at each arrival: equal strata (criterion)
+  jldi j10, 1
+  jst j10, j14, 02698h
+  jldi j10, 1
+  jst j10, j14, 026A0h
+  jldi j10, 1
+  jst j10, j14, 026A8h
+v_hb_sized:
+  ; the strata under the universe: each its share of the rows by how many live there (at least 2 bodies tall)
+  jld j1, j14, 02698h
+  jld j2, j14, 026A0h
+  jadd j1, j1, j2
+  jld j2, j14, 026A8h
+  jadd j1, j1, j2
+  jjz j1, v_hb_done
+  jst j1, j14, 02340h
+  jldi j3, 014h
+  jshi j3, 0
+  jst j3, j14, 026B0h
+  jldi j4, 0B4h
+  jshi j4, 0
+  jld j5, j14, 02698h
+  jmul j5, j5, j4
+  jld j6, j14, 02340h
+  jdiv j5, j5, j6
+  jld j6, j14, 02230h
+  jldi j10, 131072
+  jmul j6, j6, j10
+  jsub j10, j5, j6
+  jjnn j10, v_hb_min0
+  jadd j5, j6, j14
+v_hb_min0:
+  jld j3, j14, 026B0h
+  jadd j3, j3, j5
+  jst j3, j14, 026B8h
+  jld j5, j14, 026A0h
+  jmul j5, j5, j4
+  jld j6, j14, 02340h
+  jdiv j5, j5, j6
+  jld j6, j14, 02230h
+  jldi j10, 131072
+  jmul j6, j6, j10
+  jsub j10, j5, j6
+  jjnn j10, v_hb_min1
+  jadd j5, j6, j14
+v_hb_min1:
+  jld j3, j14, 026B8h
+  jadd j3, j3, j5
+  jst j3, j14, 026C0h
+  jldi j3, 0C8h
+  jshi j3, 0
+  jst j3, j14, 026C8h
+  jldi j10, 1
+  jst j10, j14, 026D0h
+  ; the bands as (top, bottom): sky BY1..BY2, land BY2..BY3, low BY3..H; r_in_band reads BY1 + 8 mode
+  ; written down: "vida-habitat", every creature's mode
+  jldi j11, 049E0h
+  jldi j12, 12
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_hb_done
+  jst j14, j14, 02338h
+v_hb_w:
+  jld j1, j14, 02338h
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_hb_wdone
+  jldi j10, 320
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j1, j9, 136
+  jldi j2, 16
+  jldi j3, 049F0h
+  jcall v_r_put_hex
+  jldi j1, 32
+  jstb j1, j14, 04A00h
+  jld j9, j14, 02338h
+  jldi j10, 320
+  jmul j9, j9, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j1, j9, 272
+  jldi j2, 1
+  jldi j3, 04A01h
+  jcall v_r_put_num
+  jldi j1, 10
+  jstb j1, j14, 04A02h
+  jldi j10, 6
+  jldi j11, 049F0h
+  jldi j12, 19
+  jcall v_r_file
+  jld j10, j14, 02338h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02338h
+  jjmp v_hb_w
+v_hb_wdone:
+  jldi j10, 7
+  jcall v_r_file
+v_hb_done:
   jret
 v_r_draw:                         ; every body that is here (later ones in front), on the torus
   jst j14, j14, 02338h

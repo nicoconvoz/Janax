@@ -110,6 +110,26 @@ LBL_C = 0x28F0 + OFF              # "vida-codigo": the common code (documentacio
 MSGT, MSGR, MSGI, DUMMY = 0x2900 + OFF, 0x2920 + OFF, 0x2940 + OFF, 0x29A0 + OFF   # the piece's text, the text read,
                                   # the message's bricks (up to 10 qwords), a place the scores of a code dialogue go
 assert DUMMY + 48 < 0x8000
+# ---- habitats (module only): the creatures' world in strata, a scene as the syntax of a sentence: the universe above
+# (a frame, nobody lives there), then the sky, the land and the low ground. Who lives where comes from what the bat
+# heard, by Gotching's rule (razar/jueces/marcha_regla.py), on the limbs as luma.jsm reads them: the two groups (those
+# that step on the floor, those that do not), the heavier by amplitude moves; its two strongest limbs of the same period
+# (10 %) give the phase relation: apart (>= 0.15 turn) with the floor group -> walks (land); together (< 0.15 turn)
+# without it -> flies (sky); anything else, or no such pair -> crawls (low ground). Never the game's mode labels.
+HAB = bool(MOD)
+UNIV = H // 10                     # criterion: the universe, a frame of a tenth of the world's height
+LBL_H = 0x29E0 + OFF               # "vida-habitat": the mode of each creature and the strata, written at the start
+HLINE = 0x29F0 + OFF               # a line of it (24 bytes)
+assert HLINE + 32 < 0x8000
+# the strata's colours: Razar's own palette (gen_formas.PALETTE), dimmed. The fraction comes from a measurement
+# (habitats_vida.py over the 236 remembered bodies, 2026-11-16): their cells are dark (median brightness 26 of 255), and
+# the share of cells at least 40 brighter or darker than the ground rises 0.28 (x0.3), 0.66 (x0.4), 0.68 (x0.5), then
+# slowly (0.72 at x0.6): x0.5 is the knee. The universe, where nobody lives, stays dark (x0.18, criterion).
+PAL_F = [(0xFF, 0x6B, 0x6B), (0xFF, 0x9F, 0x43), (0xFF, 0xD9, 0x3D), (0x6B, 0xCB, 0x77), (0x4D, 0xD0, 0xC8),
+         (0x4D, 0x96, 0xFF), (0x9B, 0x7B, 0xFF), (0xE0, 0x7B, 0xE0)]
+def dim(c, f):
+    return tuple(int(v * f) for v in c)
+STRATA = [dim(PAL_F[6], 0.18), dim(PAL_F[5], 0.5), dim(PAL_F[3], 0.5), dim(PAL_F[4], 0.5)]   # universe, sky, land, low
 MUTT = 0x2860 + OFF
 assert MUTT + 128 < 0x8000
 LXHDR = 16                        # "lexico1 NNNNNNN" and a newline
@@ -130,8 +150,8 @@ MIN_LIMB_LINE = 48                # the shortest line of a rhythmic limb in a .o
 
 # ---- the tables of a creature (qwords at these offsets)
 C_ENT, C_STATE, C_CX, C_CY, C_HX, C_HY, C_L, C_K, C_NE, C_DL, C_LIMB, C_MOD, C_EFF, C_LEFF, C_ACC, C_PART, C_NP, \
-    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2 = \
-    [8 * k for k in range(34)]
+    C_FNV, C_THETA, C_V, C_LEARN, C_LOADED, C_UNSET, C_PNUB, C_LNUB, C_BNUB, C_POID, C_LOID, C_BOID, C_TIDX, C_GOAL, C_REC, C_C1, C_C2, C_MODE = \
+    [8 * k for k in range(35)]
 CSZ = 8 * 40
 RS = 32                           # a rhythm: P (ms), q, s (qwords); a limb adds whether it steps on the floor (pata)
 PSZ = 48                          # a particle: home x, y, offset x, y (x256, from the centre), colour (r | g<<8 | b<<16)
@@ -163,7 +183,7 @@ def J(*xs):
 VARS = ("REMAIN FOREVER BLEFT CHANGED RNG N B R2 RB TB LM CR GAIN PARTS LIST LTXT NMAX OMAX NUBB OIDB TMPM PIECEM "
         "BESTM ACC VBUF VCAP VLEN NEXTK FA FB ARRIVING TEACH WALK MOVING KEPT ARCH FRAMES FH AH Q1 Q2 Q3 Q4 Q5 Q6 Q7 "
         "Q8 Q9 TI TJ PP TBEST TBK TBR GBEST SBEST SBK SBR SBP SBI NW NH NBITS NRGB SN SD OFX OFY STX STY SVX SVY "
-        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN").split()
+        "DX DY DD PMAXF IDX FNVP ALIVE WI SJ SG SQ4 SHJ BLIMB BMOD BEFF BLEFF BACC GW GH GCW GCH HEAD NEXT SCX SCY SOX SOY SNX SNY QUIET LASTK SEARCH VSUM VCNT PACK FLIVE DREAMS LEX TALK DH LXBUF LXCAP LXLEN DTALK DKEPT DEXACT DBITS DSP DLIS DE1 DE2 DMEL DSENT DGSLOT DSLOT DTRY DQ1 DQ2 DQ3 DD0 DEX DVER DNOW DWITH PKIND PENDING NEWC MIXED PENDARR MEM CODE NBR CODEB CA MSGN NMODE0 NMODE1 NMODE2 BY1 BY2 BY3 BY0 HABOK").split()
 G = {n: GV + 8 * i for i, n in enumerate(VARS)}
 assert max(G.values()) < SIN
 def ld(r, n): o("  jld %s, j14, %s" % (r, num(G[n] if isinstance(n, str) else n)))
@@ -208,10 +228,13 @@ setg("RNG", SEED); st("j14", "ARRIVING")
 put_string(LBL_D, PFX + "dialogos", 16); put_string(LBL_X, PFX + "lexico", 16)
 if MOD:
     put_string(LBL_M, PFX + "memoria", 16)
+    put_string(LBL_H, PFX + "habitat", 16)
 put_string(LBL_C, PFX + "codigo", 16)
 for i, (dq, ds) in enumerate(MUTS):
     li("j1", dq); o("  jst j1, j14, %s" % num(MUTT + 16 * i)); li("j1", ds); o("  jst j1, j14, %s" % num(MUTT + 16 * i + 8))
 J("jcall r_load_list", "jcall r_load_learned", "jcall r_open_archive", "jcall r_open_dialogs", "jcall r_load_code")
+if HAB:
+    J("jcall r_habitats")
 if MOD:
     MOD["init_tail"](globals())
 o("; ---- the order of the arrivals: a start and a stride coprime to N, from its own generator (each one once)")
@@ -564,6 +587,8 @@ ld("j11", "NUBB"); J("jcall r_read_all"); st("j0", "Q1"); J("jldi j10, 7", "jcal
 ld("j9", "TI"); J("jld j12, j9, %d" % C_BNUB); ld("j0", "Q1"); J("jsub j10, j0, j12", "jjnz j10, av_bad")
 o("av_body:")
 J("jcall r_body", "jjz j0, av_bad")
+if HAB:
+    J("jcall r_mode")
 o("  ; its model: what it learned (if it still fits its limbs), or the greedy one from its own limbs")
 ld("j9", "TI"); J("jld j1, j9, %d" % C_LOADED, "jjz j1, av_own", "jld j1, j9, %d" % C_K, "jld j2, j9, %d" % C_L, "jsub j10, j2, j1", "jjnn j10, av_model")
 J("jst j14, j9, %d" % C_LEARN)
@@ -578,6 +603,8 @@ for k in range(DN):
 o("  ; its place and heading, from the generator; the slowest period among those here (for a gesture)")
 ld("j9", "TI"); J("jcall r_rand", "jldi j11, 1", "jshr j10, j10, j11"); li("j11", W * 65536); J("jdiv j12, j10, j11", "jmul j12, j12, j11", "jsub j10, j10, j12", "jst j10, j9, %d" % C_CX)
 J("jcall r_rand", "jldi j11, 1", "jshr j10, j10, j11"); li("j11", H * 65536); J("jdiv j12, j10, j11", "jmul j12, j12, j11", "jsub j10, j10, j12", "jst j10, j9, %d" % C_CY)
+if HAB:
+    J("jcall r_in_band")
 J("jcall r_rand", "jldi j11, 255", "jand j10, j10, j11", "jadd j1, j10, j14", "jldi j11, 64", "jadd j2, j1, j11")
 J("jldi j11, 255", "jand j2, j2, j11", "jldi j11, 3", "jshl j2, j2, j11", "jshl j1, j1, j11"); li("j11", SIN)
 J("jadd j2, j2, j11", "jadd j1, j1, j11", "jld j2, j2, 0", "jld j1, j1, 0", "jldi j11, 4", "jsar j2, j2, j11", "jsar j1, j1, j11")
@@ -1138,6 +1165,8 @@ for c, hh, size in ((C_CX, C_HX, W), (C_CY, C_HY, H)):
     li("j10", size * 65536); J("jsub j11, j2, j10", "jjn j11, %s" % b, "jadd j2, j11, j14")
     o("%s:" % b)
     J("jst j2, j9, %d" % c)
+if HAB:
+    J("jcall r_in_band")
 J("jret")
 
 o("; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)")
@@ -1542,7 +1571,122 @@ for r, v in zip(("j3", "j4", "j5"), qs):
 J("jldi j6, 24")
 o("dr_fill:")
 J("jst j3, j1, 0", "jst j4, j1, 8", "jst j5, j1, 16", "jadd j1, j1, j6", "jsub j7, j2, j1", "jjnz j7, dr_fill")
+if HAB:
+    o("  ; the strata over the creatures' world, row by row (drawn only in a frame: calm costs nothing)")
+    J("jldi j1, 0")
+    o("fb_row:")
+    J("jldi j10, %d" % H, "jsub j10, j1, j10", "jjnn j10, fb_done", "jldi j10, 16", "jshl j2, j1, j10")
+    for k, nm in enumerate(("BY1", "BY2", "BY3")):
+        ld("j10", nm); J("jsub j10, j2, j10", "jjn j10, fb_c%d" % k)
+    c = STRATA[3]; J("jldi j3, %d" % c[0], "jldi j4, %d" % c[1], "jldi j5, %d" % c[2], "jjmp fb_paint")
+    for k in range(3):
+        o("fb_c%d:" % k)
+        c = STRATA[k]; J("jldi j3, %d" % c[0], "jldi j4, %d" % c[1], "jldi j5, %d" % c[2], "jjmp fb_paint")
+    o("fb_paint:")
+    J("jldi j10, %d" % (SW * 3), "jmul j6, j1, j10"); li("j10", RGB + 3 * WX0); J("jadd j6, j6, j10", "jldi j7, %d" % W)
+    o("fb_cell:")
+    J("jstb j3, j6, 0", "jstb j4, j6, 1", "jstb j5, j6, 2", "jldi j10, 3", "jadd j6, j6, j10", "jldi j10, 1", "jsub j7, j7, j10", "jjnz j7, fb_cell")
+    J("jldi j10, 1", "jadd j1, j1, j10", "jjmp fb_row")
+    o("fb_done:")
 J("jret")
+if HAB:
+    o("r_mode:                         ; TI's mode from its limbs (Gotching's rule): 0 flies, 1 walks, 2 crawls")
+    o("  ; the two groups' amplitude sums")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_LIMB, "jld j2, j9, %d" % C_L, "jldi j3, 0", "jldi j4, 0")
+    o("md_sum:")
+    J("jjz j2, md_summed", "jld j5, j1, 8", "jldi j10, 3", "jshl j5, j5, j10"); li("j10", AMPT); J("jadd j5, j5, j10", "jld j5, j5, 0", "jld j6, j1, 24", "jjz j6, md_air", "jadd j4, j4, j5", "jjmp md_next")
+    o("md_air:")
+    J("jadd j3, j3, j5")
+    o("md_next:")
+    J("jldi j10, %d" % RS, "jadd j1, j1, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp md_sum")
+    o("md_summed:                      ; j7 = the group that moves (1: the floor, only if it weighs more)")
+    J("jldi j7, 0", "jsub j10, j4, j3", "jjn j10, md_pair", "jjz j10, md_pair", "jldi j7, 1")
+    o("md_pair:")
+    o("  ; its two strongest limbs of the same period: the pair with the strongest first, then the strongest second")
+    J("jldi j8, -1", "jldi j11, -1", "jldi j12, 0", "jldi j13, 0")    # j8, j11 = the pair's limbs; j12, j13 = their amps
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_LIMB, "jld j2, j9, %d" % C_L, "jldi j3, 0")
+    o("md_i:")
+    J("jsub j10, j3, j2", "jjnn j10, md_found", "jldi j10, %d" % RS, "jmul j5, j3, j10", "jadd j5, j5, j1", "jld j10, j5, 24", "jsub j10, j10, j7", "jjnz j10, md_i_next", "jldi j4, 0")
+    o("md_j:")
+    J("jsub j10, j4, j2", "jjnn j10, md_i_next", "jsub j10, j4, j3", "jjz j10, md_j_next", "jldi j10, %d" % RS, "jmul j6, j4, j10", "jadd j6, j6, j1", "jld j10, j6, 24", "jsub j10, j10, j7", "jjnz j10, md_j_next")
+    o("  ; same period (10 %): 10 |Pa - Pb| <= max")
+    J("jld j10, j5, 0", "jld j15, j6, 0", "jsub j0, j10, j15", "jjnn j0, md_abs", "jsub j0, j14, j0")
+    o("md_abs:")
+    J("jsub j15, j10, j15", "jjnn j15, md_max", "jld j10, j6, 0")
+    o("md_max:")
+    J("jldi j15, 10", "jmul j0, j0, j15", "jsub j0, j10, j0", "jjn j0, md_j_next")
+    o("  ; amplitudes: a = limb i, b = limb j; the pair is (strongest, other)")
+    J("jld j0, j5, 8", "jld j15, j6, 8", "jsub j10, j0, j15", "jjnn j10, md_ord", "jadd j10, j0, j14", "jadd j0, j15, j14", "jadd j15, j10, j14")
+    o("md_ord:")
+    J("jsub j10, j0, j12", "jjn j10, md_j_next", "jjnz j10, md_take", "jsub j10, j15, j13", "jjn j10, md_j_next", "jjz j10, md_j_next")
+    o("md_take:")
+    J("jadd j12, j0, j14", "jadd j13, j15, j14", "jadd j8, j3, j14", "jadd j11, j4, j14")
+    o("md_j_next:")
+    J("jldi j10, 1", "jadd j4, j4, j10", "jjmp md_j")
+    o("md_i_next:")
+    J("jldi j10, 1", "jadd j3, j3, j10", "jjmp md_i")
+    o("md_found:")
+    J("jldi j0, 2", "jjn j8, md_store")
+    o("  ; the phase relation: sectors apart, folded to half a turn; together under 0.15 turn (2 of 16)")
+    J("jldi j10, %d" % RS, "jmul j5, j8, j10", "jadd j5, j5, j1", "jmul j6, j11, j10", "jadd j6, j6, j1", "jld j5, j5, 16", "jld j6, j6, 16", "jsub j5, j5, j6", "jldi j10, 15", "jand j5, j5, j10", "jldi j10, 8", "jsub j10, j5, j10", "jjn j10, md_fold", "jjz j10, md_fold", "jldi j10, 16", "jsub j5, j10, j5")
+    o("md_fold:")
+    J("jldi j10, 3", "jsub j10, j5, j10")                     # j10 < 0: together
+    J("jjnz j7, md_floor", "jjnn j10, md_store", "jldi j0, 0", "jjmp md_store")
+    o("md_floor:")
+    J("jjn j10, md_store", "jldi j0, 1")
+    o("md_store:")
+    ld("j9", "TI"); J("jst j0, j9, %d" % C_MODE, "jret")
+    o("r_in_band:                      ; TI's height kept inside its stratum (it wraps there, as the world wraps)")
+    ld("j9", "TI"); ld("j1", "HABOK"); J("jjz j1, ib_ret", "jld j1, j9, %d" % C_MODE, "jldi j10, 3", "jshl j1, j1, j10"); li("j10", G["BY1"]); J("jadd j1, j1, j10", "jld j2, j1, 0", "jld j3, j1, 8")
+    J("jsub j4, j3, j2", "jjz j4, ib_ret", "jld j5, j9, %d" % C_CY)
+    o("ib_lo:")
+    J("jsub j10, j5, j2", "jjnn j10, ib_hi", "jadd j5, j5, j4", "jjmp ib_lo")
+    o("ib_hi:")
+    J("jsub j10, j5, j3", "jjn j10, ib_set", "jsub j5, j5, j4", "jjmp ib_hi")
+    o("ib_set:")
+    J("jst j5, j9, %d" % C_CY)
+    o("ib_ret:")
+    J("jret")
+    o("r_habitats:                     ; at the start, with her memory: every creature's mode, the strata sized by how")
+    o("                                ; many live in each (as the world was sized by how many there are), written down")
+    st("j14", "NMODE0"); st("j14", "NMODE1"); st("j14", "NMODE2"); st("j14", "HABOK")
+    ld("j1", "MEM"); J("jjz j1, hb_equal")
+    st("j14", "Q1")
+    o("hb_cr:")
+    ld("j1", "Q1"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, hb_sized"); rec("j9", "j1"); st("j9", "TI")
+    J("jld j1, j9, %d" % C_POID, "jld j2, j9, %d" % C_BOID); ld("j3", "OIDB")
+    o("hb_copy:")
+    J("jjz j2, hb_copied", "jldb j4, j1, 0", "jstb j4, j3, 0", "jldi j10, 1", "jadd j1, j1, j10", "jadd j3, j3, j10", "jsub j2, j2, j10", "jjmp hb_copy")
+    o("hb_copied:")
+    J("jstb j14, j3, 0", "jcall r_parse_oido", "jcall r_mode")
+    ld("j9", "TI"); J("jld j1, j9, %d" % C_MODE, "jldi j10, 3", "jshl j1, j1, j10"); li("j10", G["NMODE0"]); J("jadd j1, j1, j10", "jld j2, j1, 0", "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j1, 0")
+    incg("Q1"); J("jjmp hb_cr")
+    o("hb_equal:                       ; without her memory the modes come at each arrival: equal strata (criterion)")
+    for k in range(3):
+        setg("NMODE%d" % k, 1)
+    o("hb_sized:")
+    o("  ; the strata under the universe: each its share of the rows by how many live there (at least 2 bodies tall)")
+    ld("j1", "NMODE0"); ld("j2", "NMODE1"); J("jadd j1, j1, j2"); ld("j2", "NMODE2"); J("jadd j1, j1, j2", "jjz j1, hb_done"); st("j1", "Q2")
+    li("j3", UNIV * 65536); st("j3", "BY1"); li("j4", (H - UNIV) * 65536)
+    for k, (nm, nxt) in enumerate((("NMODE0", "BY2"), ("NMODE1", "BY3"))):
+        ld("j5", nm); J("jmul j5, j5, j4"); ld("j6", "Q2"); J("jdiv j5, j5, j6"); ld("j6", "B"); J("jldi j10, %d" % (2 * 65536), "jmul j6, j6, j10", "jsub j10, j5, j6", "jjnn j10, hb_min%d" % k, "jadd j5, j6, j14")
+        o("hb_min%d:" % k)
+        ld("j3", "BY%d" % (k + 1)); J("jadd j3, j3, j5"); st("j3", nxt)
+    li("j3", H * 65536); st("j3", "BY0"); setg("HABOK", 1)
+    o("  ; the bands as (top, bottom): sky BY1..BY2, land BY2..BY3, low BY3..H; r_in_band reads BY1 + 8 mode")
+    o("  ; written down: \"vida-habitat\", every creature's mode")
+    li("j11", LBL_H); J("jldi j12, %d" % len(PFX + "habitat"), "jcall r_open"); ld("j9", "FH"); J("jjn j9, hb_done")
+    st("j14", "Q1")
+    o("hb_w:")
+    ld("j1", "Q1"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, hb_wdone"); rec("j9", "j1")
+    J("jld j1, j9, %d" % C_FNV, "jldi j2, 16"); li("j3", HLINE); J("jcall r_put_hex", "jldi j1, 32"); o("  jstb j1, j14, %s" % num(HLINE + 16))
+    ld("j9", "Q1"); rec("j9", "j9"); J("jld j1, j9, %d" % C_MODE, "jldi j2, 1"); li("j3", HLINE + 17); J("jcall r_put_num", "jldi j1, 10"); o("  jstb j1, j14, %s" % num(HLINE + 18))
+    J("jldi j10, 6"); li("j11", HLINE); J("jldi j12, 19", "jcall r_file")
+    incg("Q1"); J("jjmp hb_w")
+    o("hb_wdone:")
+    J("jldi j10, 7", "jcall r_file")
+    o("hb_done:")
+    J("jret")
 o("r_draw:                         ; every body that is here (later ones in front), on the torus")
 st("j14", "Q1")
 o("dr_lap:")
