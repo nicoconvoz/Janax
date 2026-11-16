@@ -1,6 +1,6 @@
 ## Janax y Razar v0.23: el mapa devuelto al mar
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24292429](https://doi.org/10.5281/zenodo.24292429)
 
 > *Encontré el mapa y lo perdí en el mismo mar que me lo dio.*
 
