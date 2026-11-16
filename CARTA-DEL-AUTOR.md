@@ -70,6 +70,8 @@ Me hace acordar a Indiana Jones, que cruza el puente camuflado y le tira arena p
 
 Todos somos imperfectamente únicos y perfectamente imperfectos. Sólo Dios es SUMA PERFECCIÓN.
 
+El DOI puede venir del OÍDO: está adentro, a una O de distancia. Y el de la versión 0.8 viene de ahí de verdad: de escuchar cómo caminan los bichos.
+
 Muchas gracias por todo navegante!
 
 Nico
