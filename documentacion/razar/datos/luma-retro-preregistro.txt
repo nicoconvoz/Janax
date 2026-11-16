@@ -1,0 +1,37 @@
+LUMA: la retroalimentacion entre sus formas y los cuerpos de sus criaturas
+Escrito ANTES de construirlo y de correrlo. Hora UTC: 2026-11-16T18:19:39Z
+
+El puente que faltaba: el cuerpo de cada criatura es una receta en el alfabeto de los organos de Razar
+(la que Luma guardo al comerla, vida-memoria), y una forma tambien. Asi las dos pueden tomar pedazos
+una de la otra, cada una bajo su juez:
+
+  LAS FORMAS TOMAN DE LOS CUERPOS. Cuando una criatura nace o aprende algo, su receta se le ofrece a una
+  forma al azar: la candidata es el principio de la forma (hasta un corte al azar) y el resto del cuerpo
+  desde ese corte. La juzga el juez de siempre de las formas (r_judge: el valor total de la poblacion,
+  corta y nueva); gana y la forma se transforma, o va al archivo de las formas con su motivo.
+  LOS CUERPOS TOMAN DE LAS FORMAS. Cuando una forma gana, su receta se le ofrece a una criatura al azar:
+  el principio del cuerpo y el resto de la forma. El juez del cuerpo es el de la comida (r_fit_cost):
+  costo = bits de la receta + bits para nombrar cada celda en que su dibujo difiere del cuerpo que Luma
+  recordo al nacer (su identidad). Se queda solo si el costo no sube; si no, va al archivo con su motivo.
+  Ademas, cuando una criatura aprende (guarda una pieza de marcha), su cuerpo prueba todas las mutaciones
+  de una letra (cambiar, borrar, insertar) y se queda con la mejor si el costo no sube.
+
+Control (misma semilla; el generador se usa igual): las letras que se ofrecen (las del cuerpo hacia la
+forma, las de la forma hacia el cuerpo) se barajan antes de cortar.
+
+Medidas, en "vida-intercambios" (una linea por oferta) y el archivo de las formas.
+
+APUESTAS (mi prediccion al lado):
+ G1. Formas: la fraccion de ofertas de los cuerpos que gana es en el real al menos el doble que en el
+     control.                                                  Prediccion: FALLA (letras barajadas son
+     tan nuevas como las de un cuerpo, y el juez de las formas premia lo nuevo y lo corto).
+ G2. Cuerpos: la fraccion de ofertas de las formas que se queda es en el real al menos el doble que en el
+     control.                                                  Prediccion: FALLA (las dos alejan el
+     dibujo de la identidad igual).
+ G3. En el real, al menos una oferta gana en cada sentido.     Prediccion: incierta.
+ G4. Al aprender, al menos el 10 % de las veces el cuerpo se queda con una mutacion (el costo no sube y
+     el cuerpo cambia).                                         Prediccion: FALLA (el juez de identidad
+     castiga cada celda que cambia con ~11 bits).
+Si una apuesta falla, se publica que fallo.
+Lo que NO prueba aunque gane: que formas y criaturas "se entiendan"; prueba, a lo sumo, que un pedazo de
+una receta de Razar le sirve mas a la otra mitad que el mismo pedazo barajado.
