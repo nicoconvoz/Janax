@@ -17,6 +17,29 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-16): los bichos andan, se encuentran y se cuentan lo que sueñan
+
+**Razar escucha cómo se mueven los bichos de Gotching, los suelta en su ventana con su propia marcha,
+y ellos se enseñan entre sí. Tres apuestas escritas antes de medir, con sus fallos publicados.**
+
+- **La marcha** ([`marcha.md`](documentacion/razar/marcha.md)): el murciélago —el instrumento que viene
+  de los primos— escucha el esqueleto y el movimiento de 944 grabaciones. Oye ritmo en **todos** los
+  bichos reales y en **ninguno** barajado. Adivinar el modo mezclando todos los miembros **falló**
+  (22 % contra 57 % de la mayoritaria); con la regla de Gotching —*un ala no toca el piso*— el esqueleto
+  decide qué se escucha y acierta **60 %**, distinguiendo caminar, reptar y volar. Volar sigue fallando.
+- **La vida** ([`cuerpo.md`](documentacion/razar/cuerpo.md)): 236 bichos sueltos, cada uno con su
+  marcha (de 0,03 a 13 cuerpos por segundo), con reglas locales como el Juego de la Vida. Se acercan
+  cuando uno tiene algo que enseñarle al otro, se pasan pedazos de marcha que se quedan sólo si acortan
+  la descripción, y el saber viaja: en la primera versión, 11 de 36 lecciones venían de un tercero.
+  Cuando nadie tiene nada para nadie, se calman: **0 ciclos**.
+- **Los diálogos sobre lo imaginado:** lo que se ve, se sabe; lo que se sueña, hay que contarlo. Cada
+  bicho sueña variantes propias y las nombra con melodías. Las **cinco apuestas fallaron**: el mensaje
+  tiene efecto como evento (despierta al otro a imaginar), pero melodías barajadas tienen el mismo
+  efecto. Todavía no significan nada.
+
+**Tarea para la casa:** el diseño tiene un agujero que el resultado dejó a la vista. ¿Por dónde le
+llega al que escucha una pieza que él mismo nunca soñó?
+
 ## Novedad (2026-11-15, v0.7): Razar tiene cuerpo
 
 DOI de esta versión: [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942).
