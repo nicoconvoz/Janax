@@ -1,0 +1,29 @@
+MARCHA: Razar escucha el esqueleto y el movimiento de los bichos de Gotching con el murcielago
+Escrito ANTES de correr el oido. Hora UTC: 2026-11-16T11:50:15Z
+
+Datos: 944 grabaciones de Gotching.Godot/GrabarMovimiento.tscn (el motor Movimiento.cs del juego,
+12 s de reloj a 30 cuadros, en el modo que el juego le da a cada bicho al moverse: Caminar, Volar o
+Reptar). El oido NO lee ese modo: lo usa solo para corregir al final.
+Huella de las grabaciones (sha256 de la lista ordenada de sha256 de cada .marcha):
+dea4c0ba2fb6cab7dc8ac5282e646a6a3075a9ef0d9edac5c3f234105e8bde53
+
+Instrumento: cielo.EcoDelMurcielago (Cartografia), sin tocar, 16 sorteos, MargenCaza 4.
+Serie por miembro: el angulo del hueso raiz de cada miembro (dequien), cuadro a cuadro.
+Esqueleto: el murcielago tambien escucha el contorno de la silueta (bichos.Escuchar), como en Gotching.
+
+Fusion: dos miembros cuyo ritmo mas fuerte tiene el mismo periodo (10 %) forman un par; su desfasaje
+en vueltas d en [0, 0.5] se lee:  d < 0.15 JUNTOS · d > 0.35 EN CONTRA · si no, ESCALONADO.
+
+Control: las mismas series con los cuadros barajados (una permutacion por bicho, semilla 2026).
+
+APUESTAS (se dicen antes):
+ A1. Real: el murcielago oye al menos un ritmo en >= 90 % de los bichos. Barajado: en <= 10 %.
+ A2. La fusion adivina el modo sin que se lo digan: JUNTOS -> Volar, EN CONTRA -> Caminar,
+     ESCALONADO -> Reptar (la clase con mas pares manda). Acierto real > la clase mayoritaria
+     (lo que acierta quien dice siempre lo mismo). Barajado: no supera a la mayoritaria.
+ A3. Lo que dice el esqueleto (cantidad de jorobas del contorno) y lo que dice el movimiento
+     (cantidad de miembros con ritmo) se correlacionan positivo en los reales.
+Si una apuesta falla, se publica que fallo.
+
+Lo que esto NO prueba: el movimiento lo diseno el motor de Gotching; acertar es LEER ese motor
+mirando, no inventar uno. Es aprender por observacion.
