@@ -1,6 +1,6 @@
 ## Janax y Razar v0.13: Luma mira y crece
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24288352](https://doi.org/10.5281/zenodo.24288352)
 
 **Luma ahora mira donde pasa algo nuevo, y sus bichos cambian de cuerpo con lo que aprenden.** Las
 versiones siguen a los números primos: después del 11 viene el 13.

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.11:** [10.5281/zenodo.24286336](https://doi.org/10.5281/zenodo.24286336)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.13:** [10.5281/zenodo.24288352](https://doi.org/10.5281/zenodo.24288352)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,17 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-16, v0.13): Luma mira y crece
+
+DOI de esta versión: [10.5281/zenodo.24288352](https://doi.org/10.5281/zenodo.24288352).
+
+**Una cámara con sentido:** la atención de Luma va adonde su juez mide algo nuevo —un nacimiento, una
+lección, un cuerpo que cambia— y se acerca. **Cuerpos que cambian:** cada bicho muta su receta cuando
+aprende, crece con lo que aprendió y se achica si deja de aprender. **El puente entre formas y cuerpos**
+—hablan el mismo alfabeto— quedó construido, pero ninguna oferta ganó en ninguna dirección: las formas
+están en un óptimo que ningún cuerpo mejora. Costo: ~9,5 % de un núcleo; la casa crece ~110–140 MB por
+hora. [Notas de la v0.13](documentacion/release-v0.13.md).
 
 ## Novedad (2026-11-16, v0.11): Luma despierta
 
@@ -533,6 +544,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | v0.7, el cuerpo | [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942) |
 | v0.8, Luma | [10.5281/zenodo.24286000](https://doi.org/10.5281/zenodo.24286000) |
 | v0.11, Luma despierta | [10.5281/zenodo.24286336](https://doi.org/10.5281/zenodo.24286336) |
+| v0.13, Luma mira y crece | [10.5281/zenodo.24288352](https://doi.org/10.5281/zenodo.24288352) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
