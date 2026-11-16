@@ -1,0 +1,52 @@
+VIDA: los dialogos con un codigo comun, hecho de todo lo que Razar aprendio
+Escrito ANTES de construirlo y de correrlo. Hora UTC: 2026-11-16T16:11:24Z
+
+El agujero que se encontro (vida-dialogos-resultado.txt): cada pieza de un lexico la ponia su duenio,
+asi que ningun canal le traia al oyente una pieza que no sono el. El arreglo que pide el Capitan: un
+CODIGO COMUN a todas las criaturas, hecho de lo que Razar aprendio de todas sus fuentes, con el que
+un mensaje sea una RECETA de ladrillos que deja al oyente CONSTRUIR una pieza que nunca sono.
+
+Un solo alfabeto: los caracteres. Las fuentes, cada una como texto (y sin inventar traducciones):
+  OIDO   lo que oyo el murcielago: cada pieza de cada marcha (vida-memoria) escrita "PPPP QQ SS"
+         (periodo en ms, codigo de amplitud, fase en dieciseisavos relativa al miembro mas amplio).
+  VISTA  lo que vio al comer: cada receta de "comidas" (letras 1-9) y sus colores (rrggbb).
+  LIBRO  lo que leyo en el Nuevo Testamento: sus organos de hasta 3 letras que le ganan a la base,
+         repetidos segun cuanto le ganan (el mismo corpus que dio las torrecitas), y las torrecitas.
+  CODIGO lo que leyo en el codigo de GEM y Godot: los 11 pares de opuestos, como palabras.
+Los ladrillos se aprenden con el mismo juez de las torrecitas (razar/jueces/torrecitas.py): fusionar el
+par vecino mas frecuente mientras baje la longitud de descripcion del corpus entero (las cuatro fuentes
+juntas; un separador nunca se fusiona). Un ladrillo entra al codigo solo si acorta la descripcion de
+todo. Cada caracter suelto queda en el codigo, asi todo se puede decir. Lo aprende un programa en Python
+(codigo_comun.py, como torrecitas.py) desde la casa y lo escribe en la casa ("vida-codigo").
+
+El dialogo: cuando dos se tocan (una vez por encuentro), la que habla nombra su primer sueno: escribe
+la pieza como "PPPP QQ SS" y la parte en ladrillos del codigo (el mas largo que calce, de izquierda a
+derecha). El mensaje es esa lista de ladrillos. La que oye pega los ladrillos, lee la pieza (si no se
+lee como "PPPP QQ SS", no entendio), la prueba en su cuerpo y la guarda solo si su descripcion se acorta.
+En la ventana el mensaje vuela como un glifo hecho con las formas de Razar: cada ladrillo, un brazo de
+su letra (1-4: este, sur, oeste, norte) segun su numero.
+
+Control (misma semilla, mismo reloj, los mismos mensajes): los numeros de los ladrillos que llegan se
+pasan por una permutacion fija del codigo. El oyente pega otros ladrillos.
+
+Medidas, en "vida-dialogos" (la pieza nombrada y el veredicto) y "vida-codigo":
+  piezas guardadas por dialogo, bits ahorrados, reconstruccion exacta, y de que fuentes son los
+  ladrillos usados en los mensajes cuya pieza se guardo.
+
+APUESTAS (mi prediccion al lado):
+ E1. Efecto: piezas guardadas por dialogo en el real >= 2 veces las del control.   Prediccion: GANA.
+ E2. Reconstruccion: en el real >= 95 % de los dialogos el oyente arma exactamente la pieza nombrada;
+     en el control <= 5 %.                                                       Prediccion: GANA,
+     pero POR CONSTRUCCION (el codigo es comun y el analisis es determinista): no prueba aprendizaje.
+ E3. Bits: los bits ahorrados por dialogos en el real >= 2 veces los del control.  Prediccion: GANA.
+ E4. Convergencia de fuentes: en los mensajes cuya pieza se guardo, algun ladrillo que aparece en LIBRO,
+     VISTA o CODIGO (no solo en OIDO) se usa en al menos el 10 % de esos mensajes.  Prediccion: FALLA
+     para CODIGO (las palabras no describen numeros); incierta para LIBRO y VISTA (comparten digitos).
+ E5. Contra la version de melodias (vida-dialogos-resultado.txt, y la regla de un encuentro: 0,45 %
+     de piezas guardadas por dialogo), el codigo comun guarda al menos el doble por dialogo.
+                                                                                 Prediccion: GANA.
+Si una apuesta falla, se publica que fallo.
+
+Lo que esto NO prueba aunque gane: que las criaturas hayan inventado un idioma. El codigo lo aprende
+Razar una vez, de todas sus fuentes, y lo comparten por construccion. Prueba, a lo sumo, que un codigo
+comun aprendido de lo que oyo, vio y leyo lleva piezas que el oyente no tenia, y que barajado no.
