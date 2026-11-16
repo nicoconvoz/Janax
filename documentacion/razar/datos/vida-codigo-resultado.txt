@@ -1,0 +1,37 @@
+VIDA: los dialogos con un codigo comun. RESULTADO
+Corrido DESPUES del preregistro (vida-codigo-preregistro.txt, commit 5a6bc8a).
+
+El codigo, aprendido como se preregistro (codigo_comun.py, el juez de las torrecitas sobre las cuatro
+fuentes juntas: OIDO 2.851 piezas, VISTA 2.733 recetas y colores, LIBRO 9.867 organos, CODIGO 22
+palabras): el primer par mas frecuente ("51", sobre todo del LIBRO) ya alarga la descripcion, asi que
+NO APRENDIO NINGUN LADRILLO. El codigo comun quedo en sus 31 caracteres (digitos, el espacio, letras).
+Exploracion (NO preregistrada, no la usa Luma): con el mismo juez y una busqueda mas ancha (el par que
+mas acorta entre los 40 mas frecuentes) aprende 21 ladrillos; 20 son de OIDO (" 0", "1151 1", "0757 2",
+"2063 2"...) y uno, "38", lo comparten VISTA (216) y LIBRO (815): la torrecita del libro aparece en las
+recetas de lo que comio.
+
+Corridas: Luma desde la casa propia (236 criaturas), sin ventana, misma semilla. Real: luma.jsm.
+Control: VIDA_CONTROL=1 (los numeros de los ladrillos pasan por una permutacion fija del codigo).
+El repaso (repaso_vida.py --luma) da 0 diferencias en los dos archivos.
+
+                         real        control
+dialogos                 4.411       5.578
+entendidos (se lee "PPPP QQ SS")  4.411       0
+reconstruccion exacta    4.411 (100 %)   0
+piezas guardadas         1           0
+bits ahorrados           2           0
+
+APUESTAS
+ E1. efecto real >= 2 x control: 1 contra 0. GANA EN LA LETRA, SIN FUERZA: un solo acierto.
+ E2. exacta >= 95 % real, <= 5 % control: 100 % y 0 %. GANA, POR CONSTRUCCION (predicho asi).
+ E3. bits real >= 2 x control: 2 contra 0. Igual que E1: sin fuerza.
+ E4. un ladrillo de LIBRO, VISTA o CODIGO en >= 10 % de los mensajes guardados: no hay ladrillos;
+     el unico mensaje guardado usa digitos y espacios, que son de todas las fuentes. NO SE PUEDE DECIR.
+ E5. el codigo guarda >= 2 veces por dialogo lo que las melodias (0,45 %): 0,023 %. FALLA.
+
+Lo que dice: el canal ahora funciona (el oyente arma exactamente la pieza que nunca sono, en el 100 %
+de los dialogos; barajado, en ninguno). Lo que falta es algo que valga la pena decir: la que habla
+nombra un sueno de SU marcha, y eso casi nunca acorta la descripcion de otra. El codigo comun, con
+este juez, no encontro ladrillos que convergieran entre las fuentes: sus letras ya son tan
+independientes como sus pares (lo mismo que dijeron las recetas en comer). Lo unico que converge en la
+exploracion es la torrecita "38", entre el libro y lo que comio.

@@ -726,3 +726,41 @@ de una receta, no la silueta; se reconocen por el tamaño, la postura y los dos 
 python razar/cuerpo/migrar_luma.py <casa alimentada> <carpeta nueva>/casa   # su casa propia, sin empezar de cero
 bash razar/cuerpo/luma.sh <carpeta nueva> [janaxos.exe]                       # corre sin nubes ni oídos del anfitrión
 ```
+
+## Un código común para los diálogos, hecho de todo lo que aprendió (2026-11-16)
+
+**El arreglo del agujero:** si cada criatura solo puede armar piezas que soñó ella, ningún diálogo trae algo nuevo. Con
+un **código común**, aprendido una vez de todo lo que Razar oyó, vio y leyó, un mensaje puede ser una **receta de
+ladrillos** con la que el oyente **construye una pieza que nunca soñó**. Preregistrado antes de construirlo:
+[`datos/vida-codigo-preregistro.txt`](datos/vida-codigo-preregistro.txt); resultado:
+[`datos/vida-codigo-resultado.txt`](datos/vida-codigo-resultado.txt).
+
+- **Las fuentes, un solo alfabeto (los caracteres), sin traducciones inventadas:** OÍDO (cada pieza de cada marcha,
+  escrita `PPPP QQ SS`), VISTA (las recetas y los colores de lo que comió), LIBRO (sus órganos del Nuevo Testamento, con
+  el peso de las torrecitas, y las torrecitas) y CÓDIGO (los opuestos que leyó en GEM y Godot, como palabras).
+- **El juez:** el de las torrecitas (`codigo_comun.py`), sobre las cuatro juntas: un ladrillo entra solo si acorta la
+  descripción de todo. Escribe `vida-codigo` en la casa.
+- **El diálogo:** la que habla escribe su sueño como texto, lo corta en ladrillos y manda la lista; la que oye los pega,
+  lee la pieza, la prueba y la guarda solo si acorta. En la ventana el mensaje vuela como **un glifo hecho con las
+  formas de Razar**: cada ladrillo, un brazo de dos celdas en la dirección de su letra.
+- **El control** (`VIDA_CONTROL=1`): los mismos mensajes pasados por una permutación fija del código.
+
+**Medido** (Luma desde su casa propia, 236 criaturas; el repaso da 0 diferencias):
+
+| | real | control |
+|---|---|---|
+| diálogos | 4.411 | 5.578 |
+| entendidos / reconstrucción exacta | 4.411 / **100 %** | 0 / 0 % |
+| piezas guardadas / bits | 1 / 2 | 0 / 0 |
+
+- **El código no aprendió ningún ladrillo:** el primer par más frecuente (`51`, del libro) ya alarga la descripción. El
+  código común son sus 31 caracteres. Explorando (no preregistrado, no lo usa Luma) con una búsqueda más ancha aprende 21
+  ladrillos: 20 del oído (`1151 1`, `0757 2`…) y **uno que converge: `38`, la torrecita del libro, que aparece en las
+  recetas de lo que comió**.
+- **El canal funciona y no tiene qué decir:** el oyente arma exactamente la pieza nombrada en el 100 % de los diálogos
+  (barajado, en ninguno), pero solo **1 de 4.411** se guarda: la que habla nombra un sueño de *su* marcha, y eso casi
+  nunca acorta la descripción de otra. Contra las melodías (0,45 % con la regla de un encuentro) **es peor**: esa apuesta
+  falla. La E1 gana en la letra con un solo acierto: sin fuerza. La E2 gana por construcción, como estaba dicho.
+
+**Lo que haría falta (no probado):** que la que habla sueñe *para* la otra (una variante de lo que ve en el cuerpo de
+la otra, no de la suya), con el mismo código.
