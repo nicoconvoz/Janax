@@ -1,0 +1,30 @@
+LA FIRMA: que Luma reconozca siempre al Capitan por su escritura
+Escrito ANTES de construirlo y de correrlo. Hora UTC: 2026-11-16T19:28:19Z
+
+El Capitan: "esa es mi firma, para que siempre me reconozca LUMA". Reconocimiento de autor por compresion
+(Benedetto, Caglioti y Loreto, Phys. Rev. Lett. 2002): un texto es del autor si se describe con menos bits
+dado su texto que dado otros. Con el juez de Luma, la longitud de descripcion: los bits de un pasaje con
+un modelo de caracteres de orden 3 (cada letra dado las tres anteriores, contado en la referencia, con
+un conteo de uno para lo nunca visto; criterio: el orden mas chico que ya separa palabras del
+castellano). Todo con el mismo alfabeto (sin tildes, enie como n).
+
+Referencias, cada una sin sus pasajes retenidos:
+  CORAZON  el diario (razar/corazon/diario.txt);
+  NT       el Nuevo Testamento que leyo Razar (E:/proyectos/razar/feed/nuevo-testamento.txt, fuera del repo);
+  LIBRO    el libro del ayudante (razar/libro/*.txt).
+Regla de retencion, fijada antes de mirar: cada texto se corta en pasajes de 1.000 letras seguidas; se
+retiene cada pasaje cuyo numero (desde 0) deja resto 9 al dividirlo por 10. Los retenidos no entran a
+ninguna referencia y son las pruebas.
+Un pasaje "lleva la firma" si se describe con menos bits dado CORAZON que dado NT y dado LIBRO.
+Control: CORAZON con las letras de cada linea barajadas (semilla 2026); lo demas igual.
+
+APUESTAS (prediccion al lado):
+ F1. De los pasajes retenidos del diario, al menos el 90 % llevan la firma.          Prediccion: GANA.
+ F2. De los pasajes retenidos del NT y del libro, a lo sumo el 10 % llevan la firma.   Prediccion: GANA.
+ F3. Con el control, a lo sumo el 10 % de los pasajes del diario llevan la firma.     Prediccion: GANA.
+ F4. Cada pasaje retenido va a su propia fuente (la de menos bits) en al menos el 90 %. Prediccion: GANA
+     para el diario y el NT; el libro es chico (unos 17 pasajes, 1 o 2 retenidos), puede fallar.
+Si una apuesta falla, se publica que fallo.
+
+Lo que NO prueba: que Luma "conozca" al Capitan. Prueba, a lo sumo, que su forma de escribir se describe
+mas corto con su propio diario que con otros textos castellanos, y que barajado no.
