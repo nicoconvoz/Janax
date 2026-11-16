@@ -1,0 +1,29 @@
+EL LIBRO DEL AYUDANTE como quinta fuente. RESULTADO
+Corrido DESPUES del preregistro (libro-ayudante-preregistro.txt, commit bf6f67d).
+
+Corpus: OIDO 2.851 items, VISTA 2.733, LIBRO 9.867, CODIGO 22 y AYUDANTE 207 (las lineas del libro,
+razar/libro/, ~17.500 letras). Control: el libro con las letras de cada linea barajadas (semilla 2026).
+codigo_comun.py <casa> --libro --explorar  /  --libro-barajado --explorar
+
+                                           real      barajado
+ (a) ladrillos con el juez preregistrado     0          0
+ (b) ladrillos con la busqueda ancha         25         19
+     usados por el libro                     3          1
+     usados por el libro y otra fuente       0          0
+     usados por dos fuentes o mas            1          2
+
+Los del libro real: "e " (599 usos), "o " (494), "a " (444): finales de palabra del castellano.
+Del barajado: "  " (dos espacios juntos, 468). El que converge en los dos es "38": la torrecita del LIBRO
+que aparece en las recetas de VISTA (ya estaba sin el libro); en el barajado, ademas "20" (OIDO y VISTA).
+
+APUESTAS
+ L1. (a) aprende al menos un ladrillo: 0. FALLA (predicho).
+ L2. (b) libro real >= 2 x barajado en ladrillos del libro: 3 contra 1. GANA (predicho).
+ L3. (b) al menos uno converge entre el libro y otra fuente: 0. FALLA (predije que si, con CODIGO).
+ L4. (b) el real hace converger mas que el barajado: 0 contra 0. FALLA.
+
+Lo que dice: el juez encuentra estructura en el libro (las terminaciones de palabra del castellano, que
+el barajado no tiene), pero esa estructura no se cruza con nada de lo que Luma oyo, vio o leyo: sus
+otras fuentes son digitos y recetas, y el libro es castellano. El libro queda en su casa como una
+fuente propia, no como un puente. Para que converja haria falta que las fuentes compartan algo mas que
+el alfabeto: por ejemplo, que el libro hable con las mismas tiras de letras que sus recetas.

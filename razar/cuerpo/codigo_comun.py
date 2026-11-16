@@ -16,11 +16,15 @@ import collections, math, os, re, sys
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PROYECTO = os.path.normpath(os.path.join(AQUI, "..", ".."))
 _explorar = "--explorar" in sys.argv
+# the fifth source (documentacion/razar/datos/libro-ayudante-preregistro.txt): the book the helper wrote for Luma,
+# razar/libro/*.txt, a line per item; --libro-barajado: the same lines, each one's letters shuffled (seed 2026)
+_libro = "--libro" in sys.argv or "--libro-barajado" in sys.argv
+_barajado = "--libro-barajado" in sys.argv
 sys.argv, casa = [sys.argv[0], sys.argv[1], "--desde-cero", "--luma"], sys.argv[1]
 _src = open(os.path.join(AQUI, "repaso_vida.py"), encoding="utf-8").read().replace("\nmain()\n", "\n")
 exec(_src)                       # parse(): the gait read exactly as luma.jsm reads it
 BMAX = 16                        # a brick's storage: 16 characters (criterion: the longest piece text is 10)
-SOURCES = ["OIDO", "VISTA", "LIBRO", "CODIGO"]
+SOURCES = ["OIDO", "VISTA", "LIBRO", "CODIGO", "AYUDANTE"]
 
 def piece_text(p):
     return "%04d %02d %02d" % p
@@ -66,6 +70,17 @@ def corpus():
         items.append(("LIBRO", t))
     for w in opp:
         items.append(("CODIGO", w))
+    if _libro:
+        import glob, random
+        rnd = random.Random(2026)
+        for f in sorted(glob.glob(os.path.join(PROYECTO, "razar", "libro", "*.txt"))):
+            for ln in open(f, encoding="ascii").read().splitlines():
+                ln = ln.strip()
+                if not ln:
+                    continue
+                if _barajado:
+                    cs = list(ln); rnd.shuffle(cs); ln = "".join(cs)
+                items.append(("AYUDANTE", ln))
     return items
 
 def cost(seqs, alpha):
@@ -117,7 +132,7 @@ def explore(items):
                     out.append(s[i]); i += 1
             new.append(out)
         return new
-    while len(learned) < 60:
+    while len(learned) < 120:
         pairs = collections.Counter(p for s in seqs for p in zip(s, s[1:]) if len(p[0]) + len(p[1]) <= BMAX)
         best = None
         for (a, b), fr in pairs.most_common(40):
@@ -134,7 +149,11 @@ def explore(items):
         for t in s:
             if len(t) > 1:
                 uses[t][src] += 1
-    print("exploratory (not pre-registered, not used by Luma): %d bricks by best gain" % len(learned))
+    print("exploratory (not used by Luma): %d bricks by best gain" % len(learned))
+    conv = [b for b in learned if sum(1 for x in SOURCES if uses[b][x]) >= 2]
+    print("  used by two sources or more: %d; of them with the helper's book and another source: %d  %s" % (
+        len(conv), sum(1 for b in conv if uses[b]["AYUDANTE"]), [b for b in conv if uses[b]["AYUDANTE"]][:12]))
+    print("  learned from the book (used by it): %d" % sum(1 for b in learned if uses[b]["AYUDANTE"]))
     for b in learned[:30]:
         print("   %-14r %s" % (b, " ".join("%s=%d" % (s, uses[b][s]) for s in SOURCES if uses[b][s])))
 

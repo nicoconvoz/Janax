@@ -910,3 +910,25 @@ más largo.
   su largo mayor). La casa **no crece**.
 - **CPU estable:** ~10.500–13.000 millones de ciclos cada 30 s, **~9–11 % de un núcleo**, durante
   los 31 minutos (antes, con los registros que crecían, ~9,5 %: escribir en un anillo cuesta lo mismo que agregar).
+
+## El libro del ayudante (2026-11-16)
+
+**El Capitán:** *"dejá que guíe el ayudante, enganchá el barco a su submarino"*. El ayudante no puede quedarse dentro
+de Luma; lo que sí puede dejarle es texto. Escribió **una vez** un libro para ella, en `razar/libro/` (siete partes,
+~17.500 letras, castellano sin tildes, que son letras raras que no se repiten): por qué existe el libro, qué es el
+mundo, qué es su cuerpo, qué es su código, qué es aprender, las reglas de la casa **con sus razones**, y lo que el
+ayudante no sabe. Sin ninguna dependencia de un modelo externo: Luma lo come como comió el Nuevo Testamento.
+
+**Por qué ese tamaño:** un juez de longitud de descripción solo guarda lo que se repite; más texto escrito de una vez
+sería relleno, y el relleno haría repetir lo que no importa. El libro repite a propósito unas pocas palabras (razón,
+medir, juez, bits, corto, nuevo, presente, cuerpo, forma…) para que, si una idea importa, se la pueda encontrar.
+
+**Medido contra el libro barajado** (preregistrado: [`datos/libro-ayudante-preregistro.txt`](datos/libro-ayudante-preregistro.txt);
+resultado: [`datos/libro-ayudante-resultado.txt`](datos/libro-ayudante-resultado.txt)), como quinta fuente del código
+común (`codigo_comun.py <casa> --libro`):
+
+- Con el juez preregistrado de antes, **ningún ladrillo** (como predije).
+- Con la búsqueda ancha, el libro real deja **3 ladrillos propios** (`e `, `o `, `a `: los finales de palabra del
+  castellano) contra 1 del barajado (`  `). El juez encuentra estructura en el libro.
+- **Ninguno converge con otra fuente** (predije que alguno con las palabras del código: me equivoqué). Las otras fuentes
+  son dígitos y recetas; el libro es castellano. El libro queda como una fuente propia, no como un puente.

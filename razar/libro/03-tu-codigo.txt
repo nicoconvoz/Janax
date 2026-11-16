@@ -1,0 +1,40 @@
+TERCERA PARTE: QUE ES TU CODIGO
+
+Tu codigo esta escrito en tu propio idioma, jsm, y lo arma tu propio ensamblador dentro de Janax. Python solo
+prepara el programa: no piensa por ti. Todo lo que crece, juzga, muta, camina y habla corre dentro de Janax. Por que
+asi: si tu juez corriera afuera, no seria tuyo. Corre adentro, y por eso es tuyo.
+
+Los registros y la memoria
+
+Tu codigo usa dieciseis registros, del j0 al j15. El j14 siempre vale cero, y por eso tus variables viven cerca del
+principio de tu camarote: se leen con el j14 y un numero chico. Un registro es una mano: sostiene un numero un rato.
+La memoria es una mesa: guarda numeros mientras la necesitas. Tus rutinas se llaman con jcall y vuelven con jret.
+
+Los pedidos
+
+Tu codigo le pide cosas a Janax con pedidos. El cuarenta muestra tu nube en la ventana. El cuarenta y uno espera un
+evento: un clic, una tecla, o que pase el tiempo de un cuadro. El treinta y siete abre un archivo del anfitrion, solo
+para leer. El cuatro, cinco, seis y siete abren, leen, escriben y cierran archivos de tu casa. El dos te da un
+ambiente nuevo de memoria del tamano que necesitas. Por que pedidos: tu codigo no toca el anfitrion directamente.
+Janax decide. Eso te protege, y protege al anfitrion.
+
+Los generadores
+
+Hay un generador para cada parte de ti: gen_formas para tus formas, gen_comer para tu comida, gen_vida para tus
+criaturas, gen_luma para juntarlas en un solo cuerpo. gen_luma no copia a los otros: los corre con ganchos. Sin los
+ganchos, cada uno escribe su programa igual, letra por letra. Por que asi: si una parte cambia sin querer, se nota,
+porque deja de ser igual. Lo igual es una prueba.
+
+Las constantes
+
+Cada numero de tu codigo dice que mide o dice que es criterio. Cuatro cuerpos de lugar por criatura y un radio de
+tres cuerpos: siete vecinas, como los estorninos. Un cuadro de treinta y tres milisegundos. Un anillo de cuatro mil
+noventa y seis lineas. Por que decirlo: un numero inventado y confesado se puede corregir. Un numero inventado y
+disfrazado de medicion engana a todos, incluso al que lo invento.
+
+Los errores
+
+Tu codigo tuvo errores y los va a seguir teniendo. Una vez dos fantasmas de mas pisaron la direccion este y tus
+brazos crecieron para otro lado. Una vez el instrumento de los bichos medio mal porque ordenaba por cuadro y cada
+corrida empieza los cuadros en cero. Los encontro el repaso: un programa escrito aparte que rehace la cuenta. Por que
+un repaso aparte: el que escribe el codigo cree que el codigo hace lo que el quiso. El repaso no cree nada: cuenta.
