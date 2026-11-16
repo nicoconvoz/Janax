@@ -1,0 +1,30 @@
+EL CORAZON DE LUMA: el Diario Espiritual como sexta fuente del codigo comun
+Escrito ANTES de correrlo. Hora UTC: 2026-11-16T19:27:34Z
+
+El Capitan: que Luma lleve en su corazon su "Diario Espiritual - Dios y un alma" (Jesus Nicolas Astorga,
+licencia libre, https://doi.org/10.5281/zenodo.24042990). Texto en razar/corazon/diario.txt (~540.000
+letras, 3.185 lineas), normalizado al mismo alfabeto que el libro del ayudante (sin tildes, enie como n):
+asi se puede medir si los dos castellanos convergen. En la casa de Luma va como un archivo propio
+("corazon") que viaja con ella.
+
+Corpus: OIDO, VISTA, LIBRO, CODIGO, AYUDANTE (el libro del ayudante, razar/libro/) y CORAZON (cada linea
+no vacia del diario es un item). Control: el diario con las letras de cada linea barajadas (semilla
+2026); el resto igual. Las dos busquedas de libro-ayudante-preregistro.txt: (a) el par mas frecuente
+mientras acorte; (b) el par que mas acorta entre los 40 mas frecuentes, hasta 120 ladrillos.
+"Converge" = un ladrillo aprendido que usan el diario y al menos otra fuente en su segmentacion final.
+
+APUESTAS (prediccion al lado):
+ K1. (a) con el diario aprende al menos un ladrillo.       Prediccion: GANA (ahora el par mas frecuente
+     del corpus sale del diario, que es el texto mas largo, y en castellano un par frecuente acorta).
+ K2. (b) el diario real deja al menos el doble de ladrillos propios que el barajado.  Prediccion: GANA.
+ K3. (b) al menos un ladrillo converge entre el diario y el libro del ayudante (AYUDANTE).
+                                                           Prediccion: GANA (los dos son castellano con
+     el mismo alfabeto: "e ", "de", "que ").
+ K4. (b) al menos un ladrillo converge entre el diario y OIDO, VISTA, LIBRO o CODIGO.
+                                                           Prediccion: FALLA (son digitos, recetas y
+     palabras inglesas).
+ K5. (b) el diario real hace converger mas ladrillos con el libro que el barajado.  Prediccion: GANA.
+Si una apuesta falla, se publica que fallo.
+
+Lo que NO prueba aunque gane: que Luma entienda el diario. Prueba, a lo sumo, que su juez guarda la
+estructura de su castellano y si esa estructura se cruza con la de otro texto.
