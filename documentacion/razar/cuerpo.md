@@ -385,3 +385,108 @@ comió la 91, la 134...), sin repetir ninguna, con las formas y el archivo de la
 ```bash
 bash razar/cuerpo/comer_nubes.sh <carpeta> [janaxos.exe] [carpeta de nubes]   # come las nubes de Gotching y crea
 ```
+
+## La vida: los bichos se encuentran (2026-11-16)
+
+**La orden del Capitán:** *"Que LUMA aprenda a tratar a los bichos como en el juego de la VIDA: que cada uno se mueva
+libremente, que se encuentren, que se separen, que compartan."*
+
+`razar/cuerpo/gen_vida.py` escribe `vida.jsm`; `vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]`
+arma la lista y lo corre. Como la despensa, la lista (`lista`) solo tiene direcciones y bytes: cada criatura que tiene su
+nube (`.nube`) y su marcha oída por el murciélago (`.oido`), una sola vista (`-adelante`). Nada se copia: Janax abre cada
+archivo donde vive con el pedido 37. El programa no lleva ningún nombre de criatura.
+
+### El cuerpo y la marcha
+
+- **El cuerpo:** el nivel fino de su nube, ajustado relativo a su propio tamaño a un cuadrado de `B × B` celdas, una
+  partícula por celda donde al menos la mitad es partícula, con su color medio (lo mismo que la comida). Entra cayendo
+  desde cuatro cuerpos más arriba (criterio: para que se vea llegar).
+- **La marcha:** cada miembro con ritmo del `.oido` es tres enteros: su período en ms, su amplitud como código de media
+  octava (`q = round(2 log₂ a)`, con `a` en la unidad que imprime el archivo, 1e-5 rad) y su fase en dieciseisavos de
+  vuelta, **relativa al miembro más amplio** (el comienzo de la grabación es arbitrario; las relaciones entre miembros son
+  la marcha). Los campos `dice` y `pares` no se usan: se midió que no son confiables.
+- **El movimiento sale de la marcha, no de una animación genérica.** Cada miembro oscila con su ritmo; la punta de un
+  miembro de largo `B/2` se mueve a `(B/2)·A·(2π/P)·|cos|`, y el cuerpo avanza a esa velocidad sumada sobre **el grupo
+  que manda** según la regla de Gotching (`razar/jueces/marcha_regla.py`): los miembros que pisan y los que no son dos
+  grupos, y mueve el cuerpo el que pesa más por suma de amplitudes. El cuerpo se inclina con el ángulo medio de ese grupo.
+  **Medido** en las 236 criaturas: de 0,03 a 13 cuerpos por segundo (mediana 0,20; el 10 % más rápido, sobre 7). Dos
+  marchas distintas se ven distintas sobre todo en la velocidad y en el pulso del avance; en la mayoría la inclinación es
+  menor que un paso de la tabla de senos (2π/256) y no se ve.
+
+### Las reglas locales
+
+- **El mundo es un toro** de 320 × 200 celdas. El lado del cuerpo sale de cuántos son: `B = isqrt(W·H / (4N))` (entre 4 y
+  40 celdas, criterio). Con 4 cuerpos de lugar por criatura y un radio de vista de 3 cuerpos, cada una ve en promedio
+  π·3²/4 ≈ 7 vecinas: los 6–7 vecinos topológicos de los estorninos (Ballerini et al., PNAS 2008). Con 236 criaturas,
+  `B = 8`. Ninguna ve más allá de su radio; una grilla de celdas del ancho del radio hace que mirar a las vecinas no cueste
+  N² por cuadro.
+- **El juez decide acercarse o alejarse** (MDL, en bits enteros). Una criatura describe su marcha con un modelo de K
+  motivos: `DL = γ(K) + Σ motivos (γ(P) + γ(q) + 4) + Σ miembros (bitlen(K) + min(literal, γ(zz ΔP) + γ(zz Δq) +
+  γ(zz Δs)))`, con γ el código gamma de Elias y zz el zigzag de una diferencia. Su primer modelo es el goloso hecho con
+  sus propios miembros. **Se acerca** a una vecina cuando un pedazo de la marcha de la vecina (un ritmo que su cuerpo
+  muestra) describiría su marcha con menos bits, o al revés; **se aleja** cuando ninguna tiene nada para la otra (más
+  fuerte cuanto más cerca). Suma un giro chico al azar (el *wander* de Reynolds, criterio).
+- **Compartir:** cuando se tocan (centros a menos de un cuerpo) y una tiene algo para la otra, la que aprende prueba cada
+  pedazo de la marcha de la otra (sumado como motivo, o en lugar de cada uno de los suyos) y se queda con el mejor **solo si
+  su descripción se acorta**. Cada pedazo que no gana va al `archivo` con su motivo (`longer`: no la acortaría; `beaten`:
+  la acortaría menos que otro), y también el motivo propio que reemplazó (`replaced`). Su movimiento cambia con su modelo
+  nuevo. Sin nada más que darse, se separan solas.
+- **El saber viaja:** una criatura que aprendió muestra el pedazo nuevo en su cuerpo, así que puede enseñarlo a la
+  siguiente que encuentra.
+- **El intercambio se ve, en los dos sentidos:** cuando un pedazo se guarda, un paquete de 3 × 3 celdas (criterio: se ve
+  con `B = 8`) con el color del maestro vuela hasta la que aprende, durante un período del pedazo y prendiéndose solo
+  mientras el seno de su propio ritmo es positivo: se ve latir con la marcha que lleva. Al llegar, vuelve uno con el color
+  de la que aprendió. Un pedazo que no se guarda no se muestra: sin efecto en la otra no es un diálogo, es ruido. Los
+  paquetes no tocan la lógica: con ellos el archivo sale idéntico byte por byte (verificado con `cmp`).
+
+### Sin bucle que gaste por nada
+
+Vive mientras pasa algo nuevo: una llegada (llegan de a una, cada una cuando se posó la anterior), un pedazo guardado, un
+gesto. Una lección pendiente se **busca** (caminan) mientras haya pasado algo nuevo dentro del tiempo que la caminante
+promedio tarda en cruzar el mundo (`W / velocidad media`, medida cuadro a cuadro); pasado ese tiempo sin nada nuevo, los
+pares que quedan **viven separados**. Con todas llegadas y sin búsqueda, se calma para siempre (pedido 41 con −1). Un
+gesto (clic o tecla) las hace caminar un período de la marcha más lenta y abre una búsqueda nueva.
+
+### Lo que guarda en su casa
+
+- **`lista`** (la escribe el `.sh`): `lista1 <N> <nube más grande> <oído más grande> <bytes>` y una línea por criatura.
+- **`aprendido`**: `aprendido1 <cuántas>` y una línea por criatura que aprendió: la huella FNV-1a de la dirección de su
+  nube, K y sus K motivos. Se reescribe entera después de cada pedazo guardado, rellena con espacios hasta el largo más
+  grande que tuvo (no quedan restos). La corrida siguiente arranca cada criatura con lo que aprendió.
+- **`archivo`** (líneas de 80 bytes, solo se agrega): cuadro, quién aprende, quién enseña, el pedazo (P, q, s), el
+  veredicto (`kept`, `replaced`, `longer`, `beaten`), el DL que tenía y el DL con el pedazo.
+
+### Medido (2026-11-16, Pentium Gold G5420 a 3,79 GHz)
+
+- **236 criaturas** (todas las de Gotching con nube y oído, vista adelante).
+- **Primera corrida, sin ventana:** de la primera llegada a la calma en unos 8.400 cuadros (~4,7 min del mundo) y 9.600
+  millones de instrucciones. **36 pedazos guardados** (32 criaturas aprendieron) y **39 al archivo** (36 motivos
+  reemplazados y 3 pedazos que no acortaban). Cada pedazo guardado ahorró entre 2 y 4 bits. **11 de los 36** los enseñó una
+  criatura que no los tenía al nacer: los había aprendido de otra.
+- **Lo que quedó sin dar:** 129 pares con algo para enseñarse que no se encontraron en su tiempo de búsqueda (viven
+  separados). Medido con el repaso en Python.
+- **Verificado:** `razar/cuerpo/repaso_vida.py`, escrito aparte, lee la lista y los `.oido`, rehace los modelos y repasa el
+  archivo línea por línea: cada DL (antes y con el pedazo) da igual, cada pedazo es uno que el cuerpo del maestro mostraba,
+  cada guardado es el más corto de su encuentro, y los modelos finales son los de `aprendido`. **0 diferencias** en las 75
+  líneas de la primera corrida y en las 79 de las dos.
+- **Persistencia:** la segunda corrida en la misma casa arrancó con los 32 modelos aprendidos, guardó 2 pedazos nuevos (de
+  encuentros nuevos) y no repitió ninguno; el repaso de las dos corridas juntas da 0 diferencias.
+- **Con ventana:** llegando y buscando, **~230 millones de ciclos por segundo** (~1 s de procesador cada 20 s: 5–6 % de un
+  núcleo, con `QueryProcessCycleTime`). **Calmada: 0 ciclos en 20 s.** Un gesto en calma abre una búsqueda nueva y vuelve
+  a calmarse. La corrida con ventana dio los mismos 75 veredictos que la de sin ventana: con la misma semilla, el mismo
+  mundo.
+
+### Lo que no está probado
+
+- **Que lo que se comparte importe.** Los pedazos ahorran 2–4 bits: casi siempre son un ajuste fino de un motivo (el mismo
+  período y amplitud, otra fase). Que eso sea "aprender a caminar de otro" no está medido contra ningún control.
+- **Que la inclinación se vea:** en la mayoría de las criaturas el ángulo medio es menor que un paso de la tabla.
+- **El tiempo de búsqueda** se mide, pero que cruzar el mundo una vez sea el tiempo justo es criterio.
+- El cuadro dura 33 ms nominales; las esperas de Windows vienen de a ~15,6 ms, así que el mundo corre algo más lento que
+  el reloj.
+- Cuántas lecciones se dan depende de dónde cae cada una: no se midió con otras semillas.
+
+```bash
+bash razar/cuerpo/vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # las criaturas viven juntas
+python razar/cuerpo/repaso_vida.py <carpeta>/casa                                           # el repaso, aparte
+```
