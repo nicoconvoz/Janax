@@ -23,7 +23,7 @@ import math, os, types
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 FORMAS = os.path.join(AQUI, "gen_formas.py")
-NS = {"__file__": FORMAS, "__name__": "gen_formas_con_comida"}
+NS = {"__file__": FORMAS, "__name__": "gen_formas_con_comida", "LUMA": globals().get("LUMA")}
 
 def _s():
     """the generator's names, here (its helpers o, J, li, ld, st..., its constants and G)."""
@@ -444,6 +444,8 @@ def hungry():
     o("hu_next:")
     incg("RLEN"); J("jjmp hu_lap")
     o("hu_eat:")
+    if NS["LUMA"]:
+        J("jcall v_meal                  ; the cloud eaten is born a creature (if it has its gait)")
     setg("MEALPH", 1); incg("MEALS"); setg("CHANGED", 1); ld("j9", "EPOCH"); st("j9", "MEP"); J("jldi j0, 1", "jret")
     o("hu_none:")
     J("jldi j0, 0", "jret")
@@ -1129,6 +1131,6 @@ def files_out():
     J("jret")
 
 COMER = types.SimpleNamespace(layout=layout, more_vars=more_vars, header=header, init=init, mutations=mutations,
-                              routines=routines, out="comer_nubes.jsm")
+                              routines=routines, out=NS["LUMA"].out if NS["LUMA"] else "comer_nubes.jsm")
 NS["COMER"] = COMER
 exec(compile(open(FORMAS, encoding="utf-8").read(), FORMAS, "exec"), NS)

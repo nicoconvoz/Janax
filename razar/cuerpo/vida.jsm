@@ -965,6 +965,28 @@ init_bits:
   jstb j1, j14, 01403h
   jldi j1, 061h
   jstb j1, j14, 01404h
+  jldi j1, 020h
+  jstb j1, j14, 01405h
+  jldi j1, 020h
+  jstb j1, j14, 01406h
+  jldi j1, 020h
+  jstb j1, j14, 01407h
+  jldi j1, 020h
+  jstb j1, j14, 01408h
+  jldi j1, 020h
+  jstb j1, j14, 01409h
+  jldi j1, 020h
+  jstb j1, j14, 0140Ah
+  jldi j1, 020h
+  jstb j1, j14, 0140Bh
+  jldi j1, 020h
+  jstb j1, j14, 0140Ch
+  jldi j1, 020h
+  jstb j1, j14, 0140Dh
+  jldi j1, 020h
+  jstb j1, j14, 0140Eh
+  jldi j1, 020h
+  jstb j1, j14, 0140Fh
   jldi j1, 061h
   jstb j1, j14, 01410h
   jldi j1, 070h
@@ -983,6 +1005,20 @@ init_bits:
   jstb j1, j14, 01417h
   jldi j1, 06Fh
   jstb j1, j14, 01418h
+  jldi j1, 020h
+  jstb j1, j14, 01419h
+  jldi j1, 020h
+  jstb j1, j14, 0141Ah
+  jldi j1, 020h
+  jstb j1, j14, 0141Bh
+  jldi j1, 020h
+  jstb j1, j14, 0141Ch
+  jldi j1, 020h
+  jstb j1, j14, 0141Dh
+  jldi j1, 020h
+  jstb j1, j14, 0141Eh
+  jldi j1, 020h
+  jstb j1, j14, 0141Fh
   jldi j1, 061h
   jstb j1, j14, 01420h
   jldi j1, 072h
@@ -997,6 +1033,56 @@ init_bits:
   jstb j1, j14, 01425h
   jldi j1, 06Fh
   jstb j1, j14, 01426h
+  jldi j1, 020h
+  jstb j1, j14, 01427h
+  jldi j1, 020h
+  jstb j1, j14, 01428h
+  jldi j1, 020h
+  jstb j1, j14, 01429h
+  jldi j1, 020h
+  jstb j1, j14, 0142Ah
+  jldi j1, 020h
+  jstb j1, j14, 0142Bh
+  jldi j1, 020h
+  jstb j1, j14, 0142Ch
+  jldi j1, 020h
+  jstb j1, j14, 0142Dh
+  jldi j1, 020h
+  jstb j1, j14, 0142Eh
+  jldi j1, 020h
+  jstb j1, j14, 0142Fh
+  jldi j1, 020h
+  jstb j1, j14, 01430h
+  jldi j1, 020h
+  jstb j1, j14, 01431h
+  jldi j1, 020h
+  jstb j1, j14, 01432h
+  jldi j1, 020h
+  jstb j1, j14, 01433h
+  jldi j1, 020h
+  jstb j1, j14, 01434h
+  jldi j1, 020h
+  jstb j1, j14, 01435h
+  jldi j1, 020h
+  jstb j1, j14, 01436h
+  jldi j1, 020h
+  jstb j1, j14, 01437h
+  jldi j1, 020h
+  jstb j1, j14, 01438h
+  jldi j1, 020h
+  jstb j1, j14, 01439h
+  jldi j1, 020h
+  jstb j1, j14, 0143Ah
+  jldi j1, 020h
+  jstb j1, j14, 0143Bh
+  jldi j1, 020h
+  jstb j1, j14, 0143Ch
+  jldi j1, 020h
+  jstb j1, j14, 0143Dh
+  jldi j1, 020h
+  jstb j1, j14, 0143Eh
+  jldi j1, 020h
+  jstb j1, j14, 0143Fh
   jldi j1, 06Bh
   jstb j1, j14, 01440h
   jldi j1, 065h
@@ -1115,6 +1201,22 @@ init_bits:
   jstb j1, j14, 02846h
   jldi j1, 073h
   jstb j1, j14, 02847h
+  jldi j1, 020h
+  jstb j1, j14, 02848h
+  jldi j1, 020h
+  jstb j1, j14, 02849h
+  jldi j1, 020h
+  jstb j1, j14, 0284Ah
+  jldi j1, 020h
+  jstb j1, j14, 0284Bh
+  jldi j1, 020h
+  jstb j1, j14, 0284Ch
+  jldi j1, 020h
+  jstb j1, j14, 0284Dh
+  jldi j1, 020h
+  jstb j1, j14, 0284Eh
+  jldi j1, 020h
+  jstb j1, j14, 0284Fh
   jldi j1, 06Ch
   jstb j1, j14, 02850h
   jldi j1, 065h
@@ -1127,6 +1229,26 @@ init_bits:
   jstb j1, j14, 02854h
   jldi j1, 06Fh
   jstb j1, j14, 02855h
+  jldi j1, 020h
+  jstb j1, j14, 02856h
+  jldi j1, 020h
+  jstb j1, j14, 02857h
+  jldi j1, 020h
+  jstb j1, j14, 02858h
+  jldi j1, 020h
+  jstb j1, j14, 02859h
+  jldi j1, 020h
+  jstb j1, j14, 0285Ah
+  jldi j1, 020h
+  jstb j1, j14, 0285Bh
+  jldi j1, 020h
+  jstb j1, j14, 0285Ch
+  jldi j1, 020h
+  jstb j1, j14, 0285Dh
+  jldi j1, 020h
+  jstb j1, j14, 0285Eh
+  jldi j1, 020h
+  jstb j1, j14, 0285Fh
   jldi j1, -1
   jst j1, j14, 02860h
   jldi j1, 0
@@ -1321,12 +1443,8 @@ fr_walk:
   jld j1, j14, 0300h
   jjnz j1, fr_go
   ; while the world is awake anyway (some fall, some still to come) every one here walks by its gait
-  jld j1, j14, 02F0h
-  jld j2, j14, 0228h
-  jld j3, j14, 02D8h
-  jsub j2, j2, j3
-  jor j1, j1, j2
-  jjz j1, fr_parts
+  jcall r_coming
+  jjz j0, fr_parts
 fr_go:
   jcall r_walk_all
   ; the search's time: W / the mean speed of those here (frames)
@@ -1358,6 +1476,7 @@ fr_q:
 fr_parts:
   jcall r_packets
   jcall r_particles
+  jcall r_fill
   jcall r_draw
   jcall r_draw_packets
   jldi j10, 40
@@ -1371,13 +1490,9 @@ fr_parts:
   jldi j10, 1
   jsub j1, j1, j10
   jst j1, j14, 0300h
-fr_alive:                       ; alive while one arrives, one waits to, a lesson is pending, a gesture walks, a
-                                ; particle moves
-  jld j1, j14, 02F0h
-  jld j2, j14, 0228h
-  jld j3, j14, 02D8h
-  jsub j2, j2, j3
-  jor j1, j1, j2
+fr_alive:
+  jcall r_coming
+  jadd j1, j0, j14
   jst j1, j14, 0338h
   jcall r_searching
   jld j1, j14, 0338h
@@ -3737,6 +3852,13 @@ td_ok_4:
   jadd j1, j3, j4
   jcall r_isqrt
   jret
+r_coming:                       ; j0 = nonzero while one falls in or one is still to come
+  jld j0, j14, 02F0h
+  jld j1, j14, 0228h
+  jld j2, j14, 02D8h
+  jsub j1, j1, j2
+  jor j0, j0, j1
+  jret
 r_searching:                    ; j0 = 1 while a lesson (seen, or a newcomer to meet) is pending and its search has
                                 ; time left (QUIET 0: fresh)
   jldi j0, 0
@@ -4126,9 +4248,9 @@ dx_ok:
   jst j1, j14, 0440h
   jld j2, j14, 0240h
   jsub j10, j1, j2
-  jjnn j10, st_next
+  jjnn j10, st_far
   jadd j10, j1, j2
-  jjn j10, st_next
+  jjn j10, st_far
   jld j1, j8, 24
   jld j2, j9, 24
   jsub j1, j1, j2
@@ -4153,9 +4275,9 @@ dy_ok:
   jst j1, j14, 0448h
   jld j2, j14, 0240h
   jsub j10, j1, j2
-  jjnn j10, st_next
+  jjnn j10, st_far
   jadd j10, j1, j2
-  jjn j10, st_next
+  jjn j10, st_far
   jld j1, j14, 0440h
   jld j2, j14, 0448h
   jmul j1, j1, j1
@@ -4163,11 +4285,13 @@ dy_ok:
   jadd j1, j1, j2
   jld j2, j14, 0238h
   jsub j10, j1, j2
-  jjnn j10, st_next
+  jjnn j10, st_far
   jcall r_isqrt
   jjz j0, st_next
   jst j0, j14, 0450h
-  ; touching: they talk once per touch (each speaks to the other from its own side); apart again: they may again
+  ; touching: they talk once per meeting (each speaks to the other from its own side); a meeting ends when they
+  ; are out of each other's sight (st_far), not when they stop touching: at the edge of a touch they talked
+  ; again every few frames (measured in luma: 208.000 dialogues before calm)
   jld j9, j14, 0380h
   jld j1, j9, 0
   jld j2, j14, 0228h
@@ -4180,7 +4304,6 @@ dy_ok:
   jld j3, j14, 0248h
   jsub j10, j2, j3
   jjn j10, st_touch
-  jstb j14, j1, 0
   jjmp st_talked
 st_touch:
   jldb j2, j1, 0
@@ -4290,6 +4413,17 @@ st_away:                        ; nothing either way: away, weighted (radius - d
   jld j2, j14, 0428h
   jsub j2, j2, j1
   jst j2, j14, 0428h
+  jjmp st_next
+st_far:                         ; out of sight: their meeting is over
+  jld j9, j14, 0380h
+  jld j1, j9, 0
+  jld j2, j14, 0228h
+  jmul j1, j1, j2
+  jld j2, j14, 0480h
+  jadd j1, j1, j2
+  jld j10, j14, 0570h
+  jadd j1, j1, j10
+  jstb j14, j1, 0
 st_next:
   jld j1, j14, 0480h
   jldi j10, 3
@@ -5423,6 +5557,8 @@ dk_y_hi:
   jldi j10, 320
   jmul j9, j9, j10
   jadd j9, j9, j7
+  jldi j10, 0
+  jadd j9, j9, j10
   jldi j10, 3
   jmul j9, j9, j10
   jadd j9, j9, j8
@@ -5568,7 +5704,7 @@ pa_next:
   jjmp pa_lap
 pa_done:
   jret
-r_draw:                         ; the ground, then every body that is here (later ones in front), on the torus
+r_fill:                         ; the ground
   jldi j1, 1
   jshi j1, 01F60h
   jldi j2, 4
@@ -5593,6 +5729,8 @@ dr_fill:
   jadd j1, j1, j6
   jsub j7, j2, j1
   jjnz j7, dr_fill
+  jret
+r_draw:                         ; every body that is here (later ones in front), on the torus
   jst j14, j14, 0338h
 dr_lap:
   jld j1, j14, 0338h
@@ -5657,6 +5795,8 @@ dr_y_hi:
   jldi j10, 320
   jmul j6, j6, j10
   jadd j6, j6, j5
+  jldi j10, 0
+  jadd j6, j6, j10
   jldi j10, 3
   jmul j6, j6, j10
   jadd j6, j6, j8

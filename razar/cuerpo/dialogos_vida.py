@@ -3,8 +3,10 @@ computed from the "dialogos" and "lexico" files of two runs of vida.jsm (the rea
 Reads the run folders only; it carries no data."""
 import sys, os
 
+PFX = "vida-" if "--luma" in sys.argv else ""   # inside luma.jsm the creatures' files are "vida-..."
+
 def read(casa, name):
-    p = os.path.join(casa, name.encode().hex())
+    p = os.path.join(casa, (PFX + name).encode().hex())
     return open(p, "rb").read().decode() if os.path.exists(p) else ""
 
 def dialogs(casa):

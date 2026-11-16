@@ -1,4 +1,4 @@
-"""repaso_vida.py <casa> [--desde-cero]: an independent check of what vida.jsm did, written apart from it.
+"""repaso_vida.py <casa> [--desde-cero] [--luma]: an independent check of what vida.jsm did, written apart from it.
 
 It reads the list of the run's folder, parses every .oido the same way the program says it does (the decimals as
 integers in 1e-5, half-octave amplitude codes, sixteenths of a turn relative to the widest limb), builds each
@@ -11,8 +11,10 @@ import sys, os
 def label(s):
     return s.encode().hex()
 
+PFX = "vida-" if "--luma" in sys.argv else ""   # inside luma.jsm the creatures' files are "vida-..."
+
 def read(casa, name):
-    p = os.path.join(casa, label(name))
+    p = os.path.join(casa, label(PFX + name))
     return open(p, "rb").read() if os.path.exists(p) else b""
 
 TH = [__import__("math").ceil(2 ** ((q + 0.5) / 2)) for q in range(64)]

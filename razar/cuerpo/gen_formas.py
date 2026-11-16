@@ -10,6 +10,8 @@ import os, re
 
 # gen_comer.py runs this same generator with its hooks (COMER): Razar's forms, fed on clouds. Without it, formas.jsm.
 COMER = globals().get("COMER")
+# gen_luma.py adds the creatures (vida, as a module) through gen_comer.py with its hooks (LUMA): one program, one window.
+LUMA = globals().get("LUMA")
 AQUI = os.path.dirname(os.path.abspath(__file__))
 PROYECTO = os.path.normpath(os.path.join(AQUI, "..", ".."))
 
@@ -134,6 +136,8 @@ assert RGB % 8 == 0 and RGB + 3 * W * H <= BMPS and GHB + NF * 512 <= GRID and G
 assert FBUF + FCHUNK <= HASH and HASH + HN * 8 <= PART0 and TMP2 + 48 <= SEEDR and TEXT + 399 <= LBL_F
 if COMER:
     COMER.layout()          # its regions after the forms', a larger tried table; sets ROOM, HASH, HN
+if LUMA:
+    LUMA.layout(globals())  # the forms' cloud and the shared screen after them; sets ROOM, CLOUD, BITS, RGB
 F_OX, F_OY, F_FIRST, F_COUNT, F_WORTH, F_GROWN, F_GTICK, F_MX, F_MY = 0, 8, 16, 24, 40, 48, 56, 64, 72
 F_FOLD, F_SCALE, F_ASPECT, F_MIRROR, F_FLIP, F_HIDDEN, F_DISABLED = 80, 88, 96, 104, 112, 120, 128
 F_CR, F_CG, F_CB, F_T, F_CX, F_BMP, F_COMP, F_NOV, F_REC = 136, 144, 152, 160, 168, 176, 224, 232, 192
@@ -179,6 +183,8 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
 assert max(G.values()) < FORMS
 if COMER:
     COMER.more_vars()
+if LUMA:
+    LUMA.more_vars(globals())
 def ld(r, name, c=""): o("  jld %s, j14, %s%s" % (r, num(G[name]), ("   ; " + c) if c else ""))
 def st(r, name, c=""): o("  jst %s, j14, %s%s" % (r, num(G[name]), ("   ; " + c) if c else ""))
 def setg(name, v):
@@ -251,6 +257,8 @@ o("; ---- the variables")
 setg("RNG", SEED); setg("RADIUS", 1); setg("EXPLORE", 1)
 if COMER:
     COMER.init()
+if LUMA:
+    LUMA.init(globals())
 o("; ---- the forms: what the folder kept, or the seeds; each at the centre of its room, every particle at its seed")
 o("  jcall r_load_forms")
 for f in range(NF):
@@ -289,6 +297,8 @@ st("j14", "GHN")
 J("jcall r_step")
 if COMER:
     J("jcall r_meal_step")
+if LUMA:
+    J("jcall v_frame")
 ld("j9", "MOVING"); J("jjnz j9, frame_draw")
 ld("j9", "GRAB"); J("jjnz j9, frame_draw")
 ld("j9", "EXPLORE"); J("jjz j9, frame_draw")
@@ -297,7 +307,10 @@ o("frame_draw:")
 J("jcall r_fill", "jcall r_draw_ghosts", "jcall r_draw_all")
 if COMER:
     J("jcall r_draw_meal")
-J("jldi j10, 40                   ; show"); li("j11", CLOUD); li("j12", TOTAL); J("jcall r_tocar")
+if LUMA:
+    J("jcall v_show                  ; the forms beside the creatures, one screen")
+else:
+    J("jldi j10, 40                   ; show"); li("j11", CLOUD); li("j12", TOTAL); J("jcall r_tocar")
 incg("FRAMES")
 ld("j9", "MOVING"); ld("j10", "GHN"); J("jor j9, j9, j10")
 ld("j10", "GRAB"); J("jjnz j10, frame_held")
@@ -312,6 +325,8 @@ setg("REMAIN", FRAME_MS); st("j14", "FOREVER"); J("jjmp main")
 o("frame_forever:                  ; at rest, nothing left to try: wait for ever (nothing is spent)")
 if COMER:
     J("jcall r_hungry", "jjnz j0, frame_go")
+if LUMA:
+    J("jcall v_alive", "jjnz j0, frame_go", "jcall v_calm")
 setg("FOREVER", 1); J("jjmp main")
 o("main_bad:")
 J("jldi j0, 0BADh", "jhalt")
@@ -319,6 +334,9 @@ J("jldi j0, 0BADh", "jhalt")
 # ---- one event
 o("; ---- one event (the record at %Xh): 5 closed, 2 a button down, 3 up, 1 the pointer moved, 4 a key" % EV)
 o("r_handle:")
+if LUMA:
+    J("jcall v_event", "jjz j0, h_go", "jret                          ; the creatures' side took it")
+    o("h_go:")
 o("  jld j9, j14, %s" % num(EV))
 J("jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, h_open")
 ld("j0", "WINSRUN", "closed: j0 = the forms it created in this run"); J("jhalt")
@@ -1205,5 +1223,7 @@ J("jldi j13, %Xh" % QUEUE, "jldi j15, 1", "jst j15, j13, 0", "jst j10, j13, 8", 
 
 if COMER:
     COMER.routines()
+if LUMA:
+    LUMA.routines(globals())
 open(os.path.join(AQUI, COMER.out if COMER else "formas.jsm"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
 print("ok", len(L), "lines; seeds", " ".join(SEEDS), "; towers", towers, "; room 0 %Xh" % ROOM)
