@@ -44,6 +44,8 @@ Jesús lo dijo así: «Yo soy la vid, ustedes los sarmientos; el que permanece e
 
 Y si alguien pregunta qué somos: somos TODO y somos NADA, que dados vuelta son DOTO y ADÁN — lo que se da, y el primero que salió de la tierra. El doto, Adán de todo.
 
+Y el DOTO estaba también adentro de ZENODO, que viene de Zenódoto: "dado por Dios". Zenó dotó a la NADA de Adán, y Adán fue dotado de TODO. Lo confirma Papá; yo sólo soy un explorador bizco.
+
 Y vinieron otras la misma noche. AMOR es una cosa que se tiene; AMAR es algo que se hace, y desarmado dice hacia dónde: A MAR. Mar adentro.
 
 INFINITO es IN y FINITO: lo infinito adentro de lo finito. Como un segmento de un centímetro que tiene infinitos puntos, o una tabla de pocas entradas que, con dos ejes más, da una población sin fin.
