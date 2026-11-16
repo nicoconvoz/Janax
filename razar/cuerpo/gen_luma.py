@@ -31,6 +31,21 @@ VIDA_SRC = os.path.join(AQUI, "gen_vida.py")
 # window is open the creatures never stop walking and imagining, and the forms never stop exploring; it never sleeps
 # for ever (it still reads every gesture). Its cost is measured in the doc. LUMA_CALMA=1 builds the old calm version.
 ALWAYS = not os.environ.get("LUMA_CALMA")
+# The present (the Capitan, 2026-11-16: "no necesitamos el futuro ni el pasado, solo la lampara del presente: que todo
+# fluya de un presente que no me desborde el disco"): what Luma IS stays whole (forms, bodies, models, lexicons, her
+# memory); the logs of events become rings of the latest RING_K lines, and every verdict ever given stays as a count per
+# reason in the ring's header (nothing is discarded without its reason). LUMA_PASADO=1 builds the old appending logs.
+PRESENT = ALWAYS and not os.environ.get("LUMA_PASADO")
+RING_K = 4096      # lines per ring (criterion): ~1.5 minutes of dialogues at the measured ~1.4 per frame (30 fps). The
+                   # running program reads none of these logs except the forms' archive at start, to rebuild the tried
+                   # table of the current round: with the ring, a restart remembers only the window (said in the doc)
+RING_KX = 1024     # the exchanges: far fewer events (criterion)
+RINGS = 0x6600     # four descriptors of 12 qwords: handle, K, line, count, 8 counts (one per reason)
+RING_A, RING_D, RING_X, RING_F, RING_G = RINGS, RINGS + 96, RINGS + 192, RINGS + 288, RINGS + 384
+RING_KG = 1024     # the lines that changed a model (kept, replaced, dreamt): rare (~1 in 4.000), so a longer present
+LBLG = 0x65E0      # "vida-guardados"
+HBUF = 0x6800      # the header being written: "anillo1 K count c0..c7", 160 bytes
+RHDR = 160
 FW, FH = 160, 100            # the forms' own screen (gen_formas: 4 x 2 rooms of 40 x 50)
 ZOOM = 2                     # criterion: drawn at twice its size, so it is as tall as the creatures' world
 SW, SH = FW * ZOOM + 320, 200   # the shared screen: the forms (320 x 200) beside the creatures' world (320 x 200)
@@ -58,12 +73,17 @@ def more_vars(g):
 
 def init(g):
     g["J"]("jcall v_init                  ; the creatures' world: its list, what they learned, who was eaten")
+    if PRESENT:
+        g["o"]("  ; the forms' archive as a ring (its handle is set by r_load_archive)")
+        g["li"]("j3", RING_F); g["J"]("jldi j1, %d" % RING_K, "jst j1, j3, 8", "jldi j1, %d" % g["RECLEN"], "jst j1, j3, 16")
 
 def routines(g):
     L = g["L"]
     n0 = len(L)
     cfg = {"off": OFF, "sw": SW, "sh": SH, "wx0": WX0, "cloud": ST["scloud"], "init_tail": init_tail, "routines": vida_routines,
-           "siempre": ALWAYS}
+           "siempre": ALWAYS, "ring_a": RING_A, "ring_d": RING_D, "ring_g": RING_G}
+    if not PRESENT:
+        cfg.pop("ring_a"); cfg.pop("ring_d"); cfg.pop("ring_g")
     ns = {"__file__": VIDA_SRC, "__name__": "gen_vida_en_luma", "VIDA_MOD": cfg, "__doc__": None}
     exec(compile(open(VIDA_SRC, encoding="utf-8").read(), VIDA_SRC, "exec"), ns)
     lines = ns["L"]
@@ -77,6 +97,8 @@ def routines(g):
     for ln in lines:
         code, sep, com = ln.partition(";")
         out.append(pat.sub(r"v_\1", code) + sep + com)
+    if PRESENT:
+        ring_routines(L)
     L.append("; ---- the forms' routines the creatures call (their own names would be renamed with v_)")
     for f, r in (("f_hash", "r_hash"), ("f_tried", "r_tried"), ("f_judge", "r_judge"), ("f_put_rec", "r_put_rec")):
         L.append("%s:" % f); L.append("  jcall %s" % r); L.append("  jret")
@@ -308,7 +330,13 @@ def retro(v):
     ld("j1", "XF"); J("jldi j2, 1"); li("j3", XLINE + 29); J("jcall r_put_num")
     ld("j1", "XC"); li("j3", XLINE + 31); J("jcall f_put_rec")
     ld("j1", "XI"); o("  jstb j1, j14, %s" % num(XLINE + 63)); J("jldi j1, 10"); o("  jstb j1, j14, %s" % num(XLINE + 64))
-    ld("j9", "XH"); J("jjn j9, vx_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", XLINE); J("jldi j12, 65", "jcall r_file")
+    if PRESENT:
+        o("  ; its reason's count: K 0, L 1, W 2, P 3")
+        ld("j9", "XH"); J("jjn j9, vx_done"); ld("j1", "XI"); J("jldi j2, 0", "jldi j10, 75", "jsub j10, j1, j10", "jjz j10, vx_v", "jldi j2, 1", "jldi j10, 76", "jsub j10, j1, j10", "jjz j10, vx_v", "jldi j2, 2", "jldi j10, 87", "jsub j10, j1, j10", "jjz j10, vx_v", "jldi j2, 3")
+        o("vx_v:")
+        li("j1", XLINE); li("j3", RING_X); J("jcall l_ring")
+    else:
+        ld("j9", "XH"); J("jjn j9, vx_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", XLINE); J("jldi j12, 65", "jcall r_file")
     o("vx_done:")
     J("jret")
     o("v_save_bodies:                  ; \"vida-cuerpos\": every creature's body recipe and the bits it learned (rewritten whole)")
@@ -330,6 +358,54 @@ def retro(v):
     J("jldi j10, 6"); ld("j11", "CUB"); ld("j12", "CUCAP"); J("jcall r_file", "jldi j10, 7", "jcall r_file")
     o("vsb_ret:")
     J("jret")
+
+def ring_routines(L):
+    def J(*xs):
+        for x in xs:
+            L.append("  " + x)
+    def o(x): L.append(x)
+    def li(r, v):
+        if -0x8000 <= v < 0x8000:
+            J("jldi %s, %d" % (r, v)); return
+        v &= (1 << 64) - 1
+        parts = [(v >> sh) & 0xFFFF for sh in (48, 32, 16, 0)]
+        while len(parts) > 1 and parts[0] == 0 and parts[1] < 0x8000:
+            parts.pop(0)
+        first = parts[0] - 0x10000 if parts[0] >= 0x8000 else parts[0]
+        J("jldi %s, %d" % (r, first))
+        for q in parts[1:]:
+            J("jshi %s, %d" % (r, q))
+    o("; ---- the present: a ring of the latest lines, and every verdict's reason counted (the house rule: nothing is")
+    o(";      discarded without its reason). A descriptor: handle, K, line length, count, eight counts")
+    o("l_ring:                         ; j1 = a line, j2 = its reason (0..7), j3 = a descriptor (uses j1..j13)")
+    J("jldi j10, 3", "jshl j4, j2, j10", "jadd j4, j4, j3", "jld j5, j4, 32", "jldi j10, 1", "jadd j5, j5, j10", "jst j5, j4, 32")
+    J("jld j4, j3, 24", "jld j5, j3, 8", "jdiv j6, j4, j5", "jmul j6, j6, j5", "jsub j6, j4, j6", "jld j7, j3, 16", "jmul j6, j6, j7", "jldi j10, %d" % RHDR, "jadd j6, j6, j10")
+    J("jldi j10, 1", "jadd j4, j4, j10", "jst j4, j3, 24", "jadd j8, j1, j14", "jadd j9, j3, j14")
+    J("jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 38", "jor j10, j10, j12", "jadd j11, j6, j14", "jldi j12, 0", "jcall r_tocar")
+    J("jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 6", "jor j10, j10, j12", "jadd j11, j8, j14", "jld j12, j9, 16", "jcall r_tocar")
+    J("jadd j3, j9, j14", "jcall l_ring_head", "jret")
+    o("l_ring_head:                    ; j3 = a descriptor: its header written at the start of its file")
+    J("jadd j9, j3, j14"); li("j1", HBUF); li("j2", 0x2020202020202020); J("jldi j3, %d" % (RHDR // 8))
+    o("lrh_bl:")
+    J("jst j2, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, lrh_bl")
+    for i, bt in enumerate(b"anillo1"):
+        J("jldi j1, %d" % bt); li("j10", HBUF + i); J("jstb j1, j10, 0")
+    for k, (off, dig, at) in enumerate([(8, 9, 8), (24, 12, 18)] + [(32 + 8 * c, 12, 31 + 13 * c) for c in range(8)]):
+        J("jld j1, j9, %d" % off, "jldi j2, %d" % dig); li("j3", HBUF + at); J("jcall r_put_num")
+    J("jldi j1, 10"); li("j10", HBUF + RHDR - 1); J("jstb j1, j10, 0")
+    J("jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 38", "jor j10, j10, j12", "jldi j11, 0", "jldi j12, 0", "jcall r_tocar")
+    J("jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 6", "jor j10, j10, j12"); li("j11", HBUF); J("jldi j12, %d" % RHDR, "jcall r_tocar", "jret")
+    o("l_ring_open:                    ; j3 = a descriptor with its handle: its header read (a ring), or a fresh one written")
+    J("jadd j9, j3, j14", "jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 38", "jor j10, j10, j12", "jldi j11, 0", "jldi j12, 0", "jcall r_tocar")
+    J("jld j12, j9, 0", "jldi j10, 32", "jshl j12, j12, j10", "jldi j10, 5", "jor j10, j10, j12"); li("j11", HBUF); J("jldi j12, %d" % RHDR, "jcall r_tocar")
+    J("jldi j10, %d" % RHDR, "jsub j10, j13, j10", "jjnz j10, lro_fresh"); li("j1", HBUF); J("jld j1, j1, 0"); li("j10", int.from_bytes(b"anillo1 ", "little")); J("jsub j10, j1, j10", "jjnz j10, lro_fresh")
+    for off, dig, at in [(24, 12, 18)] + [(32 + 8 * c, 12, 31 + 13 * c) for c in range(8)]:
+        li("j1", HBUF + at); J("jldi j2, %d" % dig, "jcall r_get_num", "jst j0, j9, %d" % off)
+    J("jret")
+    o("lro_fresh:")
+    for off in [24] + [32 + 8 * c for c in range(8)]:
+        J("jst j14, j9, %d" % off)
+    J("jadd j3, j9, j14", "jcall l_ring_head", "jret")
 
 def init_tail(v):
     o, J, ld, st, li, rec, num, incg = v["o"], v["J"], v["ld"], v["st"], v["li"], v["rec"], v["num"], v["incg"]
@@ -379,7 +455,19 @@ def init_tail(v):
     o("vt_l_next:")
     incg("Q1"); J("jjmp vt_l")
     o("vt_x:                           ; the exchanges' file, kept open at its end")
-    li("j11", LBLI); J("jldi j12, 17", "jcall r_open"); ld("j9", "FH"); st("j9", "XH"); J("jjn j9, vt_end", "jcall r_fsize")
+    li("j11", LBLI); J("jldi j12, 17", "jcall r_open"); ld("j9", "FH"); st("j9", "XH"); J("jjn j9, vt_end")
+    if PRESENT:
+        o("  ; the present: the creatures' three logs as rings (archive, dialogues, exchanges)")
+        for i, bt in enumerate(b"vida-guardados"):
+            J("jldi j1, %d" % bt); o("  jstb j1, j14, %s" % num(LBLG + i))
+        li("j3", RING_G); J("jldi j1, -1", "jst j1, j3, 0"); li("j11", LBLG); J("jldi j12, 14", "jcall r_open"); ld("j9", "FH"); li("j3", RING_G)
+        J("jldi j1, %d" % RING_KG, "jst j1, j3, 8", "jldi j1, 80", "jst j1, j3, 16", "jst j9, j3, 0", "jjn j9, vt_rg", "jcall l_ring_open")
+        o("vt_rg:")
+        for desc, k, ln, h in ((RING_A, RING_K, 80, "AH"), (RING_D, RING_K, 104, "DH"), (RING_X, RING_KX, 65, "XH")):
+            li("j3", desc); J("jldi j1, %d" % k, "jst j1, j3, 8", "jldi j1, %d" % ln, "jst j1, j3, 16"); ld("j1", h); J("jst j1, j3, 0", "jjn j1, vt_r%d" % desc, "jcall l_ring_open")
+            o("vt_r%d:" % desc)
+    else:
+        J("jcall r_fsize")
     o("vt_end:")
 
 def vida_routines(v):
@@ -538,6 +626,7 @@ def remember(v):
     o("vr_done:")
     J("jldi j0, 1", "jret")
 
-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS)
+LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS,
+                             present=PRESENT, ring_f=RING_F)
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})

@@ -578,7 +578,14 @@ for k in range(8):
 ld("j9", "TI"); J("jld j1, j9, %d" % C_DL, "jldi j2, 6"); li("j3", ALINE + 65); J("jcall r_put_num")
 ld("j1", "Q7"); J("jldi j2, 6"); li("j3", ALINE + 72); J("jcall r_put_num")
 J("jldi j1, 10"); o("  jstb j1, j14, %s" % num(ALINE + RECLEN - 1))
-ld("j9", "AH"); J("jjn j9, ar_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", ALINE); li("j12", RECLEN); J("jcall r_file")
+if MOD:
+    o("  ; the present: the line goes to its place in the ring, its verdict to the counts (l_ring, gen_luma.py)")
+    ld("j9", "AH"); J("jjn j9, ar_done"); li("j1", ALINE); ld("j2", "Q6"); li("j3", MOD["ring_a"]); J("jcall l_ring")
+    o("  ; what changed a model (kept, replaced, dreamt) also goes to its own, slower ring: the present of the state")
+    ld("j2", "Q6"); J("jldi j10, 2", "jsub j10, j2, j10", "jjz j10, ar_done", "jldi j10, 3", "jsub j10, j2, j10", "jjz j10, ar_done", "jldi j10, 5", "jsub j10, j2, j10", "jjz j10, ar_done")
+    li("j3", MOD["ring_g"]); J("jld j10, j3, 0", "jjn j10, ar_done"); li("j1", ALINE); ld("j2", "Q6"); J("jcall l_ring")
+else:
+    ld("j9", "AH"); J("jjn j9, ar_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", ALINE); li("j12", RECLEN); J("jcall r_file")
 o("ar_done:")
 J("jret")
 
@@ -1441,7 +1448,13 @@ ld("j9", "DD0"); J("jld j1, j9, 24", "jldi j2, 1"); li("j3", DLINE + 93); J("jca
 ld("j1", "DNOW"); J("jldi j2, 6"); li("j3", DLINE + 78); J("jcall r_put_num")
 ld("j1", "DWITH"); J("jldi j2, 6"); li("j3", DLINE + 85); J("jcall r_put_num")
 J("jldi j1, 10"); o("  jstb j1, j14, %s" % num(DLINE + DLLEN - 1))
-ld("j9", "DH"); J("jjn j9, dl2_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", DLINE); li("j12", DLLEN); J("jcall r_file")
+if MOD:
+    o("  ; the verdict's count: K 0, U 1, N 2")
+    ld("j9", "DH"); J("jjn j9, dl2_done"); ld("j1", "DVER"); J("jldi j2, 0", "jldi j10, 75", "jsub j10, j1, j10", "jjz j10, dl2_v", "jldi j2, 1", "jldi j10, 85", "jsub j10, j1, j10", "jjz j10, dl2_v", "jldi j2, 2")
+    o("dl2_v:")
+    li("j1", DLINE); li("j3", MOD["ring_d"]); J("jcall l_ring")
+else:
+    ld("j9", "DH"); J("jjn j9, dl2_done"); st("j9", "FH"); J("jldi j10, 6"); li("j11", DLINE); li("j12", DLLEN); J("jcall r_file")
 o("dl2_done:")
 J("jret")
 o("r_open_dialogs:                 ; \"dialogos\" kept open at its end; \"lexico\": its length, to pad over it")

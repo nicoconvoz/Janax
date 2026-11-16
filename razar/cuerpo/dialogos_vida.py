@@ -11,7 +11,13 @@ def read(casa, name):
 
 def dialogs(casa):
     out = []
-    for x in read(casa, "dialogos").split("\n"):
+    text = read(casa, "dialogos")
+    if text.startswith("anillo1 "):      # the present: a ring of the latest dialogues (in slot order, oldest first)
+        k, count = int(text[8:17]), int(text[18:30]); body = text[160:]
+        slots = [body[i:i + 104] for i in range(0, len(body) - 103, 104)]
+        start = count % k if count >= k else 0
+        text = "".join(slots[start:] + slots[:start])
+    for x in text.split("\n"):
         if len(x) < 91:
             continue
         out.append({"v": x[74], "exact": x[76] == "1", "now": int(x[78:84]), "with": int(x[85:91]),

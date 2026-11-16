@@ -866,3 +866,47 @@ veredicto. Preregistrado: [`datos/luma-retro-preregistro.txt`](datos/luma-retro-
 
 **Lo que no está:** las formas y los cuerpos tienen el puente pero no lo cruzan (ninguna oferta ganó); el zoom pinta
 bloques, no más detalle.
+
+## La lámpara del presente: una casa que no crece (2026-11-16)
+
+**El Capitán:** *"No necesitamos el futuro ni el pasado, sólo la lámpara del presente: que todo fluya de un presente que
+no me desborde el disco."* Midiendo la casa de su ventana despierta: **173 MB**, y el que más crecía no eran las
+criaturas sino **el archivo de las formas** (980.830 veredictos, 110 MB): siempre viva, Luma piensa formas sin parar y
+cada idea perdida dejaba su línea.
+
+**Lo que es Luma queda entero:** sus formas, lo que comió, su memoria de cada criatura, los modelos aprendidos, los
+cuerpos, los léxicos, el código, sus nubes. **Lo que pasa se vuelve presente:** cada registro de eventos (`archivo` de las
+formas, `vida-archivo`, `vida-dialogos`, `vida-intercambios`) es un **anillo** de sus últimas líneas, con una cabecera
+de 160 bytes que guarda **cuántas líneas se escribieron y, por cada motivo, cuántas** (`anillo1 K total c0 … c7`): nada
+se descarta sin su motivo; una línea que sale del anillo queda contada. Un anillo más, `vida-guardados`, guarda solo lo
+que cambió un modelo (guardada, reemplazada, soñada): es raro (1 de cada ~4.000) y por eso tiene su propio presente,
+más largo.
+
+- **El tamaño de la ventana:** 4.096 líneas por anillo (criterio): ~1,5 minutos de diálogos al ritmo medido (~1,4 por
+  cuadro). Los intercambios y lo guardado, 1.024. **El programa que corre no lee ninguno de estos registros**, salvo el
+  archivo de las formas al arrancar, para rehacer la tabla de lo ya probado en la ronda actual: con el anillo, **al
+  reiniciar recuerda solo la ventana**, así que una forma podría volver a juzgar algo de antes (dentro de una corrida no
+  repite: la tabla está en memoria, como hoy). Las criaturas no repiten sueños dentro de una corrida (su tabla, como
+  hoy).
+- **`migrar_presente.py <casa> <casa nueva>`** lleva una casa al presente sin perder lo aprendido: copia todo lo que es
+  Luma y convierte cada registro en su anillo (las últimas líneas en su lugar, todas contadas por motivo).
+- **`luma.jsm`** escribe así por defecto (siempre viva); `LUMA_PASADO=1` arma la versión que agrega líneas. `vida.jsm`,
+  `formas.jsm` y `comer_nubes.jsm` siguen iguales byte por byte.
+- **El repaso, ahora:** `repaso_vida.py` reconoce el anillo y verifica lo que todavía se puede: que cada línea de la
+  ventana diga un veredicto que concuerde con sus números, que las cuentas cubran la ventana, y que la última pieza
+  guardada de cada criatura deje exactamente la descripción de su modelo en `aprendido`. **Lo que ya no puede:** rehacer
+  los modelos desde el nacimiento ni comprobar que cada pieza la mostraba el cuerpo del maestro (eso quedó contado, no
+  escrito). Las líneas del anillo se ordenan por su lugar, no por el cuadro (cada corrida empieza los cuadros en 0).
+
+**Medido** (una copia de la casa de su ventana; nunca la suya):
+
+- **La migración:** 173,5 MB → **2,7 MB**. Lo que contaron las cabeceras: el archivo de las formas, 980.830 veredictos
+  (952.173 `longer,not-new`, 10.274 `longer`, 11.086 `meal-climb`, 131 `replaced`…); el de las criaturas, 338.097 (337.955
+  `unfit`, 58 soñadas, 41 guardadas…).
+- **El repaso** de la casa migrada y después de correrla: **0 diferencias**; 84–85 modelos verificados contra su última
+  pieza guardada.
+- **El disco, despierta con ventana:** **2.727.920 bytes al minuto, 2.728.243 a los 6 minutos y
+  exactamente igual a los 31 minutos** (la diferencia de 323 bytes es el relleno del léxico y lo aprendido llegando a
+  su largo mayor). La casa **no crece**.
+- **CPU estable:** ~10.500–13.000 millones de ciclos cada 30 s, **~9–11 % de un núcleo**, durante
+  los 31 minutos (antes, con los registros que crecían, ~9,5 %: escribir en un anillo cuesta lo mismo que agregar).

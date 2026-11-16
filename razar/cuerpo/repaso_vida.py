@@ -109,6 +109,60 @@ def tryp(M, Ls, p):
             best, bm, rep = d, M2, r
     return best, bm, rep
 
+VERD = ["kept", "replaced", "longer", "beaten", "dreamt", "unfit"]
+
+def in_order(ring_text, ln=80):
+    """a ring's lines from the oldest to the newest: slot (count mod K) is the oldest once it has wrapped (the frame
+    numbers cannot order them: every run starts its frames again at 0)"""
+    head = ring_text[:160].split(); k, count = int(head[1]), int(head[2])
+    body = ring_text[160:]
+    slots = [body[i:i + ln] for i in range(0, len(body) - ln + 1, ln)]
+    start = count % k if count >= k else 0
+    return slots[start:] + slots[:start]
+
+def ring(C, arch, casa):
+    """the present: the archive is a ring of its latest lines and a count per reason. What can still be checked:
+    every line of the window says a verdict that agrees with its own numbers; the counts cover the window; and each
+    creature's last kept piece in the window leaves exactly the description length of its model in "aprendido".
+    What cannot: the replay from birth (the lines before the window are only counted), so a model is no longer
+    rebuilt step by step, and a piece is no longer checked against what the teacher's body showed."""
+    head = arch[:160].split()
+    total, counts = int(head[2]), [int(x) for x in head[3:11]]
+    body = arch[160:]
+    lines = in_order(arch)
+    bad = 0; seen = [0] * 8; last = {}
+    for x in lines:
+        w = x.split()
+        v = VERD.index(w[6]); seen[v] += 1
+        now, with_ = int(w[7]), int(w[8])
+        better = with_ < now
+        if (v in (0, 1, 3, 4)) != better:
+            bad += 1; print("verdict and numbers disagree", x.strip())
+        if v in (0, 4):
+            last[int(w[1], 16)] = with_
+    for i in range(8):
+        if seen[i] > counts[i]:
+            bad += 1; print("the window has more lines of reason", i, "than its count")
+    guard = read(casa, "guardados").decode("latin-1")
+    if guard.startswith("anillo1 "):
+        for x in in_order(guard):
+            w = x.split()
+            if w[6] in ("kept", "dreamt"):
+                last[int(w[1], 16)] = int(w[8])
+    learned = read(casa, "aprendido").decode().split("\n")
+    n = int(learned[0].split()[1]) if learned and learned[0].startswith("aprendido1") else 0
+    checked = 0
+    for ln in learned[1:1 + n]:
+        w = ln.split(); p = int(w[0], 16); k = int(w[1])
+        M = [(int(w[2 + 3 * i]), int(w[3 + 3 * i]), int(w[4 + 3 * i])) for i in range(k)]
+        if p in C and p in last:
+            checked += 1
+            if DL(M, C[p]["L"]) != last[p]:
+                bad += 1; print("the last kept piece does not leave the model's description", "%016x" % p, DL(M, C[p]["L"]), last[p])
+    print("the present: %d lines ever, %d in the window, counts per reason %s; models checked against their last kept "
+          "piece %d; mismatches %d" % (total, len(lines), dict(zip(VERD, counts)), checked, bad))
+    print("not verifiable any more: the replay from birth (lines before the window are only counted)")
+
 def fnv(s):
     h = 0xCBF29CE484222325
     for b in s.encode():
@@ -139,7 +193,9 @@ def main():
         c["E0"] = eff(c["M"], c["L"])
     if "--desde-cero" not in sys.argv:
         print("(the models start as the greedy ones: run it on a folder whose first run is this archive)")
-    arch = read(casa, "archivo").decode()
+    arch = read(casa, "archivo").decode("latin-1")
+    if arch.startswith("anillo1 "):
+        return ring(C, arch, casa)
     lines = [x for x in arch.split("\n") if x.strip()]
     bad = kept = other = relayed = 0
     shown = {}

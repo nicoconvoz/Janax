@@ -595,6 +595,12 @@ init_popc:
   jcall r_food_load
   jcall r_load_former
   jcall v_init                  ; the creatures' world: its list, what they learned, who was eaten
+  ; the forms' archive as a ring (its handle is set by r_load_archive)
+  jldi j3, 06720h
+  jldi j1, 4096
+  jst j1, j3, 8
+  jldi j1, 112
+  jst j1, j3, 16
 ; ---- the forms: what the folder kept, or the seeds; each at the centre of its room, every particle at its seed
   jcall r_load_forms
   jldi j9, 0800h
@@ -3236,11 +3242,10 @@ ar_reason:
   jstb j1, j14, 019EFh
   jld j9, j14, 02E8h
   jjn j9, ar_done
-  jst j9, j14, 04A8h
-  jldi j10, 6
-  jldi j11, 01980h
-  jldi j12, 070h
-  jcall r_file
+  jldi j1, 01980h
+  jld j2, j14, 0400h
+  jldi j3, 06720h
+  jcall l_ring
 ar_done:
   jret
 r_open:                         ; j11 = a label, j12 = its bytes -> FH = the handle (or -1)
@@ -3730,6 +3735,10 @@ r_load_archive:                 ; open the archive (kept open: verdicts are appe
   jld j9, j14, 04A8h
   jst j9, j14, 02E8h
   jjn j9, la_done
+  ; the present (luma): a ring of the latest verdicts after its header; its counts keep every verdict's reason
+  jldi j3, 06720h
+  jst j9, j3, 0
+  jcall l_ring_open
 la_piece:
   jld j9, j14, 02E8h
   jst j9, j14, 04A8h
@@ -7648,6 +7657,224 @@ sb_close:
   jcall r_file
 sb_done:
   jret
+; ---- the present: a ring of the latest lines, and every verdict's reason counted (the house rule: nothing is
+;      discarded without its reason). A descriptor: handle, K, line length, count, eight counts
+l_ring:                         ; j1 = a line, j2 = its reason (0..7), j3 = a descriptor (uses j1..j13)
+  jldi j10, 3
+  jshl j4, j2, j10
+  jadd j4, j4, j3
+  jld j5, j4, 32
+  jldi j10, 1
+  jadd j5, j5, j10
+  jst j5, j4, 32
+  jld j4, j3, 24
+  jld j5, j3, 8
+  jdiv j6, j4, j5
+  jmul j6, j6, j5
+  jsub j6, j4, j6
+  jld j7, j3, 16
+  jmul j6, j6, j7
+  jldi j10, 160
+  jadd j6, j6, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jst j4, j3, 24
+  jadd j8, j1, j14
+  jadd j9, j3, j14
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 38
+  jor j10, j10, j12
+  jadd j11, j6, j14
+  jldi j12, 0
+  jcall r_tocar
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 6
+  jor j10, j10, j12
+  jadd j11, j8, j14
+  jld j12, j9, 16
+  jcall r_tocar
+  jadd j3, j9, j14
+  jcall l_ring_head
+  jret
+l_ring_head:                    ; j3 = a descriptor: its header written at the start of its file
+  jadd j9, j3, j14
+  jldi j1, 26624
+  jldi j2, 8224
+  jshi j2, 8224
+  jshi j2, 8224
+  jshi j2, 8224
+  jldi j3, 20
+lrh_bl:
+  jst j2, j1, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, lrh_bl
+  jldi j1, 97
+  jldi j10, 26624
+  jstb j1, j10, 0
+  jldi j1, 110
+  jldi j10, 26625
+  jstb j1, j10, 0
+  jldi j1, 105
+  jldi j10, 26626
+  jstb j1, j10, 0
+  jldi j1, 108
+  jldi j10, 26627
+  jstb j1, j10, 0
+  jldi j1, 108
+  jldi j10, 26628
+  jstb j1, j10, 0
+  jldi j1, 111
+  jldi j10, 26629
+  jstb j1, j10, 0
+  jldi j1, 49
+  jldi j10, 26630
+  jstb j1, j10, 0
+  jld j1, j9, 8
+  jldi j2, 9
+  jldi j3, 26632
+  jcall r_put_num
+  jld j1, j9, 24
+  jldi j2, 12
+  jldi j3, 26642
+  jcall r_put_num
+  jld j1, j9, 32
+  jldi j2, 12
+  jldi j3, 26655
+  jcall r_put_num
+  jld j1, j9, 40
+  jldi j2, 12
+  jldi j3, 26668
+  jcall r_put_num
+  jld j1, j9, 48
+  jldi j2, 12
+  jldi j3, 26681
+  jcall r_put_num
+  jld j1, j9, 56
+  jldi j2, 12
+  jldi j3, 26694
+  jcall r_put_num
+  jld j1, j9, 64
+  jldi j2, 12
+  jldi j3, 26707
+  jcall r_put_num
+  jld j1, j9, 72
+  jldi j2, 12
+  jldi j3, 26720
+  jcall r_put_num
+  jld j1, j9, 80
+  jldi j2, 12
+  jldi j3, 26733
+  jcall r_put_num
+  jld j1, j9, 88
+  jldi j2, 12
+  jldi j3, 26746
+  jcall r_put_num
+  jldi j1, 10
+  jldi j10, 26783
+  jstb j1, j10, 0
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 38
+  jor j10, j10, j12
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_tocar
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 6
+  jor j10, j10, j12
+  jldi j11, 26624
+  jldi j12, 160
+  jcall r_tocar
+  jret
+l_ring_open:                    ; j3 = a descriptor with its handle: its header read (a ring), or a fresh one written
+  jadd j9, j3, j14
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 38
+  jor j10, j10, j12
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_tocar
+  jld j12, j9, 0
+  jldi j10, 32
+  jshl j12, j12, j10
+  jldi j10, 5
+  jor j10, j10, j12
+  jldi j11, 26624
+  jldi j12, 160
+  jcall r_tocar
+  jldi j10, 160
+  jsub j10, j13, j10
+  jjnz j10, lro_fresh
+  jldi j1, 26624
+  jld j1, j1, 0
+  jldi j10, 8241
+  jshi j10, 28524
+  jshi j10, 27753
+  jshi j10, 28257
+  jsub j10, j1, j10
+  jjnz j10, lro_fresh
+  jldi j1, 26642
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 24
+  jldi j1, 26655
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 32
+  jldi j1, 26668
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 40
+  jldi j1, 26681
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 48
+  jldi j1, 26694
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 56
+  jldi j1, 26707
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 64
+  jldi j1, 26720
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 72
+  jldi j1, 26733
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 80
+  jldi j1, 26746
+  jldi j2, 12
+  jcall r_get_num
+  jst j0, j9, 88
+  jret
+lro_fresh:
+  jst j14, j9, 24
+  jst j14, j9, 32
+  jst j14, j9, 40
+  jst j14, j9, 48
+  jst j14, j9, 56
+  jst j14, j9, 64
+  jst j14, j9, 72
+  jst j14, j9, 80
+  jst j14, j9, 88
+  jadd j3, j9, j14
+  jcall l_ring_head
+  jret
 ; ---- the forms' routines the creatures call (their own names would be renamed with v_)
 f_hash:
   jcall r_hash
@@ -9276,7 +9503,81 @@ v_vt_x:                           ; the exchanges' file, kept open at its end
   jld j9, j14, 02328h
   jst j9, j14, 027A8h
   jjn j9, v_vt_end
-  jcall v_r_fsize
+  ; the present: the creatures' three logs as rings (archive, dialogues, exchanges)
+  jldi j1, 118
+  jstb j1, j14, 065E0h
+  jldi j1, 105
+  jstb j1, j14, 065E1h
+  jldi j1, 100
+  jstb j1, j14, 065E2h
+  jldi j1, 97
+  jstb j1, j14, 065E3h
+  jldi j1, 45
+  jstb j1, j14, 065E4h
+  jldi j1, 103
+  jstb j1, j14, 065E5h
+  jldi j1, 117
+  jstb j1, j14, 065E6h
+  jldi j1, 97
+  jstb j1, j14, 065E7h
+  jldi j1, 114
+  jstb j1, j14, 065E8h
+  jldi j1, 100
+  jstb j1, j14, 065E9h
+  jldi j1, 97
+  jstb j1, j14, 065EAh
+  jldi j1, 100
+  jstb j1, j14, 065EBh
+  jldi j1, 111
+  jstb j1, j14, 065ECh
+  jldi j1, 115
+  jstb j1, j14, 065EDh
+  jldi j3, 06780h
+  jldi j1, -1
+  jst j1, j3, 0
+  jldi j11, 065E0h
+  jldi j12, 14
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jldi j3, 06780h
+  jldi j1, 1024
+  jst j1, j3, 8
+  jldi j1, 80
+  jst j1, j3, 16
+  jst j9, j3, 0
+  jjn j9, v_vt_rg
+  jcall l_ring_open
+v_vt_rg:
+  jldi j3, 06600h
+  jldi j1, 4096
+  jst j1, j3, 8
+  jldi j1, 80
+  jst j1, j3, 16
+  jld j1, j14, 02330h
+  jst j1, j3, 0
+  jjn j1, v_vt_r26112
+  jcall l_ring_open
+v_vt_r26112:
+  jldi j3, 06660h
+  jldi j1, 4096
+  jst j1, j3, 8
+  jldi j1, 104
+  jst j1, j3, 16
+  jld j1, j14, 02578h
+  jst j1, j3, 0
+  jjn j1, v_vt_r26208
+  jcall l_ring_open
+v_vt_r26208:
+  jldi j3, 066C0h
+  jldi j1, 1024
+  jst j1, j3, 8
+  jldi j1, 65
+  jst j1, j3, 16
+  jld j1, j14, 027A8h
+  jst j1, j3, 0
+  jjn j1, v_vt_r26304
+  jcall l_ring_open
+v_vt_r26304:
 v_vt_end:
 ; ---- the order of the arrivals: a start and a stride coprime to N, from its own generator (each one once)
   jld j1, j14, 02228h
@@ -10673,13 +10974,27 @@ v_vx_bl:
   jstb j1, j14, 0653Fh
   jldi j1, 10
   jstb j1, j14, 06540h
+  ; its reason's count: K 0, L 1, W 2, P 3
   jld j9, j14, 027A8h
   jjn j9, v_vx_done
-  jst j9, j14, 02328h
-  jldi j10, 6
-  jldi j11, 06500h
-  jldi j12, 65
-  jcall v_r_file
+  jld j1, j14, 02760h
+  jldi j2, 0
+  jldi j10, 75
+  jsub j10, j1, j10
+  jjz j10, v_vx_v
+  jldi j2, 1
+  jldi j10, 76
+  jsub j10, j1, j10
+  jjz j10, v_vx_v
+  jldi j2, 2
+  jldi j10, 87
+  jsub j10, j1, j10
+  jjz j10, v_vx_v
+  jldi j2, 3
+v_vx_v:
+  jldi j1, 06500h
+  jldi j3, 066C0h
+  jcall l_ring
 v_vx_done:
   jret
 v_save_bodies:                  ; "vida-cuerpos": every creature's body recipe and the bits it learned (rewritten whole)
@@ -11666,13 +11981,30 @@ v_ar_blank:
   jcall v_r_put_num
   jldi j1, 10
   jstb j1, j14, 035CFh
+  ; the present: the line goes to its place in the ring, its verdict to the counts (l_ring, gen_luma.py)
   jld j9, j14, 02330h
   jjn j9, v_ar_done
-  jst j9, j14, 02328h
-  jldi j10, 6
-  jldi j11, 03580h
-  jldi j12, 050h
-  jcall v_r_file
+  jldi j1, 03580h
+  jld j2, j14, 02360h
+  jldi j3, 06600h
+  jcall l_ring
+  ; what changed a model (kept, replaced, dreamt) also goes to its own, slower ring: the present of the state
+  jld j2, j14, 02360h
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjz j10, v_ar_done
+  jldi j10, 3
+  jsub j10, j2, j10
+  jjz j10, v_ar_done
+  jldi j10, 5
+  jsub j10, j2, j10
+  jjz j10, v_ar_done
+  jldi j3, 06780h
+  jld j10, j3, 0
+  jjn j10, v_ar_done
+  jldi j1, 03580h
+  jld j2, j14, 02360h
+  jcall l_ring
 v_ar_done:
   jret
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
@@ -15006,13 +15338,23 @@ v_dl2_blank:
   jcall v_r_put_num
   jldi j1, 10
   jstb j1, j14, 047E7h
+  ; the verdict's count: K 0, U 1, N 2
   jld j9, j14, 02578h
   jjn j9, v_dl2_done
-  jst j9, j14, 02328h
-  jldi j10, 6
-  jldi j11, 04780h
-  jldi j12, 068h
-  jcall v_r_file
+  jld j1, j14, 02628h
+  jldi j2, 0
+  jldi j10, 75
+  jsub j10, j1, j10
+  jjz j10, v_dl2_v
+  jldi j2, 1
+  jldi j10, 85
+  jsub j10, j1, j10
+  jjz j10, v_dl2_v
+  jldi j2, 2
+v_dl2_v:
+  jldi j1, 04780h
+  jldi j3, 06660h
+  jcall l_ring
 v_dl2_done:
   jret
 v_r_open_dialogs:                 ; "dialogos" kept open at its end; "lexico": its length, to pad over it
