@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.7 gives Razar a body. (1) Janax, a symbiotic OS, opens its own window through the host's drivers (new kernel requests 40 'show' and 41 'wait for an event'); the screen is a particle cloud in Gotching's .nube format, and the window fits any screen. OS test suite: 402 passed, 0 failed. (2) Before that, Razar read two graphical interfaces' sources (GEM, Godot) with the same pre-registered antonym key: 19 of 21 pairs won together (p ~ 0.0001). (3) Its screen holds no copy of a known desktop: forms grown from recipes over its own organ alphabet, seeded with its best organs, mutated with its learned bricks, judged by the same MDL judge (short and new), with the opposites it learned as gestures; 8 seed forms grew to 89. (4) When its living loop runs out of novelty it is hungry and eats Gotching's particle clouds, describing each meal in its own language, and builds from it: 27 new forms from 944 meals. It costs about 1-2.5% of a core while thinking and 0 cycles when calm. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.7: Razar tiene cuerpo — una ventana propia hecha de partículas, formas que crecen y mutan desde lo que aprendió, y comida. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.8, Luma: one program and one window where what grows, what evolves and what lives share a world. (1) Gait: a period-finding instrument (the 'bat', a weighted-sinusoid listener with a shuffled null) hears the skeleton and the motion of 944 recordings of Gotching's creatures: rhythm in all real recordings and in none shuffled (pre-registered). Guessing the locomotion mode from all limbs pooled failed (22% vs 57% majority); Gotching's own geometric rule (what touches the floor is not a wing) lets the skeleton choose which group is heard: 60.4%, separating walk, crawl and fly. (2) Life: 236 creatures walk by their own gaits under local rules, approach when one piece of the other's gait would shorten their description, keep a shared piece only if it does, archive the rest with a reason, and relay what they learned. (3) Dialogues about imagined pieces: creatures dream variants and name them with melodies; all five pre-registered bets failed (the message acts as an event, not as meaning). (4) Luma: Razar's own forms, its meals of Gotching clouds and the creatures in one window; a cloud it eats is born as a creature. (5) Luma no longer needs Gotching's clouds: each creature is born with the body she remembers (median silhouette IoU 0.61); the release ships her fed home. (6) A common code from what she hears, sees, read and the code she read carries the exact piece in 100% of dialogues (0% shuffled) but is almost never kept (1 in 4,411). (7) Habitats from the gait alone: 55.5%, not above the 57.2% majority. Event-driven only: 0 CPU cycles when calm. OS test suite: 402 passed, 0 failed. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.8: Luma — lo que crece, lo que evoluciona y lo que vive en una sola ventana, con las apuestas que fallaron publicadas. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "0.7",
+  "version": "0.8",
   "creators": [
     {
       "name": "Astorga, Nicolás"
@@ -29,7 +29,10 @@
     "append-only log",
     "Venn diagram",
     "relational algebra",
-    "capability systems"
+    "capability systems",
+    "gait analysis",
+    "artificial life",
+    "pre-registration"
   ],
   "language": "spa",
   "notes": "Contacto: ingenieriaaplicada@opendoors.com.ar"
