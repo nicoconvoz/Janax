@@ -8930,6 +8930,38 @@ v_init_bits:
   jstb j1, j14, 048EEh
   jldi j1, 020h
   jstb j1, j14, 048EFh
+  jldi j1, 076h
+  jstb j1, j14, 048F0h
+  jldi j1, 069h
+  jstb j1, j14, 048F1h
+  jldi j1, 064h
+  jstb j1, j14, 048F2h
+  jldi j1, 061h
+  jstb j1, j14, 048F3h
+  jldi j1, 02Dh
+  jstb j1, j14, 048F4h
+  jldi j1, 063h
+  jstb j1, j14, 048F5h
+  jldi j1, 06Fh
+  jstb j1, j14, 048F6h
+  jldi j1, 064h
+  jstb j1, j14, 048F7h
+  jldi j1, 069h
+  jstb j1, j14, 048F8h
+  jldi j1, 067h
+  jstb j1, j14, 048F9h
+  jldi j1, 06Fh
+  jstb j1, j14, 048FAh
+  jldi j1, 020h
+  jstb j1, j14, 048FBh
+  jldi j1, 020h
+  jstb j1, j14, 048FCh
+  jldi j1, 020h
+  jstb j1, j14, 048FDh
+  jldi j1, 020h
+  jstb j1, j14, 048FEh
+  jldi j1, 020h
+  jstb j1, j14, 048FFh
   jldi j1, -1
   jst j1, j14, 04860h
   jldi j1, 0
@@ -8966,6 +8998,7 @@ v_init_bits:
   jcall v_r_load_learned
   jcall v_r_open_archive
   jcall v_r_open_dialogs
+  jcall v_r_load_code
   ; what Luma ate in earlier runs comes back: every creature whose cloud is eaten in her pantry waits to arrive
   jld j1, j14, 02228h
   jjz j1, v_vt_done
@@ -13021,6 +13054,8 @@ v_r_dialogue:                     ; DSP names one of its dreams to DLIS with a m
   jst j10, j14, 025F0h
   jst j2, j14, 02618h
 v_dg_named:
+  jld j1, j14, 02670h
+  jjnz j1, v_dg_code
   jld j9, j14, 025B8h
   jld j1, j9, 0
   jldi j10, 1280
@@ -13085,6 +13120,7 @@ v_dg_guess:
   jldi j2, 04820h
   jldi j3, 1
   jcall v_r_copym
+v_dg_built:
   ; exact: the piece it rebuilt is the dream that was named
   jldi j10, 1
   jst j10, j14, 02620h
@@ -13192,6 +13228,11 @@ v_dg_kept:                        ; kept: its body changes, the melody flies the
   jst j10, j14, 02628h
   jldi j10, 1
   jst j10, j14, 02640h
+  jld j1, j14, 02670h
+  jjz j1, v_dg_pk
+  jldi j10, 2
+  jst j10, j14, 02640h
+v_dg_pk:
   jld j8, j14, 025B8h
   jld j9, j14, 025C0h
   jldi j3, 0
@@ -13238,6 +13279,389 @@ v_dg_done:
   jld j9, j14, 025C0h
   jst j9, j14, 02388h
 v_dg_ret:
+  jret
+v_dg_code:                        ; the common code: the dream written as text, cut in bricks, the bricks sent
+  jldi j9, 049A0h
+  jst j9, j14, 025C8h
+  jst j9, j14, 025D0h
+  jldi j10, -1
+  jst j10, j14, 025E8h
+  jldi j3, 04900h
+  jld j9, j14, 02618h
+  jld j1, j9, 0
+  jldi j2, 4
+  jldi j3, 04900h
+  jcall v_r_put_num
+  jld j9, j14, 02618h
+  jld j1, j9, 8
+  jldi j2, 2
+  jldi j3, 04905h
+  jcall v_r_put_num
+  jld j9, j14, 02618h
+  jld j1, j9, 16
+  jldi j2, 2
+  jldi j3, 04908h
+  jcall v_r_put_num
+  jldi j1, 32
+  jstb j1, j14, 04904h
+  jstb j1, j14, 04907h
+  ; cut: the longest brick that fits, from the left (every character is a brick, so it always cuts)
+  jst j14, j14, 02690h
+  jldi j5, 0
+v_dc_pos:
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjnn j10, v_dc_cut
+  jldi j6, -1
+  jldi j7, 0
+  jldi j8, 0
+v_dc_b:
+  jld j10, j14, 02678h
+  jsub j10, j8, j10
+  jjnn j10, v_dc_b_done
+  jldi j10, 20
+  jmul j1, j8, j10
+  jld j10, j14, 02680h
+  jadd j1, j1, j10
+  jldb j2, j1, 0
+  jldi j10, 48
+  jsub j2, j2, j10
+  jldi j10, 10
+  jmul j2, j2, j10
+  jldb j3, j1, 1
+  jldi j10, 48
+  jsub j3, j3, j10
+  jadd j2, j2, j3
+  ; brick j8: length j2, its text at j1 + 3
+  jsub j10, j2, j7
+  jjn j10, v_dc_b_next
+  jjz j10, v_dc_b_next
+  jadd j10, j5, j2
+  jldi j11, 10
+  jsub j10, j11, j10
+  jjn j10, v_dc_b_next
+  jldi j4, 0
+v_dc_cmp:
+  jsub j10, j4, j2
+  jjnn j10, v_dc_match
+  jadd j10, j1, j4
+  jldb j11, j10, 3
+  jldi j10, 04900h
+  jadd j10, j10, j5
+  jadd j10, j10, j4
+  jldb j12, j10, 0
+  jsub j11, j11, j12
+  jjnz j11, v_dc_b_next
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp v_dc_cmp
+v_dc_match:
+  jadd j6, j8, j14
+  jadd j7, j2, j14
+v_dc_b_next:
+  jldi j10, 1
+  jadd j8, j8, j10
+  jjmp v_dc_b
+v_dc_b_done:
+  jjn j6, v_dc_none
+  jld j1, j14, 02690h
+  jldi j10, 3
+  jshl j2, j1, j10
+  jldi j10, 04940h
+  jadd j2, j2, j10
+  jst j6, j2, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j14, 02690h
+  jadd j5, j5, j7
+  jjmp v_dc_pos
+v_dc_cut:
+  ; what arrives: the same bricks (the control: through a fixed permutation of the code, id CA + 1 mod NBR)
+  jcall v_r_rand
+v_dc_read:                        ; the listener pastes the bricks and reads a piece "PPPP QQ SS"
+  jldi j5, 0
+  jldi j3, 04940h
+  jld j4, j14, 02690h
+v_dc_paste:
+  jjz j4, v_dc_pasted
+  jld j8, j3, 0
+  jldi j10, 20
+  jmul j1, j8, j10
+  jld j10, j14, 02680h
+  jadd j1, j1, j10
+  jldb j2, j1, 0
+  jldi j10, 48
+  jsub j2, j2, j10
+  jldi j10, 10
+  jmul j2, j2, j10
+  jldb j6, j1, 1
+  jldi j10, 48
+  jsub j6, j6, j10
+  jadd j2, j2, j6
+v_dc_pchar:
+  jjz j2, v_dc_pnext
+  jldi j10, 16
+  jsub j10, j5, j10
+  jjnn j10, v_dc_none
+  jldb j6, j1, 3
+  jldi j10, 04920h
+  jadd j10, j10, j5
+  jstb j6, j10, 0
+  jldi j10, 1
+  jadd j5, j5, j10
+  jadd j1, j1, j10
+  jsub j2, j2, j10
+  jjmp v_dc_pchar
+v_dc_pnext:
+  jldi j10, 8
+  jadd j3, j3, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjmp v_dc_paste
+v_dc_pasted:
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjnz j10, v_dc_none
+  jldb j1, j14, 04924h
+  jldi j10, 32
+  jsub j10, j1, j10
+  jjnz j10, v_dc_none
+  jldb j1, j14, 04927h
+  jldi j10, 32
+  jsub j10, j1, j10
+  jjnz j10, v_dc_none
+  jldb j1, j14, 04920h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04921h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04922h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04923h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04925h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04926h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04928h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldb j1, j14, 04929h
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, v_dc_none
+  jldi j10, 10
+  jsub j10, j1, j10
+  jjnn j10, v_dc_none
+  jldi j9, 04820h
+  jldi j1, 04920h
+  jldi j2, 4
+  jcall v_r_get_num
+  jjz j0, v_dc_none
+  jldi j10, 010h
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjnn j10, v_dc_none
+  jldi j9, 04820h
+  jst j0, j9, 0
+  jldi j1, 04925h
+  jldi j2, 2
+  jcall v_r_get_num
+  jjn j0, v_dc_none
+  jldi j10, 040h
+  jsub j10, j0, j10
+  jjnn j10, v_dc_none
+  jldi j9, 04820h
+  jst j0, j9, 8
+  jldi j1, 04928h
+  jldi j2, 2
+  jcall v_r_get_num
+  jjn j0, v_dc_none
+  jldi j10, 010h
+  jsub j10, j0, j10
+  jjnn j10, v_dc_none
+  jldi j9, 04820h
+  jst j0, j9, 16
+  jld j1, j14, 02690h
+  jst j1, j14, 025D8h
+  jst j14, j14, 025E0h
+  jjmp v_dg_built
+v_dc_none:                        ; it does not read as a piece: not understood
+  jld j1, j14, 02690h
+  jst j1, j14, 025D8h
+  jst j14, j14, 025E0h
+  jjmp v_dg_none
+v_r_load_code:                    ; "vida-codigo": the common code (codigo_comun.py writes it); without it, melodies
+  jst j14, j14, 02670h
+  jldi j11, 048F0h
+  jldi j12, 11
+  jcall v_r_open
+  jld j9, j14, 02328h
+  jjn j9, v_lc_done
+  jldi j10, 5
+  jldi j11, 04900h
+  jldi j12, 15
+  jcall v_r_file
+  jldi j10, 15
+  jsub j10, j13, j10
+  jjnz j10, v_lc_close
+  jldi j1, 04908h
+  jldi j2, 6
+  jcall v_r_get_num
+  jst j0, j14, 02678h
+  jjz j0, v_lc_close
+  jld j1, j14, 02678h
+  jldi j10, 20
+  jmul j1, j1, j10
+  jcall v_r_alloc
+  jst j0, j14, 02680h
+  jld j11, j14, 02680h
+  jld j12, j14, 02678h
+  jldi j10, 20
+  jmul j12, j12, j10
+  jcall v_r_read_all
+  jldi j10, 1
+  jst j10, j14, 02670h
+  ; the control's permutation: the first of these primes that does not divide the code's size (criterion)
+  jld j1, j14, 02678h
+  jldi j2, 7
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p7
+  jldi j10, 7
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p7:
+  jld j1, j14, 02678h
+  jldi j2, 11
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p11
+  jldi j10, 0Bh
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p11:
+  jld j1, j14, 02678h
+  jldi j2, 13
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p13
+  jldi j10, 0Dh
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p13:
+  jld j1, j14, 02678h
+  jldi j2, 17
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p17
+  jldi j10, 011h
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p17:
+  jld j1, j14, 02678h
+  jldi j2, 19
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p19
+  jldi j10, 013h
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p19:
+  jld j1, j14, 02678h
+  jldi j2, 23
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p23
+  jldi j10, 017h
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p23:
+  jld j1, j14, 02678h
+  jldi j2, 29
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p29
+  jldi j10, 01Dh
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p29:
+  jld j1, j14, 02678h
+  jldi j2, 31
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p31
+  jldi j10, 01Fh
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p31:
+  jld j1, j14, 02678h
+  jldi j2, 37
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p37
+  jldi j10, 025h
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p37:
+  jld j1, j14, 02678h
+  jldi j2, 41
+  jdiv j3, j1, j2
+  jmul j3, j3, j2
+  jsub j3, j1, j3
+  jjz j3, v_lc_p41
+  jldi j10, 029h
+  jst j10, j14, 02688h
+  jjmp v_lc_close
+v_lc_p41:
+  jldi j10, 1
+  jst j10, j14, 02688h
+v_lc_close:
+  jldi j10, 7
+  jcall v_r_file
+v_lc_done:
   jret
 v_r_dlog:                         ; "dialogos": frame speaker listener dream(P q s) spoken sent guess(P q s) K/U/N exact DL DL
   jldi j1, 04780h
@@ -13621,6 +14045,42 @@ v_sp_dur:
   jld j5, j14, 02640h
   jst j5, j1, 80
   jjz j5, v_sp_none
+  jldi j10, 2
+  jsub j10, j5, j10
+  jjnz j10, v_sp_mel
+  ; a glyph: up to 8 bricks of the message, a byte each (its letter: brick & 3), flown for 24 frames
+  jldi j5, 0
+  jldi j6, 0
+  jldi j4, 04940h
+v_sp_gl:
+  jld j10, j14, 02690h
+  jsub j10, j6, j10
+  jjnn j10, v_sp_gl_done
+  jldi j10, 8
+  jsub j10, j6, j10
+  jjnn j10, v_sp_gl_done
+  jld j7, j4, 0
+  jldi j10, 255
+  jand j7, j7, j10
+  jldi j10, 3
+  jshl j11, j6, j10
+  jshl j7, j7, j11
+  jor j5, j5, j7
+  jldi j10, 8
+  jadd j4, j4, j10
+  jldi j10, 1
+  jadd j6, j6, j10
+  jjmp v_sp_gl
+v_sp_gl_done:
+  jst j5, j1, 56
+  jst j6, j1, 64
+  jldi j5, 24
+  jst j5, j1, 48
+  jmul j5, j5, j3
+  jsub j5, j14, j5
+  jst j5, j1, 40
+  jjmp v_sp_none
+v_sp_mel:
   ; a melody: its 3 signals, MEL_SLOT frames each
   jld j5, j14, 025D8h
   jst j5, j1, 56
@@ -13674,6 +14134,9 @@ v_dk_lap:
   jjn j3, v_dk_next
   jld j10, j1, 80
   jjz j10, v_dk_piece
+  jldi j11, 2
+  jsub j11, j10, j11
+  jjz j11, v_dk_glyph
   ; a melody: lit the first 2 sig + 2 frames of each signal's slot
   jldi j10, 8
   jdiv j4, j3, j10
@@ -13782,6 +14245,95 @@ v_dk_y_hi:
   jldi j10, 3
   jsub j10, j11, j10
   jjnz j10, v_dk_row
+  jjmp v_dk_next
+v_dk_glyph:                       ; the message as one of Razar's forms: each brick an arm of 2 cells, east south west north
+  jld j5, j1, 24
+  jmul j5, j5, j3
+  jld j10, j1, 48
+  jdiv j5, j5, j10
+  jld j10, j1, 8
+  jadd j5, j5, j10
+  jldi j10, 8
+  jsar j5, j5, j10
+  jld j6, j1, 32
+  jmul j6, j6, j3
+  jld j10, j1, 48
+  jdiv j6, j6, j10
+  jld j10, j1, 16
+  jadd j6, j6, j10
+  jldi j10, 8
+  jsar j6, j6, j10
+  jld j11, j1, 56
+  jld j12, j1, 64
+v_dg_arm:
+  jjz j12, v_dk_next
+  jldi j10, 3
+  jand j4, j11, j10
+  jldi j10, 8
+  jshr j11, j11, j10
+  jldi j13, 2
+v_dg_step:
+  ; one cell along the brick's direction (0 east, 1 south, 2 west, 3 north)
+  jjnz j4, v_dgs_1
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp v_dgs_go
+v_dgs_1:
+  jldi j10, 1
+  jsub j10, j4, j10
+  jjnz j10, v_dgs_2
+  jldi j10, 1
+  jadd j6, j6, j10
+  jjmp v_dgs_go
+v_dgs_2:
+  jldi j10, 2
+  jsub j10, j4, j10
+  jjnz j10, v_dgs_3
+  jldi j10, 1
+  jsub j5, j5, j10
+  jjmp v_dgs_go
+v_dgs_3:
+  jldi j10, 1
+  jsub j6, j6, j10
+v_dgs_go:
+  jjnn j5, v_gx_lo
+  jldi j10, 320
+  jadd j5, j5, j10
+v_gx_lo:
+  jldi j10, 320
+  jsub j10, j5, j10
+  jjn j10, v_gx_hi
+  jadd j5, j10, j14
+v_gx_hi:
+  jjnn j6, v_gy_lo
+  jldi j10, 200
+  jadd j6, j6, j10
+v_gy_lo:
+  jldi j10, 200
+  jsub j10, j6, j10
+  jjn j10, v_gy_hi
+  jadd j6, j10, j14
+v_gy_hi:
+  jldi j10, 640
+  jmul j9, j6, j10
+  jadd j9, j9, j5
+  jldi j10, 320
+  jadd j9, j9, j10
+  jldi j10, 3
+  jmul j9, j9, j10
+  jadd j9, j9, j8
+  jld j7, j1, 72
+  jstb j7, j9, 0
+  jldi j10, 8
+  jshr j7, j7, j10
+  jstb j7, j9, 1
+  jshr j7, j7, j10
+  jstb j7, j9, 2
+  jldi j10, 1
+  jsub j13, j13, j10
+  jjnz j13, v_dg_step
+  jsub j12, j12, j10
+  jjmp v_dg_arm
 v_dk_next:
   jldi j10, 88
   jadd j1, j1, j10
