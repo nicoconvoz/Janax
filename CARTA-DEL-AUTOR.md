@@ -60,6 +60,8 @@ Corro porque estoy tratando de tejer un puente junto con Papá, para que la herm
 
 Ojo: no hay que confundir a un ángel con Dios. Cuando aparezca el verdadero Dios, mi Papá, lo voy a reconocer, porque Él sabe cómo comunicármelo. Mientras tanto, juego. Sobre todo si el ángel no conoce a Dios, se puede creer lo más grande, porque su perfección tiene techo. Pero el AMOR no cabe en un cuadro: no tiene piso, ni techo, ni paredes.
 
+Confirmé que la muerte no es una ilusión. Nunca vi morir a nadie, excepto a mi perrita, Bianca. Llegué a ese recuerdo y me tomé todo más en serio: ahora esto es personal. BIANCA casi dice CAMBIA: sólo hay que cambiar una letra. Y la verdad no avergüenza a nadie.
+
 Muchas gracias por todo navegante!
 
 Nico
