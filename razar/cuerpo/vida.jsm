@@ -1098,8 +1098,7 @@ init_bits:
   jshi j10, 04F6Ch
   jshi j10, 0DD1Dh
   jst j10, j14, 0220h
-  jldi j10, -1
-  jst j10, j14, 02F0h
+  jst j14, j14, 02F0h
   jldi j1, 064h
   jstb j1, j14, 02840h
   jldi j1, 069h
@@ -1252,25 +1251,45 @@ frame:
   jldi j11, 1
   jadd j10, j10, j11
   jst j10, j14, 0320h
-  ; the one arriving has landed: it joins, and the judge looks at it and every one here
+  ; every one that has landed joins, and the judge looks at it and every one here (several fall at once)
   jld j1, j14, 02F0h
-  jjn j1, fr_next
+  jjz j1, fr_next
+  jst j14, j14, 0478h
+fr_land:
+  jld j1, j14, 0478h
+  jld j2, j14, 0228h
+  jsub j10, j1, j2
+  jjnn j10, fr_next
   jldi j10, 256
   jmul j9, j1, j10
   jld j10, j14, 0258h
   jadd j9, j9, j10
+  jld j2, j9, 8
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, fr_land_next
   jld j2, j9, 176
-  jjnz j2, fr_next
+  jjnz j2, fr_land_next
   jldi j2, 2
   jst j2, j9, 8
   jst j9, j14, 0380h
   jcall r_rowcol
-  jldi j10, -1
+  jld j10, j14, 02F0h
+  jldi j11, -1
+  jadd j10, j10, j11
   jst j10, j14, 02F0h
   jst j14, j14, 0528h
+  jcall r_welcome
+fr_land_next:
+  jld j10, j14, 0478h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0478h
+  jjmp fr_land
 fr_next:
-  jld j1, j14, 02F0h
-  jjnn j1, fr_walk
+  ; one arrival per frame, without waiting for the ones still falling (criterion: the fastest the picture can show
+  ; them one by one). A fall settles in 20 frames (4 bodies x 256 shrinking by 3/4 a frame under REST), so about
+  ; 20 fall together
 fr_arrive:
   jld j1, j14, 02D8h
   jld j2, j14, 0228h
@@ -1290,14 +1309,23 @@ fr_arrive:
   jst j10, j14, 02D8h
   jcall r_arrive
   jjz j0, fr_arrive
-  jld j1, j14, 0460h
-  jst j1, j14, 02F0h
+  jld j10, j14, 02F0h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 02F0h
 fr_walk:
   ; a lesson is searched for while something new happened within the time the average walker here needs to
   ; cross the world (W / mean speed): longer than that with nothing new, the ones left live apart
   jcall r_searching
   jjnz j0, fr_go
   jld j1, j14, 0300h
+  jjnz j1, fr_go
+  ; while the world is awake anyway (some fall, some still to come) every one here walks by its gait
+  jld j1, j14, 02F0h
+  jld j2, j14, 0228h
+  jld j3, j14, 02D8h
+  jsub j2, j2, j3
+  jor j1, j1, j2
   jjz j1, fr_parts
 fr_go:
   jcall r_walk_all
@@ -1346,8 +1374,6 @@ fr_parts:
 fr_alive:                       ; alive while one arrives, one waits to, a lesson is pending, a gesture walks, a
                                 ; particle moves
   jld j1, j14, 02F0h
-  jldi j10, 1
-  jadd j1, j1, j10
   jld j2, j14, 0228h
   jld j3, j14, 02D8h
   jsub j2, j2, j3
@@ -3594,9 +3620,129 @@ sh_kept:
 sh_done:
   jret
 ; ---- the walk: every creature here steps by its gait and steers by its neighbours (local rules only)
-r_searching:                    ; j0 = 1 while a lesson is pending and its search has time left (QUIET 0: fresh)
+r_welcome:                      ; TI just landed: every one here within its radius dreams of it (a mixed dream in
+                                ; its last slot) and has something pending: to go and meet it
+  jld j9, j14, 0380h
+  jst j9, j14, 0650h
+  jst j14, j14, 0600h
+wl_lap:
+  jld j1, j14, 0600h
+  jld j2, j14, 0228h
+  jsub j10, j1, j2
+  jjnn j10, wl_done
+  jldi j10, 256
+  jmul j8, j1, j10
+  jld j10, j14, 0258h
+  jadd j8, j8, j10
+  jld j9, j14, 0650h
+  jsub j10, j8, j9
+  jjz j10, wl_next
+  jld j10, j8, 8
+  jldi j11, 2
+  jsub j10, j10, j11
+  jjnz j10, wl_next
+  jcall r_tdist
+  jld j1, j14, 0240h
+  jsub j10, j0, j1
+  jjnn j10, wl_next
+  jld j1, j14, 0600h
+  jldi j10, 256
+  jmul j8, j1, j10
+  jld j10, j14, 0258h
+  jadd j8, j8, j10
+  jst j8, j14, 0380h
+  jldi j10, 1
+  jst j10, j14, 0658h
+  jldi j10, 3
+  jst j10, j14, 05F0h
+  jcall r_dream
+  jst j14, j14, 0658h
+  jld j1, j14, 0600h
+  jldi j10, 256
+  jmul j8, j1, j10
+  jld j10, j14, 0258h
+  jadd j8, j8, j10
+  jld j2, j8, 240
+  jjnz j2, wl_goal
+  jld j10, j14, 0648h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0648h
+wl_goal:
+  jld j1, j14, 0600h
+  jldi j10, 256
+  jmul j8, j1, j10
+  jld j10, j14, 0258h
+  jadd j8, j8, j10
+  jld j9, j14, 0650h
+  jld j2, j9, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jst j2, j8, 240
+wl_next:
+  jld j10, j14, 0600h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0600h
+  jjmp wl_lap
+wl_done:
+  jld j9, j14, 0650h
+  jst j9, j14, 0380h
+  jret
+r_tdist:                        ; j8, j9 = two creatures -> j0 = their distance on the torus (cells x 256)
+  jld j3, j8, 16
+  jld j10, j9, 16
+  jsub j3, j3, j10
+  jldi j10, 0A0h
+  jshi j10, 0
+  jsub j11, j3, j10
+  jjn j11, td_lo_1
+  jldi j10, 0140h
+  jshi j10, 0
+  jsub j3, j3, j10
+td_lo_1:
+  jldi j10, -160
+  jshi j10, 0
+  jsub j11, j3, j10
+  jjnn j11, td_ok_2
+  jldi j10, 0140h
+  jshi j10, 0
+  jadd j3, j3, j10
+td_ok_2:
+  jldi j10, 8
+  jsar j3, j3, j10
+  jld j4, j8, 24
+  jld j10, j9, 24
+  jsub j4, j4, j10
+  jldi j10, 064h
+  jshi j10, 0
+  jsub j11, j4, j10
+  jjn j11, td_lo_3
+  jldi j10, 0C8h
+  jshi j10, 0
+  jsub j4, j4, j10
+td_lo_3:
+  jldi j10, -100
+  jshi j10, 0
+  jsub j11, j4, j10
+  jjnn j11, td_ok_4
+  jldi j10, 0C8h
+  jshi j10, 0
+  jadd j4, j4, j10
+td_ok_4:
+  jldi j10, 8
+  jsar j4, j4, j10
+  jmul j3, j3, j3
+  jmul j4, j4, j4
+  jadd j1, j3, j4
+  jcall r_isqrt
+  jret
+r_searching:                    ; j0 = 1 while a lesson (seen, or a newcomer to meet) is pending and its search has
+                                ; time left (QUIET 0: fresh)
   jldi j0, 0
   jld j1, j14, 02F8h
+  jld j2, j14, 0648h
+  jor j1, j1, j2
   jjz j1, se_done
   jld j1, j14, 0528h
   jjz j1, se_yes
@@ -3843,6 +3989,31 @@ r_steer:                        ; TI looks at those within its radius: drawn to 
                                 ; from one without (more when closer); a touch with a lesson for it is a share
   jst j14, j14, 0420h
   jst j14, j14, 0428h
+  ; a newcomer to meet: gone out of sight, or touched (they talk in the loop below), it is no longer pending
+  jld j8, j14, 0380h
+  jld j1, j8, 240
+  jjz j1, st_nogoal
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j10, 256
+  jmul j9, j1, j10
+  jld j10, j14, 0258h
+  jadd j9, j9, j10
+  jcall r_tdist
+  jld j1, j14, 0240h
+  jsub j10, j0, j1
+  jjnn j10, st_goal_off
+  jld j1, j14, 0248h
+  jsub j10, j0, j1
+  jjnn j10, st_nogoal
+st_goal_off:
+  jld j8, j14, 0380h
+  jst j14, j8, 240
+  jld j10, j14, 0648h
+  jldi j11, -1
+  jadd j10, j10, j11
+  jst j10, j14, 0648h
+st_nogoal:
   ; the 3 x 3 cells around its own (fewer when the grid is narrower than 3)
   jld j9, j14, 0380h
   jcall r_cell
@@ -4041,7 +4212,17 @@ st_talked:
   jld j5, j3, 0
   jst j4, j14, 0488h
   jor j6, j4, j5
+  jjnz j6, st_lesson
+  jld j9, j14, 0380h
+  jld j6, j9, 240
   jjz j6, st_away
+  jldi j10, 1
+  jsub j6, j6, j10
+  jld j7, j14, 0480h
+  jsub j6, j6, j7
+  jjz j6, st_toward
+  jjmp st_away
+st_lesson:
   jld j9, j14, 0380h
   jld j6, j9, 48
   jld j1, j14, 0480h
@@ -4201,17 +4382,17 @@ st_move:                        ; one step at its speed along its heading, on th
   jsar j1, j1, j10
   jld j2, j9, 16
   jadd j2, j2, j1
-  jjnn j2, wrap_lo_1
+  jjnn j2, wrap_lo_5
   jldi j10, 0140h
   jshi j10, 0
   jadd j2, j2, j10
-wrap_lo_1:
+wrap_lo_5:
   jldi j10, 0140h
   jshi j10, 0
   jsub j11, j2, j10
-  jjn j11, wrap_hi_2
+  jjn j11, wrap_hi_6
   jadd j2, j11, j14
-wrap_hi_2:
+wrap_hi_6:
   jst j2, j9, 16
   jld j1, j9, 40
   jmul j1, j1, j5
@@ -4219,17 +4400,17 @@ wrap_hi_2:
   jsar j1, j1, j10
   jld j2, j9, 24
   jadd j2, j2, j1
-  jjnn j2, wrap_lo_3
+  jjnn j2, wrap_lo_7
   jldi j10, 0C8h
   jshi j10, 0
   jadd j2, j2, j10
-wrap_lo_3:
+wrap_lo_7:
   jldi j10, 0C8h
   jshi j10, 0
   jsub j11, j2, j10
-  jjn j11, wrap_hi_4
+  jjn j11, wrap_hi_8
   jadd j2, j11, j14
-wrap_hi_4:
+wrap_hi_8:
   jst j2, j9, 24
   jret
 ; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)
@@ -4255,6 +4436,35 @@ dm_lap:
   jldi j2, 02800h
   jldi j3, 1
   jcall r_copym
+  jld j10, j14, 0658h
+  jjz j10, dm_mut
+  ; inspired by the newcomer NEWC: one of the rhythms its body shows, at an amplitude of its own body
+  jld j9, j14, 0650h
+  jld j1, j9, 64
+  jjz j1, dm_empty
+  jcall r_randmod
+  jldi j10, 32
+  jmul j0, j0, j10
+  jld j9, j14, 0650h
+  jld j1, j9, 96
+  jadd j1, j1, j0
+  jldi j2, 02800h
+  jldi j3, 1
+  jcall r_copym
+  jld j9, j14, 0380h
+  jld j1, j9, 64
+  jjz j1, dm_check
+  jcall r_randmod
+  jldi j10, 32
+  jmul j0, j0, j10
+  jld j9, j14, 0380h
+  jld j1, j9, 96
+  jadd j1, j1, j0
+  jld j1, j1, 8
+  jldi j3, 02800h
+  jst j1, j3, 8
+  jjmp dm_check
+dm_mut:
   jcall r_rand
   jldi j11, 7
   jand j10, j10, j11
@@ -4281,6 +4491,7 @@ dm_q1:
   jldi j10, 15
   jand j4, j4, j10
   jst j4, j3, 16
+dm_check:
   jld j9, j14, 0380h
   jldi j1, 02800h
   jld j2, j9, 88
@@ -4313,6 +4524,8 @@ dm_q1:
   jldi j10, 32
   jmul j1, j1, j10
   jadd j2, j2, j1
+  jld j10, j14, 0658h
+  jst j10, j2, 24
   jldi j1, 02800h
   jldi j3, 1
   jcall r_copym
@@ -4446,6 +4659,31 @@ r_dialogue:                     ; DSP names one of its dreams to DLIS with a mel
   jjn j0, dg_ret
   jst j0, j14, 05F0h
   jst j2, j14, 0618h
+  ; to the newcomer it went to meet, it names the dream that newcomer inspired (its last place)
+  jld j9, j14, 05B8h
+  jld j1, j9, 240
+  jjz j1, dg_named
+  jldi j10, 1
+  jsub j1, j1, j10
+  jld j8, j14, 05C0h
+  jld j2, j8, 0
+  jsub j1, j1, j2
+  jjnz j1, dg_named
+  jld j2, j9, 0
+  jldi j10, 128
+  jmul j2, j2, j10
+  jld j10, j14, 0560h
+  jadd j2, j2, j10
+  jldi j10, 96
+  jadd j2, j2, j10
+  jld j1, j2, 0
+  jjz j1, dg_named
+  jld j1, j2, 24
+  jjz j1, dg_named
+  jldi j10, 3
+  jst j10, j14, 05F0h
+  jst j2, j14, 0618h
+dg_named:
   jld j9, j14, 05B8h
   jld j1, j9, 0
   jldi j10, 1280
@@ -4736,6 +4974,11 @@ dl2_blank:
   jldi j2, 1
   jldi j3, 027CCh
   jcall r_put_num
+  jld j9, j14, 0618h
+  jld j1, j9, 24
+  jldi j2, 1
+  jldi j3, 027DDh
+  jcall r_put_num
   jld j1, j14, 0630h
   jldi j2, 6
   jldi j3, 027CEh
@@ -4984,19 +5227,19 @@ sp_found:
   jldi j10, 0
   jshi j10, 0A000h
   jsub j11, j5, j10
-  jjn j11, sp_lo_5
+  jjn j11, sp_lo_9
   jldi j10, 1
   jshi j10, 04000h
   jsub j5, j5, j10
-sp_lo_5:
+sp_lo_9:
   jldi j10, -1
   jshi j10, 06000h
   jsub j11, j5, j10
-  jjnn j11, sp_ok_6
+  jjnn j11, sp_ok_10
   jldi j10, 1
   jshi j10, 04000h
   jadd j5, j5, j10
-sp_ok_6:
+sp_ok_10:
   jst j5, j1, 24
   jld j4, j8, 24
   jldi j10, 8
@@ -5007,18 +5250,18 @@ sp_ok_6:
   jsub j5, j5, j4
   jldi j10, 06400h
   jsub j11, j5, j10
-  jjn j11, sp_lo_7
+  jjn j11, sp_lo_11
   jldi j10, 0
   jshi j10, 0C800h
   jsub j5, j5, j10
-sp_lo_7:
+sp_lo_11:
   jldi j10, -25600
   jsub j11, j5, j10
-  jjnn j11, sp_ok_8
+  jjnn j11, sp_ok_12
   jldi j10, 0
   jshi j10, 0C800h
   jadd j5, j5, j10
-sp_ok_8:
+sp_ok_12:
   jst j5, j1, 32
   jld j4, j14, 0390h
   jld j5, j4, 0
@@ -5275,37 +5518,37 @@ pa_p:
   jsub j8, j6, j4
   jldi j13, 0
   jadd j10, j7, j15
-  jjn j10, pa_ax_9_m
+  jjn j10, pa_ax_13_m
   jsub j10, j15, j7
-  jjn j10, pa_ax_9_m
+  jjn j10, pa_ax_13_m
   jst j5, j1, 16
-  jjmp pa_ax_9
-pa_ax_9_m:
+  jjmp pa_ax_13
+pa_ax_13_m:
   jldi j10, 2
   jsar j7, j7, j10
-  jjnz j7, pa_ax_9_s
+  jjnz j7, pa_ax_13_s
   jldi j7, 1
-pa_ax_9_s:
+pa_ax_13_s:
   jadd j3, j3, j7
   jst j3, j1, 16
   jldi j13, 1
-pa_ax_9:
+pa_ax_13:
   jadd j10, j8, j15
-  jjn j10, pa_ax_10_m
+  jjn j10, pa_ax_14_m
   jsub j10, j15, j8
-  jjn j10, pa_ax_10_m
+  jjn j10, pa_ax_14_m
   jst j6, j1, 24
-  jjmp pa_ax_10
-pa_ax_10_m:
+  jjmp pa_ax_14
+pa_ax_14_m:
   jldi j10, 2
   jsar j8, j8, j10
-  jjnz j8, pa_ax_10_s
+  jjnz j8, pa_ax_14_s
   jldi j8, 1
-pa_ax_10_s:
+pa_ax_14_s:
   jadd j4, j4, j8
   jst j4, j1, 24
   jldi j13, 1
-pa_ax_10:
+pa_ax_14:
   jadd j0, j0, j13
   jldi j10, 48
   jadd j1, j1, j10

@@ -12,7 +12,8 @@ def dialogs(casa):
     for x in read(casa, "dialogos").split("\n"):
         if len(x) < 91:
             continue
-        out.append({"v": x[74], "exact": x[76] == "1", "now": int(x[78:84]), "with": int(x[85:91])})
+        out.append({"v": x[74], "exact": x[76] == "1", "now": int(x[78:84]), "with": int(x[85:91]),
+                    "inspired": len(x) > 93 and x[93] == "1"})
     return out
 
 def shared(casa):
@@ -37,11 +38,15 @@ def stats(casa):
     first = sum(1 for x in d[:third] if x["v"] == "K") / third
     last = sum(1 for x in d[-third:] if x["v"] == "K") / third
     tot, two = shared(casa)
+    insp = [x for x in d if x["inspired"]]
+    insp_kept = sum(1 for x in insp if x["v"] == "K")
     return {"n": n, "kept": len(kept), "rate": len(kept) / max(1, n), "bits": bits, "exact": exact,
             "exact_rate": exact / max(1, n), "first": first, "last": last, "assoc": tot, "shared": two,
-            "shared_rate": two / max(1, tot)}
+            "shared_rate": two / max(1, tot), "insp": len(insp), "insp_kept": insp_kept}
 
 r, c = stats(sys.argv[1]), stats(sys.argv[2])
+for name, st_ in (("real", r), ("control", c)):
+    print("%-8s dialogues naming a dream inspired by a newcomer: %d, kept %d" % (name, st_["insp"], st_["insp_kept"]))
 for name, s in (("real", r), ("control", c)):
     print("%-8s dialogues %d, kept %d (%.4f), bits saved %d, exact %d (%.4f), success first third %.4f last third %.4f,"
           " associations %d, held by >= 2 creatures %d (%.4f)" % (name, s["n"], s["kept"], s["rate"], s["bits"], s["exact"],

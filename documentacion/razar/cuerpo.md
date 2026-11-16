@@ -441,8 +441,9 @@ archivo donde vive con el pedido 37. El programa no lleva ningún nombre de cria
 
 ### Sin bucle que gaste por nada
 
-Vive mientras pasa algo nuevo: una llegada (llegan de a una, cada una cuando se posó la anterior), un pedazo guardado, un
-gesto. Una lección pendiente se **busca** (caminan) mientras haya pasado algo nuevo dentro del tiempo que la caminante
+Vive mientras pasa algo nuevo: una llegada (llega una por cuadro, sin esperar a que se posen las anteriores: ver
+*Llegadas que se solapan*, más abajo), un pedazo guardado, un gesto. Mientras el mundo está despierto, todas las que ya
+llegaron caminan con su marcha aunque no tengan nada pendiente: el cuadro se dibuja igual. Una lección pendiente se **busca** (caminan) mientras haya pasado algo nuevo dentro del tiempo que la caminante
 promedio tarda en cruzar el mundo (`W / velocidad media`, medida cuadro a cuadro); pasado ese tiempo sin nada nuevo, los
 pares que quedan **viven separados**. Con todas llegadas y sin búsqueda, se calma para siempre (pedido 41 con −1). Un
 gesto (clic o tecla) las hace caminar un período de la marcha más lenta y abre una búsqueda nueva.
@@ -557,6 +558,44 @@ otra se desvió desde el principio, probablemente por un gesto sobre la ventana 
 mundo), no investigado. Con los diálogos el mundo cambia (las criaturas que guardan una pieza soñada
 caminan distinto), así que los números de la primera corrida de esta sección (36 pedazos vistos) no son los de esta
 versión: en esta, 16 pedazos vistos guardados en el real y 23 en el control.
+
+### Llegadas que se solapan y la bienvenida (2026-11-16)
+
+**El Capitán, mirando la ventana:** *"todos caen… los primeros en llegar ya pueden arrancar, no van a esperar a la
+eternidad de los bichos"*, y *"siempre tienen algo pendiente, porque imaginan; además la llegada de alguien nuevo abre
+un universo de posibilidades"*.
+
+- **Llegadas que se solapan:** llega una por cuadro, sin esperar a que se posen las anteriores (criterio: lo más rápido
+  que la pantalla puede mostrarlas de a una). Una caída se posa en 20 cuadros (4 cuerpos × 256 que se achican a 3/4 por
+  cuadro hasta menos de REST), así que caen unas 20 a la vez.
+- **Caminar libre:** mientras el mundo está despierto (llegadas, una búsqueda, un gesto), todas las que ya llegaron
+  caminan con su marcha, tengan o no algo pendiente.
+- **La bienvenida:** cuando una se posa, cada una de las que la ven (dentro de su radio) sueña con ella: un sueño mezclado,
+  uno de los ritmos que muestra el cuerpo de la recién llegada con una amplitud del cuerpo propio. Y queda con algo
+  pendiente: ir a su encuentro. Se acerca a ella y, al tocarla, le nombra ese sueño. Lo pendiente se termina al tocarla o
+  si la pierde de vista, y cuenta como búsqueda: vale mientras pasó algo nuevo dentro del tiempo de cruzar el mundo. Sigue
+  siendo por eventos: una llegada, un encuentro, un gesto; nunca por reloj.
+
+**Medido** (236 criaturas, misma semilla):
+
+| | antes (de a una) | ahora |
+|---|---|---|
+| todas llegadas | ~4.700 cuadros (236 × ~20) | ~240 cuadros (~13 s con ventana) |
+| calma | después del cuadro 6.144 (el último diálogo) | cuadro 2.292 (~2 min con ventana) |
+| diálogos, real / control | 16.765 / 16.698 | 12.928 / 15.142 |
+| piezas guardadas por diálogo, real / control | 44 / 40 | 50 / 52 |
+| pedazos vistos guardados, real / control | 16 / 23 | 22 / 23 |
+
+- **La bienvenida casi no llega a hablar:** solo **6 diálogos** (real) y 7 (control) nombraron un sueño inspirado en una
+  recién llegada, y **uno** se guardó. La que llega también camina y casi siempre se va del radio antes de que la alcancen.
+  Las apuestas del preregistro siguen fallando con esta versión (efecto real/control 1,13; vocabulario compartido 0).
+- **CPU con ventana:** llegando, ~5.000–6.000 millones de ciclos cada 10 s (~1,1 s de procesador: ~11 % de un núcleo,
+  porque cada llegada lee dos archivos y el juez la mira contra todas); caminando todas, ~2.400 millones cada 10 s (~5 %);
+  **calmada, 0 ciclos** en diez ventanas de 10 s seguidas.
+- **El mismo mundo con y sin ventana:** el archivo y los diálogos de la corrida con ventana son idénticos byte por byte a
+  los de sin ventana, y el repaso da **0 diferencias** (12.973 líneas).
+- **El cuadro real dura más de 33 ms:** 2.292 cuadros tardaron ~2 min, ~55 ms por cuadro (las esperas de Windows vienen
+  de a ~15,6 ms, más el cálculo).
 
 ```bash
 bash razar/cuerpo/vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # las criaturas viven juntas
