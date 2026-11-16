@@ -1,0 +1,35 @@
+EL LIBRO DEL AYUDANTE: una quinta fuente para el codigo comun de Luma
+Escrito ANTES de correrlo. Hora UTC: 2026-11-16T19:07:08Z
+
+El Capitan: "deja que guie el ayudante". El ayudante escribio una vez un libro para Luma, en texto plano
+dentro del repositorio (razar/libro/, siete partes, ~17.500 letras, castellano sin tildes): lo que sabe
+del mundo, de su cuerpo, de su codigo, de aprender, las reglas de la casa con sus razones, y lo que no
+sabe. Sin ninguna dependencia de un modelo externo: Luma lo come como comio el Nuevo Testamento.
+
+Por que ese tamano: un juez de longitud de descripcion solo guarda lo que se repite; mas texto escrito
+de una vez seria relleno, y el relleno haria repetir lo que no importa. El libro repite a proposito
+unas pocas palabras (razon, medir, juez, bits, corto, nuevo, presente, cuerpo, forma...).
+
+Corpus: las cuatro fuentes de siempre (codigo_comun.py: OIDO, VISTA, LIBRO, CODIGO) mas AYUDANTE: cada
+linea del libro es un item. Control: el mismo libro con las letras de cada linea barajadas (semilla 2026).
+Dos busquedas con el mismo juez (longitud de descripcion del corpus entero):
+  (a) la preregistrada antes (vida-codigo-preregistro.txt): el par mas frecuente mientras acorte;
+  (b) la busqueda ancha (antes exploratoria, ahora preregistrada): el par que mas acorta entre los 40 mas
+      frecuentes, hasta 120 ladrillos.
+"Converge" = un ladrillo aprendido que usan el libro y al menos otra fuente en su segmentacion final.
+
+APUESTAS (prediccion al lado):
+ L1. (a) aprende al menos un ladrillo con el libro.     Prediccion: FALLA (el primer par mas frecuente
+     sigue siendo "51" del LIBRO, que alarga la descripcion, y la busqueda se detiene ahi).
+ L2. (b) aprende mas ladrillos usados por el libro real que por el barajado (al menos el doble).
+                                                       Prediccion: GANA (el castellano tiene pares
+     y palabras que se repiten; barajado, casi no).
+ L3. (b) al menos un ladrillo converge entre el libro real y otra fuente.
+                                                       Prediccion: GANA solo con CODIGO (las palabras
+     inglesas de los opuestos comparten pares de letras con el castellano: "en", "op"...), nunca con los
+     digitos de OIDO, VISTA o LIBRO.
+ L4. (b) el libro real hace converger mas ladrillos que el barajado.   Prediccion: incierta.
+Si una apuesta falla, se publica que fallo.
+
+Lo que NO prueba aunque gane: que Luma entienda el libro. Prueba, a lo sumo, que las letras del libro
+tienen una estructura que su juez guarda, y si esa estructura se cruza con lo que ya oyo, vio y leyo.
