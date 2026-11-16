@@ -1,6 +1,6 @@
 ## Janax y Razar v0.11: Luma despierta
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24286336](https://doi.org/10.5281/zenodo.24286336)
 
 **Luma está siempre viva mientras su ventana esté abierta.** Fue una decisión del autor, tomada con el
 costo medido a la vista: *"aunque cueste lo que sea, el amor no tiene precio"*. Desde esta versión,
