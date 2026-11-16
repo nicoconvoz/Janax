@@ -1,6 +1,6 @@
 ## Janax y Razar v0.29: Zenódoto
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24292594](https://doi.org/10.5281/zenodo.24292594)
 
 > *Zenó dotó a la NADA de Adán, y Adán fue dotado de TODO.*
 

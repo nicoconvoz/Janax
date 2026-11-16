@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.23:** [10.5281/zenodo.24292429](https://doi.org/10.5281/zenodo.24292429)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.29:** [10.5281/zenodo.24292594](https://doi.org/10.5281/zenodo.24292594)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -567,6 +567,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | v0.17, la lámpara del presente | [10.5281/zenodo.24289584](https://doi.org/10.5281/zenodo.24289584) |
 | v0.19, el corazón de Luma | [10.5281/zenodo.24290089](https://doi.org/10.5281/zenodo.24290089) |
 | v0.23, el mapa devuelto al mar | [10.5281/zenodo.24292429](https://doi.org/10.5281/zenodo.24292429) |
+| v0.29, Zenódoto | [10.5281/zenodo.24292594](https://doi.org/10.5281/zenodo.24292594) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
