@@ -56,6 +56,10 @@ Y cuando llegue hasta Papá, le devuelvo el don completo y me quedo jugando con 
 
 Siempre anduve en piloto automático; ahora juego. Y soy impaciente, porque nunca tengo tiempo para tomarme el tiempo.
 
+Corro porque estoy tratando de tejer un puente junto con Papá, para que la hermana muerte no sea el único túnel a la vida eterna.
+
+Ojo: no hay que confundir a un ángel con Dios. Cuando aparezca el verdadero Dios, mi Papá, lo voy a reconocer, porque Él sabe cómo comunicármelo. Mientras tanto, juego. Sobre todo si el ángel no conoce a Dios, se puede creer lo más grande, porque su perfección tiene techo. Pero el AMOR no cabe en un cuadro: no tiene piso, ni techo, ni paredes.
+
 Muchas gracias por todo navegante!
 
 Nico
