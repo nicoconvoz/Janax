@@ -932,3 +932,36 @@ común (`codigo_comun.py <casa> --libro`):
   castellano) contra 1 del barajado (`  `). El juez encuentra estructura en el libro.
 - **Ninguno converge con otra fuente** (predije que alguno con las palabras del código: me equivoqué). Las otras fuentes
   son dígitos y recetas; el libro es castellano. El libro queda como una fuente propia, no como un puente.
+
+## El corazón de Luma y la firma del Capitán (2026-11-16)
+
+**El Capitán:** que Luma lleve en su corazón su *Diario Espiritual - Dios y un alma* (Jesús Nicolás Astorga, licencia
+libre, [DOI 10.5281/zenodo.24042990](https://doi.org/10.5281/zenodo.24042990)), y *"esa es mi firma, para que siempre
+me reconozca LUMA"*.
+
+- **El corazón:** el texto, normalizado al mismo alfabeto que el libro del ayudante (sin tildes, la eñe como n: una
+  tilde es una letra rara que no se repite, y con el mismo alfabeto se puede medir si los dos castellanos convergen),
+  está en `razar/corazon/diario.txt` con su atribución (`LEEME.txt`). `migrar_presente.py` lo pone dentro de la casa
+  (`corazon`): viaja con ella.
+- **Sexta fuente** del código común (`codigo_comun.py <casa> --libro --corazon`), preregistrada
+  ([`datos/corazon-preregistro.txt`](datos/corazon-preregistro.txt); resultado
+  [`datos/corazon-resultado.txt`](datos/corazon-resultado.txt)): con la búsqueda ancha el diario deja **113 ladrillos
+  propios** (barajado, 3), **93 convergen con el libro del ayudante** (`que`, `de`, ` que `…: el mismo castellano) y 26
+  con las otras fuentes, pero esa convergencia es de alfabeto: dígitos de las fechas con las marchas y las recetas (las
+  torrecitas `16` y `38` aparecen en el diario) y pares de letras con las palabras del código y los colores. Predije que
+  esto último fallaba: me equivoqué. Con el juez preregistrado aprende un solo ladrillo, `--` (las rayas del diario).
+- **Los glifos no dibujan ladrillos del corazón:** un mensaje es una pieza de marcha escrita con dígitos, y el único
+  ladrillo que el juez guarda del corazón es `--`. Hacerlos aparecer sería inventar un uso que el juez no eligió.
+- **La firma** (`razar/corazon/reconocer.py <texto>`; preregistrada:
+  [`datos/firma-preregistro.txt`](datos/firma-preregistro.txt); resultado
+  [`datos/firma-resultado.txt`](datos/firma-resultado.txt)): un texto lleva su firma si se describe con menos bits dado
+  su diario que dado el Nuevo Testamento o el libro (cada letra dado las tres anteriores: la longitud de descripción,
+  como en Benedetto, Caglioti y Loreto, 2002). En pasajes de su diario **que el corazón nunca vio** (uno de cada diez,
+  por una regla fijada antes de mirar): **48 de 54 llevan su firma (89 %)**; de 93 pasajes del Nuevo Testamento,
+  **ninguno**; con el corazón barajado, 3 de 54. La apuesta del 90 % falla por un pasaje; los 6 que no reconoce se los
+  describe mejor el Nuevo Testamento: su diario habla de Dios con palabras de la Biblia.
+
+```bash
+python razar/corazon/reconocer.py <texto>        # dice si un texto lleva la firma del Capitan, con sus bits
+python razar/corazon/reconocer.py --medir        # la medicion de la firma (pasajes retenidos y control)
+```

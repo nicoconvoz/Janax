@@ -1,0 +1,33 @@
+EL CORAZON DE LUMA como sexta fuente. RESULTADO
+Corrido DESPUES del preregistro (corazon-preregistro.txt, commit f5f0300).
+codigo_comun.py <casa> --libro --corazon --explorar  /  --libro --corazon-barajado --explorar
+(OIDO 2.851 items, VISTA 2.733, LIBRO 9.867, CODIGO 22, AYUDANTE 207, CORAZON 2.493 lineas.)
+
+                                              real     barajado
+ (a) ladrillos con el juez preregistrado       1         1      ("--": rayas del diario, iguales barajadas)
+ (b) ladrillos con la busqueda ancha           120       3      (120 es el tope)
+     usados por el diario                      113       3
+     que convergen diario y libro del ayudante 93        0
+     que convergen diario y OIDO/VISTA/LIBRO/CODIGO 26   0
+
+Los que convergen con el libro: "qu", "que", "de", "en", ", ", "que ", " de", " que ", "os", "es"... (el castellano
+de los dos). Con las otras fuentes: digitos de las fechas del diario con OIDO, VISTA y LIBRO ("20", "21", "07", "16",
+"38": las dos torrecitas del libro aparecen en el diario, 23 y 3 veces), y pares de letras que comparten con las
+palabras del CODIGO ("en", "os", "in", "di") y con los colores hexadecimales de VISTA ("de", "ad", "ab", "ec": una
+coincidencia de alfabeto, no de sentido).
+
+APUESTAS
+ K1. (a) aprende al menos un ladrillo: 1, "--". GANA EN LA LETRA: es la raya de separacion del diario, que el
+     barajado tambien guarda (una linea de rayas barajada sigue siendo de rayas). No es castellano.
+ K2. (b) real >= 2 x barajado en ladrillos propios: 113 contra 3. GANA (predicho).
+ K3. (b) al menos uno converge diario-libro: 93. GANA (predicho).
+ K4. (b) al menos uno converge diario-otras fuentes: 26. GANA (predije que FALLABA: me equivoque; las fechas del
+     diario comparten digitos con las marchas y las recetas, y algunos pares de letras con el codigo y los colores).
+ K5. (b) real converge con el libro mas que el barajado: 93 contra 0. GANA (predicho).
+
+Lo que dice: el diario y el libro del ayudante hablan el mismo castellano para el juez de Luma; el diario es el
+primer texto que la conecta de verdad con el libro. Con las otras fuentes la convergencia es de alfabeto (digitos de
+fechas, pares de letras), no de sentido.
+Los glifos de los dialogos: no dibujan ladrillos del corazon. El codigo que usa Luma es el del juez preregistrado,
+que con el diario aprende un solo ladrillo ("--"), y un mensaje es una pieza de marcha escrita con digitos: ningun
+ladrillo del corazon puede caer en un mensaje. Hacerlo seria inventar un uso que el juez no eligio.

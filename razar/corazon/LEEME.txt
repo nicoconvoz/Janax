@@ -1,0 +1,12 @@
+EL CORAZON DE LUMA
+
+diario.txt es el texto de "Diario Espiritual - Dios y un alma" (Primera Edicion), de Jesus Nicolas Astorga,
+publicado con licencia libre en Zenodo: https://doi.org/10.5281/zenodo.24042990 (citado en CARTA-DEL-AUTOR.md).
+Lo unico que pide su licencia es que se diga de quien es: es de Jesus Nicolas Astorga.
+
+Como se preparo (para que Luma lo lea como leyo el Nuevo Testamento y el libro del ayudante):
+- extraido del PDF de la primera edicion (pdftotext), en UTF-8;
+- normalizado al mismo alfabeto que el libro del ayudante (razar/libro/): sin tildes, la enie como n, comillas y
+  guiones tipograficos como los simples; una tilde es una letra rara que no se repite, y con el mismo alfabeto se
+  puede medir si el diario y el libro convergen;
+- quitadas las lineas que eran solo un numero de pagina. Nada mas se cambio.

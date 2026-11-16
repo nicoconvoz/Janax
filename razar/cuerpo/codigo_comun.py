@@ -20,11 +20,15 @@ _explorar = "--explorar" in sys.argv
 # razar/libro/*.txt, a line per item; --libro-barajado: the same lines, each one's letters shuffled (seed 2026)
 _libro = "--libro" in sys.argv or "--libro-barajado" in sys.argv
 _barajado = "--libro-barajado" in sys.argv
+# the sixth source (documentacion/razar/datos/corazon-preregistro.txt): her heart, the Capitan's diary
+# (razar/corazon/diario.txt); --corazon-barajado: the same lines, each one's letters shuffled (seed 2026)
+_corazon = "--corazon" in sys.argv or "--corazon-barajado" in sys.argv
+_cbarajado = "--corazon-barajado" in sys.argv
 sys.argv, casa = [sys.argv[0], sys.argv[1], "--desde-cero", "--luma"], sys.argv[1]
 _src = open(os.path.join(AQUI, "repaso_vida.py"), encoding="utf-8").read().replace("\nmain()\n", "\n")
 exec(_src)                       # parse(): the gait read exactly as luma.jsm reads it
 BMAX = 16                        # a brick's storage: 16 characters (criterion: the longest piece text is 10)
-SOURCES = ["OIDO", "VISTA", "LIBRO", "CODIGO", "AYUDANTE"]
+SOURCES = ["OIDO", "VISTA", "LIBRO", "CODIGO", "AYUDANTE", "CORAZON"]
 
 def piece_text(p):
     return "%04d %02d %02d" % p
@@ -81,6 +85,16 @@ def corpus():
                 if _barajado:
                     cs = list(ln); rnd.shuffle(cs); ln = "".join(cs)
                 items.append(("AYUDANTE", ln))
+    if _corazon:
+        import random
+        rnd = random.Random(2026)
+        for ln in open(os.path.join(PROYECTO, "razar", "corazon", "diario.txt"), encoding="ascii").read().splitlines():
+            ln = ln.strip()
+            if not ln:
+                continue
+            if _cbarajado:
+                cs = list(ln); rnd.shuffle(cs); ln = "".join(cs)
+            items.append(("CORAZON", ln))
     return items
 
 def cost(seqs, alpha):
@@ -88,62 +102,101 @@ def cost(seqs, alpha):
     N = len(toks); C = collections.Counter(toks)
     return -sum(c * math.log2(c / N) for c in C.values()) + sum(len(w) * math.log2(alpha) + math.log2(N) for w in C if len(w) > 1)
 
+def f2(c):
+    return c * math.log2(c) if c > 0 else 0.0
+
+class Book:
+    """the corpus' counts, so a merge's description length is computed from the counts (the same cost() as above,
+    fast enough for the diary's half a million letters)"""
+    def __init__(self, seqs, alpha):
+        self.seqs, self.lalpha = seqs, math.log2(alpha)
+        self.C = collections.Counter(t for s in seqs for t in s); self.C["|"] += len(seqs)
+        self.N = sum(self.C.values())
+        self.S = sum(f2(c) for c in self.C.values())
+        self.D = sum(len(w) * self.lalpha for w in self.C if len(w) > 1)
+        self.nW = sum(1 for w in self.C if len(w) > 1)
+    def cost(self, N=None, S=None, D=None, nW=None):
+        N = self.N if N is None else N; S = self.S if S is None else S
+        D = self.D if D is None else D; nW = self.nW if nW is None else nW
+        return N * math.log2(N) - S + D + nW * math.log2(N)
+    def merges(self, a, b):
+        if a != b:
+            return None
+        m = 0
+        for s in self.seqs:
+            i = 0
+            while i + 1 < len(s):
+                if s[i] == a and s[i + 1] == b:
+                    m += 1; i += 2
+                else:
+                    i += 1
+        return m
+    def try_cost(self, a, b, fr):
+        m = self.merges(a, b)
+        m = fr if m is None else m
+        C, ab = self.C, a + b
+        S, D, nW = self.S, self.D, self.nW
+        ch = collections.Counter()
+        ch[a] -= m; ch[b] -= m; ch[ab] += m
+        for w, d in ch.items():
+            old, new = C.get(w, 0), C.get(w, 0) + d
+            S += f2(new) - f2(old)
+            if len(w) > 1:
+                if old == 0 and new > 0:
+                    D += len(w) * self.lalpha; nW += 1
+                elif old > 0 and new == 0:
+                    D -= len(w) * self.lalpha; nW -= 1
+        return self.cost(self.N - m, S, D, nW)
+    def apply(self, a, b):
+        new = []
+        for s in self.seqs:
+            out, i = [], 0
+            while i < len(s):
+                if i + 1 < len(s) and s[i] == a and s[i + 1] == b:
+                    out.append(a + b); i += 2
+                else:
+                    out.append(s[i]); i += 1
+            new.append(out)
+        self.__init__(new, 2 ** self.lalpha)
+
+def pairs_of(seqs):
+    return collections.Counter(p for s in seqs for p in zip(s, s[1:]) if len(p[0]) + len(p[1]) <= BMAX)
+
 def learn(items):
     seqs = [list(t) for _, t in items]
     alpha = len({c for s in seqs for c in s})
-    now, learned = cost(seqs, alpha), []
+    bk = Book(seqs, alpha); now, learned = bk.cost(), []
     while True:
-        pairs = collections.Counter(p for s in seqs for p in zip(s, s[1:]) if len(p[0]) + len(p[1]) <= BMAX)
+        pairs = pairs_of(bk.seqs)
         if not pairs:
             break
         (a, b), fr = pairs.most_common(1)[0]
         if fr < 2:
             break
-        new = []
-        for s in seqs:
-            out, i = [], 0
-            while i < len(s):
-                if i + 1 < len(s) and s[i] == a and s[i + 1] == b:
-                    out.append(a + b); i += 2
-                else:
-                    out.append(s[i]); i += 1
-            new.append(out)
-        k = cost(new, alpha)
+        k = bk.try_cost(a, b, fr)
         if k >= now:
             break
-        seqs, now = new, k
-        learned.append(a + b)
-    return learned, seqs, alpha, now
+        bk.apply(a, b); now = bk.cost(); learned.append(a + b)
+    return learned, bk.seqs, alpha, now
 
 def explore(items):
-    """NOT pre-registered: the same judge with a wider search (the pair whose merge shortens the description most,
-    among the 40 most frequent), only to see what would converge; Luma does not use it"""
+    """the same judge with a wider search (the pair whose merge shortens the description most, among the 40 most
+    frequent, up to 120 bricks); Luma does not use it"""
     seqs = [list(t) for _, t in items]
     alpha = len({c for s in seqs for c in s})
-    now, learned = cost(seqs, alpha), []
-    def merged(a, b):
-        new = []
-        for s in seqs:
-            out, i = [], 0
-            while i < len(s):
-                if i + 1 < len(s) and s[i] == a and s[i + 1] == b:
-                    out.append(a + b); i += 2
-                else:
-                    out.append(s[i]); i += 1
-            new.append(out)
-        return new
+    bk = Book(seqs, alpha); now, learned = bk.cost(), []
     while len(learned) < 120:
-        pairs = collections.Counter(p for s in seqs for p in zip(s, s[1:]) if len(p[0]) + len(p[1]) <= BMAX)
         best = None
-        for (a, b), fr in pairs.most_common(40):
+        for (a, b), fr in pairs_of(bk.seqs).most_common(40):
             if fr < 2:
                 break
-            new = merged(a, b); k = cost(new, alpha)
+            k = bk.try_cost(a, b, fr)
             if k < now and (best is None or k < best[0]):
-                best = (k, a + b, new)
+                best = (k, a, b)
         if best is None:
             break
-        now, seqs = best[0], best[2]; learned.append(best[1])
+        bk.apply(best[1], best[2]); now = bk.cost(); learned.append(best[1] + best[2])
+    seqs = bk.seqs
     uses = collections.defaultdict(collections.Counter)
     for (src, _), s in zip(items, seqs):
         for t in s:
@@ -154,7 +207,12 @@ def explore(items):
     print("  used by two sources or more: %d; of them with the helper's book and another source: %d  %s" % (
         len(conv), sum(1 for b in conv if uses[b]["AYUDANTE"]), [b for b in conv if uses[b]["AYUDANTE"]][:12]))
     print("  learned from the book (used by it): %d" % sum(1 for b in learned if uses[b]["AYUDANTE"]))
-    for b in learned[:30]:
+    print("  learned from the heart (used by it): %d" % sum(1 for b in learned if uses[b]["CORAZON"]))
+    hb = [b for b in learned if uses[b]["CORAZON"] and uses[b]["AYUDANTE"]]
+    ho = [b for b in learned if uses[b]["CORAZON"] and any(uses[b][x] for x in ("OIDO", "VISTA", "LIBRO", "CODIGO"))]
+    print("  heart and book: %d %s" % (len(hb), hb[:15]))
+    print("  heart and OIDO/VISTA/LIBRO/CODIGO: %d %s" % (len(ho), ho[:15]))
+    for b in learned:
         print("   %-14r %s" % (b, " ".join("%s=%d" % (s, uses[b][s]) for s in SOURCES if uses[b][s])))
 
 def main():

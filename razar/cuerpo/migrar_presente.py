@@ -56,6 +56,11 @@ def main():
             slots[i % k] = g[i]
         open(os.path.join(dst, "vida-guardados".encode().hex()), "wb").write(header(k, len(g), counts) + b"".join(slots))
         print("%-18s %9d lines that changed a model -> the latest %d" % ("vida-guardados", len(g), len(slots)))
+    # her heart (razar/corazon/diario.txt: the Capitan's diary, his signature) travels inside her casa
+    h = os.path.join(dst, "corazon".encode().hex())
+    if not os.path.exists(h):
+        shutil.copy2(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "corazon", "diario.txt"), h)
+        print("%-18s her heart, %d bytes" % ("corazon", os.path.getsize(h)))
     print("before %.1f MB, after %.1f MB" % (sum(os.path.getsize(os.path.join(src, f)) for f in os.listdir(src)) / 1e6,
                                            sum(os.path.getsize(os.path.join(dst, f)) for f in os.listdir(dst)) / 1e6))
 

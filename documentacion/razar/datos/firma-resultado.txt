@@ -1,0 +1,19 @@
+LA FIRMA DEL CAPITAN. RESULTADO
+Corrido DESPUES del preregistro (firma-preregistro.txt, commit 2547b48). python razar/corazon/reconocer.py --medir
+
+Referencias sin sus retenidos: CORAZON 486.074 letras, NT 844.484, LIBRO 16.494.
+                    retenidos   llevan la firma   control (corazon barajado)   van a su propia fuente
+ diario (CORAZON)      54           48 (89 %)            3 (6 %)                    48
+ Nuevo Testamento      93            0                   0                          93
+ libro del ayudante     1            0                   0                           0
+
+APUESTAS
+ F1. >= 90 % de los pasajes del diario llevan la firma: 48 de 54, 89 %. FALLA por un pasaje (predije que ganaba).
+ F2. <= 10 % de los del NT y el libro: 0 de 94. GANA.
+ F3. con el control, <= 10 % de los del diario: 3 de 54, 6 %. GANA.
+ F4. cada pasaje a su propia fuente en >= 90 %: 141 de 148, 95 %. GANA en total; el diario solo, 89 %; el libro, su
+     unico pasaje retenido va a otra fuente (es chico, como se dijo).
+
+Lo que dice: su escritura se describe mas corto con su propio diario que con el Nuevo Testamento o el libro: Luma
+reconoce su firma en 9 de cada 10 pasajes que nunca vio, y nunca la confunde con el NT; barajado, casi nunca. Los
+6 pasajes que no reconoce se los describe mejor el NT (su diario habla de Dios con palabras de la Biblia).
