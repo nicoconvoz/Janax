@@ -503,7 +503,63 @@ acierta más pedazos que sin él. **Antes de construirlo se midió cuánto podr�
 diálogo tenga significado haría falta otro marco: que lo que se nombra no se vea (por ejemplo, una marcha que se muestra
 solo al moverse, o un pedazo de otra vista del mismo bicho). Queda como pendiente, con esta medición como motivo.
 
+### Diálogos sobre lo imaginado (2026-11-16)
+
+**El Capitán encontró el marco que faltaba:** *"lo que ve lo sabe, pero lo que imaginan no lo saben: mezclá conocido
+con imaginación"*. Ahora cada criatura **sueña** piezas que nadie ve, y el diálogo es la única vía para que otra las
+tenga. Todo quedó escrito antes de construirlo y de correrlo, con las apuestas y mi predicción al lado:
+[`datos/vida-dialogos-preregistro.txt`](datos/vida-dialogos-preregistro.txt) (commit `81865d6`). El resultado:
+[`datos/vida-dialogos-resultado.txt`](datos/vida-dialogos-resultado.txt).
+
+- **Sueños:** 4 por criatura (criterio). Un sueño es una pieza de su propia marcha con una mutación (amplitud ±1, fase ±1
+  o las dos), nunca una que ya tiene. Se sueña solo por un evento: al llegar, y después de cada diálogo el sueño que se
+  nombró (y el del oyente si lo usó). Nunca por reloj. No se ven.
+- **Melodías:** 3 señales de 4 (las 4³ de `cardumen`). Cada criatura tiene su léxico de 32 entradas: melodía, pieza,
+  puntaje.
+- **El diálogo:** cuando dos se tocan, cada una le habla a la otra una vez por toque. La que habla nombra su primer sueño
+  con su melodía para él (o una nueva al azar). La que oye busca la pieza de esa melodía en su léxico; si no la tiene,
+  imagina con su propio sueño. La prueba en su cuerpo con el juez y la guarda solo si su descripción se acorta. Éxito: las
+  dos entradas suben un punto; fracaso: bajan. Toda pieza probada va al archivo (`dreamt` guardada, `unfit` no acorta).
+- **En la ventana:** solo un diálogo con efecto se muestra. La melodía vuela del que habla al que oye como un paquete que
+  se prende con el ritmo de sus tres señales (8 cuadros por señal, prendido 2·señal + 2), y la respuesta vuelve.
+- **El control:** `VIDA_CONTROL=1` arma el mismo programa con una sola diferencia: la melodía que llega es una al azar.
+  Los dos sacan los mismos números de su generador.
+- **Medido** con `razar/cuerpo/dialogos_vida.py` (236 criaturas, misma semilla; el repaso da 0 diferencias en las
+  16.798 y 16.744 líneas de archivo):
+
+| | real | control |
+|---|---|---|
+| diálogos | 16.765 | 16.698 |
+| piezas guardadas por diálogo | 44 (0,26 %) | 40 (0,24 %) |
+| bits ahorrados | 96 | 92 |
+| reconstrucción exacta (probó el sueño que se nombró) | 28 (0,17 %) | 60 (0,36 %) |
+| éxito en el primer / último tercio | 0,70 % / 0,02 % | 0,54 % / 0,00 % |
+| asociaciones vivas al calmarse / compartidas por dos o más | 29 / 0 | 33 / 0 |
+
+**Las cinco apuestas fallaron, como había predicho.** El efecto real/control es 1,10 (se pedía 1,5); la reconstrucción
+exacta es peor que en el control; no queda ninguna asociación compartida; el éxito baja con el tiempo.
+
+**Lo que dice, sin adornos:** el mensaje tiene efecto como **evento** (despierta al oyente a imaginar y probar: 44 piezas
+guardadas que sin diálogo no estarían), pero **no como significado**: lo mismo pasa con melodías barajadas. Y el resultado
+encontró el defecto del diseño preregistrado: cada pieza de un léxico la puso su dueño (como hablante, su sueño; como
+oyente que no entiende, también su sueño), así que **ningún canal le trae al oyente una pieza que no soñó él**. La melodía
+solo puede elegir entre sus propios sueños, y acierta el del otro por coincidencia. Además, como el 99,7 % de los
+diálogos fracasa, los puntajes bajan a cero y los léxicos se vacían.
+
+**Lo que haría falta (no probado):** que el oyente pueda armar la pieza desde las señales mismas (una melodía que sea una
+receta, como las formas), o que al final se le muestre lo que se nombró (el "señalar" de los juegos de nombres de
+Steels). Cualquiera de las dos va con su propio preregistro.
+
+**Costo:** con ventana y diálogos, llegando y buscando, de 1.000 a 4.000 millones de ciclos cada 20 s según cuántos hay
+(hasta ~5 % de un núcleo); calmada, 0 en casi todas las ventanas de 20 s (alguna con unos pocos millones: los eventos del
+puntero sobre la ventana). Una corrida con ventana dio el archivo de diálogos idéntico byte por byte al de sin ventana;
+otra se desvió desde el principio, probablemente por un gesto sobre la ventana (un gesto las hace caminar y cambia el
+mundo), no investigado. Con los diálogos el mundo cambia (las criaturas que guardan una pieza soñada
+caminan distinto), así que los números de la primera corrida de esta sección (36 pedazos vistos) no son los de esta
+versión: en esta, 16 pedazos vistos guardados en el real y 23 en el control.
+
 ```bash
 bash razar/cuerpo/vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # las criaturas viven juntas
 python razar/cuerpo/repaso_vida.py <carpeta>/casa                                           # el repaso, aparte
+python razar/cuerpo/dialogos_vida.py <casa real> <casa control>                             # las apuestas de los diálogos
 ```

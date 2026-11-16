@@ -1,0 +1,39 @@
+VIDA: los dialogos sobre piezas imaginadas. RESULTADO
+Corrido DESPUES del preregistro (vida-dialogos-preregistro.txt, commit 81865d6, 2026-11-16T14:10:38Z).
+Hora UTC de este resultado: 2026-11-16T14:21:25Z
+
+Corridas: 236 criaturas, la misma semilla, sin ventana y sin esperar entre cuadros (VIDA_ESPERA=0; el
+mundo es el mismo cuadro por cuadro). Real: vida.jsm tal cual. Control: VIDA_CONTROL=1 (la melodia
+que llega es una al azar; las dos versiones sacan los mismos numeros de su generador).
+Medido con razar/cuerpo/dialogos_vida.py; el repaso razar/cuerpo/repaso_vida.py da 0 diferencias en
+los dos archivos (16.798 y 16.744 lineas: cada pieza probada, imaginada o vista).
+
+                     real      control
+dialogos             16.765    16.698
+piezas guardadas     44        40          (0,26 % y 0,24 % de los dialogos)
+bits ahorrados       96        92
+reconstruccion exacta 28 (0,17 %)  60 (0,36 %)   (de las guardadas: 1 y 0)
+exito 1er tercio     0,70 %    0,54 %
+exito ultimo tercio  0,02 %    0,00 %
+asociaciones vivas al calmarse   29   33  (puntaje > 0)
+  compartidas por >= 2 criaturas  0    0
+
+APUESTAS
+ C1. efecto real/control = 1,10 (pedia >= 1,5)        FALLA (predicho: falla)
+ C2. exacta 0,17 %, real/control 0,46 (pedia >= 5 % y >= 2)   FALLA (predicho: falla)
+ C3. bits real/control = 1,04 (pedia >= 1,5)          FALLA (predicho: falla)
+ C4. compartidas 0 y 0 (pedia real > 0 y >= 2 veces)  FALLA (predicho: falla)
+ C5. ultimo tercio 0,02 % < primer tercio 0,70 %      FALLA (predicho: falla)
+
+Lo que dice: las melodias no significan nada. Las 44 piezas guardadas por un dialogo salieron de la
+imaginacion del OYENTE (solo 1 era el sueno que se nombro), y lo mismo pasa en el control. El mensaje
+tiene efecto como evento (despierta al oyente a imaginar y probar), no como significado.
+
+El defecto esta en el diseno preregistrado, y lo encontro el resultado: cada pieza de un lexico la
+puso su duenio (como hablante, su sueno; como oyente que no entiende, tambien su sueno). Ningun canal
+le trae al oyente una pieza que no sono el. Asi la melodia solo puede elegir entre los suenos propios,
+y acierta el del otro solo por coincidencia. Ademas, como el 99,7 % de los dialogos fracasa, los
+puntajes bajan a cero y los lexicos se vacian: no queda de donde converger.
+Lo que haria falta (no probado): que el oyente pueda armar la pieza desde las senales mismas (una
+melodia que sea una receta, como las formas), o una realimentacion que le muestre al final lo que se
+nombro (el "senalar" de los juegos de nombres de Steels).
