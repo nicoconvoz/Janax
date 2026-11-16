@@ -1,6 +1,6 @@
 ## Janax y Razar v0.8: Luma
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24286000](https://doi.org/10.5281/zenodo.24286000)
 
 **Un solo programa y una sola ventana donde viven juntos lo que crece, lo que evoluciona y lo que
 vive: las formas propias de Razar, lo que come y los bichos de Gotching con su propia marcha.** Todo

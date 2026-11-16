@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.7:** [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.8:** [10.5281/zenodo.24286000](https://doi.org/10.5281/zenodo.24286000)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -17,7 +17,9 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
-## Novedad (2026-11-16): los bichos andan, se encuentran y se cuentan lo que sueñan
+## Novedad (2026-11-16, v0.8): Luma — lo que crece, lo que evoluciona y lo que vive
+
+DOI de esta versión: [10.5281/zenodo.24286000](https://doi.org/10.5281/zenodo.24286000).
 
 **Razar escucha cómo se mueven los bichos de Gotching, los suelta en su ventana con su propia marcha,
 y ellos se enseñan entre sí. Tres apuestas escritas antes de medir, con sus fallos publicados.**
@@ -36,6 +38,17 @@ y ellos se enseñan entre sí. Tres apuestas escritas antes de medir, con sus fa
   bicho sueña variantes propias y las nombra con melodías. Las **cinco apuestas fallaron**: el mensaje
   tiene efecto como evento (despierta al otro a imaginar), pero melodías barajadas tienen el mismo
   efecto. Todavía no significan nada.
+- **Luma, todo en una ventana:** las formas de Razar a la izquierda y el mundo de los bichos a la
+  derecha. **Comer es nacer:** cada nube que come alimenta sus formas y, si es un bicho con marcha,
+  nace como criatura. Se comió las 944, nacieron los 236; en calma, **0 ciclos**. Todavía no se
+  enseñan entre sí las formas y los bichos, y los diálogos son demasiados para lo que dan.
+- **Luma sin Gotching:** cada bicho nace con **el cuerpo que ella recuerda** (parecido mediano 0,61),
+  y el release trae **su casa alimentada** adjunta: no hace falta ninguna nube de Gotching.
+- **Un código común** con lo que oye, lo que ve, los libros y el código: el mensaje ahora lleva la
+  pieza exacta (100 % contra 0 % barajado), pero casi nunca le sirve al otro (1 en 4.411).
+- **Escenarios:** universo, cielo, tierra y suelo bajo; cada bicho va a su franja por lo que oyó el
+  murciélago. No supera a decir siempre "camina" (55,5 % contra 57,2 %)
+  ([notas de la v0.8](documentacion/release-v0.8.md)).
 
 **Tarea para la casa:** el diseño tiene un agujero que el resultado dejó a la vista. ¿Por dónde le
 llega al que escucha una pieza que él mismo nunca soñó?
@@ -508,6 +521,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 |---|---|
 | **El proyecto** (todas las versiones; siempre lleva a la última) | [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) |
 | v0.7, el cuerpo | [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942) |
+| v0.8, Luma | [10.5281/zenodo.24286000](https://doi.org/10.5281/zenodo.24286000) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
