@@ -486,6 +486,23 @@ gesto (clic o tecla) las hace caminar un período de la marcha más lenta y abre
   el reloj.
 - Cuántas lecciones se dan depende de dónde cae cada una: no se midió con otras semillas.
 
+### Diálogos: medido antes de construirlos
+
+El Capitán pidió que se comuniquen con diálogos que tengan efecto en la otra (sin textos armados: el narrador no miente).
+La forma prevista es un juego de nombres como el de `cardumen` (melodías de 3 señales de 4, las 4³ del banco
+convencional): el maestro nombra el pedazo con una melodía, la otra adivina cuál es, y el idioma serviría si con él
+acierta más pedazos que sin él. **Antes de construirlo se midió cuánto podría servir en este mundo**, con el repaso:
+
+- En los 36 encuentros que guardaron un pedazo, el cuerpo del maestro mostraba **un solo pedazo nuevo para la otra en 33**
+  y dos en 3; y en los 36 había **exactamente un pedazo** que acortaba la descripción.
+- O sea: mirando el cuerpo ya no hay nada que adivinar. Una que eligiera al azar entre lo que ve acertaría ~96 % de las
+  veces; un idioma, por bueno que fuera, solo puede sumar hasta ~4 % de aciertos. Contra un control con melodías
+  barajadas, ese efecto no se distinguiría del azar con 36 encuentros.
+
+**No se construyó.** Un idioma tiene efecto cuando hay algo que no se ve; acá la marcha está a la vista. Para que el
+diálogo tenga significado haría falta otro marco: que lo que se nombra no se vea (por ejemplo, una marcha que se muestra
+solo al moverse, o un pedazo de otra vista del mismo bicho). Queda como pendiente, con esta medición como motivo.
+
 ```bash
 bash razar/cuerpo/vida.sh <carpeta> [janaxos.exe] [carpeta de nubes] [carpeta de oídos]   # las criaturas viven juntas
 python razar/cuerpo/repaso_vida.py <carpeta>/casa                                           # el repaso, aparte
