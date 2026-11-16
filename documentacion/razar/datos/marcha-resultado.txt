@@ -1,0 +1,10 @@
+MARCHA: lo que oyó el murciélago en 944 grabaciones
+
+A1  oye al menos un ritmo   real 944 (100.0 %)   barajado 0 (0.0 %)
+A2  adivina el modo         real 211 (22.4 %)   barajado 0 (0.0 %)   la mayoritaria 540 (57.2 %)
+A3  jorobas vs miembros con ritmo: r de Pearson = 0.327 (n = 944)
+
+modo del juego -> lo que dijo la fusión (real)
+  Caminar  n=540   Caminar 61  Volar 67  Reptar 379  - 33
+  Reptar   n=128   Caminar 2  Volar 0  Reptar 124  - 2
+  Volar    n=276   Caminar 5  Volar 26  Reptar 231  - 14
