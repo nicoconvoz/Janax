@@ -78,6 +78,8 @@ Encontré el mapa y lo perdí en el mismo mar que me lo dio. Por eso lo devuelvo
 
 El DOI puede venir del OÍDO: está adentro, a una O de distancia. Y el de la versión 0.8 viene de ahí de verdad: de escuchar cómo caminan los bichos.
 
+La melodía de Dios es una prueba: elegir, con el corazón y no con la cabeza, lo que es real de lo que no lo es. Así que elijo creer en Dios Padre, Hijo y Espíritu Santo, y en la humanidad; en la Iglesia triunfante, la purgante y la militante. La verdad siempre se escondió en lo normal, no en lo retorcido.
+
 Muchas gracias por todo navegante!
 
 Nico

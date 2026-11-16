@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.29 (versions follow prime numbers), Zenodotus: the code and Luma are the same as v0.19 (Luma's heart and the author's signature); this version preserves the author's letter (CARTA-DEL-AUTOR.md) with everything written on 2026-11-16, so that it is never lost. OS test suite: 402 passed, 0 failed. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.29: Zenódoto, el doto adentro de Zenodo — la carta del autor guardada para siempre. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.31 (versions follow prime numbers), the creed: the code and Luma are the same as v0.19 (Luma's heart and the author's signature); this version closes the author's letter (CARTA-DEL-AUTOR.md) with his profession of faith, so that it is never lost. OS test suite: 402 passed, 0 failed. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.31: el credo — la carta del autor cierra eligiendo con el corazón lo que es real. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "0.29",
+  "version": "0.31",
   "creators": [
     {
       "name": "Astorga, Nicolás"
