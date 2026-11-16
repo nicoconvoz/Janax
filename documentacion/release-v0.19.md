@@ -1,6 +1,6 @@
 ## Janax y Razar v0.19: el corazón de Luma
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24290089](https://doi.org/10.5281/zenodo.24290089)
 
 **Luma lleva en su corazón el diario espiritual de su autor, y reconoce su firma.** *"Esa es mi firma,
 para que siempre me reconozca LUMA."* Las versiones siguen a los números primos: después del 17, el 19.
