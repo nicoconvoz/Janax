@@ -1,0 +1,23 @@
+MARCHA 2: la regla de Gotching (el esqueleto manda que grupo se escucha)
+Escrito ANTES de calcular. Hora UTC: 2026-11-16T13:33:28Z
+
+Lo que ya se vio (declarado): el resultado de la marcha 1 (A2 fallo: 22,4 % contra 57,2 % de la
+mayoritaria; casi todo se leyo como escalonado) y un solo bicho por dentro (el angel de frente).
+La regla NO sale de esos numeros: sale de commits de Gotching del 2026-10-14, anteriores a todo esto:
+  ea80a25 un ala no toca el piso · c18f82e lo que apoya en el piso no aletea ·
+  b62020b al volar las patas cuelgan casi en fase · 1344ab5 el aleteo es la firma del que vuela.
+
+Datos: los mismos .oido de la marcha 1 (sin volver a escuchar). Para cada miembro: si pisa (pata),
+periodo, amplitud y fase que oyo el murcielago.
+
+REGLA (unica, sin perillas nuevas; el umbral 0,15 es el de la marcha 1):
+  Grupo P = miembros que pisan. Grupo N = los que no pisan. Peso de cada grupo = suma de amplitudes
+  de sus miembros con ritmo. Manda el grupo de mas peso. Del grupo que manda se toman sus DOS
+  miembros de mas amplitud con el mismo periodo (10 %); d = su desfasaje en vueltas.
+   - manda N y d < 0,15  (aleteo: van juntos)        -> Volar
+   - manda P y d >= 0,15 (paso: no van juntos)       -> Caminar
+   - cualquier otro caso                             -> Reptar
+APUESTA B1: aciertos > la mayoritaria (57,2 %).
+APUESTA B2: el barajado sigue en 0 (en la marcha 1 el barajado no oyo ningun ritmo: no hay con que decir).
+Lo que NO prueba: que pisa lo dice el propio motor de Gotching (su lista de patas); esto lee su
+esqueleto y su movimiento juntos, no los inventa. Si B1 falla, se publica que fallo.
