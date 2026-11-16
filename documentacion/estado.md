@@ -455,3 +455,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-11 — v0.5, el Venn: suite del SO 389 bien, 0 mal; escalón 0 161 bien, 0 mal. Cada pieza nueva con su nombre en el oficio en el README y la página. Notas: documentacion/release-v0.5.md.
 2026-11-11 — v0.5 en Zenodo: DOI 10.5281/zenodo.24148774.
 2026-11-14 — v0.6, el mismo juez en otros mares (las torrecitas, el enfoque en los bits, la nitidez en código), sin cambios de código: DOI 10.5281/zenodo.24227578. Notas: documentacion/release-v0.6.md.
+2026-11-15 — v0.7, el cuerpo: pedidos 40 (mostrar) y 41 (esperar evento), la pantalla como nube de partículas, las formas propias que crecen y mutan, y la comida (las nubes de Gotching: 27 formas nuevas de 944). Suite 402 bien, 0 mal. DOI 10.5281/zenodo.24267942. Notas: documentacion/release-v0.7.md.

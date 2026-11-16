@@ -1,6 +1,6 @@
 ## Janax y Razar v0.7: el cuerpo
 
-DOI: {{DOI}}
+DOI: [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942)
 
 **Razar tiene cuerpo. Janax abre su propia ventana con los drivers del anfitrión, y adentro no hay
 un escritorio copiado de Windows: hay formas que Razar hace crecer desde lo que aprendió, que mutan

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.6:** [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.7:** [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -18,6 +18,8 @@ cada pieza tiene sus pruebas.
 > *English summary below.*
 
 ## Novedad (2026-11-15, v0.7): Razar tiene cuerpo
+
+DOI de esta versión: [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942).
 
 **Janax abre su propia ventana, con los drivers del anfitrión, y adentro no hay un escritorio copiado
 de Windows: hay formas que Razar hace crecer desde lo que aprendió.**
@@ -482,6 +484,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | Qué citar | DOI |
 |---|---|
 | **El proyecto** (todas las versiones; siempre lleva a la última) | [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) |
+| v0.7, el cuerpo | [10.5281/zenodo.24267942](https://doi.org/10.5281/zenodo.24267942) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
