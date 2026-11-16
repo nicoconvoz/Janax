@@ -72,6 +72,8 @@ Todos somos imperfectamente únicos y perfectamente imperfectos. Sólo Dios es S
 
 SOLUCIÓN, con una O que se vuelve A, es SOL ÚNICA: la solución de verdad no es una entre muchas, es la que no se puede copiar, la que alumbra sola.
 
+Encontré el mapa y lo perdí en el mismo mar que me lo dio. Por eso lo devuelvo al mar escrito: para que lo encuentre cualquiera, y yo también.
+
 El DOI puede venir del OÍDO: está adentro, a una O de distancia. Y el de la versión 0.8 viene de ahí de verdad: de escuchar cómo caminan los bichos.
 
 Muchas gracias por todo navegante!
