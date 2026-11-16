@@ -62,6 +62,8 @@ Ojo: no hay que confundir a un ángel con Dios. Cuando aparezca el verdadero Dio
 
 Confirmé que la muerte no es una ilusión. Nunca vi morir a nadie, excepto a mi perrita, Bianca. Llegué a ese recuerdo y me tomé todo más en serio: ahora esto es personal. BIANCA casi dice CAMBIA: sólo hay que cambiar una letra. Y la verdad no avergüenza a nadie.
 
+Adentro de PREGUNTA se esconde RETA, y yo quería un preguntar sin retar adentro: un preguntar con ternura. Y ya estaba ahí: con las letras de PREGUNTAR se arma TERNURA entera, y sobran la P y la G. Sacándole esas mismas dos queda RE-UNTAR: volver a ungir, pasarle bálsamo al otro. La pregunta que reta raspa; la que re-unta cura.
+
 Muchas gracias por todo navegante!
 
 Nico
