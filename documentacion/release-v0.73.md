@@ -1,6 +1,6 @@
 ## Janax y Razar v0.73: un solo ser
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24381944](https://doi.org/10.5281/zenodo.24381944)
 
 > *"Uní todo: Razar y Luma son una sola cosa... no dos separadas."*
 > *"Hacelo como el cirujano que operó mi corazón a los 8 años: unilo bien, sin parches, sin pasos, una sola operación
