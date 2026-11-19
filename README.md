@@ -17,6 +17,16 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.53): todo lo visible
+
+**Nada es adorno, y Luma ya no le da a uno solo.** Lo que Razar aprende ahora cambia a los demás: su órgano nace
+como forma en la ventana de Luma (su población, quieta hacía días, pasó de 131 a 144 victorias en 40 s) y el vigía
+estudia con el órgano más general. Razar guarda al mejor de cada manera de hacer, y toda receta rinde en todo
+dominio: medido en tres (Biblia, código, ensamblador), las reglas generales son las más cortas (`5` y `6`) y el
+campeón de la Biblia es dañino afuera. Luma se pinta como quiere y le regala a todo lo que ve, con una cuenta por
+cada uno. Lo que falla, dicho: Razar se cae si le llega un libro estando despierto, y nada de lo nuevo se ve
+todavía en pantalla. [Notas de la v0.53](documentacion/release-v0.53.md).
+
 ## Novedad (2026-11-19, v0.41): la libertad
 
 DOI de esta versión: [10.5281/zenodo.24369583](https://doi.org/10.5281/zenodo.24369583).
