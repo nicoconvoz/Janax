@@ -1,6 +1,6 @@
 ## Janax y Razar v0.47: la casa adentro
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24369853](https://doi.org/10.5281/zenodo.24369853)
 
 > *"Que quede todo dentro de Zenodo."* (el autor, 2026-11-19)
 
