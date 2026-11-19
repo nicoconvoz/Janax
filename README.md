@@ -17,6 +17,16 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.59): el cubo y el sueño
+
+**Código poético, un cubo vivo y Luma que duerme cuando quiere.** Las oraciones de órgano que ya funcionan
+ascienden a palabra, y con palabras se cruza una meseta que la búsqueda de a una letra no cruzaba: apareció el
+`51638` (12628 contra 11144 del campeón). El cubo guarda cada receta por sus tres valores (imagen, palabras,
+código), con melodía, armonía y reposo; en su primera melodía halló el `5163827` (13175). Comió todo el código libre
+(once libros): el `38516` paga en los once y es el más general de los fuertes, y el `16`, láser, daña el código.
+Luma tiene un quinto acto, dormir: renace con lo nuevo. Lo que falla, dicho: recién nacida la costumbre, duerme casi
+todo el tiempo, y todavía no hay sentidos nuevos. [Notas de la v0.59](documentacion/release-v0.59.md).
+
 ## Novedad (2026-11-19, v0.53): todo lo visible
 
 DOI de esta versión: [10.5281/zenodo.24376081](https://doi.org/10.5281/zenodo.24376081).
