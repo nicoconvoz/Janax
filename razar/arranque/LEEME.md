@@ -16,5 +16,4 @@ Los dos archivos que dejan a Luma, a Razar y al vigía vivos sin que nadie los l
 - `E:\Razar\libros\nuevo-testamento.txt`: el libro de Razar, que no viaja con el repositorio. Sirve cualquier
   texto; con otro libro, Razar abre otro modelo y sus recetas empiezan de cero.
 
-Para que dejen de arrancar, se borran de la carpeta Inicio. Lo que cada uno dice queda en `E:\Luma\luma.log`,
-`E:\Luma\razar.log` y `~/razar_vigia/vigia.log`.
+Para que dejen de arrancar, se borran de la carpeta Inicio. Lo que dicen Luma y el vigía queda en `E:\Luma\luma.log` y `~/razar_vigia/vigia.log`. Lo de Razar no se guarda en un archivo: un registro que crece es un texto que el vigía vuelve a comer cada vez que cambia.
