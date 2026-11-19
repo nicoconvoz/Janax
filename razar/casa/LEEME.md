@@ -4,7 +4,7 @@
 mismo archivo que se adjunta a cada release; vive también acá porque Zenodo archiva el repositorio y no los
 adjuntos, y sin esto la casa quedaba fuera de la copia archivada.
 
-Adentro (17 archivos, 2,5 MB sin comprimir; cada uno se llama con su etiqueta en hexadecimal):
+Adentro (16 archivos, 2,5 MB sin comprimir; cada uno se llama con su etiqueta en hexadecimal):
 
 | Etiqueta | Qué es |
 |---|---|
