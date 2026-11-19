@@ -177,6 +177,9 @@ def free_routine(g):
     B, CAND, D, NF, FORMS, F_REC = ST["free"], g["CAND"], g["ALINE"], g["NF"], g["FORMS"], g["F_REC"]
     N0, S0, N1, S1, N2, S2, LASTF, ACT, W0, SENT, WAITF, F0, R0, LC1, LLB, TCH, WA, WB, WC = (8 * i for i in range(19))
     BUF = 8 * 19                        # 16 bytes: Razar's letter as read
+    LASTORG = 8 * 21                    # the last organ of Razar she made a form of (kept after her counts)
+    F_WORTH, F_GROWN = g["F_WORTH"], g["F_GROWN"]
+    st, setg, incg = g["st"], g["setg"], g["incg"]
     def gl(r, off): li("j6", B); J("jld %s, j6, %d" % (r, off))
     def gs(r, off): li("j6", B); J("jst %s, j6, %d" % (r, off))
     def inc(off): gl("j1", off); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", off)
@@ -184,13 +187,15 @@ def free_routine(g):
     o("r_free_load:                    ; her conclusions, as the folder kept them (none: all zero)")
     li("j1", int.from_bytes(b"carta1", "little")); gs("j1", LC1); li("j1", int.from_bytes(b"libre", "little")); gs("j1", LLB)
     li("j11", B + LLB); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, lbl_done")
-    J("jldi j10, 5"); li("j11", B); J("jldi j12, 56", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    J("jldi j10, 5"); li("j11", B); J("jldi j12, 56", "jcall r_file")
+    J("jldi j10, 5"); li("j11", B + LASTORG); J("jldi j12, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("lbl_done:")
     J("jret")
     o("r_free_save:")
     J("jldi j10, 12"); li("j11", B + LLB); J("jldi j12, 5", "jcall r_tocar")
     li("j11", B + LLB); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, lbs_done")
-    J("jldi j10, 6"); li("j11", B); J("jldi j12, 56", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    J("jldi j10, 6"); li("j11", B); J("jldi j12, 56", "jcall r_file")
+    J("jldi j10, 6"); li("j11", B + LASTORG); J("jldi j12, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("lbs_done:")
     J("jret")
     o("r_free:")
@@ -216,7 +221,7 @@ def free_routine(g):
     o("fr_g_end:")
     gs("j14", SENT)
     o("fr_saved:")
-    gs("j14", TCH); gs("j14", ACT); J("jcall r_free_save")
+    gs("j14", TCH); gs("j14", ACT); J("jcall r_adopt", "jcall r_free_save")
     o("fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck")
     gl("j1", LASTF); J("jjz j1, fr_think")
     for n_, s_, w_ in ((N0, S0, WA), (N1, S1, WB), (N2, S2, WC)):
@@ -243,6 +248,42 @@ def free_routine(g):
     o("  ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two")
     gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2", "jcall r_randmod")
     gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
+    o("r_adopt:                        ; what Razar learns changes her (the Capitan: \"que no sean un adorno bonito: en Razar")
+    o("                                ; todo se usa\"). The organ he wears, when it is a new one (read in his letter), is born")
+    o("                                ; as a form of hers in the place of the one her own judge values least; that one goes to")
+    o("                                ; the archive (\"replaced\"): nothing is lost. Her next gifts start from what serves him.")
+    li("j6", B); J("jst j14, j6, %d" % BUF, "jst j14, j6, %d" % (BUF + 8))
+    li("j11", B + LC1); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ad_done")
+    J("jldi j10, 5"); li("j11", B + BUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    gl("j1", BUF + 8); J("jjz j1, ad_done"); gl("j2", LASTORG); J("jsub j2, j1, j2", "jjz j2, ad_done")
+    gs("j1", LASTORG)
+    for k in range(4):
+        o("  jst j14, j14, %s" % num(CAND + 8 * k))
+    gl("j1", LASTORG); li("j9", CAND); J("jldi j4, 0")
+    o("ad_unpack:                      ; his letters, four bits each from the lowest, into a recipe of hers")
+    J("jldi j10, 15", "jand j5, j1, j10", "jjz j5, ad_len", "jadd j7, j9, j4", "jstb j5, j7, 1", "jldi j10, 4", "jshr j1, j1, j10",
+      "jldi j10, 1", "jadd j4, j4, j10", "jjmp ad_unpack")
+    o("ad_len:")
+    J("jjz j4, ad_done", "jstb j4, j9, 0")
+    J("jldi j2, 0", "jldi j3, 0"); li("j9", FORMS); J("jld j5, j9, %d" % F_WORTH)
+    o("ad_min:                         ; the form she values least (her own judge's worth)")
+    J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % NF, "jsub j10, j2, j10", "jjz j10, ad_have")
+    J("jldi j10, 8", "jshl j7, j2, j10"); li("j10", FORMS); J("jadd j7, j7, j10", "jld j8, j7, %d" % F_WORTH, "jsub j10, j8, j5", "jjnn j10, ad_min",
+                                                               "jadd j5, j8, j14", "jadd j3, j2, j14", "jjmp ad_min")
+    o("ad_have:")
+    st("j3", "JF"); J("jldi j10, 8", "jshl j9, j3, j10"); li("j10", FORMS); J("jadd j9, j9, j10"); st("j9", "JFA")
+    st("j14", "AREASON"); ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); st("j9", "ALOSER"); setg("AOTHER", CAND)
+    ld("j9", "TOTAL"); st("j9", "ATL"); st("j9", "ATW"); J("jcall r_archive")
+    ld("j9", "JFA")
+    for k in range(4):
+        o("  jld j10, j14, %s" % num(CAND + 8 * k)); J("jst j10, j9, %d" % (F_REC + 8 * k))
+    ld("j1", "JF"); J("jcall r_regrow")
+    ld("j9", "DFA"); J("jldb j10, j9, %d" % F_REC, "jst j10, j9, %d" % F_GROWN)
+    J("jcall r_recompute")
+    incg("EPOCH"); setg("RADIUS", 1); setg("CHANGED", 1)
+    J("jcall r_clear_hash", "jcall r_new_walk", "jcall r_save_forms")
+    o("ad_done:")
+    J("jret")
 
 # ---- written inside gen_vida's namespace (its helpers, its variables), with the forms' and the meals' addresses
 def fg(name):

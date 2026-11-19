@@ -7972,6 +7972,11 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jshi j11, 0
   jldi j12, 56
   jcall r_file
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 0A8h
+  jldi j12, 8
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbl_done:
@@ -7992,6 +7997,11 @@ r_free_save:
   jldi j11, 015Eh
   jshi j11, 0
   jldi j12, 56
+  jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 0A8h
+  jldi j12, 8
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -8136,6 +8146,7 @@ fr_saved:
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 56
+  jcall r_adopt
   jcall r_free_save
 fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck
   jldi j6, 015Eh
@@ -8315,6 +8326,128 @@ fr_g_len:
   jsub j2, j0, j1
   jjn j2, fr_rest
   jjmp fr_think
+r_adopt:                        ; what Razar learns changes her (the Capitan: "que no sean un adorno bonito: en Razar
+                                ; todo se usa"). The organ he wears, when it is a new one (read in his letter), is born
+                                ; as a form of hers in the place of the one her own judge values least; that one goes to
+                                ; the archive ("replaced"): nothing is lost. Her next gifts start from what serves him.
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 152
+  jst j14, j6, 160
+  jldi j11, 015Eh
+  jshi j11, 068h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, ad_done
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 098h
+  jldi j12, 16
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 160
+  jjz j1, ad_done
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 168
+  jsub j2, j1, j2
+  jjz j2, ad_done
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 168
+  jst j14, j14, 01400h
+  jst j14, j14, 01408h
+  jst j14, j14, 01410h
+  jst j14, j14, 01418h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 168
+  jldi j9, 01400h
+  jldi j4, 0
+ad_unpack:                      ; his letters, four bits each from the lowest, into a recipe of hers
+  jldi j10, 15
+  jand j5, j1, j10
+  jjz j5, ad_len
+  jadd j7, j9, j4
+  jstb j5, j7, 1
+  jldi j10, 4
+  jshr j1, j1, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp ad_unpack
+ad_len:
+  jjz j4, ad_done
+  jstb j4, j9, 0
+  jldi j2, 0
+  jldi j3, 0
+  jldi j9, 0800h
+  jld j5, j9, 40
+ad_min:                         ; the form she values least (her own judge's worth)
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 8
+  jsub j10, j2, j10
+  jjz j10, ad_have
+  jldi j10, 8
+  jshl j7, j2, j10
+  jldi j10, 0800h
+  jadd j7, j7, j10
+  jld j8, j7, 40
+  jsub j10, j8, j5
+  jjnn j10, ad_min
+  jadd j5, j8, j14
+  jadd j3, j2, j14
+  jjmp ad_min
+ad_have:
+  jst j3, j14, 0388h
+  jldi j10, 8
+  jshl j9, j3, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jst j9, j14, 0390h
+  jst j14, j14, 0400h
+  jld j9, j14, 0390h
+  jldi j10, 192
+  jadd j9, j9, j10
+  jst j9, j14, 03F0h
+  jldi j10, 01400h
+  jst j10, j14, 03F8h
+  jld j9, j14, 02C8h
+  jst j9, j14, 0408h
+  jst j9, j14, 0410h
+  jcall r_archive
+  jld j9, j14, 0390h
+  jld j10, j14, 01400h
+  jst j10, j9, 192
+  jld j10, j14, 01408h
+  jst j10, j9, 200
+  jld j10, j14, 01410h
+  jst j10, j9, 208
+  jld j10, j14, 01418h
+  jst j10, j9, 216
+  jld j1, j14, 0388h
+  jcall r_regrow
+  jld j9, j14, 0488h
+  jldb j10, j9, 192
+  jst j10, j9, 48
+  jcall r_recompute
+  jld j10, j14, 0278h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 0278h
+  jldi j10, 1
+  jst j10, j14, 0290h
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jcall r_clear_hash
+  jcall r_new_walk
+  jcall r_save_forms
+ad_done:
+  jret
 ; ---- the forms' routines the creatures call (their own names would be renamed with v_)
 f_hash:
   jcall r_hash

@@ -22,6 +22,35 @@ cp "$d/comer.bin" "$casa/$(etiqueta comer)"         # the programs it launches f
 cp "$d/comer.datos" "$casa/$(etiqueta comer.datos)" # and the turns of its skeletons
 cp "$d/sentido.bin" "$casa/$(etiqueta sentido)"
 cp "$d/sentido.datos" "$casa/$(etiqueta sentido.datos)"
+# It reads with the organ Razar found most general (the Capitan: "que no sean un adorno: en Razar todo se usa"): the
+# vigia eats texts of every domain, so it wears the organ that has recipes in the most models of the board; between
+# equals, the one with fewer letters, then the lower one (the general rules measured were the shortest). Its letters
+# go into the organ's place of both programs' initial data (30h, organo.inc). No recipe, or no python: no organ, as
+# before. VIGIA_ORGANO=<letters> wears that one; VIGIA_ORGANO=- wears none.
+organo=$(python -I - "$(cygpath -m "$(cygpath -u "$tablero")")" "${VIGIA_ORGANO:-}" "$casa/$(etiqueta comer.datos)" "$casa/$(etiqueta sentido.datos)" <<'PYEOF' 2>/dev/null
+import os, sys
+board, forced, files = sys.argv[1], sys.argv[2], sys.argv[3:]
+models = {}
+if forced:
+    best = "" if forced == "-" else forced
+else:
+    for f in os.listdir(board):
+        try:
+            p = bytes.fromhex(f).decode().split("/")
+        except ValueError:
+            continue
+        if len(p) >= 5 and p[0] == "tablero" and p[1] == "Receta de Organos" and p[-1] == "recetas" and p[3].isdigit():
+            models.setdefault(p[3], set()).add(p[2])
+    best = min(models, key=lambda o: (-len(models[o]), len(o), int(o))) if models else ""
+word = sum(int(c) << (4 * i) for i, c in enumerate(best)) if best and len(best) <= 16 else 0
+for path in files:
+    b = bytearray(open(path, "rb").read())
+    if len(b) >= 0x38:
+        b[0x30:0x38] = word.to_bytes(8, "little")
+        open(path, "wb").write(b)
+print((best if word else "-") + (" (%d modelos)" % len(models[best]) if best in models else ""))
+PYEOF
+)
 registro() {   # each line to VIGIA_LOG, the file cut to its last 100 lines; without it, to the screen
   if [ -z "${VIGIA_LOG:-}" ]; then cat; return; fi
   while IFS= read -r linea; do
@@ -30,7 +59,7 @@ registro() {   # each line to VIGIA_LOG, the file cut to its last 100 lines; wit
   done
 }
 {
-  echo "Razar vigila $vigia (su casa: $casa; la biblioteca: $tablero). Ctrl+C para terminar."
+  echo "Razar vigila $vigia (su casa: $casa; la biblioteca: $tablero; lee con el organo ${organo:--}). Ctrl+C para terminar."
   JANAX_MOTOR=$motor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$casa")" JANAX_TABLERO="$tablero" JANAX_VIGIA="$vigia" \
     "$proyecto/so/build/janaxos.exe" "$(cygpath -m "$d/vigia.bin")" | sed -u 's/\r$//' \
     | grep --line-buffered -Ev '^(modo|costo|remeros|nativo|ventanilla|P[0-9]+ codigo)'
