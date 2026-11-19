@@ -4306,7 +4306,12 @@ og_niche:
     jsub j4, j3, j4
     jldi j1, 63
     jsar j4, j4, j1
+    jjnz j4, on_mix
+    jldi j4, 9                  ; (the holes are the letters 5 to 9: a letter beyond them is a sense, and a sense
+    jsub j4, j4, j3             ; mixes what it sees into the frame as 1 to 4 do; taken for a hole it named a niche
+    jsar j4, j4, j1             ; the archive does not have)
     jjz j4, on_hole
+  on_mix:
     jldi j4, 4
     jshr j2, j2, j4
   jwend

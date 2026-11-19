@@ -9,6 +9,14 @@
 ; the mold. The frame's hash travels in j2 from letter to letter (hw takes and gives it back), so the reading of the
 ; letters uses only j13 and j14. Measured: the same fingerprint as the compiled organ, bit by bit (genome 0x8321 on the
 ; NT: 0000DDE5FD0394D4), and 0.7 % more instructions.
+; ITS SENSES (the Capitan, 2026-11-19: "organos reales que le den nuevos sentidos", "que se inspire de lo que come"): the
+; letters beyond 9 are looks the nine cannot give, taken from what its own eating already measured, and each mixes what
+; it sees into the frame as 1 to 4 do. A sees the word behind the window (the row of the text goes on there; 0 at the
+; start of a line, the edge no window holds). F sees the fourth word blurred: how often it read it where it learns
+; (ROOMC), so every word it never read looks the same and the frame also fits what it never met. Measured on the NT
+; (poetico/sentidos.py): 38A516 = 14775 and F38516 = 13588, against 11496 of 38516. B to E are free: the other four
+; looks of that space (the word ahead; the first, second and third blurred) were measured and did not beat the sentence
+; they were put in, so they wait written in sentidos.py, not here. A program built before them skips their letters.
 ORGW  = 30h                     ; its letters and the audit's garbage, in the initial data of every program that
 ORGF  = 38h                     ; includes it: 30h to 3Fh of its X.datos are the organ's (zeros: no organ)
 ORGL  = 3800h                   ; the letters still to read
@@ -86,6 +94,12 @@ jwhile j13
   jldi j13, 9
   jsub j13, j14, j13
   jjz j13, og_l9
+  jldi j13, 10
+  jsub j13, j14, j13
+  jjz j13, og_lA
+  jldi j13, 15
+  jsub j13, j14, j13
+  jjz j13, og_lF
 jwcheck
 og_lap:
   jldi j1, 0
@@ -157,6 +171,25 @@ og_l9:
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
   jld j2, j1, FNVO
   jldi j3, 102h
+  jcall hw
+  jjmp og_lap
+og_lA:
+  jldi j1, 0                    ; a sense: the word behind the window into the frame
+  jld j9, j1, WAT
+  jldi j5, 8
+  jsub j9, j9, j5
+  jld j3, j9, 0
+  jcall hw
+  jjmp og_lap
+og_lF:
+  jldi j1, 0                    ; a sense: the fourth word, blurred (how often it was read where it learns), into the
+  jld j9, j1, WAT               ; frame
+  jld j3, j9, 24
+  jldi j5, 3
+  jshl j3, j3, j5
+  jld j5, j1, ROOMC
+  jadd j3, j3, j5
+  jld j3, j3, 0
   jcall hw
   jjmp og_lap
 og_done:

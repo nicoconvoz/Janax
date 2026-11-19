@@ -24,6 +24,7 @@ BASH = r"C:\Program Files\Git\bin\bash.exe"
 BODY = ("pulso.jsm", "crece.inc", "casa.inc", "pulso.inc", "negacion.inc", "lectura.inc")
 MODEL = "76951bbb9c47d761"
 LETTERS = "123456789ABCDEF"
+FREE = "BCDE"                                  # A and F are senses of his body now (organo.inc)
 NL = chr(10)
 TIMEOUT = 150
 TEMPLATE = None
@@ -54,7 +55,7 @@ def pool():
 
 def gear(n):
     """the code of the letter n (1-9) as his organ has it, without the jump back"""
-    t = original(); head = "og_l%d:" % n + NL
+    t = original(); head = "og_l%s:" % n + NL
     a = t.index(head) + len(head); b = t.index("  jjmp og_lap" + NL, a)
     return [ln.split(";")[0].strip() for ln in t[a:b].split(NL) if ln.split(";")[0].strip()]
 
@@ -63,7 +64,7 @@ def sentence(organ, legos):
     """the code of an organ as one piece: its letters' code one after the other"""
     out = []
     for ch in organ:
-        out += legos[ch] if ch in legos else gear(int(ch))
+        out += legos[ch] if ch in legos else gear(ch)
     return out
 
 
@@ -147,24 +148,24 @@ def scores(organs):
 def main():
     global TIMEOUT
     if sys.argv[1] == "validar":
-        setup(); t = time.time(); organo_inc({"A": gear(1)}); ok = build()
+        setup(); t = time.time(); organo_inc({"B": gear(1)}); ok = build()
         print("arma:", ok, "en %.0f s" % (time.time() - t))
-        t = time.time(); g = scores(["6", "5", "16", "A6", "A"])
-        print("en %.0f s:" % (time.time() - t), g, "| esperado: '' -3554, 6 -1586, 5 208, 16 2649, A6 2649, A -3554")
+        t = time.time(); g = scores(["6", "5", "16", "B6", "B"])
+        print("en %.0f s:" % (time.time() - t), g, "| esperado: '' -3554, 6 -1586, 5 208, 16 2649, B6 2649, B -3554")
         return
     if sys.argv[1] == "poetico":
         towers = sys.argv[2].split(",")
         legos = {}
-        for k, t in zip("ABCDEF", towers):
+        for k, t in zip(FREE, towers):
             legos[k] = sentence(t, legos)
         setup(); organo_inc(legos)
-        print("palabras nuevas:", {k: t for k, t in zip("ABCDEF", towers)}, "| arma:", build()); sys.stdout.flush()
+        print("palabras nuevas:", {k: t for k, t in zip(FREE, towers)}, "| arma:", build()); sys.stdout.flush()
         new = sorted(legos); old = "123456789"
         organs = [a + b for a in new for b in old] + [b + a for a in new for b in old] + [a + b for a in new for b in new]
         refs = [r for r in towers + ["516", "716", "738"] if r not in organs]
         TIMEOUT = 90 + 7 * (len(organs) + len(refs))
         g = scores(organs + refs)
-        opened = lambda o: "".join(towers["ABCDEF".index(ch)] if ch in new else ch for ch in o)
+        opened = lambda o: "".join(towers[FREE.index(ch)] if ch in new else ch for ch in o)
         out = open(W + "/poetico-%s-%s.txt" % ("-".join(towers), os.path.basename(BOOK).split(".")[0]), "w", encoding="utf-8")
         for o in sorted((k for k in g if k != "estado"), key=lambda o: -g[o]):
             line = "%-6s = %7d   abierto: %s" % (o or "sin", g[o], opened(o) if o else "(sin organo)")
@@ -183,12 +184,12 @@ def main():
                 at = rnd.randrange(len(lines) - k); body = lines[at:at + k]
             else:
                 body = [lines[rnd.randrange(len(lines))] for _ in range(k)]
-            organo_inc({"A": body + ["jcall hw"]})
+            organo_inc({"B": body + ["jcall hw"]})
             if not build():
                 res = "no arma"
             else:
-                g = scores(["6", "5", "A", "A6", "A5"])
-                res = " ".join("%s=%s" % (k or "sin", g[k]) for k in ("", "6", "5", "A", "A6", "A5", "estado") if k in g)
+                g = scores(["6", "5", "B", "B6", "B5"])
+                res = " ".join("%s=%s" % (k or "sin", g[k]) for k in ("", "6", "5", "B", "B6", "B5", "estado") if k in g)
             out.write("%s %d | %s | %s" % (kind, i, res, " ; ".join(body)) + NL); out.flush()
             print(kind, i, res); sys.stdout.flush()
 
