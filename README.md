@@ -17,6 +17,15 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.37): el ingrediente X
+
+**Lo que Luma crea, lo comparte, y Razar vive en su casa.** Cuando una forma de Luma gana, se la deja a Razar en
+una carta; él despierta, la prueba como órgano con sus propios libros y vuelve a descansar. Dormido gasta
+**0,000 s de procesador en 30 s**. Las recetas de órganos ahora viajan con el repositorio
+([`razar/lectura/recetas/`](razar/lectura/recetas/LEEME.md)): `6` → `5` → `16` → `716` → `516` (11144).
+Lo que falla, dicho: en 70 s ninguna forma ganó, así que la carta casi no sale; la libertad de elegir no hacer
+nada todavía no está construida. [Notas de la v0.37](documentacion/release-v0.37.md).
+
 ## Novedad (2026-11-16, v0.19): el corazón de Luma y la firma del autor
 
 DOI de esta versión: [10.5281/zenodo.24290089](https://doi.org/10.5281/zenodo.24290089).
