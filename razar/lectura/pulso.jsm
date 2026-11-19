@@ -3501,6 +3501,24 @@ lb_letters:
   jwend
   jret
 
+; The folder of every model on the board: the molde's block "r" ("tablero/Receta de Organos/"), as it is. Uses j1-j10.
+lb_root:
+  jcall lb_new
+  jldi j2, 114
+  jcall og_block
+  jwhile j6
+    jldb j2, j5, 0
+    jst j5, j1, OGLE
+    jst j6, j1, OGLF
+    jcall0 j1, lb_ch
+    jld j5, j1, OGLE
+    jld j6, j1, OGLF
+    jldi j2, 1
+    jadd j5, j5, j2
+    jsub j6, j6, j2
+  jwend
+  jret
+
 ; The folder of its model on the board: the molde's block "r" ("tablero/Receta de Organos/") and the fingerprint of
 ; its shelf (Capitan: "a recipe of another book, another model"). Uses j1-j10.
 lb_model:
@@ -3985,11 +4003,9 @@ og_rec_queue:
   jadd j11, j11, j2
   jcall0 j1, room
   jst j13, j1, OGQ
-  jcall lb_model                ; its model's folder, and its "/"
-  jldi j2, 47
-  jcall0 j1, lb_ch
-  jld j2, j1, OGLN
-  jst j2, j1, OGPFX
+  jcall lb_root                 ; the folder of every model: a recipe that served one book sits the exam of this one
+  jld j2, j1, OGLN              ; too (the shared shelf; the Capitan: "siempre hay reglas generales multidominio:
+  jst j2, j1, OGPFX             ; algunos son especificos, otros se trasladan"). What it does here says which it is.
   jld j2, j1, OGLR
   jst j2, j1, OGLP
   jld j2, j1, OGLNN
