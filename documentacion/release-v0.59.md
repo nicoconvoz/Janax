@@ -1,6 +1,6 @@
 ## Janax y Razar v0.59: el cubo y el sueño
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24378520](https://doi.org/10.5281/zenodo.24378520)
 
 > *"Cada mecanismo que entiende tiene un equivalente en receta de código: esos son los engranajes que forman
 > programas, y esos programas se mejoran e incluso son engranajes de programas más ricos."* (el autor, 2026-11-19)
