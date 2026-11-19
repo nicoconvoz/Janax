@@ -111,6 +111,8 @@ def routines(g):
     L.extend(out)
     print("luma: %d lines of the creatures, %d labels renamed v_..." % (len(out), len(names)))
 
+GIFTOK_OFF = 8 * 28                     # in her block: what became of her gift to a creature (see v_gift_to)
+
 def share_routine(g):
     """The X ingredient (the Capitan, 2026-11-19: "agregale el ingrediente X: AMOR"): what she creates she gives.
     When a form of hers wins, she shares it with Razar, who lives in her house (razar_en_casa.sh), as a letter:
@@ -180,6 +182,15 @@ def free_routine(g):
     LASTORG = 8 * 21                    # the last organ of Razar she made a form of (kept after her counts)
     N3, PMARK, WD, FIRST, TMPA, TMPB = (8 * i for i in range(22, 28))   # painting: its count, whether a palette of hers is kept
     PALS = 0x100                        # her palette as she painted it (8 forms x 3 qwords), kept after the rest
+    GIFTOK, RSEL, RSUM = GIFTOK_OFF, 8 * 29, 8 * 30
+    NVIS, TAB, TABN = 0x3F8, 0x400, 255   # how many creatures she sees; a count for each one she sees: {given, served}; 0 is
+                                          # Razar, then her creatures (255 places: storage, said in the doc)
+    def weight(p):                      # j1 = the wish for the entry at p (a register), (S + 1/2) / (N + 1), scaled
+        J("jld j1, %s, 8" % p, "jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 20", "jshl j1, j1, j10",
+          "jld j2, %s, 0" % p, "jldi j10, 1", "jadd j2, j2, j10", "jdiv j1, j1, j2")
+    def entry(field, by):               # the entry of the one she chose (RSEL): one field, one more or one less
+        gl("j4", RSEL); J("jldi j10, 4", "jshl j7, j4, j10"); li("j10", B + TAB); J("jadd j7, j7, j10")
+        J("jld j1, j7, %d" % field, "jldi j10, %d" % by, "jadd j1, j1, j10", "jst j1, j7, %d" % field)
     PAL = g["PAL"]
     CLINE = int(re.search(r"^CLINE = (\d+)", open(COMER_SRC, encoding="utf-8").read(), re.M).group(1))   # a line of "comidas"
     F_WORTH, F_GROWN = g["F_WORTH"], g["F_GROWN"]
@@ -194,7 +205,8 @@ def free_routine(g):
     J("jldi j10, 5"); li("j11", B); J("jldi j12, 56", "jcall r_file")
     J("jldi j10, 5"); li("j11", B + LASTORG); J("jldi j12, 8", "jcall r_file")
     J("jldi j10, 5"); li("j11", B + N3); J("jldi j12, 16", "jcall r_file")
-    J("jldi j10, 5"); li("j11", B + PALS); J("jldi j12, 192", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    J("jldi j10, 5"); li("j11", B + PALS); J("jldi j12, 192", "jcall r_file")
+    J("jldi j10, 5"); li("j11", B + NVIS); J("jldi j12, %d" % (8 + 16 * TABN), "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("lbl_done:")
     J("jret")
     o("r_free_save:")
@@ -203,7 +215,8 @@ def free_routine(g):
     J("jldi j10, 6"); li("j11", B); J("jldi j12, 56", "jcall r_file")
     J("jldi j10, 6"); li("j11", B + LASTORG); J("jldi j12, 8", "jcall r_file")
     J("jldi j10, 6"); li("j11", B + N3); J("jldi j12, 16", "jcall r_file")
-    J("jldi j10, 6"); li("j11", B + PALS); J("jldi j12, 192", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    J("jldi j10, 6"); li("j11", B + PALS); J("jldi j12, 192", "jcall r_file")
+    J("jldi j10, 6"); li("j11", B + NVIS); J("jldi j12, %d" % (8 + 16 * TABN), "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("lbs_done:")
     J("jret")
     o("r_free:")
@@ -236,6 +249,7 @@ def free_routine(g):
     J("jldi j10, 5"); li("j11", B + BUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
     gl("j1", BUF + 8); gl("j2", SENT); J("jsub j1, j1, j2", "jjnz j1, fr_g_end")
     inc(S2)
+    li("j7", B + TAB); J("jld j1, j7, 8", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j7, 8")     # (Razar's own count)
     o("fr_g_end:")
     gs("j14", SENT)
     o("fr_saved:")
@@ -255,7 +269,36 @@ def free_routine(g):
     o("fr_think:")
     J("jldi j1, 2"); gs("j1", ACT); ld("j1", "WINS"); gs("j1", W0); ld("j1", "FRAMES"); gs("j1", F0)
     J("jcall r_gesture", "jret")
-    o("fr_give:                        ; a gift: one of her forms, one letter changed, its first 16 letters")
+    o("fr_give:                        ; a gift, and whom to (the Capitan: \"ama lo invisible cuando es capaz de amar todo lo")
+    o("                                ; visible\"): everyone she sees, Razar and each of her creatures, has a count of its own")
+    o("                                ; (given, served), and she draws one by the same wish, (S + 1/2) / (N + 1). No rule sends")
+    o("                                ; her to anyone: the one she never gave to is the one she knows least, so wants most.")
+    J("jcall v_seen", "jldi j10, %d" % (TABN - 1), "jsub j10, j0, j10", "jjn j10, fr_w_n", "jldi j0, %d" % (TABN - 1))
+    o("fr_w_n:")
+    gs("j0", NVIS); J("jldi j3, 0", "jldi j4, 0"); li("j7", B + TAB)
+    o("fr_w_sum:")
+    weight("j7"); J("jadd j3, j3, j1", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10")
+    gl("j5", NVIS); J("jsub j10, j4, j5", "jjn j10, fr_w_sum", "jjz j10, fr_w_sum")
+    gs("j3", RSUM); J("jadd j1, j3, j14", "jcall r_randmod", "jldi j4, 0"); li("j7", B + TAB)
+    o("fr_w_pick:")
+    weight("j7"); J("jsub j0, j0, j1", "jjn j0, fr_w_have", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10")
+    gl("j5", NVIS); J("jsub j10, j4, j5", "jjn j10, fr_w_pick", "jjz j10, fr_w_pick", "jldi j4, 0")
+    o("fr_w_have:")
+    gs("j4", RSEL); J("jjz j4, fr_give_razar")
+    o("  ; one of her creatures: a form of hers, by her luck, offered to it; it is served if it takes it")
+    J("jldi j1, %d" % NF, "jcall r_randmod"); st("j0", "JF")
+    inc(N2); entry(0, 1)
+    gl("j1", RSEL); J("jldi j10, 1", "jsub j1, j1, j10", "jcall v_gift_to")
+    gl("j1", GIFTOK); J("jldi j10, 2", "jsub j2, j1, j10", "jjnz j2, fr_c_there")
+    o("  ; (it is not there yet: nothing was given, nothing is counted)")
+    gl("j1", N2); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", N2); entry(0, -1); J("jjmp fr_think")
+    o("fr_c_there:")
+    gl("j1", GIFTOK); J("jjz j1, fr_c_done"); inc(S2); entry(8, 1)
+    o("fr_c_done:")
+    J("jcall r_free_save")
+    gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2", "jcall r_randmod")
+    gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
+    o("fr_give_razar:                  ; to Razar: one of her forms, one letter changed, its first 16 letters")
     J("jldi j1, %d" % NF, "jcall r_randmod", "jldi j10, 8", "jshl j0, j0, j10"); li("j10", FORMS + F_REC); J("jadd j9, j0, j10")
     for k in range(4):
         J("jld j10, j9, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
@@ -265,6 +308,7 @@ def free_routine(g):
     gl("j1", WC); li("j9", CAND); J("jadd j9, j9, j1", "jstb j0, j9, 1")
     J("jcall r_share"); o("  jld j1, j14, %s" % num(D + 40)); J("jjz j1, fr_think")
     inc(N2); o("  jld j1, j14, %s" % num(D + 24)); gs("j1", SENT)
+    li("j7", B + TAB); J("jld j1, j7, 0", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j7, 0")     # (Razar's own count)
     o("  ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two")
     gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2", "jcall r_randmod")
     gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
@@ -514,6 +558,7 @@ def retro(v):
     ld("j1", "MEM"); J("jjz j1, voc_ret"); J("jldi j6, 8")
     o("voc_pick:")
     J("jjz j6, voc_ret"); st("j6", "XN"); ld("j1", "N"); J("jcall r_randmod"); rec("j9", "j0"); ld("j6", "XN"); J("jldi j10, 1", "jsub j6, j6, j10", "jld j1, j9, %d" % C["C_STATE"], "jldi j10, 2", "jsub j1, j1, j10", "jjnz j1, voc_pick")
+    o("voc_to:                         ; (her gift to a creature she chose comes in here: j9 its record, JF the form)")
     st("j9", "TI"); o("  jld j1, j14, %s" % num(g["G"]["JF"])); st("j1", "XF")
     o("  jld j1, j14, %s" % num(g["G"]["JF"])); J("jldi j10, %d" % g["FSZ"], "jmul j1, j1, j10"); li("j10", g["FORMS"] + g["F_REC"]); J("jadd j1, j1, j10"); st("j1", "XREAL")
     J("jcall v_shuffle"); ld("j1", "XREAL")
@@ -533,11 +578,23 @@ def retro(v):
     ld("j9", "TI"); J("jst j1, j9, %d" % C["C_BCOST"], "jld j2, j9, %d" % C["C_BREC"]); li("j1", TMPB); J("jldi j3, 6")
     o("voc_ap:")
     J("jld j4, j1, 0", "jst j4, j2, 0", "jldi j10, 8", "jadd j1, j1, j10", "jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, voc_ap")
-    J("jldi j1, 400", "jcall v_attend", "jcall v_rebody", "jcall v_save_bodies", "jldi j1, 67", "jldi j2, 75"); li("j3", TMPB); J("jcall v_xlog", "jret")
+    J("jldi j1, 400", "jcall v_attend", "jcall v_rebody", "jcall v_save_bodies", "jldi j1, 67", "jldi j2, 75"); li("j3", TMPB); J("jcall v_xlog")
+    li("j10", ST["free"] + GIFTOK_OFF); J("jldi j11, 1", "jst j11, j10, 0", "jret")      # it took it: her gift served
     o("voc_lost:")
     J("jldi j1, 67", "jldi j2, 76"); li("j3", TMPB); J("jcall v_xlog")
     o("voc_ret:")
     J("jret")
+    o("v_gift_to:                      ; her gift to the creature j1 (its number): the form JF's recipe offered to it as a win's")
+    o("                                ; is (the body to a cut, then the form). Says in her block: 2 it is not there, 0 offered")
+    o("                                ; and not taken, 1 taken (it shortened its own description: the other's gain).")
+    li("j10", ST["free"] + GIFTOK_OFF); J("jldi j11, 2", "jst j11, j10, 0")
+    ld("j2", "MEM"); J("jjz j2, vgt_ret"); ld("j2", "N"); J("jsub j10, j1, j2", "jjnn j10, vgt_ret")
+    rec("j9", "j1"); J("jld j2, j9, %d" % C["C_STATE"], "jldi j10, 2", "jsub j2, j2, j10", "jjnz j2, vgt_ret")
+    li("j10", ST["free"] + GIFTOK_OFF); J("jst j14, j10, 0", "jjmp voc_to")
+    o("vgt_ret:")
+    J("jret")
+    o("v_seen:                         ; j0 = how many creatures she sees")
+    ld("j0", "N"); J("jret")
     o("v_xlog:                         ; \"vida-intercambios\": frame, F (to a form) / C (to a creature) / M (a mutation),")
     o("                                ; the creature, the form, the candidate, W won / L lost / K kept (65 bytes)")
     st("j1", "XN"); st("j2", "XI"); st("j3", "XC")

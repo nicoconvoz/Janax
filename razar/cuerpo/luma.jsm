@@ -7987,6 +7987,11 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jshi j11, 0100h
   jldi j12, 192
   jcall r_file
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 03F8h
+  jldi j12, 4088
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbl_done:
@@ -8022,6 +8027,11 @@ r_free_save:
   jldi j11, 015Eh
   jshi j11, 0100h
   jldi j12, 192
+  jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 03F8h
+  jldi j12, 4088
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -8200,6 +8210,12 @@ fr_gift:                        ; a gift she left before this act: did Razar mak
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 40
+  jldi j7, 015Eh
+  jshi j7, 0400h
+  jld j1, j7, 8
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 8
 fr_g_end:
   jldi j6, 015Eh
   jshi j6, 0
@@ -8344,7 +8360,182 @@ fr_think:
   jst j1, j6, 88
   jcall r_gesture
   jret
-fr_give:                        ; a gift: one of her forms, one letter changed, its first 16 letters
+fr_give:                        ; a gift, and whom to (the Capitan: "ama lo invisible cuando es capaz de amar todo lo
+                                ; visible"): everyone she sees, Razar and each of her creatures, has a count of its own
+                                ; (given, served), and she draws one by the same wish, (S + 1/2) / (N + 1). No rule sends
+                                ; her to anyone: the one she never gave to is the one she knows least, so wants most.
+  jcall v_seen
+  jldi j10, 254
+  jsub j10, j0, j10
+  jjn j10, fr_w_n
+  jldi j0, 254
+fr_w_n:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 1016
+  jldi j3, 0
+  jldi j4, 0
+  jldi j7, 015Eh
+  jshi j7, 0400h
+fr_w_sum:
+  jld j1, j7, 8
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jld j2, j7, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jadd j3, j3, j1
+  jldi j10, 16
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j5, j6, 1016
+  jsub j10, j4, j5
+  jjn j10, fr_w_sum
+  jjz j10, fr_w_sum
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 240
+  jadd j1, j3, j14
+  jcall r_randmod
+  jldi j4, 0
+  jldi j7, 015Eh
+  jshi j7, 0400h
+fr_w_pick:
+  jld j1, j7, 8
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jld j2, j7, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jsub j0, j0, j1
+  jjn j0, fr_w_have
+  jldi j10, 16
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j5, j6, 1016
+  jsub j10, j4, j5
+  jjn j10, fr_w_pick
+  jjz j10, fr_w_pick
+  jldi j4, 0
+fr_w_have:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 232
+  jjz j4, fr_give_razar
+  ; one of her creatures: a form of hers, by her luck, offered to it; it is served if it takes it
+  jldi j1, 8
+  jcall r_randmod
+  jst j0, j14, 0388h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 32
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 32
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 232
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 0400h
+  jadd j7, j7, j10
+  jld j1, j7, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 232
+  jldi j10, 1
+  jsub j1, j1, j10
+  jcall v_gift_to
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 224
+  jldi j10, 2
+  jsub j2, j1, j10
+  jjnz j2, fr_c_there
+  ; (it is not there yet: nothing was given, nothing is counted)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 32
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 32
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 232
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 0400h
+  jadd j7, j7, j10
+  jld j1, j7, 0
+  jldi j10, -1
+  jadd j1, j1, j10
+  jst j1, j7, 0
+  jjmp fr_think
+fr_c_there:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 224
+  jjz j1, fr_c_done
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 40
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 40
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 232
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 0400h
+  jadd j7, j7, j10
+  jld j1, j7, 8
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 8
+fr_c_done:
+  jcall r_free_save
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 128
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 136
+  jadd j1, j1, j2
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 128
+  jsub j2, j0, j1
+  jjn j2, fr_rest
+  jjmp fr_think
+fr_give_razar:                  ; to Razar: one of her forms, one letter changed, its first 16 letters
   jldi j1, 8
   jcall r_randmod
   jldi j10, 8
@@ -8397,6 +8588,12 @@ fr_g_len:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 72
+  jldi j7, 015Eh
+  jshi j7, 0400h
+  jld j1, j7, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 0
   ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two
   jldi j6, 015Eh
   jshi j6, 0
@@ -11601,6 +11798,7 @@ v_voc_pick:
   jldi j10, 2
   jsub j1, j1, j10
   jjnz j1, v_voc_pick
+v_voc_to:                         ; (her gift to a creature she chose comes in here: j9 its record, JF the form)
   jst j9, j14, 02380h
   jld j1, j14, 0388h
   jst j1, j14, 02750h
@@ -11684,6 +11882,10 @@ v_voc_ap:
   jldi j2, 75
   jldi j3, 06440h
   jcall v_xlog
+  jldi j10, 015Eh
+  jshi j10, 0E0h
+  jldi j11, 1
+  jst j11, j10, 0
   jret
 v_voc_lost:
   jldi j1, 67
@@ -11691,6 +11893,35 @@ v_voc_lost:
   jldi j3, 06440h
   jcall v_xlog
 v_voc_ret:
+  jret
+v_gift_to:                      ; her gift to the creature j1 (its number): the form JF's recipe offered to it as a win's
+                                ; is (the body to a cut, then the form). Says in her block: 2 it is not there, 0 offered
+                                ; and not taken, 1 taken (it shortened its own description: the other's gain).
+  jldi j10, 015Eh
+  jshi j10, 0E0h
+  jldi j11, 2
+  jst j11, j10, 0
+  jld j2, j14, 02668h
+  jjz j2, v_vgt_ret
+  jld j2, j14, 02228h
+  jsub j10, j1, j2
+  jjnn j10, v_vgt_ret
+  jldi j10, 384
+  jmul j9, j1, j10
+  jld j10, j14, 02258h
+  jadd j9, j9, j10
+  jld j2, j9, 8
+  jldi j10, 2
+  jsub j2, j2, j10
+  jjnz j2, v_vgt_ret
+  jldi j10, 015Eh
+  jshi j10, 0E0h
+  jst j14, j10, 0
+  jjmp v_voc_to
+v_vgt_ret:
+  jret
+v_seen:                         ; j0 = how many creatures she sees
+  jld j0, j14, 02228h
   jret
 v_xlog:                         ; "vida-intercambios": frame, F (to a form) / C (to a creature) / M (a mutation),
                                 ; the creature, the form, the candidate, W won / L lost / K kept (65 bytes)
