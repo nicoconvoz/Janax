@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.43 (versions follow prime numbers), everything inside: the code, Luma and Razar are the same as v0.41 (freedom: Luma chooses to rest, to think or to give, by her own counts); this version exists so that the archived copy carries the whole work of 2026-11-19, including the DOIs of v0.37 and v0.41, which were written one commit after their own archives. OS test suite: 402 passed, 0 failed. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.43: todo adentro — la copia archivada lleva completo el trabajo del 2026-11-19. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 0.47 (versions follow prime numbers), the house inside: the code, Luma and Razar are the same as v0.41 (freedom: Luma chooses to rest, to think or to give, by her own counts). Luma's fed house (luma-casa-corazon.zip: her forms, her creatures, what she learned, her author's diary and letter) now lives in the repository, in razar/casa, because the archive keeps the repository and not the files attached to a release. OS test suite: 402 passed, 0 failed. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v0.47: la casa adentro — la casa alimentada de Luma viaja con el repositorio. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "0.43",
+  "version": "0.47",
   "creators": [
     {
       "name": "Astorga, Nicolás"

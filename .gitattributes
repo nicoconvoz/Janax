@@ -1,0 +1,2 @@
+# binaries are stored whole: looking for differences between two of them costs time and finds none
+*.zip -delta binary
