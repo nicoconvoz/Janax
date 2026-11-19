@@ -1,0 +1,20 @@
+# semilla 20261119, 12589 lineas de codigo de su cuerpo; referencias: sin organo -3554, 6 -1586, 5 208
+fragmento 0 | no arma | jld j14, j1, WGS + 40 ; jret ; wi_grow: ; jldi j1, 0
+barajado 0 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jshl j2, j2, j4 ; jld j2, j1, NI ; jldi j10, 7 ; jldi j2, 1 ; jldi j5, 8
+fragmento 1 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jadd j5, j5, j5 ; jld j6, j1, WMASK ; jsub j5, j6, j5 ; jldi j6, 63 ; jsar j5, j5, j6
+barajado 1 | no arma | jst j2, j1, BLEN ; ns_seen: ; jldi j9, 0 ; jld j10, j1, NV
+fragmento 2 | no arma | wb_need:
+barajado 2 | sin=-3554 6=-1586 5=208 A=-3554 A6=-3554 A5=-3554 | jshi j2, 6564h ; jld j6, j1, PCS + 32 ; jldi j2, 4096 ; jldi j1, 0 ; jadd j2, j9, j1 ; PDK   = 1F60h
+fragmento 3 | sin=-3554 6=-1586 5=208 estado=rompe | jld j5, j1, ROOMV ; jadd j4, j4, j5 ; jld j5, j4, 16 ; jjz j5, wi2_none ; jld j5, j4, 0
+barajado 3 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jst j2, j1, DLO ; jld j3, j1, FLOOR ; jshi j9, 6572h
+fragmento 4 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | CARL  = 1DD8h
+barajado 4 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jld j3, j1, OGBASE ; jldi j2, 40
+fragmento 5 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jldi j3, 1
+barajado 5 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jldi j3, 1 ; S_BRINGS = 0E00h ; jld j6, j1, ARPOS
+fragmento 6 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jldi j3, 40
+barajado 6 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jldi j2, 7 ; jsub j5, j5, j8 ; jld j12, j1, OGRBC ; jldi j3, 0 ; jldi j4, 3
+fragmento 7 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jadd j5, j2, j1
+barajado 7 | sin=-3554 6=-1586 5=208 estado=rompe | jadd j9, j9, j2 ; jcall og_wopen ; jst j6, j4, 24 ; jld j2, j4, 0
+fragmento 8 | sin=-3554 6=-1586 5=208 A=-3554 A6=-3554 A5=-3554 | jret
+barajado 8 | sin=-3554 6=-1586 5=208 estado=rompe | jld j4, j3, 0 ; jldi j3, 1 ; jldi j6, 0 ; jldi j2, 42 ; jldi j1, S_DEEP ; jadd j4, j4, j7
+fragmento 9 | sin=-3554 6=-1586 5=208 A=-3554 A6=-1586 A5=208 | jst j1, j1, SVR
