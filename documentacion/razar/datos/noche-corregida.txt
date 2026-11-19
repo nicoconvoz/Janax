@@ -1,0 +1,24 @@
+Razar renacido en la casa de Luma, 2026-11-19 17:31 (autopsia1, primeras lineas)
+
+memoria 556 0 133
+instinto 427: 8 1 1 = 12138 *
+carta: 8 1 1
+instinto 428: 8 1 1 = 12138
+organo 16 = 4497 (sin 13876)
+organo 166444339 = 5325 (sin 13876)
+organo 338339 = 4147 (sin 13876)
+organo 38516 = 12607 (sin 13876)
+organo 511444432319 = 13 (sin 13876)
+organo 516 = 12756 (sin 13876)
+organo 738 = 9659 (sin 13876)
+organo 5 = 13 (sin 13876)
+organo 6 = -1374 (sin 13876)
+organo 716 = 8377 (sin 13876)
+organo 36 = 3264 (sin 13876)
+organo 51 = 13 (sin 13876)
+organo 7 = -4173 (sin 13876)
+organo 71 = -4173 (sin 13876)
+organo 8 = -3768 (sin 13876)
+organo 81 = -3768 (sin 13876)
+organo 233322739 = -2867 (sin 13876)
+descansa

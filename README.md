@@ -17,6 +17,15 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.61): la noche que no llegaba
+
+**Corrección de la v0.59.** Lo que el cubo halló no le llegaba a Luma: la noche comparaba la biblioteca con la del
+arranque de quien la cuida y no con la que Razar encontró al nacer, así que Razar no renacía (57 sueños, ningún
+renacer). Corregido y probado: renació y rindió por primera vez las piezas del cubo. El resultado es en contra: en
+la casa de Luma ninguna le gana al examen sin órgano (13876; la mejor, `516`, 12756; el `38516`, 12607). Luma no
+cambió por el código libre: el cubo juzga con un lector recién nacido y el suyo ya creció.
+[Notas de la v0.61](documentacion/release-v0.61.md).
+
 ## Novedad (2026-11-19, v0.59): el cubo y el sueño
 
 DOI de esta versión: [10.5281/zenodo.24378520](https://doi.org/10.5281/zenodo.24378520).

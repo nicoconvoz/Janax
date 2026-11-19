@@ -17,6 +17,10 @@ etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 mkdir -p "$casa" "$armado"
 tablero=${JANAX_TABLERO:-$(cygpath -m "$HOME/razar_tablero")}
 mkdir -p "$(cygpath -u "$tablero")"
+# the board as he finds it at this birth (how many recipes, and a print of their names): who watches Luma's nights
+# (luma_vive.sh) compares the board with this, so whatever came after he was born makes him be born again, whoever
+# started him and whenever
+python -I -c "import hashlib,os,sys; p='tablero/Receta de Organos/'.encode().hex(); n=sorted(f for f in os.listdir(sys.argv[1]) if f.startswith(p)); print(len(n), hashlib.sha256(''.join(n).encode()).hexdigest()[:16])" "$tablero" > "$carpeta/tablero.visto" 2>/dev/null
 # built again only if a source of his changed (he is reborn in Luma's nights: a build writes its sources again, texts
 # the vigia would eat every time for nothing)
 nuevo=

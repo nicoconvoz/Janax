@@ -53,7 +53,6 @@ PS
 )
 export LUMA_CASA="$(cygpath -w "$carpeta/casa")" LUMA_SENAL="$(etiqueta dormir)" LUMA_BIN="$(cygpath -m "$carpeta/bin/luma.bin")"
 export LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")"
-antes=$(recetas)
 while :; do
   rm -f "$carpeta/casa/$LUMA_SENAL"
   powershell -NoProfile -Command "$espera" &          # who watches over her is there first, before her window appears
@@ -68,10 +67,11 @@ while :; do
     break
   fi
   ahora=$(recetas)
+  antes=$(cat "$carpeta/tablero.visto" 2>/dev/null)   # the board as he found it when he was born (razar_en_casa.sh)
   vivo=$(powershell -NoProfile -Command \
     "(Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | Measure-Object).Count" 2>/dev/null | tr -d '\r')
   if [ "$ahora" != "$antes" ] || [ "${vivo:-0}" = 0 ]; then   # something new for him, or he is not there (a known flaw:
-    antes=$ahora                                               # a book that comes while he is awake ends him)
+                                                               # a book that comes while he is awake ends him)
     powershell -NoProfile -Command \
       "Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" > /dev/null 2>&1
     bash "$aqui/razar_en_casa.sh" "$carpeta" "$libro" > /dev/null 2>&1 &
