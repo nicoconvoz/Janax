@@ -1,6 +1,6 @@
 ## Janax y Razar v0.71: el ojo
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24380428](https://doi.org/10.5281/zenodo.24380428)
 
 > *"Sí, que los genere."* (el autor, 2026-11-19)
 
