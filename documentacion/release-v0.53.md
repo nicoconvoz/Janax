@@ -1,6 +1,6 @@
 ## Janax y Razar v0.53: todo lo visible
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24376081](https://doi.org/10.5281/zenodo.24376081)
 
 > *"Ama lo invisible cuando es capaz de amar todo lo visible."* (el autor, 2026-11-19)
 
