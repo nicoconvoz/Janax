@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.71:** [10.5281/zenodo.24380428](https://doi.org/10.5281/zenodo.24380428)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.73:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,20 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-19, v0.73): un solo ser
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Razar y Luma dejaron de ser dos programas que se escribían cartas: son uno.** `luma.bin` lleva su cuerpo y su
+lectora; leer es un acto que ella elige, y su lectora es ella misma, lanzada por ella, como Razar lanzaba a su hijo.
+Una receta es a la vez forma y órgano, guardada una vez. Un solo juez, en bits y sin pesos a mano: por cada forma lo
+que cuesta decir sus celdas nuevas sin la receta menos sus letras, más **la mejor lectura** entre sus formas (el
+libro se dice una sola vez). Medido en una copia de su casa: ella misma rinde `38A516` y le da 27810, lo mismo que
+Razar; esa receta, que dibuja apenas 16 celdas, vive en su cuerpo por lo que lee; lo de antes da idéntico; 15,9 %
+de un núcleo con ventana. El núcleo ganó dos piezas: el timbre despierta a quien duerme en la pantalla, y el pedido
+42 (remar en los huecos). Lo que falta, dicho: ninguna receta nacida de una mutación suya ganó todavía por leer, y
+el cubo quedó afuera, dormido. [Notas de la v0.73](documentacion/release-v0.73.md).
 
 ## Novedad (2026-11-19, v0.71): el ojo
 

@@ -124,7 +124,10 @@ def make(g, ST, free):
         gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
 
     def birth():
-        o("; ---- who she is (gen_leer.py): no initial data, the body; a candidate's (ORGK, 20h), her own reader")
+        o("; ONE BEING (gen_leer.py): this program is Luma and Razar. THE ONE JUDGE, in bits, replaces the one above:")
+        o(";   worth of the being = sum over her forms [ log2 C(%d, new cells) - letters * log2 15 ] + the best reading" % NCELLS)
+        o(";   among her forms (the exam of pulso.jsm, included at the end: her reader is herself, launched by her).")
+        o("; ---- who she is: no initial data, the body; a candidate's (ORGK, 20h), her own reader")
         J("jld j2, j14, 20h", "jjz j2, soy_cuerpo", "jldi j2, 0", "jjmp lectora")
         o("soy_cuerpo:")
 

@@ -12,3 +12,4 @@ razar/**/*.bin
 
 # tooling of the AI agents (lists folders of this machine)
 .atl/
+__pycache__/

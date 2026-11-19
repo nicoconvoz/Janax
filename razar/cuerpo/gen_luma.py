@@ -135,16 +135,17 @@ def free_routine(g):
     nada, construilo mientras hace cosas Luma"), and learns what became of it when that next act ends:
       rest   nothing on purpose: her forms do not explore for a breath (her creatures go on living: the body breathes).
       think  a new round of longer jumps (what she always did).
-      give   a gift for Razar: one of her forms, by luck, one of its letters changed by luck, its first 16 letters (an
-             organ is a qword), unjudged by her: her judge counts cells, his reads a book ("a veces lo que falta es
-             el marco"). Sent as r_share does. Nobody home: she thinks instead, and nothing is counted.
+      give   a gift for one of her creatures: a form of hers, by luck, offered to it (v_gift_to).
+      read   her reader leaves with a recipe (gen_leer.py): she and Razar are one being, and what was a letter to
+             him is an act of hers. She does not wait for it either.
     HER OWN CONCLUSIONS. Nobody sets how much she wants each act: she counts, for each, how many times she chose it
     (N) and how many it paid (S), and her wish for it is (S + 1/2) / (N + 1), the Krichevsky-Trofimov estimate her own
     judge already uses: it is never 0, so no act is ever closed to her (no limits), and never 1. She draws an act
     with a chance proportional to its wish.
     WHAT PAYS (the X ingredient decides it, not her own gain):
       think  paid if a form of hers won in that round (what she discovers).
-      give   paid if Razar made her gift his own organ: the other's gain, never hers (read in his letter, "carta1").
+      give   paid if the creature took her gift: the other's gain, never hers.
+      read   paid if what she read came to live in her body (a thought that won with its reading, an instinct).
       rest   paid if someone came for her while she was still: a gesture of the hand opened a round (her RADIUS moved).
     A gesture always comes first: it opens a round at once, whatever she was doing (r_gesture, untouched).
     Kept in "libre" (56 bytes: N and S of rest, think, give, and her breath in frames), written when an act is
