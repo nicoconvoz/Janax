@@ -195,6 +195,17 @@ OGLNN = 3980h
 OGLP  = 3988h
 OGLK  = 3990h
 OGPFX = 3998h
+OGNT  = 39A8h                   ; the organ just tried took its niche (1); whom it took it from and that one's score;
+OGNA  = 39B0h                   ; and six words kept while its recipe is written
+OGNB  = 39B8h
+OGS1  = 39C0h
+OGS2  = 39C8h
+OGS3  = 39D0h
+OGS4  = 39D8h
+OGS5  = 39E0h
+OGS6  = 39E8h
+OGZ   = 39F0h                   ; the exam without organ, and the shelf it was sat with plus one (0: not yet)
+OGZS  = 39F8h
 OGQD  = 39A0h                   ; the shelf whose kinds already sat the exam in this life, plus one (0: none yet)
 OGLN  = 38C0h                   ; a label being built: its bytes, and walking; its model (the fingerprint of its shelf)
 OGLW  = 38C8h
@@ -2476,6 +2487,70 @@ ot_own:
     jcall og_trial
     jcall og_line
     jcall0 j1, og_niche_meet    ; it meets the champion of its niche (the best of each way of doing, not only one) ; better: the new organ is its own
+    jld j2, j1, OGNT            ; it took its niche: the best of its way of doing leaves its recipe, though it is not
+    jjz j2, ot_nokeep           ; the champion (the Capitan: "que guarde los buenos"): judged in its own frame, not
+    jld j2, j1, OGSC            ; only against the one champion. A champion's recipe is written below, with what it
+    jld j3, j1, OGBASE          ; beat: not here.
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjnz j3, ot_nokeep
+    jld j2, j1, OGCODE          ; (what the loop needs, kept meanwhile)
+    jst j2, j1, OGS1
+    jld j2, j1, OGBASE
+    jst j2, j1, OGS2
+    jld j2, j1, OGB0
+    jst j2, j1, OGS3
+    jld j2, j1, OGBA
+    jst j2, j1, OGS4
+    jld j2, j1, OGSC
+    jst j2, j1, OGS5
+    jld j2, j1, OGTRY
+    jst j2, j1, OGS6
+    jld j2, j1, BOOKH           ; good is better than no organ at all: that exam, sat once for each shelf it reads in
+    jldi j3, 1                  ; this life (a measure of its own book, not a number)
+    jadd j2, j2, j3
+    jld j3, j1, OGZS
+    jsub j3, j3, j2
+    jjz j3, ot_zhave
+    jst j2, j1, OGZS
+    jldi j2, 0
+    jcall oa_exam
+    jld j2, j1, OGSC
+    jst j2, j1, OGZ
+  ot_zhave:
+    jldi j1, 0
+    jld j2, j1, OGS5
+    jld j3, j1, OGZ
+    jsub j3, j3, j2
+    jldi j4, 63
+    jsar j3, j3, j4
+    jjz j3, ot_zback
+    jld j2, j1, OGS6
+    jst j2, j1, OGCODE
+    jld j2, j1, OGS5
+    jst j2, j1, OGBASE
+    jld j2, j1, OGNB
+    jst j2, j1, OGB0
+    jld j2, j1, OGNA
+    jst j2, j1, OGBA
+    jcall og_rec_write
+  ot_zback:
+    jldi j1, 0
+    jld j2, j1, OGS1
+    jst j2, j1, OGCODE
+    jld j2, j1, OGS2
+    jst j2, j1, OGBASE
+    jld j2, j1, OGS3
+    jst j2, j1, OGB0
+    jld j2, j1, OGS4
+    jst j2, j1, OGBA
+    jld j2, j1, OGS5
+    jst j2, j1, OGSC
+    jld j2, j1, OGS6
+    jst j2, j1, OGTRY
+  ot_nokeep:
+    jldi j1, 0
     jld j2, j1, OGSC
     jld j3, j1, OGBASE
     jsub j3, j3, j2
@@ -4251,6 +4326,7 @@ og_stamp:
 ; is of another time; the child takes the niche if it is empty or the child is better. Uses j1-j14.
 og_niche_meet:
   jldi j1, 0
+  jst j1, j1, OGNT
   jld j2, j1, OGTRY
   jst j2, j1, OGT2
   jld j2, j1, OGSC
@@ -4292,6 +4368,17 @@ nm_take:
   jldi j1, 0
   jld j2, j1, OGT3
   jcall og_arch_at
+  jld j2, j4, 0                 ; whom it takes the niche from, and that one's score (an empty niche: nobody, and its
+  jst j2, j1, OGNA              ; own score: it improves on nothing)
+  jld j2, j4, 8
+  jld j3, j4, 16
+  jjnz j3, nm_was
+  jst j1, j1, OGNA
+  jld j2, j1, OGLET2
+nm_was:
+  jst j2, j1, OGNB
+  jldi j2, 1
+  jst j2, j1, OGNT
   jld j2, j1, OGT2
   jst j2, j4, 0
   jld j2, j1, OGLET2
