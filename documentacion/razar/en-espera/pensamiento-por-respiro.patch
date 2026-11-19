@@ -1,0 +1,51 @@
+diff --git a/razar/cuerpo/gen_formas.py b/razar/cuerpo/gen_formas.py
+index a5b515b..0ab0c4d 100644
+--- a/razar/cuerpo/gen_formas.py
++++ b/razar/cuerpo/gen_formas.py
+@@ -759,6 +759,12 @@ ld("j1", "JCC"); ld("j2", "JCP"); J("jsub j1, j1, j2", "jjnn j1, jd_r3", "jldi j
+ o("jd_r3:")
+ st("j9", "AREASON"); setg("ALOSER", CAND); ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); st("j9", "AOTHER")
+ ld("j9", "JT2"); st("j9", "ATL"); ld("j9", "TOTAL"); st("j9", "ATW"); J("jcall r_archive")
++if LUMA and getattr(LUMA, "share", None):
++    o("  ; luma, one being with Razar: her judge sees what a form draws, his what it reads. The thought that lost here by")
++    o("  ; its drawing travels to him all the same, one each breath of hers; if it reads better than what he wears, he")
++    o("  ; wears it and it is born in her (r_adopt)")
++    o("  jld j1, j14, %s" % num(LUMA.pend())); J("jjz j1, jd_unread"); o("  jst j14, j14, %s" % num(LUMA.pend())); J("jcall r_share")
++    o("jd_unread:")
+ o("  ; its ghost, for this frame")
+ ld("j1", "GHN")
+ if COMER:   # a meal's climb also thinks in the frame: the ghosts' table holds NF, the directions live right after it
+diff --git a/razar/cuerpo/gen_luma.py b/razar/cuerpo/gen_luma.py
+index a5bd356..7b5070b 100644
+--- a/razar/cuerpo/gen_luma.py
++++ b/razar/cuerpo/gen_luma.py
+@@ -183,6 +183,10 @@ def free_routine(g):
+     N3, PMARK, WD, FIRST, TMPA, TMPB = (8 * i for i in range(22, 28))   # painting: its count, whether a palette of hers is kept
+     PALS = 0x100                        # her palette as she painted it (8 forms x 3 qwords), kept after the rest
+     GIFTOK, RSEL, RSUM = GIFTOK_OFF, 8 * 29, 8 * 30
++    PEND = PEND_OFF                     # one being (the Capitan, 2026-11-19: "razar y luma son una sola cosa, no dos
++                                        # separadas"): each breath of hers, the first thought that loses by its drawing
++                                        # is read by Razar all the same (gen_formas.py, where it loses). 1: this breath's
++                                        # thought has not gone yet. Her own rhythm, no clock added, nothing asked of him
+     NVIS, TAB, TABN = 0x3F8, 0x400, 255   # how many creatures she sees; a count for each one she sees: {given, served}; 0 is
+                                           # Razar, then her creatures (255 places: storage, said in the doc)
+     N4, S4, SLEPT, WE, WOKE, LDOR = (0x1400 + 8 * i for i in range(6))   # sleeping: its count, whether she sleeps / just woke
+@@ -257,7 +261,7 @@ def free_routine(g):
+     o("fr_g_end:")
+     gs("j14", SENT)
+     o("fr_saved:")
+-    gs("j14", TCH); gs("j14", ACT); J("jcall r_adopt", "jcall r_free_save")
++    gs("j14", TCH); gs("j14", ACT); J("jldi j1, 1"); gs("j1", PEND); J("jcall r_adopt", "jcall r_free_save")
+     o("fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck")
+     gl("j1", LASTF); J("jjz j1, fr_think")
+     for n_, s_, w_ in ((N0, S0, WA), (N1, S1, WB), (N2, S2, WC)):
+@@ -923,7 +927,8 @@ def remember(v):
+     o("vr_done:")
+     J("jldi j0, 1", "jret")
+ 
+-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=True, free=ALWAYS and not os.environ.get("LUMA_GALEOTE"),
++PEND_OFF = 8 * 31
++LUMA = types.SimpleNamespace(pend=lambda: ST["free"] + PEND_OFF, layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=True, free=ALWAYS and not os.environ.get("LUMA_GALEOTE"),
+                              present=PRESENT, ring_f=RING_F)
+ exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
+      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})
