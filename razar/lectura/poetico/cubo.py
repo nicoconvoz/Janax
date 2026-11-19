@@ -7,7 +7,10 @@ A recipe (a string of the organ's letters) has three values at once, one for eac
   image   what it draws as a form of Luma: the cells it covers for each bit of its recipe (rebuilt here from the
           rule written in gen_formas.py; it is not her program judging)
   words   Razar's exam over a book of words (the New Testament), minus the exam without organ
-  code    Razar's exam over a book of code (KolibriOS's kernel, assembly), minus the exam without organ
+  code    Razar's exam over every book of code it was given to eat (CODIGO: KolibriOS's kernel, its system programs
+          and its assembler, in assembly; xv6, a compiler, an editor, a network, a B-tree and Lua, in C and Python),
+          each minus its exam without organ, added up. Each book is a domain of its own, sat apart: what a piece
+          wins in each one is kept (st["nota"]), not only the sum.
 So it is a point of a cube, 4 x 4 x 4. On each axis the place 0 is "it does not pay"; 1, 2, 3 are the thirds of the
 ones that pay, taken from the pieces the cube holds now: the borders move when better pieces come (it adapts).
 
@@ -30,7 +33,8 @@ the melody plays until it rests. What the cube finds goes back: a piece that tak
 code is left on the board, in the cube's own folder, and Razar's shared shelf makes it sit his exam, with his own
 books, the next time he is born.
 
-usage: cubo.py sembrar | sonar <beats at most> | ver | vivo        state: cubo.estado (not a text: the vigia
+usage: cubo.py sembrar | sonar <beats at most> | ver | vivo | comer (the books of CODIGO that are new to it: every
+piece it knows sits their exam, everything finds its cell again, and the melody plays until it rests)        state: cubo.estado (not a text: the vigia
 does not eat it), in the work folder"""
 import ctypes, ctypes.wintypes as wt, json, math, os, pickle, re, sys
 
@@ -42,6 +46,18 @@ ESTADO = legos.W + "/cubo.estado"
 TABLERO = os.environ.get("CUBO_TABLERO", os.path.expanduser("~/razar_tablero")).replace(chr(92), "/")
 RAIZ = "tablero/Receta de Organos/"
 KOLIBRI = "E:/Razar/kolibri/kolibri.txt"
+CODIGO = "E:/Razar/codigo_libre"               # every book of code it eats; none there: the first one it had
+LOTE = 60                                     # recipes in one life of exams (so a life ends in minutes; criterion)
+
+
+def nombre(libro):
+    return os.path.basename(libro).rsplit(".", 1)[0]
+
+
+def libros():
+    """-> [(axis, book)]: the words, and every book of code"""
+    cod = sorted(os.path.join(CODIGO, f).replace(chr(92), "/") for f in os.listdir(CODIGO) if f.endswith(".txt")) if os.path.isdir(CODIGO) else []
+    return [("palabras", legos.NT)] + [("codigo", b) for b in (cod or [KOLIBRI])]
 DIRS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 ARM = 5
 MAXLEN = 16                                   # an organ is a qword: sixteen letters (pulso.jsm)
@@ -64,22 +80,30 @@ def imagen(rec):
 
 
 def examinar(recetas, st):
-    """the three values of each recipe not measured yet -> st['valor']"""
-    nuevas = [r for r in recetas if r not in st["valor"]]
-    if not nuevas:
-        return
-    out = {}
-    for eje, libro in (("palabras", legos.NT), ("codigo", KOLIBRI)):
-        legos.BOOK = libro; legos.TIMEOUT = 90 + 7 * len(nuevas)
-        g = legos.scores(nuevas)
-        for r in nuevas:
-            if r in g:
-                out.setdefault(r, {})[eje] = g[r] - g[""]
-    for r in nuevas:
-        if r in out and len(out[r]) == 2:
-            st["valor"][r] = [imagen(r), out[r]["palabras"], out[r]["codigo"]]
+    """the exams each recipe has not sat yet, book by book -> st['nota'][book][recipe]; and its three values"""
+    nota = st.setdefault("nota", {})
+    if not nota and st["valor"]:                 # what it knew before it had more than one book of code
+        nota[nombre(legos.NT)] = {r: v[1] for r, v in st["valor"].items()}
+        nota["kolibri-nucleo-0" if os.path.isdir(CODIGO) else nombre(KOLIBRI)] = {r: v[2] for r, v in st["valor"].items()}
+    todos = libros()
+    for eje, libro in todos:
+        de = nota.setdefault(nombre(libro), {})
+        falta = [r for r in recetas if r not in de and r not in st["perdidas"]]
+        for i in range(0, len(falta), LOTE):
+            lote = falta[i:i + LOTE]
+            legos.BOOK = libro; legos.TIMEOUT = 90 + 7 * len(lote)
+            g = legos.scores(lote)
+            for r in lote:
+                if r in g and "" in g:
+                    de[r] = g[r] - g[""]
+            guardar(st)
+    for r in recetas:
+        if r in st["perdidas"]:
+            continue
+        if all(r in nota[nombre(l)] for _, l in todos):
+            st["valor"][r] = [imagen(r), nota[nombre(legos.NT)][r], sum(nota[nombre(l)][r] for e, l in todos if e == "codigo")]
         else:
-            st["perdidas"].append(r)            # it did not get to sit both exams: kept with its reason
+            st["perdidas"].append(r); st["valor"].pop(r, None)     # it did not get to sit every exam: kept apart, with its reason
 
 
 def bordes(st):
@@ -158,6 +182,13 @@ def ver(st):
         r = st["celdas"][c]; v = st["valor"][r]
         print("%-9s %-18s %7.2f %+9d %+9d" % (c, r, v[0], v[1], v[2]))
     print("mejor en palabras:", max(st["valor"], key=lambda r: st["valor"][r][1]), "| mejor en codigo:", max(st["valor"], key=lambda r: st["valor"][r][2]))
+    nota = st.get("nota", {})
+    if len(nota) > 2:
+        print("por libro de codigo, la mejor pieza y cuantas pagan:")
+        for lb in sorted(nota):
+            if lb != nombre(legos.NT) and nota[lb]:
+                m = max(nota[lb], key=lambda r: nota[lb][r])
+                print("   %-20s %-12s %+7d | pagan %d de %d" % (lb, m, nota[lb][m], sum(v > 0 for v in nota[lb].values()), len(nota[lb])))
     for n, m in enumerate(st["melodia"]):
         if "llegaron" in m:
             print("compas %d: llegaron %s | tomaron %s" % (n + 1, m["llegaron"], m["tomaron"]))
@@ -258,6 +289,23 @@ def main():
             if not st["despiertas"]:
                 break
             compas(st); guardar(st)
+    elif sys.argv[1] == "comer":
+        if not os.path.exists(legos.W + "/out/pulso.bin"):
+            legos.setup(); assert legos.build()
+            import shutil; shutil.rmtree(legos.W + "/proy", ignore_errors=True)
+        conocidas = list(st["valor"])
+        examinar(conocidas, st)
+        antes = dict(st["celdas"])
+        st["celdas"] = {}                            # with more to judge by, every piece finds its cell again
+        asentar(st, [r for r in conocidas if r in st["valor"]])
+        cambiaron = [c for c, r in st["celdas"].items() if antes.get(c) != r]
+        nuevas = [st["celdas"][c] for c in cambiaron]
+        st["melodia"].append({"despiertas": [], "ahogadas": [], "oraciones": len(conocidas), "tomaron": {c: st["celdas"][c] for c in cambiaron},
+                              "llegaron": ["(comio %d libros de codigo)" % (len(libros()) - 1)]})
+        st["despiertas"] = cambiaron; guardar(st)
+        while st["despiertas"]:
+            nuevas += [st["celdas"][c] for c in compas(st)]; guardar(st)
+        dar_a_razar(st, list(dict.fromkeys(nuevas)))
     elif sys.argv[1] == "vivo":
         guardar(st); vivo(st); return
     guardar(st)

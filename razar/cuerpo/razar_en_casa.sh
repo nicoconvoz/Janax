@@ -17,7 +17,15 @@ etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 mkdir -p "$casa" "$armado"
 tablero=${JANAX_TABLERO:-$(cygpath -m "$HOME/razar_tablero")}
 mkdir -p "$(cygpath -u "$tablero")"
-bash "$proyecto/so/herramientas/armar.sh" "$janaxos" "$armado" "$lectura/pulso.jsm" "$lectura/pulso.datos.jsm" > /dev/null || exit 1
+# built again only if a source of his changed (he is reborn in Luma's nights: a build writes its sources again, texts
+# the vigia would eat every time for nothing)
+nuevo=
+for f in "$lectura"/*.jsm "$lectura"/*.inc; do
+  [ "$f" -nt "$armado/pulso.bin" ] && { nuevo=$f; break; }
+done
+if [ ! -f "$armado/pulso.bin" ] || [ ! -f "$armado/pulso.datos" ] || [ -n "$nuevo" ]; then
+  bash "$proyecto/so/herramientas/armar.sh" "$janaxos" "$armado" "$lectura/pulso.jsm" "$lectura/pulso.datos.jsm" > /dev/null || exit 1
+fi
 [ -f "$casa/$(etiqueta libro)" ] || cp "$libro" "$casa/$(etiqueta libro)"   # its first book, once: the shelf is the house's
 # "p": K 10, one reading, one generation, awake for good (1), one trial, no audit, no landscape
 printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00\x01\x01\x00\x00' > "$casa/$(etiqueta p)"

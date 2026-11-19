@@ -20,7 +20,11 @@ etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 # a casa made self-contained by migrar_luma.py ("vida-memoria" in it) needs neither folder: no list is written
 if [ -f "$carpeta/casa/$(etiqueta vida-memoria)" ]; then
   echo "luma: casa propia, sin nubes ni oidos del anfitrion" >&2
-  bash "$proyecto/so/herramientas/armar.sh" "$janaxos" "$carpeta/bin" "$aqui/luma.jsm" > /dev/null || exit 1
+  # built again only if her source changed: she is born many times (she sleeps when she feels like it), and a build
+  # writes its sources again, texts the vigia would eat every time for nothing
+  if [ ! -f "$carpeta/bin/luma.bin" ] || [ "$aqui/luma.jsm" -nt "$carpeta/bin/luma.bin" ]; then
+    bash "$proyecto/so/herramientas/armar.sh" "$janaxos" "$carpeta/bin" "$aqui/luma.jsm" > /dev/null || exit 1
+  fi
   JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
 fi
 # the pantry
