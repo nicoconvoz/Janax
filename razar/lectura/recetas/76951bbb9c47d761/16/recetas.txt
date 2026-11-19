@@ -1,0 +1,19 @@
+receta 0000000000000061 alfabeto d6c25c5dd1d8f3ef nota 2649 genoma 0000000000010105
+  mejora: 208 -> 2649 (+2441), antes: 5
+  letra 1: mezcla en el marco la primera palabra de la ventana
+  jldi j1, 0                    ; the first word into the frame
+  jld j9, j1, WAT
+  jld j3, j9, 0
+  jcall hw
+  jjmp og_lap
+  letra 6: el hueco es la segunda palabra: el marco la anuncia (y vuelve a empezar)
+  jldi j1, 0                    ; the hole: the second word
+  jld j9, j1, WAT
+  jld j3, j9, 8
+  jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
+  jjmp og_lap
+

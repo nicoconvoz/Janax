@@ -1,0 +1,27 @@
+receta 0000000000000617 alfabeto 4a6b3be14c32cef5 nota 4700 genoma 0000000000010105
+  mejora: 2649 -> 4700 (+2051), antes: 16
+  letra 7: el hueco es la tercera palabra: el marco la anuncia (y vuelve a empezar)
+  jldi j1, 0                    ; the hole: the third word
+  jld j9, j1, WAT
+  jld j3, j9, 16
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
+  jjmp og_lap
+  letra 1: mezcla en el marco la primera palabra de la ventana
+  jldi j1, 0                    ; the first word into the frame
+  jld j9, j1, WAT
+  jld j3, j9, 0
+  jcall hw
+  jjmp og_lap
+  letra 6: el hueco es la segunda palabra: el marco la anuncia (y vuelve a empezar)
+  jldi j1, 0                    ; the hole: the second word
+  jld j9, j1, WAT
+  jld j3, j9, 8
+  jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
+  jjmp og_lap
+

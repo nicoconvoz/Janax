@@ -1,0 +1,13 @@
+receta 0000000000000006 alfabeto d6c25c5dd1d8f3ef nota -1659 genoma 0000000000010104
+  mejora: -3532 -> -1659 (+1873), antes: -
+  letra 6: el hueco es la segunda palabra: el marco la anuncia (y vuelve a empezar)
+  jldi j1, 0                    ; the hole: the second word
+  jld j9, j1, WAT
+  jld j3, j9, 8
+  jcall post
+  jldi j1, 0                    ; (a frame is made only of its letters: after a hole, it starts again)
+  jld j2, j1, FNVO
+  jldi j3, 102h
+  jcall hw
+  jjmp og_lap
+
