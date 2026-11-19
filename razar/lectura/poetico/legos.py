@@ -184,4 +184,5 @@ def main():
             print(kind, i, res); sys.stdout.flush()
 
 
-main()
+if __name__ == "__main__":
+    main()
