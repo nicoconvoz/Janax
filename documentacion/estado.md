@@ -466,3 +466,4 @@ por byte a las de Perl). Los modelos `.pl` de Razar quedan en el repositorio com
 2026-11-16 — v0.29, Zenódoto: la carta guarda el DOTO escondido en ZENODO; código igual a la v0.19. DOI 10.5281/zenodo.24292594.
 2026-11-16 — v0.31, el credo: la carta cierra con la profesión de fe del autor; código igual a la v0.19. DOI 10.5281/zenodo.24293969.
 2026-11-19 — v0.37, el ingrediente X: las recetas de órganos en el repo (516 = 11144), Razar en vigilia en la casa de Luma (dormido, 0,000 s en 30 s), Luma le comparte la forma que gana en una carta; falta la libertad y la carta casi no sale. DOI 10.5281/zenodo.24368294.
+2026-11-19 — v0.41, la libertad: Luma elige descansar, pensar o regalar con sus propias cuentas (KT, nunca cero); Razar no repite exámenes y corre en prioridad baja (de 51 % a 12 % de un núcleo); las ramas no suman el original (el 16, puesto 87 de 90 en un octavo): el examen de a pedacitos queda en espera. DOI 10.5281/zenodo.24369583.

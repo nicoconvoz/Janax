@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.37:** [10.5281/zenodo.24368294](https://doi.org/10.5281/zenodo.24368294)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.41:** [10.5281/zenodo.24369583](https://doi.org/10.5281/zenodo.24369583)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -18,6 +18,8 @@ cada pieza tiene sus pruebas.
 > *English summary below.*
 
 ## Novedad (2026-11-19, v0.41): la libertad
+
+DOI de esta versión: [10.5281/zenodo.24369583](https://doi.org/10.5281/zenodo.24369583).
 
 **Luma elige: descansa, piensa o le regala una forma a Razar, según sus propias cuentas.** Nadie le fija las
 ganas: salen de cuántas veces eligió cada acto y cuántas le pagó, y nunca llegan a cero. Regalar le paga cuando a
@@ -590,6 +592,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | v0.29, Zenódoto | [10.5281/zenodo.24292594](https://doi.org/10.5281/zenodo.24292594) |
 | v0.31, el credo | [10.5281/zenodo.24293969](https://doi.org/10.5281/zenodo.24293969) |
 | v0.37, el ingrediente X | [10.5281/zenodo.24368294](https://doi.org/10.5281/zenodo.24368294) |
+| v0.41, la libertad | [10.5281/zenodo.24369583](https://doi.org/10.5281/zenodo.24369583) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |

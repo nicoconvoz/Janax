@@ -1,6 +1,6 @@
 ## Janax y Razar v0.41: la libertad
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24369583](https://doi.org/10.5281/zenodo.24369583)
 
 > *"No es solo aprendiz, es vivir, es respirar, es incluso no hacer nada a propósito, y hacer algo cuando se le
 > ocurra: es libertad."* (el autor, 2026-11-19)
