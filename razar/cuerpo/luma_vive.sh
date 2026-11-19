@@ -44,9 +44,12 @@ while :; do
   wait
   [ "$como" -eq 3 ] || break
   ahora=$(recetas)
-  if [ "$ahora" != "$antes" ]; then
-    antes=$ahora
-    LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")" powershell -NoProfile -Command \
+  export LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")"
+  vivo=$(powershell -NoProfile -Command \
+    "(Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | Measure-Object).Count" 2>/dev/null | tr -d '\r')
+  if [ "$ahora" != "$antes" ] || [ "${vivo:-0}" = 0 ]; then   # something new for him, or he is not there (a known flaw:
+    antes=$ahora                                               # a book that comes while he is awake ends him)
+    powershell -NoProfile -Command \
       "Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" > /dev/null 2>&1
     bash "$aqui/razar_en_casa.sh" "$carpeta" "$libro" > /dev/null 2>&1 &
   fi
