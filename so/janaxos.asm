@@ -109,7 +109,8 @@ P_REMAKEN = 632
 P_HOSTW  = 640                  ; 1 = it asked for what is new in the host (39): a new one wakes it while it waits
 P_SCRW   = 648                  ; 41: 1 = it sleeps until the screen has an event or its time runs out, 2 = woken
 P_SCRDL  = 656                  ; 41: when its time runs out (GetTickCount64 ms; FOREVER = never)
-PROC_SIZE = 664
+P_GAPS   = 664                  ; 42: 1 = it rows in the gaps: its rower takes the host's lowest thread priority while it rows it
+PROC_SIZE = 672
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -155,11 +156,11 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 41                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 42                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
-                                ; open on the host, go to, what is new in the host, show, wait for an event
+                                ; open on the host, go to, what is new in the host, show, wait for an event, row in the gaps
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -204,20 +205,21 @@ section '.data' data readable writeable
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
-              dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event
+              dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
-             db 3, 1, 1
+             db 3, 1, 1, 0
   assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
-             db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN
+             db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
                  db 0, 0, 0             ; (the host door only reads: it changes nothing)
                  db 0, 0                ; (show only draws, and waiting for an event only listens)
+                 db 1                   ; (rowing in the gaps changes a process)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -497,6 +499,7 @@ section '.data' data readable writeable
   old_affinity dq 0
   old_priority dq 0
   THREAD_PRIORITY_TIME_CRITICAL = 15
+  THREAD_PRIORITY_IDLE = -15
 
   optable   dq op_halt, op_ldi, op_add, op_sub, op_mul, op_div, op_shl, op_shr
             dq op_sar, op_and, op_or, op_xor, op_jmp, op_jz, op_jnz, op_shi
@@ -2718,6 +2721,20 @@ serve_wait_event:
 @@:     mov     [rbp + r13 + 16], r14
         jmp     .next
 .none:
+        test    r14, r14
+        jz      .none_0                 ; it never slept: nothing, and no time left
+        mov     rax, [rbx + P_SCRDL]    ; it slept and woke with no event: its time ran out (0 left), or its doorbell
+        mov     rcx, FOREVER            ; rang (a greeting, a word, a child that ended or waits for its signature:
+        cmp     rax, rcx                ; ambientes.inc, greet) and b says what was left of its wait (for ever: as it
+        je      .next                   ; was), so who sleeps on the screen hears its family without a clock
+        mov     r14, rax
+        call    now_ms
+        sub     r14, rax
+        jns     @f
+        xor     r14d, r14d
+@@:     mov     [rbp + r13 + 16], r14
+        jmp     .next
+.none_0:
         mov     qword [rbp + r13 + 16], 0
         jmp     .next
 .invalid:
@@ -4115,6 +4132,7 @@ serve_gate serve_end,     33, family_end
 serve_gate serve_budget,  34, family_budget
 serve_gate serve_rowed,   35, family_rowed
 serve_gate serve_remake,  36, family_remake
+serve_gate serve_gaps,    42, family_gaps
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -4415,6 +4433,29 @@ family_end:
 .rowing:
         mov     qword [r8 + P_KILL], 1
         mov     qword [rbp + r13 + 24], -1
+        ret
+.not_mine:
+        mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 42 row in the gaps (the work that must not take the machine from who uses it: a reading, an exam): a = number of
+; one of my children, b = 1 it rows in the gaps, 0 as everyone. While a rower rows that cabin its thread has the
+; host's lowest priority ("only when nothing else wants the processor": not a number of ours, the host's own word for
+; it), and takes its own back for the next cabin; the change is asked of the host only when it differs from the cabin
+; before (remos.inc, run_all). Answers 0; -2 if it is not my child.
+family_gaps:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [nprocs]
+        jae     .not_mine
+        mov     r8, [procs]
+        mov     r8, [r8 + rax*8]
+        cmp     [r8 + P_PARENT], rbx
+        jne     .not_mine
+        xor     eax, eax
+        cmp     qword [rbp + r13 + 16], 0
+        setne   al
+        mov     [r8 + P_GAPS], rax
+        mov     qword [rbp + r13 + 24], 0
         ret
 .not_mine:
         mov     qword [rbp + r13 + 24], -2

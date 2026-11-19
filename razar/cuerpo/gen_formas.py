@@ -217,6 +217,9 @@ if COMER:
 o("include '../../escalon0/janax.inc'")
 o("jfirst j1, %Xh" % ROOM)
 o("jldi j14, 0                     ; j14 stays 0: the variables live below 8000h")
+RD = LUMA.reader(globals()) if LUMA and getattr(LUMA, "reader", None) else None
+if RD:
+    RD.birth()
 
 # ---- the cloud's header and its cells (as vivo)
 cabeza = b"NUBE" + bytes([3]) + b"\x00\x00\x80\x3f" + b"\x00\x00" + bytes([1]) + b"\x00\x00\x80\x3f" + bytes(8) + W.to_bytes(2, "little") + H.to_bytes(2, "little")
@@ -290,10 +293,16 @@ st("j14", "FOREVER"); J("jjmp frame")
 o("main_frames:                    ; between two frames: what is left of this one")
 ld("j12", "BLEFT"); st("j12", "REMAIN"); J("jjz j12, frame", "jjmp main")
 o("main_time:")
+if RD:
+    o("  ; (no event and time left: her doorbell rang, her reader asks, says or ended)")
+    ld("j9", "BLEFT"); J("jjz j9, main_timed", "jcall r_read_poll"); ld("j12", "BLEFT"); st("j12", "REMAIN"); J("jjmp main")
+    o("main_timed:")
 ld("j9", "FOREVER"); J("jjz j9, frame")
 ld("j0", "WINSRUN", "for ever ran out: there is no window to wait on (JANAX_SIN_VENTANA)"); J("jhalt")
 o("frame:")
 st("j14", "GHN")
+if RD:
+    J("jcall r_read_poll              ; (and once a frame while it reads: a doorbell at the last instant is not lost)")
 J("jcall r_step")
 if COMER:
     J("jcall r_meal_step")
@@ -343,6 +352,8 @@ if LUMA:
     o("h_go:")
 o("  jld j9, j14, %s" % num(EV))
 J("jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, h_open")
+if RD:
+    J("jcall r_read_end")
 ld("j0", "WINSRUN", "closed: j0 = the forms it created in this run"); J("jhalt")
 o("h_open:")
 o("  jld j1, j14, %s" % num(EV + 8)); o("  jld j2, j14, %s" % num(EV + 16)); o("  jld j3, j14, %s" % num(EV + 24))
@@ -664,8 +675,16 @@ o("ov_next:")
 J("jldi j10, 8", "jadd j1, j1, j10", "jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, ov_lap", "jret")
 o("r_worth:                        ; j1 cells, j2 letters, j3 most shared -> j5 comp = j1 / (j2 log2 9) (x1000),")
 o("                                ; j6 nov = 1000 - 1000 j3 / j1, j0 = j5 j6 / 1000 (uses j7, j10)")
-li("j10", 317, "log2 9 = 3.17 bits a letter (x100)"); J("jmul j7, j2, j10"); li("j10", 100000); J("jmul j5, j1, j10", "jdiv j5, j5, j7")
-li("j10", 1000); J("jmul j6, j3, j10", "jdiv j6, j6, j1", "jsub j6, j10, j6", "jmul j0, j5, j6", "jdiv j0, j0, j10", "jret")
+if RD:
+    li("j10", 391, "log2 15 = 3.91 bits a letter (x100)")
+else:
+    li("j10", 317, "log2 9 = 3.17 bits a letter (x100)")
+J("jmul j7, j2, j10"); li("j10", 100000); J("jmul j5, j1, j10", "jdiv j5, j5, j7")
+li("j10", 1000); J("jmul j6, j3, j10", "jdiv j6, j6, j1", "jsub j6, j10, j6", "jmul j0, j5, j6", "jdiv j0, j0, j10")
+if RD:
+    o("  ; the one judge (gen_leer.py): its worth in bits, what its new cells cost to say without it less its letters")
+    RD.worth()
+J("jret")
 def maxrow(dst, i_reg, skip_reg, lbl):
     """dst = max over j != i, j != skip of O[i][j] (runtime i, skip); uses j10..j13."""
     J("jldi %s, 0" % dst, "jldi j11, 0")
@@ -686,11 +705,16 @@ ld("j1", "TI"); J("jldi j9, -1"); maxrow("j3", "j1", "j9", "rc_max")
 ld("j1", "TI"); form_addr("j9", "j1")
 J("jld j1, j9, %d" % F_COUNT, "jldb j2, j9, %d" % F_REC, "jcall r_worth")
 ld("j1", "TI"); form_addr("j9", "j1")
-J("jst j0, j9, %d" % F_WORTH, "jst j5, j9, %d" % F_COMP, "jst j6, j9, %d" % F_NOV)
+J("jadd j7, j0, j14")
+if RD:
+    J("jjnn j7, rc_pos", "jldi j7, 0             ; (shown and coloured from 0 up; the total keeps the true one)"); o("rc_pos:")
+J("jst j7, j9, %d" % F_WORTH, "jst j5, j9, %d" % F_COMP, "jst j6, j9, %d" % F_NOV)
 ld("j10", "TOTAL"); J("jadd j10, j10, j0"); st("j10", "TOTAL")
 ld("j10", "WMAX"); J("jsub j11, j0, j10", "jjn j11, rc_less"); st("j0", "WMAX")
 o("rc_less:")
 incg("TI"); J("jldi j11, %d" % NF, "jsub j10, j10, j11", "jjnz j10, rc_lap")
+if RD:
+    J("jcall r_read_max               ; and the best reading among them: the book is said once"); ld("j10", "TOTAL"); J("jadd j10, j10, j0"); st("j10", "TOTAL")
 st("j14", "TI")
 o("rc_colour:")
 ld("j1", "TI"); form_addr("j9", "j1"); J("jcall r_colour")
@@ -745,6 +769,8 @@ ld("j1", "JI"); form_addr("j9", "j1"); J("jld j1, j9, %d" % F_COUNT, "jldb j2, j
 ld("j10", "JT2"); J("jadd j10, j10, j0"); st("j10", "JT2")
 o("jd_others_n:")
 incg("JI"); J("jldi j11, %d" % NF, "jsub j10, j10, j11", "jjnz j10, jd_others")
+if RD:
+    J("jcall r_read_cand              ; the best reading with the candidate in the parent's place"); ld("j10", "JT2"); J("jadd j10, j10, j0"); st("j10", "JT2")
 ld("j9", "JT2"); ld("j10", "TOTAL"); J("jsub j9, j10, j9")
 if COMER:
     ld("j10", "TIEOK"); J("jsub j9, j9, j10")   # 1 while a meal's climb is judged: a tie goes to what it ate
@@ -1250,5 +1276,7 @@ if COMER:
     COMER.routines()
 if LUMA:
     LUMA.routines(globals())
+if RD:
+    RD.finish(L)
 open(os.path.join(AQUI, COMER.out if COMER else "formas.jsm"), "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
 print("ok", len(L), "lines; seeds", " ".join(SEEDS), "; towers", towers, "; room 0 %Xh" % ROOM)

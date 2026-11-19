@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
-# luma_vive.sh <folder> <book>: Luma lives, and sleeps when she feels like it (the Capitan, 2026-11-19: "operacion
-# dormir: cuando Luma duerma renace con la pieza nueva incluida; puede dormir cuando se le de la gana").
-# She decides it herself (gen_luma.py: fr_sleep): she leaves a sign in her house, "dormir". This script watches over
-# her without spending anything: it waits on two notices of the host, that sign and the end of her window.
+# luma_vive.sh <folder> [book] [janaxos.exe]: Luma lives, and sleeps when she feels like it (the Capitan, 2026-11-19:
+# "operacion dormir: cuando Luma duerma renace con la pieza nueva incluida; puede dormir cuando se le de la gana").
+# SHE IS ONE BEING: her body and her reader are one program (gen_leer.py), so this is the only thing that is started.
+# Nothing else is launched, watched or restarted here: there is no Razar apart any more.
+# She decides her sleep herself (gen_luma.py: fr_sleep): she leaves a sign in her house, "dormir". This script watches
+# over her without spending anything: it waits on two notices of the host, that sign and the end of her window.
 #   her window was closed by someone: she ends, and this ends with her.
-#   the sign: her window is closed for her (she keeps all she is, as when it is closed by hand), the night does its
-#     work, and she is born again.
-# THE NIGHT. Razar is reborn if the board has a recipe it did not have at his last birth (what the cube found, what
-# another Razar kept): then his shared shelf makes it sit his exam with his own books, and what he makes his own is
-# born as a form of hers when she wakes. Nothing new on the board: he is left as he is (unless he is not there).
+#   the sign: her window is closed for her (she keeps all she is, as when it is closed by hand; a reading of hers that
+#     was on its way ends with her and is not kept), and she is born again: built again if her source changed
+#     (luma.sh), so she wakes with whatever is new in her.
+# [book]: her first book, copied into her house only if it has none ("libro").
 # SHE DOES NOT WAKE ON TOP OF WHAT YOU ARE DOING (the Capitan: "va a tener que aprender a no arrancar en primer
 # plano"): when her window appears it is set down and shown again without taking the keyboard, behind the others;
 # whoever had it keeps it. She wakes many times a day: each one must not interrupt.
 set -u
-carpeta=$1; libro=$2
+carpeta=$1; libro=${2:-}; janaxos=${3:-}
 aqui=$(cd "$(dirname "$0")" && pwd)
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
-tablero=${JANAX_TABLERO:-$(cygpath -m "$HOME/razar_tablero")}
-recetas() {   # the recipes the board holds now: how many, and a print of their names
-  python -I -c "import hashlib,os,sys; p='tablero/Receta de Organos/'.encode().hex(); n=sorted(f for f in os.listdir(sys.argv[1]) if f.startswith(p)); print(len(n), hashlib.sha256(''.join(n).encode()).hexdigest()[:16])" "$tablero" 2>/dev/null
-}
 espera=$(cat <<'PS'
 Add-Type @'
 using System; using System.Runtime.InteropServices;
@@ -52,12 +49,12 @@ exit 0
 PS
 )
 export LUMA_CASA="$(cygpath -w "$carpeta/casa")" LUMA_SENAL="$(etiqueta dormir)" LUMA_BIN="$(cygpath -m "$carpeta/bin/luma.bin")"
-export LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")"
+export LUMA_LIBRO="$libro"
 while :; do
   rm -f "$carpeta/casa/$LUMA_SENAL"
   powershell -NoProfile -Command "$espera" &          # who watches over her is there first, before her window appears
   cuida=$!
-  bash "$aqui/luma.sh" "$carpeta" > "$carpeta/luma.log" 2>&1 &
+  bash "$aqui/luma.sh" "$carpeta" $janaxos > "$carpeta/luma.log" 2>&1 &
   wait "$cuida"; como=$?
   wait
   if [ "$como" -ne 3 ]; then
@@ -65,15 +62,5 @@ while :; do
     # written only when it happens, never a log that grows)
     [ "$como" -eq 0 ] || echo "$(date '+%F %T') quien la cuida termino con $como: Luma no fue relanzada" > "$carpeta/cuida.estado"
     break
-  fi
-  ahora=$(recetas)
-  antes=$(cat "$carpeta/tablero.visto" 2>/dev/null)   # the board as he found it when he was born (razar_en_casa.sh)
-  vivo=$(powershell -NoProfile -Command \
-    "(Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | Measure-Object).Count" 2>/dev/null | tr -d '\r')
-  if [ "$ahora" != "$antes" ] || [ "${vivo:-0}" = 0 ]; then   # something new for him, or he is not there (a known flaw:
-                                                               # a book that comes while he is awake ends him)
-    powershell -NoProfile -Command \
-      "Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" > /dev/null 2>&1
-    bash "$aqui/razar_en_casa.sh" "$carpeta" "$libro" > /dev/null 2>&1 &
   fi
 done

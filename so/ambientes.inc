@@ -1478,6 +1478,11 @@ greet:
         jz      .invalid
         mov     [rax], rbx
 .wake:
+        cmp     qword [rsi + P_SCRW], 1 ; asleep on the screen (41): its doorbell wakes it too (it is answered 0, with
+        jne     @f                      ; what was left of its wait)
+        mov     r8, rsi
+        call    event_wake
+@@:
         cmp     qword [rsi + P_GWAIT], 1
         jne     .done
         mov     qword [rsi + P_GWAIT], 0

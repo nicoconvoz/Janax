@@ -166,6 +166,7 @@ OGT2  = 1C60h                   ; (the audit's and the landscape's, never while 
 OGT3  = 1C68h                   ; niches)
 OGT4  = 1C70h
 OGLET2 = 1C78h
+ORGD  = 18h                     ; a candidate's letters beyond the sixteenth, in its initial data (0: none)
 ORGK  = 20h                     ; the organ, in its initial data (X.datos, where the label "p" leaves room): a candidate
 ORGG  = 28h                     ; (1) and the genome whose exam it sits; its letters and the garbage: organo.inc
 OGH1  = 3808h                   ; a file copied: the two handles, the room it goes through, whether its organ is
@@ -5073,12 +5074,18 @@ osg_pos:
 ; A candidate (ORGK): it sits the exam of the genome it was launched with (ORGG), tells its parent its score (a word
 ; to -1, "my parent") and ends. Nothing written. Uses j1-j14.
 candidate:
+  jld j2, j1, ORGD              ; (its letters beyond the sixteenth, if it was given any: organo.inc)
+  jst j2, j1, ORGX
   jcall0 j1, distill_no
   jldi j2, 1
   jst j2, j1, FORMS
   jld j2, j1, ORGG
   jst j2, j1, EVC
   jcall0 j1, ev_exam
+  jldi j10, 30                  ; the shelf it read (its fingerprint, 0 if it is not awake for good), then its score:
+  jldi j11, -1                  ; who hears only the last word hears the score, as always
+  jld j12, j1, BOOKH
+  jcall0 j1, ask
   jldi j10, 30
   jldi j11, -1
   jld j12, j1, EVS

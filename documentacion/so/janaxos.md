@@ -1422,6 +1422,30 @@ La ventana de Janax ya no solo muestra: cuenta lo que le pasa, y un programa pue
 - **Pruebas:** `pantalla_esperar` (sin ventana: para siempre responde 0 en el acto con `b` en 0, un registro fuera
   del camarote −1, y 0 ms responde igual) y el mismo programa sin permiso de pantalla (todo −1, negados).
 
+## El timbre también despierta a quien duerme en la pantalla, y remar en los huecos: pedido 42 (2026-11-19)
+
+Dos piezas del núcleo que hacían falta para que un programa con ventana tenga familia sin frenarse (Luma, que desde
+la v0.73 lanza a su propia lectora: [`release-v0.73.md`](../release-v0.73.md)).
+
+- **El timbre y la pantalla.** Hasta acá un saludo (28), una palabra (30), un hijo que termina o un hijo que espera
+  una firma despertaban sólo a quien dormía en la 29. Quien dormía en la 41 no se enteraba: un hijo suyo que pedía
+  una firma quedaba esperando hasta el próximo cuadro. Ahora el timbre **también despierta a quien duerme en la
+  pantalla** (`greet` en `ambientes.inc`): la 41 responde **0** (no hubo evento) y **`b` vuelve con los ms que
+  quedaban de la espera** (o como estaba, si esperaba para siempre). Así se distingue sin reloj: 0 con `b` en 0, se
+  acabó el tiempo; 0 con `b` distinto de 0, sonó el timbre. El programa atiende a su familia con pedidos que no
+  frenan (18 y 17 las firmas, 31 las palabras, 19 el estado) y vuelve a esperar lo que quedaba. Nadie encuesta.
+- **42 remar en los huecos** (`a` = el número de un hijo mío, `b` = 1 rema en los huecos, 0 como todos): mientras un
+  remero rema esa cabina, su hilo tiene **la prioridad más baja del anfitrión** (`THREAD_PRIORITY_IDLE`: "sólo
+  cuando nadie más quiere el procesador"; no es un número nuestro, es la palabra del anfitrión para eso), y recupera
+  la suya para la cabina siguiente. Al anfitrión se le pide el cambio **sólo cuando difiere de la cabina anterior**
+  de ese remero (una cuenta por turno, sin llamada), y al terminar el remero deja su hilo como lo encontró. Responde
+  0; −2 si no es mi hijo. Es importante (cambia un proceso): el de un hijo espera la firma de su padre. Para qué: un
+  trabajo largo que no debe sacarle la máquina a quien la usa (un examen, una lectura) vive en el mismo proceso que
+  una ventana que sí tiene que responder.
+- **Pruebas:** `familia_huecos` (el hijo marcado rema igual y su palabra llega; pedirlo para una cabina que no es
+  hija responde −2), en los tres motores. El timbre sobre la 41 necesita ventana: lo ejercita Luma, no la suite.
+- **No medido:** cuánto tarda de más una lectura cuando la máquina está ocupada (ahí es justamente donde cede).
+
 ## El escritorio vivo: `razar/cuerpo/vivo.jsm` (2026-11-15)
 
 > *"El bucle tiene vida: siempre explora, pero nunca es la repetición de lo mismo."* (Capitán)

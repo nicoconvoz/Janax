@@ -110,6 +110,25 @@ kern_sleep_on:
         ret
 
 
+; This rower's thread at the host's lowest priority (rcx 1) or back at the usual one (rcx 0). Keeps every register.
+gaps_set:
+        push    rax rcx rdx r8 r9 r10 r11 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 48
+        xor     edx, edx
+        test    rcx, rcx
+        jz      @f
+        mov     edx, THREAD_PRIORITY_IDLE
+@@:     mov     [rsp + 32], rdx
+        call    [GetCurrentThread]
+        mov     rcx, rax
+        mov     rdx, [rsp + 32]
+        call    [SetThreadPriority]
+        mov     rsp, rbp
+        pop     rbp r11 r10 r9 r8 rdx rcx rax
+        ret
+
 ; One rower, of the kind in rcx (ROW_LINE, ROW_SPECIAL or ROW_BOTH), until every cabin has ended. A cabin
 ; is rowed its own turn (P_QUANTUM, from its priority) and goes back to the end of the line.
 run_all:
@@ -118,6 +137,7 @@ run_all:
         xor     eax, eax
         mov     [rsp], rax              ; both: 1 = this turn is for the cabins that hold others
         mov     [rsp + 8], rax          ; 1 = it was just woken up
+        mov     [rsp + 16], rax         ; 1 = this rower's thread is at the host's lowest priority (42)
         call    kern_enter
         jmp     .turn
 .turn_lap:
@@ -199,6 +219,12 @@ run_all:
         mov     qword [rbx + P_RUNNING], 1
         inc     qword [rowing]
         call    kern_leave
+        mov     rcx, [rbx + P_GAPS]     ; a cabin that rows in the gaps (42): the host is asked only when it changes
+        cmp     rcx, [rsp + 16]
+        je      @f
+        mov     [rsp + 16], rcx
+        call    gaps_set
+@@:
         call    run_process             ; outside the lock: the cabins row side by side
         call    kern_enter
         cmp     qword [scr_nwait], 0    ; someone sleeps on the screen (41): an event or its time may have come meanwhile
@@ -259,6 +285,11 @@ run_all:
         cmp     byte [finished], 0
         je      .turn_lap
         call    kern_leave
+        cmp     qword [rsp + 16], 0     ; (its thread goes home as it came)
+        je      @f
+        xor     ecx, ecx
+        call    gaps_set
+@@:
         add     rsp, 24
         pop     rcx
         ret

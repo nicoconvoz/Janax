@@ -733,6 +733,13 @@ P1 codigo=0 j0=0000000000000000 t=*
 P0 codigo=0 j0=0000000000002A11 t=*
 ventanilla: *" familia_padre_palabra
 
+# 42: a child rows in the gaps (its rower takes the host's lowest thread priority while it rows it); only a child.
+familia familia_huecos dice_al_padre
+caso "familia: el hijo rema en los huecos (42), y solo un hijo" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000000 t=*
+P0 codigo=0 j0=0000000000002A11 t=*
+ventanilla: *" familia_huecos
+
 # A cabin remakes itself (36) with another program when it ends: not a child, the same cabin, started again.
 familia familia_rehace 02_ldi
 caso "familia: la cabina se rehace con otro programa" 0 0 "$fijo0

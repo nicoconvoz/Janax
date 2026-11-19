@@ -27,6 +27,9 @@
 ORGW  = 30h                     ; its letters and the audit's garbage, in the initial data of every program that
 ORGF  = 38h                     ; includes it: 30h to 3Fh of its X.datos are the organ's (zeros: no organ)
 ORGL  = 3800h                   ; the letters still to read
+ORGX  = 37F0h                   ; its letters beyond the sixteenth (a recipe of Luma's has up to 31: the same recipe is her
+ORGL2 = 37F8h                   ; form and her organ, whole), set by who has them (pulso.jsm: a candidate); 0 = none. And
+                                ; the ones of them still to read. Up to sixteen letters nothing changes.
 organ:
   jldi j1, 0                    ; no letters, no organ: nothing is touched (as a program that never grew one)
   jld j2, j1, ORGW
@@ -67,6 +70,8 @@ og_some:
   jcall0 j1, hw
   jldi j10, 0                   ; the eye at rest: where the window is, and sharp
   jldi j11, 0
+  jld j13, j1, ORGX
+  jst j13, j1, ORGL2
   jld j13, j1, ORGW
   jst j13, j1, ORGL
 jwhile j13
@@ -122,6 +127,10 @@ jwcheck
 og_lap:
   jldi j1, 0
   jld j13, j1, ORGL
+  jjnz j13, og_more
+  jld j13, j1, ORGL2            ; the first sixteen are read: the ones beyond, once
+  jst j1, j1, ORGL2
+og_more:
 jwend
 jjmp og_done
 og_l1:

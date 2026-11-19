@@ -20,5 +20,6 @@ Adentro (17 archivos, 2,5 MB sin comprimir; cada uno se llama con su etiqueta en
 
 No lleva `libre`: las cuentas de su libertad son de cada Luma y nacen en cero.
 
-Para verla: descomprimila dentro de una carpeta y corré `bash razar/cuerpo/luma.sh <carpeta>`. Para que Razar viva
-en esa casa: `bash razar/cuerpo/razar_en_casa.sh <carpeta> <libro>`.
+Para verla: descomprimila dentro de una carpeta y corré `bash razar/cuerpo/luma_vive.sh <carpeta> <libro>` (o
+`luma.sh <carpeta>` con `LUMA_LIBRO=<libro>` para una sola vida, sin sueños). Desde la v0.73 no hay un Razar que
+lanzar aparte: leer es un acto de ella, y lo que lee queda en `leido`.
