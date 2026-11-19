@@ -1,6 +1,6 @@
 ## Janax y Razar v0.61: la noche que no llegaba
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472)
 
 Las versiones siguen a los números primos: después del 59, el 61. Esta es una **corrección** de la v0.59.
 

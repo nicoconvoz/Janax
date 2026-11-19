@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.59:** [10.5281/zenodo.24378520](https://doi.org/10.5281/zenodo.24378520)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.61:** [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -18,6 +18,8 @@ cada pieza tiene sus pruebas.
 > *English summary below.*
 
 ## Novedad (2026-11-19, v0.61): la noche que no llegaba
+
+DOI de esta versión: [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472).
 
 **Corrección de la v0.59.** Lo que el cubo halló no le llegaba a Luma: la noche comparaba la biblioteca con la del
 arranque de quien la cuida y no con la que Razar encontró al nacer, así que Razar no renacía (57 sueños, ningún
@@ -630,6 +632,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | v0.47, la casa adentro | [10.5281/zenodo.24369853](https://doi.org/10.5281/zenodo.24369853) |
 | v0.53, todo lo visible | [10.5281/zenodo.24376081](https://doi.org/10.5281/zenodo.24376081) |
 | v0.59, el cubo y el sueño | [10.5281/zenodo.24378520](https://doi.org/10.5281/zenodo.24378520) |
+| v0.61, la noche que no llegaba | [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |
