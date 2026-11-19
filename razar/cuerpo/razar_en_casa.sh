@@ -24,5 +24,11 @@ printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00\x01\x01\x00\x00' > "$ca
 for f in "$armado/pulso.bin" "$armado/pulso.datos" "$lectura/organo.molde" "$lectura/organo.inc"; do
   cp "$f" "$casa/$(etiqueta "PDP/razar1/lectura/$(basename "$f")")"
 done
-JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$casa")" JANAX_TABLERO="$tablero" \
+# He works in the gaps (the Capitan: "en vez de tardar 25 segundos y no hacer nada, construilo mientras hace cosas
+# Luma"): the host's lowest priority class (idle), so his exams take processor only when nobody else wants it. Not a
+# number of mine: it is what the host calls "only when free". RAZAR_PRIORIDAD=normal runs him as any other program.
+export JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$casa")" JANAX_TABLERO="$tablero"
+if [ "${RAZAR_PRIORIDAD:-baja}" = normal ]; then
   exec "$janaxos" "$(cygpath -m "$armado/pulso.bin")"
+fi
+exec powershell -NoProfile -Command "\$p = Start-Process -FilePath '$(cygpath -w "$janaxos")' -ArgumentList '$(cygpath -m "$armado/pulso.bin")' -NoNewWindow -PassThru; \$p.PriorityClass = 'Idle'; \$p.WaitForExit()"

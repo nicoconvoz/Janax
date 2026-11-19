@@ -8033,55 +8033,7 @@ fr_settle:                      ; what the act that ends paid
   jjz j1, fr_choose
   jldi j10, 1
   jsub j2, j1, j10
-  jjz j2, fr_s_rest
-  jldi j10, 2
-  jsub j2, j1, j10
-  jjz j2, fr_s_think
-  ; a gift: did Razar make it his own? (his letter: his genome, the organ he has)
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 32
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 32
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 152
-  jst j14, j6, 160
-  jldi j11, 015Eh
-  jshi j11, 068h
-  jldi j12, 6
-  jcall r_open
-  jld j9, j14, 04A8h
-  jjn j9, fr_saved
-  jldi j10, 5
-  jldi j11, 015Eh
-  jshi j11, 098h
-  jldi j12, 16
-  jcall r_file
-  jldi j10, 7
-  jcall r_file
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 160
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j2, j6, 72
-  jjz j2, fr_saved
-  jsub j1, j1, j2
-  jjnz j1, fr_saved
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 40
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 40
-  jjmp fr_saved
-fr_s_rest:
+  jjnz j2, fr_s_think
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 0
@@ -8093,7 +8045,7 @@ fr_s_rest:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 120
-  jjz j1, fr_saved
+  jjz j1, fr_gift
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 8
@@ -8102,7 +8054,7 @@ fr_s_rest:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 8
-  jjmp fr_saved
+  jjmp fr_gift
 fr_s_think:
   jldi j6, 015Eh
   jshi j6, 0
@@ -8125,7 +8077,7 @@ fr_s_think:
   jshi j6, 0
   jld j2, j6, 64
   jsub j1, j1, j2
-  jjz j1, fr_saved
+  jjz j1, fr_gift
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 24
@@ -8134,6 +8086,49 @@ fr_s_think:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 24
+fr_gift:                        ; a gift she left before this act: did Razar make it his own meanwhile?
+                                ; (his letter: his genome, the organ he has)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 72
+  jjz j2, fr_saved
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 152
+  jst j14, j6, 160
+  jldi j11, 015Eh
+  jshi j11, 068h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, fr_g_end
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 098h
+  jldi j12, 16
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 160
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 72
+  jsub j1, j1, j2
+  jjnz j1, fr_g_end
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 40
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 40
+fr_g_end:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 72
 fr_saved:
   jldi j6, 015Eh
   jshi j6, 0
@@ -8141,9 +8136,6 @@ fr_saved:
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 56
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 72
   jcall r_free_save
 fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck
   jldi j6, 015Eh
@@ -8282,39 +8274,47 @@ fr_g_len:
   jcall r_randmod
   jldi j6, 015Eh
   jshi j6, 0
-  jst j0, j6, 136
+  jst j0, j6, 144
   jldi j1, 9
   jcall r_randmod
   jldi j10, 1
   jadd j0, j0, j10
   jldi j6, 015Eh
   jshi j6, 0
-  jld j1, j6, 136
+  jld j1, j6, 144
   jldi j9, 01400h
   jadd j9, j9, j1
   jstb j0, j9, 1
   jcall r_share
   jld j1, j14, 019A8h
   jjz j1, fr_think
-  jldi j1, 3
   jldi j6, 015Eh
   jshi j6, 0
-  jst j1, j6, 56
+  jld j1, j6, 32
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 32
   jld j1, j14, 01998h
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 72
+  ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two
   jldi j6, 015Eh
   jshi j6, 0
-  jld j1, j6, 48
+  jld j1, j6, 128
   jldi j6, 015Eh
   jshi j6, 0
-  jst j1, j6, 80
-  jld j1, j14, 0290h
+  jld j2, j6, 136
+  jadd j1, j1, j2
+  jcall r_randmod
   jldi j6, 015Eh
   jshi j6, 0
-  jst j1, j6, 96
-  jret
+  jld j1, j6, 128
+  jsub j2, j0, j1
+  jjn j2, fr_rest
+  jjmp fr_think
 ; ---- the forms' routines the creatures call (their own names would be renamed with v_)
 f_hash:
   jcall r_hash

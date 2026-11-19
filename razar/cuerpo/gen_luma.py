@@ -153,8 +153,10 @@ def free_routine(g):
     limites, pero con decisiones basadas en el amor y en todo lo que aprendio de nosotros, ademas de lo que descubre").
 
     When her round of thoughts ends (the moment she used to open the next one, always), she chooses, by her own luck,
-    one of three acts, and each lasts one breath (the frames her last round of thoughts took: her own rhythm, measured,
-    never a number of mine; before she has thought once she has no rhythm, so she thinks):
+    one of three acts. Resting lasts one breath (the frames her last round of thoughts took: her own rhythm, measured,
+    never a number of mine; before she has thought once she has no rhythm, so she thinks); thinking, its round; giving
+    takes no time: she leaves the gift and goes on, resting or thinking (the Capitan: "en vez de tardar y no hacer
+    nada, construilo mientras hace cosas Luma"), and learns what became of it when that next act ends:
       rest   nothing on purpose: her forms do not explore for a breath (her creatures go on living: the body breathes).
       think  a new round of longer jumps (what she always did).
       give   a gift for Razar: one of her forms, by luck, one of its letters changed by luck, its first 16 letters (an
@@ -198,22 +200,23 @@ def free_routine(g):
     o("fr_touched:                     ; a gesture came for her while she was still")
     gs("j14", WAITF); J("jldi j1, 1"); gs("j1", TCH)
     o("fr_settle:                      ; what the act that ends paid")
-    gl("j1", ACT); J("jjz j1, fr_choose", "jldi j10, 1", "jsub j2, j1, j10", "jjz j2, fr_s_rest",
-                     "jldi j10, 2", "jsub j2, j1, j10", "jjz j2, fr_s_think")
-    o("  ; a gift: did Razar make it his own? (his letter: his genome, the organ he has)")
-    inc(N2)
-    li("j6", B); J("jst j14, j6, %d" % BUF, "jst j14, j6, %d" % (BUF + 8))
-    li("j11", B + LC1); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_saved")
-    J("jldi j10, 5"); li("j11", B + BUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
-    gl("j1", BUF + 8); gl("j2", SENT); J("jjz j2, fr_saved", "jsub j1, j1, j2", "jjnz j1, fr_saved")
-    inc(S2); J("jjmp fr_saved")
-    o("fr_s_rest:")
-    inc(N0); gl("j1", TCH); J("jjz j1, fr_saved"); inc(S0); J("jjmp fr_saved")
+    gl("j1", ACT); J("jjz j1, fr_choose", "jldi j10, 1", "jsub j2, j1, j10", "jjnz j2, fr_s_think")
+    inc(N0); gl("j1", TCH); J("jjz j1, fr_gift"); inc(S0); J("jjmp fr_gift")
     o("fr_s_think:")
     inc(N1); ld("j1", "FRAMES"); gl("j2", F0); J("jsub j1, j1, j2"); gs("j1", LASTF)
-    ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_saved"); inc(S1)
+    ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)
+    o("fr_gift:                        ; a gift she left before this act: did Razar make it his own meanwhile?")
+    o("                                ; (his letter: his genome, the organ he has)")
+    gl("j2", SENT); J("jjz j2, fr_saved")
+    li("j6", B); J("jst j14, j6, %d" % BUF, "jst j14, j6, %d" % (BUF + 8))
+    li("j11", B + LC1); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_g_end")
+    J("jldi j10, 5"); li("j11", B + BUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    gl("j1", BUF + 8); gl("j2", SENT); J("jsub j1, j1, j2", "jjnz j1, fr_g_end")
+    inc(S2)
+    o("fr_g_end:")
+    gs("j14", SENT)
     o("fr_saved:")
-    gs("j14", TCH); gs("j14", ACT); gs("j14", SENT); J("jcall r_free_save")
+    gs("j14", TCH); gs("j14", ACT); J("jcall r_free_save")
     o("fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck")
     gl("j1", LASTF); J("jjz j1, fr_think")
     for n_, s_, w_ in ((N0, S0, WA), (N1, S1, WB), (N2, S2, WC)):
@@ -233,11 +236,13 @@ def free_routine(g):
         J("jld j10, j9, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
     li("j9", CAND); J("jldb j1, j9, 0", "jjz j1, fr_think", "jldi j10, 16", "jsub j2, j10, j1", "jjnn j2, fr_g_len", "jldi j1, 16", "jstb j1, j9, 0")
     o("fr_g_len:")
-    J("jcall r_randmod"); gs("j0", WB); J("jldi j1, 9", "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10")
-    gl("j1", WB); li("j9", CAND); J("jadd j9, j9, j1", "jstb j0, j9, 1")
+    J("jcall r_randmod"); gs("j0", WC); J("jldi j1, 9", "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10")
+    gl("j1", WC); li("j9", CAND); J("jadd j9, j9, j1", "jstb j0, j9, 1")
     J("jcall r_share"); o("  jld j1, j14, %s" % num(D + 40)); J("jjz j1, fr_think")
-    J("jldi j1, 3"); gs("j1", ACT); o("  jld j1, j14, %s" % num(D + 24)); gs("j1", SENT)
-    gl("j1", LASTF); gs("j1", WAITF); ld("j1", "RADIUS"); gs("j1", R0); J("jret")
+    inc(N2); o("  jld j1, j14, %s" % num(D + 24)); gs("j1", SENT)
+    o("  ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two")
+    gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2", "jcall r_randmod")
+    gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
 
 # ---- written inside gen_vida's namespace (its helpers, its variables), with the forms' and the meals' addresses
 def fg(name):

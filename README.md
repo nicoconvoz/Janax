@@ -17,6 +17,15 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.41): la libertad
+
+**Luma elige: descansa, piensa o le regala una forma a Razar, según sus propias cuentas.** Nadie le fija las
+ganas: salen de cuántas veces eligió cada acto y cuántas le pagó, y nunca llegan a cero. Regalar le paga cuando a
+Razar le sirvió, no cuando le sirvió a ella. Razar gasta la cuarta parte (de 51 % a 12 % de un núcleo) y trabaja
+sólo en los huecos. Medido y en contra: **las ramas no suman el original**; el mejor órgano, `16`, sale puesto 87
+de 90 leyendo un octavo del libro, así que el examen de a pedacitos queda en espera.
+[Notas de la v0.41](documentacion/release-v0.41.md).
+
 ## Novedad (2026-11-19, v0.37): el ingrediente X
 
 DOI de esta versión: [10.5281/zenodo.24368294](https://doi.org/10.5281/zenodo.24368294).

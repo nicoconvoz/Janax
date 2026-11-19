@@ -195,6 +195,7 @@ OGLNN = 3980h
 OGLP  = 3988h
 OGLK  = 3990h
 OGPFX = 3998h
+OGQD  = 39A0h                   ; the shelf whose kinds already sat the exam in this life, plus one (0: none yet)
 OGLN  = 38C0h                   ; a label being built: its bytes, and walking; its model (the fingerprint of its shelf)
 OGLW  = 38C8h
 OGLE  = 38D0h
@@ -2426,7 +2427,18 @@ ot_go:
   jcall og_r8
   jjmp flush
 ot_have:
-  jcall0 j1, og_rec_queue       ; the kinds its model has: they sit the exam first, as candidates
+  jld j2, j1, BOOKH             ; the kinds its model has sit the exam first, as candidates: once for each shelf it
+  jldi j3, 1                    ; reads in this life (woken again with the same books, they sat already: nothing is
+  jadd j2, j2, j3               ; spent twice on the same exam)
+  jld j3, j1, OGQD
+  jsub j3, j3, j2
+  jjnz j3, ot_queue
+  jst j1, j1, OGQN
+  jst j1, j1, OGQI
+  jjmp ot_own
+ot_queue:
+  jst j2, j1, OGQD
+  jcall0 j1, og_rec_queue
 ot_own:
   jldi j1, 0
   jld j2, j1, ORGW              ; the organ it has, and its exam without memory: what a new one has to beat
