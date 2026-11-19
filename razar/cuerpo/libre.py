@@ -17,3 +17,6 @@ print("%-10s %8s %8s %8s %8s   %s" % ("acto", "eligio", "pago", "ganas", "chance
 for i, (name, pays) in enumerate(acts):
     print("%-10s %8d %8d %8.4f %7.1f%%   %s" % (name, v[2 * i], v[2 * i + 1], wish[i], 100 * wish[i] / sum(wish), pays))
 print("su respiro: %d cuadros" % v[6])
+raw = open(path, "rb").read()
+if len(raw) >= 80:
+    print("se pinto %d veces (nada se lo paga: es gratis)" % struct.unpack("<q", raw[64:72])[0])

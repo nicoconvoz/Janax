@@ -7977,6 +7977,16 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jshi j11, 0A8h
   jldi j12, 8
   jcall r_file
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 0B0h
+  jldi j12, 16
+  jcall r_file
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 0100h
+  jldi j12, 192
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbl_done:
@@ -8003,11 +8013,66 @@ r_free_save:
   jshi j11, 0A8h
   jldi j12, 8
   jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 0B0h
+  jldi j12, 16
+  jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 0100h
+  jldi j12, 192
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbs_done:
   jret
 r_free:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 200
+  jjnz j1, fr_go
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 200
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 184
+  jjz j1, fr_go
+  ; (born again: the colours she had painted herself, over the ones her meals gave her at the start)
+  jldi j1, 015Eh
+  jshi j1, 0100h
+  jldi j2, 01840h
+  jldi j3, 24
+fr_pal:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, fr_pal
+  jldi j9, 0800h
+  jcall r_colour
+  jldi j9, 0900h
+  jcall r_colour
+  jldi j9, 0A00h
+  jcall r_colour
+  jldi j9, 0B00h
+  jcall r_colour
+  jldi j9, 0C00h
+  jcall r_colour
+  jldi j9, 0D00h
+  jcall r_colour
+  jldi j9, 0E00h
+  jcall r_colour
+  jldi j9, 0F00h
+  jcall r_colour
+  jldi j10, 1
+  jst j10, j14, 0210h
+fr_go:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 80
@@ -8204,6 +8269,18 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 144
+  jldi j1, 1
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 176
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 192
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 128
@@ -8214,6 +8291,10 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 144
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 192
   jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
@@ -8226,7 +8307,12 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jld j3, j6, 136
   jsub j2, j2, j3
   jjn j2, fr_think
-  jjmp fr_give
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 144
+  jsub j2, j2, j3
+  jjn j2, fr_give
+  jjmp fr_paint
 fr_rest:                        ; nothing, on purpose, for a breath
   jldi j1, 1
   jldi j6, 015Eh
@@ -8312,6 +8398,105 @@ fr_g_len:
   jshi j6, 0
   jst j1, j6, 72
   ; she does not wait for his answer: she goes on, resting or thinking, by her wishes for those two
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 128
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 136
+  jadd j1, j1, j2
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 128
+  jsub j2, j0, j1
+  jjn j2, fr_rest
+  jjmp fr_think
+fr_paint:                       ; she paints herself (the Capitan: "que muestre las gamas de colores que quiera"): a meal
+                                ; of hers by her luck, and the form it fed wears another of that meal's colours, by her
+                                ; luck too (a form used to wear only the first, the most counted: often a dark outline).
+                                ; Nothing pays for it: its wish is 1/2 over (times + 1), never 0. Kept in "libre".
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 176
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 176
+  jld j1, j14, 01BB8h
+  jjz j1, fr_p_done
+  jcall r_randmod
+  jldi j10, 537
+  jmul j9, j0, j10
+  jld j10, j14, 01A88h
+  jadd j9, j9, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j9, j6, 208
+  jldb j1, j9, 76
+  jldi j10, 48
+  jsub j1, j1, j10
+  jjn j1, fr_p_done
+  jldi j10, 8
+  jsub j10, j1, j10
+  jjnn j10, fr_p_done
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 216
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 208
+  jldi j10, 78
+  jadd j1, j9, j10
+  jldi j2, 2
+  jcall r_get_num
+  jjz j0, fr_p_done
+  jadd j1, j0, j14
+  jcall r_randmod
+  jldi j10, 7
+  jmul j0, j0, j10
+  jldi j10, 81
+  jadd j0, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 208
+  jadd j1, j9, j0
+  jldi j2, 6
+  jcall r_get_hex
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 216
+  jcall r_set_hue
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 216
+  jldi j10, 8
+  jshl j9, j1, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jcall r_colour
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jldi j1, 01840h
+  jldi j2, 015Eh
+  jshi j2, 0100h
+  jldi j3, 24
+fr_p_cp:
+  jld j4, j1, 0
+  jst j4, j2, 0
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, fr_p_cp
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 184
+  jcall r_free_save
+fr_p_done:                      ; and she goes on, resting or thinking
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 128
