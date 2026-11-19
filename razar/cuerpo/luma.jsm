@@ -2417,6 +2417,7 @@ jd_win:                         ; it won: the parent goes to the archive, the fo
   jst j10, j9, 208
   jld j10, j14, 01418h
   jst j10, j9, 216
+  jcall r_share                  ; luma: the form that won, shared with Razar (a letter), if he lives in her house
   jld j1, j14, 0388h
   jcall r_regrow
   jld j9, j14, 0488h
@@ -7874,6 +7875,73 @@ lro_fresh:
   jst j14, j9, 88
   jadd j3, j9, j14
   jcall l_ring_head
+  jret
+; ---- the X ingredient: the form that won, shared with Razar as a letter (see gen_luma.py: share_routine)
+r_share:
+  jldi j1, 03161h
+  jshi j1, 07472h
+  jshi j1, 06163h
+  jst j1, j14, 01980h
+  jldi j1, 03261h
+  jshi j1, 07472h
+  jshi j1, 06163h
+  jst j1, j14, 01988h
+  jldi j9, 01400h
+  jldb j2, j9, 0
+  jjz j2, sh_done
+  jldi j10, 16
+  jsub j10, j10, j2
+  jjn j10, sh_done
+  jldi j3, 0
+  jldi j4, 0
+sh_pack:                        ; her letters into a qword, the first one lowest
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 2
+  jshl j6, j4, j10
+  jshl j5, j5, j6
+  jor j3, j3, j5
+  jldi j10, 1
+  jadd j4, j4, j10
+  jsub j10, j2, j4
+  jjnz j10, sh_pack
+  jst j3, j14, 01998h
+  ; his genome, from his own letter (he is home if he left one)
+  jldi j11, 01980h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, sh_done
+  jldi j10, 5
+  jldi j11, 01990h
+  jldi j12, 8
+  jcall r_file
+  jst j13, j14, 019A0h
+  jldi j10, 7
+  jcall r_file
+  jld j1, j14, 019A0h
+  jldi j10, 8
+  jsub j1, j1, j10
+  jjnz j1, sh_done
+  jld j1, j14, 01990h
+  jjz j1, sh_done
+  ; her letter, written whole
+  jldi j10, 12
+  jldi j11, 01988h
+  jldi j12, 6
+  jcall r_tocar
+  jldi j11, 01988h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, sh_done
+  jldi j10, 6
+  jldi j11, 01990h
+  jldi j12, 16
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+sh_done:
   jret
 ; ---- the forms' routines the creatures call (their own names would be renamed with v_)
 f_hash:

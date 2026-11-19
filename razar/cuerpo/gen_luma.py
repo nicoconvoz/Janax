@@ -99,11 +99,46 @@ def routines(g):
         out.append(pat.sub(r"v_\1", code) + sep + com)
     if PRESENT:
         ring_routines(L)
+    share_routine(g)
     L.append("; ---- the forms' routines the creatures call (their own names would be renamed with v_)")
     for f, r in (("f_hash", "r_hash"), ("f_tried", "r_tried"), ("f_judge", "r_judge"), ("f_put_rec", "r_put_rec")):
         L.append("%s:" % f); L.append("  jcall %s" % r); L.append("  jret")
     L.extend(out)
     print("luma: %d lines of the creatures, %d labels renamed v_..." % (len(out), len(names)))
+
+def share_routine(g):
+    """The X ingredient (the Capitan, 2026-11-19: "agregale el ingrediente X: AMOR"): what she creates she gives.
+    When a form of hers wins, she shares it with Razar, who lives in her house (razar_en_casa.sh), as a letter:
+    "carta2" = {his own genome, read from his letter "carta1"; her recipe as an organ, four bits a letter from the
+    lowest}. His sentinel wakes him on it, he tries her organ first with his own books, and it stays only if it wins
+    there too (pulso.jsm: letter_read, og_next). It is an event, never a clock: a letter leaves only when a form won.
+    Nothing is sent if Razar is not home (no "carta1", or less than his 8 bytes in it) or if the recipe has more than
+    16 letters (an organ is a qword in pulso.jsm; criterion there). Uses the archive's line as its desk (blanked by
+    r_archive before each use): the two labels, the letter, a count."""
+    o, J, li, ld = g["o"], g["J"], g["li"], g["ld"]
+    num, CAND, D = g["num"], g["CAND"], g["ALINE"]
+    c1, c2 = (int.from_bytes(s, "little") for s in (b"carta1", b"carta2"))
+    o("; ---- the X ingredient: the form that won, shared with Razar as a letter (see gen_luma.py: share_routine)")
+    o("r_share:")
+    li("j1", c1); o("  jst j1, j14, %s" % num(D)); li("j1", c2); o("  jst j1, j14, %s" % num(D + 8))
+    li("j9", CAND); J("jldb j2, j9, 0", "jjz j2, sh_done", "jldi j10, 16", "jsub j10, j10, j2", "jjn j10, sh_done")
+    J("jldi j3, 0", "jldi j4, 0")
+    o("sh_pack:                        ; her letters into a qword, the first one lowest")
+    J("jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 2", "jshl j6, j4, j10", "jshl j5, j5, j6", "jor j3, j3, j5",
+      "jldi j10, 1", "jadd j4, j4, j10", "jsub j10, j2, j4", "jjnz j10, sh_pack")
+    o("  jst j3, j14, %s" % num(D + 24))
+    o("  ; his genome, from his own letter (he is home if he left one)")
+    li("j11", D); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, sh_done")
+    J("jldi j10, 5"); li("j11", D + 16); J("jldi j12, 8", "jcall r_file"); o("  jst j13, j14, %s" % num(D + 32))
+    J("jldi j10, 7", "jcall r_file")
+    o("  jld j1, j14, %s" % num(D + 32)); J("jldi j10, 8", "jsub j1, j1, j10", "jjnz j1, sh_done")
+    o("  jld j1, j14, %s" % num(D + 16)); J("jjz j1, sh_done")
+    o("  ; her letter, written whole")
+    J("jldi j10, 12"); li("j11", D + 8); J("jldi j12, 6", "jcall r_tocar")
+    li("j11", D + 8); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, sh_done")
+    J("jldi j10, 6"); li("j11", D + 16); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("sh_done:")
+    J("jret")
 
 # ---- written inside gen_vida's namespace (its helpers, its variables), with the forms' and the meals' addresses
 def fg(name):
@@ -626,7 +661,7 @@ def remember(v):
     o("vr_done:")
     J("jldi j0, 1", "jret")
 
-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS,
+LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=True,
                              present=PRESENT, ring_f=RING_F)
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})

@@ -763,6 +763,8 @@ ld("j9", "TOTAL"); st("j9", "ATL"); ld("j9", "JT2"); st("j9", "ATW"); J("jcall r
 ld("j9", "JFA")
 for k in range(4):
     o("  jld j10, j14, %s" % num(CAND + 8 * k)); J("jst j10, j9, %d" % (F_REC + 8 * k))
+if LUMA and getattr(LUMA, "share", None):
+    J("jcall r_share                  ; luma: the form that won, shared with Razar (a letter), if he lives in her house")
 ld("j1", "JF"); J("jcall r_regrow")
 ld("j9", "DFA"); J("jldb j10, j9, %d" % F_REC, "jst j10, j9, %d" % F_GROWN)
 J("jcall r_recompute")
