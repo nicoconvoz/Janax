@@ -61,7 +61,12 @@ while :; do
   bash "$aqui/luma.sh" "$carpeta" > "$carpeta/luma.log" 2>&1 &
   wait "$cuida"; como=$?
   wait
-  [ "$como" -eq 3 ] || break
+  if [ "$como" -ne 3 ]; then
+    # 0: her window was closed by someone. Anything else is not expected: said once, where it can be read (a line
+    # written only when it happens, never a log that grows)
+    [ "$como" -eq 0 ] || echo "$(date '+%F %T') quien la cuida termino con $como: Luma no fue relanzada" > "$carpeta/cuida.estado"
+    break
+  fi
   ahora=$(recetas)
   vivo=$(powershell -NoProfile -Command \
     "(Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | Measure-Object).Count" 2>/dev/null | tr -d '\r')
