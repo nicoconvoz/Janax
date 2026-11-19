@@ -23,14 +23,24 @@ says nothing in that beat.
 REST. A beat in which no sentence takes a cell wakes nobody: the cube rests and spends nothing until a new piece
 is given to it (dar).
 
-usage: cubo.py sembrar | sonar <beats at most> | ver        state: cubo.json, next to this file"""
-import json, math, os, sys
+ALIVE (vivo). It sleeps on the host's notice of changes in the board (nothing spent while nothing is written there)
+and wakes when a recipe is written: what Razar keeps (an organ that won, or the best of its way of doing; and Luma's
+gifts are what moves him) is a new piece for the cube. It sits the three exams, falls in its cell, and if it takes it
+the melody plays until it rests. What the cube finds goes back: a piece that takes a cell and pays in words or in
+code is left on the board, in the cube's own folder, and Razar's shared shelf makes it sit his exam, with his own
+books, the next time he is born.
+
+usage: cubo.py sembrar | sonar <beats at most> | ver | vivo        state: cubo.estado (not a text: the vigia
+does not eat it), in the work folder"""
+import ctypes, ctypes.wintypes as wt, json, math, os, pickle, re, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 import legos
 
-ESTADO = AQUI + "/cubo.json"
+ESTADO = legos.W + "/cubo.estado"
+TABLERO = os.environ.get("CUBO_TABLERO", os.path.expanduser("~/razar_tablero")).replace(chr(92), "/")
+RAIZ = "tablero/Receta de Organos/"
 KOLIBRI = "E:/Razar/kolibri/kolibri.txt"
 DIRS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 ARM = 5
@@ -149,12 +159,94 @@ def ver(st):
         print("%-9s %-18s %7.2f %+9d %+9d" % (c, r, v[0], v[1], v[2]))
     print("mejor en palabras:", max(st["valor"], key=lambda r: st["valor"][r][1]), "| mejor en codigo:", max(st["valor"], key=lambda r: st["valor"][r][2]))
     for n, m in enumerate(st["melodia"]):
-        print("compas %d: despiertas %s | ahogadas %s | oraciones %d | tomaron %s" % (n + 1, m["despiertas"], m["ahogadas"], m["oraciones"], m["tomaron"]))
+        if "llegaron" in m:
+            print("compas %d: llegaron %s | tomaron %s" % (n + 1, m["llegaron"], m["tomaron"]))
+        else:
+            print("compas %d: despiertas %s | ahogadas %s | oraciones %d | tomaron %s" % (n + 1, m["despiertas"], m["ahogadas"], m["oraciones"], m["tomaron"]))
     print("estado:", "despierto, piezas %s" % st["despiertas"] if st["despiertas"] else "en reposo")
 
 
+def guardar(st):
+    pickle.dump(st, open(ESTADO + ".tmp", "wb")); os.replace(ESTADO + ".tmp", ESTADO)
+
+
+def pieza_de(nombre):
+    """the organ a file of the board is the recipe of (its letters, 1-9, sixteen at most), or None"""
+    try:
+        p = bytes.fromhex(nombre).decode().split("/")
+    except ValueError:
+        return None
+    if len(p) >= 5 and "/".join(p[:2]) + "/" == RAIZ and p[-1] == "recetas" and p[2] != "cubo" and re.fullmatch("[1-9]{1,16}", p[3]):
+        return p[3]
+    return None
+
+
+def dar_a_razar(st, recetas):
+    """what the cube found goes back to the board: Razar's shared shelf will make it sit his exam. The pieces are
+    followed by their recipe, not by their cell: the borders move with every arrival, and a piece changes cell."""
+    modelo = None
+    for f in os.listdir(TABLERO):
+        if pieza_de(f) == "6":
+            modelo = open(TABLERO + "/" + f, "rb").read().decode("latin-1"); break
+    if modelo is None:
+        return
+    for r in recetas:
+        v = st["valor"][r]
+        if r in st["celdas"].values() and (v[1] > 0 or v[2] > 0):
+            t = re.sub(r"receta [0-9A-Fa-f]{16}", "receta %016x" % legos.word(r), modelo.split(chr(10) + chr(10))[0], count=1)
+            open(TABLERO + "/" + legos.hexl(RAIZ + "cubo/%s/recetas" % r), "wb").write(t.encode("latin-1"))
+
+
+def llegan(st, piezas):
+    """new pieces: examined, settled, and the melody until it rests"""
+    piezas = [r for r in dict.fromkeys(piezas) if r not in st["valor"] and r not in st["perdidas"]]
+    if not piezas:
+        return
+    if not os.path.exists(legos.W + "/out/pulso.bin"):
+        legos.setup(); assert legos.build()
+        import shutil; shutil.rmtree(legos.W + "/proy", ignore_errors=True)     # built: the copy is not kept
+    examinar(piezas, st); tomadas = asentar(st, piezas)
+    nuevas = [st["celdas"][c] for c in tomadas]
+    st["melodia"].append({"despiertas": [], "ahogadas": [], "oraciones": len(piezas), "tomaron": {c: st["celdas"][c] for c in tomadas}, "llegaron": piezas})
+    st["despiertas"] = tomadas; guardar(st)
+    while st["despiertas"]:
+        nuevas += [st["celdas"][c] for c in compas(st)]; guardar(st)
+    dar_a_razar(st, list(dict.fromkeys(nuevas)))
+
+
+def vivo(st):
+    """asleep on the board's changes; awake only when a recipe is written"""
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.SetPriorityClass(wt.HANDLE(k32.GetCurrentProcess()), 0x40)        # it works in the gaps, as Razar does
+    k32.CreateFileW.restype = wt.HANDLE
+    k32.CreateFileW.argtypes = [wt.LPCWSTR, wt.DWORD, wt.DWORD, ctypes.c_void_p, wt.DWORD, wt.DWORD, wt.HANDLE]
+    k32.ReadDirectoryChangesW.argtypes = [wt.HANDLE, ctypes.c_void_p, wt.DWORD, wt.BOOL, wt.DWORD, ctypes.POINTER(wt.DWORD), ctypes.c_void_p, ctypes.c_void_p]
+    h = k32.CreateFileW(TABLERO, 1, 7, None, 3, 0x02000000, None)
+    assert h not in (None, wt.HANDLE(-1).value), "no puedo escuchar el tablero"
+    llegan(st, [r for r in map(pieza_de, os.listdir(TABLERO)) if r])      # what was kept while it was not listening
+    buf = ctypes.create_string_buffer(1 << 16); n = wt.DWORD()
+    while k32.ReadDirectoryChangesW(h, buf, len(buf), False, 0x11, ctypes.byref(n), None, None):
+        nuevas = []; at = 0
+        if n.value == 0:                                                   # more changes than fit: look at all of it
+            nuevas = [r for r in map(pieza_de, os.listdir(TABLERO)) if r]
+        while n.value and True:
+            sig, _, largo = (int.from_bytes(buf.raw[at + 4 * i:at + 4 * i + 4], "little") for i in range(3))
+            r = pieza_de(buf.raw[at + 12:at + 12 + largo].decode("utf-16-le"))
+            if r:
+                nuevas.append(r)
+            if not sig:
+                break
+            at += sig
+        llegan(st, nuevas)
+
+
 def main():
-    st = json.load(open(ESTADO)) if os.path.exists(ESTADO) else {"valor": {}, "celdas": {}, "despiertas": [], "melodia": [], "perdidas": []}
+    if os.path.exists(ESTADO):
+        st = pickle.load(open(ESTADO, "rb"))
+    elif os.path.exists(legos.W + "/cubo.json"):
+        st = json.load(open(legos.W + "/cubo.json"))
+    else:
+        st = {"valor": {}, "celdas": {}, "despiertas": [], "melodia": [], "perdidas": []}
     if sys.argv[1] == "sembrar":
         legos.setup(); assert legos.build()
         semillas = [a for a in "123456789"] + [a + b for a in "123456789" for b in "123456789"] + ["516", "716", "738", "51638", "38516"]
@@ -165,8 +257,10 @@ def main():
         for _ in range(int(sys.argv[2])):
             if not st["despiertas"]:
                 break
-            compas(st); json.dump(st, open(ESTADO, "w"))
-    json.dump(st, open(ESTADO, "w"))
+            compas(st); guardar(st)
+    elif sys.argv[1] == "vivo":
+        guardar(st); vivo(st); return
+    guardar(st)
     ver(st)
 
 

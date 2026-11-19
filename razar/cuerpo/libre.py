@@ -27,3 +27,6 @@ if len(raw) >= 272 + 8 + 16:
     print("todo lo que ve: %d (Razar y %d criaturas)" % (len(tab), len(tab) - 1))
     print("  le dio algo a %d; le sirvio a %d; todavia no le dio nada a %d" % (given, served, len(tab) - given))
     print("  a Razar: %d regalos, %d le sirvieron" % tab[0])
+if len(raw) >= 4360 + 16:
+    n4, s4 = struct.unpack("<2q", raw[4360:4376])
+    print("durmio %d veces; %d desperto con algo nuevo (ganas %.4f)" % (n4, s4, (s4 + 0.5) / (n4 + 1)))

@@ -95,7 +95,11 @@ def build():
     shutil.rmtree(W + "/out", ignore_errors=True)
     c, o = sh("bash /e/Razar/legos/proy/so/herramientas/armar.sh /e/Janax/so/build/janaxos.exe /e/Razar/legos/out "
               "/e/Razar/legos/proy/razar/lectura/pulso.jsm /e/Razar/legos/proy/razar/lectura/pulso.datos.jsm 2>&1", 300)
-    return c == 0 and os.path.exists(W + "/out/pulso.bin")
+    ok = c == 0 and os.path.exists(W + "/out/pulso.bin")
+    if ok:                                    # what a house needs besides the program, kept with it: the copy of the
+        for f in ("organo.molde", "organo.inc"):   # project can go once it is built
+            shutil.copyfile(SRC + "/" + f, W + "/out/" + f)
+    return ok
 
 
 def word(organ):
@@ -108,21 +112,26 @@ def scores(organs):
     if TEMPLATE is None:
         b = os.path.expanduser("~/razar_tablero")
         TEMPLATE = open(b + "/" + hexl("tablero/Receta de Organos/%s/6/recetas" % MODEL), "rb").read().decode("latin-1")
-    casa = W + "/casa"
-    shutil.rmtree(casa, ignore_errors=True); shutil.rmtree(W + "/tablero", ignore_errors=True)
-    os.makedirs(casa); os.makedirs(W + "/tablero")
+    casa = W + "/casa_" + os.path.basename(BOOK).split(".")[0]      # a house for each book, kept: its book is written once
+    libro = casa + "/" + hexl("libro")
+    os.makedirs(casa, exist_ok=True)
+    for f in os.listdir(casa):
+        if casa + "/" + f != libro:
+            os.remove(casa + "/" + f)
+    shutil.rmtree(W + "/tablero", ignore_errors=True); os.makedirs(W + "/tablero")
     for n, organ in enumerate(organs):
         t = re.sub(r"receta [0-9A-Fa-f]{16}", "receta %016x" % word(organ), TEMPLATE, count=1)
         open(W + "/tablero/" + hexl("tablero/Receta de Organos/%s/t%d/recetas" % (MODEL, n)), "wb").write(t.encode("latin-1"))
     d = bytearray(open(W + "/out/pulso.datos", "rb").read()); d[0x30:0x38] = bytes(8)
     open(W + "/out/pulso.datos", "wb").write(d)
-    shutil.copyfile(BOOK, casa + "/" + hexl("libro"))
+    if not os.path.exists(libro) or os.path.getsize(libro) != os.path.getsize(BOOK):
+        shutil.copyfile(BOOK, libro)
     open(casa + "/" + hexl("p"), "wb").write(bytes([10, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0]))
     for src, name in ((W + "/out/pulso.bin", "pulso.bin"), (W + "/out/pulso.datos", "pulso.datos"),
-                      (SRC + "/organo.molde", "organo.molde"), (SRC + "/organo.inc", "organo.inc")):
+                      (W + "/out/organo.molde", "organo.molde"), (W + "/out/organo.inc", "organo.inc")):
         shutil.copyfile(src, casa + "/" + hexl("PDP/razar/lectura/" + name))
-    c, o = sh("JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS=E:/Razar/legos/casa JANAX_TABLERO=E:/Razar/legos/tablero "
-              "/e/Janax/so/build/janaxos.exe E:/Razar/legos/out/pulso.bin 2>&1", TIMEOUT)
+    c, o = sh("JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS=%s JANAX_TABLERO=E:/Razar/legos/tablero "
+              "/e/Janax/so/build/janaxos.exe E:/Razar/legos/out/pulso.bin 2>&1" % casa, TIMEOUT)
     got = {}
     for m in re.finditer(r"organo (\S+) = (-?\d+) \(sin (-?\d+)\)", o):
         name = "".join(LETTERS[ord(ch) - 49] if "1" <= ch <= "?" else ch for ch in m.group(1))

@@ -5,7 +5,7 @@ Los dos archivos que dejan a Luma, a Razar y al vigía vivos sin que nadie los l
 
 | Archivo | Qué lanza |
 |---|---|
-| `luma.vbs` | Razar en la casa de Luma (`razar/cuerpo/razar_en_casa.sh`) y la ventana de Luma (`razar/cuerpo/luma.sh`). Si alguno ya está vivo, no lanza otro. |
+| `luma.vbs` | Razar en la casa de Luma (`razar/cuerpo/razar_en_casa.sh`), Luma con quien la cuida mientras duerme (`razar/cuerpo/luma_vive.sh`) y el cubo vivo (`razar/lectura/poetico/cubo.py vivo`). Si alguno ya esta vivo, no lanza otro. |
 | `razar_vigia.vbs` | El vigía (`razar/lectura/vigia.sh`): estudia los textos que se escriben en `C:\` y `E:\`. |
 
 **Son ejemplos de una máquina, no algo que ande igual en cualquiera.** Llevan estas rutas, que hay que adaptar:

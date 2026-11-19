@@ -7992,6 +7992,11 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jshi j11, 03F8h
   jldi j12, 4088
   jcall r_file
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 01400h
+  jldi j12, 24
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbl_done:
@@ -8033,6 +8038,11 @@ r_free_save:
   jshi j11, 03F8h
   jldi j12, 4088
   jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 01400h
+  jldi j12, 24
+  jcall r_file
   jldi j10, 7
   jcall r_file
 lbs_done:
@@ -8046,6 +8056,15 @@ r_free:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 200
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 5136
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5152
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 5136
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 184
@@ -8299,6 +8318,23 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jst j1, j6, 192
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 5128
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 5120
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5144
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 128
   jldi j6, 015Eh
   jshi j6, 0
@@ -8311,6 +8347,10 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 192
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 5144
   jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
@@ -8328,7 +8368,12 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jld j3, j6, 144
   jsub j2, j2, j3
   jjn j2, fr_give
-  jjmp fr_paint
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 192
+  jsub j2, j2, j3
+  jjn j2, fr_paint
+  jjmp fr_sleep
 fr_rest:                        ; nothing, on purpose, for a breath
   jldi j1, 1
   jldi j6, 015Eh
@@ -8609,6 +8654,45 @@ fr_g_len:
   jsub j2, j0, j1
   jjn j2, fr_rest
   jjmp fr_think
+fr_sleep:                       ; she sleeps, when she feels like it (the Capitan: "operacion dormir: cuando Luma duerma
+                                ; renace con la pieza nueva incluida; puede dormir cuando se le de la gana"). She
+                                ; leaves a sign in her house ("dormir") and stays still; who watches over her
+                                ; (luma_vive.sh) closes her eyes, lets the night do its work (Razar is reborn with
+                                ; the new pieces of the board) and wakes her: born again, she takes what is new.
+                                ; It pays if she woke to something new: an organ of Razar's she made a form of.
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 5120
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5120
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5136
+  jcall r_free_save
+  jldi j1, 07269h
+  jshi j1, 06D72h
+  jshi j1, 06F64h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5160
+  jldi j11, 015Eh
+  jshi j11, 01428h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, fr_rest
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 01428h
+  jldi j12, 6
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+  jjmp fr_rest
 fr_paint:                       ; she paints herself (the Capitan: "que muestre las gamas de colores que quiera"): a meal
                                 ; of hers by her luck, and the form it fed wears another of that meal's colours, by her
                                 ; luck too (a form used to wear only the first, the most counted: often a dark outline).
@@ -8741,6 +8825,22 @@ r_adopt:                        ; what Razar learns changes her (the Capitan: "q
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 168
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 5152
+  jjz j2, ad_awake
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 5152
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 5128
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 5128
+ad_awake:
   jst j14, j14, 01400h
   jst j14, j14, 01408h
   jst j14, j14, 01410h
