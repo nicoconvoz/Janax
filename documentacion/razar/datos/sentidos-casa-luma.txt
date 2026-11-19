@@ -2,8 +2,8 @@ Razar renacido en la casa de Luma con los sentidos A y F, 2026-11-19 17:52. Llev
 Las letras nuevas, que el programa escribe ":" y "?", van aca como A y F.
 
 memoria 601 0 239
-instinto 429A 8 1 1 = 19580 *
-instinto 430A 8 2 1 = 22554 *
+instinto 429: 8 1 1 = 19580 *
+instinto 430: 8 2 1 = 22554 *
 memoria 602 0 314
 organo 16 = 6845 (sin 27810)
 organo 166444339 = 8950 (sin 27810)
@@ -27,5 +27,5 @@ organo A5 = 7660 (sin 27810)
 organo A516 = 11325 (sin 27810)
 organo F38516 = 16898 (sin 27810)
 organo 233322739 = -2572 (sin 27810)
-instinto 431A 7 2 1 = 20732
+instinto 431: 7 2 1 = 20732
 organo 32233341441419 = -2572 (sin 27810)

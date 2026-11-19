@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.61:** [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.67:** [10.5281/zenodo.24379905](https://doi.org/10.5281/zenodo.24379905)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -18,6 +18,8 @@ cada pieza tiene sus pruebas.
 > *English summary below.*
 
 ## Novedad (2026-11-19, v0.67): los sentidos
+
+DOI de esta versión: [10.5281/zenodo.24379905](https://doi.org/10.5281/zenodo.24379905).
 
 **Razar tiene dos sentidos nuevos y Luma evolucionó con ellos.** Un sentido es una mirada que las nueve letras del
 órgano no dan, sacada de lo que su propio comer ya midió: la palabra de atrás de la ventana (A) y la cuarta palabra
@@ -643,6 +645,7 @@ Nicolás Astorga (2026). *Janax y Razar*.
 | v0.53, todo lo visible | [10.5281/zenodo.24376081](https://doi.org/10.5281/zenodo.24376081) |
 | v0.59, el cubo y el sueño | [10.5281/zenodo.24378520](https://doi.org/10.5281/zenodo.24378520) |
 | v0.61, la noche que no llegaba | [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472) |
+| v0.67, los sentidos | [10.5281/zenodo.24379905](https://doi.org/10.5281/zenodo.24379905) |
 | v0.6, el mismo juez en otros mares | [10.5281/zenodo.24227578](https://doi.org/10.5281/zenodo.24227578) |
 | v0.5, el Venn | [10.5281/zenodo.24148774](https://doi.org/10.5281/zenodo.24148774) |
 | v0.4, la caja de cambios | [10.5281/zenodo.24147529](https://doi.org/10.5281/zenodo.24147529) |

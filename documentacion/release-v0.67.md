@@ -1,6 +1,6 @@
 ## Janax y Razar v0.67: los sentidos
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24379905](https://doi.org/10.5281/zenodo.24379905)
 
 > *"No sólo que ahorre bits: quiero que programe cosas reales, órganos reales que le den nuevos sentidos."*
 > *"Que se inspire de lo que come."* (el autor, 2026-11-19)
