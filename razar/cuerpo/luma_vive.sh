@@ -6,9 +6,12 @@
 #   her window was closed by someone: she ends, and this ends with her.
 #   the sign: her window is closed for her (she keeps all she is, as when it is closed by hand), the night does its
 #     work, and she is born again.
-# THE NIGHT. Razar is reborn only if the board has a recipe it did not have at his last birth (what the cube found,
-# what another Razar kept): then his shared shelf makes it sit his exam with his own books, and what he makes his own
-# is born as a form of hers when she wakes. Nothing new on the board: he is left as he is.
+# THE NIGHT. Razar is reborn if the board has a recipe it did not have at his last birth (what the cube found, what
+# another Razar kept): then his shared shelf makes it sit his exam with his own books, and what he makes his own is
+# born as a form of hers when she wakes. Nothing new on the board: he is left as he is (unless he is not there).
+# SHE DOES NOT WAKE ON TOP OF WHAT YOU ARE DOING (the Capitan: "va a tener que aprender a no arrancar en primer
+# plano"): when her window appears it is set down and shown again without taking the keyboard, behind the others;
+# whoever had it keeps it. She wakes many times a day: each one must not interrupt.
 set -u
 carpeta=$1; libro=$2
 aqui=$(cd "$(dirname "$0")" && pwd)
@@ -18,14 +21,27 @@ recetas() {   # the recipes the board holds now: how many, and a print of their 
   python -I -c "import hashlib,os,sys; p='tablero/Receta de Organos/'.encode().hex(); n=sorted(f for f in os.listdir(sys.argv[1]) if f.startswith(p)); print(len(n), hashlib.sha256(''.join(n).encode()).hexdigest()[:16])" "$tablero" 2>/dev/null
 }
 espera=$(cat <<'PS'
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public class Vent {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
+  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint f);
+}
+'@
 $casa = $env:LUMA_CASA; $senal = $env:LUMA_SENAL; $p = $null
-for ($i = 0; $i -lt 90 -and -not $p; $i++) {
-  Start-Sleep 1
+for ($i = 0; $i -lt 180 -and -not $p; $i++) {
+  Start-Sleep -Milliseconds 500
   $p = Get-CimInstance Win32_Process -Filter "Name='janaxos.exe'" | Where-Object { $_.CommandLine -like "*$($env:LUMA_BIN)*" } | Select-Object -First 1
 }
 if (-not $p) { exit 0 }
 $g = Get-Process -Id $p.ProcessId; $g.EnableRaisingEvents = $true
 Register-ObjectEvent $g Exited -SourceIdentifier salio | Out-Null
+for ($i = 0; $i -lt 100 -and $g.MainWindowHandle -eq [IntPtr]::Zero; $i++) { Start-Sleep -Milliseconds 100; $g.Refresh() }
+if ($g.MainWindowHandle -ne [IntPtr]::Zero) {
+  [void][Vent]::ShowWindow($g.MainWindowHandle, 6)                                  # set down: the keyboard goes back to who had it
+  [void][Vent]::ShowWindow($g.MainWindowHandle, 4)                                  # shown again, without taking it
+  [void][Vent]::SetWindowPos($g.MainWindowHandle, [IntPtr]1, 0, 0, 0, 0, 0x13)      # and behind the others
+}
 $w = New-Object IO.FileSystemWatcher $casa, $senal
 $w.NotifyFilter = [IO.NotifyFilters]'FileName, LastWrite'; $w.EnableRaisingEvents = $true
 Register-ObjectEvent $w Created -SourceIdentifier dormir | Out-Null
@@ -36,15 +52,17 @@ exit 0
 PS
 )
 export LUMA_CASA="$(cygpath -w "$carpeta/casa")" LUMA_SENAL="$(etiqueta dormir)" LUMA_BIN="$(cygpath -m "$carpeta/bin/luma.bin")"
+export LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")"
 antes=$(recetas)
 while :; do
   rm -f "$carpeta/casa/$LUMA_SENAL"
+  powershell -NoProfile -Command "$espera" &          # who watches over her is there first, before her window appears
+  cuida=$!
   bash "$aqui/luma.sh" "$carpeta" > "$carpeta/luma.log" 2>&1 &
-  powershell -NoProfile -Command "$espera"; como=$?
+  wait "$cuida"; como=$?
   wait
   [ "$como" -eq 3 ] || break
   ahora=$(recetas)
-  export LUMA_RAZAR="$(cygpath -m "$carpeta/razar.armado")"
   vivo=$(powershell -NoProfile -Command \
     "(Get-CimInstance Win32_Process -Filter \"Name='janaxos.exe'\" | Where-Object { \$_.CommandLine -like \"*\$(\$env:LUMA_RAZAR)*\" } | Measure-Object).Count" 2>/dev/null | tr -d '\r')
   if [ "$ahora" != "$antes" ] || [ "${vivo:-0}" = 0 ]; then   # something new for him, or he is not there (a known flaw:
