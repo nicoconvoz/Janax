@@ -1,6 +1,6 @@
 ## Janax y Razar v0.37: el ingrediente X
 
-DOI: pendiente
+DOI: [10.5281/zenodo.24368294](https://doi.org/10.5281/zenodo.24368294)
 
 > *"Solo te pido que le agregues el ingrediente X: AMOR."* (el autor, 2026-11-19)
 
