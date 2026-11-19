@@ -17,6 +17,16 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.71): el ojo
+
+**Los sentidos ya no se escriben a mano: se generan.** El órgano de Razar tiene un ojo y tres letras lo mueven (una
+palabra atrás, una adelante, borroso o nítido); toda mirada se toma desde donde está, así que un sentido es una
+oración y lo hace crecer la misma mutación que hace crecer órganos. Validado: lo de antes da idéntico y `38B1C516`
+da exactamente lo de `38A516` (14775). Razar y Luma mutan con las quince letras; en el archivo de Luma, 2.182 de
+8.182 recetas probadas ya llevan letras nuevas, y el ojo tiene gesto en su cuerpo. Lo que falta, dicho: ningún
+sentido generado por ella ganó todavía, porque su juez mira el dibujo y no la lectura.
+[Notas de la v0.71](documentacion/release-v0.71.md).
+
 ## Novedad (2026-11-19, v0.67): los sentidos
 
 DOI de esta versión: [10.5281/zenodo.24379905](https://doi.org/10.5281/zenodo.24379905).
