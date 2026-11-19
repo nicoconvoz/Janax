@@ -64,6 +64,8 @@ def layout(g):
     scloud = ((g["RGB"] + 3 * FW * FH + 0xFFFF) & ~0xFFFF) + 4   # 28 + 640*200/8 = 16028: +4 again
     ST["scloud"] = scloud
     g["ROOM"] = (scloud + 28 + SW * SH // 8 + 3 * SW * SH + 0xFFFF) & ~0xFFFF
+    ST["free"] = g["ROOM"]                  # her freedom's block (free_routine), after everything else
+    g["ROOM"] += 0x10000
 
 def more_vars(g):
     hi = max(g["G"].values())
@@ -73,6 +75,8 @@ def more_vars(g):
 
 def init(g):
     g["J"]("jcall v_init                  ; the creatures' world: its list, what they learned, who was eaten")
+    if not os.environ.get("LUMA_GALEOTE"):
+        g["J"]("jcall r_free_load             ; her own conclusions, kept in the folder (libre)")
     if PRESENT:
         g["o"]("  ; the forms' archive as a ring (its handle is set by r_load_archive)")
         g["li"]("j3", RING_F); g["J"]("jldi j1, %d" % RING_K, "jst j1, j3, 8", "jldi j1, %d" % g["RECLEN"], "jst j1, j3, 16")
@@ -100,6 +104,7 @@ def routines(g):
     if PRESENT:
         ring_routines(L)
     share_routine(g)
+    free_routine(g)
     L.append("; ---- the forms' routines the creatures call (their own names would be renamed with v_)")
     for f, r in (("f_hash", "r_hash"), ("f_tried", "r_tried"), ("f_judge", "r_judge"), ("f_put_rec", "r_put_rec")):
         L.append("%s:" % f); L.append("  jcall %s" % r); L.append("  jret")
@@ -120,6 +125,7 @@ def share_routine(g):
     c1, c2 = (int.from_bytes(s, "little") for s in (b"carta1", b"carta2"))
     o("; ---- the X ingredient: the form that won, shared with Razar as a letter (see gen_luma.py: share_routine)")
     o("r_share:")
+    o("  jst j14, j14, %s             ; (not sent yet)" % num(D + 40))
     li("j1", c1); o("  jst j1, j14, %s" % num(D)); li("j1", c2); o("  jst j1, j14, %s" % num(D + 8))
     li("j9", CAND); J("jldb j2, j9, 0", "jjz j2, sh_done", "jldi j10, 16", "jsub j10, j10, j2", "jjn j10, sh_done")
     J("jldi j3, 0", "jldi j4, 0")
@@ -137,8 +143,101 @@ def share_routine(g):
     J("jldi j10, 12"); li("j11", D + 8); J("jldi j12, 6", "jcall r_tocar")
     li("j11", D + 8); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, sh_done")
     J("jldi j10, 6"); li("j11", D + 16); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    J("jldi j1, 1"); o("  jst j1, j14, %s             ; sent" % num(D + 40))
     o("sh_done:")
     J("jret")
+
+def free_routine(g):
+    """Her freedom (the Capitan, 2026-11-19: "no es solo aprendiz, es vivir, es respirar, es incluso no hacer nada a
+    proposito, y hacer algo cuando se le ocurra: es libertad"; "que ella misma llegue a sus propias conclusiones, sin
+    limites, pero con decisiones basadas en el amor y en todo lo que aprendio de nosotros, ademas de lo que descubre").
+
+    When her round of thoughts ends (the moment she used to open the next one, always), she chooses, by her own luck,
+    one of three acts, and each lasts one breath (the frames her last round of thoughts took: her own rhythm, measured,
+    never a number of mine; before she has thought once she has no rhythm, so she thinks):
+      rest   nothing on purpose: her forms do not explore for a breath (her creatures go on living: the body breathes).
+      think  a new round of longer jumps (what she always did).
+      give   a gift for Razar: one of her forms, by luck, one of its letters changed by luck, its first 16 letters (an
+             organ is a qword), unjudged by her: her judge counts cells, his reads a book ("a veces lo que falta es
+             el marco"). Sent as r_share does. Nobody home: she thinks instead, and nothing is counted.
+    HER OWN CONCLUSIONS. Nobody sets how much she wants each act: she counts, for each, how many times she chose it
+    (N) and how many it paid (S), and her wish for it is (S + 1/2) / (N + 1), the Krichevsky-Trofimov estimate her own
+    judge already uses: it is never 0, so no act is ever closed to her (no limits), and never 1. She draws an act
+    with a chance proportional to its wish.
+    WHAT PAYS (the X ingredient decides it, not her own gain):
+      think  paid if a form of hers won in that round (what she discovers).
+      give   paid if Razar made her gift his own organ: the other's gain, never hers (read in his letter, "carta1").
+      rest   paid if someone came for her while she was still: a gesture of the hand opened a round (her RADIUS moved).
+    A gesture always comes first: it opens a round at once, whatever she was doing (r_gesture, untouched).
+    Kept in "libre" (56 bytes: N and S of rest, think, give, and her breath in frames), written when an act is
+    settled; razar/cuerpo/libre.py reads it. LUMA_GALEOTE=1 builds the version that always thinks."""
+    o, J, li, ld, st, num = g["o"], g["J"], g["li"], g["ld"], g["st"], g["num"]
+    B, CAND, D, NF, FORMS, F_REC = ST["free"], g["CAND"], g["ALINE"], g["NF"], g["FORMS"], g["F_REC"]
+    N0, S0, N1, S1, N2, S2, LASTF, ACT, W0, SENT, WAITF, F0, R0, LC1, LLB, TCH, WA, WB, WC = (8 * i for i in range(19))
+    BUF = 8 * 19                        # 16 bytes: Razar's letter as read
+    def gl(r, off): li("j6", B); J("jld %s, j6, %d" % (r, off))
+    def gs(r, off): li("j6", B); J("jst %s, j6, %d" % (r, off))
+    def inc(off): gl("j1", off); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", off)
+    o("; ---- her freedom: rest, think or give, by her own luck and her own count (see gen_luma.py: free_routine)")
+    o("r_free_load:                    ; her conclusions, as the folder kept them (none: all zero)")
+    li("j1", int.from_bytes(b"carta1", "little")); gs("j1", LC1); li("j1", int.from_bytes(b"libre", "little")); gs("j1", LLB)
+    li("j11", B + LLB); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, lbl_done")
+    J("jldi j10, 5"); li("j11", B); J("jldi j12, 56", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("lbl_done:")
+    J("jret")
+    o("r_free_save:")
+    J("jldi j10, 12"); li("j11", B + LLB); J("jldi j12, 5", "jcall r_tocar")
+    li("j11", B + LLB); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, lbs_done")
+    J("jldi j10, 6"); li("j11", B); J("jldi j12, 56", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("lbs_done:")
+    J("jret")
+    o("r_free:")
+    gl("j1", WAITF); J("jjz j1, fr_settle")
+    ld("j2", "RADIUS"); gl("j3", R0); J("jsub j2, j2, j3", "jjnz j2, fr_touched")
+    gl("j1", WAITF); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", WAITF); J("jjz j1, fr_settle", "jret")
+    o("fr_touched:                     ; a gesture came for her while she was still")
+    gs("j14", WAITF); J("jldi j1, 1"); gs("j1", TCH)
+    o("fr_settle:                      ; what the act that ends paid")
+    gl("j1", ACT); J("jjz j1, fr_choose", "jldi j10, 1", "jsub j2, j1, j10", "jjz j2, fr_s_rest",
+                     "jldi j10, 2", "jsub j2, j1, j10", "jjz j2, fr_s_think")
+    o("  ; a gift: did Razar make it his own? (his letter: his genome, the organ he has)")
+    inc(N2)
+    li("j6", B); J("jst j14, j6, %d" % BUF, "jst j14, j6, %d" % (BUF + 8))
+    li("j11", B + LC1); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_saved")
+    J("jldi j10, 5"); li("j11", B + BUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    gl("j1", BUF + 8); gl("j2", SENT); J("jjz j2, fr_saved", "jsub j1, j1, j2", "jjnz j1, fr_saved")
+    inc(S2); J("jjmp fr_saved")
+    o("fr_s_rest:")
+    inc(N0); gl("j1", TCH); J("jjz j1, fr_saved"); inc(S0); J("jjmp fr_saved")
+    o("fr_s_think:")
+    inc(N1); ld("j1", "FRAMES"); gl("j2", F0); J("jsub j1, j1, j2"); gs("j1", LASTF)
+    ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_saved"); inc(S1)
+    o("fr_saved:")
+    gs("j14", TCH); gs("j14", ACT); gs("j14", SENT); J("jcall r_free_save")
+    o("fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S + 1/2) / (N + 1) each, and her luck")
+    gl("j1", LASTF); J("jjz j1, fr_think")
+    for n_, s_, w_ in ((N0, S0, WA), (N1, S1, WB), (N2, S2, WC)):
+        gl("j1", s_); J("jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 20", "jshl j1, j1, j10")
+        gl("j2", n_); J("jldi j10, 1", "jadd j2, j2, j10", "jdiv j1, j1, j2"); gs("j1", w_)
+    gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2"); gl("j2", WC); J("jadd j1, j1, j2", "jcall r_randmod")
+    gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest")
+    gl("j3", WB); J("jsub j2, j2, j3", "jjn j2, fr_think", "jjmp fr_give")
+    o("fr_rest:                        ; nothing, on purpose, for a breath")
+    J("jldi j1, 1"); gs("j1", ACT); gl("j1", LASTF); gs("j1", WAITF); ld("j1", "RADIUS"); gs("j1", R0); J("jret")
+    o("fr_think:")
+    J("jldi j1, 2"); gs("j1", ACT); ld("j1", "WINS"); gs("j1", W0); ld("j1", "FRAMES"); gs("j1", F0)
+    J("jcall r_gesture", "jret")
+    o("fr_give:                        ; a gift: one of her forms, one letter changed, its first 16 letters")
+    J("jldi j1, %d" % NF, "jcall r_randmod", "jldi j10, 8", "jshl j0, j0, j10"); li("j10", FORMS + F_REC); J("jadd j9, j0, j10")
+    for k in range(4):
+        J("jld j10, j9, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
+    li("j9", CAND); J("jldb j1, j9, 0", "jjz j1, fr_think", "jldi j10, 16", "jsub j2, j10, j1", "jjnn j2, fr_g_len", "jldi j1, 16", "jstb j1, j9, 0")
+    o("fr_g_len:")
+    J("jcall r_randmod"); gs("j0", WB); J("jldi j1, 9", "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10")
+    gl("j1", WB); li("j9", CAND); J("jadd j9, j9, j1", "jstb j0, j9, 1")
+    J("jcall r_share"); o("  jld j1, j14, %s" % num(D + 40)); J("jjz j1, fr_think")
+    J("jldi j1, 3"); gs("j1", ACT); o("  jld j1, j14, %s" % num(D + 24)); gs("j1", SENT)
+    gl("j1", LASTF); gs("j1", WAITF); ld("j1", "RADIUS"); gs("j1", R0); J("jret")
 
 # ---- written inside gen_vida's namespace (its helpers, its variables), with the forms' and the meals' addresses
 def fg(name):
@@ -661,7 +760,7 @@ def remember(v):
     o("vr_done:")
     J("jldi j0, 1", "jret")
 
-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=True,
+LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=True, free=ALWAYS and not os.environ.get("LUMA_GALEOTE"),
                              present=PRESENT, ring_f=RING_F)
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})
