@@ -2,6 +2,10 @@
 
 DOI: [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472)
 
+> **Fe de erratas ([v0.67](release-v0.67.md)):** el 13876 que abajo se llama "sin órgano" era la nota del órgano
+> que Razar ya llevaba puesto (`51638`). Ninguna pieza del cubo le ganaba a ese; la lectura "el lector crecido no
+> necesita órganos" queda retirada.
+
 Las versiones siguen a los números primos: después del 59, el 61. Esta es una **corrección** de la v0.59.
 
 ### 1. El error

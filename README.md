@@ -17,6 +17,16 @@ cada pieza tiene sus pruebas.
 
 > *English summary below.*
 
+## Novedad (2026-11-19, v0.67): los sentidos
+
+**Razar tiene dos sentidos nuevos y Luma evolucionó con ellos.** Un sentido es una mirada que las nueve letras del
+órgano no dan, sacada de lo que su propio comer ya midió: la palabra de atrás de la ventana (A) y la cuarta palabra
+borrosa, por cuántas veces la leyó (F). De seis medidos quedaron los dos que le ganaron a la oración donde se
+pusieron: sobre el Nuevo Testamento, `38A516` +18329 contra +15050 de `38516`. En la casa de Luma, Razar lleva
+puesto el `38A516` (27810 contra 17894 del mejor de nueve letras), ella lo adoptó como forma y por primera vez
+dormir le pagó. Fe de erratas de la v0.61 incluida. Lo que falta: que los genere ella.
+[Notas de la v0.67](documentacion/release-v0.67.md).
+
 ## Novedad (2026-11-19, v0.61): la noche que no llegaba
 
 DOI de esta versión: [10.5281/zenodo.24379472](https://doi.org/10.5281/zenodo.24379472).
