@@ -1,0 +1,14 @@
+# nuevo-testamento, en 76 s; sin organo -3554
+5                208
+16              2649
+516            11144
+38516          11496
+38A516         14775
+F38516         13588
+38B1C516       14775   debe dar lo de 38A516: igual
+D4D38516       13588   debe dar lo de F38516: igual
+38BB1CC516    -11891
+38BB1C1C516     8045
+38AD1D516       7135
+38A516C8       12348
+BD1DC38A516    13808

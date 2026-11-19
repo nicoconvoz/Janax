@@ -4566,8 +4566,8 @@ og_mutate:
     jldi j3, 2
     jshl j4, j4, j3             ; its bit
     jst j4, j1, OGSC
-    jcall ev_rand               ; the letter, 1..9
-    jldi j3, 9
+    jcall ev_rand               ; the letter: any of the fifteen four bits hold (1-9, its senses and its eye;
+    jldi j3, 15                 ; one with no code yet does nothing, and the exam says what the rest is worth)
     jdiv j4, j2, j3
     jmul j4, j4, j3
     jsub j2, j2, j4

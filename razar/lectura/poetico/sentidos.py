@@ -20,7 +20,15 @@ were put in (38A516 = 14775, F38516 = 13588; 38516 = 11496) and are of his body 
 not (B38516 10848, C38516 11447, D38516 9126, E38516 5356), though C and E pay alone (C6 +5297, E8 +6679 over no
 organ): they wait here, with their code, for the sentence or the book that needs them.
 
-usage: sentidos.py medir [book]    every sense before each hole (X5..X8), inside the two frames of one word (1X6, 3X8)
+THE EYE (after that measurement; the Capitan: "si, que los genere"). Six letters somebody writes are not senses she
+grows. The organ has an eye now and three letters move it (organo.inc): B a word back, C a word ahead, D blurred or
+sharp again. Every look is taken from where the eye is, so the whole space above, and beyond it, is said with
+sentences: "B1C" is the old A, "D4D" the old F, "BB1" two words behind. B, C and D mean that from here on: the six
+looks of `medir` are kept as they were measured (their letters B to E were the old ones) and `medir` only tells it.
+
+usage: sentidos.py ojo [book]      the eye validated: the sentences of before give what they gave, and a sense said
+                                   with the eye gives what its letter gives
+       sentidos.py medir [book]    every sense before each hole (X5..X8), inside the two frames of one word (1X6, 3X8)
                                    and before the two strongest sentences (X516, X38516), against those without it"""
 import os, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -62,9 +70,31 @@ def sentences():
     return list(dict.fromkeys(out))
 
 
+EYE = [("5", None), ("16", None), ("516", None), ("38516", None), ("38A516", None), ("F38516", None),
+       ("38B1C516", "38A516"), ("D4D38516", "F38516"),              # the same sense, said with the eye
+       ("38BB1CC516", None), ("38BB1C1C516", None), ("38AD1D516", None), ("38A516C8", None), ("BD1DC38A516", None)]
+
+
+def ojo():
+    legos.setup(); legos.organo_inc({})
+    print("arma:", legos.build()); sys.stdout.flush()
+    organs = [o for o, _ in EYE]; legos.TIMEOUT = 90 + 9 * len(organs)
+    t = time.time(); g = legos.scores(organs)
+    name = os.path.basename(legos.BOOK).split(".")[0]
+    out = open(legos.W + "/ojo-%s.txt" % name, "w", encoding="utf-8", newline=NL)
+    for line in ["# %s, en %.0f s; sin organo %s" % (name, time.time() - t, g.get(""))] + [
+            "%-12s %7s%s" % (o, g.get(o, "no rindio"), "" if same is None else "   debe dar lo de %s: %s" % (same, "igual" if g.get(o) == g.get(same) else "DISTINTO"))
+            for o, same in EYE] + (["estado: " + g["estado"]] if "estado" in g else []):
+        out.write(line + NL); print(line)
+
+
 def main():
     if len(sys.argv) > 2:
         legos.BOOK = sys.argv[2]
+    if sys.argv[1] == "ojo":
+        return ojo()
+    if "og_lB:" in legos.original():
+        print("medir: sus letras B a E eran las de antes del ojo; lo medido esta en documentacion/razar/datos/sentidos-nuevo-testamento.txt"); return
     legos.setup(); legos.organo_inc(gears())
     print("arma:", legos.build()); sys.stdout.flush()
     refs = ["5", "6", "7", "8", "16", "38", "516", "38516"]
