@@ -31,4 +31,4 @@ export JANAX_MOTOR=traductor JANAX_CAMBIO=24 JANAX_ARCHIVOS="$(cygpath -m "$casa
 if [ "${RAZAR_PRIORIDAD:-baja}" = normal ]; then
   exec "$janaxos" "$(cygpath -m "$armado/pulso.bin")"
 fi
-exec powershell -NoProfile -Command "\$p = Start-Process -FilePath '$(cygpath -w "$janaxos")' -ArgumentList '$(cygpath -m "$armado/pulso.bin")' -NoNewWindow -PassThru; \$p.PriorityClass = 'Idle'; \$p.WaitForExit()"
+exec powershell -NoProfile -Command "\$p = Start-Process -FilePath '$(cygpath -w "$janaxos")' -ArgumentList '$(cygpath -m "$armado/pulso.bin")' -NoNewWindow -PassThru; \$p.PriorityClass = 'Idle'"   # (and it leaves: nobody waits on him holding memory)
