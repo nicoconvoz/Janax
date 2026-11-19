@@ -1463,6 +1463,7 @@ grow_clear_grid:
   jst j14, j14, 0328h
   jst j14, j14, 0330h
   jst j14, j14, 0340h
+  jst j14, j14, 04F8h
   jldi j1, 0
   jldi j2, 0
   jldi j3, -1
@@ -1488,10 +1489,15 @@ grow_letter:
   jldi j10, 9
   jsub j10, j5, j10
   jjn j10, grow_hole
-  jjmp grow_mirror
-grow_arm:                       ; 1-4: an arm towards direction k
+  jjz j10, grow_mirror
+  jjmp grow_sense
+grow_arm:                       ; 1-4: an arm towards direction k, turned as the eye is
   jldi j10, 1
   jsub j5, j5, j10
+  jld j10, j14, 04F8h
+  jadd j5, j5, j10
+  jldi j10, 3
+  jand j5, j5, j10
   jldi j10, 4
   jshl j5, j5, j10
   jldi j10, 013C0h
@@ -1524,10 +1530,15 @@ grow_arm_lap:
 grow_hole:                      ; 5-8: back to the seed and over an opening towards direction k
   jldi j10, 5
   jsub j5, j5, j10
+  jld j10, j14, 04F8h
+  jadd j5, j5, j10
+  jldi j10, 3
+  jand j5, j5, j10
   jldi j10, 4
   jshl j5, j5, j10
   jldi j10, 013C0h
   jadd j5, j5, j10
+  jst j14, j14, 04F8h
   jldi j10, 5
   jld j6, j5, 0
   jmul j1, j6, j10
@@ -1587,6 +1598,40 @@ grow_mirror_done:
   jcall r_cell
   jst j0, j14, 0338h
   jjmp grow_letter
+grow_sense:                     ; beyond 9, Razar's senses and his eye (organo.inc), each with its gesture in her body: the
+                                ; eye a word back or ahead turns what follows a quarter (B, C); the word behind the window
+                                ; is an arm one direction before the first (A); the fourth word blurred, the fourth arm
+                                ; (F); blurred or sharp (D) and the free letter (E) draw nothing. After a hole the turn is
+                                ; undone, as his eye is at rest again
+  jldi j10, 11
+  jsub j10, j5, j10
+  jjnz j10, grow_sense_c
+  jld j10, j14, 04F8h
+  jldi j11, -1
+  jadd j10, j10, j11
+  jst j10, j14, 04F8h
+  jjmp grow_letter
+grow_sense_c:
+  jldi j10, 12
+  jsub j10, j5, j10
+  jjnz j10, grow_sense_a
+  jld j10, j14, 04F8h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j14, 04F8h
+  jjmp grow_letter
+grow_sense_a:
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjnz j10, grow_sense_f
+  jldi j5, 0
+  jjmp grow_arm
+grow_sense_f:
+  jldi j10, 15
+  jsub j10, j5, j10
+  jjnz j10, grow_letter
+  jldi j5, 4
+  jjmp grow_arm
 grow_done:
   jret
 r_cell:                         ; the cell j1, j2 (from the seed) of the form being grown, parent j3 (-1: itself),
@@ -2453,7 +2498,7 @@ jd_win:                         ; it won: the parent goes to the archive, the fo
 ;      Groups, in this order: the meal (kinds 0, 1: its recipe in place of this one (1), this one's first c
 ;      letters and the meal's rest (n), the meal's first c and this one's rest (m)); the new bricks (kind 1:
 ;      NNEW (n+1)); every brick (kinds 0, 2: NB (n+1); the towers 16, 38 first, then the learned ones);
-;      change a letter (8n), insert one (9(n+1)), cross with each form (8 n: its first c letters and the
+;      change a letter (8n), insert one (15(n+1): any letter of the organ, its senses and its eye too), cross with each form (8 n: its first c letters and the
 ;      form's rest; with itself it gives itself, already tried), delete one (n, if n > 1).
 r_count:                        ; j1 = n -> j0 = how many ops of the walk's kind
   jld j2, j14, 01A38h
@@ -2484,7 +2529,7 @@ cnt_full:
   jldi j10, 16
   jmul j3, j1, j10
   jadd j0, j0, j3
-  jldi j10, 9
+  jldi j10, 15
   jmul j3, j11, j10
   jadd j0, j0, j3
   jldi j10, 1
@@ -2676,11 +2721,11 @@ ap_insert:
   jsub j2, j2, j6
   jldi j10, 1
   jadd j7, j5, j10
-  jldi j10, 9
+  jldi j10, 15
   jmul j6, j7, j10
   jsub j10, j2, j6
   jjnn j10, ap_cross
-  jldi j10, 9
+  jldi j10, 15
   jdiv j7, j2, j10
   jmul j8, j7, j10
   jsub j8, j2, j8
@@ -3152,7 +3197,7 @@ gn_skip:
   jjmp gn_lap
 gn_done:
   jret
-r_get_rec:                      ; j1 = 31 characters, j3 = a recipe: the digits 1-9 up to the first other one
+r_get_rec:                      ; j1 = 31 characters, j3 = a recipe: its letters (1 to 15, written from the digit 1 on) up to the first other character
   jldi j4, 0
 gr_lap:
   jldi j10, 31
@@ -3163,7 +3208,7 @@ gr_lap:
   jldi j10, 49
   jsub j5, j5, j10
   jjn j5, gr_done
-  jldi j10, 9
+  jldi j10, 15
   jsub j10, j5, j10
   jjnn j10, gr_done
   jldi j10, 1

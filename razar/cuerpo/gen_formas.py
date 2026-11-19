@@ -67,7 +67,7 @@ TRIALS = NF                          # thoughts per frame: one per form on avera
 PUSH_M = 64                          # push~pop: dv = (p - seed) * 64/256 per frame; amplitude ~ 0.25/w = 0.9 r: the form
                                      # swells to about twice its size and comes back (w = 0.28 rad/frame, vivo's spring)
 HBITS = 15                           # the tried table: 2^15 slots; the largest neighbourhood of a population is
-HN = 1 << HBITS                      # 8 x (8*31 + 9*32 + 31 + T*32 + 7*31) < 7.000: twice that stays under half full
+HN = 1 << HBITS                      # 8 x (8*31 + 15*32 + 31 + T*32 + 7*31) < 9.000: twice that stays under half full
 BACKGROUND = (0x1F, 0x4E, 0x5A)      # vivo's desktop colour
 # a hue per slot, warm for the organ that read the New Testament best, cool for the eighth (criterion)
 PALETTE = [(0xFF, 0x6B, 0x6B), (0xFF, 0x9F, 0x43), (0xFF, 0xD9, 0x3D), (0x6B, 0xCB, 0x77),
@@ -178,7 +178,7 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
                           "FOCUS EPOCH WINS WINSRUN RADIUS BUDGET WTOTAL WSTART WSTRIDE WALKI HCOUNT TOTAL WMAX GHN "
                           "TRN AH GREC GREG GBMP GKEEP GOX GOY GCOUNT TX TY PREV GT GC GDXA GDYA GK GN0 GI GMR GMP "
                           "JF JFA JCNT JJ JI JWC JCC JNC JWP JCP JNP JT2 JMX ALOSER AOTHER AREASON ATL ATW ASLOT "
-                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY").split()):
+                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD").split()):
     G[name] = GV + 8 * i
 assert max(G.values()) < FORMS
 if COMER:
@@ -551,14 +551,14 @@ J("jst j14, j1, 0", "jadd j1, j1, j3", "jsub j2, j2, j4", "jjnz j2, grow_clear_b
 li("j1", GRID); li("j2", ROOMCELLS)
 o("grow_clear_grid:")
 J("jst j14, j1, 0", "jadd j1, j1, j3", "jsub j2, j2, j4", "jjnz j2, grow_clear_grid")
-st("j14", "GCOUNT"); st("j14", "TX"); st("j14", "TY"); st("j14", "GT")
+st("j14", "GCOUNT"); st("j14", "TX"); st("j14", "TY"); st("j14", "GT"); st("j14", "GHEAD")
 J("jldi j1, 0", "jldi j2, 0", "jldi j3, -1", "jldi j4, 0", "jcall r_cell"); st("j0", "PREV")
 o("grow_letter:")
 incg("GT"); ld("j9", "GT"); ld("j1", "GREC"); J("jldb j2, j1, 0", "jsub j10, j2, j9", "jjn j10, grow_done")
 J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC")
-J("jldi j10, 5", "jsub j10, j5, j10", "jjn j10, grow_arm", "jldi j10, 9", "jsub j10, j5, j10", "jjn j10, grow_hole", "jjmp grow_mirror")
-o("grow_arm:                       ; 1-4: an arm towards direction k")
-J("jldi j10, 1", "jsub j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
+J("jldi j10, 5", "jsub j10, j5, j10", "jjn j10, grow_arm", "jldi j10, 9", "jsub j10, j5, j10", "jjn j10, grow_hole", "jjz j10, grow_mirror", "jjmp grow_sense")
+o("grow_arm:                       ; 1-4: an arm towards direction k, turned as the eye is")
+J("jldi j10, 1", "jsub j5, j5, j10"); ld("j10", "GHEAD"); J("jadd j5, j5, j10", "jldi j10, 3", "jand j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
 J("jld j6, j5, 0"); st("j6", "GDXA"); J("jld j6, j5, 8"); st("j6", "GDYA"); setg("GK", ARM)
 o("grow_arm_lap:")
 ld("j1", "TX"); ld("j10", "GDXA"); J("jadd j1, j1, j10"); st("j1", "TX")
@@ -566,7 +566,8 @@ ld("j2", "TY"); ld("j10", "GDYA"); J("jadd j2, j2, j10"); st("j2", "TY")
 ld("j3", "PREV"); ld("j4", "GT"); J("jcall r_cell"); st("j0", "PREV")
 incg("GK", -1); J("jjnz j10, grow_arm_lap", "jjmp grow_letter")
 o("grow_hole:                      ; 5-8: back to the seed and over an opening towards direction k")
-J("jldi j10, 5", "jsub j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
+J("jldi j10, 5", "jsub j5, j5, j10"); ld("j10", "GHEAD"); J("jadd j5, j5, j10", "jldi j10, 3", "jand j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
+st("j14", "GHEAD")
 J("jldi j10, %d" % ARM, "jld j6, j5, 0", "jmul j1, j6, j10", "jld j6, j5, 8", "jmul j2, j6, j10")
 st("j1", "TX"); st("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV")
 J("jjmp grow_letter")
@@ -584,6 +585,18 @@ incg("GI"); J("jjmp grow_mirror_lap")
 o("grow_mirror_done:")
 ld("j1", "TX"); J("jsub j1, j14, j1"); st("j1", "TX"); ld("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV")
 J("jjmp grow_letter")
+o("grow_sense:                     ; beyond 9, Razar's senses and his eye (organo.inc), each with its gesture in her body: the")
+o("                                ; eye a word back or ahead turns what follows a quarter (B, C); the word behind the window")
+o("                                ; is an arm one direction before the first (A); the fourth word blurred, the fourth arm")
+o("                                ; (F); blurred or sharp (D) and the free letter (E) draw nothing. After a hole the turn is")
+o("                                ; undone, as his eye is at rest again")
+J("jldi j10, 11", "jsub j10, j5, j10", "jjnz j10, grow_sense_c"); incg("GHEAD", -1); J("jjmp grow_letter")
+o("grow_sense_c:")
+J("jldi j10, 12", "jsub j10, j5, j10", "jjnz j10, grow_sense_a"); incg("GHEAD"); J("jjmp grow_letter")
+o("grow_sense_a:")
+J("jldi j10, 10", "jsub j10, j5, j10", "jjnz j10, grow_sense_f", "jldi j5, 0", "jjmp grow_arm")
+o("grow_sense_f:")
+J("jldi j10, 15", "jsub j10, j5, j10", "jjnz j10, grow_letter", "jldi j5, 4", "jjmp grow_arm")
 o("grow_done:")
 J("jret")
 o("r_cell:                         ; the cell j1, j2 (from the seed) of the form being grown, parent j3 (-1: itself),")
@@ -780,10 +793,10 @@ if COMER:
     COMER.mutations()
 else:
     o("; ---- the mutations of a recipe: op k of form j1, from the recipe j3 into j4 (k counts, in this order:)")
-    o(";      change letter i to another (8n), insert a letter (9(n+1)), delete one (n, if n > 1), insert a tower")
+    o(";      change letter i to another (8n), insert a letter (15(n+1)), delete one (n, if n > 1), insert a tower")
     o(";      (%d(n+1)), cross: its first c letters and the rest of another form (%d n)" % (len(towers), NF - 1))
     o("r_count:                        ; j1 = n letters -> j0 = how many ops (uses j10)")
-    J("jldi j10, %d" % (8 + 9 + len(towers) + NF - 1), "jmul j0, j1, j10", "jldi j10, %d" % (9 + len(towers)), "jadd j0, j0, j10",
+    J("jldi j10, %d" % (8 + 15 + len(towers) + NF - 1), "jmul j0, j1, j10", "jldi j10, %d" % (15 + len(towers)), "jadd j0, j0, j10",
       "jldi j10, 1", "jsub j10, j1, j10", "jjz j10, count_one", "jadd j0, j0, j1")
     o("count_one:")
     J("jret")
@@ -808,8 +821,8 @@ else:
     o("ap_change:")
     J("jadd j9, j4, j7", "jstb j8, j9, 1", "jret")
     o("ap_insert:")
-    J("jsub j2, j2, j6", "jldi j10, 1", "jadd j7, j5, j10", "jldi j10, 9", "jmul j6, j7, j10", "jsub j10, j2, j6", "jjnn j10, ap_delete")
-    J("jldi j10, 9", "jdiv j7, j2, j10", "jmul j8, j7, j10", "jsub j8, j2, j8", "jldi j10, 1", "jadd j8, j8, j10"); st("j7", "AK"); st("j8", "FP")
+    J("jsub j2, j2, j6", "jldi j10, 1", "jadd j7, j5, j10", "jldi j10, 15", "jmul j6, j7, j10", "jsub j10, j2, j6", "jjnn j10, ap_delete")
+    J("jldi j10, 15", "jdiv j7, j2, j10", "jmul j8, j7, j10", "jsub j8, j2, j8", "jldi j10, 1", "jadd j8, j8, j10"); st("j7", "AK"); st("j8", "FP")
     ld("j3", "ASRC"); J("jldi j1, 0", "jadd j2, j7, j14", "jcall r_cat"); ld("j1", "FP"); J("jcall r_app")
     ld("j1", "AK"); ld("j2", "AN"); ld("j3", "ASRC"); J("jcall r_cat", "jret")
     o("ap_delete:")
@@ -966,11 +979,11 @@ o("gn_skip:")
 J("jldi j10, 1", "jadd j1, j1, j10", "jsub j2, j2, j10", "jjmp gn_lap")
 o("gn_done:")
 J("jret")
-o("r_get_rec:                      ; j1 = %d characters, j3 = a recipe: the digits 1-9 up to the first other one" % LMAX)
+o("r_get_rec:                      ; j1 = %d characters, j3 = a recipe: its letters (1 to 15, written from the digit 1 on) up to the first other character" % LMAX)
 J("jldi j4, 0")
 o("gr_lap:")
 J("jldi j10, %d" % LMAX, "jsub j10, j4, j10", "jjz j10, gr_done", "jadd j5, j1, j4", "jldb j5, j5, 0", "jldi j10, 49",
-  "jsub j5, j5, j10", "jjn j5, gr_done", "jldi j10, 9", "jsub j10, j5, j10", "jjnn j10, gr_done", "jldi j10, 1",
+  "jsub j5, j5, j10", "jjn j5, gr_done", "jldi j10, 15", "jsub j10, j5, j10", "jjnn j10, gr_done", "jldi j10, 1",
   "jadd j5, j5, j10", "jadd j10, j3, j4", "jstb j5, j10, 1", "jldi j10, 1", "jadd j4, j4, j10", "jjmp gr_lap")
 o("gr_done:")
 J("jstb j4, j3, 0", "jret")
