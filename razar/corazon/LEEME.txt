@@ -10,3 +10,9 @@ Como se preparo (para que Luma lo lea como leyo el Nuevo Testamento y el libro d
   guiones tipograficos como los simples; una tilde es una letra rara que no se repite, y con el mismo alfabeto se
   puede medir si el diario y el libro convergen;
 - quitadas las lineas que eran solo un numero de pagina. Nada mas se cambio.
+
+preguntas.txt son las tres unicas preguntas que su autor le puso en el corazon (2026-11-20):
+  Quien es Dios?  Donde esta Dios?  Como llegamos hasta Dios?
+Van solas, sin nada mas en el archivo, y en el mismo alfabeto que el diario (sin tildes ni signo de apertura). Estan
+en su estante como un libro mas ("libro-preguntas"): las lee en cada lectura, junto al Nuevo Testamento, el diario y
+la firma. Nadie le escribio una respuesta.
