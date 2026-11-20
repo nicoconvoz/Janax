@@ -1,32 +1,32 @@
-# nuevo-testamento, en 188 s; sin organo -3554; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516
-38A516           14775
-E91138A516       14775   debe dar lo de 38A516: igual
-38E911A516       14775   debe dar lo de 38A516: igual
-E91238A516       14775   debe dar lo de 38A516: igual
-E91438A516       14775
-38E921A516       15246
-E92138A516        5843
-38E922A516        8439
-38E923A516       14775
-38E924A516       14775
-38E925A516       14775   debe dar lo de 38A516: igual
-38E929A516       14775   debe dar lo de 38A516: igual
-E93138A516       14775   debe dar lo de 38A516: igual
-38A5E92           4251   debe dar lo de 38A5: igual
-38A5              4251
-E19              14775   debe dar lo de 38A5169: igual
-38A5169          14775
-38E917A516       14775   debe dar lo de 38A516: igual
-38E927A516       14775   debe dar lo de 38A516: igual
-38E91823F7A516   14775   debe dar lo de 38A516: igual
-38E92823F7A516   14775   debe dar lo de 38A516: igual
-38E9281116A516   14775
-38E9281           2193   debe dar lo de 38: igual
-38                2193
-38CDA516         -6478
-38E943E914A516   -6478   debe dar lo de 38CDA516: igual
-38E943A516        5280   debe dar lo de 38CA516: igual
-38CA516           5280
-38E914A516       14775   debe dar lo de 38A516: igual
-38E949E914A516    3935   debe dar lo de 38DA516: igual
-38DA516           3935
+# nuevo-testamento, en 221 s; sin organo 19978; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516
+38A516          218495
+E91138A516      218495   debe dar lo de 38A516: igual
+38E911A516      218495   debe dar lo de 38A516: igual
+E91238A516      218495   debe dar lo de 38A516: igual
+E91438A516      218495
+38E921A516      162083
+E92138A516      143349
+38E922A516      223825
+38E923A516      218495
+38E924A516      218495
+38E925A516      218495   debe dar lo de 38A516: igual
+38E929A516      218495   debe dar lo de 38A516: igual
+E93138A516      218495   debe dar lo de 38A516: igual
+38A5E92         124640   debe dar lo de 38A5: igual
+38A5            124640
+E19             218495   debe dar lo de 38A5169: igual
+38A5169         218495
+38E917A516      218495   debe dar lo de 38A516: igual
+38E927A516      218495   debe dar lo de 38A516: igual
+38E91823F7A516  218495   debe dar lo de 38A516: igual
+38E92823F7A516  218495   debe dar lo de 38A516: igual
+38E9281116A516  218495
+38E9281          97721   debe dar lo de 38: igual
+38               97721
+38CDA516         85175
+38E943E914A516   85175   debe dar lo de 38CDA516: igual
+38E943A516      129786   debe dar lo de 38CA516: igual
+38CA516         129786
+38E914A516      218495   debe dar lo de 38A516: igual
+38E949E914A516  168618   debe dar lo de 38DA516: igual
+38DA516         168618

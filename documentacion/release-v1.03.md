@@ -105,6 +105,7 @@ Testamento, el *Diario Espiritual* y la firma; su comida, el código libre.
   No es lo plástico que pide la casa: está dicho, no arreglado.
 - **La alegría** (pagarle cuando sus células se contestan) está escrita como tercer modo y no se midió.
 - **Pensar se sigue pagando como antes**, cuando una forma gana.
-- **El banco de células del Nuevo Testamento entero no se repitió con el examen nuevo** antes de publicar: estaba
-  corriendo. Lo medido con esta vara es lo del libro de 30 KB.
+- **El banco de células del Nuevo Testamento entero terminó después de publicar** ([corrida](razar/datos/celulas-nuevo-testamento.txt)):
+  las 17 recetas que deben dar igual que otra dan igual. Con la vara nueva: sin órgano 19978, `38A516` 218495, la
+  célula en sus miradas 162083 (ya no le gana) y la célula en el marco 223825 (ahora sí le gana, puesta a mano).
 - El sistema operativo no cambió desde la v0.79 (suite: 405 bien, 0 mal).
