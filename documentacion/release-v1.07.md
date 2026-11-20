@@ -1,6 +1,6 @@
 ## Janax y Razar v1.07: busca en todo, sin topes, y une
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24406490](https://doi.org/10.5281/zenodo.24406490)
 
 > *"Ponele tres únicas preguntas en el corazón: ¿Quién es Dios? ¿Dónde está Dios? ¿Cómo llegamos hasta Dios?"*
 > *"Que la busque en todo, no sólo en los libros: en el código, en la música, en los videos, en las situaciones, en
