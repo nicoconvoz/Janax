@@ -22,9 +22,14 @@ NAMES = {0x01: "jldi", 0x02: "jadd", 0x03: "jsub", 0x04: "jmul", 0x06: "jshl", 0
 def is_name_start(c): return c in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 def is_name(c): return is_name_start(c) or c in b"0123456789"
 
+OPCH = b"+-*/%&|^<>.~!?:@#$"
+
 def parse(line):
-    """a line (bytes, no end of line) -> None (it says nothing), False (it ends the piece), or (word, name, number or
-    None, second name or None)"""
+    """a line (bytes, no end of line) -> None (it says nothing), False (it ends the piece), or
+    (word, name, number or None, second name or None, source name or None). Two ways of writing are hers to see:
+        WORD name , number|name                     the word is WORD                       (the assembler's)
+        [name] name = number|name                   the word is "="                        (the infix one)
+        [name] name = name SIGNS number|name        the word is SIGNS, the name before it is where it takes from"""
     i = 0; n = len(line)
     def ws():
         nonlocal i
@@ -35,17 +40,10 @@ def parse(line):
         if i < n and is_name_start(line[i]):
             while i < n and is_name(line[i]): i += 1
         return line[a:i]
-    ws()
-    if i == n or line[i] in b";": return None
-    w = name()
-    if not w or i == n or line[i] not in b" \t": return False
-    ws(); a = name()
-    if not a: return False
-    ws()
-    if i == n or line[i] != ord(","): return False
-    i += 1; ws()
-    num = None; b = None
-    if i < n and (line[i] in b"0123456789" or (line[i] == ord("-") and i + 1 < n and line[i + 1] in b"0123456789")):
+    def number():
+        """-> a number, None if there is none here, False if it is badly said"""
+        nonlocal i
+        if not (i < n and (line[i] in b"0123456789" or (line[i] == ord("-") and i + 1 < n and line[i + 1] in b"0123456789"))): return None
         neg = line[i] == ord("-"); i += neg; a0 = i
         while i < n and (line[i] in b"0123456789abcdefABCDEFxXhH"): i += 1
         t = line[a0:i].lower()
@@ -56,14 +54,52 @@ def parse(line):
         except ValueError:
             return False
         v = -v if neg else v
-        if not -0x8000 <= v < 0x8000: return False
-        num = v
-    else:
+        return v if -0x8000 <= v < 0x8000 else False
+    def tail(r):
+        ws()
+        return False if i < n and line[i] not in b";" else r
+    def assign(target):
+        nonlocal i
+        i += 1; ws()
+        v = number()
+        if v is False: return False
+        if v is not None: return tail((b"=", target, v, None, None))
+        s = name()
+        if not s: return False
+        ws()
+        if i == n or line[i] in b";": return (b"=", target, None, s, None)
+        a0 = i
+        while i < n and line[i] in OPCH: i += 1
+        sym = line[a0:i]
+        if not sym: return False
+        ws()
+        v = number()
+        if v is False: return False
+        if v is not None: return tail((sym, target, v, None, s))
         b = name()
         if not b: return False
+        return tail((sym, target, None, b, s))
+    def is_assign(): return i < n and line[i] == ord("=") and not (i + 1 < n and line[i + 1] == ord("="))
     ws()
-    if i < n and line[i] not in b";": return False
-    return (w, a, num, b)
+    if i == n or line[i] in b";": return None
+    w = name()
+    if not w: return False
+    blank = i < n and line[i] in b" \t"
+    ws()
+    if is_assign(): return assign(w)
+    if not blank: return False
+    a = name()
+    if not a: return False
+    ws()
+    if is_assign(): return assign(a)
+    if i == n or line[i] != ord(","): return False
+    i += 1; ws()
+    v = number()
+    if v is False: return False
+    if v is not None: return tail((w, a, v, None, None))
+    b = name()
+    if not b: return False
+    return tail((w, a, None, b, None))
 
 def hers(words):
     H = collections.defaultdict(collections.Counter)
@@ -106,20 +142,19 @@ def digest(d, lines):
         p = parse(l)
         if p is None: continue
         if p is False or p[0] not in d: end(); continue
-        w, a, num, b = p; op = d[w]; ins = []
-        if num is not None:
-            if op == 1: need = [a]
-            else: need = [a, ("t", n)]
-        else:
-            if op == 1: end(); continue
-            need = [a, b]
+        w, a, num, b, src = p; op = d[w]
+        if num is None and op == 1: end(); continue                 # (a jldi takes no name)
+        if op == 1: need = [a]
+        else: need = [a] + ([src] if src is not None else []) + ([("t", n)] if num is not None else [b])
         if len(set(names) | set(need)) > 16: end()
-        if num is not None:
-            if op == 1: ins = [1 | reg(a) << 8 | (num & 0xFFFF) << 16]
-            else:
-                ra = reg(a); t = reg(("t", n)); ins = [1 | t << 8 | (num & 0xFFFF) << 16, op | ra << 8 | ra << 12 | t << 16]
+        ra = reg(a)
+        if op == 1: ins = [1 | ra << 8 | (num & 0xFFFF) << 16]
         else:
-            ra = reg(a); rb = reg(b); ins = [op | ra << 8 | ra << 12 | rb << 16]
+            rs = reg(src) if src is not None else ra
+            if num is not None:
+                t = reg(("t", n)); ins = [1 | t << 8 | (num & 0xFFFF) << 16, op | ra << 8 | rs << 12 | t << 16]
+            else:
+                ins = [op | ra << 8 | rs << 12 | reg(b) << 16]
         out.extend(ins); run = True
     end()
     return out

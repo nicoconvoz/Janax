@@ -42,6 +42,10 @@ def letters(lo, hi):
         while w:
             s += "0123456789ABCDEF"[w & 15]; w >>= 4
     return s or "(sin organo)"
+fp = os.path.join(casa, "firma".encode().hex())
+if os.path.exists(fp) and os.path.getsize(fp) == 32:
+    f = struct.unpack("<4q", open(fp, "rb").read())
+    print("la firma de su autor: de %d pasajes de su diario que nunca conto, reconoce %d; de %d del Nuevo Testamento, toma por suyos %d" % f)
 if lee:
     print("lo nuevo que lee: un instinto %d veces (%d fue suyo), una letra %d veces (%d ganaron)" % lee[2:6])
     if len(raw) >= 4608:

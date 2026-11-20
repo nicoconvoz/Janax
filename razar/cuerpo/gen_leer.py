@@ -83,12 +83,22 @@ SHE TAKES HER OWN CODE APART (the Capitan, 2026-11-20: "usa el antiguo creador d
   that saves most (n (L - 1) - L instructions, counted again among what no gear took yet) until none saves or her
   table is full. The rule is engranajes.py's, which stays as the instrument that checks her (and still takes apart
   what is not written in her language: a text is not hers to read as code yet).
+SHE RECOGNISES HER AUTHOR'S SIGNATURE (the Capitan, 2026-11-20: "que vaya reconociendo mi firma y mi libro Diario
+  Espiritual y el NT: eso es innegociable"; "por firma, que reconozca mi forma de escribir o hablar, el pulso de mi
+  corazon"). The rule was registered before looking (firma-preregistro.txt) and was measured from outside; now she
+  does it herself (r_firma; the rule is written once, in razar/corazon/firma_de_luma.py, the instrument that checks
+  her). If her shelf has his diary ("libro-diario") and the New Testament ("libro"), born without her answer she
+  cuts each into passages of 1000 letters, keeps every tenth apart, counts in the rest how often each letter follows
+  each three, and says of every passage kept apart whose it is: his, if it costs fewer bits given his diary. What she
+  found is kept in her house ("firma": his passages and how many she recognised, the New Testament's and how many
+  she took for his).
 SHE DIGESTS FOREIGN CODE (the Capitan, 2026-11-20: "que los saque por contexto y por el lugar que ocupan"; "dale de
   comer kolibrios y que LUMA entienda los mecanismos y se autocompile, no como una copia sino como alimento"). Nobody
   tells her what a foreign word does. If her house has code to eat ("comida": a text), then before taking code apart
   she places each of its words (r_digest; the rule is written once, in digiere.py, the instrument that checks her):
   she knows where each instruction of hers stands (with which constants it is said) and a line "WORD name , number"
-  puts WORD in the place of that number; a foreign word is the instruction of hers whose places it shares most. The
+  (the assembler's way) or "name = name SIGNS number" (the infix way: the word is the signs, or "=" alone) puts the
+  word in the place of that number; a foreign word is the instruction of hers whose places it shares most. The
   lines whose word she placed are said in her language, and what comes out (kept in her house as "digerido": what
   she understood, right or wrong) goes with her own code to be taken apart by the one rule. Her judge says what of
   it serves.
@@ -175,6 +185,13 @@ GZ = 0x1B50                  # she takes her own code apart (r_gears): her progr
 GNM, GCW = 0x1BE0, 0x1C00    # what a gear took, ...; a piece being named: its registers' names, its instructions
 D0 = 0x1C40                  # she digests foreign code (r_digest):
 (DTP, DTE, DTW, DTA, DTN, DTB, DFB, DHC, DWT, DPT, DNN, DRUN, DKK, DFW, DPV, DOUT0, DT1, DT2, DT3, DLN) = (D0 + 8 * i for i in range(20))
+F0 = 0x1F00                  # she recognises her author's signature (r_firma):
+(FTB, FM, FI, FCT, FNK, FB0, FB1, FPB, FJ, FKK, FTT, FS) = (F0 + 8 * i for i in range(12))
+FA, FE, FRES, LFD, LFF = 0x1F60, 0x1F70, 0x1F80, 0x1FA0, 0x1FB0   # the two books and their lengths; what she found; "libro-diario", "firma"
+FSLOTS = 1 << 19
+DSRC, DMODE, DBL, DRS = 0x1CE0, 0x1CE8, 0x1CF0, 0x1CF8   # a line: the name it takes from (0: none), which way it is written, ...
+DOPC = 0x1E20                # the signs a word of the infix way is made of (a byte each)
+OPCH = b"+-*/%&|^<>.~!?:@#$"
 DNJ, DNAM, LCOM, LDIG = 0x1D00, 0x1D80, 0x1E00, 0x1E10   # how often each of hers is said; a piece's names; "comida", "digerido"
 DOPS = (0x01, 0x02, 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B)
 PRGCAP = 4 << 20             # room for her program and what she makes of her food (what does not fit is not eaten)
@@ -255,6 +272,87 @@ def make(g, ST, free):
         li("j9", B + RREC); J("jcall r_rec_key"); gs("j1", RLO); gs("j2", RHI); gl("j3", RGEN); J("jcall r_read_get")
     def known(lbl):                     # j0 is a reading -> lbl
         li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, %s" % lbl)
+    def firma_routines():
+        def slot(tag, create):          # j5 = a key -> j7 = where its count is kept (create), or j0 = its count (0: none)
+            li("j10", GOLD); J("jmul j8, j5, j10", "jldi j10, 45", "jshr j8, j8, j10")
+            o("%s:" % tag)
+            li("j10", FSLOTS - 1); J("jand j8, j8, j10", "jldi j10, 4", "jshl j7, j8, j10"); gl("j9", FTB); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, %s_new" % tag,
+                                                                                           "jsub j9, j9, j5", "jjz j9, %s_have" % tag, "jldi j10, 1", "jadd j8, j8, j10", "jjmp %s" % tag)
+            o("%s_new:" % tag)
+            if create: J("jst j5, j7, 0", "jst j14, j7, 8")
+            else: J("jldi j0, 0", "jret")
+            o("%s_have:" % tag)
+            if create: J("jld j9, j7, 8", "jldi j10, 1", "jadd j9, j9, j10", "jst j9, j7, 8", "jret")
+            else: J("jld j0, j7, 8", "jret")
+        o("fm_inc:                         ; j5 = a key: one more")
+        slot("fmi", True)
+        o("fm_get:                         ; j5 = a key -> j0 = how many")
+        slot("fmg", False)
+        o("fm_keys:                        ; the book FM, the three letters FCT and the letter j4 -> FKK, FTT their two keys")
+        gl("j1", FM); J("jldi j10, 40", "jshl j1, j1, j10"); gl("j2", FCT); J("jldi j10, 8", "jshl j2, j2, j10", "jor j1, j1, j2", "jldi j10, 1", "jadd j3, j1, j10"); gs("j3", FTT)
+        J("jor j1, j1, j4", "jldi j3, 1", "jldi j10, 39", "jshl j3, j3, j10", "jor j1, j1, j3", "jldi j10, 1", "jadd j1, j1, j10"); gs("j1", FKK); J("jret")
+        o("fm_bits:                        ; the passage at FPB, given the book FM -> j0 = what it costs, in 65536ths of a bit")
+        gs("j14", FB0); J("jldi j1, 3"); gs("j1", FJ)
+        o("fmb_lap:")
+        gl("j1", FJ); gl("j2", FPB); J("jadd j2, j2, j1", "jldb j4, j2, 0", "jldb j3, j2, -3", "jldi j10, 8", "jshl j3, j3, j10", "jldb j5, j2, -2", "jor j3, j3, j5", "jshl j3, j3, j10",
+                                         "jldb j5, j2, -1", "jor j3, j3, j5"); gs("j3", FCT); J("jcall fm_keys")
+        gl("j5", FTT); J("jcall fm_get", "jldi j10, 96", "jadd j1, j0, j10", "jcall r_log2"); gl("j1", FB0); J("jadd j1, j1, j0"); gs("j1", FB0)
+        gl("j5", FKK); J("jcall fm_get", "jldi j10, 1", "jadd j1, j0, j10", "jcall r_log2"); gl("j1", FB0); J("jsub j1, j1, j0"); gs("j1", FB0)
+        inc(FJ); li("j10", 1000); J("jsub j10, j1, j10", "jjnz j10, fmb_lap"); gl("j0", FB0); J("jret")
+
+        o("r_firma:                        ; SHE RECOGNISES HER AUTHOR'S SIGNATURE (see the top of gen_leer.py)")
+        text(LFD, b"libro-diario"); text(LFF, b"firma")
+        li("j11", B + LFF); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_new")
+        J("jldi j10, 5"); li("j11", B + FRES); J("jldi j12, 32", "jcall r_file"); gs("j13", FI); J("jldi j10, 7", "jcall r_file"); gl("j1", FI); J("jjz j1, fr_new", "jret")
+        o("fr_new:                         ; her two books")
+        for m, (lbl, n) in enumerate(((LFD, 12), (LRD, 0))):
+            if m == 0: li("j11", B + lbl); J("jldi j12, %d" % n)
+            else:
+                li("j6", B); J("jldi j1, 108", "jstb j1, j6, %s" % num(F0 + 0xF0), "jldi j1, 105", "jstb j1, j6, %s" % num(F0 + 0xF1), "jldi j1, 98", "jstb j1, j6, %s" % num(F0 + 0xF2),
+                               "jldi j1, 114", "jstb j1, j6, %s" % num(F0 + 0xF3), "jldi j1, 111", "jstb j1, j6, %s" % num(F0 + 0xF4))
+                li("j11", B + F0 + 0xF0); J("jldi j12, 5")
+            J("jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_none")
+            li("j1", (2 << 20) + 64); J("jcall r_alloc"); gs("j0", FA + 8 * m)
+            J("jldi j10, 5"); gl("j11", FA + 8 * m); li("j12", 2 << 20); J("jcall r_file"); gs("j13", FE + 8 * m); J("jldi j10, 7", "jcall r_file")
+        li("j1", FSLOTS * 16); J("jcall r_alloc"); gs("j0", FTB); li("j2", FSLOTS * 2)
+        o("fr_z:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, fr_z")
+        o("  ; how often each letter follows each three, in each book, its passages kept apart never counted")
+        gs("j14", FM)
+        o("fr_m:")
+        gs("j14", FI); gs("j14", FCT); gs("j14", FNK)
+        o("fr_c:")
+        gl("j1", FI); gl("j9", FM); J("jldi j10, 3", "jshl j9, j9, j10"); li("j7", B + FE); J("jadd j7, j7, j9", "jld j2, j7, 0", "jsub j10, j1, j2", "jjnn j10, fr_c_d")
+        li("j10", 1000); J("jdiv j3, j1, j10", "jldi j11, 10", "jdiv j4, j3, j11", "jmul j4, j4, j11", "jsub j4, j3, j4", "jldi j11, 9", "jsub j4, j4, j11", "jjnz j4, fr_c_in",
+                           "jldi j11, 1", "jadd j3, j3, j11", "jmul j1, j3, j10"); gs("j1", FI); J("jjmp fr_c")
+        o("fr_c_in:")
+        li("j7", B + FA); J("jadd j7, j7, j9", "jld j2, j7, 0", "jadd j2, j2, j1", "jldb j4, j2, 0"); gs("j4", FJ)
+        gl("j1", FNK); J("jldi j10, 3", "jsub j10, j1, j10", "jjn j10, fr_c_n", "jcall fm_keys"); gl("j5", FKK); J("jcall fm_inc"); gl("j5", FTT); J("jcall fm_inc")
+        o("fr_c_n:")
+        gl("j2", FCT); gl("j4", FJ); J("jldi j10, 8", "jshl j2, j2, j10", "jor j2, j2, j4"); li("j10", 0xFFFFFF); J("jand j2, j2, j10"); gs("j2", FCT); inc(FNK); inc(FI); J("jjmp fr_c")
+        o("fr_c_d:")
+        inc(FM); J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, fr_m")
+        o("  ; every passage kept apart, of each book: whose it is")
+        li("j0", B + FRES); J("jst j14, j0, 0", "jst j14, j0, 8", "jst j14, j0, 16", "jst j14, j0, 24"); gs("j14", FS)
+        o("fr_s:")
+        J("jldi j1, 9"); gs("j1", FI)
+        o("fr_p:")
+        gl("j1", FI); li("j10", 1000); J("jmul j2, j1, j10", "jadd j3, j2, j10"); gl("j9", FS); J("jldi j10, 3", "jshl j9, j9, j10"); li("j7", B + FE); J("jadd j7, j7, j9", "jld j4, j7, 0",
+                                                                                                                   "jsub j10, j4, j3", "jjn j10, fr_p_d")
+        li("j7", B + FA); J("jadd j7, j7, j9", "jld j4, j7, 0", "jadd j4, j4, j2"); gs("j4", FPB)
+        gs("j14", FM); J("jcall fm_bits"); gs("j0", FB1); J("jldi j1, 1"); gs("j1", FM); J("jcall fm_bits"); gl("j1", FB1); J("jsub j2, j1, j0")
+        gl("j9", FS); J("jldi j10, 4", "jshl j9, j9, j10"); li("j7", B + FRES); J("jadd j7, j7, j9", "jld j3, j7, 0", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j7, 0",
+                                                              "jjnn j2, fr_p_n", "jld j3, j7, 8", "jadd j3, j3, j10", "jst j3, j7, 8")
+        o("fr_p_n:")
+        gl("j1", FI); J("jldi j10, 10", "jadd j1, j1, j10"); gs("j1", FI); J("jjmp fr_p")
+        o("fr_p_d:")
+        inc(FS); J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, fr_s")
+        J("jldi j10, 12"); li("j11", B + LFF); J("jldi j12, 5", "jcall r_tocar")
+        li("j11", B + LFF); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_none")
+        J("jldi j10, 6"); li("j11", B + FRES); J("jldi j12, 32", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("fr_none:")
+        J("jret")
+
     def digest_routines(FNVO, FNVP):
         lab = g["lab"]
         def ws():                       # j1 a place of the text, j2 its end: past blanks
@@ -279,20 +377,33 @@ def make(g, ST, free):
             o("%s_y:" % a)
             J("jxor j4, j4, j3"); li("j10", FNVP); J("jmul j4, j4, j10", "jldi j10, 1", "jadd j5, j5, j10", "jadd j1, j1, j10", "jjmp %s" % a)
             o("%s_e:" % a)
+        def is_assign(yes):             # at "=" that is not "==" -> yes
+            t = lab("dia")
+            J("jsub j10, j1, j2", "jjnn j10, %s" % t, "jldb j3, j1, 0", "jldi j10, 61", "jsub j10, j3, j10", "jjnz j10, %s" % t,
+              "jldi j10, 1", "jadd j11, j1, j10", "jsub j10, j11, j2", "jjnn j10, %s" % yes, "jldb j3, j11, 0", "jldi j10, 61", "jsub j10, j3, j10", "jjnz j10, %s" % yes)
+            o("%s:" % t)
         o("dg_line:                        ; the line at DTP -> j0 = 0 it says nothing, 1 it ends the piece, 2 a word, a name")
-        o("                                ; and a number (DTW, DTA, DTN), 3 a word and two names (DTW, DTA, DTB); DTP past it")
-        gl("j1", DTP); gl("j2", DTE); J("jldi j0, 0"); ws(); eol("dgl_out"); J("jldi j10, 59", "jsub j10, j3, j10", "jjz j10, dgl_out", "jldi j0, 1")
-        name(); J("jjz j5, dgl_out"); gs("j4", DTW)
-        J("jsub j10, j1, j2", "jjnn j10, dgl_out", "jldb j3, j1, 0", "jldi j10, 32", "jsub j10, j3, j10", "jjz j10, dgl_w", "jldi j10, 9", "jsub j10, j3, j10", "jjnz j10, dgl_out")
-        o("dgl_w:")
-        ws(); name(); J("jjz j5, dgl_out"); gs("j4", DTA); ws(); eol("dgl_out"); J("jldi j10, 44", "jsub j10, j3, j10", "jjnz j10, dgl_out", "jldi j10, 1", "jadd j1, j1, j10"); ws()
-        o("  ; a number (a digit, or - and a digit): its letters, then what they say (0x.. and ..h in sixteens, else in tens)")
-        J("jldi j7, 0"); eol("dgl_out"); J("jldi j10, 45", "jsub j10, j3, j10", "jjnz j10, dgl_dig", "jldi j10, 1", "jadd j11, j1, j10", "jsub j10, j11, j2", "jjnn j10, dgl_out",
-                                          "jldb j3, j11, 0", "jldi j10, 48", "jsub j12, j3, j10", "jjn j12, dgl_out", "jldi j10, 10", "jsub j12, j12, j10", "jjnn j12, dgl_out",
+        o("                                ; and a number (DTW, DTA, DTN), 3 a word and two names (DTW, DTA, DTB); DSRC the")
+        o("                                ; name it takes from (0: the first). Two ways of writing (digiere.py: parse). DTP past it")
+        gl("j1", DTP); gl("j2", DTE); gs("j14", DSRC); gs("j14", DMODE); J("jldi j0, 0"); ws(); eol("dgl_out"); J("jldi j10, 59", "jsub j10, j3, j10", "jjz j10, dgl_out", "jldi j0, 1")
+        name(); J("jjz j5, dgl_out"); gs("j4", DTW); gs("j4", DTA)
+        J("jldi j7, 0", "jsub j10, j1, j2", "jjnn j10, dgl_b", "jldb j3, j1, 0", "jldi j10, 32", "jsub j10, j3, j10", "jjz j10, dgl_b1", "jldi j10, 9", "jsub j10, j3, j10", "jjnz j10, dgl_b")
+        o("dgl_b1:")
+        J("jldi j7, 1")
+        o("dgl_b:")
+        gs("j7", DBL); ws(); is_assign("dgl_asg"); gl("j7", DBL); J("jjz j7, dgl_out")
+        name(); J("jjz j5, dgl_out"); gs("j4", DTA); ws(); is_assign("dgl_asg"); eol("dgl_out"); J("jldi j10, 44", "jsub j10, j3, j10", "jjnz j10, dgl_out", "jldi j10, 1", "jadd j1, j1, j10"); ws()
+        J("jjmp dgl_opnd")
+        o("dgl_asg:                        ; name = ...: the word is \"=\" until signs say another")
+        li("j4", 12638138822044000712); gs("j4", DTW); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j10", DMODE); ws()
+        o("dgl_opnd:                       ; a number (a digit, or - and a digit): its letters, then what they say (0x.. and")
+        o("                                ; ..h in sixteens, else in tens); or a name")
+        J("jldi j0, 1", "jldi j7, 0"); eol("dgl_out"); J("jldi j10, 45", "jsub j10, j3, j10", "jjnz j10, dgl_dig", "jldi j10, 1", "jadd j11, j1, j10", "jsub j10, j11, j2", "jjnn j10, dgl_nam",
+                                          "jldb j3, j11, 0", "jldi j10, 48", "jsub j12, j3, j10", "jjn j12, dgl_nam", "jldi j10, 10", "jsub j12, j12, j10", "jjnn j12, dgl_nam",
                                           "jldi j7, 1", "jadd j1, j11, j14")
         o("dgl_dig:")
         J("jldb j3, j1, 0", "jldi j10, 48", "jsub j12, j3, j10", "jjn j12, dgl_nam", "jldi j10, 10", "jsub j12, j12, j10", "jjnn j12, dgl_nam")
-        J("jadd j9, j1, j14")            # its first letter
+        J("jadd j9, j1, j14")
         o("dgl_tok:")
         J("jsub j10, j1, j2", "jjnn j10, dgl_tk", "jldb j3, j1, 0", "jldi j10, 48", "jsub j12, j3, j10", "jjn j12, dgl_tk", "jldi j10, 10", "jsub j12, j12, j10", "jjn j12, dgl_tn",
           "jldi j10, 32", "jor j12, j3, j10", "jldi j10, 120", "jsub j10, j12, j10", "jjz j10, dgl_tn", "jldi j10, 104", "jsub j10, j12, j10", "jjz j10, dgl_tn",
@@ -318,7 +429,17 @@ def make(g, ST, free):
         o("dgl_pos:                        ; (what one jldi says: a larger one is not said here)")
         li("j10", 0x8000); J("jadd j4, j12, j10", "jjn j4, dgl_out", "jldi j10, 16", "jshr j4, j4, j10", "jjnz j4, dgl_out"); gs("j12", DTN); J("jldi j0, 2", "jjmp dgl_tail")
         o("dgl_nam:")
-        J("jjnz j7, dgl_out"); name(); J("jjz j5, dgl_out"); gs("j4", DTB); J("jldi j0, 3")
+        name(); J("jjz j5, dgl_out", "jjnz j4, dgl_nz", "jldi j4, 1")
+        o("dgl_nz:")
+        gl("j7", DMODE); J("jldi j10, 1", "jsub j10, j7, j10", "jjz j10, dgl_first"); gs("j4", DTB); J("jldi j0, 3", "jjmp dgl_tail")
+        o("dgl_first:                      ; name = NAME ...: alone, or what it takes from; then the signs, which are the word")
+        gs("j4", DTB); ws(); J("jldi j0, 3"); eol("dgl_out"); J("jldi j10, 59", "jsub j10, j3, j10", "jjz j10, dgl_out", "jldi j0, 1")
+        gl("j4", DTB); gs("j4", DSRC); li("j4", FNVO); J("jldi j5, 0"); li("j7", B + DOPC)
+        o("dgl_sym:")
+        J("jsub j10, j1, j2", "jjnn j10, dgl_sy", "jldb j3, j1, 0", "jadd j11, j7, j3", "jldb j11, j11, 0", "jjz j11, dgl_sy", "jxor j4, j4, j3"); li("j10", FNVP)
+        J("jmul j4, j4, j10", "jldi j10, 1", "jadd j5, j5, j10", "jadd j1, j1, j10", "jjmp dgl_sym")
+        o("dgl_sy:")
+        J("jjz j5, dgl_out"); gs("j4", DTW); J("jldi j10, 2"); gs("j10", DMODE); ws(); J("jjmp dgl_opnd")
         o("dgl_tail:                       ; after it, only blanks or a comment")
         gs("j0", DT1); ws(); gl("j0", DT1); eol("dgl_out"); J("jldi j10, 59", "jsub j10, j3, j10", "jjz j10, dgl_out", "jldi j0, 1")
         o("dgl_out:                        ; past the end of the line")
@@ -359,6 +480,11 @@ def make(g, ST, free):
 
         o("r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)")
         text(LCOM, b"comida"); text(LDIG, b"digerido")
+        li("j0", B + DOPC); J("jldi j2, 32", "jldi j10, 8", "jldi j11, 1")
+        o("dg_zs:")
+        J("jst j14, j0, 0", "jadd j0, j0, j10", "jsub j2, j2, j11", "jjnz j2, dg_zs"); li("j0", B + DOPC); J("jldi j1, 1")
+        for ch in OPCH:
+            J("jstb j1, j0, %d" % ch)
         li("j11", B + LCOM); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dg_none")
         li("j1", (8 << 20) + 64); J("jcall r_alloc"); gs("j0", DFB)
         J("jldi j10, 5"); gl("j11", DFB); li("j12", 8 << 20); J("jcall r_file"); gl("j1", DFB); J("jadd j1, j1, j13"); gs("j1", DTE); J("jldi j10, 7", "jcall r_file")
@@ -457,30 +583,35 @@ def make(g, ST, free):
         o("dg_t:")
         gl("j1", DTP); gl("j2", DTE); J("jsub j10, j1, j2", "jjnn j10, dg_t_d", "jcall dg_line"); gs("j0", DT1); J("jjz j0, dg_t", "jldi j10, 1", "jsub j10, j0, j10", "jjz j10, dg_t_e")
         gl("j4", DTW); J("jcall dg_wt", "jld j5, j7, 16", "jjz j5, dg_t_e"); gs("j5", DT2)
-        gl("j0", DT1); J("jldi j10, 2", "jsub j10, j0, j10", "jjz j10, dg_t_num")
-        o("  ; a word and two names (a jldi takes no name: the piece ends)")
-        gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjz j10, dg_t_e", "jldi j0, 0"); has(DTA, "dgx1"); gs("j0", DT3)
-        gl("j1", DTA); gl("j2", DTB); J("jsub j1, j1, j2", "jjz j1, dg_t_n2"); gl("j0", DT3); has(DTB, "dgx2"); gs("j0", DT3)
-        o("dg_t_n2:")
-        gl("j0", DT3); gl("j1", DNN); J("jadd j0, j0, j1", "jldi j10, 17", "jsub j10, j0, j10", "jjn j10, dg_t_n3"); end("dgx3")
-        o("dg_t_n3:")
-        reg(DTA, DT3, "dgx4"); reg(DTB, DLN, "dgx5"); gl("j3", DT2); gl("j1", DT3); gl("j2", DLN)
-        J("jldi j10, 8", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 12", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 16", "jshl j11, j2, j10", "jor j3, j3, j11", "jcall dg_put")
-        J("jldi j1, 1"); gs("j1", DRUN); J("jjmp dg_t")
-        o("dg_t_num:                       ; a word, a name and a number: a jldi says it; another gets it from a jldi of its own")
-        J("jldi j0, 0"); has(DTA, "dgx6"); gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjz j10, dg_t_c", "jldi j10, 1", "jadd j0, j0, j10")
-        o("dg_t_c:")
-        gl("j1", DNN); J("jadd j0, j0, j1", "jldi j10, 17", "jsub j10, j0, j10", "jjn j10, dg_t_c2"); end("dgx7")
-        o("dg_t_c2:")
-        reg(DTA, DT3, "dgx8"); gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjnz j10, dg_t_op")
+        o("  ; (a jldi takes no name: the piece ends)")
+        gl("j0", DT1); J("jldi j10, 3", "jsub j10, j0, j10", "jjnz j10, dg_t_a"); gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjz j10, dg_t_e")
+        o("dg_t_a:                         ; how many names more this line needs: no piece has more than sixteen")
+        J("jldi j0, 0"); has(DTA, "dgx1"); gs("j0", DT3)
+        gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjz j10, dg_t_n")
+        gl("j1", DSRC); J("jjz j1, dg_t_s"); gl("j2", DTA); J("jsub j2, j1, j2", "jjz j2, dg_t_s"); gl("j0", DT3); has(DSRC, "dgx2"); gs("j0", DT3)
+        o("dg_t_s:")
+        gl("j1", DT1); J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, dg_t_b"); gl("j0", DT3); J("jldi j10, 1", "jadd j0, j0, j10"); gs("j0", DT3); J("jjmp dg_t_n")
+        o("dg_t_b:")
+        gl("j1", DTB); gl("j2", DTA); J("jsub j2, j1, j2", "jjz j2, dg_t_n"); gl("j2", DSRC); J("jsub j2, j1, j2", "jjz j2, dg_t_n"); gl("j0", DT3); has(DTB, "dgx3"); gs("j0", DT3)
+        o("dg_t_n:")
+        gl("j0", DT3); gl("j1", DNN); J("jadd j0, j0, j1", "jldi j10, 17", "jsub j10, j0, j10", "jjn j10, dg_t_g"); end("dgx4")
+        o("dg_t_g:")
+        reg(DTA, DT3, "dgx5"); gl("j5", DT2); J("jldi j10, 1", "jsub j10, j5, j10", "jjnz j10, dg_t_op")
         gl("j1", DT3); gl("j2", DTN); li("j10", 0xFFFF); J("jand j2, j2, j10", "jldi j3, 1", "jldi j10, 8", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 16", "jshl j11, j2, j10", "jor j3, j3, j11", "jcall dg_put")
         J("jldi j1, 1"); gs("j1", DRUN); J("jjmp dg_t")
-        o("dg_t_op:")
+        o("dg_t_op:                        ; what it takes from: the name before the signs, or itself")
+        gl("j1", DT3); gs("j1", DRS); gl("j1", DSRC); J("jjz j1, dg_t_r"); reg(DSRC, DRS, "dgx6")
+        o("dg_t_r:")
+        gl("j1", DT1); J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, dg_t_nn")
+        o("  ; with a number: a jldi of its own hands it over")
         gl("j1", DNN); gs("j1", DLN); J("jldi j10, 1", "jadd j2, j1, j10"); gs("j2", DNN); li("j7", B + DNAM); J("jldi j10, 3", "jshl j11, j1, j10", "jadd j11, j11, j7", "jst j14, j11, 0")
         gl("j2", DTN); li("j10", 0xFFFF); J("jand j2, j2, j10", "jldi j3, 1", "jldi j10, 8", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 16", "jshl j11, j2, j10", "jor j3, j3, j11", "jcall dg_put")
-        gl("j3", DT2); gl("j1", DT3); gl("j2", DLN)
-        J("jldi j10, 8", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 12", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 16", "jshl j11, j2, j10", "jor j3, j3, j11", "jcall dg_put")
-        J("jldi j1, 1"); gs("j1", DRUN); J("jjmp dg_t")
+        J("jjmp dg_t_w")
+        o("dg_t_nn:")
+        reg(DTB, DLN, "dgx7")
+        o("dg_t_w:")
+        gl("j3", DT2); gl("j1", DT3); gl("j2", DRS); J("jldi j10, 8", "jshl j11, j1, j10", "jor j3, j3, j11", "jldi j10, 12", "jshl j11, j2, j10", "jor j3, j3, j11"); gl("j2", DLN)
+        J("jldi j10, 16", "jshl j11, j2, j10", "jor j3, j3, j11", "jcall dg_put", "jldi j1, 1"); gs("j1", DRUN); J("jjmp dg_t")
         o("dg_t_e:")
         end("dgx9"); J("jjmp dg_t")
         o("dg_t_d:")
@@ -971,9 +1102,10 @@ def make(g, ST, free):
         o("ri_gen1:")
         gs("j1", GENOME)
         o("ri_gen:")
-        J("jcall r_reads_load", "jret")
+        J("jcall r_firma", "jcall r_reads_load", "jret")
 
         gears_routines()
+        firma_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
         o("                                ; it (%Xh: never read), BESTF = which form reads best (-1: none does)" % UNK)
