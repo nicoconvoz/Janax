@@ -1,6 +1,6 @@
 ## Janax y Razar v0.83: los engranajes
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24395399](https://doi.org/10.5281/zenodo.24395399)
 
 > *"Lo importante no es comer el programa antes sino desarticularlo en engranajes que sean legos, para que Luma arme
 > su propio software a medida."* (el autor, 2026-11-20)
