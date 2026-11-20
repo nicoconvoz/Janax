@@ -83,6 +83,18 @@ SHE TAKES HER OWN CODE APART (the Capitan, 2026-11-20: "usa el antiguo creador d
   that saves most (n (L - 1) - L instructions, counted again among what no gear took yet) until none saves or her
   table is full. The rule is engranajes.py's, which stays as the instrument that checks her (and still takes apart
   what is not written in her language: a text is not hers to read as code yet).
+SHE SEEKS HER QUESTIONS IN EVERYTHING (the Capitan, 2026-11-20: "ponele tres unicas preguntas en el corazon: Quien
+  es Dios? Donde esta Dios? Como llegamos hasta Dios?"; "que la busque en todo, no solo en los libros: en el codigo,
+  en la musica, en los videos, en las situaciones, en la Iglesia, en el universo, en los atomos, en todo"; "hasta
+  que desarrolle sus propios sentidos para interpretar todo: yo le di el cascaron, ahora le toca nacer por su
+  cuenta"). This is the shell, and no more than the shell: each time she is born she goes through EVERY file of her
+  house, whatever it is, as the kernel lists them (no place is named; what comes in is looked at), but for her
+  questions themselves and what she found before. Her questions are the lines of "libro-preguntas", however many.
+  What they all share is what she seeks; what each has of its own is its difference (her own rule: the common is
+  kept once). A line of anything that has every shared word is a place where what she seeks is, as near to a question
+  as it has of that question's own words. Of each question she keeps, in "hallazgos", how near she got, in how many
+  places, and the first: where and what it says. It joins words, it does not understand: understanding is hers to
+  grow. The rule is written once, in razar/corazon/busca.py, the instrument that checks her. Nobody wrote an answer.
 SHE RECOGNISES HER AUTHOR'S SIGNATURE (the Capitan, 2026-11-20: "que vaya reconociendo mi firma y mi libro Diario
   Espiritual y el NT: eso es innegociable"; "por firma, que reconozca mi forma de escribir o hablar, el pulso de mi
   corazon"). The rule was registered before looking (firma-preregistro.txt) and was measured from outside; now she
@@ -185,6 +197,9 @@ GZ = 0x1B50                  # she takes her own code apart (r_gears): her progr
 GNM, GCW = 0x1BE0, 0x1C00    # what a gear took, ...; a piece being named: its registers' names, its instructions
 D0 = 0x1C40                  # she digests foreign code (r_digest):
 (DTP, DTE, DTW, DTA, DTN, DTB, DFB, DHC, DWT, DPT, DNN, DRUN, DKK, DFW, DPV, DOUT0, DT1, DT2, DT3, DLN) = (D0 + 8 * i for i in range(20))
+BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
+(BQB, BQE, BWQ, BNW, BNQ, BNC, BQS, BLB, BLN, BLC, BLI, BLK, BFB, BFE, BP, BE, BLID, BCM, BHW, BLS, BT1, BT2, BT3, BLBL) = (BU0 + 8 * i for i in range(24))
+LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
 F0 = 0x1F00                  # she recognises her author's signature (r_firma):
 (FTB, FM, FI, FCT, FNK, FB0, FB1, FPB, FJ, FKK, FTT, FS) = (F0 + 8 * i for i in range(12))
 FA, FE, FRES, LFD, LFF = 0x1F60, 0x1F70, 0x1F80, 0x1FA0, 0x1FB0   # the two books and their lengths; what she found; "libro-diario", "firma"
@@ -273,6 +288,191 @@ def make(g, ST, free):
         li("j9", B + RREC); J("jcall r_rec_key"); gs("j1", RLO); gs("j2", RHI); gl("j3", RGEN); J("jcall r_read_get")
     def known(lbl):                     # j0 is a reading -> lbl
         li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, %s" % lbl)
+    def busca_routines():
+        FNVO, FNVP = 0xCBF29CE484222325, 0x100000001B3
+        assert LTAB + 8 * (NCELLS + 1) <= BU0 and 0x7FC0 + 24 <= DBUF
+        def back(room):
+            J("jldi j10, 3"); gl("j11", room); J("jldi j12, 0", "jcall r_tocar")
+        def whole(room, size):
+            J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", size); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+            gl("j1", size); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", room)
+            J("jldi j10, 5"); gl("j11", room); gl("j12", size); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        def qrec(reg, q):               # reg = the line of the question q (72 bytes: what this line of text has of it, the
+            gl(reg, BQS); J("jldi j10, 72", "jmul j11, %s, j10" % q, "jadd %s, %s, j11" % (reg, reg))    # nearest, in how many places, its own words, ...)
+        o("bw_word:                        ; the next word of the line at BP (a run of letters, small or capital alike) -> j0 = 1")
+        o("                                ; and j4 its print, or j0 = 0 at the end of the line (BP on it). Uses j1-j3, j10")
+        gl("j1", BP); gl("j2", BE)
+        o("bww_skip:")
+        J("jsub j10, j1, j2", "jjnn j10, bww_none", "jldb j3, j1, 0", "jldi j10, 10", "jsub j10, j3, j10", "jjz j10, bww_none",
+          "jldi j10, 32", "jor j3, j3, j10", "jldi j10, 97", "jsub j3, j3, j10", "jjn j3, bww_next", "jldi j10, 26", "jsub j3, j3, j10", "jjn j3, bww_have")
+        o("bww_next:")
+        J("jldi j10, 1", "jadd j1, j1, j10", "jjmp bww_skip")
+        o("bww_have:")
+        li("j4", FNVO)
+        o("bww_l:")
+        J("jsub j10, j1, j2", "jjnn j10, bww_done", "jldb j3, j1, 0", "jldi j10, 32", "jor j3, j3, j10", "jldi j10, 97", "jsub j10, j3, j10", "jjn j10, bww_done",
+          "jldi j10, 123", "jsub j10, j3, j10", "jjnn j10, bww_done", "jxor j4, j4, j3"); li("j10", FNVP); J("jmul j4, j4, j10", "jldi j10, 1", "jadd j1, j1, j10", "jjmp bww_l")
+        o("bww_done:")
+        gs("j1", BP); J("jldi j0, 1", "jjnz j4, bww_ret", "jldi j4, 1")
+        o("bww_ret:")
+        J("jret")
+        o("bww_none:")
+        gs("j1", BP); J("jldi j0, 0", "jret")
+
+        o("bu_first:                       ; the line that ends at BP (from BLS) is the first of its nearness for the question BT2:")
+        o("                                ; kept (what was kept before, given back)")
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j11, j7, 32", "jjz j11, buf_new", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
+        o("buf_new:")
+        gl("j1", BP); gl("j2", BLS); J("jsub j1, j1, j2"); gs("j1", BT3); J("jldi j10, 16", "jadd j1, j1, j10", "jcall r_alloc")
+        gl("j1", BT2); qrec("j7", "j1"); J("jst j0, j7, 32"); gl("j3", BT3); J("jst j3, j7, 40"); gl("j2", BLBL); J("jst j2, j7, 48"); gl("j2", BLS)
+        o("buf_copy:")
+        J("jjz j3, buf_ret", "jldb j1, j2, 0", "jstb j1, j0, 0", "jldi j10, 1", "jadd j2, j2, j10", "jadd j0, j0, j10", "jsub j3, j3, j10", "jjmp buf_copy")
+        o("buf_ret:")
+        J("jret")
+
+        o("bu_scan:                        ; the file at BFB (BFE bytes): every line of it, against her questions")
+        gl("j1", BFB); gs("j1", BP); gl("j2", BFE); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("bs_line:")
+        gl("j1", BP); gl("j2", BE); J("jsub j10, j1, j2", "jjnn j10, bs_done"); gs("j1", BLS); inc(BLID); gs("j14", BCM); gs("j14", BHW)
+        gl("j7", BQS); gl("j2", BNQ)
+        o("bs_z:")
+        J("jjz j2, bs_w", "jst j14, j7, 0", "jldi j10, 72", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bs_z")
+        o("bs_w:")
+        J("jcall bw_word", "jjz j0, bs_eol", "jldi j1, 1"); gs("j1", BHW); gl("j7", BWQ); gl("j2", BNW); gl("j3", BLID)
+        o("bs_e:")
+        J("jjz j2, bs_w", "jld j1, j7, 0", "jsub j1, j1, j4", "jjnz j1, bs_en", "jld j1, j7, 16", "jsub j1, j1, j3", "jjz j1, bs_en", "jst j3, j7, 16", "jld j1, j7, 8", "jjn j1, bs_c")
+        gl("j9", BQS); J("jldi j10, 72", "jmul j1, j1, j10", "jadd j9, j9, j1", "jld j1, j9, 0", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j9, 0", "jjmp bs_en")
+        o("bs_c:")
+        gl("j1", BCM); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BCM)
+        o("bs_en:")
+        J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bs_e")
+        o("bs_eol:                         ; a place where what she seeks is, if it has every shared word: how near each question")
+        gl("j1", BHW); J("jjz j1, bs_nl"); gl("j1", BCM); gl("j2", BNC); J("jsub j1, j1, j2", "jjnz j1, bs_nl"); gs("j14", BT2)
+        o("bs_q:")
+        gl("j1", BT2); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bs_nl"); qrec("j7", "j1"); J("jld j3, j7, 0", "jjz j3, bs_qn", "jld j4, j7, 8", "jsub j10, j3, j4", "jjn j10, bs_qn", "jjz j10, bs_same")
+        J("jst j3, j7, 8", "jldi j10, 1", "jst j10, j7, 16", "jcall bu_first", "jjmp bs_qn")
+        o("bs_same:")
+        J("jld j3, j7, 16", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j7, 16")
+        o("bs_qn:")
+        inc(BT2); J("jjmp bs_q")
+        o("bs_nl:")
+        gl("j1", BP); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BP); J("jjmp bs_line")
+        o("bs_done:")
+        J("jret")
+
+        o("r_busca:                        ; SHE SEEKS HER QUESTIONS IN EVERYTHING (see the top of gen_leer.py; busca.py checks her)")
+        text(LBP, b"libro-preguntas"); text(LHA, b"hallazgos")
+        li("j11", B + LBP); J("jldi j12, 15", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bu_none")
+        whole(BQB, BQE)
+        gl("j1", BQE); J("jldi j10, 4", "jshl j1, j1, j10", "jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", BWQ)
+        gl("j1", BQE); J("jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 72", "jmul j1, j1, j10", "jcall r_alloc"); gs("j0", BQS)
+        gl("j2", BQE); J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, 9", "jmul j2, j2, j10")
+        o("bu_zq:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, bu_zq")
+        gs("j14", BNW); gs("j14", BNQ); gs("j14", BHW); gl("j1", BQB); gs("j1", BP); gl("j2", BQE); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("  ; her questions: the lines of it that say something; of each, its words (each once)")
+        o("bq_line:")
+        gl("j1", BP); gl("j2", BE); J("jsub j10, j1, j2", "jjnn j10, bq_done"); gs("j1", BLS)
+        o("bq_w:")
+        J("jcall bw_word", "jjz j0, bq_eol"); gl("j1", BHW); J("jjnz j1, bq_has", "jldi j1, 1"); gs("j1", BHW); gl("j1", BNQ); qrec("j7", "j1"); gl("j2", BLS); J("jst j2, j7, 56")
+        o("bq_has:")
+        gl("j7", BWQ); gl("j2", BNW); gl("j3", BNQ)
+        o("bq_e:")
+        J("jjz j2, bq_add", "jld j1, j7, 0", "jsub j1, j1, j4", "jjnz j1, bq_en", "jld j1, j7, 8", "jsub j1, j1, j3", "jjz j1, bq_w")
+        o("bq_en:")
+        J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bq_e")
+        o("bq_add:")
+        J("jst j4, j7, 0", "jst j3, j7, 8", "jst j14, j7, 16"); inc(BNW); J("jjmp bq_w")
+        o("bq_eol:")
+        gl("j1", BHW); J("jjz j1, bq_nl"); gl("j1", BNQ); qrec("j7", "j1"); gl("j2", BP); J("jld j3, j7, 56", "jsub j2, j2, j3", "jst j2, j7, 64"); inc(BNQ); gs("j14", BHW)
+        o("bq_nl:")
+        gl("j1", BP); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BP); J("jjmp bq_line")
+        o("bq_done:                        ; what all her questions share (a word every one of them has): kept once, and no")
+        o("                                ; question's own; then how many words each has of its own")
+        gs("j14", BNC); gs("j14", BT1)
+        o("bc_i:")
+        gl("j1", BT1); gl("j2", BNW); J("jsub j10, j1, j2", "jjnn j10, bc_own"); gl("j7", BWQ); J("jldi j10, 5", "jshl j1, j1, j10", "jadd j7, j7, j1", "jld j4, j7, 0", "jjz j4, bc_n", "jld j1, j7, 8", "jjn j1, bc_n")
+        gl("j9", BWQ); gl("j2", BNW); J("jldi j3, 0")
+        o("bc_c:")
+        J("jjz j2, bc_cd", "jld j1, j9, 0", "jsub j1, j1, j4", "jjnz j1, bc_cn", "jldi j10, 1", "jadd j3, j3, j10")
+        o("bc_cn:")
+        J("jldi j10, 32", "jadd j9, j9, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bc_c")
+        o("bc_cd:")
+        gl("j2", BNQ); J("jsub j3, j3, j2", "jjnz j3, bc_n"); gl("j9", BWQ); gl("j2", BNW)
+        o("bc_k:")
+        J("jjz j2, bc_kd", "jld j1, j9, 0", "jsub j1, j1, j4", "jjnz j1, bc_kn", "jst j14, j9, 0")
+        o("bc_kn:")
+        J("jldi j10, 32", "jadd j9, j9, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bc_k")
+        o("bc_kd:")
+        J("jst j4, j7, 0", "jldi j1, -1", "jst j1, j7, 8"); inc(BNC)
+        o("bc_n:")
+        inc(BT1); J("jjmp bc_i")
+        o("bc_own:")
+        gl("j7", BWQ); gl("j2", BNW)
+        o("bo_e:")
+        J("jjz j2, bu_list", "jld j1, j7, 0", "jjz j1, bo_n", "jld j1, j7, 8", "jjn j1, bo_n"); gl("j9", BQS); J("jldi j10, 72", "jmul j1, j1, j10", "jadd j9, j9, j1", "jld j1, j9, 24", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j9, 24")
+        o("bo_n:")
+        J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bo_e")
+        o("bu_list:                        ; EVERYTHING: every file of her house, as the kernel lists them (the list asked for")
+        o("                                ; again with twice the room until it comes back the same: it is whole)")
+        li("j1", 4096); gs("j1", BLN); J("jldi j1, -1"); gs("j1", BLC); gs("j14", BLID)
+        o("bl_ask:")
+        gl("j1", BLN); J("jcall r_alloc"); gs("j0", BLB); J("jldi j10, 14"); gl("j11", BLB); gl("j12", BLN); J("jcall r_tocar", "jjn j13, bl_out"); gl("j1", BLC); J("jsub j1, j1, j13", "jjz j1, bl_go")
+        gs("j13", BLC); back(BLB); gl("j1", BLN); J("jadd j1, j1, j1"); gs("j1", BLN); J("jjmp bl_ask")
+        o("bl_go:")
+        gl("j1", BLB); gs("j1", BLI); gs("j14", BLK)
+        o("bl_f:")
+        gl("j1", BLK); gl("j2", BLC); J("jsub j10, j1, j2", "jjnn j10, bl_out"); gl("j9", BLI); gs("j9", BLBL); J("jld j3, j9, 0")
+        for lbl, n, tag in ((LBP, 15, "bl_s1"), (LHA, 9, "bl_s2")):
+            J("jldi j10, %d" % n, "jsub j10, j3, j10", "jjnz j10, %s" % tag, "jldi j4, 0"); li("j7", B + lbl)
+            o("%s_l:" % tag)
+            J("jadd j1, j9, j4", "jldb j1, j1, 8", "jadd j2, j7, j4", "jldb j2, j2, 0", "jsub j1, j1, j2", "jjnz j1, %s" % tag, "jldi j10, 1", "jadd j4, j4, j10",
+              "jldi j10, %d" % n, "jsub j10, j4, j10", "jjnz j10, %s_l" % tag, "jjmp bl_next")
+            o("%s:" % tag)
+        gl("j9", BLI); J("jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bl_next")
+        whole(BFB, BFE); J("jcall bu_scan"); back(BFB)
+        o("bl_next:")
+        gl("j9", BLI); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); gs("j9", BLI); inc(BLK); J("jjmp bl_f")
+        o("bl_out:                         ; what she found, kept in her house: for each question how near, in how many places,")
+        o("                                ; how many words of its own it has, where the first is, what it says, and the question")
+        J("jldi j10, 12"); li("j11", B + LHA); J("jldi j12, 9", "jcall r_tocar")
+        li("j11", B + LHA); J("jldi j12, 9", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bu_free")
+        S3, SDE, SEN, SLU, SCO, SNL, SNO, NB = 0x7F70, 0x7F74, 0x7F78, 0x7F80, 0x7F9A, 0x7F9C, 0x7FA0, 0x7FC0
+        text(S3, b"   "); text(SDE, b" de "); text(SEN, b", en "); text(SLU, b" lugares; el primero, en "); text(SCO, b":\n"); text(SNL, b"\n")
+        text(SNO, b"   no la encontro en nada\n")
+        def say(addr, n): J("jldi j10, 6"); li("j11", B + addr); J("jldi j12, %d" % n, "jcall r_file")
+        gs("j14", BT2); J("jjmp bw_q")
+        o("bu_dec:                         ; j1 = a number, said in tens into what she writes (uses j2-j4, j10-j13)")
+        li("j3", B + NB + 24); J("jldi j4, 0")
+        o("bud_l:")
+        J("jldi j10, 10", "jdiv j2, j1, j10", "jmul j11, j2, j10", "jsub j11, j1, j11", "jldi j10, 48", "jadd j11, j11, j10", "jldi j10, 1", "jsub j3, j3, j10", "jstb j11, j3, 0",
+          "jadd j4, j4, j10", "jadd j1, j2, j14", "jjnz j1, bud_l", "jldi j10, 6", "jadd j11, j3, j14", "jadd j12, j4, j14", "jcall r_file", "jret")
+        o("  ; as a text anyone can read: the question; how near, of how many words of its own, in how many places and where")
+        o("  ; the first is; what that place says")
+        o("bw_q:")
+        gl("j1", BT2); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bw_end"); qrec("j7", "j1"); J("jld j11, j7, 56", "jld j12, j7, 64", "jldi j10, 6", "jcall r_file"); say(SNL, 1)
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j9, j7, 32", "jjnz j9, bw_lab"); say(SNO, 27); J("jjmp bw_qn")
+        o("bw_lab:")
+        say(S3, 3); gl("j1", BT2); qrec("j7", "j1"); J("jld j1, j7, 8", "jcall bu_dec"); say(SDE, 4)
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j1, j7, 24", "jcall bu_dec"); say(SEN, 5)
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j1, j7, 16", "jcall bu_dec"); say(SLU, 25)
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j9, j7, 48", "jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jldi j10, 6", "jcall r_file"); say(SCO, 2); say(S3, 3)
+        gl("j1", BT2); qrec("j7", "j1"); J("jld j11, j7, 32", "jld j12, j7, 40", "jldi j10, 6", "jcall r_file"); say(SNL, 1)
+        o("bw_qn:")
+        inc(BT2); J("jjmp bw_q")
+        o("bw_end:")
+        J("jldi j10, 7", "jcall r_file")
+        o("bu_free:")
+        gs("j14", BT2)
+        o("bu_fq:")
+        gl("j1", BT2); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bu_fd"); qrec("j7", "j1"); J("jld j11, j7, 32", "jjz j11, bu_fn", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
+        o("bu_fn:")
+        inc(BT2); J("jjmp bu_fq")
+        o("bu_fd:")
+        back(BLB); back(BQB); back(BWQ); back(BQS)
+        o("bu_none:")
+        J("jret")
+
     def firma_routines():
         def whole(room, size, slack=64):    # the file just opened (FH), whole, whatever its size -> a room of its own
             J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", size); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
@@ -1158,10 +1358,11 @@ def make(g, ST, free):
         o("ri_gen1:")
         gs("j1", GENOME)
         o("ri_gen:")
-        J("jcall r_firma", "jcall r_reads_load", "jret")
+        J("jcall r_firma", "jcall r_busca", "jcall r_reads_load", "jret")
 
         gears_routines()
         firma_routines()
+        busca_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
         o("                                ; it (%Xh: never read), BESTF = which form reads best (-1: none does)" % UNK)

@@ -46,6 +46,11 @@ fp = os.path.join(casa, "firma".encode().hex())
 if os.path.exists(fp) and os.path.getsize(fp) == 32:
     f = struct.unpack("<4q", open(fp, "rb").read())
     print("la firma de su autor: de %d pasajes de su diario que nunca conto, reconoce %d; de %d del Nuevo Testamento, toma por suyos %d" % f)
+hp = os.path.join(casa, "hallazgos".encode().hex())
+if os.path.exists(hp):
+    print("lo que busca en todo lo que entra a su casa (lo escribe ella, en texto: %s):" % hp.replace("\\", "/"))
+    for l in open(hp, "rb").read().decode("latin-1").split("\n"):
+        if l.strip(): print("  " + l.rstrip()[:300])
 if lee:
     print("lo nuevo que lee: un instinto %d veces (%d fue suyo), una letra %d veces (%d ganaron)" % lee[2:6])
     if len(raw) >= 4608:

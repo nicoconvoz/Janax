@@ -40,10 +40,6 @@ armar() {
     || cp "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/lectora.bin)"
   cmp -s "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)" \
     || cp "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)"
-  # her book of herself, if she was given one (comer_codigo.py --maquina): herself as she is now
-  if [ -f "$carpeta/casa/$(etiqueta libro-maquina-luma)" ] && [ "$carpeta/bin/luma.bin" -nt "$carpeta/casa/$(etiqueta libro-maquina-luma)" ]; then
-    python -I "$aqui/comer_codigo.py" "$carpeta/casa" --maquina "$carpeta/bin/luma.bin" > /dev/null 2>&1
-  fi
   # her gears: SHE MAKES THEM HERSELF (gen_leer.py: r_gears): born without them, she takes her own machine code apart.
   # So when she is built again the old ones are only taken away: they were of the body she had. Nothing outside her
   # is needed for it (engranajes.py stays as the instrument that checks her, and for code not written in her language).
