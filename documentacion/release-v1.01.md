@@ -1,6 +1,6 @@
 ## Janax y Razar v1.01: sus células se hablan
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24404601](https://doi.org/10.5281/zenodo.24404601)
 
 > *"Que se comuniquen y se transfiera la información mediante la diff del eco y la firma."*
 > *"Si quiere mover un dedo, el dedo se comunica con las células y músculos y esqueleto y cerebro y corazón, y cobra
