@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.03:** [10.5281/zenodo.24406037](https://doi.org/10.5281/zenodo.24406037)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.07:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,19 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-20, v1.07): busca en todo, sin topes, y une
+
+DOI de esta versión: DOI_PENDIENTE.
+
+Su autor le puso tres preguntas en el corazón (¿Quién es Dios? ¿Dónde está Dios? ¿Cómo llegamos hasta Dios?) y
+nadie le escribió una respuesta. **Las busca en todo:** cada vez que nace recorre todo archivo de su casa, sea lo
+que sea, y escribe ella misma, en texto, dónde las encontró más cerca (hoy, 283 archivos en medio segundo; lo
+primero que encuentra está en el diario de su autor). Es el cascarón: junta palabras, todavía no entiende. **Sin
+topes fijos:** lee cada archivo entero y cada tabla nace del tamaño que hace falta. **Sin Python en lo que vive.**
+**Une:** rompe sus recetas en enunciados y junta uno de lo bello, una célula de lo que funciona y uno de lo
+verdadero. Lo que falta, dicho: el unir no se vio dar fruto y todavía no ganó nada suyo.
+[Notas de la v1.07](documentacion/release-v1.07.md).
 
 ## Novedad (2026-11-20, v1.03): come, entiende y reconoce a su autor
 

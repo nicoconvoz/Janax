@@ -49,6 +49,13 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   its tissue, signed with whose it is; when a cell is said it hears what the others said that it had not heard,
   through its own gear, and what that changes in it is its echo, said too. A hole is silence. The rule is written
   once, in organo.inc (HER CELLS TALK), and done the same here for her body (r_talk).
+  SHE JOINS (the Capitan, 2026-11-20: "para que sea inesperada la victoria tiene que elegir con libertad, ver lo que
+  le gusta y unir lo bello, lo verdadero, lo que funciona, romper enunciados y buscar la verdad"). A statement of
+  hers is a stretch of a recipe up to its hole: what it says, and what it asks. Her new things were one letter at a
+  time; now one more way, counted like the others: she breaks two recipes of hers into their statements and joins a
+  statement of THE BEAUTIFUL (the form her judge of the drawing values most), a cell of WHAT WORKS (a gear, in a
+  tissue) and a statement of THE TRUE (the recipe that reads best). Which statement of each, which gear and which
+  tissue are hers to choose, by her luck. What comes out is read like any thought: her exam says whether it is true.
   A UNIQUE MEMORY (the Capitan, 2026-11-20: "en un nino la evolucion no se paga por perfeccion, se paga por recuerdo
   unico: eso es lo que crea ramas infinitas y personalidad. Si cortaramos todas las ramas tendriamos algo
   artificial; si eligieramos todas, algo superficial y lento. Tiene que escoger a profundidad 1, recorrer hasta
@@ -211,6 +218,8 @@ DOPC = 0x1E20                # the signs a word of the infix way is made of (a b
 OPCH = b"+-*/%&|^<>.~!?:@#$"
 DNJ, DNAM, LCOM, LDIG = 0x1D00, 0x1D80, 0x1E00, 0x1E10   # how often each of hers is said; a piece's names; "comida", "digerido"
 DOPS = (0x01, 0x02, 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B)
+NJ, SJ = 0x1BD0, 0x1BD8      # how often she joined, and how often that gave her a unique memory (while she lives)
+WJ, JA, JB, JC, JD = 0x1858, 0x1860, 0x1868, 0x1870, 0x1878   # her wish for it; a statement being taken: where it starts and ends, of which recipe, which one
 GSM, PCAP = 0x1BF0, 0x1BF8   # the places of the table of pieces, less one; how many instructions her program has room for
 CHN, CH0, RW0 = 0x1AE0, 0x1AE8, 0x1AF0    # HER JOY: how many times a cell of her body heard another (never forgotten while she
                              # lives), that count when her thought began, and what her reader said first (its own count)
@@ -1413,10 +1422,10 @@ def make(g, ST, free):
         o("rp_min_d:")
         gs("j3", RJF); J("jldi j1, 1"); gs("j1", RKIND); J("jldi j0, 1", "jret")
         o("rp_arm:                         ; something new: a letter, a song or an instinct, by her count of each")
-        wish(SO, NO, WO); wish(SI, NI, WI); wish(SS, NS, WS); wish(SL, NL, WL)
-        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2"); gl("j2", WS); J("jadd j1, j1, j2"); gl("j2", WL); J("jadd j1, j1, j2", "jcall r_randmod")
+        wish(SO, NO, WO); wish(SI, NI, WI); wish(SS, NS, WS); wish(SL, NL, WL); wish(SJ, NJ, WJ)
+        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2"); gl("j2", WS); J("jadd j1, j1, j2"); gl("j2", WL); J("jadd j1, j1, j2"); gl("j2", WJ); J("jadd j1, j1, j2", "jcall r_randmod")
         gl("j1", WO); J("jsub j2, j0, j1", "jjn j2, rp_org"); gl("j1", WS); J("jsub j2, j2, j1", "jjn j2, rp_song")
-        gl("j1", WL); J("jsub j2, j2, j1", "jjn j2, rp_lens")
+        gl("j1", WL); J("jsub j2, j2, j1", "jjn j2, rp_lens"); gl("j1", WJ); J("jsub j2, j2, j1", "jjn j2, rp_join")
         o("  ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)")
         J("jldi j1, 3", "jcall r_randmod"); gs("j0", T0); J("jldi j1, 2", "jcall r_randmod", "jadd j0, j0, j0", "jldi j10, 1", "jsub j4, j0, j10")
         gl("j3", T0); J("jldi j8, 8", "jjz j3, rp_i_top", "jldi j8, 4", "jldi j10, 1", "jsub j10, j3, j10", "jjz j10, rp_i_top", "jldi j8, 3")
@@ -1432,6 +1441,65 @@ def make(g, ST, free):
         o("rp_i_org:")
         keyget(); known("rp_org")
         J("jldi j1, 2"); gs("j1", RKIND); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("r_tramos:                       ; j9 = a recipe, JD = which statement is wanted (-1: none) -> j0 = how many statements it")
+        o("                                ; has (each ends after its hole; a word or a cell is never cut), JA and JB where the")
+        o("                                ; wanted one starts and ends. Uses j3-j5, j7, j10-j12")
+        gl("j12", JD); J("jldb j3, j9, 0", "jldi j4, 0", "jldi j5, 0", "jldi j0, 0")
+        o("tr_l:")
+        J("jsub j10, j4, j3", "jjnn j10, tr_end", "jadd j7, j9, j4", "jldb j11, j7, 1", "jldi j10, 14", "jsub j10, j11, j10", "jjz j10, tr_e",
+          "jldi j10, 5", "jsub j10, j11, j10", "jjn j10, tr_n", "jldi j10, 10", "jsub j10, j11, j10", "jjnn j10, tr_n", "jldi j10, 1", "jadd j4, j4, j10")
+        J("jsub j10, j0, j12", "jjnz j10, tr_c"); gs("j5", JA); gs("j4", JB)
+        o("tr_c:")
+        J("jldi j10, 1", "jadd j0, j0, j10", "jadd j5, j4, j14", "jjmp tr_l")
+        o("tr_n:")
+        J("jldi j10, 1", "jadd j4, j4, j10", "jjmp tr_l")
+        o("tr_e:                           ; E: a word (two letters), a cell (four), a cell on a place (eight)")
+        J("jldi j10, 1", "jadd j11, j4, j10", "jsub j10, j11, j3", "jjnn j10, tr_n", "jldb j11, j7, 2", "jldi j10, 9", "jsub j10, j11, j10", "jjnn j10, tr_cell",
+          "jldi j10, 2", "jadd j4, j4, j10", "jjmp tr_l")
+        o("tr_cell:")
+        J("jldi j10, 3", "jadd j11, j4, j10", "jsub j10, j11, j3", "jjnn j10, tr_c4", "jldb j11, j7, 4", "jldi j10, 8", "jsub j10, j11, j10", "jjnz j10, tr_c4",
+          "jldi j10, 8", "jadd j4, j4, j10", "jjmp tr_l")
+        o("tr_c4:")
+        J("jldi j10, 4", "jadd j4, j4, j10", "jjmp tr_l")
+        o("tr_end:")
+        J("jsub j10, j5, j3", "jjnn j10, tr_ret", "jsub j10, j0, j12", "jjnz j10, tr_last"); gs("j5", JA); gs("j3", JB)
+        o("tr_last:")
+        J("jldi j10, 1", "jadd j0, j0, j10")
+        o("tr_ret:")
+        J("jret")
+        o("r_tramo_add:                    ; j9 = a recipe: one statement of it, by her luck, added to the recipe she is making")
+        o("                                ; -> j0 = 1, or 0 if it has none or there is no room (a recipe has room for 31)")
+        gs("j9", JC); J("jldi j1, -1"); gs("j1", JD); J("jcall r_tramos", "jjz j0, ta_no", "jadd j1, j0, j14", "jcall r_randmod"); gs("j0", JD); gl("j9", JC); J("jcall r_tramos")
+        gl("j1", JA); gl("j2", JB); J("jsub j3, j2, j1", "jjz j3, ta_no"); li("j7", B + RREC); J("jldb j4, j7, 0", "jadd j5, j4, j3", "jldi j10, 32", "jsub j10, j5, j10", "jjnn j10, ta_no", "jstb j5, j7, 0")
+        gl("j9", JC); J("jadd j9, j9, j1", "jadd j7, j7, j4")
+        o("ta_copy:")
+        J("jldb j10, j9, 1", "jstb j10, j7, 1", "jldi j10, 1", "jadd j9, j9, j10", "jadd j7, j7, j10", "jsub j3, j3, j10", "jjnz j3, ta_copy", "jldi j0, 1", "jret")
+        o("ta_no:")
+        J("jldi j0, 0", "jret")
+        o("rp_join:                        ; SHE JOINS (see the top of gen_leer.py): a statement of the beautiful, a cell of what")
+        o("                                ; works, a statement of the true. 64 tries at one she never read")
+        gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
+        o("rj_lap:")
+        J("jcall r_read_max", "jcall r_read_place"); rrec_zero()
+        o("  ; the beautiful: the form her judge of the drawing values most")
+        J("jldi j2, 0", "jldi j3, 0"); li("j9", FORMS); J("jld j5, j9, %d" % F_WORTH)
+        o("rj_max:")
+        J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % NF, "jsub j10, j2, j10", "jjz j10, rj_max_d")
+        J("jldi j10, 8", "jshl j7, j2, j10"); li("j10", FORMS); J("jadd j7, j7, j10", "jld j8, j7, %d" % F_WORTH, "jsub j10, j5, j8", "jjnn j10, rj_max",
+                                                                   "jadd j5, j8, j14", "jadd j3, j2, j14", "jjmp rj_max")
+        o("rj_max_d:")
+        form_addr("j9", "j3"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_tramo_add", "jjz j0, rj_next")
+        o("  ; what works: a gear of hers, in a tissue (not the one she opens herself: that one is caged), by her luck")
+        gl("j1", NGE); J("jjz j1, rj_true", "jcall r_randmod"); gs("j0", T2); J("jldi j1, 7", "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10"); gs("j0", T3)
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jldi j10, 28", "jsub j10, j3, j10", "jjnn j10, rj_next", "jadd j5, j7, j3", "jldi j10, 14", "jstb j10, j5, 1"); gl("j1", T2)
+        J("jldi j10, 15", "jdiv j2, j1, j10", "jmul j4, j2, j10", "jsub j4, j1, j4", "jldi j10, 9", "jadd j2, j2, j10", "jstb j2, j5, 2", "jldi j10, 1", "jadd j4, j4, j10", "jstb j4, j5, 3"); gl("j1", T3)
+        J("jstb j1, j5, 4", "jldi j10, 4", "jadd j3, j3, j10", "jstb j3, j7, 0")
+        o("rj_true:                        ; the true: the recipe that reads best among her forms")
+        gl("j1", BESTF); J("jjn j1, rj_next"); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_tramo_add", "jjz j0, rj_next")
+        keyget(); known("rj_next")
+        J("jldi j1, 1"); gs("j1", RKIND); J("jldi j1, 5"); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("rj_next:")
+        gl("j1", T1); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", T1); J("jjnz j1, rj_lap", "jldi j0, 0", "jret")
         o("rp_lens:                        ; A CELL (the Capitan: \"desarticularlo en engranajes que sean legos\"; \"rearticular por")
         o("                                ; tipo de celula en evolucion\"): a recipe of hers with a gear of her own body put in")
         o("                                ; it, expressed in a tissue. All by luck: which gear, which tissue, which recipe (by")
@@ -1619,6 +1687,7 @@ def make(g, ST, free):
             gl("j1", RBR); J("jjz j1, ru_pay"); inc(NB); gl("j1", RUNIQ); J("jjz j1, ru_pay"); inc(SB)
             o("ru_pay:")
             gl("j1", RKIND); J("jjz j1, ru_last"); gl("j1", RUNIQ); J("jjz j1, ru_vic"); inc(S5)
+            gl("j1", RARM); J("jldi j10, 5", "jsub j10, j1, j10", "jjnz j10, ru_vic"); inc(SJ)
             o("ru_vic:")
             gl("j1", RVIC); J("jjz j1, ru_last"); inc(VICT)
             o("ru_last:                        ; and where she is now: the last thing she read, if it said something")
@@ -1645,7 +1714,7 @@ def make(g, ST, free):
         if TECHO: inc(S5)
         gl("j1", RARM); J("jjz j1, rd_saved"); place(8); gl("j1", RARM); J("jldi j10, 3", "jsub j10, j1, j10", "jjnn j10, rd_song"); inc(SO); J("jjmp rd_saved")
         o("rd_song:")
-        J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, rd_lens"); inc(SS); J("jjmp rd_saved")
+        J("jldi j10, 5", "jsub j10, j1, j10", "jjz j10, rd_saved", "jldi j10, 4", "jsub j10, j1, j10", "jjz j10, rd_lens"); inc(SS); J("jjmp rd_saved")
         o("rd_lens:")
         inc(SL); J("jjmp rd_saved")
         o("rd_plain:")
@@ -1663,7 +1732,9 @@ def make(g, ST, free):
         o("fr_r_ins:")
         J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, fr_r_song"); inc(NI); J("jjmp fr_r_cnt")
         o("fr_r_song:")
-        J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, fr_r_lens"); inc(NS); place(0); J("jjmp fr_r_cnt")
+        J("jldi j10, 5", "jsub j10, j1, j10", "jjnz j10, fr_r_s2"); inc(NJ); place(0); J("jjmp fr_r_cnt")
+        o("fr_r_s2:")
+        gl("j1", RARM); J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, fr_r_lens"); inc(NS); place(0); J("jjmp fr_r_cnt")
         o("fr_r_lens:")
         inc(NL); place(0)
         o("fr_r_cnt:")

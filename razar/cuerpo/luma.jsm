@@ -9513,10 +9513,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02CA6h
-  jshi j2, 0CF38h
-  jshi j2, 07304h
-  jshi j2, 02817h
+  jldi j2, 03D59h
+  jshi j2, 04ED8h
+  jshi j2, 0B599h
+  jshi j2, 0F1A5h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -14711,6 +14711,23 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jst j1, j6, 01830h
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 01BD8h
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01BD0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01858h
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 016D8h
   jldi j6, 015Eh
   jshi j6, 0
@@ -14723,6 +14740,10 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 01830h
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01858h
   jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
@@ -14740,6 +14761,11 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jld j1, j6, 01830h
   jsub j2, j2, j1
   jjn j2, rp_lens
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01858h
+  jsub j2, j2, j1
+  jjn j2, rp_join
   ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)
   jldi j1, 3
   jcall r_randmod
@@ -14844,6 +14870,297 @@ rp_i_org:
   jshi j6, 0
   jst j1, j6, 01698h
   jldi j0, 1
+  jret
+r_tramos:                       ; j9 = a recipe, JD = which statement is wanted (-1: none) -> j0 = how many statements it
+                                ; has (each ends after its hole; a word or a cell is never cut), JA and JB where the
+                                ; wanted one starts and ends. Uses j3-j5, j7, j10-j12
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01878h
+  jldb j3, j9, 0
+  jldi j4, 0
+  jldi j5, 0
+  jldi j0, 0
+tr_l:
+  jsub j10, j4, j3
+  jjnn j10, tr_end
+  jadd j7, j9, j4
+  jldb j11, j7, 1
+  jldi j10, 14
+  jsub j10, j11, j10
+  jjz j10, tr_e
+  jldi j10, 5
+  jsub j10, j11, j10
+  jjn j10, tr_n
+  jldi j10, 10
+  jsub j10, j11, j10
+  jjnn j10, tr_n
+  jldi j10, 1
+  jadd j4, j4, j10
+  jsub j10, j0, j12
+  jjnz j10, tr_c
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j5, j6, 01860h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01868h
+tr_c:
+  jldi j10, 1
+  jadd j0, j0, j10
+  jadd j5, j4, j14
+  jjmp tr_l
+tr_n:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp tr_l
+tr_e:                           ; E: a word (two letters), a cell (four), a cell on a place (eight)
+  jldi j10, 1
+  jadd j11, j4, j10
+  jsub j10, j11, j3
+  jjnn j10, tr_n
+  jldb j11, j7, 2
+  jldi j10, 9
+  jsub j10, j11, j10
+  jjnn j10, tr_cell
+  jldi j10, 2
+  jadd j4, j4, j10
+  jjmp tr_l
+tr_cell:
+  jldi j10, 3
+  jadd j11, j4, j10
+  jsub j10, j11, j3
+  jjnn j10, tr_c4
+  jldb j11, j7, 4
+  jldi j10, 8
+  jsub j10, j11, j10
+  jjnz j10, tr_c4
+  jldi j10, 8
+  jadd j4, j4, j10
+  jjmp tr_l
+tr_c4:
+  jldi j10, 4
+  jadd j4, j4, j10
+  jjmp tr_l
+tr_end:
+  jsub j10, j5, j3
+  jjnn j10, tr_ret
+  jsub j10, j0, j12
+  jjnz j10, tr_last
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j5, j6, 01860h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01868h
+tr_last:
+  jldi j10, 1
+  jadd j0, j0, j10
+tr_ret:
+  jret
+r_tramo_add:                    ; j9 = a recipe: one statement of it, by her luck, added to the recipe she is making
+                                ; -> j0 = 1, or 0 if it has none or there is no room (a recipe has room for 31)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j9, j6, 01870h
+  jldi j1, -1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01878h
+  jcall r_tramos
+  jjz j0, ta_no
+  jadd j1, j0, j14
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01878h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01870h
+  jcall r_tramos
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01860h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01868h
+  jsub j3, j2, j1
+  jjz j3, ta_no
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j4, j7, 0
+  jadd j5, j4, j3
+  jldi j10, 32
+  jsub j10, j5, j10
+  jjnn j10, ta_no
+  jstb j5, j7, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01870h
+  jadd j9, j9, j1
+  jadd j7, j7, j4
+ta_copy:
+  jldb j10, j9, 1
+  jstb j10, j7, 1
+  jldi j10, 1
+  jadd j9, j9, j10
+  jadd j7, j7, j10
+  jsub j3, j3, j10
+  jjnz j3, ta_copy
+  jldi j0, 1
+  jret
+ta_no:
+  jldi j0, 0
+  jret
+rp_join:                        ; SHE JOINS (see the top of gen_leer.py): a statement of the beautiful, a cell of what
+                                ; works, a statement of the true. 64 tries at one she never read
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01538h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01630h
+  jldi j1, 64
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+rj_lap:
+  jcall r_read_max
+  jcall r_read_place
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jst j14, j7, 0
+  jst j14, j7, 8
+  jst j14, j7, 16
+  jst j14, j7, 24
+  ; the beautiful: the form her judge of the drawing values most
+  jldi j2, 0
+  jldi j3, 0
+  jldi j9, 0800h
+  jld j5, j9, 40
+rj_max:
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 8
+  jsub j10, j2, j10
+  jjz j10, rj_max_d
+  jldi j10, 8
+  jshl j7, j2, j10
+  jldi j10, 0800h
+  jadd j7, j7, j10
+  jld j8, j7, 40
+  jsub j10, j5, j8
+  jjnn j10, rj_max
+  jadd j5, j8, j14
+  jadd j3, j2, j14
+  jjmp rj_max
+rj_max_d:
+  jldi j10, 8
+  jshl j9, j3, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jldi j10, 192
+  jadd j9, j9, j10
+  jcall r_tramo_add
+  jjz j0, rj_next
+  ; what works: a gear of hers, in a tissue (not the one she opens herself: that one is caged), by her luck
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01838h
+  jjz j1, rj_true
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01678h
+  jldi j1, 7
+  jcall r_randmod
+  jldi j10, 1
+  jadd j0, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01680h
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j3, j7, 0
+  jldi j10, 28
+  jsub j10, j3, j10
+  jjnn j10, rj_next
+  jadd j5, j7, j3
+  jldi j10, 14
+  jstb j10, j5, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01678h
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 9
+  jadd j2, j2, j10
+  jstb j2, j5, 2
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01680h
+  jstb j1, j5, 4
+  jldi j10, 4
+  jadd j3, j3, j10
+  jstb j3, j7, 0
+rj_true:                        ; the true: the recipe that reads best among her forms
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016B8h
+  jjn j1, rj_next
+  jldi j10, 8
+  jshl j9, j1, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jldi j10, 192
+  jadd j9, j9, j10
+  jcall r_tramo_add
+  jjz j0, rj_next
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01620h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01628h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01630h
+  jcall r_read_get
+  jldi j10, -32768
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjnz j10, rj_next
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01638h
+  jldi j1, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01698h
+  jldi j0, 1
+  jret
+rj_next:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01670h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+  jjnz j1, rj_lap
+  jldi j0, 0
   jret
 rp_lens:                        ; A CELL (the Capitan: "desarticularlo en engranajes que sean legos"; "rearticular por
                                 ; tipo de celula en evolucion"): a recipe of hers with a gear of her own body put in
@@ -15883,6 +16200,20 @@ ru_pay:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01508h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01698h
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnz j10, ru_vic
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01BD8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BD8h
 ru_vic:
   jldi j6, 015Eh
   jshi j6, 0
@@ -16035,6 +16366,9 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jst j1, j6, 01528h
   jjmp rd_saved
 rd_song:
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjz j10, rd_saved
   jldi j10, 4
   jsub j10, j1, j10
   jjz j10, rd_lens
@@ -16771,6 +17105,34 @@ fr_r_ins:
   jst j1, j6, 01510h
   jjmp fr_r_cnt
 fr_r_song:
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnz j10, fr_r_s2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01BD0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BD0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01640h
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 01550h
+  jadd j7, j7, j10
+  jld j1, j7, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 0
+  jjmp fr_r_cnt
+fr_r_s2:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01698h
   jldi j10, 4
   jsub j10, j1, j10
   jjz j10, fr_r_lens
