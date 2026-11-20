@@ -8419,6 +8419,20 @@ r_talk:                         ; A CELL IS SAID (organo.inc: HER CELLS TALK, og
   jjz j1, tk_say
   jadd j2, j2, j1
   jst j2, j7, 128
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AD8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AE0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AE0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AD8h
   jld j2, j14, 0360h
   jcall r_gear
   jldi j6, 015Eh
@@ -9284,10 +9298,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 031C4h
-  jshi j2, 0DA50h
-  jshi j2, 0A09Ch
-  jshi j2, 09E2Dh
+  jldi j2, 0110h
+  jshi j2, 09523h
+  jshi j2, 0AA87h
+  jshi j2, 0CA32h
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -9499,10 +9513,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02756h
-  jshi j2, 05D1h
-  jshi j2, 05C55h
-  jshi j2, 09715h
+  jldi j2, 07D0h
+  jshi j2, 03DD3h
+  jshi j2, 035Fh
+  jshi j2, 0BD41h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -11013,6 +11027,12 @@ pl_words:
   jjnz j1, pl_words
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 01610h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AF0h
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 01618h
   jldi j6, 015Eh
   jshi j6, 0
@@ -11149,10 +11169,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 031C4h
-  jshi j1, 0DA50h
-  jshi j1, 0A09Ch
-  jshi j1, 09E2Dh
+  jldi j1, 0110h
+  jshi j1, 09523h
+  jshi j1, 0AA87h
+  jshi j1, 0CA32h
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
@@ -11768,6 +11788,12 @@ fr_think:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 88
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AE0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AE8h
   jcall r_gesture
   jret
 fr_give:                        ; a gift, and whom to (the Capitan: "ama lo invisible cuando es capaz de amar todo lo
@@ -26517,8 +26543,12 @@ candidate:
   jld j2, j1, ORGG
   jst j2, j1, EVC
   jcall0 j1, ev_exam
-  jldi j10, 30                  ; the shelf it read (its fingerprint, 0 if it is not awake for good), then its score:
-  jldi j11, -1                  ; who hears only the last word hears the score, as always
+  jldi j10, 30                  ; how many times its cells heard one another (organo.inc: HER JOY), the shelf it read
+  jldi j11, -1                  ; (its fingerprint, 0 if it is not awake for good), then its score: who hears only the
+  jld j12, j1, ORGCE            ; last word hears the score, as always
+  jcall0 j1, ask
+  jldi j10, 30
+  jldi j11, -1
   jld j12, j1, BOOKH
   jcall0 j1, ask
   jldi j10, 30

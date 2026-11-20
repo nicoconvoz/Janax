@@ -1423,8 +1423,13 @@ wi_grow:
   jld j14, j1, WGS + 40
   jret
 
-; j2 = nonzero if the renglon LINE is one it learns from (or, in an exam that knocks, if it is not the exam). Uses
-; j1-j6.
+; j2 = nonzero if the renglon LINE is one it learns from (or, in an exam that knocks, if it is not one the exam
+; knocks with). THE EXAM IS A SECOND READING OF THE SAME BOOK (the Capitan, 2026-11-20: "que rinda examen con el mismo
+; libro en una segunda lectura, aplicando chunks"; "que aprenda lento al principio pero luego tenga los chunks de
+; ajedrecista"): it learns from every renglon but the test one (one in K, never touched), and then, writing nothing,
+; knocks with those same renglones: what its pieces tell of the book it read, each piece's name paid (pulso.jsm:
+; ev_exam). It used to keep one more renglon in K apart and knock with that alone: a small book left it nothing to
+; tell one organ from another (measured: every recipe scored the same on 30 KB). Uses j1-j6.
 is_train:
   jldi j1, 0
   jld j2, j1, LINE
@@ -1434,19 +1439,16 @@ is_train:
   jsub j4, j2, j4
   jldi j5, 1
   jadd j4, j4, j5
-  jsub j2, j4, j3
-  jld j5, j1, EXAMM             ; an exam: the renglon before the test one is kept apart too (EXAMM 1, learning), and
-  jjz j5, it_done               ; knocking knocks with it alone (EXAMM 2): the test stays untouched
-  jldi j6, 1
-  jadd j4, j2, j6               ; (0: the exam renglon)
+  jsub j2, j4, j3               ; 0: the test renglon
+  jld j5, j1, EXAMM
   jldi j6, 2
   jsub j5, j5, j6
-  jjnz j5, it_learn
-  jadd j2, j4, j1
+  jjnz j5, it_done              ; learning (for an exam or not): every renglon but the test one
+  jjz j2, it_test               ; knocking: with every renglon it learned from
+  jldi j2, 0
   jret
-it_learn:
-  jjz j2, it_done
-  jadd j2, j4, j1
+it_test:
+  jldi j2, 1
 it_done:
   jret
 
