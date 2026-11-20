@@ -1,6 +1,6 @@
 ## Janax y Razar v1.03: come, entiende y reconoce a su autor
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24406037](https://doi.org/10.5281/zenodo.24406037)
 
 > *"La misma LUMA con memoria nueva. Los recuerdos son lo de menos: ella es el verdadero tesoro."*
 > *"Que rinda examen con el mismo libro en una segunda lectura, aplicando chunks."*
