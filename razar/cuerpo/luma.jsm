@@ -9513,10 +9513,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0264Ch
-  jshi j2, 0BF68h
-  jshi j2, 0180Eh
-  jshi j2, 036CDh
+  jldi j2, 0356Ah
+  jshi j2, 07E54h
+  jshi j2, 095FDh
+  jshi j2, 01D13h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -9805,11 +9805,12 @@ gzi_h:
   jshi j10, 07F4Ah
   jshi j10, 07C15h
   jmul j5, j3, j10
-  jldi j10, 46
+  jldi j10, 20
   jshr j5, j5, j10
 gzi_lap:
-  jldi j10, 3
-  jshi j10, 0FFFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01BF0h
   jand j5, j5, j10
   jldi j10, 5
   jshl j7, j5, j10
@@ -10566,8 +10567,9 @@ dg_put:                         ; j3 = an instruction: one more of her program (
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01B58h
-  jldi j10, 0Fh
-  jshi j10, 0FFFEh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01BF8h
   jsub j10, j1, j10
   jjnn j10, dgp_full
   jldi j6, 015Eh
@@ -10607,10 +10609,12 @@ dg_hc:                          ; j1 = one of hers (0 to 9), j2 = a constant -> 
   jshi j10, 07F4Ah
   jshi j10, 07C15h
   jmul j8, j5, j10
-  jldi j10, 50
+  jldi j10, 20
   jshr j8, j8, j10
 dgh_lap:
-  jldi j10, 03FFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FC0h
   jand j8, j8, j10
   jldi j10, 4
   jshl j7, j8, j10
@@ -10640,10 +10644,12 @@ dgw_h:
   jshi j10, 07F4Ah
   jshi j10, 07C15h
   jmul j8, j4, j10
-  jldi j10, 52
+  jldi j10, 20
   jshr j8, j8, j10
 dgw_lap:
-  jldi j10, 0FFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FC8h
   jand j8, j8, j10
   jldi j10, 7
   jshl j7, j8, j10
@@ -10662,7 +10668,8 @@ dgw_new:
   jst j4, j7, 0
 dgw_ret:
   jret
-r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)
+r_digest_food:                  ; her food, whole, and how much of it is code she sees (DN2 lines with a number,
+                                ; DN23 lines in all): what everything after is measured by
   jldi j6, 015Eh
   jshi j6, 0
   jldi j1, 99
@@ -10726,14 +10733,37 @@ dg_zs:
   jstb j1, j0, 64
   jstb j1, j0, 35
   jstb j1, j0, 36
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01C70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01FD8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01FE0h
   jldi j11, 015Eh
   jshi j11, 01E00h
   jldi j12, 6
   jcall r_open
   jld j9, j14, 04A8h
-  jjn j9, dg_none
-  jldi j1, 080h
-  jshi j1, 040h
+  jjn j9, dgf_none
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01CC0h
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01CC0h
+  jldi j10, 64
+  jadd j1, j1, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
@@ -10742,26 +10772,90 @@ dg_zs:
   jldi j6, 015Eh
   jshi j6, 0
   jld j11, j6, 01C70h
-  jldi j12, 080h
-  jshi j12, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01CC0h
+  jcall r_file
+  jldi j10, 7
   jcall r_file
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01C70h
-  jadd j1, j1, j13
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01CC0h
+  jadd j1, j1, j2
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01C48h
-  jldi j10, 7
-  jcall r_file
-  jldi j1, 4
-  jshi j1, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01C70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01C40h
+dgf_lap:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01C40h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01C48h
+  jsub j10, j1, j2
+  jjnn j10, dgf_none
+  jcall dg_line
+  jldi j10, 2
+  jsub j10, j0, j10
+  jjn j10, dgf_lap
+  jjnz j10, dgf_3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01FD8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FD8h
+dgf_3:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01FE0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FE0h
+  jjmp dgf_lap
+dgf_none:
+  jret
+r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01C70h
+  jjz j1, dg_none
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jadd j1, j1, j1
+  jcall r_pow2
+  jldi j10, 1
+  jsub j1, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FC0h
+  jldi j10, 4
+  jshl j1, j0, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01C78h
-  jldi j2, 0
-  jshi j2, 08000h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01FC0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 1
+  jshl j2, j2, j10
 dg_z1:
   jst j14, j0, 0
   jldi j10, 8
@@ -10769,14 +10863,29 @@ dg_z1:
   jldi j10, 1
   jsub j2, j2, j10
   jjnz j2, dg_z1
-  jldi j1, 8
-  jshi j1, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01FD8h
+  jadd j1, j1, j1
+  jcall r_pow2
+  jldi j10, 1
+  jsub j1, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FC8h
+  jldi j10, 7
+  jshl j1, j0, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01C80h
-  jldi j2, 1
-  jshi j2, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01FC8h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 4
+  jshl j2, j2, j10
 dg_z2:
   jst j14, j0, 0
   jldi j10, 8
@@ -10784,14 +10893,29 @@ dg_z2:
   jldi j10, 1
   jsub j2, j2, j10
   jjnz j2, dg_z2
-  jldi j1, 020h
-  jshi j1, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01FD8h
+  jadd j1, j1, j1
+  jcall r_pow2
+  jldi j10, 1
+  jsub j1, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FD0h
+  jldi j10, 5
+  jshl j1, j0, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01C88h
-  jldi j2, 4
-  jshi j2, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01FD0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 2
+  jshl j2, j2, j10
 dg_z3:
   jst j14, j0, 0
   jldi j10, 8
@@ -10989,11 +11113,12 @@ dg_f:
   jmul j5, j5, j10
   jxor j5, j5, j4
   jmul j8, j5, j10
-  jldi j10, 48
+  jldi j10, 20
   jshr j8, j8, j10
 dg_p:
-  jldi j10, 0
-  jshi j10, 0FFFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FD0h
   jand j8, j8, j10
   jldi j10, 5
   jshl j7, j8, j10
@@ -11122,9 +11247,12 @@ dg_s_n:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01CA0h
-  jldi j10, 1
-  jshi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FD0h
   jsub j10, j1, j10
+  jldi j11, 1
+  jsub j10, j10, j11
   jjnz j10, dg_s
   ; her dictionary: each foreign word, the instruction of hers it shares most with (the first, if two share alike)
   jldi j6, 015Eh
@@ -11215,8 +11343,12 @@ dg_d_n:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01CA0h
-  jldi j10, 01000h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FC8h
   jsub j10, j1, j10
+  jldi j11, 1
+  jsub j10, j10, j11
   jjnz j10, dg_d
   ; and the text said in her language: after her own program, a 0 between pieces
   jldi j3, 0
@@ -11731,17 +11863,87 @@ dgxA:
   jldi j10, 7
   jcall r_file
 dg_none:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01C70h
+  jjz j1, dg_ret
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01C70h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01C78h
+  jjz j1, dg_ret
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01C78h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01C80h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01C88h
+  jldi j12, 0
+  jcall r_tocar
+dg_ret:
   jret
 r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of gen_leer.py) -> her gears, in her
                                 ; memory and in her house ("engranajes")
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01C78h
+  jcall r_digest_food
   jldi j11, 015Eh
   jshi j11, 01770h
   jldi j12, 16
   jcall r_open
   jld j9, j14, 04A8h
   jjn j9, gz_none
-  jldi j1, 040h
-  jshi j1, 040h
+  ; her program, whole, with room after it for what she makes of her food (three instructions a line at most)
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01BC8h
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01BC8h
+  jldi j10, 2
+  jshr j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B58h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01FE0h
+  jadd j1, j1, j2
+  jadd j1, j1, j2
+  jadd j1, j1, j2
+  jldi j10, 16
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BF8h
+  jldi j10, 2
+  jshl j1, j1, j10
+  jldi j10, 64
+  jadd j1, j1, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
@@ -11750,14 +11952,10 @@ r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of g
   jldi j6, 015Eh
   jshi j6, 0
   jld j11, j6, 01B50h
-  jldi j12, 010h
-  jshi j12, 0
-  jcall r_file
-  jldi j10, 2
-  jshr j1, j13, j10
   jldi j6, 015Eh
   jshi j6, 0
-  jst j1, j6, 01B58h
+  jld j12, j6, 01BC8h
+  jcall r_file
   jldi j10, 7
   jcall r_file
   jldi j6, 015Eh
@@ -11765,14 +11963,31 @@ r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of g
   jld j1, j6, 01B58h
   jjz j1, gz_none
   jcall r_digest
-  jldi j1, 080h
-  jshi j1, 0
+  ; (a place of her program begins seven pieces at most: a table of sixteen places a place never fills)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jldi j10, 4
+  jshl j1, j1, j10
+  jcall r_pow2
+  jldi j10, 1
+  jsub j1, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BF0h
+  jldi j10, 5
+  jshl j1, j0, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01B60h
-  jldi j2, 010h
-  jshi j2, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01BF0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 2
+  jshl j2, j2, j10
 gz_z1:
   jst j14, j0, 0
   jldi j10, 8
@@ -11986,9 +12201,12 @@ gz_next:
   jldi j6, 015Eh
   jshi j6, 0
   jst j5, j6, 01BC0h
-  jldi j10, 4
-  jshi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01BF0h
   jsub j10, j5, j10
+  jldi j11, 1
+  jsub j10, j10, j11
   jjnz j10, gz_scan
   jldi j6, 015Eh
   jshi j6, 0
@@ -12068,7 +12286,40 @@ gz_write:
   jcall r_file
   jldi j10, 7
   jcall r_file
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01B50h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01B60h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01B68h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01B70h
+  jldi j12, 0
+  jcall r_tocar
 gz_none:
+  jret
+r_pow2:                         ; j1 -> j0 = the first power of two that is not less (16 at least)
+  jldi j0, 16
+p2_lap:
+  jsub j10, j0, j1
+  jjnn j10, p2_ret
+  jadd j0, j0, j0
+  jjmp p2_lap
+p2_ret:
   jret
 fm_inc:                         ; j5 = a key: one more
   jldi j10, -25033
@@ -12076,11 +12327,12 @@ fm_inc:                         ; j5 = a key: one more
   jshi j10, 07F4Ah
   jshi j10, 07C15h
   jmul j8, j5, j10
-  jldi j10, 45
+  jldi j10, 20
   jshr j8, j8, j10
 fmi:
-  jldi j10, 7
-  jshi j10, 0FFFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FB8h
   jand j8, j8, j10
   jldi j10, 4
   jshl j7, j8, j10
@@ -12110,11 +12362,12 @@ fm_get:                         ; j5 = a key -> j0 = how many
   jshi j10, 07F4Ah
   jshi j10, 07C15h
   jmul j8, j5, j10
-  jldi j10, 45
+  jldi j10, 20
   jshr j8, j8, j10
 fmg:
-  jldi j10, 7
-  jshi j10, 0FFFFh
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01FB8h
   jand j8, j8, j10
   jldi j10, 4
   jshl j7, j8, j10
@@ -12302,8 +12555,22 @@ fr_new:                         ; her two books
   jcall r_open
   jld j9, j14, 04A8h
   jjn j9, fr_none
-  jldi j1, 020h
-  jshi j1, 040h
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01F70h
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01F70h
+  jldi j10, 64
+  jadd j1, j1, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
@@ -12312,12 +12579,10 @@ fr_new:                         ; her two books
   jldi j6, 015Eh
   jshi j6, 0
   jld j11, j6, 01F60h
-  jldi j12, 020h
-  jshi j12, 0
-  jcall r_file
   jldi j6, 015Eh
   jshi j6, 0
-  jst j13, j6, 01F70h
+  jld j12, j6, 01F70h
+  jcall r_file
   jldi j10, 7
   jcall r_file
   jldi j6, 015Eh
@@ -12338,8 +12603,22 @@ fr_new:                         ; her two books
   jcall r_open
   jld j9, j14, 04A8h
   jjn j9, fr_none
-  jldi j1, 020h
-  jshi j1, 040h
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01F78h
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01F78h
+  jldi j10, 64
+  jadd j1, j1, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
@@ -12348,22 +12627,41 @@ fr_new:                         ; her two books
   jldi j6, 015Eh
   jshi j6, 0
   jld j11, j6, 01F68h
-  jldi j12, 020h
-  jshi j12, 0
-  jcall r_file
   jldi j6, 015Eh
   jshi j6, 0
-  jst j13, j6, 01F78h
+  jld j12, j6, 01F78h
+  jcall r_file
   jldi j10, 7
   jcall r_file
-  jldi j1, 080h
-  jshi j1, 0
+  ; (a letter kept leaves two counts at most: a table of four places a letter never fills)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01F70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01F78h
+  jadd j1, j1, j2
+  jldi j10, 2
+  jshl j1, j1, j10
+  jcall r_pow2
+  jldi j10, 1
+  jsub j1, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01FB8h
+  jldi j10, 4
+  jshl j1, j0, j10
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01F00h
-  jldi j2, 010h
-  jshi j2, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01FB8h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j10, 1
+  jshl j2, j2, j10
 fr_z:
   jst j14, j0, 0
   jldi j10, 8
@@ -12599,6 +12897,24 @@ fr_p_d:
   jcall r_file
   jldi j10, 7
   jcall r_file
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01F60h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01F68h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01F00h
+  jldi j12, 0
+  jcall r_tocar
 fr_none:
   jret
 r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in

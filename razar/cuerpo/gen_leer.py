@@ -188,14 +188,15 @@ D0 = 0x1C40                  # she digests foreign code (r_digest):
 F0 = 0x1F00                  # she recognises her author's signature (r_firma):
 (FTB, FM, FI, FCT, FNK, FB0, FB1, FPB, FJ, FKK, FTT, FS) = (F0 + 8 * i for i in range(12))
 FA, FE, FRES, LFD, LFF = 0x1F60, 0x1F70, 0x1F80, 0x1FA0, 0x1FB0   # the two books and their lengths; what she found; "libro-diario", "firma"
-FSLOTS = 1 << 19
+FSM, DHCM, DWTM, DPTM, DN2, DN23 = 0x1FB8, 0x1FC0, 0x1FC8, 0x1FD0, 0x1FD8, 0x1FE0   # PLASTIC (the Capitan: "destrui el tope fijo"):
+                             # every table is as large as what is in front of her asks (its places less one, kept
+                             # here), every file is read whole whatever its size, and every room is given back
 DSRC, DMODE, DBL, DRS = 0x1CE0, 0x1CE8, 0x1CF0, 0x1CF8   # a line: the name it takes from (0: none), which way it is written, ...
 DOPC = 0x1E20                # the signs a word of the infix way is made of (a byte each)
 OPCH = b"+-*/%&|^<>.~!?:@#$"
 DNJ, DNAM, LCOM, LDIG = 0x1D00, 0x1D80, 0x1E00, 0x1E10   # how often each of hers is said; a piece's names; "comida", "digerido"
 DOPS = (0x01, 0x02, 0x03, 0x04, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B)
-PRGCAP = 4 << 20             # room for her program and what she makes of her food (what does not fit is not eaten)
-GSLOTS = 1 << 18             # (plastic it is not yet: a body of 32,000 instructions has some 80,000 different pieces)
+GSM, PCAP = 0x1BF0, 0x1BF8   # the places of the table of pieces, less one; how many instructions her program has room for
 CHN, CH0, RW0 = 0x1AE0, 0x1AE8, 0x1AF0    # HER JOY: how many times a cell of her body heard another (never forgotten while she
                              # lives), that count when her thought began, and what her reader said first (its own count)
 CDIRTY, COLD, CNEW, CECHO = 0x1AC0, 0x1AC8, 0x1AD0, 0x1AD8   # something was said; a cell being said: before, after, what it heard through its gear
@@ -273,10 +274,27 @@ def make(g, ST, free):
     def known(lbl):                     # j0 is a reading -> lbl
         li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, %s" % lbl)
     def firma_routines():
-        def slot(tag, create):          # j5 = a key -> j7 = where its count is kept (create), or j0 = its count (0: none)
-            li("j10", GOLD); J("jmul j8, j5, j10", "jldi j10, 45", "jshr j8, j8, j10")
+        def whole(room, size, slack=64):    # the file just opened (FH), whole, whatever its size -> a room of its own
+            J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", size); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+            gl("j1", size); J("jldi j10, %d" % slack, "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", room)
+            J("jldi j10, 5"); gl("j11", room); gl("j12", size); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        def table(room, mask, shift, tag):  # j1 = how many it must hold at least -> a table of the next power of two, clean
+            J("jcall r_pow2", "jldi j10, 1", "jsub j1, j0, j10"); gs("j1", mask); J("jldi j10, %d" % shift, "jshl j1, j0, j10", "jcall r_alloc"); gs("j0", room)
+            gl("j2", mask); J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % (shift - 3), "jshl j2, j2, j10")
             o("%s:" % tag)
-            li("j10", FSLOTS - 1); J("jand j8, j8, j10", "jldi j10, 4", "jshl j7, j8, j10"); gl("j9", FTB); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, %s_new" % tag,
+            J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
+        def back(room):                     # a room, given back
+            J("jldi j10, 3"); gl("j11", room); J("jldi j12, 0", "jcall r_tocar")
+        o("r_pow2:                         ; j1 -> j0 = the first power of two that is not less (16 at least)")
+        J("jldi j0, 16")
+        o("p2_lap:")
+        J("jsub j10, j0, j1", "jjnn j10, p2_ret", "jadd j0, j0, j0", "jjmp p2_lap")
+        o("p2_ret:")
+        J("jret")
+        def slot(tag, create):          # j5 = a key -> j7 = where its count is kept (create), or j0 = its count (0: none)
+            li("j10", GOLD); J("jmul j8, j5, j10", "jldi j10, 20", "jshr j8, j8, j10")
+            o("%s:" % tag)
+            gl("j10", FSM); J("jand j8, j8, j10", "jldi j10, 4", "jshl j7, j8, j10"); gl("j9", FTB); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, %s_new" % tag,
                                                                                            "jsub j9, j9, j5", "jjz j9, %s_have" % tag, "jldi j10, 1", "jadd j8, j8, j10", "jjmp %s" % tag)
             o("%s_new:" % tag)
             if create: J("jst j5, j7, 0", "jst j14, j7, 8")
@@ -312,11 +330,9 @@ def make(g, ST, free):
                                "jldi j1, 114", "jstb j1, j6, %s" % num(F0 + 0xF3), "jldi j1, 111", "jstb j1, j6, %s" % num(F0 + 0xF4))
                 li("j11", B + F0 + 0xF0); J("jldi j12, 5")
             J("jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_none")
-            li("j1", (2 << 20) + 64); J("jcall r_alloc"); gs("j0", FA + 8 * m)
-            J("jldi j10, 5"); gl("j11", FA + 8 * m); li("j12", 2 << 20); J("jcall r_file"); gs("j13", FE + 8 * m); J("jldi j10, 7", "jcall r_file")
-        li("j1", FSLOTS * 16); J("jcall r_alloc"); gs("j0", FTB); li("j2", FSLOTS * 2)
-        o("fr_z:")
-        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, fr_z")
+            whole(FA + 8 * m, FE + 8 * m)
+        o("  ; (a letter kept leaves two counts at most: a table of four places a letter never fills)")
+        gl("j1", FE); gl("j2", FE + 8); J("jadd j1, j1, j2", "jldi j10, 2", "jshl j1, j1, j10"); table(FTB, FSM, 4, "fr_z")
         o("  ; how often each letter follows each three, in each book, its passages kept apart never counted")
         gs("j14", FM)
         o("fr_m:")
@@ -350,11 +366,23 @@ def make(g, ST, free):
         J("jldi j10, 12"); li("j11", B + LFF); J("jldi j12, 5", "jcall r_tocar")
         li("j11", B + LFF); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_none")
         J("jldi j10, 6"); li("j11", B + FRES); J("jldi j12, 32", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        back(FA); back(FA + 8); back(FTB)
         o("fr_none:")
         J("jret")
 
     def digest_routines(FNVO, FNVP):
         lab = g["lab"]
+        def whole(room, size, slack=64):    # the file just opened (FH), whole, whatever its size -> a room of its own
+            J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", size); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+            gl("j1", size); J("jldi j10, %d" % slack, "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", room)
+            J("jldi j10, 5"); gl("j11", room); gl("j12", size); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        def table(room, mask, shift, tag):  # j1 = how many it must hold at least -> a table of the next power of two, clean
+            J("jcall r_pow2", "jldi j10, 1", "jsub j1, j0, j10"); gs("j1", mask); J("jldi j10, %d" % shift, "jshl j1, j0, j10", "jcall r_alloc"); gs("j0", room)
+            gl("j2", mask); J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % (shift - 3), "jshl j2, j2, j10")
+            o("%s:" % tag)
+            J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
+        def back(room):                     # a room, given back
+            J("jldi j10, 3"); gl("j11", room); J("jldi j12, 0", "jcall r_tocar")
         def ws():                       # j1 a place of the text, j2 its end: past blanks
             a = lab("dws")
             o("%s:" % a)
@@ -451,15 +479,15 @@ def make(g, ST, free):
         gl("j2", GPRG); J("jldi j10, 1", "jand j12, j1, j10", "jsub j1, j1, j12", "jldi j10, 2", "jshl j1, j1, j10", "jadd j2, j2, j1", "jld j3, j2, 0",
                           "jldi j10, 5", "jshl j12, j12, j10", "jshr j3, j3, j12"); li("j10", 0xFFFFFFFF); J("jand j3, j3, j10", "jret")
         o("dg_put:                         ; j3 = an instruction: one more of her program (if it fits)")
-        gl("j1", GNW); li("j10", PRGCAP // 4 - 2); J("jsub j10, j1, j10", "jjnn j10, dgp_full"); gl("j2", GPRG); J("jldi j10, 2", "jshl j11, j1, j10", "jadd j2, j2, j11")
+        gl("j1", GNW); gl("j10", PCAP); J("jsub j10, j1, j10", "jjnn j10, dgp_full"); gl("j2", GPRG); J("jldi j10, 2", "jshl j11, j1, j10", "jadd j2, j2, j11")
         J("jstb j3, j2, 0", "jldi j10, 8", "jshr j11, j3, j10", "jstb j11, j2, 1", "jldi j10, 16", "jshr j11, j3, j10", "jstb j11, j2, 2", "jldi j10, 24", "jshr j11, j3, j10", "jstb j11, j2, 3",
           "jldi j10, 1", "jadd j1, j1, j10"); gs("j1", GNW)
         o("dgp_full:")
         J("jret")
         o("dg_hc:                          ; j1 = one of hers (0 to 9), j2 = a constant -> j7 = where its count is kept")
-        J("jldi j10, 16", "jshl j5, j1, j10"); li("j10", 0xFFFF); J("jand j11, j2, j10", "jor j5, j5, j11", "jldi j10, 1", "jadd j5, j5, j10"); li("j10", GOLD); J("jmul j8, j5, j10", "jldi j10, 50", "jshr j8, j8, j10")
+        J("jldi j10, 16", "jshl j5, j1, j10"); li("j10", 0xFFFF); J("jand j11, j2, j10", "jor j5, j5, j11", "jldi j10, 1", "jadd j5, j5, j10"); li("j10", GOLD); J("jmul j8, j5, j10", "jldi j10, 20", "jshr j8, j8, j10")
         o("dgh_lap:")
-        li("j10", (1 << 14) - 1); J("jand j8, j8, j10", "jldi j10, 4", "jshl j7, j8, j10"); gl("j9", DHC); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, dgh_new",
+        gl("j10", DHCM); J("jand j8, j8, j10", "jldi j10, 4", "jshl j7, j8, j10"); gl("j9", DHC); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, dgh_new",
                                                                                                "jsub j9, j9, j5", "jjz j9, dgh_ret", "jldi j10, 1", "jadd j8, j8, j10", "jjmp dgh_lap")
         o("dgh_new:")
         J("jst j5, j7, 0", "jst j14, j7, 8")
@@ -469,31 +497,40 @@ def make(g, ST, free):
         o("                                ; it was said with a number, the instruction of hers it is, then what it shares with each)")
         J("jjnz j4, dgw_h", "jldi j4, 1")
         o("dgw_h:")
-        li("j10", GOLD); J("jmul j8, j4, j10", "jldi j10, 52", "jshr j8, j8, j10")
+        li("j10", GOLD); J("jmul j8, j4, j10", "jldi j10, 20", "jshr j8, j8, j10")
         o("dgw_lap:")
-        li("j10", 4095); J("jand j8, j8, j10", "jldi j10, 7", "jshl j7, j8, j10"); gl("j9", DWT); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, dgw_new",
+        gl("j10", DWTM); J("jand j8, j8, j10", "jldi j10, 7", "jshl j7, j8, j10"); gl("j9", DWT); J("jadd j7, j7, j9", "jld j9, j7, 0", "jjz j9, dgw_new",
                                                                                      "jsub j9, j9, j4", "jjz j9, dgw_ret", "jldi j10, 1", "jadd j8, j8, j10", "jjmp dgw_lap")
         o("dgw_new:")
         J("jst j4, j7, 0")
         o("dgw_ret:")
         J("jret")
 
-        o("r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)")
+        o("r_digest_food:                  ; her food, whole, and how much of it is code she sees (DN2 lines with a number,")
+        o("                                ; DN23 lines in all): what everything after is measured by")
         text(LCOM, b"comida"); text(LDIG, b"digerido")
         li("j0", B + DOPC); J("jldi j2, 32", "jldi j10, 8", "jldi j11, 1")
         o("dg_zs:")
         J("jst j14, j0, 0", "jadd j0, j0, j10", "jsub j2, j2, j11", "jjnz j2, dg_zs"); li("j0", B + DOPC); J("jldi j1, 1")
         for ch in OPCH:
             J("jstb j1, j0, %d" % ch)
-        li("j11", B + LCOM); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dg_none")
-        li("j1", (8 << 20) + 64); J("jcall r_alloc"); gs("j0", DFB)
-        J("jldi j10, 5"); gl("j11", DFB); li("j12", 8 << 20); J("jcall r_file"); gl("j1", DFB); J("jadd j1, j1, j13"); gs("j1", DTE); J("jldi j10, 7", "jcall r_file")
+        gs("j14", DFB); gs("j14", DN2); gs("j14", DN23)
+        li("j11", B + LCOM); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dgf_none")
+        whole(DFB, DT1); gl("j1", DFB); gl("j2", DT1); J("jadd j1, j1, j2"); gs("j1", DTE); gl("j1", DFB); gs("j1", DTP)
+        o("dgf_lap:")
+        gl("j1", DTP); gl("j2", DTE); J("jsub j10, j1, j2", "jjnn j10, dgf_none", "jcall dg_line", "jldi j10, 2", "jsub j10, j0, j10", "jjn j10, dgf_lap", "jjnz j10, dgf_3"); inc(DN2)
+        o("dgf_3:")
+        inc(DN23); J("jjmp dgf_lap")
+        o("dgf_none:")
+        J("jret")
+        o("r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)")
+        gl("j1", DFB); J("jjz j1, dg_none")
         def zero(tag):
             o("%s:" % tag)
             J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
-        li("j1", 16 << 14); J("jcall r_alloc"); gs("j0", DHC); li("j2", 2 << 14); zero("dg_z1")
-        li("j1", 128 << 12); J("jcall r_alloc"); gs("j0", DWT); li("j2", 16 << 12); zero("dg_z2")
-        li("j1", 32 << 16); J("jcall r_alloc"); gs("j0", DPT); li("j2", 4 << 16); zero("dg_z3")
+        gl("j1", GNW); J("jadd j1, j1, j1"); table(DHC, DHCM, 4, "dg_z1")
+        gl("j1", DN2); J("jadd j1, j1, j1"); table(DWT, DWTM, 7, "dg_z2")
+        gl("j1", DN2); J("jadd j1, j1, j1"); table(DPT, DPTM, 5, "dg_z3")
         li("j0", B + DNJ); J("jldi j2, 10"); zero("dg_z4")
         o("  ; where each instruction of hers stands: a jldi with its own constant, another with the one a jldi just before")
         o("  ; hands it")
@@ -517,9 +554,9 @@ def make(g, ST, free):
         o("dg_f:")
         gl("j1", DTP); gl("j2", DTE); J("jsub j10, j1, j2", "jjnn j10, dg_f_d", "jcall dg_line", "jldi j10, 2", "jsub j10, j0, j10", "jjnz j10, dg_f")
         gl("j4", DTW); J("jcall dg_wt", "jld j9, j7, 8", "jldi j10, 1", "jadd j9, j9, j10", "jst j9, j7, 8")
-        gl("j4", DTW); gl("j2", DTN); li("j10", 0xFFFF); J("jand j2, j2, j10", "jldi j10, 1", "jadd j5, j2, j10"); li("j10", GOLD); J("jmul j5, j5, j10", "jxor j5, j5, j4", "jmul j8, j5, j10", "jldi j10, 48", "jshr j8, j8, j10")
+        gl("j4", DTW); gl("j2", DTN); li("j10", 0xFFFF); J("jand j2, j2, j10", "jldi j10, 1", "jadd j5, j2, j10"); li("j10", GOLD); J("jmul j5, j5, j10", "jxor j5, j5, j4", "jmul j8, j5, j10", "jldi j10, 20", "jshr j8, j8, j10")
         o("dg_p:")
-        li("j10", 0xFFFF); J("jand j8, j8, j10", "jldi j10, 5", "jshl j7, j8, j10"); gl("j9", DPT); J("jadd j7, j7, j9", "jld j9, j7, 16", "jjz j9, dg_p_new",
+        gl("j10", DPTM); J("jand j8, j8, j10", "jldi j10, 5", "jshl j7, j8, j10"); gl("j9", DPT); J("jadd j7, j7, j9", "jld j9, j7, 16", "jjz j9, dg_p_new",
                                                                                        "jld j9, j7, 0", "jsub j9, j9, j4", "jjnz j9, dg_p_n", "jld j9, j7, 8", "jsub j9, j9, j2", "jjz j9, dg_p_have")
         o("dg_p_n:")
         J("jldi j10, 1", "jadd j8, j8, j10", "jjmp dg_p")
@@ -542,7 +579,7 @@ def make(g, ST, free):
         o("dg_s_kn:")
         inc(DT1); J("jldi j10, 10", "jsub j10, j1, j10", "jjnz j10, dg_s_k")
         o("dg_s_n:")
-        inc(DKK); li("j10", 1 << 16); J("jsub j10, j1, j10", "jjnz j10, dg_s")
+        inc(DKK); gl("j10", DPTM); J("jsub j10, j1, j10", "jldi j11, 1", "jsub j10, j10, j11", "jjnz j10, dg_s")
         o("  ; her dictionary: each foreign word, the instruction of hers it shares most with (the first, if two share alike)")
         gs("j14", DKK)
         o("dg_d:")
@@ -552,7 +589,7 @@ def make(g, ST, free):
             o("dg_b%d:" % k)
         J("jst j5, j7, 16")
         o("dg_d_n:")
-        inc(DKK); li("j10", 4096); J("jsub j10, j1, j10", "jjnz j10, dg_d")
+        inc(DKK); gl("j10", DWTM); J("jsub j10, j1, j10", "jldi j11, 1", "jsub j10, j10, j11", "jjnz j10, dg_d")
         o("  ; and the text said in her language: after her own program, a 0 between pieces")
         J("jldi j3, 0", "jcall dg_put"); gl("j1", GNW); gs("j1", DOUT0); gs("j14", DNN); gs("j14", DRUN); gl("j1", DFB); gs("j1", DTP)
         def end(tag):                   # the piece ends: a 0 if it had begun, its names forgotten
@@ -621,10 +658,23 @@ def make(g, ST, free):
         li("j11", B + LDIG); J("jldi j12, 8", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dg_none")
         gl("j1", DOUT0); gl("j2", GNW); J("jsub j12, j2, j1", "jldi j10, 2", "jshl j12, j12, j10", "jshl j1, j1, j10"); gl("j11", GPRG); J("jadd j11, j11, j1", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("dg_none:")
+        gl("j1", DFB); J("jjz j1, dg_ret"); back(DFB); gl("j1", DHC); J("jjz j1, dg_ret"); back(DHC); back(DWT); back(DPT)
+        o("dg_ret:")
         J("jret")
 
     def gears_routines():
         FNVO, FNVP = 0xCBF29CE484222325, 0x100000001B3
+        def whole(room, size, slack=64):    # the file just opened (FH), whole, whatever its size -> a room of its own
+            J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", size); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+            gl("j1", size); J("jldi j10, %d" % slack, "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", room)
+            J("jldi j10, 5"); gl("j11", room); gl("j12", size); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        def table(room, mask, shift, tag):  # j1 = how many it must hold at least -> a table of the next power of two, clean
+            J("jcall r_pow2", "jldi j10, 1", "jsub j1, j0, j10"); gs("j1", mask); J("jldi j10, %d" % shift, "jshl j1, j0, j10", "jcall r_alloc"); gs("j0", room)
+            gl("j2", mask); J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % (shift - 3), "jshl j2, j2, j10")
+            o("%s:" % tag)
+            J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
+        def back(room):                     # a room, given back
+            J("jldi j10, 3"); gl("j11", room); J("jldi j12, 0", "jcall r_tocar")
         def name(r, tag):               # the register r (0..15) -> its name in this piece (j7 = the names, j8 = how many)
             J("jadd j13, j7, %s" % r, "jldb j10, j13, 0", "jldi j2, 255", "jsub j2, j10, j2", "jjnz j2, %s" % tag,
               "jstb j8, j13, 0", "jadd j10, j8, j14", "jldi j2, 1", "jadd j8, j8, j2")
@@ -659,9 +709,9 @@ def make(g, ST, free):
         o("gz_ins:                         ; the piece of print j3 and j4 instructions at the place GCP: one more time said")
         J("jjnz j3, gzi_h", "jldi j3, 1")
         o("gzi_h:")
-        li("j10", GOLD); J("jmul j5, j3, j10", "jldi j10, 46", "jshr j5, j5, j10")
+        li("j10", GOLD); J("jmul j5, j3, j10", "jldi j10, 20", "jshr j5, j5, j10")
         o("gzi_lap:")
-        li("j10", GSLOTS - 1); J("jand j5, j5, j10", "jldi j10, 5", "jshl j7, j5, j10"); gl("j8", GHT); J("jadd j7, j7, j8", "jld j9, j7, 0", "jjz j9, gzi_new",
+        gl("j10", GSM); J("jand j5, j5, j10", "jldi j10, 5", "jshl j7, j5, j10"); gl("j8", GHT); J("jadd j7, j7, j8", "jld j9, j7, 0", "jjz j9, gzi_new",
                                                                                                  "jsub j9, j9, j3", "jjz j9, gzi_found", "jldi j10, 1", "jadd j5, j5, j10", "jjmp gzi_lap")
         o("gzi_new:")
         J("jst j3, j7, 0", "jst j14, j7, 8", "jst j14, j7, 16")
@@ -688,14 +738,19 @@ def make(g, ST, free):
         digest_routines(FNVO, FNVP)
         o("r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of gen_leer.py) -> her gears, in her")
         o("                                ; memory and in her house (\"engranajes\")")
+        gs("j14", DHC); J("jcall r_digest_food")
         li("j11", B + LBIN); J("jldi j12, %d" % len(S_BIN), "jcall r_open"); ld("j9", "FH"); J("jjn j9, gz_none")
-        li("j1", PRGCAP + 64); J("jcall r_alloc"); gs("j0", GPRG)
-        J("jldi j10, 5"); gl("j11", GPRG); li("j12", 1 << 20); J("jcall r_file", "jldi j10, 2", "jshr j1, j13, j10"); gs("j1", GNW); J("jldi j10, 7", "jcall r_file")
+        o("  ; her program, whole, with room after it for what she makes of her food (three instructions a line at most)")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", GCI); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+        gl("j1", GCI); J("jldi j10, 2", "jshr j1, j1, j10"); gs("j1", GNW); gl("j2", DN23); J("jadd j1, j1, j2", "jadd j1, j1, j2", "jadd j1, j1, j2", "jldi j10, 16", "jadd j1, j1, j10"); gs("j1", PCAP)
+        J("jldi j10, 2", "jshl j1, j1, j10", "jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", GPRG)
+        J("jldi j10, 5"); gl("j11", GPRG); gl("j12", GCI); J("jcall r_file", "jldi j10, 7", "jcall r_file")
         gl("j1", GNW); J("jjz j1, gz_none", "jcall r_digest")
         def zero(tag):                  # j0 = where, j2 = how many words
             o("%s:" % tag)
             J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
-        li("j1", GSLOTS * 32); J("jcall r_alloc"); gs("j0", GHT); li("j2", GSLOTS * 4); zero("gz_z1")
+        o("  ; (a place of her program begins seven pieces at most: a table of sixteen places a place never fills)")
+        gl("j1", GNW); J("jldi j10, 4", "jshl j1, j1, j10"); table(GHT, GSM, 5, "gz_z1")
         gl("j1", GNW); J("jldi j10, 6", "jshl j1, j1, j10", "jcall r_alloc"); gs("j0", GNX)
         gl("j1", GNW); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", GUS); gl("j2", GNW); J("jldi j10, 3", "jshr j2, j2, j10", "jldi j10, 8", "jadd j2, j2, j10"); zero("gz_z2")
         li("j0", B + DBUF + GEARS); li("j2", 16 * NGEARS); zero("gz_z3")
@@ -725,7 +780,7 @@ def make(g, ST, free):
         o("gz_dead:")
         J("jst j14, j7, 8")
         o("gz_next:")
-        gl("j5", GSI); J("jldi j10, 1", "jadd j5, j5, j10"); gs("j5", GSI); li("j10", GSLOTS); J("jsub j10, j5, j10", "jjnz j10, gz_scan")
+        gl("j5", GSI); J("jldi j10, 1", "jadd j5, j5, j10"); gs("j5", GSI); gl("j10", GSM); J("jsub j10, j5, j10", "jldi j11, 1", "jsub j10, j10, j11", "jjnz j10, gz_scan")
         gl("j7", GBE); J("jjz j7, gz_write"); gs("j7", GRE); J("jldi j1, 1"); gs("j1", GRMK); J("jcall gz_count")
         gl("j7", GBE); J("jld j1, j7, 24"); li("j10", 0xFFFFFFFF); J("jand j1, j1, j10", "jcall gz_canon")
         gl("j7", GBE); J("jld j4, j7, 24", "jldi j10, 32", "jshr j4, j4, j10", "jst j14, j7, 8")
@@ -737,6 +792,7 @@ def make(g, ST, free):
         J("jldi j10, 12"); li("j11", B + LGE); J("jldi j12, 10", "jcall r_tocar")
         li("j11", B + LGE); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gz_none")
         J("jldi j10, 6"); li("j11", B + DBUF + GEARS); li("j12", 128 * NGEARS); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        back(GPRG); back(GHT); back(GNX); back(GUS)
         o("gz_none:")
         J("jret")
 
