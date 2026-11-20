@@ -49,6 +49,19 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   its tissue, signed with whose it is; when a cell is said it hears what the others said that it had not heard,
   through its own gear, and what that changes in it is its echo, said too. A hole is silence. The rule is written
   once, in organo.inc (HER CELLS TALK), and done the same here for her body (r_talk).
+  A UNIQUE MEMORY (the Capitan, 2026-11-20: "en un nino la evolucion no se paga por perfeccion, se paga por recuerdo
+  unico: eso es lo que crea ramas infinitas y personalidad. Si cortaramos todas las ramas tendriamos algo
+  artificial; si eligieramos todas, algo superficial y lento. Tiene que escoger a profundidad 1, recorrer hasta
+  donde quiera, ir, venir, volver, seguir, rodear y festejar las victorias inesperadas"). This is what pays her will
+  to read now:
+    - a reading pays if what it gave is a memory she did not have: no reading she remembers of this shelf gave that
+      score. Not that it beat anything.
+    - she walks one step at a time: the new thing she reads is a step from a form of her body (she comes back) or
+      from the last thing she read (she goes on along that branch), by her own count of the two (the same wish as
+      her acts: how often going on gave her a unique memory). A branch is neither cut nor kept: it is where she is.
+    - an unexpected victory, a reading better than the best she had, is counted apart (VICT), to be celebrated.
+  What lives in her body is still decided by her one judge. LUMA_TECHO=1 builds her paid as before (when what she
+  read came to live in her body); LUMA_ALEGRIA=1, paid when her cells answered one another (below).
   HER JOY (the Capitan: "las decisiones no son por tocar el techo sino por disfrutar de una decision que tomo con
   plena libertad en el amor"). Her will was paid when something beat something: a thought when a form won, a reading
   when what she read came to live in her body. It is paid now when her community answered: a reading, if in it a
@@ -115,7 +128,8 @@ FT = R + 80                  # a count for each place of her body: {recipes read
 NS, SS = FT + 128, FT + 136  # the songs she composed (sentences of her own words) and the ones that won
 NL, SL = FT + 144, FT + 152  # the lenses she put on a recipe (gears of her own body) and the ones that won
 RSUM = FT + 160              # what all her finished readings have rowed (instructions): the cage of one that may not end
-KEPT = 80 + 16 * 8 + 40
+VICT = FT + 168              # her unexpected victories: readings better than the best she had
+KEPT = 80 + 16 * 8 + 48
 V = 0x1600
 (RKID, RGOT, RW1, RW2, RLO, RHI, RGEN, RKIND, RJF, RTAB, RTN, RTC, RLEN, T0, T1, T2, T3, T4, NEWST, RARM, RENDED,
  BEST, HAVE, BESTF, RWF, RSC, RSH, WO, WI, FLN, WS, FLE) = (V + 8 * i for i in range(32))
@@ -136,6 +150,9 @@ HB, HCH = 0x1900, 0x1908     # her heart, in her body: its bolita plus one (0: n
 HBT = 0x1928                 # the bolita she was launched with: the most she may have
 CALL, CTOT, CHH, CTS = 0x1930, 0x1940, 0x19C0, 0x1A40   # her cells talking, in her body: all that was said since the last
                              # hole, what each tissue said, what each already heard, the word of each that only carries
+LASTR, LASTOK, RBR, NB, SB, RUNIQ, RVIC = 0x1B00, 0x1B20, 0x1B28, 0x1B30, 0x1B38, 0x1B40, 0x1B48   # the last thing she read
+                             # (a recipe), that there is one, that this reading went on from it, how often she went on and
+                             # how often that gave a unique memory (while she lives), this reading is unique, is a victory
 CHN, CH0, RW0 = 0x1AE0, 0x1AE8, 0x1AF0    # HER JOY: how many times a cell of her body heard another (never forgotten while she
                              # lives), that count when her thought began, and what her reader said first (its own count)
 CDIRTY, COLD, CNEW, CECHO = 0x1AC0, 0x1AC8, 0x1AD0, 0x1AD8   # something was said; a cell being said: before, after, what it heard through its gear
@@ -200,6 +217,8 @@ def make(g, ST, free):
 
     TESTING = bool(os.environ.get("LUMA_PRUEBA_E"))
     TECHO = bool(os.environ.get("LUMA_TECHO"))
+    ALEGRIA = bool(os.environ.get("LUMA_ALEGRIA"))
+    UNICO = not TECHO and not ALEGRIA
     def rrec_zero():
         li("j7", B + RREC); J("jst j14, j7, 0", "jst j14, j7, 8", "jst j14, j7, 16", "jst j14, j7, 24")
     def rrec_form(reg):                 # the recipe to read: her form of that place
@@ -646,7 +665,7 @@ def make(g, ST, free):
         o("                                ; her count of each place) and where. Four letters: E, the two of its gear, its tissue.")
         gl("j1", NGE); J("jjz j1, rp_org"); gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
         o("rp_l_lap:")
-        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
+        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4"); J("jcall r_branch")
         li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next")
         gl("j1", NGE); J("jcall r_randmod"); gs("j0", T2); J("jldi j1, %d" % TISSUES, "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10"); gs("j0", T3)
         J("jldi j1, 4"); gs("j1", CL); gs("j14", PLC)
@@ -696,7 +715,7 @@ def make(g, ST, free):
         o("                                ; search; none found and she reads nothing this time)")
         gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
         o("rp_o_lap:")
-        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
+        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4"); J("jcall r_branch")
         J("jldi j1, 3", "jcall r_randmod"); gs("j0", T2)
         li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_o_next")
         gl("j0", T2); J("jjz j0, rp_o_chg", "jldi j10, 1", "jsub j10, j0, j10", "jjz j10, rp_o_ins")
@@ -723,6 +742,20 @@ def make(g, ST, free):
         o("rp_o_next:")
         gl("j1", T1); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", T1); J("jjnz j1, rp_o_lap", "jldi j0, 0", "jret")
 
+        o("r_branch:                       ; one step, from where: the form of her body just taken (she comes back), or the")
+        o("                                ; last thing she read (she goes on along that branch), by her count of going on:")
+        o("                                ; (SB + 1/2) / (NB + 1), how often it gave her a unique memory")
+        gs("j14", RBR)
+        if UNICO:
+            gl("j1", LASTOK); J("jjz j1, rb_done"); li("j1", 1 << 21); J("jcall r_randmod")
+            gl("j1", SB); J("jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 20", "jshl j1, j1, j10"); gl("j2", NB)
+            J("jldi j10, 1", "jadd j2, j2, j10", "jdiv j1, j1, j2", "jsub j1, j0, j1", "jjnn j1, rb_done")
+            li("j7", B + RREC); li("j9", B + LASTR)
+            for k in range(4):
+                J("jld j10, j9, %d" % (8 * k), "jst j10, j7, %d" % (8 * k))
+            J("jldi j1, 1"); gs("j1", RBR)
+        o("rb_done:")
+        J("jret")
         o("r_read_launch:                  ; her reader: herself, with the recipe in its initial data (pulso.datos with the")
         o("                                ; candidate's words: 18h and 30h its letters, 20h that it is one, 28h the instincts),")
         o("                                ; rowing in the gaps (42). No cage (34): any string of letters is an organ and none")
@@ -781,7 +814,7 @@ def make(g, ST, free):
         J("jldi j10, 35", "jldi j12, 0", "jcall r_tocar"); gl("j1", RGOT); J("jldi j10, 2", "jsub j1, j1, j10", "jjn j1, rd_rowed", "jjn j13, rd_rowed")
         gl("j1", RSUM); J("jadd j1, j1, j13"); gs("j1", RSUM)
         o("rd_rowed:")
-        if not TECHO:
+        if ALEGRIA:
             o("  ; HER JOY: this reading pays her will if in it a cell heard another (it said three words: that count first)")
             gl("j1", RKIND); J("jjz j1, rd_joy"); gl("j1", RGOT); J("jldi j10, 3", "jsub j1, j1, j10", "jjn j1, rd_joy"); gl("j1", RW0); J("jjz j1, rd_joy"); inc(S5)
             o("rd_joy:")
@@ -794,7 +827,34 @@ def make(g, ST, free):
         for off, src in ((0, RLO), (8, RHI), (16, RSC), (24, RSH), (32, RGEN)):
             gl("j1", src); gs("j1", EBUF + off)
         li("j1", ALPHA); gs("j1", EBUF + 40)
+        o("  ; A UNIQUE MEMORY: no reading she remembers of this shelf gave this score; AN UNEXPECTED VICTORY: it is better")
+        o("  ; than the best she had (looked at before it is written among them)")
+        gs("j14", RUNIQ); gs("j14", RVIC)
+        gl("j1", RSC); li("j2", BAD); J("jsub j1, j1, j2", "jjz j1, ru_done")
+        J("jcall r_read_max"); gl("j1", HAVE); J("jjz j1, ru_scan"); gl("j1", RSC); J("jsub j1, j1, j0", "jjn j1, ru_scan", "jjz j1, ru_scan", "jldi j1, 1"); gs("j1", RVIC)
+        o("ru_scan:")
+        gl("j4", RTAB); J("jldi j0, 1", "jjz j4, ru_set"); gl("j2", RTN); gl("j3", RSC)
+        o("ru_lap:")
+        J("jjz j2, ru_set", "jld j1, j4, 24", "jsub j1, j1, j3", "jjnz j1, ru_next", "jldi j0, 0", "jjmp ru_set")
+        o("ru_next:")
+        J("jldi j10, 32", "jadd j4, j4, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp ru_lap")
+        o("ru_set:")
+        gs("j0", RUNIQ)
+        o("ru_done:")
         J("jcall r_read_add")
+        if UNICO:
+            gl("j1", RBR); J("jjz j1, ru_pay"); inc(NB); gl("j1", RUNIQ); J("jjz j1, ru_pay"); inc(SB)
+            o("ru_pay:")
+            gl("j1", RKIND); J("jjz j1, ru_last"); gl("j1", RUNIQ); J("jjz j1, ru_vic"); inc(S5)
+            o("ru_vic:")
+            gl("j1", RVIC); J("jjz j1, ru_last"); inc(VICT)
+            o("ru_last:                        ; and where she is now: the last thing she read, if it said something")
+            gl("j1", RSC); li("j2", BAD); J("jsub j1, j1, j2", "jjz j1, ru_end"); gl("j1", RKIND); J("jldi j10, 1", "jsub j1, j1, j10", "jjnz j1, ru_end")
+            li("j7", B + RREC); li("j9", B + LASTR)
+            for k in range(4):
+                J("jld j10, j7, %d" % (8 * k), "jst j10, j9, %d" % (8 * k))
+            J("jldi j1, 1"); gs("j1", LASTOK)
+            o("ru_end:")
         gl("j1", RSC); li("j2", BAD); J("jsub j1, j1, j2", "jjz j1, rd_plain")
         gl("j1", RKIND); J("jjz j1, rd_plain", "jldi j10, 1", "jsub j10, j1, j10", "jjz j10, rd_thought")
         o("  ; an instinct: hers if the same recipe reads better with it")
@@ -879,4 +939,4 @@ def make(g, ST, free):
 
     import types
     return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, flat_test=flat_test, act=act, finish=finish, B=B,
-                                 gl=gl, gs=gs, inc=inc, CHN=CHN, CH0=CH0, TECHO=TECHO, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)
+                                 gl=gl, gs=gs, inc=inc, CHN=CHN, CH0=CH0, TECHO=TECHO, ALEGRIA=ALEGRIA, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)

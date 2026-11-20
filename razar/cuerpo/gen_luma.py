@@ -223,7 +223,7 @@ def free_routine(g):
     inc(N0); gl("j1", TCH); J("jjz j1, fr_gift"); inc(S0); J("jjmp fr_gift")
     o("fr_s_think:")
     inc(N1); ld("j1", "FRAMES"); gl("j2", F0); J("jsub j1, j1, j2"); gs("j1", LASTF)
-    if RD.TECHO:
+    if not RD.ALEGRIA:
         ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)
     else:                               # HER JOY (gen_leer.py): the thought pays if while it lasted a cell of her body heard another
         RD.gl("j1", RD.CHN); RD.gl("j2", RD.CH0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)

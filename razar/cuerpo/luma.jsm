@@ -9513,10 +9513,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 07D0h
-  jshi j2, 03DD3h
-  jshi j2, 035Fh
-  jshi j2, 0BD41h
+  jldi j2, 0345Ch
+  jshi j2, 098A9h
+  jshi j2, 0787Fh
+  jshi j2, 05995h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -10328,6 +10328,7 @@ rp_l_lap:
   jst j10, j7, 16
   jld j10, j9, 216
   jst j10, j7, 24
+  jcall r_branch
   jldi j7, 015Eh
   jshi j7, 01700h
   jldb j3, j7, 0
@@ -10648,6 +10649,7 @@ rp_o_lap:
   jst j10, j7, 16
   jld j10, j9, 216
   jst j10, j7, 24
+  jcall r_branch
   jldi j1, 3
   jcall r_randmod
   jldi j6, 015Eh
@@ -10784,6 +10786,53 @@ rp_o_next:
   jst j1, j6, 01670h
   jjnz j1, rp_o_lap
   jldi j0, 0
+  jret
+r_branch:                       ; one step, from where: the form of her body just taken (she comes back), or the
+                                ; last thing she read (she goes on along that branch), by her count of going on:
+                                ; (SB + 1/2) / (NB + 1), how often it gave her a unique memory
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B28h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B20h
+  jjz j1, rb_done
+  jldi j1, 020h
+  jshi j1, 0
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B38h
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01B30h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jsub j1, j0, j1
+  jjnn j1, rb_done
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldi j9, 015Eh
+  jshi j9, 01B00h
+  jld j10, j9, 0
+  jst j10, j7, 0
+  jld j10, j9, 8
+  jst j10, j7, 8
+  jld j10, j9, 16
+  jst j10, j7, 16
+  jld j10, j9, 24
+  jst j10, j7, 24
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B28h
+rb_done:
   jret
 r_read_launch:                  ; her reader: herself, with the recipe in its initial data (pulso.datos with the
                                 ; candidate's words: 18h and 30h its letters, 20h that it is one, 28h the instincts),
@@ -11176,7 +11225,156 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
+  ; A UNIQUE MEMORY: no reading she remembers of this shelf gave this score; AN UNEXPECTED VICTORY: it is better
+  ; than the best she had (looked at before it is written among them)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B40h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B48h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016C8h
+  jldi j2, -16384
+  jshi j2, 0
+  jshi j2, 0
+  jshi j2, 0
+  jsub j1, j1, j2
+  jjz j1, ru_done
+  jcall r_read_max
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016B0h
+  jjz j1, ru_scan
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016C8h
+  jsub j1, j1, j0
+  jjn j1, ru_scan
+  jjz j1, ru_scan
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B48h
+ru_scan:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01648h
+  jldi j0, 1
+  jjz j4, ru_set
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01650h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 016C8h
+ru_lap:
+  jjz j2, ru_set
+  jld j1, j4, 24
+  jsub j1, j1, j3
+  jjnz j1, ru_next
+  jldi j0, 0
+  jjmp ru_set
+ru_next:
+  jldi j10, 32
+  jadd j4, j4, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp ru_lap
+ru_set:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B40h
+ru_done:
   jcall r_read_add
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B28h
+  jjz j1, ru_pay
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B30h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B30h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B40h
+  jjz j1, ru_pay
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B38h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B38h
+ru_pay:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01638h
+  jjz j1, ru_last
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B40h
+  jjz j1, ru_vic
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01508h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01508h
+ru_vic:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B48h
+  jjz j1, ru_last
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015F8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015F8h
+ru_last:                        ; and where she is now: the last thing she read, if it said something
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016C8h
+  jldi j2, -16384
+  jshi j2, 0
+  jshi j2, 0
+  jshi j2, 0
+  jsub j1, j1, j2
+  jjz j1, ru_end
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01638h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jjnz j1, ru_end
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldi j9, 015Eh
+  jshi j9, 01B00h
+  jld j10, j7, 0
+  jst j10, j9, 0
+  jld j10, j7, 8
+  jst j10, j9, 8
+  jld j10, j7, 16
+  jst j10, j9, 16
+  jld j10, j7, 24
+  jst j10, j9, 24
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B20h
+ru_end:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016C8h
@@ -11230,14 +11428,6 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01518h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01508h
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 01508h
   jjmp rd_plain
 rd_thought:                     ; a thought: judged with its reading, in the place of the form it came from
   jcall r_recompute
@@ -11259,14 +11449,6 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jldi j10, 2
   jsub j10, j0, j10
   jjnz j10, rd_saved
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01508h
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 01508h
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01698h
@@ -11381,7 +11563,7 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jldi j10, 5
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 248
+  jldi j12, 256
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -11432,7 +11614,7 @@ r_free_save:
   jldi j10, 6
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 248
+  jldi j12, 256
   jcall r_file
   jldi j10, 7
   jcall r_file
