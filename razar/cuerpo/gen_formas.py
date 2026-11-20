@@ -279,6 +279,8 @@ o("  jcall r_clear_hash")
 o("  jcall r_load_archive")
 o("  jcall r_new_walk")
 o("  jcall r_save_forms             ; the folder holds the population from the start")
+if RD and os.environ.get("LUMA_PRUEBA_PIEL"):
+    J("jldi j0, 0", "jhalt                         ; (a test: her forms grown and written, and she ends)")
 
 # ---- the living loop (vivo's, without its pauses: here a thought takes a frame)
 o("; ---- the living loop: wait for an event or for the time to run out, then a frame")

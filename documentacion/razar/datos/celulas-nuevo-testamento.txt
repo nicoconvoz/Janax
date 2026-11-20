@@ -1,0 +1,18 @@
+# nuevo-testamento, en 97 s; sin organo -3554; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516
+38A516           14775
+E91138A516       14775   debe dar lo de 38A516: igual
+38E911A516       14775   debe dar lo de 38A516: igual
+E91238A516       14775   debe dar lo de 38A516: igual
+E91438A516       14775
+38E921A516       15246
+E92138A516        5843
+38E922A516        8439
+38E923A516       14775
+38E924A516       14775
+38E925A516       14775   debe dar lo de 38A516: igual
+38E929A516       14775   debe dar lo de 38A516: igual
+E93138A516       14775   debe dar lo de 38A516: igual
+38A5E92           4251   debe dar lo de 38A5: igual
+38A5              4251
+E19              14775   debe dar lo de 38A5169: igual
+38A5169          14775

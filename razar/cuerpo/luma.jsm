@@ -1514,11 +1514,58 @@ grow_letter:
   jldi j10, 14
   jsub j10, j5, j10
   jjnz j10, grow_seen
+  ; a cell: E, the two letters of its gear and its tissue. The tissues of her body: 5, where her pen is passes
+  ; through the gear (across and down, each on its own) and she goes on from there, as after a hole; 6, where
+  ; her pen heads (the quarter turn of what follows) passes through it. Any other tissue draws nothing.
+  jldb j2, j1, 1
+  jldb j3, j1, 2
+  jldb j4, j1, 3
+  jldi j10, 9
+  jsub j2, j2, j10
+  jldi j10, 15
+  jmul j2, j2, j10
+  jadd j2, j2, j3
+  jldi j10, 1
+  jsub j2, j2, j10
+  jst j2, j14, 0360h
+  jst j4, j14, 0368h
   jld j10, j14, 0500h
-  jldi j11, 2
+  jldi j11, 3
   jadd j10, j10, j11
   jst j10, j14, 0500h
-  jjmp grow_letter               ; (a lens is of her eye: its three letters draw nothing)
+  jld j2, j14, 0360h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01838h
+  jsub j10, j2, j10
+  jjnn j10, grow_letter
+  jld j4, j14, 0368h
+  jldi j10, 5
+  jsub j10, j4, j10
+  jjz j10, grow_pen
+  jldi j10, 6
+  jsub j10, j4, j10
+  jjnz j10, grow_letter
+  jld j1, j14, 04F8h
+  jld j2, j14, 0360h
+  jcall r_gear
+  jst j0, j14, 04F8h
+  jjmp grow_letter
+grow_pen:
+  jld j1, j14, 0328h
+  jld j2, j14, 0360h
+  jcall r_gear
+  jst j0, j14, 0328h
+  jld j1, j14, 0330h
+  jld j2, j14, 0360h
+  jcall r_gear
+  jst j0, j14, 0330h
+  jld j1, j14, 0328h
+  jld j2, j14, 0330h
+  jldi j4, -1
+  jcall r_cell
+  jst j0, j14, 0338h
+  jjmp grow_letter
 grow_seen:
   jldi j10, 5
   jsub j10, j5, j10
@@ -8068,6 +8115,145 @@ or_hi:
 or_done:
   jstb j4, j9, 0
   jret
+r_gear:                         ; j1 = a number, j2 = a gear of hers (from 0) -> j0 = the number through it: the
+                                ; same little machine as her reader's (organo.inc: og_gear), for her body
+  jldi j9, 015Eh
+  jshi j9, 0C400h
+  jldi j10, 7
+  jshl j3, j2, j10
+  jadd j9, j9, j3
+  jldi j8, 015Eh
+  jshi j8, 01880h
+  jst j1, j8, 0
+  jst j1, j8, 8
+  jst j1, j8, 16
+  jst j1, j8, 24
+  jst j1, j8, 32
+  jst j1, j8, 40
+  jst j1, j8, 48
+  jst j1, j8, 56
+  jst j1, j8, 64
+  jst j1, j8, 72
+  jst j1, j8, 80
+  jst j1, j8, 88
+  jst j1, j8, 96
+  jst j1, j8, 104
+  jst j1, j8, 112
+  jst j1, j8, 120
+  jadd j0, j1, j14
+  jld j7, j9, 0
+  jldi j10, 15
+  jand j7, j7, j10
+bg_ins:
+  jjz j7, bg_done
+  jld j6, j9, 8
+  jldi j10, 12
+  jshr j3, j6, j10
+  jldi j10, 15
+  jand j3, j3, j10
+  jldi j10, 3
+  jshl j3, j3, j10
+  jadd j3, j3, j8
+  jld j3, j3, 0
+  jldi j10, 16
+  jshr j4, j6, j10
+  jldi j10, 255
+  jand j5, j6, j10
+  jldi j10, 8
+  jshr j6, j6, j10
+  jldi j10, 15
+  jand j6, j6, j10
+  jldi j10, 3
+  jshl j6, j6, j10
+  jadd j6, j6, j8
+  jldi j10, 1
+  jsub j10, j5, j10
+  jjnz j10, bg_o2
+  jldi j10, 48
+  jshl j0, j4, j10
+  jsar j0, j0, j10
+  jjmp bg_put
+bg_o2:
+  jldi j10, 15
+  jsub j10, j5, j10
+  jjnz j10, bg_o3
+  jld j0, j6, 0
+  jldi j10, 16
+  jshl j0, j0, j10
+  jor j0, j0, j4
+  jjmp bg_put
+bg_o3:
+  jldi j10, 15
+  jand j4, j4, j10
+  jldi j10, 3
+  jshl j4, j4, j10
+  jadd j4, j4, j8
+  jld j4, j4, 0
+  jldi j10, 2
+  jsub j10, j5, j10
+  jjnz j10, bg_p0
+  jadd j0, j3, j4
+  jjmp bg_put
+bg_p0:
+  jldi j10, 3
+  jsub j10, j5, j10
+  jjnz j10, bg_p1
+  jsub j0, j3, j4
+  jjmp bg_put
+bg_p1:
+  jldi j10, 4
+  jsub j10, j5, j10
+  jjnz j10, bg_p2
+  jmul j0, j3, j4
+  jjmp bg_put
+bg_p2:
+  jldi j10, 6
+  jsub j10, j5, j10
+  jjnz j10, bg_p3
+  jshl j0, j3, j4
+  jjmp bg_put
+bg_p3:
+  jldi j10, 7
+  jsub j10, j5, j10
+  jjnz j10, bg_p4
+  jshr j0, j3, j4
+  jjmp bg_put
+bg_p4:
+  jldi j10, 8
+  jsub j10, j5, j10
+  jjnz j10, bg_p5
+  jsar j0, j3, j4
+  jjmp bg_put
+bg_p5:
+  jldi j10, 9
+  jsub j10, j5, j10
+  jjnz j10, bg_p6
+  jand j0, j3, j4
+  jjmp bg_put
+bg_p6:
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjnz j10, bg_p7
+  jor j0, j3, j4
+  jjmp bg_put
+bg_p7:
+  jldi j10, 11
+  jsub j10, j5, j10
+  jjnz j10, bg_p8
+  jxor j0, j3, j4
+  jjmp bg_put
+bg_p8:
+  jjmp bg_skip
+bg_put:
+  jst j0, j6, 0
+bg_skip:
+  jldi j10, 8
+  jadd j9, j9, j10
+  jldi j10, 1
+  jsub j7, j7, j10
+  jjmp bg_ins
+bg_done:
+  jret
 r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly
                                 ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that
                                 ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and
@@ -8121,6 +8307,15 @@ flat_e:                         ; its number: the next letter, if there is one i
   jldi j10, 14
   jsub j12, j12, j10
   jjz j12, flat_two
+  jldi j10, 1
+  jadd j12, j11, j10
+  jsub j10, j12, j3
+  jjnn j10, flat_three
+  jldi j10, 15
+  jand j12, j4, j10
+  jldi j10, 13
+  jsub j12, j12, j10
+  jjz j12, flat_three
   jldi j5, 14
   jldi j10, 015Eh
   jshi j10, 03001h
@@ -8145,13 +8340,25 @@ flat_e:                         ; its number: the next letter, if there is one i
   jstb j7, j10, 200h
   jldi j10, 1
   jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 2
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
   jldi j10, 1
   jldi j6, 015Eh
   jshi j6, 0
   jst j10, j6, 01828h
-  jldi j10, 3
+  jldi j10, 4
   jadd j4, j4, j10
   jjmp flat_lap
+flat_three:
+  jldi j10, 1
+  jadd j4, j4, j10
 flat_two:
   jldi j10, 2
   jadd j4, j4, j10
@@ -8219,6 +8426,15 @@ flat_we:
   jldi j10, 14
   jsub j12, j12, j10
   jjz j12, flat_wl2
+  jldi j10, 1
+  jadd j12, j11, j10
+  jsub j10, j12, j1
+  jjnn j10, flat_wl3
+  jldi j10, 15
+  jand j12, j2, j10
+  jldi j10, 13
+  jsub j12, j12, j10
+  jjz j12, flat_wl3
   jldi j5, 14
   jldi j10, 015Eh
   jshi j10, 03001h
@@ -8243,13 +8459,25 @@ flat_we:
   jstb j7, j10, 200h
   jldi j10, 1
   jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 2
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
   jldi j10, 1
   jldi j6, 015Eh
   jshi j6, 0
   jst j10, j6, 01828h
-  jldi j10, 3
+  jldi j10, 4
   jadd j2, j2, j10
   jjmp flat_wl
+flat_wl3:
+  jldi j10, 1
+  jadd j2, j2, j10
 flat_wl2:
   jldi j10, 2
   jadd j2, j2, j10
@@ -8623,10 +8851,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 066B3h
-  jshi j2, 0E36h
-  jshi j2, 048F4h
-  jshi j2, 04562h
+  jldi j2, 04E6Bh
+  jshi j2, 0EEh
+  jshi j2, 0377h
+  jshi j2, 0528Ah
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -8838,10 +9066,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 021B3h
-  jshi j2, 0F106h
-  jshi j2, 019ACh
-  jshi j2, 06A99h
+  jldi j2, 011ACh
+  jshi j2, 04DF8h
+  jshi j2, 01B4Ah
+  jshi j2, 0D5BFh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -9616,10 +9844,10 @@ rp_i_org:
   jst j1, j6, 01698h
   jldi j0, 1
   jret
-rp_lens:                        ; A LENS (the Capitan: "desarticularlo en engranajes que sean legos para que Luma
-                                ; arme su propio software a medida"): a recipe of hers with a gear of her own body
-                                ; put in it, by luck: which gear, which recipe (by her count of each place) and
-                                ; where. Three letters: E, and the two that say its number. 64 tries.
+rp_lens:                        ; A CELL (the Capitan: "desarticularlo en engranajes que sean legos"; "rearticular por
+                                ; tipo de celula en evolucion"): a recipe of hers with a gear of her own body put in
+                                ; it, expressed in a tissue. All by luck: which gear, which tissue, which recipe (by
+                                ; her count of each place) and where. Four letters: E, the two of its gear, its tissue.
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01838h
@@ -9657,7 +9885,7 @@ rp_l_lap:
   jshi j7, 01700h
   jldb j3, j7, 0
   jjz j3, rp_l_next
-  jldi j10, 29
+  jldi j10, 28
   jsub j10, j3, j10
   jjnn j10, rp_l_next
   jldi j6, 015Eh
@@ -9667,6 +9895,13 @@ rp_l_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01678h
+  jldi j1, 6
+  jcall r_randmod
+  jldi j10, 1
+  jadd j0, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01680h
   jldi j7, 015Eh
   jshi j7, 01700h
   jldb j3, j7, 0
@@ -9677,12 +9912,12 @@ rp_l_lap:
   jshi j7, 01700h
   jldb j3, j7, 0
   jadd j4, j3, j14
-rp_l_up:                        ; room for its three letters
+rp_l_up:                        ; room for its four letters
   jsub j10, j4, j0
   jjz j10, rp_l_put
   jadd j5, j7, j4
   jldb j1, j5, 0
-  jstb j1, j5, 3
+  jstb j1, j5, 4
   jldi j10, 1
   jsub j4, j4, j10
   jjmp rp_l_up
@@ -9703,7 +9938,11 @@ rp_l_put:
   jldi j10, 1
   jadd j4, j4, j10
   jstb j4, j5, 3
-  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01680h
+  jstb j1, j5, 4
+  jldi j10, 4
   jadd j3, j3, j10
   jstb j3, j7, 0
   jldi j9, 015Eh
@@ -10349,10 +10588,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 066B3h
-  jshi j1, 0E36h
-  jshi j1, 048F4h
-  jshi j1, 04562h
+  jldi j1, 04E6Bh
+  jshi j1, 0EEh
+  jshi j1, 0377h
+  jshi j1, 0528Ah
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h

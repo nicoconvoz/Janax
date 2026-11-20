@@ -53,12 +53,27 @@ ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the
 ; (constants, + - * shifts, and or xor), on its own sixteen registers; anything else is passed over. The gears are
 ; data (80h bytes each from ORGGT: how many instructions, then each one, a word of the Janax language): put there
 ; by who launches it. A program with no gears has zeros there, and its lenses change nothing.
+; ITS TISSUES (the Capitan, 2026-11-20: "rearticular por tipo de celula en evolucion... no es lo mismo una neurona que
+; la celula de la piel o del ojo o del corazon"; "no acotes: los tejidos pueden ser alas, pueden ser escamas, pueden
+; ser lo que sea"). The same gear is a different cell in each tissue it is expressed in, and a tissue is anything of
+; hers a gear can pass through. So a CELL is four letters: E, the two that say its gear ((first - 9) * 15 + second,
+; from 1 to 105), and one that says its TISSUE, 1 to F. The tissues that are of this organ:
+;   1  her looks        a lens: every look passes through the gear until the next hole.
+;   2  the frame        what has been mixed so far passes through it, once, here: what the sentence associates.
+;   3  where her eye is how many words back or ahead it looks, through the gear.
+;   4  how her eye sees sharp or blurred, through the gear (anything but 0 is blurred).
+; Any other number is of another part of her (her body: gen_leer.py) or of no tissue yet: it does nothing here, and
+; it is free for whatever tissue comes. Nobody says which tissue a gear is for: a recipe says the cell it wants, and
+; the cell that pays where it is expressed is the one that stays alive in her.
+; The heart is the kernel itself (the Capitan): its cell would be a gear in the turn the kernel gives, where the
+; planner already is a Janax program that can be replaced. Not done: said in the notes.
 ORGGT0 = 4380h                  ; (a gear, counted from its number times 80h; its instructions)
 ORGGT1 = 4388h
 ORGGT = 4400h                   ; the gears: 105 x {its instructions, up to fifteen of them}
 ORGV  = 7D80h                   ; the little machine's sixteen registers
 ORGP  = 7E00h                   ; the lenses on the eye (a byte each: its gear's number, the last said lowest)
 ORGPL = 7E08h                   ; the ones still to look through
+ORGN  = 7E10h                   ; a cell being said: its gear
 ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
 ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
 ORGQ3 = 37E0h
@@ -334,24 +349,75 @@ og_lE:
   jst j13, j1, ORGIN
   jjmp og_lap
 og_lens:
-  jld j13, j1, ORGL             ; a gear: its second letter
+  jld j13, j1, ORGL             ; a cell: the second letter of its gear
   jjz j13, og_lap
   jldi j1, 9
   jsub j14, j14, j1
   jldi j1, 15
   jmul j14, j14, j1
   jand j1, j13, j1
-  jadd j14, j14, j1             ; its number, from 1
+  jadd j14, j14, j1             ; its gear, from 1
   jldi j1, 4
   jshr j13, j13, j1
   jldi j1, 0
   jst j13, j1, ORGL
-  jld j13, j1, ORGP             ; a lens more on the eye
-  jldi j1, 8
-  jshl j13, j13, j1
-  jor j13, j13, j14
+  jst j14, j1, ORGN
+  jjz j13, og_lap               ; and its tissue
+  jldi j14, 15
+  jand j14, j13, j14
+  jldi j1, 4
+  jshr j13, j13, j1
   jldi j1, 0
-  jst j13, j1, ORGP
+  jst j13, j1, ORGL
+  jld j13, j1, ORGN
+  jldi j1, 1
+  jsub j1, j14, j1
+  jjz j1, og_eye
+  jldi j1, 2
+  jsub j1, j14, j1
+  jjz j1, og_t2
+  jldi j1, 3
+  jsub j1, j14, j1
+  jjz j1, og_t3
+  jldi j1, 4
+  jsub j1, j14, j1
+  jjz j1, og_t4
+  jjmp og_lap                   ; of another part of her, or of no tissue yet
+og_t2:
+  jldi j1, 0
+  jadd j3, j2, j1
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jldi j1, 0
+  jadd j2, j3, j1
+  jjmp og_lap
+og_t3:
+  jldi j1, 0
+  jadd j3, j10, j1
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jldi j1, 0
+  jadd j10, j3, j1
+  jjmp og_lap
+og_t4:
+  jldi j1, 0
+  jadd j3, j11, j1
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jldi j1, 0
+  jadd j11, j3, j1
+  jjmp og_lap
+og_eye:
+  jldi j1, 0                    ; her looks: a lens more
+  jld j14, j1, ORGP
+  jldi j1, 8
+  jshl j14, j14, j1
+  jor j14, j14, j13
+  jldi j1, 0
+  jst j14, j1, ORGP
   jjmp og_lap
 og_lD:
   jldi j5, 1                    ; the eye blurred, or sharp again
@@ -412,6 +478,20 @@ ol_lens:
   jshr j13, j13, j1
   jldi j1, 0
   jst j13, j1, ORGPL
+  jldi j1, 7
+  jshl j9, j9, j1
+  jcall og_gear
+  jldi j1, 0
+  jld j13, j1, ORGPL
+  jjnz j13, ol_lens
+ol_ret:
+  jldi j1, 0
+  jret
+
+; The gear at j9 (its number, from 1, times 80h) run on its little machine: sixteen registers, every one starting as
+; j3; its instructions as they are written; -> j3 what the last one left. Uses j1, j4, j6, j7, j9, j13, j14.
+og_gear:
+  jldi j1, 0
   jst j3, j1, ORGV
   jst j3, j1, ORGV + 8
   jst j3, j1, ORGV + 16
@@ -428,13 +508,11 @@ ol_lens:
   jst j3, j1, ORGV + 104
   jst j3, j1, ORGV + 112
   jst j3, j1, ORGV + 120
-  jldi j1, 7
-  jshl j9, j9, j1
   jld j7, j9, ORGGT0
   jldi j1, 15
   jand j7, j7, j1
 ol_ins:
-  jjz j7, ol_next
+  jjz j7, og_gear_end
   jld j6, j9, ORGGT1            ; an instruction: its first operand, its constant, what it does, where it leaves it
   jldi j1, 12
   jshr j13, j6, j1
@@ -539,11 +617,7 @@ ol_skip:
   jldi j1, 1
   jsub j7, j7, j1
   jjmp ol_ins
-ol_next:
-  jldi j1, 0
-  jld j13, j1, ORGPL
-  jjnz j13, ol_lens
-ol_ret:
+og_gear_end:
   jldi j1, 0
   jret
 

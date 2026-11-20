@@ -28,6 +28,15 @@ WHAT SHE READS, in this order (a rule, not a list of cases: first what her judge
   her three instincts a step up or down (patience, firmness, readings: the genome of pulso.jsm), read with the form
   that reads best; or A SONG, a sentence of two or three of her own words; or A LENS, a gear of her own body put
   into a recipe of hers.
+HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es lo mismo una neurona que la celula
+  de la piel o del ojo o del corazon"; "no acotes: los tejidos pueden ser alas, pueden ser escamas, pueden ser lo que
+  sea"). The same gear is a different cell in each tissue it is expressed in, and a tissue is anything of hers a
+  gear can pass through. A cell is four letters: E, the two of its gear, and one that says its tissue (1 to F).
+  Connected today: 1 her looks, 2 the frame (what she associates), 3 where her eye is, 4 how it sees (her reader);
+  5 where her pen is, 6 where it heads (her body). The other numbers do nothing yet and are free: a tissue more is
+  one more place where a gear is let through, not a new kind of thing. Nobody decides which tissue a gear is for:
+  each tissue is judged by what it changes (her reading or her drawing, both in bits), and the cell that pays there
+  is the one that stays in her body. The heart is the kernel itself (the Capitan): not connected yet.
 HER GEARS (the Capitan: "lo importante no es comer el programa sino desarticularlo en engranajes que sean legos
   para que Luma arme su propio software a medida"). engranajes.py takes her own program apart with her own judge:
   a gear is a piece it repeats, which said once saves bits. The ones that only reckon with registers go into her
@@ -91,7 +100,11 @@ PBUF = 0x2000                # what waits for her signature (4096)
 FLC, FLB = 0x3000, 0x3001    # a recipe said flat, its words opened: how many letters (when they fit a byte), the letters
 FLO = FLB + 0x200            # and for each the letter of the sentence it came from (1 the first)
 WORDS = 0x7F00               # in her reader's initial data: her words (organo.inc: ORGT)
-GEARS, NGEARS = 0x4400, 105  # and her gears (organo.inc: ORGGT), 80h bytes each: the file "engranajes" of her house
+GEARS, NGEARS = 0x4400, 105  # and her gears (organo.inc: ORGGT), 80h bytes each: the file "engranajes" of her house.
+TISSUES = 6                  # the tissues a gear can be expressed in today (a cell says which, a letter from 1 to F):
+                             # 1 her looks, 2 the frame, 3 where her eye is, 4 how it sees (her reader: organo.inc);
+                             # 5 where her pen is, 6 where it heads (her body, here). The other numbers are free.
+BVR = 0x1880                 # the sixteen registers of the little machine of her body (r_gear)
 GFP, FLG, WL, NGE = 0x1820, 0x1828, 0x1830, 0x1838   # the gears' print, a recipe said flat has a lens, a wish, how many gears
 LGE = 0x1840                 # "engranajes"
 DLEN = WORDS + 16 * 8
@@ -182,7 +195,19 @@ def make(g, ST, free):
         g["incg"]("GFI"); ld("j9", "GFI"); gl("j2", FLN); J("jsub j10, j2, j9", "jjn j10, grow_done")
         li("j1", B + FLB - 1); J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC"); J("jldb j6, j1, 200h"); st("j6", "GT")
         J("jldi j10, 14", "jsub j10, j5, j10", "jjnz j10, grow_seen")
-        g["incg"]("GFI", 2); J("jjmp grow_letter               ; (a lens is of her eye: its three letters draw nothing)")
+        o("  ; a cell: E, the two letters of its gear and its tissue. The tissues of her body: 5, where her pen is passes")
+        o("  ; through the gear (across and down, each on its own) and she goes on from there, as after a hole; 6, where")
+        o("  ; her pen heads (the quarter turn of what follows) passes through it. Any other tissue draws nothing.")
+        J("jldb j2, j1, 1", "jldb j3, j1, 2", "jldb j4, j1, 3", "jldi j10, 9", "jsub j2, j2, j10", "jldi j10, 15", "jmul j2, j2, j10", "jadd j2, j2, j3",
+          "jldi j10, 1", "jsub j2, j2, j10")
+        st("j2", "GK"); st("j4", "GN0"); g["incg"]("GFI", 3)
+        ld("j2", "GK"); gl("j10", NGE); J("jsub j10, j2, j10", "jjnn j10, grow_letter")
+        ld("j4", "GN0"); J("jldi j10, 5", "jsub j10, j4, j10", "jjz j10, grow_pen", "jldi j10, 6", "jsub j10, j4, j10", "jjnz j10, grow_letter")
+        ld("j1", "GHEAD"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "GHEAD"); J("jjmp grow_letter")
+        o("grow_pen:")
+        ld("j1", "TX"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TX")
+        ld("j1", "TY"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TY")
+        ld("j1", "TX"); ld("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV"); J("jjmp grow_letter")
         o("grow_seen:")
 
     def flat_test():
@@ -227,6 +252,46 @@ def make(g, ST, free):
         o("or_done:")
         J("jstb j4, j9, 0", "jret")
 
+        o("r_gear:                         ; j1 = a number, j2 = a gear of hers (from 0) -> j0 = the number through it: the")
+        o("                                ; same little machine as her reader's (organo.inc: og_gear), for her body")
+        li("j9", B + DBUF + GEARS); J("jldi j10, 7", "jshl j3, j2, j10", "jadd j9, j9, j3"); li("j8", B + BVR)
+        for k in range(16):
+            J("jst j1, j8, %d" % (8 * k))
+        J("jadd j0, j1, j14", "jld j7, j9, 0", "jldi j10, 15", "jand j7, j7, j10")
+        o("bg_ins:")
+        J("jjz j7, bg_done", "jld j6, j9, 8", "jldi j10, 12", "jshr j3, j6, j10", "jldi j10, 15", "jand j3, j3, j10", "jldi j10, 3", "jshl j3, j3, j10",
+          "jadd j3, j3, j8", "jld j3, j3, 0", "jldi j10, 16", "jshr j4, j6, j10", "jldi j10, 255", "jand j5, j6, j10",
+          "jldi j10, 8", "jshr j6, j6, j10", "jldi j10, 15", "jand j6, j6, j10", "jldi j10, 3", "jshl j6, j6, j10", "jadd j6, j6, j8")
+        J("jldi j10, 1", "jsub j10, j5, j10", "jjnz j10, bg_o2", "jldi j10, 48", "jshl j0, j4, j10", "jsar j0, j0, j10", "jjmp bg_put")
+        o("bg_o2:")
+        J("jldi j10, 15", "jsub j10, j5, j10", "jjnz j10, bg_o3", "jld j0, j6, 0", "jldi j10, 16", "jshl j0, j0, j10", "jor j0, j0, j4", "jjmp bg_put")
+        o("bg_o3:")
+        J("jldi j10, 15", "jand j4, j4, j10", "jldi j10, 3", "jshl j4, j4, j10", "jadd j4, j4, j8", "jld j4, j4, 0")
+        J("jldi j10, 2", "jsub j10, j5, j10", "jjnz j10, bg_p0", "jadd j0, j3, j4", "jjmp bg_put")
+        o("bg_p0:")
+        J("jldi j10, 3", "jsub j10, j5, j10", "jjnz j10, bg_p1", "jsub j0, j3, j4", "jjmp bg_put")
+        o("bg_p1:")
+        J("jldi j10, 4", "jsub j10, j5, j10", "jjnz j10, bg_p2", "jmul j0, j3, j4", "jjmp bg_put")
+        o("bg_p2:")
+        J("jldi j10, 6", "jsub j10, j5, j10", "jjnz j10, bg_p3", "jshl j0, j3, j4", "jjmp bg_put")
+        o("bg_p3:")
+        J("jldi j10, 7", "jsub j10, j5, j10", "jjnz j10, bg_p4", "jshr j0, j3, j4", "jjmp bg_put")
+        o("bg_p4:")
+        J("jldi j10, 8", "jsub j10, j5, j10", "jjnz j10, bg_p5", "jsar j0, j3, j4", "jjmp bg_put")
+        o("bg_p5:")
+        J("jldi j10, 9", "jsub j10, j5, j10", "jjnz j10, bg_p6", "jand j0, j3, j4", "jjmp bg_put")
+        o("bg_p6:")
+        J("jldi j10, 10", "jsub j10, j5, j10", "jjnz j10, bg_p7", "jor j0, j3, j4", "jjmp bg_put")
+        o("bg_p7:")
+        J("jldi j10, 11", "jsub j10, j5, j10", "jjnz j10, bg_p8", "jxor j0, j3, j4", "jjmp bg_put")
+        o("bg_p8:")
+        J("jjmp bg_skip")
+        o("bg_put:")
+        J("jst j0, j6, 0")
+        o("bg_skip:")
+        J("jldi j10, 8", "jadd j9, j9, j10", "jldi j10, 1", "jsub j7, j7, j10", "jjmp bg_ins")
+        o("bg_done:")
+        J("jret")
         o("r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly")
         o("                                ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that")
         o("                                ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and")
@@ -234,13 +299,17 @@ def make(g, ST, free):
         J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE); gs("j14", FLG)
         def emit(origin, reg="j5"):
             li("j10", B + FLB); J("jadd j10, j10, j8", "jstb %s, j10, 0" % reg, "jstb %s, j10, 200h" % origin, "jldi j10, 1", "jadd j8, j8, j10")
-        def lens(rec, idx, n, back, skip):
-            """at an E whose number (in j6 = k, at idx + 1) is 9 or more: its second letter, if it has one in the same
-            sixteen -> the three stay; else only E and its number are passed over"""
+        def lens(rec, idx, n, back, skip, skip3):
+            """at an E whose number (in j6 = k, at idx + 1) is 9 or more: a cell. Its gear's second letter and its
+            tissue, each if it has it in the same sixteen -> the four stay; else what her reader would have taken is
+            passed over (E and one letter, or E and two)"""
             J("jldi j10, 2", "jadd j11, %s, j10" % idx, "jsub j10, j11, %s" % n, "jjnn j10, %s" % skip,
               "jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 14", "jsub j12, j12, j10", "jjz j12, %s" % skip)
+            J("jldi j10, 1", "jadd j12, j11, j10", "jsub j10, j12, %s" % n, "jjnn j10, %s" % skip3,
+              "jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 13", "jsub j12, j12, j10", "jjz j12, %s" % skip3)
             J("jldi j5, 14"); emit("j7"); emit("j7", "j6"); J("jadd j5, %s, j11" % rec, "jldb j5, j5, 1"); emit("j7")
-            J("jldi j10, 1"); gs("j10", FLG); J("jldi j10, 3", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
+            J("jadd j5, %s, j11" % rec, "jldb j5, j5, 2"); emit("j7")
+            J("jldi j10, 1"); gs("j10", FLG); J("jldi j10, 4", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
         o("flat_lap:")
         J("jsub j10, j4, j3", "jjnn j10, flat_done", "jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 1", "jadd j7, j4, j10",
           "jldi j10, 14", "jsub j10, j5, j10", "jjz j10, flat_e")
@@ -248,7 +317,9 @@ def make(g, ST, free):
         o("flat_e:                         ; its number: the next letter, if there is one in the same sixteen")
         J("jsub j10, j7, j3", "jjnn j10, flat_one", "jldi j10, 15", "jand j11, j4, j10", "jsub j11, j11, j10", "jjz j11, flat_one")
         J("jadd j6, j9, j7", "jldb j6, j6, 1", "jldi j10, 9", "jsub j10, j6, j10", "jjn j10, flat_word")
-        lens("j9", "j4", "j3", "flat_lap", "flat_two")
+        lens("j9", "j4", "j3", "flat_lap", "flat_two", "flat_three")
+        o("flat_three:")
+        J("jldi j10, 1", "jadd j4, j4, j10")
         o("flat_two:")
         J("jldi j10, 2", "jadd j4, j4, j10", "jjmp flat_lap")
         o("flat_word:")
@@ -263,7 +334,9 @@ def make(g, ST, free):
         st("j6", "TF"); J("jadd j12, j6, j11", "jldb j12, j12, 1", "jldi j10, 9", "jsub j10, j12, j10", "jjn j10, flat_w2")
         o("  ; (a lens inside the word: the word's place is kept while its three letters are said)")
         st("j9", "TI"); J("jadd j9, j6, j14", "jadd j6, j12, j14")
-        lens("j9", "j2", "j1", "flat_wl", "flat_wl2")
+        lens("j9", "j2", "j1", "flat_wl", "flat_wl2", "flat_wl3")
+        o("flat_wl3:")
+        J("jldi j10, 1", "jadd j2, j2, j10")
         o("flat_wl2:")
         J("jldi j10, 2", "jadd j2, j2, j10")
         o("flat_wl:")
@@ -462,21 +535,23 @@ def make(g, ST, free):
         o("rp_i_org:")
         keyget(); known("rp_org")
         J("jldi j1, 2"); gs("j1", RKIND); gs("j1", RARM); J("jldi j0, 1", "jret")
-        o("rp_lens:                        ; A LENS (the Capitan: \"desarticularlo en engranajes que sean legos para que Luma")
-        o("                                ; arme su propio software a medida\"): a recipe of hers with a gear of her own body")
-        o("                                ; put in it, by luck: which gear, which recipe (by her count of each place) and")
-        o("                                ; where. Three letters: E, and the two that say its number. 64 tries.")
+        o("rp_lens:                        ; A CELL (the Capitan: \"desarticularlo en engranajes que sean legos\"; \"rearticular por")
+        o("                                ; tipo de celula en evolucion\"): a recipe of hers with a gear of her own body put in")
+        o("                                ; it, expressed in a tissue. All by luck: which gear, which tissue, which recipe (by")
+        o("                                ; her count of each place) and where. Four letters: E, the two of its gear, its tissue.")
         gl("j1", NGE); J("jjz j1, rp_org"); gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
         o("rp_l_lap:")
         J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
-        li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next", "jldi j10, 29", "jsub j10, j3, j10", "jjnn j10, rp_l_next")
-        gl("j1", NGE); J("jcall r_randmod"); gs("j0", T2); li("j7", B + RREC); J("jldb j3, j7, 0", "jldi j10, 1", "jadd j1, j3, j10", "jcall r_randmod")
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next", "jldi j10, 28", "jsub j10, j3, j10", "jjnn j10, rp_l_next")
+        gl("j1", NGE); J("jcall r_randmod"); gs("j0", T2); J("jldi j1, %d" % TISSUES, "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10"); gs("j0", T3)
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jldi j10, 1", "jadd j1, j3, j10", "jcall r_randmod")
         li("j7", B + RREC); J("jldb j3, j7, 0", "jadd j4, j3, j14")
-        o("rp_l_up:                        ; room for its three letters")
-        J("jsub j10, j4, j0", "jjz j10, rp_l_put", "jadd j5, j7, j4", "jldb j1, j5, 0", "jstb j1, j5, 3", "jldi j10, 1", "jsub j4, j4, j10", "jjmp rp_l_up")
+        o("rp_l_up:                        ; room for its four letters")
+        J("jsub j10, j4, j0", "jjz j10, rp_l_put", "jadd j5, j7, j4", "jldb j1, j5, 0", "jstb j1, j5, 4", "jldi j10, 1", "jsub j4, j4, j10", "jjmp rp_l_up")
         o("rp_l_put:")
         J("jadd j5, j7, j0", "jldi j10, 14", "jstb j10, j5, 1"); gl("j1", T2); J("jldi j10, 15", "jdiv j2, j1, j10", "jmul j4, j2, j10", "jsub j4, j1, j4",
-          "jldi j10, 9", "jadd j2, j2, j10", "jstb j2, j5, 2", "jldi j10, 1", "jadd j4, j4, j10", "jstb j4, j5, 3", "jldi j10, 3", "jadd j3, j3, j10", "jstb j3, j7, 0")
+          "jldi j10, 9", "jadd j2, j2, j10", "jstb j2, j5, 2", "jldi j10, 1", "jadd j4, j4, j10", "jstb j4, j5, 3"); gl("j1", T3)
+        J("jstb j1, j5, 4", "jldi j10, 4", "jadd j3, j3, j10", "jstb j3, j7, 0")
         keyget(); known("rp_l_next")
         J("jldi j1, 1"); gs("j1", RKIND); J("jldi j1, 4"); gs("j1", RARM); J("jldi j0, 1", "jret")
         o("rp_l_next:")
