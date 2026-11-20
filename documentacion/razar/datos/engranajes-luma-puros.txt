@@ -1,0 +1,84 @@
+# luma.bin: 30102 instrucciones, 11649 en tramos sin saltos ni memoria
+# 24 engranajes ahorran 2252 instrucciones (7.5 % del programa)
+engranaje 1: ahorra 568, dicho 570 veces, 2 instrucciones
+    jldi r0, 1
+    jadd r1, r1, r0
+engranaje 2: ahorra 371, dicho 373 veces, 2 instrucciones
+    jldi r0, 350
+    jshi r0, 0
+engranaje 3: ahorra 237, dicho 239 veces, 2 instrucciones
+    jldi r0, 1
+    jsub r1, r1, r0
+engranaje 4: ahorra 99, dicho 101 veces, 2 instrucciones
+    jldi r0, 8
+    jadd r1, r1, r0
+engranaje 5: ahorra 95, dicho 33 veces, 4 instrucciones
+    jldi r0, 8
+    jshl r2, r1, r0
+    jldi r0, 2048
+    jadd r2, r2, r0
+engranaje 6: ahorra 91, dicho 93 veces, 2 instrucciones
+    jldi r0, 63
+    jsar r1, r1, r0
+engranaje 7: ahorra 84, dicho 86 veces, 2 instrucciones
+    jldi r0, 3
+    jshl r1, r1, r0
+engranaje 8: ahorra 68, dicho 24 veces, 4 instrucciones
+    jldi r0, 32
+    jshl r1, r1, r0
+    jldi r0, 7
+    jor r1, r1, r0
+engranaje 9: ahorra 66, dicho 68 veces, 2 instrucciones
+    jldi r0, 0
+    jldi r1, 0
+engranaje 10: ahorra 57, dicho 59 veces, 2 instrucciones
+    jldi r0, 8
+    jsar r1, r1, r0
+engranaje 11: ahorra 54, dicho 56 veces, 2 instrucciones
+    jldi r0, 3
+    jshl r0, r1, r0
+engranaje 12: ahorra 51, dicho 14 veces, 5 instrucciones
+    jldi r0, -32768
+    jshi r0, 0
+    jshi r0, 0
+    jshi r0, 0
+    jsub r0, r1, r0
+engranaje 13: ahorra 41, dicho 43 veces, 2 instrucciones
+    jldi r0, 63
+    jsar r0, r1, r0
+engranaje 14: ahorra 38, dicho 40 veces, 2 instrucciones
+    jldi r0, 3
+    jshl r2, r1, r0
+engranaje 15: ahorra 37, dicho 39 veces, 2 instrucciones
+    jldi r0, 10
+    jsub r0, r1, r0
+engranaje 16: ahorra 37, dicho 39 veces, 2 instrucciones
+    jshl r0, r0, r1
+    jor r2, r2, r0
+engranaje 17: ahorra 36, dicho 38 veces, 2 instrucciones
+    jldi r0, 384
+    jmul r2, r1, r0
+engranaje 18: ahorra 35, dicho 37 veces, 2 instrucciones
+    jldi r0, 1
+    jsub r0, r1, r0
+engranaje 19: ahorra 35, dicho 13 veces, 4 instrucciones
+    jldi r0, 32
+    jshl r2, r1, r0
+    jldi r0, 5
+    jor r2, r2, r0
+engranaje 20: ahorra 34, dicho 36 veces, 2 instrucciones
+    jldi r0, 255
+    jand r1, r1, r0
+engranaje 21: ahorra 33, dicho 18 veces, 3 instrucciones
+    jdiv r2, r0, r1
+    jmul r2, r2, r1
+    jsub r2, r0, r2
+engranaje 22: ahorra 29, dicho 31 veces, 2 instrucciones
+    jadd r2, r0, r1
+    jadd r4, r3, r1
+engranaje 23: ahorra 28, dicho 30 veces, 2 instrucciones
+    jldi r0, 2
+    jsub r0, r1, r0
+engranaje 24: ahorra 28, dicho 30 veces, 2 instrucciones
+    jldi r0, 4
+    jshl r1, r1, r0
