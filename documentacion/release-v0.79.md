@@ -1,6 +1,6 @@
 ## Janax y Razar v0.79: sus palabras
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24394744](https://doi.org/10.5281/zenodo.24394744)
 
 > *"Cada mecanismo que entiende tiene un equivalente en receta de código: esos son los engranajes que forman
 > programas, y esos programas se mejoran e incluso son engranajes de programas más ricos."* (el autor, 2026-11-19)
