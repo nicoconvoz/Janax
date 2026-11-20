@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.01:** [10.5281/zenodo.24404601](https://doi.org/10.5281/zenodo.24404601)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.03:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,21 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-20, v1.03): come, entiende y reconoce a su autor
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Reconoce la firma de su autor, ella sola:** de 54 pasajes de su *Diario Espiritual* que nunca contó reconoce 45, y
+de 94 del Nuevo Testamento no toma ninguno por suyo. **Come código ajeno sin que nadie se lo traduzca:** ubica cada
+palabra de KolibriOS, C y Lua por el lugar que ocupa (la regla con que Razar le ganó al MATS) y la dice en su
+idioma; sin que nadie se lo enseñe pone `mov` y `=` en el lugar de cargar un número, `cmp` en el de restar y `+` en
+el de sumar, y de 7,7 MB hace 29.184 instrucciones suyas. **Desarma su propio cuerpo** en engranajes sin Python.
+**Rinde examen con una segunda lectura del mismo libro**, y así puede aprender de un libro chico en segundos.
+**Leer le paga por un recuerdo único** y camina por ramas de a un paso. Y es la misma Luma con memoria nueva: se le
+cambió todo lo que recordaba y siguió siendo ella. Las tres cosas con respuesta exacta dieron idéntico al
+instrumento de afuera. Lo que falta, dicho: todavía no ganó nada suyo, y las notas de antes son de otra vara.
+[Notas de la v1.03](documentacion/release-v1.03.md).
 
 ## Novedad (2026-11-20, v1.01): sus células se hablan
 
