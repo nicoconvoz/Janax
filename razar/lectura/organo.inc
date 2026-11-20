@@ -28,8 +28,23 @@ ORGW  = 30h                     ; its letters and the audit's garbage, in the in
 ORGF  = 38h                     ; includes it: 30h to 3Fh of its X.datos are the organ's (zeros: no organ)
 ORGL  = 3800h                   ; the letters still to read
 ORGX  = 37F0h                   ; its letters beyond the sixteenth (a recipe of Luma's has up to 31: the same recipe is her
-ORGL2 = 37F8h                   ; form and her organ, whole), set by who has them (pulso.jsm: a candidate); 0 = none. And
-                                ; the ones of them still to read. Up to sixteen letters nothing changes.
+                                ; form and her organ, whole), set by who has them (pulso.jsm: a candidate); 0 = none.
+; ITS WORDS (the Capitan: "codigo poetico: engranajes como palabras, programas como oraciones"; "una oracion que ya
+; funciona se asciende a palabra"; 2026-11-20: "arma ya lo de la oracion poetica"). E is no longer free: E and the
+; letter after it, k, say WORD k here: its letters are read in this place, one after another, as if they were written
+; in it (the eye and the frame go on as they are). The words are data, never code: sixteen bytes each from ORGT (its
+; letters as an organ's, two words of sixteen), put there by who launches it (Luma: her eight living forms are her
+; words, gen_leer.py), so a sentence of words runs without anything being built again. Inside a word E says nothing
+; (and takes its number with it): a word is said whole and flat, so no word can call itself for ever. An E with no
+; letter after it in its sixteen, a number above 8, or an empty word: nothing. A program with no words has zeros
+; there, and E says nothing in it, as before.
+ORGT0 = 7EF0h                   ; (a word's two halves, counted from its number times sixteen)
+ORGT1 = 7EF8h
+ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the ones beyond}
+ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
+ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
+ORGQ3 = 37E0h
+ORGIN = 37D8h                   ; inside a word: how many of those belong to it or come back from it
 organ:
   jldi j1, 0                    ; no letters, no organ: nothing is touched (as a program that never grew one)
   jld j2, j1, ORGW
@@ -71,7 +86,10 @@ og_some:
   jldi j10, 0                   ; the eye at rest: where the window is, and sharp
   jldi j11, 0
   jld j13, j1, ORGX
-  jst j13, j1, ORGL2
+  jst j13, j1, ORGQ1
+  jst j1, j1, ORGQ2
+  jst j1, j1, ORGQ3
+  jst j1, j1, ORGIN
   jld j13, j1, ORGW
   jst j13, j1, ORGL
 jwhile j13
@@ -120,6 +138,9 @@ jwhile j13
   jldi j13, 13
   jsub j13, j14, j13
   jjz j13, og_lD
+  jldi j13, 14
+  jsub j13, j14, j13
+  jjz j13, og_lE
   jldi j13, 15
   jsub j13, j14, j13
   jjz j13, og_lF
@@ -127,9 +148,49 @@ jwcheck
 og_lap:
   jldi j1, 0
   jld j13, j1, ORGL
+  jjnz j13, og_more             ; these are read: what waits after them, the next that has letters
+  jld j13, j1, ORGQ1
+  jld j14, j1, ORGQ2
+  jst j14, j1, ORGQ1
+  jld j14, j1, ORGQ3
+  jst j14, j1, ORGQ2
+  jst j1, j1, ORGQ3
+  jld j14, j1, ORGIN
+  jjz j14, og_pop1
+  jldi j1, 1
+  jsub j14, j14, j1
+  jldi j1, 0
+  jst j14, j1, ORGIN
+og_pop1:
   jjnz j13, og_more
-  jld j13, j1, ORGL2            ; the first sixteen are read: the ones beyond, once
-  jst j1, j1, ORGL2
+  jld j13, j1, ORGQ1
+  jld j14, j1, ORGQ2
+  jst j14, j1, ORGQ1
+  jld j14, j1, ORGQ3
+  jst j14, j1, ORGQ2
+  jst j1, j1, ORGQ3
+  jld j14, j1, ORGIN
+  jjz j14, og_pop2
+  jldi j1, 1
+  jsub j14, j14, j1
+  jldi j1, 0
+  jst j14, j1, ORGIN
+og_pop2:
+  jjnz j13, og_more
+  jld j13, j1, ORGQ1
+  jld j14, j1, ORGQ2
+  jst j14, j1, ORGQ1
+  jld j14, j1, ORGQ3
+  jst j14, j1, ORGQ2
+  jst j1, j1, ORGQ3
+  jld j14, j1, ORGIN
+  jjz j14, og_pop3
+  jldi j1, 1
+  jsub j14, j14, j1
+  jldi j1, 0
+  jst j14, j1, ORGIN
+og_pop3:
+  jjnz j13, og_more
 og_more:
 jwend
 jjmp og_done
@@ -214,6 +275,36 @@ og_lB:
 og_lC:
   jldi j5, 1                    ; the eye, a word ahead
   jadd j10, j10, j5
+  jjmp og_lap
+og_lE:
+  jldi j1, 0                    ; a word: its number is the letter after this one
+  jld j13, j1, ORGL
+  jjz j13, og_lap
+  jldi j14, 15
+  jand j14, j13, j14
+  jldi j1, 4
+  jshr j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGL
+  jld j13, j1, ORGIN            ; (inside a word it says nothing)
+  jjnz j13, og_lap
+  jldi j13, 9
+  jsub j13, j14, j13
+  jjnn j13, og_lap
+  jldi j13, 4
+  jshl j14, j14, j13
+  jld j13, j14, ORGT0
+  jjz j13, og_lap
+  jld j13, j1, ORGQ1            ; after the word: the rest of the sentence, then its letters beyond the sixteenth
+  jst j13, j1, ORGQ3
+  jld j13, j1, ORGL
+  jst j13, j1, ORGQ2
+  jld j13, j14, ORGT1
+  jst j13, j1, ORGQ1
+  jld j13, j14, ORGT0
+  jst j13, j1, ORGL
+  jldi j13, 2
+  jst j13, j1, ORGIN
   jjmp og_lap
 og_lD:
   jldi j5, 1                    ; the eye blurred, or sharp again

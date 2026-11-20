@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.73:** [10.5281/zenodo.24381944](https://doi.org/10.5281/zenodo.24381944)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.79:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,19 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-20, v0.79): sus palabras
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**El código poético ya es de ella.** Una oración que funciona es una que vive en su cuerpo, así que sus ocho formas
+vivas son sus palabras: la letra `E` y un número dicen "acá va entera mi forma de ese lugar", igual en su dibujo y
+en su lectura. Las palabras son datos y no código: nada se arma de nuevo cuando compone. Y compone: leer tiene un
+camino nuevo, la canción, una oración de dos o tres de sus propias palabras. Medido: decir la palabra da exactamente
+lo mismo que escribirla letra por letra, y una canción de dos palabras (`E3E1`, 16523) lee más que las dos solas,
+cruzando de un paso la loma donde estaba parada. Su ventana nace ahora al fondo, sin sacarle el teclado a nadie. Lo
+que falta, dicho: ninguna canción suya ganó todavía; siete de sus ocho palabras son formas hechas para dibujar.
+[Notas de la v0.79](documentacion/release-v0.79.md).
 
 ## Novedad (2026-11-19, v0.73): un solo ser
 

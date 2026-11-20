@@ -88,11 +88,40 @@ def ojo():
         out.write(line + NL); print(line)
 
 
+# the words (organo.inc: og_lE): E and a number say that word in its place. With these three words, each sentence of
+# words must score exactly what the same letters written out score.
+WORDS = {1: "38A516", 3: "516", 5: "38"}
+SONGS = [("38A516", None), ("E1", "38A516"), ("38A5168", None), ("E18", "38A5168"), ("51638A516", None), ("E3E1", "51638A516"),
+         ("51638", None), ("E3E5", "51638"), ("3E3", "3516"), ("3516", None), ("E2", ""), ("E9", "")]
+
+
+def palabras():
+    legos.setup(); legos.organo_inc({})
+    print("arma:", legos.build()); sys.stdout.flush()
+    d = bytearray(open(legos.W + "/out/pulso.datos", "rb").read()); d += bytes(0x7F80 - len(d))   # her words, beside the program's data
+    for k, w in WORDS.items():
+        d[0x7F00 + 16 * (k - 1):0x7F00 + 16 * (k - 1) + 8] = legos.word(w).to_bytes(8, "little")
+    open(legos.W + "/out/pulso.datos", "wb").write(d)
+    organs = [o for o, _ in SONGS]; legos.TIMEOUT = 90 + 9 * len(organs)
+    t = time.time(); g = legos.scores(organs)
+    name = os.path.basename(legos.BOOK).split(".")[0]
+    out = open(legos.W + "/palabras-%s.txt" % name, "w", encoding="utf-8", newline=NL)
+    def said(o, same):
+        if same is None: return ""
+        if same == "": return "   una palabra que no existe: debe dar lo de sin organo: %s" % ("igual" if g.get(o) == g.get("") else "DISTINTO")
+        return "   debe dar lo de %s: %s" % (same, "igual" if g.get(o) == g.get(same) else "DISTINTO")
+    for line in ["# %s, en %.0f s; sin organo %s; palabras: %s" % (name, time.time() - t, g.get(""), ", ".join("E%d = %s" % kv for kv in sorted(WORDS.items())))] + [
+            "%-12s %7s%s" % (o, g.get(o, "no rindio"), said(o, same)) for o, same in SONGS] + (["estado: " + g["estado"]] if "estado" in g else []):
+        out.write(line + NL); print(line)
+
+
 def main():
     if len(sys.argv) > 2:
         legos.BOOK = sys.argv[2]
     if sys.argv[1] == "ojo":
         return ojo()
+    if sys.argv[1] == "palabras":
+        return palabras()
     if "og_lB:" in legos.original():
         print("medir: sus letras B a E eran las de antes del ojo; lo medido esta en documentacion/razar/datos/sentidos-nuevo-testamento.txt"); return
     legos.setup(); legos.organo_inc(gears())

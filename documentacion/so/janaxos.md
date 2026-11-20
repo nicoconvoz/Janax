@@ -1446,6 +1446,19 @@ la v0.73 lanza a su propia lectora: [`release-v0.73.md`](../release-v0.73.md)).
   hija responde −2), en los tres motores. El timbre sobre la 41 necesita ventana: lo ejercita Luma, no la suite.
 - **No medido:** cuánto tarda de más una lectura cuando la máquina está ocupada (ahí es justamente donde cede).
 
+## La ventana que nace al fondo: `JANAX_VENTANA_FONDO` (Capitán, 2026-11-20)
+
+> *"Que inicie debajo de todo, arriba del escritorio, pero como última pantalla."*
+
+Un programa que nace muchas veces por día (Luma duerme y renace cuando quiere) no puede sacarle el teclado a quien
+está trabajando. Con `JANAX_VENTANA_FONDO` (cualquier valor) la ventana se muestra **detrás de todas las demás y sin
+activarse**: una sola llamada al crearla (`SetWindowPos` al fondo, sin mover, sin cambiar el tamaño y sin activar),
+en vez de mostrarla al frente. Un clic la trae arriba como a cualquier ventana. Sin la variable, todo sigue igual.
+
+Antes lo hacía quien la cuidaba, desde afuera: la apoyaba y la volvía a mostrar una vez nacida, y ese instante se
+veía y cortaba. **Medido:** con la variable, la ventana que tenía el teclado antes de que naciera lo sigue teniendo
+después, y la de Janax existe y es visible.
+
 ## El escritorio vivo: `razar/cuerpo/vivo.jsm` (2026-11-15)
 
 > *"El bucle tiene vida: siempre explora, pero nunca es la repetición de lo mismo."* (Capitán)

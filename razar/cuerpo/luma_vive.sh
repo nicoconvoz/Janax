@@ -11,20 +11,14 @@
 #     (luma.sh), so she wakes with whatever is new in her.
 # [book]: her first book, copied into her house only if it has none ("libro").
 # SHE DOES NOT WAKE ON TOP OF WHAT YOU ARE DOING (the Capitan: "va a tener que aprender a no arrancar en primer
-# plano"): when her window appears it is set down and shown again without taking the keyboard, behind the others;
-# whoever had it keeps it. She wakes many times a day: each one must not interrupt.
+# plano"; "que inicie debajo de todo, arriba del escritorio, como ultima pantalla"): her window is born behind every
+# other one and never takes the keyboard. The kernel does it when it makes the window (JANAX_VENTANA_FONDO, set by
+# luma.sh): nothing here moves it afterwards (it used to be set down and shown again, which could still be seen).
 set -u
 carpeta=$1; libro=${2:-}; janaxos=${3:-}
 aqui=$(cd "$(dirname "$0")" && pwd)
 etiqueta() { printf '%s' "$1" | od -An -tx1 | tr -d ' \n'; }
 espera=$(cat <<'PS'
-Add-Type @'
-using System; using System.Runtime.InteropServices;
-public class Vent {
-  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
-  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint f);
-}
-'@
 $casa = $env:LUMA_CASA; $senal = $env:LUMA_SENAL; $p = $null
 for ($i = 0; $i -lt 180 -and -not $p; $i++) {
   Start-Sleep -Milliseconds 500
@@ -34,11 +28,6 @@ if (-not $p) { exit 0 }
 $g = Get-Process -Id $p.ProcessId; $g.EnableRaisingEvents = $true
 Register-ObjectEvent $g Exited -SourceIdentifier salio | Out-Null
 for ($i = 0; $i -lt 100 -and $g.MainWindowHandle -eq [IntPtr]::Zero; $i++) { Start-Sleep -Milliseconds 100; $g.Refresh() }
-if ($g.MainWindowHandle -ne [IntPtr]::Zero) {
-  [void][Vent]::ShowWindow($g.MainWindowHandle, 6)                                  # set down: the keyboard goes back to who had it
-  [void][Vent]::ShowWindow($g.MainWindowHandle, 4)                                  # shown again, without taking it
-  [void][Vent]::SetWindowPos($g.MainWindowHandle, [IntPtr]1, 0, 0, 0, 0, 0x13)      # and behind the others
-}
 $w = New-Object IO.FileSystemWatcher $casa, $senal
 $w.NotifyFilter = [IO.NotifyFilters]'FileName, LastWrite'; $w.EnableRaisingEvents = $true
 Register-ObjectEvent $w Created -SourceIdentifier dormir | Out-Null

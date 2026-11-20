@@ -620,6 +620,7 @@ section '.idata' import data readable writeable
          RegisterClassExW, 'RegisterClassExW',\
          CreateWindowExW, 'CreateWindowExW',\
          ShowWindow, 'ShowWindow',\
+         SetWindowPos, 'SetWindowPos',\
          UpdateWindow, 'UpdateWindow',\
          GetMessageW, 'GetMessageW',\
          TranslateMessage, 'TranslateMessage',\

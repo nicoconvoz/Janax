@@ -178,7 +178,7 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
                           "FOCUS EPOCH WINS WINSRUN RADIUS BUDGET WTOTAL WSTART WSTRIDE WALKI HCOUNT TOTAL WMAX GHN "
                           "TRN AH GREC GREG GBMP GKEEP GOX GOY GCOUNT TX TY PREV GT GC GDXA GDYA GK GN0 GI GMR GMP "
                           "JF JFA JCNT JJ JI JWC JCC JNC JWP JCP JNP JT2 JMX ALOSER AOTHER AREASON ATL ATW ASLOT "
-                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD").split()):
+                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI").split()):
     G[name] = GV + 8 * i
 assert max(G.values()) < FORMS
 if COMER:
@@ -556,6 +556,8 @@ o(";      Particles below GKEEP keep their place and speed (a form that transfor
 o(";      is born where its parent is (the seed: at GOX, GOY). Its parent is the cell before it in its arm, so it is")
 o(";      drawn joined to it however far the springs pull them apart.")
 o("r_grow:")
+if RD:
+    ld("j9", "GREC"); J("jcall r_flat                  ; her words opened (gen_leer.py): she draws what the sentence means"); st("j14", "GFI")
 ld("j1", "GBMP"); J("jldi j2, 50", "jldi j3, 8", "jldi j4, 1")
 o("grow_clear_bmp:")
 J("jst j14, j1, 0", "jadd j1, j1, j3", "jsub j2, j2, j4", "jjnz j2, grow_clear_bmp")
@@ -565,8 +567,11 @@ J("jst j14, j1, 0", "jadd j1, j1, j3", "jsub j2, j2, j4", "jjnz j2, grow_clear_g
 st("j14", "GCOUNT"); st("j14", "TX"); st("j14", "TY"); st("j14", "GT"); st("j14", "GHEAD")
 J("jldi j1, 0", "jldi j2, 0", "jldi j3, -1", "jldi j4, 0", "jcall r_cell"); st("j0", "PREV")
 o("grow_letter:")
-incg("GT"); ld("j9", "GT"); ld("j1", "GREC"); J("jldb j2, j1, 0", "jsub j10, j2, j9", "jjn j10, grow_done")
-J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC")
+if RD:
+    RD.grow_letter()
+else:
+    incg("GT"); ld("j9", "GT"); ld("j1", "GREC"); J("jldb j2, j1, 0", "jsub j10, j2, j9", "jjn j10, grow_done")
+    J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC")
 J("jldi j10, 5", "jsub j10, j5, j10", "jjn j10, grow_arm", "jldi j10, 9", "jsub j10, j5, j10", "jjn j10, grow_hole", "jjz j10, grow_mirror", "jjmp grow_sense")
 o("grow_arm:                       ; 1-4: an arm towards direction k, turned as the eye is")
 J("jldi j10, 1", "jsub j5, j5, j10"); ld("j10", "GHEAD"); J("jadd j5, j5, j10", "jldi j10, 3", "jand j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
@@ -774,7 +779,8 @@ if RD:
 ld("j9", "JT2"); ld("j10", "TOTAL"); J("jsub j9, j10, j9")
 if COMER:
     ld("j10", "TIEOK"); J("jsub j9, j9, j10")   # 1 while a meal's climb is judged: a tie goes to what it ate
-J("jjn j9, jd_win")
+if not os.environ.get("LUMA_QUIETA"):   # (a test: nothing wins, so her forms stay as they were written)
+    J("jjn j9, jd_win")
 o("  ; it lost: why")
 J("jldi j9, 5")
 ld("j1", "JWC"); ld("j2", "JWP"); J("jsub j1, j2, j1", "jjnn j1, jd_r1", "jldi j9, 4")

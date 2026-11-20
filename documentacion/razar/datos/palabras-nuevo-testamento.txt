@@ -1,0 +1,13 @@
+# nuevo-testamento, en 54 s; sin organo -3554; palabras: E1 = 38A516, E3 = 516, E5 = 38
+38A516         14775
+E1             14775   debe dar lo de 38A516: igual
+38A5168        18892
+E18            18892   debe dar lo de 38A5168: igual
+51638A516      16523
+E3E1           16523   debe dar lo de 51638A516: igual
+51638          12628
+E3E5           12628   debe dar lo de 51638: igual
+3E3             5533   debe dar lo de 3516: igual
+3516            5533
+E2             -3554   una palabra que no existe: debe dar lo de sin organo: igual
+E9             -3554   una palabra que no existe: debe dar lo de sin organo: igual

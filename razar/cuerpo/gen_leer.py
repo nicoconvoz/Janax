@@ -26,7 +26,15 @@ WHAT SHE READS, in this order (a rule, not a list of cases: first what her judge
   became one (his last letter, once: nothing he learned is lost); then something new, by her luck between two ways
   she counts apart: a recipe of hers with one letter put in, taken out or changed (any of the fifteen), or one of
   her three instincts a step up or down (patience, firmness, readings: the genome of pulso.jsm), read with the form
-  that reads best. From which of her forms the letter is changed she also counts, place by place (a count of
+  that reads best; or A SONG, a sentence of two or three of her own words.
+HER WORDS (the Capitan: "codigo poetico: engranajes como palabras, programas como oraciones"; "una oracion que ya
+  funciona se asciende a palabra"). A sentence that works is one that lives in her body: it won by her one judge.
+  So her eight living forms ARE her words, with no second list to keep: the letter E and a number, 1 to 8, say her
+  form of that place, whole, wherever they are written. In her body the word's letters are drawn in that place; in
+  her reader they are read in that place (organo.inc: og_lE), from her words written beside the sentence in its
+  initial data. Nothing is built again: a song compiles itself, because its words are data. When a form of hers
+  changes, every sentence that says it means something else, so a reading is kept under what the sentence MEANS (its
+  letters said flat, or their print if they are more than 31), never under how it is written. From which of her forms the letter is changed she also counts, place by place (a count of
   recipes read from it and of the ones that won), so the place whose thoughts read well is asked more. A recipe is read once for a shelf, an instinct and an alphabet ("leido" remembers).
 WHEN IT COMES BACK (her doorbell wakes her: no clock): a thought is judged, with its reading, in the place of the form
   it came from, by the judge above; an instinct that reads better than hers with the same recipe becomes hers.
@@ -62,16 +70,21 @@ GOLD = 0x9E3779B97F4A7C15
 R = 0x1500
 N5, S5, NI, SI, NO, SO, SHELF, GENOME, STAMP, RBUD = (R + 8 * i for i in range(10))
 FT = R + 80                  # a count for each place of her body: {recipes read that came from it, the ones that won}
-KEPT = 80 + 16 * 8
+NS, SS = FT + 128, FT + 136  # the songs she composed (sentences of her own words) and the ones that won
+KEPT = 80 + 16 * 8 + 16
 V = 0x1600
 (RKID, RGOT, RW1, RW2, RLO, RHI, RGEN, RKIND, RJF, RTAB, RTN, RTC, RLEN, T0, T1, T2, T3, T4, NEWST, RARM, RENDED,
- BEST, HAVE, BESTF, RWF, RSC, RSH, WO, WI) = (V + 8 * i for i in range(29))
+ BEST, HAVE, BESTF, RWF, RSC, RSH, WO, WI, FLN, WS, FLE) = (V + 8 * i for i in range(32))
 RREC = 0x1700                # the recipe being read (32 bytes)
 LRD, LMOLD, LBIN, LDAT, LCAR = 0x1740, 0x1750, 0x1770, 0x1790, 0x17B0
 WBUF, EBUF = 0x17C0, 0x17E0
 PBUF = 0x2000                # what waits for her signature (4096)
+FLC, FLB = 0x3000, 0x3001    # a recipe said flat, its words opened: how many letters (when they fit a byte), the letters
+FLO = FLB + 0x200            # and for each the letter of the sentence it came from (1 the first)
+WORDS = 0x7F00               # in her reader's initial data: her words (organo.inc: ORGT)
+DLEN = WORDS + 16 * 8
 LTAB = 0x4000                # L(k), k = 0..N, thousandths of a bit
-DBUF = 0x8000                # her reader's initial data (8192)
+DBUF = 0x8000                # her reader's initial data (the reader's own, then zeros up to her words)
 ENT = 48                     # a line of "leido": lo, hi, score, shelf, genome, alphabet
 S_MOLD, S_BIN, S_DAT = b"luma/lectora.molde", b"luma/lectora.bin", b"luma/lectora.datos"
 
@@ -81,7 +94,8 @@ def make(g, ST, free):
     B = ST["free"]
     NF, FORMS, F_REC, F_WORTH, CAND, NCELLS = g["NF"], g["FORMS"], g["F_REC"], g["F_WORTH"], g["CAND"], g["ROOMCELLS"]
     F_READ = 248
-    assert LTAB + 8 * (NCELLS + 1) <= DBUF and DBUF + 8192 <= 0x10000 and free <= R and R + KEPT <= V and V + 8 * 29 <= RREC and EBUF + ENT <= PBUF and NF == 8
+    assert LTAB + 8 * (NCELLS + 1) <= DBUF and free <= R and R + KEPT <= V and V + 8 * 32 <= RREC and EBUF + ENT <= PBUF and NF == 8
+    assert FLO + 0x200 <= LTAB and DBUF + DLEN <= 0x10000
     def gl(r, off): li("j6", B); J("jld %s, j6, %s" % (r, num(off)))
     def gs(r, off): li("j6", B); J("jst %s, j6, %s" % (r, num(off)))
     def inc(off): gl("j1", off); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", off)
@@ -123,6 +137,17 @@ def make(g, ST, free):
         gl("j1", WA); gl("j2", WB); J("jadd j1, j1, j2", "jcall r_randmod")
         gl("j1", WA); J("jsub j2, j0, j1", "jjn j2, fr_rest", "jjmp fr_think")
 
+    TESTING = bool(os.environ.get("LUMA_PRUEBA_E"))
+    def rrec_zero():
+        li("j7", B + RREC); J("jst j14, j7, 0", "jst j14, j7, 8", "jst j14, j7, 16", "jst j14, j7, 24")
+    def rrec_form(reg):                 # the recipe to read: her form of that place
+        form_addr("j9", reg); li("j7", B + RREC)
+        for k in range(4):
+            J("jld j10, j9, %d" % (F_REC + 8 * k), "jst j10, j7, %d" % (8 * k))
+    def keyget():                       # the recipe to read -> its name (RLO, RHI), j0 = its reading with RGEN's instincts
+        li("j9", B + RREC); J("jcall r_rec_key"); gs("j1", RLO); gs("j2", RHI); gl("j3", RGEN); J("jcall r_read_get")
+    def known(lbl):                     # j0 is a reading -> lbl
+        li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, %s" % lbl)
     def birth():
         o("; ONE BEING (gen_leer.py): this program is Luma and Razar. THE ONE JUDGE, in bits, replaces the one above:")
         o(";   worth of the being = sum over her forms [ log2 C(%d, new cells) - letters * log2 15 ] + the best reading" % NCELLS)
@@ -138,6 +163,12 @@ def make(g, ST, free):
         """inside r_worth: j1 cells, j2 letters, j3 most shared -> j0 = L(j1 - j3) - j2 log2 15, thousandths of a bit"""
         J("jsub j7, j1, j3", "jldi j10, 3", "jshl j7, j7, j10"); li("j10", B + LTAB); J("jadd j7, j7, j10", "jld j0, j7, 0")
         li("j10", LOG15); J("jmul j7, j2, j10", "jsub j0, j0, j7")
+
+    def grow_letter():
+        """inside r_grow: the next letter of the sentence said flat (j5, GC); GT = the letter of the sentence it came
+        from, so a word's cells are born with the E that said it"""
+        g["incg"]("GFI"); ld("j9", "GFI"); gl("j2", FLN); J("jsub j10, j2, j9", "jjn j10, grow_done")
+        li("j1", B + FLB - 1); J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC"); J("jldb j6, j1, 200h"); st("j6", "GT")
 
     def routines():
         o("; ---- reading, an act of hers: the one being (see gen_leer.py)")
@@ -171,6 +202,60 @@ def make(g, ST, free):
         J("jjz j2, or_done", "jadd j1, j2, j14", "jldi j2, 0", "jjmp or_lap")
         o("or_done:")
         J("jstb j4, j9, 0", "jret")
+
+        o("r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from): E and")
+        o("                                ; the letter after it open that word of hers, her living form of that number (1 to")
+        o("                                ; 8), exactly as her reader does (organo.inc: og_lE); FLE = 1 if a word was said")
+        J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE)
+        def emit(origin):
+            li("j10", B + FLB); J("jadd j10, j10, j8", "jstb j5, j10, 0", "jstb %s, j10, 200h" % origin, "jldi j10, 1", "jadd j8, j8, j10")
+        o("flat_lap:")
+        J("jsub j10, j4, j3", "jjnn j10, flat_done", "jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 1", "jadd j7, j4, j10",
+          "jldi j10, 14", "jsub j10, j5, j10", "jjz j10, flat_e")
+        emit("j7"); J("jadd j4, j7, j14", "jjmp flat_lap")
+        o("flat_e:                           ; its number: the next letter, if there is one in the same sixteen")
+        J("jsub j10, j7, j3", "jjnn j10, flat_one", "jldi j10, 15", "jand j11, j4, j10", "jsub j11, j11, j10", "jjz j11, flat_one")
+        J("jadd j6, j9, j7", "jldb j6, j6, 1", "jldi j10, 2", "jadd j4, j4, j10", "jldi j10, 9", "jsub j10, j6, j10", "jjnn j10, flat_lap")
+        J("jldi j10, 1", "jsub j6, j6, j10", "jldi j10, 8", "jshl j6, j6, j10"); li("j10", FORMS + F_REC); J("jadd j6, j6, j10", "jldb j1, j6, 0", "jldi j2, 0")
+        J("jjz j1, flat_lap", "jldi j10, 1"); gs("j10", FLE); li("j10", FORMS + F_REC)
+        o("flat_w:                           ; the word's letters (an E inside it says nothing, and takes its number)")
+        J("jsub j10, j2, j1", "jjnn j10, flat_lap", "jadd j5, j6, j2", "jldb j5, j5, 1", "jldi j10, 14", "jsub j10, j5, j10", "jjz j10, flat_we")
+        emit("j7"); J("jldi j10, 1", "jadd j2, j2, j10", "jjmp flat_w")
+        o("flat_we:")
+        J("jldi j10, 1", "jadd j11, j2, j10", "jsub j10, j11, j1", "jjnn j10, flat_w1", "jldi j10, 15", "jand j12, j2, j10", "jsub j12, j12, j10", "jjz j12, flat_w1",
+          "jldi j10, 2", "jadd j2, j2, j10", "jjmp flat_w")
+        o("flat_w1:")
+        J("jldi j10, 1", "jadd j2, j2, j10", "jjmp flat_w")
+        o("flat_one:")
+        J("jadd j4, j7, j14", "jjmp flat_lap")
+        o("flat_done:")
+        gs("j8", FLN); J("jret")
+        o("r_rec_key:                      ; j9 = a recipe -> j1, j2 = what it MEANS, the name its reading is kept under: said")
+        o("                                ; flat, its letters as an organ's if they are 31 or fewer (so a sentence of words")
+        o("                                ; and the same letters written out are one reading), else their print (two FNV, the")
+        o("                                ; top four bits all 1: no letters reach there)")
+        J("jcall r_flat"); gl("j3", FLN)
+        if TESTING:
+            gl("j10", FLE); J("jjnz j10, rk_hash                 ; LUMA_PRUEBA_E: a sentence with a word always by its print (a test)")
+        J("jldi j10, 32", "jsub j10, j3, j10", "jjnn j10, rk_hash"); li("j9", B + FLC); J("jstb j3, j9, 0", "jcall r_rec_org", "jret")
+        o("rk_hash:")
+        li("j1", 0xCBF29CE484222325); li("j2", 0xCBF29CE484222325 ^ GOLD); li("j7", 0x100000001B3); J("jldi j4, 0"); li("j5", B + FLB)
+        o("rk_h:")
+        J("jsub j10, j4, j3", "jjnn j10, rk_hd", "jadd j10, j5, j4", "jldb j10, j10, 0", "jxor j1, j1, j10", "jmul j1, j1, j7", "jxor j2, j2, j10", "jmul j2, j2, j7",
+          "jldi j10, 1", "jadd j4, j4, j10", "jjmp rk_h")
+        o("rk_hd:")
+        J("jldi j10, 4", "jshr j2, j2, j10"); li("j10", 0xF << 60); J("jor j2, j2, j10", "jret")
+        o("r_read_place:                   ; from which place of her body: by her count of each (the one whose thoughts won is")
+        o("                                ; asked more; none is closed) -> RJF")
+        J("jldi j3, 0", "jldi j4, 0"); li("j7", B + FT)
+        o("rp_w_sum:")
+        pwish(); J("jadd j3, j3, j1", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10", "jldi j10, %d" % NF, "jsub j10, j4, j10", "jjnz j10, rp_w_sum")
+        J("jadd j1, j3, j14", "jcall r_randmod", "jldi j4, 0"); li("j7", B + FT)
+        o("rp_w_pick:")
+        pwish(); J("jsub j0, j0, j1", "jjn j0, rp_w_have", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10", "jldi j10, %d" % NF, "jsub j10, j4, j10",
+                   "jjnz j10, rp_w_pick", "jldi j4, %d" % (NF - 1))
+        o("rp_w_have:")
+        gs("j4", RJF); J("jret")
 
         o("r_read_get:                     ; j1, j2 = an organ, j3 = the instincts -> j0 = what it read on this shelf, or")
         o("                                ; %Xh: never read (uses j4..j8, j10, j11)" % UNK)
@@ -254,7 +339,7 @@ def make(g, ST, free):
         J("jldi j1, 0", "jldi j2, 0"); gl("j3", GENOME); J("jcall r_read_get"); fold()
         gs("j14", T0)
         o("rm_lap:")
-        gl("j1", T0); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_rec_org"); gl("j3", GENOME); J("jcall r_read_get")
+        gl("j1", T0); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_rec_key"); gl("j3", GENOME); J("jcall r_read_get")
         gl("j1", T0); form_addr("j9", "j1"); J("jst j0, j9, %d" % F_READ)
         gs("j14", T4); fold(); gl("j1", T4); J("jjz j1, rm_next"); gl("j1", T0); gs("j1", BESTF)
         o("rm_next:")
@@ -266,32 +351,29 @@ def make(g, ST, free):
         o("r_read_cand:                    ; the same with the candidate CAND in the place of form JF (r_judge)")
         gs("j14", HAVE); gs("j14", BEST)
         J("jldi j1, 0", "jldi j2, 0"); gl("j3", GENOME); J("jcall r_read_get"); fold()
-        li("j9", CAND); J("jcall r_rec_org"); gl("j3", GENOME); J("jcall r_read_get"); fold()
+        li("j9", CAND); J("jcall r_rec_key"); gl("j3", GENOME); J("jcall r_read_get"); fold()
         gs("j14", T0)
         o("rc2_lap:")
         gl("j1", T0); ld("j2", "JF"); J("jsub j2, j1, j2", "jjz j2, rc2_next"); form_addr("j9", "j1"); J("jld j0, j9, %d" % F_READ); fold()
         o("rc2_next:")
         inc(T0); J("jldi j10, %d" % NF, "jsub j10, j1, j10", "jjnz j10, rc2_lap", "jjmp rm_out")
 
-        o("r_read_pick:                    ; what she reads now -> j0 = 1 (RLO, RHI the organ, RGEN the instincts, RKIND 0 a")
-        o("                                ; form of hers or no organ, 1 a thought, 2 an instinct), or 0: nothing new")
+        o("r_read_pick:                    ; what she reads now -> j0 = 1 (RREC the recipe, RLO RHI its name, RGEN the instincts,")
+        o("                                ; RKIND 0 a form of hers or no organ, 1 a thought, 2 an instinct), or 0: nothing new")
         gs("j14", RARM); gs("j14", RKIND); gl("j1", GENOME); gs("j1", RGEN)
-        J("jldi j1, 0", "jldi j2, 0"); gl("j3", GENOME); J("jcall r_read_get"); li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, rp_forms")
-        gs("j14", RLO); gs("j14", RHI); J("jldi j0, 1", "jret")
+        rrec_zero(); keyget(); known("rp_forms"); J("jldi j0, 1", "jret")
         o("rp_forms:")
         gs("j14", T0)
         o("rp_f_lap:")
-        gl("j1", T0); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_rec_org"); gs("j1", RLO); gs("j2", RHI)
-        gl("j3", GENOME); J("jcall r_read_get"); li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, rp_f_next", "jldi j0, 1", "jret")
+        gl("j1", T0); rrec_form("j1"); keyget(); known("rp_f_next"); J("jldi j0, 1", "jret")
         o("rp_f_next:")
         inc(T0); J("jldi j10, %d" % NF, "jsub j10, j1, j10", "jjnz j10, rp_f_lap")
         o("  ; what Razar wore when they became one: his last letter, once (as a thought of hers, judged like any)")
         li("j6", B); J("jst j14, j6, %s" % num(EBUF), "jst j14, j6, %s" % num(EBUF + 8))
         li("j11", B + LCAR); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, rp_arm")
         J("jldi j10, 5"); li("j11", B + EBUF); J("jldi j12, 16", "jcall r_file", "jldi j10, 7", "jcall r_file")
-        gl("j1", EBUF + 8); J("jjz j1, rp_arm"); gs("j1", RLO); gs("j14", RHI)
-        J("jldi j2, 0"); gl("j3", GENOME); J("jcall r_read_get"); li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, rp_arm")
-        gl("j1", RLO); J("jldi j2, 0"); li("j9", B + RREC); J("jcall r_org_rec")
+        gl("j1", EBUF + 8); J("jjz j1, rp_arm", "jldi j2, 0"); li("j9", B + RREC); J("jcall r_org_rec")
+        keyget(); known("rp_arm")
         J("jldi j2, 0", "jldi j3, 0"); li("j9", FORMS); J("jld j5, j9, %d" % F_WORTH)
         o("rp_min:                         ; in the place of the form her judge values least")
         J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, %d" % NF, "jsub j10, j2, j10", "jjz j10, rp_min_d")
@@ -299,9 +381,10 @@ def make(g, ST, free):
                                                                    "jadd j5, j8, j14", "jadd j3, j2, j14", "jjmp rp_min")
         o("rp_min_d:")
         gs("j3", RJF); J("jldi j1, 1"); gs("j1", RKIND); J("jldi j0, 1", "jret")
-        o("rp_arm:                         ; something new: a letter or an instinct, by her count of each")
-        wish(SO, NO, WO); wish(SI, NI, WI)
-        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2", "jcall r_randmod"); gl("j1", WO); J("jsub j2, j0, j1", "jjn j2, rp_org")
+        o("rp_arm:                         ; something new: a letter, a song or an instinct, by her count of each")
+        wish(SO, NO, WO); wish(SI, NI, WI); wish(SS, NS, WS)
+        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2"); gl("j2", WS); J("jadd j1, j1, j2", "jcall r_randmod")
+        gl("j1", WO); J("jsub j2, j0, j1", "jjn j2, rp_org"); gl("j1", WS); J("jsub j2, j2, j1", "jjn j2, rp_song")
         o("  ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)")
         J("jldi j1, 3", "jcall r_randmod"); gs("j0", T0); J("jldi j1, 2", "jcall r_randmod", "jadd j0, j0, j0", "jldi j10, 1", "jsub j4, j0, j10")
         gl("j3", T0); J("jldi j8, 8", "jjz j3, rp_i_top", "jldi j8, 4", "jldi j10, 1", "jsub j10, j3, j10", "jjz j10, rp_i_top", "jldi j8, 3")
@@ -313,28 +396,32 @@ def make(g, ST, free):
         J("jsub j2, j7, j4", "jjz j2, rp_org", "jsub j10, j8, j2", "jjn j10, rp_org")
         o("rp_i_put:")
         J("jldi j10, 255", "jshl j10, j10, j5", "jldi j11, -1", "jxor j10, j10, j11", "jand j1, j1, j10", "jshl j2, j2, j5", "jor j1, j1, j2"); gs("j1", RGEN)
-        J("jcall r_read_max"); gs("j14", RLO); gs("j14", RHI); gl("j1", BESTF); J("jjn j1, rp_i_org")
-        form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_rec_org"); gs("j1", RLO); gs("j2", RHI)
+        J("jcall r_read_max"); rrec_zero(); gl("j1", BESTF); J("jjn j1, rp_i_org"); rrec_form("j1")
         o("rp_i_org:")
-        gl("j1", RLO); gl("j2", RHI); gl("j3", RGEN); J("jcall r_read_get"); li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, rp_org")
+        keyget(); known("rp_org")
         J("jldi j1, 2"); gs("j1", RKIND); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("rp_song:                        ; A SONG (the Capitan: \"compone canciones de programacion autocompilables\"): a")
+        o("                                ; sentence of her own words. Her words are what lives in her body: E and a number say")
+        o("                                ; her form of that place, whole. Two or three of them, by luck (criterion: the")
+        o("                                ; sentences of two words crossed the plateau in v0.59; three is one more). Nothing is")
+        o("                                ; built: her reader opens the words as it reads. 64 tries at one she never read.")
+        gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
+        o("rp_s_lap:")
+        rrec_zero(); J("jldi j1, 2", "jcall r_randmod", "jldi j10, 2", "jadd j0, j0, j10"); gs("j0", T2); gs("j14", T3)
+        o("rp_s_word:")
+        J("jldi j1, %d" % NF, "jcall r_randmod", "jldi j10, 1", "jadd j2, j0, j10"); gl("j3", T3); li("j7", B + RREC)
+        J("jadd j5, j3, j3", "jadd j5, j5, j7", "jldi j10, 14", "jstb j10, j5, 1", "jstb j2, j5, 2", "jldi j10, 1", "jadd j3, j3, j10"); gs("j3", T3)
+        gl("j1", T2); J("jsub j10, j3, j1", "jjnz j10, rp_s_word", "jadd j3, j3, j3"); li("j7", B + RREC); J("jstb j3, j7, 0")
+        keyget(); known("rp_s_next")
+        J("jcall r_read_place", "jldi j1, 1"); gs("j1", RKIND); J("jldi j1, 3"); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("rp_s_next:")
+        gl("j1", T1); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", T1); J("jjnz j1, rp_s_lap", "jldi j0, 0", "jret")
         o("rp_org:                         ; a recipe of hers, by luck, with a letter changed, put in or taken out (any of")
         o("                                ; the fifteen): 64 tries at one she never read (criterion: a round of luck, not a")
         o("                                ; search; none found and she reads nothing this time)")
         gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
         o("rp_o_lap:")
-        o("  ; from which place of her body: by her count of each (the one whose thoughts won is asked more; none is closed)")
-        J("jldi j3, 0", "jldi j4, 0"); li("j7", B + FT)
-        o("rp_w_sum:")
-        pwish(); J("jadd j3, j3, j1", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10", "jldi j10, %d" % NF, "jsub j10, j4, j10", "jjnz j10, rp_w_sum")
-        J("jadd j1, j3, j14", "jcall r_randmod", "jldi j4, 0"); li("j7", B + FT)
-        o("rp_w_pick:")
-        pwish(); J("jsub j0, j0, j1", "jjn j0, rp_w_have", "jldi j10, 16", "jadd j7, j7, j10", "jldi j10, 1", "jadd j4, j4, j10", "jldi j10, %d" % NF, "jsub j10, j4, j10",
-                   "jjnz j10, rp_w_pick", "jldi j4, %d" % (NF - 1))
-        o("rp_w_have:")
-        gs("j4", RJF); form_addr("j9", "j4"); li("j7", B + RREC)
-        for k in range(4):
-            J("jld j10, j9, %d" % (F_REC + 8 * k), "jst j10, j7, %d" % (8 * k))
+        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
         J("jldi j1, 3", "jcall r_randmod"); gs("j0", T2)
         li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_o_next")
         gl("j0", T2); J("jjz j0, rp_o_chg", "jldi j10, 1", "jsub j10, j0, j10", "jjz j10, rp_o_ins")
@@ -356,8 +443,7 @@ def make(g, ST, free):
         J("jadd j1, j3, j14", "jcall r_randmod"); gs("j0", T3); J("jldi j1, 15", "jcall r_randmod", "jldi j10, 1", "jadd j2, j0, j10")
         gl("j0", T3); li("j7", B + RREC); J("jadd j5, j7, j0", "jstb j2, j5, 1")
         o("rp_o_try:")
-        li("j9", B + RREC); J("jcall r_rec_org"); gs("j1", RLO); gs("j2", RHI); gl("j3", GENOME); J("jcall r_read_get")
-        li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, rp_o_next")
+        keyget(); known("rp_o_next")
         J("jldi j1, 1"); gs("j1", RKIND); gs("j1", RARM); J("jldi j0, 1", "jret")
         o("rp_o_next:")
         gl("j1", T1); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", T1); J("jjnz j1, rp_o_lap", "jldi j0, 0", "jret")
@@ -369,11 +455,17 @@ def make(g, ST, free):
         li("j11", B + LMOLD); J("jldi j12, %d" % len(S_MOLD), "jcall r_open"); ld("j9", "FH"); J("jjn j9, rn_no")
         J("jldi j10, 5"); li("j11", B + DBUF); li("j12", 8192); J("jcall r_file"); gs("j13", RLEN); J("jldi j10, 7", "jcall r_file")
         gl("j1", RLEN); J("jldi j10, 64", "jsub j1, j1, j10", "jjn j1, rn_no")
-        li("j9", B + DBUF); gl("j1", RHI); J("jst j1, j9, 18h", "jldi j1, 1", "jst j1, j9, 20h"); gl("j1", RGEN); J("jst j1, j9, 28h")
-        gl("j1", RLO); J("jst j1, j9, 30h", "jst j14, j9, 38h")
+        li("j9", B + RREC); J("jcall r_rec_org")
+        li("j9", B + DBUF); J("jst j2, j9, 18h", "jst j1, j9, 30h", "jldi j1, 1", "jst j1, j9, 20h"); gl("j1", RGEN); J("jst j1, j9, 28h", "jst j14, j9, 38h")
+        o("  ; her words: her eight living forms, as they are now")
+        gs("j14", T0)
+        o("rn_words:")
+        gl("j1", T0); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_rec_org")
+        gl("j3", T0); J("jldi j10, 4", "jshl j3, j3, j10"); li("j10", B + DBUF + WORDS); J("jadd j3, j3, j10", "jst j1, j3, 0", "jst j2, j3, 8")
+        inc(T0); J("jldi j10, %d" % NF, "jsub j10, j1, j10", "jjnz j10, rn_words")
         J("jldi j10, 12"); li("j11", B + LDAT); J("jldi j12, %d" % len(S_DAT), "jcall r_tocar")
         li("j11", B + LDAT); J("jldi j12, %d" % len(S_DAT), "jcall r_open"); ld("j9", "FH"); J("jjn j9, rn_no")
-        J("jldi j10, 6"); li("j11", B + DBUF); gl("j12", RLEN); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        J("jldi j10, 6"); li("j11", B + DBUF); li("j12", DLEN); J("jcall r_file", "jldi j10, 7", "jcall r_file")
         li("j10", 16 | (14 << 32)); li("j11", B + LBIN); J("jldi j12, %d" % len(S_BIN), "jcall r_tocar", "jjn j13, rn_no")
         J("jldi j10, 1", "jadd j1, j13, j10"); gs("j1", RKID); gs("j14", RGOT)
         J("jldi j10, 42", "jadd j11, j13, j14", "jldi j12, 1", "jcall r_tocar")
@@ -426,7 +518,9 @@ def make(g, ST, free):
         for k in range(4):
             J("jld j10, j7, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
         gl("j1", RJF); st("j1", "JF"); J("jcall r_judge", "jldi j10, 2", "jsub j10, j0, j10", "jjnz j10, rd_saved")
-        inc(S5); gl("j1", RARM); J("jjz j1, rd_saved"); inc(SO); place(8); J("jjmp rd_saved")
+        inc(S5); gl("j1", RARM); J("jjz j1, rd_saved"); place(8); gl("j1", RARM); J("jldi j10, 3", "jsub j10, j1, j10", "jjz j10, rd_song"); inc(SO); J("jjmp rd_saved")
+        o("rd_song:")
+        inc(SS); J("jjmp rd_saved")
         o("rd_plain:")
         J("jcall r_recompute"); g["setg"]("CHANGED", 1)
         o("rd_saved:")
@@ -440,7 +534,9 @@ def make(g, ST, free):
         gl("j1", RKIND); J("jjz j1, fr_r_on"); inc(N5)
         gl("j1", RARM); J("jjz j1, fr_r_cnt", "jldi j10, 1", "jsub j10, j1, j10", "jjnz j10, fr_r_ins"); inc(NO); place(0); J("jjmp fr_r_cnt")
         o("fr_r_ins:")
-        inc(NI)
+        J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, fr_r_song"); inc(NI); J("jjmp fr_r_cnt")
+        o("fr_r_song:")
+        inc(NS); place(0)
         o("fr_r_cnt:")
         J("jcall r_free_save")
         o("fr_r_on:")
@@ -460,7 +556,9 @@ def make(g, ST, free):
         mine = set()
         for l in L:
             m = re.match(r"\s*([A-Za-z_][\w.]*)\s*:", l.split(";")[0])
-            if m: mine.add(m.group(1))
+            if m:
+                assert m.group(1) not in mine, "a label of her body twice: " + m.group(1)
+                mine.add(m.group(1))
         both = sorted(names & mine, key=len, reverse=True)
         assert "lectora" not in names and "soy_cuerpo" not in names
         if both:
@@ -479,5 +577,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)

@@ -1462,6 +1462,9 @@ st_open:
 ;      is born where its parent is (the seed: at GOX, GOY). Its parent is the cell before it in its arm, so it is
 ;      drawn joined to it however far the springs pull them apart.
 r_grow:
+  jld j9, j14, 02F0h
+  jcall r_flat                  ; her words opened (gen_leer.py): she draws what the sentence means
+  jst j14, j14, 0500h
   jld j1, j14, 0300h
   jldi j2, 50
   jldi j3, 8
@@ -1491,18 +1494,23 @@ grow_clear_grid:
   jcall r_cell
   jst j0, j14, 0338h
 grow_letter:
-  jld j10, j14, 0340h
+  jld j10, j14, 0500h
   jldi j11, 1
   jadd j10, j10, j11
-  jst j10, j14, 0340h
-  jld j9, j14, 0340h
-  jld j1, j14, 02F0h
-  jldb j2, j1, 0
+  jst j10, j14, 0500h
+  jld j9, j14, 0500h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 016E8h
   jsub j10, j2, j9
   jjn j10, grow_done
+  jldi j1, 015Eh
+  jshi j1, 03000h
   jadd j1, j1, j9
   jldb j5, j1, 0
   jst j5, j14, 0348h
+  jldb j6, j1, 200h
+  jst j6, j14, 0340h
   jldi j10, 5
   jsub j10, j5, j10
   jjn j10, grow_arm
@@ -8051,6 +8059,212 @@ or_hi:
 or_done:
   jstb j4, j9, 0
   jret
+r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from): E and
+                                ; the letter after it open that word of hers, her living form of that number (1 to
+                                ; 8), exactly as her reader does (organo.inc: og_lE); FLE = 1 if a word was said
+  jldb j3, j9, 0
+  jldi j4, 0
+  jldi j8, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 016F8h
+flat_lap:
+  jsub j10, j4, j3
+  jjnn j10, flat_done
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 1
+  jadd j7, j4, j10
+  jldi j10, 14
+  jsub j10, j5, j10
+  jjz j10, flat_e
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j4, j7, j14
+  jjmp flat_lap
+flat_e:                           ; its number: the next letter, if there is one in the same sixteen
+  jsub j10, j7, j3
+  jjnn j10, flat_one
+  jldi j10, 15
+  jand j11, j4, j10
+  jsub j11, j11, j10
+  jjz j11, flat_one
+  jadd j6, j9, j7
+  jldb j6, j6, 1
+  jldi j10, 2
+  jadd j4, j4, j10
+  jldi j10, 9
+  jsub j10, j6, j10
+  jjnn j10, flat_lap
+  jldi j10, 1
+  jsub j6, j6, j10
+  jldi j10, 8
+  jshl j6, j6, j10
+  jldi j10, 08C0h
+  jadd j6, j6, j10
+  jldb j1, j6, 0
+  jldi j2, 0
+  jjz j1, flat_lap
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 016F8h
+  jldi j10, 08C0h
+flat_w:                           ; the word's letters (an E inside it says nothing, and takes its number)
+  jsub j10, j2, j1
+  jjnn j10, flat_lap
+  jadd j5, j6, j2
+  jldb j5, j5, 1
+  jldi j10, 14
+  jsub j10, j5, j10
+  jjz j10, flat_we
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 1
+  jadd j2, j2, j10
+  jjmp flat_w
+flat_we:
+  jldi j10, 1
+  jadd j11, j2, j10
+  jsub j10, j11, j1
+  jjnn j10, flat_w1
+  jldi j10, 15
+  jand j12, j2, j10
+  jsub j12, j12, j10
+  jjz j12, flat_w1
+  jldi j10, 2
+  jadd j2, j2, j10
+  jjmp flat_w
+flat_w1:
+  jldi j10, 1
+  jadd j2, j2, j10
+  jjmp flat_w
+flat_one:
+  jadd j4, j7, j14
+  jjmp flat_lap
+flat_done:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j8, j6, 016E8h
+  jret
+r_rec_key:                      ; j9 = a recipe -> j1, j2 = what it MEANS, the name its reading is kept under: said
+                                ; flat, its letters as an organ's if they are 31 or fewer (so a sentence of words
+                                ; and the same letters written out are one reading), else their print (two FNV, the
+                                ; top four bits all 1: no letters reach there)
+  jcall r_flat
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 016E8h
+  jldi j10, 32
+  jsub j10, j3, j10
+  jjnn j10, rk_hash
+  jldi j9, 015Eh
+  jshi j9, 03000h
+  jstb j3, j9, 0
+  jcall r_rec_org
+  jret
+rk_hash:
+  jldi j1, -13326
+  jshi j1, 09CE4h
+  jshi j1, 08422h
+  jshi j1, 02325h
+  jldi j2, 055C5h
+  jshi j2, 0E55Dh
+  jshi j2, 0FB68h
+  jshi j2, 05F30h
+  jldi j7, 0100h
+  jshi j7, 0
+  jshi j7, 01B3h
+  jldi j4, 0
+  jldi j5, 015Eh
+  jshi j5, 03001h
+rk_h:
+  jsub j10, j4, j3
+  jjnn j10, rk_hd
+  jadd j10, j5, j4
+  jldb j10, j10, 0
+  jxor j1, j1, j10
+  jmul j1, j1, j7
+  jxor j2, j2, j10
+  jmul j2, j2, j7
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp rk_h
+rk_hd:
+  jldi j10, 4
+  jshr j2, j2, j10
+  jldi j10, -4096
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jor j2, j2, j10
+  jret
+r_read_place:                   ; from which place of her body: by her count of each (the one whose thoughts won is
+                                ; asked more; none is closed) -> RJF
+  jldi j3, 0
+  jldi j4, 0
+  jldi j7, 015Eh
+  jshi j7, 01550h
+rp_w_sum:
+  jld j1, j7, 8
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jld j2, j7, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jadd j3, j3, j1
+  jldi j10, 16
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j10, 8
+  jsub j10, j4, j10
+  jjnz j10, rp_w_sum
+  jadd j1, j3, j14
+  jcall r_randmod
+  jldi j4, 0
+  jldi j7, 015Eh
+  jshi j7, 01550h
+rp_w_pick:
+  jld j1, j7, 8
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jld j2, j7, 0
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jsub j0, j0, j1
+  jjn j0, rp_w_have
+  jldi j10, 16
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j10, 8
+  jsub j10, j4, j10
+  jjnz j10, rp_w_pick
+  jldi j4, 7
+rp_w_have:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01640h
+  jret
 r_read_get:                     ; j1, j2 = an organ, j3 = the instincts -> j0 = what it read on this shelf, or
                                 ; 8000000000000000h: never read (uses j4..j8, j10, j11)
   jldi j8, 0
@@ -8279,10 +8493,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 07279h
-  jshi j2, 09B0h
-  jshi j2, 01EB6h
-  jshi j2, 0405Eh
+  jldi j2, 0562Bh
+  jshi j2, 04BC2h
+  jshi j2, 0B93Fh
+  jshi j2, 0C4A9h
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -8494,10 +8708,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03480h
-  jshi j2, 0A602h
-  jshi j2, 01172h
-  jshi j2, 0C5A3h
+  jldi j2, 01642h
+  jshi j2, 04E60h
+  jshi j2, 01B07h
+  jshi j2, 052D5h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -8606,7 +8820,7 @@ rm_lap:
   jadd j9, j9, j10
   jldi j10, 192
   jadd j9, j9, j10
-  jcall r_rec_org
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 01538h
@@ -8729,7 +8943,7 @@ fold_28_t:
   jst j1, j6, 01688h
 fold_28:
   jldi j9, 01400h
-  jcall r_rec_org
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 01538h
@@ -8820,8 +9034,8 @@ rc2_next:
   jsub j10, j1, j10
   jjnz j10, rc2_lap
   jjmp rm_out
-r_read_pick:                    ; what she reads now -> j0 = 1 (RLO, RHI the organ, RGEN the instincts, RKIND 0 a
-                                ; form of hers or no organ, 1 a thought, 2 an instinct), or 0: nothing new
+r_read_pick:                    ; what she reads now -> j0 = 1 (RREC the recipe, RLO RHI its name, RGEN the instincts,
+                                ; RKIND 0 a form of hers or no organ, 1 a thought, 2 an instinct), or 0: nothing new
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 01698h
@@ -8834,11 +9048,24 @@ r_read_pick:                    ; what she reads now -> j0 = 1 (RLO, RHI the org
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01630h
-  jldi j1, 0
-  jldi j2, 0
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jst j14, j7, 0
+  jst j14, j7, 8
+  jst j14, j7, 16
+  jst j14, j7, 24
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
-  jld j3, j6, 01538h
+  jst j1, j6, 01620h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01628h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01630h
   jcall r_read_get
   jldi j10, -32768
   jshi j10, 0
@@ -8846,12 +9073,6 @@ r_read_pick:                    ; what she reads now -> j0 = 1 (RLO, RHI the org
   jshi j10, 0
   jsub j10, j0, j10
   jjnz j10, rp_forms
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 01620h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 01628h
   jldi j0, 1
   jret
 rp_forms:
@@ -8866,9 +9087,19 @@ rp_f_lap:
   jshl j9, j1, j10
   jldi j10, 0800h
   jadd j9, j9, j10
-  jldi j10, 192
-  jadd j9, j9, j10
-  jcall r_rec_org
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jld j10, j9, 192
+  jst j10, j7, 0
+  jld j10, j9, 200
+  jst j10, j7, 8
+  jld j10, j9, 208
+  jst j10, j7, 16
+  jld j10, j9, 216
+  jst j10, j7, 24
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01620h
@@ -8877,7 +9108,7 @@ rp_f_lap:
   jst j2, j6, 01628h
   jldi j6, 015Eh
   jshi j6, 0
-  jld j3, j6, 01538h
+  jld j3, j6, 01630h
   jcall r_read_get
   jldi j10, -32768
   jshi j10, 0
@@ -8921,16 +9152,22 @@ rp_f_next:
   jshi j6, 0
   jld j1, j6, 017E8h
   jjz j1, rp_arm
+  jldi j2, 0
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_org_rec
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01620h
   jldi j6, 015Eh
   jshi j6, 0
-  jst j14, j6, 01628h
-  jldi j2, 0
+  jst j2, j6, 01628h
   jldi j6, 015Eh
   jshi j6, 0
-  jld j3, j6, 01538h
+  jld j3, j6, 01630h
   jcall r_read_get
   jldi j10, -32768
   jshi j10, 0
@@ -8938,13 +9175,6 @@ rp_f_next:
   jshi j10, 0
   jsub j10, j0, j10
   jjnz j10, rp_arm
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01620h
-  jldi j2, 0
-  jldi j9, 015Eh
-  jshi j9, 01700h
-  jcall r_org_rec
   jldi j2, 0
   jldi j3, 0
   jldi j9, 0800h
@@ -8975,7 +9205,7 @@ rp_min_d:
   jst j1, j6, 01638h
   jldi j0, 1
   jret
-rp_arm:                         ; something new: a letter or an instinct, by her count of each
+rp_arm:                         ; something new: a letter, a song or an instinct, by her count of each
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01528h
@@ -9012,10 +9242,31 @@ rp_arm:                         ; something new: a letter or an instinct, by her
   jst j1, j6, 016E0h
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 015D8h
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 015D0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 016F0h
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 016D8h
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 016E0h
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 016F0h
   jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
@@ -9023,6 +9274,11 @@ rp_arm:                         ; something new: a letter or an instinct, by her
   jld j1, j6, 016D8h
   jsub j2, j0, j1
   jjn j2, rp_org
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016F0h
+  jsub j2, j2, j1
+  jjn j2, rp_song
   ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)
   jldi j1, 3
   jcall r_randmod
@@ -9075,12 +9331,12 @@ rp_i_put:
   jshi j6, 0
   jst j1, j6, 01630h
   jcall r_read_max
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 01620h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 01628h
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jst j14, j7, 0
+  jst j14, j7, 8
+  jst j14, j7, 16
+  jst j14, j7, 24
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016B8h
@@ -9089,22 +9345,26 @@ rp_i_put:
   jshl j9, j1, j10
   jldi j10, 0800h
   jadd j9, j9, j10
-  jldi j10, 192
-  jadd j9, j9, j10
-  jcall r_rec_org
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jld j10, j9, 192
+  jst j10, j7, 0
+  jld j10, j9, 200
+  jst j10, j7, 8
+  jld j10, j9, 208
+  jst j10, j7, 16
+  jld j10, j9, 216
+  jst j10, j7, 24
+rp_i_org:
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01620h
   jldi j6, 015Eh
   jshi j6, 0
   jst j2, j6, 01628h
-rp_i_org:
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01620h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j2, j6, 01628h
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 01630h
@@ -9124,6 +9384,109 @@ rp_i_org:
   jst j1, j6, 01698h
   jldi j0, 1
   jret
+rp_song:                        ; A SONG (the Capitan: "compone canciones de programacion autocompilables"): a
+                                ; sentence of her own words. Her words are what lives in her body: E and a number say
+                                ; her form of that place, whole. Two or three of them, by luck (criterion: the
+                                ; sentences of two words crossed the plateau in v0.59; three is one more). Nothing is
+                                ; built: her reader opens the words as it reads. 64 tries at one she never read.
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01538h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01630h
+  jldi j1, 64
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+rp_s_lap:
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jst j14, j7, 0
+  jst j14, j7, 8
+  jst j14, j7, 16
+  jst j14, j7, 24
+  jldi j1, 2
+  jcall r_randmod
+  jldi j10, 2
+  jadd j0, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01678h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01680h
+rp_s_word:
+  jldi j1, 8
+  jcall r_randmod
+  jldi j10, 1
+  jadd j2, j0, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01680h
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jadd j5, j3, j3
+  jadd j5, j5, j7
+  jldi j10, 14
+  jstb j10, j5, 1
+  jstb j2, j5, 2
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01680h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01678h
+  jsub j10, j3, j1
+  jjnz j10, rp_s_word
+  jadd j3, j3, j3
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jstb j3, j7, 0
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01620h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01628h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01630h
+  jcall r_read_get
+  jldi j10, -32768
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjnz j10, rp_s_next
+  jcall r_read_place
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01638h
+  jldi j1, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01698h
+  jldi j0, 1
+  jret
+rp_s_next:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01670h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+  jjnz j1, rp_s_lap
+  jldi j0, 0
+  jret
 rp_org:                         ; a recipe of hers, by luck, with a letter changed, put in or taken out (any of
                                 ; the fifteen): 64 tries at one she never read (criterion: a round of luck, not a
                                 ; search; none found and she reads nothing this time)
@@ -9138,60 +9501,10 @@ rp_org:                         ; a recipe of hers, by luck, with a letter chang
   jshi j6, 0
   jst j1, j6, 01670h
 rp_o_lap:
-  ; from which place of her body: by her count of each (the one whose thoughts won is asked more; none is closed)
-  jldi j3, 0
-  jldi j4, 0
-  jldi j7, 015Eh
-  jshi j7, 01550h
-rp_w_sum:
-  jld j1, j7, 8
-  jadd j1, j1, j1
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j10, 20
-  jshl j1, j1, j10
-  jld j2, j7, 0
-  jldi j10, 1
-  jadd j2, j2, j10
-  jdiv j1, j1, j2
-  jadd j3, j3, j1
-  jldi j10, 16
-  jadd j7, j7, j10
-  jldi j10, 1
-  jadd j4, j4, j10
-  jldi j10, 8
-  jsub j10, j4, j10
-  jjnz j10, rp_w_sum
-  jadd j1, j3, j14
-  jcall r_randmod
-  jldi j4, 0
-  jldi j7, 015Eh
-  jshi j7, 01550h
-rp_w_pick:
-  jld j1, j7, 8
-  jadd j1, j1, j1
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j10, 20
-  jshl j1, j1, j10
-  jld j2, j7, 0
-  jldi j10, 1
-  jadd j2, j2, j10
-  jdiv j1, j1, j2
-  jsub j0, j0, j1
-  jjn j0, rp_w_have
-  jldi j10, 16
-  jadd j7, j7, j10
-  jldi j10, 1
-  jadd j4, j4, j10
-  jldi j10, 8
-  jsub j10, j4, j10
-  jjnz j10, rp_w_pick
-  jldi j4, 7
-rp_w_have:
+  jcall r_read_place
   jldi j6, 015Eh
   jshi j6, 0
-  jst j4, j6, 01640h
+  jld j4, j6, 01640h
   jldi j10, 8
   jshl j9, j4, j10
   jldi j10, 0800h
@@ -9305,7 +9618,7 @@ rp_o_chg:
 rp_o_try:
   jldi j9, 015Eh
   jshi j9, 01700h
-  jcall r_rec_org
+  jcall r_rec_key
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01620h
@@ -9314,7 +9627,7 @@ rp_o_try:
   jst j2, j6, 01628h
   jldi j6, 015Eh
   jshi j6, 0
-  jld j3, j6, 01538h
+  jld j3, j6, 01630h
   jcall r_read_get
   jldi j10, -32768
   jshi j10, 0
@@ -9370,22 +9683,55 @@ r_read_launch:                  ; her reader: herself, with the recipe in its in
   jsub j1, j1, j10
   jjn j1, b_rn_no
   jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_org
+  jldi j9, 015Eh
   jshi j9, 08000h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01628h
-  jst j1, j9, 18h
+  jst j2, j9, 18h
+  jst j1, j9, 30h
   jldi j1, 1
   jst j1, j9, 20h
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01630h
   jst j1, j9, 28h
+  jst j14, j9, 38h
+  ; her words: her eight living forms, as they are now
   jldi j6, 015Eh
   jshi j6, 0
-  jld j1, j6, 01620h
-  jst j1, j9, 30h
-  jst j14, j9, 38h
+  jst j14, j6, 01668h
+rn_words:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01668h
+  jldi j10, 8
+  jshl j9, j1, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jldi j10, 192
+  jadd j9, j9, j10
+  jcall r_rec_org
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01668h
+  jldi j10, 4
+  jshl j3, j3, j10
+  jldi j10, 015Eh
+  jshi j10, 0FF00h
+  jadd j3, j3, j10
+  jst j1, j3, 0
+  jst j2, j3, 8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01668h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01668h
+  jldi j10, 8
+  jsub j10, j1, j10
+  jjnz j10, rn_words
   jldi j10, 12
   jldi j11, 015Eh
   jshi j11, 01790h
@@ -9400,9 +9746,7 @@ r_read_launch:                  ; her reader: herself, with the recipe in its in
   jldi j10, 6
   jldi j11, 015Eh
   jshi j11, 08000h
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j12, j6, 01660h
+  jldi j12, 07F80h
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -9642,10 +9986,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 07279h
-  jshi j1, 09B0h
-  jshi j1, 01EB6h
-  jshi j1, 0405Eh
+  jldi j1, 0562Bh
+  jshi j1, 04BC2h
+  jshi j1, 0B93Fh
+  jshi j1, 0C4A9h
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
@@ -9746,14 +10090,6 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jjz j1, rd_saved
   jldi j6, 015Eh
   jshi j6, 0
-  jld j1, j6, 01528h
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 01528h
-  jldi j6, 015Eh
-  jshi j6, 0
   jld j4, j6, 01640h
   jldi j10, 4
   jshl j7, j4, j10
@@ -9764,6 +10100,30 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jldi j10, 1
   jadd j1, j1, j10
   jst j1, j7, 8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01698h
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjz j10, rd_song
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01528h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01528h
+  jjmp rd_saved
+rd_song:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015D8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015D8h
   jjmp rd_saved
 rd_plain:
   jcall r_recompute
@@ -9825,7 +10185,7 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jldi j10, 5
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 208
+  jldi j12, 224
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -9876,7 +10236,7 @@ r_free_save:
   jldi j10, 6
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 208
+  jldi j12, 224
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -10460,6 +10820,9 @@ fr_read:                        ; she reads (gen_leer.py): her reader leaves wit
   jst j1, j7, 0
   jjmp fr_r_cnt
 fr_r_ins:
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjnz j10, fr_r_song
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01510h
@@ -10468,6 +10831,28 @@ fr_r_ins:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01510h
+  jjmp fr_r_cnt
+fr_r_song:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015D0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015D0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01640h
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 01550h
+  jadd j7, j7, j10
+  jld j1, j7, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 0
 fr_r_cnt:
   jcall r_free_save
 fr_r_on:

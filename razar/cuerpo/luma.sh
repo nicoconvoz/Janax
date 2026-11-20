@@ -12,6 +12,8 @@
 #   "vida-lista" every creature with its cloud and its gait (<gaits folder>/<name>.oido, default E:/tmp/marcha-oido),
 #                view "-adelante", as vida.sh.
 # A casa made self-contained by migrar_luma.py needs neither folder (luma.sh <folder> [janaxos.exe] is enough).
+# HER WINDOW IS BORN BEHIND EVERY OTHER ONE and never takes the keyboard (JANAX_VENTANA_FONDO, so/pantalla.inc): she is
+# born many times a day, and must not interrupt whoever is working.
 # Nothing is copied: every file is opened where it lives (request 37, read only). Her forms, what she ate, what she
 # read, what the creatures learned and every verdict stay in <folder>/casa, so the next run continues.
 set -u
@@ -48,7 +50,7 @@ armar() {
 if [ -f "$carpeta/casa/$(etiqueta vida-memoria)" ]; then
   echo "luma: casa propia, sin nubes ni oidos del anfitrion" >&2
   armar
-  JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
+  JANAX_VENTANA_FONDO=1 JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
 fi
 # the pantry
 lineas=$(mktemp); max=8; n=0
@@ -75,4 +77,4 @@ texto=$(stat -c %s "$lineas")
 rm -f "$lineas"
 echo "luma: $n nubes en la despensa, $c criaturas con su marcha" >&2
 armar
-JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
+JANAX_VENTANA_FONDO=1 JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"

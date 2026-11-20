@@ -35,6 +35,8 @@ if len(raw) >= 272 + 8 + 16:
     print("criaturas que ve: %d; le dio algo a %d; le sirvio a %d" % (len(tab), given, served))
 
 def letters(lo, hi):
+    if hi >> 60 == 15:                  # a sentence of words longer than 31 letters: kept under its print
+        return "cancion #%015x%016x" % (hi & (2 ** 60 - 1), lo)
     s = ""
     for w in (lo, hi):
         while w:
@@ -42,6 +44,8 @@ def letters(lo, hi):
     return s or "(sin organo)"
 if lee:
     print("lo nuevo que lee: un instinto %d veces (%d fue suyo), una letra %d veces (%d ganaron)" % lee[2:6])
+    if len(raw) >= 4608:
+        print("canciones que compuso con sus palabras: %d (%d ganaron)" % struct.unpack("<2q", raw[4592:4608]))
     print("sus instintos: paciencia %d, firmeza %d, lecturas %d; su estante: %016x" % (lee[7] & 255, lee[7] >> 8 & 255, lee[7] >> 16 & 255, lee[6]))
     if len(raw) >= 4464 + 128:
         ft = struct.unpack("<16q", raw[4464:4592])

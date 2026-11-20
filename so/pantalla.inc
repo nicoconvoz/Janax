@@ -5,6 +5,9 @@
 ; programs (41, screen_take); each one rings the host's bell scr_event, and the kernel wakes whoever sleeps on it.
 ; The window lives in a host thread of its own (its message loop), started by the first show; the kernel and that
 ; thread share the pixels under scr_lock. JANAX_SIN_VENTANA (any value): the same decoding and answers, no window.
+; JANAX_VENTANA_FONDO (any value): the window is born behind every other one, just above the desktop, and never
+; takes the keyboard from who has it (the Capitan, 2026-11-20: "que inicie debajo de todo, arriba del escritorio,
+; como ultima pantalla": a program that is born many times a day must not interrupt). A click brings it up as any.
 
 if PANTALLA_PARTE = 0
 
@@ -12,10 +15,12 @@ if PANTALLA_PARTE = 0
   SCR_WORKAREA = 30h            ; SystemParametersInfoW: the desktop the host leaves free (no taskbar)
   SCR_REDRAW = 3                ; CS_VREDRAW | CS_HREDRAW: a new size repaints the whole window
   scr_quiet_env db 'JANAX_SIN_VENTANA', 0
+  scr_back_env db 'JANAX_VENTANA_FONDO', 0
   scr_class_name du 'JanaxPantalla', 0
   scr_title du 'Janax', 0
   scr_ready db 0                ; the lock is built and the host asked about the window
   scr_quiet db 0                ; 1: never a window
+  scr_back  db 0                ; 1: born behind the others, without taking the keyboard
   align 8
   scr_lock  rb 40               ; CRITICAL_SECTION: the pixels, their size and the bitmap header
   scr_pix   dq 0                ; the pixels: a 32-bit top-down DIB (BGRA), one per cell
@@ -126,6 +131,11 @@ screen_show:
         jz      .ready
         mov     byte [scr_quiet], 1
 .ready:
+        invoke  GetEnvironmentVariableA, scr_back_env, env_value, 31
+        test    eax, eax
+        jz      @f
+        mov     byte [scr_back], 1
+@@:
         invoke  EnterCriticalSection, scr_lock
         mov     rsi, r12
         imul    rsi, r13
@@ -283,7 +293,13 @@ screen_thread:
         test    rax, rax
         jz      .out
         mov     r12, rax
+        cmp     byte [scr_back], 0
+        je      .front
+        invoke  SetWindowPos, r12, 1, 0, 0, 0, 0, 53h   ; HWND_BOTTOM; no move, no size, no activation, shown
+        jmp     .shown
+.front:
         invoke  ShowWindow, r12, SW_SHOW
+.shown:
         invoke  UpdateWindow, r12
         jmp     .message
 .message_lap:
