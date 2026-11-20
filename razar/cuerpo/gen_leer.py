@@ -36,7 +36,19 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   5 where her pen is, 6 where it heads (her body). The other numbers do nothing yet and are free: a tissue more is
   one more place where a gear is let through, not a new kind of thing. Nobody decides which tissue a gear is for:
   each tissue is judged by what it changes (her reading or her drawing, both in bits), and the cell that pays there
-  is the one that stays in her body. The heart is the kernel itself (the Capitan): not connected yet.
+  is the one that stays in her body.
+  HER HEART (the Capitan: "el corazon es el propio kernel") is tissue 7: the kernel gives every cabin its turn from
+  its bolita, the fraction of its time that is real work (request 20). The bolita of the cabin where the cell is
+  said (her reader's, or her body's) passes through the gear and is asked of the kernel, which cuts it down to the
+  one it was launched with (its law: nobody gives itself more than it was given). Until the next hole, where her
+  heart is at rest again. The kernel is asked only when the turn changes (nothing is sent that says nothing).
+  A TISSUE SHE OPENS HERSELF is tissue 8: any word of her reader's memory, said by the cell itself with four letters
+  more (a number in base fifteen: organo.inc). No list of places is kept: the place is in the recipe, so her luck
+  moves it letter by letter and her one judge keeps the ones that pay. It is of her reader only: a place that breaks
+  it ends that reading (the kernel keeps cabins apart; a reading that said nothing is known as the worst), never
+  her. Such a reading could also never end, so it is the only one she cages (34): it may row as much as all her
+  finished readings together have rowed (so what she can lose to cages is never more than what she has read; with
+  nothing read yet she does not send one).
 HER GEARS (the Capitan: "lo importante no es comer el programa sino desarticularlo en engranajes que sean legos
   para que Luma arme su propio software a medida"). engranajes.py takes her own program apart with her own judge:
   a gear is a piece it repeats, which said once saves bits. The ones that only reckon with registers go into her
@@ -89,7 +101,8 @@ N5, S5, NI, SI, NO, SO, SHELF, GENOME, STAMP, RBUD = (R + 8 * i for i in range(1
 FT = R + 80                  # a count for each place of her body: {recipes read that came from it, the ones that won}
 NS, SS = FT + 128, FT + 136  # the songs she composed (sentences of her own words) and the ones that won
 NL, SL = FT + 144, FT + 152  # the lenses she put on a recipe (gears of her own body) and the ones that won
-KEPT = 80 + 16 * 8 + 32
+RSUM = FT + 160              # what all her finished readings have rowed (instructions): the cage of one that may not end
+KEPT = 80 + 16 * 8 + 40
 V = 0x1600
 (RKID, RGOT, RW1, RW2, RLO, RHI, RGEN, RKIND, RJF, RTAB, RTN, RTC, RLEN, T0, T1, T2, T3, T4, NEWST, RARM, RENDED,
  BEST, HAVE, BESTF, RWF, RSC, RSH, WO, WI, FLN, WS, FLE) = (V + 8 * i for i in range(32))
@@ -101,9 +114,14 @@ FLC, FLB = 0x3000, 0x3001    # a recipe said flat, its words opened: how many le
 FLO = FLB + 0x200            # and for each the letter of the sentence it came from (1 the first)
 WORDS = 0x7F00               # in her reader's initial data: her words (organo.inc: ORGT)
 GEARS, NGEARS = 0x4400, 105  # and her gears (organo.inc: ORGGT), 80h bytes each: the file "engranajes" of her house.
-TISSUES = 6                  # the tissues a gear can be expressed in today (a cell says which, a letter from 1 to F):
+TISSUES = 8                  # the tissues a gear can be expressed in today (a cell says which, a letter from 1 to F):
                              # 1 her looks, 2 the frame, 3 where her eye is, 4 how it sees (her reader: organo.inc);
-                             # 5 where her pen is, 6 where it heads (her body, here). The other numbers are free.
+                             # 5 where her pen is, 6 where it heads (her body, here); 7 her heart (the turn the
+                             # kernel gives the cabin that says it); 8 any word of her reader's memory, said by the
+                             # cell with four letters more. The other numbers are free.
+HB, HCH = 0x1900, 0x1908     # her heart, in her body: its bolita plus one (0: not asked yet), 1 = not at rest
+HBT = 0x1928                 # the bolita she was launched with: the most she may have
+CL, PLC, FLH = 0x1910, 0x1918, 0x1920   # a cell being put in: how many letters, its place; a recipe said flat has one on a place
 BVR = 0x1880                 # the sixteen registers of the little machine of her body (r_gear)
 GFP, FLG, WL, NGE = 0x1820, 0x1828, 0x1830, 0x1838   # the gears' print, a recipe said flat has a lens, a wish, how many gears
 LGE = 0x1840                 # "engranajes"
@@ -201,14 +219,35 @@ def make(g, ST, free):
         J("jldb j2, j1, 1", "jldb j3, j1, 2", "jldb j4, j1, 3", "jldi j10, 9", "jsub j2, j2, j10", "jldi j10, 15", "jmul j2, j2, j10", "jadd j2, j2, j3",
           "jldi j10, 1", "jsub j2, j2, j10")
         st("j2", "GK"); st("j4", "GN0"); g["incg"]("GFI", 3)
+        ld("j4", "GN0"); J("jldi j10, 8", "jsub j10, j4, j10", "jjnz j10, grow_cell")
+        g["incg"]("GFI", 4)             # (a cell on a place of her reader: its four letters are not of her body)
+        o("grow_cell:")
         ld("j2", "GK"); gl("j10", NGE); J("jsub j10, j2, j10", "jjnn j10, grow_letter")
-        ld("j4", "GN0"); J("jldi j10, 5", "jsub j10, j4, j10", "jjz j10, grow_pen", "jldi j10, 6", "jsub j10, j4, j10", "jjnz j10, grow_letter")
+        ld("j4", "GN0"); J("jldi j10, 5", "jsub j10, j4, j10", "jjz j10, grow_pen", "jldi j10, 7", "jsub j10, j4, j10", "jjz j10, grow_heart",
+                           "jldi j10, 6", "jsub j10, j4, j10", "jjnz j10, grow_letter")
         ld("j1", "GHEAD"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "GHEAD"); J("jjmp grow_letter")
+        o("grow_heart:                     ; 7, her heart: her body's bolita through the gear, asked of the kernel (20), which")
+        o("                                ; cuts it down to the one she was launched with; at rest again at the next hole")
+        gl("j1", HB); J("jjnz j1, grow_heart_has", "jldi j10, 20", "jldi j11, -1", "jldi j12, 0", "jcall r_tocar"); gs("j13", HBT)
+        J("jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB)
+        o("grow_heart_has:")
+        J("jldi j10, 1", "jsub j1, j1, j10"); ld("j2", "GK"); J("jcall r_gear")
+        o("  ; the kernel's law, known here (never more than she was launched with), and it is asked only if her turn changes")
+        gl("j2", HBT); J("jjn j0, grow_heart_top", "jsub j10, j2, j0", "jjnn j10, grow_heart_cut")
+        o("grow_heart_top:")
+        J("jadd j0, j2, j14")
+        o("grow_heart_cut:")
+        gl("j1", HB); J("jldi j10, 1", "jsub j1, j1, j10", "jsub j1, j1, j0", "jjz j1, grow_letter")
+        J("jldi j10, 20", "jadd j11, j0, j14", "jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB); J("jldi j1, 1"); gs("j1", HCH)
+        J("jjmp grow_letter")
         o("grow_pen:")
         ld("j1", "TX"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TX")
         ld("j1", "TY"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TY")
         ld("j1", "TX"); ld("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV"); J("jjmp grow_letter")
         o("grow_seen:")
+
+    def heart_rest():
+        J("jcall r_heart_rest             ; her heart at rest (gen_leer.py): the turn she was given")
 
     def flat_test():
         """LUMA_PRUEBA_PLANO: each of her forms said flat (r_flat) into the file "plano": 520 bytes a form, how many
@@ -292,11 +331,16 @@ def make(g, ST, free):
         J("jldi j10, 8", "jadd j9, j9, j10", "jldi j10, 1", "jsub j7, j7, j10", "jjmp bg_ins")
         o("bg_done:")
         J("jret")
+        o("r_heart_rest:                   ; her heart at rest: her bolita as she was launched, if a cell changed it (uses j1,")
+        o("                                ; j6, j10 to j13, j15)")
+        gl("j1", HCH); J("jjnz j1, hr_go", "jret")
+        o("hr_go:")
+        gs("j14", HCH); J("jldi j10, 20", "jldi j11, -1", "jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB); J("jret")
         o("r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly")
         o("                                ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that")
         o("                                ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and")
         o("                                ; any letter are a lens, a gear of her body, and stay as they are written (FLG = 1)")
-        J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE); gs("j14", FLG)
+        J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE); gs("j14", FLG); gs("j14", FLH)
         def emit(origin, reg="j5"):
             li("j10", B + FLB); J("jadd j10, j10, j8", "jstb %s, j10, 0" % reg, "jstb %s, j10, 200h" % origin, "jldi j10, 1", "jadd j8, j8, j10")
         def lens(rec, idx, n, back, skip, skip3):
@@ -307,6 +351,19 @@ def make(g, ST, free):
               "jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 14", "jsub j12, j12, j10", "jjz j12, %s" % skip)
             J("jldi j10, 1", "jadd j12, j11, j10", "jsub j10, j12, %s" % n, "jjnn j10, %s" % skip3,
               "jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 13", "jsub j12, j12, j10", "jjz j12, %s" % skip3)
+            a = g["lab"]("cell")
+            J("jadd j12, %s, j11" % rec, "jldb j12, j12, 2", "jldi j10, 8", "jsub j12, j12, j10", "jjnz j12, %s" % a)
+            o("  ; on a place of her reader (tissue 8): its four letters more, if it has them in the same sixteen -> the")
+            o("  ; eight stay (FLH = 1); else her reader takes what is left of that sixteen and there is no cell")
+            J("jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 9", "jsub j12, j12, j10", "jjnn j12, %s_cut" % a,
+              "jldi j10, 7", "jadd j12, %s, j10" % idx, "jsub j10, j12, %s" % n, "jjnn j10, %s_cut" % a)
+            J("jldi j5, 14"); emit("j7"); emit("j7", "j6")
+            for k in range(1, 7):
+                J("jadd j5, %s, j11" % rec, "jldb j5, j5, %d" % k); emit("j7")
+            J("jldi j10, 1"); gs("j10", FLG); gs("j10", FLH); J("jldi j10, 8", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
+            o("%s_cut:" % a)
+            J("jldi j10, 15", "jor %s, %s, j10" % (idx, idx), "jldi j10, 1", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
+            o("%s:" % a)
             J("jldi j5, 14"); emit("j7"); emit("j7", "j6"); J("jadd j5, %s, j11" % rec, "jldb j5, j5, 1"); emit("j7")
             J("jadd j5, %s, j11" % rec, "jldb j5, j5, 2"); emit("j7")
             J("jldi j10, 1"); gs("j10", FLG); J("jldi j10, 4", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
@@ -542,16 +599,30 @@ def make(g, ST, free):
         gl("j1", NGE); J("jjz j1, rp_org"); gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
         o("rp_l_lap:")
         J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
-        li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next", "jldi j10, 28", "jsub j10, j3, j10", "jjnn j10, rp_l_next")
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next")
         gl("j1", NGE); J("jcall r_randmod"); gs("j0", T2); J("jldi j1, %d" % TISSUES, "jcall r_randmod", "jldi j10, 1", "jadd j0, j0, j10"); gs("j0", T3)
-        li("j7", B + RREC); J("jldb j3, j7, 0", "jldi j10, 1", "jadd j1, j3, j10", "jcall r_randmod")
-        li("j7", B + RREC); J("jldb j3, j7, 0", "jadd j4, j3, j14")
-        o("rp_l_up:                        ; room for its four letters")
-        J("jsub j10, j4, j0", "jjz j10, rp_l_put", "jadd j5, j7, j4", "jldb j1, j5, 0", "jstb j1, j5, 4", "jldi j10, 1", "jsub j4, j4, j10", "jjmp rp_l_up")
+        J("jldi j1, 4"); gs("j1", CL); gs("j14", PLC)
+        gl("j1", T3); J("jldi j10, 8", "jsub j10, j1, j10", "jjnz j10, rp_l_len")
+        o("  ; a tissue she opens: a word of what her reader is born with (its initial data), by luck; her luck with the")
+        o("  ; letters moves it from there, anywhere")
+        J("jldi j1, 8"); gs("j1", CL); li("j1", DLEN // 8); J("jcall r_randmod"); gs("j0", PLC)
+        o("rp_l_len:                       ; room for its letters (a recipe has room for 31)")
+        li("j7", B + RREC); J("jldb j3, j7, 0"); gl("j1", CL); J("jadd j1, j1, j3", "jldi j10, 32", "jsub j10, j1, j10", "jjnn j10, rp_l_next")
+        J("jldi j10, 1", "jadd j1, j3, j10", "jcall r_randmod")
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jadd j4, j3, j14"); gl("j2", CL)
+        o("rp_l_up:")
+        J("jsub j10, j4, j0", "jjz j10, rp_l_put", "jadd j5, j7, j4", "jldb j1, j5, 0", "jadd j11, j5, j2", "jstb j1, j11, 0",
+          "jldi j10, 1", "jsub j4, j4, j10", "jjmp rp_l_up")
         o("rp_l_put:")
         J("jadd j5, j7, j0", "jldi j10, 14", "jstb j10, j5, 1"); gl("j1", T2); J("jldi j10, 15", "jdiv j2, j1, j10", "jmul j4, j2, j10", "jsub j4, j1, j4",
           "jldi j10, 9", "jadd j2, j2, j10", "jstb j2, j5, 2", "jldi j10, 1", "jadd j4, j4, j10", "jstb j4, j5, 3"); gl("j1", T3)
-        J("jstb j1, j5, 4", "jldi j10, 4", "jadd j3, j3, j10", "jstb j3, j7, 0")
+        J("jstb j1, j5, 4")
+        gl("j1", CL); J("jldi j10, 8", "jsub j10, j1, j10", "jjnz j10, rp_l_cnt"); gl("j1", PLC)
+        for off in (8, 7, 6, 5):
+            J("jldi j10, 15", "jdiv j2, j1, j10", "jmul j4, j2, j10", "jsub j4, j1, j4", "jldi j10, 1", "jadd j4, j4, j10",
+              "jstb j4, j5, %d" % off, "jadd j1, j2, j14")
+        o("rp_l_cnt:")
+        gl("j1", CL); li("j7", B + RREC); J("jldb j3, j7, 0", "jadd j3, j3, j1", "jstb j3, j7, 0")
         keyget(); known("rp_l_next")
         J("jldi j1, 1"); gs("j1", RKIND); J("jldi j1, 4"); gs("j1", RARM); J("jldi j0, 1", "jret")
         o("rp_l_next:")
@@ -607,7 +678,11 @@ def make(g, ST, free):
         o("r_read_launch:                  ; her reader: herself, with the recipe in its initial data (pulso.datos with the")
         o("                                ; candidate's words: 18h and 30h its letters, 20h that it is one, 28h the instincts),")
         o("                                ; rowing in the gaps (42). No cage (34): any string of letters is an organ and none")
-        o("                                ; can hang, and what ends it is her window closing -> j0 = 1")
+        o("                                ; can hang, and what ends it is her window closing; but a cell on a place of her")
+        o("                                ; reader (tissue 8) can make it never end, so that one is caged: it may row what")
+        o("                                ; all her finished readings together rowed (RSUM; none yet, not sent) -> j0 = 1")
+        li("j9", B + RREC); J("jcall r_flat"); gl("j1", FLH); J("jjz j1, rn_go"); gl("j1", RSUM); J("jjz j1, rn_no")
+        o("rn_go:")
         li("j11", B + LMOLD); J("jldi j12, %d" % len(S_MOLD), "jcall r_open"); ld("j9", "FH"); J("jjn j9, rn_no")
         J("jldi j10, 5"); li("j11", B + DBUF); li("j12", 8192); J("jcall r_file"); gs("j13", RLEN); J("jldi j10, 7", "jcall r_file")
         gl("j1", RLEN); J("jldi j10, 64", "jsub j1, j1, j10", "jjn j1, rn_no")
@@ -625,6 +700,8 @@ def make(g, ST, free):
         li("j10", 16 | (14 << 32)); li("j11", B + LBIN); J("jldi j12, %d" % len(S_BIN), "jcall r_tocar", "jjn j13, rn_no")
         J("jldi j10, 1", "jadd j1, j13, j10"); gs("j1", RKID); gs("j14", RGOT)
         J("jldi j10, 42", "jadd j11, j13, j14", "jldi j12, 1", "jcall r_tocar")
+        gl("j1", FLH); J("jjz j1, rn_sent"); gl("j12", RSUM); gl("j11", RKID); J("jldi j10, 1", "jsub j11, j11, j10", "jldi j10, 34", "jcall r_tocar")
+        o("rn_sent:")
         J("jldi j0, 1", "jret")
         o("rn_no:")
         J("jldi j0, 0", "jret")
@@ -652,6 +729,10 @@ def make(g, ST, free):
         gl("j1", RENDED); J("jldi j10, 1", "jadd j1, j1, j10", "jjnz j1, r_read_done", "jret")
         o("r_read_done:                    ; it ended: its line in \"leido\", and what it changes in her")
         gl("j11", RKID); J("jldi j10, 1", "jsub j11, j11, j10"); gs("j14", RKID); gs("j14", T3)
+        o("  ; what it rowed (35), if it said its score: one more of her finished readings")
+        J("jldi j10, 35", "jldi j12, 0", "jcall r_tocar"); gl("j1", RGOT); J("jldi j10, 2", "jsub j1, j1, j10", "jjn j1, rd_rowed", "jjn j13, rd_rowed")
+        gl("j1", RSUM); J("jadd j1, j1, j13"); gs("j1", RSUM)
+        o("rd_rowed:")
         gl("j1", SHELF); gs("j1", RSH); li("j1", BAD); gs("j1", RSC)
         gl("j1", RGOT); J("jldi j10, 2", "jsub j1, j1, j10", "jjn j1, rd_line")
         gl("j1", RW2); gs("j1", RSC); gl("j1", RW1); gs("j1", RSH)
@@ -719,6 +800,11 @@ def make(g, ST, free):
             if m:
                 assert m.group(1) not in mine, "a label of her body twice: " + m.group(1)
                 mine.add(m.group(1))
+        for l in L:                     # (the assembler only counts errors: a jump to nowhere is told here, by name)
+            code = l.split(";")[0]
+            m = (re.match(r"\s*(?:jjmp|jcall)\s+([A-Za-z_]\w*)\s*$", code)
+                 or re.match(r"\s*(?:jjz|jjnz|jjn|jjnn|jcall0)\s+j\d+\s*,\s*([A-Za-z_]\w*)\s*$", code))
+            assert not m or m.group(1) in mine or m.group(1) in names or m.group(1) == "lectora", "a jump of her body to nowhere: " + m.group(1)
         both = sorted(names & mine, key=len, reverse=True)
         assert "lectora" not in names and "soy_cuerpo" not in names
         if both:
@@ -737,5 +823,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, flat_test=flat_test, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, flat_test=flat_test, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)

@@ -48,6 +48,8 @@ if lee:
         print("canciones que compuso con sus palabras: %d (%d ganaron)" % struct.unpack("<2q", raw[4592:4608]))
     if len(raw) >= 4624:
         print("celulas que puso (un engranaje de su cuerpo en un tejido): %d (%d ganaron)" % struct.unpack("<2q", raw[4608:4624]))
+    if len(raw) >= 4632:
+        print("lo que remaron sus lecturas terminadas (la jaula de una que podria no terminar): %d instrucciones" % struct.unpack("<q", raw[4624:4632]))
     print("sus instintos: paciencia %d, firmeza %d, lecturas %d; su estante: %016x" % (lee[7] & 255, lee[7] >> 8 & 255, lee[7] >> 16 & 255, lee[6]))
     if len(raw) >= 4464 + 128:
         ft = struct.unpack("<16q", raw[4464:4592])

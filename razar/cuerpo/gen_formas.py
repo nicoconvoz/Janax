@@ -586,6 +586,8 @@ ld("j2", "TY"); ld("j10", "GDYA"); J("jadd j2, j2, j10"); st("j2", "TY")
 ld("j3", "PREV"); ld("j4", "GT"); J("jcall r_cell"); st("j0", "PREV")
 incg("GK", -1); J("jjnz j10, grow_arm_lap", "jjmp grow_letter")
 o("grow_hole:                      ; 5-8: back to the seed and over an opening towards direction k")
+if RD:
+    RD.heart_rest()
 J("jldi j10, 5", "jsub j5, j5, j10"); ld("j10", "GHEAD"); J("jadd j5, j5, j10", "jldi j10, 3", "jand j5, j5, j10", "jldi j10, 4", "jshl j5, j5, j10"); li("j10", DIRT); J("jadd j5, j5, j10")
 st("j14", "GHEAD")
 J("jldi j10, %d" % ARM, "jld j6, j5, 0", "jmul j1, j6, j10", "jld j6, j5, 8", "jmul j2, j6, j10")
@@ -618,6 +620,8 @@ J("jldi j10, 10", "jsub j10, j5, j10", "jjnz j10, grow_sense_f", "jldi j5, 0", "
 o("grow_sense_f:")
 J("jldi j10, 15", "jsub j10, j5, j10", "jjnz j10, grow_letter", "jldi j5, 4", "jjmp grow_arm")
 o("grow_done:")
+if RD:
+    RD.heart_rest()
 J("jret")
 o("r_cell:                         ; the cell j1, j2 (from the seed) of the form being grown, parent j3 (-1: itself),")
 o("                                ; birth j4 (-1: only look) -> j0 = its particle, or -1 (outside the room, or empty)")

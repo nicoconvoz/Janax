@@ -122,11 +122,17 @@ def gear_word(op, rd, ra=0, imm=0):
     return op | rd << 8 | ra << 12 | (imm & 0xFFFF) << 16
 GEARS = {1: [gear_word(0x01, 0, 0, 0), gear_word(0x02, 1, 1, 0)], 2: [gear_word(0x01, 0, 0, 8), gear_word(0x07, 1, 1, 0)]}
 # A cell is four letters: E, the two of its gear (E91 is gear 1, E92 gear 2, E93 gear 3, which is not there) and its
-# tissue: 1 her looks, 2 the frame, 3 where her eye is, 4 how it sees; 5 and 6 are of her body and 9 of nothing yet.
+# tissue: 1 her looks, 2 the frame, 3 where her eye is, 4 how it sees; 5 and 6 are of her body, 7 her heart, 8 a place
+# of hers said with four letters more, and 9 of nothing yet.
 LENSES = [("38A516", None), ("E91138A516", "38A516"), ("38E911A516", "38A516"), ("E91238A516", "38A516"), ("E91438A516", None),
           ("38E921A516", None), ("E92138A516", None), ("38E922A516", None), ("38E923A516", None), ("38E924A516", None),
           ("38E925A516", "38A516"), ("38E929A516", "38A516"), ("E93138A516", "38A516"), ("38A5E92", "38A5"), ("38A5", None),
-          ("E19", "38A5169"), ("38A5169", None)]
+          ("E19", "38A5169"), ("38A5169", None),
+          # 7, her heart: the turn the kernel gives this reader, through the gear (what it reads does not change);
+          # 8, a place of hers said with four letters more (base fifteen, each letter less one): 23F7 is a word that
+          # holds nothing (7E48h), 1116 her instincts (28h), FFFF a place this reader does not have; cut short, no cell
+          ("38E917A516", "38A516"), ("38E927A516", "38A516"), ("38E91823F7A516", "38A516"), ("38E92823F7A516", "38A516"),
+          ("38E9281116A516", None), ("38E9281", "38"), ("38", None)]
 
 
 def lentes():

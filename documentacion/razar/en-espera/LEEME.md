@@ -42,3 +42,6 @@ Que se llevo consigo y sigue dormido, con su despertador:
   ella lee sola. Los instintos si siguen vivos: los prueba ella, de a un paso.
 - **La jaula del candidato** (pedido 34, el doble de lo remado): una receta no puede colgarse (cualquier tira de
   letras es un organo), asi que ella no enjaula a su lectora. Despierta si un dia las letras pueden pedir algo.
+  **Desperto en la v0.97**: una celula puede decir un lugar de la memoria de su lectora (tejido 8), y esa lectura si
+  puede no terminar. Solo esa se enjaula, y con otra medida: lo que remaron todas sus lecturas terminadas juntas (el
+  doble de una sola no servia aca: la primera lectura con celula no tiene otra igual con que compararse).

@@ -1,4 +1,4 @@
-# nuevo-testamento, en 97 s; sin organo -3554; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516
+# nuevo-testamento, en 160 s; sin organo -3554; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516
 38A516           14775
 E91138A516       14775   debe dar lo de 38A516: igual
 38E911A516       14775   debe dar lo de 38A516: igual
@@ -16,3 +16,10 @@ E93138A516       14775   debe dar lo de 38A516: igual
 38A5              4251
 E19              14775   debe dar lo de 38A5169: igual
 38A5169          14775
+38E917A516       14775   debe dar lo de 38A516: igual
+38E927A516       14775   debe dar lo de 38A516: igual
+38E91823F7A516   14775   debe dar lo de 38A516: igual
+38E92823F7A516   14775   debe dar lo de 38A516: igual
+38E9281116A516   14775
+38E9281           2193   debe dar lo de 38: igual
+38                2193

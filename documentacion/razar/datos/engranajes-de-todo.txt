@@ -1,0 +1,360 @@
+# luma.bin: programa de Janax, 31362 instrucciones, 15819 en tramos que solo hacen cuentas
+# libro: texto, 0 instrucciones, 0 en tramos que solo hacen cuentas
+# libro-fuente-c-chico-0: texto, 844 instrucciones, 844 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-fasm-1: texto, 3225 instrucciones, 3225 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-nucleo-1: texto, 4020 instrucciones, 4020 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-nucleo-2: texto, 3222 instrucciones, 3222 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-nucleo-3: texto, 1679 instrucciones, 1679 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-nucleo-4: texto, 322 instrucciones, 322 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-sistema-1: texto, 3920 instrucciones, 3920 en tramos que solo hacen cuentas
+# libro-fuente-kolibri-sistema-2: texto, 1600 instrucciones, 1600 en tramos que solo hacen cuentas
+# libro-fuente-lua-1: texto, 369 instrucciones, 369 en tramos que solo hacen cuentas
+# libro-fuente-lua-2: texto, 795 instrucciones, 795 en tramos que solo hacen cuentas
+# libro-kolibri: texto, 2128 instrucciones, 2128 en tramos que solo hacen cuentas
+# libro-maquina-janaxos: codigo de maquina del anfitrion (dicho por objdump), 5233 instrucciones, 5233 en tramos que solo hacen cuentas
+# libro-maquina-luma: ya dicho (los mismos bytes), se pasa de largo
+# 105 engranajes ahorran 11066 instrucciones (18.8 % de las 58719)
+engranaje 1: ahorra 2441, dicho 2443 veces (612 en luma.bin, 387 en libro-maquina-janaxos, 276 en libro-fuente-kolibri-fasm-1, 255 en libro-fuente-kolibri-sistema-1, 216 en libro-fuente-kolibri-nucleo-1, 164 en libro-fuente-kolibri-nucleo-2, 124 en libro-kolibri, 99 en libro-fuente-kolibri-sistema-2, 97 en libro-fuente-kolibri-nucleo-3, 89 en libro-fuente-c-chico-0, 79 en libro-fuente-lua-2, 23 en libro-fuente-kolibri-nucleo-4, 22 en libro-fuente-lua-1), 2 instrucciones
+    jldi r0, 1
+    jadd r1, r1, r0
+engranaje 2: ahorra 1480, dicho 1482 veces (248 en luma.bin, 213 en libro-fuente-kolibri-nucleo-1, 188 en libro-maquina-janaxos, 187 en libro-fuente-kolibri-nucleo-2, 182 en libro-fuente-kolibri-sistema-1, 127 en libro-kolibri, 125 en libro-fuente-kolibri-fasm-1, 98 en libro-fuente-kolibri-nucleo-3, 77 en libro-fuente-kolibri-sistema-2, 18 en libro-fuente-c-chico-0, 8 en libro-fuente-lua-2, 6 en libro-fuente-kolibri-nucleo-4, 5 en libro-fuente-lua-1), 2 instrucciones
+    jldi r0, 1
+    jsub r1, r1, r0
+engranaje 3: ahorra 438, dicho 440 veces (440 en luma.bin), 2 instrucciones
+    jldi r0, 350
+    jshi r0, 0
+engranaje 4: ahorra 319, dicho 321 veces (107 en libro-maquina-janaxos, 106 en luma.bin, 31 en libro-fuente-kolibri-nucleo-1, 31 en libro-fuente-kolibri-nucleo-2, 14 en libro-fuente-kolibri-fasm-1, 11 en libro-fuente-kolibri-sistema-1, 10 en libro-kolibri, 5 en libro-fuente-kolibri-sistema-2, 4 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-c-chico-0, 1 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 8
+    jadd r1, r1, r0
+engranaje 5: ahorra 280, dicho 282 veces (98 en libro-fuente-kolibri-sistema-1, 49 en libro-maquina-janaxos, 47 en libro-fuente-kolibri-sistema-2, 26 en libro-fuente-kolibri-nucleo-2, 19 en libro-fuente-kolibri-nucleo-3, 16 en luma.bin, 15 en libro-fuente-kolibri-fasm-1, 10 en libro-kolibri, 2 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jldi r0, 16
+    jshl r1, r1, r0
+engranaje 6: ahorra 250, dicho 252 veces (155 en libro-maquina-janaxos, 28 en libro-fuente-kolibri-fasm-1, 27 en libro-fuente-kolibri-nucleo-1, 15 en luma.bin, 11 en libro-kolibri, 8 en libro-fuente-kolibri-nucleo-2, 5 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-sistema-2, 1 en libro-fuente-lua-1), 2 instrucciones
+    jldi r0, 16
+    jadd r1, r1, r0
+engranaje 7: ahorra 239, dicho 241 veces (59 en libro-fuente-kolibri-sistema-1, 49 en libro-maquina-janaxos, 34 en libro-fuente-kolibri-nucleo-3, 30 en libro-fuente-kolibri-sistema-2, 18 en libro-fuente-kolibri-nucleo-2, 18 en libro-kolibri, 14 en libro-fuente-kolibri-nucleo-1, 11 en libro-fuente-kolibri-fasm-1, 8 en luma.bin), 2 instrucciones
+    jldi r0, 16
+    jshr r1, r1, r0
+engranaje 8: ahorra 225, dicho 227 veces (155 en libro-maquina-janaxos, 21 en luma.bin, 18 en libro-fuente-kolibri-nucleo-1, 12 en libro-fuente-kolibri-fasm-1, 9 en libro-fuente-kolibri-sistema-1, 5 en libro-fuente-kolibri-nucleo-2, 5 en libro-fuente-kolibri-sistema-2, 2 en libro-kolibri), 2 instrucciones
+    jldi r0, 32
+    jadd r1, r1, r0
+engranaje 9: ahorra 201, dicho 203 veces (44 en libro-fuente-kolibri-nucleo-1, 36 en libro-fuente-kolibri-nucleo-2, 35 en libro-fuente-kolibri-sistema-1, 26 en libro-fuente-kolibri-nucleo-3, 25 en libro-fuente-kolibri-fasm-1, 19 en libro-fuente-kolibri-sistema-2, 11 en libro-kolibri, 7 en luma.bin), 2 instrucciones
+    jldi r0, 4
+    jadd r1, r1, r0
+engranaje 10: ahorra 167, dicho 169 veces (157 en libro-maquina-janaxos, 5 en libro-fuente-kolibri-nucleo-1, 3 en libro-fuente-kolibri-fasm-1, 2 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-sistema-1, 1 en libro-kolibri), 2 instrucciones
+    jldi r0, 32
+    jsub r1, r1, r0
+engranaje 11: ahorra 163, dicho 165 veces (33 en libro-fuente-kolibri-fasm-1, 28 en libro-fuente-kolibri-sistema-1, 22 en libro-fuente-kolibri-nucleo-2, 18 en libro-kolibri, 17 en libro-fuente-kolibri-sistema-2, 16 en luma.bin, 11 en libro-maquina-janaxos, 9 en libro-fuente-kolibri-nucleo-1, 9 en libro-fuente-kolibri-nucleo-3, 2 en libro-fuente-lua-1), 2 instrucciones
+    jldi r0, 1
+    jshr r1, r1, r0
+engranaje 12: ahorra 153, dicho 155 veces (47 en libro-maquina-janaxos, 32 en libro-fuente-kolibri-nucleo-1, 18 en libro-fuente-c-chico-0, 14 en libro-fuente-kolibri-nucleo-2, 12 en libro-fuente-kolibri-fasm-1, 8 en libro-kolibri, 7 en libro-fuente-lua-2, 5 en libro-fuente-kolibri-nucleo-3, 5 en libro-fuente-kolibri-sistema-1, 5 en libro-fuente-kolibri-sistema-2, 2 en libro-fuente-lua-1), 2 instrucciones
+    jor r1, r0, r0
+    jor r3, r2, r2
+engranaje 13: ahorra 151, dicho 153 veces (117 en libro-maquina-janaxos, 9 en luma.bin, 8 en libro-fuente-kolibri-sistema-1, 7 en libro-fuente-kolibri-nucleo-1, 7 en libro-fuente-kolibri-nucleo-3, 3 en libro-fuente-kolibri-fasm-1, 2 en libro-kolibri), 2 instrucciones
+    jldi r0, 5
+    jshl r1, r1, r0
+engranaje 14: ahorra 142, dicho 144 veces (94 en libro-maquina-janaxos, 18 en luma.bin, 10 en libro-fuente-kolibri-nucleo-2, 9 en libro-fuente-kolibri-fasm-1, 7 en libro-fuente-kolibri-nucleo-1, 2 en libro-fuente-kolibri-nucleo-4, 2 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 8
+    jsub r1, r1, r0
+engranaje 15: ahorra 140, dicho 142 veces (93 en luma.bin, 20 en libro-fuente-kolibri-nucleo-2, 16 en libro-maquina-janaxos, 7 en libro-fuente-kolibri-nucleo-1, 3 en libro-kolibri, 2 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 3
+    jshl r1, r1, r0
+engranaje 16: ahorra 135, dicho 137 veces (37 en libro-fuente-kolibri-fasm-1, 16 en libro-fuente-c-chico-0, 14 en libro-fuente-kolibri-nucleo-1, 12 en luma.bin, 12 en libro-maquina-janaxos, 11 en libro-fuente-kolibri-sistema-1, 9 en libro-fuente-kolibri-sistema-2, 9 en libro-kolibri, 7 en libro-fuente-kolibri-nucleo-2, 6 en libro-fuente-kolibri-nucleo-3, 3 en libro-fuente-lua-1, 1 en libro-fuente-lua-2), 2 instrucciones
+    jldi r0, 2
+    jadd r1, r1, r0
+engranaje 17: ahorra 127, dicho 129 veces (43 en libro-fuente-kolibri-nucleo-2, 26 en libro-kolibri, 17 en libro-fuente-kolibri-nucleo-1, 11 en libro-fuente-kolibri-sistema-1, 9 en libro-fuente-kolibri-fasm-1, 9 en libro-fuente-kolibri-nucleo-3, 6 en libro-fuente-kolibri-sistema-2, 4 en libro-maquina-janaxos, 2 en luma.bin, 2 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 2
+    jshr r1, r1, r0
+engranaje 18: ahorra 115, dicho 117 veces (37 en libro-fuente-kolibri-sistema-1, 23 en libro-fuente-kolibri-nucleo-1, 22 en libro-fuente-kolibri-nucleo-2, 12 en libro-fuente-kolibri-fasm-1, 11 en libro-fuente-kolibri-sistema-2, 5 en libro-fuente-kolibri-nucleo-3, 5 en libro-kolibri, 2 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, -1
+    jor r1, r1, r0
+engranaje 19: ahorra 111, dicho 113 veces (71 en luma.bin, 19 en libro-maquina-janaxos, 8 en libro-fuente-lua-1, 6 en libro-fuente-c-chico-0, 4 en libro-fuente-lua-2, 3 en libro-kolibri, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 0
+    jldi r1, 0
+engranaje 20: ahorra 103, dicho 105 veces (30 en luma.bin, 21 en libro-fuente-kolibri-nucleo-1, 14 en libro-maquina-janaxos, 13 en libro-fuente-kolibri-nucleo-2, 12 en libro-fuente-kolibri-sistema-1, 12 en libro-kolibri, 2 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 4
+    jshl r1, r1, r0
+engranaje 21: ahorra 99, dicho 101 veces (26 en libro-fuente-kolibri-nucleo-2, 15 en libro-fuente-kolibri-nucleo-1, 12 en libro-maquina-janaxos, 11 en libro-fuente-kolibri-fasm-1, 11 en libro-fuente-kolibri-nucleo-3, 10 en libro-fuente-kolibri-sistema-2, 7 en luma.bin, 5 en libro-kolibri, 4 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 0
+    jsub r1, r0, r1
+engranaje 22: ahorra 98, dicho 34 veces (34 en luma.bin), 4 instrucciones
+    jldi r0, 8
+    jshl r2, r1, r0
+    jldi r0, 2048
+    jadd r2, r2, r0
+engranaje 23: ahorra 98, dicho 100 veces (29 en luma.bin, 23 en libro-fuente-kolibri-sistema-1, 18 en libro-kolibri, 10 en libro-fuente-kolibri-nucleo-2, 7 en libro-fuente-kolibri-sistema-2, 4 en libro-fuente-kolibri-nucleo-1, 4 en libro-fuente-kolibri-nucleo-3, 3 en libro-fuente-kolibri-fasm-1, 2 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 8
+    jshr r1, r1, r0
+engranaje 24: ahorra 98, dicho 100 veces (27 en libro-fuente-kolibri-nucleo-2, 15 en libro-kolibri, 14 en libro-fuente-kolibri-sistema-1, 12 en libro-fuente-kolibri-nucleo-3, 8 en libro-fuente-kolibri-fasm-1, 7 en libro-fuente-kolibri-sistema-2, 6 en libro-fuente-kolibri-nucleo-1, 6 en libro-maquina-janaxos, 5 en luma.bin), 2 instrucciones
+    jldi r0, 2
+    jshl r1, r1, r0
+engranaje 25: ahorra 91, dicho 93 veces (93 en luma.bin), 2 instrucciones
+    jldi r0, 63
+    jsar r1, r1, r0
+engranaje 26: ahorra 88, dicho 90 veces (25 en luma.bin, 14 en libro-fuente-kolibri-fasm-1, 10 en libro-fuente-kolibri-nucleo-2, 9 en libro-kolibri, 7 en libro-fuente-kolibri-nucleo-3, 6 en libro-fuente-kolibri-nucleo-1, 6 en libro-fuente-kolibri-sistema-1, 5 en libro-fuente-kolibri-sistema-2, 3 en libro-fuente-lua-2, 2 en libro-fuente-c-chico-0, 2 en libro-fuente-lua-1, 1 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 0
+    jldi r1, 1
+engranaje 27: ahorra 88, dicho 90 veces (29 en luma.bin, 15 en libro-fuente-kolibri-fasm-1, 14 en libro-fuente-kolibri-sistema-1, 10 en libro-fuente-kolibri-nucleo-1, 8 en libro-fuente-kolibri-sistema-2, 7 en libro-kolibri, 4 en libro-fuente-kolibri-nucleo-4, 2 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-c-chico-0), 2 instrucciones
+    jldi r0, 2
+    jsub r1, r1, r0
+engranaje 28: ahorra 88, dicho 90 veces (25 en libro-fuente-kolibri-fasm-1, 23 en libro-fuente-kolibri-nucleo-1, 13 en luma.bin, 12 en libro-fuente-kolibri-nucleo-2, 7 en libro-maquina-janaxos, 6 en libro-kolibri, 2 en libro-fuente-kolibri-sistema-1, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jldi r0, -1
+    jxor r1, r1, r0
+engranaje 29: ahorra 88, dicho 90 veces (18 en libro-fuente-kolibri-sistema-1, 14 en libro-kolibri, 13 en libro-maquina-janaxos, 11 en libro-fuente-kolibri-nucleo-1, 9 en libro-fuente-kolibri-fasm-1, 9 en libro-fuente-kolibri-nucleo-3, 8 en libro-fuente-kolibri-nucleo-2, 8 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jxor r0, r0, r0
+    jxor r1, r1, r1
+engranaje 30: ahorra 83, dicho 85 veces (18 en libro-fuente-kolibri-nucleo-2, 16 en libro-fuente-kolibri-fasm-1, 16 en libro-fuente-kolibri-nucleo-1, 14 en libro-fuente-kolibri-sistema-1, 10 en libro-fuente-kolibri-nucleo-3, 4 en libro-kolibri, 3 en luma.bin, 3 en libro-fuente-kolibri-sistema-2, 1 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 1
+    jshl r1, r1, r0
+engranaje 31: ahorra 83, dicho 85 veces (65 en libro-fuente-kolibri-nucleo-1, 6 en libro-fuente-kolibri-nucleo-2, 6 en libro-kolibri, 2 en libro-fuente-kolibri-sistema-1, 2 en libro-maquina-janaxos, 1 en luma.bin, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jldi r0, 12
+    jshr r1, r1, r0
+engranaje 32: ahorra 75, dicho 77 veces (30 en luma.bin, 17 en libro-fuente-kolibri-nucleo-2, 8 en libro-fuente-kolibri-fasm-1, 8 en libro-fuente-kolibri-sistema-1, 6 en libro-fuente-kolibri-nucleo-3, 4 en libro-fuente-kolibri-nucleo-4, 3 en libro-kolibri, 1 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 8
+    jshl r1, r1, r0
+engranaje 33: ahorra 70, dicho 72 veces (16 en libro-fuente-kolibri-sistema-1, 12 en libro-fuente-kolibri-nucleo-3, 10 en libro-fuente-kolibri-nucleo-1, 8 en luma.bin, 7 en libro-fuente-kolibri-fasm-1, 6 en libro-kolibri, 5 en libro-fuente-kolibri-nucleo-2, 4 en libro-fuente-kolibri-sistema-2, 2 en libro-fuente-c-chico-0, 1 en libro-fuente-lua-2, 1 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 3
+    jadd r1, r1, r0
+engranaje 34: ahorra 70, dicho 72 veces (40 en libro-fuente-kolibri-fasm-1, 10 en libro-fuente-kolibri-nucleo-1, 8 en libro-fuente-kolibri-nucleo-2, 8 en libro-maquina-janaxos, 3 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-sistema-2, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jor r1, r0, r0
+    jsub r1, r1, r2
+engranaje 35: ahorra 68, dicho 24 veces (24 en luma.bin), 4 instrucciones
+    jldi r0, 32
+    jshl r1, r1, r0
+    jldi r0, 7
+    jor r1, r1, r0
+engranaje 36: ahorra 66, dicho 68 veces (23 en libro-fuente-kolibri-nucleo-2, 13 en libro-fuente-kolibri-fasm-1, 9 en libro-fuente-kolibri-nucleo-1, 7 en libro-fuente-kolibri-sistema-2, 6 en libro-fuente-kolibri-sistema-1, 4 en libro-kolibri, 3 en luma.bin, 3 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 4
+    jsub r1, r1, r0
+engranaje 37: ahorra 65, dicho 67 veces (16 en libro-fuente-kolibri-nucleo-1, 10 en libro-fuente-kolibri-nucleo-2, 9 en libro-kolibri, 8 en libro-fuente-kolibri-nucleo-3, 8 en libro-fuente-kolibri-sistema-1, 7 en libro-fuente-kolibri-fasm-1, 7 en libro-maquina-janaxos, 1 en libro-fuente-c-chico-0, 1 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jor r1, r0, r0
+    jor r0, r2, r2
+engranaje 38: ahorra 63, dicho 65 veces (41 en libro-maquina-janaxos, 24 en luma.bin), 2 instrucciones
+    jldi r0, 48
+    jsub r1, r1, r0
+engranaje 39: ahorra 61, dicho 32 veces (32 en libro-maquina-janaxos), 3 instrucciones
+    jor r1, r0, r0
+    jldi r2, 32
+    jshr r1, r1, r2
+engranaje 40: ahorra 60, dicho 62 veces (26 en libro-fuente-kolibri-fasm-1, 10 en libro-fuente-kolibri-nucleo-1, 9 en libro-fuente-kolibri-sistema-1, 7 en libro-fuente-kolibri-sistema-2, 6 en libro-fuente-kolibri-nucleo-2, 2 en libro-kolibri, 1 en luma.bin, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 12
+    jadd r1, r1, r0
+engranaje 41: ahorra 60, dicho 62 veces (24 en libro-fuente-kolibri-nucleo-2, 20 en libro-fuente-kolibri-nucleo-1, 8 en libro-kolibri, 6 en libro-fuente-kolibri-nucleo-3, 2 en libro-fuente-kolibri-fasm-1, 2 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 9
+    jshl r1, r1, r0
+engranaje 42: ahorra 59, dicho 61 veces (36 en luma.bin, 9 en libro-fuente-kolibri-sistema-1, 7 en libro-fuente-kolibri-nucleo-2, 4 en libro-maquina-janaxos, 2 en libro-fuente-kolibri-sistema-2, 2 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jldi r0, 255
+    jand r1, r1, r0
+engranaje 43: ahorra 58, dicho 60 veces (33 en libro-maquina-janaxos, 25 en luma.bin, 1 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 48
+    jadd r1, r1, r0
+engranaje 44: ahorra 58, dicho 60 veces (17 en luma.bin, 10 en libro-fuente-kolibri-nucleo-2, 8 en libro-fuente-kolibri-sistema-1, 8 en libro-maquina-janaxos, 7 en libro-fuente-kolibri-fasm-1, 4 en libro-fuente-kolibri-nucleo-1, 2 en libro-fuente-kolibri-nucleo-4, 2 en libro-fuente-kolibri-sistema-2, 2 en libro-kolibri), 2 instrucciones
+    jldi r0, 4
+    jshr r1, r1, r0
+engranaje 45: ahorra 58, dicho 60 veces (20 en luma.bin, 14 en libro-maquina-janaxos, 7 en libro-fuente-kolibri-nucleo-2, 7 en libro-kolibri, 4 en libro-fuente-kolibri-sistema-1, 4 en libro-fuente-kolibri-sistema-2, 2 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jldi r0, 15
+    jand r1, r1, r0
+engranaje 46: ahorra 57, dicho 59 veces (59 en luma.bin), 2 instrucciones
+    jldi r0, 8
+    jsar r1, r1, r0
+engranaje 47: ahorra 55, dicho 15 veces (15 en luma.bin), 5 instrucciones
+    jldi r0, -32768
+    jshi r0, 0
+    jshi r0, 0
+    jshi r0, 0
+    jsub r0, r1, r0
+engranaje 48: ahorra 54, dicho 56 veces (18 en libro-fuente-kolibri-nucleo-1, 9 en libro-fuente-kolibri-nucleo-2, 9 en libro-maquina-janaxos, 7 en libro-kolibri, 5 en libro-fuente-kolibri-nucleo-3, 4 en libro-fuente-kolibri-sistema-1, 2 en luma.bin, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jldi r0, 3
+    jshr r1, r1, r0
+engranaje 49: ahorra 54, dicho 56 veces (56 en luma.bin), 2 instrucciones
+    jldi r0, 3
+    jshl r0, r1, r0
+engranaje 50: ahorra 54, dicho 56 veces (14 en libro-fuente-kolibri-fasm-1, 14 en libro-fuente-kolibri-nucleo-1, 9 en libro-maquina-janaxos, 6 en libro-kolibri, 5 en libro-fuente-kolibri-nucleo-2, 4 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-nucleo-4, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jor r1, r0, r0
+    jxor r2, r2, r2
+engranaje 51: ahorra 53, dicho 19 veces (5 en libro-fuente-kolibri-fasm-1, 4 en libro-fuente-kolibri-sistema-2, 3 en libro-fuente-kolibri-nucleo-3, 2 en libro-fuente-kolibri-nucleo-2, 2 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-1, 1 en libro-fuente-kolibri-nucleo-4, 1 en libro-fuente-kolibri-sistema-1), 4 instrucciones
+    jldi r0, 2
+    jldi r1, 3
+    jldi r2, 4
+    jldi r3, 5
+engranaje 52: ahorra 49, dicho 26 veces (26 en luma.bin), 3 instrucciones
+    jldi r0, 350
+    jshi r0, 12289
+    jadd r0, r0, r1
+engranaje 53: ahorra 47, dicho 49 veces (26 en luma.bin, 10 en libro-fuente-c-chico-0, 9 en libro-fuente-lua-1, 2 en libro-fuente-lua-2, 1 en libro-fuente-kolibri-nucleo-4, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jldi r0, 1
+    jadd r2, r1, r0
+engranaje 54: ahorra 41, dicho 43 veces (18 en libro-maquina-janaxos, 8 en libro-fuente-kolibri-fasm-1, 7 en luma.bin, 4 en libro-kolibri, 2 en libro-fuente-kolibri-nucleo-1, 2 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 64
+    jadd r1, r1, r0
+engranaje 55: ahorra 41, dicho 43 veces (43 en luma.bin), 2 instrucciones
+    jldi r0, 63
+    jsar r0, r1, r0
+engranaje 56: ahorra 40, dicho 42 veces (20 en libro-fuente-kolibri-nucleo-2, 12 en libro-fuente-kolibri-nucleo-1, 4 en libro-fuente-kolibri-fasm-1, 4 en libro-kolibri, 2 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 9
+    jshr r1, r1, r0
+engranaje 57: ahorra 39, dicho 41 veces (41 en luma.bin), 2 instrucciones
+    jldi r0, 10
+    jsub r0, r1, r0
+engranaje 58: ahorra 38, dicho 40 veces (40 en luma.bin), 2 instrucciones
+    jldi r0, 1
+    jsub r0, r1, r0
+engranaje 59: ahorra 38, dicho 40 veces (40 en luma.bin), 2 instrucciones
+    jldi r0, 3
+    jshl r2, r1, r0
+engranaje 60: ahorra 38, dicho 40 veces (13 en libro-fuente-kolibri-sistema-1, 8 en libro-kolibri, 7 en luma.bin, 4 en libro-fuente-kolibri-nucleo-1, 4 en libro-fuente-kolibri-nucleo-2, 3 en libro-maquina-janaxos, 1 en libro-fuente-lua-2), 2 instrucciones
+    jldi r0, 7
+    jadd r1, r1, r0
+engranaje 61: ahorra 38, dicho 40 veces (22 en libro-fuente-kolibri-nucleo-1, 4 en libro-fuente-kolibri-nucleo-4, 3 en libro-fuente-kolibri-nucleo-2, 3 en libro-fuente-kolibri-nucleo-3, 3 en libro-kolibri, 2 en luma.bin, 2 en libro-maquina-janaxos, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 12
+    jshl r1, r1, r0
+engranaje 62: ahorra 36, dicho 38 veces (38 en luma.bin), 2 instrucciones
+    jldi r0, 384
+    jmul r2, r1, r0
+engranaje 63: ahorra 36, dicho 38 veces (10 en libro-fuente-lua-2, 9 en libro-fuente-kolibri-nucleo-1, 6 en libro-fuente-kolibri-nucleo-2, 4 en libro-fuente-kolibri-sistema-2, 3 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-c-chico-0, 2 en libro-kolibri, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-lua-1), 2 instrucciones
+    jor r1, r0, r0
+    jor r2, r0, r0
+engranaje 64: ahorra 35, dicho 13 veces (13 en luma.bin), 4 instrucciones
+    jldi r0, 32
+    jshl r2, r1, r0
+    jldi r0, 5
+    jor r2, r2, r0
+engranaje 65: ahorra 34, dicho 36 veces (10 en libro-fuente-kolibri-fasm-1, 6 en libro-fuente-kolibri-sistema-2, 4 en libro-fuente-kolibri-nucleo-2, 4 en libro-kolibri, 3 en libro-fuente-kolibri-nucleo-3, 3 en libro-fuente-kolibri-sistema-1, 3 en libro-fuente-lua-2, 1 en libro-fuente-c-chico-0, 1 en libro-fuente-kolibri-nucleo-1, 1 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 1
+    jldi r1, 2
+engranaje 66: ahorra 33, dicho 35 veces (29 en libro-maquina-janaxos, 4 en luma.bin, 2 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jsub r0, r0, r1
+    jadd r2, r2, r0
+engranaje 67: ahorra 32, dicho 34 veces (9 en libro-maquina-janaxos, 7 en libro-fuente-kolibri-nucleo-3, 5 en libro-fuente-kolibri-nucleo-1, 4 en libro-fuente-kolibri-sistema-2, 3 en luma.bin, 2 en libro-fuente-kolibri-fasm-1, 2 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-nucleo-4), 2 instrucciones
+    jldi r0, 3
+    jand r1, r1, r0
+engranaje 68: ahorra 32, dicho 34 veces (13 en libro-fuente-kolibri-nucleo-1, 7 en libro-fuente-kolibri-nucleo-3, 6 en libro-fuente-kolibri-nucleo-2, 3 en libro-kolibri, 3 en libro-maquina-janaxos, 2 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 5
+    jshr r1, r1, r0
+engranaje 69: ahorra 31, dicho 33 veces (33 en luma.bin), 2 instrucciones
+    jldi r0, 2
+    jsub r0, r1, r0
+engranaje 70: ahorra 31, dicho 33 veces (23 en luma.bin, 5 en libro-fuente-kolibri-fasm-1, 3 en libro-maquina-janaxos, 1 en libro-fuente-kolibri-nucleo-2, 1 en libro-kolibri), 2 instrucciones
+    jshl r0, r0, r1
+    jor r2, r2, r0
+engranaje 71: ahorra 29, dicho 31 veces (31 en luma.bin), 2 instrucciones
+    jldi r0, 8
+    jsub r0, r1, r0
+engranaje 72: ahorra 29, dicho 31 veces (31 en luma.bin), 2 instrucciones
+    jadd r2, r0, r1
+    jadd r4, r3, r1
+engranaje 73: ahorra 29, dicho 11 veces (6 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-1, 1 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-nucleo-4, 1 en libro-fuente-kolibri-sistema-2), 4 instrucciones
+    jldi r0, 6
+    jldi r1, 7
+    jldi r2, 8
+    jldi r3, 9
+engranaje 74: ahorra 28, dicho 30 veces (28 en luma.bin, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 32
+    jmul r1, r1, r0
+engranaje 75: ahorra 28, dicho 30 veces (10 en luma.bin, 6 en libro-fuente-kolibri-nucleo-1, 5 en libro-fuente-kolibri-nucleo-2, 4 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-fasm-1, 2 en libro-maquina-janaxos, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 40
+    jadd r1, r1, r0
+engranaje 76: ahorra 27, dicho 29 veces (28 en luma.bin, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 128
+    jadd r1, r1, r0
+engranaje 77: ahorra 26, dicho 28 veces (28 en luma.bin), 2 instrucciones
+    jldi r0, 350
+    jshi r0, 5888
+engranaje 78: ahorra 26, dicho 28 veces (28 en luma.bin), 2 instrucciones
+    jldi r0, 63
+    jshr r0, r1, r0
+engranaje 79: ahorra 25, dicho 27 veces (18 en libro-fuente-kolibri-nucleo-1, 4 en libro-maquina-janaxos, 2 en libro-fuente-kolibri-sistema-1, 2 en libro-kolibri, 1 en libro-fuente-kolibri-fasm-1), 2 instrucciones
+    jldi r0, 10
+    jshr r1, r1, r0
+engranaje 80: ahorra 25, dicho 27 veces (27 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 12288
+    jldi r1, 4
+engranaje 81: ahorra 24, dicho 26 veces (7 en luma.bin, 6 en libro-fuente-kolibri-sistema-2, 6 en libro-kolibri, 4 en libro-fuente-kolibri-fasm-1, 2 en libro-fuente-kolibri-sistema-1, 1 en libro-fuente-kolibri-nucleo-2), 2 instrucciones
+    jldi r0, 3
+    jsub r1, r1, r0
+engranaje 82: ahorra 24, dicho 26 veces (11 en libro-fuente-kolibri-fasm-1, 6 en libro-fuente-kolibri-nucleo-1, 6 en libro-fuente-kolibri-nucleo-2, 2 en luma.bin, 1 en libro-fuente-kolibri-sistema-1), 2 instrucciones
+    jldi r0, 20
+    jadd r1, r1, r0
+engranaje 83: ahorra 23, dicho 25 veces (9 en libro-fuente-kolibri-nucleo-1, 5 en libro-fuente-kolibri-nucleo-2, 5 en libro-fuente-kolibri-sistema-1, 4 en libro-fuente-kolibri-fasm-1, 2 en libro-kolibri), 2 instrucciones
+    jor r1, r0, r0
+    jxor r0, r0, r0
+engranaje 84: ahorra 22, dicho 24 veces (16 en luma.bin, 3 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-nucleo-3, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jmul r0, r0, r1
+    jadd r0, r0, r2
+engranaje 85: ahorra 22, dicho 24 veces (7 en libro-fuente-kolibri-sistema-1, 3 en libro-fuente-kolibri-nucleo-1, 3 en libro-fuente-kolibri-sistema-2, 2 en luma.bin, 2 en libro-fuente-kolibri-fasm-1, 2 en libro-fuente-kolibri-nucleo-3, 2 en libro-fuente-lua-2, 2 en libro-maquina-janaxos, 1 en libro-fuente-c-chico-0), 2 instrucciones
+    jldi r0, 10
+    jadd r1, r1, r0
+engranaje 86: ahorra 21, dicho 23 veces (16 en luma.bin, 4 en libro-fuente-lua-2, 3 en libro-maquina-janaxos), 2 instrucciones
+    jldi r0, 32
+    jshl r1, r1, r0
+engranaje 87: ahorra 20, dicho 22 veces (22 en luma.bin), 2 instrucciones
+    jldi r0, 3
+    jsub r0, r1, r0
+engranaje 88: ahorra 20, dicho 22 veces (22 en luma.bin), 2 instrucciones
+    jmul r0, r0, r1
+    jsub r0, r2, r0
+engranaje 89: ahorra 20, dicho 22 veces (11 en luma.bin, 5 en libro-kolibri, 3 en libro-fuente-kolibri-nucleo-1, 2 en libro-fuente-kolibri-sistema-2, 1 en libro-fuente-kolibri-nucleo-2), 2 instrucciones
+    jldi r0, 1
+    jand r1, r1, r0
+engranaje 90: ahorra 20, dicho 22 veces (18 en libro-maquina-janaxos, 1 en luma.bin, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-1, 1 en libro-kolibri), 2 instrucciones
+    jldi r0, 64
+    jsub r1, r1, r0
+engranaje 91: ahorra 20, dicho 22 veces (12 en libro-maquina-janaxos, 5 en libro-kolibri, 4 en libro-fuente-kolibri-nucleo-1, 1 en luma.bin), 2 instrucciones
+    jldi r0, 63
+    jand r1, r1, r0
+engranaje 92: ahorra 20, dicho 22 veces (7 en libro-kolibri, 6 en libro-fuente-kolibri-nucleo-1, 3 en libro-fuente-kolibri-sistema-1, 2 en luma.bin, 2 en libro-fuente-kolibri-sistema-2, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-2), 2 instrucciones
+    jldi r0, 4096
+    jadd r1, r1, r0
+engranaje 93: ahorra 19, dicho 21 veces (7 en luma.bin, 5 en libro-fuente-c-chico-0, 4 en libro-fuente-kolibri-nucleo-1, 2 en libro-fuente-kolibri-nucleo-2, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-3, 1 en libro-kolibri), 2 instrucciones
+    jadd r0, r0, r1
+    jadd r2, r2, r1
+engranaje 94: ahorra 19, dicho 21 veces (8 en luma.bin, 7 en libro-fuente-kolibri-sistema-1, 5 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jldi r0, 6
+    jshl r1, r1, r0
+engranaje 95: ahorra 19, dicho 5 veces (5 en luma.bin), 6 instrucciones
+    jldi r0, 1
+    jshi r0, 16384
+    jsub r1, r1, r0
+    jldi r0, -1
+    jshi r0, 24576
+    jsub r2, r1, r0
+engranaje 96: ahorra 19, dicho 21 veces (8 en libro-fuente-kolibri-nucleo-1, 5 en libro-kolibri, 4 en libro-fuente-kolibri-nucleo-2, 3 en libro-fuente-kolibri-sistema-1, 1 en libro-fuente-lua-2), 2 instrucciones
+    jldi r0, 31
+    jand r1, r1, r0
+engranaje 97: ahorra 19, dicho 5 veces (4 en libro-kolibri, 1 en libro-fuente-kolibri-nucleo-2), 6 instrucciones
+    jldi r0, 16
+    jldi r1, 32
+    jldi r2, 64
+    jldi r3, 128
+    jldi r4, 256
+    jldi r5, 512
+engranaje 98: ahorra 18, dicho 20 veces (20 en luma.bin), 2 instrucciones
+    jshi r0, 0
+    jshi r0, 0
+engranaje 99: ahorra 18, dicho 20 veces (5 en libro-fuente-kolibri-nucleo-3, 4 en libro-fuente-kolibri-nucleo-2, 3 en libro-fuente-kolibri-sistema-2, 3 en libro-kolibri, 2 en libro-fuente-kolibri-sistema-1, 1 en luma.bin, 1 en libro-fuente-kolibri-fasm-1, 1 en libro-fuente-kolibri-nucleo-1), 2 instrucciones
+    jldi r0, 4
+    jldi r1, 8
+engranaje 100: ahorra 17, dicho 19 veces (19 en luma.bin), 2 instrucciones
+    jldi r0, -1
+    jadd r1, r1, r0
+engranaje 101: ahorra 17, dicho 4 veces (4 en luma.bin), 7 instrucciones
+    jldi r0, -13326
+    jshi r0, 40164
+    jshi r0, 33826
+    jshi r0, 8997
+    jldi r1, 256
+    jshi r1, 0
+    jshi r1, 435
+engranaje 102: ahorra 16, dicho 18 veces (9 en luma.bin, 3 en libro-fuente-lua-2, 2 en libro-fuente-c-chico-0, 2 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-lua-1), 2 instrucciones
+    jldi r0, 1
+    jsub r2, r1, r0
+engranaje 103: ahorra 16, dicho 18 veces (8 en libro-fuente-kolibri-fasm-1, 4 en luma.bin, 3 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-nucleo-1, 1 en libro-fuente-kolibri-sistema-2), 2 instrucciones
+    jldi r0, 5
+    jadd r1, r1, r0
+engranaje 104: ahorra 16, dicho 18 veces (17 en libro-fuente-kolibri-sistema-1, 1 en luma.bin), 2 instrucciones
+    jldi r0, 21
+    jadd r1, r1, r0
+engranaje 105: ahorra 16, dicho 18 veces (5 en libro-fuente-kolibri-nucleo-2, 4 en libro-maquina-janaxos, 2 en libro-fuente-kolibri-fasm-1, 2 en libro-fuente-kolibri-sistema-1, 2 en libro-fuente-kolibri-sistema-2, 1 en luma.bin, 1 en libro-fuente-kolibri-nucleo-1, 1 en libro-fuente-kolibri-nucleo-3), 2 instrucciones
+    jldi r0, 16
+    jsub r1, r1, r0
+# en cuantos engranajes esta cada uno: luma.bin 85, libro 0, libro-fuente-c-chico-0 16, libro-fuente-kolibri-fasm-1 59, libro-fuente-kolibri-nucleo-1 64, libro-fuente-kolibri-nucleo-2 62, libro-fuente-kolibri-nucleo-3 49, libro-fuente-kolibri-nucleo-4 19, libro-fuente-kolibri-sistema-1 62, libro-fuente-kolibri-sistema-2 45, libro-fuente-lua-1 11, libro-fuente-lua-2 15, libro-kolibri 61, libro-maquina-janaxos 52

@@ -10,7 +10,7 @@ restarted. What she read before was of another shelf: "leido" keeps it, and she 
                 digits, sixteen to a line (a line is what her reader keeps apart, one in K, to sit its exam).
                 Label "libro-maquina-<name>". Nothing is interpreted: which bytes go together is hers to find.
 
-A book already there with the same bytes is left alone. Prints what the shelf holds afterwards.
+A book already there with the same bytes is left alone, under whatever name. Prints what the shelf holds afterwards.
 The books do not travel with the repository: each has its own licence (the Janax kernel and Luma are Apache 2.0;
 KolibriOS is GPL-2.0; Lua is MIT)."""
 import os, sys
@@ -21,6 +21,14 @@ def put(casa, name, data):
     p = os.path.join(casa, label(name))
     if os.path.exists(p) and open(p, "rb").read() == data:
         return "ya estaba"
+    for f in os.listdir(casa):          # the same bytes under another name: the same book, said once
+        try:
+            n = bytes.fromhex(f).decode()
+        except ValueError:
+            continue
+        q = os.path.join(casa, f)
+        if n.startswith("libro") and n != name and os.path.getsize(q) == len(data) and open(q, "rb").read() == data:
+            return "ya estaba, como " + n
     open(p, "wb").write(data); return "nuevo"
 
 def main():

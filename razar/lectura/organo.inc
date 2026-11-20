@@ -62,11 +62,23 @@ ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the
 ;   2  the frame        what has been mixed so far passes through it, once, here: what the sentence associates.
 ;   3  where her eye is how many words back or ahead it looks, through the gear.
 ;   4  how her eye sees sharp or blurred, through the gear (anything but 0 is blurred).
+;   7  her heart        (the Capitan: "el corazon es el propio kernel") the kernel gives every cabin its turn from its
+;                       bolita, the fraction of its time that is real work (request 20). The bolita of the cabin that
+;                       says the cell passes through the gear and is asked of the kernel, which cuts it down to the
+;                       one it was launched with (its law: nobody gives itself more than it was given) and gives its
+;                       turn again from it. Until the next hole, where the heart is at rest: the turn it was given.
+;                       The kernel is asked only when the turn changes: a cell that leaves it as it is asks nothing.
+;   8  ANY PLACE OF HERS, said by the cell itself: four letters more, a number in base fifteen (each letter less one,
+;                       the first the highest), say which word of this reader's memory. That word passes through the
+;                       gear, once, here. She opens such a tissue herself, by saying it (gen_leer.py: rp_lens); no
+;                       list of places is kept anywhere. Four letters reach 50625 words: all it is born with (its
+;                       initial data, 4080 words) and beyond. A place it does not have ends this reader (the kernel
+;                       ends who reads outside its memory), and her body knows a reading that said nothing as the
+;                       worst; one that never ends is ended by the cage she gives it (gen_leer.py: r_read_launch).
+;                       Cut by the end of its sixteen letters, it is no cell.
 ; Any other number is of another part of her (her body: gen_leer.py) or of no tissue yet: it does nothing here, and
 ; it is free for whatever tissue comes. Nobody says which tissue a gear is for: a recipe says the cell it wants, and
 ; the cell that pays where it is expressed is the one that stays alive in her.
-; The heart is the kernel itself (the Capitan): its cell would be a gear in the turn the kernel gives, where the
-; planner already is a Janax program that can be replaced. Not done: said in the notes.
 ORGGT0 = 4380h                  ; (a gear, counted from its number times 80h; its instructions)
 ORGGT1 = 4388h
 ORGGT = 4400h                   ; the gears: 105 x {its instructions, up to fifteen of them}
@@ -74,6 +86,12 @@ ORGV  = 7D80h                   ; the little machine's sixteen registers
 ORGP  = 7E00h                   ; the lenses on the eye (a byte each: its gear's number, the last said lowest)
 ORGPL = 7E08h                   ; the ones still to look through
 ORGN  = 7E10h                   ; a cell being said: its gear
+ORGB  = 7E18h                   ; her heart: the bolita this cabin has, plus one (0: not asked yet)
+ORGBT = 7E40h                   ; the one it was launched with: the most it may have
+ORGH  = 7E20h                   ; 1 = her heart is not at rest (a cell changed its bolita since the last hole)
+ORGS1 = 7E28h                   ; the eye, kept while the kernel is asked (a request uses its registers)
+ORGS2 = 7E30h
+ORGA  = 7E38h                   ; a cell on a place of hers: its address
 ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
 ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
 ORGQ3 = 37E0h
@@ -253,6 +271,7 @@ og_l5:
   jldi j11, 0
   jldi j1, 0                    ; (a hole says its word as it is: no lens)
   jst j1, j1, ORGP
+  jcall og_rest
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -265,6 +284,7 @@ og_l6:
   jldi j11, 0
   jldi j1, 0                    ; (a hole says its word as it is: no lens)
   jst j1, j1, ORGP
+  jcall og_rest
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -277,6 +297,7 @@ og_l7:
   jldi j11, 0
   jldi j1, 0                    ; (a hole says its word as it is: no lens)
   jst j1, j1, ORGP
+  jcall og_rest
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -289,6 +310,7 @@ og_l8:
   jldi j11, 0
   jldi j1, 0                    ; (a hole says its word as it is: no lens)
   jst j1, j1, ORGP
+  jcall og_rest
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -297,6 +319,7 @@ og_l8:
   jldi j10, 0
   jjmp og_lap
 og_l9:
+  jcall og_rest
   jldi j3, 0                    ; the hole empty: the frame said as it is
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -382,7 +405,115 @@ og_lens:
   jldi j1, 4
   jsub j1, j14, j1
   jjz j1, og_t4
+  jldi j1, 7
+  jsub j1, j14, j1
+  jjz j1, og_t7
+  jldi j1, 8
+  jsub j1, j14, j1
+  jjz j1, og_t8
   jjmp og_lap                   ; of another part of her, or of no tissue yet
+og_t7:
+  jldi j1, 0                    ; her heart: the bolita of this cabin through the gear, asked of the kernel (20)
+  jst j10, j1, ORGS1
+  jst j11, j1, ORGS2
+  jld j3, j1, ORGB
+  jjnz j3, og_t7_has
+  jldi j10, 20                  ; (not asked yet: the one it was launched with, which is the most it may have)
+  jldi j11, -1
+  jcall ask
+  jldi j1, 0
+  jst j13, j1, ORGBT
+  jldi j1, 1
+  jadd j3, j13, j1
+  jldi j1, 0
+  jst j3, j1, ORGB
+og_t7_has:
+  jldi j1, 1
+  jsub j3, j3, j1
+  jldi j1, 0
+  jld j13, j1, ORGN
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jld j13, j1, ORGBT            ; the kernel's law, known here: never more than it was launched with (a number that
+  jjn j3, og_t7_top             ; is not a fraction of its time is the most there is)
+  jsub j14, j13, j3
+  jjnn j14, og_t7_cut
+og_t7_top:
+  jadd j3, j13, j1
+og_t7_cut:
+  jld j13, j1, ORGB             ; and the kernel is asked only if its turn changes (nothing is sent that says nothing)
+  jldi j14, 1
+  jsub j13, j13, j14
+  jsub j13, j13, j3
+  jjz j13, og_t7_same
+  jldi j10, 20
+  jadd j11, j3, j1
+  jcall ask
+  jldi j1, 1
+  jadd j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGB
+  jldi j13, 1
+  jst j13, j1, ORGH
+og_t7_same:
+  jldi j1, 0
+  jld j10, j1, ORGS1
+  jld j11, j1, ORGS2
+  jjmp og_lap
+og_t8:
+  jldi j9, 0                    ; a place of hers: its four letters, a number in base fifteen
+  jldi j4, 4
+og_t8_lap:
+  jldi j1, 0
+  jld j13, j1, ORGL
+  jjz j13, og_lap               ; (cut by the end of its sixteen: no cell)
+  jldi j14, 15
+  jand j14, j13, j14
+  jldi j1, 4
+  jshr j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGL
+  jldi j1, 15
+  jmul j9, j9, j1
+  jadd j9, j9, j14
+  jldi j1, 1
+  jsub j9, j9, j1
+  jsub j4, j4, j1
+  jjnz j4, og_t8_lap
+  jldi j1, 3
+  jshl j9, j9, j1
+  jldi j1, 0
+  jst j9, j1, ORGA
+  jld j3, j9, 0                 ; that word of hers, through the gear
+  jld j13, j1, ORGN
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jld j9, j1, ORGA
+  jst j3, j9, 0
+  jjmp og_lap
+; Her heart at rest: the turn this cabin was given (its bolita as it was launched), if a cell changed it. Keeps the
+; eye. Uses j13, j14 (j1 = 0 after).
+og_rest:
+  jldi j1, 0
+  jld j13, j1, ORGH
+  jjz j13, og_rest_d
+  jst j1, j1, ORGH
+  jst j10, j1, ORGS1
+  jst j11, j1, ORGS2
+  jldi j10, 20
+  jldi j11, -1
+  jcall ask
+  jldi j1, 1
+  jadd j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGB
+  jld j10, j1, ORGS1
+  jld j11, j1, ORGS2
+og_rest_d:
+  jldi j1, 0
+  jret
 og_t2:
   jldi j1, 0
   jadd j3, j2, j1
@@ -433,6 +564,7 @@ og_lF:
   jcall hw
   jjmp og_lap
 og_done:
+  jcall og_rest
   jldi j1, 0
   jret
 

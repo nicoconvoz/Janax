@@ -1533,6 +1533,15 @@ grow_letter:
   jldi j11, 3
   jadd j10, j10, j11
   jst j10, j14, 0500h
+  jld j4, j14, 0368h
+  jldi j10, 8
+  jsub j10, j4, j10
+  jjnz j10, grow_cell
+  jld j10, j14, 0500h
+  jldi j11, 4
+  jadd j10, j10, j11
+  jst j10, j14, 0500h
+grow_cell:
   jld j2, j14, 0360h
   jldi j6, 015Eh
   jshi j6, 0
@@ -1543,6 +1552,9 @@ grow_letter:
   jldi j10, 5
   jsub j10, j4, j10
   jjz j10, grow_pen
+  jldi j10, 7
+  jsub j10, j4, j10
+  jjz j10, grow_heart
   jldi j10, 6
   jsub j10, j4, j10
   jjnz j10, grow_letter
@@ -1550,6 +1562,60 @@ grow_letter:
   jld j2, j14, 0360h
   jcall r_gear
   jst j0, j14, 04F8h
+  jjmp grow_letter
+grow_heart:                     ; 7, her heart: her body's bolita through the gear, asked of the kernel (20), which
+                                ; cuts it down to the one she was launched with; at rest again at the next hole
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01900h
+  jjnz j1, grow_heart_has
+  jldi j10, 20
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01928h
+  jldi j10, 1
+  jadd j1, j13, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01900h
+grow_heart_has:
+  jldi j10, 1
+  jsub j1, j1, j10
+  jld j2, j14, 0360h
+  jcall r_gear
+  ; the kernel's law, known here (never more than she was launched with), and it is asked only if her turn changes
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01928h
+  jjn j0, grow_heart_top
+  jsub j10, j2, j0
+  jjnn j10, grow_heart_cut
+grow_heart_top:
+  jadd j0, j2, j14
+grow_heart_cut:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01900h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jsub j1, j1, j0
+  jjz j1, grow_letter
+  jldi j10, 20
+  jadd j11, j0, j14
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 1
+  jadd j1, j13, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01900h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01908h
   jjmp grow_letter
 grow_pen:
   jld j1, j14, 0328h
@@ -1612,6 +1678,7 @@ grow_arm_lap:
   jjnz j10, grow_arm_lap
   jjmp grow_letter
 grow_hole:                      ; 5-8: back to the seed and over an opening towards direction k
+  jcall r_heart_rest             ; her heart at rest (gen_leer.py): the turn she was given
   jldi j10, 5
   jsub j5, j5, j10
   jld j10, j14, 04F8h
@@ -1717,6 +1784,7 @@ grow_sense_f:
   jldi j5, 4
   jjmp grow_arm
 grow_done:
+  jcall r_heart_rest             ; her heart at rest (gen_leer.py): the turn she was given
   jret
 r_cell:                         ; the cell j1, j2 (from the seed) of the form being grown, parent j3 (-1: itself),
                                 ; birth j4 (-1: only look) -> j0 = its particle, or -1 (outside the room, or empty)
@@ -8254,6 +8322,27 @@ bg_skip:
   jjmp bg_ins
 bg_done:
   jret
+r_heart_rest:                   ; her heart at rest: her bolita as she was launched, if a cell changed it (uses j1,
+                                ; j6, j10 to j13, j15)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01908h
+  jjnz j1, hr_go
+  jret
+hr_go:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01908h
+  jldi j10, 20
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 1
+  jadd j1, j13, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01900h
+  jret
 r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly
                                 ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that
                                 ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and
@@ -8267,6 +8356,9 @@ r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 01828h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01920h
 flat_lap:
   jsub j10, j4, j3
   jjnn j10, flat_done
@@ -8316,6 +8408,108 @@ flat_e:                         ; its number: the next letter, if there is one i
   jldi j10, 13
   jsub j12, j12, j10
   jjz j12, flat_three
+  jadd j12, j9, j11
+  jldb j12, j12, 2
+  jldi j10, 8
+  jsub j12, j12, j10
+  jjnz j12, cell_26
+  ; on a place of her reader (tissue 8): its four letters more, if it has them in the same sixteen -> the
+  ; eight stay (FLH = 1); else her reader takes what is left of that sixteen and there is no cell
+  jldi j10, 15
+  jand j12, j4, j10
+  jldi j10, 9
+  jsub j12, j12, j10
+  jjnn j12, cell_26_cut
+  jldi j10, 7
+  jadd j12, j4, j10
+  jsub j10, j12, j3
+  jjnn j10, cell_26_cut
+  jldi j5, 14
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j6, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 1
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 2
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 3
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 4
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 5
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 6
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01828h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01920h
+  jldi j10, 8
+  jadd j4, j4, j10
+  jjmp flat_lap
+cell_26_cut:
+  jldi j10, 15
+  jor j4, j4, j10
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp flat_lap
+cell_26:
   jldi j5, 14
   jldi j10, 015Eh
   jshi j10, 03001h
@@ -8435,6 +8629,108 @@ flat_we:
   jldi j10, 13
   jsub j12, j12, j10
   jjz j12, flat_wl3
+  jadd j12, j9, j11
+  jldb j12, j12, 2
+  jldi j10, 8
+  jsub j12, j12, j10
+  jjnz j12, cell_27
+  ; on a place of her reader (tissue 8): its four letters more, if it has them in the same sixteen -> the
+  ; eight stay (FLH = 1); else her reader takes what is left of that sixteen and there is no cell
+  jldi j10, 15
+  jand j12, j2, j10
+  jldi j10, 9
+  jsub j12, j12, j10
+  jjnn j12, cell_27_cut
+  jldi j10, 7
+  jadd j12, j2, j10
+  jsub j10, j12, j1
+  jjnn j10, cell_27_cut
+  jldi j5, 14
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j6, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 1
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 2
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 3
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 4
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 5
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 6
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01828h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01920h
+  jldi j10, 8
+  jadd j2, j2, j10
+  jjmp flat_wl
+cell_27_cut:
+  jldi j10, 15
+  jor j2, j2, j10
+  jldi j10, 1
+  jadd j2, j2, j10
+  jjmp flat_wl
+cell_27:
   jldi j5, 14
   jldi j10, 015Eh
   jshi j10, 03001h
@@ -8851,10 +9147,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 04E6Bh
-  jshi j2, 0EEh
-  jshi j2, 0377h
-  jshi j2, 0528Ah
+  jldi j2, 06290h
+  jshi j2, 02B33h
+  jshi j2, 0F2E0h
+  jshi j2, 0F5C5h
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -9066,10 +9362,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 011ACh
-  jshi j2, 04DF8h
-  jshi j2, 01B4Ah
-  jshi j2, 0D5BFh
+  jldi j2, 02724h
+  jshi j2, 0FACFh
+  jshi j2, 0397Fh
+  jshi j2, 0DD7Bh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -9217,18 +9513,18 @@ r_read_max:                     ; -> j0 = the best reading among her forms and w
   jshi j10, 0
   jshi j10, 0
   jsub j10, j0, j10
-  jjz j10, fold_26
+  jjz j10, fold_28
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016B0h
-  jjz j1, fold_26_t
+  jjz j1, fold_28_t
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016A8h
   jsub j1, j0, j1
-  jjn j1, fold_26
-  jjz j1, fold_26
-fold_26_t:
+  jjn j1, fold_28
+  jjz j1, fold_28
+fold_28_t:
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 016A8h
@@ -9240,7 +9536,7 @@ fold_26_t:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01688h
-fold_26:
+fold_28:
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 01668h
@@ -9275,18 +9571,18 @@ rm_lap:
   jshi j10, 0
   jshi j10, 0
   jsub j10, j0, j10
-  jjz j10, fold_27
+  jjz j10, fold_29
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016B0h
-  jjz j1, fold_27_t
+  jjz j1, fold_29_t
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016A8h
   jsub j1, j0, j1
-  jjn j1, fold_27
-  jjz j1, fold_27
-fold_27_t:
+  jjn j1, fold_29
+  jjz j1, fold_29
+fold_29_t:
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 016A8h
@@ -9298,7 +9594,7 @@ fold_27_t:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01688h
-fold_27:
+fold_29:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01688h
@@ -9352,85 +9648,6 @@ r_read_cand:                    ; the same with the candidate CAND in the place 
   jshi j10, 0
   jshi j10, 0
   jsub j10, j0, j10
-  jjz j10, fold_28
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 016B0h
-  jjz j1, fold_28_t
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 016A8h
-  jsub j1, j0, j1
-  jjn j1, fold_28
-  jjz j1, fold_28
-fold_28_t:
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j0, j6, 016A8h
-  jldi j1, 1
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 016B0h
-  jldi j1, 1
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 01688h
-fold_28:
-  jldi j9, 01400h
-  jcall r_rec_key
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j3, j6, 01538h
-  jcall r_read_get
-  jldi j10, -32768
-  jshi j10, 0
-  jshi j10, 0
-  jshi j10, 0
-  jsub j10, j0, j10
-  jjz j10, fold_29
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 016B0h
-  jjz j1, fold_29_t
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 016A8h
-  jsub j1, j0, j1
-  jjn j1, fold_29
-  jjz j1, fold_29
-fold_29_t:
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j0, j6, 016A8h
-  jldi j1, 1
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 016B0h
-  jldi j1, 1
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j1, j6, 01688h
-fold_29:
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j14, j6, 01668h
-rc2_lap:
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j1, j6, 01668h
-  jld j2, j14, 0388h
-  jsub j2, j1, j2
-  jjz j2, rc2_next
-  jldi j10, 8
-  jshl j9, j1, j10
-  jldi j10, 0800h
-  jadd j9, j9, j10
-  jld j0, j9, 248
-  jldi j10, -32768
-  jshi j10, 0
-  jshi j10, 0
-  jshi j10, 0
-  jsub j10, j0, j10
   jjz j10, fold_30
   jldi j6, 015Eh
   jshi j6, 0
@@ -9455,6 +9672,85 @@ fold_30_t:
   jshi j6, 0
   jst j1, j6, 01688h
 fold_30:
+  jldi j9, 01400h
+  jcall r_rec_key
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01538h
+  jcall r_read_get
+  jldi j10, -32768
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjz j10, fold_31
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016B0h
+  jjz j1, fold_31_t
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016A8h
+  jsub j1, j0, j1
+  jjn j1, fold_31
+  jjz j1, fold_31
+fold_31_t:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 016A8h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 016B0h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01688h
+fold_31:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01668h
+rc2_lap:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01668h
+  jld j2, j14, 0388h
+  jsub j2, j1, j2
+  jjz j2, rc2_next
+  jldi j10, 8
+  jshl j9, j1, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jld j0, j9, 248
+  jldi j10, -32768
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjz j10, fold_32
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016B0h
+  jjz j1, fold_32_t
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016A8h
+  jsub j1, j0, j1
+  jjn j1, fold_32
+  jjz j1, fold_32
+fold_32_t:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 016A8h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 016B0h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01688h
+fold_32:
 rc2_next:
   jldi j6, 015Eh
   jshi j6, 0
@@ -9885,9 +10181,6 @@ rp_l_lap:
   jshi j7, 01700h
   jldb j3, j7, 0
   jjz j3, rp_l_next
-  jldi j10, 28
-  jsub j10, j3, j10
-  jjnn j10, rp_l_next
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01838h
@@ -9895,16 +10188,48 @@ rp_l_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01678h
-  jldi j1, 6
+  jldi j1, 8
   jcall r_randmod
   jldi j10, 1
   jadd j0, j0, j10
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01680h
+  jldi j1, 4
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01910h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01918h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01680h
+  jldi j10, 8
+  jsub j10, j1, j10
+  jjnz j10, rp_l_len
+  ; a tissue she opens: a word of what her reader is born with (its initial data), by luck; her luck with the
+  ; letters moves it from there, anywhere
+  jldi j1, 8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01910h
+  jldi j1, 0FF0h
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01918h
+rp_l_len:                       ; room for its letters (a recipe has room for 31)
   jldi j7, 015Eh
   jshi j7, 01700h
   jldb j3, j7, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01910h
+  jadd j1, j1, j3
+  jldi j10, 32
+  jsub j10, j1, j10
+  jjnn j10, rp_l_next
   jldi j10, 1
   jadd j1, j3, j10
   jcall r_randmod
@@ -9912,12 +10237,16 @@ rp_l_lap:
   jshi j7, 01700h
   jldb j3, j7, 0
   jadd j4, j3, j14
-rp_l_up:                        ; room for its four letters
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01910h
+rp_l_up:
   jsub j10, j4, j0
   jjz j10, rp_l_put
   jadd j5, j7, j4
   jldb j1, j5, 0
-  jstb j1, j5, 4
+  jadd j11, j5, j2
+  jstb j1, j11, 0
   jldi j10, 1
   jsub j4, j4, j10
   jjmp rp_l_up
@@ -9942,8 +10271,55 @@ rp_l_put:
   jshi j6, 0
   jld j1, j6, 01680h
   jstb j1, j5, 4
-  jldi j10, 4
-  jadd j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01910h
+  jldi j10, 8
+  jsub j10, j1, j10
+  jjnz j10, rp_l_cnt
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01918h
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 8
+  jadd j1, j2, j14
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 7
+  jadd j1, j2, j14
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 6
+  jadd j1, j2, j14
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 5
+  jadd j1, j2, j14
+rp_l_cnt:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01910h
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j3, j7, 0
+  jadd j3, j3, j1
   jstb j3, j7, 0
   jldi j9, 015Eh
   jshi j9, 01700h
@@ -10261,7 +10637,21 @@ rp_o_next:
 r_read_launch:                  ; her reader: herself, with the recipe in its initial data (pulso.datos with the
                                 ; candidate's words: 18h and 30h its letters, 20h that it is one, 28h the instincts),
                                 ; rowing in the gaps (42). No cage (34): any string of letters is an organ and none
-                                ; can hang, and what ends it is her window closing -> j0 = 1
+                                ; can hang, and what ends it is her window closing; but a cell on a place of her
+                                ; reader (tissue 8) can make it never end, so that one is caged: it may row what
+                                ; all her finished readings together rowed (RSUM; none yet, not sent) -> j0 = 1
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_flat
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01920h
+  jjz j1, rn_go
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015F0h
+  jjz j1, b_rn_no
+rn_go:
   jldi j11, 015Eh
   jshi j11, 01750h
   jldi j12, 18
@@ -10372,6 +10762,21 @@ rn_words:
   jadd j11, j13, j14
   jldi j12, 1
   jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01920h
+  jjz j1, rn_sent
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 015F0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01600h
+  jldi j10, 1
+  jsub j11, j11, j10
+  jldi j10, 34
+  jcall r_tocar
+rn_sent:
   jldi j0, 1
   jret
 b_rn_no:
@@ -10510,6 +10915,25 @@ r_read_done:                    ; it ended: its line in "leido", and what it cha
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 01680h
+  ; what it rowed (35), if it said its score: one more of her finished readings
+  jldi j10, 35
+  jldi j12, 0
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01608h
+  jldi j10, 2
+  jsub j1, j1, j10
+  jjn j1, rd_rowed
+  jjn j13, rd_rowed
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015F0h
+  jadd j1, j1, j13
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015F0h
+rd_rowed:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01530h
@@ -10588,10 +11012,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 04E6Bh
-  jshi j1, 0EEh
-  jshi j1, 0377h
-  jshi j1, 0528Ah
+  jldi j1, 06290h
+  jshi j1, 02B33h
+  jshi j1, 0F2E0h
+  jshi j1, 0F5C5h
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
@@ -10800,7 +11224,7 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jldi j10, 5
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 240
+  jldi j12, 248
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -10851,7 +11275,7 @@ r_free_save:
   jldi j10, 6
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 240
+  jldi j12, 248
   jcall r_file
   jldi j10, 7
   jcall r_file

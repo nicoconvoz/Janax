@@ -1,0 +1,29 @@
+# v0.97, 2026-11-20. Nuevo Testamento, lector recien nacido (poetico/legos.py; engranaje 2 = correr 8 a la derecha).
+# Tejido 8: un lugar de ella dicho por la celula misma (cuatro letras, base quince). La receta es la campeona
+# 38A516 (14775) con la celula E92 8 <lugar> en el mismo sitio. Sin organo: -3554.
+#
+# receta            nota   lugar de su lectora
+38A516             14775
+38E9281111A516     14775   palabra 0 (0h)
+38E9281112A516     14775   palabra 1 (8h)
+38E9281113A516     14775   palabra 2 (10h)
+38E9281114A516     14775   palabra 3 (18h)
+38E9281115A516     14775   palabra 4 (20h)
+38E9281116A516     14775   palabra 5 (28h): sus instintos (ya los leyo al nacer)
+38E92823F7A516     14775   palabra 4041 (7E48h): no guarda nada
+38E9281425A516     14775   palabra 694 (15B0h)
+38E9281372A516     14001   palabra 541 (10E8h): la semilla con que arma el marco
+38E928139DA516      3247   palabra 582 (1230h): el piso
+38E9281369A516     -7592   palabra 533 (10A8h): cuantas palabras lleva la fila
+38E92813A1A516  no rindio  palabra 585 (1248h): donde esta la ventana (una direccion: la lectora se rompe)
+38E9281397A516  no rindio  palabra 576 (1200h): donde cuenta lo leido (una direccion: la lectora se rompe)
+38E9281            2193   cortada antes de sus cuatro letras: no es celula, da lo de 38 (2193)
+#
+# Ninguno de estos lugares, con este engranaje, mejora a la campeona. Dos rompen a la lectora, como se esperaba:
+# en ella eso es una lectura que no dijo nada (la peor), nunca ella.
+#
+# Tejido 7, su corazon (la bolita de la cabina por el engranaje, pedida al nucleo): la nota no cambia.
+# receta            nota   pedidos al nucleo   segundos (cuatro corridas, con la maquina ocupada)
+38A516             14775        10325          25.2  28.5  27.7
+38E927A516         14775      2860489          30.3  27.1  31.1
+38E917A516         14775                       33.2  29.6

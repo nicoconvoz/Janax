@@ -40,10 +40,23 @@ armar() {
     || cp "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/lectora.bin)"
   cmp -s "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)" \
     || cp "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)"
-  # her gears: her own body taken apart (engranajes.py), the ones that only reckon with registers. Made again when she
-  # is: they are of the body she has. No python: no gears, and her lenses change nothing.
-  if [ ! -f "$carpeta/casa/$(etiqueta engranajes)" ] || [ "$carpeta/bin/luma.bin" -nt "$carpeta/casa/$(etiqueta engranajes)" ]; then
-    python -I "$aqui/engranajes.py" "$carpeta/bin/luma.bin" 105 --callado --tabla "$carpeta/casa/$(etiqueta engranajes)" > /dev/null 2>&1
+  # her book of herself, if she was given one (comer_codigo.py --maquina): herself as she is now
+  if [ -f "$carpeta/casa/$(etiqueta libro-maquina-luma)" ] && [ "$carpeta/bin/luma.bin" -nt "$carpeta/casa/$(etiqueta libro-maquina-luma)" ]; then
+    python -I "$aqui/comer_codigo.py" "$carpeta/casa" --maquina "$carpeta/bin/luma.bin" > /dev/null 2>&1
+  fi
+  # her gears: all the code she has, taken apart together (engranajes.py): her own body and every book of her shelf
+  # (a text's lines that only reckon, a book of machine code as the program it says), the pieces that only reckon
+  # with registers. Made again when she is, or when a book is put on her shelf. No python: no gears, and her cells
+  # change nothing.
+  engr="$carpeta/casa/$(etiqueta engranajes)"; viejo=
+  [ -f "$engr" ] && [ ! "$carpeta/bin/luma.bin" -nt "$engr" ] || viejo=1
+  libros=()
+  for f in "$carpeta/casa/$(etiqueta libro)"*; do
+    [ -f "$f" ] || continue
+    libros+=("$f"); [ "$f" -nt "$engr" ] && viejo=1
+  done
+  if [ -n "$viejo" ]; then
+    python -I "$aqui/engranajes.py" "$carpeta/bin/luma.bin" "${libros[@]}" 105 --callado --tabla "$engr" > /dev/null 2>&1
   fi
   [ -f "$carpeta/casa/$(etiqueta p)" ] \
     || printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00\x01\x01\x00\x00' > "$carpeta/casa/$(etiqueta p)"
