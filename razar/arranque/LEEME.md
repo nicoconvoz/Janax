@@ -5,7 +5,7 @@ Windows (`Win + R`, `shell:startup`) y corren cada vez que se inicia sesión.
 
 | Archivo | Qué lanza |
 |---|---|
-| `luma.vbs` | **Luma, un solo ser** (`razar/cuerpo/luma_vive.sh`): su cuerpo y su lectora son un solo programa, así que no se lanza ningún Razar aparte. También el cubo (`razar/lectura/poetico/cubo.py vivo`), que no es parte de ella. Si alguno ya está vivo, no lanza otro. |
+| `luma.vbs` | **Luma, un solo ser** (`razar/cuerpo/luma_vive.sh`): su cuerpo y su lectora son un solo programa, así que no se lanza ningún Razar aparte, ni el cubo (dormía sobre un tablero donde ya nadie escribe; quedó en espera). Si ya está viva, no lanza otra. |
 | `razar_vigia.vbs` | El vigía (`razar/lectura/vigia.sh`): estudia los textos que se escriben en `C:\` y `E:\`. |
 
 **Son ejemplos de una máquina, no algo que ande igual en cualquiera.** Llevan estas rutas, que hay que adaptar:

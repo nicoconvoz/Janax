@@ -100,7 +100,7 @@ Todo en una copia de su casa (`E:\Luma\casa`), antes de tocar la que vive.
 - **Todavía ninguna receta nacida de una mutación suya ganó por leer.** En las pruebas leyó 11 de esas y ninguna le
   ganó a `38A516`, que es herencia de Razar. El camino está abierto y medido; el hallazgo propio no llegó.
 - **El cubo no es parte de ella.** Se alimentaba de las recetas que Razar escribía en el tablero; ahí ya no escribe
-  nadie, así que duerme. Unirlo así como está sería otro puente.
+  nadie, así que dormía; el mismo día se lo sacó del arranque (sigue en el repositorio, en espera). Unirlo así como está sería otro puente.
 - **El vigía sigue aparte** y lee con el órgano más general del tablero, congelado el día de la unión.
 - **Los nichos de Razar, su memoria de piezas y el cruce de genomas con un hermano** no pasaron: están en espera con
   su motivo. `pulso.jsm` solo sigue armando y es el instrumento de las medidas.

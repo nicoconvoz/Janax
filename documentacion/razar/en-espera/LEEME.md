@@ -33,7 +33,8 @@ Que se llevo consigo y sigue dormido, con su despertador:
 - **Las recetas en el tablero** (`og_rec_write`, `tablero/Receta de Organos/...`): ella no las escribe; lo que leyo
   esta en `leido`. Despierta el dia que otro ser tenga que leer lo que ella aprendio.
 - **El cubo** (`poetico/cubo.py vivo`): se alimentaba de las recetas del tablero y le devolvia las suyas a Razar.
-  Sin nadie que escriba ahi, duerme. No se unio a ella: seria otro puente entre dos programas. Despierta cuando el
+  Sin nadie que escriba ahi, dormia; el autor pidio sacar lo que sobra y ya no arranca con Windows (el programa
+  sigue en el repositorio). No se unio a ella: seria otro puente entre dos programas. Despierta cuando el
   cubo sea un sentido de ella (leer `leido`, proponerle recetas como un pensamiento mas) o cuando alguien vuelva a
   escribir el tablero.
 - **El vigia** lee con el organo mas general del tablero, que quedo como estaba el dia de la union.
