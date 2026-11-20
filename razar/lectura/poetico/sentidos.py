@@ -115,13 +115,45 @@ def palabras():
         out.write(line + NL); print(line)
 
 
+# the gears (organo.inc: og_lens): E, a letter from 9 to F and any letter put a lens on the eye. Gear 1 here adds 0
+# (a lens that changes nothing: the sentence must score what it scores without it); gear 2 is one her own body
+# repeats, "shift right by 8" (every 256 words in a row look the same: a blur by how early the word was first read).
+def gear_word(op, rd, ra=0, imm=0):
+    return op | rd << 8 | ra << 12 | (imm & 0xFFFF) << 16
+GEARS = {1: [gear_word(0x01, 0, 0, 0), gear_word(0x02, 1, 1, 0)], 2: [gear_word(0x01, 0, 0, 8), gear_word(0x07, 1, 1, 0)]}
+LENSES = [("38A516", None), ("E9138A516", "38A516"), ("38E91A516", "38A516"), ("E9238A516", None), ("38E92A516", None),
+          ("E92E9238A516", None), ("E9338A516", "38A516"), ("E19", "38A5169"), ("38A5169", None)]
+
+
+def lentes():
+    legos.setup(); legos.organo_inc({})
+    print("arma:", legos.build()); sys.stdout.flush()
+    d = bytearray(open(legos.W + "/out/pulso.datos", "rb").read()); d += bytes(0x7F80 - len(d))
+    for k, g in GEARS.items():
+        at = 0x4400 + 128 * (k - 1); d[at:at + 8] = len(g).to_bytes(8, "little")
+        for i, w in enumerate(g):
+            d[at + 8 + 8 * i:at + 16 + 8 * i] = w.to_bytes(8, "little")
+    d[0x7F00:0x7F08] = legos.word("38A516").to_bytes(8, "little")
+    open(legos.W + "/out/pulso.datos", "wb").write(d)
+    organs = [o for o, _ in LENSES]; legos.TIMEOUT = 90 + 9 * len(organs)
+    t = time.time(); g = legos.scores(organs)
+    name = os.path.basename(legos.BOOK).split(".")[0]
+    out = open(legos.W + "/lentes-%s.txt" % name, "w", encoding="utf-8", newline=NL)
+    for line in ["# %s, en %.0f s; sin organo %s; engranaje 1: sumar 0; engranaje 2: correr 8 a la derecha; el 3 no existe; palabra 1 = 38A516" % (name, time.time() - t, g.get(""))] + [
+            "%-14s %7s%s" % (o, g.get(o, "no rindio"), "" if same is None else "   debe dar lo de %s: %s" % (same, "igual" if g.get(o) == g.get(same) else "DISTINTO"))
+            for o, same in LENSES] + (["estado: " + g["estado"]] if "estado" in g else []):
+        out.write(line + NL); print(line)
+
+
 def main():
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 2 and sys.argv[1] != "lentes":
         legos.BOOK = sys.argv[2]
     if sys.argv[1] == "ojo":
         return ojo()
     if sys.argv[1] == "palabras":
         return palabras()
+    if sys.argv[1] == "lentes":
+        return lentes()
     if "og_lB:" in legos.original():
         print("medir: sus letras B a E eran las de antes del ojo; lo medido esta en documentacion/razar/datos/sentidos-nuevo-testamento.txt"); return
     legos.setup(); legos.organo_inc(gears())

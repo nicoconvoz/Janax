@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.79:** [10.5281/zenodo.24394744](https://doi.org/10.5281/zenodo.24394744)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v0.83:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,19 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-20, v0.83): los engranajes
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Un programa no se come entero: se desarticula.** `engranajes.py` desarma un programa con el mismo juez de ella: un
+engranaje es un pedazo sin saltos que el programa repite, y que dicho una sola vez ahorra bits. Sobre su propio
+cuerpo salen solos y se entienden (sumar uno, restar uno, el signo, por ocho, correr a la derecha). Los que sólo
+hacen cuentas van a su casa, y en una receta son **lentes de su ojo**: su lectora tiene una maquinita que corre el
+engranaje sobre cada mirada. Es código de un programa de verdad corriendo adentro de una receta que ella escribe, y
+es dato: nada se rearma. Medido: una lente hecha con un engranaje de su propio cuerpo sube a la campeona de 14775 a
+15246. Lo que falta, dicho: ella todavía no puso una lente que gane, y los engranajes los desarma Python al armarla.
+[Notas de la v0.83](documentacion/release-v0.83.md).
 
 ## Novedad (2026-11-20, v0.79): sus palabras
 

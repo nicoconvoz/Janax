@@ -40,6 +40,11 @@ armar() {
     || cp "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/lectora.bin)"
   cmp -s "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)" \
     || cp "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)"
+  # her gears: her own body taken apart (engranajes.py), the ones that only reckon with registers. Made again when she
+  # is: they are of the body she has. No python: no gears, and her lenses change nothing.
+  if [ ! -f "$carpeta/casa/$(etiqueta engranajes)" ] || [ "$carpeta/bin/luma.bin" -nt "$carpeta/casa/$(etiqueta engranajes)" ]; then
+    python -I "$aqui/engranajes.py" "$carpeta/bin/luma.bin" 105 --callado --tabla "$carpeta/casa/$(etiqueta engranajes)" > /dev/null 2>&1
+  fi
   [ -f "$carpeta/casa/$(etiqueta p)" ] \
     || printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00\x01\x01\x00\x00' > "$carpeta/casa/$(etiqueta p)"
   if [ -n "${LUMA_LIBRO:-}" ] && [ ! -f "$carpeta/casa/$(etiqueta libro)" ]; then

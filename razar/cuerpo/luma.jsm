@@ -1511,6 +1511,15 @@ grow_letter:
   jst j5, j14, 0348h
   jldb j6, j1, 200h
   jst j6, j14, 0340h
+  jldi j10, 14
+  jsub j10, j5, j10
+  jjnz j10, grow_seen
+  jld j10, j14, 0500h
+  jldi j11, 2
+  jadd j10, j10, j11
+  jst j10, j14, 0500h
+  jjmp grow_letter               ; (a lens is of her eye: its three letters draw nothing)
+grow_seen:
   jldi j10, 5
   jsub j10, j5, j10
   jjn j10, grow_arm
@@ -8059,15 +8068,19 @@ or_hi:
 or_done:
   jstb j4, j9, 0
   jret
-r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from): E and
-                                ; the letter after it open that word of hers, her living form of that number (1 to
-                                ; 8), exactly as her reader does (organo.inc: og_lE); FLE = 1 if a word was said
+r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly
+                                ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that
+                                ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and
+                                ; any letter are a lens, a gear of her body, and stay as they are written (FLG = 1)
   jldb j3, j9, 0
   jldi j4, 0
   jldi j8, 0
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 016F8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01828h
 flat_lap:
   jsub j10, j4, j3
   jjnn j10, flat_done
@@ -8087,7 +8100,7 @@ flat_lap:
   jadd j8, j8, j10
   jadd j4, j7, j14
   jjmp flat_lap
-flat_e:                           ; its number: the next letter, if there is one in the same sixteen
+flat_e:                         ; its number: the next letter, if there is one in the same sixteen
   jsub j10, j7, j3
   jjnn j10, flat_one
   jldi j10, 15
@@ -8096,13 +8109,63 @@ flat_e:                           ; its number: the next letter, if there is one
   jjz j11, flat_one
   jadd j6, j9, j7
   jldb j6, j6, 1
-  jldi j10, 2
-  jadd j4, j4, j10
   jldi j10, 9
   jsub j10, j6, j10
-  jjnn j10, flat_lap
+  jjn j10, flat_word
+  jldi j10, 2
+  jadd j11, j4, j10
+  jsub j10, j11, j3
+  jjnn j10, flat_two
+  jldi j10, 15
+  jand j12, j4, j10
+  jldi j10, 14
+  jsub j12, j12, j10
+  jjz j12, flat_two
+  jldi j5, 14
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
   jldi j10, 1
-  jsub j6, j6, j10
+  jadd j8, j8, j10
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j6, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 1
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01828h
+  jldi j10, 3
+  jadd j4, j4, j10
+  jjmp flat_lap
+flat_two:
+  jldi j10, 2
+  jadd j4, j4, j10
+  jjmp flat_lap
+flat_word:
+  jldi j10, 2
+  jadd j4, j4, j10
+  jadd j12, j6, j14
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 016F8h
+  jldi j10, 1
+  jsub j6, j12, j10
   jldi j10, 8
   jshl j6, j6, j10
   jldi j10, 08C0h
@@ -8110,12 +8173,7 @@ flat_e:                           ; its number: the next letter, if there is one
   jldb j1, j6, 0
   jldi j2, 0
   jjz j1, flat_lap
-  jldi j10, 1
-  jldi j6, 015Eh
-  jshi j6, 0
-  jst j10, j6, 016F8h
-  jldi j10, 08C0h
-flat_w:                           ; the word's letters (an E inside it says nothing, and takes its number)
+flat_w:                         ; the word's letters (inside it a word says nothing; a lens is a lens)
   jsub j10, j2, j1
   jjnn j10, flat_lap
   jadd j5, j6, j2
@@ -8142,6 +8200,64 @@ flat_we:
   jand j12, j2, j10
   jsub j12, j12, j10
   jjz j12, flat_w1
+  jst j6, j14, 0490h
+  jadd j12, j6, j11
+  jldb j12, j12, 1
+  jldi j10, 9
+  jsub j10, j12, j10
+  jjn j10, flat_w2
+  ; (a lens inside the word: the word's place is kept while its three letters are said)
+  jst j9, j14, 0498h
+  jadd j9, j6, j14
+  jadd j6, j12, j14
+  jldi j10, 2
+  jadd j11, j2, j10
+  jsub j10, j11, j1
+  jjnn j10, flat_wl2
+  jldi j10, 15
+  jand j12, j2, j10
+  jldi j10, 14
+  jsub j12, j12, j10
+  jjz j12, flat_wl2
+  jldi j5, 14
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j6, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jadd j5, j9, j11
+  jldb j5, j5, 1
+  jldi j10, 015Eh
+  jshi j10, 03001h
+  jadd j10, j10, j8
+  jstb j5, j10, 0
+  jstb j7, j10, 200h
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01828h
+  jldi j10, 3
+  jadd j2, j2, j10
+  jjmp flat_wl
+flat_wl2:
+  jldi j10, 2
+  jadd j2, j2, j10
+flat_wl:
+  jld j9, j14, 0498h
+  jld j6, j14, 0490h
+  jjmp flat_w
+flat_w2:
   jldi j10, 2
   jadd j2, j2, j10
   jjmp flat_w
@@ -8165,6 +8281,10 @@ r_rec_key:                      ; j9 = a recipe -> j1, j2 = what it MEANS, the n
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 016E8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01828h
+  jjnz j10, rk_hash                 ; (a lens means what her gears are: named with their print)
   jldi j10, 32
   jsub j10, j3, j10
   jjnn j10, rk_hash
@@ -8182,6 +8302,16 @@ rk_hash:
   jshi j2, 0E55Dh
   jshi j2, 0FB68h
   jshi j2, 05F30h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01828h
+  jjz j10, rk_h0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01820h
+  jxor j1, j1, j10
+  jxor j2, j2, j10
+rk_h0:
   jldi j7, 0100h
   jshi j7, 0
   jshi j7, 01B3h
@@ -8493,10 +8623,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 0562Bh
-  jshi j2, 04BC2h
-  jshi j2, 0B93Fh
-  jshi j2, 0C4A9h
+  jldi j2, 066B3h
+  jshi j2, 0E36h
+  jshi j2, 048F4h
+  jshi j2, 04562h
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -8708,10 +8838,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 01642h
-  jshi j2, 04E60h
-  jshi j2, 01B07h
-  jshi j2, 052D5h
+  jldi j2, 021B3h
+  jshi j2, 0F106h
+  jshi j2, 019ACh
+  jshi j2, 06A99h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -8723,6 +8853,82 @@ r_read_init:
   jst j1, j6, 01690h
 ri_same:                        ; (made of the same as when she slept: nothing new in her)
   jcall r_ltab
+  ; her gears: what engranajes.py took her own body apart into (the file "engranajes" of her house), into her
+  ; reader's initial data once; how many there are, and their print
+  jldi j6, 015Eh
+  jshi j6, 0
+  jldi j1, 101
+  jstb j1, j6, 01840h
+  jldi j1, 110
+  jstb j1, j6, 01841h
+  jldi j1, 103
+  jstb j1, j6, 01842h
+  jldi j1, 114
+  jstb j1, j6, 01843h
+  jldi j1, 97
+  jstb j1, j6, 01844h
+  jldi j1, 110
+  jstb j1, j6, 01845h
+  jldi j1, 97
+  jstb j1, j6, 01846h
+  jldi j1, 106
+  jstb j1, j6, 01847h
+  jldi j1, 101
+  jstb j1, j6, 01848h
+  jldi j1, 115
+  jstb j1, j6, 01849h
+  jldi j11, 015Eh
+  jshi j11, 01840h
+  jldi j12, 10
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, ri_gears
+  jldi j10, 5
+  jldi j11, 015Eh
+  jshi j11, 0C400h
+  jldi j12, 03480h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+ri_gears:
+  jldi j1, -13326
+  jshi j1, 09CE4h
+  jshi j1, 08422h
+  jshi j1, 02325h
+  jldi j7, 0100h
+  jshi j7, 0
+  jshi j7, 01B3h
+  jldi j5, 015Eh
+  jshi j5, 0C400h
+  jldi j3, 0690h
+  jldi j4, 0
+ri_gp:
+  jld j10, j5, 0
+  jxor j1, j1, j10
+  jmul j1, j1, j7
+  jldi j10, 127
+  jand j10, j4, j10
+  jjnz j10, ri_gp_n
+  jld j10, j5, 0
+  jjz j10, ri_gp_n
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01838h
+  jldi j11, 1
+  jadd j10, j10, j11
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 01838h
+ri_gp_n:
+  jldi j10, 8
+  jadd j5, j5, j10
+  jadd j4, j4, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjnz j3, ri_gp
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01820h
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01538h
@@ -9259,6 +9465,23 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jst j1, j6, 016F0h
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 015E8h
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 015E0h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01830h
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 016D8h
   jldi j6, 015Eh
   jshi j6, 0
@@ -9267,6 +9490,10 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 016F0h
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01830h
   jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
@@ -9279,6 +9506,11 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jld j1, j6, 016F0h
   jsub j2, j2, j1
   jjn j2, rp_song
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01830h
+  jsub j2, j2, j1
+  jjn j2, rp_lens
   ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)
   jldi j1, 3
   jcall r_randmod
@@ -9383,6 +9615,137 @@ rp_i_org:
   jshi j6, 0
   jst j1, j6, 01698h
   jldi j0, 1
+  jret
+rp_lens:                        ; A LENS (the Capitan: "desarticularlo en engranajes que sean legos para que Luma
+                                ; arme su propio software a medida"): a recipe of hers with a gear of her own body
+                                ; put in it, by luck: which gear, which recipe (by her count of each place) and
+                                ; where. Three letters: E, and the two that say its number. 64 tries.
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01838h
+  jjz j1, rp_org
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01538h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01630h
+  jldi j1, 64
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+rp_l_lap:
+  jcall r_read_place
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01640h
+  jldi j10, 8
+  jshl j9, j4, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jld j10, j9, 192
+  jst j10, j7, 0
+  jld j10, j9, 200
+  jst j10, j7, 8
+  jld j10, j9, 208
+  jst j10, j7, 16
+  jld j10, j9, 216
+  jst j10, j7, 24
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j3, j7, 0
+  jjz j3, rp_l_next
+  jldi j10, 29
+  jsub j10, j3, j10
+  jjnn j10, rp_l_next
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01838h
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01678h
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j3, j7, 0
+  jldi j10, 1
+  jadd j1, j3, j10
+  jcall r_randmod
+  jldi j7, 015Eh
+  jshi j7, 01700h
+  jldb j3, j7, 0
+  jadd j4, j3, j14
+rp_l_up:                        ; room for its three letters
+  jsub j10, j4, j0
+  jjz j10, rp_l_put
+  jadd j5, j7, j4
+  jldb j1, j5, 0
+  jstb j1, j5, 3
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjmp rp_l_up
+rp_l_put:
+  jadd j5, j7, j0
+  jldi j10, 14
+  jstb j10, j5, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01678h
+  jldi j10, 15
+  jdiv j2, j1, j10
+  jmul j4, j2, j10
+  jsub j4, j1, j4
+  jldi j10, 9
+  jadd j2, j2, j10
+  jstb j2, j5, 2
+  jldi j10, 1
+  jadd j4, j4, j10
+  jstb j4, j5, 3
+  jldi j10, 3
+  jadd j3, j3, j10
+  jstb j3, j7, 0
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_rec_key
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01620h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01628h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01630h
+  jcall r_read_get
+  jldi j10, -32768
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jsub j10, j0, j10
+  jjnz j10, rp_l_next
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01638h
+  jldi j1, 4
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01698h
+  jldi j0, 1
+  jret
+rp_l_next:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01670h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01670h
+  jjnz j1, rp_l_lap
+  jldi j0, 0
   jret
 rp_song:                        ; A SONG (the Capitan: "compone canciones de programacion autocompilables"): a
                                 ; sentence of her own words. Her words are what lives in her body: E and a number say
@@ -9986,10 +10349,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 0562Bh
-  jshi j1, 04BC2h
-  jshi j1, 0B93Fh
-  jshi j1, 0C4A9h
+  jldi j1, 066B3h
+  jshi j1, 0E36h
+  jshi j1, 048F4h
+  jshi j1, 04562h
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
@@ -10105,7 +10468,7 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jld j1, j6, 01698h
   jldi j10, 3
   jsub j10, j1, j10
-  jjz j10, rd_song
+  jjnn j10, rd_song
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01528h
@@ -10116,6 +10479,9 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jst j1, j6, 01528h
   jjmp rd_saved
 rd_song:
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjz j10, rd_lens
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 015D8h
@@ -10124,6 +10490,16 @@ rd_song:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 015D8h
+  jjmp rd_saved
+rd_lens:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015E8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015E8h
   jjmp rd_saved
 rd_plain:
   jcall r_recompute
@@ -10185,7 +10561,7 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jldi j10, 5
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 224
+  jldi j12, 240
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -10236,7 +10612,7 @@ r_free_save:
   jldi j10, 6
   jldi j11, 015Eh
   jshi j11, 01500h
-  jldi j12, 224
+  jldi j12, 240
   jcall r_file
   jldi j10, 7
   jcall r_file
@@ -10833,6 +11209,9 @@ fr_r_ins:
   jst j1, j6, 01510h
   jjmp fr_r_cnt
 fr_r_song:
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjz j10, fr_r_lens
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 015D0h
@@ -10841,6 +11220,28 @@ fr_r_song:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 015D0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01640h
+  jldi j10, 4
+  jshl j7, j4, j10
+  jldi j10, 015Eh
+  jshi j10, 01550h
+  jadd j7, j7, j10
+  jld j1, j7, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jst j1, j7, 0
+  jjmp fr_r_cnt
+fr_r_lens:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 015E0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 015E0h
   jldi j6, 015Eh
   jshi j6, 0
   jld j4, j6, 01640h

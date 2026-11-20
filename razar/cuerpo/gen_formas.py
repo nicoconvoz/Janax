@@ -272,6 +272,8 @@ for f in range(NF):
                    (F_FIRST, PART0 + f * PREG), (F_BMP, BMPS + 512 * f), (F_GTICK, GROW_FRAMES)):
         li("j1", v); o("  jst j1, j9, %d" % fld)
     o("  jldi j1, %d" % f); o("  jcall r_regrow")
+if RD and os.environ.get("LUMA_PRUEBA_PLANO"):
+    RD.flat_test()          # (a test: her eight forms said flat, written to "plano", and she ends)
 o("  jcall r_recompute")
 o("  jcall r_clear_hash")
 o("  jcall r_load_archive")

@@ -18,8 +18,12 @@ Pieces of 2 to 8 instructions (criterion: longer ones were not seen repeated eno
 quadratic in it). The gears are taken greedily, the one that saves most first; an instruction belongs to one gear.
 
 --puros: only gears that touch no memory (registers and constants): the ones a small machine can run anywhere without
-being able to break anything. Prints each gear with what it saves, how many times it is said, and its code."""
-import collections, struct, sys
+being able to break anything (and no division: there is nothing to divide by when a register is 0).
+--tabla <file>: also writes those gears as her reader takes them (organo.inc: ORGGT): 80h bytes each, how many
+instructions and then each one as a word of the Janax language with its registers named 0, 1, 2... A gear with more
+than sixteen registers is left out (her little machine has sixteen). Prints each gear with what it saves, how many
+times it is said, and its code."""
+import collections, os, struct, sys
 
 NAMES = {0x01: "jldi", 0x02: "jadd", 0x03: "jsub", 0x04: "jmul", 0x05: "jdiv", 0x06: "jshl", 0x07: "jshr", 0x08: "jsar",
          0x09: "jand", 0x0A: "jor", 0x0B: "jxor", 0x0F: "jshi", 0x10: "jld", 0x11: "jst", 0x12: "jldb", 0x13: "jstb",
@@ -52,10 +56,13 @@ def canon(words):
     return tuple(key), text
 
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]; pure = "--puros" in sys.argv
+    argv = list(sys.argv[1:]); table = None
+    if "--tabla" in argv:
+        i = argv.index("--tabla"); table = argv[i + 1]; del argv[i:i + 2]
+    args = [a for a in argv if not a.startswith("--")]; pure = "--puros" in argv or table is not None
     data = open(args[0], "rb").read(); top = int(args[1]) if len(args) > 1 else 12
     words = struct.unpack("<%dI" % (len(data) // 4), data[:len(data) // 4 * 4])
-    ok = lambda w: (w & 255) in NAMES and not (pure and (w & 255) in MEMORY)
+    ok = lambda w: (w & 255) in NAMES and not (pure and ((w & 255) in MEMORY or (w & 255) == 0x05))
     runs = []; start = None
     for i, w in enumerate(words + (0,)):
         if i < len(words) and ok(w):
@@ -76,7 +83,8 @@ def main():
                 n += 1; last = i + L - 1
                 if mark: used[i:i + L] = b"\x01" * L
         return n
-    cand = {k: len(v) for k, v in where.items() if len(v) >= 2}
+    regs = lambda k: 1 + max(max(x[1:3]) if x[0] in (0x01, 0x0F) else max(x[1:4]) if x[0] in THREE else max(x[1:3]) for x in k)
+    cand = {k: len(v) for k, v in where.items() if len(v) >= 2 and not (table and regs(k) > 16)}
     while len(gears) < top and cand:
         best = None
         for k in sorted(cand, key=lambda k: -(cand[k] * (len(k) - 1) - len(k)))[:400]:    # (counts only fall: the true best is among the highest)
@@ -86,11 +94,23 @@ def main():
         if best is None: break
         s, n, k = best; count(k, mark=True); del cand[k]; gears.append((s, n, k)); total += s
     inside = sum(b - a for a, b in runs)
+    if table: sys.stdout = open(os.devnull, "w") if "--callado" in argv else sys.stdout
     print("# %s: %d instrucciones, %d en tramos sin saltos%s" % (args[0].replace("\\", "/").split("/")[-1], len(words), inside, " ni memoria" if pure else ""))
     print("# %d engranajes ahorran %d instrucciones (%.1f %% del programa)" % (len(gears), total, 100.0 * total / len(words)))
     for i, (s, n, k) in enumerate(gears):
         print("engranaje %d: ahorra %d, dicho %d veces, %d instrucciones" % (i + 1, s, n, len(k)))
         for t in text[k]: print("    " + t)
+
+    if table:
+        out = bytearray()
+        for s_, n, k in gears:
+            g = bytearray(128); struct.pack_into("<Q", g, 0, len(k))
+            for i, x in enumerate(k):
+                op = x[0]
+                w = op | x[1] << 8 | ((x[2] & 0xFFFF) << 16 if op in (0x01, 0x0F) else x[2] << 12 | x[3] << 16)
+                struct.pack_into("<Q", g, 8 + 8 * i, w)
+            out += g
+        open(table, "wb").write(out)
 
 if __name__ == "__main__":
     main()

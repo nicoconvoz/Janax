@@ -26,7 +26,15 @@ WHAT SHE READS, in this order (a rule, not a list of cases: first what her judge
   became one (his last letter, once: nothing he learned is lost); then something new, by her luck between two ways
   she counts apart: a recipe of hers with one letter put in, taken out or changed (any of the fifteen), or one of
   her three instincts a step up or down (patience, firmness, readings: the genome of pulso.jsm), read with the form
-  that reads best; or A SONG, a sentence of two or three of her own words.
+  that reads best; or A SONG, a sentence of two or three of her own words; or A LENS, a gear of her own body put
+  into a recipe of hers.
+HER GEARS (the Capitan: "lo importante no es comer el programa sino desarticularlo en engranajes que sean legos
+  para que Luma arme su propio software a medida"). engranajes.py takes her own program apart with her own judge:
+  a gear is a piece it repeats, which said once saves bits. The ones that only reckon with registers go into her
+  house ("engranajes") each time she is built, so her gears are of the body she has. In a recipe, E, a letter from
+  9 to F and any letter are a lens: that gear, run on a little machine in her reader (organo.inc: og_lens), through
+  which her eye looks until the next hole. A recipe with a lens is named with her gears' print, so if her body
+  changes and her gears with it, it is read again.
 HER WORDS (the Capitan: "codigo poetico: engranajes como palabras, programas como oraciones"; "una oracion que ya
   funciona se asciende a palabra"). A sentence that works is one that lives in her body: it won by her one judge.
   So her eight living forms ARE her words, with no second list to keep: the letter E and a number, 1 to 8, say her
@@ -71,7 +79,8 @@ R = 0x1500
 N5, S5, NI, SI, NO, SO, SHELF, GENOME, STAMP, RBUD = (R + 8 * i for i in range(10))
 FT = R + 80                  # a count for each place of her body: {recipes read that came from it, the ones that won}
 NS, SS = FT + 128, FT + 136  # the songs she composed (sentences of her own words) and the ones that won
-KEPT = 80 + 16 * 8 + 16
+NL, SL = FT + 144, FT + 152  # the lenses she put on a recipe (gears of her own body) and the ones that won
+KEPT = 80 + 16 * 8 + 32
 V = 0x1600
 (RKID, RGOT, RW1, RW2, RLO, RHI, RGEN, RKIND, RJF, RTAB, RTN, RTC, RLEN, T0, T1, T2, T3, T4, NEWST, RARM, RENDED,
  BEST, HAVE, BESTF, RWF, RSC, RSH, WO, WI, FLN, WS, FLE) = (V + 8 * i for i in range(32))
@@ -82,6 +91,9 @@ PBUF = 0x2000                # what waits for her signature (4096)
 FLC, FLB = 0x3000, 0x3001    # a recipe said flat, its words opened: how many letters (when they fit a byte), the letters
 FLO = FLB + 0x200            # and for each the letter of the sentence it came from (1 the first)
 WORDS = 0x7F00               # in her reader's initial data: her words (organo.inc: ORGT)
+GEARS, NGEARS = 0x4400, 105  # and her gears (organo.inc: ORGGT), 80h bytes each: the file "engranajes" of her house
+GFP, FLG, WL, NGE = 0x1820, 0x1828, 0x1830, 0x1838   # the gears' print, a recipe said flat has a lens, a wish, how many gears
+LGE = 0x1840                 # "engranajes"
 DLEN = WORDS + 16 * 8
 LTAB = 0x4000                # L(k), k = 0..N, thousandths of a bit
 DBUF = 0x8000                # her reader's initial data (the reader's own, then zeros up to her words)
@@ -169,6 +181,18 @@ def make(g, ST, free):
         from, so a word's cells are born with the E that said it"""
         g["incg"]("GFI"); ld("j9", "GFI"); gl("j2", FLN); J("jsub j10, j2, j9", "jjn j10, grow_done")
         li("j1", B + FLB - 1); J("jadd j1, j1, j9", "jldb j5, j1, 0"); st("j5", "GC"); J("jldb j6, j1, 200h"); st("j6", "GT")
+        J("jldi j10, 14", "jsub j10, j5, j10", "jjnz j10, grow_seen")
+        g["incg"]("GFI", 2); J("jjmp grow_letter               ; (a lens is of her eye: its three letters draw nothing)")
+        o("grow_seen:")
+
+    def flat_test():
+        """LUMA_PRUEBA_PLANO: each of her forms said flat (r_flat) into the file "plano": 520 bytes a form, how many
+        letters and then the letters; then she ends. The same is reckoned outside and compared."""
+        text(0x1850, b"plano"); li("j11", B + 0x1850); J("jldi j12, 5", "jcall r_open"); gs("j14", T0)
+        o("ft_lap:")
+        gl("j1", T0); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jcall r_flat")
+        gl("j1", FLN); li("j6", B + FLB - 9); J("jst j1, j6, 0", "jldi j10, 6"); li("j11", B + FLB - 9); li("j12", 520); J("jcall r_file")
+        inc(T0); J("jldi j10, %d" % NF, "jsub j10, j1, j10", "jjnz j10, ft_lap", "jldi j10, 7", "jcall r_file", "jldi j0, 0", "jhalt")
 
     def routines():
         o("; ---- reading, an act of hers: the one being (see gen_leer.py)")
@@ -203,27 +227,49 @@ def make(g, ST, free):
         o("or_done:")
         J("jstb j4, j9, 0", "jret")
 
-        o("r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from): E and")
-        o("                                ; the letter after it open that word of hers, her living form of that number (1 to")
-        o("                                ; 8), exactly as her reader does (organo.inc: og_lE); FLE = 1 if a word was said")
-        J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE)
-        def emit(origin):
-            li("j10", B + FLB); J("jadd j10, j10, j8", "jstb j5, j10, 0", "jstb %s, j10, 200h" % origin, "jldi j10, 1", "jadd j8, j8, j10")
+        o("r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly")
+        o("                                ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that")
+        o("                                ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and")
+        o("                                ; any letter are a lens, a gear of her body, and stay as they are written (FLG = 1)")
+        J("jldb j3, j9, 0", "jldi j4, 0", "jldi j8, 0"); gs("j14", FLE); gs("j14", FLG)
+        def emit(origin, reg="j5"):
+            li("j10", B + FLB); J("jadd j10, j10, j8", "jstb %s, j10, 0" % reg, "jstb %s, j10, 200h" % origin, "jldi j10, 1", "jadd j8, j8, j10")
+        def lens(rec, idx, n, back, skip):
+            """at an E whose number (in j6 = k, at idx + 1) is 9 or more: its second letter, if it has one in the same
+            sixteen -> the three stay; else only E and its number are passed over"""
+            J("jldi j10, 2", "jadd j11, %s, j10" % idx, "jsub j10, j11, %s" % n, "jjnn j10, %s" % skip,
+              "jldi j10, 15", "jand j12, %s, j10" % idx, "jldi j10, 14", "jsub j12, j12, j10", "jjz j12, %s" % skip)
+            J("jldi j5, 14"); emit("j7"); emit("j7", "j6"); J("jadd j5, %s, j11" % rec, "jldb j5, j5, 1"); emit("j7")
+            J("jldi j10, 1"); gs("j10", FLG); J("jldi j10, 3", "jadd %s, %s, j10" % (idx, idx), "jjmp %s" % back)
         o("flat_lap:")
         J("jsub j10, j4, j3", "jjnn j10, flat_done", "jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 1", "jadd j7, j4, j10",
           "jldi j10, 14", "jsub j10, j5, j10", "jjz j10, flat_e")
         emit("j7"); J("jadd j4, j7, j14", "jjmp flat_lap")
-        o("flat_e:                           ; its number: the next letter, if there is one in the same sixteen")
+        o("flat_e:                         ; its number: the next letter, if there is one in the same sixteen")
         J("jsub j10, j7, j3", "jjnn j10, flat_one", "jldi j10, 15", "jand j11, j4, j10", "jsub j11, j11, j10", "jjz j11, flat_one")
-        J("jadd j6, j9, j7", "jldb j6, j6, 1", "jldi j10, 2", "jadd j4, j4, j10", "jldi j10, 9", "jsub j10, j6, j10", "jjnn j10, flat_lap")
-        J("jldi j10, 1", "jsub j6, j6, j10", "jldi j10, 8", "jshl j6, j6, j10"); li("j10", FORMS + F_REC); J("jadd j6, j6, j10", "jldb j1, j6, 0", "jldi j2, 0")
-        J("jjz j1, flat_lap", "jldi j10, 1"); gs("j10", FLE); li("j10", FORMS + F_REC)
-        o("flat_w:                           ; the word's letters (an E inside it says nothing, and takes its number)")
+        J("jadd j6, j9, j7", "jldb j6, j6, 1", "jldi j10, 9", "jsub j10, j6, j10", "jjn j10, flat_word")
+        lens("j9", "j4", "j3", "flat_lap", "flat_two")
+        o("flat_two:")
+        J("jldi j10, 2", "jadd j4, j4, j10", "jjmp flat_lap")
+        o("flat_word:")
+        J("jldi j10, 2", "jadd j4, j4, j10", "jadd j12, j6, j14", "jldi j10, 1"); gs("j10", FLE)   # (gs uses j6: the word's place after it)
+        J("jldi j10, 1", "jsub j6, j12, j10", "jldi j10, 8", "jshl j6, j6, j10"); li("j10", FORMS + F_REC); J("jadd j6, j6, j10", "jldb j1, j6, 0", "jldi j2, 0")
+        J("jjz j1, flat_lap")
+        o("flat_w:                         ; the word's letters (inside it a word says nothing; a lens is a lens)")
         J("jsub j10, j2, j1", "jjnn j10, flat_lap", "jadd j5, j6, j2", "jldb j5, j5, 1", "jldi j10, 14", "jsub j10, j5, j10", "jjz j10, flat_we")
         emit("j7"); J("jldi j10, 1", "jadd j2, j2, j10", "jjmp flat_w")
         o("flat_we:")
-        J("jldi j10, 1", "jadd j11, j2, j10", "jsub j10, j11, j1", "jjnn j10, flat_w1", "jldi j10, 15", "jand j12, j2, j10", "jsub j12, j12, j10", "jjz j12, flat_w1",
-          "jldi j10, 2", "jadd j2, j2, j10", "jjmp flat_w")
+        J("jldi j10, 1", "jadd j11, j2, j10", "jsub j10, j11, j1", "jjnn j10, flat_w1", "jldi j10, 15", "jand j12, j2, j10", "jsub j12, j12, j10", "jjz j12, flat_w1")
+        st("j6", "TF"); J("jadd j12, j6, j11", "jldb j12, j12, 1", "jldi j10, 9", "jsub j10, j12, j10", "jjn j10, flat_w2")
+        o("  ; (a lens inside the word: the word's place is kept while its three letters are said)")
+        st("j9", "TI"); J("jadd j9, j6, j14", "jadd j6, j12, j14")
+        lens("j9", "j2", "j1", "flat_wl", "flat_wl2")
+        o("flat_wl2:")
+        J("jldi j10, 2", "jadd j2, j2, j10")
+        o("flat_wl:")
+        ld("j9", "TI"); ld("j6", "TF"); J("jjmp flat_w")
+        o("flat_w2:")
+        J("jldi j10, 2", "jadd j2, j2, j10", "jjmp flat_w")
         o("flat_w1:")
         J("jldi j10, 1", "jadd j2, j2, j10", "jjmp flat_w")
         o("flat_one:")
@@ -235,11 +281,14 @@ def make(g, ST, free):
         o("                                ; and the same letters written out are one reading), else their print (two FNV, the")
         o("                                ; top four bits all 1: no letters reach there)")
         J("jcall r_flat"); gl("j3", FLN)
+        gl("j10", FLG); J("jjnz j10, rk_hash                 ; (a lens means what her gears are: named with their print)")
         if TESTING:
             gl("j10", FLE); J("jjnz j10, rk_hash                 ; LUMA_PRUEBA_E: a sentence with a word always by its print (a test)")
         J("jldi j10, 32", "jsub j10, j3, j10", "jjnn j10, rk_hash"); li("j9", B + FLC); J("jstb j3, j9, 0", "jcall r_rec_org", "jret")
         o("rk_hash:")
-        li("j1", 0xCBF29CE484222325); li("j2", 0xCBF29CE484222325 ^ GOLD); li("j7", 0x100000001B3); J("jldi j4, 0"); li("j5", B + FLB)
+        li("j1", 0xCBF29CE484222325); li("j2", 0xCBF29CE484222325 ^ GOLD); gl("j10", FLG); J("jjz j10, rk_h0"); gl("j10", GFP); J("jxor j1, j1, j10", "jxor j2, j2, j10")
+        o("rk_h0:")
+        li("j7", 0x100000001B3); J("jldi j4, 0"); li("j5", B + FLB)
         o("rk_h:")
         J("jsub j10, j4, j3", "jjnn j10, rk_hd", "jadd j10, j5, j4", "jldb j10, j10, 0", "jxor j1, j1, j10", "jmul j1, j1, j7", "jxor j2, j2, j10", "jmul j2, j2, j7",
           "jldi j10, 1", "jadd j4, j4, j10", "jjmp rk_h")
@@ -320,6 +369,18 @@ def make(g, ST, free):
         gl("j1", STAMP); li("j2", build_stamp()); J("jsub j3, j1, j2", "jjz j3, ri_same"); gs("j2", STAMP); J("jldi j1, 1"); gs("j1", NEWST)
         o("ri_same:                        ; (made of the same as when she slept: nothing new in her)")
         J("jcall r_ltab")
+        o("  ; her gears: what engranajes.py took her own body apart into (the file \"engranajes\" of her house), into her")
+        o("  ; reader's initial data once; how many there are, and their print")
+        text(LGE, b"engranajes")
+        li("j11", B + LGE); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ri_gears")
+        J("jldi j10, 5"); li("j11", B + DBUF + GEARS); li("j12", 128 * NGEARS); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("ri_gears:")
+        li("j1", 0xCBF29CE484222325); li("j7", 0x100000001B3); li("j5", B + DBUF + GEARS); li("j3", 128 * NGEARS // 8); J("jldi j4, 0")
+        o("ri_gp:")
+        J("jld j10, j5, 0", "jxor j1, j1, j10", "jmul j1, j1, j7", "jldi j10, 127", "jand j10, j4, j10", "jjnz j10, ri_gp_n", "jld j10, j5, 0", "jjz j10, ri_gp_n")
+        gl("j10", NGE); J("jldi j11, 1", "jadd j10, j10, j11"); gs("j10", NGE)
+        o("ri_gp_n:")
+        J("jldi j10, 8", "jadd j5, j5, j10", "jadd j4, j4, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, ri_gp"); gs("j1", GFP)
         gl("j1", GENOME); J("jjnz j1, ri_gen")
         o("  ; her instincts: Razar's, from the last letter he left (they are one now), or the ones she is born with")
         li("j6", B); J("jst j14, j6, %s" % num(EBUF), "jst j14, j6, %s" % num(EBUF + 8))
@@ -382,9 +443,10 @@ def make(g, ST, free):
         o("rp_min_d:")
         gs("j3", RJF); J("jldi j1, 1"); gs("j1", RKIND); J("jldi j0, 1", "jret")
         o("rp_arm:                         ; something new: a letter, a song or an instinct, by her count of each")
-        wish(SO, NO, WO); wish(SI, NI, WI); wish(SS, NS, WS)
-        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2"); gl("j2", WS); J("jadd j1, j1, j2", "jcall r_randmod")
+        wish(SO, NO, WO); wish(SI, NI, WI); wish(SS, NS, WS); wish(SL, NL, WL)
+        gl("j1", WO); gl("j2", WI); J("jadd j1, j1, j2"); gl("j2", WS); J("jadd j1, j1, j2"); gl("j2", WL); J("jadd j1, j1, j2", "jcall r_randmod")
         gl("j1", WO); J("jsub j2, j0, j1", "jjn j2, rp_org"); gl("j1", WS); J("jsub j2, j2, j1", "jjn j2, rp_song")
+        gl("j1", WL); J("jsub j2, j2, j1", "jjn j2, rp_lens")
         o("  ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)")
         J("jldi j1, 3", "jcall r_randmod"); gs("j0", T0); J("jldi j1, 2", "jcall r_randmod", "jadd j0, j0, j0", "jldi j10, 1", "jsub j4, j0, j10")
         gl("j3", T0); J("jldi j8, 8", "jjz j3, rp_i_top", "jldi j8, 4", "jldi j10, 1", "jsub j10, j3, j10", "jjz j10, rp_i_top", "jldi j8, 3")
@@ -400,6 +462,25 @@ def make(g, ST, free):
         o("rp_i_org:")
         keyget(); known("rp_org")
         J("jldi j1, 2"); gs("j1", RKIND); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("rp_lens:                        ; A LENS (the Capitan: \"desarticularlo en engranajes que sean legos para que Luma")
+        o("                                ; arme su propio software a medida\"): a recipe of hers with a gear of her own body")
+        o("                                ; put in it, by luck: which gear, which recipe (by her count of each place) and")
+        o("                                ; where. Three letters: E, and the two that say its number. 64 tries.")
+        gl("j1", NGE); J("jjz j1, rp_org"); gl("j1", GENOME); gs("j1", RGEN); J("jldi j1, 64"); gs("j1", T1)
+        o("rp_l_lap:")
+        J("jcall r_read_place"); gl("j4", RJF); rrec_form("j4")
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jjz j3, rp_l_next", "jldi j10, 29", "jsub j10, j3, j10", "jjnn j10, rp_l_next")
+        gl("j1", NGE); J("jcall r_randmod"); gs("j0", T2); li("j7", B + RREC); J("jldb j3, j7, 0", "jldi j10, 1", "jadd j1, j3, j10", "jcall r_randmod")
+        li("j7", B + RREC); J("jldb j3, j7, 0", "jadd j4, j3, j14")
+        o("rp_l_up:                        ; room for its three letters")
+        J("jsub j10, j4, j0", "jjz j10, rp_l_put", "jadd j5, j7, j4", "jldb j1, j5, 0", "jstb j1, j5, 3", "jldi j10, 1", "jsub j4, j4, j10", "jjmp rp_l_up")
+        o("rp_l_put:")
+        J("jadd j5, j7, j0", "jldi j10, 14", "jstb j10, j5, 1"); gl("j1", T2); J("jldi j10, 15", "jdiv j2, j1, j10", "jmul j4, j2, j10", "jsub j4, j1, j4",
+          "jldi j10, 9", "jadd j2, j2, j10", "jstb j2, j5, 2", "jldi j10, 1", "jadd j4, j4, j10", "jstb j4, j5, 3", "jldi j10, 3", "jadd j3, j3, j10", "jstb j3, j7, 0")
+        keyget(); known("rp_l_next")
+        J("jldi j1, 1"); gs("j1", RKIND); J("jldi j1, 4"); gs("j1", RARM); J("jldi j0, 1", "jret")
+        o("rp_l_next:")
+        gl("j1", T1); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", T1); J("jjnz j1, rp_l_lap", "jldi j0, 0", "jret")
         o("rp_song:                        ; A SONG (the Capitan: \"compone canciones de programacion autocompilables\"): a")
         o("                                ; sentence of her own words. Her words are what lives in her body: E and a number say")
         o("                                ; her form of that place, whole. Two or three of them, by luck (criterion: the")
@@ -518,9 +599,11 @@ def make(g, ST, free):
         for k in range(4):
             J("jld j10, j7, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
         gl("j1", RJF); st("j1", "JF"); J("jcall r_judge", "jldi j10, 2", "jsub j10, j0, j10", "jjnz j10, rd_saved")
-        inc(S5); gl("j1", RARM); J("jjz j1, rd_saved"); place(8); gl("j1", RARM); J("jldi j10, 3", "jsub j10, j1, j10", "jjz j10, rd_song"); inc(SO); J("jjmp rd_saved")
+        inc(S5); gl("j1", RARM); J("jjz j1, rd_saved"); place(8); gl("j1", RARM); J("jldi j10, 3", "jsub j10, j1, j10", "jjnn j10, rd_song"); inc(SO); J("jjmp rd_saved")
         o("rd_song:")
-        inc(SS); J("jjmp rd_saved")
+        J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, rd_lens"); inc(SS); J("jjmp rd_saved")
+        o("rd_lens:")
+        inc(SL); J("jjmp rd_saved")
         o("rd_plain:")
         J("jcall r_recompute"); g["setg"]("CHANGED", 1)
         o("rd_saved:")
@@ -536,7 +619,9 @@ def make(g, ST, free):
         o("fr_r_ins:")
         J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, fr_r_song"); inc(NI); J("jjmp fr_r_cnt")
         o("fr_r_song:")
-        inc(NS); place(0)
+        J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, fr_r_lens"); inc(NS); place(0); J("jjmp fr_r_cnt")
+        o("fr_r_lens:")
+        inc(NL); place(0)
         o("fr_r_cnt:")
         J("jcall r_free_save")
         o("fr_r_on:")
@@ -577,5 +662,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, flat_test=flat_test, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)

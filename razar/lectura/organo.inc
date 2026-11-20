@@ -41,6 +41,24 @@ ORGX  = 37F0h                   ; its letters beyond the sixteenth (a recipe of 
 ORGT0 = 7EF0h                   ; (a word's two halves, counted from its number times sixteen)
 ORGT1 = 7EF8h
 ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the ones beyond}
+; ITS GEARS (the Capitan: "Legos, and inside the Legos free mutation of code"; 2026-11-20: "lo importante no es comer
+; el programa sino desarticularlo en engranajes que sean legos para que Luma arme su propio software a medida"). A
+; gear is a piece of a real program (engranajes.py takes it apart: what it repeats, said once, saves bits): up to
+; fifteen instructions that only reckon with registers. Here a gear is a LENS of the eye. E, then a letter from 9 to
+; F, then any letter, say gear ((first - 9) * 15 + second): from then on every look passes through it before it is
+; mixed into the frame. Its little machine has sixteen registers, every one of them starting as the look; the gear's
+; instructions run on them as they are written, and the look becomes what the last one left. Lenses stack (the last
+; said looks first; eight at most, the oldest falls), and a hole puts the eye at rest, lenses off, as it does with
+; where it is. A gear can not break anything: its instructions are done here one by one, only the ones that reckon
+; (constants, + - * shifts, and or xor), on its own sixteen registers; anything else is passed over. The gears are
+; data (80h bytes each from ORGGT: how many instructions, then each one, a word of the Janax language): put there
+; by who launches it. A program with no gears has zeros there, and its lenses change nothing.
+ORGGT0 = 4380h                  ; (a gear, counted from its number times 80h; its instructions)
+ORGGT1 = 4388h
+ORGGT = 4400h                   ; the gears: 105 x {its instructions, up to fifteen of them}
+ORGV  = 7D80h                   ; the little machine's sixteen registers
+ORGP  = 7E00h                   ; the lenses on the eye (a byte each: its gear's number, the last said lowest)
+ORGPL = 7E08h                   ; the ones still to look through
 ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
 ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
 ORGQ3 = 37E0h
@@ -90,6 +108,7 @@ og_some:
   jst j1, j1, ORGQ2
   jst j1, j1, ORGQ3
   jst j1, j1, ORGIN
+  jst j1, j1, ORGP
   jld j13, j1, ORGW
   jst j13, j1, ORGL
 jwhile j13
@@ -217,6 +236,8 @@ og_l4:
 og_l5:
   jldi j5, 0                   ; the hole: the first word, as it is
   jldi j11, 0
+  jldi j1, 0                    ; (a hole says its word as it is: no lens)
+  jst j1, j1, ORGP
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -227,6 +248,8 @@ og_l5:
 og_l6:
   jldi j5, 1                   ; the hole: the second word, as it is
   jldi j11, 0
+  jldi j1, 0                    ; (a hole says its word as it is: no lens)
+  jst j1, j1, ORGP
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -237,6 +260,8 @@ og_l6:
 og_l7:
   jldi j5, 2                   ; the hole: the third word, as it is
   jldi j11, 0
+  jldi j1, 0                    ; (a hole says its word as it is: no lens)
+  jst j1, j1, ORGP
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -247,6 +272,8 @@ og_l7:
 og_l8:
   jldi j5, 3                   ; the hole: the fourth word, as it is
   jldi j11, 0
+  jldi j1, 0                    ; (a hole says its word as it is: no lens)
+  jst j1, j1, ORGP
   jcall og_look
   jcall0 j1, post               ; (a frame is made only of its letters: after a hole, it starts again, and the
   jld j2, j1, FNVO              ; eye is at rest)
@@ -286,11 +313,11 @@ og_lE:
   jshr j13, j13, j1
   jldi j1, 0
   jst j13, j1, ORGL
-  jld j13, j1, ORGIN            ; (inside a word it says nothing)
-  jjnz j13, og_lap
   jldi j13, 9
   jsub j13, j14, j13
-  jjnn j13, og_lap
+  jjnn j13, og_lens             ; 9 to F: not a word, a gear
+  jld j13, j1, ORGIN            ; (inside a word, a word says nothing)
+  jjnz j13, og_lap
   jldi j13, 4
   jshl j14, j14, j13
   jld j13, j14, ORGT0
@@ -305,6 +332,26 @@ og_lE:
   jst j13, j1, ORGL
   jldi j13, 2
   jst j13, j1, ORGIN
+  jjmp og_lap
+og_lens:
+  jld j13, j1, ORGL             ; a gear: its second letter
+  jjz j13, og_lap
+  jldi j1, 9
+  jsub j14, j14, j1
+  jldi j1, 15
+  jmul j14, j14, j1
+  jand j1, j13, j1
+  jadd j14, j14, j1             ; its number, from 1
+  jldi j1, 4
+  jshr j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGL
+  jld j13, j1, ORGP             ; a lens more on the eye
+  jldi j1, 8
+  jshl j13, j13, j1
+  jor j13, j13, j14
+  jldi j1, 0
+  jst j13, j1, ORGP
   jjmp og_lap
 og_lD:
   jldi j5, 1                    ; the eye blurred, or sharp again
@@ -325,7 +372,8 @@ og_done:
 
 ; The look of the eye at the word j5 of the window (0 its first; the eye's place, j10 words, added) -> j3: the word
 ; as it is, or how often it was read where it learns (ROOMC) if the eye is blurred (j11); 0 out of the row. The row
-; is the text's (ROOMT, NTOK units) and the window is a place of it (WAT). Uses j1, j6, j7, j9 (j1 = 0 after).
+; is the text's (ROOMT, NTOK units) and the window is a place of it (WAT). Then through the lenses on the eye, if any.
+; Uses j1, j4, j6, j7, j9, j13, j14 (j1 = 0 after).
 og_look:
   jldi j1, 0
   jld j9, j1, WAT
@@ -354,6 +402,148 @@ og_look:
   jadd j3, j3, j7
   jld j3, j3, 0
 ol_out:
+  jldi j1, 0                    ; the lenses on the eye: the look passes through each gear (see ITS GEARS)
+  jld j13, j1, ORGP
+  jjz j13, ol_ret
+ol_lens:
+  jldi j1, 255
+  jand j9, j13, j1
+  jldi j1, 8
+  jshr j13, j13, j1
+  jldi j1, 0
+  jst j13, j1, ORGPL
+  jst j3, j1, ORGV
+  jst j3, j1, ORGV + 8
+  jst j3, j1, ORGV + 16
+  jst j3, j1, ORGV + 24
+  jst j3, j1, ORGV + 32
+  jst j3, j1, ORGV + 40
+  jst j3, j1, ORGV + 48
+  jst j3, j1, ORGV + 56
+  jst j3, j1, ORGV + 64
+  jst j3, j1, ORGV + 72
+  jst j3, j1, ORGV + 80
+  jst j3, j1, ORGV + 88
+  jst j3, j1, ORGV + 96
+  jst j3, j1, ORGV + 104
+  jst j3, j1, ORGV + 112
+  jst j3, j1, ORGV + 120
+  jldi j1, 7
+  jshl j9, j9, j1
+  jld j7, j9, ORGGT0
+  jldi j1, 15
+  jand j7, j7, j1
+ol_ins:
+  jjz j7, ol_next
+  jld j6, j9, ORGGT1            ; an instruction: its first operand, its constant, what it does, where it leaves it
+  jldi j1, 12
+  jshr j13, j6, j1
+  jldi j1, 15
+  jand j13, j13, j1
+  jldi j1, 3
+  jshl j13, j13, j1
+  jld j13, j13, ORGV
+  jldi j1, 16
+  jshr j14, j6, j1
+  jldi j1, 255
+  jand j4, j6, j1
+  jldi j1, 8
+  jshr j6, j6, j1
+  jldi j1, 15
+  jand j6, j6, j1
+  jldi j1, 3
+  jshl j6, j6, j1
+  jldi j1, 1                    ; a constant
+  jsub j1, j4, j1
+  jjnz j1, ol_o2
+  jldi j1, 48
+  jshl j3, j14, j1
+  jsar j3, j3, j1
+  jjmp ol_put
+ol_o2:
+  jldi j1, 15                   ; sixteen bits more of a constant
+  jsub j1, j4, j1
+  jjnz j1, ol_o3a
+  jld j3, j6, ORGV
+  jldi j1, 16
+  jshl j3, j3, j1
+  jor j3, j3, j14
+  jjmp ol_put
+ol_o3a:
+  jldi j1, 15                   ; the others reckon with a second register
+  jand j14, j14, j1
+  jldi j1, 3
+  jshl j14, j14, j1
+  jld j14, j14, ORGV
+ol_o3:
+  jldi j1, 2
+  jsub j1, j4, j1
+  jjnz j1, ol_o4
+  jadd j3, j13, j14
+  jjmp ol_put
+ol_o4:
+  jldi j1, 3
+  jsub j1, j4, j1
+  jjnz j1, ol_o5
+  jsub j3, j13, j14
+  jjmp ol_put
+ol_o5:
+  jldi j1, 4
+  jsub j1, j4, j1
+  jjnz j1, ol_o6
+  jmul j3, j13, j14
+  jjmp ol_put
+ol_o6:
+  jldi j1, 6
+  jsub j1, j4, j1
+  jjnz j1, ol_o7
+  jshl j3, j13, j14
+  jjmp ol_put
+ol_o7:
+  jldi j1, 7
+  jsub j1, j4, j1
+  jjnz j1, ol_o8
+  jshr j3, j13, j14
+  jjmp ol_put
+ol_o8:
+  jldi j1, 8
+  jsub j1, j4, j1
+  jjnz j1, ol_o9
+  jsar j3, j13, j14
+  jjmp ol_put
+ol_o9:
+  jldi j1, 9
+  jsub j1, j4, j1
+  jjnz j1, ol_o10
+  jand j3, j13, j14
+  jjmp ol_put
+ol_o10:
+  jldi j1, 10
+  jsub j1, j4, j1
+  jjnz j1, ol_o11
+  jor j3, j13, j14
+  jjmp ol_put
+ol_o11:
+  jldi j1, 11
+  jsub j1, j4, j1
+  jjnz j1, ol_o12
+  jxor j3, j13, j14
+  jjmp ol_put
+ol_o12:
+  jjmp ol_skip                  ; anything else is passed over
+ol_put:
+  jst j3, j6, ORGV
+ol_skip:
+  jldi j1, 8
+  jadd j9, j9, j1
+  jldi j1, 1
+  jsub j7, j7, j1
+  jjmp ol_ins
+ol_next:
+  jldi j1, 0
+  jld j13, j1, ORGPL
+  jjnz j13, ol_lens
+ol_ret:
   jldi j1, 0
   jret
 
