@@ -5082,8 +5082,12 @@ candidate:
   jld j2, j1, ORGG
   jst j2, j1, EVC
   jcall0 j1, ev_exam
-  jldi j10, 30                  ; the shelf it read (its fingerprint, 0 if it is not awake for good), then its score:
-  jldi j11, -1                  ; who hears only the last word hears the score, as always
+  jldi j10, 30                  ; how many times its cells heard one another (organo.inc: HER JOY), the shelf it read
+  jldi j11, -1                  ; (its fingerprint, 0 if it is not awake for good), then its score: who hears only the
+  jld j12, j1, ORGCE            ; last word hears the score, as always
+  jcall0 j1, ask
+  jldi j10, 30
+  jldi j11, -1
   jld j12, j1, BOOKH
   jcall0 j1, ask
   jldi j10, 30

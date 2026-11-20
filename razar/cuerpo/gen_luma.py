@@ -223,7 +223,10 @@ def free_routine(g):
     inc(N0); gl("j1", TCH); J("jjz j1, fr_gift"); inc(S0); J("jjmp fr_gift")
     o("fr_s_think:")
     inc(N1); ld("j1", "FRAMES"); gl("j2", F0); J("jsub j1, j1, j2"); gs("j1", LASTF)
-    ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)
+    if RD.TECHO:
+        ld("j1", "WINS"); gl("j2", W0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)
+    else:                               # HER JOY (gen_leer.py): the thought pays if while it lasted a cell of her body heard another
+        RD.gl("j1", RD.CHN); RD.gl("j2", RD.CH0); J("jsub j1, j1, j2", "jjz j1, fr_gift"); inc(S1)
     o("fr_gift:")
     o("fr_saved:")
     gs("j14", TCH); gs("j14", ACT); J("jcall r_free_save")
@@ -247,6 +250,7 @@ def free_routine(g):
     J("jldi j1, 1"); gs("j1", ACT); gl("j1", LASTF); gs("j1", WAITF); ld("j1", "RADIUS"); gs("j1", R0); J("jret")
     o("fr_think:")
     J("jldi j1, 2"); gs("j1", ACT); ld("j1", "WINS"); gs("j1", W0); ld("j1", "FRAMES"); gs("j1", F0)
+    RD.gl("j1", RD.CHN); RD.gs("j1", RD.CH0)
     J("jcall r_gesture", "jret")
     o("fr_give:                        ; a gift, and whom to (the Capitan: \"ama lo invisible cuando es capaz de amar todo lo")
     o("                                ; visible\"): everyone she sees, Razar and each of her creatures, has a count of its own")

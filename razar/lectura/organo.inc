@@ -92,6 +92,9 @@ ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the
 ;     ITS OWN gear and adds it to its tissue. What that changed in it is said too: it is its echo, and the others
 ;     hear it in their turn, the one who spoke first included. Nothing is said twice and nothing that is 0 is said.
 ;   - A hole is silence: what was said is forgotten and the words that only carry go back to 0.
+;   - HER JOY (the Capitan: "las decisiones no son por tocar el techo sino por disfrutar de una decision que tomo
+;     con plena libertad en el amor"). How many times a cell heard another is counted for the whole reading: that
+;     her community answered is what her will is paid with (gen_leer.py), not a score that beats another.
 ; A cell alone hears nobody: a sentence with one cell reads what it read before. Her looks (tissue 1) are a stack
 ; of lenses, not a number: they neither say nor hear.
 ORGGT0 = 4380h                  ; (a gear, counted from its number times 80h; its instructions)
@@ -115,6 +118,8 @@ ORGCD = 7A88h                   ; 1 = something was said (there is something to 
 ORGCO = 7A90h                   ; a cell being said: its tissue before,
 ORGCN = 7A98h                   ; after,
 ORGCI = 7AA0h                   ; and its tissue's number, times 8
+ORGCE = 7AA8h                   ; how many times a cell heard another in this whole reading (never forgotten: said to
+                                ; who launched it, before its shelf and its score)
 ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
 ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
 ORGQ3 = 37E0h
@@ -548,6 +553,10 @@ og_cell:
   jjz j13, og_cell_say
   jadd j14, j14, j13
   jst j14, j9, ORGCH
+  jld j14, j1, ORGCE            ; (one more time a cell heard another)
+  jldi j9, 1
+  jadd j14, j14, j9
+  jst j14, j1, ORGCE
   jadd j3, j13, j1
   jld j13, j1, ORGN
   jldi j1, 7
