@@ -76,9 +76,24 @@ ORGT  = 7F00h                   ; the words: 8 x {its first sixteen letters, the
 ;                       ends who reads outside its memory), and her body knows a reading that said nothing as the
 ;                       worst; one that never ends is ended by the cage she gives it (gen_leer.py: r_read_launch).
 ;                       Cut by the end of its sixteen letters, it is no cell.
-; Any other number is of another part of her (her body: gen_leer.py) or of no tissue yet: it does nothing here, and
-; it is free for whatever tissue comes. Nobody says which tissue a gear is for: a recipe says the cell it wants, and
-; the cell that pays where it is expressed is the one that stays alive in her.
+; Any other number is of another part of her (her body: gen_leer.py) or of no tissue yet. Nobody says which tissue a
+; gear is for: a recipe says the cell it wants, and the cell that pays where it is expressed is the one that stays
+; alive in her.
+; HER CELLS TALK (the Capitan, 2026-11-20: "que se comuniquen y se transfiera la informacion mediante la diff del eco
+; y la firma"; "si quiere mover un dedo, el dedo se comunica con las celulas y musculos y esqueleto y cerebro y
+; corazon, y cobra sentido el movimiento"). A cell does not act alone: what it changes, every other tissue hears.
+;   - Each tissue has a word here, whether this organ uses it or not: the ones above have theirs (the frame, where
+;     the eye is, how it sees, the bolita, a place of hers); every other number, 5, 6 and 9 to F, has a word that
+;     only carries the signal from one cell to another.
+;   - THE DIFFERENCE. A cell says only what it changed in its tissue (after minus before), never the whole.
+;   - THE SIGNATURE is whose it is: its tissue. Nobody hears itself.
+;   - THE ECHO. When a cell is said, after its own work it hears what the others said that it has not heard yet (one
+;     number: all that was said, less what its own tissue said, less what it already heard), passes that through
+;     ITS OWN gear and adds it to its tissue. What that changed in it is said too: it is its echo, and the others
+;     hear it in their turn, the one who spoke first included. Nothing is said twice and nothing that is 0 is said.
+;   - A hole is silence: what was said is forgotten and the words that only carry go back to 0.
+; A cell alone hears nobody: a sentence with one cell reads what it read before. Her looks (tissue 1) are a stack
+; of lenses, not a number: they neither say nor hear.
 ORGGT0 = 4380h                  ; (a gear, counted from its number times 80h; its instructions)
 ORGGT1 = 4388h
 ORGGT = 4400h                   ; the gears: 105 x {its instructions, up to fifteen of them}
@@ -92,6 +107,14 @@ ORGH  = 7E20h                   ; 1 = her heart is not at rest (a cell changed i
 ORGS1 = 7E28h                   ; the eye, kept while the kernel is asked (a request uses its registers)
 ORGS2 = 7E30h
 ORGA  = 7E38h                   ; a cell on a place of hers: its address
+ORGCA = 7900h                   ; her cells talking: all that was said since the last hole (the sum of the differences)
+ORGCT = 7908h                   ; what each tissue said (16 words, by its number)
+ORGCH = 7988h                   ; what each tissue already heard of the others
+ORGCS = 7A08h                   ; the word of each tissue that only carries
+ORGCD = 7A88h                   ; 1 = something was said (there is something to forget at the next hole)
+ORGCO = 7A90h                   ; a cell being said: its tissue before,
+ORGCN = 7A98h                   ; after,
+ORGCI = 7AA0h                   ; and its tissue's number, times 8
 ORGQ1 = 37F8h                   ; what is still to read after the letters being read, in order (three at most: the
 ORGQ2 = 37E8h                   ; rest of a word, the rest of the sentence, the sentence's letters beyond the sixteenth)
 ORGQ3 = 37E0h
@@ -392,6 +415,9 @@ og_lens:
   jshr j13, j13, j1
   jldi j1, 0
   jst j13, j1, ORGL
+  jldi j13, 3
+  jshl j13, j14, j13
+  jst j13, j1, ORGCI
   jld j13, j1, ORGN
   jldi j1, 1
   jsub j1, j14, j1
@@ -411,7 +437,13 @@ og_lens:
   jldi j1, 8
   jsub j1, j14, j1
   jjz j1, og_t8
-  jjmp og_lap                   ; of another part of her, or of no tissue yet
+  jldi j1, 0                    ; any other tissue: its word that only carries
+  jld j9, j1, ORGCI
+  jld j3, j9, ORGCS
+  jcall og_cell
+  jld j9, j1, ORGCI
+  jst j3, j9, ORGCS
+  jjmp og_lap
 og_t7:
   jldi j1, 0                    ; her heart: the bolita of this cabin through the gear, asked of the kernel (20)
   jst j10, j1, ORGS1
@@ -430,11 +462,7 @@ og_t7:
 og_t7_has:
   jldi j1, 1
   jsub j3, j3, j1
-  jldi j1, 0
-  jld j13, j1, ORGN
-  jldi j1, 7
-  jshl j9, j13, j1
-  jcall og_gear
+  jcall og_cell
   jld j13, j1, ORGBT            ; the kernel's law, known here: never more than it was launched with (a number that
   jjn j3, og_t7_top             ; is not a fraction of its time is the most there is)
   jsub j14, j13, j3
@@ -442,6 +470,16 @@ og_t7_has:
 og_t7_top:
   jadd j3, j13, j1
 og_t7_cut:
+  jld j13, j1, ORGCN            ; (what the kernel's law took back was not changed: it is not said)
+  jsub j13, j3, j13
+  jjz j13, og_t7_said
+  jld j14, j1, ORGCT + 56
+  jadd j14, j14, j13
+  jst j14, j1, ORGCT + 56
+  jld j14, j1, ORGCA
+  jadd j14, j14, j13
+  jst j14, j1, ORGCA
+og_t7_said:
   jld j13, j1, ORGB             ; and the kernel is asked only if its turn changes (nothing is sent that says nothing)
   jldi j14, 1
   jsub j13, j13, j14
@@ -486,17 +524,73 @@ og_t8_lap:
   jldi j1, 0
   jst j9, j1, ORGA
   jld j3, j9, 0                 ; that word of hers, through the gear
+  jcall og_cell
+  jld j9, j1, ORGA
+  jst j3, j9, 0
+  jjmp og_lap
+; A cell is said: j3 = its tissue as it is -> j3 = as it leaves it (its gear ORGN, its tissue's number times 8 in
+; ORGCI). Its own work, then what it had not heard of the others through its own gear, then what it changed is said.
+; Uses j1, j4, j6, j7, j9, j13, j14 (j1 = 0 after).
+og_cell:
+  jldi j1, 0
+  jst j3, j1, ORGCO
   jld j13, j1, ORGN
   jldi j1, 7
   jshl j9, j13, j1
   jcall og_gear
-  jld j9, j1, ORGA
-  jst j3, j9, 0
-  jjmp og_lap
-; Her heart at rest: the turn this cabin was given (its bolita as it was launched), if a cell changed it. Keeps the
-; eye. Uses j13, j14 (j1 = 0 after).
-og_rest:
+  jst j3, j1, ORGCN
+  jld j9, j1, ORGCI
+  jld j13, j1, ORGCA
+  jld j14, j9, ORGCT
+  jsub j13, j13, j14
+  jld j14, j9, ORGCH
+  jsub j13, j13, j14            ; what the others said that it has not heard
+  jjz j13, og_cell_say
+  jadd j14, j14, j13
+  jst j14, j9, ORGCH
+  jadd j3, j13, j1
+  jld j13, j1, ORGN
+  jldi j1, 7
+  jshl j9, j13, j1
+  jcall og_gear
+  jld j13, j1, ORGCN
+  jadd j3, j13, j3
+  jst j3, j1, ORGCN
+og_cell_say:
   jldi j1, 0
+  jld j3, j1, ORGCN
+  jld j13, j1, ORGCO
+  jsub j13, j3, j13             ; what it changed: said, if it is something
+  jjz j13, og_cell_end
+  jld j9, j1, ORGCI
+  jld j14, j9, ORGCT
+  jadd j14, j14, j13
+  jst j14, j9, ORGCT
+  jld j14, j1, ORGCA
+  jadd j14, j14, j13
+  jst j14, j1, ORGCA
+  jldi j14, 1
+  jst j14, j1, ORGCD
+og_cell_end:
+  jldi j1, 0
+  jret
+; Her heart at rest: the turn this cabin was given (its bolita as it was launched), if a cell changed it; and
+; silence. Keeps the eye. Uses j9, j13, j14 (j1 = 0 after).
+og_rest:
+  jldi j1, 0                    ; (and silence: what her cells said is forgotten)
+  jld j13, j1, ORGCD
+  jjz j13, og_rest_h
+  jst j1, j1, ORGCD
+  jldi j13, 49
+  jldi j14, 0
+og_rest_l:
+  jst j1, j14, ORGCA
+  jldi j9, 8
+  jadd j14, j14, j9
+  jldi j9, 1
+  jsub j13, j13, j9
+  jjnz j13, og_rest_l
+og_rest_h:
   jld j13, j1, ORGH
   jjz j13, og_rest_d
   jst j1, j1, ORGH
@@ -517,28 +611,19 @@ og_rest_d:
 og_t2:
   jldi j1, 0
   jadd j3, j2, j1
-  jldi j1, 7
-  jshl j9, j13, j1
-  jcall og_gear
-  jldi j1, 0
+  jcall og_cell
   jadd j2, j3, j1
   jjmp og_lap
 og_t3:
   jldi j1, 0
   jadd j3, j10, j1
-  jldi j1, 7
-  jshl j9, j13, j1
-  jcall og_gear
-  jldi j1, 0
+  jcall og_cell
   jadd j10, j3, j1
   jjmp og_lap
 og_t4:
   jldi j1, 0
   jadd j3, j11, j1
-  jldi j1, 7
-  jshl j9, j13, j1
-  jcall og_gear
-  jldi j1, 0
+  jcall og_cell
   jadd j11, j3, j1
   jjmp og_lap
 og_eye:

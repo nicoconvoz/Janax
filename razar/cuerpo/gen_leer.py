@@ -42,6 +42,13 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   said (her reader's, or her body's) passes through the gear and is asked of the kernel, which cuts it down to the
   one it was launched with (its law: nobody gives itself more than it was given). Until the next hole, where her
   heart is at rest again. The kernel is asked only when the turn changes (nothing is sent that says nothing).
+  HER CELLS TALK (the Capitan: "que se comuniquen y se transfiera la informacion mediante la diff del eco y la
+  firma"; "si quiere mover un dedo, el dedo se comunica con las celulas y musculos y esqueleto y cerebro y corazon,
+  y cobra sentido el movimiento"). In each of her two cabins every tissue has a word (the ones that cabin works
+  with have theirs; the others have one that only carries the signal). A cell says only the difference it made in
+  its tissue, signed with whose it is; when a cell is said it hears what the others said that it had not heard,
+  through its own gear, and what that changes in it is its echo, said too. A hole is silence. The rule is written
+  once, in organo.inc (HER CELLS TALK), and done the same here for her body (r_talk).
   A TISSUE SHE OPENS HERSELF is tissue 8: any word of her reader's memory, said by the cell itself with four letters
   more (a number in base fifteen: organo.inc). No list of places is kept: the place is in the recipe, so her luck
   moves it letter by letter and her one judge keeps the ones that pay. It is of her reader only: a place that breaks
@@ -121,6 +128,9 @@ TISSUES = 8                  # the tissues a gear can be expressed in today (a c
                              # cell with four letters more. The other numbers are free.
 HB, HCH = 0x1900, 0x1908     # her heart, in her body: its bolita plus one (0: not asked yet), 1 = not at rest
 HBT = 0x1928                 # the bolita she was launched with: the most she may have
+CALL, CTOT, CHH, CTS = 0x1930, 0x1940, 0x19C0, 0x1A40   # her cells talking, in her body: all that was said since the last
+                             # hole, what each tissue said, what each already heard, the word of each that only carries
+CDIRTY, COLD, CNEW, CECHO = 0x1AC0, 0x1AC8, 0x1AD0, 0x1AD8   # something was said; a cell being said: before, after, what it heard through its gear
 CL, PLC, FLH = 0x1910, 0x1918, 0x1920   # a cell being put in: how many letters, its place; a recipe said flat has one on a place
 BVR = 0x1880                 # the sixteen registers of the little machine of her body (r_gear)
 GFP, FLG, WL, NGE = 0x1820, 0x1828, 0x1830, 0x1838   # the gears' print, a recipe said flat has a lens, a wish, how many gears
@@ -223,26 +233,34 @@ def make(g, ST, free):
         g["incg"]("GFI", 4)             # (a cell on a place of her reader: its four letters are not of her body)
         o("grow_cell:")
         ld("j2", "GK"); gl("j10", NGE); J("jsub j10, j2, j10", "jjnn j10, grow_letter")
-        ld("j4", "GN0"); J("jldi j10, 5", "jsub j10, j4, j10", "jjz j10, grow_pen", "jldi j10, 7", "jsub j10, j4, j10", "jjz j10, grow_heart",
-                           "jldi j10, 6", "jsub j10, j4, j10", "jjnz j10, grow_letter")
-        ld("j1", "GHEAD"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "GHEAD"); J("jjmp grow_letter")
+        ld("j4", "GN0"); J("jldi j10, 8", "jsub j10, j4, j10", "jjz j10, grow_letter",
+                           "jldi j10, 5", "jsub j10, j4, j10", "jjz j10, grow_pen", "jldi j10, 7", "jsub j10, j4, j10", "jjz j10, grow_heart",
+                           "jldi j10, 6", "jsub j10, j4, j10", "jjz j10, grow_head")
+        o("  ; any other tissue: here it has a word that only carries what her cells say")
+        J("jldi j10, 3", "jshl j4, j4, j10"); li("j7", B + CTS); J("jadd j7, j7, j4", "jld j1, j7, 0", "jcall r_talk")
+        ld("j4", "GN0"); J("jldi j10, 3", "jshl j4, j4, j10"); li("j7", B + CTS); J("jadd j7, j7, j4", "jst j0, j7, 0", "jjmp grow_letter")
+        o("grow_head:")
+        ld("j1", "GHEAD"); J("jcall r_talk"); st("j0", "GHEAD"); J("jjmp grow_letter")
         o("grow_heart:                     ; 7, her heart: her body's bolita through the gear, asked of the kernel (20), which")
         o("                                ; cuts it down to the one she was launched with; at rest again at the next hole")
         gl("j1", HB); J("jjnz j1, grow_heart_has", "jldi j10, 20", "jldi j11, -1", "jldi j12, 0", "jcall r_tocar"); gs("j13", HBT)
         J("jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB)
         o("grow_heart_has:")
-        J("jldi j10, 1", "jsub j1, j1, j10"); ld("j2", "GK"); J("jcall r_gear")
+        J("jldi j10, 1", "jsub j1, j1, j10", "jcall r_talk")
         o("  ; the kernel's law, known here (never more than she was launched with), and it is asked only if her turn changes")
         gl("j2", HBT); J("jjn j0, grow_heart_top", "jsub j10, j2, j0", "jjnn j10, grow_heart_cut")
         o("grow_heart_top:")
         J("jadd j0, j2, j14")
-        o("grow_heart_cut:")
+        o("grow_heart_cut:                 ; (what the law took back was not changed: it is not said)")
+        gs("j0", COLD); gl("j1", CNEW); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", COLD)
         gl("j1", HB); J("jldi j10, 1", "jsub j1, j1, j10", "jsub j1, j1, j0", "jjz j1, grow_letter")
         J("jldi j10, 20", "jadd j11, j0, j14", "jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB); J("jldi j1, 1"); gs("j1", HCH)
         J("jjmp grow_letter")
-        o("grow_pen:")
-        ld("j1", "TX"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TX")
-        ld("j1", "TY"); ld("j2", "GK"); J("jcall r_gear"); st("j0", "TY")
+        o("grow_pen:                       ; where her pen is: across as any tissue; down through the gear too, and what")
+        o("                                ; across heard of the others, down hears alike")
+        ld("j1", "TX"); J("jcall r_talk"); st("j0", "TX")
+        ld("j1", "TY"); ld("j2", "GK"); J("jcall r_gear"); gl("j1", CECHO); J("jadd j0, j0, j1"); gs("j0", CNEW)
+        ld("j1", "TY"); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", CNEW); st("j0", "TY")
         ld("j1", "TX"); ld("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV"); J("jjmp grow_letter")
         o("grow_seen:")
 
@@ -331,8 +349,28 @@ def make(g, ST, free):
         J("jldi j10, 8", "jadd j9, j9, j10", "jldi j10, 1", "jsub j7, j7, j10", "jjmp bg_ins")
         o("bg_done:")
         J("jret")
-        o("r_heart_rest:                   ; her heart at rest: her bolita as she was launched, if a cell changed it (uses j1,")
-        o("                                ; j6, j10 to j13, j15)")
+        o("r_said:                         ; j1 = what the cell being said (its tissue GN0) changed -> said, if it is something")
+        o("                                ; (uses j2, j4, j6, j7, j10)")
+        J("jjz j1, sd_done"); ld("j4", "GN0"); J("jldi j10, 3", "jshl j4, j4, j10"); li("j7", B + CTOT); J("jadd j7, j7, j4", "jld j2, j7, 0", "jadd j2, j2, j1", "jst j2, j7, 0")
+        gl("j2", CALL); J("jadd j2, j2, j1"); gs("j2", CALL); J("jldi j2, 1"); gs("j2", CDIRTY)
+        o("sd_done:")
+        J("jret")
+        o("r_talk:                         ; A CELL IS SAID (organo.inc: HER CELLS TALK, og_cell): j1 = its tissue as it is ->")
+        o("                                ; j0 = as it leaves it (its gear GK, its tissue GN0). Its own work; what it had not")
+        o("                                ; heard of the others, through its own gear (CECHO); what it changed, said")
+        gs("j1", COLD); gs("j14", CECHO); ld("j2", "GK"); J("jcall r_gear"); gs("j0", CNEW)
+        gl("j1", CALL); ld("j4", "GN0"); J("jldi j10, 3", "jshl j4, j4, j10"); li("j7", B + CTOT); J("jadd j7, j7, j4", "jld j2, j7, 0", "jsub j1, j1, j2",
+                                                                                                   "jld j2, j7, 128", "jsub j1, j1, j2", "jjz j1, tk_say",
+                                                                                                   "jadd j2, j2, j1", "jst j2, j7, 128")
+        ld("j2", "GK"); J("jcall r_gear"); gs("j0", CECHO); gl("j1", CNEW); J("jadd j1, j1, j0"); gs("j1", CNEW)
+        o("tk_say:")
+        gl("j0", CNEW); gl("j1", COLD); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", CNEW); J("jret")
+        o("r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her")
+        o("                                ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)")
+        gl("j1", CDIRTY); J("jjz j1, hr_heart"); li("j7", B + CALL); J("jldi j11, %d" % ((CDIRTY + 8 - CALL) // 8), "jldi j10, 8", "jldi j12, 1")
+        o("hr_hush:")
+        J("jst j14, j7, 0", "jadd j7, j7, j10", "jsub j11, j11, j12", "jjnz j11, hr_hush")
+        o("hr_heart:")
         gl("j1", HCH); J("jjnz j1, hr_go", "jret")
         o("hr_go:")
         gs("j14", HCH); J("jldi j10, 20", "jldi j11, -1", "jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jadd j1, j13, j10"); gs("j1", HB); J("jret")

@@ -120,7 +120,8 @@ def palabras():
 # repeats, "shift right by 8" (every 256 words in a row look the same: a blur by how early the word was first read).
 def gear_word(op, rd, ra=0, imm=0):
     return op | rd << 8 | ra << 12 | (imm & 0xFFFF) << 16
-GEARS = {1: [gear_word(0x01, 0, 0, 0), gear_word(0x02, 1, 1, 0)], 2: [gear_word(0x01, 0, 0, 8), gear_word(0x07, 1, 1, 0)]}
+GEARS = {1: [gear_word(0x01, 0, 0, 0), gear_word(0x02, 1, 1, 0)], 2: [gear_word(0x01, 0, 0, 8), gear_word(0x07, 1, 1, 0)],
+         4: [gear_word(0x01, 0, 0, 1), gear_word(0x02, 1, 1, 0)]}        # gear 4 adds 1
 # A cell is four letters: E, the two of its gear (E91 is gear 1, E92 gear 2, E93 gear 3, which is not there) and its
 # tissue: 1 her looks, 2 the frame, 3 where her eye is, 4 how it sees; 5 and 6 are of her body, 7 her heart, 8 a place
 # of hers said with four letters more, and 9 of nothing yet.
@@ -132,7 +133,14 @@ LENSES = [("38A516", None), ("E91138A516", "38A516"), ("38E911A516", "38A516"), 
           # 8, a place of hers said with four letters more (base fifteen, each letter less one): 23F7 is a word that
           # holds nothing (7E48h), 1116 her instincts (28h), FFFF a place this reader does not have; cut short, no cell
           ("38E917A516", "38A516"), ("38E927A516", "38A516"), ("38E91823F7A516", "38A516"), ("38E92823F7A516", "38A516"),
-          ("38E9281116A516", None), ("38E9281", "38"), ("38", None)]
+          ("38E9281116A516", None), ("38E9281", "38"), ("38", None),
+          # HER CELLS TALK. A cell on where her eye is, with the gear that adds 1, moves it a word ahead (as the
+          # letter C) and says 1; a cell on how it sees, with the gear that adds 0, changes nothing by itself but hears
+          # that 1 through its gear and blurs (as the letter D). So the two cells must read as the letters C and D;
+          # the same through a tissue that only carries (9), which hears the eye and is heard by how it sees; and the
+          # one that only listens, alone, hears nobody
+          ("38CDA516", None), ("38E943E914A516", "38CDA516"), ("38E943A516", "38CA516"), ("38CA516", None),
+          ("38E914A516", "38A516"), ("38E949E914A516", "38DA516"), ("38DA516", None)]
 
 
 def lentes():

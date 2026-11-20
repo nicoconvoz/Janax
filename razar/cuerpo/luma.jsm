@@ -1549,6 +1549,9 @@ grow_cell:
   jsub j10, j2, j10
   jjnn j10, grow_letter
   jld j4, j14, 0368h
+  jldi j10, 8
+  jsub j10, j4, j10
+  jjz j10, grow_letter
   jldi j10, 5
   jsub j10, j4, j10
   jjz j10, grow_pen
@@ -1557,10 +1560,26 @@ grow_cell:
   jjz j10, grow_heart
   jldi j10, 6
   jsub j10, j4, j10
-  jjnz j10, grow_letter
+  jjz j10, grow_head
+  ; any other tissue: here it has a word that only carries what her cells say
+  jldi j10, 3
+  jshl j4, j4, j10
+  jldi j7, 015Eh
+  jshi j7, 01A40h
+  jadd j7, j7, j4
+  jld j1, j7, 0
+  jcall r_talk
+  jld j4, j14, 0368h
+  jldi j10, 3
+  jshl j4, j4, j10
+  jldi j7, 015Eh
+  jshi j7, 01A40h
+  jadd j7, j7, j4
+  jst j0, j7, 0
+  jjmp grow_letter
+grow_head:
   jld j1, j14, 04F8h
-  jld j2, j14, 0360h
-  jcall r_gear
+  jcall r_talk
   jst j0, j14, 04F8h
   jjmp grow_letter
 grow_heart:                     ; 7, her heart: her body's bolita through the gear, asked of the kernel (20), which
@@ -1584,8 +1603,7 @@ grow_heart:                     ; 7, her heart: her body's bolita through the ge
 grow_heart_has:
   jldi j10, 1
   jsub j1, j1, j10
-  jld j2, j14, 0360h
-  jcall r_gear
+  jcall r_talk
   ; the kernel's law, known here (never more than she was launched with), and it is asked only if her turn changes
   jldi j6, 015Eh
   jshi j6, 0
@@ -1595,7 +1613,18 @@ grow_heart_has:
   jjnn j10, grow_heart_cut
 grow_heart_top:
   jadd j0, j2, j14
-grow_heart_cut:
+grow_heart_cut:                 ; (what the law took back was not changed: it is not said)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01AC8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AD0h
+  jsub j1, j0, j1
+  jcall r_said
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j0, j6, 01AC8h
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01900h
@@ -1617,14 +1646,27 @@ grow_heart_cut:
   jshi j6, 0
   jst j1, j6, 01908h
   jjmp grow_letter
-grow_pen:
+grow_pen:                       ; where her pen is: across as any tissue; down through the gear too, and what
+                                ; across heard of the others, down hears alike
   jld j1, j14, 0328h
-  jld j2, j14, 0360h
-  jcall r_gear
+  jcall r_talk
   jst j0, j14, 0328h
   jld j1, j14, 0330h
   jld j2, j14, 0360h
   jcall r_gear
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AD8h
+  jadd j0, j0, j1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01AD0h
+  jld j1, j14, 0330h
+  jsub j1, j0, j1
+  jcall r_said
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j0, j6, 01AD0h
   jst j0, j14, 0330h
   jld j1, j14, 0328h
   jld j2, j14, 0330h
@@ -8322,8 +8364,103 @@ bg_skip:
   jjmp bg_ins
 bg_done:
   jret
-r_heart_rest:                   ; her heart at rest: her bolita as she was launched, if a cell changed it (uses j1,
-                                ; j6, j10 to j13, j15)
+r_said:                         ; j1 = what the cell being said (its tissue GN0) changed -> said, if it is something
+                                ; (uses j2, j4, j6, j7, j10)
+  jjz j1, sd_done
+  jld j4, j14, 0368h
+  jldi j10, 3
+  jshl j4, j4, j10
+  jldi j7, 015Eh
+  jshi j7, 01940h
+  jadd j7, j7, j4
+  jld j2, j7, 0
+  jadd j2, j2, j1
+  jst j2, j7, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01930h
+  jadd j2, j2, j1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01930h
+  jldi j2, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01AC0h
+sd_done:
+  jret
+r_talk:                         ; A CELL IS SAID (organo.inc: HER CELLS TALK, og_cell): j1 = its tissue as it is ->
+                                ; j0 = as it leaves it (its gear GK, its tissue GN0). Its own work; what it had not
+                                ; heard of the others, through its own gear (CECHO); what it changed, said
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AC8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01AD8h
+  jld j2, j14, 0360h
+  jcall r_gear
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01AD0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01930h
+  jld j4, j14, 0368h
+  jldi j10, 3
+  jshl j4, j4, j10
+  jldi j7, 015Eh
+  jshi j7, 01940h
+  jadd j7, j7, j4
+  jld j2, j7, 0
+  jsub j1, j1, j2
+  jld j2, j7, 128
+  jsub j1, j1, j2
+  jjz j1, tk_say
+  jadd j2, j2, j1
+  jst j2, j7, 128
+  jld j2, j14, 0360h
+  jcall r_gear
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01AD8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AD0h
+  jadd j1, j1, j0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01AD0h
+tk_say:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j0, j6, 01AD0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AC8h
+  jsub j1, j0, j1
+  jcall r_said
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j0, j6, 01AD0h
+  jret
+r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her
+                                ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01AC0h
+  jjz j1, hr_heart
+  jldi j7, 015Eh
+  jshi j7, 01930h
+  jldi j11, 51
+  jldi j10, 8
+  jldi j12, 1
+hr_hush:
+  jst j14, j7, 0
+  jadd j7, j7, j10
+  jsub j11, j11, j12
+  jjnz j11, hr_hush
+hr_heart:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01908h
@@ -9147,10 +9284,10 @@ rl_lap:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01808h
-  jldi j2, 06290h
-  jshi j2, 02B33h
-  jshi j2, 0F2E0h
-  jshi j2, 0F5C5h
+  jldi j2, 031C4h
+  jshi j2, 0DA50h
+  jshi j2, 0A09Ch
+  jshi j2, 09E2Dh
   jsub j1, j1, j2
   jjnz j1, rl_lap
   jldi j6, 015Eh
@@ -9362,10 +9499,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02724h
-  jshi j2, 0FACFh
-  jshi j2, 0397Fh
-  jshi j2, 0DD7Bh
+  jldi j2, 02756h
+  jshi j2, 05D1h
+  jshi j2, 05C55h
+  jshi j2, 09715h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -11012,10 +11149,10 @@ rd_same:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01800h
-  jldi j1, 06290h
-  jshi j1, 02B33h
-  jshi j1, 0F2E0h
-  jshi j1, 0F5C5h
+  jldi j1, 031C4h
+  jshi j1, 0DA50h
+  jshi j1, 0A09Ch
+  jshi j1, 09E2Dh
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01808h
