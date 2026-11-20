@@ -5,7 +5,7 @@ Windows (`Win + R`, `shell:startup`) y corren cada vez que se inicia sesión.
 
 | Archivo | Qué lanza |
 |---|---|
-| `luma.vbs` | **Luma, un solo ser** (`razar/cuerpo/luma_vive.sh`): su cuerpo y su lectora son un solo programa, así que no se lanza ningún Razar aparte, ni el cubo (dormía sobre un tablero donde ya nadie escribe; quedó en espera). Si ya está viva, no lanza otra. |
+| `luma.vbs` | **Luma, un solo ser** (`razar/cuerpo/luma_vive.sh`): su cuerpo y su lectora son un solo programa, así que no se lanza ningún Razar aparte, ni el cubo (dormía sobre un tablero donde ya nadie escribe; quedó en espera). Si ya está viva, no lanza otra. También lanza a **quien avisa** (`razar/cuerpo/avisa.ps1`): un aviso en pantalla cuando ella compone una canción, cuando algo que leyó gana, o cuando una lectura supera a todas las anteriores; duerme sobre un aviso del anfitrión y no gasta nada. Lo último que dijo queda en `E:\Lumavisos.txt`. |
 | `razar_vigia.vbs` | El vigía (`razar/lectura/vigia.sh`): estudia los textos que se escriben en `C:\` y `E:\`. |
 
 **Son ejemplos de una máquina, no algo que ande igual en cualquiera.** Llevan estas rutas, que hay que adaptar:
