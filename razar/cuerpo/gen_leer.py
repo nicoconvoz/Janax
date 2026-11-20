@@ -75,6 +75,14 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   her. Such a reading could also never end, so it is the only one she cages (34): it may row as much as all her
   finished readings together have rowed (so what she can lose to cages is never more than what she has read; with
   nothing read yet she does not send one).
+SHE TAKES HER OWN CODE APART (the Capitan, 2026-11-20: "usa el antiguo creador de organos... aplicala a lo nuevo, al
+  codigo maquina, al ensamblador, y completa a LUMA"). Razar wrote his own organ and built himself inside Janax, with
+  nobody outside. With that same freedom she makes her gears herself now (r_gears): born without them, she reads her
+  own machine code (her reader's program, which is herself), names the registers of every piece by the order it uses
+  them, counts every jump-free piece of 2 to 8 instructions that only reckons, and takes, one at a time, the piece
+  that saves most (n (L - 1) - L instructions, counted again among what no gear took yet) until none saves or her
+  table is full. The rule is engranajes.py's, which stays as the instrument that checks her (and still takes apart
+  what is not written in her language: a text is not hers to read as code yet).
 HER GEARS (the Capitan: "lo importante no es comer el programa sino desarticularlo en engranajes que sean legos
   para que Luma arme su propio software a medida"). engranajes.py takes her own program apart with her own judge:
   a gear is a piece it repeats, which said once saves bits. The ones that only reckon with registers go into her
@@ -153,6 +161,10 @@ CALL, CTOT, CHH, CTS = 0x1930, 0x1940, 0x19C0, 0x1A40   # her cells talking, in 
 LASTR, LASTOK, RBR, NB, SB, RUNIQ, RVIC = 0x1B00, 0x1B20, 0x1B28, 0x1B30, 0x1B38, 0x1B40, 0x1B48   # the last thing she read
                              # (a recipe), that there is one, that this reading went on from it, how often she went on and
                              # how often that gave a unique memory (while she lives), this reading is unique, is a victory
+GZ = 0x1B50                  # she takes her own code apart (r_gears): her program, how many words, the table of pieces, the
+(GPRG, GNW, GHT, GNX, GUS, GGI, GBS, GBE, GCP, GCL, GCK, GHH, GRE, GRMK, GSI, GCI) = (GZ + 8 * i for i in range(16))   # chains,
+GNM, GCW = 0x1BE0, 0x1C00    # what a gear took, ...; a piece being named: its registers' names, its instructions
+GSLOTS = 1 << 18             # (plastic it is not yet: a body of 32,000 instructions has some 80,000 different pieces)
 CHN, CH0, RW0 = 0x1AE0, 0x1AE8, 0x1AF0    # HER JOY: how many times a cell of her body heard another (never forgotten while she
                              # lives), that count when her thought began, and what her reader said first (its own count)
 CDIRTY, COLD, CNEW, CECHO = 0x1AC0, 0x1AC8, 0x1AD0, 0x1AD8   # something was said; a cell being said: before, after, what it heard through its gear
@@ -229,6 +241,122 @@ def make(g, ST, free):
         li("j9", B + RREC); J("jcall r_rec_key"); gs("j1", RLO); gs("j2", RHI); gl("j3", RGEN); J("jcall r_read_get")
     def known(lbl):                     # j0 is a reading -> lbl
         li("j10", UNK); J("jsub j10, j0, j10", "jjnz j10, %s" % lbl)
+    def gears_routines():
+        FNVO, FNVP = 0xCBF29CE484222325, 0x100000001B3
+        def name(r, tag):               # the register r (0..15) -> its name in this piece (j7 = the names, j8 = how many)
+            J("jadd j13, j7, %s" % r, "jldb j10, j13, 0", "jldi j2, 255", "jsub j2, j10, j2", "jjnz j2, %s" % tag,
+              "jstb j8, j13, 0", "jadd j10, j8, j14", "jldi j2, 1", "jadd j8, j8, j2")
+            o("%s:" % tag)
+            J("jadd %s, j10, j14" % r)
+        o("gz_canon:                       ; j1 = a place of her program -> j0 = how many instructions that only reckon")
+        o("                                ; follow from there (8 at most, 16 registers at most), each at GCW as a word of")
+        o("                                ; the Janax language with its registers named by the order the piece uses them")
+        gs("j1", GCI); li("j7", B + GNM); J("jldi j2, -1", "jst j2, j7, 0", "jst j2, j7, 8", "jldi j8, 0", "jldi j9, 0")
+        o("gzc_lap:")
+        J("jldi j10, 8", "jsub j10, j9, j10", "jjz j10, gzc_end"); gl("j1", GCI); J("jadd j1, j1, j9"); gl("j2", GNW); J("jsub j2, j1, j2", "jjnn j2, gzc_end")
+        o("  ; (an instruction is four bytes and her memory is read eight at a time: the half it is in)")
+        gl("j2", GPRG); J("jldi j10, 1", "jand j12, j1, j10", "jsub j1, j1, j12", "jldi j10, 2", "jshl j1, j1, j10", "jadd j2, j2, j1", "jld j3, j2, 0",
+                          "jldi j10, 5", "jshl j12, j12, j10", "jshr j3, j3, j12"); li("j10", 0xFFFFFFFF); J("jand j3, j3, j10")
+        J("jldi j10, 255", "jand j4, j3, j10", "jjz j4, gzc_end", "jldi j10, 5", "jsub j10, j4, j10", "jjz j10, gzc_end",
+          "jldi j10, 12", "jsub j10, j4, j10", "jjn j10, gzc_ok", "jldi j10, 15", "jsub j10, j4, j10", "jjnz j10, gzc_end")
+        o("gzc_ok:")
+        J("jldi j10, 8", "jshr j5, j3, j10", "jldi j10, 15", "jand j5, j5, j10", "jldi j10, 16", "jshr j11, j3, j10",
+          "jldi j10, 1", "jsub j10, j4, j10", "jjz j10, gzc_one", "jldi j10, 15", "jsub j10, j4, j10", "jjz j10, gzc_one")
+        J("jldi j10, 12", "jshr j12, j3, j10", "jldi j10, 15", "jand j12, j12, j10"); name("j12", "gzc_n1")
+        J("jldi j10, 15", "jand j11, j11, j10"); name("j11", "gzc_n2"); name("j5", "gzc_n3")
+        J("jldi j10, 12", "jshl j12, j12, j10", "jor j4, j4, j12", "jjmp gzc_put")
+        o("gzc_one:")
+        name("j5", "gzc_n4")
+        o("gzc_put:")
+        J("jldi j10, 16", "jsub j10, j10, j8", "jjn j10, gzc_end")
+        J("jldi j10, 8", "jshl j5, j5, j10", "jor j4, j4, j5", "jldi j10, 16", "jshl j11, j11, j10", "jor j4, j4, j11")
+        li("j13", B + GCW); J("jldi j10, 3", "jshl j2, j9, j10", "jadd j13, j13, j2", "jst j4, j13, 0", "jldi j10, 1", "jadd j9, j9, j10", "jjmp gzc_lap")
+        o("gzc_end:")
+        J("jadd j0, j9, j14", "jret")
+
+        o("gz_ins:                         ; the piece of print j3 and j4 instructions at the place GCP: one more time said")
+        J("jjnz j3, gzi_h", "jldi j3, 1")
+        o("gzi_h:")
+        li("j10", GOLD); J("jmul j5, j3, j10", "jldi j10, 46", "jshr j5, j5, j10")
+        o("gzi_lap:")
+        li("j10", GSLOTS - 1); J("jand j5, j5, j10", "jldi j10, 5", "jshl j7, j5, j10"); gl("j8", GHT); J("jadd j7, j7, j8", "jld j9, j7, 0", "jjz j9, gzi_new",
+                                                                                                 "jsub j9, j9, j3", "jjz j9, gzi_found", "jldi j10, 1", "jadd j5, j5, j10", "jjmp gzi_lap")
+        o("gzi_new:")
+        J("jst j3, j7, 0", "jst j14, j7, 8", "jst j14, j7, 16")
+        o("gzi_found:")
+        J("jld j9, j7, 8", "jldi j10, 1", "jadd j9, j9, j10", "jst j9, j7, 8"); gl("j1", GCP); J("jldi j10, 32", "jshl j2, j4, j10", "jor j2, j2, j1", "jst j2, j7, 24")
+        J("jldi j10, 3", "jshl j2, j1, j10", "jadd j2, j2, j4", "jldi j10, 1", "jsub j2, j2, j10", "jldi j10, 3", "jshl j2, j2, j10"); gl("j8", GNX)
+        J("jadd j2, j2, j8", "jld j9, j7, 16", "jst j9, j2, 0", "jldi j10, 1", "jadd j9, j1, j10", "jst j9, j7, 16", "jret")
+
+        o("gz_count:                       ; the piece GRE -> j0 = how many times it is said among what no gear took yet,")
+        o("                                ; one after another; GRMK 1: those are taken")
+        gl("j7", GRE); J("jld j1, j7, 24", "jldi j10, 32", "jshr j4, j1, j10", "jld j5, j7, 16", "jldi j0, 0", "jldi j3, -1"); gl("j8", GNX); gl("j9", GUS); gl("j11", GRMK)
+        o("gzn_lap:")
+        J("jjz j5, gzn_end", "jldi j10, 1", "jsub j1, j5, j10",
+          "jldi j10, 3", "jshl j2, j1, j10", "jadd j2, j2, j4", "jldi j10, 1", "jsub j2, j2, j10", "jldi j10, 3", "jshl j2, j2, j10", "jadd j2, j2, j8", "jld j5, j2, 0",
+          "jsub j10, j1, j3", "jjn j10, gzn_lap", "jjz j10, gzn_lap", "jadd j2, j9, j1", "jldi j12, 0")
+        o("gzn_u:")
+        J("jadd j13, j2, j12", "jldb j10, j13, 0", "jjnz j10, gzn_lap", "jldi j10, 1", "jadd j12, j12, j10", "jsub j10, j12, j4", "jjnz j10, gzn_u")
+        J("jldi j10, 1", "jadd j0, j0, j10", "jadd j3, j1, j4", "jsub j3, j3, j10", "jjz j11, gzn_lap", "jldi j12, 0")
+        o("gzn_m:")
+        J("jadd j13, j2, j12", "jldi j10, 1", "jstb j10, j13, 0", "jadd j12, j12, j10", "jsub j10, j12, j4", "jjnz j10, gzn_m", "jjmp gzn_lap")
+        o("gzn_end:")
+        J("jret")
+
+        o("r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of gen_leer.py) -> her gears, in her")
+        o("                                ; memory and in her house (\"engranajes\")")
+        li("j11", B + LBIN); J("jldi j12, %d" % len(S_BIN), "jcall r_open"); ld("j9", "FH"); J("jjn j9, gz_none")
+        li("j1", (1 << 20) + 64); J("jcall r_alloc"); gs("j0", GPRG)
+        J("jldi j10, 5"); gl("j11", GPRG); li("j12", 1 << 20); J("jcall r_file", "jldi j10, 2", "jshr j1, j13, j10"); gs("j1", GNW); J("jldi j10, 7", "jcall r_file")
+        gl("j1", GNW); J("jjz j1, gz_none")
+        def zero(tag):                  # j0 = where, j2 = how many words
+            o("%s:" % tag)
+            J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, %s" % tag)
+        li("j1", GSLOTS * 32); J("jcall r_alloc"); gs("j0", GHT); li("j2", GSLOTS * 4); zero("gz_z1")
+        gl("j1", GNW); J("jldi j10, 6", "jshl j1, j1, j10", "jcall r_alloc"); gs("j0", GNX)
+        gl("j1", GNW); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); gs("j0", GUS); gl("j2", GNW); J("jldi j10, 3", "jshr j2, j2, j10", "jldi j10, 8", "jadd j2, j2, j10"); zero("gz_z2")
+        li("j0", B + DBUF + GEARS); li("j2", 16 * NGEARS); zero("gz_z3")
+        o("  ; every piece, counted: from the end of her program to its start, so each piece's places are kept in order")
+        gl("j1", GNW); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", GCP)
+        o("gz_pos:")
+        gl("j1", GCP); J("jjn j1, gz_sel", "jcall gz_canon"); gs("j0", GCL); li("j3", FNVO); gs("j3", GHH); gs("j14", GCK)
+        o("gz_k:")
+        gl("j9", GCK); gl("j1", GCL); J("jsub j1, j9, j1", "jjnn j1, gz_pn")
+        li("j13", B + GCW); J("jldi j10, 3", "jshl j2, j9, j10", "jadd j13, j13, j2", "jld j4, j13, 0"); gl("j3", GHH); J("jxor j3, j3, j4"); li("j10", FNVP)
+        J("jmul j3, j3, j10"); gs("j3", GHH); J("jldi j10, 1", "jadd j9, j9, j10"); gs("j9", GCK)
+        J("jldi j10, 2", "jsub j10, j9, j10", "jjn j10, gz_k", "jadd j4, j9, j14", "jcall gz_ins", "jjmp gz_k")
+        o("gz_pn:")
+        gl("j1", GCP); J("jldi j10, 1", "jsub j1, j1, j10"); gs("j1", GCP); J("jjmp gz_pos")
+        o("gz_sel:                         ; one gear at a time: the piece that saves most, counted again (a count only")
+        o("                                ; falls, so a piece whose old count saves no more than the best is not counted)")
+        gs("j14", GGI)
+        o("gz_round:")
+        gs("j14", GBS); gs("j14", GBE); gs("j14", GSI)
+        o("gz_scan:")
+        gl("j5", GSI); J("jldi j10, 5", "jshl j7, j5, j10"); gl("j8", GHT); J("jadd j7, j7, j8", "jld j1, j7, 8", "jldi j10, 2", "jsub j10, j1, j10", "jjn j10, gz_next")
+        J("jld j4, j7, 24", "jldi j10, 32", "jshr j4, j4, j10", "jldi j10, 1", "jsub j2, j4, j10", "jmul j2, j2, j1", "jsub j2, j2, j4"); gl("j3", GBS)
+        J("jsub j10, j2, j3", "jjn j10, gz_next", "jjz j10, gz_next"); gs("j7", GRE); gs("j14", GRMK); J("jcall gz_count")
+        gl("j7", GRE); J("jst j0, j7, 8", "jldi j10, 2", "jsub j10, j0, j10", "jjn j10, gz_dead")
+        J("jld j4, j7, 24", "jldi j10, 32", "jshr j4, j4, j10", "jldi j10, 1", "jsub j2, j4, j10", "jmul j2, j2, j0", "jsub j2, j2, j4",
+          "jjn j2, gz_dead", "jjz j2, gz_dead"); gl("j3", GBS); J("jsub j10, j2, j3", "jjn j10, gz_next", "jjz j10, gz_next"); gs("j2", GBS); gs("j7", GBE); J("jjmp gz_next")
+        o("gz_dead:")
+        J("jst j14, j7, 8")
+        o("gz_next:")
+        gl("j5", GSI); J("jldi j10, 1", "jadd j5, j5, j10"); gs("j5", GSI); li("j10", GSLOTS); J("jsub j10, j5, j10", "jjnz j10, gz_scan")
+        gl("j7", GBE); J("jjz j7, gz_write"); gs("j7", GRE); J("jldi j1, 1"); gs("j1", GRMK); J("jcall gz_count")
+        gl("j7", GBE); J("jld j1, j7, 24"); li("j10", 0xFFFFFFFF); J("jand j1, j1, j10", "jcall gz_canon")
+        gl("j7", GBE); J("jld j4, j7, 24", "jldi j10, 32", "jshr j4, j4, j10", "jst j14, j7, 8")
+        gl("j1", GGI); J("jldi j10, 7", "jshl j1, j1, j10"); li("j9", B + DBUF + GEARS); J("jadd j9, j9, j1", "jst j4, j9, 0"); li("j13", B + GCW)
+        o("gz_copy:")
+        J("jld j1, j13, 0", "jst j1, j9, 8", "jldi j10, 8", "jadd j13, j13, j10", "jadd j9, j9, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjnz j4, gz_copy")
+        inc(GGI); J("jldi j10, %d" % NGEARS, "jsub j10, j1, j10", "jjnz j10, gz_round")
+        o("gz_write:")
+        J("jldi j10, 12"); li("j11", B + LGE); J("jldi j12, 10", "jcall r_tocar")
+        li("j11", B + LGE); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gz_none")
+        J("jldi j10, 6"); li("j11", B + DBUF + GEARS); li("j12", 128 * NGEARS); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("gz_none:")
+        J("jret")
+
     def birth():
         o("; ONE BEING (gen_leer.py): this program is Luma and Razar. THE ONE JUDGE, in bits, replaces the one above:")
         o(";   worth of the being = sum over her forms [ log2 C(%d, new cells) - letters * log2 15 ] + the best reading" % NCELLS)
@@ -569,8 +697,11 @@ def make(g, ST, free):
         o("  ; her gears: what engranajes.py took her own body apart into (the file \"engranajes\" of her house), into her")
         o("  ; reader's initial data once; how many there are, and their print")
         text(LGE, b"engranajes")
-        li("j11", B + LGE); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ri_gears")
-        J("jldi j10, 5"); li("j11", B + DBUF + GEARS); li("j12", 128 * NGEARS); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        li("j11", B + LGE); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ri_make")
+        J("jldi j10, 5"); li("j11", B + DBUF + GEARS); li("j12", 128 * NGEARS); J("jcall r_file"); gs("j13", GCI); J("jldi j10, 7", "jcall r_file")
+        gl("j1", GCI); J("jjnz j1, ri_gears")
+        o("ri_make:                        ; born without her gears: she takes her own code apart")
+        J("jcall r_gears")
         o("ri_gears:")
         li("j1", 0xCBF29CE484222325); li("j7", 0x100000001B3); li("j5", B + DBUF + GEARS); li("j3", 128 * NGEARS // 8); J("jldi j4, 0")
         o("ri_gp:")
@@ -590,6 +721,7 @@ def make(g, ST, free):
         o("ri_gen:")
         J("jcall r_reads_load", "jret")
 
+        gears_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
         o("                                ; it (%Xh: never read), BESTF = which form reads best (-1: none does)" % UNK)

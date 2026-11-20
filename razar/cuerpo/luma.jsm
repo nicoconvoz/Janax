@@ -9513,10 +9513,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0345Ch
-  jshi j2, 098A9h
-  jshi j2, 0787Fh
-  jshi j2, 05995h
+  jldi j2, 033AEh
+  jshi j2, 01D51h
+  jshi j2, 0DCC1h
+  jshi j2, 01E5Dh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -9557,14 +9557,23 @@ ri_same:                        ; (made of the same as when she slept: nothing n
   jldi j12, 10
   jcall r_open
   jld j9, j14, 04A8h
-  jjn j9, ri_gears
+  jjn j9, ri_make
   jldi j10, 5
   jldi j11, 015Eh
   jshi j11, 0C400h
   jldi j12, 03480h
   jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01BC8h
   jldi j10, 7
   jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01BC8h
+  jjnz j1, ri_gears
+ri_make:                        ; born without her gears: she takes her own code apart
+  jcall r_gears
 ri_gears:
   jldi j1, -13326
   jshi j1, 09CE4h
@@ -9639,6 +9648,612 @@ ri_gen1:
   jst j1, j6, 01538h
 ri_gen:
   jcall r_reads_load
+  jret
+gz_canon:                       ; j1 = a place of her program -> j0 = how many instructions that only reckon
+                                ; follow from there (8 at most, 16 registers at most), each at GCW as a word of
+                                ; the Janax language with its registers named by the order the piece uses them
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BC8h
+  jldi j7, 015Eh
+  jshi j7, 01BE0h
+  jldi j2, -1
+  jst j2, j7, 0
+  jst j2, j7, 8
+  jldi j8, 0
+  jldi j9, 0
+gzc_lap:
+  jldi j10, 8
+  jsub j10, j9, j10
+  jjz j10, gzc_end
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01BC8h
+  jadd j1, j1, j9
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01B58h
+  jsub j2, j1, j2
+  jjnn j2, gzc_end
+  ; (an instruction is four bytes and her memory is read eight at a time: the half it is in)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01B50h
+  jldi j10, 1
+  jand j12, j1, j10
+  jsub j1, j1, j12
+  jldi j10, 2
+  jshl j1, j1, j10
+  jadd j2, j2, j1
+  jld j3, j2, 0
+  jldi j10, 5
+  jshl j12, j12, j10
+  jshr j3, j3, j12
+  jldi j10, 0
+  jshi j10, 0FFFFh
+  jshi j10, 0FFFFh
+  jand j3, j3, j10
+  jldi j10, 255
+  jand j4, j3, j10
+  jjz j4, gzc_end
+  jldi j10, 5
+  jsub j10, j4, j10
+  jjz j10, gzc_end
+  jldi j10, 12
+  jsub j10, j4, j10
+  jjn j10, gzc_ok
+  jldi j10, 15
+  jsub j10, j4, j10
+  jjnz j10, gzc_end
+gzc_ok:
+  jldi j10, 8
+  jshr j5, j3, j10
+  jldi j10, 15
+  jand j5, j5, j10
+  jldi j10, 16
+  jshr j11, j3, j10
+  jldi j10, 1
+  jsub j10, j4, j10
+  jjz j10, gzc_one
+  jldi j10, 15
+  jsub j10, j4, j10
+  jjz j10, gzc_one
+  jldi j10, 12
+  jshr j12, j3, j10
+  jldi j10, 15
+  jand j12, j12, j10
+  jadd j13, j7, j12
+  jldb j10, j13, 0
+  jldi j2, 255
+  jsub j2, j10, j2
+  jjnz j2, gzc_n1
+  jstb j8, j13, 0
+  jadd j10, j8, j14
+  jldi j2, 1
+  jadd j8, j8, j2
+gzc_n1:
+  jadd j12, j10, j14
+  jldi j10, 15
+  jand j11, j11, j10
+  jadd j13, j7, j11
+  jldb j10, j13, 0
+  jldi j2, 255
+  jsub j2, j10, j2
+  jjnz j2, gzc_n2
+  jstb j8, j13, 0
+  jadd j10, j8, j14
+  jldi j2, 1
+  jadd j8, j8, j2
+gzc_n2:
+  jadd j11, j10, j14
+  jadd j13, j7, j5
+  jldb j10, j13, 0
+  jldi j2, 255
+  jsub j2, j10, j2
+  jjnz j2, gzc_n3
+  jstb j8, j13, 0
+  jadd j10, j8, j14
+  jldi j2, 1
+  jadd j8, j8, j2
+gzc_n3:
+  jadd j5, j10, j14
+  jldi j10, 12
+  jshl j12, j12, j10
+  jor j4, j4, j12
+  jjmp gzc_put
+gzc_one:
+  jadd j13, j7, j5
+  jldb j10, j13, 0
+  jldi j2, 255
+  jsub j2, j10, j2
+  jjnz j2, gzc_n4
+  jstb j8, j13, 0
+  jadd j10, j8, j14
+  jldi j2, 1
+  jadd j8, j8, j2
+gzc_n4:
+  jadd j5, j10, j14
+gzc_put:
+  jldi j10, 16
+  jsub j10, j10, j8
+  jjn j10, gzc_end
+  jldi j10, 8
+  jshl j5, j5, j10
+  jor j4, j4, j5
+  jldi j10, 16
+  jshl j11, j11, j10
+  jor j4, j4, j11
+  jldi j13, 015Eh
+  jshi j13, 01C00h
+  jldi j10, 3
+  jshl j2, j9, j10
+  jadd j13, j13, j2
+  jst j4, j13, 0
+  jldi j10, 1
+  jadd j9, j9, j10
+  jjmp gzc_lap
+gzc_end:
+  jadd j0, j9, j14
+  jret
+gz_ins:                         ; the piece of print j3 and j4 instructions at the place GCP: one more time said
+  jjnz j3, gzi_h
+  jldi j3, 1
+gzi_h:
+  jldi j10, -25033
+  jshi j10, 079B9h
+  jshi j10, 07F4Ah
+  jshi j10, 07C15h
+  jmul j5, j3, j10
+  jldi j10, 46
+  jshr j5, j5, j10
+gzi_lap:
+  jldi j10, 3
+  jshi j10, 0FFFFh
+  jand j5, j5, j10
+  jldi j10, 5
+  jshl j7, j5, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01B60h
+  jadd j7, j7, j8
+  jld j9, j7, 0
+  jjz j9, gzi_new
+  jsub j9, j9, j3
+  jjz j9, gzi_found
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp gzi_lap
+gzi_new:
+  jst j3, j7, 0
+  jst j14, j7, 8
+  jst j14, j7, 16
+gzi_found:
+  jld j9, j7, 8
+  jldi j10, 1
+  jadd j9, j9, j10
+  jst j9, j7, 8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B90h
+  jldi j10, 32
+  jshl j2, j4, j10
+  jor j2, j2, j1
+  jst j2, j7, 24
+  jldi j10, 3
+  jshl j2, j1, j10
+  jadd j2, j2, j4
+  jldi j10, 1
+  jsub j2, j2, j10
+  jldi j10, 3
+  jshl j2, j2, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01B68h
+  jadd j2, j2, j8
+  jld j9, j7, 16
+  jst j9, j2, 0
+  jldi j10, 1
+  jadd j9, j1, j10
+  jst j9, j7, 16
+  jret
+gz_count:                       ; the piece GRE -> j0 = how many times it is said among what no gear took yet,
+                                ; one after another; GRMK 1: those are taken
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01BB0h
+  jld j1, j7, 24
+  jldi j10, 32
+  jshr j4, j1, j10
+  jld j5, j7, 16
+  jldi j0, 0
+  jldi j3, -1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01B68h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01B70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01BB8h
+gzn_lap:
+  jjz j5, gzn_end
+  jldi j10, 1
+  jsub j1, j5, j10
+  jldi j10, 3
+  jshl j2, j1, j10
+  jadd j2, j2, j4
+  jldi j10, 1
+  jsub j2, j2, j10
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j2, j2, j8
+  jld j5, j2, 0
+  jsub j10, j1, j3
+  jjn j10, gzn_lap
+  jjz j10, gzn_lap
+  jadd j2, j9, j1
+  jldi j12, 0
+gzn_u:
+  jadd j13, j2, j12
+  jldb j10, j13, 0
+  jjnz j10, gzn_lap
+  jldi j10, 1
+  jadd j12, j12, j10
+  jsub j10, j12, j4
+  jjnz j10, gzn_u
+  jldi j10, 1
+  jadd j0, j0, j10
+  jadd j3, j1, j4
+  jsub j3, j3, j10
+  jjz j11, gzn_lap
+  jldi j12, 0
+gzn_m:
+  jadd j13, j2, j12
+  jldi j10, 1
+  jstb j10, j13, 0
+  jadd j12, j12, j10
+  jsub j10, j12, j4
+  jjnz j10, gzn_m
+  jjmp gzn_lap
+gzn_end:
+  jret
+r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of gen_leer.py) -> her gears, in her
+                                ; memory and in her house ("engranajes")
+  jldi j11, 015Eh
+  jshi j11, 01770h
+  jldi j12, 16
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, gz_none
+  jldi j1, 010h
+  jshi j1, 040h
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B50h
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01B50h
+  jldi j12, 010h
+  jshi j12, 0
+  jcall r_file
+  jldi j10, 2
+  jshr j1, j13, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B58h
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jjz j1, gz_none
+  jldi j1, 080h
+  jshi j1, 0
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B60h
+  jldi j2, 010h
+  jshi j2, 0
+gz_z1:
+  jst j14, j0, 0
+  jldi j10, 8
+  jadd j0, j0, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, gz_z1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jldi j10, 6
+  jshl j1, j1, j10
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B68h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jldi j10, 64
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01B58h
+  jldi j10, 3
+  jshr j2, j2, j10
+  jldi j10, 8
+  jadd j2, j2, j10
+gz_z2:
+  jst j14, j0, 0
+  jldi j10, 8
+  jadd j0, j0, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, gz_z2
+  jldi j0, 015Eh
+  jshi j0, 0C400h
+  jldi j2, 0690h
+gz_z3:
+  jst j14, j0, 0
+  jldi j10, 8
+  jadd j0, j0, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, gz_z3
+  ; every piece, counted: from the end of her program to its start, so each piece's places are kept in order
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B58h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B90h
+gz_pos:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B90h
+  jjn j1, gz_sel
+  jcall gz_canon
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01B98h
+  jldi j3, -13326
+  jshi j3, 09CE4h
+  jshi j3, 08422h
+  jshi j3, 02325h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01BA8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01BA0h
+gz_k:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01BA0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B98h
+  jsub j1, j9, j1
+  jjnn j1, gz_pn
+  jldi j13, 015Eh
+  jshi j13, 01C00h
+  jldi j10, 3
+  jshl j2, j9, j10
+  jadd j13, j13, j2
+  jld j4, j13, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01BA8h
+  jxor j3, j3, j4
+  jldi j10, 0100h
+  jshi j10, 0
+  jshi j10, 01B3h
+  jmul j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01BA8h
+  jldi j10, 1
+  jadd j9, j9, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j9, j6, 01BA0h
+  jldi j10, 2
+  jsub j10, j9, j10
+  jjn j10, gz_k
+  jadd j4, j9, j14
+  jcall gz_ins
+  jjmp gz_k
+gz_pn:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B90h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B90h
+  jjmp gz_pos
+gz_sel:                         ; one gear at a time: the piece that saves most, counted again (a count only
+                                ; falls, so a piece whose old count saves no more than the best is not counted)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B78h
+gz_round:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B80h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01B88h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01BC0h
+gz_scan:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j5, j6, 01BC0h
+  jldi j10, 5
+  jshl j7, j5, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01B60h
+  jadd j7, j7, j8
+  jld j1, j7, 8
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjn j10, gz_next
+  jld j4, j7, 24
+  jldi j10, 32
+  jshr j4, j4, j10
+  jldi j10, 1
+  jsub j2, j4, j10
+  jmul j2, j2, j1
+  jsub j2, j2, j4
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01B80h
+  jsub j10, j2, j3
+  jjn j10, gz_next
+  jjz j10, gz_next
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01BB0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01BB8h
+  jcall gz_count
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01BB0h
+  jst j0, j7, 8
+  jldi j10, 2
+  jsub j10, j0, j10
+  jjn j10, gz_dead
+  jld j4, j7, 24
+  jldi j10, 32
+  jshr j4, j4, j10
+  jldi j10, 1
+  jsub j2, j4, j10
+  jmul j2, j2, j0
+  jsub j2, j2, j4
+  jjn j2, gz_dead
+  jjz j2, gz_dead
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01B80h
+  jsub j10, j2, j3
+  jjn j10, gz_next
+  jjz j10, gz_next
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01B80h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01B88h
+  jjmp gz_next
+gz_dead:
+  jst j14, j7, 8
+gz_next:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j5, j6, 01BC0h
+  jldi j10, 1
+  jadd j5, j5, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j5, j6, 01BC0h
+  jldi j10, 4
+  jshi j10, 0
+  jsub j10, j5, j10
+  jjnz j10, gz_scan
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01B88h
+  jjz j7, gz_write
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01BB0h
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01BB8h
+  jcall gz_count
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01B88h
+  jld j1, j7, 24
+  jldi j10, 0
+  jshi j10, 0FFFFh
+  jshi j10, 0FFFFh
+  jand j1, j1, j10
+  jcall gz_canon
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01B88h
+  jld j4, j7, 24
+  jldi j10, 32
+  jshr j4, j4, j10
+  jst j14, j7, 8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B78h
+  jldi j10, 7
+  jshl j1, j1, j10
+  jldi j9, 015Eh
+  jshi j9, 0C400h
+  jadd j9, j9, j1
+  jst j4, j9, 0
+  jldi j13, 015Eh
+  jshi j13, 01C00h
+gz_copy:
+  jld j1, j13, 0
+  jst j1, j9, 8
+  jldi j10, 8
+  jadd j13, j13, j10
+  jadd j9, j9, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjnz j4, gz_copy
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01B78h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01B78h
+  jldi j10, 105
+  jsub j10, j1, j10
+  jjnz j10, gz_round
+gz_write:
+  jldi j10, 12
+  jldi j11, 015Eh
+  jshi j11, 01840h
+  jldi j12, 10
+  jcall r_tocar
+  jldi j11, 015Eh
+  jshi j11, 01840h
+  jldi j12, 10
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, gz_none
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 0C400h
+  jldi j12, 03480h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+gz_none:
   jret
 r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in
                                 ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in
