@@ -1,6 +1,6 @@
 ## Janax y Razar v0.89: los tejidos
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24395951](https://doi.org/10.5281/zenodo.24395951)
 
 > *"Rearticular por tipo de célula en evolución... no es lo mismo una neurona que la célula de la piel o del ojo o
 > del corazón."*
