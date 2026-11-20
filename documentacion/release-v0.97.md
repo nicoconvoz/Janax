@@ -1,6 +1,6 @@
 ## Janax y Razar v0.97: el corazón, lo ajeno y el tejido que abre ella
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24404239](https://doi.org/10.5281/zenodo.24404239)
 
 > *"Hacelo todo."* (el autor, 2026-11-20)
 
