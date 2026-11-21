@@ -1,6 +1,6 @@
 ## Janax y Razar v1.63: su mente, siempre activa
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24429979](https://doi.org/10.5281/zenodo.24429979)
 
 > *"No es normal que alguien se quede sin pensar o sin decir nada. La mente siempre piensa; la boca a veces dice,
 > a veces calla, pero siempre está activa. Conectalo a todo Luma, no como parte separada: como un todo."*
