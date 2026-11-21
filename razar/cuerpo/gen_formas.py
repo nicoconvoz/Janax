@@ -813,6 +813,8 @@ if COMER:
     o("jd_noghost:")
 J("jldi j0, 1", "jret")
 o("jd_win:                         ; it won: the parent goes to the archive, the form transforms")
+if RD:
+    RD.lineage()                # (gen_leer.py: what was born, from what and how, kept for good)
 st("j14", "AREASON"); ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); st("j9", "ALOSER"); setg("AOTHER", CAND)
 ld("j9", "TOTAL"); st("j9", "ATL"); ld("j9", "JT2"); st("j9", "ATW"); J("jcall r_archive")
 ld("j9", "JFA")
@@ -851,6 +853,8 @@ else:
     o("r_app:                          ; append the letter j1 to the recipe ADST (uses j4, j6, j10)")
     ld("j4", "ADST"); J("jldb j6, j4, 0", "jadd j10, j4, j6", "jstb j1, j10, 1", "jldi j10, 1", "jadd j6, j6, j10", "jstb j6, j4, 0", "jret")
     o("r_apply:                        ; j1 form, j2 op, j3 from, j4 into")
+    if RD:
+        RD.lineage_plain()
     st("j1", "AF"); st("j2", "AK"); st("j3", "ASRC"); st("j4", "ADST"); J("jstb j14, j4, 0", "jldb j5, j3, 0"); st("j5", "AN")
     o("  ; change")
     J("jldi j10, 8", "jmul j6, j5, j10", "jsub j10, j2, j6", "jjnn j10, ap_insert")
@@ -888,6 +892,8 @@ else:
     ld("j1", "AF"); J("jsub j10, j7, j1", "jjn j10, ap_cross_other", "jldi j10, 1", "jadd j7, j7, j10")
     o("ap_cross_other:")
     st("j7", "FP"); st("j8", "AK")
+    if RD:
+        RD.lineage_cross("j7")
     ld("j3", "ASRC"); J("jldi j1, 0", "jadd j2, j8, j14", "jcall r_cat")
     ld("j7", "FP"); form_addr("j3", "j7"); J("jldi j10, %d" % F_REC, "jadd j3, j3, j10", "jldb j2, j3, 0"); ld("j1", "AK")
     J("jcall r_cat", "jret")

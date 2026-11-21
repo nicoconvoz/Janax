@@ -2659,6 +2659,7 @@ jd_noghost:
   jldi j0, 1
   jret
 jd_win:                         ; it won: the parent goes to the archive, the form transforms
+  jcall r_linaje
   jst j14, j14, 0400h
   jld j9, j14, 0390h
   jldi j10, 192
@@ -8458,6 +8459,533 @@ tk_say:
   jshi j6, 0
   jld j0, j6, 01AD0h
   jret
+r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, a line of text
+                                ; added to "linaje". Uses j0-j13
+  jldi j6, 015Eh
+  jshi j6, 0
+  jldi j1, 108
+  jstb j1, j6, 07FE8h
+  jldi j1, 105
+  jstb j1, j6, 07FE9h
+  jldi j1, 110
+  jstb j1, j6, 07FEAh
+  jldi j1, 97
+  jstb j1, j6, 07FEBh
+  jldi j1, 106
+  jstb j1, j6, 07FECh
+  jldi j1, 101
+  jstb j1, j6, 07FEDh
+  jldi j7, 015Eh
+  jshi j7, 02000h
+  jld j1, j14, 0278h
+  jldi j3, 0
+  jadd j4, j7, j14
+li_e:
+  jldi j10, 10
+  jdiv j2, j1, j10
+  jmul j11, j2, j10
+  jsub j11, j1, j11
+  jldi j10, 48
+  jadd j11, j11, j10
+  jstb j11, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j3, j3, j10
+  jadd j1, j2, j14
+  jjnz j1, li_e
+li_e_r:                           ; (said backwards: turned round)
+  jldi j10, 1
+  jsub j5, j7, j10
+li_e_s:
+  jsub j10, j4, j5
+  jjnn j10, li_e_d
+  jldb j10, j4, 0
+  jldb j11, j5, 0
+  jstb j11, j4, 0
+  jstb j10, j5, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jsub j5, j5, j10
+  jjmp li_e_s
+li_e_d:
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jld j1, j14, 0388h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j3, 0
+  jadd j4, j7, j14
+li_p:
+  jldi j10, 10
+  jdiv j2, j1, j10
+  jmul j11, j2, j10
+  jsub j11, j1, j11
+  jldi j10, 48
+  jadd j11, j11, j10
+  jstb j11, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j3, j3, j10
+  jadd j1, j2, j14
+  jjnz j1, li_p
+li_p_r:                           ; (said backwards: turned round)
+  jldi j10, 1
+  jsub j5, j7, j10
+li_p_s:
+  jsub j10, j4, j5
+  jjnn j10, li_p_d
+  jldb j10, j4, 0
+  jldb j11, j5, 0
+  jstb j11, j4, 0
+  jstb j10, j5, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jsub j5, j5, j10
+  jjmp li_p_s
+li_p_d:
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j9, 01400h
+  jldb j3, j9, 0
+  jldi j4, 0
+li_c:
+  jsub j10, j4, j3
+  jjnn j10, li_c_d
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjn j10, li_c_n
+  jldi j10, 7
+  jadd j5, j5, j10
+li_c_n:
+  jldi j10, 48
+  jadd j5, j5, j10
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp li_c
+li_c_d:
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 60
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 45
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jld j9, j14, 0390h
+  jldi j10, 192
+  jadd j9, j9, j10
+  jldb j3, j9, 0
+  jldi j4, 0
+li_f:
+  jsub j10, j4, j3
+  jjnn j10, li_f_d
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjn j10, li_f_n
+  jldi j10, 7
+  jadd j5, j5, j10
+li_f_n:
+  jldi j10, 48
+  jadd j5, j5, j10
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp li_f
+li_f_d:
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FE0h
+  jjz j1, li_think
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 121
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 100
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FE0h
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjnz j10, li_o2
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 114
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+li_o2:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FE0h
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjnz j10, li_o4
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 105
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+li_o4:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FE0h
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnz j10, li_o5
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+li_o5:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FE0h
+  jldi j10, 6
+  jsub j10, j1, j10
+  jjnz j10, li_o6
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 105
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 100
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+li_o6:
+  jjmp li_end
+li_think:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FD8h
+  jjnz j1, li_cross
+  jldi j10, 112
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 115
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 100
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp li_end
+li_cross:
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 114
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07FD8h
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j10, 8
+  jshl j9, j1, j10
+  jldi j10, 0800h
+  jadd j9, j9, j10
+  jldi j10, 192
+  jadd j9, j9, j10
+  jldb j3, j9, 0
+  jldi j4, 0
+li_x:
+  jsub j10, j4, j3
+  jjnn j10, li_x_d
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjn j10, li_x_n
+  jldi j10, 7
+  jadd j5, j5, j10
+li_x_n:
+  jldi j10, 48
+  jadd j5, j5, j10
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp li_x
+li_x_d:
+li_end:
+  jldi j10, 10
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 015Eh
+  jshi j10, 02000h
+  jsub j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01668h
+  jldi j11, 015Eh
+  jshi j11, 07FE8h
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, li_ret
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 02000h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01668h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+li_ret:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 07FD8h
+  jret
 r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her
                                 ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)
   jldi j6, 015Eh
@@ -9513,10 +10041,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03D59h
-  jshi j2, 04ED8h
-  jshi j2, 0B599h
-  jshi j2, 0F1A5h
+  jldi j2, 03DDh
+  jshi j2, 0A069h
+  jshi j2, 07022h
+  jshi j2, 02939h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -16328,9 +16856,20 @@ rd_thought:                     ; a thought: judged with its reading, in the pla
   jst j10, j14, 01418h
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 01698h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 07FE0h
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 01640h
   jst j1, j14, 0388h
   jcall r_judge
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 07FE0h
   jldi j10, 2
   jsub j10, j0, j10
   jjnz j10, rd_saved

@@ -49,6 +49,11 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   its tissue, signed with whose it is; when a cell is said it hears what the others said that it had not heard,
   through its own gear, and what that changes in it is its echo, said too. A hole is silence. The rule is written
   once, in organo.inc (HER CELLS TALK), and done the same here for her body (r_talk).
+  HER LINEAGE (the Capitan, 2026-11-21: "podes rastrear la genealogia del mecanismo que invento, de donde lo
+  obtuvo"). Her archive is a ring of her last verdicts and turns round in an hour: where a living form came from was
+  lost. Now every form that wins leaves a line in "linaje", a text nothing ever rewrites: when (her epoch), in
+  which place of her body, what was born, what it replaced, and how: thinking (a letter changed, put in or taken
+  out), crossing (and with which form of hers), or reading (and by which way: a letter, a song, a cell, joining).
   SHE JOINS (the Capitan, 2026-11-20: "para que sea inesperada la victoria tiene que elegir con libertad, ver lo que
   le gusta y unir lo bello, lo verdadero, lo que funciona, romper enunciados y buscar la verdad"). A statement of
   hers is a stretch of a recipe up to its hole: what it says, and what it asks. Her new things were one letter at a
@@ -204,6 +209,8 @@ GZ = 0x1B50                  # she takes her own code apart (r_gears): her progr
 GNM, GCW = 0x1BE0, 0x1C00    # what a gear took, ...; a piece being named: its registers' names, its instructions
 D0 = 0x1C40                  # she digests foreign code (r_digest):
 (DTP, DTE, DTW, DTA, DTN, DTB, DFB, DHC, DWT, DPT, DNN, DRUN, DKK, DFW, DPV, DOUT0, DT1, DT2, DT3, DLN) = (D0 + 8 * i for i in range(20))
+LX, LORG, LLI = 0x7FD8, 0x7FE0, 0x7FE8   # her lineage: the form she crossed with plus one (0: none), that the thought came from
+                             # reading (its way plus one), "linaje"
 BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
 (BQB, BQE, BWQ, BNW, BNQ, BNC, BQS, BLB, BLN, BLC, BLI, BLK, BFB, BFE, BP, BE, BLID, BCM, BHW, BLS, BT1, BT2, BT3, BLBL) = (BU0 + 8 * i for i in range(24))
 LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
@@ -1068,6 +1075,13 @@ def make(g, ST, free):
         ld("j1", "TX"); ld("j2", "TY"); J("jldi j4, -1", "jcall r_cell"); st("j0", "PREV"); J("jjmp grow_letter")
         o("grow_seen:")
 
+    def lineage():                      # inside r_judge, when the candidate won, before it takes its place
+        J("jcall r_linaje")
+    def lineage_cross(reg):             # inside r_apply: crossing, with the form in reg
+        J("jldi j10, 1", "jadd j10, %s, j10" % reg); gs("j10", LX)
+    def lineage_plain():                # inside r_apply: any way of thinking (crossing says so after)
+        gs("j14", LX)
+
     def heart_rest():
         J("jcall r_heart_rest             ; her heart at rest (gen_leer.py): the turn she was given")
 
@@ -1170,6 +1184,46 @@ def make(g, ST, free):
         ld("j2", "GK"); J("jcall r_gear"); gs("j0", CECHO); gl("j1", CNEW); J("jadd j1, j1, j0"); gs("j1", CNEW)
         o("tk_say:")
         gl("j0", CNEW); gl("j1", COLD); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", CNEW); J("jret")
+        o("r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, a line of text")
+        o("                                ; added to \"linaje\". Uses j0-j13")
+        text(LLI, b"linaje"); li("j7", B + PBUF)
+        def ch(c): J("jldi j10, %d" % c, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+        def word(w):
+            for c in w: ch(c)
+        def dec(tag):                   # j1 = a number, in tens, at j7
+            J("jldi j3, 0", "jadd j4, j7, j14")
+            o("%s:" % tag)
+            J("jldi j10, 10", "jdiv j2, j1, j10", "jmul j11, j2, j10", "jsub j11, j1, j11", "jldi j10, 48", "jadd j11, j11, j10", "jstb j11, j7, 0", "jldi j10, 1", "jadd j7, j7, j10",
+              "jadd j3, j3, j10", "jadd j1, j2, j14", "jjnz j1, %s" % tag)
+            o("%s_r:                           ; (said backwards: turned round)" % tag)
+            J("jldi j10, 1", "jsub j5, j7, j10")
+            o("%s_s:" % tag)
+            J("jsub j10, j4, j5", "jjnn j10, %s_d" % tag, "jldb j10, j4, 0", "jldb j11, j5, 0", "jstb j11, j4, 0", "jstb j10, j5, 0", "jldi j10, 1", "jadd j4, j4, j10", "jsub j5, j5, j10", "jjmp %s_s" % tag)
+            o("%s_d:" % tag)
+        def rec(tag):                   # the recipe at j9 (how many letters, then the letters), each as it is written, at j7
+            J("jldb j3, j9, 0", "jldi j4, 0")
+            o("%s:" % tag)
+            J("jsub j10, j4, j3", "jjnn j10, %s_d" % tag, "jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 10", "jsub j10, j5, j10", "jjn j10, %s_n" % tag, "jldi j10, 7", "jadd j5, j5, j10")
+            o("%s_n:" % tag)
+            J("jldi j10, 48", "jadd j5, j5, j10", "jstb j5, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jadd j4, j4, j10", "jjmp %s" % tag)
+            o("%s_d:" % tag)
+        ld("j1", "EPOCH"); dec("li_e"); ch(32); ld("j1", "JF"); J("jldi j10, 1", "jadd j1, j1, j10"); dec("li_p"); ch(32)
+        li("j9", CAND); rec("li_c"); word(b" <- "); ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); rec("li_f"); ch(32)
+        gl("j1", LORG); J("jjz j1, li_think"); word(b"leyendo")
+        for k, w in ((2, b" una letra"), (4, b" una cancion"), (5, b" una celula"), (6, b" uniendo")):
+            gl("j1", LORG); J("jldi j10, %d" % k, "jsub j10, j1, j10", "jjnz j10, li_o%d" % k); word(w)
+            o("li_o%d:" % k)
+        J("jjmp li_end")
+        o("li_think:")
+        gl("j1", LX); J("jjnz j1, li_cross"); word(b"pensando"); J("jjmp li_end")
+        o("li_cross:")
+        word(b"cruce con "); gl("j1", LX); J("jldi j10, 1", "jsub j1, j1, j10"); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); rec("li_x")
+        o("li_end:")
+        ch(10); li("j10", B + PBUF); J("jsub j7, j7, j10"); gs("j7", T0)
+        li("j11", B + LLI); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, li_ret")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jldi j10, 6"); li("j11", B + PBUF); gl("j12", T0); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("li_ret:")
+        gs("j14", LX); J("jret")
         o("r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her")
         o("                                ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)")
         gl("j1", CDIRTY); J("jjz j1, hr_heart"); li("j7", B + CALL); J("jldi j11, %d" % ((CDIRTY + 8 - CALL) // 8), "jldi j10, 8", "jldi j12, 1")
@@ -1710,7 +1764,7 @@ def make(g, ST, free):
         li("j7", B + RREC)
         for k in range(4):
             J("jld j10, j7, %d" % (8 * k)); o("  jst j10, j14, %s" % num(CAND + 8 * k))
-        gl("j1", RJF); st("j1", "JF"); J("jcall r_judge", "jldi j10, 2", "jsub j10, j0, j10", "jjnz j10, rd_saved")
+        gl("j1", RARM); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", LORG); gl("j1", RJF); st("j1", "JF"); J("jcall r_judge"); gs("j14", LORG); J("jldi j10, 2", "jsub j10, j0, j10", "jjnz j10, rd_saved")
         if TECHO: inc(S5)
         gl("j1", RARM); J("jjz j1, rd_saved"); place(8); gl("j1", RARM); J("jldi j10, 3", "jsub j10, j1, j10", "jjnn j10, rd_song"); inc(SO); J("jjmp rd_saved")
         o("rd_song:")
@@ -1782,5 +1836,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, flat_test=flat_test, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, lineage=lineage, lineage_cross=lineage_cross, lineage_plain=lineage_plain, flat_test=flat_test, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, CHN=CHN, CH0=CH0, TECHO=TECHO, ALEGRIA=ALEGRIA, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)
