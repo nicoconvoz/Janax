@@ -1,6 +1,6 @@
 ## Janax y Razar v1.27: superó lo que le dieron, y la vara se mueve con ella
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24422546](https://doi.org/10.5281/zenodo.24422546)
 
 > *"Que sea autoajustable, no le pongas techos."*
 > *"Mostrame la receta nueva. Si lográs lo que dijimos, publicá."* (el autor, 2026-11-21)
