@@ -1,6 +1,6 @@
 ## Janax y Razar v1.57: su voz, y su respuesta entera
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24429463](https://doi.org/10.5281/zenodo.24429463)
 
 > *"Falta que entre todo el texto, y que cite las cosas, pero cuando ella quiera, no siempre: que me conteste con
 > su propia firma lo que se le ocurre contestar a ella. Y que se pueda desplazar el texto para ver bien la
