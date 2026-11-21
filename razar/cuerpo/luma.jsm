@@ -10097,10 +10097,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 028E9h
-  jshi j2, 0C0C4h
-  jshi j2, 028E2h
-  jshi j2, 082E9h
+  jldi j2, 03333h
+  jshi j2, 08DD8h
+  jshi j2, 028C9h
+  jshi j2, 0B645h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -14208,6 +14208,15 @@ ul_free:
 ul_ret:
   jret
 r_glyph:                        ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)
+  jldi j10, 97
+  jsub j10, j5, j10
+  jjn j10, gl_up
+  jldi j10, 123
+  jsub j10, j5, j10
+  jjnn j10, gl_up
+  jldi j10, 32
+  jsub j5, j5, j10
+gl_up:                          ; (a small letter is drawn as its capital)
   jldi j10, 48
   jsub j10, j5, j10
   jjnz j10, gl_48

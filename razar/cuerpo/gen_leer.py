@@ -1069,6 +1069,8 @@ def make(g, ST, free):
     def nombre_routines():
         assert NM0 + 24 <= 0x1D80
         o("r_glyph:                        ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)")
+        J("jldi j10, 97", "jsub j10, j5, j10", "jjn j10, gl_up", "jldi j10, 123", "jsub j10, j5, j10", "jjnn j10, gl_up", "jldi j10, 32", "jsub j5, j5, j10")
+        o("gl_up:                          ; (a small letter is drawn as its capital)")
         for ch in sorted(FONT):
             J("jldi j10, %d" % ord(ch), "jsub j10, j5, j10", "jjnz j10, gl_%d" % ord(ch)); li("j0", glyph_bits(ch)); J("jret")
             o("gl_%d:" % ord(ch))
