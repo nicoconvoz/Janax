@@ -1,6 +1,6 @@
 ## Janax y Razar v1.09: su linaje
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24418355](https://doi.org/10.5281/zenodo.24418355)
 
 > *"¿Podés rastrear la genealogía del mecanismo que inventó, de dónde lo obtuvo?"*
 > *"No anotes todo, sólo la diff: ahorremos espacio."* *"Nada de Python, todo en Janax."*
