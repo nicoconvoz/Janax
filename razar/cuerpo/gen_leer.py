@@ -62,7 +62,8 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   shelf of several domains, and it went unseen twice over: her count of unexpected victories only looked at new
   thoughts (they were forms already living in her body, read for the first time), and a recipe with a word or a
   cell is kept in "leido" under its print, so what its letters were could not be said afterwards. Now a victory is
-  any reading better than the best she had, whatever was read; and every reading kept under a print leaves a line
+  any reading further above what she expects than her readings usually are (her own mean and her own spread, no
+  record and no ceiling: the bar moves with her), whatever was read; and every reading kept under a print leaves a line
   in "recetas", a text nothing rewrites: its score, the recipe as it is written and, if it says words of hers, what
   it meant then (said flat), since her words change when her body does.
   SHE JOINS (the Capitan, 2026-11-20: "para que sea inesperada la victoria tiene que elegir con libertad, ver lo que
@@ -1780,7 +1781,25 @@ def make(g, ST, free):
         o("  ; than the best she had (looked at before it is written among them)")
         gs("j14", RUNIQ); gs("j14", RVIC)
         gl("j1", RSC); li("j2", BAD); J("jsub j1, j1, j2", "jjz j1, ru_done")
-        J("jcall r_read_max"); gl("j1", HAVE); J("jjz j1, ru_scan"); gl("j1", RSC); J("jsub j1, j1, j0", "jjn j1, ru_scan", "jjz j1, ru_scan", "jldi j1, 1"); gs("j1", RVIC)
+        o("  ; AN UNEXPECTED VICTORY, with no ceiling (the Capitan: \"que sea autoajustable, no le pongas techos\"). Not a")
+        o("  ; record to beat, which only rises: what she EXPECTS, taken from her own readings of this shelf and nothing")
+        o("  ; else. What she usually reads (their mean) and how far her readings usually are from it (the mean of those")
+        o("  ; distances): a reading further above than that is unexpected. The bar rises and falls with what she reads.")
+        gl("j4", RTAB); J("jjz j4, ru_scan"); gl("j2", RTN); J("jldi j7, 0", "jldi j8, 0"); li("j11", UNK); li("j12", BAD)
+        o("ru_m:")
+        J("jjz j2, ru_md", "jld j1, j4, 24", "jsub j10, j1, j11", "jjz j10, ru_mn", "jsub j10, j1, j12", "jjz j10, ru_mn", "jadd j7, j7, j1", "jldi j10, 1", "jadd j8, j8, j10")
+        o("ru_mn:")
+        J("jldi j10, 32", "jadd j4, j4, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp ru_m")
+        o("ru_md:")
+        J("jjz j8, ru_scan", "jdiv j7, j7, j8"); gl("j4", RTAB); gl("j2", RTN); J("jldi j9, 0")
+        o("ru_d:")
+        J("jjz j2, ru_dd", "jld j1, j4, 24", "jsub j10, j1, j11", "jjz j10, ru_dn", "jsub j10, j1, j12", "jjz j10, ru_dn", "jsub j1, j1, j7", "jjnn j1, ru_da", "jsub j1, j14, j1")
+        o("ru_da:")
+        J("jadd j9, j9, j1")
+        o("ru_dn:")
+        J("jldi j10, 32", "jadd j4, j4, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp ru_d")
+        o("ru_dd:")
+        J("jdiv j9, j9, j8", "jadd j7, j7, j9"); gl("j1", RSC); J("jsub j1, j1, j7", "jjn j1, ru_scan", "jjz j1, ru_scan", "jldi j1, 1"); gs("j1", RVIC)
         o("ru_scan:")
         gl("j4", RTAB); J("jldi j0, 1", "jjz j4, ru_set"); gl("j2", RTN); gl("j3", RSC)
         o("ru_lap:")

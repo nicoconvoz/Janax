@@ -10092,10 +10092,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 08FAh
-  jshi j2, 079D3h
-  jshi j2, 04197h
-  jshi j2, 09907h
+  jldi j2, 03A7Ch
+  jshi j2, 01313h
+  jshi j2, 01AFAh
+  jshi j2, 04B03h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -16692,15 +16692,78 @@ rd_same:
   jshi j2, 0
   jsub j1, j1, j2
   jjz j1, ru_done
-  jcall r_read_max
+  ; AN UNEXPECTED VICTORY, with no ceiling (the Capitan: "que sea autoajustable, no le pongas techos"). Not a
+  ; record to beat, which only rises: what she EXPECTS, taken from her own readings of this shelf and nothing
+  ; else. What she usually reads (their mean) and how far her readings usually are from it (the mean of those
+  ; distances): a reading further above than that is unexpected. The bar rises and falls with what she reads.
   jldi j6, 015Eh
   jshi j6, 0
-  jld j1, j6, 016B0h
-  jjz j1, ru_scan
+  jld j4, j6, 01648h
+  jjz j4, ru_scan
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01650h
+  jldi j7, 0
+  jldi j8, 0
+  jldi j11, -32768
+  jshi j11, 0
+  jshi j11, 0
+  jshi j11, 0
+  jldi j12, -16384
+  jshi j12, 0
+  jshi j12, 0
+  jshi j12, 0
+ru_m:
+  jjz j2, ru_md
+  jld j1, j4, 24
+  jsub j10, j1, j11
+  jjz j10, ru_mn
+  jsub j10, j1, j12
+  jjz j10, ru_mn
+  jadd j7, j7, j1
+  jldi j10, 1
+  jadd j8, j8, j10
+ru_mn:
+  jldi j10, 32
+  jadd j4, j4, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp ru_m
+ru_md:
+  jjz j8, ru_scan
+  jdiv j7, j7, j8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01648h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01650h
+  jldi j9, 0
+ru_d:
+  jjz j2, ru_dd
+  jld j1, j4, 24
+  jsub j10, j1, j11
+  jjz j10, ru_dn
+  jsub j10, j1, j12
+  jjz j10, ru_dn
+  jsub j1, j1, j7
+  jjnn j1, ru_da
+  jsub j1, j14, j1
+ru_da:
+  jadd j9, j9, j1
+ru_dn:
+  jldi j10, 32
+  jadd j4, j4, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp ru_d
+ru_dd:
+  jdiv j9, j9, j8
+  jadd j7, j7, j9
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 016C8h
-  jsub j1, j1, j0
+  jsub j1, j1, j7
   jjn j1, ru_scan
   jjz j1, ru_scan
   jldi j1, 1
