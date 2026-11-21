@@ -1,6 +1,6 @@
 ## Janax y Razar v1.13: lo que leyó no se pierde
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24418731](https://doi.org/10.5281/zenodo.24418731)
 
 > *"Esto no es por la pregunta: es para ver si creó alguna receta multidominio. Rastreá qué pasó."*
 > *"Arreglalo, y publicá: esto lo merece. Registro del error, por supuesto."* (el autor, 2026-11-21)
