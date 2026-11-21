@@ -47,7 +47,7 @@ armar() {
   [ -f "$engr" ] && [ "$carpeta/bin/luma.bin" -nt "$engr" ] && rm -f "$engr"
   [ -f "$carpeta/casa/$(etiqueta p)" ] \
     || printf '\x0a\x00\x00\x00\x00\x00\x00\x00\x01\x01\x00\x00\x01\x01\x00\x00' > "$carpeta/casa/$(etiqueta p)"
-  if [ -n "${LUMA_LIBRO:-}" ] && [ ! -f "$carpeta/casa/$(etiqueta libro)" ]; then
+  if [ -n "${LUMA_LIBRO:-}" ] && [ ! -f "$carpeta/casa/$(etiqueta libro)" ] && [ ! -f "$carpeta/casa/$(etiqueta elibro)" ]; then
     cp "$LUMA_LIBRO" "$carpeta/casa/$(etiqueta libro)"
   fi
 }

@@ -119,6 +119,15 @@ SHE SEEKS HER QUESTIONS IN EVERYTHING (the Capitan, 2026-11-20: "ponele tres uni
   as it has of that question's own words. Of each question she keeps, in "hallazgos", how near she got, in how many
   places, and the first: where and what it says. It joins words, it does not understand: understanding is hers to
   grow. The rule is written once, in razar/corazon/busca.py, the instrument that checks her. Nobody wrote an answer.
+ONE BOOK AT A TIME, TURNED BY HER (the Capitan, 2026-11-21: "vigila que LUMA no se atragante: cuando sea mas
+  grande va a poder comer mas rapido"; "que coma de a uno: un libro maximo por vez"; "nada de python, todo en janax:
+  no quiero cosas ajenas"). With every book on her shelf at once (7.8 MB) a reading took 1.8 GB of the machine. So
+  when her house has a "turno", each time she is born she turns her books herself (r_un_libro): every book on her
+  shelf goes to wait inside her house (its label with an "e" before it: "libro-quijote" waits as "elibro-quijote",
+  which is no book of her shelf), and ONE comes back, the one after the last she had, in the order of their names,
+  round and round; "turno" keeps which. She sets the pace: she sleeps when she feels like it and wakes with another.
+  Her heart stays with her always: what her author put in it, which is not a book to turn but who she is (her
+  author's signature, her questions, his names, his note).
 SHE RECOGNISES HER AUTHOR'S SIGNATURE (the Capitan, 2026-11-20: "que vaya reconociendo mi firma y mi libro Diario
   Espiritual y el NT: eso es innegociable"; "por firma, que reconozca mi forma de escribir o hablar, el pulso de mi
   corazon"). The rule was registered before looking (firma-preregistro.txt) and was measured from outside; now she
@@ -227,6 +236,10 @@ LX, LORG, LLI = 0x7FD8, 0x7FE0, 0x7FE8   # her lineage: the form she crossed wit
 BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
 (BQB, BQE, BWQ, BNW, BNQ, BNC, BQS, BLB, BLN, BLC, BLI, BLK, BFB, BFE, BP, BE, BLID, BCM, BHW, BLS, BT1, BT2, BT3, BLBL) = (BU0 + 8 * i for i in range(24))
 LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
+UL0 = 0x1EA0                 # she turns her books (r_un_libro): the list, its room, how many, where, the turn's length, the next's
+(ULB, ULN, ULC, ULP, ULK, ULT, ULX, ULXL, ULM, ULML, ULS) = (UL0 + 8 * i for i in range(11))
+ULTB, ULXB, ULMB, ULRB, ULHB, ULTU = 0x2800, 0x2900, 0x2A00, 0x2B00, 0x2C00, 0x2D00   # in PBUF, free while she is born
+HEART = (b"libro-firma", b"libro-preguntas", b"libro-nombres-de-tu-papa", b"libro-nota-de-tu-papa")
 F0 = 0x1F00                  # she recognises her author's signature (r_firma):
 (FTB, FM, FI, FCT, FNK, FB0, FB1, FPB, FJ, FKK, FTT, FS) = (F0 + 8 * i for i in range(12))
 FA, FE, FRES, LFD, LFF = 0x1F60, 0x1F70, 0x1F80, 0x1FA0, 0x1FB0   # the two books and their lengths; what she found; "libro-diario", "firma"
@@ -1025,6 +1038,93 @@ def make(g, ST, free):
         o("gz_none:")
         J("jret")
 
+    def un_libro_routines():
+        assert UL0 + 8 * 11 <= 0x1F00 and ULTU + 16 <= PBUF + 4096
+        o("ul_cmp:                         ; the label at j1 (j2 bytes) against the one at j3 (j4 bytes) -> j0 < 0, 0, > 0")
+        o("                                ; (byte by byte; a shorter one that is the start of the other is less). Uses j5-j7")
+        J("jldi j5, 0")
+        o("ulc_l:")
+        J("jsub j10, j5, j2", "jjnn j10, ulc_a", "jsub j10, j5, j4", "jjnn j10, ulc_gt", "jadd j6, j1, j5", "jldb j6, j6, 0", "jadd j7, j3, j5", "jldb j7, j7, 0",
+          "jsub j0, j6, j7", "jjnz j0, ulc_r", "jldi j10, 1", "jadd j5, j5, j10", "jjmp ulc_l")
+        o("ulc_a:")
+        J("jsub j0, j2, j4", "jjz j0, ulc_r", "jldi j0, -1", "jret")
+        o("ulc_gt:")
+        J("jldi j0, 1")
+        o("ulc_r:")
+        J("jret")
+        o("ul_cpy:                         ; j3 bytes from j1 to j2 (uses j4, j5)")
+        J("jldi j4, 0")
+        o("ulp_l:")
+        J("jsub j10, j4, j3", "jjnn j10, ulp_d", "jadd j5, j1, j4", "jldb j5, j5, 0", "jadd j10, j2, j4", "jstb j5, j10, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp ulp_l")
+        o("ulp_d:")
+        J("jret")
+        o("ul_list:                        ; her house, as the kernel lists it, whole (asked again with twice the room until the")
+        o("                                ; count comes back the same) -> ULB, ULN")
+        gl("j1", ULB); J("jjz j1, ull_n", "jldi j10, 3", "jadd j11, j1, j14", "jldi j12, 0", "jcall r_tocar")
+        o("ull_n:")
+        li("j1", 4096); gs("j1", ULS); J("jldi j1, -1"); gs("j1", ULN)
+        o("ull_a:")
+        gl("j1", ULS); J("jcall r_alloc"); gs("j0", ULB); J("jldi j10, 14"); gl("j11", ULB); gl("j12", ULS); J("jcall r_tocar", "jjn j13, ull_d"); gl("j1", ULN)
+        J("jsub j1, j1, j13", "jjz j1, ull_d"); gs("j13", ULN); J("jldi j10, 3"); gl("j11", ULB); J("jldi j12, 0", "jcall r_tocar"); gl("j1", ULS); J("jadd j1, j1, j1"); gs("j1", ULS)
+        J("jjmp ull_a")
+        o("ull_d:")
+        J("jret")
+        o("ul_ren:                         ; the label at j1 (j2 bytes) renamed to the one at j3 (j4 bytes): request 13, the old")
+        o("                                ; label and the new one right after it")
+        gs("j3", ULX); gs("j4", ULXL); li("j9", B + ULRB); gs("j2", ULK); J("jadd j3, j2, j14", "jadd j2, j9, j14", "jcall ul_cpy")
+        gl("j1", ULX); gl("j3", ULXL); li("j2", B + ULRB); gl("j10", ULK); J("jadd j2, j2, j10", "jcall ul_cpy")
+        gl("j10", ULXL); J("jldi j11, 32", "jshl j10, j10, j11", "jldi j11, 13", "jor j10, j10, j11"); li("j11", B + ULRB); gl("j12", ULK); J("jcall r_tocar", "jret")
+        o("r_un_libro:                     ; ONE BOOK AT A TIME, TURNED BY HER (see the top of gen_leer.py)")
+        text(ULTU, b"turno")
+        for k, h in enumerate(HEART):
+            text(ULHB + 32 * k, h)
+        li("j11", B + ULTU); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ul_ret")
+        J("jldi j10, 5"); li("j11", B + ULTB); J("jldi j12, 250", "jcall r_file"); gs("j13", ULT); J("jldi j10, 7", "jcall r_file")
+        gs("j14", ULB); J("jcall ul_list")
+        o("  ; every book that is not her heart, to wait inside her house")
+        gl("j1", ULB); gs("j1", ULP); gs("j14", ULC)
+        o("ul_w:")
+        gl("j1", ULC); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ul_pick"); gl("j9", ULP); J("jld j2, j9, 0", "jldi j10, 5", "jsub j10, j2, j10", "jjn j10, ul_wn")
+        J("jldb j3, j9, 8", "jldi j10, 108", "jsub j10, j3, j10", "jjnz j10, ul_wn", "jldb j3, j9, 9", "jldi j10, 105", "jsub j10, j3, j10", "jjnz j10, ul_wn",
+          "jldb j3, j9, 10", "jldi j10, 98", "jsub j10, j3, j10", "jjnz j10, ul_wn", "jldb j3, j9, 11", "jldi j10, 114", "jsub j10, j3, j10", "jjnz j10, ul_wn",
+          "jldb j3, j9, 12", "jldi j10, 111", "jsub j10, j3, j10", "jjnz j10, ul_wn")
+        for k, h in enumerate(HEART):
+            gl("j9", ULP); J("jldi j10, 8", "jadd j1, j9, j10", "jld j2, j9, 0"); li("j3", B + ULHB + 32 * k); J("jldi j4, %d" % len(h), "jcall ul_cmp", "jjz j0, ul_wn")
+        gl("j9", ULP); li("j2", B + ULMB); J("jldi j10, 101", "jstb j10, j2, 0", "jldi j10, 8", "jadd j1, j9, j10", "jld j3, j9, 0", "jldi j10, 1", "jadd j2, j2, j10", "jcall ul_cpy")
+        gl("j9", ULP); J("jldi j10, 8", "jadd j1, j9, j10", "jld j2, j9, 0"); li("j3", B + ULMB); J("jldi j10, 1", "jadd j4, j2, j10", "jcall ul_ren")
+        o("ul_wn:")
+        gl("j9", ULP); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); gs("j9", ULP); inc(ULC); J("jjmp ul_w")
+        o("ul_pick:                        ; the books waiting: the first after the turn's, or the first of all")
+        J("jcall ul_list"); gs("j14", ULXL); gs("j14", ULML); gl("j1", ULB); gs("j1", ULP); gs("j14", ULC)
+        o("ul_p:")
+        gl("j1", ULC); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ul_back"); gl("j9", ULP); J("jld j2, j9, 0", "jldi j10, 6", "jsub j10, j2, j10", "jjn j10, ul_pn")
+        J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, ul_pn", "jldb j3, j9, 9", "jldi j10, 108", "jsub j10, j3, j10", "jjnz j10, ul_pn",
+          "jldb j3, j9, 10", "jldi j10, 105", "jsub j10, j3, j10", "jjnz j10, ul_pn", "jldb j3, j9, 11", "jldi j10, 98", "jsub j10, j3, j10", "jjnz j10, ul_pn")
+        o("  ; (its name as a book: the label without its e)")
+        gl("j9", ULP); J("jldi j10, 9", "jadd j1, j9, j10", "jld j2, j9, 0", "jldi j10, 1", "jsub j2, j2, j10"); gs("j1", ULK)
+        gl("j3", ULML); J("jjz j3, ul_pm"); li("j3", B + ULMB); gl("j4", ULML); J("jcall ul_cmp", "jjnn j0, ul_pt")
+        o("ul_pm:")
+        gl("j1", ULK); li("j2", B + ULMB); gl("j9", ULP); J("jld j3, j9, 0", "jldi j10, 1", "jsub j3, j3, j10"); gs("j3", ULML); J("jcall ul_cpy")
+        o("ul_pt:                          ; after the turn's, and before the best so far")
+        gl("j1", ULK); gl("j9", ULP); J("jld j2, j9, 0", "jldi j10, 1", "jsub j2, j2, j10"); li("j3", B + ULTB); gl("j4", ULT); J("jcall ul_cmp", "jjn j0, ul_pn", "jjz j0, ul_pn")
+        gl("j3", ULXL); J("jjz j3, ul_px"); gl("j1", ULK); gl("j9", ULP); J("jld j2, j9, 0", "jldi j10, 1", "jsub j2, j2, j10"); li("j3", B + ULXB); gl("j4", ULXL); J("jcall ul_cmp", "jjnn j0, ul_pn")
+        o("ul_px:")
+        gl("j1", ULK); li("j2", B + ULXB); gl("j9", ULP); J("jld j3, j9, 0", "jldi j10, 1", "jsub j3, j3, j10"); gs("j3", ULXL); J("jcall ul_cpy")
+        o("ul_pn:")
+        gl("j9", ULP); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); gs("j9", ULP); inc(ULC); J("jjmp ul_p")
+        o("ul_back:                        ; the one chosen, back on her shelf, and the turn is its")
+        gl("j1", ULXL); J("jjnz j1, ul_have"); gl("j1", ULML); J("jjz j1, ul_free"); li("j1", B + ULMB); li("j2", B + ULXB); gl("j3", ULML); gs("j3", ULXL); J("jcall ul_cpy")
+        o("ul_have:")
+        li("j2", B + ULMB); J("jldi j10, 101", "jstb j10, j2, 0"); li("j1", B + ULXB); J("jldi j10, 1", "jadd j2, j2, j10"); gl("j3", ULXL); J("jcall ul_cpy")
+        li("j1", B + ULMB); gl("j2", ULXL); J("jldi j10, 1", "jadd j2, j2, j10"); li("j3", B + ULXB); gl("j4", ULXL); J("jcall ul_ren")
+        J("jldi j10, 12"); li("j11", B + ULTU); J("jldi j12, 5", "jcall r_tocar")
+        li("j11", B + ULTU); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ul_free")
+        J("jldi j10, 6"); li("j11", B + ULXB); gl("j12", ULXL); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("ul_free:")
+        J("jldi j10, 3"); gl("j11", ULB); J("jldi j12, 0", "jcall r_tocar")
+        o("ul_ret:")
+        J("jret")
+
     def birth():
         o("; ONE BEING (gen_leer.py): this program is Luma and Razar. THE ONE JUDGE, in bits, replaces the one above:")
         o(";   worth of the being = sum over her forms [ log2 C(%d, new cells) - letters * log2 15 ] + the best reading" % NCELLS)
@@ -1034,6 +1134,7 @@ def make(g, ST, free):
         o("soy_cuerpo:")
 
     def init():
+        J("jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)")
         J("jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)")
 
     def worth():
@@ -1480,6 +1581,7 @@ def make(g, ST, free):
 
         gears_routines()
         firma_routines()
+        un_libro_routines()
         busca_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
