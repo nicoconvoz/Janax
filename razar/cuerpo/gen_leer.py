@@ -58,6 +58,13 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   how: p thinking, x and a place crossing with that form of hers, l and a way reading (0 what Razar wore, 1 a
   letter, 3 a song, 4 a cell, 5 joining). The first time, before any line, how her eight forms were ("= place
   recipe"): from there every form she ever had is rebuilt by reading down.
+  WHAT SHE READ IS NOT LOST (2026-11-21). Two recipes of hers read better than the one she had from Razar, on a
+  shelf of several domains, and it went unseen twice over: her count of unexpected victories only looked at new
+  thoughts (they were forms already living in her body, read for the first time), and a recipe with a word or a
+  cell is kept in "leido" under its print, so what its letters were could not be said afterwards. Now a victory is
+  any reading better than the best she had, whatever was read; and every reading kept under a print leaves a line
+  in "recetas", a text nothing rewrites: its score, the recipe as it is written and, if it says words of hers, what
+  it meant then (said flat), since her words change when her body does.
   SHE JOINS (the Capitan, 2026-11-20: "para que sea inesperada la victoria tiene que elegir con libertad, ver lo que
   le gusta y unir lo bello, lo verdadero, lo que funciona, romper enunciados y buscar la verdad"). A statement of
   hers is a stretch of a recipe up to its hole: what it says, and what it asks. Her new things were one letter at a
@@ -213,6 +220,7 @@ GZ = 0x1B50                  # she takes her own code apart (r_gears): her progr
 GNM, GCW = 0x1BE0, 0x1C00    # what a gear took, ...; a piece being named: its registers' names, its instructions
 D0 = 0x1C40                  # she digests foreign code (r_digest):
 (DTP, DTE, DTW, DTA, DTN, DTB, DFB, DHC, DWT, DPT, DNN, DRUN, DKK, DFW, DPV, DOUT0, DT1, DT2, DT3, DLN) = (D0 + 8 * i for i in range(20))
+LRC = 0x7FF0                 # "recetas"
 LX, LORG, LLI = 0x7FD8, 0x7FE0, 0x7FE8   # her lineage: the form she crossed with plus one (0: none), that the thought came from
                              # reading (its way plus one), "linaje"
 BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
@@ -1188,6 +1196,36 @@ def make(g, ST, free):
         ld("j2", "GK"); J("jcall r_gear"); gs("j0", CECHO); gl("j1", CNEW); J("jadd j1, j1, j0"); gs("j1", CNEW)
         o("tk_say:")
         gl("j0", CNEW); gl("j1", COLD); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", CNEW); J("jret")
+        o("r_receta:                       ; WHAT SHE READ IS NOT LOST: the recipe just read (RREC, its score RSC) is kept under its")
+        o("                                ; print, so its letters are written in \"recetas\": score, recipe, and what it meant")
+        text(LRC, b"recetas"); li("j9", B + RREC); J("jcall r_flat"); li("j7", B + PBUF)
+        def rch(c): J("jldi j10, %d" % c, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+        gl("j1", RSC); li("j2", BAD); J("jsub j2, j1, j2", "jjnz j2, rct_num"); rch(110); rch(97); rch(100); rch(97); J("jjmp rct_rec")
+        o("rct_num:")
+        J("jjnn j1, rct_pos", "jsub j1, j14, j1"); rch(45)
+        o("rct_pos:")
+        J("jadd j4, j7, j14")
+        o("rct_d:")
+        J("jldi j10, 10", "jdiv j2, j1, j10", "jmul j11, j2, j10", "jsub j11, j1, j11", "jldi j10, 48", "jadd j11, j11, j10", "jstb j11, j7, 0", "jldi j10, 1", "jadd j7, j7, j10",
+          "jadd j1, j2, j14", "jjnz j1, rct_d", "jldi j10, 1", "jsub j5, j7, j10")
+        o("rct_s:")
+        J("jsub j10, j4, j5", "jjnn j10, rct_rec", "jldb j10, j4, 0", "jldb j11, j5, 0", "jstb j11, j4, 0", "jstb j10, j5, 0", "jldi j10, 1", "jadd j4, j4, j10", "jsub j5, j5, j10", "jjmp rct_s")
+        def run(tag, off):              # j3 letters from j9 + off, each as it is written, at j7
+            J("jldi j4, 0")
+            o("%s:" % tag)
+            J("jsub j10, j4, j3", "jjnn j10, %s_d" % tag, "jadd j5, j9, j4", "jldb j5, j5, %d" % off, "jldi j10, 10", "jsub j10, j5, j10", "jjn j10, %s_n" % tag, "jldi j10, 7", "jadd j5, j5, j10")
+            o("%s_n:" % tag)
+            J("jldi j10, 48", "jadd j5, j5, j10", "jstb j5, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jadd j4, j4, j10", "jjmp %s" % tag)
+            o("%s_d:" % tag)
+        o("rct_rec:")
+        rch(32); li("j9", B + RREC); J("jldb j3, j9, 0"); run("rct_w", 1)
+        gl("j1", FLE); J("jjz j1, rct_end"); rch(32); rch(61); rch(32); li("j9", B + FLB); gl("j3", FLN); run("rct_f", 0)
+        o("rct_end:")
+        rch(10); li("j10", B + PBUF); J("jsub j7, j7, j10"); gs("j7", T0)
+        li("j11", B + LRC); J("jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjn j9, rct_ret")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jldi j10, 6"); li("j11", B + PBUF); gl("j12", T0); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("rct_ret:")
+        J("jret")
         o("r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, the difference")
         o("                                ; with the form it takes the place of, a line of text added to \"linaje\". Uses j0-j13")
         text(LLI, b"linaje")
@@ -1753,12 +1791,15 @@ def make(g, ST, free):
         gs("j0", RUNIQ)
         o("ru_done:")
         J("jcall r_read_add")
+        gl("j1", RHI); J("jldi j10, 60", "jshr j1, j1, j10", "jldi j10, 15", "jsub j1, j1, j10", "jjnz j1, ru_named", "jcall r_receta")
+        o("ru_named:")
         if UNICO:
             gl("j1", RBR); J("jjz j1, ru_pay"); inc(NB); gl("j1", RUNIQ); J("jjz j1, ru_pay"); inc(SB)
             o("ru_pay:")
-            gl("j1", RKIND); J("jjz j1, ru_last"); gl("j1", RUNIQ); J("jjz j1, ru_vic"); inc(S5)
+            gl("j1", RKIND); J("jjz j1, ru_vic"); gl("j1", RUNIQ); J("jjz j1, ru_vic"); inc(S5)
             gl("j1", RARM); J("jldi j10, 5", "jsub j10, j1, j10", "jjnz j10, ru_vic"); inc(SJ)
-            o("ru_vic:")
+            o("ru_vic:                         ; (a victory is any reading better than the best she had: a form of hers read")
+            o("                                ; for the first time too, not only a new thought)")
             gl("j1", RVIC); J("jjz j1, ru_last"); inc(VICT)
             o("ru_last:                        ; and where she is now: the last thing she read, if it said something")
             gl("j1", RSC); li("j2", BAD); J("jsub j1, j1, j2", "jjz j1, ru_end"); gl("j1", RKIND); J("jldi j10, 1", "jsub j1, j1, j10", "jjnz j1, ru_end")

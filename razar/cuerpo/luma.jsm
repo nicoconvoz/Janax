@@ -8459,6 +8459,190 @@ tk_say:
   jshi j6, 0
   jld j0, j6, 01AD0h
   jret
+r_receta:                       ; WHAT SHE READ IS NOT LOST: the recipe just read (RREC, its score RSC) is kept under its
+                                ; print, so its letters are written in "recetas": score, recipe, and what it meant
+  jldi j6, 015Eh
+  jshi j6, 0
+  jldi j1, 114
+  jstb j1, j6, 07FF0h
+  jldi j1, 101
+  jstb j1, j6, 07FF1h
+  jldi j1, 99
+  jstb j1, j6, 07FF2h
+  jldi j1, 101
+  jstb j1, j6, 07FF3h
+  jldi j1, 116
+  jstb j1, j6, 07FF4h
+  jldi j1, 97
+  jstb j1, j6, 07FF5h
+  jldi j1, 115
+  jstb j1, j6, 07FF6h
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jcall r_flat
+  jldi j7, 015Eh
+  jshi j7, 02000h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016C8h
+  jldi j2, -16384
+  jshi j2, 0
+  jshi j2, 0
+  jshi j2, 0
+  jsub j2, j1, j2
+  jjnz j2, rct_num
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 100
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp rct_rec
+rct_num:
+  jjnn j1, rct_pos
+  jsub j1, j14, j1
+  jldi j10, 45
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+rct_pos:
+  jadd j4, j7, j14
+rct_d:
+  jldi j10, 10
+  jdiv j2, j1, j10
+  jmul j11, j2, j10
+  jsub j11, j1, j11
+  jldi j10, 48
+  jadd j11, j11, j10
+  jstb j11, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j1, j2, j14
+  jjnz j1, rct_d
+  jldi j10, 1
+  jsub j5, j7, j10
+rct_s:
+  jsub j10, j4, j5
+  jjnn j10, rct_rec
+  jldb j10, j4, 0
+  jldb j11, j5, 0
+  jstb j11, j4, 0
+  jstb j10, j5, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jsub j5, j5, j10
+  jjmp rct_s
+rct_rec:
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j9, 015Eh
+  jshi j9, 01700h
+  jldb j3, j9, 0
+  jldi j4, 0
+rct_w:
+  jsub j10, j4, j3
+  jjnn j10, rct_w_d
+  jadd j5, j9, j4
+  jldb j5, j5, 1
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjn j10, rct_w_n
+  jldi j10, 7
+  jadd j5, j5, j10
+rct_w_n:
+  jldi j10, 48
+  jadd j5, j5, j10
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp rct_w
+rct_w_d:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 016F8h
+  jjz j1, rct_end
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 61
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j9, 015Eh
+  jshi j9, 03001h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 016E8h
+  jldi j4, 0
+rct_f:
+  jsub j10, j4, j3
+  jjnn j10, rct_f_d
+  jadd j5, j9, j4
+  jldb j5, j5, 0
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjn j10, rct_f_n
+  jldi j10, 7
+  jadd j5, j5, j10
+rct_f_n:
+  jldi j10, 48
+  jadd j5, j5, j10
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp rct_f
+rct_f_d:
+rct_end:
+  jldi j10, 10
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 015Eh
+  jshi j10, 02000h
+  jsub j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01668h
+  jldi j11, 015Eh
+  jshi j11, 07FF0h
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, rct_ret
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j10, 6
+  jldi j11, 015Eh
+  jshi j11, 02000h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01668h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+rct_ret:
+  jret
 r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, the difference
                                 ; with the form it takes the place of, a line of text added to "linaje". Uses j0-j13
   jldi j6, 015Eh
@@ -9908,10 +10092,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 027B1h
-  jshi j2, 01353h
-  jshi j2, 0DD57h
-  jshi j2, 0D083h
+  jldi j2, 08FAh
+  jshi j2, 079D3h
+  jshi j2, 04197h
+  jshi j2, 09907h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -16556,6 +16740,16 @@ ru_done:
   jcall r_read_add
   jldi j6, 015Eh
   jshi j6, 0
+  jld j1, j6, 01628h
+  jldi j10, 60
+  jshr j1, j1, j10
+  jldi j10, 15
+  jsub j1, j1, j10
+  jjnz j1, ru_named
+  jcall r_receta
+ru_named:
+  jldi j6, 015Eh
+  jshi j6, 0
   jld j1, j6, 01B28h
   jjz j1, ru_pay
   jldi j6, 015Eh
@@ -16582,7 +16776,7 @@ ru_pay:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01638h
-  jjz j1, ru_last
+  jjz j1, ru_vic
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01B40h
@@ -16609,7 +16803,8 @@ ru_pay:
   jldi j6, 015Eh
   jshi j6, 0
   jst j1, j6, 01BD8h
-ru_vic:
+ru_vic:                         ; (a victory is any reading better than the best she had: a form of hers read
+                                ; for the first time too, not only a new thought)
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01B48h
