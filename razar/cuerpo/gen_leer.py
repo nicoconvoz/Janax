@@ -51,9 +51,13 @@ HER TISSUES (the Capitan: "rearticular por tipo de celula en evolucion... no es 
   once, in organo.inc (HER CELLS TALK), and done the same here for her body (r_talk).
   HER LINEAGE (the Capitan, 2026-11-21: "podes rastrear la genealogia del mecanismo que invento, de donde lo
   obtuvo"). Her archive is a ring of her last verdicts and turns round in an hour: where a living form came from was
-  lost. Now every form that wins leaves a line in "linaje", a text nothing ever rewrites: when (her epoch), in
-  which place of her body, what was born, what it replaced, and how: thinking (a letter changed, put in or taken
-  out), crossing (and with which form of hers), or reading (and by which way: a letter, a song, a cell, joining).
+  lost. Now every form that wins leaves a line in "linaje", a text nothing ever rewrites. ONLY THE DIFFERENCE (the
+  Capitan: "no anotes todo, solo la diff: ahorremos espacio"): the mother of a form is always the one that lived in
+  its place, so a line says what changed and no more:
+      <her epoch> <place 1-8> <how many letters stay at the start>[-<letters taken out>][+<letters put in>] <how>
+  how: p thinking, x and a place crossing with that form of hers, l and a way reading (0 what Razar wore, 1 a
+  letter, 3 a song, 4 a cell, 5 joining). The first time, before any line, how her eight forms were ("= place
+  recipe"): from there every form she ever had is rebuilt by reading down.
   SHE JOINS (the Capitan, 2026-11-20: "para que sea inesperada la victoria tiene que elegir con libertad, ver lo que
   le gusta y unir lo bello, lo verdadero, lo que funciona, romper enunciados y buscar la verdad"). A statement of
   hers is a stretch of a recipe up to its hole: what it says, and what it asks. Her new things were one letter at a
@@ -1184,44 +1188,56 @@ def make(g, ST, free):
         ld("j2", "GK"); J("jcall r_gear"); gs("j0", CECHO); gl("j1", CNEW); J("jadd j1, j1, j0"); gs("j1", CNEW)
         o("tk_say:")
         gl("j0", CNEW); gl("j1", COLD); J("jsub j1, j0, j1", "jcall r_said"); gl("j0", CNEW); J("jret")
-        o("r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, a line of text")
-        o("                                ; added to \"linaje\". Uses j0-j13")
-        text(LLI, b"linaje"); li("j7", B + PBUF)
+        o("r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, the difference")
+        o("                                ; with the form it takes the place of, a line of text added to \"linaje\". Uses j0-j13")
+        text(LLI, b"linaje")
+        li("j11", B + LLI); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, li_ret")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); gs("j13", T0); li("j7", B + PBUF)
         def ch(c): J("jldi j10, %d" % c, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
-        def word(w):
-            for c in w: ch(c)
         def dec(tag):                   # j1 = a number, in tens, at j7
             J("jldi j3, 0", "jadd j4, j7, j14")
             o("%s:" % tag)
             J("jldi j10, 10", "jdiv j2, j1, j10", "jmul j11, j2, j10", "jsub j11, j1, j11", "jldi j10, 48", "jadd j11, j11, j10", "jstb j11, j7, 0", "jldi j10, 1", "jadd j7, j7, j10",
-              "jadd j3, j3, j10", "jadd j1, j2, j14", "jjnz j1, %s" % tag)
-            o("%s_r:                           ; (said backwards: turned round)" % tag)
-            J("jldi j10, 1", "jsub j5, j7, j10")
+              "jadd j1, j2, j14", "jjnz j1, %s" % tag, "jldi j10, 1", "jsub j5, j7, j10")
             o("%s_s:" % tag)
             J("jsub j10, j4, j5", "jjnn j10, %s_d" % tag, "jldb j10, j4, 0", "jldb j11, j5, 0", "jstb j11, j4, 0", "jstb j10, j5, 0", "jldi j10, 1", "jadd j4, j4, j10", "jsub j5, j5, j10", "jjmp %s_s" % tag)
             o("%s_d:" % tag)
-        def rec(tag):                   # the recipe at j9 (how many letters, then the letters), each as it is written, at j7
-            J("jldb j3, j9, 0", "jldi j4, 0")
+        def letters(tag):               # the letters j4 to j3 (not this one) of the recipe at j9, each as it is written, at j7
             o("%s:" % tag)
             J("jsub j10, j4, j3", "jjnn j10, %s_d" % tag, "jadd j5, j9, j4", "jldb j5, j5, 1", "jldi j10, 10", "jsub j10, j5, j10", "jjn j10, %s_n" % tag, "jldi j10, 7", "jadd j5, j5, j10")
             o("%s_n:" % tag)
             J("jldi j10, 48", "jadd j5, j5, j10", "jstb j5, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jadd j4, j4, j10", "jjmp %s" % tag)
             o("%s_d:" % tag)
-        ld("j1", "EPOCH"); dec("li_e"); ch(32); ld("j1", "JF"); J("jldi j10, 1", "jadd j1, j1, j10"); dec("li_p"); ch(32)
-        li("j9", CAND); rec("li_c"); word(b" <- "); ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); rec("li_f"); ch(32)
-        gl("j1", LORG); J("jjz j1, li_think"); word(b"leyendo")
-        for k, w in ((2, b" una letra"), (4, b" una cancion"), (5, b" una celula"), (6, b" uniendo")):
-            gl("j1", LORG); J("jldi j10, %d" % k, "jsub j10, j1, j10", "jjnz j10, li_o%d" % k); word(w)
-            o("li_o%d:" % k)
-        J("jjmp li_end")
+        o("  ; the first time: how her eight forms are, before this one takes its place")
+        gl("j1", T0); J("jjnz j1, li_line"); gs("j14", T1)
+        o("li_b:")
+        ch(61); ch(32); gl("j1", T1); J("jldi j10, 49", "jadd j1, j1, j10", "jstb j1, j7, 0", "jldi j10, 1", "jadd j7, j7, j10"); ch(32)
+        gl("j1", T1); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jldb j3, j9, 0", "jldi j4, 0"); letters("li_bl"); ch(10)
+        inc(T1); J("jldi j10, %d" % NF, "jsub j10, j1, j10", "jjnz j10, li_b")
+        o("li_line:                        ; what stays at the start, and at the end: between them, what was taken out and put in")
+        gs("j7", T3); li("j9", CAND); ld("j8", "JFA"); J("jldi j10, %d" % F_REC, "jadd j8, j8, j10", "jldb j3, j9, 0", "jldb j2, j8, 0", "jldi j4, 0")
+        o("li_pf:")
+        J("jsub j10, j4, j3", "jjnn j10, li_pd", "jsub j10, j4, j2", "jjnn j10, li_pd", "jadd j5, j9, j4", "jldb j5, j5, 1", "jadd j11, j8, j4", "jldb j11, j11, 1", "jsub j5, j5, j11", "jjnz j5, li_pd",
+          "jldi j10, 1", "jadd j4, j4, j10", "jjmp li_pf")
+        o("li_pd:")
+        J("jldi j1, 0")
+        o("li_sf:")
+        J("jsub j10, j3, j4", "jsub j10, j1, j10", "jjnn j10, li_sd", "jsub j10, j2, j4", "jsub j10, j1, j10", "jjnn j10, li_sd",
+          "jadd j5, j9, j3", "jsub j5, j5, j1", "jldb j5, j5, 0", "jadd j11, j8, j2", "jsub j11, j11, j1", "jldb j11, j11, 0", "jsub j5, j5, j11", "jjnz j5, li_sd", "jldi j10, 1", "jadd j1, j1, j10", "jjmp li_sf")
+        o("li_sd:")
+        gs("j4", T1); gs("j1", T2); gl("j7", T3)
+        ld("j1", "EPOCH"); dec("li_e"); ch(32); ld("j1", "JF"); J("jldi j10, 1", "jadd j1, j1, j10"); dec("li_p"); ch(32); gl("j1", T1); dec("li_k")
+        ld("j9", "JFA"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10", "jldb j3, j9, 0"); gl("j1", T2); J("jsub j3, j3, j1"); gl("j4", T1); J("jsub j10, j4, j3", "jjnn j10, li_ins"); ch(45); letters("li_rm")
+        o("li_ins:")
+        li("j9", CAND); J("jldb j3, j9, 0"); gl("j1", T2); J("jsub j3, j3, j1"); gl("j4", T1); J("jsub j10, j4, j3", "jjnn j10, li_how"); ch(43); letters("li_in")
+        o("li_how:")
+        ch(32); gl("j1", LORG); J("jjz j1, li_think"); ch(108); gl("j1", LORG); J("jldi j10, 47", "jadd j1, j1, j10", "jstb j1, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jjmp li_end")
         o("li_think:")
-        gl("j1", LX); J("jjnz j1, li_cross"); word(b"pensando"); J("jjmp li_end")
+        gl("j1", LX); J("jjnz j1, li_cross"); ch(112); J("jjmp li_end")
         o("li_cross:")
-        word(b"cruce con "); gl("j1", LX); J("jldi j10, 1", "jsub j1, j1, j10"); form_addr("j9", "j1"); J("jldi j10, %d" % F_REC, "jadd j9, j9, j10"); rec("li_x")
+        ch(120); gl("j1", LX); J("jldi j10, 48", "jadd j1, j1, j10", "jstb j1, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
         o("li_end:")
-        ch(10); li("j10", B + PBUF); J("jsub j7, j7, j10"); gs("j7", T0)
-        li("j11", B + LLI); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, li_ret")
-        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jldi j10, 6"); li("j11", B + PBUF); gl("j12", T0); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        ch(10); li("j10", B + PBUF); J("jsub j12, j7, j10", "jldi j10, 6"); li("j11", B + PBUF); J("jcall r_file", "jldi j10, 7", "jcall r_file")
         o("li_ret:")
         gs("j14", LX); J("jret")
         o("r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her")
