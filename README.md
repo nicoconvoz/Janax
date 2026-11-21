@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.13:** [10.5281/zenodo.24418731](https://doi.org/10.5281/zenodo.24418731)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.27:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,18 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-21, v1.27): superó lo que le dieron, y la vara se mueve con ella
+
+DOI de esta versión: DOI_PENDIENTE.
+
+En un estante de cinco dominios (el Nuevo Testamento, el *Quijote*, un diario, código y tres preguntas) **una receta
+hecha por ella leyó 1.008.812 bits, contra 875.172 de la que heredó de Razar.** Y esta vez quedó escrita:
+`21293A32E34E945FF49131A4122E5E5`. No tiró lo heredado: lo usó como una palabra adentro de su propia oración.
+[La receta, letra por letra](documentacion/razar/datos/receta-que-supero-a-la-heredada.md). Su contador de victorias
+no la contó: comparaba bits con milésimas de bit, y la prueba se había hecho con números demasiado chicos para
+notarlo. **El error está registrado.** Arreglado sin techo: lo inesperado ya no es batir un récord, es leer más
+arriba de lo que ella espera, y lo que espera sale de sus propias lecturas. [Notas de la v1.27](documentacion/release-v1.27.md).
 
 ## Novedad (2026-11-21, v1.13): lo que leyó no se pierde
 
