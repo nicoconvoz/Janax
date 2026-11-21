@@ -17,7 +17,9 @@ if PANTALLA_PARTE = 0
   scr_quiet_env db 'JANAX_SIN_VENTANA', 0
   scr_back_env db 'JANAX_VENTANA_FONDO', 0
   scr_class_name du 'JanaxPantalla', 0
-  scr_title du 'Janax', 0
+  scr_title du 'Janax', 0         ; the window's title (kind 43 changes it: screen_title)
+            rw SCR_TITLE_MAX - 5
+SCR_TITLE_MAX = 512               ; the letters a title keeps (criterion: what any window shows, many times over)
   scr_ready db 0                ; the lock is built and the host asked about the window
   scr_quiet db 0                ; 1: never a window
   scr_back  db 0                ; 1: born behind the others, without taking the keyboard
@@ -56,6 +58,38 @@ if PANTALLA_PARTE = 0
   scr_ring  rb SCR_RING * 32    ; {kind, x, y, extra} each
 
 else
+
+; rsi = a text (a pointer in this process), rcx = its bytes -> rax = the letters the window's title got (each byte one
+; letter; past SCR_TITLE_MAX they are left out). If the window lives it is renamed by its own thread (a message: no
+; window is touched from another thread); if it is not built yet, it is born with this title. Keeps rbx, rbp, r12-r15.
+screen_title:
+        push    rsi rdi
+        mov     rax, rcx
+        cmp     rax, SCR_TITLE_MAX
+        jb      @f
+        mov     rax, SCR_TITLE_MAX
+@@:     lea     rdi, [scr_title]
+        xor     ecx, ecx
+        jmp     .copy
+.copy_lap:
+        movzx   edx, byte [rsi + rcx]
+        mov     [rdi + rcx*2], dx
+        inc     rcx
+.copy:
+        cmp     rcx, rax
+        jb      .copy_lap
+        mov     word [rdi + rcx*2], 0
+        mov     rcx, [scr_hwnd]
+        test    rcx, rcx
+        jz      .done
+        push    rax                     ; (the stack is 16-aligned here: four pushes after the call)
+        sub     rsp, 32
+        invoke  PostMessageW, rcx, 8001h, 0, 0
+        add     rsp, 32
+        pop     rax
+.done:
+        pop     rdi rsi
+        ret
 
 ; rsi = a .nube version 3 cloud (a pointer in this process), rcx = its bytes -> rax = the particles of its first
 ; level now on the screen, or -1 if it is malformed: bad magic or version, no level, a size past its bytes, a side 0
@@ -326,6 +360,14 @@ screen_proc:
 @@:     cmp     edx, WM_NCDESTROY
         jne     @f
         mov     qword [scr_hwnd], 0
+@@:     cmp     edx, 8001h              ; its title changed (screen_title): renamed here, by its own thread
+        jne     @f
+        sub     rsp, 40
+        lea     rdx, [scr_title]
+        call    [SetWindowTextW]
+        add     rsp, 40
+        xor     eax, eax
+        ret
 @@:     cmp     edx, WM_PAINT
         je      .paint
         cmp     edx, WM_DESTROY

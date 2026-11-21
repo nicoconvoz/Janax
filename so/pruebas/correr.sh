@@ -596,6 +596,15 @@ caso "pantalla: sin permiso de pantalla no muestra" 0 0 "$fijo0
 P0 codigo=0 j0=FFFFFFFFFFFFFFFF t=*
 ventanilla: *
 porteros: *" pantalla_mostrar@m
+# Naming the window (43): a program names its own window, never someone outside it. With no window (the tests) the name
+# is kept for when one is born: "Luma" answers 4; a text outside the cabin, -1; without the screen right, denied.
+caso "pantalla: el programa le pone nombre a su ventana" 0 0 "$fijo0
+P0 codigo=0 j0=0000000000000041 t=*
+ventanilla: *" pantalla_titulo
+caso "pantalla: sin permiso de pantalla no nombra la ventana" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFF1 t=*
+ventanilla: *
+porteros: *" pantalla_titulo@m
 # Waiting for an event of the screen (41) with no window ever opened: 0 at once, never a sleep; a record outside the
 # cabin answers -1; without the screen right, denied.
 caso "pantalla: esperar un evento sin ventana responde 0 enseguida" 0 0 "$fijo0

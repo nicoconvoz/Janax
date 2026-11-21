@@ -607,6 +607,7 @@ init_popc:
   jcall r_free_load             ; her own conclusions, kept in the folder (libre)
   jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)
   jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)
+  jcall r_dlg_load               ; her word, in her window (gen_leer.py)
   jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)
   ; the forms' archive as a ring (its handle is set by r_load_archive)
   jldi j3, 06720h
@@ -10097,10 +10098,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03333h
-  jshi j2, 08DD8h
-  jshi j2, 028C9h
-  jshi j2, 0B645h
+  jldi j2, 0FC8h
+  jshi j2, 0F99h
+  jshi j2, 037BFh
+  jshi j2, 0755h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -14711,7 +14712,9 @@ nm_got:
   jldi j6, 015Eh
   jshi j6, 0
   jst j4, j6, 01D60h
-  jjnz j4, nm_ret
+  jjz j4, nm_ask
+  jcall r_nombre_titulo
+  jjmp nm_ret
 nm_ask:
   jldi j1, 1
   jldi j6, 015Eh
@@ -14796,18 +14799,19 @@ nd_name:
   jldi j6, 015Eh
   jshi j6, 0
   jld j4, j6, 01D60h
-  jldi j1, 4
-  jldi j2, 91
+  jldi j1, 2
+  jldi j2, 2
   jcall r_txt
+  jcall r_dlg_draw
 nd_ret:
   jret
-r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0
+r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0;
+                                ; when she does not ask, the keys of her word are hers too (HER WORD)
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01D50h
   jjnz j1, nk_go
-  jldi j0, 0
-  jret
+  jjmp r_dlg_key
 nk_go:
   jldi j10, 1
   jst j10, j14, 0210h
@@ -14964,6 +14968,1504 @@ nkp_r:
   jldi j6, 015Eh
   jshi j6, 0
   jst j14, j6, 01D50h
+  jcall r_nombre_titulo
+  jret
+r_nombre_titulo:                ; her window wears her name: she asks the kernel herself (request 43)
+  jldi j10, 43
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j12, 64
+  jadd j11, j11, j12
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01D60h
+  jcall r_tocar
+  jret
+r_dlg_save:                     ; her counts into "charla"
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6160
+  jadd j11, j11, j15
+  jldi j10, 12
+  jldi j12, 6
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6160
+  jadd j11, j11, j15
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dsv_r
+  jldi j10, 6
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6424
+  jadd j11, j11, j15
+  jldi j12, 32
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+dsv_r:
+  jret
+r_dlg_load:                     ; HER WORD: its room, its labels, her counts
+  jldi j1, 02000h
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01D68h
+  jadd j6, j0, j14
+  jldi j2, 1024
+dll_z:
+  jst j14, j6, 0
+  jldi j10, 8
+  jadd j6, j6, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, dll_z
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jldi j10, 100
+  jstb j10, j6, 6144
+  jldi j10, 105
+  jstb j10, j6, 6145
+  jldi j10, 97
+  jstb j10, j6, 6146
+  jldi j10, 108
+  jstb j10, j6, 6147
+  jldi j10, 111
+  jstb j10, j6, 6148
+  jldi j10, 103
+  jstb j10, j6, 6149
+  jldi j10, 111
+  jstb j10, j6, 6150
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jldi j10, 99
+  jstb j10, j6, 6160
+  jldi j10, 104
+  jstb j10, j6, 6161
+  jldi j10, 97
+  jstb j10, j6, 6162
+  jldi j10, 114
+  jstb j10, j6, 6163
+  jldi j10, 108
+  jstb j10, j6, 6164
+  jldi j10, 97
+  jstb j10, j6, 6165
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6160
+  jadd j11, j11, j15
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dll_r
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6424
+  jadd j11, j11, j15
+  jldi j12, 32
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+dll_r:
+  jret
+r_dlg_write:                    ; a line of "dialogo": who (j1: 0 "vos: ", 1 "luma: ", 2 her silence), then the text at
+                                ; j2 (j3 bytes)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01D20h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01D28h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 4096
+  jadd j7, j7, j15
+  jldi j4, 0
+  jldi j10, 0
+  jsub j10, j1, j10
+  jjnz j10, dw_0
+  jldi j10, 118
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 115
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 58
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dw_t
+dw_0:
+  jldi j10, 1
+  jsub j10, j1, j10
+  jjnz j10, dw_1
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 109
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 58
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dw_t
+dw_1:
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjnz j10, dw_2
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 109
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 58
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 40
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 105
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 103
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 105
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 115
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 114
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 41
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dw_t
+dw_2:
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjnz j10, dw_3
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 109
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 58
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 40
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 114
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 113
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 111
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 110
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 101
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 115
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 114
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 41
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dw_t
+dw_3:
+dw_t:
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjz j10, dw_nl
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjz j10, dw_nl
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D20h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D28h
+  jldi j4, 0
+dw_c:
+  jsub j10, j4, j3
+  jjnn j10, dw_nl
+  jadd j5, j2, j4
+  jldb j5, j5, 0
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jadd j4, j4, j10
+  jjmp dw_c
+dw_nl:
+  jldi j10, 10
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01D68h
+  jldi j15, 4096
+  jadd j8, j8, j15
+  jsub j7, j7, j8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01D30h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6144
+  jadd j11, j11, j15
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dw_r
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j10, 6
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 4096
+  jadd j11, j11, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01D30h
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+dw_r:
+  jret
+r_dlg_words:                    ; the words of more than three letters at j1 (j2 bytes) -> the words said to her
+  jadd j10, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j10, j6, 07F08h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6456
+dws_l:
+  jcall bw_word
+  jjz j0, dws_d
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07F00h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D78h
+  jsub j1, j1, j2
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjn j10, dws_l
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6456
+  jldi j10, 120
+  jsub j10, j3, j10
+  jjnn j10, dws_d
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 2048
+  jadd j7, j7, j15
+  jldi j5, 0
+dws_u:                          ; (each word once)
+  jsub j10, j5, j3
+  jjnn j10, dws_add
+  jldi j10, 3
+  jshl j10, j5, j10
+  jadd j10, j7, j10
+  jld j10, j10, 0
+  jsub j10, j10, j4
+  jjz j10, dws_l
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp dws_u
+dws_add:
+  jldi j10, 3
+  jshl j10, j3, j10
+  jadd j10, j7, j10
+  jst j4, j10, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j3, j6, 6456
+  jjmp dws_l
+dws_d:
+  jldi j10, 1
+  jadd j1, j1, j10
+  jret
+r_dlg_answer:                   ; the line of all her books that shares most of the words said to her -> D_OUT (and
+                                ; D_OUTL; 0: none shares any)
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6464
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6560
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6456
+  jjz j1, dan_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+  jcall ul_list
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01EA0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6504
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6496
+dan_f:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6496
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjnn j10, dan_end
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 6504
+  ; (a book: its label starts with libro, or elibro while it waits its turn)
+  jldb j3, j9, 8
+  jldi j10, 101
+  jsub j10, j3, j10
+  jjnz j10, dan_b
+  jldi j10, 1
+  jadd j9, j9, j10
+dan_b:
+  jldb j3, j9, 8
+  jldi j10, 108
+  jsub j10, j3, j10
+  jjnz j10, dan_n
+  jldb j3, j9, 9
+  jldi j10, 105
+  jsub j10, j3, j10
+  jjnz j10, dan_n
+  jldb j3, j9, 10
+  jldi j10, 98
+  jsub j10, j3, j10
+  jjnz j10, dan_n
+  jldb j3, j9, 11
+  jldi j10, 114
+  jsub j10, j3, j10
+  jjnz j10, dan_n
+  jldb j3, j9, 12
+  jldi j10, 111
+  jsub j10, j3, j10
+  jjnz j10, dan_n
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 6504
+  jldi j10, 8
+  jadd j11, j9, j10
+  jld j12, j9, 0
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dan_n
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j13, j6, 6520
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6520
+  jldi j10, 64
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j0, j6, 6512
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6512
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j12, j6, 6520
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6512
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6520
+  jadd j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 07F08h
+dan_line:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07F00h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 07F08h
+  jsub j10, j1, j2
+  jjnn j10, dan_free
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6528
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6536
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6560
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6560
+dan_w:
+  jcall bw_word
+  jjz j0, dan_eol
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07F00h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D78h
+  jsub j1, j1, j2
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjn j10, dan_w
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6456
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 2048
+  jadd j7, j7, j15
+  jldi j5, 0
+dan_m:
+  jsub j10, j5, j3
+  jjnn j10, dan_w
+  jldi j10, 3
+  jshl j8, j5, j10
+  jadd j8, j7, j8
+  jld j10, j8, 0
+  jsub j10, j10, j4
+  jjz j10, dan_hit
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp dan_m
+dan_hit:                        ; (a word said to her counts once a line: its mark is the line)
+  jldi j10, 1024
+  jadd j8, j8, j10
+  jld j10, j8, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6560
+  jsub j10, j10, j11
+  jjz j10, dan_w
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6560
+  jst j11, j8, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6536
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6536
+  jjmp dan_w
+dan_eol:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6536
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6464
+  jsub j10, j1, j2
+  jjn j10, dan_nl
+  jjz j10, dan_nl
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6464
+  ; (the best so far: kept, up to the end of its line or what her room holds)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6528
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 07F00h
+  jsub j3, j2, j1
+  jldi j10, 1000
+  jsub j10, j3, j10
+  jjn j10, dan_k
+  jldi j3, 1000
+dan_k:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j3, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 1024
+  jadd j2, j2, j15
+  jldi j4, 0
+dan_kc:
+  jsub j10, j4, j3
+  jjnn j10, dan_nl
+  jadd j5, j1, j4
+  jldb j5, j5, 0
+  jldi j10, 13
+  jsub j10, j5, j10
+  jjnz j10, dan_k2
+  jldi j5, 32
+dan_k2:
+  jadd j10, j2, j4
+  jstb j5, j10, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dan_kc
+dan_nl:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 07F00h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jjmp dan_line
+dan_free:
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6512
+  jldi j12, 0
+  jcall r_tocar
+dan_n:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 6504
+  jld j3, j9, 0
+  jldi j10, 7
+  jadd j3, j3, j10
+  jldi j10, -8
+  jand j3, j3, j10
+  jldi j10, 8
+  jadd j3, j3, j10
+  jadd j9, j9, j3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j9, j6, 6504
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6496
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6496
+  jjmp dan_f
+dan_end:
+  jldi j10, 3
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01EA0h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+dan_r:
+  jret
+r_dlg_sent:                     ; Enter: what was typed is said to her. If what she said waited, it was answered (it
+                                ; pays). Then she answers, or not, by her wish
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 0
+  jadd j2, j2, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6400
+  jldi j1, 0
+  jcall r_dlg_write
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 0
+  jadd j1, j1, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6400
+  jcall r_dlg_words
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6400
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6416
+  jjz j1, dse_w
+  jldi j10, 1
+  jsub j10, j1, j10
+  jjnz j10, dse_h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6432
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6432
+  jjmp dse_p
+dse_h:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6448
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6448
+dse_p:
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6416
+dse_w:                          ; her wish to answer: (S + 1/2) / (N + 1), against her luck
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6432
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 19
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6424
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01D38h
+  jldi j1, 010h
+  jshi j1, 0
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D38h
+  jsub j10, j0, j1
+  jjn j10, dse_yes
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6408
+  jldi j1, 2
+  jldi j3, 0
+  jcall r_dlg_write
+  jcall r_dlg_save
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jret
+dse_yes:
+  jcall r_dlg_answer
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6408
+  jjnz j1, dse_has
+  ; (nothing she read shares a word with it: she says so, and it is not counted as an answer)
+  jldi j1, 3
+  jldi j3, 0
+  jcall r_dlg_write
+  jcall r_dlg_save
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jret
+dse_has:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6424
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6424
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 1024
+  jadd j2, j2, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6408
+  jldi j1, 1
+  jcall r_dlg_write
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6416
+  jcall r_dlg_save
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jret
+r_dlg_wish:                     ; -> DWH: her wish to speak first, (S + 1/2) / (N + 1) as her acts' (0 while what she
+                                ; said waits, or with no room)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01D70h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jjz j1, dwi_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6416
+  jjnz j1, dwi_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6448
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 20
+  jshl j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6440
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01D70h
+dwi_r:
+  jret
+r_dlg_talk:                     ; SHE SPEAKS FIRST: one of the questions of her heart, by her luck
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6440
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6440
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jldi j1, 108
+  jstb j1, j6, 02D10h
+  jldi j1, 105
+  jstb j1, j6, 02D11h
+  jldi j1, 98
+  jstb j1, j6, 02D12h
+  jldi j1, 114
+  jstb j1, j6, 02D13h
+  jldi j1, 111
+  jstb j1, j6, 02D14h
+  jldi j1, 45
+  jstb j1, j6, 02D15h
+  jldi j1, 112
+  jstb j1, j6, 02D16h
+  jldi j1, 114
+  jstb j1, j6, 02D17h
+  jldi j1, 101
+  jstb j1, j6, 02D18h
+  jldi j1, 103
+  jstb j1, j6, 02D19h
+  jldi j1, 117
+  jstb j1, j6, 02D1Ah
+  jldi j1, 110
+  jstb j1, j6, 02D1Bh
+  jldi j1, 116
+  jstb j1, j6, 02D1Ch
+  jldi j1, 97
+  jstb j1, j6, 02D1Dh
+  jldi j1, 115
+  jstb j1, j6, 02D1Eh
+  jldi j11, 015Eh
+  jshi j11, 02D10h
+  jldi j12, 15
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dtk_r
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 4096
+  jadd j11, j11, j15
+  jldi j12, 1000
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01D38h
+  jldi j10, 7
+  jcall r_file
+  ; (how many lines say something, then one of them)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 4096
+  jadd j7, j7, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D38h
+  jldi j4, 0
+  jldi j8, 0
+  jldi j9, 1
+dtk_c:
+  jsub j10, j4, j3
+  jjnn j10, dtk_cd
+  jadd j5, j7, j4
+  jldb j5, j5, 0
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjnz j10, dtk_cn
+  jjz j9, dtk_cz
+  jjmp dtk_cn2
+dtk_cz:
+  jldi j10, 1
+  jadd j8, j8, j10
+dtk_cn2:
+  jldi j9, 1
+  jjmp dtk_cx
+dtk_cn:
+  jldi j10, 13
+  jsub j10, j5, j10
+  jjz j10, dtk_cx
+  jldi j9, 0
+dtk_cx:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dtk_c
+dtk_cd:
+  jjnz j9, dtk_has
+  jldi j10, 1
+  jadd j8, j8, j10
+dtk_has:
+  jjz j8, dtk_r
+  jadd j1, j8, j14
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01D20h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 4096
+  jadd j7, j7, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D38h
+  jldi j4, 0
+  jldi j8, 0
+  jldi j9, 1
+dtk_s:                          ; (the chosen line: from its first letter to its end)
+  jsub j10, j4, j3
+  jjnn j10, dtk_r
+  jadd j5, j7, j4
+  jldb j5, j5, 0
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjz j10, dtk_sl
+  jldi j10, 13
+  jsub j10, j5, j10
+  jjz j10, dtk_sx
+  jjz j9, dtk_sx
+  jldi j9, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D20h
+  jsub j10, j8, j1
+  jjnz j10, dtk_sn
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 1024
+  jadd j2, j2, j15
+  jldi j11, 0
+dtk_cp:
+  jsub j10, j4, j3
+  jjnn j10, dtk_out
+  jadd j5, j7, j4
+  jldb j5, j5, 0
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjz j10, dtk_out
+  jldi j10, 13
+  jsub j10, j5, j10
+  jjz j10, dtk_out
+  jadd j10, j2, j11
+  jstb j5, j10, 0
+  jldi j10, 1
+  jadd j11, j11, j10
+  jadd j4, j4, j10
+  jjmp dtk_cp
+dtk_out:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j11, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 1024
+  jadd j2, j2, j15
+  jadd j3, j11, j14
+  jldi j1, 1
+  jcall r_dlg_write
+  jldi j10, 2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6416
+  jcall r_dlg_save
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jret
+dtk_sn:
+  jldi j10, 1
+  jadd j8, j8, j10
+dtk_sx:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dtk_s
+dtk_sl:
+  jldi j9, 1
+  jjmp dtk_sx
+dtk_r:
+  jcall r_dlg_save
+  jret
+r_dlg_key:                      ; j3 = a key, when she is not asking her name -> j0 = 1 if it was for her word
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jjnz j1, dk_go
+  jldi j0, 0
+  jret
+dk_go:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6400
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 0
+  jadd j7, j7, j15
+  jldi j10, 8
+  jsub j10, j3, j10
+  jjnz j10, dk_enter
+  jjz j4, dk_yes
+  jldi j10, 1
+  jsub j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 6400
+  jjmp dk_yes
+dk_enter:
+  jldi j10, 13
+  jsub j10, j3, j10
+  jjnz j10, dk_char
+  jjz j4, dk_yes
+  jcall r_dlg_sent
+  jjmp dk_yes
+dk_char:
+  jldi j10, 192
+  jsub j10, j3, j10
+  jjnz j10, dk_c2
+  jldi j3, 78
+dk_c2:
+  jldi j10, 32
+  jsub j10, j3, j10
+  jjz j10, dk_put
+  jldi j10, 48
+  jsub j10, j3, j10
+  jjn j10, dk_no
+  jldi j10, 58
+  jsub j10, j3, j10
+  jjn j10, dk_put
+  jldi j10, 65
+  jsub j10, j3, j10
+  jjn j10, dk_no
+  jldi j10, 91
+  jsub j10, j3, j10
+  jjnn j10, dk_no
+dk_put:
+  jldi j10, 1000
+  jsub j10, j4, j10
+  jjnn j10, dk_yes
+  jadd j5, j7, j4
+  jstb j3, j5, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 6400
+dk_yes:
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jldi j0, 1
+  jret
+dk_no:
+  jldi j0, 0
+  jret
+r_dlg_draw:                     ; her last words (up to four lines of 26 letters) and the line being typed, with a cursor
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jjz j1, ddr_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6408
+  jjz j1, ddr_in
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6544
+ddr_l:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6544
+  jldi j10, 26
+  jmul j2, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6408
+  jsub j4, j4, j2
+  jjn j4, ddr_in
+  jjz j4, ddr_in
+  jldi j10, 26
+  jsub j10, j4, j10
+  jjn j10, ddr_c
+  jldi j4, 26
+ddr_c:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 1024
+  jadd j3, j3, j15
+  jadd j3, j3, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6544
+  jldi j10, 9
+  jmul j2, j1, j10
+  jldi j10, 50
+  jadd j2, j2, j10
+  jldi j1, 2
+  jcall r_txt
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6544
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6544
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjnz j10, ddr_l
+ddr_in:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 0
+  jadd j3, j3, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6400
+  jldi j10, 25
+  jsub j10, j4, j10
+  jjn j10, ddr_t
+  jldi j10, 25
+  jsub j10, j4, j10
+  jsub j3, j3, j10
+  jldi j4, 25
+ddr_t:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01D28h
+  jldi j1, 2
+  jldi j2, 91
+  jcall r_txt
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D28h
+  jldi j10, 6
+  jmul j1, j1, j10
+  jldi j10, 2
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01D30h
+  jldi j9, 0
+ddr_cur:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D30h
+  jadd j1, j1, j9
+  jldi j2, 99
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j9, j6, 01D38h
+  jcall r_plot
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01D38h
+  jldi j10, 1
+  jadd j9, j9, j10
+  jldi j10, 5
+  jsub j10, j9, j10
+  jjnz j10, ddr_cur
+ddr_r:
   jret
 bw_word:                        ; the next word of the line at BP (a run of letters, small or capital alike) -> j0 = 1
                                 ; and j4 its print, or j0 = 0 at the end of the line (BP on it). Uses j1-j3, j10
@@ -14993,6 +16495,9 @@ bww_next:
   jadd j1, j1, j10
   jjmp bww_skip
 bww_have:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01D78h
   jldi j4, -13326
   jshi j4, 09CE4h
   jshi j4, 08422h
@@ -18934,6 +20439,11 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jshi j6, 0
   jld j2, j6, 016C0h
   jadd j1, j1, j2
+  jcall r_dlg_wish
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D70h
+  jadd j1, j1, j2
   jcall r_randmod
   jldi j6, 015Eh
   jshi j6, 0
@@ -18960,6 +20470,11 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jld j3, j6, 5144
   jsub j2, j2, j3
   jjn j2, fr_sleep
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D70h
+  jsub j2, j2, j3
+  jjn j2, fr_talk
   jjmp fr_read
 fr_rest:                        ; nothing, on purpose, for a breath
   jldi j1, 1
@@ -19313,6 +20828,22 @@ fr_r_lens:
 fr_r_cnt:
   jcall r_free_save
 fr_r_on:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 080h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 088h
+  jadd j1, j1, j2
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 080h
+  jsub j2, j0, j1
+  jjn j2, fr_rest
+  jjmp fr_think
+fr_talk:                        ; she speaks first (gen_leer.py: HER WORD)
+  jcall r_dlg_talk
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 080h

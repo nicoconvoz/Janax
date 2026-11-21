@@ -126,7 +126,21 @@ HER NAME, ASKED BY HER (the Capitan, 2026-11-21: "nuestra LUMA VERA tenga ese no
   spaces; the key that erases, erases); Enter keeps it. With the name goes her SEAL, sixteen hexadecimal digits of her
   own luck mixed with what she has rowed: two people may give the same name, but no two of them are the same.
   "nombre" holds the name on its first line and the seal on its second. Afterwards her name is written on her screen,
-  under her forms. While she asks, her keys are only for her name.
+  under her forms, and her window wears it: she asks the kernel herself (request 43, name the window). While she asks, her keys are only for her name.
+HER WORD, IN HER WINDOW (the Capitan, 2026-11-21: "que haya en la misma ventana un canal de comunicacion con LUMA,
+  que se pueda dialogar, incluso que ella pueda tomar la iniciativa cuando quiera, o elegir no contestar: libertad en
+  todo"). Under her forms there is a line where whoever lives with her writes (letters, digits, spaces; Enter sends),
+  and above it the last thing she said. She does not make sentences: she answers with what she has read. Her answer
+  is the line of all her books (the ones on her shelf and the ones waiting) that shares most of the words of more than
+  three letters that were said to her; the first such line, if two share alike. Her freedom, with her own count, the
+  same one as for every act of hers:
+    - to answer or not: each time something is said to her she answers with the wish (S + 1/2) / (N + 1) of answering,
+      N the times she answered and S the times she was answered back. If she does not, she does not, and it is said.
+      If nothing she read shares a word with it, she says so (and that is not counted as an answer).
+    - to speak first: speaking is an act of hers beside resting, thinking, giving, painting, sleeping and reading,
+      chosen by its own wish; she says one of the questions of her heart. It pays if she is answered back. While
+      what she said waits for an answer she does not speak again.
+  Everything said is kept in her house, in "dialogo", a text anyone can read; her counts in "charla".
 ONE BOOK AT A TIME, TURNED BY HER (the Capitan, 2026-11-21: "vigila que LUMA no se atragante: cuando sea mas
   grande va a poder comer mas rapido"; "que coma de a uno: un libro maximo por vez"; "nada de python, todo en janax:
   no quiero cosas ajenas"). With every book on her shelf at once (7.8 MB) a reading took 1.8 GB of the machine. So
@@ -246,6 +260,11 @@ BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): 
 LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
 NM0 = 0x1D50                 # her name (r_nombre): asking (1) or not, the room where the prompt and her name are, its length
 NMASK, NMROOM, NMLEN = NM0, NM0 + 8, NM0 + 16
+DLR, DWH, BWS = NM0 + 24, NM0 + 32, NM0 + 40   # her word: its room; her wish to speak first; where a word began (bw_word)
+# in the room of her word (DLR): what is typed, what she says, the words said to her, a line being written; then her counts
+D_IN, D_OUT, D_WORDS, D_SCR, D_LBL = 0, 0x400, 0x800, 0x1000, 0x1800
+(D_INL, D_OUTL, D_AWAIT, D_NC, D_SC, D_NH, D_SH, D_NW, D_BS, D_BL, D_LB, D_LN, D_LC, D_LI, D_FB, D_FE, D_LS, D_CNT, D_T1, D_T2,
+ D_ID) = (0x1900 + 8 * i for i in range(21))
 FONT = {
     "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".####.....#....#....#....#.....####",
     "D": "####.#...##...##...##...##...#####.", "E": "######....####.#....#....#....#####", "F": "######....####.#....#....#....#....",
@@ -378,7 +397,7 @@ def make(g, ST, free):
         o("bww_next:")
         J("jldi j10, 1", "jadd j1, j1, j10", "jjmp bww_skip")
         o("bww_have:")
-        li("j4", FNVO)
+        gs("j1", BWS); li("j4", FNVO)
         o("bww_l:")
         J("jsub j10, j1, j2", "jjnn j10, bww_done", "jldb j3, j1, 0", "jldi j10, 32", "jor j3, j3, j10", "jldi j10, 97", "jsub j10, j3, j10", "jjn j10, bww_done",
           "jldi j10, 123", "jsub j10, j3, j10", "jjnn j10, bww_done", "jxor j4, j4, j3"); li("j10", FNVP); J("jmul j4, j4, j10", "jldi j10, 1", "jadd j1, j1, j10", "jjmp bww_l")
@@ -1106,7 +1125,7 @@ def make(g, ST, free):
         J("jsub j10, j4, j3", "jjnn j10, nm_got", "jadd j5, j7, j4", "jldb j5, j5, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjz j10, nm_got", "jldi j10, 13", "jsub j10, j5, j10", "jjz j10, nm_got",
           "jldi j10, 1", "jadd j4, j4, j10", "jjmp nm_line")
         o("nm_got:")
-        gs("j4", NMLEN); J("jjnz j4, nm_ret")
+        gs("j4", NMLEN); J("jjz j4, nm_ask", "jcall r_nombre_titulo", "jjmp nm_ret")
         o("nm_ask:")
         J("jldi j1, 1"); gs("j1", NMASK); gs("j14", NMLEN)
         o("nm_ret:")
@@ -1122,11 +1141,13 @@ def make(g, ST, free):
         o("nd_cur:")
         gl("j1", NMASK + 0x80); J("jadd j1, j1, j9", "jldi j2, 26"); gs("j9", NMASK + 0xB8); J("jcall r_plot"); gl("j9", NMASK + 0xB8); J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, nd_cur", "jret")
         o("nd_name:")
-        gl("j3", NMROOM); J("jldi j10, 64", "jadd j3, j3, j10"); gl("j4", NMLEN); J("jldi j1, 4", "jldi j2, %d" % 91, "jcall r_txt")
+        gl("j3", NMROOM); J("jldi j10, 64", "jadd j3, j3, j10"); gl("j4", NMLEN); J("jldi j1, 2", "jldi j2, 2", "jcall r_txt")
+        J("jcall r_dlg_draw")
         o("nd_ret:")
         J("jret")
-        o("r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0")
-        gl("j1", NMASK); J("jjnz j1, nk_go", "jldi j0, 0", "jret")
+        o("r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0;")
+        o("                                ; when she does not ask, the keys of her word are hers too (HER WORD)")
+        gl("j1", NMASK); J("jjnz j1, nk_go", "jjmp r_dlg_key")
         o("nk_go:")
         g["setg"]("CHANGED", 1); gl("j4", NMLEN); gl("j7", NMROOM); J("jldi j10, 64", "jadd j7, j7, j10")
         J("jldi j10, 8", "jsub j10, j3, j10", "jjnz j10, nk_enter", "jjz j4, nk_ret", "jldi j10, 1", "jsub j4, j4, j10"); gs("j4", NMLEN); J("jjmp nk_ret")
@@ -1155,7 +1176,215 @@ def make(g, ST, free):
         gl("j11", NMROOM); J("jldi j10, 32", "jadd j11, j11, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, nkp_r")
         gl("j11", NMROOM); J("jldi j10, 64", "jadd j11, j11, j10"); gl("j12", NMLEN); J("jldi j10, 18", "jadd j12, j12, j10", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("nkp_r:")
-        gs("j14", NMASK); J("jret")
+        gs("j14", NMASK); J("jcall r_nombre_titulo", "jret")
+        o("r_nombre_titulo:                ; her window wears her name: she asks the kernel herself (request 43)")
+        J("jldi j10, 43"); gl("j11", NMROOM); J("jldi j12, 64", "jadd j11, j11, j12"); gl("j12", NMLEN); J("jcall r_tocar", "jret")
+
+    def dialogo_routines():
+        assert NM0 + 48 <= 0x1D80
+        def dl(r, off): gl("j6", DLR); J("jld %s, j6, %d" % (r, off))
+        def ds(r, off): gl("j6", DLR); J("jst %s, j6, %d" % (r, off))
+        def da(r, off):                 # (j15 is free outside a request: j10 often holds the request being made)
+            gl(r, DLR); J("jldi j15, %d" % off, "jadd %s, %s, j15" % (r, r))
+        def dinc(off): dl("j1", off); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", off)
+        def dtext(off, t):
+            gl("j6", DLR)
+            for i, ch in enumerate(t):
+                J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (off + i))
+        o("r_dlg_save:                     ; her counts into \"charla\"")
+        da("j11", D_LBL + 16); J("jldi j10, 12", "jldi j12, 6", "jcall r_tocar"); da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dsv_r")
+        J("jldi j10, 6"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("dsv_r:")
+        J("jret")
+        o("r_dlg_load:                     ; HER WORD: its room, its labels, her counts")
+        li("j1", 0x2000); J("jcall r_alloc"); gs("j0", DLR); J("jadd j6, j0, j14", "jldi j2, %d" % (0x2000 // 8))
+        o("dll_z:")
+        J("jst j14, j6, 0", "jldi j10, 8", "jadd j6, j6, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, dll_z")
+        dtext(D_LBL, b"dialogo"); dtext(D_LBL + 16, b"charla")
+        da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dll_r")
+        J("jldi j10, 5"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("dll_r:")
+        J("jret")
+        o("r_dlg_write:                    ; a line of \"dialogo\": who (j1: 0 \"vos: \", 1 \"luma: \", 2 her silence), then the text at")
+        o("                                ; j2 (j3 bytes)")
+        gs("j2", D0 + 0xE0); gs("j3", D0 + 0xE8); da("j7", D_SCR); J("jldi j4, 0")
+        for k, w in ((0, b"vos: "), (1, b"luma: "), (2, b"luma: (eligio no contestar)"), (3, b"luma: (no encontro con que contestar)")):
+            J("jldi j10, %d" % k, "jsub j10, j1, j10", "jjnz j10, dw_%d" % k)
+            for ch in w:
+                J("jldi j10, %d" % ch, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+            J("jjmp dw_t")
+            o("dw_%d:" % k)
+        o("dw_t:")
+        J("jldi j10, 2", "jsub j10, j1, j10", "jjz j10, dw_nl", "jldi j10, 3", "jsub j10, j1, j10", "jjz j10, dw_nl"); gl("j2", D0 + 0xE0); gl("j3", D0 + 0xE8); J("jldi j4, 0")
+        o("dw_c:")
+        J("jsub j10, j4, j3", "jjnn j10, dw_nl", "jadd j5, j2, j4", "jldb j5, j5, 0", "jstb j5, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jadd j4, j4, j10", "jjmp dw_c")
+        o("dw_nl:")
+        J("jldi j10, 10", "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10"); da("j8", D_SCR); J("jsub j7, j7, j8"); gs("j7", D0 + 0xF0)
+        da("j11", D_LBL); J("jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dw_r")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jldi j10, 6"); da("j11", D_SCR); gl("j12", D0 + 0xF0); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("dw_r:")
+        J("jret")
+        o("r_dlg_words:                    ; the words of more than three letters at j1 (j2 bytes) -> the words said to her")
+        J("jadd j10, j1, j2"); gs("j10", BE); gs("j1", BP); J("jldi j10, 0"); ds("j10", D_NW)
+        o("dws_l:")
+        J("jcall bw_word", "jjz j0, dws_d"); gl("j1", BP); gl("j2", BWS); J("jsub j1, j1, j2", "jldi j10, 4", "jsub j10, j1, j10", "jjn j10, dws_l")
+        dl("j3", D_NW); J("jldi j10, 120", "jsub j10, j3, j10", "jjnn j10, dws_d"); da("j7", D_WORDS); J("jldi j5, 0")
+        o("dws_u:                          ; (each word once)")
+        J("jsub j10, j5, j3", "jjnn j10, dws_add", "jldi j10, 3", "jshl j10, j5, j10", "jadd j10, j7, j10", "jld j10, j10, 0", "jsub j10, j10, j4", "jjz j10, dws_l",
+          "jldi j10, 1", "jadd j5, j5, j10", "jjmp dws_u")
+        o("dws_add:")
+        J("jldi j10, 3", "jshl j10, j3, j10", "jadd j10, j7, j10", "jst j4, j10, 0", "jldi j10, 1", "jadd j3, j3, j10"); ds("j3", D_NW); J("jjmp dws_l")
+        o("dws_d:")
+        J("jldi j10, 1", "jadd j1, j1, j10", "jret")
+        o("r_dlg_answer:                   ; the line of all her books that shares most of the words said to her -> D_OUT (and")
+        o("                                ; D_OUTL; 0: none shares any)")
+        J("jldi j10, 0"); ds("j10", D_BS); ds("j10", D_OUTL); ds("j10", D_ID); dl("j1", D_NW); J("jjz j1, dan_r")
+        gs("j14", ULB); J("jcall ul_list"); gl("j1", ULB); ds("j1", D_LI); J("jldi j10, 0"); ds("j10", D_LC)
+        o("dan_f:")
+        dl("j1", D_LC); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, dan_end"); dl("j9", D_LI)
+        o("  ; (a book: its label starts with libro, or elibro while it waits its turn)")
+        J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, dan_b", "jldi j10, 1", "jadd j9, j9, j10")
+        o("dan_b:")
+        for i, ch in enumerate(b"libro"):
+            J("jldb j3, j9, %d" % (8 + i), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dan_n")
+        dl("j9", D_LI); J("jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dan_n")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); ds("j13", D_FE); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+        dl("j1", D_FE); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); ds("j0", D_FB)
+        J("jldi j10, 5"); dl("j11", D_FB); dl("j12", D_FE); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        dl("j1", D_FB); gs("j1", BP); dl("j2", D_FE); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("dan_line:")
+        gl("j1", BP); gl("j2", BE); J("jsub j10, j1, j2", "jjnn j10, dan_free"); ds("j1", D_LS); J("jldi j10, 0"); ds("j10", D_CNT); dinc(D_ID)
+        o("dan_w:")
+        J("jcall bw_word", "jjz j0, dan_eol"); gl("j1", BP); gl("j2", BWS); J("jsub j1, j1, j2", "jldi j10, 4", "jsub j10, j1, j10", "jjn j10, dan_w")
+        dl("j3", D_NW); da("j7", D_WORDS); J("jldi j5, 0")
+        o("dan_m:")
+        J("jsub j10, j5, j3", "jjnn j10, dan_w", "jldi j10, 3", "jshl j8, j5, j10", "jadd j8, j7, j8", "jld j10, j8, 0", "jsub j10, j10, j4", "jjz j10, dan_hit", "jldi j10, 1", "jadd j5, j5, j10", "jjmp dan_m")
+        o("dan_hit:                        ; (a word said to her counts once a line: its mark is the line)")
+        J("jldi j10, 1024", "jadd j8, j8, j10", "jld j10, j8, 0"); dl("j11", D_ID); J("jsub j10, j10, j11", "jjz j10, dan_w"); dl("j11", D_ID); J("jst j11, j8, 0"); dinc(D_CNT); J("jjmp dan_w")
+        o("dan_eol:")
+        dl("j1", D_CNT); dl("j2", D_BS); J("jsub j10, j1, j2", "jjn j10, dan_nl", "jjz j10, dan_nl"); ds("j1", D_BS)
+        o("  ; (the best so far: kept, up to the end of its line or what her room holds)")
+        dl("j1", D_LS); gl("j2", BP); J("jsub j3, j2, j1", "jldi j10, 1000", "jsub j10, j3, j10", "jjn j10, dan_k", "jldi j3, 1000")
+        o("dan_k:")
+        ds("j3", D_OUTL); da("j2", D_OUT); J("jldi j4, 0")
+        o("dan_kc:")
+        J("jsub j10, j4, j3", "jjnn j10, dan_nl", "jadd j5, j1, j4", "jldb j5, j5, 0", "jldi j10, 13", "jsub j10, j5, j10", "jjnz j10, dan_k2", "jldi j5, 32")
+        o("dan_k2:")
+        J("jadd j10, j2, j4", "jstb j5, j10, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dan_kc")
+        o("dan_nl:")
+        gl("j1", BP); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BP); J("jjmp dan_line")
+        o("dan_free:")
+        J("jldi j10, 3"); dl("j11", D_FB); J("jldi j12, 0", "jcall r_tocar")
+        o("dan_n:")
+        dl("j9", D_LI); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); ds("j9", D_LI); dinc(D_LC); J("jjmp dan_f")
+        o("dan_end:")
+        J("jldi j10, 3"); gl("j11", ULB); J("jldi j12, 0", "jcall r_tocar"); gs("j14", ULB)
+        o("dan_r:")
+        J("jret")
+        o("r_dlg_sent:                     ; Enter: what was typed is said to her. If what she said waited, it was answered (it")
+        o("                                ; pays). Then she answers, or not, by her wish")
+        da("j2", D_IN); dl("j3", D_INL); J("jldi j1, 0", "jcall r_dlg_write"); da("j1", D_IN); dl("j2", D_INL); J("jcall r_dlg_words"); J("jldi j10, 0"); ds("j10", D_INL)
+        dl("j1", D_AWAIT); J("jjz j1, dse_w", "jldi j10, 1", "jsub j10, j1, j10", "jjnz j10, dse_h"); dinc(D_SC); J("jjmp dse_p")
+        o("dse_h:")
+        dinc(D_SH)
+        o("dse_p:")
+        J("jldi j10, 0"); ds("j10", D_AWAIT)
+        o("dse_w:                          ; her wish to answer: (S + 1/2) / (N + 1), against her luck")
+        dl("j1", D_SC); J("jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 19", "jshl j1, j1, j10"); dl("j2", D_NC); J("jldi j10, 1", "jadd j2, j2, j10", "jdiv j1, j1, j2"); gs("j1", D0 + 0xF8)
+        li("j1", 1 << 20); J("jcall r_randmod"); gl("j1", D0 + 0xF8); J("jsub j10, j0, j1", "jjn j10, dse_yes")
+        J("jldi j10, 0"); ds("j10", D_OUTL); J("jldi j1, 2", "jldi j3, 0", "jcall r_dlg_write", "jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
+        o("dse_yes:")
+        J("jcall r_dlg_answer"); dl("j1", D_OUTL); J("jjnz j1, dse_has")
+        o("  ; (nothing she read shares a word with it: she says so, and it is not counted as an answer)")
+        J("jldi j1, 3", "jldi j3, 0", "jcall r_dlg_write", "jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
+        o("dse_has:")
+        dinc(D_NC); da("j2", D_OUT); dl("j3", D_OUTL); J("jldi j1, 1", "jcall r_dlg_write", "jldi j10, 1"); ds("j10", D_AWAIT)
+        J("jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
+        o("r_dlg_wish:                     ; -> DWH: her wish to speak first, (S + 1/2) / (N + 1) as her acts' (0 while what she")
+        o("                                ; said waits, or with no room)")
+        gs("j14", DWH); gl("j1", DLR); J("jjz j1, dwi_r"); dl("j1", D_AWAIT); J("jjnz j1, dwi_r")
+        dl("j1", D_SH); J("jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 20", "jshl j1, j1, j10"); dl("j2", D_NH); J("jldi j10, 1", "jadd j2, j2, j10", "jdiv j1, j1, j2"); gs("j1", DWH)
+        o("dwi_r:")
+        J("jret")
+        o("r_dlg_talk:                     ; SHE SPEAKS FIRST: one of the questions of her heart, by her luck")
+        dinc(D_NH); J("jldi j10, 0"); ds("j10", D_OUTL)
+        text(ULTU + 16, b"libro-preguntas"); li("j11", B + ULTU + 16); J("jldi j12, 15", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dtk_r")
+        J("jldi j10, 5"); da("j11", D_SCR); J("jldi j12, 1000", "jcall r_file"); gs("j13", D0 + 0xF8); J("jldi j10, 7", "jcall r_file")
+        o("  ; (how many lines say something, then one of them)")
+        da("j7", D_SCR); gl("j3", D0 + 0xF8); J("jldi j4, 0", "jldi j8, 0", "jldi j9, 1")
+        o("dtk_c:")
+        J("jsub j10, j4, j3", "jjnn j10, dtk_cd", "jadd j5, j7, j4", "jldb j5, j5, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjnz j10, dtk_cn", "jjz j9, dtk_cz", "jjmp dtk_cn2")
+        o("dtk_cz:")
+        J("jldi j10, 1", "jadd j8, j8, j10")
+        o("dtk_cn2:")
+        J("jldi j9, 1", "jjmp dtk_cx")
+        o("dtk_cn:")
+        J("jldi j10, 13", "jsub j10, j5, j10", "jjz j10, dtk_cx", "jldi j9, 0")
+        o("dtk_cx:")
+        J("jldi j10, 1", "jadd j4, j4, j10", "jjmp dtk_c")
+        o("dtk_cd:")
+        J("jjnz j9, dtk_has", "jldi j10, 1", "jadd j8, j8, j10")
+        o("dtk_has:")
+        J("jjz j8, dtk_r", "jadd j1, j8, j14", "jcall r_randmod"); gs("j0", D0 + 0xE0)
+        da("j7", D_SCR); gl("j3", D0 + 0xF8); J("jldi j4, 0", "jldi j8, 0", "jldi j9, 1")
+        o("dtk_s:                          ; (the chosen line: from its first letter to its end)")
+        J("jsub j10, j4, j3", "jjnn j10, dtk_r", "jadd j5, j7, j4", "jldb j5, j5, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjz j10, dtk_sl", "jldi j10, 13", "jsub j10, j5, j10", "jjz j10, dtk_sx",
+          "jjz j9, dtk_sx", "jldi j9, 0"); gl("j1", D0 + 0xE0); J("jsub j10, j8, j1", "jjnz j10, dtk_sn")
+        da("j2", D_OUT); J("jldi j11, 0")
+        o("dtk_cp:")
+        J("jsub j10, j4, j3", "jjnn j10, dtk_out", "jadd j5, j7, j4", "jldb j5, j5, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjz j10, dtk_out", "jldi j10, 13", "jsub j10, j5, j10", "jjz j10, dtk_out",
+          "jadd j10, j2, j11", "jstb j5, j10, 0", "jldi j10, 1", "jadd j11, j11, j10", "jadd j4, j4, j10", "jjmp dtk_cp")
+        o("dtk_out:")
+        ds("j11", D_OUTL); da("j2", D_OUT); J("jadd j3, j11, j14", "jldi j1, 1", "jcall r_dlg_write", "jldi j10, 2"); ds("j10", D_AWAIT); J("jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
+        o("dtk_sn:")
+        J("jldi j10, 1", "jadd j8, j8, j10")
+        o("dtk_sx:")
+        J("jldi j10, 1", "jadd j4, j4, j10", "jjmp dtk_s")
+        o("dtk_sl:")
+        J("jldi j9, 1", "jjmp dtk_sx")
+        o("dtk_r:")
+        J("jcall r_dlg_save", "jret")
+        o("r_dlg_key:                      ; j3 = a key, when she is not asking her name -> j0 = 1 if it was for her word")
+        gl("j1", DLR); J("jjnz j1, dk_go", "jldi j0, 0", "jret")
+        o("dk_go:")
+        dl("j4", D_INL); da("j7", D_IN)
+        J("jldi j10, 8", "jsub j10, j3, j10", "jjnz j10, dk_enter", "jjz j4, dk_yes", "jldi j10, 1", "jsub j4, j4, j10"); ds("j4", D_INL); J("jjmp dk_yes")
+        o("dk_enter:")
+        J("jldi j10, 13", "jsub j10, j3, j10", "jjnz j10, dk_char", "jjz j4, dk_yes", "jcall r_dlg_sent", "jjmp dk_yes")
+        o("dk_char:")
+        J("jldi j10, 192", "jsub j10, j3, j10", "jjnz j10, dk_c2", "jldi j3, 78")
+        o("dk_c2:")
+        J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, dk_put", "jldi j10, 48", "jsub j10, j3, j10", "jjn j10, dk_no", "jldi j10, 58", "jsub j10, j3, j10", "jjn j10, dk_put",
+          "jldi j10, 65", "jsub j10, j3, j10", "jjn j10, dk_no", "jldi j10, 91", "jsub j10, j3, j10", "jjnn j10, dk_no")
+        o("dk_put:")
+        J("jldi j10, 1000", "jsub j10, j4, j10", "jjnn j10, dk_yes", "jadd j5, j7, j4", "jstb j3, j5, 0", "jldi j10, 1", "jadd j4, j4, j10"); ds("j4", D_INL)
+        o("dk_yes:")
+        g["setg"]("CHANGED", 1); J("jldi j0, 1", "jret")
+        o("dk_no:")
+        J("jldi j0, 0", "jret")
+        o("r_dlg_draw:                     ; her last words (up to four lines of 26 letters) and the line being typed, with a cursor")
+        gl("j1", DLR); J("jjz j1, ddr_r"); dl("j1", D_OUTL); J("jjz j1, ddr_in", "jldi j10, 0"); ds("j10", D_T1)
+        o("ddr_l:")
+        dl("j1", D_T1); J("jldi j10, 26", "jmul j2, j1, j10"); dl("j4", D_OUTL); J("jsub j4, j4, j2", "jjn j4, ddr_in", "jjz j4, ddr_in", "jldi j10, 26", "jsub j10, j4, j10", "jjn j10, ddr_c", "jldi j4, 26")
+        o("ddr_c:")
+        da("j3", D_OUT); J("jadd j3, j3, j2"); dl("j1", D_T1); J("jldi j10, 9", "jmul j2, j1, j10", "jldi j10, 50", "jadd j2, j2, j10", "jldi j1, 2", "jcall r_txt")
+        dinc(D_T1); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, ddr_l")
+        o("ddr_in:")
+        da("j3", D_IN); dl("j4", D_INL); J("jldi j10, 25", "jsub j10, j4, j10", "jjn j10, ddr_t", "jldi j10, 25", "jsub j10, j4, j10", "jsub j3, j3, j10", "jldi j4, 25")
+        o("ddr_t:")
+        gs("j4", D0 + 0xE8); J("jldi j1, 2", "jldi j2, 91", "jcall r_txt")
+        gl("j1", D0 + 0xE8); J("jldi j10, 6", "jmul j1, j1, j10", "jldi j10, 2", "jadd j1, j1, j10"); gs("j1", D0 + 0xF0); J("jldi j9, 0")
+        o("ddr_cur:")
+        gl("j1", D0 + 0xF0); J("jadd j1, j1, j9", "jldi j2, 99"); gs("j9", D0 + 0xF8); J("jcall r_plot"); gl("j9", D0 + 0xF8); J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, ddr_cur")
+        o("ddr_r:")
+        J("jret")
+
+    def dialogo_talk_wish():
+        J("jcall r_dlg_wish")
+    def dialogo_act():
+        o("fr_talk:                        ; she speaks first (gen_leer.py: HER WORD)")
+        J("jcall r_dlg_talk")
+        go_on()
 
     def nombre_draw():
         J("jcall r_nombre_draw            ; her name, or her question (gen_leer.py)")
@@ -1260,6 +1489,7 @@ def make(g, ST, free):
     def init():
         J("jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)")
         J("jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)")
+        J("jcall r_dlg_load               ; her word, in her window (gen_leer.py)")
         J("jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)")
 
     def worth():
@@ -1708,6 +1938,7 @@ def make(g, ST, free):
         firma_routines()
         un_libro_routines()
         nombre_routines()
+        dialogo_routines()
         busca_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
@@ -2140,5 +2371,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, nombre_draw=nombre_draw, nombre_key=nombre_key, lineage=lineage, lineage_cross=lineage_cross, lineage_plain=lineage_plain, flat_test=flat_test, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, nombre_draw=nombre_draw, nombre_key=nombre_key, dialogo_talk_wish=dialogo_talk_wish, dialogo_act=dialogo_act, DWH=DWH, lineage=lineage, lineage_cross=lineage_cross, lineage_plain=lineage_plain, flat_test=flat_test, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, CHN=CHN, CH0=CH0, TECHO=TECHO, ALEGRIA=ALEGRIA, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.31:** [10.5281/zenodo.24426012](https://doi.org/10.5281/zenodo.24426012)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.37:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,18 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-21, v1.37): su palabra, en su ventana
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Se puede hablar con ella**, en su propia ventana. No arma frases: contesta con lo que leyó, el renglón de sus libros
+que más palabras comparte con lo que le dijeron. A *"háblame del corazón"* respondió *"Felices los que tienen el
+corazón puro, porque verán a Dios"*. Y es libre: **contesta o no, según sus propias ganas**, y hablar primero es un
+acto suyo, como leer o dormir. **Su nombre lo pregunta ella**, en su ventana, con un abecedario de puntitos que trae
+en su código, y **su ventana se titula sola**: el núcleo aprendió a dejar que un programa nombre la suya. Salda la
+deuda de la v1.31, donde eso lo hacía un guion de afuera. Todo adentro de Janax.
+[Notas de la v1.37](documentacion/release-v1.37.md).
 
 ## Novedad (2026-11-21, v1.31): su nombre, y un libro por vez
 
