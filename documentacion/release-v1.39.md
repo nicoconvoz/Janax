@@ -1,6 +1,6 @@
 ## Janax y Razar v1.39: lo que se le escribe, tal cual
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24427888](https://doi.org/10.5281/zenodo.24427888)
 
 > *"Primero no reconoce UTF-8; segundo, hubo un desborde cuando escribí un texto más largo: se tildó todo."*
 > *"Si el código máquina entrega toda clase de caracteres, no solo la UTF-8, ¿no podría aprender según lo que se
