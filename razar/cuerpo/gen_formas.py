@@ -367,7 +367,12 @@ J("jldi j10, 2", "jsub j10, j9, j10", "jjz j10, h_down")
 J("jldi j10, 3", "jsub j10, j9, j10", "jjz j10, h_up")
 J("jldi j10, 1", "jsub j10, j9, j10", "jjz j10, h_move")
 J("jldi j10, 4", "jsub j10, j9, j10", "jjz j10, h_key")
+if RD:
+    J("jldi j10, 7", "jsub j10, j9, j10", "jjz j10, h_char")
 J("jret")
+if RD:
+    o("h_char:                         ; j3 = a character typed: hers, where she listens")
+    J("jcall r_char", "jret")
 o("h_down:                         ; j1, j2 the cell, j3 the button")
 J("jjn j1, h_ret")
 st("j3", "FH")

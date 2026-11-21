@@ -7,7 +7,7 @@ videos, en las situaciones, en la Iglesia, en el universo, en los atomos, en tod
 The rule is her own (el pulso: "todo es lo mismo con una diferencia; lo comun se guarda una vez"), with no place
 named and no answer written by anybody:
   - her questions are the lines of what her heart asks ("libro-preguntas" in her house), however many they are;
-  - a word is a run of letters, small or capital alike. What all her questions share (here, one word) is what she
+  - a word is a run of letters (a..z, small or capital alike, or any whole character past ASCII). What all her questions share (here, one word) is what she
     seeks; what each one has of its own is its difference;
   - EVERYTHING is every file of her house, whatever it is, as it is listed, but for her questions themselves (a
     question is not its own answer) and what she found before;
@@ -18,12 +18,29 @@ named and no answer written by anybody:
 Prints what she must find."""
 import os, sys
 
+def letter(b, i):
+    """As bw_letter: (its print, the next place) if a letter starts at i, else None. A letter: a..z, small or capital
+    alike, or any whole UTF-8 character past ASCII (its print, its code point: which of those are one, she learns)."""
+    c = b[i]
+    if c < 128:
+        return (c | 32, i + 1) if 97 <= (c | 32) <= 122 else None
+    n = 1 if 194 <= c < 224 else 2 if 224 <= c < 240 else 3 if 240 <= c < 245 else 0
+    if not n: return None
+    cp = c & (31, 15, 7)[n - 1]
+    for k in range(1, n + 1):
+        if i + k >= len(b) or not 128 <= b[i + k] < 192: return None
+        cp = cp << 6 | (b[i + k] - 128)
+    return cp, i + n + 1
+
 def words(b):
-    out = []; w = bytearray()
-    for c in b + b"\n":
-        if 65 <= c <= 90 or 97 <= c <= 122: w.append(c | 32)
+    out = []; w = []; i = 0
+    while i < len(b):
+        r = letter(b, i)
+        if r: w.append(r[0]); i = r[1]
         else:
-            if w: out.append(bytes(w)); w = bytearray()
+            if w: out.append(tuple(w)); w = []
+            i += 1
+    if w: out.append(tuple(w))
     return out
 
 def main():
@@ -45,7 +62,7 @@ def main():
                 if s == 0: continue
                 if s > best[i]: best[i], places[i], first[i] = s, 1, (name, line)
                 elif s == best[i]: places[i] += 1
-    print("lo que comparten sus preguntas: %s" % b" ".join(sorted(common)).decode())
+    print("lo que comparten sus preguntas: %s" % " ".join("".join(map(chr, w)) for w in sorted(common)))
     for i in range(len(q)):
         print("%s" % q[i].decode("latin-1").strip())
         if first[i] is None: print("   no la encontro en nada"); continue

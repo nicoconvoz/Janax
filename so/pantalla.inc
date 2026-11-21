@@ -54,6 +54,7 @@ SCR_TITLE_MAX = 512               ; the letters a title keeps (criterion: what a
   scr_count dq 0
   scr_lastx dq -1               ; the pointer's last cell (a key says where it was)
   scr_lasty dq -1
+  scr_high  dq 0                ; the first half of a surrogate pair, while the second has not come (0: none)
   scr_erect dd 4 dup 0          ; RECT of the client area, when an event arrives
   scr_ring  rb SCR_RING * 32    ; {kind, x, y, extra} each
 
@@ -378,6 +379,8 @@ screen_proc:
         jbe     .note
 @@:     cmp     edx, WM_KEYDOWN
         je      .note
+        cmp     edx, WM_CHAR
+        je      .note
         cmp     edx, WM_SIZE
         je      .note
         jmp     [DefWindowProcW]
@@ -443,7 +446,8 @@ screen_proc:
 ; The window's thread: the message edx (wParam r8, lParam r9) of window rcx, kept in the ring as an event
 ; {kind, x, y, extra}: 1 the pointer moved (extra: the buttons held, 1 left, 2 right), 2 a button went down and 3 up
 ; (extra 1 left, 2 right), 4 a key went down (extra: its virtual-key code; x, y where the pointer was), 5 the window
-; closed (x, y = -1), 6 a new size (x, y: the client area in pixels). The pointer's x, y are cells of the cloud shown,
+; closed (x, y = -1), 6 a new size (x, y: the client area in pixels), 7 a character was typed (extra: its Unicode
+; code point, the two halves of a surrogate pair joined; x, y where the pointer was). The pointer's x, y are cells of the cloud shown,
 ; through the same proportions and centring the painting uses; -1, -1 outside the picture. A move right after
 ; another kept move takes its place. Then the bell rings: the kernel, asleep on it while nobody rows, wakes whoever
 ; sleeps on the screen (and a rower that ends a turn looks too). This thread never takes the kernel's lock: a rower
@@ -487,6 +491,8 @@ screen_note:
         je      .right_up
         cmp     r12d, WM_KEYDOWN
         je      .key
+        cmp     r12d, WM_CHAR
+        je      .char
         cmp     r12d, WM_SIZE
         je      .size
         cmp     r12d, WM_DESTROY
@@ -516,6 +522,29 @@ screen_note:
 .key:
         mov     rdi, r13
         mov     r12d, 4
+        mov     r15, [scr_lastx]
+        mov     rsi, [scr_lasty]
+        jmp     .put
+.char:
+        movzx   edi, r13w               ; a UTF-16 unit
+        mov     eax, edi
+        and     eax, 0FC00h
+        cmp     eax, 0D800h             ; the first half of a pair: kept until the second comes
+        jne     @f
+        mov     [scr_high], rdi
+        jmp     .unlock
+@@:     cmp     eax, 0DC00h
+        jne     .char_put
+        mov     rax, [scr_high]         ; the second half: joined with the first (alone, it is not a character)
+        test    rax, rax
+        jz      .unlock
+        sub     eax, 0D800h
+        shl     eax, 10
+        sub     edi, 0DC00h
+        lea     edi, [rdi + rax + 10000h]
+.char_put:
+        mov     qword [scr_high], 0
+        mov     r12d, 7
         mov     r15, [scr_lastx]
         mov     rsi, [scr_lasty]
         jmp     .put

@@ -1398,6 +1398,9 @@ La ventana de Janax ya no solo muestra: cuenta lo que le pasa, y un programa pue
   - 4 una tecla bajó (extra: su código de tecla virtual; `x`, `y`: dónde estaba el puntero).
   - 5 la ventana se cerró (`x`, `y` = −1). La espera del sistema al terminar sigue igual: cerrar la ventana lo termina.
   - 6 un tamaño nuevo (`x`, `y`: el área en píxeles).
+  - 7 se escribió un carácter (extra: su punto de código Unicode, con las dos mitades de un par sustituto ya
+    juntas; `x`, `y`: dónde estaba el puntero). Llega además de la tecla que lo produjo (4): la tecla dice qué se
+    apretó; el carácter, qué se escribió, con acentos, eñes y lo que el teclado arme.
 - **`b` vuelve con lo que quedaba de la espera** (como `select` en Linux): 0 si no llegó nada; con un evento, los ms
   que faltaban (o como estaba, si no durmió o espera para siempre). Así un programa que dibuja cuadros cada 33 ms
   atiende los eventos que lleguen en el medio sin correr el próximo cuadro: no hay reloj, y no hace falta.
