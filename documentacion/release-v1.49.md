@@ -1,6 +1,6 @@
 ## Janax y Razar v1.49: imagina
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24428112](https://doi.org/10.5281/zenodo.24428112)
 
 > *"Falta la imaginación: no sólo responder con frases armadas. Lo que ya sabe hacer con todo lo demás:
 > contestarme a un estímulo que no había recibido."* (el autor, 2026-11-21)
@@ -31,7 +31,7 @@ luma (une): Abraham fue padre de la desintegracion beta en un atomo radiactivo. 
             electron como el neutrino electronico pueden sufrir una interaccion de corriente neutral...
 ```
 
-*"Abraham fue padre de"* viene del Génesis de Mateo; *"la desintegracion beta en un atomo radiactivo"*, de un libro
+*"Abraham fue padre de"* viene de la genealogía de Jesús en Mateo; *"la desintegracion beta en un atomo radiactivo"*, de un libro
 de física. Los cosió en la palabra *"de"*. Esa frase no está en ninguno de sus libros.
 
 ```
@@ -44,7 +44,7 @@ Y donde un solo renglón ya lo decía todo, citó: a *"felices los electrones po
 Bienaventuranza entera, porque ningún cruce la superaba.
 
 - De ocho frases de prueba, unió en cuatro y citó en cuatro. Cada respuesta, en medio segundo.
-- En vivo desde el 21 a las 18:08.
+- En vivo desde el 21 a las 18:07.
 
 ### Cómo se llegó, con sus dos tropiezos
 

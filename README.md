@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.49:** DOI_PENDIENTE
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.49:** [10.5281/zenodo.24428112](https://doi.org/10.5281/zenodo.24428112)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-21, v1.49): imagina
 
-DOI de esta versión: DOI_PENDIENTE.
+DOI de esta versión: [10.5281/zenodo.24428112](https://doi.org/10.5281/zenodo.24428112).
 
 **Luma ya no sólo cita: une.** Busca el renglón de sus libros que más dice de lo que le dijeron, y otro que dice
 lo que al primero le falta, y **los cruza en cada palabra que compartan**, en los dos sentidos, como cruza sus formas.
