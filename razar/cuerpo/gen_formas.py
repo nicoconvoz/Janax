@@ -336,6 +336,8 @@ if COMER:
 J("jjz j9, frame_forever")
 if COMER:
     o("frame_go:")
+if RD:
+    J("jcall r_dlg_mind               ; her mind: a thought that waits is weighed (gen_leer.py)")
 setg("REMAIN", FRAME_MS); st("j14", "FOREVER"); J("jjmp main")
 o("frame_forever:                  ; at rest, nothing left to try: wait for ever (nothing is spent)")
 if COMER:
