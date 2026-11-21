@@ -1,6 +1,6 @@
 ## Janax y Razar v1.37: su palabra, en su ventana
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24426914](https://doi.org/10.5281/zenodo.24426914)
 
 > *"Que haya en la misma ventana un canal de comunicación con LUMA, que se pueda dialogar, incluso que ella pueda
 > tomar la iniciativa cuando quiera, o elegir no contestar: libertad en todo."*
