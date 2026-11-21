@@ -1,6 +1,6 @@
 ## Janax y Razar v1.51: aprende a dibujar cada letra
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24429385](https://doi.org/10.5281/zenodo.24429385)
 
 > *"Al escribir en Luma no aparecen todos los caracteres."*
 > *"Esperá, Doc: que aprenda a dibujar todo, incluso si hay algo nuevo que no conoce."* (el autor, 2026-11-21)
