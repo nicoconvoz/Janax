@@ -318,6 +318,8 @@ ld("j9", "EXPLORE"); J("jjz j9, frame_draw")
 J("jcall r_explore_frame")
 o("frame_draw:")
 J("jcall r_fill", "jcall r_draw_ghosts", "jcall r_draw_all")
+if RD:
+    RD.nombre_draw()
 if COMER:
     J("jcall r_draw_meal")
 if LUMA:
@@ -410,6 +412,8 @@ for r, hi in (("j1", (W - 1) * 256), ("j2", (H - 1) * 256)):
     li("j10", hi); J("jsub j11, j10, %s" % r, "jjnn j11, %s" % b, "jadd %s, j10, j14" % r); o("%s:" % b)
 J("jst j1, j9, %d" % F_OX, "jst j2, j9, %d" % F_OY, "jret")
 o("h_key:                          ; j3 = the key: an action on the focused form")
+if RD:
+    RD.nombre_key("h_ret")          # (while she asks her name, the keys are hers)
 st("j3", "FH"); J("jcall r_gesture")
 ld("j0", "FOCUS"); form_addr("j9", "j0"); st("j9", "DFA"); ld("j3", "FH")
 def on_keys(keys, body_label):

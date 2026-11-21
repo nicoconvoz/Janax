@@ -606,6 +606,7 @@ init_popc:
   jcall v_init                  ; the creatures' world: its list, what they learned, who was eaten
   jcall r_free_load             ; her own conclusions, kept in the folder (libre)
   jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)
+  jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)
   jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)
   ; the forms' archive as a ring (its handle is set by r_load_archive)
   jldi j3, 06720h
@@ -798,6 +799,7 @@ frame_draw:
   jcall r_fill
   jcall r_draw_ghosts
   jcall r_draw_all
+  jcall r_nombre_draw            ; her name, or her question (gen_leer.py)
   jcall r_draw_meal
   jcall v_show                  ; the forms beside the creatures, one screen
   jld j10, j14, 0228h
@@ -994,6 +996,8 @@ hi_4:
   jst j2, j9, 8
   jret
 h_key:                          ; j3 = the key: an action on the focused form
+  jcall r_nombre_key
+  jjnz j0, h_ret
   jst j3, j14, 04A8h
   jcall r_gesture
   jld j0, j14, 0270h
@@ -10093,10 +10097,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 01541h
-  jshi j2, 04978h
-  jshi j2, 01F6Ah
-  jshi j2, 0B56Fh
+  jldi j2, 028E9h
+  jshi j2, 0C0C4h
+  jshi j2, 028E2h
+  jshi j2, 082E9h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -14202,6 +14206,755 @@ ul_free:
   jldi j12, 0
   jcall r_tocar
 ul_ret:
+  jret
+r_glyph:                        ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)
+  jldi j10, 48
+  jsub j10, j5, j10
+  jjnz j10, gl_48
+  jldi j0, 3
+  jshi j0, 0A33Ah
+  jshi j0, 0E62Eh
+  jret
+gl_48:
+  jldi j10, 49
+  jsub j10, j5, j10
+  jjnz j10, gl_49
+  jldi j0, 3
+  jshi j0, 08842h
+  jshi j0, 010C4h
+  jret
+gl_49:
+  jldi j10, 50
+  jsub j10, j5, j10
+  jjnz j10, gl_50
+  jldi j0, 7
+  jshi j0, 0C444h
+  jshi j0, 0422Eh
+  jret
+gl_50:
+  jldi j10, 51
+  jsub j10, j5, j10
+  jjnz j10, gl_51
+  jldi j0, 3
+  jshi j0, 0A306h
+  jshi j0, 0422Eh
+  jret
+gl_51:
+  jldi j10, 52
+  jsub j10, j5, j10
+  jjnz j10, gl_52
+  jldi j0, 2
+  jshi j0, 011F4h
+  jshi j0, 0A988h
+  jret
+gl_52:
+  jldi j10, 53
+  jsub j10, j5, j10
+  jjnz j10, gl_53
+  jldi j0, 3
+  jshi j0, 0A308h
+  jshi j0, 03C3Fh
+  jret
+gl_53:
+  jldi j10, 54
+  jsub j10, j5, j10
+  jjnz j10, gl_54
+  jldi j0, 3
+  jshi j0, 0A317h
+  jshi j0, 0842Eh
+  jret
+gl_54:
+  jldi j10, 55
+  jsub j10, j5, j10
+  jjnz j10, gl_55
+  jldi j0, 0
+  jshi j0, 08422h
+  jshi j0, 0221Fh
+  jret
+gl_55:
+  jldi j10, 56
+  jsub j10, j5, j10
+  jjnz j10, gl_56
+  jldi j0, 3
+  jshi j0, 0A317h
+  jshi j0, 0462Eh
+  jret
+gl_56:
+  jldi j10, 57
+  jsub j10, j5, j10
+  jjnz j10, gl_57
+  jldi j0, 3
+  jshi j0, 0A10Fh
+  jshi j0, 0462Eh
+  jret
+gl_57:
+  jldi j10, 63
+  jsub j10, j5, j10
+  jjnz j10, gl_63
+  jldi j0, 1
+  jshi j0, 044h
+  jshi j0, 0422Eh
+  jret
+gl_63:
+  jldi j10, 65
+  jsub j10, j5, j10
+  jjnz j10, gl_65
+  jldi j0, 4
+  jshi j0, 0631Fh
+  jshi j0, 0C62Eh
+  jret
+gl_65:
+  jldi j10, 66
+  jsub j10, j5, j10
+  jjnz j10, gl_66
+  jldi j0, 3
+  jshi j0, 0E318h
+  jshi j0, 0BE2Fh
+  jret
+gl_66:
+  jldi j10, 67
+  jsub j10, j5, j10
+  jjnz j10, gl_67
+  jldi j0, 7
+  jshi j0, 08210h
+  jshi j0, 0841Eh
+  jret
+gl_67:
+  jldi j10, 68
+  jsub j10, j5, j10
+  jjnz j10, gl_68
+  jldi j0, 3
+  jshi j0, 0E318h
+  jshi j0, 0C62Fh
+  jret
+gl_68:
+  jldi j10, 69
+  jsub j10, j5, j10
+  jjnz j10, gl_69
+  jldi j0, 7
+  jshi j0, 0C210h
+  jshi j0, 0BC3Fh
+  jret
+gl_69:
+  jldi j10, 70
+  jsub j10, j5, j10
+  jjnz j10, gl_70
+  jldi j0, 04210h
+  jshi j0, 0BC3Fh
+  jret
+gl_70:
+  jldi j10, 71
+  jsub j10, j5, j10
+  jjnz j10, gl_71
+  jldi j0, 7
+  jshi j0, 0A31Ch
+  jshi j0, 0841Eh
+  jret
+gl_71:
+  jldi j10, 72
+  jsub j10, j5, j10
+  jjnz j10, gl_72
+  jldi j0, 4
+  jshi j0, 06318h
+  jshi j0, 0FE31h
+  jret
+gl_72:
+  jldi j10, 73
+  jsub j10, j5, j10
+  jjnz j10, gl_73
+  jldi j0, 3
+  jshi j0, 08842h
+  jshi j0, 0108Eh
+  jret
+gl_73:
+  jldi j10, 74
+  jsub j10, j5, j10
+  jjnz j10, gl_74
+  jldi j0, 1
+  jshi j0, 06984h
+  jshi j0, 0211Ch
+  jret
+gl_74:
+  jldi j10, 75
+  jsub j10, j5, j10
+  jjnz j10, gl_75
+  jldi j0, 4
+  jshi j0, 05251h
+  jshi j0, 09531h
+  jret
+gl_75:
+  jldi j10, 76
+  jsub j10, j5, j10
+  jjnz j10, gl_76
+  jldi j0, 7
+  jshi j0, 0C210h
+  jshi j0, 08421h
+  jret
+gl_76:
+  jldi j10, 77
+  jsub j10, j5, j10
+  jjnz j10, gl_77
+  jldi j0, 4
+  jshi j0, 06318h
+  jshi j0, 0D771h
+  jret
+gl_77:
+  jldi j10, 78
+  jsub j10, j5, j10
+  jjnz j10, gl_78
+  jldi j0, 4
+  jshi j0, 0631Ch
+  jshi j0, 0D671h
+  jret
+gl_78:
+  jldi j10, 79
+  jsub j10, j5, j10
+  jjnz j10, gl_79
+  jldi j0, 3
+  jshi j0, 0A318h
+  jshi j0, 0C62Eh
+  jret
+gl_79:
+  jldi j10, 80
+  jsub j10, j5, j10
+  jjnz j10, gl_80
+  jldi j0, 04217h
+  jshi j0, 0C62Fh
+  jret
+gl_80:
+  jldi j10, 81
+  jsub j10, j5, j10
+  jjnz j10, gl_81
+  jldi j0, 5
+  jshi j0, 09358h
+  jshi j0, 0C62Eh
+  jret
+gl_81:
+  jldi j10, 82
+  jsub j10, j5, j10
+  jjnz j10, gl_82
+  jldi j0, 4
+  jshi j0, 05257h
+  jshi j0, 0C62Fh
+  jret
+gl_82:
+  jldi j10, 83
+  jsub j10, j5, j10
+  jjnz j10, gl_83
+  jldi j0, 7
+  jshi j0, 0820Eh
+  jshi j0, 083Eh
+  jret
+gl_83:
+  jldi j10, 84
+  jsub j10, j5, j10
+  jjnz j10, gl_84
+  jldi j0, 1
+  jshi j0, 0842h
+  jshi j0, 0109Fh
+  jret
+gl_84:
+  jldi j10, 85
+  jsub j10, j5, j10
+  jjnz j10, gl_85
+  jldi j0, 3
+  jshi j0, 0A318h
+  jshi j0, 0C631h
+  jret
+gl_85:
+  jldi j10, 86
+  jsub j10, j5, j10
+  jjnz j10, gl_86
+  jldi j0, 1
+  jshi j0, 01518h
+  jshi j0, 0C631h
+  jret
+gl_86:
+  jldi j10, 87
+  jsub j10, j5, j10
+  jjnz j10, gl_87
+  jldi j0, 4
+  jshi j0, 0775Ah
+  jshi j0, 0C631h
+  jret
+gl_87:
+  jldi j10, 88
+  jsub j10, j5, j10
+  jjnz j10, gl_88
+  jldi j0, 4
+  jshi j0, 062A2h
+  jshi j0, 02A31h
+  jret
+gl_88:
+  jldi j10, 89
+  jsub j10, j5, j10
+  jjnz j10, gl_89
+  jldi j0, 1
+  jshi j0, 0842h
+  jshi j0, 02A31h
+  jret
+gl_89:
+  jldi j10, 90
+  jsub j10, j5, j10
+  jjnz j10, gl_90
+  jldi j0, 7
+  jshi j0, 0C222h
+  jshi j0, 0221Fh
+  jret
+gl_90:
+  jldi j0, 0
+  jret
+r_txt:                          ; the letters at j3 (j4 of them) drawn from the cell j1, j2 (6 cells a letter), in the
+                                ; colour PR PG PB. Uses j0-j12
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01DD0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j2, j6, 01DD8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j3, j6, 01DE0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01DE8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01DF0h
+tx_c:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01DF0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01DE8h
+  jsub j10, j7, j4
+  jjnn j10, tx_d
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01DE0h
+  jadd j5, j3, j7
+  jldb j5, j5, 0
+  jcall r_glyph
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01DF8h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01E00h
+tx_b:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01E00h
+  jldi j10, 35
+  jsub j10, j7, j10
+  jjnn j10, tx_n
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j0, j6, 01DF8h
+  jshr j10, j0, j7
+  jldi j11, 1
+  jand j10, j10, j11
+  jjz j10, tx_bn
+  jldi j10, 5
+  jdiv j8, j7, j10
+  jmul j9, j8, j10
+  jsub j9, j7, j9
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01DD0h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j10, j6, 01DF0h
+  jldi j11, 6
+  jmul j10, j10, j11
+  jadd j1, j1, j10
+  jadd j1, j1, j9
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01DD8h
+  jadd j2, j2, j8
+  jcall r_plot
+tx_bn:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01E00h
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01E00h
+  jjmp tx_b
+tx_n:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01DF0h
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j7, j6, 01DF0h
+  jjmp tx_c
+tx_d:
+  jret
+r_nombre_load:                  ; HER NAME, ASKED BY HER: her room (the prompt at its start, her name from 64 on); her
+                                ; name from "nombre", or she will ask
+  jldi j1, 01000h
+  jcall r_alloc
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j0, j6, 01D58h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01D50h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01D60h
+  jadd j7, j0, j14
+  jldi j10, 67
+  jstb j10, j7, 0
+  jldi j10, 79
+  jstb j10, j7, 1
+  jldi j10, 77
+  jstb j10, j7, 2
+  jldi j10, 79
+  jstb j10, j7, 3
+  jldi j10, 32
+  jstb j10, j7, 4
+  jldi j10, 77
+  jstb j10, j7, 5
+  jldi j10, 69
+  jstb j10, j7, 6
+  jldi j10, 32
+  jstb j10, j7, 7
+  jldi j10, 76
+  jstb j10, j7, 8
+  jldi j10, 76
+  jstb j10, j7, 9
+  jldi j10, 65
+  jstb j10, j7, 10
+  jldi j10, 77
+  jstb j10, j7, 11
+  jldi j10, 79
+  jstb j10, j7, 12
+  jldi j10, 63
+  jstb j10, j7, 13
+  jldi j10, 110
+  jstb j10, j7, 32
+  jldi j10, 111
+  jstb j10, j7, 33
+  jldi j10, 109
+  jstb j10, j7, 34
+  jldi j10, 98
+  jstb j10, j7, 35
+  jldi j10, 114
+  jstb j10, j7, 36
+  jldi j10, 101
+  jstb j10, j7, 37
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j10, 32
+  jadd j11, j11, j10
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, nm_ask
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j10, 64
+  jadd j11, j11, j10
+  jldi j12, 1000
+  jldi j10, 5
+  jcall r_file
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j13, j6, 01D60h
+  jldi j10, 7
+  jcall r_file
+  ; (the first line is her name)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D58h
+  jldi j10, 64
+  jadd j7, j7, j10
+  jldi j4, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D60h
+nm_line:
+  jsub j10, j4, j3
+  jjnn j10, nm_got
+  jadd j5, j7, j4
+  jldb j5, j5, 0
+  jldi j10, 10
+  jsub j10, j5, j10
+  jjz j10, nm_got
+  jldi j10, 13
+  jsub j10, j5, j10
+  jjz j10, nm_got
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp nm_line
+nm_got:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01D60h
+  jjnz j4, nm_ret
+nm_ask:
+  jldi j1, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01D50h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01D60h
+nm_ret:
+  jret
+r_nombre_draw:                  ; on her screen: while she asks, her question and what is typed (and a cursor); after,
+                                ; her name under her forms
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D58h
+  jjz j1, nd_ret
+  jldi j10, 0ECh
+  jst j10, j14, 0460h
+  jldi j10, 0ECh
+  jst j10, j14, 0468h
+  jldi j10, 0E4h
+  jst j10, j14, 0470h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D50h
+  jjz j1, nd_name
+  jldi j1, 4
+  jldi j2, 6
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D58h
+  jldi j4, 14
+  jcall r_txt
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D58h
+  jldi j10, 64
+  jadd j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01D60h
+  jldi j1, 4
+  jldi j2, 18
+  jcall r_txt
+  ; (the cursor: a line under where the next letter goes)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D60h
+  jldi j10, 6
+  jmul j1, j1, j10
+  jldi j10, 4
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j1, j6, 01DD0h
+  jldi j9, 0
+nd_cur:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01DD0h
+  jadd j1, j1, j9
+  jldi j2, 26
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j9, j6, 01E08h
+  jcall r_plot
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01E08h
+  jldi j10, 1
+  jadd j9, j9, j10
+  jldi j10, 5
+  jsub j10, j9, j10
+  jjnz j10, nd_cur
+  jret
+nd_name:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j3, j6, 01D58h
+  jldi j10, 64
+  jadd j3, j3, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01D60h
+  jldi j1, 4
+  jldi j2, 91
+  jcall r_txt
+nd_ret:
+  jret
+r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j1, j6, 01D50h
+  jjnz j1, nk_go
+  jldi j0, 0
+  jret
+nk_go:
+  jldi j10, 1
+  jst j10, j14, 0210h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01D60h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D58h
+  jldi j10, 64
+  jadd j7, j7, j10
+  jldi j10, 8
+  jsub j10, j3, j10
+  jjnz j10, nk_enter
+  jjz j4, nk_ret
+  jldi j10, 1
+  jsub j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01D60h
+  jjmp nk_ret
+nk_enter:
+  jldi j10, 13
+  jsub j10, j3, j10
+  jjnz j10, nk_char
+  jjz j4, nk_ret
+  jcall r_nombre_keep
+  jjmp nk_ret
+nk_char:                        ; a letter, a digit or a space (the n with its tilde is said as N, as in her books)
+  jldi j10, 192
+  jsub j10, j3, j10
+  jjnz j10, nk_c2
+  jldi j3, 78
+nk_c2:
+  jldi j10, 32
+  jsub j10, j3, j10
+  jjz j10, nk_put
+  jldi j10, 48
+  jsub j10, j3, j10
+  jjn j10, nk_ret
+  jldi j10, 58
+  jsub j10, j3, j10
+  jjn j10, nk_put
+  jldi j10, 65
+  jsub j10, j3, j10
+  jjn j10, nk_ret
+  jldi j10, 91
+  jsub j10, j3, j10
+  jjnn j10, nk_ret
+nk_put:
+  jldi j10, 3000
+  jsub j10, j4, j10
+  jjnn j10, nk_ret
+  jadd j5, j7, j4
+  jstb j3, j5, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j4, j6, 01D60h
+nk_ret:
+  jldi j0, 1
+  jret
+r_nombre_keep:                  ; her name, and her seal (her own luck mixed with what she has rowed), into "nombre"
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D58h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01D60h
+  jldi j10, 64
+  jadd j5, j7, j10
+  jadd j5, j5, j4
+  jldi j10, 10
+  jstb j10, j5, 0
+  jldi j10, 35
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_tocar
+  jld j1, j14, 0238h
+  jxor j1, j1, j13
+  jldi j10, -25033
+  jshi j10, 079B9h
+  jshi j10, 07F4Ah
+  jshi j10, 07C15h
+  jmul j1, j1, j10
+  jldi j10, 31
+  jshr j2, j1, j10
+  jxor j1, j1, j2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D58h
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j4, j6, 01D60h
+  jldi j10, 65
+  jadd j5, j7, j10
+  jadd j5, j5, j4
+  jldi j8, 60
+nkp_h:
+  jshr j2, j1, j8
+  jldi j10, 15
+  jand j2, j2, j10
+  jldi j10, 10
+  jsub j10, j2, j10
+  jjn j10, nkp_d
+  jldi j10, 39
+  jadd j2, j2, j10
+nkp_d:
+  jldi j10, 48
+  jadd j2, j2, j10
+  jstb j2, j5, 0
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjz j8, nkp_e
+  jldi j10, 4
+  jsub j8, j8, j10
+  jjmp nkp_h
+nkp_e:
+  jldi j10, 10
+  jstb j10, j5, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j10, 32
+  jadd j11, j11, j10
+  jldi j10, 12
+  jldi j12, 6
+  jcall r_tocar
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j10, 32
+  jadd j11, j11, j10
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, nkp_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D58h
+  jldi j10, 64
+  jadd j11, j11, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j12, j6, 01D60h
+  jldi j10, 18
+  jadd j12, j12, j10
+  jldi j10, 6
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+nkp_r:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jst j14, j6, 01D50h
   jret
 bw_word:                        ; the next word of the line at BP (a run of letters, small or capital alike) -> j0 = 1
                                 ; and j4 its print, or j0 = 0 at the end of the line (BP on it). Uses j1-j3, j10

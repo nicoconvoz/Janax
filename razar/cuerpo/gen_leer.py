@@ -119,6 +119,14 @@ SHE SEEKS HER QUESTIONS IN EVERYTHING (the Capitan, 2026-11-20: "ponele tres uni
   as it has of that question's own words. Of each question she keeps, in "hallazgos", how near she got, in how many
   places, and the first: where and what it says. It joins words, it does not understand: understanding is hers to
   grow. The rule is written once, in razar/corazon/busca.py, the instrument that checks her. Nobody wrote an answer.
+HER NAME, ASKED BY HER (the Capitan, 2026-11-21: "nuestra LUMA VERA tenga ese nombre, pero que cada Razar pregunte el
+  suyo a su usuario: todos unicos e irrepetibles"; and, when it was found to be asked from outside her: "nunca mas te
+  olvides de la regla de la casa"). Born in a house with no "nombre", she asks herself, on her own screen, in letters
+  of dots she draws (a 5 x 7 alphabet, here): "COMO ME LLAMO?". What is typed appears under it (letters, digits,
+  spaces; the key that erases, erases); Enter keeps it. With the name goes her SEAL, sixteen hexadecimal digits of her
+  own luck mixed with what she has rowed: two people may give the same name, but no two of them are the same.
+  "nombre" holds the name on its first line and the seal on its second. Afterwards her name is written on her screen,
+  under her forms. While she asks, her keys are only for her name.
 ONE BOOK AT A TIME, TURNED BY HER (the Capitan, 2026-11-21: "vigila que LUMA no se atragante: cuando sea mas
   grande va a poder comer mas rapido"; "que coma de a uno: un libro maximo por vez"; "nada de python, todo en janax:
   no quiero cosas ajenas"). With every book on her shelf at once (7.8 MB) a reading took 1.8 GB of the machine. So
@@ -236,6 +244,26 @@ LX, LORG, LLI = 0x7FD8, 0x7FE0, 0x7FE8   # her lineage: the form she crossed wit
 BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
 (BQB, BQE, BWQ, BNW, BNQ, BNC, BQS, BLB, BLN, BLC, BLI, BLK, BFB, BFE, BP, BE, BLID, BCM, BHW, BLS, BT1, BT2, BT3, BLBL) = (BU0 + 8 * i for i in range(24))
 LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
+NM0 = 0x1D50                 # her name (r_nombre): asking (1) or not, the room where the prompt and her name are, its length
+NMASK, NMROOM, NMLEN = NM0, NM0 + 8, NM0 + 16
+FONT = {
+    "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".####.....#....#....#....#.....####",
+    "D": "####.#...##...##...##...##...#####.", "E": "######....####.#....#....#....#####", "F": "######....####.#....#....#....#....",
+    "G": ".####.....#....#..###...##...#.####", "H": "#...##...#######...##...##...##...#", "I": ".###...#....#....#....#....#...###.",
+    "J": "..###...#....#....#....##..#.##.#..", "K": "#...##..#.#.#..##...#.#..#..#.#...#", "L": "#....#....#....#....#....#....#####",
+    "M": "#...###.###.#.##...##...##...##...#", "N": "#...###..##.#.##..###...##...##...#", "O": ".###.#...##...##...##...##...#.###.",
+    "P": "####.#...##...#####.#....#....#....", "Q": ".###.#...##...##...##.#.##..#..##.#", "R": "####.#...##...#####.#.#..#..#.#...#",
+    "S": ".#####.....#.....###.....#.....####", "T": "#####..#....#....#....#....#....#..", "U": "#...##...##...##...##...##...#.###.",
+    "V": "#...##...##...##...##...#.#.#...#..", "W": "#...##...##...##.#.##.#.###.###...#", "X": "#...##...#.#.#...#...#.#.#...##...#",
+    "Y": "#...##...#.#.#...#....#....#....#..", "Z": "#####....#...#...#...#...#....#####", "?": ".###.#...#....#...#...#.........#..",
+    "0": ".###.#...##..###.#.###..##...#.###.", "1": "..#...##....#....#....#....#...###.", "2": ".###.#...#....#...#...#...#...#####",
+    "3": ".###.#...#....#..##.....##...#.###.", "4": "...#...##..#.#.#..#.#####...#....#.", "5": "######....####.....#....##...#.###.",
+    "6": ".###.#....#....####.#...##...#.###.", "7": "#####....#...#...#...#....#....#...", "8": ".###.#...##...#.###.#...##...#.###.",
+    "9": ".###.#...##...#.####....#....#.###.",
+}
+def glyph_bits(ch):
+    g = FONT[ch][:35].ljust(35, ".")
+    return sum(1 << i for i, x in enumerate(g) if x == "#")
 UL0 = 0x1EA0                 # she turns her books (r_un_libro): the list, its room, how many, where, the turn's length, the next's
 (ULB, ULN, ULC, ULP, ULK, ULT, ULX, ULXL, ULM, ULML, ULS) = (UL0 + 8 * i for i in range(11))
 ULTB, ULXB, ULMB, ULRB, ULHB, ULTU = 0x2800, 0x2900, 0x2A00, 0x2B00, 0x2C00, 0x2D00   # in PBUF, free while she is born
@@ -1038,6 +1066,100 @@ def make(g, ST, free):
         o("gz_none:")
         J("jret")
 
+    def nombre_routines():
+        assert NM0 + 24 <= 0x1D80
+        o("r_glyph:                        ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)")
+        for ch in sorted(FONT):
+            J("jldi j10, %d" % ord(ch), "jsub j10, j5, j10", "jjnz j10, gl_%d" % ord(ch)); li("j0", glyph_bits(ch)); J("jret")
+            o("gl_%d:" % ord(ch))
+        J("jldi j0, 0", "jret")
+        o("r_txt:                          ; the letters at j3 (j4 of them) drawn from the cell j1, j2 (6 cells a letter), in the")
+        o("                                ; colour PR PG PB. Uses j0-j12")
+        gs("j1", NMASK + 0x80); gs("j2", NMASK + 0x88); gs("j3", NMASK + 0x90); gs("j4", NMASK + 0x98); gs("j14", NMASK + 0xA0)
+        o("tx_c:")
+        gl("j7", NMASK + 0xA0); gl("j4", NMASK + 0x98); J("jsub j10, j7, j4", "jjnn j10, tx_d"); gl("j3", NMASK + 0x90); J("jadd j5, j3, j7", "jldb j5, j5, 0", "jcall r_glyph"); gs("j0", NMASK + 0xA8); gs("j14", NMASK + 0xB0)
+        o("tx_b:")
+        gl("j7", NMASK + 0xB0); J("jldi j10, 35", "jsub j10, j7, j10", "jjnn j10, tx_n"); gl("j0", NMASK + 0xA8); J("jshr j10, j0, j7", "jldi j11, 1", "jand j10, j10, j11", "jjz j10, tx_bn")
+        J("jldi j10, 5", "jdiv j8, j7, j10", "jmul j9, j8, j10", "jsub j9, j7, j9"); gl("j1", NMASK + 0x80); gl("j10", NMASK + 0xA0); J("jldi j11, 6", "jmul j10, j10, j11", "jadd j1, j1, j10", "jadd j1, j1, j9")
+        gl("j2", NMASK + 0x88); J("jadd j2, j2, j8", "jcall r_plot")
+        o("tx_bn:")
+        gl("j7", NMASK + 0xB0); J("jldi j10, 1", "jadd j7, j7, j10"); gs("j7", NMASK + 0xB0); J("jjmp tx_b")
+        o("tx_n:")
+        gl("j7", NMASK + 0xA0); J("jldi j10, 1", "jadd j7, j7, j10"); gs("j7", NMASK + 0xA0); J("jjmp tx_c")
+        o("tx_d:")
+        J("jret")
+        o("r_nombre_load:                  ; HER NAME, ASKED BY HER: her room (the prompt at its start, her name from 64 on); her")
+        o("                                ; name from \"nombre\", or she will ask")
+        li("j1", 4096); J("jcall r_alloc"); gs("j0", NMROOM); gs("j14", NMASK); gs("j14", NMLEN)
+        J("jadd j7, j0, j14")
+        for i, ch in enumerate(b"COMO ME LLAMO?"):
+            J("jldi j10, %d" % ch, "jstb j10, j7, %d" % i)
+        for i, ch in enumerate(b"nombre"):
+            J("jldi j10, %d" % ch, "jstb j10, j7, %d" % (32 + i))
+        gl("j11", NMROOM); J("jldi j10, 32", "jadd j11, j11, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, nm_ask")
+        J("jldi j10, 5"); gl("j11", NMROOM); J("jldi j10, 64", "jadd j11, j11, j10", "jldi j12, 1000", "jldi j10, 5", "jcall r_file"); gs("j13", NMLEN); J("jldi j10, 7", "jcall r_file")
+        o("  ; (the first line is her name)")
+        gl("j7", NMROOM); J("jldi j10, 64", "jadd j7, j7, j10", "jldi j4, 0"); gl("j3", NMLEN)
+        o("nm_line:")
+        J("jsub j10, j4, j3", "jjnn j10, nm_got", "jadd j5, j7, j4", "jldb j5, j5, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjz j10, nm_got", "jldi j10, 13", "jsub j10, j5, j10", "jjz j10, nm_got",
+          "jldi j10, 1", "jadd j4, j4, j10", "jjmp nm_line")
+        o("nm_got:")
+        gs("j4", NMLEN); J("jjnz j4, nm_ret")
+        o("nm_ask:")
+        J("jldi j1, 1"); gs("j1", NMASK); gs("j14", NMLEN)
+        o("nm_ret:")
+        J("jret")
+        o("r_nombre_draw:                  ; on her screen: while she asks, her question and what is typed (and a cursor); after,")
+        o("                                ; her name under her forms")
+        gl("j1", NMROOM); J("jjz j1, nd_ret"); g["setg"]("PR", 236); g["setg"]("PG", 236); g["setg"]("PB", 228)
+        gl("j1", NMASK); J("jjz j1, nd_name")
+        J("jldi j1, 4", "jldi j2, 6"); gl("j3", NMROOM); J("jldi j4, 14", "jcall r_txt")
+        gl("j3", NMROOM); J("jldi j10, 64", "jadd j3, j3, j10"); gl("j4", NMLEN); J("jldi j1, 4", "jldi j2, 18", "jcall r_txt")
+        o("  ; (the cursor: a line under where the next letter goes)")
+        gl("j1", NMLEN); J("jldi j10, 6", "jmul j1, j1, j10", "jldi j10, 4", "jadd j1, j1, j10"); gs("j1", NMASK + 0x80); J("jldi j9, 0")
+        o("nd_cur:")
+        gl("j1", NMASK + 0x80); J("jadd j1, j1, j9", "jldi j2, 26"); gs("j9", NMASK + 0xB8); J("jcall r_plot"); gl("j9", NMASK + 0xB8); J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, nd_cur", "jret")
+        o("nd_name:")
+        gl("j3", NMROOM); J("jldi j10, 64", "jadd j3, j3, j10"); gl("j4", NMLEN); J("jldi j1, 4", "jldi j2, %d" % 91, "jcall r_txt")
+        o("nd_ret:")
+        J("jret")
+        o("r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0")
+        gl("j1", NMASK); J("jjnz j1, nk_go", "jldi j0, 0", "jret")
+        o("nk_go:")
+        g["setg"]("CHANGED", 1); gl("j4", NMLEN); gl("j7", NMROOM); J("jldi j10, 64", "jadd j7, j7, j10")
+        J("jldi j10, 8", "jsub j10, j3, j10", "jjnz j10, nk_enter", "jjz j4, nk_ret", "jldi j10, 1", "jsub j4, j4, j10"); gs("j4", NMLEN); J("jjmp nk_ret")
+        o("nk_enter:")
+        J("jldi j10, 13", "jsub j10, j3, j10", "jjnz j10, nk_char", "jjz j4, nk_ret", "jcall r_nombre_keep", "jjmp nk_ret")
+        o("nk_char:                        ; a letter, a digit or a space (the n with its tilde is said as N, as in her books)")
+        J("jldi j10, 192", "jsub j10, j3, j10", "jjnz j10, nk_c2", "jldi j3, 78")
+        o("nk_c2:")
+        J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, nk_put", "jldi j10, 48", "jsub j10, j3, j10", "jjn j10, nk_ret", "jldi j10, 58", "jsub j10, j3, j10", "jjn j10, nk_put",
+          "jldi j10, 65", "jsub j10, j3, j10", "jjn j10, nk_ret", "jldi j10, 91", "jsub j10, j3, j10", "jjnn j10, nk_ret")
+        o("nk_put:")
+        J("jldi j10, 3000", "jsub j10, j4, j10", "jjnn j10, nk_ret", "jadd j5, j7, j4", "jstb j3, j5, 0", "jldi j10, 1", "jadd j4, j4, j10"); gs("j4", NMLEN)
+        o("nk_ret:")
+        J("jldi j0, 1", "jret")
+        o("r_nombre_keep:                  ; her name, and her seal (her own luck mixed with what she has rowed), into \"nombre\"")
+        gl("j7", NMROOM); gl("j4", NMLEN); J("jldi j10, 64", "jadd j5, j7, j10", "jadd j5, j5, j4", "jldi j10, 10", "jstb j10, j5, 0")
+        J("jldi j10, 35", "jldi j11, -1", "jldi j12, 0", "jcall r_tocar"); ld("j1", "RNG"); J("jxor j1, j1, j13"); li("j10", GOLD); J("jmul j1, j1, j10", "jldi j10, 31", "jshr j2, j1, j10", "jxor j1, j1, j2")
+        gl("j7", NMROOM); gl("j4", NMLEN); J("jldi j10, 65", "jadd j5, j7, j10", "jadd j5, j5, j4", "jldi j8, 60")
+        o("nkp_h:")
+        J("jshr j2, j1, j8", "jldi j10, 15", "jand j2, j2, j10", "jldi j10, 10", "jsub j10, j2, j10", "jjn j10, nkp_d", "jldi j10, 39", "jadd j2, j2, j10")
+        o("nkp_d:")
+        J("jldi j10, 48", "jadd j2, j2, j10", "jstb j2, j5, 0", "jldi j10, 1", "jadd j5, j5, j10", "jjz j8, nkp_e", "jldi j10, 4", "jsub j8, j8, j10", "jjmp nkp_h")
+        o("nkp_e:")
+        J("jldi j10, 10", "jstb j10, j5, 0")
+        gl("j11", NMROOM); J("jldi j10, 32", "jadd j11, j11, j10", "jldi j10, 12", "jldi j12, 6", "jcall r_tocar")
+        gl("j11", NMROOM); J("jldi j10, 32", "jadd j11, j11, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, nkp_r")
+        gl("j11", NMROOM); J("jldi j10, 64", "jadd j11, j11, j10"); gl("j12", NMLEN); J("jldi j10, 18", "jadd j12, j12, j10", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("nkp_r:")
+        gs("j14", NMASK); J("jret")
+
+    def nombre_draw():
+        J("jcall r_nombre_draw            ; her name, or her question (gen_leer.py)")
+    def nombre_key(done):
+        J("jcall r_nombre_key", "jjnz j0, %s" % done)
+
     def un_libro_routines():
         assert UL0 + 8 * 11 <= 0x1F00 and ULTU + 16 <= PBUF + 4096
         o("ul_cmp:                         ; the label at j1 (j2 bytes) against the one at j3 (j4 bytes) -> j0 < 0, 0, > 0")
@@ -1135,6 +1257,7 @@ def make(g, ST, free):
 
     def init():
         J("jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)")
+        J("jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)")
         J("jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)")
 
     def worth():
@@ -1582,6 +1705,7 @@ def make(g, ST, free):
         gears_routines()
         firma_routines()
         un_libro_routines()
+        nombre_routines()
         busca_routines()
         o("r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in")
         o("                                ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in")
@@ -2014,5 +2138,5 @@ def make(g, ST, free):
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
-    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, lineage=lineage, lineage_cross=lineage_cross, lineage_plain=lineage_plain, flat_test=flat_test, act=act, finish=finish, B=B,
+    return types.SimpleNamespace(birth=birth, init=init, worth=worth, routines=routines, grow_letter=grow_letter, heart_rest=heart_rest, nombre_draw=nombre_draw, nombre_key=nombre_key, lineage=lineage, lineage_cross=lineage_cross, lineage_plain=lineage_plain, flat_test=flat_test, act=act, finish=finish, B=B,
                                  gl=gl, gs=gs, inc=inc, CHN=CHN, CH0=CH0, TECHO=TECHO, ALEGRIA=ALEGRIA, N5=N5, S5=S5, RWF=RWF, NEWST=NEWST, R=R, KEPT=KEPT, F_READ=F_READ)
