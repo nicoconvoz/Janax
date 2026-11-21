@@ -10104,10 +10104,10 @@ r_read_init:
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03C85h
-  jshi j2, 0BAEAh
-  jshi j2, 08107h
-  jshi j2, 06B89h
+  jldi j2, 0E8Dh
+  jshi j2, 0692Eh
+  jshi j2, 0C5A4h
+  jshi j2, 041DBh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 015Eh
@@ -14521,8 +14521,17 @@ gl_90:
   jldi j0, 0
   jret
 r_txt:                          ; the text at j3 (j4 bytes of UTF-8) drawn from the cell j1, j2, in the colour PR PG PB
-                                ; -> j0 = the cells it took across. Her own letters take 6; a learned one, half its width
-                                ; and one. Uses j0-j12
+                                ; -> j0 = the cells it took across, j1 = the bytes it took. Her own letters take 6; a
+                                ; learned one, half its width and one. j5: a width it must not pass (0: none); j7: 1 draws,
+                                ; 0 only measures. Uses j0-j12
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jst j5, j6, 3824
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jst j7, j6, 3832
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D58h
@@ -14552,6 +14561,20 @@ r_txt:                          ; the text at j3 (j4 bytes of UTF-8) drawn from 
   jld j6, j6, 01D58h
   jst j14, j6, 3784
 tx_c:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jld j5, j6, 3824
+  jjz j5, tx_w
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jld j10, j6, 3784
+  jldi j11, 9
+  jadd j10, j10, j11
+  jsub j10, j10, j5
+  jjnn j10, tx_d
+tx_w:
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D58h
@@ -14695,6 +14718,11 @@ tb_c:
   jadd j2, j2, j7
   jldi j10, 1
   jsub j2, j2, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jld j10, j6, 3832
+  jjz j10, tb_cn
   jcall r_plot
 tb_cn:
   jldi j6, 015Eh
@@ -14793,6 +14821,11 @@ tx_b:
   jld j6, j6, 01D58h
   jld j2, j6, 3720
   jadd j2, j2, j8
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jld j10, j6, 3832
+  jjz j10, tx_bn
   jcall r_plot
 tx_bn:
   jldi j6, 015Eh
@@ -14833,6 +14866,10 @@ tx_d:
   jshi j6, 0
   jld j6, j6, 01D58h
   jld j0, j6, 3784
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D58h
+  jld j1, j6, 3744
   jret
 r_nombre_load:                  ; HER NAME, ASKED BY HER: her room (the prompt at its start, her name from 64 on); her
                                 ; name from "nombre", or she will ask
@@ -14970,6 +15007,8 @@ r_nombre_draw:                  ; on her screen: while she asks, her question an
   jjz j1, nd_name
   jldi j1, 4
   jldi j2, 6
+  jldi j5, 0
+  jldi j7, 1
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 01D58h
@@ -14985,6 +15024,8 @@ r_nombre_draw:                  ; on her screen: while she asks, her question an
   jld j4, j6, 01D60h
   jldi j1, 4
   jldi j2, 18
+  jldi j5, 0
+  jldi j7, 1
   jcall r_txt
   ; (the cursor: a line under where the next letter goes)
   jldi j10, 4
@@ -15027,6 +15068,8 @@ nd_name:
   jld j4, j6, 01D60h
   jldi j1, 2
   jldi j2, 2
+  jldi j5, 0
+  jldi j7, 1
   jcall r_txt
   jcall r_dlg_draw
 nd_ret:
@@ -15214,18 +15257,26 @@ r_dlg_save:                     ; her counts into "charla"
   jadd j11, j11, j15
   jldi j12, 32
   jcall r_file
+  jldi j10, 6
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6832
+  jadd j11, j11, j15
+  jldi j12, 32
+  jcall r_file
   jldi j10, 7
   jcall r_file
 dsv_r:
   jret
 r_dlg_load:                     ; HER WORD: its room, its labels, her counts
-  jldi j1, 03400h
+  jldi j1, 03480h
   jcall r_alloc
   jldi j6, 015Eh
   jshi j6, 0
   jst j0, j6, 01D68h
   jadd j6, j0, j14
-  jldi j2, 1664
+  jldi j2, 1680
 dll_z:
   jst j14, j6, 0
   jldi j10, 8
@@ -15317,6 +15368,14 @@ dll_z:
   jshi j6, 0
   jld j11, j6, 01D68h
   jldi j15, 6424
+  jadd j11, j11, j15
+  jldi j12, 32
+  jcall r_file
+  jldi j10, 5
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6832
   jadd j11, j11, j15
   jldi j12, 32
   jcall r_file
@@ -15421,6 +15480,11 @@ dll_ar:
   jret
 r_dlg_write:                    ; a line of "dialogo": who (j1: 0 "vos: ", 1 "luma: ", 2 her silence), then the text at
                                 ; j2 (j3 bytes)
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6872
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -15835,6 +15899,63 @@ dw_3:
   jadd j7, j7, j10
   jjmp dw_t
 dw_4:
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnz j10, dw_5
+  jldi j10, 108
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 117
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 109
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 40
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 99
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 105
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 116
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 97
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 41
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 58
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 32
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dw_t
+dw_5:
 dw_t:
   jldi j10, 2
   jsub j10, j1, j10
@@ -16259,6 +16380,59 @@ dan_k:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j3, j6, 6408
+  ; (the book it comes from: its label after its first dash)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 6504
+  jld j4, j9, 0
+  jldi j10, 8
+  jadd j9, j9, j10
+  jldi j5, 0
+dan_sd:
+  jsub j10, j5, j4
+  jjnn j10, dan_sn
+  jadd j10, j9, j5
+  jldb j10, j10, 0
+  jldi j11, 1
+  jadd j5, j5, j11
+  jldi j11, 45
+  jsub j10, j10, j11
+  jjnz j10, dan_sd
+dan_sn:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01D68h
+  jldi j15, 13312
+  jadd j8, j8, j15
+  jldi j7, 0
+dan_sc:
+  jsub j10, j5, j4
+  jjnn j10, dan_se
+  jldi j10, 60
+  jsub j10, j7, j10
+  jjnn j10, dan_se
+  jadd j10, j9, j5
+  jldb j10, j10, 0
+  jadd j11, j8, j7
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j5, j5, j10
+  jadd j7, j7, j10
+  jjmp dan_sc
+dan_se:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j7, j6, 6888
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6776
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6408
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 01D68h
@@ -16396,6 +16570,42 @@ r_dlg_sent:                     ; Enter: what was typed is said to her. If what 
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 6432
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6864
+  jldi j10, 1
+  jsub j10, j1, j10
+  jjnz j10, dse_p2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6840
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6840
+  jjmp dse_p
+dse_p2:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6864
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjnz j10, dse_p
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6856
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6856
   jjmp dse_p
 dse_h:
   jldi j6, 015Eh
@@ -16463,8 +16673,87 @@ dse_yes:
   jld j6, j6, 01D68h
   jld j1, j6, 6408
   jjz j1, dse_none
+  ; (to quote, or to say it her way: by her wishes, (S + 1/2) / (N + 1) each, against her luck)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6840
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6832
+  jcall dse_wish
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6896
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6856
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6848
+  jcall dse_wish
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6896
+  jadd j1, j1, j2
+  jcall r_randmod
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6896
+  jsub j10, j0, j1
+  jjn j10, dse_cite
   jcall r_dlg_cross
+  jcall r_dlg_own
+  jldi j10, 2
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6864
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6848
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6848
   jjmp dse_has
+dse_cite:
+  jcall r_dlg_cite
+  jldi j10, 1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6864
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6832
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6832
+  jjmp dse_has
+dse_wish:                       ; j1 = S, j2 = N -> j1 = (S + 1/2) / (N + 1), in 2^20ths
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 19
+  jshl j1, j1, j10
+  jldi j10, 1
+  jadd j2, j2, j10
+  jdiv j1, j1, j2
+  jret
 dse_none:                       ; (nothing she read shares a word with it: she says so, and it is not counted as an answer)
   jldi j1, 3
   jldi j3, 0
@@ -16487,11 +16776,13 @@ dse_has:
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 6672
-  jldi j10, 3
-  jmul j1, j1, j10
+  jld j1, j6, 6864
   jldi j10, 1
-  jadd j1, j1, j10
+  jsub j10, j1, j10
+  jldi j1, 1
+  jjnz j10, dse_sg
+  jldi j1, 5
+dse_sg:                         ; (her own words are signed luma; a quote says so)
   jldi j6, 015Eh
   jshi j6, 0
   jld j2, j6, 01D68h
@@ -16971,6 +17262,264 @@ dcr_k:
   jjmp dcr_k
 dcr_r:
   jret
+r_dlg_cite:                     ; SHE QUOTES: her line as it is, and the book it comes from
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j5, j6, 6888
+  jadd j10, j4, j5
+  jldi j11, 3
+  jadd j10, j10, j11
+  jldi j11, 1000
+  jsub j10, j10, j11
+  jjnn j10, dct_r
+  jjz j5, dct_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jadd j8, j7, j4
+  jldi j10, 32
+  jstb j10, j8, 0
+  jldi j10, 40
+  jstb j10, j8, 1
+  jldi j10, 2
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01D68h
+  jldi j15, 13312
+  jadd j9, j9, j15
+  jldi j3, 0
+dct_c:
+  jsub j10, j3, j5
+  jjnn j10, dct_e
+  jadd j10, j9, j3
+  jldb j10, j10, 0
+  jadd j11, j7, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jadd j4, j4, j10
+  jjmp dct_c
+dct_e:
+  jadd j11, j7, j4
+  jldi j10, 41
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 6408
+dct_r:
+  jret
+r_dlg_own:                      ; SHE SAYS IT HER WAY: of what she has (her line, or her cross), only the sentences that say
+                                ; something of what was said to her (if none does, all of it)
+  jldi j10, 0
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6896
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6904
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6912
+dow_l:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6904
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jsub j10, j1, j2
+  jjnn j10, dow_end
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jadd j8, j7, j1
+  jldb j5, j8, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6904
+  jldi j10, 46
+  jsub j10, j5, j10
+  jjz j10, dow_p
+  jldi j10, 33
+  jsub j10, j5, j10
+  jjz j10, dow_p
+  jldi j10, 63
+  jsub j10, j5, j10
+  jjnz j10, dow_l
+dow_p:                          ; (a sentence ends where the sign is followed by a space, or the end)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6904
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jsub j10, j1, j2
+  jjnn j10, dow_s
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jadd j8, j7, j1
+  jldb j5, j8, 0
+  jldi j10, 32
+  jsub j10, j5, j10
+  jjnz j10, dow_l
+dow_s:
+  jcall dow_take
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6904
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6896
+  jjmp dow_l
+dow_end:
+  jcall dow_take
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6912
+  jjz j1, dow_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6912
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j3, j6, 6408
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 11264
+  jadd j2, j2, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jldi j4, 0
+dow_k:
+  jsub j10, j4, j3
+  jjnn j10, dow_r
+  jadd j10, j2, j4
+  jldb j10, j10, 0
+  jadd j11, j7, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dow_k
+dow_r:
+  jret
+dow_take:                       ; (the sentence D_TS .. D_TI: kept in D_C if it says something of what was said to her)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6896
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6904
+  jsub j2, j2, j1
+  jjz j2, dtk2_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jadd j1, j7, j1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j9, j6, 01D68h
+  jldi j15, 10240
+  jadd j9, j9, j15
+  jcall r_dlg_cover
+  jjz j0, dtk2_r
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6896
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6904
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j8, j6, 01D68h
+  jldi j15, 11264
+  jadd j8, j8, j15
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6912
+dtk2_c:                         ; (its first spaces left)
+  jsub j10, j1, j2
+  jjnn j10, dtk2_e
+  jadd j10, j7, j1
+  jldb j10, j10, 0
+  jldi j11, 32
+  jsub j10, j10, j11
+  jjnz j10, dtk2_k
+  jldi j10, 1
+  jadd j1, j1, j10
+  jjmp dtk2_c
+dtk2_k:
+  jsub j10, j1, j2
+  jjnn j10, dtk2_e
+  jldi j10, 998
+  jsub j10, j4, j10
+  jjnn j10, dtk2_e
+  jadd j10, j7, j1
+  jldb j10, j10, 0
+  jadd j11, j8, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jadd j4, j4, j10
+  jjmp dtk2_k
+dtk2_e:
+  jadd j11, j8, j4
+  jldi j10, 32
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 6912
+dtk2_r:
+  jret
 r_dlg_wish:                     ; -> DWH: her wish to speak first, (S + 1/2) / (N + 1) as her acts' (0 while what she
                                 ; said waits, or with no room)
   jldi j6, 015Eh
@@ -17255,9 +17804,54 @@ dk_bsd:
 dk_enter:
   jldi j10, 13
   jsub j10, j3, j10
-  jjnz j10, dk_char
+  jjnz j10, dk_pg
   jjz j4, dk_yes
   jcall r_dlg_sent
+  jjmp dk_yes
+dk_pg:                          ; (Page Up: four lines back)
+  jldi j10, 33
+  jsub j10, j3, j10
+  jjnz j10, dk_pd
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6872
+  jldi j10, 4
+  jsub j1, j1, j10
+  jjnn j1, dk_pu
+  jldi j1, 0
+dk_pu:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6872
+  jjmp dk_yes
+dk_pd:                          ; (Page Down: four lines on, while there are more)
+  jldi j10, 34
+  jsub j10, j3, j10
+  jjnz j10, dk_char
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6872
+  jldi j10, 4
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6880
+  jldi j10, 8
+  jsub j2, j2, j10
+  jsub j10, j1, j2
+  jjn j10, dk_pv
+  jadd j1, j2, j14
+  jjnn j1, dk_pv
+  jldi j1, 0
+dk_pv:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6872
   jjmp dk_yes
 dk_char:                        ; the keys that write (the space, digits, letters, the number pad, signs) are hers: what
                                 ; they write comes as a character (r_char). The others are her forms'
@@ -17977,40 +18571,33 @@ lt_meet:
   jjmp lt_l
 lt_r:
   jret
-r_dlg_draw:                     ; her last words (up to four lines of 26 letters) and the line being typed, with a cursor
+r_dlg_draw:                     ; her last words, whole, in lines as wide as her place, eight shown from D_SCR0 (Page Up,
+                                ; Page Down move them), and the line being typed, with a cursor
   jldi j6, 015Eh
   jshi j6, 0
   jld j1, j6, 01D68h
   jjz j1, ddr_r
-  jldi j6, 015Eh
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6408
-  jjz j1, ddr_in
   jldi j10, 0
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j10, j6, 6544
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6552
 ddr_l:
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 6544
-  jldi j10, 26
-  jmul j2, j1, j10
+  jld j2, j6, 6552
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j4, j6, 6408
   jsub j4, j4, j2
-  jjn j4, ddr_in
-  jjz j4, ddr_in
-  jldi j10, 26
-  jsub j10, j4, j10
-  jjn j10, ddr_c
-  jldi j4, 26
-ddr_c:
+  jjn j4, ddr_n
+  jjz j4, ddr_n
   jldi j6, 015Eh
   jshi j6, 0
   jld j3, j6, 01D68h
@@ -18021,12 +18608,37 @@ ddr_c:
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j1, j6, 6544
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j10, j6, 6872
+  jsub j1, j1, j10
+  jldi j7, 0
+  jjn j1, ddr_m
+  jldi j10, 8
+  jsub j10, j1, j10
+  jjnn j10, ddr_m
+  jldi j7, 1
+ddr_m:
   jldi j10, 9
   jmul j2, j1, j10
-  jldi j10, 50
+  jldi j10, 12
   jadd j2, j2, j10
   jldi j1, 2
+  jldi j5, 152
   jcall r_txt
+  jjnz j1, ddr_t2
+  jldi j1, 1
+ddr_t2:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6552
+  jadd j2, j2, j1
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j2, j6, 6552
   jldi j6, 015Eh
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -18037,9 +18649,41 @@ ddr_c:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 6544
-  jldi j10, 4
-  jsub j10, j1, j10
-  jjnz j10, ddr_l
+  jjmp ddr_l
+ddr_n:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6544
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6880
+  ; (more below, or above: a mark at the side)
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6872
+  jjz j1, ddr_nb
+  jldi j1, 156
+  jldi j2, 12
+  jcall r_plot
+ddr_nb:
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6872
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j6, 015Eh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6880
+  jsub j10, j1, j2
+  jjnn j10, ddr_in
+  jldi j1, 156
+  jldi j2, 82
+  jcall r_plot
 ddr_in:
   jldi j6, 015Eh
   jshi j6, 0
@@ -18060,6 +18704,8 @@ ddr_in:
 ddr_t:
   jldi j1, 2
   jldi j2, 91
+  jldi j5, 0
+  jldi j7, 1
   jcall r_txt
   jldi j10, 2
   jadd j1, j0, j10
