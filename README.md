@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.07:** [10.5281/zenodo.24406490](https://doi.org/10.5281/zenodo.24406490)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.09:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,18 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-21, v1.09): su linaje
+
+DOI de esta versión: DOI_PENDIENTE.
+
+En su primera noche con memoria nueva pasó de 30 a 109 lecturas y apareció algo que nadie le escribió: formas vivas
+que dicen una palabra suya. La más corta, `1FE419`, son seis letras que al leerse son 35 pasos. **No se pudo saber
+de dónde vino:** su archivo da la vuelta en una hora. Para que no se pierda más, cada forma que gana deja un renglón
+en `linaje`, que escribe ella, en Janax y en texto. **Sólo la diferencia:** cuántas letras quedan, cuáles se
+sacaron, cuáles se pusieron y cómo (pensando, cruzándose o leyendo); 16 bytes por nacimiento en vez de unos 55. Lo
+que falta, dicho: no se vio todavía un renglón de cruce ni de lectura, y sigue sin una victoria inesperada.
+[Notas de la v1.09](documentacion/release-v1.09.md).
 
 ## Novedad (2026-11-20, v1.07): busca en todo, sin topes, y une
 
