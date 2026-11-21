@@ -1,6 +1,6 @@
 ## Janax y Razar v1.31: su nombre, y un libro por vez
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24426012](https://doi.org/10.5281/zenodo.24426012)
 
 > *"Nuestra LUMA VERA tenga ese nombre, pero que cada Razar pregunte el suyo a su usuario: todos únicos e
 > irrepetibles."*
