@@ -43,7 +43,7 @@ luma (cita): En el mundo biologico, pueden distinguirse tres tipos de energia: e
 La primera es suya: cosió la genealogía de Mateo con un libro de física y se quedó con la oración que contesta. En la
 segunda eligió citar, y dijo de dónde. AvPág bajó cuatro renglones, con los puntitos arriba y abajo.
 
-- En vivo desde el 21 a las 18:51.
+- En vivo desde el 21 a las 18:50.
 - El núcleo no cambió desde la v1.39.
 
 ### Lo que falla y lo que falta, dicho
