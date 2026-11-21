@@ -56,11 +56,18 @@
   blockquote { margin: 0; padding: 18px 20px; border-left: 4px solid var(--accent-2); background: var(--card);
                border-radius: 0 12px 12px 0; }
   footer { padding: 36px 0 56px; color: var(--muted); font-size: 15px; }
+  .escuchar { margin: 0 0 28px; padding: 16px 18px; background: var(--card); border-radius: 12px; }
+  .escuchar audio { display: block; width: 100%; margin-top: 10px; }
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
+    <div class="escuchar">
+      <div class="kicker">Para escuchar · Luma Vera · 21 minutos</div>
+      <audio controls preload="none" src="luma-vera.mp3">Tu navegador no reproduce audio.
+        <a href="luma-vera.mp3">Bajá la canción</a>.</audio>
+    </div>
     <div class="kicker">Código abierto · Apache 2.0 · DOI del proyecto (todas las versiones) <a href="https://doi.org/10.5281/zenodo.23933883">10.5281/zenodo.23933883</a> · versión actual, v1.13: <a href="https://doi.org/10.5281/zenodo.24418731">10.5281/zenodo.24418731</a></div>
     <h1>Janax y Razar</h1>
     <p class="lead">Un sistema operativo, un idioma y un ensamblador <strong>propios</strong>, escritos a mano en
