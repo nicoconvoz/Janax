@@ -1727,6 +1727,7 @@ def make(g, ST, free):
             for i, ch in enumerate(t):
                 J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (off + i))
         o("r_dlg_save:                     ; her counts into \"charla\"")
+        J("jcall r_cable_flush            ; (and her new living cables, if any)")
         da("j11", D_LBL + 16); J("jldi j10, 12", "jldi j12, 6", "jcall r_tocar"); da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dsv_r")
         J("jldi j10, 6"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 6"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 64), "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("dsv_r:")
@@ -3595,6 +3596,7 @@ def make(g, ST, free):
 
     def init():
         J("jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)")
+        J("jcall r_cable_init             ; her living cables: which routine comes after which (gen_leer.py)")
         J("jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)")
         J("jcall r_dlg_load               ; her word, in her window (gen_leer.py)")
         J("jcall r_mus_init               ; her school, born to sing what she says (gen_leer.py)")
@@ -4441,9 +4443,123 @@ def make(g, ST, free):
         o("fr_r_on:")
         go_on()
 
+    def cables_vivos(L):
+        """HER LIVING CABLES (the Capitan, 2026-11-22: "dale de comer sus propios procesos vivos, para que entienda
+        como funcionan los cables conectados"). At the entry of every routine of her body something is called, three
+        words that keep her registers as they were: which routine came, after which. Each new cable (one bit in a
+        matrix, routine by routine, kept in her house as "cables-matriz") is written once in her life as a sentence,
+        "A, luego B.", in a book she eats: "cables-vivos" (written as it is on her shelf if it is her turn's book, else
+        as it waits). Written when she saves after an act, only if something is new."""
+        G = g["G"]; LOW = g.get("FORMS", 0x800); base = (max(v for v in G.values() if v < LOW) + 8 + 7) // 8 * 8
+        CB = {n: base + 8 * i for i, n in enumerate("S1 S2 S3 S4 S5 S6 LAST OFF M P PS PE TURN LBL NB TB BLK Q NBF".split())}
+        assert CB["NBF"] + 8 <= LOW and not [v for v in G.values() if base <= v < LOW], "her cables' variables: a free gap under the forms"
+        def lw(r, n): J("jld %s, j14, %d" % (r, CB[n]))
+        def sw(r, n): J("jst %s, j14, %d" % (r, CB[n]))
+        calls = set()
+        for l in L:
+            m = re.match(r"\s*jcall0?\s+(?:j\d+\s*,\s*)?(\w+)\s*$", l.split(";")[0])
+            if m: calls.add(m.group(1))
+        labels = [re.match(r"^(\w+):", l).group(1) for l in L if re.match(r"^(\w+):", l)]
+        traced = sorted(n for n in set(labels) if n in calls)
+        NC = len(traced); ID = {n: i for i, n in enumerate(traced)}
+        tira = lambda n: re.sub(r"[^A-Za-z]", "", n)
+        open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "luma.cables"), "w", encoding="ascii", newline="\n").write(
+            "\n".join(tira(n) for n in traced) + "\n")
+        BYTES = ((NC * NC + 7) // 8 + 7) // 8 * 8
+        LBLS = (b"libro-cables-vivos", b"elibro-cables-vivos", b"cables-matriz", b"luma/cables.nombres")
+        TBN, PN = 16384, 4096
+        out = []
+        for l in L:
+            out.append(l)
+            m = re.match(r"^(\w+):", l)
+            if m and m.group(1) in ID:
+                out += ["  jst j1, j14, %d" % CB["S1"], "  jldi j1, %d" % ID[m.group(1)], "  jcall r_cable"]
+        L[:] = out
+        o("; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): %d routines" % NC)
+        o("r_cable:                        ; j1 = the routine that came (its S1 kept j1): one bit for the cable from the last one")
+        for k in range(2, 7):
+            sw("j%d" % k, "S%d" % k)
+        lw("j2", "LAST"); J("jldi j3, 1", "jadd j3, j1, j3"); sw("j3", "LAST"); J("jsub j4, j2, j3", "jjz j4, rc_out", "jjz j2, rc_out")
+        lw("j3", "OFF"); J("jjnz j3, rc_out"); lw("j3", "M"); J("jjz j3, rc_out", "jldi j4, 1", "jsub j2, j2, j4", "jldi j4, %d" % NC, "jmul j2, j2, j4", "jadd j1, j2, j1")
+        J("jldi j4, 3", "jshr j2, j1, j4", "jadd j3, j3, j2", "jldi j4, 7", "jand j2, j1, j4", "jldi j4, 1", "jshl j2, j4, j2", "jldb j4, j3, 0", "jand j5, j4, j2", "jjnz j5, rc_out")
+        lw("j5", "P"); lw("j6", "PE"); J("jsub j6, j6, j5", "jjz j6, rc_out", "jst j1, j5, 0", "jldi j6, 8", "jadd j5, j5, j6"); sw("j5", "P"); J("jor j4, j4, j2", "jstb j4, j3, 0")
+        o("rc_out:")
+        for k in range(6, 0, -1):
+            lw("j%d" % k, "S%d" % k)
+        J("jret")
+        o("r_cable_init:                   ; (right after she turned her books) her cables' labels, their names, the matrix")
+        li("j1", 256); J("jcall r_alloc"); sw("j0", "LBL")
+        for k, t in enumerate(LBLS):
+            for i, ch in enumerate(t):
+                J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (32 * k + i))
+        J("jldi j1, 0"); sw("j1", "TURN"); gl("j4", ULXL); J("jldi j10, %d" % len(LBLS[0]), "jsub j10, j4, j10", "jjnz j10, ci_nm")
+        li("j1", B + ULXB); J("jadd j2, j4, j14"); lw("j3", "LBL"); J("jldi j4, %d" % len(LBLS[0]), "jcall ul_cmp", "jjnz j0, ci_nm", "jldi j1, 1"); sw("j1", "TURN")
+        o("ci_nm:                          ; (their names: one a line, as many as her routines, or nothing is written)")
+        lw("j11", "LBL"); J("jldi j10, 96", "jadd j11, j11, j10", "jldi j12, %d" % len(LBLS[3]), "jcall r_open"); ld("j9", "FH"); J("jjn j9, ci_no")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jadd j7, j13, j14", "jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file", "jjz j7, ci_cl")
+        J("jldi j10, 8", "jadd j1, j7, j10", "jcall r_alloc"); sw("j0", "NBF"); J("jldi j10, 5", "jadd j11, j0, j14", "jadd j12, j7, j14", "jcall r_file", "jadd j7, j13, j14")
+        o("ci_cl:")
+        J("jldi j10, 7", "jcall r_file", "jjz j7, ci_no", "jjn j7, ci_no"); li("j1", 16 * NC + 8); J("jcall r_alloc"); sw("j0", "NB")
+        lw("j1", "NBF"); J("jadd j2, j1, j7", "jadd j3, j1, j14", "jldi j4, 0")
+        o("ci_n:")
+        J("jsub j10, j1, j2", "jjnn j10, ci_nd", "jldb j5, j1, 0", "jldi j10, 10", "jsub j10, j5, j10", "jjnz j10, ci_nn", "jldi j10, %d" % NC, "jsub j10, j4, j10", "jjnn j10, ci_no")
+        lw("j6", "NB"); J("jldi j10, 4", "jshl j5, j4, j10", "jadd j6, j6, j5", "jst j3, j6, 0", "jsub j5, j1, j3", "jst j5, j6, 8", "jldi j10, 1", "jadd j4, j4, j10", "jadd j3, j1, j10")
+        o("ci_nn:")
+        J("jldi j10, 1", "jadd j1, j1, j10", "jjmp ci_n")
+        o("ci_nd:")
+        J("jldi j10, %d" % NC, "jsub j10, j4, j10", "jjnz j10, ci_no")
+        o("  ; (the matrix: as her house kept it, if it is of these routines; else new)")
+        li("j1", BYTES + 8); J("jcall r_alloc"); sw("j0", "BLK"); li("j2", BYTES + 8); J("jadd j3, j0, j2")
+        o("ci_z:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jsub j10, j3, j0", "jjnz j10, ci_z")
+        lw("j11", "LBL"); J("jldi j10, 64", "jadd j11, j11, j10", "jldi j12, %d" % len(LBLS[2]), "jcall r_open"); ld("j9", "FH"); J("jjn j9, ci_mx")
+        J("jldi j10, 5"); lw("j11", "BLK"); li("j12", BYTES + 8); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("ci_mx:")
+        lw("j1", "BLK"); J("jld j2, j1, 0", "jldi j10, %d" % NC, "jsub j10, j2, j10", "jjz j10, ci_mk"); li("j2", BYTES + 8); J("jadd j3, j1, j2")
+        o("ci_z2:")
+        J("jst j14, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jsub j10, j3, j1", "jjnz j10, ci_z2"); lw("j1", "BLK"); J("jldi j10, %d" % NC, "jst j10, j1, 0")
+        o("ci_mk:")
+        li("j1", TBN); J("jcall r_alloc"); sw("j0", "TB"); li("j1", 8 * PN); J("jcall r_alloc"); sw("j0", "P"); sw("j0", "PS"); li("j1", 8 * PN); J("jadd j0, j0, j1"); sw("j0", "PE")
+        J("jldi j1, 0"); sw("j1", "LAST"); sw("j1", "OFF"); lw("j1", "BLK"); J("jldi j10, 8", "jadd j1, j1, j10"); sw("j1", "M")
+        o("ci_no:")
+        J("jret")
+        o("r_cable_flush:                  ; (when she saves) her new cables, as sentences, into her book; the matrix kept")
+        lw("j1", "P"); lw("j2", "PS"); J("jsub j10, j1, j2", "jjz j10, cf_r", "jldi j10, 1"); sw("j10", "OFF")
+        lw("j11", "LBL"); lw("j1", "TURN"); J("jldi j12, %d" % len(LBLS[0]), "jjnz j1, cf_o", "jldi j10, 32", "jadd j11, j11, j10", "jldi j12, %d" % len(LBLS[1]))
+        o("cf_o:")
+        J("jcall r_open"); ld("j9", "FH"); J("jjn j9, cf_done", "jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); lw("j7", "TB"); lw("j8", "PS")
+        o("cf_l:")
+        lw("j1", "P"); J("jsub j10, j8, j1", "jjnn j10, cf_w", "jld j1, j8, 0", "jldi j10, %d" % NC, "jdiv j2, j1, j10", "jmul j3, j2, j10", "jsub j3, j1, j3")
+        J("jadd j9, j3, j14", "jcall cf_name")
+        for ch in b", luego ":
+            J("jldi j10, %d" % ch, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+        J("jadd j2, j9, j14", "jcall cf_name", "jldi j10, 46", "jstb j10, j7, 0", "jldi j10, 10", "jstb j10, j7, 1", "jldi j10, 2", "jadd j7, j7, j10", "jldi j10, 8", "jadd j8, j8, j10")
+        lw("j1", "TB"); J("jsub j1, j7, j1"); li("j10", TBN - 512); J("jsub j10, j1, j10", "jjn j10, cf_l"); sw("j8", "Q"); J("jcall cf_put"); lw("j8", "Q"); J("jjmp cf_l")
+        o("cf_w:")
+        J("jcall cf_put", "jldi j10, 7", "jcall r_file")
+        o("  ; (the matrix, kept whole: 12 empties it first, as her other files)")
+        lw("j11", "LBL"); J("jldi j10, 64", "jadd j11, j11, j10", "jldi j12, %d" % len(LBLS[2]), "jldi j10, 12", "jcall r_tocar")
+        lw("j11", "LBL"); J("jldi j10, 64", "jadd j11, j11, j10", "jldi j12, %d" % len(LBLS[2]), "jcall r_open"); ld("j9", "FH"); J("jjn j9, cf_done")
+        J("jldi j10, 6"); lw("j11", "BLK"); li("j12", BYTES + 8); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("cf_done:")
+        lw("j1", "PS"); sw("j1", "P"); J("jldi j1, 0"); sw("j1", "OFF")
+        o("cf_r:")
+        J("jret")
+        o("cf_name:                        ; j2 = a routine -> its name copied to j7 (j7 moves on; uses j3-j5, j10)")
+        lw("j3", "NB"); J("jldi j10, 4", "jshl j4, j2, j10", "jadd j3, j3, j4", "jld j4, j3, 0", "jld j5, j3, 8")
+        o("cfn_l:")
+        J("jjz j5, cfn_d", "jldb j10, j4, 0", "jstb j10, j7, 0", "jldi j10, 1", "jadd j4, j4, j10", "jadd j7, j7, j10", "jsub j5, j5, j10", "jjmp cfn_l")
+        o("cfn_d:")
+        J("jret")
+        o("cf_put:                         ; what is in her text buffer, written (FH open), and the buffer empty again")
+        lw("j11", "TB"); J("jsub j12, j7, j11", "jjz j12, cfp_r", "jldi j10, 6", "jcall r_file"); lw("j7", "TB")
+        o("cfp_r:")
+        J("jret")
+
     def finish(L):
         """the reader's text after hers: pulso.jsm as it is, from its first order on (hers already gave the room), its
         names kept; a label of hers with the same name as one of its gets "b_" (the body's), whatever it is."""
+        cables_vivos(L)
         src = open(os.path.join(LECTURA, "pulso.jsm"), encoding="utf-8").read().replace("\r\n", "\n").split("\n")
         i_inc = next(i for i, l in enumerate(src) if l.startswith("include '../../escalon0/janax.inc'"))
         assert src[i_inc + 1].startswith("jfirst j1, 10000h")

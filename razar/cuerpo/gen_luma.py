@@ -199,6 +199,7 @@ def free_routine(g):
     o("lbl_done:")
     J("jret")
     o("r_free_save:")
+    J("jcall r_cable_flush            ; (her new living cables, if any, into her book: gen_leer.py)")
     J("jldi j10, 12"); li("j11", B + LLB); J("jldi j12, 5", "jcall r_tocar")
     li("j11", B + LLB); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, lbs_done")
     J("jldi j10, 6"); li("j11", B); J("jldi j12, 56", "jcall r_file")
