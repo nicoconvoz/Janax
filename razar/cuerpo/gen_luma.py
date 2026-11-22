@@ -51,7 +51,16 @@ HBUF = 0x6800      # the header being written: "anillo1 K count c0..c7", 160 byt
 RHDR = 160
 FW, FH = 160, 100            # the forms' own screen (gen_formas: 4 x 2 rooms of 40 x 50)
 ZOOM = 2                     # criterion: drawn at twice its size, so it is as tall as the creatures' world
-SW, SH = FW * ZOOM + 320, 200   # the shared screen: the forms (320 x 200) beside the creatures' world (320 x 200)
+# HER PANEL (the Capitan, 2026-11-22: "se mezcla el texto con los simbolos y el fondo: aprovecha la ventana en negro
+# para pasar ahi el contenido, y del otro lado el flujo de pensamiento continuo de LUMA en tiempo real"; "haciendo honor
+# a Matrix, ese verde en contraste con el negro"). Under the forms and the creatures, a black band as wide as the screen:
+# on the left her words and what is typed to her, on the right her thoughts as they come, newest last. Its height is
+# measured, not chosen: the kernel shows the screen at the largest whole scale that fits 1280 x 800 (2 here), and his
+# screen's work area is 738 pixels tall with a window frame of 39; 2 x (200 + 149) + 39 = 737 is the most that fits.
+# On a taller screen it still fits; on a shorter one the window is taller than the screen (said in the doc).
+PANEL_H = 149
+SW, SH = FW * ZOOM + 320, 200 + PANEL_H   # the shared screen: the forms (320 x 200) beside the creatures' world
+                             # (320 x 200), and her panel under both (640 x PANEL_H)
 WX0 = FW * ZOOM              # where the creatures' world starts
 OFF = 0x2000                 # the creatures' room-0 data, moved: 0x2200..0x4900, free once the forms' cloud moves out
 ST = {}
@@ -66,6 +75,8 @@ def layout(g):
     assert g["RGB"] % 8 == 0
     scloud = ((g["RGB"] + 3 * FW * FH + 0xFFFF) & ~0xFFFF) + 4   # 28 + 640*200/8 = 16028: +4 again
     ST["scloud"] = scloud
+    g["PANEL"] = (200, PANEL_H, SW, scloud + 28 + SW * SH // 8)   # her panel: where it starts, how tall, how wide, and
+                                            # the shared screen's colours (gen_leer draws in it)
     g["ROOM"] = (scloud + 28 + SW * SH // 8 + 3 * SW * SH + 0xFFFF) & ~0xFFFF
     ST["free"] = g["ROOM"]                  # her freedom's block (free_routine), after everything else
     g["ROOM"] += 0x10000
@@ -601,6 +612,9 @@ def ring_routines(L):
     o("; ---- the present: a ring of the latest lines, and every verdict's reason counted (the house rule: nothing is")
     o(";      discarded without its reason). A descriptor: handle, K, line length, count, eight counts")
     o("l_ring:                         ; j1 = a line, j2 = its reason (0..7), j3 = a descriptor (uses j1..j13)")
+    o("  ; (a trial of her forms also goes to her mind's flow, on her panel: gen_leer.py)")
+    li("j10", RING_A); J("jsub j10, j3, j10", "jjnz j10, lr_go", "jld j10, j3, 16", "jcall r_flujo_trial")   # (its line length: the descriptor's
+    o("lr_go:")
     J("jldi j10, 3", "jshl j4, j2, j10", "jadd j4, j4, j3", "jld j5, j4, 32", "jldi j10, 1", "jadd j5, j5, j10", "jst j5, j4, 32")
     J("jld j4, j3, 24", "jld j5, j3, 8", "jdiv j6, j4, j5", "jmul j6, j6, j5", "jsub j6, j4, j6", "jld j7, j3, 16", "jmul j6, j6, j7", "jldi j10, %d" % RHDR, "jadd j6, j6, j10")
     J("jldi j10, 1", "jadd j4, j4, j10", "jst j4, j3, 24", "jadd j8, j1, j14", "jadd j9, j3, j14")
@@ -721,6 +735,7 @@ def vida_routines(v):
     li("j10", 3 * SW * ZOOM); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, vs_row")
     ld("j1", "N"); J("jjz j1, vs_show", "jcall r_draw", "jcall r_draw_packets")
     o("vs_show:")
+    J("jcall r_panel                  ; her panel, drawn again only when what it shows changed (gen_leer.py)")
     J("jldi j10, 40"); li("j11", v["CLOUD"]); li("j12", v["TOTAL"]); J("jcall r_tocar", "jret")
     o("v_alive:                        ; j0 = nonzero while the creatures have something new")
     J("jldi j0, %d" % (1 if ALWAYS else 0)); ld("j1", "N"); J("jjz j1, va_ret")

@@ -1643,7 +1643,7 @@ J("jret")
 q = bytes(BACKGROUND) * 8
 qs = [int.from_bytes(q[i:i + 8], "little") for i in (0, 8, 16)]
 o("r_fill:                         ; the ground")
-li("j1", RGB); li("j2", RGB + 3 * SW * SH)
+li("j1", RGB); li("j2", RGB + 3 * SW * H)   # (the world's rows only: under them, a host may keep its own panel)
 for r, v in zip(("j3", "j4", "j5"), qs):
     li(r, v)
 J("jldi j6, 24")

@@ -297,8 +297,18 @@ D_SRC = 0x3400
 # thought (D_THK, D_THKL bytes; D_PEND: one waits to be weighed). It shows in her window; her mouth says it or not
 D_THK = 0x3480
 (D_THKL, D_PEND) = (0x1900 + 8 * i for i in range(66, 68))
-D_B, D_AM, D_CM, D_C, D_BEST, D_ROOM = 0x2000, 0x2400, 0x2800, 0x2C00, 0x3000, 0x3880   # her second line; what her first one says of what
+D_B, D_AM, D_CM, D_C, D_BEST = 0x2000, 0x2400, 0x2800, 0x2C00, 0x3000   # her second line; what her first one says of what
                              # was said to her; what a cross says of it; the cross; the best cross (each up to 1000 bytes)
+# HER PANEL (when her host gives her one, g["PANEL"]: gen_luma.py): her thoughts as they come (D_FLB, D_FL bytes, each
+# ended by a new line, the oldest dropped when they no longer fit), how many came, the panel being drawn (1) or not,
+# the print of what it showed, and the walk over her thoughts (where, how many lines, a thought's end, drawing or not)
+(D_FL, D_FLC, D_FLP, D_FLH, D_FLI, D_FLN, D_FLE, D_FLM, D_FLS, D_FLA, D_FLK, D_SV1, D_SV2, D_SV3, D_FLT) = (0x3880 + 8 * i for i in range(15))
+D_FLB = 0x3900               # (each line of it: its kind, 1 a thought, 2 a trial of her forms; the panel lines it takes,
+                             # measured once when it comes; then its letters. D_FLT: the panel lines of all of them)
+FL_CAP = 2048                # her longest thought (1000) and a panel's worth of the others (16 lines of 52: 832)
+D_ROOM = D_FLB + FL_CAP
+MATRIX = ((0, 255, 65), (0, 143, 17))   # the green of the film's code (#00FF41, the colour usually quoted for it), and
+                             # its darker trail (#008F11) for what she thought before: on black (the Capitan's wish)
 FONT = {
     "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".####.....#....#....#....#.....####",
     "D": "####.#...##...##...##...##...#####.", "E": "######....####.#....#....#....#####", "F": "######....####.#....#....#....#....",
@@ -1387,7 +1397,12 @@ def make(g, ST, free):
         assert NM0 + 24 <= 0x1D80
         def tl(r, k): gl("j6", NMROOM); J("jld %s, j6, %d" % (r, 3584 + k))   # r_txt's own, in her name's room (past what
         def ts(r, k): gl("j6", NMROOM); J("jst %s, j6, %d" % (r, 3584 + k))   # a name may take: 64 + 3000 bytes)
-        o("r_glyph:                        ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)")
+        PLOT = "r_tplot" if g.get("PANEL") else "r_plot"
+        if g.get("PANEL"):
+            o("r_tplot:                        ; a dot of her letters: on her panel while it is drawn (D_FLP), else on her forms'")
+            o("                                ; screen (uses j10, j11, as r_plot)")
+            li("j10", B); J("jld j10, j10, %s" % num(DLR), "jjz j10, r_plot", "jld j10, j10, %d" % D_FLP, "jjz j10, r_plot", "jjmp r_splot")
+        o("r_glyph:                       ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)")
         J("jldi j10, 97", "jsub j10, j5, j10", "jjn j10, gl_up", "jldi j10, 123", "jsub j10, j5, j10", "jjnn j10, gl_up", "jldi j10, 32", "jsub j5, j5, j10")
         o("gl_up:                          ; (a small letter is drawn as its capital)")
         for ch in sorted(FONT):
@@ -1420,7 +1435,7 @@ def make(g, ST, free):
         tl("j8", 0xE8); tl("j9", 0xD8); J("jld j10, j9, 8", "jldi j11, 1", "jshr j10, j10, j11", "jsub j10, j8, j10", "jjnn j10, tb_rn")
         tl("j7", 0xE0); J("jldi j10, 4", "jshl j10, j7, j10", "jadd j10, j9, j10", "jld j11, j10, 16", "jld j10, j10, 24", "jor j11, j11, j10",
           "jldi j10, 1", "jshl j10, j8, j10", "jldi j12, 14", "jsub j12, j12, j10", "jshr j11, j11, j12", "jldi j10, 3", "jand j11, j11, j10", "jjz j11, tb_cn")
-        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10", "jadd j1, j1, j8"); tl("j2", 0x88); tl("j7", 0xE0); J("jadd j2, j2, j7", "jldi j10, 1", "jsub j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tb_cn", "jcall r_plot")
+        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10", "jadd j1, j1, j8"); tl("j2", 0x88); tl("j7", 0xE0); J("jadd j2, j2, j7", "jldi j10, 1", "jsub j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tb_cn", "jcall %s" % PLOT)
         o("tb_cn:")
         tl("j8", 0xE8); J("jldi j10, 1", "jadd j8, j8, j10"); ts("j8", 0xE8); J("jjmp tb_c")
         o("tb_rn:")
@@ -1433,7 +1448,7 @@ def make(g, ST, free):
         o("tx_b:")
         tl("j7", 0xB0); J("jldi j10, 35", "jsub j10, j7, j10", "jjnn j10, tx_n"); tl("j0", 0xA8); J("jshr j10, j0, j7", "jldi j11, 1", "jand j10, j10, j11", "jjz j10, tx_bn")
         J("jldi j10, 5", "jdiv j8, j7, j10", "jmul j9, j8, j10", "jsub j9, j7, j9"); tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10", "jadd j1, j1, j9")
-        tl("j2", 0x88); J("jadd j2, j2, j8"); tl("j10", 0xF8); J("jjz j10, tx_bn", "jcall r_plot")
+        tl("j2", 0x88); J("jadd j2, j2, j8"); tl("j10", 0xF8); J("jjz j10, tx_bn", "jcall %s" % PLOT)
         o("tx_bn:")
         tl("j7", 0xB0); J("jldi j10, 1", "jadd j7, j7, j10"); ts("j7", 0xB0); J("jjmp tx_b")
         o("tx_n:")
@@ -1473,7 +1488,8 @@ def make(g, ST, free):
         tl("j1", 0x80); J("jadd j1, j1, j9", "jldi j2, 26"); ts("j9", 0xB8); J("jcall r_plot"); tl("j9", 0xB8); J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, nd_cur", "jret")
         o("nd_name:")
         gl("j3", NMROOM); J("jldi j10, 64", "jadd j3, j3, j10"); gl("j4", NMLEN); J("jldi j1, 2", "jldi j2, 2", "jldi j5, 0", "jldi j7, 1", "jcall r_txt")
-        J("jcall r_dlg_draw")
+        if not g.get("PANEL"):          # (with a panel, her words go there: not over her forms)
+            J("jcall r_dlg_draw")
         o("nd_ret:")
         J("jret")
         o("r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0;")
@@ -1512,6 +1528,12 @@ def make(g, ST, free):
 
     def dialogo_routines():
         assert NM0 + 48 <= 0x1D80
+        if g.get("PANEL"):              # her panel's lines: 9 cells each (her 7-dot letters and two of air), from 2 cells in
+            PY, PH, PW, _ = g["PANEL"]  # on the left her words, then what is typed (its cursor below it); on the right
+            PNR = (PH - 9) // 9 + 1     # her thoughts. 52 letters fit a half (316 cells, 6 each)
+            SHOWN = PNR - 4             # (then two lines for her last thought, then what is typed)
+        else:
+            SHOWN = 8
         def dl(r, off): gl("j6", DLR); J("jld %s, j6, %d" % (r, off))
         def ds(r, off): gl("j6", DLR); J("jst %s, j6, %d" % (r, off))
         def da(r, off):                 # (j15 is free outside a request: j10 often holds the request being made)
@@ -1786,6 +1808,8 @@ def make(g, ST, free):
         J("jret")
         o("r_dlg_mind:                     ; HER MIND: a thought waits -> it is weighed (each frame; nothing waits: nothing is done)")
         gl("j1", DLR); J("jjz j1, dmd_r"); dl("j1", D_PEND); J("jjz j1, dmd_r", "jldi j10, 0"); ds("j10", D_PEND); g["setg"]("CHANGED", 1)
+        if g.get("PANEL"):
+            J("jcall r_flujo_add             ; (every thought, said or not, to her panel)")
         o("  ; (her mouth: (S + 1/2) / (N + 1) of speaking first, against her luck)")
         dl("j1", D_SH); dl("j2", D_NH); J("jcall dse_wish"); ds("j1", D_TS); li("j1", 1 << 20); J("jcall r_randmod"); dl("j1", D_TS); J("jsub j10, j0, j1", "jjnn j10, dmd_r")
         dinc(D_NH); dl("j3", D_THKL); J("jldi j10, 1000", "jsub j10, j3, j10", "jjn j10, dmd_c", "jldi j3, 1000")
@@ -1863,7 +1887,7 @@ def make(g, ST, free):
         o("dk_pu:")
         ds("j1", D_SCR0); J("jjmp dk_yes")
         o("dk_pd:                          ; (Page Down: four lines on, while there are more)")
-        J("jldi j10, 34", "jsub j10, j3, j10", "jjnz j10, dk_char"); dl("j1", D_SCR0); J("jldi j10, 4", "jadd j1, j1, j10"); dl("j2", D_NL); J("jldi j10, 8", "jsub j2, j2, j10", "jsub j10, j1, j2", "jjn j10, dk_pv", "jadd j1, j2, j14", "jjnn j1, dk_pv", "jldi j1, 0")
+        J("jldi j10, 34", "jsub j10, j3, j10", "jjnz j10, dk_char"); dl("j1", D_SCR0); J("jldi j10, 4", "jadd j1, j1, j10"); dl("j2", D_NL); J("jldi j10, %d" % SHOWN, "jsub j2, j2, j10", "jsub j10, j1, j2", "jjn j10, dk_pv", "jadd j1, j2, j14", "jjnn j1, dk_pv", "jldi j1, 0")
         o("dk_pv:")
         ds("j1", D_SCR0); J("jjmp dk_yes")
         o("dk_char:                        ; the keys that write (the space, digits, letters, the number pad, signs) are hers: what")
@@ -2075,6 +2099,153 @@ def make(g, ST, free):
         o("ddr_cur:")
         dl("j1", D_X + 16); J("jadd j1, j1, j9", "jldi j2, 99"); ds("j9", D_X + 24); J("jcall r_plot"); dl("j9", D_X + 24); J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, ddr_cur")
         o("ddr_r:")
+        J("jret")
+        if g.get("PANEL"):
+            panel_routines(dl, ds, da, dinc, PY, PH, PW, PNR, SHOWN)
+
+    def panel_routines(dl, ds, da, dinc, PY, PH, PW, PNR, SHOWN):
+        X0, XR, WID, Y0 = 2, PW // 2 + 2, PW // 2 - 4, PY + 2
+        INMAX = WID // 6
+        SRGB, SH = g["PANEL"][3], PY + PH
+        o("r_splot:                        ; the cell j1, j2 of her host's shared screen in the colour PR PG PB (uses j10, j11)")
+        J("jjn j1, spl_o", "jjn j2, spl_o", "jldi j10, %d" % PW, "jsub j11, j1, j10", "jjnn j11, spl_o",
+          "jldi j11, %d" % SH, "jsub j11, j2, j11", "jjnn j11, spl_o", "jmul j11, j2, j10", "jadd j11, j11, j1", "jldi j10, 3", "jmul j11, j11, j10")
+        li("j10", SRGB); J("jadd j11, j11, j10")
+        for k, c in enumerate(("PR", "PG", "PB")):
+            ld("j10", c); J("jstb j10, j11, %d" % k)
+        o("spl_o:")
+        J("jret")
+        o("r_panel_clear:                  ; her panel, black (8 bytes at a time)")
+        li("j1", SRGB + 3 * PW * PY); li("j2", SRGB + 3 * PW * SH); J("jldi j6, 8")
+        o("pcl_l:")
+        J("jst j14, j1, 0", "jadd j1, j1, j6", "jsub j7, j2, j1", "jjnz j7, pcl_l", "jret")
+        def green(k):
+            for c, val in zip(("PR", "PG", "PB"), MATRIX[k]):
+                g["setg"](c, val)
+        o("r_panel:                        ; HER PANEL (see gen_luma.py): drawn again only when what it shows changed (its print:")
+        o("                                ; how many thoughts came, how long her words, what is typed and her thoughts are, the")
+        o("                                ; first and last letter of each, where her words are scrolled). Nothing new: nothing done")
+        gl("j1", DLR); J("jjz j1, pn_r"); gl("j1", NMROOM); J("jjz j1, pn_r", "jldi j1, 0", "jldi j3, 1000003")
+        def mix(): J("jmul j1, j1, j3", "jadd j1, j1, j2")
+        for off in (D_FLC, D_FL, D_OUTL, D_INL, D_SCR0):
+            dl("j2", off); mix()
+        for buf, ln in ((D_OUT, D_OUTL), (D_IN, D_INL), (D_FLB, D_FL)):
+            da("j4", buf); dl("j5", ln); J("jldb j2, j4, 0"); mix(); J("jjz j5, pn_e%d" % buf, "jadd j4, j4, j5", "jldi j10, 1", "jsub j4, j4, j10", "jldb j2, j4, 0"); mix()
+            o("pn_e%d:" % buf)
+        dl("j2", D_FLH); J("jsub j2, j2, j1", "jjz j2, pn_r"); ds("j1", D_FLH)
+        J("jcall r_panel_clear", "jldi j1, 1"); ds("j1", D_FLP)
+        J("jcall r_dlg_panel", "jldi j1, 1"); ds("j1", D_FLM); J("jcall r_flujo_walk", "jldi j1, 0"); ds("j1", D_FLP)
+        o("pn_r:")
+        J("jret")
+        o("r_dlg_panel:                    ; on the left of her panel: her last words in lines of its width, %d shown from D_SCR0" % SHOWN)
+        o("                                ; (Page Up, Page Down), and the line being typed with its cursor")
+        green(0); J("jldi j10, 0"); ds("j10", D_T1); ds("j10", D_T2)
+        o("dpl_l:")
+        dl("j2", D_T2); dl("j4", D_OUTL); J("jsub j4, j4, j2", "jjn j4, dpl_n", "jjz j4, dpl_n"); da("j3", D_OUT); J("jadd j3, j3, j2")
+        dl("j1", D_T1); dl("j10", D_SCR0); J("jsub j1, j1, j10", "jldi j7, 0", "jjn j1, dpl_m", "jldi j10, %d" % SHOWN, "jsub j10, j1, j10", "jjnn j10, dpl_m", "jldi j7, 1")
+        o("dpl_m:")
+        J("jldi j10, 9", "jmul j2, j1, j10", "jldi j10, %d" % Y0, "jadd j2, j2, j10", "jldi j1, %d" % X0, "jldi j5, %d" % WID, "jcall r_txt", "jjnz j1, dpl_t2", "jldi j1, 1")
+        o("dpl_t2:")
+        dl("j2", D_T2); J("jadd j2, j2, j1"); ds("j2", D_T2); dinc(D_T1); J("jjmp dpl_l")
+        o("dpl_n:")
+        dl("j1", D_T1); ds("j1", D_NL)
+        o("  ; (more above, or below: a dot at the side)")
+        dl("j1", D_SCR0); J("jjz j1, dpl_nb", "jldi j1, %d" % (X0 + WID), "jldi j2, %d" % Y0, "jcall r_tplot")
+        o("dpl_nb:")
+        dl("j1", D_SCR0); J("jldi j10, %d" % SHOWN, "jadd j1, j1, j10"); dl("j2", D_NL)
+        J("jsub j10, j1, j2", "jjnn j10, dpl_in", "jldi j1, %d" % (X0 + WID), "jldi j2, %d" % (Y0 + 9 * (SHOWN - 1)), "jcall r_tplot")
+        o("dpl_in:                         ; (her last thought, bright, in two lines at most: the rain does not take it away)")
+        green(0); dl("j4", D_THKL); J("jjz j4, dpl_in2", "jldi j10, 1000", "jsub j10, j4, j10", "jjn j10, dpl_th", "jldi j4, 1000")
+        o("dpl_th:")
+        da("j3", D_THK); ds("j4", D_T2); J("jldi j1, %d" % X0, "jldi j2, %d" % (Y0 + 9 * SHOWN), "jldi j5, %d" % WID, "jldi j7, 1", "jcall r_txt")
+        dl("j4", D_T2); J("jsub j4, j4, j1", "jjn j4, dpl_in2", "jjz j4, dpl_in2"); da("j3", D_THK); J("jadd j3, j3, j1", "jldi j1, %d" % X0, "jldi j2, %d" % (Y0 + 9 * (SHOWN + 1)), "jldi j5, %d" % WID, "jldi j7, 1", "jcall r_txt")
+        o("dpl_in2:")
+        green(0)
+        da("j3", D_IN); dl("j4", D_INL); J("jldi j10, %d" % INMAX, "jsub j10, j4, j10", "jjn j10, dpl_t", "jadd j3, j3, j10", "jldi j4, %d" % INMAX)
+        o("dpl_t:")
+        J("jldi j1, %d" % X0, "jldi j2, %d" % (Y0 + 9 * (SHOWN + 2)), "jldi j5, 0", "jldi j7, 1", "jcall r_txt")
+        J("jldi j10, %d" % X0, "jadd j1, j0, j10"); ds("j1", D_X + 16); J("jldi j9, 0")
+        o("dpl_cur:")
+        dl("j1", D_X + 16); J("jadd j1, j1, j9", "jldi j2, %d" % (Y0 + 9 * (SHOWN + 2) + 8)); ds("j9", D_X + 24); J("jcall r_tplot"); dl("j9", D_X + 24)
+        J("jldi j10, 1", "jadd j9, j9, j10", "jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, dpl_cur", "jret")
+        o("r_flujo_walk:                   ; on the right of her panel, what her mind does as it comes: her thoughts bright, the")
+        o("                                ; trials of her forms in their trail; D_FLM: 1 draws, 0 only counts -> D_FLN = its lines")
+        J("jldi j1, 0"); ds("j1", D_FLN); ds("j1", D_FLI)
+        o("fw_seg:")
+        dl("j1", D_FLI); dl("j2", D_FL); J("jsub j10, j1, j2", "jjnn j10, fw_r"); da("j3", D_FLB); J("jadd j4, j1, j14")
+        o("fw_s:                           ; (where this line of her mind ends: its new line)")
+        J("jsub j10, j4, j2", "jjnn j10, fw_se", "jadd j10, j3, j4", "jldb j10, j10, 0", "jldi j11, 10", "jsub j10, j10, j11", "jjz j10, fw_se", "jldi j10, 1", "jadd j4, j4, j10", "jjmp fw_s")
+        o("fw_se:")
+        ds("j4", D_FLE); J("jadd j10, j3, j1", "jldb j10, j10, 0", "jldi j11, 2", "jadd j1, j1, j11"); ds("j1", D_FLI); J("jldi j11, 1"); J("jsub j10, j10, j11", "jjnz j10, fw_old"); green(0); J("jjmp fw_ln")
+        o("fw_old:")
+        green(1)
+        o("fw_ln:")
+        dl("j1", D_FLI); dl("j4", D_FLE); J("jsub j4, j4, j1", "jjn j4, fw_nx", "jjz j4, fw_nx"); da("j3", D_FLB); J("jadd j3, j3, j1")
+        dl("j2", D_FLN); J("jldi j10, 9", "jmul j2, j2, j10", "jldi j10, %d" % Y0, "jadd j2, j2, j10", "jldi j1, %d" % XR, "jldi j5, %d" % WID); dl("j7", D_FLM); J("jcall r_txt", "jjnz j1, fw_t", "jldi j1, 1")
+        o("fw_t:")
+        dl("j2", D_FLI); J("jadd j2, j2, j1"); ds("j2", D_FLI); dinc(D_FLN); J("jjmp fw_ln")
+        o("fw_nx:")
+        dl("j1", D_FLE); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_FLI); J("jjmp fw_seg")
+        o("fw_r:")
+        J("jret")
+        o("r_flujo_drop:                   ; her oldest thought out of the panel's memory -> j0 = 1, or 0 if it was the only one")
+        da("j3", D_FLB); dl("j2", D_FL); J("jldi j4, 0")
+        o("fd_s:")
+        J("jsub j10, j4, j2", "jjnn j10, fd_one", "jadd j10, j3, j4", "jldb j10, j10, 0", "jldi j11, 10", "jsub j10, j10, j11", "jjz j10, fd_got", "jldi j10, 1", "jadd j4, j4, j10", "jjmp fd_s")
+        o("fd_got:")
+        J("jldi j10, 1", "jadd j4, j4, j10", "jsub j10, j4, j2", "jjnn j10, fd_one", "jldb j5, j3, 1"); dl("j10", D_FLT); J("jsub j10, j10, j5"); ds("j10", D_FLT); da("j3", D_FLB); J("jldi j5, 0")
+        o("fd_mv:")
+        J("jadd j10, j5, j4", "jsub j11, j10, j2", "jjnn j11, fd_end", "jadd j10, j3, j10", "jldb j10, j10, 0", "jadd j11, j3, j5", "jstb j10, j11, 0", "jldi j10, 1", "jadd j5, j5, j10", "jjmp fd_mv")
+        o("fd_end:")
+        ds("j5", D_FL); J("jldi j0, 1", "jret")
+        o("fd_one:")
+        J("jldi j0, 0", "jret")
+        o("r_flujo_add:                    ; her thought (D_THK) to her mind's flow, bright")
+        gl("j6", DLR); J("jjz j6, fa_x"); da("j2", D_THK); dl("j3", D_THKL); J("jldi j4, 1", "jjmp r_flujo_put")
+        o("fa_x:")
+        J("jret")
+        o("r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j10 its bytes: to her mind's flow,")
+        o("                                ; in the trail (keeps j1, j2, j3: her host writes it to its ring next)")
+        gl("j6", DLR); J("jjz j6, ft_x"); ds("j1", D_SV1); ds("j2", D_SV2); ds("j3", D_SV3); J("jadd j2, j1, j14", "jadd j3, j10, j14", "jldi j4, 2", "jcall r_flujo_put")
+        dl("j1", D_SV1); dl("j2", D_SV2); dl("j3", D_SV3)
+        o("ft_x:")
+        J("jret")
+        o("r_flujo_put:                    ; j2 = a text, j3 its bytes, j4 its kind (1 a thought, 2 a trial): one line at the end of")
+        o("                                ; her mind's flow (its new lines become spaces, its trailing blanks go); the oldest go")
+        o("                                ; while they do not fit, or take more lines than the panel has (%d)" % PNR)
+        ds("j2", D_FLA); ds("j4", D_FLK); J("jldi j10, 1000", "jsub j10, j3, j10", "jjn j10, fa_tb", "jldi j3, 1000")
+        o("fa_tb:")
+        J("jjz j3, fa_r", "jadd j10, j2, j3", "jldb j10, j10, -1", "jldi j11, 32", "jsub j11, j10, j11", "jjz j11, fa_tb1", "jjnz j10, fa_c")
+        o("fa_tb1:")
+        J("jldi j10, 1", "jsub j3, j3, j10", "jjmp fa_tb")
+        o("fa_c:")
+        ds("j3", D_FLS)
+        o("fa_room:")
+        dl("j1", D_FL); dl("j3", D_FLS); J("jadd j1, j1, j3", "jldi j10, %d" % (FL_CAP - 3), "jsub j10, j1, j10", "jjn j10, fa_cp", "jcall r_flujo_drop", "jjnz j0, fa_room")
+        J("jldi j10, 0"); ds("j10", D_FL); ds("j10", D_FLT); J("jjmp fa_room")
+        o("fa_cp:")
+        dl("j2", D_FLA); da("j7", D_FLB); dl("j1", D_FL); J("jadd j7, j7, j1"); dl("j10", D_FLK); J("jstb j10, j7, 0", "jstb j14, j7, 1", "jldi j10, 2", "jadd j7, j7, j10", "jldi j4, 0")
+        o("fa_k:")
+        J("jsub j10, j4, j3", "jjnn j10, fa_w", "jadd j10, j2, j4", "jldb j10, j10, 0", "jldi j11, 10", "jsub j11, j10, j11", "jjz j11, fa_sp", "jldi j11, 13", "jsub j11, j10, j11", "jjnz j11, fa_put")
+        o("fa_sp:")
+        J("jldi j10, 32")
+        o("fa_put:")
+        J("jadd j11, j7, j4", "jstb j10, j11, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp fa_k")
+        o("fa_w:")
+        J("jadd j11, j7, j4", "jldi j10, 10", "jstb j10, j11, 0"); dl("j1", D_FL); ds("j1", D_FLI); J("jadd j1, j1, j3", "jldi j10, 3", "jadd j1, j1, j10"); ds("j1", D_FL); dinc(D_FLC)
+        gl("j1", NMROOM); J("jjz j1, fa_r")
+        o("  ; (the panel lines it takes, measured once with her own letters, kept in it and in the total)")
+        J("jldi j10, 0"); ds("j10", D_FLN); ds("j10", D_FLE)
+        o("fa_ml:")
+        dl("j4", D_FLS); dl("j10", D_FLE); J("jsub j4, j4, j10", "jjn j4, fa_md", "jjz j4, fa_md"); da("j3", D_FLB); dl("j1", D_FLI); J("jadd j3, j3, j1", "jldi j10, 2", "jadd j3, j3, j10"); dl("j10", D_FLE); J("jadd j3, j3, j10")
+        J("jldi j1, %d" % XR, "jldi j2, 0", "jldi j5, %d" % WID, "jldi j7, 0", "jcall r_txt", "jjnz j1, fa_mt", "jldi j1, 1")
+        o("fa_mt:")
+        dl("j2", D_FLE); J("jadd j2, j2, j1"); ds("j2", D_FLE); dinc(D_FLN); J("jjmp fa_ml")
+        o("fa_md:")
+        da("j3", D_FLB); dl("j1", D_FLI); J("jadd j3, j3, j1"); dl("j2", D_FLN); J("jstb j2, j3, 1"); dl("j1", D_FLT); J("jadd j1, j1, j2"); ds("j1", D_FLT)
+        o("fa_trim:                        ; (the oldest go while the panel has not their lines)")
+        dl("j1", D_FLT); J("jldi j10, %d" % (PNR + 1), "jsub j10, j1, j10", "jjn j10, fa_r", "jcall r_flujo_drop", "jjnz j0, fa_trim")
+        o("fa_r:")
         J("jret")
 
     def dialogo_talk_wish():
