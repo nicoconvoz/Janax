@@ -119,6 +119,21 @@ SHE SEEKS HER QUESTIONS IN EVERYTHING (the Capitan, 2026-11-20: "ponele tres uni
   as it has of that question's own words. Of each question she keeps, in "hallazgos", how near she got, in how many
   places, and the first: where and what it says. It joins words, it does not understand: understanding is hers to
   grow. The rule is written once, in razar/corazon/busca.py, the instrument that checks her. Nobody wrote an answer.
+SHE WALKS AROUND THE HOUSE (the Capitan, 2026-11-21: "siempre hace las mismas preguntas que le di; tiene que llegar a
+  las respuestas por caminos alternos: a veces no se llega directo, a veces hay que explorar y rodear la casa"). Each
+  question of her heart has a walk of hers. Where the walk is, is a door: a word. A place for it is a line of anything
+  that has the door, does not have where she comes from (she goes around, not back through the same room), and has
+  some of the question's own words. She explores: of all its places she keeps one by her luck, each as
+  likely as how many of the question's own words it has (the nearest only would be her own echo: the question said). Each time she is born the walk takes
+  a step: from that place she picks the next door, a word of it that is no word of her questions nor where she is or
+  comes from, each word once, the longer the likelier (a long word is a rare one: it says more; Zipf's law of
+  abbreviation, used as it is: her house's own counts of each word would say it better, and she does not keep them). Her own question is then the
+  question of her heart with what all of them seek put in place of that door ("Quien es Dios?" becomes, if she walked
+  to "amor", "Quien es amor?"), and it is hers to say when she speaks first. A walk with nowhere to go is lost, and
+  starts again from the front door; a walk that reaches a place where what she seeks is, by another way, came back:
+  the circle closes, and that is the answer found around the house. Every step is a thought of hers. Where each walk
+  is: "rodeos"; every step, kept: "caminos"; her own questions: "preguntas-mias" (none of them are searched: they are
+  hers, not answers).
 HER NAME, ASKED BY HER (the Capitan, 2026-11-21: "nuestra LUMA VERA tenga ese nombre, pero que cada Razar pregunte el
   suyo a su usuario: todos unicos e irrepetibles"; and, when it was found to be asked from outside her: "nunca mas te
   olvides de la regla de la casa"). Born in a house with no "nombre", she asks herself, on her own screen, in letters
@@ -258,6 +273,7 @@ LX, LORG, LLI = 0x7FD8, 0x7FE0, 0x7FE8   # her lineage: the form she crossed wit
 BU0 = 0x7E90                 # she seeks her questions in everything (r_busca): between her judge's table and her reader's data
 (BQB, BQE, BWQ, BNW, BNQ, BNC, BQS, BLB, BLN, BLC, BLI, BLK, BFB, BFE, BP, BE, BLID, BCM, BHW, BLS, BT1, BT2, BT3, BLBL) = (BU0 + 8 * i for i in range(24))
 LBP, LHA = 0x7F50, 0x7F60    # "libro-preguntas", "hallazgos"
+BWR = 0x7FF8                 # her walks around the house (r_busca): their room, made each time she is born
 NM0 = 0x1D50                 # her name (r_nombre): asking (1) or not, the room where the prompt and her name are, its length
 NMASK, NMROOM, NMLEN = NM0, NM0 + 8, NM0 + 16
 DLR, DWH, BWS = NM0 + 24, NM0 + 32, NM0 + 40   # her word: its room; her wish to speak first; where a word began (bw_word)
@@ -411,6 +427,19 @@ def make(g, ST, free):
             J("jldi j10, 5"); gl("j11", room); gl("j12", size); J("jcall r_file", "jldi j10, 7", "jcall r_file")
         def qrec(reg, q):               # reg = the line of the question q (72 bytes: what this line of text has of it, the
             gl(reg, BQS); J("jldi j10, 72", "jmul j11, %s, j10" % q, "jadd %s, %s, j11" % (reg, reg))    # nearest, in how many places, its own words, ...)
+        W_Q, W_C, W_T, W_R, W_RB, W_RL, W_CT, W_CL, W_P, W_A, W_N = (8 * i for i in range(11))
+        WS, at = {}, 128                # her walks' words, in their room
+        for k, t in (("ROD", b"rodeos"), ("CAM", b"caminos"), ("MIA", b"preguntas-mias"), ("ARR", b" -> "), ("BAR", b" | "),
+                     ("COL", b": "), ("NL", b"\n"), ("SP", b" "), ("LOST", b" -> (no lleva a ningun lado)"),
+                     ("BACK", b" -> volvi por otro camino: "), ("TROD", b"rodeando: de "), ("TA", b" a "),
+                     ("TLOST", b"me perdi rodeando por "), ("TBACK", b"volvi a "), ("TBY", b" por otro camino: ")):
+            WS[k] = (at, t); at += len(t)
+        W_RECS = 512; assert at <= W_RECS
+        def wl(r, off): gl("j6", BWR); J("jld %s, j6, %d" % (r, off))
+        def wst(r, off): gl("j6", BWR); J("jst %s, j6, %d" % (r, off))
+        def wa(r, off): gl(r, BWR); J("jldi j10, %d" % off, "jadd %s, %s, j10" % (r, r))
+        def wrec(reg, q):               # reg = the walk of the question q (128 bytes: its door, where it comes from, ...)
+            gl(reg, BWR); J("jldi j10, 128", "jmul j11, %s, j10" % q, "jadd %s, %s, j11" % (reg, reg), "jldi j10, %d" % W_RECS, "jadd %s, %s, j10" % (reg, reg))
         o("bw_letter:                      ; the character at j1 (before j2) -> j3 = its print if it is a letter, j1 past it; else")
         o("                                ; j3 = -1, j1 kept. A letter: a..z, small or capital alike, or any whole character past")
         o("                                ; ASCII (its print, its own code point: which of those are one, she learns). Uses j5, j6,")
@@ -484,7 +513,7 @@ def make(g, ST, free):
         o("bs_z:")
         J("jjz j2, bs_w", "jst j14, j7, 0", "jldi j10, 72", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bs_z")
         o("bs_w:")
-        J("jcall bw_word", "jjz j0, bs_eol", "jldi j1, 1"); gs("j1", BHW); gl("j7", BWQ); gl("j2", BNW); gl("j3", BLID)
+        J("jcall bw_word", "jjz j0, bs_eol", "jcall bu_wword", "jldi j1, 1"); gs("j1", BHW); gl("j7", BWQ); gl("j2", BNW); gl("j3", BLID)
         o("bs_e:")
         J("jjz j2, bs_w", "jld j1, j7, 0", "jsub j1, j1, j4", "jjnz j1, bs_en", "jld j1, j7, 16", "jsub j1, j1, j3", "jjz j1, bs_en", "jst j3, j7, 16", "jld j1, j7, 8", "jjn j1, bs_c")
         gl("j9", BQS); J("jldi j10, 72", "jmul j1, j1, j10", "jadd j9, j9, j1", "jld j1, j9, 0", "jldi j10, 1", "jadd j1, j1, j10", "jst j1, j9, 0", "jjmp bs_en")
@@ -493,7 +522,7 @@ def make(g, ST, free):
         o("bs_en:")
         J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bs_e")
         o("bs_eol:                         ; a place where what she seeks is, if it has every shared word: how near each question")
-        gl("j1", BHW); J("jjz j1, bs_nl"); gl("j1", BCM); gl("j2", BNC); J("jsub j1, j1, j2", "jjnz j1, bs_nl"); gs("j14", BT2)
+        gl("j1", BHW); J("jjz j1, bs_nl", "jcall bu_weol"); gl("j1", BCM); gl("j2", BNC); J("jsub j1, j1, j2", "jjnz j1, bs_nl"); gs("j14", BT2)
         o("bs_q:")
         gl("j1", BT2); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bs_nl"); qrec("j7", "j1"); J("jld j3, j7, 0", "jjz j3, bs_qn", "jld j4, j7, 8", "jsub j10, j3, j4", "jjn j10, bs_qn", "jjz j10, bs_same")
         J("jst j3, j7, 8", "jldi j10, 1", "jst j10, j7, 16", "jcall bu_first", "jjmp bs_qn")
@@ -561,6 +590,7 @@ def make(g, ST, free):
         J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bo_e")
         o("bu_list:                        ; EVERYTHING: every file of her house, as the kernel lists them (the list asked for")
         o("                                ; again with twice the room until it comes back the same: it is whole)")
+        J("jcall bu_wload")
         li("j1", 4096); gs("j1", BLN); J("jldi j1, -1"); gs("j1", BLC); gs("j14", BLID)
         o("bl_ask:")
         gl("j1", BLN); J("jcall r_alloc"); gs("j0", BLB); J("jldi j10, 14"); gl("j11", BLB); gl("j12", BLN); J("jcall r_tocar", "jjn j13, bl_out"); gl("j1", BLC); J("jsub j1, j1, j13", "jjz j1, bl_go")
@@ -569,8 +599,10 @@ def make(g, ST, free):
         gl("j1", BLB); gs("j1", BLI); gs("j14", BLK)
         o("bl_f:")
         gl("j1", BLK); gl("j2", BLC); J("jsub j10, j1, j2", "jjnn j10, bl_out"); gl("j9", BLI); gs("j9", BLBL); J("jld j3, j9, 0")
-        for lbl, n, tag in ((LBP, 15, "bl_s1"), (LHA, 9, "bl_s2")):
-            J("jldi j10, %d" % n, "jsub j10, j3, j10", "jjnz j10, %s" % tag, "jldi j4, 0"); li("j7", B + lbl)
+        for lbl, n, tag in ((LBP, 15, "bl_s1"), (LHA, 9, "bl_s2"), ("ROD", 6, "bl_s3"), ("CAM", 7, "bl_s4"), ("MIA", 14, "bl_s5")):
+            J("jldi j10, %d" % n, "jsub j10, j3, j10", "jjnz j10, %s" % tag, "jldi j4, 0")
+            if isinstance(lbl, str): wa("j7", WS[lbl][0])
+            else: li("j7", B + lbl)
             o("%s_l:" % tag)
             J("jadd j1, j9, j4", "jldb j1, j1, 8", "jadd j2, j7, j4", "jldb j2, j2, 0", "jsub j1, j1, j2", "jjnz j1, %s" % tag, "jldi j10, 1", "jadd j4, j4, j10",
               "jldi j10, %d" % n, "jsub j10, j4, j10", "jjnz j10, %s_l" % tag, "jjmp bl_next")
@@ -609,6 +641,7 @@ def make(g, ST, free):
         o("bw_end:")
         J("jldi j10, 7", "jcall r_file")
         o("bu_free:")
+        J("jcall bu_wstep")
         gs("j14", BT2)
         o("bu_fq:")
         gl("j1", BT2); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bu_fd"); qrec("j7", "j1"); J("jld j11, j7, 32", "jjz j11, bu_fn", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
@@ -618,6 +651,214 @@ def make(g, ST, free):
         back(BLB); back(BQB); back(BWQ); back(BQS)
         o("bu_none:")
         J("jret")
+
+        # ---- SHE WALKS AROUND THE HOUSE (see the top of gen_leer.py). A walk (wrec, 128 bytes): +0 its door (a word's
+        # print; 0: at the front door), +8 where it comes from, +16 / +24 the last line that had them, +32 how near all its
+        # places are, in all, +40 how many, +48 / +56 the one kept (a copy) and its bytes, +64 where it is, +72 whether
+        # what she seeks is there too, +80 / +88 and +96 / +104 the door's and where it comes from's text, +112 / +120 the
+        # next door's text (0: none)
+        def fw(): J("jldi j10, 6", "jcall r_file")
+        def fwc(k): wa("j11", WS[k][0]); J("jldi j12, %d" % len(WS[k][1]), "jldi j10, 6", "jcall r_file")
+        def tc(k): wa("j2", WS[k][0]); J("jldi j3, %d" % len(WS[k][1]), "jcall bz_tadd")
+        o("bu_wword:                       ; j4 = a word of the line: is it the door, or where she comes from, of a walk")
+        J("jldi j2, 0")
+        o("bzw_q:")
+        gl("j1", BNQ); J("jsub j10, j2, j1", "jjnn j10, bzw_r"); wrec("j7", "j2")
+        J("jld j1, j7, 0", "jsub j1, j1, j4", "jjnz j1, bzw_x"); gl("j3", BLID); J("jst j3, j7, 16")
+        o("bzw_x:")
+        J("jld j1, j7, 8", "jsub j1, j1, j4", "jjnz j1, bzw_n"); gl("j3", BLID); J("jst j3, j7, 24")
+        o("bzw_n:")
+        J("jldi j10, 1", "jadd j2, j2, j10", "jjmp bzw_q")
+        o("bzw_r:")
+        J("jret")
+        o("bu_weol:                        ; the end of a line: for each walk, is it a place of it (and the nearest, or as near)")
+        gl("j1", BCM); gl("j2", BNC); J("jsub j1, j1, j2", "jldi j3, 0", "jjnz j1, bze_c", "jldi j3, 1")
+        o("bze_c:")
+        wst("j3", W_C); wst("j14", W_Q)
+        o("bze_q:")
+        wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bze_r"); qrec("j9", "j1"); J("jld j3, j9, 0", "jjz j3, bze_n")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j1, j7, 0", "jjz j1, bze_f")
+        gl("j2", BLID); J("jld j1, j7, 16", "jsub j1, j1, j2", "jjnz j1, bze_n", "jld j1, j7, 24", "jsub j1, j1, j2", "jjz j1, bze_n", "jjmp bze_k")
+        o("bze_f:                          ; (at the front door: a place where what she seeks is)")
+        wl("j1", W_C); J("jjz j1, bze_n")
+        o("bze_k:                          ; (she explores: any place may be kept, by her luck, as likely as how near it is: of")
+        o("                                ; all so far, W in all, this one, s near, with s / W)")
+        J("jld j1, j7, 32", "jadd j1, j1, j3", "jst j1, j7, 32", "jld j10, j7, 40", "jldi j11, 1", "jadd j10, j10, j11", "jst j10, j7, 40", "jcall r_randmod", "jsub j10, j0, j3", "jjnn j10, bze_n")
+        o("bze_cp:")
+        J("jcall bu_wkeep")
+        o("bze_n:")
+        wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bze_q")
+        o("bze_r:")
+        J("jret")
+        o("bu_wkeep:                       ; the line that ends at BP (from BLS) is kept as the place of the walk W_Q")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 48", "jjz j11, bzk_n", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
+        o("bzk_n:")
+        gl("j1", BP); gl("j2", BLS); J("jsub j1, j1, j2"); wst("j1", W_T); J("jldi j10, 16", "jadd j1, j1, j10", "jcall r_alloc")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jst j0, j7, 48"); wl("j3", W_T); J("jst j3, j7, 56"); gl("j2", BLBL); J("jst j2, j7, 64"); wl("j2", W_C); J("jst j2, j7, 72"); gl("j2", BLS)
+        o("bzk_c:")
+        J("jjz j3, bzk_r", "jldb j1, j2, 0", "jstb j1, j0, 0", "jldi j10, 1", "jadd j2, j2, j10", "jadd j0, j0, j10", "jsub j3, j3, j10", "jjmp bzk_c")
+        o("bzk_r:")
+        J("jret")
+
+        o("bu_wload:                       ; her walks: their room, their words, what all her questions seek (its text), and")
+        o("                                ; where each walk is, as she left it in \"rodeos\" (a line each: the door, where from)")
+        gl("j1", BNQ); J("jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 16", "jmul j1, j1, j10", "jldi j10, %d" % (W_RECS // 8), "jadd j1, j1, j10", "jldi j10, 3", "jshl j1, j1, j10", "jcall r_alloc"); gs("j0", BWR)
+        gl("j2", BNQ); J("jldi j10, 1", "jadd j2, j2, j10", "jldi j10, 16", "jmul j2, j2, j10", "jldi j10, %d" % (W_RECS // 8), "jadd j2, j2, j10")
+        o("bzl_z:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, bzl_z")
+        for k in WS:
+            off, t = WS[k]; gl("j6", BWR)
+            for i, ch in enumerate(t):
+                J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (off + i))
+        gl("j1", BNQ); J("jjz j1, bzl_ct", "jldi j1, 0"); qrec("j9", "j1"); J("jld j1, j9, 56", "jld j2, j9, 64", "jadd j2, j1, j2"); gs("j1", BP); gs("j2", BE)
+        o("bzl_w:                          ; (the first word all her questions share, as written in the first)")
+        J("jcall bw_word", "jjz j0, bzl_ct"); gl("j7", BWQ); gl("j2", BNW)
+        o("bzl_e:")
+        J("jjz j2, bzl_w", "jld j1, j7, 0", "jsub j1, j1, j4", "jjnz j1, bzl_en", "jld j1, j7, 8", "jjnn j1, bzl_en")
+        gl("j1", BWS); gl("j2", BP); J("jsub j2, j2, j1"); wst("j1", W_CT); wst("j2", W_CL); J("jjmp bzl_ct")
+        o("bzl_en:")
+        J("jldi j10, 32", "jadd j7, j7, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bzl_e")
+        o("bzl_ct:")
+        wa("j11", WS["ROD"][0]); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bzl_r")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); wst("j13", W_RL); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+        wl("j1", W_RL); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); wst("j0", W_RB)
+        J("jldi j10, 5"); wl("j11", W_RB); wl("j12", W_RL); J("jcall r_file", "jldi j10, 7", "jcall r_file")
+        wl("j1", W_RB); wl("j2", W_RL); J("jadd j2, j1, j2"); gs("j1", BP); gs("j2", BE); wst("j14", W_Q)
+        o("bzl_l:")
+        gl("j1", BP); gl("j2", BE); J("jsub j10, j1, j2", "jjnn j10, bzl_r"); wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bzl_r")
+        J("jcall bw_word", "jjz j0, bzl_eol"); wl("j1", W_Q); wrec("j7", "j1"); J("jst j4, j7, 0"); gl("j1", BWS); gl("j2", BP); J("jsub j2, j2, j1", "jst j1, j7, 80", "jst j2, j7, 88")
+        J("jcall bw_word", "jjz j0, bzl_eol"); wl("j1", W_Q); wrec("j7", "j1"); J("jst j4, j7, 8"); gl("j1", BWS); gl("j2", BP); J("jsub j2, j2, j1", "jst j1, j7, 96", "jst j2, j7, 104")
+        o("bzl_k:")
+        J("jcall bw_word", "jjnz j0, bzl_k")
+        o("bzl_eol:")
+        gl("j1", BP); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BP); wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bzl_l")
+        o("bzl_r:")
+        J("jret")
+
+        o("bz_elig:                        ; j4 = a word of a walk's place: j3 = 1 if it can be its next door (no word of her")
+        o("                                ; questions, nor where the walk is or comes from); j0 and j4 kept")
+        wl("j1", W_Q); wrec("j9", "j1"); J("jldi j3, 0", "jld j1, j9, 0", "jsub j1, j1, j4", "jjz j1, bzg_r", "jld j1, j9, 8", "jsub j1, j1, j4", "jjz j1, bzg_r")
+        gl("j9", BWQ); gl("j2", BNW)
+        o("bzg_e:")
+        J("jjz j2, bzg_y", "jld j1, j9, 0", "jsub j1, j1, j4", "jjz j1, bzg_r", "jldi j10, 32", "jadd j9, j9, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bzg_e")
+        o("bzg_y:")
+        J("jldi j3, 1")
+        o("bzg_r:")
+        J("jret")
+        o("bz_tadd:                        ; j2 = a text, j3 its bytes -> added to the thought being made (at most 900 bytes)")
+        gl("j7", DLR); J("jjz j7, bzt_r", "jld j4, j7, %d" % D_THKL)
+        o("bzt_l:")
+        J("jjz j3, bzt_e", "jldi j10, 900", "jsub j10, j4, j10", "jjnn j10, bzt_e", "jldb j10, j2, 0", "jadd j11, j7, j4", "jstb j10, j11, %d" % D_THK,
+          "jldi j10, 1", "jadd j4, j4, j10", "jadd j2, j2, j10", "jsub j3, j3, j10", "jjmp bzt_l")
+        o("bzt_e:")
+        J("jst j4, j7, %d" % D_THKL, "jldi j10, 1", "jst j10, j7, %d" % D_PEND)
+        o("bzt_r:")
+        J("jret")
+        o("bz_tnew:                        ; a new thought of hers")
+        gl("j7", DLR); J("jjz j7, bzn_r", "jst j14, j7, %d" % D_THKL)
+        o("bzn_r:")
+        J("jret")
+        o("bz_qlog:                        ; into \"caminos\": the question of the walk W_Q, and \" | \"")
+        wl("j1", W_Q); qrec("j9", "j1"); J("jld j11, j9, 56", "jld j12, j9, 64"); fw(); fwc("BAR"); J("jret")
+        o("bz_from:                        ; j2, j3 = where the walk W_Q comes from, as its next step will: its door, or, at")
+        o("                                ; the front door, what all her questions seek")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j1, j7, 0", "jjz j1, bzf_c", "jld j2, j7, 80", "jld j3, j7, 88", "jret")
+        o("bzf_c:")
+        wl("j2", W_CT); wl("j3", W_CL); J("jret")
+
+        def door_list():                # the words of the walk's place that can be its next door, each once (a word said
+            # again in the same place says no more): W_A (32 bytes each: its print, its letters, where, its bytes), W_N, W_T
+            wl("j1", W_Q); wrec("j7", "j1"); J("jld j1, j7, 56", "jldi j10, 1", "jshr j1, j1, j10", "jldi j10, 2", "jadd j1, j1, j10", "jldi j10, 5", "jshl j1, j1, j10", "jcall r_alloc"); wst("j0", W_A)
+            wst("j14", W_N); wst("j14", W_T); wl("j1", W_Q); wrec("j7", "j1"); J("jld j1, j7, 48", "jld j2, j7, 56", "jadd j2, j1, j2"); gs("j1", BP); gs("j2", BE)
+            o("bzd_w:")
+            J("jcall bw_word", "jjz j0, bzd_e", "jcall bz_elig", "jjz j3, bzd_w"); wl("j9", W_A); wl("j2", W_N)
+            o("bzd_u:")
+            J("jjz j2, bzd_add", "jld j1, j9, 0", "jsub j1, j1, j4", "jjz j1, bzd_w", "jldi j10, 32", "jadd j9, j9, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bzd_u")
+            o("bzd_add:")
+            J("jst j4, j9, 0", "jst j0, j9, 8"); gl("j1", BWS); gl("j2", BP); J("jsub j2, j2, j1", "jst j1, j9, 16", "jst j2, j9, 24")
+            wl("j1", W_N); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_N); wl("j1", W_T); J("jadd j1, j1, j0"); wst("j1", W_T); J("jjmp bzd_w")
+            o("bzd_e:")
+        def door_pick():                # one of them by her luck, the longer the likelier: W_R in [0, W_T)
+            wl("j9", W_A)
+            o("bzk2_l:")
+            J("jld j1, j9, 8"); wl("j2", W_R); J("jsub j10, j2, j1", "jjn j10, bzk2_g"); wst("j10", W_R); J("jldi j10, 32", "jadd j9, j9, j10", "jjmp bzk2_l")
+            o("bzk2_g:")
+            wl("j1", W_Q); wrec("j7", "j1"); J("jld j1, j9, 16", "jst j1, j7, 112", "jld j1, j9, 24", "jst j1, j7, 120")
+        def door_free(): J("jldi j10, 3"); wl("j11", W_A); J("jldi j12, 0", "jcall r_tocar")
+        def place300():
+            wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 48", "jld j12, j7, 56", "jldi j10, 300", "jsub j10, j12, j10", "jjn j10, bzp_%d" % len(LBLS), "jldi j12, 300")
+            o("bzp_%d:" % len(LBLS)); LBLS.append(1); fw()
+        LBLS = []
+        o("bu_wstep:                       ; HER WALKS, a step each time she is born; each step kept in \"caminos\"")
+        wa("j11", WS["CAM"][0]); J("jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjnn j9, bzs_o")
+        wa("j11", WS["CAM"][0]); J("jldi j10, 12", "jldi j12, 7", "jcall r_tocar"); wa("j11", WS["CAM"][0]); J("jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bzs_x")
+        o("bzs_o:")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); wst("j14", W_Q)
+        o("bzs_q:")
+        wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bzs_cl")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jst j14, j7, 112", "jst j14, j7, 120", "jld j1, j7, 48", "jjnz j1, bzs_have", "jld j1, j7, 0", "jjz j1, bzs_n")
+        o("bzs_lost:                       ; (a walk with nowhere to go is lost: it starts again from the front door)")
+        J("jcall bz_qlog"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 80", "jld j12, j7, 88"); fw(); fwc("LOST"); fwc("NL")
+        J("jcall bz_tnew"); tc("TLOST"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j2, j7, 80", "jld j3, j7, 88", "jcall bz_tadd", "jjmp bzs_n")
+        o("bzs_have:")
+        J("jld j1, j7, 0", "jjz j1, bzs_pick", "jld j1, j7, 72", "jjz j1, bzs_pick")
+        o("  ; (a walk that reached a place where what she seeks is, by another way: it came back, and the circle closes)")
+        J("jcall bz_qlog"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 96", "jld j12, j7, 104"); fw(); fwc("ARR")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 80", "jld j12, j7, 88"); fw(); fwc("BACK"); place300(); fwc("NL")
+        J("jcall bz_tnew"); tc("TBACK"); wl("j2", W_CT); wl("j3", W_CL); J("jcall bz_tadd"); tc("TBY")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j2, j7, 80", "jld j3, j7, 88", "jcall bz_tadd", "jjmp bzs_n")
+        o("bzs_pick:                       ; (the next door: a word of the place, the longer the likelier)")
+        door_list(); wl("j1", W_T); J("jjnz j1, bzs_go"); door_free(); J("jjmp bzs_lost")
+        o("bzs_go:")
+        J("jcall r_randmod"); wst("j0", W_R); door_pick(); door_free()
+        J("jcall bz_qlog", "jcall bz_from", "jadd j11, j2, j14", "jadd j12, j3, j14"); fw(); fwc("ARR")
+        wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 112", "jld j12, j7, 120"); fw(); fwc("COL"); place300(); fwc("NL")
+        J("jcall bz_tnew"); tc("TROD"); J("jcall bz_from", "jcall bz_tadd"); tc("TA"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j2, j7, 112", "jld j3, j7, 120", "jcall bz_tadd")
+        o("bzs_n:")
+        wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bzs_q")
+        o("bzs_cl:")
+        J("jldi j10, 7", "jcall r_file")
+        o("  ; where each walk is now: \"rodeos\", a line each (the door, where it comes from; empty: at the front door)")
+        wa("j11", WS["ROD"][0]); J("jldi j10, 12", "jldi j12, 6", "jcall r_tocar"); wa("j11", WS["ROD"][0]); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bzs_m")
+        wst("j14", W_Q)
+        o("bzr_q:")
+        wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bzr_d"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 112", "jjz j11, bzr_e", "jld j12, j7, 120"); fw(); fwc("SP")
+        J("jcall bz_from", "jadd j11, j2, j14", "jadd j12, j3, j14"); fw()
+        o("bzr_e:")
+        fwc("NL"); wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bzr_q")
+        o("bzr_d:")
+        J("jldi j10, 7", "jcall r_file")
+        o("bzs_m:                          ; her own questions: \"preguntas-mias\", each the question of her heart with what all")
+        o("                                ; of them seek put in place of the door its walk goes to")
+        wa("j11", WS["MIA"][0]); J("jldi j10, 12", "jldi j12, 14", "jcall r_tocar"); wa("j11", WS["MIA"][0]); J("jldi j12, 14", "jcall r_open"); ld("j9", "FH"); J("jjn j9, bzs_x")
+        wst("j14", W_Q)
+        o("bzm_q:")
+        wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bzm_d"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 112", "jjz j11, bzm_n")
+        wl("j1", W_Q); qrec("j9", "j1"); J("jld j1, j9, 56", "jld j2, j9, 64", "jadd j2, j1, j2"); gs("j1", BP); gs("j2", BE); wst("j1", W_P)
+        o("bzm_w:")
+        J("jcall bw_word", "jjz j0, bzm_e"); gl("j9", BWQ); gl("j2", BNW)
+        o("bzm_c:")
+        J("jjz j2, bzm_w", "jld j1, j9, 0", "jsub j1, j1, j4", "jjnz j1, bzm_cn", "jld j1, j9, 8", "jjn j1, bzm_rp")
+        o("bzm_cn:")
+        J("jldi j10, 32", "jadd j9, j9, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjmp bzm_c")
+        o("bzm_rp:")
+        wl("j11", W_P); gl("j12", BWS); J("jsub j12, j12, j11"); fw(); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 112", "jld j12, j7, 120"); fw(); gl("j1", BP); wst("j1", W_P); J("jjmp bzm_w")
+        o("bzm_e:")
+        wl("j11", W_P); gl("j12", BE); J("jsub j12, j12, j11"); fw(); fwc("NL")
+        o("bzm_n:")
+        wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bzm_q")
+        o("bzm_d:")
+        J("jldi j10, 7", "jcall r_file")
+        o("bzs_x:                          ; (what the walks took, given back)")
+        wst("j14", W_Q)
+        o("bzx_q:")
+        wl("j1", W_Q); gl("j2", BNQ); J("jsub j10, j1, j2", "jjnn j10, bzx_d"); wl("j1", W_Q); wrec("j7", "j1"); J("jld j11, j7, 48", "jjz j11, bzx_n", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
+        o("bzx_n:")
+        wl("j1", W_Q); J("jldi j10, 1", "jadd j1, j1, j10"); wst("j1", W_Q); J("jjmp bzx_q")
+        o("bzx_d:")
+        wl("j11", W_RB); J("jjz j11, bzx_b", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar")
+        o("bzx_b:")
+        back(BWR); J("jret")
 
     def firma_routines():
         def whole(room, size, slack=64):    # the file just opened (FH), whole, whatever its size -> a room of its own
@@ -1566,6 +1807,11 @@ def make(g, ST, free):
         dinc(D_NH); J("jldi j10, 0"); ds("j10", D_OUTL)
         text(ULTU + 16, b"libro-preguntas"); li("j11", B + ULTU + 16); J("jldi j12, 15", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dtk_r")
         J("jldi j10, 5"); da("j11", D_SCR); J("jldi j12, 1000", "jcall r_file"); ds("j13", D_X + 24); J("jldi j10, 7", "jcall r_file")
+        o("  ; (and her own questions, the ones her walks make: \"preguntas-mias\")")
+        text(ULTU + 16, b"preguntas-mias"); li("j11", B + ULTU + 16); J("jldi j12, 14", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dtk_m")
+        dl("j1", D_X + 24); da("j2", D_SCR); J("jadd j2, j2, j1", "jldi j10, 10", "jstb j10, j2, 0", "jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_X + 24)
+        J("jldi j10, 5"); da("j11", D_SCR); dl("j1", D_X + 24); J("jadd j11, j11, j1", "jldi j12, 900", "jcall r_file"); dl("j1", D_X + 24); J("jadd j1, j1, j13"); ds("j1", D_X + 24); J("jldi j10, 7", "jcall r_file")
+        o("dtk_m:")
         o("  ; (how many lines say something, then one of them)")
         da("j7", D_SCR); dl("j3", D_X + 24); J("jldi j4, 0", "jldi j8, 0", "jldi j9, 1")
         o("dtk_c:")
