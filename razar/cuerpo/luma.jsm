@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0B53h
-  jshi j2, 0471Ch
-  jshi j2, 0B460h
-  jshi j2, 0D59Dh
+  jldi j2, 07Dh
+  jshi j2, 07DD2h
+  jshi j2, 06DA8h
+  jshi j2, 0990Fh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -19518,6 +19518,17 @@ fw_se:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 14496
+  jldi j11, 3
+  jsub j11, j10, j11
+  jjnz j11, fw_nf
+  jldi j10, 0FFh
+  jst j10, j14, 0460h
+  jldi j10, 0FFh
+  jst j10, j14, 0468h
+  jldi j10, 0FFh
+  jst j10, j14, 0470h
+  jjmp fw_ln
+fw_nf:
   jldi j11, 1
   jsub j10, j10, j11
   jjnz j10, fw_old
@@ -19687,8 +19698,9 @@ r_flujo_add:                    ; her thought (D_THK) to her mind's flow, bright
   jjmp r_flujo_put
 fa_x:
   jret
-r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j10 its bytes: to her mind's flow,
-                                ; in the trail (keeps j1, j2, j3: her host writes it to its ring next)
+r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j2 its reason, j10 its bytes: to
+                                ; her mind's flow, in the trail; in white if it found something (reason 0)
+                                ; (keeps j1, j2, j3: her host writes it to its ring next)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -19705,9 +19717,12 @@ r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j3, j6, 14568
+  jldi j4, 2
+  jjnz j2, ft_k
+  jldi j4, 3
+ft_k:                           ; (its reason 0 is "replaced": a recipe of hers won its place, something she found)
   jadd j2, j1, j14
   jadd j3, j10, j14
-  jldi j4, 2
   jcall r_flujo_put
   jldi j6, 0162h
   jshi j6, 0

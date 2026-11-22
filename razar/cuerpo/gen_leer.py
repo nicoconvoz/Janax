@@ -307,8 +307,11 @@ D_FLB = 0x3900               # (each line of it: its kind, 1 a thought, 2 a tria
                              # measured once when it comes; then its letters. D_FLT: the panel lines of all of them)
 FL_CAP = 2048                # her longest thought (1000) and a panel's worth of the others (16 lines of 52: 832)
 D_ROOM = D_FLB + FL_CAP
-MATRIX = ((0, 255, 65), (0, 143, 17))   # the green of the film's code (#00FF41, the colour usually quoted for it), and
-                             # its darker trail (#008F11) for what she thought before: on black (the Capitan's wish)
+MATRIX = ((0, 255, 65), (0, 143, 17), (255, 255, 255))   # the green of the film's code (#00FF41, the colour usually quoted for it), and
+                             # its darker trail (#008F11) for what she tried and the judge turned down, on black (the
+                             # Capitan's wish); and white for what her mind FOUND (a recipe that replaced an older one:
+                             # "cuando su pensamiento encuentre algo nuevo, pinta el texto de amarillo o blanco"), as the
+                             # newest sign at the head of each stream of the film's rain is drawn almost white
 FONT = {
     "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".####.....#....#....#....#.....####",
     "D": "####.#...##...##...##...##...#####.", "E": "######....####.#....#....#....#####", "F": "######....####.#....#....#....#....",
@@ -2176,7 +2179,9 @@ def make(g, ST, free):
         o("fw_s:                           ; (where this line of her mind ends: its new line)")
         J("jsub j10, j4, j2", "jjnn j10, fw_se", "jadd j10, j3, j4", "jldb j10, j10, 0", "jldi j11, 10", "jsub j10, j10, j11", "jjz j10, fw_se", "jldi j10, 1", "jadd j4, j4, j10", "jjmp fw_s")
         o("fw_se:")
-        ds("j4", D_FLE); J("jadd j10, j3, j1", "jldb j10, j10, 0", "jldi j11, 2", "jadd j1, j1, j11"); ds("j1", D_FLI); J("jldi j11, 1"); J("jsub j10, j10, j11", "jjnz j10, fw_old"); green(0); J("jjmp fw_ln")
+        ds("j4", D_FLE); J("jadd j10, j3, j1", "jldb j10, j10, 0", "jldi j11, 2", "jadd j1, j1, j11"); ds("j1", D_FLI); J("jldi j11, 3", "jsub j11, j10, j11", "jjnz j11, fw_nf"); green(2); J("jjmp fw_ln")
+        o("fw_nf:")
+        J("jldi j11, 1"); J("jsub j10, j10, j11", "jjnz j10, fw_old"); green(0); J("jjmp fw_ln")
         o("fw_old:")
         green(1)
         o("fw_ln:")
@@ -2204,9 +2209,12 @@ def make(g, ST, free):
         gl("j6", DLR); J("jjz j6, fa_x"); da("j2", D_THK); dl("j3", D_THKL); J("jldi j4, 1", "jjmp r_flujo_put")
         o("fa_x:")
         J("jret")
-        o("r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j10 its bytes: to her mind's flow,")
-        o("                                ; in the trail (keeps j1, j2, j3: her host writes it to its ring next)")
-        gl("j6", DLR); J("jjz j6, ft_x"); ds("j1", D_SV1); ds("j2", D_SV2); ds("j3", D_SV3); J("jadd j2, j1, j14", "jadd j3, j10, j14", "jldi j4, 2", "jcall r_flujo_put")
+        o("r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j2 its reason, j10 its bytes: to")
+        o("                                ; her mind's flow, in the trail; in white if it found something (reason 0)")
+        o("                                ; (keeps j1, j2, j3: her host writes it to its ring next)")
+        gl("j6", DLR); J("jjz j6, ft_x"); ds("j1", D_SV1); ds("j2", D_SV2); ds("j3", D_SV3); J("jldi j4, 2", "jjnz j2, ft_k", "jldi j4, 3")
+        o("ft_k:                           ; (its reason 0 is \"replaced\": a recipe of hers won its place, something she found)")
+        J("jadd j2, j1, j14", "jadd j3, j10, j14", "jcall r_flujo_put")
         dl("j1", D_SV1); dl("j2", D_SV2); dl("j3", D_SV3)
         o("ft_x:")
         J("jret")
