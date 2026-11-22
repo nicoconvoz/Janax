@@ -1,6 +1,6 @@
 ## Janax y Razar v2.29: encadena por lo que tiene sentido, y es libre de hacerlo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24440937](https://doi.org/10.5281/zenodo.24440937)
 
 > *"Que pueda usarla o no: que siempre sea libre."* *"Que no vaya por lo raro, que vaya por lo que tenga sentido."*
 > *"Terminalo, Doc, y publicá todo."* (el autor, 2026-11-22)

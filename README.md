@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.29:** DOI_PENDIENTE
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.29:** [10.5281/zenodo.24440937](https://doi.org/10.5281/zenodo.24440937)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-22, v2.29): encadena por lo que tiene sentido, y es libre
 
-DOI de esta versión: DOI_PENDIENTE.
+DOI de esta versión: [10.5281/zenodo.24440937](https://doi.org/10.5281/zenodo.24440937).
 
 Luma encadena **por lo que tiene sentido**, no por lo raro: un hecho hace cadena sólo si el siguiente eslabón hace lo mismo en sus libros, confirmado por encima de la casualidad y por dos casos. Y es **libre** de encadenar o no. A "quién es Isaac?" siguió: "Isaac habia bendecido a Jacob, y le habia enviado a Padan-aram...". Las listas y las frases hechas todavía confunden, y está dicho.
 
