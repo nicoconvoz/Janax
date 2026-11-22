@@ -1,6 +1,6 @@
 ## Janax y Razar v2.77: su coeficiente de marco
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24446218](https://doi.org/10.5281/zenodo.24446218)
 
 > *"Coeficiente de marco: que dude del enunciado hasta que encuentre armonía."* (el autor, 2026-11-22)
 >
