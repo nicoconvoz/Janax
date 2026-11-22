@@ -1,6 +1,6 @@
 ## Janax y Razar v1.97: todas sus letras, y nada se descarta
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24439812](https://doi.org/10.5281/zenodo.24439812)
 
 > *"Arreglalo, pero no elimines la posibilidad. Además, hacé que pueda entender y ver todo tipo de caracteres, incluso
 > las minúsculas."* (el autor, 2026-11-22)
