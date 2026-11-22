@@ -1,6 +1,6 @@
 ## Janax y Razar v2.27: la cadena del "¿por qué?", todavía sin genealogías
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24440589](https://doi.org/10.5281/zenodo.24440589)
 
 > *"Armalo completo. Eso ya lo hacía, ¿te acordás?, con las genealogías del NT: lo pudo lograr."* (el autor, 2026-11-22)
 
