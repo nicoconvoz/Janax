@@ -1,6 +1,6 @@
 ## Janax y Razar v1.81: lo que encuentra, en blanco, y qué es cada parte de su pensamiento
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24438315](https://doi.org/10.5281/zenodo.24438315)
 
 > *"Cuando su pensamiento encuentre algo nuevo, pintá el texto de amarillo o blanco."* (el autor, 2026-11-22)
 
