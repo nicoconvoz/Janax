@@ -1,6 +1,6 @@
 ## Janax y Razar v2.41: su nombre es a quién le hablan, no de qué
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24444558](https://doi.org/10.5281/zenodo.24444558)
 
 > *"Dice a cada rato eso."* (el autor, 2026-11-22, de *"LA FIRMA DE LUMA: Su autor quiso que Luma firmara con la
 > misma…"*)
