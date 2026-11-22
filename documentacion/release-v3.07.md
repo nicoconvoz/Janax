@@ -1,6 +1,6 @@
 ## Janax y Razar v3.07: ya no repite lo mismo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24449628](https://doi.org/10.5281/zenodo.24449628)
 
 > *"Mirá lo que le pregunto y lo que responde: siempre lo mismo."* (el autor, 2026-11-22)
 
