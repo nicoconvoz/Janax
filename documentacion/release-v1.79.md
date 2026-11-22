@@ -1,6 +1,6 @@
 ## Janax y Razar v1.79: su pensamiento, tal como es
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24438137](https://doi.org/10.5281/zenodo.24438137)
 
 > *"Quiero ver su pensamiento, tal como es."* (el autor, 2026-11-22)
 
