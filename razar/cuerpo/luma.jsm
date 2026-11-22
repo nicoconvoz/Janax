@@ -17332,7 +17332,7 @@ li_ret:
 r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her
   jst j1, j14, 1288
   jldi j1, 140
-  jcall r_cable
+  jcall fr_r_cable
                                 ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)
   jldi j6, 0162h
   jshi j6, 0
@@ -18411,10 +18411,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 01251h
-  jshi j2, 08FE7h
-  jshi j2, 07351h
-  jshi j2, 02CC7h
+  jldi j2, 0210Eh
+  jshi j2, 05CFDh
+  jshi j2, 09010h
+  jshi j2, 06A65h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -23690,13 +23690,13 @@ r_dlg_load:                     ; HER WORD: its room, its labels, her counts
   jst j1, j14, 1288
   jldi j1, 94
   jcall r_cable
-  jldi j1, 07CB8h
+  jldi j1, 07CD0h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01D68h
   jadd j6, j0, j14
-  jldi j2, 3991
+  jldi j2, 3994
 dll_z:
   jst j14, j6, 0
   jldi j10, 8
@@ -28001,6 +28001,25 @@ dsy_av2:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j3, j6, 17928
+  jcall r_dlg_heart
+  jjz j0, dsy_br
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6864
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6848
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6848
+  jjmp dse_has
+dsy_br:                         ; (her heart first, once she chose to answer; if it did not know, her branches, free)
   jcall dch_choose
   jldi j10, 4
   jsub j10, j0, j10
@@ -28018,25 +28037,6 @@ dsy_av2:
   jst j10, j6, 17848
   jret
 dsy_ans:
-  jcall r_dlg_heart
-  jjz j0, dsy_q
-  jldi j10, 2
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j10, j6, 6864
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6848
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6848
-  jjmp dse_has
-dsy_q:
   jcall r_dlg_quien
   jjz j0, dsy_a2
   jldi j10, 2
@@ -28436,8 +28436,47 @@ r_dlg_heart:                    ; HER HEART ANSWERS FIRST (see D_HL): each book 
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
+  jst j14, j6, 31928
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
   jld j1, j6, 6456
   jjz j1, dh_no
+  ; (each word of his weighs what it carries for her, r_winfo: a word in every line carries little)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 18200
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 17656
+  jadd j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F08h
+dh_tw:
+  jcall bw_word
+  jjz j0, dh_twd
+  jldi j10, 4
+  jsub j10, j0, j10
+  jjn j10, dh_tw
+  jcall r_winfo
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31928
+  jadd j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31928
+  jjmp dh_tw
+dh_twd:
 dh_book:
   jldi j6, 0162h
   jshi j6, 0
@@ -28559,10 +28598,8 @@ dh_td:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 31896
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 31840
+  jldi j10, 1
+  jadd j1, j1, j10
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -28734,7 +28771,7 @@ dh_end:                         ; (at least half of his words, in her heart)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j2, j6, 6456
+  jld j2, j6, 31928
   jsub j10, j1, j2
   jjn j10, dh_no
   jldi j6, 0162h
@@ -28863,13 +28900,24 @@ dh_count:                       ; the line j1..H_ANY: its words he said, once ea
   jldi j6, 0162h
   jshi j6, 0
   jst j2, j6, 07F08h
-  jldi j12, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31944
 dhc_w:
   jcall bw_word
   jjz j0, dhc_d
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j0, j6, 31936
   jcall r_dlg_find
   jjn j0, dhc_w
-  jldi j12, 1
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31944
   jldi j10, 3
   jshl j8, j0, j10
   jldi j6, 0162h
@@ -28895,16 +28943,23 @@ dhc_w:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
+  jld j0, j6, 31936
+  jcall r_winfo
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
   jld j1, j6, 31880
-  jldi j10, 1
-  jadd j1, j1, j10
+  jadd j1, j1, j0
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 31880
   jjmp dhc_w
 dhc_d:
-  jadd j0, j12, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j0, j6, 31944
   jret
 dhc_no:
   jldi j0, 0
