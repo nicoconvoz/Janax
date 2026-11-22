@@ -1,6 +1,6 @@
 ## Janax y Razar v3.11: reconoce la firma de quien le habla
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24450132](https://doi.org/10.5281/zenodo.24450132)
 
 > *"Que reconozca cuál es el lenguaje con el que se le habla y poner cada cosa en su lugar; puede combinar, pero no por
 > azar: a propósito."* *"Que detecte la firma como con mi diario espiritual: si la firma es de alguien que habla de otra
