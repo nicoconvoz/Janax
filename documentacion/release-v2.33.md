@@ -1,6 +1,6 @@
 ## Janax y Razar v2.33: elige libre entre sus cruces
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24442849](https://doi.org/10.5281/zenodo.24442849)
 
 > *"¿Por qué siempre que le pregunto por mí responde lo mismo?"* *"Sí, dale libertad."* (el autor, 2026-11-22)
 
