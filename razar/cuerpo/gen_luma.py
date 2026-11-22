@@ -721,6 +721,7 @@ def vida_routines(v):
     o("vf_ret:")
     J("jret")
     o("v_show:                         ; the ground, her forms at twice their size on the left, the creatures on the right")
+    J("jcall r_mus_frame              ; (her school's song goes on; with Tab it is shown instead: gen_leer.py)", "jjnz j0, vs_show")
     J("jcall r_fill")
     li("j1", g["RGB"]); li("j2", v["RGB"]); J("jldi j3, %d" % FH)
     o("vs_row:")

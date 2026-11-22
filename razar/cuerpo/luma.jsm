@@ -8590,6 +8590,7 @@ init_popc:
   jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)
   jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)
   jcall r_dlg_load               ; her word, in her window (gen_leer.py)
+  jcall r_mus_init               ; her school, born to sing what she says (gen_leer.py)
   jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)
   ; the forms' archive as a ring (its handle is set by r_load_archive)
   jldi j3, 06720h
@@ -18094,10 +18095,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0370h
-  jshi j2, 03F8Dh
-  jshi j2, 09782h
-  jshi j2, 07431h
+  jldi j2, 038D5h
+  jshi j2, 060CCh
+  jshi j2, 0210Ch
+  jshi j2, 0C1E1h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -23276,13 +23277,13 @@ r_dlg_save:                     ; her counts into "charla"
 dsv_r:
   jret
 r_dlg_load:                     ; HER WORD: its room, its labels, her counts
-  jldi j1, 07AD8h
+  jldi j1, 07B78h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01D68h
   jadd j6, j0, j14
-  jldi j2, 3931
+  jldi j2, 3951
 dll_z:
   jst j14, j6, 0
   jldi j10, 8
@@ -27737,6 +27738,7 @@ dse_none:                       ; (nothing she read shares a word with it: she s
   jst j10, j14, 0210h
   jret
 dse_has:
+  jcall r_mus_sing               ; (what she says, sung to her school)
   jldi j10, 4
   jldi j6, 0162h
   jshi j6, 0
@@ -30992,9 +30994,15 @@ dk_bsd:
 dk_enter:
   jldi j10, 13
   jsub j10, j3, j10
-  jjnz j10, dk_pg
+  jjnz j10, dk_tab
   jjz j4, dk_yes
   jcall r_dlg_sent
+  jjmp dk_yes
+dk_tab:                         ; (Tab: her school's music, shown and sounded, or her world again)
+  jldi j10, 9
+  jsub j10, j3, j10
+  jjnz j10, dk_pg
+  jcall r_mus_tab
   jjmp dk_yes
 dk_pg:                          ; (Page Up: four lines back)
   jldi j10, 33
@@ -33263,6 +33271,670 @@ fa_trim:                        ; (the oldest go while the panel has not their l
   jcall r_flujo_drop
   jjnz j0, fa_trim
 fa_r:
+  jret
+r_mus_init:                     ; HER SCHOOL, BORN (see D_MU): launched with memory rights (she builds its room),
+                                ; its faces' room, and order 5 (side n, her dice as its seed)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jldi j10, 108
+  jstb j10, j6, 31576
+  jldi j10, 117
+  jstb j10, j6, 31577
+  jldi j10, 109
+  jstb j10, j6, 31578
+  jldi j10, 97
+  jstb j10, j6, 31579
+  jldi j10, 47
+  jstb j10, j6, 31580
+  jldi j10, 99
+  jstb j10, j6, 31581
+  jldi j10, 97
+  jstb j10, j6, 31582
+  jldi j10, 114
+  jstb j10, j6, 31583
+  jldi j10, 100
+  jstb j10, j6, 31584
+  jldi j10, 117
+  jstb j10, j6, 31585
+  jldi j10, 109
+  jstb j10, j6, 31586
+  jldi j10, 101
+  jstb j10, j6, 31587
+  jldi j10, 110
+  jstb j10, j6, 31588
+  jldi j10, 46
+  jstb j10, j6, 31589
+  jldi j10, 98
+  jstb j10, j6, 31590
+  jldi j10, 105
+  jstb j10, j6, 31591
+  jldi j10, 110
+  jstb j10, j6, 31592
+  jldi j10, 2
+  jshi j10, 0
+  jshi j10, 010h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 31576
+  jadd j11, j11, j15
+  jldi j12, 17
+  jcall r_tocar
+  jjn j13, mi_no
+  jldi j10, 1
+  jadd j13, j13, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j13, j6, 31448
+  jldi j1, 04B0h
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j0, j6, 31480
+  jld j1, j14, 0238h
+  jldi j2, 0
+  jshi j2, 0FFFFh
+  jand j1, j1, j2
+  jldi j2, 24
+  jshl j1, j1, j2
+  jldi j2, 5
+  jshi j2, 5
+  jor j1, j1, j2
+  jcall r_mus_say
+  jldi j1, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31456
+mi_no:
+  jret
+r_mus_say:                      ; j1 = a word, said to her school (request 30)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 31448
+  jldi j10, 1
+  jsub j11, j11, j10
+  jadd j12, j1, j14
+  jldi j10, 30
+  jcall r_tocar
+  jret
+r_mus_mail:                     ; her mailbox while no reader reads: her school's words, the rest let go
+  jldi j10, 31
+  jldi j11, 0162h
+  jshi j11, 017C0h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j10, 1
+  jsub j10, j13, j10
+  jjnz j10, mm_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 017C0h
+  jcall r_mus_from
+  jjmp r_mus_mail
+mm_r:
+  jret
+r_mus_from:                     ; j1 = who said the word at WBUF + 8: if her school, it is heard
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 31448
+  jjz j2, mf_r
+  jldi j10, 1
+  jsub j2, j2, j10
+  jsub j2, j1, j2
+  jjnz j2, mf_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 017C8h
+  jjmp r_mus_word
+mf_r:
+  jret
+r_mus_word:                     ; j1 = her school's word, by the dance: born (the room it needs), the song's steps,
+                                ; its top faces (64 bits a word: step t, top piece j at bit t * n^2 + j)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 31456
+  jldi j10, 1
+  jsub j10, j2, j10
+  jjnz j10, mw_2
+  jjz j1, mw_ready
+  jcall r_alloc
+  jadd j11, j0, j14
+  jldi j10, 23
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j12, j6, 31448
+  jldi j3, 1
+  jsub j12, j12, j3
+  jcall r_tocar
+  jldi j1, 0
+  jcall r_mus_say
+mw_ready:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31456
+  jret
+mw_2:
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjnz j10, mw_3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31472
+  jldi j10, 25
+  jmul j1, j1, j10
+  jldi j10, 63
+  jadd j1, j1, j10
+  jldi j10, 6
+  jshr j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31464
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31488
+  jldi j10, 3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31456
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31464
+  jjz j1, mw_done
+  jret
+mw_3:
+  jldi j10, 3
+  jsub j10, j2, j10
+  jjnz j10, mw_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 31480
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 31488
+  jldi j10, 149
+  jsub j10, j4, j10
+  jjnn j10, mw_full
+  jldi j10, 3
+  jshl j5, j4, j10
+  jadd j5, j5, j3
+  jst j1, j5, 0
+mw_full:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 31488
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 31464
+  jldi j10, 1
+  jsub j4, j4, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 31464
+  jjnz j4, mw_r
+mw_done:                        ; (all of it: she plays it from its first step)
+  jldi j10, -1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31496
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31504
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31520
+  jldi j10, 4
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31456
+mw_r:
+  jret
+r_mus_sing:                     ; what she says (D_OUT), sung to her school if it is born and quiet: order 6, how many
+                                ; words (up to 255), then each word as its three bottom pieces, from its print
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31448
+  jjz j1, ms_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31456
+  jjnz j1, ms_r
+  jldi j7, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jadd j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F08h
+ms_c:
+  jcall bw_word
+  jjz j0, ms_cd
+  jldi j10, 255
+  jsub j10, j7, j10
+  jjnn j10, ms_cd
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp ms_c
+ms_cd:
+  jjz j7, ms_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j7, j6, 31528
+  jldi j10, 8
+  jshl j1, j7, j10
+  jldi j10, 6
+  jor j1, j1, j10
+  jcall r_mus_say
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jadd j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F08h
+ms_w:
+  jcall bw_word
+  jjz j0, ms_wd
+  jldi j9, 0
+  jldi j10, 0
+  jshr j1, j4, j10
+  jldi j10, 25
+  jdiv j2, j1, j10
+  jmul j2, j2, j10
+  jsub j1, j1, j2
+  jldi j10, 0
+  jshl j1, j1, j10
+  jor j9, j9, j1
+  jldi j10, 16
+  jshr j1, j4, j10
+  jldi j10, 25
+  jdiv j2, j1, j10
+  jmul j2, j2, j10
+  jsub j1, j1, j2
+  jldi j10, 16
+  jshl j1, j1, j10
+  jor j9, j9, j1
+  jldi j10, 32
+  jshr j1, j4, j10
+  jldi j10, 25
+  jdiv j2, j1, j10
+  jmul j2, j2, j10
+  jsub j1, j1, j2
+  jldi j10, 32
+  jshl j1, j1, j10
+  jor j9, j9, j1
+  jadd j1, j9, j14
+  jcall r_mus_say
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j7, j6, 31528
+  jldi j10, 1
+  jsub j7, j7, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j7, j6, 31528
+  jjnz j7, ms_w
+ms_wd:
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31456
+ms_r:
+  jret
+r_mus_bit:                      ; j1 = a step, j2 = a top piece -> j0 = 1 if it woke then (uses j3-j5, j10)
+  jldi j0, 0
+  jjn j1, mb_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 31472
+  jsub j3, j1, j3
+  jjnn j3, mb_r
+  jldi j10, 25
+  jmul j3, j1, j10
+  jadd j3, j3, j2
+  jldi j10, 6
+  jshr j4, j3, j10
+  jldi j10, 3
+  jshl j4, j4, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j5, j6, 31480
+  jadd j5, j5, j4
+  jld j5, j5, 0
+  jldi j10, 63
+  jand j3, j3, j10
+  jshr j5, j5, j3
+  jldi j10, 1
+  jand j0, j5, j10
+mb_r:
+  jret
+r_mus_pitch:                    ; j2 = a top piece (x + n y) -> j3 = its MIDI note: x the pentatonic step (0 2 4 7 9),
+                                ; y the octave, from 48 (criterion: the face is the scale, see MU_N)
+  jldi j10, 5
+  jdiv j4, j2, j10
+  jmul j5, j4, j10
+  jsub j5, j2, j5
+  jldi j10, 12
+  jmul j3, j4, j10
+  jldi j10, 48
+  jadd j3, j3, j10
+  jldi j4, 9
+  jshi j4, 07420h
+  jldi j10, 2
+  jshl j5, j5, j10
+  jshr j4, j4, j5
+  jldi j10, 15
+  jand j4, j4, j10
+  jadd j3, j3, j4
+  jret
+r_mus_notes:                    ; the step MU_T against the one before: what woke sounds, what slept is let go
+  jldi j7, 0
+mn_l:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31496
+  jadd j2, j7, j14
+  jcall r_mus_bit
+  jadd j8, j0, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31496
+  jldi j10, 1
+  jsub j1, j1, j10
+  jadd j2, j7, j14
+  jcall r_mus_bit
+  jadd j9, j0, j14
+  jsub j10, j8, j9
+  jjz j10, mn_n
+  jadd j2, j7, j14
+  jcall r_mus_pitch
+  jldi j10, 8
+  jshl j3, j3, j10
+  jjz j8, mn_off
+  jldi j11, 064h
+  jshi j11, 090h
+  jor j11, j11, j3
+  jjmp mn_say
+mn_off:
+  jldi j11, 80h
+  jor j11, j11, j3
+mn_say:
+  jldi j10, 44
+  jldi j12, 0
+  jcall r_tocar
+mn_n:
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j10, 25
+  jsub j10, j7, j10
+  jjnz j10, mn_l
+  jret
+r_mus_tab:                      ; Tab: her school's music or her world; leaving it, every note is let go
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31512
+  jldi j10, 1
+  jxor j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31512
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31520
+  jjnz j1, mt_r
+  jldi j10, 44
+  jldi j11, 07BB0h
+  jldi j12, 0
+  jcall r_tocar
+mt_r:
+  jret
+r_mus_frame:                    ; every frame: her school's song goes on (a step every 4 frames, sounded only while
+                                ; it is shown) -> j0 = 1 if her music is shown instead of her world
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31456
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjnz j10, mfr_v
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31504
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31504
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjn j10, mfr_v
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31504
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31496
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31496
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31520
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 31512
+  jjz j2, mfr_q
+  jcall r_mus_notes
+mfr_q:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31496
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 31472
+  jsub j10, j1, j2
+  jjn j10, mfr_v
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31456
+mfr_v:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31512
+  jjz j1, mfr_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31520
+  jjz j1, mfr_yes
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31520
+  jcall r_mus_draw
+mfr_yes:
+  jldi j0, 1
+  jret
+mfr_no:
+  jldi j0, 0
+  jret
+r_mus_draw:                     ; her school's song as a roll: time across, its top pieces up (piece 0 at the bottom),
+                                ; what woke in green, the step sounding in white; black where nothing woke
+  jldi j1, 0157h
+  jshi j1, 06D30h
+  jldi j2, 015Dh
+  jshi j2, 04930h
+  jldi j6, 8
+md_cl:
+  jst j14, j1, 0
+  jadd j1, j1, j6
+  jsub j7, j2, j1
+  jjnz j7, md_cl
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31472
+  jjz j1, md_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31456
+  jldi j10, 4
+  jsub j10, j1, j10
+  jjnz j10, md_r
+  jldi j7, 0
+md_t:
+  jldi j8, 0
+md_j:
+  jadd j1, j7, j14
+  jadd j2, j8, j14
+  jcall r_mus_bit
+  jjz j0, md_jn
+  jldi j10, 0
+  jst j10, j14, 0460h
+  jldi j10, 0FFh
+  jst j10, j14, 0468h
+  jldi j10, 041h
+  jst j10, j14, 0470h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31496
+  jsub j1, j1, j7
+  jjnz j1, md_col
+  jldi j10, 0FFh
+  jst j10, j14, 0460h
+  jldi j10, 0FFh
+  jst j10, j14, 0468h
+  jldi j10, 0FFh
+  jst j10, j14, 0470h
+md_col:                         ; (its cells: x from t * W / steps, y from (n^2 - 1 - j) * H / n^2)
+  jldi j10, 640
+  jmul j3, j7, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j10, j6, 31472
+  jdiv j3, j3, j10
+  jldi j10, 1
+  jadd j4, j7, j10
+  jldi j10, 640
+  jmul j4, j4, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j10, j6, 31472
+  jdiv j4, j4, j10
+  jsub j10, j4, j3
+  jjnz j10, md_w
+  jldi j10, 1
+  jadd j4, j3, j10
+md_w:
+  jldi j5, 24
+  jsub j5, j5, j8
+  jldi j10, 8
+  jmul j5, j5, j10
+  jadd j9, j5, j10
+md_y:
+  jadd j2, j5, j14
+  jadd j1, j3, j14
+md_x:
+  jcall r_splot
+  jldi j10, 1
+  jadd j1, j1, j10
+  jsub j10, j4, j1
+  jjnz j10, md_x
+  jldi j10, 1
+  jadd j5, j5, j10
+  jsub j10, j9, j5
+  jjnz j10, md_y
+md_jn:
+  jldi j10, 1
+  jadd j8, j8, j10
+  jldi j10, 25
+  jsub j10, j8, j10
+  jjnz j10, md_j
+  jldi j10, 1
+  jadd j7, j7, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j10, j6, 31472
+  jsub j10, j7, j10
+  jjnz j10, md_t
+md_r:
   jret
 bw_letter:                      ; the character at j1 (before j2) -> j3 = its print if it is a letter, j1 past it; else
                                 ; j3 = -1, j1 kept. A letter: a..z, small or capital alike, or any whole character past
@@ -38561,6 +39233,7 @@ r_read_poll:                    ; her doorbell (her reader asks for a signature,
   jshi j6, 0
   jld j1, j6, 01600h
   jjnz j1, pl_go
+  jcall r_mus_mail
   jret
 pl_go:
   jldi j10, 19
@@ -38630,7 +39303,7 @@ pl_words:
   jldi j10, 1
   jsub j2, j2, j10
   jsub j1, j1, j2
-  jjnz j1, pl_words
+  jjnz j1, pl_other
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01610h
@@ -38657,6 +39330,12 @@ pl_words:
   jldi j6, 0162h
   jshi j6, 0
   jst j1, j6, 01608h
+  jjmp pl_words
+pl_other:                       ; (a word not from her reader: her school's, or nobody's)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 017C0h
+  jcall r_mus_from
   jjmp pl_words
 pl_state:
   jldi j6, 0162h
@@ -42104,6 +42783,8 @@ v_fr_parts:
 v_vf_ret:
   jret
 v_show:                         ; the ground, her forms at twice their size on the left, the creatures on the right
+  jcall r_mus_frame              ; (her school's song goes on; with Tab it is shown instead: gen_leer.py)
+  jjnz j0, v_vs_show
   jcall v_r_fill
   jldi j1, 0156h
   jshi j1, 07F0h

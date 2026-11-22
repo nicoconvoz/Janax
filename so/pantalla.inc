@@ -33,6 +33,8 @@ SCR_TITLE_MAX = 512               ; the letters a title keeps (criterion: what a
   scr_rgb   dq 0
   scr_thread dq 0               ; the window's thread (0: never opened)
   scr_hwnd  dq 0                ; the window, while it lives
+  scr_midi  dq 0                ; the host's synthesizer (kind 44): 0 not asked yet, 1 open, -1 the host has none
+  scr_midi_h dq 0               ; its handle
   scr_bmi   dd 40, 0, 0         ; BITMAPINFOHEADER: size, width, -height (top-down)
             dw 1, 32            ; planes, bits per pixel
             dd 0, 0, 0, 0, 0, 0 ; BI_RGB, and the rest 0
@@ -59,6 +61,42 @@ SCR_TITLE_MAX = 512               ; the letters a title keeps (criterion: what a
   scr_ring  rb SCR_RING * 32    ; {kind, x, y, extra} each
 
 else
+
+; rax = a MIDI message of three bytes (status, note, strength: its low 24 bits) -> rax = 1 it sounded, 0 no window,
+; -1 the host has no synthesizer. Sound belongs to the window (the Capitan, 2026-11-22: "quiero ver la musica", and
+; hear it): what the user sees and hears is one door, so without a window nothing sounds (the tests, and
+; JANAX_SIN_VENTANA, are silent and answer the same). The host's own synthesizer (MIDI_MAPPER), opened at the first
+; note. Keeps rbx, rbp, r12-r15.
+screen_sound:
+        push    rsi rdi
+        sub     rsp, 8
+        mov     rsi, rax
+        xor     eax, eax
+        cmp     qword [scr_hwnd], 0
+        je      .done
+        cmp     qword [scr_midi], 0
+        jne     .opened
+        invoke  midiOutOpen, scr_midi_h, -1, 0, 0, 0
+        inc     qword [hostcalls]
+        mov     qword [scr_midi], 1
+        test    eax, eax
+        jz      .opened
+        mov     qword [scr_midi], -1
+.opened:
+        mov     rax, -1
+        cmp     qword [scr_midi], 1
+        jne     .done
+        mov     edx, esi
+        and     edx, 0FFFFFFh
+        invoke  midiOutShortMsg, [scr_midi_h], rdx
+        test    eax, eax
+        mov     eax, 1
+        jz      .done
+        mov     rax, -1
+.done:
+        add     rsp, 8
+        pop     rdi rsi
+        ret
 
 ; rsi = a text (a pointer in this process), rcx = its bytes -> rax = the letters the window's title got (each byte one
 ; letter; past SCR_TITLE_MAX they are left out). If the window lives it is renamed by its own thread (a message: no

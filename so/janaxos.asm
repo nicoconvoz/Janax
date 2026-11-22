@@ -156,12 +156,12 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 43                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 44                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
                                 ; open on the host, go to, what is new in the host, show, wait for an event, row in the gaps,
-                                ; name the window
+                                ; name the window, a note
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -206,15 +206,15 @@ section '.data' data readable writeable
               dq serve_cede_label, serve_launch, serve_sign, serve_pending, serve_state, serve_bolita
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
-              dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps, serve_title
+              dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps, serve_title, serve_note
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
-             db 3, 1, 1, 0, 1
+             db 3, 1, 1, 0, 1, 1
   assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
-             db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN, 0, R_SCREEN
+             db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN, 0, R_SCREEN, R_SCREEN
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
@@ -222,6 +222,7 @@ section '.data' data readable writeable
                  db 0, 0                ; (show only draws, and waiting for an event only listens)
                  db 1                   ; (rowing in the gaps changes a process)
                  db 0                   ; (naming the window only draws)
+                 db 0                   ; (a note only sounds)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -562,7 +563,12 @@ section '.idata' import data readable writeable
           advapi32, 'ADVAPI32.DLL',\
           shell32, 'SHELL32.DLL',\
           user32, 'USER32.DLL',\
-          gdi32, 'GDI32.DLL'
+          gdi32, 'GDI32.DLL',\
+          winmm, 'WINMM.DLL'
+
+  import winmm,\
+         midiOutOpen, 'midiOutOpen',\
+         midiOutShortMsg, 'midiOutShortMsg'
 
   import kernel32,\
          GetCommandLineA, 'GetCommandLineA',\
@@ -2709,6 +2715,30 @@ serve_title:
         jmp     .next
 .invalid:
         mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "a note" (kind 44): a = a MIDI message of three bytes (pantalla.inc, screen_sound). Answers 1 it
+; sounded, 0 no window, -1 the host has no synthesizer.
+serve_note:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 44
+        jne     .next
+        mov     rax, [rbp + r13 + 8]
+        call    screen_sound
+        mov     [rbp + r13 + 24], rax
 .next:
         inc     r12
 .one:

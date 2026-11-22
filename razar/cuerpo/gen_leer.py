@@ -364,7 +364,19 @@ D_WDP = D_VQL + 8
 (D_SX, D_SXW, D_SBR, D_SN, D_SV, D_SVS, D_SXT, D_SXTL, D_SI, D_SJ, D_SBK, D_SKY, D_SCNT, D_SOL, D_SHN,
  D_SR, D_CHN, D_YW, D_YS, D_YL, D_CHS, D_RI, D_SCAP, D_CMODE, D_LCM, D_PCB, D_PCN, D_PHB, D_PHM, D_PPV, D_PBK,
  D_XMODE, D_LXM) = (D_WDP + 8 + 8 * i for i in range(33))
-D_ROOM = D_WDP + 8 + 8 * 33
+# HER SCHOOL'S MUSIC (the Capitan, 2026-11-22: "usa el mismo motor, el mismo cardumen, que ademas de recitar la melodia
+# que la ensene"). She is the mother of the real school (cardumen_cubo.jsm): she launches it, sings it what she says
+# (each word, three bottom pieces from its print), and its melody (which top pieces woke at each step) is shown and
+# sounded by her window, with Tab. Its state: the child (+1), the dance (1 born, 2 steps, 3 faces, 4 playing), words
+# left, steps, the faces' room, how many came, the step playing, frames, the view, redraw, words counted, a label.
+D_MU = D_WDP + 8 + 8 * 33
+(MU_KID, MU_ST, MU_LEFT, MU_STEPS, MU_BUF, MU_W, MU_T, MU_FC, MU_VIEW, MU_DIRTY, MU_CNT) = (D_MU + 8 * i for i in range(11))
+MU_LBL = D_MU + 128
+MU_N = 5                      # the side of her school: n = 5, because the top face (5 x 5) is then the pentatonic scale
+                              # (5 notes, x) over 5 octaves (y): criterion, not measurement
+MU_WORDS = ((256 + MU_N ** 3) * MU_N * MU_N + 63) // 64   # the longest answer (a song lasts 256 + n^3 steps at most)
+MU_FRAMES = 4                 # frames per step (a frame is 33 ms): about 130 ms a step, criterion
+D_ROOM = MU_LBL + 32
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
                                       # the fact's words (16 prints), the next subject's clause (bytes, 120), the next with its name
@@ -2280,6 +2292,7 @@ def make(g, ST, free):
         o("dse_none:                       ; (nothing she read shares a word with it: she says so, and it is not counted as an answer)")
         J("jldi j1, 3", "jldi j3, 0", "jcall r_dlg_write", "jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
         o("dse_has:")
+        J("jcall r_mus_sing               ; (what she says, sung to her school)")
         J("jldi j10, 4"); ds("j10", D_LBR); J("jcall dcx_said")
         dinc(D_NC); dl("j1", D_LMODE); J("jldi j10, 1", "jsub j10, j1, j10", "jldi j1, 1", "jjnz j10, dse_sg", "jldi j1, 5")
         o("dse_sg:                         ; (her own words are signed luma; a quote says so)")
@@ -2768,7 +2781,9 @@ def make(g, ST, free):
         o("dk_bsd:")
         ds("j4", D_INL); J("jjmp dk_yes")
         o("dk_enter:")
-        J("jldi j10, 13", "jsub j10, j3, j10", "jjnz j10, dk_pg", "jjz j4, dk_yes", "jcall r_dlg_sent", "jjmp dk_yes")
+        J("jldi j10, 13", "jsub j10, j3, j10", "jjnz j10, dk_tab", "jjz j4, dk_yes", "jcall r_dlg_sent", "jjmp dk_yes")
+        o("dk_tab:                         ; (Tab: her school's music, shown and sounded, or her world again)")
+        J("jldi j10, 9", "jsub j10, j3, j10", "jjnz j10, dk_pg", "jcall r_mus_tab", "jjmp dk_yes")
         o("dk_pg:                          ; (Page Up: four lines back)")
         J("jldi j10, 33", "jsub j10, j3, j10", "jjnz j10, dk_pd"); dl("j1", D_SCR0); J("jldi j10, 4", "jsub j1, j1, j10", "jjnn j1, dk_pu", "jldi j1, 0")
         o("dk_pu:")
@@ -3038,6 +3053,137 @@ def make(g, ST, free):
         J("jret")
         if g.get("PANEL"):
             panel_routines(dl, ds, da, dinc, PY, PH, PW, PNR, SHOWN)
+            music_routines(dl, ds, da, PW, PY)
+
+    def music_routines(dl, ds, da, PW, PY):
+        N2 = MU_N * MU_N
+        SRGB = g["PANEL"][3]
+        o("r_mus_init:                     ; HER SCHOOL, BORN (see D_MU): launched with memory rights (she builds its room),")
+        o("                                ; its faces' room, and order 5 (side n, her dice as its seed)")
+        gl("j6", DLR)
+        for i, ch in enumerate(b"luma/cardumen.bin"):
+            J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (MU_LBL + i))
+        li("j10", (2 << 32) | 16); da("j11", MU_LBL); J("jldi j12, 17", "jcall r_tocar", "jjn j13, mi_no", "jldi j10, 1", "jadd j13, j13, j10"); ds("j13", MU_KID)
+        li("j1", 8 * MU_WORDS + 8); J("jcall r_alloc"); ds("j0", MU_BUF)
+        ld("j1", "RNG"); li("j2", 0xFFFF); J("jand j1, j1, j2", "jldi j2, 24", "jshl j1, j1, j2"); li("j2", (MU_N << 16) | 5); J("jor j1, j1, j2", "jcall r_mus_say", "jldi j1, 1"); ds("j1", MU_ST)
+        o("mi_no:")
+        J("jret")
+        o("r_mus_say:                      ; j1 = a word, said to her school (request 30)")
+        dl("j11", MU_KID); J("jldi j10, 1", "jsub j11, j11, j10", "jadd j12, j1, j14", "jldi j10, 30", "jcall r_tocar", "jret")
+        o("r_mus_mail:                     ; her mailbox while no reader reads: her school's words, the rest let go")
+        J("jldi j10, 31"); li("j11", B + WBUF); J("jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jsub j10, j13, j10", "jjnz j10, mm_r")
+        gl("j1", WBUF); J("jcall r_mus_from", "jjmp r_mus_mail")
+        o("mm_r:")
+        J("jret")
+        o("r_mus_from:                     ; j1 = who said the word at WBUF + 8: if her school, it is heard")
+        dl("j2", MU_KID); J("jjz j2, mf_r", "jldi j10, 1", "jsub j2, j2, j10", "jsub j2, j1, j2", "jjnz j2, mf_r"); gl("j1", WBUF + 8); J("jjmp r_mus_word")
+        o("mf_r:")
+        J("jret")
+        o("r_mus_word:                     ; j1 = her school's word, by the dance: born (the room it needs), the song's steps,")
+        o("                                ; its top faces (64 bits a word: step t, top piece j at bit t * n^2 + j)")
+        dl("j2", MU_ST); J("jldi j10, 1", "jsub j10, j2, j10", "jjnz j10, mw_2", "jjz j1, mw_ready", "jcall r_alloc", "jadd j11, j0, j14", "jldi j10, 23")
+        dl("j12", MU_KID); J("jldi j3, 1", "jsub j12, j12, j3", "jcall r_tocar", "jldi j1, 0", "jcall r_mus_say")
+        o("mw_ready:")
+        ds("j14", MU_ST); J("jret")
+        o("mw_2:")
+        J("jldi j10, 2", "jsub j10, j2, j10", "jjnz j10, mw_3"); ds("j1", MU_STEPS); J("jldi j10, %d" % N2, "jmul j1, j1, j10", "jldi j10, 63", "jadd j1, j1, j10", "jldi j10, 6", "jshr j1, j1, j10")
+        ds("j1", MU_LEFT); ds("j14", MU_W); J("jldi j10, 3"); ds("j10", MU_ST); dl("j1", MU_LEFT); J("jjz j1, mw_done", "jret")
+        o("mw_3:")
+        J("jldi j10, 3", "jsub j10, j2, j10", "jjnz j10, mw_r"); dl("j3", MU_BUF); dl("j4", MU_W); J("jldi j10, %d" % MU_WORDS, "jsub j10, j4, j10", "jjnn j10, mw_full")
+        J("jldi j10, 3", "jshl j5, j4, j10", "jadd j5, j5, j3", "jst j1, j5, 0")
+        o("mw_full:")
+        J("jldi j10, 1", "jadd j4, j4, j10"); ds("j4", MU_W); dl("j4", MU_LEFT); J("jldi j10, 1", "jsub j4, j4, j10"); ds("j4", MU_LEFT); J("jjnz j4, mw_r")
+        o("mw_done:                        ; (all of it: she plays it from its first step)")
+        J("jldi j10, -1"); ds("j10", MU_T); ds("j14", MU_FC); J("jldi j10, 1"); ds("j10", MU_DIRTY); J("jldi j10, 4"); ds("j10", MU_ST)
+        o("mw_r:")
+        J("jret")
+        o("r_mus_sing:                     ; what she says (D_OUT), sung to her school if it is born and quiet: order 6, how many")
+        o("                                ; words (up to 255), then each word as its three bottom pieces, from its print")
+        dl("j1", MU_KID); J("jjz j1, ms_r"); dl("j1", MU_ST); J("jjnz j1, ms_r", "jldi j7, 0"); da("j1", D_OUT); gs("j1", BP); dl("j2", D_OUTL); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("ms_c:")
+        J("jcall bw_word", "jjz j0, ms_cd", "jldi j10, 255", "jsub j10, j7, j10", "jjnn j10, ms_cd", "jldi j10, 1", "jadd j7, j7, j10", "jjmp ms_c")
+        o("ms_cd:")
+        J("jjz j7, ms_r"); ds("j7", MU_CNT); J("jldi j10, 8", "jshl j1, j7, j10", "jldi j10, 6", "jor j1, j1, j10", "jcall r_mus_say")
+        da("j1", D_OUT); gs("j1", BP); dl("j2", D_OUTL); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("ms_w:")
+        J("jcall bw_word", "jjz j0, ms_wd", "jldi j9, 0")
+        for k in range(3):
+            J("jldi j10, %d" % (16 * k), "jshr j1, j4, j10", "jldi j10, %d" % N2, "jdiv j2, j1, j10", "jmul j2, j2, j10", "jsub j1, j1, j2",
+              "jldi j10, %d" % (16 * k), "jshl j1, j1, j10", "jor j9, j9, j1")
+        J("jadd j1, j9, j14", "jcall r_mus_say"); dl("j7", MU_CNT); J("jldi j10, 1", "jsub j7, j7, j10"); ds("j7", MU_CNT); J("jjnz j7, ms_w")
+        o("ms_wd:")
+        J("jldi j10, 2"); ds("j10", MU_ST)
+        o("ms_r:")
+        J("jret")
+        o("r_mus_bit:                      ; j1 = a step, j2 = a top piece -> j0 = 1 if it woke then (uses j3-j5, j10)")
+        J("jldi j0, 0", "jjn j1, mb_r"); dl("j3", MU_STEPS); J("jsub j3, j1, j3", "jjnn j3, mb_r", "jldi j10, %d" % N2, "jmul j3, j1, j10", "jadd j3, j3, j2",
+          "jldi j10, 6", "jshr j4, j3, j10", "jldi j10, 3", "jshl j4, j4, j10"); dl("j5", MU_BUF); J("jadd j5, j5, j4", "jld j5, j5, 0", "jldi j10, 63", "jand j3, j3, j10",
+          "jshr j5, j5, j3", "jldi j10, 1", "jand j0, j5, j10")
+        o("mb_r:")
+        J("jret")
+        o("r_mus_pitch:                    ; j2 = a top piece (x + n y) -> j3 = its MIDI note: x the pentatonic step (0 2 4 7 9),")
+        o("                                ; y the octave, from 48 (criterion: the face is the scale, see MU_N)")
+        J("jldi j10, %d" % MU_N, "jdiv j4, j2, j10", "jmul j5, j4, j10", "jsub j5, j2, j5", "jldi j10, 12", "jmul j3, j4, j10", "jldi j10, 48", "jadd j3, j3, j10")
+        li("j4", 0x97420); J("jldi j10, 2", "jshl j5, j5, j10", "jshr j4, j4, j5", "jldi j10, 15", "jand j4, j4, j10", "jadd j3, j3, j4", "jret")
+        o("r_mus_notes:                    ; the step MU_T against the one before: what woke sounds, what slept is let go")
+        J("jldi j7, 0")
+        o("mn_l:")
+        dl("j1", MU_T); J("jadd j2, j7, j14", "jcall r_mus_bit", "jadd j8, j0, j14"); dl("j1", MU_T); J("jldi j10, 1", "jsub j1, j1, j10", "jadd j2, j7, j14", "jcall r_mus_bit", "jadd j9, j0, j14")
+        J("jsub j10, j8, j9", "jjz j10, mn_n", "jadd j2, j7, j14", "jcall r_mus_pitch", "jldi j10, 8", "jshl j3, j3, j10", "jjz j8, mn_off")
+        li("j11", (100 << 16) | 0x90); J("jor j11, j11, j3", "jjmp mn_say")
+        o("mn_off:")
+        J("jldi j11, 80h", "jor j11, j11, j3")
+        o("mn_say:")
+        J("jldi j10, 44", "jldi j12, 0", "jcall r_tocar")
+        o("mn_n:")
+        J("jldi j10, 1", "jadd j7, j7, j10", "jldi j10, %d" % N2, "jsub j10, j7, j10", "jjnz j10, mn_l", "jret")
+        o("r_mus_tab:                      ; Tab: her school's music or her world; leaving it, every note is let go")
+        dl("j1", MU_VIEW); J("jldi j10, 1", "jxor j1, j1, j10"); ds("j1", MU_VIEW); J("jldi j10, 1"); ds("j10", MU_DIRTY); J("jjnz j1, mt_r")
+        J("jldi j10, 44"); li("j11", 0x7BB0); J("jldi j12, 0", "jcall r_tocar")
+        o("mt_r:")
+        J("jret")
+        o("r_mus_frame:                    ; every frame: her school's song goes on (a step every %d frames, sounded only while" % MU_FRAMES)
+        o("                                ; it is shown) -> j0 = 1 if her music is shown instead of her world")
+        dl("j1", MU_ST); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, mfr_v"); dl("j1", MU_FC); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", MU_FC)
+        J("jldi j10, %d" % MU_FRAMES, "jsub j10, j1, j10", "jjn j10, mfr_v"); ds("j14", MU_FC); dl("j1", MU_T); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", MU_T)
+        J("jldi j10, 1"); ds("j10", MU_DIRTY); dl("j2", MU_VIEW); J("jjz j2, mfr_q", "jcall r_mus_notes")
+        o("mfr_q:")
+        dl("j1", MU_T); dl("j2", MU_STEPS); J("jsub j10, j1, j2", "jjn j10, mfr_v"); ds("j14", MU_ST)
+        o("mfr_v:")
+        dl("j1", MU_VIEW); J("jjz j1, mfr_no"); dl("j1", MU_DIRTY); J("jjz j1, mfr_yes"); ds("j14", MU_DIRTY); J("jcall r_mus_draw")
+        o("mfr_yes:")
+        J("jldi j0, 1", "jret")
+        o("mfr_no:")
+        J("jldi j0, 0", "jret")
+        o("r_mus_draw:                     ; her school's song as a roll: time across, its top pieces up (piece 0 at the bottom),")
+        o("                                ; what woke in green, the step sounding in white; black where nothing woke")
+        li("j1", SRGB); li("j2", SRGB + 3 * PW * PY); J("jldi j6, 8")
+        o("md_cl:")
+        J("jst j14, j1, 0", "jadd j1, j1, j6", "jsub j7, j2, j1", "jjnz j7, md_cl")
+        dl("j1", MU_STEPS); J("jjz j1, md_r"); dl("j1", MU_ST); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, md_r", "jldi j7, 0")
+        o("md_t:")
+        J("jldi j8, 0")
+        o("md_j:")
+        J("jadd j1, j7, j14", "jadd j2, j8, j14", "jcall r_mus_bit", "jjz j0, md_jn")
+        for c, v in zip(("PR", "PG", "PB"), MATRIX[0]):
+            g["setg"](c, v)
+        dl("j1", MU_T); J("jsub j1, j1, j7", "jjnz j1, md_col")
+        for c, v in zip(("PR", "PG", "PB"), MATRIX[2]):
+            g["setg"](c, v)
+        o("md_col:                         ; (its cells: x from t * W / steps, y from (n^2 - 1 - j) * H / n^2)")
+        J("jldi j10, %d" % PW, "jmul j3, j7, j10"); dl("j10", MU_STEPS); J("jdiv j3, j3, j10", "jldi j10, 1", "jadd j4, j7, j10", "jldi j10, %d" % PW, "jmul j4, j4, j10"); dl("j10", MU_STEPS)
+        J("jdiv j4, j4, j10", "jsub j10, j4, j3", "jjnz j10, md_w", "jldi j10, 1", "jadd j4, j3, j10")
+        o("md_w:")
+        J("jldi j5, %d" % (N2 - 1), "jsub j5, j5, j8", "jldi j10, %d" % (PY // N2), "jmul j5, j5, j10", "jadd j9, j5, j10")
+        o("md_y:")
+        J("jadd j2, j5, j14", "jadd j1, j3, j14")
+        o("md_x:")
+        J("jcall r_splot", "jldi j10, 1", "jadd j1, j1, j10", "jsub j10, j4, j1", "jjnz j10, md_x", "jldi j10, 1", "jadd j5, j5, j10", "jsub j10, j9, j5", "jjnz j10, md_y")
+        o("md_jn:")
+        J("jldi j10, 1", "jadd j8, j8, j10", "jldi j10, %d" % N2, "jsub j10, j8, j10", "jjnz j10, md_j")
+        J("jldi j10, 1", "jadd j7, j7, j10"); dl("j10", MU_STEPS); J("jsub j10, j7, j10", "jjnz j10, md_t")
+        o("md_r:")
+        J("jret")
 
     def panel_routines(dl, ds, da, dinc, PY, PH, PW, PNR, SHOWN):
         X0, XR, WID, Y0 = 2, PW // 2 + 2, PW // 2 - 4, PY + 2
@@ -3300,6 +3446,7 @@ def make(g, ST, free):
         J("jcall r_un_libro               ; one book at a time, turned by her (gen_leer.py)")
         J("jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)")
         J("jcall r_dlg_load               ; her word, in her window (gen_leer.py)")
+        J("jcall r_mus_init               ; her school, born to sing what she says (gen_leer.py)")
         J("jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)")
 
     def worth():
@@ -4013,7 +4160,7 @@ def make(g, ST, free):
         o("r_read_poll:                    ; her doorbell (her reader asks for a signature, says a word or ends), or a frame")
         o("                                ; while it reads: what waits is signed, its words are heard (the shelf it read,")
         o("                                ; then its score), and when it ended what it read is settled")
-        gl("j1", RKID); J("jjnz j1, pl_go", "jret")
+        gl("j1", RKID); J("jjnz j1, pl_go", "jcall r_mus_mail", "jret")
         o("pl_go:")
         J("jldi j10, 19", "jldi j11, 1", "jsub j11, j1, j11", "jldi j12, 0", "jcall r_tocar"); gs("j13", RENDED)
         J("jldi j10, 18"); li("j11", B + PBUF); li("j12", 4096); J("jcall r_tocar", "jadd j8, j13, j14", "jjn j8, pl_words", "jjz j8, pl_words")
@@ -4023,8 +4170,10 @@ def make(g, ST, free):
         gl("j9", T1); J("jldi j10, 24", "jadd j9, j9, j10"); gs("j9", T1); gl("j8", T0); J("jldi j10, 1", "jsub j8, j8, j10"); gs("j8", T0); J("jjnz j8, pl_sign")
         o("pl_words:")
         J("jldi j10, 31"); li("j11", B + WBUF); J("jldi j12, 0", "jcall r_tocar", "jldi j10, 1", "jsub j10, j13, j10", "jjnz j10, pl_state")
-        gl("j1", WBUF); gl("j2", RKID); J("jldi j10, 1", "jsub j2, j2, j10", "jsub j1, j1, j2", "jjnz j1, pl_words")
+        gl("j1", WBUF); gl("j2", RKID); J("jldi j10, 1", "jsub j2, j2, j10", "jsub j1, j1, j2", "jjnz j1, pl_other")
         gl("j1", RW1); gs("j1", RW0); gl("j1", RW2); gs("j1", RW1); gl("j1", WBUF + 8); gs("j1", RW2); inc(RGOT); J("jjmp pl_words")
+        o("pl_other:                       ; (a word not from her reader: her school's, or nobody's)")
+        gl("j1", WBUF); J("jcall r_mus_from", "jjmp pl_words")
         o("pl_state:")
         gl("j1", RENDED); J("jldi j10, 1", "jadd j1, j1, j10", "jjnz j1, r_read_done", "jret")
         o("r_read_done:                    ; it ended: its line in \"leido\", and what it changes in her")
