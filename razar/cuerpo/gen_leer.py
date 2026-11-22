@@ -4170,12 +4170,21 @@ def make(g, ST, free):
             for i, l in enumerate(L):
                 code, sep, com = l.partition(";")
                 L[i] = pat.sub(r"b_\1", code) + sep + com
-        L.append("; ==== her reader: pulso.jsm (razar/lectura), included whole by gen_leer.py; only its first order is hers")
-        L.extend(src[:i_inc])
-        L.append("lectora:")
+        # HER READER NEXT TO HER BIRTH (2026-11-22): a jump reaches 32767 words, signed. It was placed after her body,
+        # and since v1.73 her body was longer than that: the jump to it went nowhere and every reading she launched
+        # ended as it began, unsaid. Now it goes right after the question "am I her reader?", so her body can grow
+        # as it likes; only the reader itself must stay under the reach (its assembler now says so if it does not).
+        R = ["; ==== her reader: pulso.jsm (razar/lectura), included whole by gen_leer.py; only its first order is hers"]
+        R.extend(src[:i_inc])
+        R.append("lectora:")
         for l in src[i_inc + 2:]:
             m = re.match(r"include '([\w.]+)'", l)
-            L.append("include '../lectura/%s'" % m.group(1) if m else l)
+            R.append("include '../lectura/%s'" % m.group(1) if m else l)
+        while R and not R[-1]:
+            R.pop()
+        k = [i for i, l in enumerate(L) if l.split(";")[0].strip() == "jjmp lectora"]
+        assert len(k) == 1, "her birth's jump to her reader: %d" % len(k)
+        L[k[0] + 1:k[0] + 1] = R
         while L and not L[-1]:
             L.pop()
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))

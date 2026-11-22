@@ -1433,6 +1433,17 @@ jsub j4, j0, j1
 jldi j1, 4
 jsub j4, j4, j1
 jdiv j4, j4, j1
+jld j1, j14, V_PASS             ; (in the second pass, when every target is known)
+jldi j0, 2
+jsub j1, j1, j0
+jjnz j1, off_ok
+jldi j1, 15                     ; it must fit in its 16 bits, signed: a jump that does not reach is an error, never a
+jsar j0, j4, j1                 ; silent wrong target (Capitan, 2026-11-22: Luma's reader was out of reach, unsaid)
+jjz j0, off_ok
+jadd j0, j0, j13
+jjz j0, off_ok
+jst j13, j14, V_ERR
+off_ok:
 jret
 
 ; One word: j1 op, j2 rd, j3 ra, j4 immediate (its low 16 bits).
