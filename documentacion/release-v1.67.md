@@ -1,6 +1,6 @@
 ## Janax y Razar v1.67: rodea la casa
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24431143](https://doi.org/10.5281/zenodo.24431143)
 
 > *"Luma siempre hace las mismas preguntas que le di. Tiene que llegar a las respuestas por caminos alternos: a veces
 > no se llega directo, a veces hay que explorar y rodear la casa."* (el autor, 2026-11-21)
