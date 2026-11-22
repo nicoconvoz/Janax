@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.97:** [10.5281/zenodo.24439812](https://doi.org/10.5281/zenodo.24439812)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.99:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,16 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-22, v1.99): el error de la v1.97, arreglado
+
+DOI de esta versión: DOI_PENDIENTE.
+
+Arreglado el error de la v1.97 que la hacía incoherente: al seguir tus palabras perdía el "?" y copiaba basura en sus caminos ("Donde esta te"). Sus archivos se repararon, y esta vez la rama se vio correr: a "el jardín de mamá" contestó "Donde esta mamá?".
+
+![Luma siguiendo tus palabras](documentacion/razar/img/luma-sigue.png)
+
+[Notas de la v1.99](documentacion/release-v1.99.md).
 
 ## Novedad (2026-11-22, v1.97): todas sus letras, y nada se descarta
 

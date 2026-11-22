@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 06Bh
-  jshi j2, 0852Dh
-  jshi j2, 044Dh
-  jshi j2, 02785h
+  jldi j2, 03F0Ch
+  jshi j2, 02E70h
+  jshi j2, 021B5h
+  jshi j2, 0E77Fh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -18963,15 +18963,15 @@ dgo_qw:
   jst j5, j3, 0
   jldi j6, 0162h
   jshi j6, 0
-  jld j6, j6, 07F00h
-  jsub j6, j6, j5
+  jld j7, j6, 07F00h
+  jsub j7, j7, j5
   jldi j6, 0162h
   jshi j6, 0
   jld j3, j6, 01D68h
   jldi j15, 19712
   jadd j3, j3, j15
   jadd j3, j3, j2
-  jst j6, j3, 0
+  jst j7, j3, 0
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h

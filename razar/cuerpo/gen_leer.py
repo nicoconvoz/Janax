@@ -1998,6 +1998,9 @@ def make(g, ST, free):
             dl("j3", D_CTX); J("jldi j10, 6", "jshl j3, j3, j10"); da("j4", D_CX); J("jadd j4, j4, j3", "jld j1, j4, %d" % (16 * (b - 1) + 8), "jld j2, j4, %d" % (16 * (b - 1)), "jcall dse_wish"); ds("j1", tv)
             dl("j2", D_T4B); J("jadd j2, j2, j1"); ds("j2", D_T4B)
             o("dch_n%d:" % b)
+        if os.environ.get("LUMA_SEGUIR"):   # (a test: she always goes on when she can, to see that branch run)
+            dl("j1", D_AV); J("jldi j10, 4", "jand j1, j1, j10", "jjz j1, dch_ns", "jldi j0, 3", "jret")
+            o("dch_ns:")
         dl("j1", D_T4B); J("jjz j1, dch_none", "jcall r_randmod", "jldi j3, 1")
         for b, tv in ((1, D_T0B), (2, D_T1B), (3, D_T2B)):
             dl("j1", tv); J("jsub j0, j0, j1", "jjn j0, dch_got", "jldi j10, 1", "jadd j3, j3, j10")
@@ -2100,7 +2103,7 @@ def make(g, ST, free):
         J("jldi j10, 0"); ds("j10", D_QHN); da("j1", D_Q); gs("j1", BP); da("j2", D_Q); dl("j3", D_QL); J("jadd j2, j2, j3"); gs("j2", BE)
         o("dgo_qw:")
         J("jcall bw_word", "jjz j0, dgo_qd"); dl("j1", D_QHN); J("jldi j10, 32", "jsub j10, j1, j10", "jjnn j10, dgo_qw", "jldi j10, 3", "jshl j2, j1, j10")
-        da("j3", D_QH); J("jadd j3, j3, j2", "jst j4, j3, 0"); da("j3", D_QS); J("jadd j3, j3, j2"); gl("j5", BWS); J("jst j5, j3, 0"); gl("j6", BP); J("jsub j6, j6, j5"); da("j3", D_QN); J("jadd j3, j3, j2", "jst j6, j3, 0")
+        da("j3", D_QH); J("jadd j3, j3, j2", "jst j4, j3, 0"); da("j3", D_QS); J("jadd j3, j3, j2"); gl("j5", BWS); J("jst j5, j3, 0"); gl("j7", BP); J("jsub j7, j7, j5"); da("j3", D_QN); J("jadd j3, j3, j2", "jst j7, j3, 0")
         dl("j1", D_QHN); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_QHN); J("jjmp dgo_qw")
         o("dgo_qd:")
         dl("j1", D_QHN); J("jjz j1, dgo_no", "jldi j10, 1", "jsub j1, j1, j10"); ds("j1", D_DS)
