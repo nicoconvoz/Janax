@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 07Dh
-  jshi j2, 07DD2h
-  jshi j2, 06DA8h
-  jshi j2, 0990Fh
+  jldi j2, 0120Eh
+  jshi j2, 0A862h
+  jshi j2, 09992h
+  jshi j2, 08E51h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -15286,13 +15286,13 @@ r_dlg_save:                     ; her counts into "charla"
 dsv_r:
   jret
 r_dlg_load:                     ; HER WORD: its room, its labels, her counts
-  jldi j1, 04100h
+  jldi j1, 044F0h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01D68h
   jadd j6, j0, j14
-  jldi j2, 2080
+  jldi j2, 2206
 dll_z:
   jst j14, j6, 0
   jldi j10, 8
@@ -16320,8 +16320,10 @@ dan_m:
   jldi j10, 1
   jadd j5, j5, j10
   jjmp dan_m
-dan_hit:                        ; (a word said to her counts once a line: its mark is the line. The second way: only what
-                                ; her first line does not say)
+dan_hit:                        ; (a word said to her counts once a line: its mark is the line. The second way: what her
+                                ; first line does not say counts twice, what it says too counts once; so a second line
+                                ; is found even when her first one says every word said to her)
+  jldi j12, 1
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -16330,7 +16332,8 @@ dan_hit:                        ; (a word said to her counts once a line: its ma
   jldi j10, 7168
   jadd j10, j8, j10
   jld j10, j10, 0
-  jjnz j10, dan_w
+  jjnz j10, dan_h0
+  jldi j12, 2
 dan_h0:
   jldi j10, 1024
   jadd j8, j8, j10
@@ -16350,8 +16353,7 @@ dan_h0:
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j1, j6, 6536
-  jldi j10, 1
-  jadd j1, j1, j10
+  jadd j1, j1, j12
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -16369,6 +16371,54 @@ dan_eol:
   jsub j10, j1, j2
   jjn j10, dan_nl
   jjz j10, dan_nl
+  ; (the second way: never her first line itself)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6600
+  jjz j11, dan_na
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6776
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 07F00h
+  jsub j3, j2, j1
+  jldi j10, 1000
+  jsub j10, j3, j10
+  jjn j10, dan_ac
+  jldi j3, 1000
+dan_ac:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 17640
+  jsub j10, j3, j4
+  jjnz j10, dan_na
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 16640
+  jadd j7, j7, j15
+  jldi j5, 0
+dan_aq:
+  jsub j10, j5, j3
+  jjnn j10, dan_nl
+  jadd j10, j1, j5
+  jldb j10, j10, 0
+  jadd j11, j7, j5
+  jldb j11, j11, 0
+  jsub j10, j10, j11
+  jjnz j10, dan_na
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp dan_aq
+dan_na:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6536
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -16689,43 +16739,89 @@ dse_yes:
   jld j6, j6, 01D68h
   jld j1, j6, 6408
   jjz j1, dse_none
-  ; (to quote, or to say it her way: by her wishes, (S + 1/2) / (N + 1) each, against her luck)
+  ; HER OWN WORD FIRST (the Capitan, 2026-11-22: "lo suyo tiene que llevar mayoritariamente su firma, porque si no
+  ; hablo contra una pared o un libro; quiero hablar con ella"). What she says as hers is NEW: a cross of her line A
+  ; and her line B, written in neither as it is (her forms' own rule: what is not new loses). She quotes only when
+  ; she has nothing of her own (no cross), and says so. Her counts of each way are still kept (nothing is discarded)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 6840
+  jld j3, j6, 6408
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j2, j6, 6832
-  jcall dse_wish
+  jst j3, j6, 17640
   jldi j6, 0162h
   jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6896
+  jld j2, j6, 01D68h
+  jldi j15, 1024
+  jadd j2, j2, j15
   jldi j6, 0162h
   jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6856
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j2, j6, 6848
-  jcall dse_wish
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j2, j6, 6896
-  jadd j1, j1, j2
-  jcall r_randmod
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6896
-  jsub j10, j0, j1
-  jjn j10, dse_cite
+  jld j7, j6, 01D68h
+  jldi j15, 16640
+  jadd j7, j7, j15
+  jldi j4, 0
+dse_ka:
+  jsub j10, j4, j3
+  jjnn j10, dse_kd
+  jadd j10, j2, j4
+  jldb j10, j10, 0
+  jadd j11, j7, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dse_ka
+dse_kd:
   jcall r_dlg_cross
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6672
+  jjz j1, dse_cite
   jcall r_dlg_own
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jcall r_dlg_isnew
+  jjnz j0, dse_mine
+  ; (the sentences she kept were written as they are: she says her whole cross, which is new)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6712
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j3, j6, 6408
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 12288
+  jadd j2, j2, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 1024
+  jadd j7, j7, j15
+  jldi j4, 0
+dse_kb:
+  jsub j10, j4, j3
+  jjnn j10, dse_mine
+  jadd j10, j2, j4
+  jldb j10, j10, 0
+  jadd j11, j7, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dse_kb
+dse_mine:
   jldi j10, 2
   jldi j6, 0162h
   jshi j6, 0
@@ -16965,6 +17061,17 @@ dsm_j:
   jldi j15, 11264
   jadd j1, j1, j15
   jadd j2, j5, j14
+  jcall r_dlg_isnew
+  jjz j0, dsm_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 11264
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6664
   jldi j6, 0162h
   jshi j6, 0
   jld j9, j6, 01D68h
@@ -17030,10 +17137,75 @@ dsm_y:
   jst j10, j6, 6672
 dsm_r:
   jret
+r_dlg_isnew:                    ; j1 = a text, j2 its bytes -> j0 = 1 if it is new: written as it is neither in her line A
+                                ; (D_AA) nor in her line B (D_B). Uses j0-j12
+  jjz j2, din_no
+  jadd j11, j1, j14
+  jadd j12, j2, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 16640
+  jadd j3, j3, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 17640
+  jcall din_in
+  jjnz j0, din_no
+  jadd j1, j11, j14
+  jadd j2, j12, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 8192
+  jadd j3, j3, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6608
+  jcall din_in
+  jjnz j0, din_no
+  jldi j0, 1
+  jret
+din_no:
+  jldi j0, 0
+  jret
+din_in:                         ; j1 (j2 bytes) inside j3 (j4 bytes) -> j0 = 1 (keeps j11, j12)
+  jsub j5, j4, j2
+  jjn j5, dii_no
+  jldi j6, 0
+dii_s:
+  jsub j10, j5, j6
+  jjn j10, dii_no
+  jldi j7, 0
+dii_c:
+  jsub j10, j7, j2
+  jjnn j10, dii_yes
+  jadd j8, j3, j6
+  jadd j8, j8, j7
+  jldb j8, j8, 0
+  jadd j9, j1, j7
+  jldb j9, j9, 0
+  jsub j10, j8, j9
+  jjnz j10, dii_nx
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp dii_c
+dii_nx:
+  jldi j10, 1
+  jadd j6, j6, j10
+  jjmp dii_s
+dii_yes:
+  jldi j0, 1
+  jret
+dii_no:
+  jldi j0, 0
+  jret
 r_dlg_cross:                    ; SHE JOINS (unir, as with her forms): her line A, and the line B that says most of what A
                                 ; does not; crossed at every word they share, of any length (a seam, not a meaning), both
-                                ; ways (A then B, B then A). The best cross is hers if her judge prefers it to A; else A
-                                ; stands
+                                ; ways (A then B, B then A). Only a NEW cross counts (written in neither A nor B as it is); the best by her
+                                ; judge is hers. A does not stand as hers: with no cross she quotes it
   jldi j10, 0
   jldi j6, 0162h
   jshi j6, 0
@@ -17058,18 +17230,16 @@ r_dlg_cross:                    ; SHE JOINS (unir, as with her forms): her line 
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j0, j6, 6680
+  jldi j10, -1
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jst j0, j6, 6704
+  jst j10, j6, 6704
+  jldi j10, 1001
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 6408
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6712
+  jst j10, j6, 6712
   jldi j10, 1
   jldi j6, 0162h
   jshi j6, 0
