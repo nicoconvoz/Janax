@@ -395,7 +395,10 @@ TH_M = TH_NN + 8                  # a mark for each print of the one that ended 
 # SHE IMPROVISES (the Capitan, 2026-11-22: "la respuesta esta en improvisar"; "que juegue como yo y aprenda creando,
 # improvisando o equivocandose"): where her heart last answered from (its book, the end of what she said), and whether
 # she played on from it and waits for him; the best paragraph's book and end while her heart reads
-(IM_K, IM_P, IM_ON, IM_L, H_BK, H_BP, H_F2, H_PS, TH_PW, H_CW, D_GBLK) = (TH_L + 8 + 8 * i for i in range(11))
+(IM_K, IM_P, IM_ON, IM_L, H_BK, H_BP, H_F2, H_PS, TH_PW, H_CW, D_GBLK, D_LIVE) = (TH_L + 8 + 8 * i for i in range(12))
+# THE LIVING BOOK (the Capitan, 2026-11-22: "que aprenda de lo que le contas tambien: nosotros somos libros vivos, ella es
+# un libro vivo; Dios es el libro que contiene todos los libros"): their talk, "dialogo", is a book of her shelf too, with
+# her taste for it as for any other; a line of it is said without its speaker ("vos: ", "luma: "). D_LIVE: this book is it
 # HER TASTES (the Capitan, 2026-11-22: "que entienda y distinga los cables comentados de una conversacion natural, nada
 # fijo, que se autoajuste y aprenda"): each book of hers has her wish, (S + 1/2) / (N + 1): N the times she answered with
 # a line of it, S the times he followed the talk after (a word of that exchange again in his). A line weighs the words
@@ -404,7 +407,7 @@ TH_M = TH_NN + 8                  # a mark for each print of the one that ended 
 # (its print, N, S), and the label
 GU_K = 256
 GU_LBL = 48 + GU_K * 24   # (H_F2: a line already written; H_PS: her second look, by the thread; TH_PW: her wish for it)
-D_ROOM = IM_L + 8 * 8
+D_ROOM = IM_L + 8 * 9
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
                                       # the fact's words (16 prints), the next subject's clause (bytes, 120), the next with its name
@@ -1845,6 +1848,8 @@ def make(g, ST, free):
         dinc(D_SI); J("jjmp dq_pl")
         o("dq_pg:")
         dl("j1", D_SBK); J("jjn j1, dq_done", "jldi j10, %d" % SQ_E, "jmul j1, j1, j10"); dl("j2", D_SBR); J("jadd j9, j1, j2", "jldi j10, 1", "jst j10, j9, 24")
+        dl("j1", D_SCNT); J("jjnz j1, dq_pg1", "jld j1, j9, 152"); dl("j6", D_GBLK); J("jst j1, j6, 24")
+        o("dq_pg1:")
         o("  ; (said already by him: every word of the clause is a word he said)")
         J("jldi j10, 32", "jadd j1, j9, j10", "jld j2, j9, 16", "jadd j2, j1, j2"); gs("j1", BP); gs("j2", BE); J("jldi j9, 0")
         o("dq_aw:")
@@ -2094,9 +2099,17 @@ def make(g, ST, free):
         dl("j1", D_LC); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, dq_end"); dl("j9", D_LI)
         J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, dq_b", "jldi j10, 1", "jadd j9, j9, j10")
         o("dq_b:")
+        dl("j9", D_LI); J("jld j3, j9, 0", "jldi j10, 7", "jsub j10, j3, j10", "jjnz j10, dq_lb")
+        for k, ch in enumerate(b"dialogo"):
+            J("jldb j3, j9, %d" % (8 + k), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dq_lb")
+        J("jjmp dq_o")
+        o("dq_lb:")
+        dl("j9", D_LI); J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, dq_lb2", "jldi j10, 1", "jadd j9, j9, j10")
+        o("dq_lb2:")
         for k, ch in enumerate(b"libro"):
             J("jldb j3, j9, %d" % (8 + k), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dq_n")
-        dl("j9", D_LI); J("jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dq_n")
+        o("dq_o:")
+        dl("j9", D_LI); J("jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dq_n", "jcall gu_book")
         J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); ds("j13", D_FE); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
         dl("j1", D_FE); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); ds("j0", D_FB)
         J("jldi j10, 5"); dl("j11", D_FB); dl("j12", D_FE); J("jcall r_file", "jldi j10, 7", "jcall r_file")
@@ -2124,7 +2137,11 @@ def make(g, ST, free):
         o("dqr_f:")
         J("jsub j10, j1, j2", "jjnn j10, dqr_add", "jldi j10, %d" % SQ_E, "jmul j3, j1, j10", "jadd j3, j3, j9", "jld j10, j3, 0"); dl("j11", D_SV); J("jsub j10, j10, j11", "jjz j10, dqr_one", "jldi j10, 1", "jadd j1, j1, j10", "jjmp dqr_f")
         o("dqr_one:")
-        J("jld j10, j3, 8", "jldi j11, 1", "jadd j10, j10, j11", "jst j10, j3, 8", "jret")
+        J("jcall dq_tw", "jld j10, j3, 8", "jadd j10, j10, j11", "jst j10, j3, 8", "jret")
+        o("dq_tw:                          ; -> j11 = what one more time weighs: her taste for this book, in 1024ths, at least 1 (keeps j3)")
+        dl("j6", D_GBLK); J("jld j11, j6, 0", "jldi j10, 10", "jshr j11, j11, j10", "jjnz j11, dqtw_r", "jldi j11, 1")
+        o("dqtw_r:")
+        J("jret")
         o("dqr_add:")
         dl("j10", D_SCAP); J("jsub j10, j2, j10", "jjn j10, dqr_in")
         o("  ; (full: twice the room, what it had copied over, the old one given back)")
@@ -2134,7 +2151,7 @@ def make(g, ST, free):
         o("dqr_gd:")
         ds("j0", D_SBR); J("jadd j11, j9, j14", "jldi j10, 3", "jldi j12, 0", "jcall r_tocar"); dl("j9", D_SBR); dl("j2", D_SN)
         o("dqr_in:")
-        J("jldi j10, %d" % SQ_E, "jmul j3, j2, j10", "jadd j3, j3, j9"); dl("j11", D_SV); J("jst j11, j3, 0", "jldi j10, 1", "jst j10, j3, 8", "jst j14, j3, 24")
+        J("jldi j10, %d" % SQ_E, "jmul j3, j2, j10", "jadd j3, j3, j9"); dl("j11", D_SV); J("jst j11, j3, 0", "jcall dq_tw", "jst j11, j3, 8", "jst j14, j3, 24"); dl("j6", D_GBLK); J("jld j10, j6, 16", "jst j10, j3, 152")
         J("jldi j10, 1", "jadd j2, j2, j10"); ds("j2", D_SN); dl("j1", D_SVS); gl("j2", BE); J("jldi j4, 0")
         o("dqr_c:")
         J("jldi j10, %d" % SQ_C, "jsub j10, j4, j10", "jjnn j10, dqr_e", "jadd j10, j1, j4", "jsub j11, j10, j2", "jjnn j11, dqr_e", "jldb j5, j10, 0")
@@ -2160,8 +2177,16 @@ def make(g, ST, free):
         o("  ; (a book: its label starts with libro, or elibro while it waits its turn)")
         J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, dan_b", "jldi j10, 1", "jadd j9, j9, j10")
         o("dan_b:")
+        ds("j14", D_LIVE); dl("j9", D_LI); J("jld j3, j9, 0", "jldi j10, 7", "jsub j10, j3, j10", "jjnz j10, dan_lb")
+        for i, ch in enumerate(b"dialogo"):
+            J("jldb j3, j9, %d" % (8 + i), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dan_lb")
+        J("jldi j10, 1"); ds("j10", D_LIVE); J("jjmp dan_o")
+        o("dan_lb:")
+        dl("j9", D_LI); J("jldb j3, j9, 8", "jldi j10, 101", "jsub j10, j3, j10", "jjnz j10, dan_lb2", "jldi j10, 1", "jadd j9, j9, j10")
+        o("dan_lb2:")
         for i, ch in enumerate(b"libro"):
             J("jldb j3, j9, %d" % (8 + i), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dan_n")
+        o("dan_o:")
         dl("j9", D_LI); J("jldi j10, 8", "jadd j11, j9, j10", "jld j12, j9, 0", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dan_n", "jcall gu_book")
         J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); ds("j13", D_FE); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
         dl("j1", D_FE); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); ds("j0", D_FB)
@@ -2210,6 +2235,14 @@ def make(g, ST, free):
         o("dan_kb:")
         ds("j3", D_BL2); da("j2", D_B)
         o("dan_kk:")
+        dl("j10", D_LIVE); J("jjz j10, dan_kk0", "jldi j4, 0")
+        o("dan_lv:                         ; (a line of their talk: without its speaker, up to its first ': ')")
+        J("jldi j10, 24", "jsub j10, j4, j10", "jjnn j10, dan_kk0", "jsub j10, j4, j3", "jjnn j10, dan_kk0", "jadd j5, j1, j4", "jldb j5, j5, 0", "jldi j10, 58", "jsub j10, j5, j10", "jjz j10, dan_lc", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dan_lv")
+        o("dan_lc:")
+        J("jldi j10, 2", "jadd j4, j4, j10", "jadd j1, j1, j4", "jsub j3, j3, j4"); dl("j10", D_MODE); J("jjnz j10, dan_lcb"); ds("j3", D_OUTL); J("jjmp dan_kk0")
+        o("dan_lcb:")
+        ds("j3", D_BL2)
+        o("dan_kk0:")
         J("jldi j4, 0")
         o("dan_kc:")
         J("jsub j10, j4, j3", "jjnn j10, dan_nl", "jadd j5, j1, j4", "jldb j5, j5, 0", "jldi j10, 13", "jsub j10, j5, j10", "jjnz j10, dan_k2", "jldi j5, 32")
@@ -2302,7 +2335,7 @@ def make(g, ST, free):
         J("jcall dch_choose", "jldi j10, 4", "jsub j10, j0, j10", "jjz j10, dsy_ans", "jjz j0, dse_none")
         ds("j0", D_FBR); J("jcall r_dlg_talk", "jldi j10, 0"); ds("j10", D_FBR); J("jret")
         o("dsy_ans:")
-        J("jcall r_dlg_quien", "jjz j0, dsy_a2", "jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
+        J("jcall r_dlg_quien", "jjz j0, dsy_a2", "jcall gu_said", "jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("dsy_a2:")
         dl("j1", D_OUTL); J("jjz j1, dse_none")
         o("  ; HER OWN WORD FIRST (the Capitan, 2026-11-22: \"lo suyo tiene que llevar mayoritariamente su firma, porque si no")
@@ -2391,7 +2424,10 @@ def make(g, ST, free):
         dl("j3", H_ANY); J("jsub j10, j3, j1", "jjz j10, dh_pe", "jldi j7, 0", "jcall dh_count"); dl("j3", H_LE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", H_P); J("jjmp dh_pl")
         o("dh_pe:                          ; (HER HEART, FREE: each paragraph that reaches half of his words is kept by its weight")
         o("                                ; against her luck, as her crosses are: sometimes the strongest, sometimes another)")
-        dl("j1", H_P); ds("j1", H_BE); dl("j1", H_CNT); dl("j2", H_BEST); J("jjz j1, dh_pn", "jadd j2, j1, j1"); dl("j3", H_TOT); J("jsub j10, j2, j3", "jjn j10, dh_pn"); dl("j2", H_CW); J("jadd j2, j2, j1"); ds("j2", H_CW)
+        dl("j1", H_P); ds("j1", H_BE); dl("j1", H_CNT); dl("j2", H_BEST); J("jjz j1, dh_pn"); dl("j3", H_TOT); J("jjz j3, dh_pnow"); dl("j2", TH_C); J("jsub j2, j1, j2", "jjz j2, dh_pn")
+        o("dh_pnow:                        ; (the thread helps what he says now, it does not replace it, but when what he says now")
+        o("                                ; carries nothing: then the thread leads)")
+        dl("j1", H_CNT); J("jadd j2, j1, j1"); dl("j3", H_TOT); J("jsub j10, j2, j3", "jjn j10, dh_pn"); dl("j2", H_CW); J("jadd j2, j2, j1"); ds("j2", H_CW)
         J("jadd j1, j2, j14", "jcall r_randmod"); dl("j1", H_CNT); J("jsub j10, j0, j1", "jjnn j10, dh_pn"); dl("j1", H_CNT); ds("j1", H_BEST); dl("j1", TH_C); ds("j1", TH_B); dl("j1", H_K); ds("j1", H_BK); dl("j1", H_P); dl("j2", H_BUF); J("jsub j1, j1, j2"); ds("j1", H_BP); J("jcall dh_say")
         o("dh_pn:")
         dl("j1", H_P); dl("j2", H_BUF); dl("j3", H_SZ); J("jadd j2, j2, j3", "jsub j10, j1, j2", "jjnn j10, dh_free", "jldi j10, 1", "jadd j1, j1, j10"); ds("j1", H_P); J("jjmp dh_par")
