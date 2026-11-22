@@ -1,6 +1,6 @@
 ## Janax y Razar v2.71: el libro vivo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24445971](https://doi.org/10.5281/zenodo.24445971)
 
 > *"Que aprenda de lo que le contás también: nosotros somos libros vivos, ella es un libro vivo. Dios es el libro que
 > contiene todos los libros."* (el autor, 2026-11-22)
