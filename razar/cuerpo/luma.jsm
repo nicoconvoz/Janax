@@ -18271,7 +18271,7 @@ ra2_load:
 r_read_init:
   jst j1, j14, 1288
   jldi j1, 203
-  jcall fr_r_cable
+  jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
   jldi j1, 108
@@ -18411,10 +18411,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0231Fh
-  jshi j2, 0C4CCh
-  jshi j2, 0B2C9h
-  jshi j2, 08CF1h
+  jldi j2, 013EDh
+  jshi j2, 09F8Fh
+  jshi j2, 04EBAh
+  jshi j2, 0DC43h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -24626,18 +24626,6 @@ dws_u:                          ; (each word once)
   jldi j10, 1
   jadd j5, j5, j10
   jjmp dws_u
-dws_add:
-  jldi j10, 3
-  jshl j10, j3, j10
-  jadd j10, j7, j10
-  jst j4, j10, 0
-  jldi j10, 1
-  jadd j3, j3, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j3, j6, 6456
-  jjmp dws_l
 ; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
 fr_l_ring:
   jjmp l_ring
@@ -24661,6 +24649,18 @@ fr_v_init:
   jjmp v_init
 fr_v_show:
   jjmp v_show
+dws_add:
+  jldi j10, 3
+  jshl j10, j3, j10
+  jadd j10, j7, j10
+  jst j4, j10, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j3, j6, 6456
+  jjmp dws_l
 dws_d:
   jldi j10, 1
   jadd j1, j1, j10
@@ -33233,61 +33233,8 @@ dtk_go:
   jldi j10, 7
   jcall r_file
 dtk_m:
-  ; (and the questions of hers she gave up for others: "preguntas-viejas", as much as her room still holds)
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j11, j6, 01D68h
-  jldi j15, 6256
-  jadd j11, j11, j15
-  jldi j12, 16
-  jcall r_open
-  jld j9, j14, 04A8h
-  jjn j9, dtk_v
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6592
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j2, j6, 01D68h
-  jldi j15, 4096
-  jadd j2, j2, j15
-  jadd j2, j2, j1
-  jldi j10, 10
-  jstb j10, j2, 0
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6592
-  jldi j10, 5
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j11, j6, 01D68h
-  jldi j15, 4096
-  jadd j11, j11, j15
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6592
-  jadd j11, j11, j1
-  jldi j12, 2047
-  jsub j12, j12, j1
-  jcall r_file
-  jjn j13, dtk_vc
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6592
-  jadd j1, j1, j13
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6592
-dtk_vc:
-  jldi j10, 7
-  jcall r_file
+  ; (her old questions, the ones she gave up, are kept in "preguntas-viejas" but are no script of hers: the Capitan,
+  ; 2026-11-22: "saca las preguntas viejas, que aprenda de lo suyo, que no tenga un guion prearmado")
 dtk_v:
   ; (how many lines say something, then one of them)
   jldi j6, 0162h
