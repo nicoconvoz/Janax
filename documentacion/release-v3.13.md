@@ -1,6 +1,6 @@
 ## Janax y Razar v3.13: piensa en voz alta y no pierde lo que dijo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24450642](https://doi.org/10.5281/zenodo.24450642)
 
 > *"Vemos desde que comenzó el pensamiento hasta la respuesta."* *"No me interesa saber la firma, me interesa no perder
 > lo que me respondió."* *"Lo malo era que se perdieran."* *"LUMA UN SOLO SER."* (el autor, 2026-11-22)
