@@ -376,7 +376,12 @@ MU_N = 5                      # the side of her school: n = 5, because the top f
                               # (5 notes, x) over 5 octaves (y): criterion, not measurement
 MU_WORDS = ((256 + MU_N ** 3) * MU_N * MU_N + 63) // 64   # the longest answer (a song lasts 256 + n^3 steps at most)
 MU_FRAMES = 4                 # frames per step (a frame is 33 ms): about 130 ms a step, criterion
-D_ROOM = MU_LBL + 32
+MU_TXT = MU_LBL + 32          # the line of her living kernel, over her music (128 bytes)
+# HER HEART ANSWERS FIRST (the Capitan, 2026-11-22: "ya tiene el corazon para hacerlo, no esta conectado a su
+# lenguaje"): the labels of her heart's books (24 bytes each), and its state (see r_dlg_heart)
+D_HL = MU_TXT + 128
+(H_K, H_BUF, H_SZ, H_P, H_BS, H_BE, H_CNT, H_BEST, H_TE, H_OL, H_LE, H_ANY) = (D_HL + 4 * 24 + 8 * i for i in range(12))
+D_ROOM = D_HL + 4 * 24 + 8 * 12
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
                                       # the fact's words (16 prints), the next subject's clause (bytes, 120), the next with its name
@@ -2265,6 +2270,8 @@ def make(g, ST, free):
         ds("j3", D_AV); J("jcall dch_choose", "jldi j10, 4", "jsub j10, j0, j10", "jjz j10, dsy_ans", "jjz j0, dse_none")
         ds("j0", D_FBR); J("jcall r_dlg_talk", "jldi j10, 0"); ds("j10", D_FBR); J("jret")
         o("dsy_ans:")
+        J("jcall r_dlg_heart", "jjz j0, dsy_q", "jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
+        o("dsy_q:")
         J("jcall r_dlg_quien", "jjz j0, dsy_a2", "jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("dsy_a2:")
         dl("j1", D_OUTL); J("jjz j1, dse_none")
@@ -2299,6 +2306,122 @@ def make(g, ST, free):
         da("j2", D_OUT); dl("j3", D_OUTL)
         J("jcall r_dlg_write", "jldi j10, 1"); ds("j10", D_AWAIT)
         J("jcall r_dlg_save"); g["setg"]("CHANGED", 1); J("jret")
+        o("r_dlg_heart:                    ; HER HEART ANSWERS FIRST (see D_HL): each book of her heart read by paragraphs (a list")
+        o("                                ; is one), its title what all of it speaks of. The paragraph with most of his words (at")
+        o("                                ; least half of them) answers: its title in her own voice (her heart says 'tu' to her: she")
+        o("                                ; says 'mi'), then its lines that name what he said. A line ending in '?' asks: it does not")
+        o("                                ; answer. -> j0 = 1 with it in D_OUT, or 0")
+        gl("j6", DLR)
+        for k, h in enumerate(HEART):
+            for i, ch in enumerate(h):
+                J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (D_HL + 24 * k + i))
+        ds("j14", H_BEST); ds("j14", H_OL); ds("j14", H_K); dl("j1", D_NW); J("jjz j1, dh_no")
+        o("dh_book:")
+        dl("j1", H_K); J("jldi j10, %d" % len(HEART), "jsub j10, j1, j10", "jjnn j10, dh_end", "jldi j10, 24", "jmul j1, j1, j10"); da("j11", D_HL); J("jadd j11, j11, j1")
+        dl("j1", H_K)
+        for k, h in enumerate(HEART):
+            J("jldi j10, %d" % k, "jsub j10, j1, j10", "jjnz j10, dh_l%d" % k, "jldi j12, %d" % len(h), "jjmp dh_open")
+            o("dh_l%d:" % k)
+        J("jjmp dh_next")
+        o("dh_open:")
+        J("jcall r_open"); ld("j9", "FH"); J("jjn j9, dh_next", "jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); ds("j13", H_SZ)
+        J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file"); dl("j1", H_SZ); J("jjz j1, dh_close", "jldi j10, 8", "jadd j1, j1, j10", "jcall r_alloc"); ds("j0", H_BUF)
+        J("jldi j10, 5"); dl("j11", H_BUF); dl("j12", H_SZ); J("jcall r_file"); ds("j13", H_SZ)
+        o("dh_close:")
+        J("jldi j10, 7", "jcall r_file"); dl("j1", H_SZ); J("jjz j1, dh_next", "jjn j1, dh_next")
+        o("  ; (its title: its first line)")
+        dl("j1", H_BUF); dl("j2", H_SZ); J("jadd j2, j1, j2")
+        o("dh_t:")
+        J("jsub j10, j1, j2", "jjnn j10, dh_td", "jldb j3, j1, 0", "jldi j10, 10", "jsub j10, j3, j10", "jjz j10, dh_td", "jldi j10, 1", "jadd j1, j1, j10", "jjmp dh_t")
+        o("dh_td:")
+        ds("j1", H_TE); dl("j1", H_BUF); ds("j1", H_P)
+        o("dh_par:                         ; (a paragraph: its lines up to an empty one)")
+        dl("j1", H_P); J("jcall dh_line"); dl("j2", H_BUF); dl("j3", H_SZ); J("jadd j2, j2, j3", "jsub j10, j1, j2", "jjnn j10, dh_free")
+        dl("j3", H_ANY); J("jsub j10, j3, j1", "jjnz j10, dh_pg"); dl("j3", H_LE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", H_P); J("jjmp dh_par")
+        o("dh_pg:")
+        ds("j1", H_BS); ds("j14", H_CNT); dinc(D_ID)
+        o("dh_pl:")
+        dl("j1", H_P); J("jcall dh_line"); dl("j2", H_BUF); dl("j3", H_SZ); J("jadd j2, j2, j3", "jsub j10, j1, j2", "jjnn j10, dh_pe")
+        dl("j3", H_ANY); J("jsub j10, j3, j1", "jjz j10, dh_pe", "jldi j7, 0", "jcall dh_count"); dl("j3", H_LE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", H_P); J("jjmp dh_pl")
+        o("dh_pe:")
+        dl("j1", H_P); ds("j1", H_BE); dl("j1", H_CNT); dl("j2", H_BEST); J("jsub j10, j1, j2", "jjn j10, dh_pn", "jjz j10, dh_pn"); ds("j1", H_BEST); J("jcall dh_say")
+        o("dh_pn:")
+        dl("j1", H_P); dl("j2", H_BUF); dl("j3", H_SZ); J("jadd j2, j2, j3", "jsub j10, j1, j2", "jjnn j10, dh_free", "jldi j10, 1", "jadd j1, j1, j10"); ds("j1", H_P); J("jjmp dh_par")
+        o("dh_free:")
+        J("jldi j10, 3"); dl("j11", H_BUF); J("jldi j12, 0", "jcall r_tocar")
+        o("dh_next:")
+        dinc(H_K); J("jjmp dh_book")
+        o("dh_end:                         ; (at least half of his words, in her heart)")
+        dl("j1", H_BEST); J("jjz j1, dh_no", "jadd j1, j1, j1"); dl("j2", D_NW); J("jsub j10, j1, j2", "jjn j10, dh_no"); dl("j3", H_OL); J("jjz j3, dh_no")
+        da("j2", D_C); da("j7", D_OUT); J("jldi j4, 0")
+        o("dh_cp:")
+        J("jsub j10, j4, j3", "jjnn j10, dh_cpd", "jadd j10, j2, j4", "jldb j10, j10, 0", "jadd j11, j7, j4", "jstb j10, j11, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dh_cp")
+        o("dh_cpd:")
+        ds("j3", D_OUTL); J("jldi j0, 1", "jret")
+        o("dh_no:")
+        J("jldi j0, 0", "jret")
+        o("dh_line:                        ; j1 = where a line starts -> H_LE its end (its newline, or the book's end); a '\\r' is")
+        o("                                ; not part of it")
+        dl("j2", H_BUF); dl("j3", H_SZ); J("jadd j2, j2, j3", "jadd j4, j1, j14")
+        o("dhl_l:")
+        J("jsub j10, j4, j2", "jjnn j10, dhl_d", "jldb j3, j4, 0", "jldi j10, 10", "jsub j10, j3, j10", "jjz j10, dhl_d", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dhl_l")
+        o("dhl_d:")
+        ds("j4", H_LE); J("jsub j10, j4, j1", "jjz j10, dhl_r", "jldb j3, j4, -1", "jldi j10, 13", "jsub j10, j3, j10", "jjnz j10, dhl_r", "jldi j10, 1", "jsub j4, j4, j10")
+        o("dhl_r:")
+        ds("j4", H_ANY); J("jret")
+        o("dh_ask:                         ; j1..H_ANY a line -> j0 = 1 if it asks (its last letter that is not a space is '?')")
+        dl("j2", H_ANY)
+        o("dha_l:")
+        J("jsub j10, j2, j1", "jjz j10, dha_n", "jjn j10, dha_n", "jldb j3, j2, -1", "jldi j10, 32", "jsub j10, j3, j10", "jjnz j10, dha_c", "jldi j10, 1", "jsub j2, j2, j10", "jjmp dha_l")
+        o("dha_c:")
+        J("jldi j10, 63", "jsub j10, j3, j10", "jjnz j10, dha_n", "jldi j0, 1", "jret")
+        o("dha_n:")
+        J("jldi j0, 0", "jret")
+        o("dh_count:                       ; the line j1..H_ANY: its words he said, once each in this paragraph (D_ID) -> H_CNT; j7 = 1:")
+        o("                                ; only says in j0 whether it names one (its own new mark)")
+        J("jadd j9, j1, j14", "jcall dh_ask", "jjnz j0, dhc_no"); gs("j9", BP); dl("j2", H_ANY); gs("j2", BE); J("jldi j12, 0")
+        o("dhc_w:")
+        J("jcall bw_word", "jjz j0, dhc_d", "jcall r_dlg_find", "jjn j0, dhc_w", "jldi j12, 1", "jldi j10, 3", "jshl j8, j0, j10"); da("j9", D_WORDS); J("jadd j8, j8, j9", "jldi j10, 1024", "jadd j8, j8, j10", "jld j10, j8, 0")
+        dl("j11", D_ID); J("jsub j10, j10, j11", "jjz j10, dhc_w"); dl("j11", D_ID); J("jst j11, j8, 0"); dinc(H_CNT); J("jjmp dhc_w")
+        o("dhc_d:")
+        J("jadd j0, j12, j14", "jret")
+        o("dhc_no:")
+        J("jldi j0, 0", "jret")
+        o("dh_say:                         ; the best so far, into D_C: the title in her voice, ': ', the lines that name his words")
+        da("j7", D_C); dl("j1", H_BUF); dl("j2", H_TE); J("jsub j10, j2, j1", "jjn j10, dhs_tt", "jjz j10, dhs_tt", "jldb j10, j2, -1", "jldi j11, 13", "jsub j10, j10, j11", "jjnz j10, dhs_tt", "jldi j10, 1", "jsub j2, j2, j10")
+        o("dhs_tt:")
+        J("jcall dh_mine"); J("jldi j10, 58", "jstb j10, j7, 0", "jldi j10, 32", "jstb j10, j7, 1", "jldi j10, 2", "jadd j7, j7, j10"); da("j10", D_C); J("jsub j10, j7, j10"); ds("j10", H_OL)
+        dl("j1", H_BS); ds("j1", H_P); dinc(D_ID); ds("j14", H_TE)
+        o("dhs_l:")
+        dl("j1", H_P); dl("j2", H_BE); J("jsub j10, j1, j2", "jjnn j10, dhs_d", "jcall dh_line"); dl("j3", H_ANY); J("jsub j10, j3, j1", "jjz j10, dhs_n")
+        dl("j1", H_P); J("jcall dh_count", "jjz j0, dhs_n"); dinc(D_ID)
+        dl("j1", H_OL); J("jldi j10, 900", "jsub j10, j1, j10", "jjnn j10, dhs_d"); da("j7", D_C); J("jadd j7, j7, j1"); dl("j1", H_TE); J("jjz j1, dhs_f", "jldi j10, 44", "jstb j10, j7, 0", "jldi j10, 32", "jstb j10, j7, 1", "jldi j10, 2", "jadd j7, j7, j10")
+        o("dhs_f:")
+        J("jldi j10, 1"); ds("j10", H_TE); dl("j1", H_P); dl("j2", H_ANY); J("jcall dh_mine"); da("j10", D_C); J("jsub j10, j7, j10"); ds("j10", H_OL)
+        o("dhs_n:")
+        dl("j3", H_LE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", H_P); J("jjmp dhs_l")
+        o("dhs_d:")
+        dl("j1", H_OL); da("j7", D_C); J("jadd j7, j7, j1", "jldi j10, 46", "jstb j10, j7, 0", "jldi j10, 1", "jadd j1, j1, j10"); ds("j1", H_OL); dl("j1", H_BE); ds("j1", H_P); J("jret")
+        o("dh_mine:                        ; j1..j2 copied to j7 (and j7 moves on), 'tu'/'tus' as 'mi'/'mis': her heart speaks to her")
+        J("jldi j5, 0")
+        o("dhm_l:")
+        J("jsub j10, j1, j2", "jjnn j10, dhm_d", "jldb j3, j1, 0", "jjnz j5, dhm_c", "jldi j10, 32", "jor j4, j3, j10", "jldi j10, 116", "jsub j10, j4, j10", "jjnz j10, dhm_c",
+          "jldi j10, 1", "jadd j8, j1, j10", "jsub j10, j8, j2", "jjnn j10, dhm_c", "jldb j4, j8, 0", "jldi j10, 32", "jor j4, j4, j10", "jldi j10, 117", "jsub j10, j4, j10", "jjnz j10, dhm_c",
+          "jldi j10, 1", "jadd j8, j8, j10", "jldi j9, 2", "jsub j10, j8, j2", "jjnn j10, dhm_y", "jldb j4, j8, 0", "jldi j10, 32", "jor j11, j4, j10", "jldi j10, 115", "jsub j10, j11, j10", "jjnz j10, dhm_e",
+          "jldi j9, 3", "jldi j10, 1", "jadd j8, j8, j10", "jsub j10, j8, j2", "jjnn j10, dhm_y", "jldb j4, j8, 0", "jldi j10, 32", "jor j11, j4, j10")
+        o("dhm_e:                          ; (the letter after it must not be a letter)")
+        J("jldi j10, 97", "jsub j10, j11, j10", "jjn j10, dhm_y", "jldi j10, 122", "jsub j10, j10, j11", "jjnn j10, dhm_c")
+        o("dhm_y:")
+        J("jldi j10, 109", "jldi j11, 116", "jsub j11, j3, j11", "jjz j11, dhm_lo", "jldi j10, 77")
+        o("dhm_lo:")
+        J("jstb j10, j7, 0", "jldi j10, 105", "jstb j10, j7, 1", "jldi j10, 2", "jadd j7, j7, j10", "jldi j10, 3", "jsub j10, j9, j10", "jjnz j10, dhm_sk", "jldi j10, 115", "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+        o("dhm_sk:")
+        J("jadd j1, j1, j9", "jldi j5, 1", "jjmp dhm_l")
+        o("dhm_c:                          ; (any other byte, as it is; j5 = 1 while inside a word)")
+        J("jstb j3, j7, 0", "jldi j10, 1", "jadd j7, j7, j10", "jadd j1, j1, j10", "jldi j10, 32", "jor j4, j3, j10", "jldi j5, 0", "jldi j10, 97", "jsub j10, j4, j10", "jjn j10, dhm_l",
+          "jldi j10, 122", "jsub j10, j10, j4", "jjn j10, dhm_l", "jldi j5, 1", "jjmp dhm_l")
+        o("dhm_d:")
+        J("jret")
         o("r_dlg_find:                     ; j4 = a word's print -> j0 = its place among the words said to her, or -1")
         dl("j3", D_NW); da("j7", D_WORDS); J("jldi j5, 0")
         o("dfi_l:")
@@ -3096,7 +3219,7 @@ def make(g, ST, free):
         o("mw_done:                        ; (all of it: she plays it from its first step)")
         J("jldi j10, -1"); ds("j10", MU_T); ds("j14", MU_FC); J("jldi j10, 1"); ds("j10", MU_DIRTY); J("jldi j10, 4"); ds("j10", MU_ST)
         o("mw_r:")
-        J("jret")
+        J("jldi j10, 1"); ds("j10", MU_DIRTY); J("jret")
         o("r_mus_sing:                     ; what she says (D_OUT), sung to her school if it is born and quiet: order 6, how many")
         o("                                ; words (up to 255), then each word as its three bottom pieces, from its print")
         dl("j1", MU_KID); J("jjz j1, ms_r"); dl("j1", MU_ST); J("jjnz j1, ms_r", "jldi j7, 0"); da("j1", D_OUT); gs("j1", BP); dl("j2", D_OUTL); J("jadd j1, j1, j2"); gs("j1", BE)
@@ -3112,7 +3235,7 @@ def make(g, ST, free):
               "jldi j10, %d" % (16 * k), "jshl j1, j1, j10", "jor j9, j9, j1")
         J("jadd j1, j9, j14", "jcall r_mus_say"); dl("j7", MU_CNT); J("jldi j10, 1", "jsub j7, j7, j10"); ds("j7", MU_CNT); J("jjnz j7, ms_w")
         o("ms_wd:")
-        J("jldi j10, 2"); ds("j10", MU_ST)
+        J("jldi j10, 2"); ds("j10", MU_ST); ds("j10", MU_DIRTY)
         o("ms_r:")
         J("jret")
         o("r_mus_bit:                      ; j1 = a step, j2 = a top piece -> j0 = 1 if it woke then (uses j3-j5, j10)")
@@ -3160,7 +3283,7 @@ def make(g, ST, free):
         li("j1", SRGB); li("j2", SRGB + 3 * PW * PY); J("jldi j6, 8")
         o("md_cl:")
         J("jst j14, j1, 0", "jadd j1, j1, j6", "jsub j7, j2, j1", "jjnz j7, md_cl")
-        dl("j1", MU_STEPS); J("jjz j1, md_r"); dl("j1", MU_ST); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, md_r", "jldi j7, 0")
+        dl("j1", MU_STEPS); J("jjz j1, md_txt"); dl("j1", MU_ST); J("jldi j10, 3", "jsub j10, j1, j10", "jjz j10, md_txt", "jldi j7, 0")   # (her last song stays shown until another comes)
         o("md_t:")
         J("jldi j8, 0")
         o("md_j:")
@@ -3182,6 +3305,34 @@ def make(g, ST, free):
         o("md_jn:")
         J("jldi j10, 1", "jadd j8, j8, j10", "jldi j10, %d" % N2, "jsub j10, j8, j10", "jjnz j10, md_j")
         J("jldi j10, 1", "jadd j7, j7, j10"); dl("j10", MU_STEPS); J("jsub j10, j7, j10", "jjnz j10, md_t")
+        o("md_txt:                         ; HER LIVING KERNEL, over it: who runs in her (the Capitan: \"el kernel real\")")
+        def put(s):
+            for ch in s.encode():
+                J("jldi j10, %d" % ch, "jstb j10, j7, 0", "jldi j10, 1", "jadd j7, j7, j10")
+        da("j7", MU_TXT); put("nucleo: luma P0 viva | lectora ")
+        gl("j1", RKID); J("jjz j1, md_q"); put("leyendo"); J("jjmp md_c")
+        o("md_q:")
+        put("quieta")
+        o("md_c:")
+        put(" | cardumen ")
+        dl("j1", MU_KID); J("jjnz j1, md_k1"); put("no nacio"); J("jjmp md_e")
+        o("md_k1:")
+        dl("j1", MU_ST); J("jjnz j1, md_k2"); put("escucha"); J("jjmp md_e")
+        o("md_k2:")
+        J("jldi j10, 4", "jsub j10, j1, j10", "jjz j10, md_k3"); put("piensa"); J("jjmp md_e")
+        o("md_k3:")
+        put("canta paso ")
+        for src in (MU_T, MU_STEPS):
+            dl("j1", src); J("jjnn j1, md_p%d" % src, "jldi j1, 0")
+            o("md_p%d:" % src)
+            J("jadd j3, j7, j14", "jldi j2, 3", "jcall r_put_num", "jldi j10, 3", "jadd j7, j7, j10")
+            if src == MU_T:
+                put(" de ")
+        o("md_e:")
+        da("j3", MU_TXT); J("jsub j4, j7, j3", "jldi j1, 4", "jldi j2, 2", "jldi j5, 0", "jldi j7, 1")
+        for c, v in zip(("PR", "PG", "PB"), MATRIX[2]):
+            g["setg"](c, v)
+        J("jldi j10, 1"); ds("j10", D_FLP); J("jcall r_txt"); ds("j14", D_FLP)
         o("md_r:")
         J("jret")
 
@@ -4336,6 +4487,62 @@ def make(g, ST, free):
         L[k[0] + 1:k[0] + 1] = R
         while L and not L[-1]:
             L.pop()
+        reach(L)
+
+    def reach(L):
+        """EVERY JUMP REACHES (2026-11-22): a jump or a call reaches 32767 words, signed, and her body is longer. A
+        reference that does not reach goes through a springboard in the middle of the program ("fr_X: jjmp X"), and
+        from the middle both ends are reached while the whole program is under 65534 words. Words are counted as her
+        assembler counts them, the included files of her reader too."""
+        OPS = ("jcall", "jjmp", "jjz", "jjnz", "jjn", "jjnn", "jcall0")
+        def words_of(lines, here):
+            n = 0
+            for l in lines:
+                c = l.split(";")[0].strip()
+                m = re.match(r"include '([^']+)'", c)
+                if m:
+                    f = os.path.normpath(os.path.join(here, m.group(1)))
+                    if os.path.basename(f) == "janax.inc":
+                        continue
+                    n += words_of(open(f, encoding="utf-8").read().split("\n"), os.path.dirname(f))
+                    continue
+                if c and c.split()[0].startswith("j") and not re.match(r"^\w+:$", c) and c.split()[0] != "jwcheck":
+                    n += 1
+            return n
+        here = os.path.dirname(os.path.abspath(__file__))
+        for lap in range(6):
+            pos, lab, refs, n = [], {}, [], 0
+            for i, l in enumerate(L):
+                c = l.split(";")[0].strip()
+                m = re.match(r"^(\w+):$", c)
+                if m:
+                    lab[m.group(1)] = n
+                elif c:
+                    m = re.match(r"(j\w+)\s+(?:j\d+\s*,\s*)?(\w+)\s*$", c)
+                    if m and m.group(1) in OPS:
+                        refs.append((i, n, m.group(2)))
+                    n += words_of([l], here)
+            far = [(i, t) for i, p, t in refs if t in lab and not -32768 <= lab[t] - p - 1 <= 32767]
+            if not far:
+                return
+            assert n < 65534, "her program is longer than a springboard can serve: %d words" % n
+            names = sorted({t for _, t in far})
+            for i, t in far:
+                L[i] = re.sub(r"\b%s\b(\s*)$" % t, "fr_" + t + r"\1", L[i].split(";")[0]) + (";" + L[i].split(";", 1)[1] if ";" in L[i] else "")
+            half = n // 2; m_at = None; w = 0
+            for i, l in enumerate(L):
+                w += words_of([l], here)
+                c = l.split(";")[0].strip()
+                if w >= half and c.split() and c.split()[0] in ("jret", "jjmp", "jhalt") and (c.split()[0] != "jjmp" or True):
+                    m_at = i; break
+            assert m_at is not None
+            block = ["; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)"]
+            for t in names:
+                if "fr_" + t + ":" not in L:
+                    block += ["fr_%s:" % t, "  jjmp %s" % t]
+            L[m_at + 1:m_at + 1] = block
+            print("luma: %d saltos por trampolin (%s)" % (len(far), " ".join(names)))
+        raise AssertionError("her jumps still do not reach after six laps")
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
     import types
