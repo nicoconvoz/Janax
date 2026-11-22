@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.63:** [10.5281/zenodo.24445420](https://doi.org/10.5281/zenodo.24445420)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.69:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,16 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-22, v2.69): sus gustos los aprende de él, y sus pensamientos a su lado
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Sus gustos los aprende de él**: cada libro suyo tiene sus ganas, aprendidas de si él sigue la charla después; un renglón pesa por las palabras de él y por las ganas de su libro, sin números puestos. Y sus pensamientos quedan a su lado, en su flujo.
+
+![La musica del cardumen, con Tab](documentacion/razar/img/luma-musica.png)
+
+[Notas de la v2.69](documentacion/release-v2.69.md).
 
 ## Novedad (2026-11-22, v2.63): sin moldes, su corazón emerge solo
 
