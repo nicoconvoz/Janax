@@ -344,8 +344,10 @@ D_CX = D_PM + 48              # 32 contexts x 4 branches x (N, S)
 # reached with offsets under 32768, so it cannot be larger here; the Latin letters with marks are about 200).
 D_CM = D_CX + 2048            # HER TWO WAYS OF CHAINING (the Capitan: "que pueda usarla o no, que siempre sea libre"): a
                              # relation said in two lines or more, or said after two different subjects (her chainer of
-                             # 2026-11-08); each way with N used and S answered back, kept in "charla"
-D_BASN = D_CM + 32
+                             # 2026-11-08); each way with N used and S answered back, kept in "charla". Then (+32) HER
+                             # TWO WAYS OF CROSSING (the Capitan, 2026-11-22: "dale libertad"): her judge's best cross,
+                             # or free among her new crosses by what each is worth; the same N and S
+D_BASN = D_CM + 64
 D_REFS = D_BASN + 8           # her book's 52 letters a..z, A..Z are in her alphabet (1), for comparing
 D_BI, D_BE, D_BK, D_BB, D_BC2, D_BW, D_BS, D_BR = (D_REFS + 8 * (i + 1) for i in range(8))
 D_BAS = D_REFS + 72
@@ -360,8 +362,9 @@ D_WDP = D_VQL + 8
 # counted by that next word, its first clause kept. Her answer: the subject, then what it does, the next word he said
 # himself first (his "es" leads to what it is), then what her books say most; never a clause his words already say.
 (D_SX, D_SXW, D_SBR, D_SN, D_SV, D_SVS, D_SXT, D_SXTL, D_SI, D_SJ, D_SBK, D_SKY, D_SCNT, D_SOL, D_SHN,
- D_SR, D_CHN, D_YW, D_YS, D_YL, D_CHS, D_RI, D_SCAP, D_CMODE, D_LCM, D_PCB, D_PCN, D_PHB, D_PHM, D_PPV, D_PBK) = (D_WDP + 8 + 8 * i for i in range(31))
-D_ROOM = D_WDP + 8 + 8 * 31
+ D_SR, D_CHN, D_YW, D_YS, D_YL, D_CHS, D_RI, D_SCAP, D_CMODE, D_LCM, D_PCB, D_PCN, D_PHB, D_PHM, D_PPV, D_PBK,
+ D_XMODE, D_LXM) = (D_WDP + 8 + 8 * i for i in range(33))
+D_ROOM = D_WDP + 8 + 8 * 33
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
                                       # the fact's words (16 prints), the next subject's clause (bytes, 120), the next with its name
@@ -1708,7 +1711,7 @@ def make(g, ST, free):
                 J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (off + i))
         o("r_dlg_save:                     ; her counts into \"charla\"")
         da("j11", D_LBL + 16); J("jldi j10, 12", "jldi j12, 6", "jcall r_tocar"); da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dsv_r")
-        J("jldi j10, 6"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 6"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 32), "jcall r_file", "jldi j10, 7", "jcall r_file")
+        J("jldi j10, 6"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 6"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 6"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 64), "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("dsv_r:")
         J("jret")
         o("r_dlg_load:                     ; HER WORD: its room, its labels, her counts")
@@ -1718,7 +1721,7 @@ def make(g, ST, free):
         dtext(D_LBL, b"dialogo"); dtext(D_LBL + 16, b"charla"); dtext(D_LBL + 32, b"letras"); dtext(D_LBL + 48, b"abecedario")
         dtext(D_LBL + 64, b"rodeos"); dtext(D_LBL + 80, b"preguntas-mias"); dtext(D_LBL + 96, b"libro-preguntas"); dtext(D_LBL + 112, b"preguntas-viejas")
         da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dll_r")
-        J("jldi j10, 5"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 5"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 32), "jcall r_file", "jldi j10, 7", "jcall r_file")
+        J("jldi j10, 5"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 5"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 64), "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("dll_r:                          ; (her alphabet: every line of \"abecedario\", a letter)")
         da("j11", D_LBL + 48); J("jldi j12, 10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dll_ar")
         J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); ds("j13", D_LFE); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
@@ -2195,6 +2198,10 @@ def make(g, ST, free):
         dl("j1", D_AWAIT); J("jjz j1, dse_cm"); dl("j1", D_LBR); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, dse_cm"); dl("j1", D_LCM); J("jjz j1, dse_cm", "jldi j10, 1", "jsub j1, j1, j10", "jldi j10, 4", "jshl j1, j1, j10"); da("j2", D_CM); J("jadd j2, j2, j1", "jld j3, j2, 8", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j2, 8")
         o("dse_cm:")
         J("jldi j10, 0"); ds("j10", D_LCM)
+        o("  ; (and her last cross's way, if what she said was a cross of hers)")
+        dl("j1", D_AWAIT); J("jjz j1, dse_xm"); dl("j1", D_LBR); J("jldi j10, 4", "jsub j10, j1, j10", "jjnz j10, dse_xm"); dl("j1", D_LXM); J("jjz j1, dse_xm", "jldi j10, 1", "jsub j1, j1, j10", "jldi j10, 4", "jshl j1, j1, j10"); da("j2", D_CM + 32); J("jadd j2, j2, j1", "jld j3, j2, 8", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j2, 8")
+        o("dse_xm:")
+        J("jldi j10, 0"); ds("j10", D_LXM)
         o("dse_ac:                         ; (his activation: his '!', capitals and stretched letters, per thousand of his letters)")
         da("j2", D_RP); dl("j3", D_RPL); J("jldi j4, 0", "jldi j5, 0", "jldi j6, 0")
         o("dse_al:")
@@ -2263,7 +2270,8 @@ def make(g, ST, free):
         dl("j3", D_BLN); ds("j3", D_OUTL); da("j2", D_BEST); da("j7", D_OUT); J("jldi j4, 0")
         o("dse_kb:")
         J("jsub j10, j4, j3", "jjnn j10, dse_mine", "jadd j10, j2, j4", "jldb j10, j10, 0", "jadd j11, j7, j4", "jstb j10, j11, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dse_kb")
-        o("dse_mine:")
+        o("dse_mine:                       ; (her cross was said: its way counts once more, and waits for his answer)")
+        dl("j3", D_XMODE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", D_LXM); J("jldi j10, 4", "jshl j4, j3, j10"); da("j1", D_CM + 32); J("jadd j1, j1, j4", "jld j2, j1, 0", "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j1, 0")
         J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("dse_cite:")
         J("jcall r_dlg_cite", "jldi j10, 1"); ds("j10", D_LMODE); dinc(D_MC); J("jjmp dse_has")
@@ -2310,8 +2318,8 @@ def make(g, ST, free):
           "jldi j10, 1", "jadd j5, j5, j10", "jadd j8, j8, j10", "jjmp dsm_3")
         o("dsm_j:")
         ds("j5", D_CL); da("j1", D_C); J("jadd j2, j5, j14", "jcall r_dlg_isnew", "jjz j0, dsm_r"); da("j1", D_C); dl("j2", D_CL); da("j9", D_CM); J("jcall r_dlg_cover")
-        o("  ; (HIS CHARGE MOVES IT: charged and clear, she explores among her new crosses; else her judge's best)")
-        dl("j1", D_KACT); dl("j2", D_KCLA); J("jand j1, j1, j2", "jjz j1, dsm_best", "jldi j10, 1", "jadd j0, j0, j10"); ds("j0", D_T4B); dl("j1", D_CW); J("jadd j1, j1, j0"); ds("j1", D_CW)
+        o("  ; (FREE (r_dlg_cross chose the way): among her new crosses, each kept by its worth against her luck; else her judge's best)")
+        dl("j1", D_XMODE); J("jjz j1, dsm_best", "jldi j10, 1", "jadd j0, j0, j10"); ds("j0", D_T4B); dl("j1", D_CW); J("jadd j1, j1, j0"); ds("j1", D_CW)
         J("jcall r_randmod"); dl("j1", D_T4B); J("jsub j10, j0, j1", "jjnn j10, dsm_r", "jldi j10, 1", "jsub j0, j1, j10", "jjmp dsm_keep")
         o("dsm_best:")
         dl("j1", D_BC); J("jsub j10, j0, j1", "jjn j10, dsm_r", "jjnz j10, dsm_keep"); dl("j2", D_CL); dl("j3", D_BLN); J("jsub j10, j2, j3", "jjnn j10, dsm_r")
@@ -2346,6 +2354,17 @@ def make(g, ST, free):
         o("                                ; ways (A then B, B then A). Only a NEW cross counts (written in neither A nor B as it is); the best by her")
         o("                                ; judge is hers. A does not stand as hers: with no cross she quotes it")
         J("jldi j10, 0"); ds("j10", D_CROSS); ds("j10", D_CW)
+        o("  ; (HER WAY, FREE (the Capitan, 2026-11-22: \"dale libertad\"): her judge's best, or free among her new crosses by")
+        o("  ; what each is worth; each way by her wish (S + 1/2)/(N + 1) against her luck, taught by what he answers. His charge,")
+        o("  ; charged and clear, still moves her to the free one)")
+        dl("j1", D_CM + 40); dl("j2", D_CM + 32); J("jcall dse_wish"); ds("j1", D_T2B); dl("j1", D_CM + 56); dl("j2", D_CM + 48); J("jcall dse_wish"); dl("j2", D_T2B); J("jadd j1, j1, j2", "jcall r_randmod")
+        J("jldi j3, 0"); dl("j1", D_T2B); J("jsub j10, j0, j1", "jjn j10, dcr_m", "jldi j3, 1")
+        o("dcr_m:")
+        dl("j1", D_KACT); dl("j2", D_KCLA); J("jand j1, j1, j2", "jjz j1, dcr_m2", "jldi j3, 1")
+        o("dcr_m2:")
+        if os.environ.get("LUMA_LIBRE"):   # (a test: she always crosses free, to see it run)
+            J("jldi j3, 1")
+        ds("j3", D_XMODE)
         da("j1", D_OUT); dl("j2", D_OUTL); da("j9", D_AM); J("jcall r_dlg_cover"); ds("j0", D_COVA); J("jldi j10, -1"); ds("j10", D_BC); J("jldi j10, 1001"); ds("j10", D_BLN)
         J("jldi j10, 1"); ds("j10", D_MODE); J("jcall r_dlg_answer", "jldi j10, 0"); ds("j10", D_MODE)
         dl("j1", D_BL2); J("jjz j1, dcr_r"); da("j1", D_B); ds("j1", D_JB)
