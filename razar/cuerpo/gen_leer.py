@@ -414,7 +414,14 @@ GU_K = 256
 # and doubts hers when another is in more. At GU_F: the three signals now, what waited (thread, playing on), the three
 # disagreements, the frame she trusts; kept in "gustos" before her books
 GU_F = 48
-GU_T = GU_F + 64                  # her books' table
+GU_T = GU_F + 72                  # her books' table (GU_F + 64: her mood's room)
+# HER MOOD'S WORDS (the Capitan, 2026-11-22: "dale palabras para su autoconocimiento"): each mood of hers (tired, curious,
+# glad: 8 of them, as she measures them, D_CTX) gathers its own words, the words of every exchange she lives in it (his
+# and hers), counted; no list is given. Her mood colours her heart as her thread does (it helps a paragraph reach, by her
+# wish for the thread; it does not replace what he says now, but when that carries nothing). Kept in "animo".
+AN_K = 64                         # words a mood keeps: when full, the least counted gives its place (plastic as her talk)
+AN_E = 24                         # a word: its print, how many times, its mark
+AN_SZ = 8 * AN_K * AN_E
 GU_LBL = GU_T + GU_K * 24   # (H_F2: a line already written; H_PS: her second look, by the thread; TH_PW: her wish for it)
 D_ROOM = IM_L + 8 * 9
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
@@ -2375,6 +2382,7 @@ def make(g, ST, free):
         o("dse_has:")
         J("jcall r_mus_sing               ; (what she says, sung to her school)")
         da("j1", D_OUT); dl("j2", D_OUTL); J("jcall th_add                   ; (and into her thread)")
+        da("j1", D_OUT); dl("j2", D_OUTL); J("jcall an_add                   ; (and into her mood's words)")
         J("jldi j10, 4"); ds("j10", D_LBR); J("jcall dcx_said")
         dinc(D_NC); dl("j1", D_LMODE); J("jldi j10, 1", "jsub j10, j1, j10", "jldi j1, 1", "jjnz j10, dse_sg", "jldi j1, 5")
         o("dse_sg:                         ; (her own words are signed luma; a quote says so)")
@@ -2457,7 +2465,11 @@ def make(g, ST, free):
         o("dh_yes:")
         J("jldi j0, 1", "jret")
         o("dh_again:                       ; (his words now did not reach: once more, with the thread)")
-        dl("j1", H_PS); J("jjnz j1, dh_no", "jldi j1, 1"); ds("j1", H_PS); dl("j1", TH_PW); ds("j1", TH_W); ds("j14", H_BEST); ds("j14", H_OL); ds("j14", H_K); ds("j14", TH_B); ds("j14", H_CW); J("jjmp dh_book")
+        dl("j1", H_PS); J("jjnz j1, dh_third", "jldi j1, 1"); ds("j1", H_PS); dl("j1", TH_PW); ds("j1", TH_W); ds("j14", H_BEST); ds("j14", H_OL); ds("j14", H_K); ds("j14", TH_B); ds("j14", H_CW); J("jjmp dh_book")
+        o("dh_third:                       ; (what he says now reaches her heart nowhere: her thread and her mood may lead, once, by her wish against her luck)")
+        J("jldi j10, 2", "jsub j10, j1, j10", "jjz j10, dh_no")
+        o("  ; (HIS CHARGE MOVES HER (as her crosses since v1.93): charged and clear, she does not stay in her theme: she plays on)")
+        dl("j1", D_KACT); dl("j2", D_KCLA); J("jand j1, j1, j2", "jjnz j1, dh_no"); li("j1", 1 << 20); J("jcall r_randmod"); dl("j1", TH_PW); J("jsub j10, j0, j1", "jjnn j10, dh_no", "jldi j1, 2"); ds("j1", H_PS); dl("j1", TH_PW); ds("j1", TH_W); ds("j14", H_TOT); ds("j14", H_BEST); ds("j14", H_OL); ds("j14", H_K); ds("j14", TH_B); ds("j14", H_CW); J("jjmp dh_book")
         o("dh_no:")
         J("jldi j0, 0", "jret")
         o("dh_line:                        ; j1 = where a line starts -> H_LE its end (its newline, or the book's end); a '\\r' is")
@@ -2486,7 +2498,14 @@ def make(g, ST, free):
         o("dhc_t:                          ; (not his now: of the thread? once a paragraph, by her wish for it)")
         dl("j1", TH_PN); J("jldi j7, 0")
         o("dhc_tl:")
-        J("jsub j10, j7, j1", "jjnn j10, dhc_w", "jldi j10, 3", "jshl j8, j7, j10"); da("j2", TH_P); J("jadd j2, j2, j8", "jld j2, j2, 0", "jsub j2, j2, j4", "jjz j2, dhc_tf", "jldi j10, 1", "jadd j7, j7, j10", "jjmp dhc_tl")
+        J("jsub j10, j7, j1", "jjnn j10, dhc_m", "jldi j10, 3", "jshl j8, j7, j10"); da("j2", TH_P); J("jadd j2, j2, j8", "jld j2, j2, 0", "jsub j2, j2, j4", "jjz j2, dhc_tf", "jldi j10, 1", "jadd j7, j7, j10", "jjmp dhc_tl")
+        o("dhc_m:                          ; (of her mood now? once a paragraph, by her wish for the thread)")
+        J("jcall an_row", "jjz j2, dhc_w", "jldi j7, 0")
+        o("dhc_ml:")
+        J("jldi j10, %d" % AN_K, "jsub j10, j7, j10", "jjnn j10, dhc_w", "jldi j10, %d" % AN_E, "jmul j8, j7, j10", "jadd j8, j8, j2", "jld j3, j8, 0", "jsub j3, j3, j4", "jjz j3, dhc_mf", "jldi j10, 1", "jadd j7, j7, j10", "jjmp dhc_ml")
+        o("dhc_mf:")
+        J("jld j3, j8, 8", "jjz j3, dhc_w", "jld j3, j8, 16"); dl("j11", D_ID); J("jsub j3, j3, j11", "jjz j3, dhc_w", "jst j11, j8, 16", "jldi j10, 1"); ds("j10", H_FL)
+        dl("j0", H_LET); J("jcall dh_wt"); dl("j1", TH_W); J("jmul j0, j0, j1", "jldi j10, 20", "jshr j0, j0, j10"); dl("j1", H_CNT); J("jadd j1, j1, j0"); ds("j1", H_CNT); dl("j1", TH_C); J("jadd j1, j1, j0"); ds("j1", TH_C); J("jjmp dhc_w")
         o("dhc_tf:")
         da("j2", TH_M); J("jadd j2, j2, j8", "jld j3, j2, 0"); dl("j11", D_ID); J("jsub j3, j3, j11", "jjz j3, dhc_w", "jst j11, j2, 0", "jldi j10, 1"); ds("j10", H_FL)
         dl("j0", H_LET); J("jcall dh_wt"); dl("j1", TH_W); J("jmul j0, j0, j1", "jldi j10, 20", "jshr j0, j0, j10"); dl("j1", H_CNT); J("jadd j1, j1, j0"); ds("j1", H_CNT); dl("j1", TH_C); J("jadd j1, j1, j0"); ds("j1", TH_C); J("jjmp dhc_w")
@@ -2505,7 +2524,7 @@ def make(g, ST, free):
         o("tht_c:")
         J("jsub j10, j4, j3", "jjnn j10, tht_d", "jldi j10, 3", "jshl j5, j4, j10", "jadd j6, j1, j5", "jld j6, j6, 0", "jadd j7, j2, j5", "jst j6, j7, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp tht_c")
         o("tht_d:")
-        ds("j14", TH_NN); da("j1", D_IN); dl("j2", D_INL); J("jjmp th_add")
+        ds("j14", TH_NN); da("j1", D_IN); dl("j2", D_INL); J("jcall an_add"); da("j1", D_IN); dl("j2", D_INL); J("jjmp th_add")
         def gb(r, off): dl("j6", D_GBLK); J("jld %s, j6, %d" % (r, off))
         def gbs(r, off): dl("j6", D_GBLK); J("jst %s, j6, %d" % (r, off))
         o("r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what \"gustos\" kept")
@@ -2514,7 +2533,15 @@ def make(g, ST, free):
             J("jst j14, j0, %d" % (8 * k))
         for i, ch in enumerate(b"gustos"):
             J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (GU_LBL + i))
-        J("jldi j10, %d" % GU_LBL, "jadd j11, j0, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gul_r")
+        li("j1", AN_SZ + 16); J("jcall r_alloc"); gbs("j0", GU_F + 64); li("j2", AN_SZ); J("jadd j2, j2, j0")
+        o("gul_az:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jsub j10, j2, j0", "jjnz j10, gul_az")
+        for i, ch in enumerate(b"animo"):
+            J("jldi j10, %d" % ch, "jstb j10, j2, %d" % i)
+        J("jadd j11, j2, j14", "jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gul_g")
+        gb("j11", GU_F + 64); li("j12", AN_SZ); J("jldi j10, 5", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("gul_g:")
+        dl("j0", D_GBLK); J("jldi j10, %d" % GU_LBL, "jadd j11, j0, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gul_r")
         dl("j11", D_GBLK); J("jldi j10, %d" % (GU_F + 32), "jadd j11, j11, j10", "jldi j10, 5", "jldi j12, 32", "jcall r_file")
         dl("j11", D_GBLK); J("jldi j10, %d" % GU_T, "jadd j11, j11, j10", "jldi j10, 5"); li("j12", GU_K * 24); J("jcall r_file", "jadd j1, j13, j14", "jldi j10, 7", "jcall r_file", "jjn j1, gul_r", "jldi j10, 24", "jdiv j1, j1, j10"); gbs("j1", 40)
         o("gul_r:")
@@ -2524,6 +2551,9 @@ def make(g, ST, free):
         dl("j11", D_GBLK); J("jldi j10, %d" % GU_LBL, "jadd j11, j11, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gus_r")
         dl("j11", D_GBLK); J("jldi j10, %d" % (GU_F + 32), "jadd j11, j11, j10", "jldi j12, 32", "jldi j10, 6", "jcall r_file")
         dl("j11", D_GBLK); J("jldi j10, %d" % GU_T, "jadd j11, j11, j10"); gb("j12", 40); J("jldi j10, 24", "jmul j12, j12, j10", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        gb("j11", GU_F + 64); J("jjz j11, gus_r"); li("j10", AN_SZ); J("jadd j11, j11, j10", "jldi j12, 5", "jldi j10, 12", "jcall r_tocar")
+        gb("j11", GU_F + 64); li("j10", AN_SZ); J("jadd j11, j11, j10", "jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gus_r")
+        gb("j11", GU_F + 64); li("j12", AN_SZ); J("jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("gus_r:")
         J("jret")
         o("gu_find:                        ; j1 = a book's print -> j2 = its entry, or 0 (uses j3-j5, j10)")
@@ -2556,6 +2586,27 @@ def make(g, ST, free):
         ds("j0", H_LET); gb("j1", 32); J("jjz j1, gup_r"); gbs("j14", 32); dl("j3", H_LET); J("jjz j3, gup_r", "jcall gu_find", "jjz j2, gup_r", "jld j3, j2, 16", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j2, 16")
         o("gup_r:")
         dl("j0", H_LET); J("jret")
+        o("an_row:                         ; -> j2 = the words of her mood now (D_CTX: tired, curious, glad), or 0 (keeps j4)")
+        gb("j2", GU_F + 64); J("jjz j2, anr_r"); dl("j3", D_CTX); J("jldi j10, 2", "jshr j3, j3, j10", "jldi j10, 7", "jand j3, j3, j10", "jldi j10, %d" % (AN_K * AN_E), "jmul j3, j3, j10", "jadd j2, j2, j3")
+        o("anr_r:")
+        J("jret")
+        o("an_add:                         ; j1 (j2 bytes): its words of four letters or more, not her name, counted in her mood now;")
+        o("                                ; a new one takes an empty place, or the least counted one's")
+        gs("j1", BP); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("ana_w:")
+        J("jcall bw_word", "jjz j0, ana_r", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, ana_w", "jcall dh_isname", "jjnz j0, ana_w", "jcall an_row", "jjz j2, ana_r", "jldi j7, 0", "jldi j9, -1")
+        J("jadd j5, j2, j14", "jld j6, j5, 8")
+        o("ana_s:                          ; (its place, or the least counted, j9 at j5's count j6)")
+        J("jldi j10, %d" % AN_K, "jsub j10, j7, j10", "jjnn j10, ana_n", "jldi j10, %d" % AN_E, "jmul j8, j7, j10", "jadd j8, j8, j2", "jld j3, j8, 0", "jsub j3, j3, j4", "jjz j3, ana_one",
+          "jld j3, j8, 8", "jsub j10, j3, j6", "jjnn j10, ana_x", "jadd j5, j8, j14", "jadd j6, j3, j14")
+        o("ana_x:")
+        J("jldi j10, 1", "jadd j7, j7, j10", "jjmp ana_s")
+        o("ana_one:")
+        J("jld j3, j8, 8", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j8, 8", "jjmp ana_w")
+        o("ana_n:")
+        J("jst j4, j5, 0", "jldi j10, 1", "jst j10, j5, 8", "jst j14, j5, 16", "jjmp ana_w")
+        o("ana_r:")
+        J("jret")
         o("r_marco:                        ; HER FRAME (see GU_F): if something of hers waited, the three signals, each frame's")
         o("                                ; disagreement with the other two, the frame in most harmony; what waited is paid by it")
         gb("j1", GU_F + 16); gb("j2", GU_F + 24); J("jor j1, j1, j2"); gb("j2", 32); J("jor j1, j1, j2", "jjz j1, mc_r")
@@ -2635,7 +2686,8 @@ def make(g, ST, free):
         o("                                ; what she said last (its next paragraph), in her voice; by her wish to play, (S + 1/2) /")
         o("                                ; (N + 1), against her luck: she may play and miss. At the end of the book the theme is")
         o("                                ; spent. -> j0 = 1 with it in D_OUT, or 0")
-        dl("j1", IM_ON); J("jjz j1, im_no"); dl("j1", D_CM + 88); dl("j2", D_CM + 80); J("jcall dse_wish"); ds("j1", TH_C); li("j1", 1 << 20); J("jcall r_randmod"); dl("j1", TH_C); J("jsub j10, j0, j1", "jjnn j10, im_no")
+        dl("j1", IM_ON); J("jjz j1, im_no"); dl("j1", D_KACT); dl("j2", D_KCLA); J("jand j1, j1, j2", "jjnz j1, r_dlg_impro_go")
+        dl("j1", D_CM + 88); dl("j2", D_CM + 80); J("jcall dse_wish"); ds("j1", TH_C); li("j1", 1 << 20); J("jcall r_randmod"); dl("j1", TH_C); J("jsub j10, j0, j1", "jjnn j10, im_no")
         o("r_dlg_impro_go:                 ; (playing on, already chosen)")
         dl("j1", IM_K); J("jldi j10, 24", "jmul j1, j1, j10"); da("j11", D_HL); J("jadd j11, j11, j1"); dl("j1", IM_K)
         for k, h in enumerate(HEART):
