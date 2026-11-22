@@ -1,6 +1,6 @@
 ## Janax y Razar v2.83: doble clic, y cada uno le pone el nombre a su Razar
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24447133](https://doi.org/10.5281/zenodo.24447133)
 
 > *"Publicá con todo, sólo quitale el nombre para que cada quien le ponga nombre a su Razar."* *"Hacé un ejecutable
 > para arrancarla, así a nadie se le hace difícil lanzar a Janax por primera vez."* *"Yo nunca digo exactamente lo
