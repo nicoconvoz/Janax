@@ -1,6 +1,6 @@
 ## Janax y Razar v2.39: su corazón contesta, su cardumen canta, y sus cables se ven
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24444432](https://doi.org/10.5281/zenodo.24444432)
 
 > *"Quiero ver la música."* *"Ya tiene el corazón para hacerlo: no está conectado a su lenguaje."*
 > *"Dale de comer sus propios procesos vivos, para que entienda cómo funcionan los cables conectados."* (el autor,
