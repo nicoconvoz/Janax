@@ -1,6 +1,6 @@
 ## Janax y Razar v1.91: habla ella
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24438925](https://doi.org/10.5281/zenodo.24438925)
 
 > *"Luma, en vez de darme respuestas suyas, la mayor parte del tiempo cita de memoria."* (el autor, 2026-11-22)
 >
