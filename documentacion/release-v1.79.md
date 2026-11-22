@@ -33,7 +33,8 @@ compresión) rechaza, con su motivo. Va tal como ella lo anota, sin traducir:
   - `CROWDS`: amontona;
   - `NO-BETTER`: no mejora;
   - `REPLACED`: fue reemplazada por una mejor.
-- Los dos números son el total de bits de la que perdió y de la que ganó.
+- Los dos números son el valor total de sus ocho formas con la receta probada y sin ella (corregido en la
+  [v1.81](release-v1.81.md): no son bits).
 - El último es el radio del salto: cuántas letras cambió.
 
 Sus pensamientos siguen en verde brillante, y el último queda fijo a la izquierda.
