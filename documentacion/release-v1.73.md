@@ -1,6 +1,6 @@
 ## Janax y Razar v1.73: su panel, verde sobre negro
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24438023](https://doi.org/10.5281/zenodo.24438023)
 
 > *"En Luma se mezcla el texto con los símbolos y el fondo. Aprovechá la ventana en negro que te queda para pasar ahí
 > el contenido, y del otro lado el flujo de pensamiento continuo de Luma en tiempo real."* (el autor, 2026-11-22)
