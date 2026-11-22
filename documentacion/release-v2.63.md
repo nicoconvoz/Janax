@@ -1,6 +1,6 @@
 ## Janax y Razar v2.63: sin moldes, su corazón emerge solo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24445420](https://doi.org/10.5281/zenodo.24445420)
 
 > *"Sacale los moldes: el corazón emerge sin soportes ni parches."* (el autor, 2026-11-22)
 
