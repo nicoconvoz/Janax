@@ -380,8 +380,9 @@ MU_TXT = MU_LBL + 32          # the line of her living kernel, over her music (1
 # HER HEART ANSWERS FIRST (the Capitan, 2026-11-22: "ya tiene el corazon para hacerlo, no esta conectado a su
 # lenguaje"): the labels of her heart's books (24 bytes each), and its state (see r_dlg_heart)
 D_HL = MU_TXT + 128
-(H_K, H_BUF, H_SZ, H_P, H_BS, H_BE, H_CNT, H_BEST, H_TE, H_OL, H_LE, H_ANY, H_TOT, H_LET, H_FL) = (D_HL + 4 * 24 + 8 * i for i in range(15))
-D_ROOM = D_HL + 4 * 24 + 8 * 15
+(H_K, H_BUF, H_SZ, H_P, H_BS, H_BE, H_CNT, H_BEST, H_TE, H_OL, H_LE, H_ANY, H_TOT, H_LET, H_FL, H_NN) = (D_HL + 4 * 24 + 8 * i for i in range(16))
+H_NP = D_HL + 4 * 24 + 8 * 16     # the prints of her own name's words (up to 4): his calling her, not what he asks
+D_ROOM = H_NP + 8 * 4
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
                                       # the fact's words (16 prints), the next subject's clause (bytes, 120), the next with its name
@@ -2317,10 +2318,15 @@ def make(g, ST, free):
             for i, ch in enumerate(h):
                 J("jldi j10, %d" % ch, "jstb j10, j6, %d" % (D_HL + 24 * k + i))
         ds("j14", H_BEST); ds("j14", H_OL); ds("j14", H_K); ds("j14", H_TOT); dl("j1", D_NW); J("jjz j1, dh_no")
+        o("  ; (her name in what he says is whom he speaks to, not what he speaks of: its words do not count)")
+        ds("j14", H_NN); gl("j1", NMLEN); J("jjz j1, dh_nmd"); gl("j2", NMROOM); J("jldi j10, 64", "jadd j2, j2, j10"); gs("j2", BP); J("jadd j2, j2, j1"); gs("j2", BE)
+        o("dh_nm:")
+        J("jcall bw_word", "jjz j0, dh_nmd"); dl("j1", H_NN); J("jldi j10, 4", "jsub j10, j1, j10", "jjnn j10, dh_nmd", "jldi j10, 3", "jshl j2, j1, j10"); da("j3", H_NP); J("jadd j3, j3, j2", "jst j4, j3, 0"); dinc(H_NN); J("jjmp dh_nm")
+        o("dh_nmd:")
         o("  ; (each word of his weighs what it carries for her, r_winfo: a word in every line carries little)")
         da("j1", D_RP); gs("j1", BP); dl("j2", D_RPL); J("jadd j1, j1, j2"); gs("j1", BE)
         o("dh_tw:")
-        J("jcall bw_word", "jjz j0, dh_twd", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, dh_tw", "jcall r_winfo"); dl("j1", H_TOT); J("jadd j1, j1, j0"); ds("j1", H_TOT); J("jjmp dh_tw")
+        J("jcall bw_word", "jjz j0, dh_twd", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, dh_tw"); ds("j0", H_LET); J("jcall dh_isname", "jjnz j0, dh_tw"); dl("j0", H_LET); J("jcall r_winfo"); dl("j1", H_TOT); J("jadd j1, j1, j0"); ds("j1", H_TOT); J("jjmp dh_tw")
         o("dh_twd:")
         o("dh_book:")
         dl("j1", H_K); J("jldi j10, %d" % len(HEART), "jsub j10, j1, j10", "jjnn j10, dh_end", "jldi j10, 24", "jmul j1, j1, j10"); da("j11", D_HL); J("jadd j11, j11, j1")
@@ -2387,11 +2393,19 @@ def make(g, ST, free):
         o("                                ; only says in j0 whether it names one (its own new mark)")
         J("jadd j9, j1, j14", "jcall dh_ask", "jjnz j0, dhc_no"); gs("j9", BP); dl("j2", H_ANY); gs("j2", BE); ds("j14", H_FL)
         o("dhc_w:")
-        J("jcall bw_word", "jjz j0, dhc_d"); ds("j0", H_LET); J("jcall r_dlg_find", "jjn j0, dhc_w", "jldi j10, 1"); ds("j10", H_FL); J("jldi j10, 3", "jshl j8, j0, j10"); da("j9", D_WORDS); J("jadd j8, j8, j9", "jldi j10, 1024", "jadd j8, j8, j10", "jld j10, j8, 0")
+        J("jcall bw_word", "jjz j0, dhc_d"); ds("j0", H_LET); J("jcall dh_isname", "jjnz j0, dhc_w", "jcall r_dlg_find", "jjn j0, dhc_w", "jldi j10, 1"); ds("j10", H_FL); J("jldi j10, 3", "jshl j8, j0, j10"); da("j9", D_WORDS); J("jadd j8, j8, j9", "jldi j10, 1024", "jadd j8, j8, j10", "jld j10, j8, 0")
         dl("j11", D_ID); J("jsub j10, j10, j11", "jjz j10, dhc_w"); dl("j11", D_ID); J("jst j11, j8, 0"); dl("j0", H_LET); J("jcall r_winfo"); dl("j1", H_CNT); J("jadd j1, j1, j0"); ds("j1", H_CNT); J("jjmp dhc_w")
         o("dhc_d:")
         dl("j0", H_FL); J("jret")
         o("dhc_no:")
+        J("jldi j0, 0", "jret")
+        o("dh_isname:                      ; j4 = a print -> j0 = 1 if it is a word of her own name (keeps j4; uses j1-j3, j10)")
+        dl("j1", H_NN); da("j2", H_NP)
+        o("dhi_l:")
+        J("jjz j1, dhi_n", "jld j3, j2, 0", "jsub j3, j3, j4", "jjz j3, dhi_y", "jldi j10, 8", "jadd j2, j2, j10", "jldi j10, 1", "jsub j1, j1, j10", "jjmp dhi_l")
+        o("dhi_y:")
+        J("jldi j0, 1", "jret")
+        o("dhi_n:")
         J("jldi j0, 0", "jret")
         o("dh_say:                         ; the best so far, into D_C: the title in her voice, ': ', the lines that name his words")
         da("j7", D_C); dl("j1", H_BUF); dl("j2", H_TE); J("jsub j10, j2, j1", "jjn j10, dhs_tt", "jjz j10, dhs_tt", "jldb j10, j2, -1", "jldi j11, 13", "jsub j10, j10, j11", "jjnz j10, dhs_tt", "jldi j10, 1", "jsub j2, j2, j10")
