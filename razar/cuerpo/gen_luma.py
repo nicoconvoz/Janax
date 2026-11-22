@@ -612,8 +612,8 @@ def ring_routines(L):
     o("; ---- the present: a ring of the latest lines, and every verdict's reason counted (the house rule: nothing is")
     o(";      discarded without its reason). A descriptor: handle, K, line length, count, eight counts")
     o("l_ring:                         ; j1 = a line, j2 = its reason (0..7), j3 = a descriptor (uses j1..j13)")
-    o("  ; (a trial of her forms also goes to her mind's flow, on her panel: gen_leer.py)")
-    li("j10", RING_A); J("jsub j10, j3, j10", "jjnz j10, lr_go", "jld j10, j3, 16", "jcall r_flujo_trial")   # (its line length: the descriptor's
+    o("  ; (a trial of her forms (their archive, RING_F) also goes to her mind's flow, on her panel: gen_leer.py)")
+    li("j10", RING_F); J("jsub j10, j3, j10", "jjnz j10, lr_go", "jld j10, j3, 16", "jcall r_flujo_trial")   # (its line length: the descriptor's
     o("lr_go:")
     J("jldi j10, 3", "jshl j4, j2, j10", "jadd j4, j4, j3", "jld j5, j4, 32", "jldi j10, 1", "jadd j5, j5, j10", "jst j5, j4, 32")
     J("jld j4, j3, 24", "jld j5, j3, 8", "jdiv j6, j4, j5", "jmul j6, j6, j5", "jsub j6, j4, j6", "jld j7, j3, 16", "jmul j6, j6, j7", "jldi j10, %d" % RHDR, "jadd j6, j6, j10")

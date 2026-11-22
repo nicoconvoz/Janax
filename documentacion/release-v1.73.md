@@ -24,6 +24,8 @@ propias letras, en verde:
 
 - **A la izquierda, el contenido:** sus últimas palabras (Re Pág y Av Pág las mueven), su último pensamiento en dos
   renglones, y lo que se le está escribiendo, con su cursor.
+- *(Corrección, v1.79: la lluvia de esta versión eran las charlas de sus criaturas, no las pruebas de sus formas.
+  Ver la [v1.79](release-v1.79.md).)*
 - **A la derecha, su mente en el momento:** cada pensamiento suyo en verde brillante, y cada prueba de sus formas, tal
   como la anota su archivo (vuelta, receta, contra cuál, veredicto, costos), en el verde más oscuro de la estela. Sus
   formas prueban unas **29 recetas por segundo**, así que el panel corre como una lluvia. Sus pensamientos son raros

@@ -7937,8 +7937,8 @@ b_sb_done:
 ; ---- the present: a ring of the latest lines, and every verdict's reason counted (the house rule: nothing is
 ;      discarded without its reason). A descriptor: handle, K, line length, count, eight counts
 l_ring:                         ; j1 = a line, j2 = its reason (0..7), j3 = a descriptor (uses j1..j13)
-  ; (a trial of her forms also goes to her mind's flow, on her panel: gen_leer.py)
-  jldi j10, 26112
+  ; (a trial of her forms (their archive, RING_F) also goes to her mind's flow, on her panel: gen_leer.py)
+  jldi j10, 26400
   jsub j10, j3, j10
   jjnz j10, lr_go
   jld j10, j3, 16
@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 087Bh
-  jshi j2, 0A8E0h
-  jshi j2, 04070h
-  jshi j2, 07009h
+  jldi j2, 0B53h
+  jshi j2, 0471Ch
+  jshi j2, 0B460h
+  jshi j2, 0D59Dh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
