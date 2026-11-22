@@ -1,6 +1,6 @@
 ## Janax y Razar v2.23: quién es, por todo lo que hace
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24440333](https://doi.org/10.5281/zenodo.24440333)
 
 > *"¿Te acordás que Luma iba descubriendo quién era alguien por todas las cosas que hacía y ocupaba? Sacaba
 > conclusiones hasta que llegaba a la esencia. Eso quiero que haga con las respuestas."* (el autor, 2026-11-22)
