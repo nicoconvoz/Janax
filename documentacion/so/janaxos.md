@@ -120,6 +120,7 @@ so/build/janaxos.exe programa1.bin programa2.bin ...
    - **33 terminar a un hijo** (`a` = un hijo mío): ver "El padre termina a un hijo colgado".
    - **34 presupuesto** (`a` = un hijo mío, `b` = instrucciones más que puede remar): ver "El presupuesto".
    - **36 rehacerse** (`a`/`b` = la etiqueta de un programa): ver "Rehacerse".
+   - **45 heredar firma** (`a` = 0 el próximo hijo, o un hijo mío; `b` = las clases firmadas): ver "La herencia paterna".
    - **20 bolita** (`a` = la bolita que quiere, en 65.536avos; 10000h = 1): la recorta a la que le dieron al
      lanzarlo (nadie se da más de lo que le dieron, igual que los permisos), recalcula su turno una vez y
      contesta la que quedó. Ver "La bolita de cada camarote".
@@ -1381,6 +1382,12 @@ ninguna otra aplicación.
 - **Pruebas:** `pantalla_mostrar` (una nube de 3×2 con 3 partículas responde 3; otra versión, un byte de menos y una
   dirección fuera del camarote responden −1) y el mismo programa sin permiso de pantalla (todo −1, negados).
   `razar/cuerpo/pantalla.jsm` graba `pantalla.nube` y la muestra: responde 16000.
+- **Un hijo muestra sin la firma de su padre** (verificado 2026-11-22): 40, 41 y 43 no son importantes
+  (`kind_important` en 0: sólo dibujan o escuchan), así que no esperan firma; alcanza con el permiso `p`, que se
+  recorta al del padre al lanzarlo. Prueba `familia: el hijo muestra (40) sin la firma del padre`: el padre lanza a
+  `pantalla_mostrar` y mira su estado en un bucle sin firmar nunca; el hijo responde 3 en los tres motores. Ojo: un
+  toque de la ventanilla espera entero si trae **un** pedido importante, así que una hija pintora manda sus 40 en
+  toques propios, sin mezclarlos con pedidos que cambian algo.
 
 ## La pantalla escucha: pedido 41, "esperar un evento" (2026-11-15)
 
@@ -1448,6 +1455,45 @@ la v0.73 lanza a su propia lectora: [`release-v0.73.md`](../release-v0.73.md)).
 - **Pruebas:** `familia_huecos` (el hijo marcado rema igual y su palabra llega; pedirlo para una cabina que no es
   hija responde −2), en los tres motores. El timbre sobre la 41 necesita ventana: lo ejercita Luma, no la suite.
 - **No medido:** cuánto tarda de más una lectura cuando la máquina está ocupada (ahí es justamente donde cede).
+
+## La herencia paterna: pedido 45, el hijo nace con la firma (Capitán, 2026-11-22)
+
+> *"Que ya nazcan con los permisos, no hace falta que el padre se los pase todo el tiempo: es herencia paterna."* —
+> *"El padre recibe permisos del abuelo, puede dar ciertos permisos a un hijo y otros no, pero si es necesario puede
+> otorgarle todos los que le dio el abuelo."* — *"Si el abuelo hereda todo al padre y el padre todo al hijo, el abuelo
+> y el hijo tienen el mismo poder, pero siempre honrando la familia."*
+
+Hasta acá un hijo heredaba los **permisos** (los porteros, recortados), pero no la **firma**: cada pedido importante
+volvía a golpear la puerta del padre. Ahora el padre puede firmar de antemano clases enteras de pedidos.
+
+- **45 heredar firma** (`a` = **0** para el próximo hijo que lance, o el número de **un hijo mío** para cambiarle la
+  herencia ahora; `b` = las clases, **el bit k es el tipo de pedido k**: escribir es `2`, lanzar `1 << 16`, todo `−1`).
+  Responde **lo que quedó**, recortado a lo que el padre mismo puede firmar; −2 si `a` no es 0 ni un hijo mío. Es
+  importante (cambia un proceso).
+- **Nadie da más de lo que recibió**: un hijo del kernel firma todas las clases (`KINDS_ALL`, los bits 1 a 45); los
+  demás, sólo lo que heredaron. Pedir `−1` da exactamente todo lo que uno tiene: si el abuelo le dio todo al padre y el
+  padre todo al hijo, el hijo tiene el poder del abuelo.
+- **Se verifica subiendo, como los porteros** (`signed_mask`): un pedido importante de un hijo no espera firma si su
+  clase está en su herencia **y en la de cada uno de arriba**, hasta un hijo del kernel. Por eso **revocar en
+  cualquier generación corta a toda la línea de abajo en el acto**: la familia siempre manda sobre los suyos. Cuesta
+  la altura de la familia, una cuenta por generación.
+- **La herencia no da permisos**: los porteros se siguen revisando antes y al ejecutar. Lo único que se salta es la
+  espera de la firma.
+- **El próximo hijo se la lleva una vez** (como la dote): un hijo lanzado después nace sin herencia hasta que el padre
+  vuelva a elegir. Así un mutante de Razar lanzado más tarde nunca hereda por descuido; sin el 45, todo sigue como antes
+  (pedido por pedido).
+- **El tope, dicho**: la herencia es un qword, un bit por tipo, así que vale hasta el tipo 63 (`assert KINDS < 64`).
+  Cuando haya un tipo 64, la máscara tiene que crecer a un bloque. Es un límite de hoy, no un número elegido.
+- **Uso típico (Luma y su pintora)**: `45` con `a = 0` y las clases que la pintora necesita, después `16` para
+  lanzarla. La pantalla (40, 41, 43) **no necesita herencia**: no es importante y nunca esperó firma.
+- **Pruebas** (tres motores): `firma: el hijo nace con la firma heredada y escribe sin esperar` (el padre despierta con
+  el fin del hijo y no hay nada pendiente: `020001`); `firma: la herencia se revoca y el hijo vuelve a esperar` (el
+  mismo, revocado antes de que escriba: un pendiente, firma, `020101`); `firma: nadie hereda mas de lo que tiene su
+  padre` (el hijo del kernel pide todo y recibe `3FFFFFFFFFFE`; su hijo, con escribir y heredar, pide todo y recibe
+  `200000000002`); `firma: revocar arriba corta la herencia de toda la linea` (tres generaciones: el abuelo revoca al
+  padre y la escritura del nieto vuelve a esperar la firma de su padre: un pendiente). Más
+  `familia: el hijo muestra (40) sin la firma del padre`.
+- **No medido**: el costo de la subida con familias hondas (las pruebas tienen tres generaciones).
 
 ## La ventana que nace al fondo: `JANAX_VENTANA_FONDO` (Capitán, 2026-11-20)
 
