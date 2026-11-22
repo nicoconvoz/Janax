@@ -52,6 +52,10 @@ fmbits
 fmget
 fminc
 fmkeys
+gubook
+gufind
+gupay
+gusaid
 gzcanon
 gzcount
 gzins
@@ -142,6 +146,8 @@ rgetnum
 rgetrec
 rglyph
 rgrow
+rgustosload
+rgustossave
 rhandle
 rhash
 rheartrest
