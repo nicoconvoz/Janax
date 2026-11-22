@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02EF2h
-  jshi j2, 0E8DAh
-  jshi j2, 08E43h
-  jshi j2, 0163Dh
+  jldi j2, 02664h
+  jshi j2, 080EFh
+  jshi j2, 012B2h
+  jshi j2, 04169h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -19558,7 +19558,7 @@ dgh_ret:
 dg_wt:                          ; j4 = a foreign word (its print) -> j7 = its line (128 bytes: the print, how often
   jst j1, j14, 1288
   jldi j1, 33
-  jcall r_cable
+  jcall fr_r_cable
                                 ; it was said with a number, the instruction of hers it is, then what it shares with each)
   jjnz j4, dgw_h
   jldi j4, 1
@@ -19595,7 +19595,7 @@ dgw_ret:
 r_digest_food:                  ; her food, whole, and how much of it is code she sees (DN2 lines with a number,
   jst j1, j14, 1288
   jldi j1, 92
-  jcall r_cable
+  jcall fr_r_cable
                                 ; DN23 lines in all): what everything after is measured by
   jldi j6, 0162h
   jshi j6, 0
@@ -19758,7 +19758,7 @@ dgf_none:
 r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)
   jst j1, j14, 1288
   jldi j1, 90
-  jcall r_cable
+  jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01C70h
@@ -21870,7 +21870,7 @@ fr_none:
   jret
 ul_cmp:                         ; the label at j1 (j2 bytes) against the one at j3 (j4 bytes) -> j0 < 0, 0, > 0
   jst j1, j14, 1288
-  jldi j1, 254
+  jldi j1, 256
   jcall r_cable
                                 ; (byte by byte; a shorter one that is the start of the other is less). Uses j5-j7
   jldi j5, 0
@@ -21899,7 +21899,7 @@ ulc_r:
   jret
 ul_cpy:                         ; j3 bytes from j1 to j2 (uses j4, j5)
   jst j1, j14, 1288
-  jldi j1, 255
+  jldi j1, 257
   jcall r_cable
   jldi j4, 0
 ulp_l:
@@ -21916,7 +21916,7 @@ ulp_d:
   jret
 ul_list:                        ; her house, as the kernel lists it, whole (asked again with twice the room until the
   jst j1, j14, 1288
-  jldi j1, 256
+  jldi j1, 258
   jcall r_cable
                                 ; count comes back the same) -> ULB, ULN
   jldi j6, 0162h
@@ -21979,7 +21979,7 @@ ull_d:
   jret
 ul_ren:                         ; the label at j1 (j2 bytes) renamed to the one at j3 (j4 bytes): request 13, the old
   jst j1, j14, 1288
-  jldi j1, 257
+  jldi j1, 259
   jcall r_cable
                                 ; label and the new one right after it
   jldi j6, 0162h
@@ -25288,38 +25288,6 @@ dch_kn:
   jld j6, j6, 01D68h
   jst j1, j6, 31280
   jjmp dch_kl
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-fr_l_ring:
-  jjmp l_ring
-fr_r_alloc:
-  jjmp r_alloc
-fr_r_cable:
-  jjmp r_cable
-fr_r_cable_init:
-  jjmp r_cable_init
-fr_r_file:
-  jjmp r_file
-fr_r_free:
-  jjmp r_free
-fr_r_free_load:
-  jjmp r_free_load
-fr_r_gesture:
-  jjmp r_gesture
-fr_r_get_rec:
-  jjmp r_get_rec
-fr_r_open:
-  jjmp r_open
-fr_r_tocar:
-  jjmp r_tocar
-fr_v_event:
-  jjmp v_event
-fr_v_frame:
-  jjmp v_frame
-fr_v_init:
-  jjmp v_init
-fr_v_show:
-  jjmp v_show
 dch_kd:
   jldi j6, 0162h
   jshi j6, 0
@@ -25553,6 +25521,37 @@ dpc_nc:
   jldi j10, 1
   jadd j3, j3, j10
   jjmp dpc_nc
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_l_ring:
+  jjmp l_ring
+fr_r_alloc:
+  jjmp r_alloc
+fr_r_cable:
+  jjmp r_cable
+fr_r_cable_init:
+  jjmp r_cable_init
+fr_r_file:
+  jjmp r_file
+fr_r_free:
+  jjmp r_free
+fr_r_free_load:
+  jjmp r_free_load
+fr_r_gesture:
+  jjmp r_gesture
+fr_r_get_rec:
+  jjmp r_get_rec
+fr_r_open:
+  jjmp r_open
+fr_r_tocar:
+  jjmp r_tocar
+fr_v_event:
+  jjmp v_event
+fr_v_frame:
+  jjmp v_frame
+fr_v_init:
+  jjmp v_init
+fr_v_show:
+  jjmp v_show
 dpc_wd:
   jldi j6, 0162h
   jshi j6, 0
@@ -29300,6 +29299,11 @@ dh_cpd:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
+  jld j1, j6, 32680
+  jcall tm_heart
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
   jst j14, j6, 32640
   jldi j6, 0162h
   jshi j6, 0
@@ -29828,7 +29832,7 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j1, j14, 1288
   jldi j1, 151
   jcall r_cable
-  jldi j1, 01888h
+  jldi j1, 018D8h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
@@ -30702,21 +30706,7 @@ dhn_t:
   jld j6, j6, 01D68h
   jld j1, j6, 32664
   jjnz j1, dhn_go
-  jldi j1, 4
-  jcall r_randmod
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j0, j6, 32648
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j14, j6, 32656
-  jldi j1, 1
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 32664
+  jcall tm_pick
 dhn_go:
   jcall r_dlg_impro_go
   jjnz j0, dhn_r
@@ -30733,6 +30723,297 @@ dhn_go:
   jjnz j1, dhn_t
   jldi j0, 0
 dhn_r:
+  jret
+tm_heart:                       ; j1 = a book of her heart -> it is her theme (its label)
+  jst j1, j14, 1288
+  jldi j1, 254
+  jcall r_cable
+  jldi j10, 24
+  jmul j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 31768
+  jadd j2, j2, j15
+  jadd j2, j2, j1
+  jldi j3, 0
+tmh_l:
+  jadd j10, j2, j3
+  jldb j10, j10, 0
+  jjz j10, tmh_d
+  jldi j11, 24
+  jsub j11, j3, j11
+  jjnn j11, tmh_d
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j11, j6, j3
+  jstb j10, j11, 6288
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp tmh_l
+tmh_d:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 6280
+  jst j14, j6, 6344
+  jret
+tm_pick:                        ; a theme of her own: of the books of her shelf (and their talk), each by her taste
+  jst j1, j14, 1288
+  jldi j1, 255
+  jcall r_cable
+                                ; against her luck; entered where her luck lands, from the next line
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+  jcall ul_list
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01EA0h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31888
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31864
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 32720
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31896
+tmp_f:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31864
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjnn j10, tmp_end
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 31888
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jldi j10, 7
+  jsub j10, j3, j10
+  jjnz j10, tmp_lb
+  jldb j10, j1, 0
+  jldi j11, 100
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 1
+  jldi j11, 105
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 2
+  jldi j11, 97
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 3
+  jldi j11, 108
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 4
+  jldi j11, 111
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 5
+  jldi j11, 103
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jldb j10, j1, 6
+  jldi j11, 111
+  jsub j10, j10, j11
+  jjnz j10, tmp_lb
+  jjmp tmp_ok
+tmp_lb:
+  jldb j4, j1, 0
+  jldi j10, 101
+  jsub j10, j4, j10
+  jjnz j10, tmp_lb2
+  jldi j10, 1
+  jadd j1, j1, j10
+  jsub j3, j3, j10
+tmp_lb2:
+  jldb j10, j1, 0
+  jldi j11, 108
+  jsub j10, j10, j11
+  jjnz j10, tmp_n
+  jldb j10, j1, 1
+  jldi j11, 105
+  jsub j10, j10, j11
+  jjnz j10, tmp_n
+  jldb j10, j1, 2
+  jldi j11, 98
+  jsub j10, j10, j11
+  jjnz j10, tmp_n
+  jldb j10, j1, 3
+  jldi j11, 114
+  jsub j10, j10, j11
+  jjnz j10, tmp_n
+  jldb j10, j1, 4
+  jldi j11, 111
+  jsub j10, j10, j11
+  jjnz j10, tmp_n
+tmp_ok:                         ; (its print, as her tastes know it; her wish for it; kept by it against her luck)
+  jldi j2, 0
+tmp_h:
+  jjz j3, tmp_hd
+  jldb j4, j1, 0
+  jldi j10, 31
+  jmul j2, j2, j10
+  jadd j2, j2, j4
+  jldi j10, 1
+  jadd j1, j1, j10
+  jsub j3, j3, j10
+  jjmp tmp_h
+tmp_hd:
+  jadd j1, j2, j14
+  jcall gu_find
+  jldi j1, 0
+  jldi j3, 0
+  jjz j2, tmp_w
+  jld j1, j2, 16
+  jld j3, j2, 8
+tmp_w:
+  jadd j2, j3, j14
+  jcall dse_wish
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 32720
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j2, j6, 32720
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31904
+  jadd j1, j2, j14
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31904
+  jsub j10, j0, j1
+  jjnn j10, tmp_n
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31888
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31896
+tmp_n:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 31888
+  jld j3, j9, 0
+  jldi j10, 7
+  jadd j3, j3, j10
+  jldi j10, -8
+  jand j3, j3, j10
+  jldi j10, 8
+  jadd j3, j3, j10
+  jadd j9, j9, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j9, j6, 31888
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31864
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 31864
+  jjmp tmp_f
+tmp_end:                        ; (the one kept: its label is her theme; where her luck lands in it)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 31896
+  jjz j9, tmp_r
+  jld j3, j9, 0
+  jldi j10, 48
+  jsub j10, j3, j10
+  jjnn j10, tmp_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 6280
+  jldi j4, 0
+tmp_c:
+  jsub j10, j4, j3
+  jjnn j10, tmp_o
+  jadd j10, j9, j4
+  jldb j10, j10, 8
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j11, j6, j4
+  jstb j10, j11, 6288
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp tmp_c
+tmp_o:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 6288
+  jadd j11, j6, j10
+  jld j12, j6, 6280
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, tmp_r
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jadd j7, j13, j14
+  jldi j10, 7
+  jcall r_file
+  jjz j7, tmp_r
+  jjn j7, tmp_r
+  jadd j1, j7, j14
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j0, j6, 32656
+  jldi j1, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 32664
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6344
+tmp_r:
   jret
 r_dlg_impro:                    ; SHE IMPROVISES (see IM_K): on her theme, the piece of her heart's book that comes after
   jst j1, j14, 1288
@@ -30778,52 +31059,18 @@ r_dlg_impro:                    ; SHE IMPROVISES (see IM_K): on her theme, the p
   jld j1, j6, 32624
   jsub j10, j0, j1
   jjnn j10, im_no
-r_dlg_impro_go:                 ; (playing on, already chosen)
+r_dlg_impro_go:                 ; (playing on, already chosen: her theme's book, a window from where she is)
   jst j1, j14, 1288
   jldi j1, 105
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 32648
-  jldi j10, 24
-  jmul j1, j1, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j11, j6, 01D68h
-  jldi j15, 31768
-  jadd j11, j11, j15
-  jadd j11, j11, j1
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 32648
-  jldi j10, 0
-  jsub j10, j1, j10
-  jjnz j10, im_l0
-  jldi j12, 11
-  jjmp im_open
-im_l0:
-  jldi j10, 1
-  jsub j10, j1, j10
-  jjnz j10, im_l1
-  jldi j12, 15
-  jjmp im_open
-im_l1:
-  jldi j10, 2
-  jsub j10, j1, j10
-  jjnz j10, im_l2
-  jldi j12, 24
-  jjmp im_open
-im_l2:
-  jldi j10, 3
-  jsub j10, j1, j10
-  jjnz j10, im_l3
-  jldi j12, 21
-  jjmp im_open
-im_l3:
-  jjmp im_no
-im_open:
+  jld j6, j6, 32728
+  jldi j10, 6288
+  jadd j11, j6, j10
+  jld j12, j6, 6280
+  jjz j12, im_no
   jcall r_open
   jld j9, j14, 04A8h
   jjn j9, im_no
@@ -30834,18 +31081,27 @@ im_open:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jst j13, j6, 31880
-  jldi j10, 38
-  jldi j11, 0
-  jldi j12, 0
-  jcall r_file
+  jld j1, j6, 32656
+  jsub j13, j13, j1
+  jjn j13, im_cl0
+  jjz j13, im_cl0
+  jldi j10, 01000h
+  jsub j10, j13, j10
+  jjn j10, im_win
+  jldi j13, 01000h
+im_win:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 31880
-  jjz j1, im_cl
-  jldi j10, 8
-  jadd j1, j1, j10
+  jst j13, j6, 31880
+  jldi j10, 38
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 32656
+  jldi j12, 0
+  jcall r_file
+  jldi j1, 01008h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
@@ -30865,6 +31121,12 @@ im_open:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j13, j6, 31880
+  jjmp im_cl
+im_cl0:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 31880
 im_cl:
   jldi j10, 7
   jcall r_file
@@ -30874,7 +31136,7 @@ im_cl:
   jld j1, j6, 31880
   jjz j1, im_off
   jjn j1, im_off
-  ; (from where she ended: past the empty lines, the next paragraph)
+  ; (from where she is: if she landed mid-line, from the next line; past the empty lines, the next paragraph)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30882,8 +31144,25 @@ im_cl:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j2, j6, 32656
-  jadd j1, j1, j2
+  jst j1, j6, 31888
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6344
+  jjz j2, im_sk
+  jst j14, j6, 6344
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31888
+  jcall dh_line
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 31944
+  jldi j10, 1
+  jadd j1, j3, j10
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -31047,6 +31326,11 @@ im_cpd:
   jld j6, j6, 01D68h
   jld j2, j6, 31872
   jsub j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 32656
+  jadd j1, j1, j2
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -45295,7 +45579,7 @@ f_put_rec:
 ; Ends when the window is closed: j0 = the pieces kept in this run. Generated by gen_vida.py.
 v_init:                         ; the creatures' world, inside Luma's program
   jst j1, j14, 1288
-  jldi j1, 266
+  jldi j1, 268
   jcall r_cable
 ; ---- the screen's cloud: its header and every cell set, once
   jldi j1, 0157h
@@ -46968,7 +47252,7 @@ v_order_done:
 ; ---- the creatures inside Luma: a frame, the shared picture, alive or not, the calm, an event, a meal
 v_frame:
   jst j1, j14, 1288
-  jldi j1, 264
+  jldi j1, 266
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vf_ret
@@ -47112,7 +47396,7 @@ v_vf_ret:
   jret
 v_show:                         ; the ground, her forms at twice their size on the left, the creatures on the right
   jst j1, j14, 1288
-  jldi j1, 349
+  jldi j1, 351
   jcall r_cable
   jcall r_mus_frame              ; (her school's song goes on; with Tab it is shown instead: gen_leer.py)
   jjnz j0, v_vs_show
@@ -47188,7 +47472,7 @@ v_va_ret:
   jret
 v_calm:                         ; calming (or closing): the lexicons to the folder
   jst j1, j14, 1288
-  jldi j1, 261
+  jldi j1, 263
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vc_ret
@@ -47197,7 +47481,7 @@ v_vc_ret:
   jret
 v_event:                        ; an event on the shared screen -> j0 = 1 if it was the creatures' (taken)
   jst j1, j14, 1288
-  jldi j1, 263
+  jldi j1, 265
   jcall r_cable
   jld j9, j14, 0140h
   jldi j10, 5
@@ -47244,7 +47528,7 @@ v_ve_forms:
   jret
 v_ve_gesture:                     ; the creatures walk one period of the slowest gait, and a search opens
   jst j1, j14, 1288
-  jldi j1, 353
+  jldi j1, 355
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vg_ret
@@ -47261,7 +47545,7 @@ v_vg_ret:
   jret
 v_meal:                         ; Luma began to eat the pantry's entry MIDX: if it is a creature, it is born
   jst j1, j14, 1288
-  jldi j1, 268
+  jldi j1, 270
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vm_ret
@@ -47301,7 +47585,7 @@ v_vm_ret:
   jret
 v_remember:
   jst j1, j14, 1288
-  jldi j1, 344
+  jldi j1, 346
   jcall r_cable
   jcall v_save
   ; its identity, once: the recipe she kept for that meal, drawn as its form (the drawing that judged the meal)
@@ -47559,7 +47843,7 @@ v_vr_done:
   jret
 v_save:                         ; the forms' and the meals' state, kept while the creatures draw with their tools
   jst j1, j14, 1288
-  jldi j1, 346
+  jldi j1, 348
   jcall r_cable
   jldi j1, 0200h
   jldi j2, 05000h
@@ -47614,7 +47898,7 @@ v_vsvt:
   jret
 v_restore:
   jst j1, j14, 1288
-  jldi j1, 345
+  jldi j1, 347
   jcall r_cable
   jldi j1, 05000h
   jldi j2, 0200h
@@ -47669,7 +47953,7 @@ v_vrst:
   jret
 v_bcost_raw:                    ; j1 = a recipe -> j0 = its cost against TI's identity (bits x100; DBMP = its drawing)
   jst j1, j14, 1288
-  jldi j1, 259
+  jldi j1, 261
   jcall r_cable
   jst j1, j14, 02748h
   jld j9, j14, 02380h
@@ -47692,7 +47976,7 @@ v_vb_cp:
   jret
 v_size:                         ; TI's side from what it learned: isqrt(B^2 + B bits), at most 2B (each bit learned
   jst j1, j14, 1288
-  jldi j1, 352
+  jldi j1, 354
   jcall r_cable
                                 ; adds a row of B cells to its area; criterion)
   jld j9, j14, 02380h
@@ -47714,7 +47998,7 @@ v_vz_ok:
   jret
 v_attend:                       ; news of j1 bits (x100) at TI: stronger news (or as strong) takes the camera
   jst j1, j14, 1288
-  jldi j1, 258
+  jldi j1, 260
   jcall r_cable
   jld j2, j14, 02728h
   jsub j10, j1, j2
@@ -47732,7 +48016,7 @@ v_va2_ret:
   jret
 v_camera:                       ; a frame of the camera: interest decays, zoom and place ease towards the news
   jst j1, j14, 1288
-  jldi j1, 262
+  jldi j1, 264
   jcall r_cable
   jld j1, j14, 02728h
   jldi j10, 7
@@ -47822,7 +48106,7 @@ v_vcm_y2:
   jret
 v_born:                         ; TI landed: news (its description / 16), a body offered to the forms
   jst j1, j14, 1288
-  jldi j1, 260
+  jldi j1, 262
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 72
@@ -47841,7 +48125,7 @@ v_vbo_ret:
   jret
 v_learned:                      ; TI kept a piece of gait worth LBITS: it grows, its body may change, the forms hear
   jst j1, j14, 1288
-  jldi j1, 267
+  jldi j1, 269
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 304
@@ -47864,7 +48148,7 @@ v_vl_ret:
   jret
 v_morph:                        ; every one-letter mutation of its body (change, delete, insert), the best kept if its
   jst j1, j14, 1288
-  jldi j1, 269
+  jldi j1, 271
   jcall r_cable
                                 ; cost against its identity does not go up (it keeps or shortens its description)
   jcall v_save
@@ -47960,7 +48244,7 @@ v_vmo_lost:
   jret
 v_mut_build:                    ; XI (position x kind) and XN (a letter) on TI's body -> TMPB; j0 = 0 if no candidate
   jst j1, j14, 1288
-  jldi j1, 270
+  jldi j1, 272
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 288
@@ -48052,7 +48336,7 @@ v_vmb_none:
   jret
 v_rebody:                       ; TI's body drawn again at its size (her own cloud rewritten), growing from its centre
   jst j1, j14, 1288
-  jldi j1, 343
+  jldi j1, 345
   jcall r_cable
   jcall v_size
   jcall v_remember
@@ -48081,7 +48365,7 @@ v_vrb_ret:
   jret
 v_shrink:                       ; a frame: who learned nothing for a world-crossing time forgets a bit and shrinks
   jst j1, j14, 1288
-  jldi j1, 350
+  jldi j1, 352
   jcall r_cable
   jld j1, j14, 02668h
   jjz j1, v_vsh_ret
@@ -48134,7 +48418,7 @@ v_vsh_ret:
   jret
 v_shuffle:                      ; j1 = a recipe -> SHUF: its letters shuffled by the generator (used by the control)
   jst j1, j14, 1288
-  jldi j1, 351
+  jldi j1, 353
   jcall r_cable
   jldb j2, j1, 0
   jstb j2, j14, 064C0h
@@ -48174,7 +48458,7 @@ v_vsf_done:
   jret
 v_offer_forms:                  ; TI's body offered to a form at random: its first letters to a cut, then the body
   jst j1, j14, 1288
-  jldi j1, 272
+  jldi j1, 274
   jcall r_cable
   jldi j1, 8
   jcall v_r_randmod
@@ -48251,7 +48535,7 @@ v_vof_ret:
   jret
 v_offer_creature:               ; a form won: its recipe offered to a creature at random (the body to a cut, then it)
   jst j1, j14, 1288
-  jldi j1, 271
+  jldi j1, 273
   jcall r_cable
   jld j1, j14, 0280h
   jld j2, j14, 02778h
@@ -48375,7 +48659,7 @@ v_voc_ret:
   jret
 v_gift_to:                      ; her gift to the creature j1 (its number): the form JF's recipe offered to it as a win's
   jst j1, j14, 1288
-  jldi j1, 265
+  jldi j1, 267
   jcall r_cable
                                 ; is (the body to a cut, then the form). Says in her block: 2 it is not there, 0 offered
                                 ; and not taken, 1 taken (it shortened its own description: the other's gain).
@@ -48404,13 +48688,13 @@ v_vgt_ret:
   jret
 v_seen:                         ; j0 = how many creatures she sees
   jst j1, j14, 1288
-  jldi j1, 348
+  jldi j1, 350
   jcall r_cable
   jld j0, j14, 02228h
   jret
 v_xlog:                         ; "vida-intercambios": frame, F (to a form) / C (to a creature) / M (a mutation),
   jst j1, j14, 1288
-  jldi j1, 354
+  jldi j1, 356
   jcall r_cable
                                 ; the creature, the form, the candidate, W won / L lost / K kept (65 bytes)
   jst j1, j14, 02758h
@@ -48476,7 +48760,7 @@ v_vx_done:
   jret
 v_save_bodies:                  ; "vida-cuerpos": every creature's body recipe and the bits it learned (rewritten whole)
   jst j1, j14, 1288
-  jldi j1, 347
+  jldi j1, 349
   jcall r_cable
   jld j1, j14, 02790h
   jjz j1, v_vsb_ret
@@ -48579,7 +48863,7 @@ v_vsb_ret:
 ;      "<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>"; every table sized from it (plastic)
 v_r_load_list:
   jst j1, j14, 1288
-  jldi j1, 312
+  jldi j1, 314
   jcall r_cable
   jst j14, j14, 02228h
   jst j14, j14, 02668h
@@ -49010,7 +49294,7 @@ v_ll_ret:
 ;      " <P 5> <q 2> <s 2>". Read at birth (each model waits in its creature for the arrival)
 v_r_load_learned:
   jst j1, j14, 1288
-  jldi j1, 311
+  jldi j1, 313
   jcall r_cable
   jldi j11, 03410h
   jldi j12, 14
@@ -49181,7 +49465,7 @@ v_la_none:
   jret
 v_r_save_learned:                 ; rewritten whole, padded with spaces to the longest it ever was (no leftovers)
   jst j1, j14, 1288
-  jldi j1, 328
+  jldi j1, 330
   jcall r_cable
   jld j3, j14, 022C0h
   jldi j10, 18
@@ -49367,7 +49651,7 @@ v_sl_done:
   jret
 v_r_open_archive:                 ; "archivo": kept open, its position at its end (only appended)
   jst j1, j14, 1288
-  jldi j1, 316
+  jldi j1, 318
   jcall r_cable
   jldi j11, 03420h
   jldi j12, 12
@@ -49380,7 +49664,7 @@ v_oa_done:
   jret
 v_r_fsize:                        ; FH open at its start -> j0 = its bytes, the position left at its end
   jst j1, j14, 1288
-  jldi j1, 296
+  jldi j1, 298
   jcall r_cable
   jst j14, j14, 02378h
 v_fz_lap:
@@ -49399,7 +49683,7 @@ v_fz_done:
   jret
 v_r_archive:                      ; a line: frame, pupil, teacher, the piece (P q s), verdict, DL now, DL with it
   jst j1, j14, 1288
-  jldi j1, 274
+  jldi j1, 276
   jcall r_cable
                                 ; j1 = the piece, j2 = the verdict (0..3), j3 = DL with it; TI pupil, TJ teacher
   jst j1, j14, 02358h
@@ -49508,7 +49792,7 @@ v_ar_done:
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
 v_r_arrive:
   jst j1, j14, 1288
-  jldi j1, 275
+  jldi j1, 277
   jcall r_cable
   jld j1, j14, 02460h
   jldi j10, 384
@@ -49704,7 +49988,7 @@ v_av_bad:
   jret
 v_r_parse_oido:                   ; OIDB (ends in 0) -> the creature TI's rhythmic limbs, quantized
   jst j1, j14, 1288
-  jldi j1, 320
+  jldi j1, 322
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 48
@@ -49855,7 +50139,7 @@ v_po_q_done:
   jret
 v_r_skipsp:                       ; j1 -> past spaces, tabs, line ends
   jst j1, j14, 1288
-  jldi j1, 332
+  jldi j1, 334
   jcall r_cable
   jldb j2, j1, 0
   jjz j2, v_ss_done
@@ -49869,7 +50153,7 @@ v_ss_done:
   jret
 v_r_skiptok:                      ; j1 -> past the next token
   jst j1, j14, 1288
-  jldi j1, 333
+  jldi j1, 335
   jcall r_cable
   jcall v_r_skipsp
 v_sk_lap:
@@ -49884,7 +50168,7 @@ v_sk_done:
   jret
 v_r_dec:                          ; j1 -> j0 = the decimal there x 1e5 (5 decimals, the file's own), j1 past it
   jst j1, j14, 1288
-  jldi j1, 283
+  jldi j1, 285
   jcall r_cable
   jcall v_r_skipsp
   jldi j0, 0
@@ -49956,7 +50240,7 @@ v_dc_done:
   jret
 v_r_body:                         ; NUBB -> TI's body: its finest level fitted relative to its own size into B x B,
   jst j1, j14, 1288
-  jldi j1, 277
+  jldi j1, 279
   jcall r_cable
                                 ; a particle per cell where at least half is particle, its mean colour -> j0 = 1
   jld j9, j14, 02290h
@@ -50230,7 +50514,7 @@ v_bd_bad:
 ; ---- the judge: the description length of a gait, in whole bits
 v_r_gam:                          ; j10 = n >= 0 -> j12 = 2 bitlen(n + 1) - 1, the Elias gamma code (uses j13)
   jst j1, j14, 1288
-  jldi j1, 300
+  jldi j1, 302
   jcall r_cable
   jldi j13, 1
   jadd j13, j10, j13
@@ -50247,7 +50531,7 @@ v_gm_done:
   jret
 v_r_bitlen:                       ; j10 = n >= 0 -> j12 = its bits (the bits to name one of n + 1; uses j13)
   jst j1, j14, 1288
-  jldi j1, 276
+  jldi j1, 278
   jcall r_cable
   jadd j13, j10, j14
   jldi j12, 0
@@ -50261,7 +50545,7 @@ v_bl_done:
   jret
 v_r_zz:                           ; j10 = a difference -> its zigzag (0, -1, 1, -2... -> 0, 1, 2, 3...; uses j13)
   jst j1, j14, 1288
-  jldi j1, 342
+  jldi j1, 344
   jcall r_cable
   jjn j10, v_zz_neg
   jadd j10, j10, j10
@@ -50274,7 +50558,7 @@ v_zz_neg:
   jret
 v_r_mcost:                        ; j11 = a rhythm -> j15 = its bits said whole: gamma(P) + gamma(q) + 4
   jst j1, j14, 1288
-  jldi j1, 313
+  jldi j1, 315
   jcall r_cable
   jld j10, j11, 0
   jcall v_r_gam
@@ -50287,7 +50571,7 @@ v_r_mcost:                        ; j11 = a rhythm -> j15 = its bits said whole:
   jret
 v_r_dist:                         ; j6 = a limb, j9 = a motif -> j15 = the bits to say the limb from the motif
   jst j1, j14, 1288
-  jldi j1, 285
+  jldi j1, 287
   jcall r_cable
   jld j10, j6, 0
   jld j13, j9, 0
@@ -50318,7 +50602,7 @@ v_ds_s:
   jret
 v_r_dl:                           ; j1 = a model, j2 = K, j3 = the limbs, j4 = L -> j0 = DL (j1..j4 kept)
   jst j1, j14, 1288
-  jldi j1, 286
+  jldi j1, 288
   jcall r_cable
   jadd j10, j2, j14
   jcall v_r_gam
@@ -50372,7 +50656,7 @@ v_dl_done:
   jret
 v_r_copym:                        ; j1 -> j2, j3 rhythms (uses j10)
   jst j1, j14, 1288
-  jldi j1, 281
+  jldi j1, 283
   jcall r_cable
 v_cm_lap:
   jjz j3, v_cm_done
@@ -50392,7 +50676,7 @@ v_cm_done:
   jret
 v_r_inlist:                       ; j1 = a rhythm, j2 = a list, j3 = its count -> j0 = 1 if the rhythm is in it
   jst j1, j14, 1288
-  jldi j1, 305
+  jldi j1, 307
   jcall r_cable
 v_il_lap:
   jjz j3, v_il_no
@@ -50421,7 +50705,7 @@ v_il_no:
   jret
 v_r_own:                          ; TI's first model: add the own limb that shortens DL most, while one does
   jst j1, j14, 1288
-  jldi j1, 318
+  jldi j1, 320
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 56
@@ -50502,7 +50786,7 @@ v_ow_done:
   jret
 v_r_eff:                          ; TI's limbs as its model says them (the motion), and the list of distinct ones
   jst j1, j14, 1288
-  jldi j1, 291
+  jldi j1, 293
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 64
@@ -50576,7 +50860,7 @@ v_ef_done:
   jret
 v_r_try:                          ; the piece PP in TI's model: added (if K < L), or in place of each motif ->
   jst j1, j14, 1288
-  jldi j1, 339
+  jldi j1, 341
   jcall r_cable
                                 ; TBEST = the shortest DL, TBK its K, TBR the motif replaced (-1: added), PIECEM it
   jldi j10, 0100h
@@ -50656,7 +50940,7 @@ v_tr_done:
   jret
 v_r_gain:                         ; TI learning from TJ -> j0 = the bits the best piece of TJ's gait saves (0: none)
   jst j1, j14, 1288
-  jldi j1, 298
+  jldi j1, 300
   jcall r_cable
   jldi j10, 0100h
   jshi j10, 0
@@ -50702,7 +50986,7 @@ v_gn_ret:
   jret
 v_r_rowcol:                       ; TI changed (or arrived): its row and its column of the gains, then the count
   jst j1, j14, 1288
-  jldi j1, 327
+  jldi j1, 329
   jcall r_cable
   jld j9, j14, 02380h
   jst j9, j14, 02360h
@@ -50761,7 +51045,7 @@ v_rc_done:
   jret
 v_r_gaddr:                        ; j1 = pupil, j2 = teacher -> j3 = the address of its gain (uses j10)
   jst j1, j14, 1288
-  jldi j1, 297
+  jldi j1, 299
   jcall r_cable
   jld j3, j14, 02228h
   jmul j3, j3, j1
@@ -50773,7 +51057,7 @@ v_r_gaddr:                        ; j1 = pupil, j2 = teacher -> j3 = the address
   jret
 v_r_count:                        ; TEACH = the pairs here with a lesson to give, that can meet (one of them moves)
   jst j1, j14, 1288
-  jldi j1, 282
+  jldi j1, 284
   jcall r_cable
   jst j14, j14, 022F8h
   jldi j1, 0
@@ -50827,7 +51111,7 @@ v_ct_done:
   jret
 v_r_share:                        ; TI and TJ touch and TJ has something for TI: TI tries every piece of TJ's gait,
   jst j1, j14, 1288
-  jldi j1, 331
+  jldi j1, 333
   jcall r_cable
                                 ; keeps the best only if it shortens its description; the rest go to the archive
   jldi j10, 0100h
@@ -51006,7 +51290,7 @@ v_sh_done:
 ; ---- the walk: every creature here steps by its gait and steers by its neighbours (local rules only)
 v_r_welcome:                      ; TI just landed: every one here within its radius dreams of it (a mixed dream in
   jst j1, j14, 1288
-  jldi j1, 341
+  jldi j1, 343
   jcall r_cable
                                 ; its last slot) and has something pending: to go and meet it
   jld j9, j14, 02380h
@@ -51078,7 +51362,7 @@ v_wl_done:
   jret
 v_r_tdist:                        ; j8, j9 = two creatures -> j0 = their distance on the torus (cells x 256)
   jst j1, j14, 1288
-  jldi j1, 336
+  jldi j1, 338
   jcall r_cable
   jld j3, j8, 16
   jld j10, j9, 16
@@ -51129,7 +51413,7 @@ v_td_ok_4:
   jret
 v_r_coming:                       ; j0 = nonzero while one falls in or one is still to come
   jst j1, j14, 1288
-  jldi j1, 279
+  jldi j1, 281
   jcall r_cable
   jld j0, j14, 022F0h
   jld j1, j14, 02660h
@@ -51137,7 +51421,7 @@ v_r_coming:                       ; j0 = nonzero while one falls in or one is st
   jret
 v_r_searching:                    ; j0 = 1 while a lesson (seen, or a newcomer to meet) is pending and its search has
   jst j1, j14, 1288
-  jldi j1, 330
+  jldi j1, 332
   jcall r_cable
                                 ; time left (QUIET 0: fresh)
   jldi j0, 0
@@ -51156,7 +51440,7 @@ v_se_done:
   jret
 v_r_walk_all:
   jst j1, j14, 1288
-  jldi j1, 340
+  jldi j1, 342
   jcall r_cable
   ; the buckets: every creature here in the list of its grid cell
   jld j1, j14, 024E8h
@@ -51241,7 +51525,7 @@ v_wa_done:
   jret
 v_r_cell:                         ; j9 = a creature -> j2, j3 = its grid cell, j4 = its index (uses j10)
   jst j1, j14, 1288
-  jldi j1, 278
+  jldi j1, 280
   jcall r_cable
   jld j2, j9, 16
   jldi j10, 8
@@ -51273,7 +51557,7 @@ v_cl_y:
   jret
 v_r_gait:                         ; TI's limbs advance one frame. Gotching's rule (razar/jueces/marcha_regla.py): the
   jst j1, j14, 1288
-  jldi j1, 299
+  jldi j1, 301
   jcall r_cable
                                 ; limbs that step on the floor and those that do not are two groups, and the one
                                 ; with the larger amplitude sum moves the body -> its lean (the group's mean limb
@@ -51397,7 +51681,7 @@ v_gt_store:
   jret
 v_r_steer:                        ; TI looks at those within its radius: drawn to one with a lesson either way, away
   jst j1, j14, 1288
-  jldi j1, 335
+  jldi j1, 337
   jcall r_cable
                                 ; from one without (more when closer); a touch with a lesson for it is a share
   jst j14, j14, 02420h
@@ -51842,7 +52126,7 @@ v_wrap_hi_8:
 ; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)
 v_r_dream:                        ; TI dreams into its slot DSLOT: a piece of its body, mutated, that it does not hold
   jst j1, j14, 1288
-  jldi j1, 290
+  jldi j1, 292
   jcall r_cable
   jldi j10, 010h
   jst j10, j14, 025F8h
@@ -52012,7 +52296,7 @@ v_dm_none:
   jret
 v_r_tried:                        ; TI and the piece TMPD: j1 = 0 look, 1 write -> j0 = 1 it was tried (uses j1..j7)
   jst j1, j14, 1288
-  jldi j1, 338
+  jldi j1, 340
   jcall r_cable
   jld j2, j14, 026D8h
   jjnz j2, v_tr_have
@@ -52082,7 +52366,7 @@ v_tr_yes:
   jret
 v_r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address
   jst j1, j14, 1288
-  jldi j1, 294
+  jldi j1, 296
   jcall r_cable
   jld j2, j9, 0
   jldi j10, 128
@@ -52107,7 +52391,7 @@ v_fd_done:
   jret
 v_r_lex_piece:                    ; j1 = a lexicon, j2 = a piece -> j0 = its entry of highest score > 0 (0: none)
   jst j1, j14, 1288
-  jldi j1, 309
+  jldi j1, 311
   jcall r_cable
   jldi j0, 0
   jldi j3, 0
@@ -52142,7 +52426,7 @@ v_lp_done:
   jret
 v_r_lex_mel:                      ; j1 = a lexicon, j2 = a melody -> j0 = its entry of highest score > 0 (0: none)
   jst j1, j14, 1288
-  jldi j1, 308
+  jldi j1, 310
   jcall r_cable
   jldi j0, 0
   jldi j3, 0
@@ -52168,7 +52452,7 @@ v_lm_done:
   jret
 v_r_lex_add:                      ; j1 = a lexicon, j2 = a melody, j3 = a piece -> j0 = the new entry, score 1, in the
   jst j1, j14, 1288
-  jldi j1, 307
+  jldi j1, 309
   jcall r_cable
                                 ; place of the lowest score (a free place has score 0 or less)
   jadd j8, j1, j14
@@ -52203,7 +52487,7 @@ v_la2_put:
   jret
 v_r_dialogue:                     ; DSP names one of its dreams to DLIS with a melody; DLIS rebuilds a piece from the
   jst j1, j14, 1288
-  jldi j1, 284
+  jldi j1, 286
   jcall r_cable
                                 ; melody alone, tries it on its body (MDL), keeps it only if it shortens its description
   jld j9, j14, 025B8h
@@ -52723,7 +53007,7 @@ v_dc_none:                        ; it does not read as a piece: not understood
   jjmp v_dg_none
 v_r_load_code:                    ; "vida-codigo": the common code (codigo_comun.py writes it); without it, melodies
   jst j1, j14, 1288
-  jldi j1, 310
+  jldi j1, 312
   jcall r_cable
   jst j14, j14, 02670h
   jldi j11, 048F0h
@@ -52865,7 +53149,7 @@ v_lc_done:
   jret
 v_r_dlog:                         ; "dialogos": frame speaker listener dream(P q s) spoken sent guess(P q s) K/U/N exact DL DL
   jst j1, j14, 1288
-  jldi j1, 287
+  jldi j1, 289
   jcall r_cable
   jldi j1, 04780h
   jldi j2, 02020h
@@ -52974,7 +53258,7 @@ v_dl2_done:
   jret
 v_r_open_dialogs:                 ; "dialogos" kept open at its end; "lexico": its length, to pad over it
   jst j1, j14, 1288
-  jldi j1, 317
+  jldi j1, 319
   jcall r_cable
   jldi j11, 04840h
   jldi j12, 13
@@ -52998,7 +53282,7 @@ v_od_done:
   jret
 v_r_save_lex:                     ; "lexico": every entry with score > 0 of every creature, rewritten whole, padded
   jst j1, j14, 1288
-  jldi j1, 329
+  jldi j1, 331
   jcall r_cable
   jld j1, j14, 02588h
   jld j2, j14, 02590h
@@ -53184,7 +53468,7 @@ v_sx_done:
   jret
 v_r_spawn:                        ; a packet from j8 to j9 (records) with the piece PP; j3 = 1: it waits one flight
   jst j1, j14, 1288
-  jldi j1, 334
+  jldi j1, 336
   jcall r_cable
   jld j1, j14, 02550h
   jldi j2, 64
@@ -53315,7 +53599,7 @@ v_sp_none:
   jret
 v_r_packets:                      ; every packet one frame on; FLIVE = how many fly
   jst j1, j14, 1288
-  jldi j1, 319
+  jldi j1, 321
   jcall r_cable
   jst j14, j14, 02558h
   jld j1, j14, 02550h
@@ -53348,7 +53632,7 @@ v_pk_done:
   jret
 v_r_draw_packets:                 ; at its place on the path, lit while the piece's own sine is positive
   jst j1, j14, 1288
-  jldi j1, 289
+  jldi j1, 291
   jcall r_cable
   jld j1, j14, 02550h
   jldi j2, 64
@@ -53667,7 +53951,7 @@ v_dk_done:
 ; ---- the particles: each to its place in its body (leaning with the mean limb angle), a quarter of the way
 v_r_particles:
   jst j1, j14, 1288
-  jldi j1, 321
+  jldi j1, 323
   jcall r_cable
   jst j14, j14, 02308h
   jst j14, j14, 02338h
@@ -53786,7 +54070,7 @@ v_pa_done:
   jret
 v_r_fill:                         ; the ground
   jst j1, j14, 1288
-  jldi j1, 293
+  jldi j1, 295
   jcall r_cable
   jldi j1, 0157h
   jshi j1, 06D30h
@@ -53893,7 +54177,7 @@ v_fb_done:
   jret
 v_r_mode:                         ; TI's mode from its limbs (Gotching's rule): 0 flies, 1 walks, 2 crawls
   jst j1, j14, 1288
-  jldi j1, 314
+  jldi j1, 316
   jcall r_cable
   ; the two groups' amplitude sums
   jld j9, j14, 02380h
@@ -54037,7 +54321,7 @@ v_md_store:
   jret
 v_r_in_band:                      ; TI's height kept inside its stratum (it wraps there, as the world wraps)
   jst j1, j14, 1288
-  jldi j1, 304
+  jldi j1, 306
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j14, 026D0h
@@ -54068,7 +54352,7 @@ v_ib_ret:
   jret
 v_r_habitats:                     ; at the start, with her memory: every creature's mode, the strata sized by how
   jst j1, j14, 1288
-  jldi j1, 303
+  jldi j1, 305
   jcall r_cable
                                 ; many live in each (as the world was sized by how many there are), written down
   jst j14, j14, 02698h
@@ -54223,7 +54507,7 @@ v_hb_done:
   jret
 v_r_draw:                         ; every body that is here, through the camera (a particle is a block as big as the
   jst j1, j14, 1288
-  jldi j1, 288
+  jldi j1, 290
   jcall r_cable
                                 ; zoom), later ones in front
   jst j14, j14, 02338h
@@ -54466,7 +54750,7 @@ v_dr_done:
 ; ---- small things
 v_r_isqrt:                        ; j1 = n >= 0 (< 2^62) -> j0 = floor sqrt n (uses j1, j2, j3, j10)
   jst j1, j14, 1288
-  jldi j1, 306
+  jldi j1, 308
   jcall r_cable
   jldi j0, 0
   jldi j2, 1
@@ -54500,7 +54784,7 @@ v_is_done:
   jret
 v_r_alloc:                        ; j1 = bytes -> j0 = a new environment of that size (request 2), its address
   jst j1, j14, 1288
-  jldi j1, 273
+  jldi j1, 275
   jcall r_cable
   jldi j10, 8
   jsub j10, j1, j10
@@ -54519,7 +54803,7 @@ v_alloc_ok:
   jret
 v_r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)
   jst j1, j14, 1288
-  jldi j1, 326
+  jldi j1, 328
   jcall r_cable
   jst j11, j14, 02368h
   jst j12, j14, 02370h
@@ -54545,7 +54829,7 @@ v_ra_done:
   jret
 v_r_fnv:                          ; j1 = bytes, j2 = how many -> j0 = their FNV-1a print, never 0 (uses j3, j4, j10)
   jst j1, j14, 1288
-  jldi j1, 295
+  jldi j1, 297
   jcall r_cable
   jldi j0, -13326
   jshi j0, 09CE4h
@@ -54569,7 +54853,7 @@ v_fnv_done:
   jret
 v_r_put_hex:                      ; j1 = a number, j2 = hex digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 322
+  jldi j1, 324
   jcall r_cable
 v_ph_lap:
   jldi j10, 1
@@ -54594,7 +54878,7 @@ v_ph_done:
   jret
 v_r_get_hex:                      ; j1 = where, j2 = hex digits -> j0 (uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 301
+  jldi j1, 303
   jcall r_cable
   jldi j0, 0
 v_gh_lap:
@@ -54621,7 +54905,7 @@ v_gh_done:
   jret
 v_r_put_num:                      ; j1 = a number >= 0, j2 = digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 323
+  jldi j1, 325
   jcall r_cable
 v_pn_lap:
   jldi j10, 1
@@ -54641,7 +54925,7 @@ v_pn_done:
   jret
 v_r_get_num:                      ; j1 = where, j2 = digits -> j0 (a non-digit counts as 0; uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 302
+  jldi j1, 304
   jcall r_cable
   jldi j0, 0
 v_gnm_lap:
@@ -54665,7 +54949,7 @@ v_gnm_done:
   jret
 v_r_open:                         ; j11 = a label, j12 = its bytes -> FH = the handle (or -1)
   jst j1, j14, 1288
-  jldi j1, 315
+  jldi j1, 317
   jcall r_cable
   jldi j10, 4
   jcall v_r_tocar
@@ -54673,7 +54957,7 @@ v_r_open:                         ; j11 = a label, j12 = its bytes -> FH = the h
   jret
 v_r_file:                         ; j10 = request (5 read, 6 write, 7 close, 38 go to), FH = the handle, j11, j12 -> j13
   jst j1, j14, 1288
-  jldi j1, 292
+  jldi j1, 294
   jcall r_cable
   jldi j9, 32
   jld j8, j14, 02328h
@@ -54683,7 +54967,7 @@ v_r_file:                         ; j10 = request (5 read, 6 write, 7 close, 38 
   jret
 v_r_coprime:                      ; j1 = a total > 0 -> j0 = a random stride coprime to it
   jst j1, j14, 1288
-  jldi j1, 280
+  jldi j1, 282
   jcall r_cable
   jst j1, j14, 02360h
   jcall v_r_randmod
@@ -54717,7 +55001,7 @@ v_cp_go:
   jret
 v_r_randmod:                      ; j1 = n > 0 -> j0 in [0, n) from the generator (uses j10..j12)
   jst j1, j14, 1288
-  jldi j1, 325
+  jldi j1, 327
   jcall r_cable
   jcall v_r_rand
   jldi j11, 1
@@ -54728,7 +55012,7 @@ v_r_randmod:                      ; j1 = n > 0 -> j0 in [0, n) from the generato
   jret
 v_r_rand:                         ; j10 = the next of the generator (xorshift64); uses j11, j12
   jst j1, j14, 1288
-  jldi j1, 324
+  jldi j1, 326
   jcall r_cable
   jld j10, j14, 02220h
   jldi j12, 13
@@ -54744,7 +55028,7 @@ v_r_rand:                         ; j10 = the next of the generator (xorshift64)
   jret
 v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 answer, j12 = b as it came back
   jst j1, j14, 1288
-  jldi j1, 337
+  jldi j1, 339
   jcall r_cable
   jldi j13, 100h
   jldi j15, 1
@@ -54756,7 +55040,7 @@ v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 
   jld j12, j13, 24
   jld j13, j13, 32
   jret
-; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 355 routines
+; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 357 routines
 r_cable:                        ; j1 = the routine that came (its S1 kept j1): one bit for the cable from the last one
   jst j2, j14, 1296
   jst j3, j14, 1304
@@ -54776,7 +55060,7 @@ r_cable:                        ; j1 = the routine that came (its S1 kept j1): o
   jjz j3, rc_out
   jldi j4, 1
   jsub j2, j2, j4
-  jldi j4, 355
+  jldi j4, 357
   jmul j2, j2, j4
   jadd j1, j2, j1
   jldi j4, 3
@@ -54998,7 +55282,7 @@ ci_cl:
   jcall fr_r_file
   jjz j7, ci_no
   jjn j7, ci_no
-  jldi j1, 01638h
+  jldi j1, 01658h
   jcall fr_r_alloc
   jst j0, j14, 1400
   jld j1, j14, 1432
@@ -55012,7 +55296,7 @@ ci_n:
   jldi j10, 10
   jsub j10, j5, j10
   jjnz j10, ci_nn
-  jldi j10, 355
+  jldi j10, 357
   jsub j10, j4, j10
   jjnn j10, ci_no
   jld j6, j14, 1400
@@ -55030,14 +55314,14 @@ ci_nn:
   jadd j1, j1, j10
   jjmp ci_n
 ci_nd:
-  jldi j10, 355
+  jldi j10, 357
   jsub j10, j4, j10
   jjnz j10, ci_no
   ; (the matrix: as her house kept it, if it is of these routines; else new)
-  jldi j1, 03D98h
+  jldi j1, 03E48h
   jcall fr_r_alloc
   jst j0, j14, 1416
-  jldi j2, 03D98h
+  jldi j2, 03E48h
   jadd j3, j0, j2
 ci_z:
   jst j14, j0, 0
@@ -55054,17 +55338,17 @@ ci_z:
   jjn j9, ci_mx
   jldi j10, 5
   jld j11, j14, 1416
-  jldi j12, 03D98h
+  jldi j12, 03E48h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
 ci_mx:
   jld j1, j14, 1416
   jld j2, j1, 0
-  jldi j10, 355
+  jldi j10, 357
   jsub j10, j2, j10
   jjz j10, ci_mk
-  jldi j2, 03D98h
+  jldi j2, 03E48h
   jadd j3, j1, j2
 ci_z2:
   jst j14, j1, 0
@@ -55073,7 +55357,7 @@ ci_z2:
   jsub j10, j3, j1
   jjnz j10, ci_z2
   jld j1, j14, 1416
-  jldi j10, 355
+  jldi j10, 357
   jst j10, j1, 0
 ci_mk:
   jldi j1, 04000h
@@ -55126,7 +55410,7 @@ cf_l:
   jsub j10, j8, j1
   jjnn j10, cf_w
   jld j1, j8, 0
-  jldi j10, 355
+  jldi j10, 357
   jdiv j2, j1, j10
   jmul j3, j2, j10
   jsub j3, j1, j3
@@ -55203,7 +55487,7 @@ cf_w:
   jjn j9, cf_done
   jldi j10, 6
   jld j11, j14, 1416
-  jldi j12, 03D98h
+  jldi j12, 03E48h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
