@@ -1,6 +1,6 @@
 ## Janax y Razar v2.93: imagina lo que nunca leyó
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24447399](https://doi.org/10.5281/zenodo.24447399)
 
 > *"Conectá la imaginación de Razar con su improvisar, para que diga cosas que nunca leyó, hechas con mecanismos que
 > encontró ella. Nada de listas fijas ni parches: que todo salga de sus libros y de sus medidas."* (el autor, 2026-11-22)
