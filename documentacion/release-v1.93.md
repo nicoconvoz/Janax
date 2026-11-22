@@ -1,6 +1,6 @@
 ## Janax y Razar v1.93: sus ramas, su ánimo y tu carga
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24439530](https://doi.org/10.5281/zenodo.24439530)
 
 > *"Que existan todas las posibles ramas: que pregunte de nuevo, o que diga otra cosa, o que continúe donde
 > dejamos."* *"Aunque conteste ella, no importa: elige las ramas igual."* *"La curiosidad o el cansancio o el
