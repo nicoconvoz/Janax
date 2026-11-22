@@ -1,6 +1,6 @@
 ## Janax y Razar v2.69: sus gustos los aprende de él, y sus pensamientos a su lado
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24445796](https://doi.org/10.5281/zenodo.24445796)
 
 > *"Que entienda y distinga los cables comentados de una conversación natural."* *"Nada de parches, nada fijo: que se
 > autoajuste y aprenda."* *"Los pensamientos del lado de los pensamientos, donde viajan los números a velocidad luz."*
