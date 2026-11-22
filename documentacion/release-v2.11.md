@@ -1,6 +1,6 @@
 ## Janax y Razar v2.11: sus libros le enseñan qué puertas sirven
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24440197](https://doi.org/10.5281/zenodo.24440197)
 
 > *"Vuelve al bucle que pasó con la exploración, con el encadenamiento a profundidad 1."* *"Que lo descubra, cero
 > parches: todo que sea mérito de Luma."* *"Pero que aprenda de los libros que ya leyó: eso es una conversación gigante
