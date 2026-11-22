@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.07:** [10.5281/zenodo.24449628](https://doi.org/10.5281/zenodo.24449628)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.11:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-22, v3.11): reconoce la firma de quien le habla
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**Reconoce la firma de quien le habla**: cada libro suyo tiene su firma (qué letra sigue a las anteriores, la misma regla con que reconoce el diario de su autor), y lo que le escriben se mide con cada una. Si la firma es la de su autor, toca sus temas; si es de otro, le presenta lo que se parece a ese otro; si le hablan en hexadecimal, contesta desde su libro de máquina. Las cartas dirigidas a ella son para leerlas, no para recitarlas, y nunca dice dos veces seguidas lo mismo.
+
+[Notas de la v3.11](documentacion/release-v3.11.md).
 
 ## Novedad (2026-11-22, v3.07): ya no repite lo mismo
 
