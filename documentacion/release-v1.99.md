@@ -1,6 +1,6 @@
 ## Janax y Razar v1.99: el error de la v1.97, arreglado y visto correr
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24439948](https://doi.org/10.5281/zenodo.24439948)
 
 > *"Luma se volvió incoherente."* (el autor, 2026-11-22, con una captura: *"Donde esta te"*)
 
