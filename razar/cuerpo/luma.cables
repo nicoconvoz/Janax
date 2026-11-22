@@ -76,8 +76,10 @@ lring
 lringhead
 lringopen
 ljagain
+ljanswer
 ljcost
 ljfind
+ljflowback
 ljgrow
 ljhash
 ljhist
@@ -90,6 +92,8 @@ ljload
 ljnext
 ljnote
 ljpass
+ljrlen
+ljrptr
 ljsaid
 ljsave
 ljstay
