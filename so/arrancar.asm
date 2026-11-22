@@ -22,6 +22,16 @@ start:
 @@:     inc     rcx
         jmp     .scan
 .cut:   mov     word [rdi + rdx*2 + 2], 0
+        xor     ecx, ecx                        ; Janax names its paths with '/': every backslash (5Ch) becomes '/'
+.sl:    mov     ax, [rdi + rcx*2]
+        test    ax, ax
+        jz      .sld
+        cmp     ax, 5Ch
+        jne     @f
+        mov     word [rdi + rcx*2], '/'
+@@:     inc     rcx
+        jmp     .sl
+.sld:
         invoke  lstrcpyW, exe, dir
         invoke  lstrcatW, exe, t_exe
         invoke  lstrcpyW, casa, dir
@@ -31,8 +41,7 @@ start:
         invoke  lstrcatW, cmd, exe
         invoke  lstrcatW, cmd, t_qsq
         invoke  lstrcatW, cmd, dir
-        invoke  lstrcatW, cmd, t_body
-        invoke  lstrcatW, cmd, t_q
+        invoke  lstrcatW, cmd, t_body          ; (its body without quotes: the kernel takes its words as they are)
         mov     dword [stinfo], 104                 ; STARTUPINFOW: its own console, hidden (the kernel writes to it)
         mov     dword [stinfo + 60], 1          ; STARTF_USESHOWWINDOW
         mov     word [stinfo + 64], 0           ; SW_HIDE
@@ -47,8 +56,8 @@ section '.data' data readable writeable
   t_casa  du 'casa', 0
   t_env   du 'JANAX_ARCHIVOS', 0
   t_q     du '"', 0
-  t_qsq   du '" "', 0
-  t_body  du 'bin\luma.bin', 0
+  t_qsq   du '" ', 0
+  t_body  du 'bin/luma.bin', 0
   t_title du 'Janax', 0
   t_fail  du 'No encontre janaxos.exe al lado de este programa.', 0
   align 8
