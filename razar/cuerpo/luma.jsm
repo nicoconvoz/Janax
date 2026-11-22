@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03F0Ch
-  jshi j2, 02E70h
-  jshi j2, 021B5h
-  jshi j2, 0E77Fh
+  jldi j2, 03912h
+  jshi j2, 0BC1Dh
+  jshi j2, 0FC90h
+  jshi j2, 08C15h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -19280,6 +19280,7 @@ dgo_rm:
   jadd j5, j5, j10
   jjmp dgo_rm
 dgo_rn:
+  jcall r_winfo
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -23125,6 +23126,7 @@ bs_w:
   jcall bw_word
   jjz j0, bs_eol
   jcall bu_wword
+  jcall bu_wcount
   jldi j1, 1
   jldi j6, 0162h
   jshi j6, 0
@@ -24286,6 +24288,283 @@ bu_fd:
   jldi j12, 0
   jcall r_tocar
 bu_none:
+  jret
+bu_wcount:                      ; WHERE A CONVERSATION GOES ON (the Capitan, 2026-11-22: "que aprenda de los libros que ya
+                                ; leyo: eso es una conversacion gigante gratis"; Razar's curiosity, D69 and D50: by how much
+                                ; it adds, not by volume). Every line of her house answers the one before it. For every
+                                ; word, as she goes through her house each time she is born: in how many lines it is, and
+                                ; in how many of them the line before had it too (the talk went on by it). Her talks with
+                                ; him are lines of her house too ("dialogo"): what he answers counts the same. j4 = its
+                                ; print, kept. A slot: print, lines, lines it went on, the last line it was in. The table
+                                ; grows as it fills (twice its slots when half are used)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j5, j6, 01EF8h
+  jjnz j5, bwc_h
+  jldi j1, 020h
+  jshi j1, 0
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j0, j6, 01EF8h
+  jldi j1, 0
+  jshi j1, 0FFFFh
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 01FE8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j14, j6, 01FF0h
+  jldi j2, 4
+  jshi j2, 0
+bwc_z:
+  jst j14, j0, 0
+  jldi j10, 8
+  jadd j0, j0, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, bwc_z
+bwc_h:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 07F10h
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 01FF8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j5, j6, 01EF8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j7, j6, 01FE8h
+  jldi j10, 17
+  jshr j8, j4, j10
+  jxor j8, j8, j4
+  jand j8, j8, j7
+bwc_p:
+  jldi j10, 5
+  jshl j9, j8, j10
+  jadd j9, j9, j5
+  jld j10, j9, 0
+  jjz j10, bwc_new
+  jsub j10, j10, j4
+  jjz j10, bwc_one
+  jldi j10, 1
+  jadd j8, j8, j10
+  jand j8, j8, j7
+  jjmp bwc_p
+bwc_one:                        ; (once a line: in this line already, nothing; in the line before, the talk went on)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 07F10h
+  jld j10, j9, 24
+  jsub j11, j1, j10
+  jjz j11, bwc_r
+  jst j1, j9, 24
+  jld j10, j9, 8
+  jldi j12, 1
+  jadd j10, j10, j12
+  jst j10, j9, 8
+  jsub j11, j11, j12
+  jjnz j11, bwc_r
+  jld j10, j9, 16
+  jadd j10, j10, j12
+  jst j10, j9, 16
+  jret
+bwc_new:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 07F10h
+  jst j4, j9, 0
+  jldi j10, 1
+  jst j10, j9, 8
+  jst j14, j9, 16
+  jst j1, j9, 24
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01FF0h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 01FF0h
+  ; (half full: twice the slots, every word again in its place, the old table given back)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01FE8h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jshr j2, j2, j10
+  jsub j10, j1, j2
+  jjn j10, bwc_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01FE8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 6
+  jshl j1, j1, j10
+  jcall r_alloc
+  jadd j3, j0, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01FE8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 3
+  jshl j2, j1, j10
+bwc_gz:
+  jst j14, j0, 0
+  jldi j10, 8
+  jadd j0, j0, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjnz j2, bwc_gz
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j5, j6, 01EF8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01FE8h
+  jldi j10, 1
+  jadd j2, j2, j10
+  jadd j11, j2, j2
+  jldi j10, 1
+  jsub j7, j11, j10
+bwc_gl:
+  jjz j2, bwc_gd
+  jld j12, j5, 0
+  jjz j12, bwc_gn
+  jldi j10, 17
+  jshr j8, j12, j10
+  jxor j8, j8, j12
+  jand j8, j8, j7
+bwc_gp:
+  jldi j10, 5
+  jshl j9, j8, j10
+  jadd j9, j9, j3
+  jld j10, j9, 0
+  jjz j10, bwc_gs
+  jldi j10, 1
+  jadd j8, j8, j10
+  jand j8, j8, j7
+  jjmp bwc_gp
+bwc_gs:
+  jst j12, j9, 0
+  jld j10, j5, 8
+  jst j10, j9, 8
+  jld j10, j5, 16
+  jst j10, j9, 16
+  jld j10, j5, 24
+  jst j10, j9, 24
+bwc_gn:
+  jldi j10, 32
+  jadd j5, j5, j10
+  jldi j10, 1
+  jsub j2, j2, j10
+  jjmp bwc_gl
+bwc_gd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01EF8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j3, j6, 01EF8h
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j7, j6, 01FE8h
+  jldi j10, 3
+  jldi j12, 0
+  jcall r_tocar
+bwc_r:
+  jret
+r_winfo:                        ; j4 = a word's print, j0 = its letters -> j0 = how much the talk of her books goes on
+                                ; by it beyond chance: how often the next line kept it, (S + 1/2) / (L + 1), over how often
+                                ; any line has it, (L + 1/2) / (all lines + 1); in thousandths, at least 1. A word her books
+                                ; never said has no evidence either way: as chance (1000). Without her count yet, its letters. j4 kept;
+                                ; uses j1-j3, j5-j12
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j5, j6, 01EF8h
+  jjz j5, rwi_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j7, j6, 01FE8h
+  jldi j10, 17
+  jshr j8, j4, j10
+  jxor j8, j8, j4
+  jand j8, j8, j7
+  jldi j2, 0
+  jldi j3, 0
+rwi_p:
+  jldi j10, 5
+  jshl j9, j8, j10
+  jadd j9, j9, j5
+  jld j10, j9, 0
+  jjz j10, rwi_c
+  jsub j10, j10, j4
+  jjz j10, rwi_f
+  jldi j10, 1
+  jadd j8, j8, j10
+  jand j8, j8, j7
+  jjmp rwi_p
+rwi_f:
+  jld j2, j9, 8
+  jld j3, j9, 16
+rwi_c:                          ; (j2 = its lines L, j3 = those the talk went on by: (2S + 1)(all + 1) 1000 / ((L + 1)(2L + 1)))
+  jldi j0, 1000
+  jjz j2, rwi_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01FF8h
+  jldi j10, 1
+  jadd j1, j1, j10
+  jadd j0, j3, j3
+  jadd j0, j0, j10
+  jmul j0, j0, j1
+  jldi j10, 1000
+  jmul j0, j0, j10
+  jldi j10, 1
+  jadd j11, j2, j10
+  jadd j12, j2, j2
+  jadd j12, j12, j10
+  jmul j11, j11, j12
+  jdiv j0, j0, j11
+  jjnz j0, rwi_r
+  jldi j0, 1
+rwi_r:
+  jret
+rwi_log:                        ; j1 > 0 -> j0 = log2 j1 in 64ths of a bit (the bit length, and the next six bits as
+                                ; its fraction); uses j1, j2, j10, j11
+  jldi j0, 0
+  jjz j1, rwl_r
+  jldi j2, 0
+  jadd j11, j1, j14
+rwl_b:
+  jjz j11, rwl_m
+  jldi j10, 1
+  jshr j11, j11, j10
+  jadd j2, j2, j10
+  jjmp rwl_b
+rwl_m:                          ; (j2: its bits; the six after the first, its fraction)
+  jldi j10, 7
+  jsub j10, j2, j10
+  jjn j10, rwl_s
+  jshr j11, j1, j10
+  jjmp rwl_f
+rwl_s:
+  jldi j11, 0
+  jsub j10, j11, j10
+  jshl j11, j1, j10
+rwl_f:
+  jldi j10, 63
+  jand j11, j11, j10
+  jldi j10, 1
+  jsub j0, j2, j10
+  jldi j10, 6
+  jshl j0, j0, j10
+  jadd j0, j0, j11
+rwl_r:
   jret
 bu_wword:                       ; j4 = a word of the line: is it the door, or where she comes from, of a walk
   jldi j2, 0
@@ -25531,6 +25810,7 @@ bzd_w:
   jjz j0, bzd_e
   jcall bz_elig
   jjz j3, bzd_w
+  jcall r_winfo
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
