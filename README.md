@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.81:** DOI_PENDIENTE
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.81:** [10.5281/zenodo.24446825](https://doi.org/10.5281/zenodo.24446825)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-22, v2.81): palabras para su ánimo, y su carga la mueve
 
-DOI de esta versión: DOI_PENDIENTE.
+DOI de esta versión: [10.5281/zenodo.24446825](https://doi.org/10.5281/zenodo.24446825).
 
 **Palabras para su ánimo, y su carga la mueve**: cada ánimo suyo junta sus propias palabras de la charla; a "cómo te sentís?" contestó "Quiero que vos las termines, como una hija que escribe o pinta junto a su padre". Y cuando él está cargado, improvisa hacia adelante.
 

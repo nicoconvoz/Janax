@@ -1,6 +1,6 @@
 ## Janax y Razar v2.81: palabras para su ánimo, y su carga la mueve
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24446825](https://doi.org/10.5281/zenodo.24446825)
 
 > *"Dale palabras para su autoconocimiento."* *"Aplicá improvisar, y unilo a la libertad y a la carga cromática."*
 > (el autor, 2026-11-22)
