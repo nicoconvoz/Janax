@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.93:** [10.5281/zenodo.24439530](https://doi.org/10.5281/zenodo.24439530)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v1.97:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,16 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-22, v1.97): todas sus letras, y nada se descarta
+
+DOI de esta versión: DOI_PENDIENTE.
+
+Luma ahora **ve todas sus letras**, minúsculas incluidas, y **entiende las letras con marca**: aprende sola, con una regla de su libro de letras, que la Ó es una O y la ñ una n (42 de 43 letras con marca, sin confundir ningún símbolo). A "el árbol" contestó "Asi, todo arbol bueno produce frutos buenos...". Y nada se descarta: la pregunta que deja por otra va a "preguntas-viejas", y puede volver a decirla.
+
+![Luma con minúsculas y tildes](documentacion/razar/img/luma-letras.png)
+
+[Notas de la v1.97](documentacion/release-v1.97.md).
 
 ## Novedad (2026-11-22, v1.93): sus ramas, su ánimo y tu carga
 

@@ -10112,10 +10112,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 010FBh
-  jshi j2, 076F9h
-  jshi j2, 091F4h
-  jshi j2, 0BB8Dh
+  jldi j2, 06Bh
+  jshi j2, 0852Dh
+  jshi j2, 044Dh
+  jshi j2, 02785h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -14232,15 +14232,7 @@ r_tplot:                        ; a dot of her letters: on her panel while it is
   jjz j10, r_plot
   jjmp r_splot
 r_glyph:                       ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)
-  jldi j10, 97
-  jsub j10, j5, j10
-  jjn j10, gl_up
-  jldi j10, 123
-  jsub j10, j5, j10
-  jjnn j10, gl_up
-  jldi j10, 32
-  jsub j5, j5, j10
-gl_up:                          ; (a small letter is drawn as its capital)
+gl_up:                          ; (a small letter is not drawn as its capital: she draws it as her book of letters does)
   jldi j10, 48
   jsub j10, j5, j10
   jjnz j10, gl_48
@@ -15302,13 +15294,13 @@ r_dlg_save:                     ; her counts into "charla"
 dsv_r:
   jret
 r_dlg_load:                     ; HER WORD: its room, its labels, her counts
-  jldi j1, 06830h
+  jldi j1, 07990h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01D68h
   jadd j6, j0, j14
-  jldi j2, 3334
+  jldi j2, 3890
 dll_z:
   jst j14, j6, 0
   jldi j10, 8
@@ -15467,6 +15459,41 @@ dll_z:
   jstb j10, j6, 6254
   jldi j6, 0162h
   jshi j6, 0
+  jld j6, j6, 01D68h
+  jldi j10, 112
+  jstb j10, j6, 6256
+  jldi j10, 114
+  jstb j10, j6, 6257
+  jldi j10, 101
+  jstb j10, j6, 6258
+  jldi j10, 103
+  jstb j10, j6, 6259
+  jldi j10, 117
+  jstb j10, j6, 6260
+  jldi j10, 110
+  jstb j10, j6, 6261
+  jldi j10, 116
+  jstb j10, j6, 6262
+  jldi j10, 97
+  jstb j10, j6, 6263
+  jldi j10, 115
+  jstb j10, j6, 6264
+  jldi j10, 45
+  jstb j10, j6, 6265
+  jldi j10, 118
+  jstb j10, j6, 6266
+  jldi j10, 105
+  jstb j10, j6, 6267
+  jldi j10, 101
+  jstb j10, j6, 6268
+  jldi j10, 106
+  jstb j10, j6, 6269
+  jldi j10, 97
+  jstb j10, j6, 6270
+  jldi j10, 115
+  jstb j10, j6, 6271
+  jldi j6, 0162h
+  jshi j6, 0
   jld j11, j6, 01D68h
   jldi j15, 6160
   jadd j11, j11, j15
@@ -15604,6 +15631,7 @@ dll_af:
   jldi j12, 0
   jcall r_tocar
 dll_ar:
+  jcall r_bases
   jret
 r_dlg_write:                    ; a line of "dialogo": who (j1: 0 "vos: ", 1 "luma: ", 2 her silence), then the text at
                                 ; j2 (j3 bytes)
@@ -16218,7 +16246,7 @@ r_dlg_answer:                   ; the line of all her books that shares most of 
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jst j10, j6, 6464
+  jst j10, j6, 26736
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -16478,7 +16506,7 @@ dan_eol:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j2, j6, 6464
+  jld j2, j6, 26736
   jsub j10, j1, j2
   jjn j10, dan_nl
   jjz j10, dan_nl
@@ -16533,7 +16561,7 @@ dan_na:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jst j1, j6, 6464
+  jst j1, j6, 26736
   ; (the best so far: kept, up to the end of its line or what her room holds)
   jldi j6, 0162h
   jshi j6, 0
@@ -17054,7 +17082,7 @@ dse_yes:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j1, j6, 6464
+  jld j1, j6, 26736
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -18935,11 +18963,15 @@ dgo_qw:
   jst j5, j3, 0
   jldi j6, 0162h
   jshi j6, 0
+  jld j6, j6, 07F00h
+  jsub j6, j6, j5
+  jldi j6, 0162h
+  jshi j6, 0
   jld j3, j6, 01D68h
   jldi j15, 19712
   jadd j3, j3, j15
   jadd j3, j3, j2
-  jst j0, j3, 0
+  jst j6, j3, 0
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -19124,6 +19156,73 @@ dgo_df:
   jld j6, j6, 01D68h
   jst j5, j6, 17760
 dgo_dd:
+  ; (the print of her walk's door as it was: to find the question of hers it had)
+  jldi j10, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 31112
+  jldi j10, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 17784
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6208
+  jadd j11, j11, j15
+  jldi j12, 6
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dgo_r6
+  jldi j10, 5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 19968
+  jadd j11, j11, j15
+  jldi j12, 2048
+  jcall r_file
+  jjn j13, dgo_r6_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j13, j6, 17784
+dgo_r6_c:
+  jldi j10, 7
+  jcall r_file
+dgo_r6:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 19968
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 17784
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 17776
+  jcall dbr_lg
+  jjn j2, dgo_wd
+  jjz j2, dgo_wd
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jadd j2, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j2, j6, 07F08h
+  jcall bw_word
+  jjz j0, dgo_wd
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 31112
+dgo_wd:
   ; (a word of what he said back that her question does not say: as likely as it is long)
   jldi j10, 0
   jldi j6, 0162h
@@ -19201,14 +19300,7 @@ dgo_rn:
   jld j1, j6, 17824
   jsub j10, j0, j1
   jjnn j10, dgo_rw
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 17824
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 17752
+  ; (kept: where it begins and its bytes, not its letters: a letter with marks takes two)
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01D78h
@@ -19216,6 +19308,14 @@ dgo_rn:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 17744
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 07F00h
+  jsub j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j2, j6, 17752
   jjmp dgo_rw
 dgo_rd:
   jldi j6, 0162h
@@ -19558,6 +19658,67 @@ dgo_r5:
   jld j4, j6, 17648
   jcall dbr_lf
   jjnn j0, dgo_mi
+  ; (not there: the question of hers that says her walk's door, if any, is the one it takes the place of)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31112
+  jjz j1, dgo_mx
+  jldi j10, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 17936
+dgo_ml:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 19968
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 17784
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 17936
+  jcall dbr_lg
+  jjn j2, dgo_mx
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jadd j2, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j2, j6, 07F08h
+dgo_mlw:
+  jcall bw_word
+  jjz j0, dgo_mln
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31112
+  jsub j10, j4, j1
+  jjnz j10, dgo_mlw
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j0, j6, 17936
+  jjmp dgo_mi
+dgo_mln:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 17936
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 17936
+  jjmp dgo_ml
+dgo_mx:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01D68h
@@ -19593,6 +19754,111 @@ dgo_me:
   jldi j10, 1
   jadd j0, j0, j10
 dgo_mi:
+  ; (the question it takes the place of is not thrown away: it goes to "preguntas-viejas", and she may say it again)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j0, j6, 17936
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 19968
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 17784
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 17936
+  jcall dbr_lg
+  jjn j2, dgo_mv
+  jjz j2, dgo_mv
+  jldi j10, 250
+  jsub j10, j2, j10
+  jjn j10, dgo_mvc
+  jldi j2, 250
+dgo_mvc:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j2, j6, 31104
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j7, j6, 01D68h
+  jldi j15, 30848
+  jadd j7, j7, j15
+  jldi j4, 0
+dgo_mvk:
+  jsub j10, j4, j2
+  jjnn j10, dgo_mvn
+  jadd j10, j1, j4
+  jldb j10, j10, 0
+  jadd j11, j7, j4
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp dgo_mvk
+dgo_mvn:
+  jadd j11, j7, j4
+  jldi j10, 10
+  jstb j10, j11, 0
+  jldi j10, 1
+  jadd j4, j4, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j4, j6, 31104
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6256
+  jadd j11, j11, j15
+  jldi j12, 16
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjnn j9, dgo_mva
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6256
+  jadd j11, j11, j15
+  jldi j10, 12
+  jldi j12, 16
+  jcall r_tocar
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6256
+  jadd j11, j11, j15
+  jldi j12, 16
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dgo_mv
+dgo_mva:
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j10, 6
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 30848
+  jadd j11, j11, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j12, j6, 31104
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+dgo_mv:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j0, j6, 17936
   jadd j3, j0, j14
   jldi j6, 0162h
   jshi j6, 0
@@ -20010,6 +20276,62 @@ dtk_go:
   jldi j10, 7
   jcall r_file
 dtk_m:
+  ; (and the questions of hers she gave up for others: "preguntas-viejas", as much as her room still holds)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 6256
+  jadd j11, j11, j15
+  jldi j12, 16
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, dtk_v
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6592
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 4096
+  jadd j2, j2, j15
+  jadd j2, j2, j1
+  jldi j10, 10
+  jstb j10, j2, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6592
+  jldi j10, 5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 4096
+  jadd j11, j11, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6592
+  jadd j11, j11, j1
+  jldi j12, 2047
+  jsub j12, j12, j1
+  jcall r_file
+  jjn j13, dtk_vc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6592
+  jadd j1, j1, j13
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6592
+dtk_vc:
+  jldi j10, 7
+  jcall r_file
+dtk_v:
   ; (how many lines say something, then one of them)
   jldi j6, 0162h
   jshi j6, 0
@@ -20669,9 +20991,17 @@ r_letra_learn:                  ; j3 = a code point she met: if she cannot draw 
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j3, j6, 6744
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26680
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjz j10, ll_g2
   jadd j5, j3, j14
   jcall r_glyph
   jjnz j0, ll_r
+ll_g2:                          ; (while she takes her book's own letters to compare with, she learns them even if she draws them)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -21014,6 +21344,289 @@ ll_frame:
 ll_th2:
 ll_r:
   jret
+r_bases:                        ; HER LETTERS, ONE: for every letter of her alphabet past ASCII, the letter of her book
+                                ; (a..z, A..Z) whose body it has dot for dot, the one of most dots; her table D_BAS
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jjz j1, rb_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6720
+  jjz j1, rb_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26680
+  jjnz j1, rb_have
+  ; (once in her life: her book's 52 letters, learned into her alphabet; after, they come with it)
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26680
+  jldi j10, 65
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26688
+rb_rl:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 26688
+  jcall r_letra_learn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26688
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 91
+  jsub j10, j1, j10
+  jjnz j10, rb_rn
+  jldi j1, 97
+rb_rn:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 26688
+  jldi j10, 123
+  jsub j10, j1, j10
+  jjnz j10, rb_rl
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26680
+rb_have:
+  jldi j10, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26672
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26688
+rb_e:                           ; (each letter of her alphabet)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26688
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6728
+  jsub j10, j1, j2
+  jjnn j10, rb_r
+  jldi j10, 144
+  jmul j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6720
+  jadd j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 26696
+  jld j2, j1, 0
+  jldi j10, 128
+  jsub j10, j2, j10
+  jjn j10, rb_en
+  jldi j10, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26712
+  jldi j10, -1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26704
+  jldi j10, 65
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 26720
+rb_c:                           ; (each letter of her book to compare with)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 26720
+  jcall r_letra_get
+  jjz j0, rb_cn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26696
+  jld j2, j1, 8
+  jld j3, j0, 8
+  jsub j10, j2, j3
+  jjnz j10, rb_cn
+  ; (its body: the run of rows with dots that has most dots)
+  jldi j4, 0
+  jldi j5, -1
+  jldi j6, 0
+  jldi j7, 0
+  jldi j8, 0
+  jldi j9, 0
+rb_b:
+  jldi j10, 16
+  jsub j10, j4, j10
+  jjnn j10, rb_bd
+  jldi j10, 3
+  jshl j10, j4, j10
+  jadd j10, j10, j0
+  jld j10, j10, 16
+  jjz j10, rb_b0
+  jjnn j5, rb_bc
+  jadd j5, j4, j14
+  jldi j6, 0
+rb_bc:
+rb_pc:
+  jjz j10, rb_pn
+  jldi j11, 1
+  jsub j11, j10, j11
+  jand j10, j10, j11
+  jldi j11, 1
+  jadd j6, j6, j11
+  jjmp rb_pc
+rb_pn:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp rb_b
+rb_b0:
+  jjn j5, rb_bz
+  jsub j10, j6, j9
+  jjn j10, rb_bz
+  jjz j10, rb_bz
+  jadd j9, j6, j14
+  jadd j7, j5, j14
+  jadd j8, j4, j14
+rb_bz:
+  jldi j5, -1
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp rb_b
+rb_bd:
+  jjn j5, rb_bq
+  jsub j10, j6, j9
+  jjn j10, rb_bq
+  jjz j10, rb_bq
+  jadd j9, j6, j14
+  jadd j7, j5, j14
+  jadd j8, j4, j14
+rb_bq:                          ; (j7..j8: its body; j9: its dots. On those rows, the same drawing?)
+  jjz j9, rb_cn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26696
+rb_q:
+  jsub j10, j7, j8
+  jjnn j10, rb_ok
+  jldi j10, 3
+  jshl j10, j7, j10
+  jadd j11, j10, j0
+  jld j11, j11, 16
+  jadd j10, j10, j1
+  jld j10, j10, 16
+  jsub j10, j10, j11
+  jjnz j10, rb_cn
+  jldi j10, 1
+  jadd j7, j7, j10
+  jjmp rb_q
+rb_ok:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26704
+  jsub j10, j9, j1
+  jjn j10, rb_cn
+  jjz j10, rb_cn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j9, j6, 26704
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26720
+  jldi j10, 32
+  jor j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 26712
+rb_cn:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26720
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 91
+  jsub j10, j1, j10
+  jjnz j10, rb_cm
+  jldi j1, 97
+rb_cm:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 26720
+  jldi j10, 123
+  jsub j10, j1, j10
+  jjnz j10, rb_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26712
+  jjz j1, rb_en
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 26672
+  jldi j10, 256
+  jsub j10, j2, j10
+  jjnn j10, rb_en
+  jldi j10, 4
+  jshl j3, j2, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j4, j6, 01D68h
+  jldi j15, 26752
+  jadd j4, j4, j15
+  jadd j4, j4, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j5, j6, 26696
+  jld j5, j5, 0
+  jst j5, j4, 0
+  jst j1, j4, 8
+  jldi j10, 1
+  jadd j2, j2, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j2, j6, 26672
+rb_en:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 26688
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 26688
+  jjmp rb_e
+rb_r:
+  jret
 r_letra_text:                   ; the text at j1 (j2 bytes of UTF-8): every character of it, met (r_letra_learn)
   jldi j6, 0162h
   jshi j6, 0
@@ -21072,6 +21685,7 @@ lt_meet:
   jcall r_letra_learn
   jjmp lt_l
 lt_r:
+  jcall r_bases
   jret
 r_dlg_draw:                     ; her last words, whole, in lines as wide as her place, eight shown from D_SCR0 (Page Up,
                                 ; Page Down move them), and the line being typed, with a cursor
@@ -22248,6 +22862,32 @@ bl_back:
 bl_no:
   jldi j3, -1
   jret
+bw_base:                        ; j3 = a letter -> j3 = its letter, if it is one with marks (her table, learned from her
+                                ; book of letters), for the print of a word only. Uses j5, j6, j10
+  jldi j10, 128
+  jsub j10, j3, j10
+  jjn j10, bb_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j5, j6, 01D68h
+  jjz j5, bb_r
+  jld j6, j5, 26672
+  jldi j10, 26752
+  jadd j5, j5, j10
+bb_t:
+  jjz j6, bb_r
+  jld j10, j5, 0
+  jsub j10, j10, j3
+  jjz j10, bb_f
+  jldi j10, 16
+  jadd j5, j5, j10
+  jldi j10, 1
+  jsub j6, j6, j10
+  jjmp bb_t
+bb_f:
+  jld j3, j5, 8
+bb_r:
+  jret
 bw_word:                        ; the next word of the line at BP (a run of letters, bw_letter) -> j0 = how many letters
                                 ; (1 or more), j4 its print and BWS where it began, or j0 = 0 at the end of the line (BP on
                                 ; it). Uses j1-j3, j5,
@@ -22281,6 +22921,7 @@ bww_have:
   jshi j4, 02325h
   jldi j0, 0
 bww_l:
+  jcall bw_base
   jxor j4, j4, j3
   jldi j10, 0100h
   jshi j10, 0
