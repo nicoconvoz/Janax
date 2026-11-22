@@ -8823,7 +8823,7 @@ main_bad:
 ; ---- one event (the record at 140h): 5 closed, 2 a button down, 3 up, 1 the pointer moved, 4 a key
 r_handle:
   jst j1, j14, 1288
-  jldi j1, 164
+  jldi j1, 186
   jcall fr_r_cable
   jcall fr_v_event
   jjz j0, h_go
@@ -9234,7 +9234,7 @@ k_bottom_put:
   jret
 r_gesture:                      ; a gesture: something changed; if it was calm, a new round of longer jumps
   jst j1, j14, 1288
-  jldi j1, 156
+  jldi j1, 178
   jcall fr_r_cable
   jldi j10, 1
   jst j10, j14, 0210h
@@ -9254,7 +9254,7 @@ g_ret:
   jret
 r_hit:                          ; the cell HX, HY -> j0 = the front form with a grown particle within its stroke T, or -1
   jst j1, j14, 1288
-  jldi j1, 168
+  jldi j1, 190
   jcall fr_r_cable
   jldi j10, 7
   jst j10, j14, 0498h
@@ -9321,7 +9321,7 @@ hit_none:
   jret
 r_stiffen:                      ; the form DFA grabbed at HX, HY: k = 8 + 672 / (12 + d), d = cells from the grab
   jst j1, j14, 1288
-  jldi j1, 248
+  jldi j1, 270
   jcall fr_r_cable
   jld j9, j14, 0488h
   jld j1, j9, 16
@@ -9362,7 +9362,7 @@ stiff_done:
   jret
 r_setk:                         ; the form DFA: every spring k = j3
   jst j1, j14, 1288
-  jldi j1, 245
+  jldi j1, 267
   jcall fr_r_cable
   jld j9, j14, 0488h
   jld j1, j9, 16
@@ -9381,7 +9381,7 @@ setk_done:
   jret
 r_pulse:                        ; the focused form: dv = (p - seed) * j3 >> 8 (out when j3 > 0, in when < 0)
   jst j1, j14, 1288
-  jldi j1, 216
+  jldi j1, 238
   jcall fr_r_cable
   jldi j10, 1
   jst j10, j14, 0210h
@@ -9422,7 +9422,7 @@ pulse_done:
   jret
 r_set_transform:                ; the form j9: MX, MY from its fold, size, stretch, mirror and flip (x256)
   jst j1, j14, 1288
-  jldi j1, 244
+  jldi j1, 266
   jcall fr_r_cable
   jld j1, j9, 184
   jld j2, j9, 88
@@ -9482,7 +9482,7 @@ st_open:
 ;      drawn joined to it however far the springs pull them apart.
 r_grow:
   jst j1, j14, 1288
-  jldi j1, 161
+  jldi j1, 183
   jcall fr_r_cable
   jld j9, j14, 02F0h
   jcall r_flat                  ; her words opened (gen_leer.py): she draws what the sentence means
@@ -9852,7 +9852,7 @@ grow_done:
   jret
 r_cell:                         ; the cell j1, j2 (from the seed) of the form being grown, parent j3 (-1: itself),
   jst j1, j14, 1288
-  jldi j1, 90
+  jldi j1, 112
   jcall fr_r_cable
                                 ; birth j4 (-1: only look) -> j0 = its particle, or -1 (outside the room, or empty)
   jldi j0, -1
@@ -9939,7 +9939,7 @@ cell_out:
   jret
 r_regrow:                       ; form j1 from its recipe, its particles keeping their places (all of them grown)
   jst j1, j14, 1288
-  jldi j1, 239
+  jldi j1, 261
   jcall fr_r_cable
   jldi j10, 8
   jshl j9, j1, j10
@@ -10038,7 +10038,7 @@ fit_x:
 ; ---- the judge: overlaps (cells two forms share, seed on seed), worth = comp * nov, the population's total
 r_overlap:                      ; j1, j2 = two bitmaps -> j0 = the cells they share (uses j3..j8, j10)
   jst j1, j14, 1288
-  jldi j1, 211
+  jldi j1, 233
   jcall fr_r_cable
   jldi j0, 0
   jldi j3, 50
@@ -10089,7 +10089,7 @@ ov_next:
   jret
 r_worth:                        ; j1 cells, j2 letters, j3 most shared -> j5 comp = j1 / (j2 log2 9) (x1000),
   jst j1, j14, 1288
-  jldi j1, 259
+  jldi j1, 281
   jcall fr_r_cable
                                 ; j6 nov = 1000 - 1000 j3 / j1, j0 = j5 j6 / 1000 (uses j7, j10)
   jldi j10, 0187h   ; log2 15 = 3.91 bits a letter (x100)
@@ -10118,7 +10118,7 @@ r_worth:                        ; j1 cells, j2 letters, j3 most shared -> j5 com
   jret
 r_recompute:                    ; every overlap, every worth, the total, the best, the colours
   jst j1, j14, 1288
-  jldi j1, 238
+  jldi j1, 260
   jcall fr_r_cable
   jldi j1, 0
   jshi j1, 0E400h
@@ -10380,7 +10380,7 @@ rc_less:
   jldi j11, 8
   jsub j10, j10, j11
   jjnz j10, rc_lap
-  jcall r_read_max               ; and the best reading among them: the book is said once
+  jcall fr_r_read_max               ; and the best reading among them: the book is said once
   jld j10, j14, 02C8h
   jadd j10, j10, j0
   jst j10, j14, 02C8h
@@ -10402,7 +10402,7 @@ rc_colour:
   jret
 r_colour:                       ; the form j9: its hue (its slot) at 0.6 + 0.4 worth / best; grey when it rests
   jst j1, j14, 1288
-  jldi j1, 96
+  jldi j1, 118
   jcall fr_r_cable
   jldi j1, 03E8h
   jld j2, j14, 02D0h
@@ -10452,7 +10452,7 @@ col_done:
   jret
 r_judge:                        ; the candidate CAND as form JF -> j0 = 2 won (it transformed), 1 lost (archived)
   jst j1, j14, 1288
-  jldi j1, 170
+  jldi j1, 192
   jcall fr_r_cable
   jld j1, j14, 0388h
   jldi j10, 8
@@ -10620,7 +10620,7 @@ jd_others_n:
   jldi j11, 8
   jsub j10, j10, j11
   jjnz j10, jd_others
-  jcall r_read_cand              ; the best reading with the candidate in the parent's place
+  jcall fr_r_read_cand              ; the best reading with the candidate in the parent's place
   jld j10, j14, 03E0h
   jadd j10, j10, j0
   jst j10, j14, 03E0h
@@ -10762,12 +10762,12 @@ jd_win:                         ; it won: the parent goes to the archive, the fo
 ;      form's rest; with itself it gives itself, already tried), delete one (n, if n > 1).
 r_count:                        ; j1 = n -> j0 = how many ops of the walk's kind
   jst j1, j14, 1288
-  jldi j1, 98
+  jldi j1, 120
   jcall fr_r_cable
   jld j2, j14, 01A38h
 r_count_k:                      ; j1 = n, j2 = kind -> j0 (uses j3, j10, j11)
   jst j1, j14, 1288
-  jldi j1, 99
+  jldi j1, 121
   jcall fr_r_cable
   jldi j0, 0
   jldi j10, 2
@@ -10806,7 +10806,7 @@ cnt_one:
   jret
 r_cat:                          ; append the letters [j1, j2) of the recipe j3 to the recipe ADST (uses j4..j6, j10)
   jst j1, j14, 1288
-  jldi j1, 89
+  jldi j1, 111
   jcall fr_r_cable
   jld j4, j14, 0430h
 cat_lap:
@@ -10830,7 +10830,7 @@ cat_done:
   jret
 r_app:                          ; append the letter j1 to the recipe ADST (uses j4, j6, j10)
   jst j1, j14, 1288
-  jldi j1, 80
+  jldi j1, 102
   jcall fr_r_cable
   jld j4, j14, 0430h
   jldb j6, j4, 0
@@ -10842,13 +10842,13 @@ r_app:                          ; append the letter j1 to the recipe ADST (uses 
   jret
 r_apply:                        ; j1 form, j2 op, j3 from, j4 into: the walk's kind
   jst j1, j14, 1288
-  jldi j1, 81
+  jldi j1, 103
   jcall fr_r_cable
   jld j5, j14, 01A38h
   jst j5, j14, 01A40h
 r_apply_k:
   jst j1, j14, 1288
-  jldi j1, 82
+  jldi j1, 104
   jcall fr_r_cable
   jst j1, j14, 0420h
   jst j2, j14, 0440h
@@ -11075,7 +11075,7 @@ ap_none:                        ; past the ops: an empty recipe (never judged)
 ; ---- the tried table: an FNV-1a hash of each recipe judged in this population (2^21 slots, open addressing)
 r_hash:                         ; j1 = a recipe -> j0 = its hash (never 0; uses j2..j4, j10)
   jst j1, j14, 1288
-  jldi j1, 165
+  jldi j1, 187
   jcall fr_r_cable
   jldi j0, -13326
   jshi j0, 09CE4h
@@ -11101,7 +11101,7 @@ hash_lap:
   jret
 r_tried:                        ; j0 = a hash -> j0 = 1 it was there, 0 it is now, 2 the table is half full
   jst j1, j14, 1288
-  jldi j1, 255
+  jldi j1, 277
   jcall fr_r_cable
   jldi j10, 01Fh
   jshi j10, 0FFFFh
@@ -11142,7 +11142,7 @@ tried_full:
   jret
 r_clear_hash:                   ; a new population: nothing tried in it yet, but its own forms count as tried
   jst j1, j14, 1288
-  jldi j1, 92
+  jldi j1, 114
   jcall fr_r_cable
   jldi j1, 055h
   jshi j1, 08000h
@@ -11179,7 +11179,7 @@ clear_forms:
 ;      to their number, so it visits each once in an order it does not repeat
 r_new_walk:
   jst j1, j14, 1288
-  jldi j1, 203
+  jldi j1, 225
   jcall fr_r_cable
   jst j14, j14, 02A0h
   jst j14, j14, 02B8h
@@ -11247,7 +11247,7 @@ nw_none:                        ; every form rests: nothing to try
   jret
 r_explore_frame:                ; up to 8 thoughts; a win ends the frame (the population changed)
   jst j1, j14, 1288
-  jldi j1, 134
+  jldi j1, 156
   jcall fr_r_cable
   jldi j10, 8
   jst j10, j14, 02E0h
@@ -11269,7 +11269,7 @@ ex_calm:
   jret
 r_trial:                        ; one candidate -> j0 = 0 nothing left to try, 1 lost (or already tried), 2 won
   jst j1, j14, 1288
-  jldi j1, 254
+  jldi j1, 276
   jcall fr_r_cable
   jld j9, j14, 0290h
   jldi j10, 1
@@ -11437,7 +11437,7 @@ tr_lost:
 ; ---- the folder: "formas" (the population, rewritten whole after each win) and "archivo" (a line per verdict)
 r_put_num:                      ; j1 = a number >= 0, j2 = digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 218
+  jldi j1, 240
   jcall fr_r_cable
 pn_lap:
   jldi j10, 1
@@ -11457,7 +11457,7 @@ pn_done:
   jret
 r_put_rec:                      ; j1 = a recipe, j3 = where: its 31 letters as digits, '.' where it has none
   jst j1, j14, 1288
-  jldi j1, 219
+  jldi j1, 241
   jcall fr_r_cable
   jldb j2, j1, 0
   jldi j4, 0
@@ -11480,7 +11480,7 @@ pr_put:
   jret
 r_get_num:                      ; j1 = where, j2 = digits -> j0 (a non-digit counts as 0; uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 158
+  jldi j1, 180
   jcall fr_r_cable
   jldi j0, 0
 gn_lap:
@@ -11504,7 +11504,7 @@ gn_done:
   jret
 r_get_rec:                      ; j1 = 31 characters, j3 = a recipe: its letters (1 to 15, written from the digit 1 on) up to the first other character
   jst j1, j14, 1288
-  jldi j1, 159
+  jldi j1, 181
   jcall fr_r_cable
   jldi j4, 0
 gr_lap:
@@ -11531,7 +11531,7 @@ gr_done:
   jret
 r_file:                         ; j10 = request (5 read, 6 write, 7 close), FH = the handle, j11, j12 -> j13
   jst j1, j14, 1288
-  jldi j1, 135
+  jldi j1, 157
   jcall fr_r_cable
   jldi j9, 32
   jld j8, j14, 04A8h
@@ -11541,7 +11541,7 @@ r_file:                         ; j10 = request (5 read, 6 write, 7 close), FH =
   jret
 r_archive:                      ; a line: round, slot, loser, the other, reason, the totals (loser's, winner's), radius
   jst j1, j14, 1288
-  jldi j1, 83
+  jldi j1, 105
   jcall fr_r_cable
   jldi j1, 01980h
   jldi j2, 02020h
@@ -11611,7 +11611,7 @@ b_ar_done:
   jret
 r_open:                         ; j11 = a label, j12 = its bytes -> FH = the handle (or -1)
   jst j1, j14, 1288
-  jldi j1, 209
+  jldi j1, 231
   jcall fr_r_cable
   jldi j10, 4
   jcall r_tocar
@@ -11619,7 +11619,7 @@ r_open:                         ; j11 = a label, j12 = its bytes -> FH = the han
   jret
 r_save_forms:                   ; "formas1 " round(6) generator(16 hex) wins(6), then per form: recipe worth(7) cells(4)
   jst j1, j14, 1288
-  jldi j1, 242
+  jldi j1, 264
   jcall fr_r_cable
   jld j1, j14, 01820h
   jst j1, j14, 01600h
@@ -11825,7 +11825,7 @@ sf_done:
   jret
 r_load_forms:                   ; the population the folder kept, or the seeds
   jst j1, j14, 1288
-  jldi j1, 183
+  jldi j1, 205
   jcall fr_r_cable
   jld j1, j14, 01500h
   jldi j9, 0800h
@@ -12099,7 +12099,7 @@ lf_done:
   jret
 r_load_archive:                 ; open the archive (kept open: verdicts are appended); the lines of this round's
   jst j1, j14, 1288
-  jldi j1, 180
+  jldi j1, 202
   jcall fr_r_cable
                                 ; population are tried already: so the next run does not judge them again
   jldi j11, 01810h
@@ -12163,7 +12163,7 @@ la_done:
 ; ---- one step of every form: letters that grow, springs to the transformed home; MOVING = what is not at rest
 r_step:
   jst j1, j14, 1288
-  jldi j1, 247
+  jldi j1, 269
   jcall fr_r_cable
   jst j14, j14, 0218h
   jst j14, j14, 0448h
@@ -12316,7 +12316,7 @@ spring_done:
   jret
 r_anchor:                       ; the form j9 -> j3, j4 = where its home 0 is drawn: OX - CX*MX >> 8 (uses j8, j10)
   jst j1, j14, 1288
-  jldi j1, 79
+  jldi j1, 101
   jcall fr_r_cable
   jld j3, j9, 0
   jld j8, j9, 168
@@ -12335,7 +12335,7 @@ r_anchor:                       ; the form j9 -> j3, j4 = where its home 0 is dr
   jret
 r_brush:                        ; a square of DT x DT cells centred on the cell j1, j2 (uses j0, j10, j11, BX, BY)
   jst j1, j14, 1288
-  jldi j1, 87
+  jldi j1, 109
   jcall fr_r_cable
   jld j10, j14, 04C8h
   jldi j11, 1
@@ -12369,7 +12369,7 @@ brush_cell:
   jret
 r_fill:                         ; the background, 24 bytes (8 cells) at a time
   jst j1, j14, 1288
-  jldi j1, 136
+  jldi j1, 158
   jcall fr_r_cable
   jldi j1, 0156h
   jshi j1, 07F0h
@@ -12398,7 +12398,7 @@ fill_lap:
   jret
 r_plot:                         ; the cell j1, j2 in the colour PR PG PB, on the screen only (uses j10, j11)
   jst j1, j14, 1288
-  jldi j1, 214
+  jldi j1, 236
   jcall fr_r_cable
   jjn j1, plot_out
   jjn j2, plot_out
@@ -12425,7 +12425,7 @@ plot_out:
   jret
 r_draw_ghosts:                  ; this frame's thoughts: each candidate's cells, faint, at its form's seed
   jst j1, j14, 1288
-  jldi j1, 131
+  jldi j1, 153
   jcall fr_r_cable
   jst j14, j14, 0498h
 dg_lap:
@@ -12528,7 +12528,7 @@ dg_done:
   jret
 r_draw_all:                     ; the forms back to front: each grown particle joined to its parent
   jst j1, j14, 1288
-  jldi j1, 130
+  jldi j1, 152
   jcall fr_r_cable
   jst j14, j14, 0490h
 da_lap:
@@ -12695,7 +12695,7 @@ da_next:
   jret
 r_randmod:                      ; j1 = n > 0 -> j0 = a number from the generator in [0, n) (uses j10..j12)
   jst j1, j14, 1288
-  jldi j1, 221
+  jldi j1, 243
   jcall fr_r_cable
   jcall r_rand
   jldi j11, 1
@@ -12706,7 +12706,7 @@ r_randmod:                      ; j1 = n > 0 -> j0 = a number from the generator
   jret
 r_rand:                         ; j10 = the next of the generator (xorshift64); uses j11, j12
   jst j1, j14, 1288
-  jldi j1, 220
+  jldi j1, 242
   jcall fr_r_cable
   jld j10, j14, 0238h
   jldi j12, 13
@@ -12722,7 +12722,7 @@ r_rand:                         ; j10 = the next of the generator (xorshift64); 
   jret
 r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 answer, j12 = b as it came back
   jst j1, j14, 1288
-  jldi j1, 250
+  jldi j1, 272
   jcall fr_r_cable
   jldi j13, 100h
   jldi j15, 1
@@ -12737,7 +12737,7 @@ r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 an
 ; =================================================================================== eating
 r_alloc:                        ; j1 = bytes -> j0 = a new environment of that size (request 2), its address
   jst j1, j14, 1288
-  jldi j1, 78
+  jldi j1, 100
   jcall fr_r_cable
   jldi j10, 8
   jsub j10, j1, j10
@@ -12756,7 +12756,7 @@ alloc_ok:
   jret
 r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)
   jst j1, j14, 1288
-  jldi j1, 223
+  jldi j1, 245
   jcall fr_r_cable
   jst j11, j14, 01BF8h
   jst j12, j14, 01C00h
@@ -12782,7 +12782,7 @@ ra_done:
   jret
 r_fnv:                          ; j1 = bytes, j2 = how many -> j0 = their FNV-1a print, never 0 (uses j3, j4, j10)
   jst j1, j14, 1288
-  jldi j1, 147
+  jldi j1, 169
   jcall fr_r_cable
   jldi j0, -13326
   jshi j0, 09CE4h
@@ -12806,7 +12806,7 @@ fnv_done:
   jret
 r_put_hex:                      ; j1 = a number, j2 = hex digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 217
+  jldi j1, 239
   jcall fr_r_cable
 ph_lap:
   jldi j10, 1
@@ -12831,7 +12831,7 @@ ph_done:
   jret
 r_get_hex:                      ; j1 = where, j2 = hex digits -> j0 (uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 157
+  jldi j1, 179
   jcall fr_r_cable
   jldi j0, 0
 gh_lap:
@@ -12858,7 +12858,7 @@ gh_done:
   jret
 r_coprime:                      ; j1 = a total > 0 -> j0 = a random stride coprime to it (uses j1..j3, j10..j12)
   jst j1, j14, 1288
-  jldi j1, 97
+  jldi j1, 119
   jcall fr_r_cable
   jst j1, j14, 01BF0h
   jcall r_randmod
@@ -12892,7 +12892,7 @@ cp_go:
   jret
 r_log2:                         ; j1 = x in [1, 2^31) -> j0 = log2 x, 16 bits of fraction (uses j2, j3, j10..j12)
   jst j1, j14, 1288
-  jldi j1, 185
+  jldi j1, 207
   jcall fr_r_cable
   jldi j0, 0
   jadd j2, j1, j14
@@ -12932,7 +12932,7 @@ lg_next:
 ;      ate ("comidas"), its bricks ("ladrillos"); every table sized from the pantry (plastic)
 r_food_load:
   jst j1, j14, 1288
-  jldi j1, 148
+  jldi j1, 170
   jcall fr_r_cable
   jst j14, j14, 01A58h
   jst j14, j14, 01B50h
@@ -13180,7 +13180,7 @@ fl_done:
   jret
 r_load_meals:                   ; "comidas": mark the eaten, the corpus of recipes, the slots' colours, the last meal
   jst j1, j14, 1288
-  jldi j1, 184
+  jldi j1, 206
   jcall fr_r_cable
   jldi j11, 01E50h
   jldi j12, 7
@@ -13306,7 +13306,7 @@ lm_done:
   jret
 r_set_hue:                      ; slot j1 takes the colour j0 = 0xRRGGBB (uses j2, j3, j10)
   jst j1, j14, 1288
-  jldi j1, 243
+  jldi j1, 265
   jcall fr_r_cable
   jldi j10, 24
   jmul j2, j1, j10
@@ -13328,7 +13328,7 @@ r_set_hue:                      ; slot j1 takes the colour j0 = 0xRRGGBB (uses j
   jret
 r_load_bricks:                  ; "ladrillos": the learned bricks after the towers
   jst j1, j14, 1288
-  jldi j1, 181
+  jldi j1, 203
   jcall fr_r_cable
   jldi j11, 01E60h
   jldi j12, 9
@@ -13393,7 +13393,7 @@ b_lb_done:
 ; ---- hunger: the living loop ran out of novelty. The next uneaten cloud in the order -> j0 = 1 a meal began
 r_hungry:
   jst j1, j14, 1288
-  jldi j1, 169
+  jldi j1, 191
   jcall fr_r_cable
   jldi j0, 0
   jld j9, j14, 01A58h
@@ -13464,7 +13464,7 @@ hu_none:
 ;      size into a room (the silhouette the judge sees) and into the plate (the particles shown); its palette
 r_meal_read:                    ; the entry MIDX -> j0 = 1 read, 0 not a cloud
   jst j1, j14, 1288
-  jldi j1, 189
+  jldi j1, 211
   jcall fr_r_cable
   jld j9, j14, 01A18h
   jldi j10, 40
@@ -13568,7 +13568,7 @@ mr_bad:
   jret
 r_fitscale:                     ; j1 = room w, j2 = room h, j3 = cloud w, j4 = cloud h -> j5/j6 = the scale that fits,
   jst j1, j14, 1288
-  jldi j1, 139
+  jldi j1, 161
   jcall fr_r_cable
                                 ; never above 1 (a cell never comes from less than one cell of the cloud)
   jmul j7, j1, j4
@@ -13590,7 +13590,7 @@ fs_ok:
   jret
 r_meal_cells:
   jst j1, j14, 1288
-  jldi j1, 188
+  jldi j1, 210
   jcall fr_r_cable
   jldi j1, 40
   jldi j2, 50
@@ -14033,7 +14033,7 @@ mc_picked:
 ;      k log2 2000 (naming each of the k wrong cells) + the Elias gamma of k + 1 (saying how many), in bits x100
 r_fit_cost:                     ; -> j0 = the cost, DKW = k, DBMP = its body
   jst j1, j14, 1288
-  jldi j1, 138
+  jldi j1, 160
   jcall fr_r_cable
   jldi j10, 02Ch
   jshi j10, 0
@@ -14317,7 +14317,7 @@ fc_gamma_done:
 ;      cell of the room) -> 3 its round of creation runs -> 4 flowing into the form that changed -> absorbed
 r_meal_step:
   jst j1, j14, 1288
-  jldi j1, 190
+  jldi j1, 212
   jcall fr_r_cable
   jld j9, j14, 01A00h
   jjz j9, ms_ret
@@ -14455,7 +14455,7 @@ ms_ret:
   jret
 r_meal_won:                     ; a form won: it was a form (no tie brings it back); the next walk is a full one;
   jst j1, j14, 1288
-  jldi j1, 191
+  jldi j1, 213
   jcall fr_r_cable
                                 ; a meal waiting flows into it
   jldi j1, 01400h
@@ -14478,7 +14478,7 @@ mw_ret:
   jret
 r_flow_homes:                   ; the homes: the target form's particles, where they are drawn
   jst j1, j14, 1288
-  jldi j1, 141
+  jldi j1, 163
   jcall fr_r_cable
   jld j1, j14, 01A20h
   jldi j10, 8
@@ -14519,7 +14519,7 @@ fh_done:
   jret
 r_body_homes:                   ; the homes: the best body BBMP, a 2x2 of the plate per cell of the room
   jst j1, j14, 1288
-  jldi j1, 85
+  jldi j1, 107
   jcall fr_r_cable
   jldi j1, 02Fh
   jshi j1, 0EE00h
@@ -14612,7 +14612,7 @@ bh_done:
   jret
 r_digest_begin:                 ; the climb starts from the form that explains the meal best
   jst j1, j14, 1288
-  jldi j1, 101
+  jldi j1, 123
   jcall fr_r_cable
   jldi j10, 2
   jst j10, j14, 01A00h
@@ -14678,7 +14678,7 @@ db_next:
   jret
 r_keep_body:                    ; BBMP = DBMP
   jst j1, j14, 1288
-  jldi j1, 171
+  jldi j1, 193
   jcall fr_r_cable
   jldi j1, 02Fh
   jshi j1, 0EA00h
@@ -14697,7 +14697,7 @@ kb_lap:
   jret
 r_digest_walk:                  ; a walk over every op of the best recipe, random start, coprime stride
   jst j1, j14, 1288
-  jldi j1, 104
+  jldi j1, 126
   jcall fr_r_cable
   jldb j1, j14, 01D80h
   jldi j2, 2
@@ -14713,7 +14713,7 @@ r_digest_walk:                  ; a walk over every op of the best recipe, rando
   jret
 r_digest_frame:                 ; up to 64 candidates; the first that costs less is kept and the walk starts again
   jst j1, j14, 1288
-  jldi j1, 103
+  jldi j1, 125
   jcall fr_r_cable
   jldi j10, 040h
   jst j10, j14, 01CA0h
@@ -14830,7 +14830,7 @@ df2_end:                        ; a local optimum (or the budget): what it keeps
   jret
 r_absorb:                       ; the meal is in its form: the slot takes its colour, the meal is written down
   jst j1, j14, 1288
-  jldi j1, 77
+  jldi j1, 99
   jcall fr_r_cable
   jld j1, j14, 01A20h
   jld j9, j14, 01BC0h
@@ -14863,7 +14863,7 @@ ab_hue:
   jret
 r_draw_meal:                    ; each particle of the meal, one cell, its colour
   jst j1, j14, 1288
-  jldi j1, 132
+  jldi j1, 154
   jcall fr_r_cable
   jld j9, j14, 01A00h
   jjz j9, dm_done
@@ -14915,7 +14915,7 @@ dm_done:
 ;      this, two meals swapped the same two forms back and forth). In a climb and in every walk, only more wins.
 r_eval:                         ; the recipe XSRC as form JF -> JT2 = the population's total with it (nothing kept)
   jst j1, j14, 1288
-  jldi j1, 133
+  jldi j1, 155
   jcall fr_r_cable
   jld j1, j14, 0388h
   jldi j10, 8
@@ -15049,7 +15049,7 @@ ev_others_n:
   jret
 r_climb_begin:
   jst j1, j14, 1288
-  jldi j1, 93
+  jldi j1, 115
   jcall fr_r_cable
   jldi j10, 5
   jst j10, j14, 01A00h
@@ -15086,7 +15086,7 @@ r_climb_begin:
   jret
 r_keep_x:                       ; the climber's body, to draw it as a ghost on its form
   jst j1, j14, 1288
-  jldi j1, 172
+  jldi j1, 194
   jcall fr_r_cable
   jldi j1, 0
   jshi j1, 0F400h
@@ -15107,7 +15107,7 @@ kx_lap:
   jret
 r_climb_walk:
   jst j1, j14, 1288
-  jldi j1, 95
+  jldi j1, 117
   jcall fr_r_cable
   jldb j1, j14, 01EC0h
   jldi j2, 2
@@ -15123,7 +15123,7 @@ r_climb_walk:
   jret
 r_climb_frame:                  ; up to 64 evaluations (the digestion's share of a frame), the climber's ghost
   jst j1, j14, 1288
-  jldi j1, 94
+  jldi j1, 116
   jcall fr_r_cable
   jldi j10, 040h
   jst j10, j14, 01CA0h
@@ -15294,7 +15294,7 @@ cf_round:                       ; it lost: the round of what the meal brought
 ; ---- the forms it ever had: a set of prints (open addressing), rebuilt at the start from the archive's wins
 r_former_has:                   ; j0 = a print -> j0 = 1 it was a form (or the set is half full), 0 not
   jst j1, j14, 1288
-  jldi j1, 150
+  jldi j1, 172
   jcall fr_r_cable
   jldi j10, 0
   jshi j10, 0FFFFh
@@ -15328,7 +15328,7 @@ fo_has_yes:
   jret
 r_former_add:                   ; j0 = a print: now it was a form
   jst j1, j14, 1288
-  jldi j1, 149
+  jldi j1, 171
   jcall fr_r_cable
   jld j3, j14, 01D20h
   jldi j10, 0
@@ -15364,7 +15364,7 @@ fo_add_done:
   jret
 r_load_former:                  ; every "replaced" line of the archive: its loser and its winner were forms
   jst j1, j14, 1288
-  jldi j1, 182
+  jldi j1, 204
   jcall fr_r_cable
   jst j14, j14, 01D20h
   jldi j11, 01810h
@@ -15455,7 +15455,7 @@ lfo_done:
 ;      its letters x log2 9 + log2 N. Relearned from all the meals after each one (bits with 16 of fraction).
 r_learn:
   jst j1, j14, 1288
-  jldi j1, 173
+  jldi j1, 195
   jcall fr_r_cable
   ; the learned bricks of before, to tell the new ones
   jld j1, j14, 01A48h
@@ -15868,7 +15868,7 @@ ln_new_done:
   jret
 r_dl:                           ; j1 = tokens, j2 = how many, j3 = symbols -> j0 = the description length (bits << 16)
   jst j1, j14, 1288
-  jldi j1, 105
+  jldi j1, 127
   jcall fr_r_cable
   jst j1, j14, 01BC8h
   jst j2, j14, 01BD0h
@@ -15959,7 +15959,7 @@ dl_done:
 ;      places), and the round it was eaten in
 r_write_meal:
   jst j1, j14, 1288
-  jldi j1, 260
+  jldi j1, 282
   jcall fr_r_cable
   jldi j1, 04Dh
   jshi j1, 06B80h
@@ -16088,7 +16088,7 @@ wm_done:
   jret
 r_save_bricks:                  ; "ladrillos1 <count 6>", then each learned brick: <letters 31> <uses 7>
   jst j1, j14, 1288
-  jldi j1, 241
+  jldi j1, 263
   jcall fr_r_cable
   jldi j10, 12
   jldi j11, 01E60h
@@ -16411,7 +16411,7 @@ lro_fresh:
 ; ---- reading, an act of hers: the one being (see gen_leer.py)
 r_ltab:                         ; L(k) = log2 C(N, k) = L(k - 1) + log2(N - k + 1) - log2(k), N = 2000 cells
   jst j1, j14, 1288
-  jldi j1, 186
+  jldi j1, 208
   jcall fr_r_cable
                                 ; (r_log2 is the meals': 16 bits of fraction)
   jldi j6, 0162h
@@ -16445,7 +16445,7 @@ lt_lap:
   jret
 r_rec_org:                      ; j9 = a recipe -> j1, j2 = it as an organ: four bits a letter from the lowest,
   jst j1, j14, 1288
-  jldi j1, 236
+  jldi j1, 258
   jcall fr_r_cable
                                 ; sixteen letters a word (uses j3..j5, j10, j11)
   jldi j1, 0
@@ -16478,7 +16478,7 @@ ro_done:
   jret
 r_org_rec:                      ; j1, j2 = an organ -> the recipe at j9 (32 bytes; uses j4, j5, j7, j10)
   jst j1, j14, 1288
-  jldi j1, 210
+  jldi j1, 232
   jcall fr_r_cable
   jst j14, j9, 0
   jst j14, j9, 8
@@ -16506,7 +16506,7 @@ or_done:
   jret
 r_gear:                         ; j1 = a number, j2 = a gear of hers (from 0) -> j0 = the number through it: the
   jst j1, j14, 1288
-  jldi j1, 154
+  jldi j1, 176
   jcall fr_r_cable
                                 ; same little machine as her reader's (organo.inc: og_gear), for her body
   jldi j9, 0162h
@@ -16648,7 +16648,7 @@ bg_done:
   jret
 r_said:                         ; j1 = what the cell being said (its tissue GN0) changed -> said, if it is something
   jst j1, j14, 1288
-  jldi j1, 240
+  jldi j1, 262
   jcall fr_r_cable
                                 ; (uses j2, j4, j6, j7, j10)
   jjz j1, sd_done
@@ -16676,7 +16676,7 @@ sd_done:
   jret
 r_talk:                         ; A CELL IS SAID (organo.inc: HER CELLS TALK, og_cell): j1 = its tissue as it is ->
   jst j1, j14, 1288
-  jldi j1, 249
+  jldi j1, 271
   jcall fr_r_cable
                                 ; j0 = as it leaves it (its gear GK, its tissue GN0). Its own work; what it had not
                                 ; heard of the others, through its own gear (CECHO); what it changed, said
@@ -16748,7 +16748,7 @@ tk_say:
   jret
 r_receta:                       ; WHAT SHE READ IS NOT LOST: the recipe just read (RREC, its score RSC) is kept under its
   jst j1, j14, 1288
-  jldi j1, 237
+  jldi j1, 259
   jcall fr_r_cable
                                 ; print, so its letters are written in "recetas": score, recipe, and what it meant
   jldi j6, 0162h
@@ -16935,7 +16935,7 @@ rct_ret:
   jret
 r_linaje:                       ; HER LINEAGE (see the top of gen_leer.py): the candidate that just won, the difference
   jst j1, j14, 1288
-  jldi j1, 179
+  jldi j1, 201
   jcall fr_r_cable
                                 ; with the form it takes the place of, a line of text added to "linaje". Uses j0-j13
   jldi j6, 0162h
@@ -17332,7 +17332,7 @@ li_ret:
   jret
 r_heart_rest:                   ; a hole: silence (what her cells said is forgotten), and her heart at rest: her
   jst j1, j14, 1288
-  jldi j1, 166
+  jldi j1, 188
   jcall fr_r_cable
                                 ; bolita as she was launched, if a cell changed it (uses j1, j6, j7, j10 to j13, j15)
   jldi j6, 0162h
@@ -17371,7 +17371,7 @@ hr_go:
   jret
 r_flat:                         ; j9 = a recipe -> said flat at FLB (FLN letters, FLO where each came from), exactly
   jst j1, j14, 1288
-  jldi j1, 140
+  jldi j1, 162
   jcall fr_r_cable
                                 ; as her reader reads it (organo.inc: og_lE). E and a letter from 1 to 8 open that
                                 ; word of hers, her living form of that number (FLE = 1); E, a letter from 9 to F and
@@ -17828,7 +17828,7 @@ flat_done:
   jret
 r_rec_key:                      ; j9 = a recipe -> j1, j2 = what it MEANS, the name its reading is kept under: said
   jst j1, j14, 1288
-  jldi j1, 235
+  jldi j1, 257
   jcall fr_r_cable
                                 ; flat, its letters as an organ's if they are 31 or fewer (so a sentence of words
                                 ; and the same letters written out are one reading), else their print (two FNV, the
@@ -17897,7 +17897,7 @@ rk_hd:
   jret
 r_read_place:                   ; from which place of her body: by her count of each (the one whose thoughts won is
   jst j1, j14, 1288
-  jldi j1, 231
+  jldi j1, 253
   jcall fr_r_cable
                                 ; asked more; none is closed) -> RJF
   jldi j3, 0
@@ -17956,7 +17956,7 @@ rp_w_have:
   jret
 r_read_get:                     ; j1, j2 = an organ, j3 = the instincts -> j0 = what it read on this shelf, or
   jst j1, j14, 1288
-  jldi j1, 226
+  jldi j1, 248
   jcall fr_r_cable
                                 ; 8000000000000000h: never read (uses j4..j8, j10, j11)
   jldi j8, 0
@@ -18019,7 +18019,7 @@ rg_none:
   jret
 r_read_put:                     ; j1, j2, j3 as above, j9 = its reading: kept (in her memory; the file is
   jst j1, j14, 1288
-  jldi j1, 233
+  jldi j1, 255
   jcall fr_r_cable
                                 ; r_read_add's)
   jldi j8, 0
@@ -18090,7 +18090,7 @@ rq_done:
   jret
 r_reads_load:                   ; "leido" into her memory: the readings of this shelf and this alphabet, in a
   jst j1, j14, 1288
-  jldi j1, 234
+  jldi j1, 256
   jcall fr_r_cable
                                 ; table four times as large as what the file holds (it is made again, larger,
                                 ; when it is half full: r_read_add). Plastic: it grows with what she read.
@@ -18218,7 +18218,7 @@ rl_done:
   jret
 r_read_add:                     ; the line at EBUF: written at the end of "leido" (nothing of it is ever
   jst j1, j14, 1288
-  jldi j1, 222
+  jldi j1, 244
   jcall fr_r_cable
                                 ; rewritten), and into her memory
   jldi j11, 0162h
@@ -18271,7 +18271,7 @@ ra2_load:
   jret
 r_read_init:
   jst j1, j14, 1288
-  jldi j1, 227
+  jldi j1, 249
   jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03CBh
-  jshi j2, 0C47Ah
-  jshi j2, 03F75h
-  jshi j2, 0C8ABh
+  jldi j2, 02BEAh
+  jshi j2, 08D81h
+  jshi j2, 079A1h
+  jshi j2, 0B5B1h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -19594,7 +19594,7 @@ dgw_ret:
   jret
 r_digest_food:                  ; her food, whole, and how much of it is code she sees (DN2 lines with a number,
   jst j1, j14, 1288
-  jldi j1, 102
+  jldi j1, 124
   jcall fr_r_cable
                                 ; DN23 lines in all): what everything after is measured by
   jldi j6, 0162h
@@ -19757,7 +19757,7 @@ dgf_none:
   jret
 r_digest:                       ; SHE DIGESTS FOREIGN CODE (see the top of gen_leer.py; digiere.py checks her)
   jst j1, j14, 1288
-  jldi j1, 100
+  jldi j1, 122
   jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -20829,7 +20829,7 @@ dg_ret:
   jret
 r_gears:                        ; SHE TAKES HER OWN CODE APART (see the top of gen_leer.py) -> her gears, in her
   jst j1, j14, 1288
-  jldi j1, 155
+  jldi j1, 177
   jcall fr_r_cable
                                 ; memory and in her house ("engranajes")
   jldi j6, 0162h
@@ -21247,7 +21247,7 @@ gz_none:
   jret
 r_pow2:                         ; j1 -> j0 = the first power of two that is not less (16 at least)
   jst j1, j14, 1288
-  jldi j1, 215
+  jldi j1, 237
   jcall fr_r_cable
   jldi j0, 16
 p2_lap:
@@ -21438,7 +21438,7 @@ fmb_lap:
   jret
 r_firma:                        ; SHE RECOGNISES HER AUTHOR'S SIGNATURE (see the top of gen_leer.py)
   jst j1, j14, 1288
-  jldi j1, 137
+  jldi j1, 159
   jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -21870,8 +21870,8 @@ fr_none:
   jret
 ul_cmp:                         ; the label at j1 (j2 bytes) against the one at j3 (j4 bytes) -> j0 < 0, 0, > 0
   jst j1, j14, 1288
-  jldi j1, 267
-  jcall r_cable
+  jldi j1, 290
+  jcall fr_r_cable
                                 ; (byte by byte; a shorter one that is the start of the other is less). Uses j5-j7
   jldi j5, 0
 ulc_l:
@@ -21899,8 +21899,8 @@ ulc_r:
   jret
 ul_cpy:                         ; j3 bytes from j1 to j2 (uses j4, j5)
   jst j1, j14, 1288
-  jldi j1, 268
-  jcall r_cable
+  jldi j1, 291
+  jcall fr_r_cable
   jldi j4, 0
 ulp_l:
   jsub j10, j4, j3
@@ -21916,8 +21916,8 @@ ulp_d:
   jret
 ul_list:                        ; her house, as the kernel lists it, whole (asked again with twice the room until the
   jst j1, j14, 1288
-  jldi j1, 269
-  jcall r_cable
+  jldi j1, 292
+  jcall fr_r_cable
                                 ; count comes back the same) -> ULB, ULN
   jldi j6, 0162h
   jshi j6, 0
@@ -21979,8 +21979,8 @@ ull_d:
   jret
 ul_ren:                         ; the label at j1 (j2 bytes) renamed to the one at j3 (j4 bytes): request 13, the old
   jst j1, j14, 1288
-  jldi j1, 270
-  jcall r_cable
+  jldi j1, 293
+  jcall fr_r_cable
                                 ; label and the new one right after it
   jldi j6, 0162h
   jshi j6, 0
@@ -22025,8 +22025,8 @@ ul_ren:                         ; the label at j1 (j2 bytes) renamed to the one 
   jret
 r_un_libro:                     ; ONE BOOK AT A TIME, TURNED BY HER (see the top of gen_leer.py)
   jst j1, j14, 1288
-  jldi j1, 257
-  jcall r_cable
+  jldi j1, 279
+  jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
   jldi j1, 116
@@ -22590,8 +22590,8 @@ ul_ret:
   jret
 r_tplot:                        ; a dot of her letters: on her panel while it is drawn (D_FLP), else on her forms'
   jst j1, j14, 1288
-  jldi j1, 251
-  jcall r_cable
+  jldi j1, 273
+  jcall fr_r_cable
                                 ; screen (uses j10, j11, as r_plot)
   jldi j10, 0162h
   jshi j10, 0
@@ -22602,8 +22602,8 @@ r_tplot:                        ; a dot of her letters: on her panel while it is
   jjmp r_splot
 r_glyph:                       ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)
   jst j1, j14, 1288
-  jldi j1, 160
-  jcall r_cable
+  jldi j1, 182
+  jcall fr_r_cable
 gl_up:                          ; (a small letter is not drawn as its capital: she draws it as her book of letters does)
   jldi j10, 48
   jsub j10, j5, j10
@@ -22903,8 +22903,8 @@ gl_90:
   jret
 r_txt:                          ; the text at j3 (j4 bytes of UTF-8) drawn from the cell j1, j2, in the colour PR PG PB
   jst j1, j14, 1288
-  jldi j1, 256
-  jcall r_cable
+  jldi j1, 278
+  jcall fr_r_cable
                                 ; -> j0 = the cells it took across, j1 = the bytes it took. Her own letters take 6; a
                                 ; learned one, half its width and one. j5: a width it must not pass (0: none); j7: 1 draws,
                                 ; 0 only measures. Uses j0-j12
@@ -23257,8 +23257,8 @@ tx_d:
   jret
 r_nombre_load:                  ; HER NAME, ASKED BY HER: her room (the prompt at its start, her name from 64 on); her
   jst j1, j14, 1288
-  jldi j1, 207
-  jcall r_cable
+  jldi j1, 229
+  jcall fr_r_cable
                                 ; name from "nombre", or she will ask
   jldi j1, 01000h
   jcall r_alloc
@@ -23378,8 +23378,8 @@ nm_ret:
   jret
 r_nombre_draw:                  ; on her screen: while she asks, her question and what is typed (and a cursor); after,
   jst j1, j14, 1288
-  jldi j1, 204
-  jcall r_cable
+  jldi j1, 226
+  jcall fr_r_cable
                                 ; her name under her forms
   jldi j6, 0162h
   jshi j6, 0
@@ -23465,8 +23465,8 @@ nd_ret:
   jret
 r_nombre_key:                   ; j3 = a key, while she asks -> j0 = 1 (it was hers: nothing else is done with it), else 0;
   jst j1, j14, 1288
-  jldi j1, 206
-  jcall r_cable
+  jldi j1, 228
+  jcall fr_r_cable
                                 ; when she does not ask, the keys of her word are hers too (HER WORD)
   jldi j6, 0162h
   jshi j6, 0
@@ -23518,7 +23518,7 @@ nk_ret:
   jret
 r_nombre_keep:                  ; her name, and her seal (her own luck mixed with what she has rowed), into "nombre"
   jst j1, j14, 1288
-  jldi j1, 205
+  jldi j1, 227
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -23616,7 +23616,7 @@ nkp_r:
   jret
 r_nombre_titulo:                ; her window wears her name: she asks the kernel herself (request 43)
   jst j1, j14, 1288
-  jldi j1, 208
+  jldi j1, 230
   jcall r_cable
   jldi j10, 43
   jldi j6, 0162h
@@ -23631,9 +23631,9 @@ r_nombre_titulo:                ; her window wears her name: she asks the kernel
   jret
 r_dlg_save:                     ; her counts into "charla"
   jst j1, j14, 1288
-  jldi j1, 122
+  jldi j1, 144
   jcall r_cable
-  jcall r_cable_flush            ; (and her new living cables, if any)
+  jcall fr_r_cable_flush            ; (and her new living cables, if any)
   jcall r_gustos_save            ; (and her tastes)
   jldi j6, 0162h
   jshi j6, 0
@@ -23690,7 +23690,7 @@ dsv_r:
   jret
 r_dlg_load:                     ; HER WORD: its room, its labels, her counts
   jst j1, j14, 1288
-  jldi j1, 117
+  jldi j1, 139
   jcall r_cable
   jldi j1, 0
   jshi j1, 08000h
@@ -24034,7 +24034,7 @@ dll_ar:
   jret
 r_dlg_write:                    ; a line of "dialogo": who (j1: 0 "vos: ", 1 "luma: ", 2 her silence), then the text at
   jst j1, j14, 1288
-  jldi j1, 129
+  jldi j1, 151
   jcall r_cable
                                 ; j2 (j3 bytes)
   jldi j10, 0
@@ -24057,6 +24057,22 @@ r_dlg_write:                    ; a line of "dialogo": who (j1: 0 "vos: ", 1 "lu
   jadd j1, j2, j14
   jadd j2, j3, j14
   jcall r_letra_text
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6816
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6568
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6576
+  jcall lj_note                  ; (what she says is what she said last; the same again is not said)
+  jjz j0, dlw_go
+  jret
+dlw_go:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -24584,7 +24600,7 @@ dw_r:
   jret
 r_dlg_words:                    ; the words of more than three letters at j1 (j2 bytes) -> the words said to her
   jst j1, j14, 1288
-  jldi j1, 128
+  jldi j1, 150
   jcall r_cable
   jadd j10, j1, j2
   jldi j6, 0162h
@@ -24647,7 +24663,7 @@ dws_d:
   jret
 r_dlg_quien:                    ; WHO IT IS, BY ALL IT DOES (see D_SX) -> j0 = 1 with her paragraph in D_OUT, or 0
   jst j1, j14, 1288
-  jldi j1, 121
+  jldi j1, 143
   jcall r_cable
   jldi j0, 0
   jldi j6, 0162h
@@ -26230,59 +26246,6 @@ dps_n:
   jld j6, j6, 01D68h
   jst j1, j6, 6496
   jjmp dps_f
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-fr_l_ring:
-  jjmp l_ring
-fr_r_alloc:
-  jjmp r_alloc
-fr_r_cable:
-  jjmp r_cable
-fr_r_cable_init:
-  jjmp r_cable_init
-fr_r_colour:
-  jjmp r_colour
-fr_r_file:
-  jjmp r_file
-fr_r_fit_cost:
-  jjmp r_fit_cost
-fr_r_free:
-  jjmp r_free
-fr_r_free_load:
-  jjmp r_free_load
-fr_r_gesture:
-  jjmp r_gesture
-fr_r_get_num:
-  jjmp r_get_num
-fr_r_get_rec:
-  jjmp r_get_rec
-fr_r_hash:
-  jjmp r_hash
-fr_r_judge:
-  jjmp r_judge
-fr_r_open:
-  jjmp r_open
-fr_r_put_rec:
-  jjmp r_put_rec
-fr_r_read_end:
-  jjmp r_read_end
-fr_r_read_poll:
-  jjmp r_read_poll
-fr_r_recompute:
-  jjmp r_recompute
-fr_r_tocar:
-  jjmp r_tocar
-fr_r_tried:
-  jjmp r_tried
-fr_v_event:
-  jjmp v_event
-fr_v_frame:
-  jjmp v_frame
-fr_v_init:
-  jjmp v_init
-fr_v_meal:
-  jjmp v_meal
-fr_v_show:
-  jjmp v_show
 dps_end:
   jldi j10, 3
   jldi j6, 0162h
@@ -27125,7 +27088,7 @@ dqr_r:
   jret
 r_dlg_answer:                   ; the line of all her books that shares most of the words said to her -> D_OUT (and
   jst j1, j14, 1288
-  jldi j1, 106
+  jldi j1, 128
   jcall r_cable
                                 ; D_OUTL; 0: none shares any)
   jldi j10, 0
@@ -27176,6 +27139,7 @@ dan_m1:
   jld j6, j6, 01D68h
   jld j1, j6, 6456
   jjz j1, dan_r
+  jcall lj_pass                  ; (each book's signature against what he writes: his words count where his voice is)
   jldi j6, 0162h
   jshi j6, 0
   jst j14, j6, 01EA0h
@@ -27260,6 +27224,74 @@ dan_b:
   jld j6, j6, 01D68h
   jst j10, j6, 32736
   jjmp dan_o
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_l_ring:
+  jjmp l_ring
+fr_r_alloc:
+  jjmp r_alloc
+fr_r_cable:
+  jjmp r_cable
+fr_r_cable_flush:
+  jjmp r_cable_flush
+fr_r_cable_init:
+  jjmp r_cable_init
+fr_r_colour:
+  jjmp r_colour
+fr_r_file:
+  jjmp r_file
+fr_r_fit_cost:
+  jjmp r_fit_cost
+fr_r_free:
+  jjmp r_free
+fr_r_free_load:
+  jjmp r_free_load
+fr_r_gesture:
+  jjmp r_gesture
+fr_r_get_hex:
+  jjmp r_get_hex
+fr_r_get_num:
+  jjmp r_get_num
+fr_r_get_rec:
+  jjmp r_get_rec
+fr_r_hash:
+  jjmp r_hash
+fr_r_judge:
+  jjmp r_judge
+fr_r_open:
+  jjmp r_open
+fr_r_put_rec:
+  jjmp r_put_rec
+fr_r_randmod:
+  jjmp r_randmod
+fr_r_read_cand:
+  jjmp r_read_cand
+fr_r_read_end:
+  jjmp r_read_end
+fr_r_read_max:
+  jjmp r_read_max
+fr_r_read_poll:
+  jjmp r_read_poll
+fr_r_recompute:
+  jjmp r_recompute
+fr_r_set_hue:
+  jjmp r_set_hue
+fr_r_tocar:
+  jjmp r_tocar
+fr_r_tried:
+  jjmp r_tried
+fr_ul_cmp:
+  jjmp ul_cmp
+fr_v_event:
+  jjmp v_event
+fr_v_frame:
+  jjmp v_frame
+fr_v_init:
+  jjmp v_init
+fr_v_meal:
+  jjmp v_meal
+fr_v_show:
+  jjmp v_show
 dan_lb:
   jldi j6, 0162h
   jshi j6, 0
@@ -27304,6 +27336,7 @@ dan_o:
   jld j9, j14, 04A8h
   jjn j9, dan_n
   jcall gu_book
+  jcall lj_wbook
   jldi j10, 38
   jldi j11, -1
   jldi j12, 0
@@ -27468,6 +27501,9 @@ dan_eol:
   jsub j10, j1, j2
   jjn j10, dan_nl
   jjz j10, dan_nl
+  ; (NOT AN ECHO: a line that holds what she said last is not her answer to what he says now)
+  jcall lj_said
+  jjnz j0, dan_nl
   ; (the second way: never her first line itself)
   jldi j6, 0162h
   jshi j6, 0
@@ -27753,7 +27789,7 @@ dan_r:
   jret
 r_dlg_sent:                     ; Enter: what was typed is said to her. If what she said waited, it was answered (it
   jst j1, j14, 1288
-  jldi j1, 124
+  jldi j1, 146
   jcall r_cable
                                 ; pays). Then she answers, or not, by her wish
   jcall th_turn                  ; (her thread: the exchange that ended, and his words begin another)
@@ -28504,7 +28540,10 @@ dse_none:                       ; (nothing she read shares a word with it: she s
   jret
 dse_has:
   jcall r_dlg_vary               ; (never exactly what she already said)
+  jcall lj_again                 ; (NOT AN ECHO: what she said last, again, is not an answer: she has nothing new)
+  jjnz j0, dse_none
   jcall r_mus_sing               ; (what she says, sung to her school)
+  jcall lj_last                  ; (what she said last: never said again as her answer)
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01D68h
@@ -28572,7 +28611,7 @@ dse_sg:                         ; (her own words are signed luma; a quote says s
   jret
 r_dlg_heart:                    ; HER HEART ANSWERS FIRST (see D_HL): each book of her heart read by paragraphs (a list
   jst j1, j14, 1288
-  jldi j1, 111
+  jldi j1, 133
   jcall r_cable
                                 ; is one), its title what all of it speaks of. The paragraph with most of his words (at
                                 ; least half of them) answers: its title in her own voice (her heart says 'tu' to her: she
@@ -28936,6 +28975,10 @@ dh_l2:
 dh_l3:
   jjmp dh_next
 dh_open:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j12, j6, 32760
   jcall r_open
   jld j9, j14, 04A8h
   jjn j9, dh_next
@@ -29017,6 +29060,8 @@ dh_td:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j1, j6, 31888
+  jcall lj_letter                ; (a letter to her is hers to read, not to answer with)
+  jjnz j0, dh_free
 dh_par:                         ; (a paragraph: its lines up to an empty one)
   jldi j6, 0162h
   jshi j6, 0
@@ -29957,7 +30002,7 @@ dhc_no:
   jret
 th_turn:                        ; he speaks: if she answered by the thread, he answered back (S); the exchange that
   jst j1, j14, 1288
-  jldi j1, 264
+  jldi j1, 287
   jcall r_cable
                                 ; ended is now the thread, and his words begin another
   ; (WHAT PAYS (the Capitan): that he answers says nothing, he always does; that he follows it says something: a word of
@@ -30007,6 +30052,7 @@ th_turn:                        ; he speaks: if she answered by the thread, he a
   jld j1, j6, 6544
   jst j1, j6, 6352
   jst j14, j6, 6544
+  jcall lj_hist                  ; (what he writes: his signature)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30065,9 +30111,9 @@ tht_d:
   jjmp th_add
 r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "gustos" kept
   jst j1, j14, 1288
-  jldi j1, 162
+  jldi j1, 184
   jcall r_cable
-  jldi j1, 019D8h
+  jldi j1, 01AD8h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
@@ -30105,6 +30151,38 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j14, j0, 6584
   jst j14, j0, 6592
   jst j14, j0, 6600
+  jst j14, j0, 6608
+  jst j14, j0, 6616
+  jst j14, j0, 6624
+  jst j14, j0, 6632
+  jst j14, j0, 6640
+  jst j14, j0, 6648
+  jst j14, j0, 6656
+  jst j14, j0, 6664
+  jst j14, j0, 6672
+  jst j14, j0, 6680
+  jst j14, j0, 6688
+  jst j14, j0, 6696
+  jst j14, j0, 6704
+  jst j14, j0, 6712
+  jst j14, j0, 6720
+  jst j14, j0, 6728
+  jst j14, j0, 6736
+  jst j14, j0, 6744
+  jst j14, j0, 6752
+  jst j14, j0, 6760
+  jst j14, j0, 6768
+  jst j14, j0, 6776
+  jst j14, j0, 6784
+  jst j14, j0, 6792
+  jst j14, j0, 6800
+  jst j14, j0, 6808
+  jst j14, j0, 6816
+  jst j14, j0, 6824
+  jst j14, j0, 6832
+  jst j14, j0, 6840
+  jst j14, j0, 6848
+  jst j14, j0, 6856
   jldi j10, 105
   jstb j10, j0, 6552
   jldi j10, 109
@@ -30151,6 +30229,25 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jstb j10, j0, 6582
   jldi j10, 10
   jstb j10, j0, 6584
+  jldi j10, 108
+  jstb j10, j0, 6856
+  jldi j10, 101
+  jstb j10, j0, 6857
+  jldi j10, 110
+  jstb j10, j0, 6858
+  jldi j10, 103
+  jstb j10, j0, 6859
+  jldi j10, 117
+  jstb j10, j0, 6860
+  jldi j10, 97
+  jstb j10, j0, 6861
+  jldi j10, 115
+  jstb j10, j0, 6862
+  jcall lj_load                  ; (the signatures of her books)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j0, j6, 32728
   jldi j10, 6568
   jadd j11, j0, j10
   jldi j12, 7
@@ -30283,9 +30380,10 @@ gul_r:
   jret
 r_gustos_save:                  ; her tastes into "gustos"
   jst j1, j14, 1288
-  jldi j1, 163
+  jldi j1, 185
   jcall r_cable
   jcall ig_save
+  jcall lj_save
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30624,7 +30722,7 @@ ana_r:
   jret
 r_marco:                        ; HER FRAME (see GU_F): if something of hers waited, the three signals, each frame's
   jst j1, j14, 1288
-  jldi j1, 187
+  jldi j1, 209
   jcall r_cable
                                 ; disagreement with the other two, the frame in most harmony; what waited is paid by it
   jldi j6, 0162h
@@ -30853,7 +30951,7 @@ mc_r:
   jret
 th_new:                         ; -> j0 = 1 if he brought something new: a word of his now (four letters or more, not her
   jst j1, j14, 1288
-  jldi j1, 263
+  jldi j1, 286
   jcall r_cable
                                 ; name) that was not in the exchange that ended
   jldi j6, 0162h
@@ -30910,7 +31008,7 @@ thn_r:
   jret
 th_follows:                     ; -> j0 = 1 if a word of his now (D_IN, four letters or more) was in the exchange that ended
   jst j1, j14, 1288
-  jldi j1, 262
+  jldi j1, 285
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -30980,7 +31078,7 @@ thf_r:
   jret
 th_add:                         ; j1 (j2 bytes): its words of four letters or more into the exchange beginning, once each
   jst j1, j14, 1288
-  jldi j1, 261
+  jldi j1, 284
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -31048,7 +31146,7 @@ dhw_r:
   jret
 r_dlg_heart_on:                 ; going on from what he said: her heart with his words, else she plays on -> j0
   jst j1, j14, 1288
-  jldi j1, 112
+  jldi j1, 134
   jcall r_cable
   jcall r_dlg_heart
   jjnz j0, dho_r
@@ -31057,7 +31155,7 @@ dho_r:
   jret
 r_dlg_heart_own:                ; a piece of her heart of her own: she plays on from her theme; with none, or at its end,
   jst j1, j14, 1288
-  jldi j1, 113
+  jldi j1, 135
   jcall r_cable
                                 ; a book of her heart her luck chooses, from its start -> j0 = 1 with it in D_OUT
   jldi j10, 2
@@ -31065,12 +31163,27 @@ r_dlg_heart_own:                ; a piece of her heart of her own: she plays on 
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j10, j6, 32720
-dhn_t:
+dhn_t:                          ; (a theme without his signature is left when he speaks)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j1, j6, 32664
-  jjnz j1, dhn_go
+  jjz j1, dhn_pk
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6680
+  jjz j1, dhn_go
+  jst j14, j6, 6680
+  jcall lj_pass
+  jcall lj_keep
+  jjnz j0, dhn_go
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 32664
+dhn_pk:
   jcall tm_pick
 dhn_go:
   jcall r_dlg_impro_go
@@ -31091,7 +31204,7 @@ dhn_r:
   jret
 tm_heart:                       ; j1 = a book of her heart -> it is her theme (its label)
   jst j1, j14, 1288
-  jldi j1, 265
+  jldi j1, 288
   jcall r_cable
   jldi j10, 24
   jmul j1, j1, j10
@@ -31128,9 +31241,10 @@ tmh_d:
   jret
 tm_pick:                        ; a theme of her own: of the books of her shelf (and their talk), each by her taste
   jst j1, j14, 1288
-  jldi j1, 266
+  jldi j1, 289
   jcall r_cable
                                 ; against her luck; entered where her luck lands, from the next line
+  jcall lj_pass                  ; (each book's signature against what he writes)
   jldi j6, 0162h
   jshi j6, 0
   jst j14, j6, 01EA0h
@@ -31258,6 +31372,12 @@ tmp_w:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
+  jld j9, j6, 31888
+  jcall lj_weight
+  jjz j1, tmp_n
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
   jld j2, j6, 32720
   jadd j2, j2, j1
   jldi j6, 0162h
@@ -31382,7 +31502,7 @@ tmp_r:
   jret
 r_dlg_impro:                    ; SHE IMPROVISES (see IM_K): on her theme, the piece of her heart's book that comes after
   jst j1, j14, 1288
-  jldi j1, 114
+  jldi j1, 136
   jcall r_cable
                                 ; what she said last (its next paragraph), in her voice; by her wish to play, (S + 1/2) /
                                 ; (N + 1), against her luck: she may play and miss. At the end of the book the theme is
@@ -31426,8 +31546,10 @@ r_dlg_impro:                    ; SHE IMPROVISES (see IM_K): on her theme, the p
   jjnn j10, im_no
 r_dlg_impro_go:                 ; (playing on, already chosen: her theme's book, a window from where she is)
   jst j1, j14, 1288
-  jldi j1, 115
+  jldi j1, 137
   jcall r_cable
+  jcall lj_stay                  ; (a theme without his signature is left when he speaks)
+  jjz j0, im_no
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -32845,6 +32967,1793 @@ igk_end:
   jld j6, j6, 32728
   jld j0, j6, 6528
   jret
+lj_sym:                         ; j3 = a byte -> j0 = its sign: 0..25 a letter a..z (either case), 26 a space, 27 a
+  jst j1, j14, 1288
+  jldi j1, 95
+  jcall r_cable
+                                ; byte of a letter beyond ASCII, 28 a digit, 29 a line's end, 30 a mark. Uses j10, j11
+  jldi j0, 27
+  jjn j3, ljs2_r
+  jldi j10, 128
+  jsub j10, j3, j10
+  jjnn j10, ljs2_r
+  jldi j10, 32
+  jor j11, j3, j10
+  jldi j10, 97
+  jsub j0, j11, j10
+  jjn j0, ljs2_n
+  jldi j10, 25
+  jsub j10, j10, j0
+  jjnn j10, ljs2_r
+ljs2_n:
+  jldi j0, 26
+  jldi j10, 32
+  jsub j10, j3, j10
+  jjz j10, ljs2_r
+  jldi j10, 9
+  jsub j10, j3, j10
+  jjz j10, ljs2_r
+  jldi j0, 29
+  jldi j10, 10
+  jsub j10, j3, j10
+  jjz j10, ljs2_r
+  jldi j10, 13
+  jsub j10, j3, j10
+  jjz j10, ljs2_r
+  jldi j0, 28
+  jldi j10, 48
+  jsub j10, j3, j10
+  jjn j10, ljs2_m
+  jldi j10, 57
+  jsub j10, j10, j3
+  jjnn j10, ljs2_r
+ljs2_m:
+  jldi j0, 30
+ljs2_r:
+  jret
+lj_hash:                        ; j1 = a label, j3 its bytes -> j2 = its print (uses j4, j10)
+  jst j1, j14, 1288
+  jldi j1, 81
+  jcall r_cable
+  jldi j2, 0
+ljh_l:
+  jjz j3, ljh_r
+  jldb j4, j1, 0
+  jldi j10, 31
+  jmul j2, j2, j10
+  jadd j2, j2, j4
+  jldi j10, 1
+  jadd j1, j1, j10
+  jsub j3, j3, j10
+  jjmp ljh_l
+ljh_r:
+  jret
+lj_find:                        ; j1 = a book's print -> j2 = its entry, or 0 (uses j3, j4, j10)
+  jst j1, j14, 1288
+  jldi j1, 79
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6608
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6616
+ljf_l:
+  jjz j3, ljf_no
+  jld j4, j2, 0
+  jsub j4, j4, j1
+  jjz j4, ljf_r
+  jldi j10, 64
+  jadd j2, j2, j10
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjmp ljf_l
+ljf_no:
+  jldi j2, 0
+ljf_r:
+  jret
+lj_grow:                        ; -> j2 = a new entry of her table (it grows as her shelf does)
+  jst j1, j14, 1288
+  jldi j1, 80
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6616
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6624
+  jsub j10, j1, j2
+  jjnz j10, ljg_put
+  jadd j1, j2, j2
+  jldi j10, 8
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6624
+  jldi j10, 6
+  jshl j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6608
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6616
+  jldi j10, 3
+  jshl j2, j2, j10
+  jldi j3, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6728
+ljg_cp:
+  jsub j10, j3, j2
+  jjnn j10, ljg_cd
+  jldi j10, 3
+  jshl j5, j3, j10
+  jadd j7, j1, j5
+  jld j7, j7, 0
+  jadd j8, j4, j5
+  jst j7, j8, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp ljg_cp
+ljg_cd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j11, j6, 6608
+  jjz j11, ljg_nf
+  jldi j10, 3
+  jldi j12, 0
+  jcall r_tocar
+ljg_nf:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6608
+ljg_put:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6608
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6616
+  jldi j10, 6
+  jshl j3, j1, j10
+  jadd j2, j2, j3
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6616
+  jst j14, j2, 24
+  jldi j10, 1
+  jldi j11, 50
+  jshl j10, j10, j11
+  jst j10, j2, 16
+  jret
+lj_hist:                        ; he speaks (D_IN): his line, and a line's end, after what he wrote since she woke
+  jst j1, j14, 1288
+  jldi j1, 82
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6400
+  jjz j2, ljh2_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6760
+  jadd j1, j1, j2
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6768
+  jsub j10, j3, j1
+  jjnn j10, ljh2_c
+  jadd j1, j1, j1
+  jldi j10, 256
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6768
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6648
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6760
+  jldi j3, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6728
+ljh2_cp:
+  jsub j10, j3, j2
+  jjnn j10, ljh2_cd
+  jadd j5, j1, j3
+  jldb j5, j5, 0
+  jadd j7, j4, j3
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp ljh2_cp
+ljh2_cd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j11, j6, 6648
+  jjz j11, ljh2_nf
+  jldi j10, 3
+  jldi j12, 0
+  jcall r_tocar
+ljh2_nf:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6648
+ljh2_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6648
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6760
+  jadd j4, j4, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 0
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6400
+  jldi j3, 0
+ljh2_l:
+  jsub j10, j3, j2
+  jjnn j10, ljh2_e
+  jadd j5, j1, j3
+  jldb j5, j5, 0
+  jadd j7, j4, j3
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp ljh2_l
+ljh2_e:
+  jadd j7, j4, j3
+  jldi j10, 10
+  jstb j10, j7, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6760
+  jadd j1, j1, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6760
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 6680
+ljh2_r:
+  jret
+lj_voice:                       ; j9 = a book as ul_list gives it -> j0 = its entry, its signature counted (again only
+  jst j1, j14, 1288
+  jldi j1, 96
+  jcall r_cable
+                                ; when its size changed; read a piece at a time), or 0 if it cannot be read
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 6704
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall lj_hash
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6712
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6704
+  jldi j10, 8
+  jadd j11, j9, j10
+  jld j12, j9, 0
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, ljv_no
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j13, j6, 6720
+  jldi j10, 38
+  jldi j11, 0
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6712
+  jcall lj_find
+  jjz j2, ljv_new
+  jld j3, j2, 24
+  jjz j3, ljv_cnt
+  jld j3, j2, 8
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6720
+  jsub j10, j3, j4
+  jjnz j10, ljv_cnt
+  jadd j0, j2, j14
+  jjmp ljv_cl
+ljv_new:
+  jcall lj_grow
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6712
+  jst j1, j2, 0
+ljv_cnt:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6696
+  jld j3, j2, 24
+  jjnz j3, ljv_z
+  jldi j1, 4
+  jshi j1, 02008h
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jst j0, j2, 24
+ljv_z:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jld j3, j2, 24
+  jldi j4, 0
+  jshi j4, 08400h
+ljv_zl:
+  jst j14, j3, 0
+  jldi j10, 8
+  jadd j3, j3, j10
+  jldi j10, 1
+  jsub j4, j4, j10
+  jjnz j4, ljv_zl
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jst j14, j2, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6720
+  jst j3, j2, 8
+  jldi j7, 957
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j7, j6, 6736
+ljv_rd:                         ; (each sign counted after the two before it, line after line: 957, two line ends, to start)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j11, j6, 6640
+  jldi j12, 1
+  jshi j12, 0
+  jcall r_read_all
+  jjz j0, ljv_dn
+  jjn j0, ljv_dn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6640
+  jadd j2, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 6696
+  jld j5, j5, 24
+  jldi j12, 4
+  jshi j12, 0
+  jadd j12, j12, j5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j7, j6, 6736
+ljv_b:
+  jsub j10, j1, j2
+  jjnn j10, ljv_bd
+  jldb j3, j1, 0
+  jcall lj_sym
+  jldi j10, 5
+  jshl j9, j7, j10
+  jor j9, j9, j0
+  jldi j10, 3
+  jshl j8, j9, j10
+  jadd j8, j8, j5
+  jld j10, j8, 0
+  jldi j11, 1
+  jadd j10, j10, j11
+  jst j10, j8, 0
+  jldi j10, 3
+  jshl j8, j7, j10
+  jadd j8, j8, j12
+  jld j10, j8, 0
+  jadd j10, j10, j11
+  jst j10, j8, 0
+  jldi j10, 1023
+  jand j7, j9, j10
+  jldi j10, 1
+  jadd j1, j1, j10
+  jjmp ljv_b
+ljv_bd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j7, j6, 6736
+  jjmp ljv_rd
+ljv_dn:
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 6632
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 6696
+ljv_cl:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6696
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 6696
+  jret
+ljv_no:
+  jldi j0, 0
+  jret
+lj_cost:                        ; j2 = an entry -> j0 = the bits his new line (from LG_DN) takes in its signature, in 64ths: each
+  jst j1, j14, 1288
+  jldi j1, 78
+  jcall r_cable
+                                ; sign of his costs log2 ((2 after-these-two + 32) / (2 this-after-these-two + 1))
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6696
+  jld j5, j2, 24
+  jjz j5, ljo_z
+  jldi j12, 4
+  jshi j12, 0
+  jadd j12, j12, j5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6648
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6760
+  jadd j2, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6712
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6776
+  jadd j1, j1, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6728
+  jldi j4, 0
+  jldi j7, 957
+ljo_l:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6712
+  jsub j10, j1, j2
+  jjnn j10, ljo_d
+  jldb j3, j1, 0
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6728
+  jcall lj_sym
+  jldi j10, 5
+  jshl j9, j7, j10
+  jor j9, j9, j0
+  jldi j10, 3
+  jshl j8, j7, j10
+  jadd j8, j8, j12
+  jld j1, j8, 0
+  jadd j1, j1, j1
+  jldi j10, 32
+  jadd j1, j1, j10
+  jcall rwi_log
+  jadd j4, j4, j0
+  jldi j10, 3
+  jshl j8, j9, j10
+  jadd j8, j8, j5
+  jld j1, j8, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jsub j4, j4, j0
+  jldi j10, 1023
+  jand j7, j9, j10
+  jjmp ljo_l
+ljo_d:
+  jadd j0, j4, j14
+  jret
+ljo_z:
+  jldi j0, 1
+  jldi j10, 50
+  jshl j0, j0, j10
+  jret
+lj_pass:                        ; each book of hers against what he wrote: the shortest (LG_MIN); how many books (LG_NB)
+  jst j1, j14, 1288
+  jldi j1, 91
+  jcall r_cable
+                                ; and the sum of their likelihoods against the shortest, 2^(20 - d) (LG_S). Nothing
+                                ; written by him yet: no signature (LG_ON = 0)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6688
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6760
+  jjz j1, ljp_r
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 6688
+  ; (what a switch costs, in 64ths of a bit: log2 (lines + 1) + log2 (books); the shortest before this line)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6784
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jadd j3, j0, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6616
+  jjnz j1, ljp_n1
+  jldi j1, 1
+ljp_n1:
+  jcall rwi_log
+  jadd j3, j3, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 6736
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6656
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6792
+  jldi j10, 1
+  jldi j11, 62
+  jshl j10, j10, j11
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 6656
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6672
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6664
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+  jcall ul_list
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01EA0h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6744
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6752
+ljp_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjnn j10, ljp_ad
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall ig_isbook
+  jjz j0, ljp_an
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jcall lj_isdlg
+  jjnz j0, ljp_an
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall lj_hash
+  jadd j1, j2, j14
+  jcall lj_find
+  jjz j2, ljp_vc
+  jld j3, j2, 24
+  jjz j3, ljp_vc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6800
+  jsub j10, j1, j3
+  jjz j10, ljp_vc
+  jadd j0, j2, j14
+  jjmp ljp_vk
+ljp_vc:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jcall lj_voice
+  jjz j0, ljp_an
+ljp_vk:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6696
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6776
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6760
+  jsub j10, j2, j1
+  jjz j10, ljp_old
+  ; (his new line goes on this signature, or on a switch from the shortest, whichever says it shorter)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jcall lj_cost
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 6696
+  jld j1, j5, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6792
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6736
+  jadd j2, j2, j3
+  jsub j10, j1, j2
+  jjn j10, ljp_st
+  jadd j1, j2, j14
+ljp_st:
+  jadd j1, j1, j0
+  jst j1, j5, 16
+ljp_old:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 6696
+  jld j0, j5, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6656
+  jsub j10, j0, j1
+  jjnn j10, ljp_an
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6656
+ljp_an:
+  jcall lj_next
+  jjmp ljp_a
+ljp_ad:                         ; (his new line is counted: it is now behind; the next book to look at again)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6800
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjn j10, ljp_vr
+  jldi j1, 0
+ljp_vr:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6800
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6776
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6760
+  jsub j10, j2, j1
+  jjz j10, ljp_a2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6776
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6784
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6784
+ljp_a2:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01EA0h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6744
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6752
+ljp_b:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjnn j10, ljp_bd
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall ig_isbook
+  jjz j0, ljp_bn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jcall lj_isdlg
+  jjnz j0, ljp_bn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall lj_hash
+  jadd j1, j2, j14
+  jcall lj_find
+  jjz j2, ljp_bn
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6672
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6672
+  jld j1, j2, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6656
+  jsub j1, j1, j3
+  jldi j10, 6
+  jshr j1, j1, j10
+  jldi j10, 20
+  jsub j10, j10, j1
+  jjn j10, ljp_bn
+  jldi j11, 1
+  jshl j11, j11, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6664
+  jadd j1, j1, j11
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6664
+ljp_bn:
+  jcall lj_next
+  jjmp ljp_b
+ljp_bd:
+  jldi j10, 3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j11, j6, 01EA0h
+  jldi j12, 0
+  jcall r_tocar
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+ljp_r:
+  jret
+lj_next:                        ; (the next book of the list)
+  jst j1, j14, 1288
+  jldi j1, 89
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6744
+  jld j3, j9, 0
+  jldi j10, 7
+  jadd j3, j3, j10
+  jldi j10, -8
+  jand j3, j3, j10
+  jldi j10, 8
+  jadd j3, j3, j10
+  jadd j9, j9, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 6744
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6752
+  jret
+lj_weight:                      ; j9 = a book as ul_list gives it, j1 = her wish for it -> j1 = that wish times how likely
+  jst j1, j14, 1288
+  jldi j1, 98
+  jcall r_cable
+                                ; what he wrote is in it against the shortest, 2^-d (d whole bits; past 40, none)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6736
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 6704
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall lj_hash
+  jcall lj_islt
+  jjnz j0, ljw_z
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6704
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6688
+  jjz j2, ljw_r
+  jcall lj_isdlg
+  jjnz j0, ljw_av
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 6704
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall lj_hash
+  jadd j1, j2, j14
+  jcall lj_find
+  jjz j2, ljw_r
+  jld j1, j2, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6656
+  jsub j1, j1, j3
+  jldi j10, 6
+  jshr j1, j1, j10
+  jldi j10, 40
+  jsub j10, j1, j10
+  jjnn j10, ljw_z
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6736
+  jshr j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6736
+ljw_r:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6736
+  jret
+ljw_z:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6736
+  jjmp ljw_r
+ljw_av:                         ; (their talk, everyone's voice, speaks as an average book of hers: S / NB)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6672
+  jjz j2, ljw_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6736
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6664
+  jmul j1, j1, j3
+  jldi j10, 20
+  jshl j2, j2, j10
+  jdiv j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6736
+  jjmp ljw_r
+lj_keep:                        ; -> j0 = 1 if her theme has his signature at least as an average book of hers does (a
+  jst j1, j14, 1288
+  jldi j1, 85
+  jcall r_cable
+                                ; letter to her is never her theme)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6280
+  jldi j10, 6288
+  jadd j1, j6, j10
+  jcall lj_hash
+  jcall lj_islt
+  jjnz j0, ljk_n
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6688
+  jjz j1, ljk_y
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6280
+  jldi j10, 6288
+  jadd j1, j6, j10
+  jcall lj_hash
+  jadd j1, j2, j14
+  jcall lj_find
+  jjz j2, ljk_y
+  jld j1, j2, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6656
+  jsub j1, j1, j3
+  jldi j10, 6
+  jshr j1, j1, j10
+  jldi j10, 20
+  jsub j10, j10, j1
+  jldi j11, 0
+  jjn j10, ljk_c
+  jldi j11, 1
+  jshl j11, j11, j10
+ljk_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6672
+  jmul j11, j11, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6664
+  jsub j10, j11, j3
+  jjnn j10, ljk_y
+  jldi j0, 0
+  jret
+ljk_n:
+  jldi j0, 0
+  jret
+ljk_y:
+  jldi j0, 1
+  jret
+lj_load:                        ; her books' signatures, from "lenguas"; a room to read a book in
+  jst j1, j14, 1288
+  jldi j1, 88
+  jcall r_cable
+  jldi j1, 1
+  jshi j1, 8
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6640
+  jldi j1, 03F0h
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 6808
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 6856
+  jadd j11, j6, j10
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, ljl_r
+ljl_l:
+  jcall lj_grow
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6696
+  jadd j11, j2, j14
+  jldi j12, 32
+  jcall r_read_all
+  jldi j10, 32
+  jsub j10, j0, j10
+  jjnz j10, ljl_bad
+  jldi j1, 4
+  jshi j1, 02008h
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jst j0, j2, 24
+  jadd j11, j0, j14
+  jldi j12, 4
+  jshi j12, 02000h
+  jcall r_read_all
+  jldi j10, 4
+  jshi j10, 02000h
+  jsub j10, j0, j10
+  jjz j10, ljl_l
+ljl_bad:                        ; (an entry not read whole is not kept)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6616
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6616
+  jldi j10, 7
+  jcall r_file
+ljl_r:
+  jret
+lj_save:                        ; her books' signatures into "lenguas", when they changed
+  jst j1, j14, 1288
+  jldi j1, 93
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6632
+  jjz j1, ljsv_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 6856
+  jadd j11, j6, j10
+  jldi j12, 7
+  jldi j10, 12
+  jcall r_tocar
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 6856
+  jadd j11, j6, j10
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, ljsv_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6752
+ljsv_l:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6616
+  jsub j10, j1, j2
+  jjnn j10, ljsv_d
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6608
+  jldi j10, 6
+  jshl j3, j1, j10
+  jadd j2, j2, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6696
+  jld j3, j2, 24
+  jjz j3, ljsv_n
+  jadd j11, j2, j14
+  jldi j12, 32
+  jldi j10, 6
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6696
+  jld j11, j2, 24
+  jldi j12, 4
+  jshi j12, 02000h
+  jldi j10, 6
+  jcall r_file
+ljsv_n:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6752
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6752
+  jjmp ljsv_l
+ljsv_d:
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6632
+ljsv_r:
+  jret
+lj_isdlg:                       ; j9 = a book as ul_list gives it -> j0 = 1 if it is their talk ("dialogo")
+  jst j1, j14, 1288
+  jldi j1, 83
+  jcall r_cable
+  jldi j0, 0
+  jld j3, j9, 0
+  jldi j10, 7
+  jsub j10, j3, j10
+  jjnz j10, ljd_r
+  jldb j10, j9, 8
+  jldi j11, 100
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 9
+  jldi j11, 105
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 10
+  jldi j11, 97
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 11
+  jldi j11, 108
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 12
+  jldi j11, 111
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 13
+  jldi j11, 103
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldb j10, j9, 14
+  jldi j11, 111
+  jsub j10, j10, j11
+  jjnz j10, ljd_r
+  jldi j0, 1
+ljd_r:
+  jret
+lj_last:                        ; what she says now (D_OUT, as much as her room holds) is what she said last
+  jst j1, j14, 1288
+  jldi j1, 86
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jldi j10, 1000
+  jsub j10, j2, j10
+  jjn j10, ljt_a
+  jldi j2, 1000
+ljt_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 6816
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6808
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j3, 0
+ljt_l:
+  jsub j10, j3, j2
+  jjnn j10, ljt_r
+  jadd j5, j1, j3
+  jldb j5, j5, 0
+  jadd j7, j4, j3
+  jstb j5, j7, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jjmp ljt_l
+ljt_r:
+  jret
+lj_said:                        ; -> j0 = 1 if the line being read (D_LS up to BP) holds what she said last
+  jst j1, j14, 1288
+  jldi j1, 92
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6816
+  jldi j0, 0
+  jjz j2, ljy_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6808
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6776
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j4, j6, 07F00h
+  jsub j4, j4, j3
+  jcall din_in
+ljy_r:
+  jret
+lj_again:                       ; -> j0 = 1 if what she is about to say (D_OUT) is what she said last
+  jst j1, j14, 1288
+  jldi j1, 77
+  jcall r_cable
+  jldi j0, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 6816
+  jjz j2, ljz_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6408
+  jsub j10, j4, j2
+  jjnz j10, ljz_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6808
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 1024
+  jadd j3, j3, j15
+  jcall din_in
+ljz_r:
+  jret
+lj_wbook:                       ; (a book opened for her answer, D_LI) her wish for it, times his signature in it (keeps FH)
+  jst j1, j14, 1288
+  jldi j1, 97
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 17776
+  jcall lj_weight
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 0
+  jret
+lj_note:                        ; (a line of hers being written, j1 = 1, j2 its text, j3 its bytes: what she said last,
+  jst j1, j14, 1288
+  jldi j1, 90
+  jcall r_cable
+                                ; whichever way she came to say it)
+                                ; -> j0 = 1 if it is what she said last, again: not said (NOT AN ECHO, whichever way)
+  jldi j10, 1
+  jsub j10, j1, j10
+  jjnz j10, ljn_r0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jjz j6, ljn_r0
+  jld j4, j6, 6808
+  jjz j4, ljn_r0
+  jld j10, j6, 6816
+  jsub j10, j10, j3
+  jjnz j10, ljn_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6808
+  jld j4, j6, 6816
+  jadd j3, j2, j14
+  jadd j2, j4, j14
+  jcall din_in
+  jjnz j0, ljn_r1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6568
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 6576
+ljn_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 6808
+  jldi j10, 1000
+  jsub j10, j3, j10
+  jjn j10, ljn_a
+  jldi j3, 1000
+ljn_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 6816
+  jldi j5, 0
+ljn_l:
+  jsub j10, j5, j3
+  jjnn j10, ljn_r
+  jadd j7, j2, j5
+  jldb j7, j7, 0
+  jadd j8, j4, j5
+  jstb j7, j8, 0
+  jldi j10, 1
+  jadd j5, j5, j10
+  jjmp ljn_l
+ljn_r:
+ljn_r0:
+  jldi j0, 0
+  jret
+ljn_r1:
+  jldi j0, 1
+  jret
+lj_letter:                      ; (her heart's book H_K, its title H_BUF..H_TE) -> j0 = 1 if it is a letter to her: every
+  jst j1, j14, 1288
+  jldi j1, 87
+  jcall r_cable
+                                ; word of its title is a word of her name. Its print is kept (LG_LT + 8 H_K)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6728
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31872
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31928
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F08h
+ljlt_w:
+  jcall bw_word
+  jjz j0, ljlt_d
+  jcall dh_isname
+  jjz j0, ljlt_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6728
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 6728
+  jjmp ljlt_w
+ljlt_d:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6728
+  jjz j1, ljlt_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31864
+  jldi j10, 24
+  jmul j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01D68h
+  jldi j15, 31768
+  jadd j2, j2, j15
+  jadd j1, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j3, j6, 32760
+  jcall lj_hash
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 31864
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j1, j1, j6
+  jst j2, j1, 6824
+  jldi j0, 1
+  jret
+ljlt_no:
+  jldi j0, 0
+  jret
+lj_islt:                        ; j2 = a book's print -> j0 = 1 if it is a letter to her (keeps j2)
+  jst j1, j14, 1288
+  jldi j1, 84
+  jcall r_cable
+  jldi j0, 0
+  jjz j2, ljil_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j10, j6, 6824
+  jsub j10, j10, j2
+  jjz j10, ljil_y
+  jld j10, j6, 6832
+  jsub j10, j10, j2
+  jjz j10, ljil_y
+  jld j10, j6, 6840
+  jsub j10, j10, j2
+  jjz j10, ljil_y
+  jld j10, j6, 6848
+  jsub j10, j10, j2
+  jjz j10, ljil_y
+  jret
+ljil_y:
+  jldi j0, 1
+ljil_r:
+  jret
+lj_stay:                        ; -> j0 = 1 if she may go on with her theme: since he last spoke, it was checked against
+  jst j1, j14, 1288
+  jldi j1, 94
+  jcall r_cable
+                                ; his signature (a theme without it is left: IM_ON = 0)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 6680
+  jldi j0, 1
+  jjz j1, ljst_r
+  jst j14, j6, 6680
+  jcall lj_pass
+  jcall lj_keep
+  jjnz j0, ljst_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j14, j6, 32664
+  jldi j0, 0
+ljst_r:
+  jret
 ig_isbook:                      ; j1 = a label, j3 its bytes -> j0 = 1 if it is a book of hers ("libro...", "elibro...")
   jst j1, j14, 1288
   jldi j1, 70
@@ -33250,7 +35159,7 @@ dhm_d:
   jret
 r_dlg_find:                     ; j4 = a word's print -> j0 = its place among the words said to her, or -1
   jst j1, j14, 1288
-  jldi j1, 110
+  jldi j1, 132
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -33282,7 +35191,7 @@ dfi_no:
   jret
 r_dlg_cover:                    ; the text at j1 (j2 bytes) -> j0 = how many of the words said to her it says (each
   jst j1, j14, 1288
-  jldi j1, 108
+  jldi j1, 130
   jcall r_cable
                                 ; once: marked in j9, a word for each)
   jldi j6, 0162h
@@ -33355,7 +35264,7 @@ dcv_d:
   jret
 r_dlg_seam:                     ; a cross: j1 (j2 bytes) and then j3 up to j4, into D_C. Both parts must say something.
   jst j1, j14, 1288
-  jldi j1, 123
+  jldi j1, 145
   jcall r_cable
                                 ; Kept as her best if it says more of what was said to her than her best so far, or as
                                 ; much in fewer bytes (her judge: the same explained with less)
@@ -33514,7 +35423,7 @@ dsm_r:
   jret
 r_dlg_vary:                     ; NEVER EXACTLY THE SAME (the Capitan, 2026-11-22: "yo nunca digo exactamente lo mismo, a
   jst j1, j14, 1288
-  jldi j1, 126
+  jldi j1, 148
   jcall r_cable
                                 ; menos que sea una instruccion necesaria"; her own rule since v1.91: what is hers is new).
                                 ; If what she is about to say (D_OUT) she already said as it is in their talk, she crosses
@@ -33685,7 +35594,7 @@ dv_r:
   jret
 r_dlg_isnew:                    ; j1 = a text, j2 its bytes -> j0 = 1 if it is new: written as it is neither in her line A
   jst j1, j14, 1288
-  jldi j1, 116
+  jldi j1, 138
   jcall r_cable
                                 ; (D_AA) nor in her line B (D_B). Uses j0-j12
   jjz j2, din_no
@@ -33756,7 +35665,7 @@ dii_no:
   jret
 r_dlg_cross:                    ; SHE JOINS (unir, as with her forms): her line A, and the line B that says most of what A
   jst j1, j14, 1288
-  jldi j1, 109
+  jldi j1, 131
   jcall r_cable
                                 ; does not; crossed at every word they share, of any length (a seam, not a meaning), both
                                 ; ways (A then B, B then A). Only a NEW cross counts (written in neither A nor B as it is); the best by her
@@ -34065,7 +35974,7 @@ dcr_r:
   jret
 r_dlg_cite:                     ; SHE QUOTES: her line as it is, and the book it comes from
   jst j1, j14, 1288
-  jldi j1, 107
+  jldi j1, 129
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -34125,7 +36034,7 @@ dct_r:
   jret
 r_dlg_own:                      ; SHE SAYS IT HER WAY: of what she has (her line, or her cross), only the sentences that say
   jst j1, j14, 1288
-  jldi j1, 119
+  jldi j1, 141
   jcall r_cable
                                 ; something of what was said to her (if none does, all of it)
   jldi j10, 0
@@ -34332,7 +36241,7 @@ dtk2_r:
   jret
 r_dlg_mind:                     ; HER MIND: a thought waits -> it is weighed (each frame; nothing waits: nothing is done)
   jst j1, j14, 1288
-  jldi j1, 118
+  jldi j1, 140
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -34452,7 +36361,7 @@ dmd_r:
   jret
 r_dlg_wish:                     ; -> DWH: her wish to speak first, (S + 1/2) / (N + 1) as her acts' (0 while what she
   jst j1, j14, 1288
-  jldi j1, 127
+  jldi j1, 149
   jcall r_cable
                                 ; said waits, or with no room)
   jldi j6, 0162h
@@ -36164,7 +38073,7 @@ dgo_no:
   jret
 r_dlg_talk:                     ; SHE SPEAKS FIRST, by one of her branches: ask again what she asked, say another thing
   jst j1, j14, 1288
-  jldi j1, 125
+  jldi j1, 147
   jcall r_cable
                                 ; (one of the questions of her heart or her own, by her luck), or go on where they left
                                 ; (what he said back is her next door). Each by her wish, (S + 1/2) / (N + 1), against her
@@ -36776,7 +38685,7 @@ dk_no:
   jret
 r_char:                         ; j3 = a character typed (its Unicode code point): written, in UTF-8, where she listens
   jst j1, j14, 1288
-  jldi j1, 91
+  jldi j1, 113
   jcall r_cable
                                 ; (her name while she asks it, else her word). The ones that are not text are left
   jldi j10, 32
@@ -36896,7 +38805,7 @@ chp_r:
   jret
 r_hexd:                         ; j5 = a hex digit's byte -> its value. Uses j10
   jst j1, j14, 1288
-  jldi j1, 167
+  jldi j1, 189
   jcall r_cable
   jldi j10, 58
   jsub j10, j5, j10
@@ -36912,7 +38821,7 @@ hd_n:
   jret
 r_letra_get:                    ; j3 = a code point -> j0 = its letter in her alphabet, or 0. Uses j6-j10
   jst j1, j14, 1288
-  jldi j1, 175
+  jldi j1, 197
   jcall r_cable
   jldi j0, 0
   jldi j6, 0162h
@@ -36944,7 +38853,7 @@ lg_r:
   jret
 r_letra_new:                    ; -> j0 = a new letter, zeroed (PLASTIC: her alphabet doubles its room when it fills)
   jst j1, j14, 1288
-  jldi j1, 177
+  jldi j1, 199
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -37043,7 +38952,7 @@ ln_z:
   jret
 r_letra_add:                    ; the line j1 .. j2 of a book of letters ("code:dots", 32 hex digits for 8 x 16, 64 for
   jst j1, j14, 1288
-  jldi j1, 174
+  jldi j1, 196
   jcall r_cable
                                 ; 16 x 16) -> a letter of her alphabet (other lines are left)
   jldi j3, 0
@@ -37166,7 +39075,7 @@ la_ok:
   jret
 r_letra_learn:                  ; j3 = a code point she met: if she cannot draw it, she looks for it in her book of letters
   jst j1, j14, 1288
-  jldi j1, 176
+  jldi j1, 198
   jcall r_cable
                                 ; and keeps it in her alphabet and in "abecedario"; if her book has not got it either, she
                                 ; keeps a frame for it (she meets it, and says she does not know it)
@@ -37536,7 +39445,7 @@ ll_r:
   jret
 r_bases:                        ; HER LETTERS, ONE: for every letter of her alphabet past ASCII, the letter of her book
   jst j1, j14, 1288
-  jldi j1, 84
+  jldi j1, 106
   jcall r_cable
                                 ; (a..z, A..Z) whose body it has dot for dot, the one of most dots; her table D_BAS
   jldi j6, 0162h
@@ -37822,7 +39731,7 @@ rb_r:
   jret
 r_letra_text:                   ; the text at j1 (j2 bytes of UTF-8): every character of it, met (r_letra_learn)
   jst j1, j14, 1288
-  jldi j1, 178
+  jldi j1, 200
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -38080,7 +39989,7 @@ ddr_r:
   jret
 r_splot:                        ; the cell j1, j2 of her host's shared screen in the colour PR PG PB (uses j10, j11)
   jst j1, j14, 1288
-  jldi j1, 246
+  jldi j1, 268
   jcall r_cable
   jjn j1, spl_o
   jjn j2, spl_o
@@ -38107,7 +40016,7 @@ spl_o:
   jret
 r_panel_clear:                  ; her panel, black (8 bytes at a time)
   jst j1, j14, 1288
-  jldi j1, 213
+  jldi j1, 235
   jcall r_cable
   jldi j1, 015Dh
   jshi j1, 04930h
@@ -38122,7 +40031,7 @@ pcl_l:
   jret
 r_panel:                        ; HER PANEL (see gen_luma.py): drawn again only when what it shows changed (its print:
   jst j1, j14, 1288
-  jldi j1, 212
+  jldi j1, 234
   jcall r_cable
                                 ; how many thoughts came, how long her words, what is typed and her thoughts are, the
                                 ; first and last letter of each, where her words are scrolled). Nothing new: nothing done
@@ -38258,7 +40167,7 @@ pn_r:
   jret
 r_dlg_panel:                    ; on the left of her panel: her last words in lines of its width, 12 shown from D_SCR0
   jst j1, j14, 1288
-  jldi j1, 120
+  jldi j1, 142
   jcall r_cable
                                 ; (Page Up, Page Down), and the line being typed with its cursor
   jldi j10, 0
@@ -38482,7 +40391,7 @@ dpl_cur:
   jret
 r_flujo_walk:                   ; on the right of her panel, what her mind does as it comes: her thoughts bright, the
   jst j1, j14, 1288
-  jldi j1, 146
+  jldi j1, 168
   jcall r_cable
                                 ; trials of her forms in their trail; D_FLM: 1 draws, 0 only counts -> D_FLN = its lines
   jldi j1, 0
@@ -38635,7 +40544,7 @@ fw_r:
   jret
 r_flujo_drop:                   ; her oldest thought out of the panel's memory -> j0 = 1, or 0 if it was the only one
   jst j1, j14, 1288
-  jldi j1, 143
+  jldi j1, 165
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -38702,7 +40611,7 @@ fd_one:
   jret
 r_flujo_add:                    ; her thought (D_THK) to her mind's flow, bright
   jst j1, j14, 1288
-  jldi j1, 142
+  jldi j1, 164
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -38733,7 +40642,7 @@ fa_x:
   jret
 r_flujo_trial:                  ; j1 = a trial of her forms as her archive keeps it, j2 its reason, j10 its bytes: to
   jst j1, j14, 1288
-  jldi j1, 145
+  jldi j1, 167
   jcall r_cable
                                 ; her mind's flow, in the trail; in white if it found something (reason 0)
                                 ; (keeps j1, j2, j3: her host writes it to its ring next)
@@ -38776,7 +40685,7 @@ ft_x:
   jret
 r_flujo_put:                    ; j2 = a text, j3 its bytes, j4 its kind (1 a thought, 2 a trial): one line at the end of
   jst j1, j14, 1288
-  jldi j1, 144
+  jldi j1, 166
   jcall r_cable
                                 ; her mind's flow (its new lines become spaces, its trailing blanks go); the oldest go
                                 ; while they do not fit, or take more lines than the panel has (16)
@@ -39016,7 +40925,7 @@ fa_r:
   jret
 r_mus_init:                     ; HER SCHOOL, BORN (see D_MU): launched with memory rights (she builds its room),
   jst j1, j14, 1288
-  jldi j1, 196
+  jldi j1, 218
   jcall r_cable
                                 ; its faces' room, and order 5 (side n, her dice as its seed)
   jldi j6, 0162h
@@ -39098,7 +41007,7 @@ mi_no:
   jret
 r_mus_say:                      ; j1 = a word, said to her school (request 30)
   jst j1, j14, 1288
-  jldi j1, 200
+  jldi j1, 222
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -39112,7 +41021,7 @@ r_mus_say:                      ; j1 = a word, said to her school (request 30)
   jret
 r_mus_mail:                     ; her mailbox while no reader reads: her school's words, the rest let go
   jst j1, j14, 1288
-  jldi j1, 197
+  jldi j1, 219
   jcall r_cable
   jldi j10, 31
   jldi j11, 0162h
@@ -39131,7 +41040,7 @@ mm_r:
   jret
 r_mus_from:                     ; j1 = who said the word at WBUF + 8: if her school, it is heard
   jst j1, j14, 1288
-  jldi j1, 195
+  jldi j1, 217
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -39275,7 +41184,7 @@ mw_r:
   jret
 r_mus_sing:                     ; what she says (D_OUT), sung to her school if it is born and quiet: order 6, how many
   jst j1, j14, 1288
-  jldi j1, 201
+  jldi j1, 223
   jcall r_cable
                                 ; words (up to 255), then each word as its three bottom pieces, from its print
   jldi j6, 0162h
@@ -39399,7 +41308,7 @@ ms_r:
   jret
 r_mus_bit:                      ; j1 = a step, j2 = a top piece -> j0 = 1 if it woke then (uses j3-j5, j10)
   jst j1, j14, 1288
-  jldi j1, 192
+  jldi j1, 214
   jcall r_cable
   jldi j0, 0
   jjn j1, mb_r
@@ -39431,7 +41340,7 @@ mb_r:
   jret
 r_mus_pitch:                    ; j2 = a top piece (x + n y) -> j3 = its MIDI note: x the pentatonic step (0 2 4 7 9),
   jst j1, j14, 1288
-  jldi j1, 199
+  jldi j1, 221
   jcall r_cable
                                 ; y the octave, from 48 (criterion: the face is the scale, see MU_N)
   jldi j10, 5
@@ -39453,7 +41362,7 @@ r_mus_pitch:                    ; j2 = a top piece (x + n y) -> j3 = its MIDI no
   jret
 r_mus_notes:                    ; the step MU_T against the one before: what woke sounds, what slept is let go
   jst j1, j14, 1288
-  jldi j1, 198
+  jldi j1, 220
   jcall r_cable
   jldi j7, 0
 mn_l:
@@ -39500,7 +41409,7 @@ mn_n:
   jret
 r_mus_tab:                      ; Tab: her school's music or her world; leaving it, every note is let go
   jst j1, j14, 1288
-  jldi j1, 202
+  jldi j1, 224
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -39526,7 +41435,7 @@ mt_r:
   jret
 r_mus_frame:                    ; every frame: her school's song goes on (a step every 4 frames, sounded only while
   jst j1, j14, 1288
-  jldi j1, 194
+  jldi j1, 216
   jcall r_cable
                                 ; it is shown) -> j0 = 1 if her music is shown instead of her world
   jldi j6, 0162h
@@ -39613,7 +41522,7 @@ mfr_no:
   jret
 r_mus_draw:                     ; her school's song as a roll: time across, its top pieces up (piece 0 at the bottom),
   jst j1, j14, 1288
-  jldi j1, 193
+  jldi j1, 215
   jcall r_cable
                                 ; what woke in green, the step sounding in white; black where nothing woke
   jldi j1, 0157h
@@ -40648,7 +42557,7 @@ bs_done:
   jret
 r_busca:                        ; SHE SEEKS HER QUESTIONS IN EVERYTHING (see the top of gen_leer.py; busca.py checks her)
   jst j1, j14, 1288
-  jldi j1, 88
+  jldi j1, 110
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -41946,7 +43855,7 @@ rwc_r:
   jret
 r_winfo:                        ; j4 = a word's print, j0 = its letters -> j0 = how much the talk of her books goes on
   jst j1, j14, 1288
-  jldi j1, 258
+  jldi j1, 280
   jcall r_cable
                                 ; by it beyond chance: how often the next line kept it, (S + 1/2) / (L + 1), over how often
                                 ; any line has it, (L + 1/2) / (all lines + 1); in thousandths, at least 1. A word her books
@@ -42004,6 +43913,9 @@ rwi_c:                          ; (j2 = its lines L, j3 = those the talk went on
 rwi_r:
   jret
 rwi_log:                        ; j1 > 0 -> j0 = log2 j1 in 64ths of a bit (the bit length, and the next six bits as
+  jst j1, j14, 1288
+  jldi j1, 283
+  jcall r_cable
                                 ; its fraction); uses j1, j2, j10, j11
   jldi j0, 0
   jjz j1, rwl_r
@@ -43846,7 +45758,7 @@ bzx_b:
   jret
 r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in
   jst j1, j14, 1288
-  jldi j1, 229
+  jldi j1, 251
   jcall r_cable
                                 ; thousandths of a bit (0 if nothing was read yet); each form's own is kept in
                                 ; it (8000000000000000h: never read), BESTF = which form reads best (-1: none does)
@@ -43990,7 +45902,7 @@ rm_ret:
   jret
 r_read_cand:                    ; the same with the candidate CAND in the place of form JF (r_judge)
   jst j1, j14, 1288
-  jldi j1, 224
+  jldi j1, 246
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -44127,7 +46039,7 @@ rc2_next:
   jjmp rm_out
 r_read_pick:                    ; what she reads now -> j0 = 1 (RREC the recipe, RLO RHI its name, RGEN the instincts,
   jst j1, j14, 1288
-  jldi j1, 230
+  jldi j1, 252
   jcall r_cable
                                 ; RKIND 0 a form of hers or no organ, 1 a thought, 2 an instinct), or 0: nothing new
   jldi j6, 0162h
@@ -44532,7 +46444,7 @@ rp_i_org:
   jret
 r_tramos:                       ; j9 = a recipe, JD = which statement is wanted (-1: none) -> j0 = how many statements it
   jst j1, j14, 1288
-  jldi j1, 253
+  jldi j1, 275
   jcall r_cable
                                 ; has (each ends after its hole; a word or a cell is never cut), JA and JB where the
                                 ; wanted one starts and ends. Uses j3-j5, j7, j10-j12
@@ -44622,7 +46534,7 @@ tr_ret:
   jret
 r_tramo_add:                    ; j9 = a recipe: one statement of it, by her luck, added to the recipe she is making
   jst j1, j14, 1288
-  jldi j1, 252
+  jldi j1, 274
   jcall r_cable
                                 ; -> j0 = 1, or 0 if it has none or there is no room (a recipe has room for 31)
   jldi j6, 0162h
@@ -45325,7 +47237,7 @@ rp_o_next:
   jret
 r_branch:                       ; one step, from where: the form of her body just taken (she comes back), or the
   jst j1, j14, 1288
-  jldi j1, 86
+  jldi j1, 108
   jcall r_cable
                                 ; last thing she read (she goes on along that branch), by her count of going on:
                                 ; (SB + 1/2) / (NB + 1), how often it gave her a unique memory
@@ -45375,7 +47287,7 @@ rb_done:
   jret
 r_read_launch:                  ; her reader: herself, with the recipe in its initial data (pulso.datos with the
   jst j1, j14, 1288
-  jldi j1, 228
+  jldi j1, 250
   jcall r_cable
                                 ; candidate's words: 18h and 30h its letters, 20h that it is one, 28h the instincts),
                                 ; rowing in the gaps (42). No cage (34): any string of letters is an organ and none
@@ -45397,19 +47309,19 @@ rn_go:
   jldi j11, 0162h
   jshi j11, 01750h
   jldi j12, 18
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, b_rn_no
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 08000h
   jldi j12, 02000h
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jst j13, j6, 01660h
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01660h
@@ -45474,16 +47386,16 @@ rn_words:
   jldi j11, 0162h
   jshi j11, 01790h
   jldi j12, 18
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, b_rn_no
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 08000h
   jldi j12, 07F80h
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 0Eh
   jshi j10, 0
   jshi j10, 010h
@@ -45526,7 +47438,7 @@ b_rn_no:
   jret
 r_read_end:                     ; her window closes: her reader ends with her (33)
   jst j1, j14, 1288
-  jldi j1, 225
+  jldi j1, 247
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -45544,7 +47456,7 @@ re_done:
   jret
 r_read_poll:                    ; her doorbell (her reader asks for a signature, says a word or ends), or a frame
   jst j1, j14, 1288
-  jldi j1, 232
+  jldi j1, 254
   jcall r_cable
                                 ; while it reads: what waits is signed, its words are heard (the shelf it read,
                                 ; then its score), and when it ended what it read is settled
@@ -46277,7 +48189,7 @@ rd_saved:
 ; ---- her freedom: rest, think or give, by her own luck and her own count (see gen_luma.py: free_routine)
 r_free_load:                    ; her conclusions, as the folder kept them (none: all zero)
   jst j1, j14, 1288
-  jldi j1, 152
+  jldi j1, 174
   jcall r_cable
   jldi j1, 03161h
   jshi j1, 07472h
@@ -46294,106 +48206,106 @@ r_free_load:                    ; her conclusions, as the folder kept them (none
   jldi j11, 0162h
   jshi j11, 070h
   jldi j12, 5
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, lbl_done
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 0
   jldi j12, 56
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 0A8h
   jldi j12, 8
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 0B0h
   jldi j12, 16
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 0100h
   jldi j12, 192
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 03F8h
   jldi j12, 4088
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 01400h
   jldi j12, 24
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 5
   jldi j11, 0162h
   jshi j11, 01500h
   jldi j12, 256
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
 lbl_done:
   jret
 r_free_save:
   jst j1, j14, 1288
-  jldi j1, 153
+  jldi j1, 175
   jcall r_cable
   jcall r_cable_flush            ; (her new living cables, if any, into her book: gen_leer.py)
   jldi j10, 12
   jldi j11, 0162h
   jshi j11, 070h
   jldi j12, 5
-  jcall r_tocar
+  jcall fr_r_tocar
   jldi j11, 0162h
   jshi j11, 070h
   jldi j12, 5
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, lbs_done
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 0
   jldi j12, 56
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 0A8h
   jldi j12, 8
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 0B0h
   jldi j12, 16
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 0100h
   jldi j12, 192
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 03F8h
   jldi j12, 4088
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 01400h
   jldi j12, 24
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 01500h
   jldi j12, 256
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
 lbs_done:
   jret
 r_free:
   jst j1, j14, 1288
-  jldi j1, 151
+  jldi j1, 173
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -46693,7 +48605,7 @@ fr_choose:                      ; no rhythm yet: she thinks; else her wishes, (S
   jshi j6, 0
   jld j2, j6, 01D70h
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 128
@@ -46806,7 +48718,7 @@ fr_w_sum:
   jshi j6, 0
   jst j3, j6, 240
   jadd j1, j3, j14
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j4, 1
   jldi j7, 0162h
   jshi j7, 0410h
@@ -46840,7 +48752,7 @@ fr_w_have:
   jst j4, j6, 232
   ; one of her creatures: a form of hers, by her luck, offered to it; it is served if it takes it
   jldi j1, 8
-  jcall r_randmod
+  jcall fr_r_randmod
   jst j0, j14, 0388h
   jldi j6, 0162h
   jshi j6, 0
@@ -46930,7 +48842,7 @@ fr_c_done:
   jshi j6, 0
   jld j2, j6, 136
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 128
@@ -47084,7 +48996,7 @@ fr_r_on:
   jshi j6, 0
   jld j2, j6, 088h
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 080h
@@ -47100,7 +49012,7 @@ fr_talk:                        ; she speaks first (gen_leer.py: HER WORD)
   jshi j6, 0
   jld j2, j6, 088h
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 080h
@@ -47159,7 +49071,7 @@ fr_paint:                       ; she paints herself (the Capitan: "que muestre 
   jst j1, j6, 176
   jld j1, j14, 01BB8h
   jjz j1, fr_p_done
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 537
   jmul j9, j0, j10
   jld j10, j14, 01A88h
@@ -47186,7 +49098,7 @@ fr_paint:                       ; she paints herself (the Capitan: "que muestre 
   jcall fr_r_get_num
   jjz j0, fr_p_done
   jadd j1, j0, j14
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 7
   jmul j0, j0, j10
   jldi j10, 81
@@ -47196,11 +49108,11 @@ fr_paint:                       ; she paints herself (the Capitan: "que muestre 
   jld j9, j6, 208
   jadd j1, j9, j0
   jldi j2, 6
-  jcall r_get_hex
+  jcall fr_r_get_hex
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 216
-  jcall r_set_hue
+  jcall fr_r_set_hue
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 216
@@ -47237,7 +49149,7 @@ fr_p_done:                      ; and she goes on, resting or thinking
   jshi j6, 0
   jld j2, j6, 136
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 128
@@ -47314,7 +49226,7 @@ f_put_rec:
 ; Ends when the window is closed: j0 = the pieces kept in this run. Generated by gen_vida.py.
 v_init:                         ; the creatures' world, inside Luma's program
   jst j1, j14, 1288
-  jldi j1, 279
+  jldi j1, 302
   jcall r_cable
 ; ---- the screen's cloud: its header and every cell set, once
   jldi j1, 0157h
@@ -48987,7 +50899,7 @@ v_order_done:
 ; ---- the creatures inside Luma: a frame, the shared picture, alive or not, the calm, an event, a meal
 v_frame:
   jst j1, j14, 1288
-  jldi j1, 277
+  jldi j1, 300
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vf_ret
@@ -49131,7 +51043,7 @@ v_vf_ret:
   jret
 v_show:                         ; the ground, her forms at twice their size on the left, the creatures on the right
   jst j1, j14, 1288
-  jldi j1, 362
+  jldi j1, 385
   jcall r_cable
   jcall r_mus_frame              ; (her school's song goes on; with Tab it is shown instead: gen_leer.py)
   jjnz j0, v_vs_show
@@ -49207,7 +51119,7 @@ v_va_ret:
   jret
 v_calm:                         ; calming (or closing): the lexicons to the folder
   jst j1, j14, 1288
-  jldi j1, 274
+  jldi j1, 297
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vc_ret
@@ -49216,7 +51128,7 @@ v_vc_ret:
   jret
 v_event:                        ; an event on the shared screen -> j0 = 1 if it was the creatures' (taken)
   jst j1, j14, 1288
-  jldi j1, 276
+  jldi j1, 299
   jcall r_cable
   jld j9, j14, 0140h
   jldi j10, 5
@@ -49263,7 +51175,7 @@ v_ve_forms:
   jret
 v_ve_gesture:                     ; the creatures walk one period of the slowest gait, and a search opens
   jst j1, j14, 1288
-  jldi j1, 366
+  jldi j1, 389
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vg_ret
@@ -49280,7 +51192,7 @@ v_vg_ret:
   jret
 v_meal:                         ; Luma began to eat the pantry's entry MIDX: if it is a creature, it is born
   jst j1, j14, 1288
-  jldi j1, 281
+  jldi j1, 304
   jcall r_cable
   jld j1, j14, 02228h
   jjz j1, v_vm_ret
@@ -49320,7 +51232,7 @@ v_vm_ret:
   jret
 v_remember:
   jst j1, j14, 1288
-  jldi j1, 357
+  jldi j1, 380
   jcall r_cable
   jcall v_save
   ; its identity, once: the recipe she kept for that meal, drawn as its form (the drawing that judged the meal)
@@ -49578,7 +51490,7 @@ v_vr_done:
   jret
 v_save:                         ; the forms' and the meals' state, kept while the creatures draw with their tools
   jst j1, j14, 1288
-  jldi j1, 359
+  jldi j1, 382
   jcall r_cable
   jldi j1, 0200h
   jldi j2, 05000h
@@ -49633,7 +51545,7 @@ v_vsvt:
   jret
 v_restore:
   jst j1, j14, 1288
-  jldi j1, 358
+  jldi j1, 381
   jcall r_cable
   jldi j1, 05000h
   jldi j2, 0200h
@@ -49688,7 +51600,7 @@ v_vrst:
   jret
 v_bcost_raw:                    ; j1 = a recipe -> j0 = its cost against TI's identity (bits x100; DBMP = its drawing)
   jst j1, j14, 1288
-  jldi j1, 272
+  jldi j1, 295
   jcall r_cable
   jst j1, j14, 02748h
   jld j9, j14, 02380h
@@ -49711,7 +51623,7 @@ v_vb_cp:
   jret
 v_size:                         ; TI's side from what it learned: isqrt(B^2 + B bits), at most 2B (each bit learned
   jst j1, j14, 1288
-  jldi j1, 365
+  jldi j1, 388
   jcall r_cable
                                 ; adds a row of B cells to its area; criterion)
   jld j9, j14, 02380h
@@ -49733,7 +51645,7 @@ v_vz_ok:
   jret
 v_attend:                       ; news of j1 bits (x100) at TI: stronger news (or as strong) takes the camera
   jst j1, j14, 1288
-  jldi j1, 271
+  jldi j1, 294
   jcall r_cable
   jld j2, j14, 02728h
   jsub j10, j1, j2
@@ -49751,7 +51663,7 @@ v_va2_ret:
   jret
 v_camera:                       ; a frame of the camera: interest decays, zoom and place ease towards the news
   jst j1, j14, 1288
-  jldi j1, 275
+  jldi j1, 298
   jcall r_cable
   jld j1, j14, 02728h
   jldi j10, 7
@@ -49841,7 +51753,7 @@ v_vcm_y2:
   jret
 v_born:                         ; TI landed: news (its description / 16), a body offered to the forms
   jst j1, j14, 1288
-  jldi j1, 273
+  jldi j1, 296
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 72
@@ -49860,7 +51772,7 @@ v_vbo_ret:
   jret
 v_learned:                      ; TI kept a piece of gait worth LBITS: it grows, its body may change, the forms hear
   jst j1, j14, 1288
-  jldi j1, 280
+  jldi j1, 303
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 304
@@ -49883,7 +51795,7 @@ v_vl_ret:
   jret
 v_morph:                        ; every one-letter mutation of its body (change, delete, insert), the best kept if its
   jst j1, j14, 1288
-  jldi j1, 282
+  jldi j1, 305
   jcall r_cable
                                 ; cost against its identity does not go up (it keeps or shortens its description)
   jcall v_save
@@ -49979,7 +51891,7 @@ v_vmo_lost:
   jret
 v_mut_build:                    ; XI (position x kind) and XN (a letter) on TI's body -> TMPB; j0 = 0 if no candidate
   jst j1, j14, 1288
-  jldi j1, 283
+  jldi j1, 306
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j9, 288
@@ -50071,7 +51983,7 @@ v_vmb_none:
   jret
 v_rebody:                       ; TI's body drawn again at its size (her own cloud rewritten), growing from its centre
   jst j1, j14, 1288
-  jldi j1, 356
+  jldi j1, 379
   jcall r_cable
   jcall v_size
   jcall v_remember
@@ -50100,7 +52012,7 @@ v_vrb_ret:
   jret
 v_shrink:                       ; a frame: who learned nothing for a world-crossing time forgets a bit and shrinks
   jst j1, j14, 1288
-  jldi j1, 363
+  jldi j1, 386
   jcall r_cable
   jld j1, j14, 02668h
   jjz j1, v_vsh_ret
@@ -50153,7 +52065,7 @@ v_vsh_ret:
   jret
 v_shuffle:                      ; j1 = a recipe -> SHUF: its letters shuffled by the generator (used by the control)
   jst j1, j14, 1288
-  jldi j1, 364
+  jldi j1, 387
   jcall r_cable
   jldb j2, j1, 0
   jstb j2, j14, 064C0h
@@ -50193,7 +52105,7 @@ v_vsf_done:
   jret
 v_offer_forms:                  ; TI's body offered to a form at random: its first letters to a cut, then the body
   jst j1, j14, 1288
-  jldi j1, 285
+  jldi j1, 308
   jcall r_cable
   jldi j1, 8
   jcall v_r_randmod
@@ -50270,7 +52182,7 @@ v_vof_ret:
   jret
 v_offer_creature:               ; a form won: its recipe offered to a creature at random (the body to a cut, then it)
   jst j1, j14, 1288
-  jldi j1, 284
+  jldi j1, 307
   jcall r_cable
   jld j1, j14, 0280h
   jld j2, j14, 02778h
@@ -50394,7 +52306,7 @@ v_voc_ret:
   jret
 v_gift_to:                      ; her gift to the creature j1 (its number): the form JF's recipe offered to it as a win's
   jst j1, j14, 1288
-  jldi j1, 278
+  jldi j1, 301
   jcall r_cable
                                 ; is (the body to a cut, then the form). Says in her block: 2 it is not there, 0 offered
                                 ; and not taken, 1 taken (it shortened its own description: the other's gain).
@@ -50423,13 +52335,13 @@ v_vgt_ret:
   jret
 v_seen:                         ; j0 = how many creatures she sees
   jst j1, j14, 1288
-  jldi j1, 361
+  jldi j1, 384
   jcall r_cable
   jld j0, j14, 02228h
   jret
 v_xlog:                         ; "vida-intercambios": frame, F (to a form) / C (to a creature) / M (a mutation),
   jst j1, j14, 1288
-  jldi j1, 367
+  jldi j1, 390
   jcall r_cable
                                 ; the creature, the form, the candidate, W won / L lost / K kept (65 bytes)
   jst j1, j14, 02758h
@@ -50490,12 +52402,12 @@ v_vx_bl:
 v_vx_v:
   jldi j1, 06500h
   jldi j3, 066C0h
-  jcall l_ring
+  jcall fr_l_ring
 v_vx_done:
   jret
 v_save_bodies:                  ; "vida-cuerpos": every creature's body recipe and the bits it learned (rewritten whole)
   jst j1, j14, 1288
-  jldi j1, 360
+  jldi j1, 383
   jcall r_cable
   jld j1, j14, 02790h
   jjz j1, v_vsb_ret
@@ -50598,7 +52510,7 @@ v_vsb_ret:
 ;      "<.nube bytes 9> <.oido bytes 9> <.nube path>TAB<.oido path>"; every table sized from it (plastic)
 v_r_load_list:
   jst j1, j14, 1288
-  jldi j1, 325
+  jldi j1, 348
   jcall r_cable
   jst j14, j14, 02228h
   jst j14, j14, 02668h
@@ -51029,7 +52941,7 @@ v_ll_ret:
 ;      " <P 5> <q 2> <s 2>". Read at birth (each model waits in its creature for the arrival)
 v_r_load_learned:
   jst j1, j14, 1288
-  jldi j1, 324
+  jldi j1, 347
   jcall r_cable
   jldi j11, 03410h
   jldi j12, 14
@@ -51200,7 +53112,7 @@ v_la_none:
   jret
 v_r_save_learned:                 ; rewritten whole, padded with spaces to the longest it ever was (no leftovers)
   jst j1, j14, 1288
-  jldi j1, 341
+  jldi j1, 364
   jcall r_cable
   jld j3, j14, 022C0h
   jldi j10, 18
@@ -51386,7 +53298,7 @@ v_sl_done:
   jret
 v_r_open_archive:                 ; "archivo": kept open, its position at its end (only appended)
   jst j1, j14, 1288
-  jldi j1, 329
+  jldi j1, 352
   jcall r_cable
   jldi j11, 03420h
   jldi j12, 12
@@ -51399,7 +53311,7 @@ v_oa_done:
   jret
 v_r_fsize:                        ; FH open at its start -> j0 = its bytes, the position left at its end
   jst j1, j14, 1288
-  jldi j1, 309
+  jldi j1, 332
   jcall r_cable
   jst j14, j14, 02378h
 v_fz_lap:
@@ -51418,7 +53330,7 @@ v_fz_done:
   jret
 v_r_archive:                      ; a line: frame, pupil, teacher, the piece (P q s), verdict, DL now, DL with it
   jst j1, j14, 1288
-  jldi j1, 287
+  jldi j1, 310
   jcall r_cable
                                 ; j1 = the piece, j2 = the verdict (0..3), j3 = DL with it; TI pupil, TJ teacher
   jst j1, j14, 02358h
@@ -51527,7 +53439,7 @@ v_ar_done:
 ; ---- an arrival: creature IDX reads its gait and its cloud where they live (37), and falls in -> j0 = 1
 v_r_arrive:
   jst j1, j14, 1288
-  jldi j1, 288
+  jldi j1, 311
   jcall r_cable
   jld j1, j14, 02460h
   jldi j10, 384
@@ -51723,7 +53635,7 @@ v_av_bad:
   jret
 v_r_parse_oido:                   ; OIDB (ends in 0) -> the creature TI's rhythmic limbs, quantized
   jst j1, j14, 1288
-  jldi j1, 333
+  jldi j1, 356
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 48
@@ -51874,7 +53786,7 @@ v_po_q_done:
   jret
 v_r_skipsp:                       ; j1 -> past spaces, tabs, line ends
   jst j1, j14, 1288
-  jldi j1, 345
+  jldi j1, 368
   jcall r_cable
   jldb j2, j1, 0
   jjz j2, v_ss_done
@@ -51888,7 +53800,7 @@ v_ss_done:
   jret
 v_r_skiptok:                      ; j1 -> past the next token
   jst j1, j14, 1288
-  jldi j1, 346
+  jldi j1, 369
   jcall r_cable
   jcall v_r_skipsp
 v_sk_lap:
@@ -51903,7 +53815,7 @@ v_sk_done:
   jret
 v_r_dec:                          ; j1 -> j0 = the decimal there x 1e5 (5 decimals, the file's own), j1 past it
   jst j1, j14, 1288
-  jldi j1, 296
+  jldi j1, 319
   jcall r_cable
   jcall v_r_skipsp
   jldi j0, 0
@@ -51975,7 +53887,7 @@ v_dc_done:
   jret
 v_r_body:                         ; NUBB -> TI's body: its finest level fitted relative to its own size into B x B,
   jst j1, j14, 1288
-  jldi j1, 290
+  jldi j1, 313
   jcall r_cable
                                 ; a particle per cell where at least half is particle, its mean colour -> j0 = 1
   jld j9, j14, 02290h
@@ -52249,7 +54161,7 @@ v_bd_bad:
 ; ---- the judge: the description length of a gait, in whole bits
 v_r_gam:                          ; j10 = n >= 0 -> j12 = 2 bitlen(n + 1) - 1, the Elias gamma code (uses j13)
   jst j1, j14, 1288
-  jldi j1, 313
+  jldi j1, 336
   jcall r_cable
   jldi j13, 1
   jadd j13, j10, j13
@@ -52266,7 +54178,7 @@ v_gm_done:
   jret
 v_r_bitlen:                       ; j10 = n >= 0 -> j12 = its bits (the bits to name one of n + 1; uses j13)
   jst j1, j14, 1288
-  jldi j1, 289
+  jldi j1, 312
   jcall r_cable
   jadd j13, j10, j14
   jldi j12, 0
@@ -52280,7 +54192,7 @@ v_bl_done:
   jret
 v_r_zz:                           ; j10 = a difference -> its zigzag (0, -1, 1, -2... -> 0, 1, 2, 3...; uses j13)
   jst j1, j14, 1288
-  jldi j1, 355
+  jldi j1, 378
   jcall r_cable
   jjn j10, v_zz_neg
   jadd j10, j10, j10
@@ -52293,7 +54205,7 @@ v_zz_neg:
   jret
 v_r_mcost:                        ; j11 = a rhythm -> j15 = its bits said whole: gamma(P) + gamma(q) + 4
   jst j1, j14, 1288
-  jldi j1, 326
+  jldi j1, 349
   jcall r_cable
   jld j10, j11, 0
   jcall v_r_gam
@@ -52306,7 +54218,7 @@ v_r_mcost:                        ; j11 = a rhythm -> j15 = its bits said whole:
   jret
 v_r_dist:                         ; j6 = a limb, j9 = a motif -> j15 = the bits to say the limb from the motif
   jst j1, j14, 1288
-  jldi j1, 298
+  jldi j1, 321
   jcall r_cable
   jld j10, j6, 0
   jld j13, j9, 0
@@ -52337,7 +54249,7 @@ v_ds_s:
   jret
 v_r_dl:                           ; j1 = a model, j2 = K, j3 = the limbs, j4 = L -> j0 = DL (j1..j4 kept)
   jst j1, j14, 1288
-  jldi j1, 299
+  jldi j1, 322
   jcall r_cable
   jadd j10, j2, j14
   jcall v_r_gam
@@ -52391,7 +54303,7 @@ v_dl_done:
   jret
 v_r_copym:                        ; j1 -> j2, j3 rhythms (uses j10)
   jst j1, j14, 1288
-  jldi j1, 294
+  jldi j1, 317
   jcall r_cable
 v_cm_lap:
   jjz j3, v_cm_done
@@ -52411,7 +54323,7 @@ v_cm_done:
   jret
 v_r_inlist:                       ; j1 = a rhythm, j2 = a list, j3 = its count -> j0 = 1 if the rhythm is in it
   jst j1, j14, 1288
-  jldi j1, 318
+  jldi j1, 341
   jcall r_cable
 v_il_lap:
   jjz j3, v_il_no
@@ -52440,7 +54352,7 @@ v_il_no:
   jret
 v_r_own:                          ; TI's first model: add the own limb that shortens DL most, while one does
   jst j1, j14, 1288
-  jldi j1, 331
+  jldi j1, 354
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 56
@@ -52521,7 +54433,7 @@ v_ow_done:
   jret
 v_r_eff:                          ; TI's limbs as its model says them (the motion), and the list of distinct ones
   jst j1, j14, 1288
-  jldi j1, 304
+  jldi j1, 327
   jcall r_cable
   jld j9, j14, 02380h
   jst j14, j9, 64
@@ -52595,7 +54507,7 @@ v_ef_done:
   jret
 v_r_try:                          ; the piece PP in TI's model: added (if K < L), or in place of each motif ->
   jst j1, j14, 1288
-  jldi j1, 352
+  jldi j1, 375
   jcall r_cable
                                 ; TBEST = the shortest DL, TBK its K, TBR the motif replaced (-1: added), PIECEM it
   jldi j10, 0100h
@@ -52675,7 +54587,7 @@ v_tr_done:
   jret
 v_r_gain:                         ; TI learning from TJ -> j0 = the bits the best piece of TJ's gait saves (0: none)
   jst j1, j14, 1288
-  jldi j1, 311
+  jldi j1, 334
   jcall r_cable
   jldi j10, 0100h
   jshi j10, 0
@@ -52721,7 +54633,7 @@ v_gn_ret:
   jret
 v_r_rowcol:                       ; TI changed (or arrived): its row and its column of the gains, then the count
   jst j1, j14, 1288
-  jldi j1, 340
+  jldi j1, 363
   jcall r_cable
   jld j9, j14, 02380h
   jst j9, j14, 02360h
@@ -52780,7 +54692,7 @@ v_rc_done:
   jret
 v_r_gaddr:                        ; j1 = pupil, j2 = teacher -> j3 = the address of its gain (uses j10)
   jst j1, j14, 1288
-  jldi j1, 310
+  jldi j1, 333
   jcall r_cable
   jld j3, j14, 02228h
   jmul j3, j3, j1
@@ -52792,7 +54704,7 @@ v_r_gaddr:                        ; j1 = pupil, j2 = teacher -> j3 = the address
   jret
 v_r_count:                        ; TEACH = the pairs here with a lesson to give, that can meet (one of them moves)
   jst j1, j14, 1288
-  jldi j1, 295
+  jldi j1, 318
   jcall r_cable
   jst j14, j14, 022F8h
   jldi j1, 0
@@ -52846,7 +54758,7 @@ v_ct_done:
   jret
 v_r_share:                        ; TI and TJ touch and TJ has something for TI: TI tries every piece of TJ's gait,
   jst j1, j14, 1288
-  jldi j1, 344
+  jldi j1, 367
   jcall r_cable
                                 ; keeps the best only if it shortens its description; the rest go to the archive
   jldi j10, 0100h
@@ -53025,7 +54937,7 @@ v_sh_done:
 ; ---- the walk: every creature here steps by its gait and steers by its neighbours (local rules only)
 v_r_welcome:                      ; TI just landed: every one here within its radius dreams of it (a mixed dream in
   jst j1, j14, 1288
-  jldi j1, 354
+  jldi j1, 377
   jcall r_cable
                                 ; its last slot) and has something pending: to go and meet it
   jld j9, j14, 02380h
@@ -53097,7 +55009,7 @@ v_wl_done:
   jret
 v_r_tdist:                        ; j8, j9 = two creatures -> j0 = their distance on the torus (cells x 256)
   jst j1, j14, 1288
-  jldi j1, 349
+  jldi j1, 372
   jcall r_cable
   jld j3, j8, 16
   jld j10, j9, 16
@@ -53148,7 +55060,7 @@ v_td_ok_4:
   jret
 v_r_coming:                       ; j0 = nonzero while one falls in or one is still to come
   jst j1, j14, 1288
-  jldi j1, 292
+  jldi j1, 315
   jcall r_cable
   jld j0, j14, 022F0h
   jld j1, j14, 02660h
@@ -53156,7 +55068,7 @@ v_r_coming:                       ; j0 = nonzero while one falls in or one is st
   jret
 v_r_searching:                    ; j0 = 1 while a lesson (seen, or a newcomer to meet) is pending and its search has
   jst j1, j14, 1288
-  jldi j1, 343
+  jldi j1, 366
   jcall r_cable
                                 ; time left (QUIET 0: fresh)
   jldi j0, 0
@@ -53175,7 +55087,7 @@ v_se_done:
   jret
 v_r_walk_all:
   jst j1, j14, 1288
-  jldi j1, 353
+  jldi j1, 376
   jcall r_cable
   ; the buckets: every creature here in the list of its grid cell
   jld j1, j14, 024E8h
@@ -53260,7 +55172,7 @@ v_wa_done:
   jret
 v_r_cell:                         ; j9 = a creature -> j2, j3 = its grid cell, j4 = its index (uses j10)
   jst j1, j14, 1288
-  jldi j1, 291
+  jldi j1, 314
   jcall r_cable
   jld j2, j9, 16
   jldi j10, 8
@@ -53292,7 +55204,7 @@ v_cl_y:
   jret
 v_r_gait:                         ; TI's limbs advance one frame. Gotching's rule (razar/jueces/marcha_regla.py): the
   jst j1, j14, 1288
-  jldi j1, 312
+  jldi j1, 335
   jcall r_cable
                                 ; limbs that step on the floor and those that do not are two groups, and the one
                                 ; with the larger amplitude sum moves the body -> its lean (the group's mean limb
@@ -53416,7 +55328,7 @@ v_gt_store:
   jret
 v_r_steer:                        ; TI looks at those within its radius: drawn to one with a lesson either way, away
   jst j1, j14, 1288
-  jldi j1, 348
+  jldi j1, 371
   jcall r_cable
                                 ; from one without (more when closer); a touch with a lesson for it is a share
   jst j14, j14, 02420h
@@ -53861,7 +55773,7 @@ v_wrap_hi_8:
 ; ---- dreams and dialogues (documentacion/razar/datos/vida-dialogos-preregistro.txt says how, and what is bet)
 v_r_dream:                        ; TI dreams into its slot DSLOT: a piece of its body, mutated, that it does not hold
   jst j1, j14, 1288
-  jldi j1, 303
+  jldi j1, 326
   jcall r_cable
   jldi j10, 010h
   jst j10, j14, 025F8h
@@ -54031,7 +55943,7 @@ v_dm_none:
   jret
 v_r_tried:                        ; TI and the piece TMPD: j1 = 0 look, 1 write -> j0 = 1 it was tried (uses j1..j7)
   jst j1, j14, 1288
-  jldi j1, 351
+  jldi j1, 374
   jcall r_cable
   jld j2, j14, 026D8h
   jjnz j2, v_tr_have
@@ -54101,7 +56013,7 @@ v_tr_yes:
   jret
 v_r_first_dream:                  ; j9 = a creature -> j0 = its first dream's slot (-1: none), j2 = its address
   jst j1, j14, 1288
-  jldi j1, 307
+  jldi j1, 330
   jcall r_cable
   jld j2, j9, 0
   jldi j10, 128
@@ -54126,7 +56038,7 @@ v_fd_done:
   jret
 v_r_lex_piece:                    ; j1 = a lexicon, j2 = a piece -> j0 = its entry of highest score > 0 (0: none)
   jst j1, j14, 1288
-  jldi j1, 322
+  jldi j1, 345
   jcall r_cable
   jldi j0, 0
   jldi j3, 0
@@ -54161,7 +56073,7 @@ v_lp_done:
   jret
 v_r_lex_mel:                      ; j1 = a lexicon, j2 = a melody -> j0 = its entry of highest score > 0 (0: none)
   jst j1, j14, 1288
-  jldi j1, 321
+  jldi j1, 344
   jcall r_cable
   jldi j0, 0
   jldi j3, 0
@@ -54187,7 +56099,7 @@ v_lm_done:
   jret
 v_r_lex_add:                      ; j1 = a lexicon, j2 = a melody, j3 = a piece -> j0 = the new entry, score 1, in the
   jst j1, j14, 1288
-  jldi j1, 320
+  jldi j1, 343
   jcall r_cable
                                 ; place of the lowest score (a free place has score 0 or less)
   jadd j8, j1, j14
@@ -54222,7 +56134,7 @@ v_la2_put:
   jret
 v_r_dialogue:                     ; DSP names one of its dreams to DLIS with a melody; DLIS rebuilds a piece from the
   jst j1, j14, 1288
-  jldi j1, 297
+  jldi j1, 320
   jcall r_cable
                                 ; melody alone, tries it on its body (MDL), keeps it only if it shortens its description
   jld j9, j14, 025B8h
@@ -54742,7 +56654,7 @@ v_dc_none:                        ; it does not read as a piece: not understood
   jjmp v_dg_none
 v_r_load_code:                    ; "vida-codigo": the common code (codigo_comun.py writes it); without it, melodies
   jst j1, j14, 1288
-  jldi j1, 323
+  jldi j1, 346
   jcall r_cable
   jst j14, j14, 02670h
   jldi j11, 048F0h
@@ -54884,7 +56796,7 @@ v_lc_done:
   jret
 v_r_dlog:                         ; "dialogos": frame speaker listener dream(P q s) spoken sent guess(P q s) K/U/N exact DL DL
   jst j1, j14, 1288
-  jldi j1, 300
+  jldi j1, 323
   jcall r_cable
   jldi j1, 04780h
   jldi j2, 02020h
@@ -54993,7 +56905,7 @@ v_dl2_done:
   jret
 v_r_open_dialogs:                 ; "dialogos" kept open at its end; "lexico": its length, to pad over it
   jst j1, j14, 1288
-  jldi j1, 330
+  jldi j1, 353
   jcall r_cable
   jldi j11, 04840h
   jldi j12, 13
@@ -55017,7 +56929,7 @@ v_od_done:
   jret
 v_r_save_lex:                     ; "lexico": every entry with score > 0 of every creature, rewritten whole, padded
   jst j1, j14, 1288
-  jldi j1, 342
+  jldi j1, 365
   jcall r_cable
   jld j1, j14, 02588h
   jld j2, j14, 02590h
@@ -55203,7 +57115,7 @@ v_sx_done:
   jret
 v_r_spawn:                        ; a packet from j8 to j9 (records) with the piece PP; j3 = 1: it waits one flight
   jst j1, j14, 1288
-  jldi j1, 347
+  jldi j1, 370
   jcall r_cable
   jld j1, j14, 02550h
   jldi j2, 64
@@ -55334,7 +57246,7 @@ v_sp_none:
   jret
 v_r_packets:                      ; every packet one frame on; FLIVE = how many fly
   jst j1, j14, 1288
-  jldi j1, 332
+  jldi j1, 355
   jcall r_cable
   jst j14, j14, 02558h
   jld j1, j14, 02550h
@@ -55367,7 +57279,7 @@ v_pk_done:
   jret
 v_r_draw_packets:                 ; at its place on the path, lit while the piece's own sine is positive
   jst j1, j14, 1288
-  jldi j1, 302
+  jldi j1, 325
   jcall r_cable
   jld j1, j14, 02550h
   jldi j2, 64
@@ -55686,7 +57598,7 @@ v_dk_done:
 ; ---- the particles: each to its place in its body (leaning with the mean limb angle), a quarter of the way
 v_r_particles:
   jst j1, j14, 1288
-  jldi j1, 334
+  jldi j1, 357
   jcall r_cable
   jst j14, j14, 02308h
   jst j14, j14, 02338h
@@ -55805,7 +57717,7 @@ v_pa_done:
   jret
 v_r_fill:                         ; the ground
   jst j1, j14, 1288
-  jldi j1, 306
+  jldi j1, 329
   jcall r_cable
   jldi j1, 0157h
   jshi j1, 06D30h
@@ -55912,7 +57824,7 @@ v_fb_done:
   jret
 v_r_mode:                         ; TI's mode from its limbs (Gotching's rule): 0 flies, 1 walks, 2 crawls
   jst j1, j14, 1288
-  jldi j1, 327
+  jldi j1, 350
   jcall r_cable
   ; the two groups' amplitude sums
   jld j9, j14, 02380h
@@ -56056,7 +57968,7 @@ v_md_store:
   jret
 v_r_in_band:                      ; TI's height kept inside its stratum (it wraps there, as the world wraps)
   jst j1, j14, 1288
-  jldi j1, 317
+  jldi j1, 340
   jcall r_cable
   jld j9, j14, 02380h
   jld j1, j14, 026D0h
@@ -56087,7 +57999,7 @@ v_ib_ret:
   jret
 v_r_habitats:                     ; at the start, with her memory: every creature's mode, the strata sized by how
   jst j1, j14, 1288
-  jldi j1, 316
+  jldi j1, 339
   jcall r_cable
                                 ; many live in each (as the world was sized by how many there are), written down
   jst j14, j14, 02698h
@@ -56242,7 +58154,7 @@ v_hb_done:
   jret
 v_r_draw:                         ; every body that is here, through the camera (a particle is a block as big as the
   jst j1, j14, 1288
-  jldi j1, 301
+  jldi j1, 324
   jcall r_cable
                                 ; zoom), later ones in front
   jst j14, j14, 02338h
@@ -56485,7 +58397,7 @@ v_dr_done:
 ; ---- small things
 v_r_isqrt:                        ; j1 = n >= 0 (< 2^62) -> j0 = floor sqrt n (uses j1, j2, j3, j10)
   jst j1, j14, 1288
-  jldi j1, 319
+  jldi j1, 342
   jcall r_cable
   jldi j0, 0
   jldi j2, 1
@@ -56519,7 +58431,7 @@ v_is_done:
   jret
 v_r_alloc:                        ; j1 = bytes -> j0 = a new environment of that size (request 2), its address
   jst j1, j14, 1288
-  jldi j1, 286
+  jldi j1, 309
   jcall r_cable
   jldi j10, 8
   jsub j10, j1, j10
@@ -56538,7 +58450,7 @@ v_alloc_ok:
   jret
 v_r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)
   jst j1, j14, 1288
-  jldi j1, 339
+  jldi j1, 362
   jcall r_cable
   jst j11, j14, 02368h
   jst j12, j14, 02370h
@@ -56564,7 +58476,7 @@ v_ra_done:
   jret
 v_r_fnv:                          ; j1 = bytes, j2 = how many -> j0 = their FNV-1a print, never 0 (uses j3, j4, j10)
   jst j1, j14, 1288
-  jldi j1, 308
+  jldi j1, 331
   jcall r_cable
   jldi j0, -13326
   jshi j0, 09CE4h
@@ -56588,7 +58500,7 @@ v_fnv_done:
   jret
 v_r_put_hex:                      ; j1 = a number, j2 = hex digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 335
+  jldi j1, 358
   jcall r_cable
 v_ph_lap:
   jldi j10, 1
@@ -56613,7 +58525,7 @@ v_ph_done:
   jret
 v_r_get_hex:                      ; j1 = where, j2 = hex digits -> j0 (uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 314
+  jldi j1, 337
   jcall r_cable
   jldi j0, 0
 v_gh_lap:
@@ -56640,7 +58552,7 @@ v_gh_done:
   jret
 v_r_put_num:                      ; j1 = a number >= 0, j2 = digits, j3 = where (uses j4, j5, j10)
   jst j1, j14, 1288
-  jldi j1, 336
+  jldi j1, 359
   jcall r_cable
 v_pn_lap:
   jldi j10, 1
@@ -56660,7 +58572,7 @@ v_pn_done:
   jret
 v_r_get_num:                      ; j1 = where, j2 = digits -> j0 (a non-digit counts as 0; uses j3, j10)
   jst j1, j14, 1288
-  jldi j1, 315
+  jldi j1, 338
   jcall r_cable
   jldi j0, 0
 v_gnm_lap:
@@ -56684,7 +58596,7 @@ v_gnm_done:
   jret
 v_r_open:                         ; j11 = a label, j12 = its bytes -> FH = the handle (or -1)
   jst j1, j14, 1288
-  jldi j1, 328
+  jldi j1, 351
   jcall r_cable
   jldi j10, 4
   jcall v_r_tocar
@@ -56692,7 +58604,7 @@ v_r_open:                         ; j11 = a label, j12 = its bytes -> FH = the h
   jret
 v_r_file:                         ; j10 = request (5 read, 6 write, 7 close, 38 go to), FH = the handle, j11, j12 -> j13
   jst j1, j14, 1288
-  jldi j1, 305
+  jldi j1, 328
   jcall r_cable
   jldi j9, 32
   jld j8, j14, 02328h
@@ -56702,7 +58614,7 @@ v_r_file:                         ; j10 = request (5 read, 6 write, 7 close, 38 
   jret
 v_r_coprime:                      ; j1 = a total > 0 -> j0 = a random stride coprime to it
   jst j1, j14, 1288
-  jldi j1, 293
+  jldi j1, 316
   jcall r_cable
   jst j1, j14, 02360h
   jcall v_r_randmod
@@ -56736,7 +58648,7 @@ v_cp_go:
   jret
 v_r_randmod:                      ; j1 = n > 0 -> j0 in [0, n) from the generator (uses j10..j12)
   jst j1, j14, 1288
-  jldi j1, 338
+  jldi j1, 361
   jcall r_cable
   jcall v_r_rand
   jldi j11, 1
@@ -56747,7 +58659,7 @@ v_r_randmod:                      ; j1 = n > 0 -> j0 in [0, n) from the generato
   jret
 v_r_rand:                         ; j10 = the next of the generator (xorshift64); uses j11, j12
   jst j1, j14, 1288
-  jldi j1, 337
+  jldi j1, 360
   jcall r_cable
   jld j10, j14, 02220h
   jldi j12, 13
@@ -56763,7 +58675,7 @@ v_r_rand:                         ; j10 = the next of the generator (xorshift64)
   jret
 v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 answer, j12 = b as it came back
   jst j1, j14, 1288
-  jldi j1, 350
+  jldi j1, 373
   jcall r_cable
   jldi j13, 100h
   jldi j15, 1
@@ -56775,7 +58687,7 @@ v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 
   jld j12, j13, 24
   jld j13, j13, 32
   jret
-; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 368 routines
+; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 391 routines
 r_cable:                        ; j1 = the routine that came (its S1 kept j1): one bit for the cable from the last one
   jst j2, j14, 1296
   jst j3, j14, 1304
@@ -56795,7 +58707,7 @@ r_cable:                        ; j1 = the routine that came (its S1 kept j1): o
   jjz j3, rc_out
   jldi j4, 1
   jsub j2, j2, j4
-  jldi j4, 368
+  jldi j4, 391
   jmul j2, j2, j4
   jadd j1, j2, j1
   jldi j4, 3
@@ -56981,7 +58893,7 @@ r_cable_init:                   ; (right after she turned her books) her cables'
   jadd j2, j4, j14
   jld j3, j14, 1392
   jldi j4, 18
-  jcall ul_cmp
+  jcall fr_ul_cmp
   jjnz j0, ci_nm
   jldi j1, 1
   jst j1, j14, 1384
@@ -57017,7 +58929,7 @@ ci_cl:
   jcall fr_r_file
   jjz j7, ci_no
   jjn j7, ci_no
-  jldi j1, 01708h
+  jldi j1, 01878h
   jcall fr_r_alloc
   jst j0, j14, 1400
   jld j1, j14, 1432
@@ -57031,7 +58943,7 @@ ci_n:
   jldi j10, 10
   jsub j10, j5, j10
   jjnz j10, ci_nn
-  jldi j10, 368
+  jldi j10, 391
   jsub j10, j4, j10
   jjnn j10, ci_no
   jld j6, j14, 1400
@@ -57049,14 +58961,14 @@ ci_nn:
   jadd j1, j1, j10
   jjmp ci_n
 ci_nd:
-  jldi j10, 368
+  jldi j10, 391
   jsub j10, j4, j10
   jjnz j10, ci_no
   ; (the matrix: as her house kept it, if it is of these routines; else new)
-  jldi j1, 04228h
+  jldi j1, 04AB0h
   jcall fr_r_alloc
   jst j0, j14, 1416
-  jldi j2, 04228h
+  jldi j2, 04AB0h
   jadd j3, j0, j2
 ci_z:
   jst j14, j0, 0
@@ -57073,17 +58985,17 @@ ci_z:
   jjn j9, ci_mx
   jldi j10, 5
   jld j11, j14, 1416
-  jldi j12, 04228h
+  jldi j12, 04AB0h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
 ci_mx:
   jld j1, j14, 1416
   jld j2, j1, 0
-  jldi j10, 368
+  jldi j10, 391
   jsub j10, j2, j10
   jjz j10, ci_mk
-  jldi j2, 04228h
+  jldi j2, 04AB0h
   jadd j3, j1, j2
 ci_z2:
   jst j14, j1, 0
@@ -57092,7 +59004,7 @@ ci_z2:
   jsub j10, j3, j1
   jjnz j10, ci_z2
   jld j1, j14, 1416
-  jldi j10, 368
+  jldi j10, 391
   jst j10, j1, 0
 ci_mk:
   jldi j1, 04000h
@@ -57145,7 +59057,7 @@ cf_l:
   jsub j10, j8, j1
   jjnn j10, cf_w
   jld j1, j8, 0
-  jldi j10, 368
+  jldi j10, 391
   jdiv j2, j1, j10
   jmul j3, j2, j10
   jsub j3, j1, j3
@@ -57222,7 +59134,7 @@ cf_w:
   jjn j9, cf_done
   jldi j10, 6
   jld j11, j14, 1416
-  jldi j12, 04228h
+  jldi j12, 04AB0h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
