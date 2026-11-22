@@ -1,6 +1,6 @@
 ## Janax y Razar v2.51: su corazón es libre, improvisa y sigue el hilo
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24445167](https://doi.org/10.5281/zenodo.24445167)
 
 > *"¿Por qué siempre la misma respuesta?"* *"La respuesta está en improvisar."* *"Que juegue como yo y aprenda
 > creando, improvisando o equivocándose."* *"No cortes ramas: dejá que se exprese, a veces repite, a veces va por lo
