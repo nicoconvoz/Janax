@@ -28,7 +28,8 @@ include '../../../escalon0/janax.inc'
 ; 2000h     open whiles: 32 bytes each (body address, register, condition, order), 128 deep
 ; 3000h     where the condition of each while is, by order (8 bytes each), 2560 whiles
 ; 10000h    folder listing (64 KiB)
-; 20000h    source (1 MiB), a 0 after it
+; (source)  its own environment, as big as the file and a 0 after it (Capitan, 2026-11-22: "hacelo autoajustable";
+;           it was 1 MiB at 20000h, and Luma's body had reached 95% of it); its address in V_SRC
 ; 120000h   output (1 MiB)
 ; 220000h   symbols: 65536 entries of 32 bytes (name address, name bytes, value, generation)
 ; 420000h   macros: 4096 entries of 32 bytes (name address, name bytes, where its parameters start, generation)
@@ -76,6 +77,8 @@ V_LINE    = 1170h
 V_TABLE   = 1178h               ; find_entry: the table and its mask
 V_MASK    = 1180h
 V_OUTLEN  = 1188h               ; bytes of the output label
+V_SRC     = 1190h               ; where the source is (its own environment)
+V_SRCLEN  = 1198h               ; its bytes
 OUTLBL    = 1200h
 HLBL      = 1300h
 FPBUF     = 1400h
@@ -173,6 +176,44 @@ jst j2, j4, 16
 jst j3, j4, 24
 jsys j0, j4
 jld j0, j4, 32
+jret
+
+; j1 label, j2 its bytes -> j0 the file's bytes, negative if it cannot be opened.
+file_size:
+jsub j15, j15, j12
+jst j8, j15, 0
+jsub j15, j15, j12
+jst j9, j15, 0
+jadd j3, j2, j14
+jadd j2, j1, j14
+jldi j1, 4                      ; open
+jcall sys1
+jadd j8, j0, j14
+jldi j1, 63
+jshr j1, j0, j1
+jjz j1, fs_open
+jldi j0, -1
+jjmp fs_out
+fs_open:
+jldi j1, 32
+jshl j1, j8, j1
+jldi j2, 38
+jor j1, j1, j2                  ; go to its end: where that is, is its size
+jldi j2, -1
+jldi j3, 0
+jcall sys1
+jadd j9, j0, j14
+jldi j1, 32
+jshl j1, j8, j1
+jldi j2, 7
+jor j1, j1, j2                  ; close
+jcall sys1
+jadd j0, j9, j14
+fs_out:
+jld j9, j15, 0
+jadd j15, j15, j12
+jld j8, j15, 0
+jadd j15, j15, j12
 jret
 
 ; j1 label, j2 its bytes, j3 where, j4 room -> j0 bytes read, negative if it cannot be opened.
@@ -419,23 +460,33 @@ jstb j4, j3, 4
 jstb j4, j3, 5
 jldi j4, 61h
 jstb j4, j3, 6
-jld j1, j14, V_NAME             ; the source, with a 0 after it
+jld j1, j14, V_NAME             ; the source: its room is its size (an environment as big as the file, a 0 after it)
 jld j2, j14, V_NAMELEN
-jldi j3, 2
-jshi j3, 0
-jldi j4, 10h
-jshi j4, 0
-jsub j4, j4, j12
+jcall file_size
+jldi j1, 63
+jshr j1, j0, j1
+jjnz j1, df_out
+jst j0, j14, V_SRCLEN
+jadd j2, j0, j12
+jldi j1, 2                      ; a new environment of that size
+jldi j3, 0
+jcall sys1
+jldi j1, 63
+jshr j1, j0, j1
+jjnz j1, df_error
+jst j0, j14, V_SRC
+jld j1, j14, V_NAME
+jld j2, j14, V_NAMELEN
+jld j3, j14, V_SRC
+jld j4, j14, V_SRCLEN
 jcall read_file
 jldi j1, 63
 jshr j1, j0, j1
 jjnz j1, df_out
-jldi j3, 2
-jshi j3, 0
+jld j3, j14, V_SRC
 jadd j3, j3, j0
 jstb j14, j3, 0
-jldi j1, 2                      ; its fingerprint: the table and the source
-jshi j1, 0
+jld j1, j14, V_SRC              ; its fingerprint: the table and the source
 jadd j2, j0, j14
 jld j3, j14, V_TABHASH
 jcall fnv
@@ -484,9 +535,16 @@ jld j0, j14, V_COUNT
 jadd j0, j0, j13
 jst j0, j14, V_COUNT
 df_out:
+jld j2, j14, V_SRC              ; its source's environment, given back
+jjz j2, df_r
+jldi j1, 3
+jldi j3, 0
+jcall sys1
+jst j14, j14, V_SRC
+df_r:
 jret
 
-; The first pass over the source at 20000h -> j0 = 1, or 0 if it has errors.
+; The first pass over the source (at V_SRC) -> j0 = 1, or 0 if it has errors.
 assemble_first:
 jld j0, j14, V_GEN              ; a new generation: the symbols and macros of the last source are gone
 jadd j0, j0, j13
@@ -513,8 +571,7 @@ jret
 
 ; One pass over the source: the first one learns where every label is, the second one writes the words.
 run_pass:
-jldi j0, 2
-jshi j0, 0
+jld j0, j14, V_SRC
 jst j0, j14, V_POS
 jst j14, j14, V_PC
 jst j14, j14, V_NWHILE
