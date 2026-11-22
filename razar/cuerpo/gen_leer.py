@@ -406,7 +406,16 @@ TH_M = TH_NN + 8                  # a mark for each print of the one that ended 
 # best score, this book, the book of her line A, the book that waits for him, how many books, then a book a 24 bytes
 # (its print, N, S), and the label
 GU_K = 256
-GU_LBL = 48 + GU_K * 24   # (H_F2: a line already written; H_PS: her second look, by the thread; TH_PW: her wish for it)
+# HER FRAME COEFFICIENT (the Capitan, 2026-11-22: "coeficiente de marco: que dude del enunciado hasta que encuentre
+# armonia"; his note of v0.53: what counts is when you doubted the statement). What pays her is not fixed: three frames,
+# three signals of his after she spoke (he followed the theme: a word of that exchange again that carries something for
+# her and is not her name; he was moved: his charge above his mean; he brought something new: a word of his that was not
+# in that exchange). Each frame counts how often it disagreed with the other two; she trusts the one in most harmony,
+# and doubts hers when another is in more. At GU_F: the three signals now, what waited (thread, playing on), the three
+# disagreements, the frame she trusts; kept in "gustos" before her books
+GU_F = 48
+GU_T = GU_F + 64                  # her books' table
+GU_LBL = GU_T + GU_K * 24   # (H_F2: a line already written; H_PS: her second look, by the thread; TH_PW: her wish for it)
 D_ROOM = IM_L + 8 * 9
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
@@ -2297,6 +2306,7 @@ def make(g, ST, free):
         J("jldi j10, 0"); ds("j10", D_KACT); J("jjz j1, dse_ad"); dl("j2", D_PM + 8); J("jmul j3, j1, j2"); dl("j2", D_PM); J("jsub j10, j3, j2", "jjn j10, dse_ad", "jldi j10, 1"); ds("j10", D_KACT)
         o("dse_ad:")
         dl("j2", D_PM); J("jadd j2, j2, j1"); ds("j2", D_PM); dinc(D_PM + 8)
+        J("jcall r_marco                  ; (her frame: what pays, by harmony)")
         da("j2", D_IN); dl("j3", D_INL); J("jldi j1, 0", "jcall r_dlg_write"); da("j1", D_IN); dl("j2", D_INL); J("jcall r_dlg_words"); J("jldi j10, 0"); ds("j10", D_INL)
         dl("j1", D_AWAIT); J("jjz j1, dse_w", "jldi j10, 1", "jsub j10, j1, j10", "jjnz j10, dse_h"); dinc(D_SC)
         dl("j1", D_LMODE); J("jldi j10, 1", "jsub j10, j1, j10", "jjnz j10, dse_p2"); dinc(D_MC_S1); J("jjmp dse_p")
@@ -2488,10 +2498,8 @@ def make(g, ST, free):
         o("                                ; ended is now the thread, and his words begin another")
         o("  ; (WHAT PAYS (the Capitan): that he answers says nothing, he always does; that he follows it says something: a word of")
         o("  ; his now that was in the exchange that ended)")
-        J("jcall th_follows", "jcall gu_pay", "jjz j0, tht_no"); dl("j1", TH_L); J("jjz j1, tht_m"); dl("j1", D_CM + 72); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_CM + 72)
-        o("tht_m:")
-        dl("j1", IM_L); J("jjz j1, tht_no"); dl("j1", D_CM + 88); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_CM + 88)
-        o("tht_no:")
+        J("jcall th_follows"); dl("j6", D_GBLK); J("jst j0, j6, %d" % GU_F, "jcall th_new"); dl("j6", D_GBLK); J("jst j0, j6, %d" % (GU_F + 8))
+        dl("j1", TH_L); dl("j6", D_GBLK); J("jst j1, j6, %d" % (GU_F + 16)); dl("j1", IM_L); dl("j6", D_GBLK); J("jst j1, j6, %d" % (GU_F + 24))
         ds("j14", TH_L); ds("j14", IM_L)
         dl("j3", TH_NN); ds("j3", TH_PN); da("j1", TH_N); da("j2", TH_P); J("jldi j4, 0")
         o("tht_c:")
@@ -2502,22 +2510,24 @@ def make(g, ST, free):
         def gbs(r, off): dl("j6", D_GBLK); J("jst %s, j6, %d" % (r, off))
         o("r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what \"gustos\" kept")
         li("j1", GU_LBL + 16); J("jcall r_alloc"); ds("j0", D_GBLK)
-        for k in range(6):
+        for k in range(GU_T // 8):
             J("jst j14, j0, %d" % (8 * k))
         for i, ch in enumerate(b"gustos"):
             J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (GU_LBL + i))
         J("jldi j10, %d" % GU_LBL, "jadd j11, j0, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gul_r")
-        J("jldi j10, 5"); gb("j11", 0); dl("j11", D_GBLK); J("jldi j10, 48", "jadd j11, j11, j10", "jldi j10, 5"); li("j12", GU_K * 24); J("jcall r_file", "jadd j1, j13, j14", "jldi j10, 7", "jcall r_file", "jjn j1, gul_r", "jldi j10, 24", "jdiv j1, j1, j10"); gbs("j1", 40)
+        dl("j11", D_GBLK); J("jldi j10, %d" % (GU_F + 32), "jadd j11, j11, j10", "jldi j10, 5", "jldi j12, 32", "jcall r_file")
+        dl("j11", D_GBLK); J("jldi j10, %d" % GU_T, "jadd j11, j11, j10", "jldi j10, 5"); li("j12", GU_K * 24); J("jcall r_file", "jadd j1, j13, j14", "jldi j10, 7", "jcall r_file", "jjn j1, gul_r", "jldi j10, 24", "jdiv j1, j1, j10"); gbs("j1", 40)
         o("gul_r:")
         J("jret")
         o("r_gustos_save:                  ; her tastes into \"gustos\"")
         dl("j11", D_GBLK); J("jjz j11, gus_r", "jldi j10, %d" % GU_LBL, "jadd j11, j11, j10", "jldi j12, 6", "jldi j10, 12", "jcall r_tocar")
         dl("j11", D_GBLK); J("jldi j10, %d" % GU_LBL, "jadd j11, j11, j10", "jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, gus_r")
-        dl("j11", D_GBLK); J("jldi j10, 48", "jadd j11, j11, j10"); gb("j12", 40); J("jldi j10, 24", "jmul j12, j12, j10", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        dl("j11", D_GBLK); J("jldi j10, %d" % (GU_F + 32), "jadd j11, j11, j10", "jldi j12, 32", "jldi j10, 6", "jcall r_file")
+        dl("j11", D_GBLK); J("jldi j10, %d" % GU_T, "jadd j11, j11, j10"); gb("j12", 40); J("jldi j10, 24", "jmul j12, j12, j10", "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("gus_r:")
         J("jret")
         o("gu_find:                        ; j1 = a book's print -> j2 = its entry, or 0 (uses j3-j5, j10)")
-        gb("j3", 40); dl("j2", D_GBLK); J("jldi j10, 48", "jadd j2, j2, j10")
+        gb("j3", 40); dl("j2", D_GBLK); J("jldi j10, %d" % GU_T, "jadd j2, j2, j10")
         o("guf_l:")
         J("jjz j3, guf_no", "jld j4, j2, 0", "jsub j4, j4, j1", "jjz j4, guf_r", "jldi j10, 24", "jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjmp guf_l")
         o("guf_no:")
@@ -2536,7 +2546,7 @@ def make(g, ST, free):
         o("gub_w:")
         J("jadd j2, j3, j14", "jcall dse_wish"); gbs("j1", 0); J("jret")
         o("gu_said:                        ; what she says came from her line A's book: once more for it, and it waits for him")
-        gb("j1", 24); J("jjz j1, gsd_r", "jcall gu_find", "jjnz j2, gsd_n"); gb("j3", 40); J("jldi j10, %d" % GU_K, "jsub j10, j3, j10", "jjnn j10, gsd_r", "jldi j10, 24", "jmul j2, j3, j10"); dl("j4", D_GBLK); J("jadd j2, j2, j4", "jldi j10, 48", "jadd j2, j2, j10")
+        gb("j1", 24); J("jjz j1, gsd_r", "jcall gu_find", "jjnz j2, gsd_n"); gb("j3", 40); J("jldi j10, %d" % GU_K, "jsub j10, j3, j10", "jjnn j10, gsd_r", "jldi j10, 24", "jmul j2, j3, j10"); dl("j4", D_GBLK); J("jadd j2, j2, j4", "jldi j10, %d" % GU_T, "jadd j2, j2, j10")
         J("jst j1, j2, 0", "jst j14, j2, 8", "jst j14, j2, 16", "jldi j10, 1", "jadd j3, j3, j10"); gbs("j3", 40)
         o("gsd_n:")
         J("jld j3, j2, 8", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j2, 8"); gb("j1", 24); gbs("j1", 32)
@@ -2546,14 +2556,51 @@ def make(g, ST, free):
         ds("j0", H_LET); gb("j1", 32); J("jjz j1, gup_r"); gbs("j14", 32); dl("j3", H_LET); J("jjz j3, gup_r", "jcall gu_find", "jjz j2, gup_r", "jld j3, j2, 16", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j2, 16")
         o("gup_r:")
         dl("j0", H_LET); J("jret")
+        o("r_marco:                        ; HER FRAME (see GU_F): if something of hers waited, the three signals, each frame's")
+        o("                                ; disagreement with the other two, the frame in most harmony; what waited is paid by it")
+        gb("j1", GU_F + 16); gb("j2", GU_F + 24); J("jor j1, j1, j2"); gb("j2", 32); J("jor j1, j1, j2", "jjz j1, mc_r")
+        gb("j1", GU_F); gb("j2", GU_F + 8); dl("j3", D_KACT); J("jadd j4, j1, j2", "jadd j4, j4, j3", "jldi j10, 2", "jsub j4, j4, j10", "jldi j5, 0", "jjn j4, mc_maj", "jldi j5, 1")
+        o("mc_maj:                         ; (j5: what most of them say)")
+        for k, r in enumerate(("j1", "j2", "j3")):
+            J("jsub j10, %s, j5" % r, "jjz j10, mc_a%d" % k); gb("j9", GU_F + 32 + 8 * k); J("jldi j10, 1", "jadd j9, j9, j10"); dl("j7", D_GBLK); J("jst j9, j7, %d" % (GU_F + 32 + 8 * k))
+            o("mc_a%d:" % k)
+        o("  ; (her frame: the one in most harmony; she keeps hers while none is in more)")
+        gb("j9", GU_F + 56); J("jldi j10, 3", "jshl j7, j9, j10"); dl("j8", D_GBLK); J("jadd j7, j7, j8", "jld j7, j7, %d" % (GU_F + 32))
+        for k in range(3):
+            gb("j8", GU_F + 32 + 8 * k); J("jsub j10, j8, j7", "jjnn j10, mc_b%d" % k, "jadd j7, j8, j14", "jldi j9, %d" % k)
+            o("mc_b%d:" % k)
+        gbs("j9", GU_F + 56)
+        o("  ; (its signal is what pays)")
+        J("jjz j9, mc_s0", "jldi j10, 1", "jsub j10, j9, j10", "jjz j10, mc_s1", "jadd j0, j3, j14", "jjmp mc_p")
+        o("mc_s1:")
+        J("jadd j0, j2, j14", "jjmp mc_p")
+        o("mc_s0:")
+        J("jadd j0, j1, j14")
+        o("mc_p:")
+        J("jcall gu_pay", "jjz j0, mc_r"); gb("j1", GU_F + 16); J("jjz j1, mc_im"); dl("j1", D_CM + 72); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_CM + 72)
+        o("mc_im:")
+        gb("j1", GU_F + 24); J("jjz j1, mc_r"); dl("j1", D_CM + 88); J("jldi j10, 1", "jadd j1, j1, j10"); ds("j1", D_CM + 88)
+        o("mc_r:")
+        gbs("j14", GU_F + 16); gbs("j14", GU_F + 24); J("jret")
+        o("th_new:                         ; -> j0 = 1 if he brought something new: a word of his now (four letters or more, not her")
+        o("                                ; name) that was not in the exchange that ended")
+        da("j1", D_IN); gs("j1", BP); dl("j2", D_INL); J("jadd j1, j1, j2"); gs("j1", BE)
+        o("thn_w:")
+        J("jcall bw_word", "jjz j0, thn_r", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, thn_w", "jcall dh_isname", "jjnz j0, thn_w"); dl("j1", TH_NN); da("j2", TH_N); J("jldi j3, 0")
+        o("thn_s:")
+        J("jsub j10, j3, j1", "jjnn j10, thn_y", "jldi j10, 3", "jshl j5, j3, j10", "jadd j5, j2, j5", "jld j5, j5, 0", "jsub j5, j5, j4", "jjz j5, thn_w", "jldi j10, 1", "jadd j3, j3, j10", "jjmp thn_s")
+        o("thn_y:")
+        J("jldi j0, 1", "jret")
+        o("thn_r:")
+        J("jldi j0, 0", "jret")
         o("th_follows:                     ; -> j0 = 1 if a word of his now (D_IN, four letters or more) was in the exchange that ended")
         da("j1", D_IN); gs("j1", BP); dl("j2", D_INL); J("jadd j1, j1, j2"); gs("j1", BE)
         o("thf_w:")
-        J("jcall bw_word", "jjz j0, thf_r", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, thf_w"); dl("j1", TH_NN); da("j2", TH_N); J("jldi j3, 0")
+        J("jcall bw_word", "jjz j0, thf_r", "jldi j10, 4", "jsub j10, j0, j10", "jjn j10, thf_w"); ds("j0", H_LET); dl("j1", TH_NN); da("j2", TH_N); J("jldi j3, 0")
         o("thf_s:")
         J("jsub j10, j3, j1", "jjnn j10, thf_w", "jldi j10, 3", "jshl j5, j3, j10", "jadd j5, j2, j5", "jld j5, j5, 0", "jsub j5, j5, j4", "jjz j5, thf_y", "jldi j10, 1", "jadd j3, j3, j10", "jjmp thf_s")
-        o("thf_y:")
-        J("jldi j0, 1", "jret")
+        o("thf_y:                          ; (it counts if it carries something for her, and is not her name)")
+        ds("j0", H_LET); J("jcall dh_isname", "jjnz j0, thf_w"); dl("j0", H_LET); J("jcall dh_wt", "jjz j0, thf_w", "jldi j0, 1", "jret")
         o("thf_r:")
         J("jldi j0, 0", "jret")
         o("th_add:                         ; j1 (j2 bytes): its words of four letters or more into the exchange beginning, once each")

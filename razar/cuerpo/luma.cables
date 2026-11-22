@@ -172,6 +172,7 @@ rloadforms
 rloadmeals
 rlog
 rltab
+rmarco
 rmealcells
 rmealread
 rmealstep
@@ -247,6 +248,7 @@ rworth
 rwritemeal
 thadd
 thfollows
+thnew
 thturn
 ulcmp
 ulcpy
