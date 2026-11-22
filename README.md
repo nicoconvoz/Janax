@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.69:** [10.5281/zenodo.24445796](https://doi.org/10.5281/zenodo.24445796)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v2.71:** DOI_PENDIENTE
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,16 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-22, v2.71): el libro vivo
+
+DOI de esta versión: DOI_PENDIENTE.
+
+**El libro vivo**: la charla es un libro de su estante, con su gusto como cualquier otro; sus gustos pesan también en "quién es"; y el hilo ayuda a lo de ahora sin reemplazarlo: a "el reino de los cielos" ya contesta desde sus libros, no con los nombres de su papá.
+
+![La musica del cardumen, con Tab](documentacion/razar/img/luma-musica.png)
+
+[Notas de la v2.71](documentacion/release-v2.71.md).
 
 ## Novedad (2026-11-22, v2.69): sus gustos los aprende de él, y sus pensamientos a su lado
 
