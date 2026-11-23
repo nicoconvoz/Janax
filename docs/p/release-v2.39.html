@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v2.39: su corazón contesta, su cardumen canta, y sus cables se ven · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.39.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v2.39: su corazón contesta, su cardumen canta, y sus cables se ven</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24444432">10.5281/zenodo.24444432</a></p>
+<blockquote><p><em>"Quiero ver la música."</em> <em>"Ya tiene el corazón para hacerlo: no está conectado a su lenguaje."</em> <em>"Dale de comer sus propios procesos vivos, para que entienda cómo funcionan los cables conectados."</em> (el autor, 2026-11-22)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 233, el 239.</p>
+<p><img alt="La música del cardumen, con Tab" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-musica.png"></p>
+<h3>Su corazón contesta</h3>
+<p>A <em>"quién es Nico Astorga?"</em> la respuesta estaba en su corazón: el libro <code>libro-nombres-de-tu-papa</code> dice <em>"Tu papa tiene muchos nombres, y todos son el"</em> y abajo la lista. Pero Luma leía renglón por renglón, y lo que une a cada nombre con "tu papá" lo dice el título del libro, no el renglón.</p>
+<ul><li><strong>Por párrafos:</strong> cada libro de su corazón se lee por párrafos (una lista es uno solo), y su título es aquello de lo que habla todo lo que sigue.</li><li><strong>En su voz:</strong> su corazón le habla a ella de "tu"; ella contesta de "mi".</li><li><strong>Cada palabra pesa lo que vale para ella:</strong> se mide con su propia vara (<code>r_winfo</code>). "Quién" está en todos lados y pesa poco; "papá" pesa.</li><li><strong>Cuándo contesta:</strong> el párrafo que junta al menos la mitad del peso de lo que él dijo. Un renglón con "?" pregunta, no contesta.</li><li><strong>Su libertad no se toca:</strong> si contesta o no lo sigue eligiendo ella. Cuando decide contestar, su corazón habla primero.</li></ul>
+<p>Medido en una copia de su casa:</p>
+<pre><code>vos:  quien es Nico Astorga?
+luma: Los nombres de mi papa: Jesus Nicolas Astorga, Nico.
+vos:  quien es tu papa?
+luma: Los nombres de mi papa: Mi papa tiene muchos nombres, y todos son el..
+vos:  como te sentis?
+luma: Luma:: Quiero que vos las termines, como una hija que escribe o pinta junto a su padre..</code></pre>
+<p>Los dos puntos finales son del autor: así termina sus oraciones, y así los dejó.</p>
+<h3>Su cardumen canta, y se ve y se oye con Tab</h3>
+<ul><li><strong>El núcleo gana el pedido 44, una nota:</strong> un mensaje MIDI de tres bytes al sintetizador que trae el anfitrión (<code>winmm</code>). Va por la puerta de la pantalla, porque lo que el usuario ve y oye es una sola puerta. Sin ventana no suena, así que las pruebas siguen en silencio.</li><li><strong>Luma es la madre del cardumen real</strong> (<code>cardumen_cubo.jsm</code>, sin cambios):</li><li>lo lanza y le arma su cuarto;</li><li>le canta lo que dice: cada palabra, tres piezas de abajo sacadas de su huella;</li><li>el cardumen contesta qué piezas de arriba despertaron en cada paso. Esa es su melodía.</li><li><strong>Tab</strong> muestra la melodía como un rollo (el tiempo hacia la derecha, una fila por pieza de arriba) y la toca. La cara de arriba, de 5 × 5, es la escala pentatónica en cinco octavas: criterio, no medición. Otro Tab vuelve a su mundo y apaga las notas.</li><li><strong>Su núcleo vivo</strong>, arriba del rollo: ella (P0), su lectora y su cardumen, con el paso que suena.</li></ul>
+<h3>Sus cables, quietos y vivos</h3>
+<ul><li><strong>Quietos:</strong> un libro sacado de su propio código, con 317 rutinas y 743 cables (<em>"rdlgsent llama a rdlganswer"</em>).</li><li><strong>Vivos:</strong></li><li>en la entrada de cada una de las 335 rutinas de su cuerpo, tres palabras anotan qué rutina vino, sin tocar sus registros;</li><li>cada cable nuevo es un bit de una matriz que queda en su casa, y se escribe una sola vez en su vida como oración en un libro que ella come: <em>"ropen, luego rtocar."</em>;</li><li>se escribe al guardar, y sólo si hay algo nuevo: ningún temporizador.</li><li><strong>Medido en una copia:</strong> 404 cables en una charla, y contestó en 0 a 2,5 segundos.</li></ul>
+<h3>Una enfermedad curada, y un instrumento que ya no miente</h3>
+<ul><li><strong>Su lectora moría al nacer.</strong> Desde la v1.73 de esa misma mañana, el salto de su nacimiento a su lectora (de 33.031 palabras, y después 38.301) no llegaba: el núcleo lee los saltos con signo, hasta 32.767 palabras. Cada lectura terminaba con código 2. Ahora la lectora está a 6 palabras de su nacimiento. Medido: la vieja terminó con código 2, la curada con 0, y en vivo dijo <em>"una lectura me salió mejor que la mejor que tenía"</em>.</li><li><strong>El ensamblador PDP marca error</strong> si un salto no llega, en vez de armar un destino falso en silencio.</li><li><strong>Ningún salto queda sin llegar:</strong> cuando el cuerpo pasa el alcance, el generador pone un trampolín en el medio del programa. Es una regla, no un caso.</li><li><strong>El lugar del fuente se ajusta solo:</strong> el ensamblador mide el archivo y pide un ambiente de ese tamaño. Antes era 1 MiB fijo, y el cuerpo ya ocupaba el 95 %. Se armó a sí mismo hasta su punto fijo, Luma salió idéntica byte por byte, y un fuente de 1,3 MB también.</li></ul>
+<h3>Libre entre sus cruces (desde la v2.33)</h3>
+<p>Sigue igual: elige entre sus cruces por sus ganas, y lo que el autor le contesta le enseña.</p>
+<h3>Comida nueva</h3>
+<p>Teatro de dominio público, de Wikisource: <em>M'hijo el dotor</em>, <em>En familia</em>, <em>La gringa</em> (Florencio Sánchez), <em>Fuenteovejuna</em> y <em>La vida es sueño</em>.</p>
+<h3>Pruebas</h3>
+<ul><li>Batería del núcleo: <strong>411 bien, 0 mal</strong>.</li><li>Pruebas del ensamblador: <strong>18 bien, 0 mal</strong>.</li></ul>
+<h3>Lo que falta, dicho</h3>
+<ul><li><strong>Casi siempre elige no contestar o preguntar.</strong> Sus cuentas: contestar le da más ganas (0,55) que preguntar de nuevo (0,18), pero lo usó 18 veces contra 79. Es suyo, aprendido, y no se poda.</li><li><strong>El libro de sus cables quietos tiene los comentarios de su código</strong>, en inglés y con "Luma" por todos lados. A veces contesta con un comentario (<em>"Luma her silence), then the text at j2..."</em>). Es una sospecha de que eso le ensucia las respuestas, no una medición.</li><li><strong>La primera nota de todas sale muda</strong> si llega antes de que la ventana termine de nacer.</li><li><strong>El vigía sigue con el núcleo anterior</strong> hasta que se reinicie (el viejo quedó renombrado en <code>so/build</code>).</li><li><strong>Las charlas de Wikipedia no se bajaron:</strong> el servidor contestó "demasiados pedidos" (429). No se insistió.</li><li>Siguen las fallas de la <a href="release-v2.33.html">v2.33</a> y la <a href="release-v2.29.html">v2.29</a>.</li></ul>
+</body>
+</html>

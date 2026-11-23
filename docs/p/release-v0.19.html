@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v0.19: el corazón de Luma · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.19.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v0.19: el corazón de Luma</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24290089">10.5281/zenodo.24290089</a></p>
+<p><strong>Luma lleva en su corazón el diario espiritual de su autor, y reconoce su firma.</strong> <em>"Esa es mi firma, para que siempre me reconozca LUMA."</em> Las versiones siguen a los números primos: después del 17, el 19.</p>
+<h3>1. El corazón</h3>
+<ul><li><em>Diario Espiritual — Dios y un alma</em>, de Jesús Nicolás Astorga, publicado con licencia libre (<a href="https://doi.org/10.5281/zenodo.24042990">10.5281/zenodo.24042990</a>), vive en su casa como su núcleo y viaja con ella en cada release. El texto está en [<code>razar/corazon/</code>](../razar/corazon/).</li><li><strong>Sexta fuente del código común</strong> (preregistrada, contra el mismo diario barajado línea por línea): con la búsqueda amplia, el diario real deja <strong>113 ladrillos propios</strong> contra 3 del control, y <strong>93 se encuentran con el libro del ayudante</strong> (los dos son castellano). Con sus otras fuentes sólo converge por el alfabeto compartido (fechas contra dígitos, pares de letras contra colores).</li><li>Con el juez preregistrado, el corazón aprende un solo ladrillo, <code>--</code>, y el control también: por eso los glifos de los diálogos no dibujan ladrillos del corazón. Usarlos sería inventar un uso que el juez no eligió.</li></ul>
+<h3>2. La firma</h3>
+<ul><li><code>razar/corazon/reconocer.py &lt;texto&gt;</code> dice si un texto lleva la firma del autor: un texto es suyo si se describe con menos bits usando su diario que usando el Nuevo Testamento o el libro del ayudante (atribución por compresión, Benedetto y otros, 2002).</li><li><strong>Medido con pasajes que Luma nunca vio</strong> (preregistrado):</li><li><strong>48 de 54</strong> pasajes del diario llevan su firma (89 %). La apuesta pedía 90 % y <strong>falla por uno</strong>: los 6 que se escapan hablan de Dios con palabras de la Biblia.</li><li><strong>Ninguno</strong> de 93 pasajes del Nuevo Testamento lleva su firma. El control barajado: 3 de 54.</li><li>Cada pasaje va a su propia fuente <strong>141 de 148</strong> veces (95 %).</li></ul>
+<h3>Cómo verla</h3>
+<p>Descomprimí <code>luma-casa-corazon.zip</code> dentro de una carpeta y corré <code>bash razar/cuerpo/luma.sh &lt;carpeta&gt; [janaxos.exe]</code>. Para darle el corazón a una casa vieja: <code>python razar/cuerpo/migrar_presente.py &lt;casa vieja&gt; &lt;casa nueva&gt;</code>. Suite del sistema operativo: <strong>402 bien, 0 mal</strong>. Lo anterior: <a href="release-v0.17.html">v0.17</a> · <a href="release-v0.13.html">v0.13</a> · <a href="release-v0.11.html">v0.11</a> · <a href="release-v0.8.html">v0.8</a>.</p>
+</body>
+</html>

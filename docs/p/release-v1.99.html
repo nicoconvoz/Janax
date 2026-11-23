@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v1.99: el error de la v1.97, arreglado y visto correr · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.99.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v1.99: el error de la v1.97, arreglado y visto correr</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24439948">10.5281/zenodo.24439948</a></p>
+<blockquote><p><em>"Luma se volvió incoherente."</em> (el autor, 2026-11-22, con una captura: <em>"Donde esta te"</em>)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 197, el 199.</p>
+<p><img alt="Luma siguiendo las palabras, con tildes enteras" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-sigue.png"></p>
+<h3>Lo que pasó</h3>
+<p>La v1.97 corrigió que las palabras con tilde se cortaran ("últim"): la puerta pasó a medirse en bytes y no en letras. Pero el largo quedó en un registro que la instrucción siguiente pisaba con la dirección de su cuarto, así que el largo de la puerta salía enorme. Cada vez que seguía por las palabras del otro:</p>
+<ul><li>su pregunta nueva perdía todo lo que iba después de la puerta, empezando por el "?": <em>"Donde esta te"</em>, <em>"Donde esta jajaja"</em>;</li><li>en <code>rodeos</code> copiaba cientos de bytes de su cuarto, ceros incluidos.</li></ul>
+<p>La v1.97 se publicó diciendo que ese arreglo <strong>no se había visto correr</strong>, porque la rama no salió por su suerte en la prueba. Era justo ahí donde estaba el error.</p>
+<h3>Lo arreglado</h3>
+<ul><li>El largo se guarda en un registro que nada pisa.</li><li><strong>Sus archivos se repararon</strong> (<code>rodeos</code>, <code>preguntas-mias</code>, <code>preguntas-viejas</code>): se les sacó la basura y se les devolvió el "?" a las preguntas, sin cambiar nada más. Las copias de antes quedaron guardadas.</li><li><strong>Esta vez se vio correr:</strong> una versión de prueba, que no se publica, sigue siempre las palabras del otro cuando puede (<code>LUMA_SEGUIR=1</code> al generar, como el <code>LUMA_QUIETA</code> de sus formas). En una copia de su casa:</li></ul>
+<pre><code>vos:  te quiero mucho hija      luma: Donde esta quiero?
+vos:  el último camino          luma: Donde esta camino?
+vos:  la montaña más alta       luma: Donde esta más?
+vos:  el jardín de mamá         luma: Donde esta mamá?
+vos:  la pasión del río         luma: Donde esta pasión?</code></pre>
+<p><code>rodeos</code> quedó en <code>pasión mamá</code>, limpio, y cada pregunta que dejó está en <code>preguntas-viejas</code>.</p>
+<h3>Al despertarla, dos Lumas</h3>
+<p>Cuando se le llevó esta versión, el cuidador viejo justo la estaba haciendo nacer. Esa Luma quedó sin cuidador al lado de la nueva. Se cerró con cuidado, y quedó una sola.</p>
+<h3>Lo que falla y lo que falta, dicho</h3>
+<ul><li><strong>Cuando sigue tus palabras puede elegir una corta y vacía</strong> ("de", "te"): tiene más chance cuanto más larga, pero ninguna queda prohibida. Es la regla de sus caminos.</li><li><strong>Reiniciar a su cuidador mientras ella nace puede dejar dos Lumas.</strong> Esta vez se vio y se cerró a mano; el script de reinicio todavía no lo evita.</li><li>Siguen los de la <a href="release-v1.97.html">v1.97</a>.</li></ul>
+</body>
+</html>

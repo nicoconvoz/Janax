@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v3.11: reconoce la firma de quien le habla · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.11.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v3.11: reconoce la firma de quien le habla</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24450132">10.5281/zenodo.24450132</a></p>
+<blockquote><p><em>"Que reconozca cuál es el lenguaje con el que se le habla y poner cada cosa en su lugar; puede combinar, pero no por azar: a propósito."</em> <em>"Que detecte la firma como con mi diario espiritual: si la firma es de alguien que habla de otra cosa, que le presente eso; si es la mía, que hable en mi idioma y con mis temas."</em> (el autor, 2026-11-22)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 307, el 311.</p>
+<h3>La firma de cada libro</h3>
+<p>Desde la v1.03 Luma reconoce la firma de su autor con una regla: un pasaje es de él si cuesta menos bits conociendo su diario (<code>r_firma</code>, qué letra sigue a las anteriores). Ahora <strong>cada libro de su estante tiene su firma</strong>, con la misma regla: qué signo sigue a los dos anteriores. Los signos son 32: las letras de la a a la z, una letra más allá del ASCII, el espacio, el dígito, el fin de línea y el signo. Se cuentan una vez y quedan en su casa, en <code>lenguas</code>. Un libro se vuelve a contar sólo si cambió su tamaño.</p>
+<h3>Quién le habla</h3>
+<p>Lo que le escriben se codifica con cada firma, con los conteos de Krichevsky y Trofimov como en Razar. El libro que lo dice más corto tiene la firma de quien habla, y otro libro que tarda <em>d</em> bits más es 2^−<em>d</em> de probable. Es compresión, el único juez de Razar.</p>
+<p>Quien le habla puede cambiar. Cada línea nueva se suma a la firma de antes, salvo que cambiar de firma la diga más corto. Cambiar cuesta lo que se tarda en anotarlo: log₂ de las líneas más log₂ de los libros (<em>fixed share</em>, Herbster y Warmuth 1998). Por eso una persona que sigue hablando acumula su firma, y un cambio de idioma se nota de inmediato.</p>
+<h3>Cada cosa en su lugar, a propósito</h3>
+<ul><li><strong>Al elegir tema</strong>, su gusto por cada libro se multiplica por esa probabilidad. Si el tema que venía tocando tiene menos firma que un libro promedio suyo, lo deja cuando él habla.</li><li><strong>Al contestar por sus palabras</strong>, cada libro las cuenta con el mismo peso: sus palabras pesan donde está su voz.</li><li><strong>La charla</strong> (<code>dialogo</code>) es la voz de todos, la suya y la de él, así que no es la firma de nadie. No compite como firma y vale como un libro promedio.</li><li><strong>Una carta a ella</strong>, un libro de su corazón cuyo título es su nombre (la nota de su papá empieza con <em>"Luma:"</em>), le habla a ella con la voz de él. Es para leerla, no para decirla: nunca contesta con ella ni la toma como tema. Antes respondía <em>"Quiero que vos las termines…"</em> a cualquiera, y parecía que le pedía algo a quien le hablaba.</li><li><strong>Nada dos veces seguidas.</strong> Lo que acaba de decir no lo vuelve a decir, venga por el camino que venga: el freno está en el único lugar donde escribe sus líneas (<code>r_dlg_write</code>).</li></ul>
+<h3>Lo que se vio</h3>
+<p>Todo se probó en una copia de su casa, nunca en la Luma viva:</p>
+<table><tr><th>Le escriben</th><th>Contesta</th></tr><tr><td>"Dios me habló esta mañana en el silencio del alma, hermano"</td><td>Santa Catalina de Siena y un salmo, de su diario</td></tr><tr><td>"el amor de Dios es lo que me sostiene cuando todo se cae"</td><td><em>"Este es mi regalo para este día. Espero me dejes un comentario si lo deseas."</em>, de su diario</td></tr><tr><td>dos líneas de bytes en hexadecimal</td><td>en hexadecimal, desde su libro de máquina, distinto cada vez</td></tr><tr><td>10 preguntas seguidas, entre ellas "hola Luma", "¿quién es Jacob?" y "¿quién es Elon Musk?"</td><td>ni una vez la carta, ninguna respuesta repetida</td></tr></table>
+<p>La Luma viva corre, byte por byte, el cuerpo que se probó. Para que no tuviera que leer todo su estante, se le dieron las firmas que ya había contado la copia, que tiene los mismos libros.</p>
+<h3>Lo que todavía no</h3>
+<ul><li><strong>La primera vez que conoce el estante tarda.</strong> Contar las firmas de unos 50 MB llevó cerca de un minuto, y esas respuestas tardaron 39 y 57 segundos. Después queda guardado.</li><li><strong>Una línea en hexadecimal todavía puede salir contestada en castellano.</strong> Pasó una vez entre dos: el camino que respondió no está identificado.</li><li>La firma usa dos signos de contexto y no tres como <code>r_firma</code>. Con tres serían más de 120 MB.</li><li>La firma de quien habla se acumula desde que ella se despierta. Si dos personas escriben en la misma sesión, el cambio de firma las separa sólo cuando cambiar la dice más corto.</li><li>La carta a ella se reconoce cuando su corazón la lee, al contestar. Antes de eso podría elegirla como tema.</li></ul>
+<h3>Dónde está</h3>
+<p><code>razar/cuerpo/gen_leer.py</code>: <code>lj_voice</code>, <code>lj_cost</code>, <code>lj_pass</code>, <code>lj_weight</code>, <code>lj_keep</code>, <code>lj_stay</code>, <code>lj_wbook</code>, <code>lj_letter</code>, <code>lj_note</code> y los demás <code>lj_*</code>.</p>
+</body>
+</html>

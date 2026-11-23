@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v0.6: el mismo juez, en otros mares · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.6.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v0.6: el mismo juez, en otros mares</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24227578">10.5281/zenodo.24227578</a></p>
+<p><strong>El juez de Razar es uno solo: decir lo mismo con menos bits. Esta versión mide hasta dónde llega sin tocarlo — en código C, en los unos y los ceros del código máquina, y sobre los propios órganos de Razar.</strong> Todas las predicciones se escribieron antes de correr, y lo que falló va contado.</p>
+<h3>1. Las torrecitas: Razar aprende de sus propios órganos</h3>
+<p>Razar diseña sus órganos mutando una letra al azar, a ciegas. Sobre el <strong>paisaje completo de sus 819 órganos de hasta 3 letras</strong> (Nuevo Testamento; el instrumento reproduce exacto lo ya medido), el mismo segmentador por MDL aprende qué se repite en los que funcionan:</p>
+<table><tr><th></th><th>Torrecitas</th></tr><tr><td><strong>Real</strong> (428 órganos que le ganan a la base)</td><td>**<code>16</code> (837 usos) y <code>38</code> (814)**</td></tr><tr><td><strong>Las mismas notas, sorteadas</strong></td><td><strong>ninguna</strong></td></tr></table>
+<p>De yapa, <strong>post-hoc y sin probar</strong>: las dos son la misma forma corrida dos palabras, y los mejores órganos (<code>516</code>, <code>738</code>, <code>627</code>) son una familia de esa forma. <strong>Falta la mitad que importa:</strong> que la mutación las use como ladrillos y medir si busca mejor. [<code>documentacion/razar/torrecitas.md</code>](razar/torrecitas.md)</p>
+<h3>2. El enfoque en los unos y los ceros</h3>
+<p>Sobre los 48.060 bytes del código ejecutable del núcleo, sin desensamblar:</p>
+<table><tr><th>Enfoque</th><th>Qué encontró</th><th>Real</th><th>Bytes barajados</th><th>Azar</th></tr><tr><td><strong>De cerca</strong></td><td>el tamaño de palabra</td><td><strong>8 bits, alineado al byte</strong></td><td>ninguno gana</td><td>—</td></tr><tr><td><strong>De lejos</strong></td><td>dónde termina cada instrucción (F1)</td><td><strong>0,369</strong></td><td>0,255</td><td>0,235</td></tr></table>
+<p>Un segmentador que se ajusta solo, sin ninguna regla sobre bordes, aprende 85 palabras: el <strong>98,7%</strong> cae adentro de una sola instrucción (<code>48 8d</code> es <em>lea</em>, <code>48 8b</code> es <em>mov</em>). Las dos reglas que le decían cómo es un borde fallaron por debajo del azar, y están contadas. [<code>documentacion/razar/enfoque-en-bits.md</code>](razar/enfoque-en-bits.md)</p>
+<h3>3. La nitidez en código</h3>
+<ul><li><strong>Código fuente C</strong> (el driver de openrazer): 8 de 8 antónimos pre-registrados, y cae a azar cuando se barajan las palabras (p ≈ 0,004).</li><li><strong>Código máquina x86-64 crudo:</strong> no se engancha, ni con 4,2 MB. También es un resultado.</li></ul>
+<p>[<code>documentacion/razar/nitidez-en-codigo.md</code>](razar/nitidez-en-codigo.md)</p>
+<h3>Los jueces nuevos</h3>
+<p>En <code>razar/jueces/</code>: <code>barajar_palabras.py</code>, <code>extraer_codigo.py</code>, <code>enfoque_bits.py</code>, <code>segmentar_mdl.py</code>, <code>medir_lexico.py</code> y <code>torrecitas.py</code>. Con los datos del paisaje y el pre-registro en <code>documentacion/razar/datos/</code>.</p>
+<h3>Lo que no está medido</h3>
+<ul><li><strong>Las torrecitas como ladrillos de la mutación:</strong> sin hacer.</li><li><strong>El segmentador corre en Python</strong>, no como órgano de Razar.</li><li><strong>Un solo binario y un solo libro</strong> en las pruebas nuevas. Lo abierto quedó como <em>tarea para la casa</em> en <code>enfoque-en-bits.md</code>: otro compilador, otra arquitectura, otros chorros sin idioma.</li><li><strong>Esta versión no cambia el código de Janax ni de Razar:</strong> las suites de la v0.5 siguen valiendo.</li></ul>
+<h3>Y en la carta</h3>
+<p>La carta del autor suma las palabras de estos días y su sueño. [<code>CARTA-DEL-AUTOR.md</code>](../CARTA-DEL-AUTOR.md)</p>
+</body>
+</html>

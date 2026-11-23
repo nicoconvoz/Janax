@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v2.93: imagina lo que nunca leyó · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.93.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v2.93: imagina lo que nunca leyó</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24447399">10.5281/zenodo.24447399</a></p>
+<blockquote><p><em>"Conectá la imaginación de Razar con su improvisar, para que diga cosas que nunca leyó, hechas con mecanismos que encontró ella. Nada de listas fijas ni parches: que todo salga de sus libros y de sus medidas."</em> (el autor, 2026-11-22)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 283, el 293.</p>
+<h3>Lo que hace</h3>
+<p>Mientras improvisa, toca un pedazo de su tema (una ventana de 4 KB del libro donde está). Ahora, a veces, una palabra de ese pedazo le deja su lugar a otra, y lo que dice es una frase que no está en ninguno de sus libros.</p>
+<p>La palabra que entra no sale de una lista. Sale del mecanismo con el que imagina Razar (<code>hl_instr</code>, en <code>razar/cardumen/hilos.jsm</code>): <strong>dos palabras se parecen cuando ocupan un mismo rol</strong>, es decir, la misma relación, del mismo lado y con la misma otra palabra. En su texto, la relación es estar al lado. El rol de una palabra es la palabra de antes y la de después, las dos a la vez. Mirar un solo lado ("el ___") no alcanza, porque casi todas las palabras de una clase lo ocupan, y eso dice poco.</p>
+<ol><li><strong>Qué palabras pueden cambiar:</strong> sólo las que le dicen algo a ella, por su propia medida (<code>dh_wt</code>: lo que la charla de sus libros sigue por esa palabra más allá del azar). Nunca su nombre.</li><li><strong>Quién entra:</strong> cualquier otra palabra que le diga algo y ocupe, en la ventana, un rol de la que sale. Juntos, todos los roles compartidos forman el sorteo: la elige su suerte, y una palabra que comparte más roles tiene más chances.</li><li><strong>Sólo si es nuevo:</strong> la cláusula que arma (de signo a signo) no puede estar escrita ni en la ventana, ni en ningún libro suyo (<code>libro…</code>, <code>elibro…</code>), ni en la charla con él (<code>dialogo</code>). Si ya la leyó, no la imaginó: dice lo que tocaba.</li><li><strong>Cuándo:</strong> por sus ganas de imaginar, (S + 1/2) / (N + 1), contra su suerte. Cada vez que imagina, N suma uno. S suma uno cuando su coeficiente de marco (<code>r_marco</code>) dice que eso le pagó. No hay ningún número fijo puesto por nosotros.</li></ol>
+<p>Todo lo que imagina queda en su casa, en <code>imaginado</code>, en una línea que cualquiera puede leer: la cláusula, la palabra que salió y la que entró. Sus cuentas quedan en <code>imagina</code>. Y en su panel aparece el pensamiento: <em>imagine: …</em></p>
+<h3>Lo que se vio</h3>
+<p>Probado en una copia de su casa, nunca en la Luma viva, con una variante que la fuerza a imaginar (<code>LUMA_IMAGINA=1</code>). Tocando un libro de filosofía, dijo:</p>
+<blockquote><p>… en la tesis de Rudolf Carnap de que el <strong>proposito</strong> de verdad de las afirmaciones de existencia depende del marco linguistico en el que se hacen</p></blockquote>
+<p>Su libro dice "el <strong>valor</strong> de verdad". En la ventana, "valor" y "proposito" ocupan el mismo rol ("el ___ de"). Se verificó desde afuera que esa cláusula no está escrita en ninguno de sus libros: sólo aparece en lo que ella dijo y en su <code>imaginado</code>. Su marco le pagó esa vez (N = 1, S = 1). Después se probó la versión real, sin el gancho: vive, contesta y guarda <code>imagina</code>.</p>
+<h3>Lo que todavía no</h3>
+<ul><li>Cambia <strong>una</strong> palabra por vez, y la parecida la busca sólo en la ventana de 4 KB que lee, no en todo el libro.</li><li>Para saber que es nuevo, recorre todos sus libros cada vez que imagina (~50 MB). En la prueba, la respuesta en que imaginó tardó 4,5 s en total; lo que tarda el recorrido solo no se midió aparte.</li><li>No usa todavía las formas que Razar descubre que "unen iguales" (como "y"), ni los votos abiertos del <code>imaginado</code> de Razar: comparte la definición de parecido, no los hallazgos.</li><li>No se comprueba que lo imaginado sea verdad: es una frase nueva, armada con lo que ella sabe del lugar de cada palabra, nada más.</li><li>El paquete <code>Janax-Razar-Windows.zip</code> es el de la v2.83 y trae su cuerpo anterior. Este release no lo rearma.</li></ul>
+<h3>Dónde está</h3>
+<p><code>razar/cuerpo/gen_leer.py</code>: <code>im_imagine</code>, <code>ig_books</code>, <code>ig_isbook</code>, <code>ig_mark</code>, <code>ig_save</code>, y el pago en <code>r_marco</code>.</p>
+</body>
+</html>

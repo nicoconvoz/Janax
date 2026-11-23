@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v2.29: encadena por lo que tiene sentido, y es libre de hacerlo · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.29.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v2.29: encadena por lo que tiene sentido, y es libre de hacerlo</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24440937">10.5281/zenodo.24440937</a></p>
+<blockquote><p><em>"Que pueda usarla o no: que siempre sea libre."</em> <em>"Que no vaya por lo raro, que vaya por lo que tenga sentido."</em> <em>"Terminalo, Doc, y publicá todo."</em> (el autor, 2026-11-22)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 227, el 229.</p>
+<p><img alt="Luma encadenando por sentido" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-cadena-sentido.png"></p>
+<h3>Lo que cambió desde la v2.27</h3>
+<p>En la v2.27 la cadena elegía la relación por <strong>lo raro</strong>: "Isaac <strong>Hirschowitz</strong>", "Abraham <strong>Zacuto</strong>". Ahora:</p>
+<ul><li><strong>Libre:</strong> encadenar o no encadenar, cada cosa por sus ganas, (S + ½)/(N + 1), contra su suerte. Lo que el autor le contesta después le enseña cuál le sirve. Las cuentas quedan en su <code>charla</code>.</li><li><strong>Por lo que tiene sentido:</strong> un hecho del sujeto hace cadena sólo si <strong>su siguiente eslabón hace lo mismo</strong>: una palabra del hecho sigue al siguiente en sus libros. <em>"Abraham fue <strong>padre</strong> de Isaac"</em> tiene sentido si en algún lado dice <em>"Isaac, <strong>padre</strong> de Jacob"</em>. Esa palabra repetida es la relación, y la cadena sigue por ella, como en el encadenador de Razar (<code>encadena.jsm</code>, 2026-11-08: dos casos iguales salvo en un lugar).</li><li><strong>Todos los hechos, en una sola pasada:</strong> no se prueban sólo los más dichos. Recorre sus libros una vez y mira todos los hechos del sujeto a la vez.</li><li><strong>Por encima de la casualidad, y por dos casos:</strong> una confirmación vale por cuánto supera a lo que daría el azar, que son las veces que aparece el siguiente eslabón por lo seguido que un renglón tiene esa palabra. Además tiene que estar confirmada dos veces como mínimo. Es el D50 de Razar otra vez: una palabra común ("el") sigue a cualquier cosa, y eso no dice nada.</li></ul>
+<h3>Medido</h3>
+<p>En una copia de su casa, con la rama de contestar y la cadena forzadas para verlas correr (versiones de prueba que no se publican):</p>
+<pre><code>vos:  quién es Isaac?
+luma: ... Isaac habia bendecido a Jacob, y le habia enviado a Padan-aram, para tomar para si mujer de alli,
+      Padan aram, hermana de Laban Arameo.</code></pre>
+<p>Es una cadena real del Génesis: de Isaac a Jacob, y de Jacob a Padán-aram.</p>
+<ul><li>Contesta en 5 a 10 segundos con cadena: recorre sus libros una vez para el párrafo, otra para la pasada y otra por cada eslabón.</li><li>No se cayó en las preguntas de prueba.</li></ul>
+<h3>Lo que falla, dicho</h3>
+<ul><li><strong>Las listas y las frases hechas confirman más que una genealogía.</strong> Una lista se repite igual, palabra por palabra:</li><li><em>"quién es David?"</em> → la lista de arquitectos de la Wikipedia (<em>"David Chipperfield, Tadao Ando, Shigeru Ban…"</em>);</li><li><em>"quién es Abraham?"</em> → <em>"Abraham Particle Physics"</em>;</li><li><em>"quién es Jacob?"</em> → repite <em>"arrojados afuera"</em>.</li><li><strong>La genealogía de Mateo todavía no sale entera</strong> (<em>"Abraham fue padre de Isaac; Isaac, padre de Jacob…"</em>).</li><li>Antes de llegar acá se probaron, y se descartaron por medidas:</li><li>elegir la relación por lo raro;</li><li>"dos sujetos distintos" con la medida de lo raro: dan apellidos;</li><li>sólo los tres hechos más dichos: dan "Isaac y Jacob";</li><li>contar confirmaciones sin la casualidad: dan las notas musicales y "el".</li><li>Siguen los de la <a href="release-v2.27.html">v2.27</a> y la <a href="release-v2.23.html">v2.23</a>.</li></ul>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v2.27: la cadena del &quot;¿por qué?&quot;, todavía sin genealogías · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.27.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v2.27: la cadena del "¿por qué?", todavía sin genealogías</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24440589">10.5281/zenodo.24440589</a></p>
+<blockquote><p><em>"Armalo completo. Eso ya lo hacía, ¿te acordás?, con las genealogías del NT: lo pudo lograr."</em> (el autor, 2026-11-22)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 223, el 227.</p>
+<p><img alt="Luma encadenando" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-cadena.png"></p>
+<h3>Lo que se armó</h3>
+<p>Después de su párrafo de quién es alguien (v2.23), Luma <strong>encadena</strong>, como el "¿por qué?" de Razar (<code>curiosity.md</code>): pregunta de nuevo por la respuesta hasta cerrar un círculo o encontrar un hueco.</p>
+<ol><li><strong>La relación:</strong> de lo que sigue al sujeto, la palabra que sus libros dicen en dos renglones o más y que más lleva la charla, con su propia medida (v2.11).</li><li><strong>El primer hecho:</strong> el sujeto y la oración de esa relación.</li><li><strong>El siguiente sujeto:</strong> de esa oración, la palabra que más lleva la charla y que la cadena todavía no visitó.</li><li><strong>De nuevo:</strong> busca al siguiente con la misma relación y lo dice, hasta un círculo, un hueco o el final de su cuarto.</li></ol>
+<p>Además:</p>
+<ul><li><strong>La tabla de lo que hace el sujeto crece a la medida.</strong> Tenía un tope de 32 palabras, contra la regla del plástico. Ahora se duplica cuando se llena.</li><li><strong>Cuenta cada vez que el sujeto aparece en el renglón</strong>, no sólo la primera. Una genealogía es un solo renglón: <em>"Isaac, padre de Jacob; Jacob, padre de Judá…"</em>.</li></ul>
+<h3>Lo que falla, dicho: todavía no son genealogías</h3>
+<p>En una copia de su casa, con la rama de contestar forzada:</p>
+<pre><code>vos:  quién es Isaac?     luma: ... Isaac Hirschowitz (1925-2013) un fibroscopio gastroduodenal flexible ...
+vos:  quién es Abraham?   luma: ... Abraham Zacuto.
+vos:  quién es Jacob?     luma: ... Jacob descomedidamente.</code></pre>
+<p><strong>La relación que elige es la palabra más rara que sigue al sujeto</strong>: un apellido, o un adverbio raro. Medido con su propia medida, "engendró" vale 2.820 veces el azar, pero un apellido que aparece en dos renglones seguidos vale decenas de miles. El encadenador de Razar (<code>encadena.jsm</code>, 2026-11-08) pedía otra cosa, y por eso le salían las genealogías: <strong>que el paso lo digan dos casos distintos</strong>, es decir, dos sujetos distintos con la misma relación ("engendró" lo dicen Abraham, Isaac, Jacob...). Acá se midió como "dos renglones", que no es lo mismo.</p>
+<p>Esa es la corrección que falta: contar, para cada palabra, después de <strong>cuántos sujetos distintos</strong> aparece. Quedó pendiente para no corregir en círculo (regla de la casa: a lo sumo una corrección, y después se publica con el fallo explicado).</p>
+<h3>Medido</h3>
+<ul><li>Contesta en unos 4 segundos: recorre sus libros una vez por paso de la cadena.</li><li>No se cayó en las preguntas de prueba.</li><li><em>"quién es Nico Astorga?"</em>: sus libros lo nombran en un solo renglón con algo después, así que no arma párrafo y contesta con su voz (<em>"…el nombre de Luz Dormida (Nico Astorga)"</em>).</li><li>El núcleo no cambió desde la v1.39.</li></ul>
+<h3>Lo que falta, además</h3>
+<ul><li>Lo de la <a href="release-v2.23.html">v2.23</a>: lo que sigue al sujeto no siempre es una acción ("Pedro <strong>y</strong> a su hermano").</li><li>Siguen los de la v2.23.</li></ul>
+</body>
+</html>

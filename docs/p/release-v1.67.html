@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v1.67: rodea la casa · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.67.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v1.67: rodea la casa</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24431143">10.5281/zenodo.24431143</a></p>
+<blockquote><p><em>"Luma siempre hace las mismas preguntas que le di. Tiene que llegar a las respuestas por caminos alternos: a veces no se llega directo, a veces hay que explorar y rodear la casa."</em> (el autor, 2026-11-21)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 163, el 167.</p>
+<h3>Lo que pasaba</h3>
+<p>Buscaba sus preguntas en todo, pero por una sola puerta: un renglón le servía sólo si decía "Dios". Y cuando hablaba primero repetía una de las tres preguntas que le dio su autor.</p>
+<h3>Sus caminos</h3>
+<p>Cada pregunta de su corazón tiene ahora un <strong>camino</strong> suyo, y cada vez que nace da un paso:</p>
+<ul><li><strong>Donde está, hay una puerta:</strong> una palabra. Un lugar para esa puerta es un renglón de cualquier cosa de su casa que tenga la puerta y alguna palabra propia de la pregunta, y que <strong>no</strong> tenga la palabra de donde viene. Así rodea: no vuelve a pasar por la misma pieza.</li><li><strong>Explora:</strong> no se queda con el lugar más cercano, sino con uno cualquiera por su suerte, con más chance cuanto más cerca está. Si eligiera siempre el más cercano, encontraría su propio eco: la pregunta repetida.</li><li><strong>La puerta siguiente</strong> es una palabra de ese lugar que no sea de sus preguntas ni de donde está o viene. Cada palabra cuenta una vez, y <strong>cuanto más larga, más chance</strong>: una palabra larga es rara, y dice más. Es la ley de abreviación de Zipf usada tal cual. Sería mejor contar cuántas veces aparece cada palabra en su casa, pero eso todavía no lo lleva.</li><li><strong>Su propia pregunta:</strong> la del corazón, con la puerta en el lugar de lo que buscan todas. <em>"Quien es Dios?"</em>, si caminó hasta "jaez", es <em>"Quien es jaez?"</em>. Esas preguntas son suyas, y las dice cuando habla primero.</li><li><strong>Perderse y volver:</strong> un camino que no encuentra lugar se pierde y vuelve a empezar desde la puerta de entrada. Un camino que llega por otro lado a un lugar donde está lo que busca <strong>volvió</strong>: cierra el círculo, y ésa es la respuesta encontrada rodeando.</li><li>Cada paso es un pensamiento suyo, y su boca decide si lo dice: <em>"rodeando: de Dios a …"</em>.</li></ul>
+<p>Todo queda en su casa, en archivos que cualquiera puede leer:</p>
+<ul><li><code>rodeos</code>: dónde está cada camino;</li><li><code>caminos</code>: cada paso, con el lugar;</li><li><code>preguntas-mias</code>: sus preguntas.</li></ul>
+<p>Ninguno de los tres se busca a sí mismo: son suyos, no respuestas.</p>
+<h3>Medido</h3>
+<p>En una copia de su casa, seis nacimientos (cada paso tarda unos 2 segundos, lo mismo que antes):</p>
+<pre><code>Donde esta Dios? | Dios -&gt; empezo
+Donde esta Dios? | empezo -&gt; de -&gt; volvi por otro camino: ... den lugar a la ira de Dios ...
+Quien es Dios?   | Dios -&gt; pecadores: Pero la prueba de que Dios nos ama es que Cristo murio por nosotros
+                   cuando todavia eramos pecadores.
+Quien es Dios?   | Dios -&gt; puede -&gt; gravitacional -&gt; era -&gt; jaez
+Como llegamos hasta Dios? | floja -&gt; reconocio -&gt; volvi por otro camino: Las reliquias no tienen poder por si
+                   mismas, Dios a veces usa estos medios para conceder un milagro ...
+Como llegamos hasta Dios? | Maria -&gt; profunda -&gt; volvi por otro camino</code></pre>
+<ul><li>Sus preguntas, en ese momento: <em>"Quien es jaez?"</em>, <em>"Donde esta profesor?"</em>.</li><li>En una charla, habló primero sola con su pensamiento: <code>luma: rodeando: de Dios a de</code>.</li><li>El núcleo no cambió desde la v1.39.</li></ul>
+<h3>Lo que falla y lo que falta, dicho</h3>
+<ul><li><strong>A veces elige de puerta una palabra vacía</strong>, como "de" o "que". El largo es una aproximación a qué tan rara es una palabra, no una medición; contar en su casa cuántas veces aparece cada palabra lo diría mejor.</li><li><strong>Las puertas raras se pierden pronto</strong>, porque casi no tienen lugares. Las comunes viven más, pero dicen menos.</li><li><strong>Sus preguntas pueden no tener sentido</strong> (<em>"Quien es jaez?"</em>): une palabras, no las entiende.</li><li><strong>Su eco no está prohibido:</strong> sólo tiene menos chance.</li><li><strong>Que diga sus propias preguntas al hablar primero no se vio todavía en la prueba:</strong> en 90 segundos eligió decir sus pensamientos.</li><li>Siguen los de la <a href="release-v1.63.html">v1.63</a>.</li></ul>
+</body>
+</html>

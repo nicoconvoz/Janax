@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v0.61: la noche que no llegaba · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.61.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v0.61: la noche que no llegaba</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24379472">10.5281/zenodo.24379472</a></p>
+<blockquote><p><strong>Fe de erratas (<a href="release-v0.67.html">v0.67</a>):</strong> el 13876 que abajo se llama "sin órgano" era la nota del órgano que Razar ya llevaba puesto (<code>51638</code>). Ninguna pieza del cubo le ganaba a ese; la lectura "el lector crecido no necesita órganos" queda retirada.</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 59, el 61. Esta es una <strong>corrección</strong> de la v0.59.</p>
+<h3>1. El error</h3>
+<p>La v0.59 decía: <em>"en la noche Razar renace si la biblioteca tiene una receta que no tenía; así prueba lo que el cubo encontró, y lo que adopte nace como forma de Luma"</em>. No pasaba.</p>
+<p>Quien cuida a Luma comparaba la biblioteca con la que había <strong>cuando arrancó quien la cuida</strong>, no con la que Razar encontró <strong>al nacer</strong>. Razar había nacido a las 13:20; el cubo dejó sus 12 piezas a las 16:51; quien la cuida arrancó después. Para ella nunca hubo nada nuevo. Medido el mismo día: <strong>57 sueños de Luma, ningún renacer de Razar</strong>, y las piezas del cubo sin rendir un solo examen en su casa. Lo que el cubo aprendió comiendo el código libre no le llegó.</p>
+<h3>2. La corrección</h3>
+<p>Razar deja escrito, al nacer, cómo encontró la biblioteca (cuántas recetas y una huella de sus nombres: <code>tablero.visto</code>, en [<code>razar_en_casa.sh</code>](../razar/cuerpo/razar_en_casa.sh)). La noche ([<code>luma_vive.sh</code>](../razar/cuerpo/luma_vive.sh)) compara contra eso. Vale lo arranque quien lo arranque y cuando sea.</p>
+<p><strong>Probado:</strong> renacido a las 17:31, en 330 s rindió 17 recetas con sus libros, y por primera vez las del cubo: <code>38516</code>, <code>738</code>, <code>36</code>, <code>51</code>, <code>7</code>, <code>71</code>, <code>8</code>, <code>81</code> (<a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/datos/noche-corregida.txt">corrida</a>).</p>
+<h3>3. Lo que dio, que es en contra</h3>
+<p>En la casa de Luma, Razar lee juntos el Nuevo Testamento y el núcleo de KolibriOS, y lleva 424 generaciones de instinto. Su examen <strong>sin órgano</strong> da 13876. Ninguna receta le gana:</p>
+<table><tr><th>Receta</th><th>Examen en la casa de Luma</th><th>Contra sin órgano (13876)</th></tr><tr><td><code>516</code></td><td>12756</td><td>−1120</td></tr><tr><td><code>38516</code> (la más general del cubo)</td><td>12607</td><td>−1269</td></tr><tr><td><code>738</code></td><td>9659</td><td>−4217</td></tr><tr><td><code>716</code></td><td>8377</td><td>−5499</td></tr><tr><td><code>166444339</code></td><td>5325</td><td>−8551</td></tr><tr><td><code>16</code></td><td>4497</td><td>−9379</td></tr><tr><td><code>5</code></td><td>13</td><td>−13863</td></tr><tr><td><code>6</code></td><td>−1374</td><td>−15250</td></tr></table>
+<ul><li><strong>Razar no adopta ninguna, y Luma no cambió por el código libre.</strong> Eso es lo cierto hoy.</li><li><strong>El cubo y la casa no miden lo mismo.</strong> El cubo examina con un lector recién nacido y un libro por vez: ahí el <code>38516</code> da +86312. El Razar de Luma ya aprendió sus libros, y a ese lector los órganos de nueve letras le estorban. La v0.59 lo había anotado como riesgo; ahora está medido.</li><li>No se sabe todavía si es por lo que ya sabe, por leer los dos libros juntos, o por las dos cosas. No se separó.</li></ul>
+<h3>Lo que falta para que evolucione de verdad</h3>
+<ul><li>Que el juez del cubo sea <strong>el mismo lector que vive</strong> en la casa de Luma, no uno recién nacido.</li><li><strong>Sentidos nuevos:</strong> con las nueve letras de siempre no hay nada que le gane al Razar crecido. Lo que le sirva tiene que darle algo que no tiene.</li><li>Sigue lo dicho en la <a href="release-v0.59.html">v0.59</a>: duerme mucho, el cubo no se ve, Razar se cae si le llega un libro despierto.</li></ul>
+<p>El sistema operativo no cambió (suite: 402 bien, 0 mal, la de la v0.59).</p>
+</body>
+</html>

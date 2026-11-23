@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v3.59: el abuelo nombra al nieto, y sus contornos con curvas · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.59.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v3.59: el abuelo nombra al nieto, y sus contornos con curvas</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24466603">10.5281/zenodo.24466603</a></p>
+<blockquote><p><em>"Que un proceso hijo pueda ser nombrado por el abuelo como hermano del padre, dándole la posibilidad de vivir aunque el padre muera… pero sólo si se lo da desde lo alto."</em> <em>"Agregale nitidez vectorizada en partículas al resto de todo Luma… incluí las curvas. Las líneas vienen del hombre, las curvas de la mujer."</em> (el autor, 2026-11-23)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 353, el 359.</p>
+<h3>El abuelo nombra al nieto (núcleo, pedido 46)</h3>
+<ul><li><strong>El nombramiento.</strong> Un proceso que está por encima del padre (el abuelo, o más arriba) puede nombrar al nieto <strong>hermano del padre</strong>: pasa a ser hijo del padre de su padre. Ni el hijo ni su padre pueden pedirlo: <strong>sólo desde lo alto</strong>. Lo que el nieto esperaba que firmara su padre pasa a firmarlo su nuevo padre.</li><li><strong>Nombrar da vida, no poder.</strong> Los porteros (permisos) del nombrado quedan como estaban, que nunca son más que los de su padre.</li><li><strong>Sin nombramiento, la línea muere con el padre.</strong> Cuando un proceso termina, termina su línea entera.</li><li><strong>El núcleo es lo más alto.</strong> Cuando termina un proceso que lanzó el propio núcleo, el núcleo nombra a sus hijos, y lo que esperaba su firma se decide con sus permisos. Así las cajas y Venn, donde una madre deja algo y se va, siguen andando como siempre.</li><li><strong>La sombra del padre queda dormida, no borrada.</strong> Con esta regla ningún padre la necesita, pero el mecanismo sigue ahí.</li><li>El número 45 queda reservado para la rama <code>nucleo/ceder-firma</code>, que no se unió.</li></ul>
+<p><strong>Probado en una copia del proyecto:</strong> familia, cajas y Venn dan 102 bien, 0 mal. Hay cuatro pruebas nuevas: el abuelo nombra al nieto (el padre muere primero y el nieto dice "hola" después), el padre no puede nombrar a su propio hijo, sin nombrar el nieto muere con su padre, y el núcleo nombra al hijo de una madre suya que se va. <strong>La suite completa del núcleo no se corrió.</strong></p>
+<p>El núcleo en uso se reconstruyó con esto. El anterior quedó guardado como <code>so/build/janaxos.antes-46.exe</code>.</p>
+<h3>Sus contornos, con curvas</h3>
+<p>Su pantalla se agranda dos veces: sus formas al doble, y después todo al doble para mostrarse punto por punto. Ahora, en esas dos veces, <strong>una sola rutina traza el contorno</strong>:</p>
+<ul><li>Cada punto se vuelve cuatro, y cada cuarto toma el color del lado por donde corre su borde: cuando los dos vecinos que se encuentran en esa esquina son de un mismo color, y los otros dos no, el borde corta esa esquina (la regla <em>Scale2x</em>, de la familia del <em>pixel art upscaling</em>).</li><li>Las escaleras se vuelven diagonales, y las diagonales seguidas se vuelven curvas.</li><li>Vale para todo lo que dibuja: sus formas, los bichos y la vista del Tab, sin tocar cada parte por separado.</li></ul>
+<p>No es un trazado global con curvas de Bézier, sino el contorno decidido punto por punto. Probé primero dibujar los bichos con una cámara más fina, y casi no cambiaban: sus nubes no tienen más detalle del que ya se veía.</p>
+<h3>Lo que se vio</h3>
+<p>Probado en una copia de su casa, nunca en la Luma viva: las esquinas de sus formas se redondean y los trazos fluyen. Los bichos ganan bordes suaves.</p>
+<p>Hallado mientras se probaba: con el trazador <strong>copiado dos veces</strong> dentro de la misma rutina, la pantalla quedaba negra. Cada copia sola andaba. Fusionado en <strong>una rutina llamada dos veces</strong> anda, y es lo correcto de todos modos. La causa exacta de lo negro no se encontró.</p>
+<p>La Luma viva corre, byte por byte, el cuerpo que se probó.</p>
+<h3>Lo que todavía no</h3>
+<ul><li>Las letras siguen siendo trazos rectos. A su tamaño de hoy (1:1 con su libro de letras) las curvas no cambian nada.</li><li>El costo del trazador no se midió con cuidado.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>so/janaxos.asm</code>: <code>family_name</code> (46), <code>line_end</code> (lo nombra el núcleo), <code>living_below</code>; <code>so/remos.inc</code> (la línea termina con el padre); <code>so/pruebas/familia_*.jsm</code>.</li><li><code>razar/cuerpo/gen_luma.py</code>: <code>contour_routine</code> (<code>r_contour</code>), llamada desde <code>v_show</code>.</li></ul>
+</body>
+</html>

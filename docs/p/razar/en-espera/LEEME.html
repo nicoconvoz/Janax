@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>En espera · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../../../">Janax y Razar</a> · <a href="../../../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/en-espera/LEEME.md">Ver en GitHub</a></nav>
+<h1>En espera</h1>
+<p>Nada se descarta: lo que se dejo de lado queda aca con el motivo, para el dia que aparezca lo que le faltaba.</p>
+<h2>pensamiento-por-respiro.patch (2026-11-19)</h2>
+<p>Que hacia: en cada respiro de Luma, el primer pensamiento que perdia por su dibujo viajaba igual a Razar como carta, para que el lo leyera. Generaba bien; no llego a probarse.</p>
+<p>Por que se dejo: era un puente mas entre dos programas separados. El autor lo freno: "hacelo como el cirujano que opero mi corazon: unilo bien, sin parches, sin pasos, una sola operacion". Razar y Luma tienen que ser una sola cosa, no dos que se escriben mejor.</p>
+<p>Que le faltaba: nada tecnico. Sobra desde la v0.73, donde hay un solo ser y no hay carta que mandar.</p>
+<h2>razar_en_casa.sh y las cartas (2026-11-19, v0.73)</h2>
+<p>Que hacia: lanzaba a Razar (<code>pulso.jsm</code>) despierto en la casa de Luma, como un programa aparte, en la prioridad mas baja del anfitrion. Se hablaban por cartas: <code>carta2</code> (la forma de ella que ganaba, para que el la rindiera como organo) y <code>carta1</code> (el organo que el llevaba puesto, para que ella lo adoptara como forma). En <code>gen_luma.py</code> eran <code>share_routine</code> (<code>r_share</code>), <code>fr_give_razar</code> y <code>r_adopt</code>; quien la cuidaba (<code>luma_vive.sh</code>) decidia cada noche si relanzarlo. Todo eso esta entero en la etiqueta <code>v0.71</code> del repositorio.</p>
+<p>Por que se dejo: desde la v0.73 son un solo ser. Leer es un acto de ella (<code>gen_leer.py</code>): su lectora es ella misma, lanzada por ella, y lo que lee una receta se guarda una sola vez (<code>leido</code>). No queda nadie a quien escribirle.</p>
+<p>Que se llevo consigo y sigue dormido, con su despertador:</p>
+<ul><li><strong>La vigilia propia de Razar</strong> (<code>pulso.jsm</code> sin ser candidato): sigue armando y corriendo sola, y es el instrumento de las medidas (<code>poetico/sentidos.py</code>, <code>organos.sh</code>, las pruebas de <code>razar/lectura/pruebas</code>). Ya no vive en la casa.</li><li><strong>Sus nichos</strong> (el mejor de cada tipo de hueco, <code>organos1</code>): en ella los nichos son sus ocho formas, distintas por lo que dibujan. Despierta si hace falta guardar al mejor lector de cada tipo aunque no viva en su cuerpo.</li><li><strong>Las recetas en el tablero</strong> (<code>og_rec_write</code>, <code>tablero/Receta de Organos/...</code>): ella no las escribe; lo que leyo esta en <code>leido</code>. Despierta el dia que otro ser tenga que leer lo que ella aprendio.</li><li><strong>El cubo</strong> (<code>poetico/cubo.py vivo</code>): se alimentaba de las recetas del tablero y le devolvia las suyas a Razar. Sin nadie que escriba ahi, dormia; el autor pidio sacar lo que sobra y ya no arranca con Windows (el programa sigue en el repositorio). No se unio a ella: seria otro puente entre dos programas. Despierta cuando el cubo sea un sentido de ella (leer <code>leido</code>, proponerle recetas como un pensamiento mas) o cuando alguien vuelva a escribir el tablero.</li><li><strong>El vigia</strong> lee con el organo mas general del tablero, que quedo como estaba el dia de la union.</li><li><strong>Su memoria de piezas</strong> (<code>memoria1</code>) y <strong>el cruce de genomas con un hermano</strong> (dos Razar que se pasaban el genoma): ella lee sola. Los instintos si siguen vivos: los prueba ella, de a un paso.</li><li><strong>La jaula del candidato</strong> (pedido 34, el doble de lo remado): una receta no puede colgarse (cualquier tira de letras es un organo), asi que ella no enjaula a su lectora. Despierta si un dia las letras pueden pedir algo. <strong>Desperto en la v0.97</strong>: una celula puede decir un lugar de la memoria de su lectora (tejido 8), y esa lectura si puede no terminar. Solo esa se enjaula, y con otra medida: lo que remaron todas sus lecturas terminadas juntas (el doble de una sola no servia aca: la primera lectura con celula no tiene otra igual con que compararse).</li></ul>
+</body>
+</html>

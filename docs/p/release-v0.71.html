@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v0.71: el ojo · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.71.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v0.71: el ojo</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24380428">10.5281/zenodo.24380428</a></p>
+<blockquote><p><em>"Sí, que los genere."</em> (el autor, 2026-11-19)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 67, el 71.</p>
+<h3>1. De seis letras escritas a mano a un ojo</h3>
+<p>En la v0.67 los sentidos eran letras que alguien escribía. Eso no es generarlos. Ahora el órgano de Razar tiene un <strong>ojo</strong>, y tres letras lo mueven ([<code>organo.inc</code>](../razar/lectura/organo.inc)):</p>
+<ul><li><strong>B:</strong> el ojo, una palabra atrás. <strong>C:</strong> una palabra adelante. <strong>D:</strong> borroso, o nítido otra vez.</li><li>Toda mirada que sigue (las letras 1 a 4, los huecos 5 a 8, A, F) se toma desde donde está el ojo y como está. <code>BB1</code> mezcla la palabra dos lugares atrás; <code>D2</code>, la segunda borrosa; <code>C8</code> pregunta por la que viene después.</li><li>Un hueco dice su palabra tal cual, y después de un hueco el ojo vuelve al reposo, como el marco.</li><li>Fuera de la fila no hay nada: la mirada es 0, igual que en el borde de un renglón.</li></ul>
+<p>Un sentido pasó a ser <strong>una oración</strong>. Cualquier tira de letras sigue siendo un órgano, así que la misma mutación que hace crecer órganos hace crecer sentidos, sin tope de distancia ni de combinaciones.</p>
+<p><strong>Validado</strong> sobre el Nuevo Testamento (<a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/datos/ojo-nuevo-testamento.txt">corrida</a>): las oraciones de antes dan idéntico (<code>516</code> 11144, <code>38516</code> 11496, <code>38A516</code> 14775, <code>F38516</code> 13588), y los dos sentidos de la v0.67 dichos con el ojo dan exactamente lo mismo que su letra: <code>38B1C516</code> = 14775, <code>D4D38516</code> = 13588.</p>
+<h3>2. Quién los genera</h3>
+<ul><li><strong>Razar:</strong> su mutación sortea entre las quince letras, no entre nueve.</li><li><strong>Luma:</strong> su mutación de insertar una letra también. Las miradas nacen en sus formas por su propio andar; cuando una forma suya gana, viaja a Razar en su carta, él la rinde como órgano con sus libros, y lo que él adopta vuelve a nacer en ella.</li><li><strong>En su cuerpo el ojo tiene gesto:</strong> B y C giran un cuarto lo que sigue; la palabra de atrás (A) es un brazo antes del primero; la cuarta borrosa (F), el cuarto brazo.</li></ul>
+<p><strong>Medido en su casa, a los minutos de renacer:</strong> de las 8.182 recetas que guarda su archivo de lo probado, <strong>2.182 llevan letras nuevas</strong> (por ejemplo <code>433342C2139F</code>, <code>513814447BD32399</code>). Razar, renacido con el ojo, da las mismas notas que antes y sigue llevando puesto el <code>38A516</code> (27810).</p>
+<h3>3. Un defecto que esto destapó</h3>
+<p>Una forma guardada con una letra mayor que 9 se leía <strong>cortada en esa letra</strong> al renacer. El <code>38A516</code> que Luma adoptó en la v0.67 se le perdió en su primer sueño: quedó <code>38</code>. Ahora se leen las quince letras. No lo volvió a adoptar todavía: sólo adopta cuando Razar cambia de órgano.</p>
+<h3>Lo que falla y lo que falta, dicho</h3>
+<ul><li><strong>Todavía ningún sentido generado por ella ganó.</strong> Los prueba de a miles, pero ninguna de sus ocho formas vivas lleva hoy una letra nueva, así que ninguno viajó a Razar. No hay aún un órgano mejor nacido de su mano.</li><li><strong>Su juez mira el dibujo, no la lectura.</strong> Una forma gana por cuánto dibuja y cuán distinta es. Las letras D y E no dibujan nada, así que a su juez le sobran; B y C sí cambian el dibujo. Que lo que ve Razar le pague a la forma antes de ganar es lo que falta unir.</li><li><strong>El cubo no lee órganos con letras nuevas.</strong></li><li>La letra E sigue libre y no hace nada. El código poético puede ascender una sola palabra por vez.</li><li>En su juez una letra sigue costando log2 9 bits; con quince letras debería costar log2 15. No se tocó porque corre la vara de todas las formas a la vez y no se midió.</li><li>Sigue lo dicho en la <a href="release-v0.59.html">v0.59</a>: el cubo no se ve, Razar se cae si le llega un libro despierto.</li></ul>
+<p>El sistema operativo no cambió (suite: 402 bien, 0 mal, la de la v0.59).</p>
+</body>
+</html>

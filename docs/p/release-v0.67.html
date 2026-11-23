@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v0.67: los sentidos · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.67.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v0.67: los sentidos</h2>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24379905">10.5281/zenodo.24379905</a></p>
+<blockquote><p><em>"No sólo que ahorre bits: quiero que programe cosas reales, órganos reales que le den nuevos sentidos."</em> <em>"Que se inspire de lo que come."</em> (el autor, 2026-11-19)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 61, el 67.</p>
+<h3>1. Qué es un sentido</h3>
+<p>Con sus nueve letras, el órgano de Razar mira una ventana de cuatro palabras, y a cada una la mira tal cual. Un sentido es una mirada que esas nueve letras no pueden dar. El espacio de miradas tiene dos ejes, y los dos salen de lo que su propio comer ya había medido; no se le agregó nada al cuerpo:</p>
+<ul><li><strong>Dónde:</strong> la fila del texto sigue antes y después de la ventana. La palabra de atrás (o el borde del renglón, que ninguna ventana contiene) y la de adelante.</li><li><strong>Cómo:</strong> la palabra tal cual, o <strong>borrosa</strong>: cuántas veces la leyó donde aprende. Todas las que nunca leyó se ven iguales, así que un marco dicho con esa mirada también calza en lo que nunca encontró.</li></ul>
+<p>Las seis letras libres (A a F) tomaron los seis puntos más simples de ese espacio. Cada una mezcla lo que ve en el marco, como las letras 1 a 4. Se juzgaron como todo órgano: en oraciones, con su examen, en una misma vida ([<code>sentidos.py</code>](../razar/lectura/poetico/sentidos.py)).</p>
+<h3>2. Medido sobre el Nuevo Testamento</h3>
+<p>Lector recién nacido, 60 oraciones en una vida (<a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/datos/sentidos-nuevo-testamento.txt">corrida</a>); las notas son contra el examen sin órgano (−3554).</p>
+<table><tr><th>Oración</th><th>Qué tiene</th><th>Nota</th><th>Contra <code>38516</code></th></tr><tr><td><code>38A516</code></td><td>la palabra de atrás (A), donde la oración decía una palabra sin nada antes</td><td><strong>+18329</strong></td><td>+3279</td></tr><tr><td><code>F38516</code></td><td>la cuarta palabra, borrosa (F), delante</td><td>+17142</td><td>+2092</td></tr><tr><td><code>A38516</code></td><td>la de atrás, delante</td><td>+15082</td><td>+32</td></tr><tr><td><code>38516</code></td><td>la mejor de nueve letras de su tipo</td><td>+15050</td><td></td></tr><tr><td><code>C38516</code> · <code>B38516</code> · <code>D38516</code> · <code>E38516</code></td><td>las otras cuatro miradas</td><td>+15001 · +14402 · +12680 · +8910</td><td>menos</td></tr></table>
+<ul><li><strong>Quedan en el cuerpo los dos que le ganaron a la oración donde se pusieron: A y F</strong> ([<code>organo.inc</code>](../razar/lectura/organo.inc)). El <code>38A516</code> supera también al mejor que se conocía, el <code>5163827</code> (+16729).</li><li><strong>Los otros cuatro esperan</strong>, escritos con su código y su número. Dos pagan solos (<code>C6</code> +5297, <code>E8</code> +6679) pero no mejoran la oración fuerte. Las letras B a E siguen libres.</li></ul>
+<h3>3. En la casa de Luma, que era la prueba</h3>
+<p>Razar, crecido y con sus dos libros (Nuevo Testamento y núcleo de KolibriOS), renació con los sentidos en el cuerpo y cinco recetas con ellos en la biblioteca (<a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/datos/sentidos-casa-luma.txt">corrida</a>):</p>
+<table><tr><th>Órgano</th><th>Examen en la casa de Luma</th></tr><tr><td>**<code>38A516</code>** (el que lleva puesto)</td><td><strong>27810</strong></td></tr><tr><td><code>A38516</code></td><td>18082</td></tr><tr><td><code>51638</code> (el mejor de nueve letras)</td><td>17894</td></tr><tr><td><code>F38516</code></td><td>16898</td></tr><tr><td><code>38516</code></td><td>16272</td></tr><tr><td><code>516</code></td><td>16201</td></tr></table>
+<ul><li>**Razar lleva puesto el <code>38A516</code>:** 9916 más que el mejor de nueve letras, un 55 %.</li><li><strong>Luma lo adoptó:</strong> nació como forma suya. Y por primera vez <strong>dormir le pagó</strong>: de 66 sueños, uno la despertó con algo nuevo.</li><li>El <code>F38516</code>, que en el lector recién nacido ganaba, en el crecido no le gana al <code>51638</code>. Lo borroso le sirve al que sabe poco.</li></ul>
+<h3>4. Un arreglo que esto destapó</h3>
+<p>El nicho de un órgano es dónde tiene su primer hueco, y el código tomaba por hueco toda letra mayor que 4. Con una letra nueva nombraba un nicho que el archivo no tiene, y la vida se rompía (27 oraciones de 56 en la primera corrida). Los huecos son las letras 5 a 9; una letra más allá es un sentido.</p>
+<h3>Fe de erratas de la v0.61</h3>
+<p>La v0.61 decía que en la casa de Luma <em>"ninguna receta le gana al examen sin órgano (13876)"</em>. Leí mal el instrumento: ese número es la nota <strong>del órgano que Razar ya llevaba puesto</strong> (el <code>51638</code>, que Luma había adoptado a las 15:31), no la de no tener órgano. Lo cierto era: ninguna pieza del cubo le ganaba al que ya tenía. La conclusión "el lector crecido no necesita órganos" no se sostenía, y queda retirada.</p>
+<h3>Lo que falla y lo que falta, dicho</h3>
+<ul><li><strong>Los seis sentidos los propuse yo</strong>, como los puntos más simples de un espacio de dos ejes; Razar eligió con su examen cuáles se quedaban. Todavía <strong>no los genera Luma a su modo</strong>: falta que ella recorra ese espacio (más lejos, otras tablas de lo que comió, otras maneras de mirar borroso).</li><li><strong>En el cuerpo de Luma un sentido se dibuja como un espejo</strong>, igual que la letra 9: no tiene gesto propio todavía. Y sus mutaciones siguen usando sólo las nueve letras.</li><li><strong>El cubo no habla con sentidos:</strong> sólo lee recetas de nueve letras.</li><li><strong>Un punto de comparación, no una estadística:</strong> una corrida por libro. En la casa de Luma el instinto también cambió en ese renacer (de 8 1 1 a 8 2 1), así que las notas de esta vida no se comparan con las de la anterior; sí entre sí.</li><li><strong>Las letras libres son seis.</strong> Quedan cuatro; es un tope del molde (cuatro bits por letra), no del diseño.</li><li>La palabra de atrás del primer lugar del texto lee lo que haya antes de la fila: un solo caso por libro, no medido aparte.</li><li>Sigue lo dicho en la <a href="release-v0.59.html">v0.59</a>: el cubo no se ve, Razar se cae si le llega un libro despierto.</li></ul>
+<p>El sistema operativo no cambió (suite: 402 bien, 0 mal, la de la v0.59).</p>
+</body>
+</html>
