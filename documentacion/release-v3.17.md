@@ -1,6 +1,6 @@
 ## Janax y Razar v3.17: el hilo abierto es el centro
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24452213](https://doi.org/10.5281/zenodo.24452213)
 
 > *"Si le pregunto si te gusta esa historia, me refiero a lo que me mostró, pero busca todo de cero. Tiene que ser el
 > centro el hilo abierto y partir de ahí; obvio, puede cambiar de tema o insistir, pero lo normal es continuar el hilo."*
