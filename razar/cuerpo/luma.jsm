@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02B33h
-  jshi j2, 037D0h
-  jshi j2, 08394h
-  jshi j2, 03D07h
+  jldi j2, 029C4h
+  jshi j2, 0292Ah
+  jshi j2, 0164Ah
+  jshi j2, 0F975h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -24624,7 +24624,7 @@ dw_r:
 r_dlg_words:                    ; the words of more than three letters at j1 (j2 bytes) -> the words said to her
   jst j1, j14, 1288
   jldi j1, 159
-  jcall r_cable
+  jcall fr_r_cable
   jadd j10, j1, j2
   jldi j6, 0162h
   jshi j6, 0
@@ -24687,7 +24687,7 @@ dws_d:
 r_dlg_quien:                    ; WHO IT IS, BY ALL IT DOES (see D_SX) -> j0 = 1 with her paragraph in D_OUT, or 0
   jst j1, j14, 1288
   jldi j1, 152
-  jcall r_cable
+  jcall fr_r_cable
   jldi j0, 0
   jldi j6, 0162h
   jshi j6, 0
@@ -25158,7 +25158,7 @@ dq_r:
 dq_chain:                       ; WHY, AND WHY AGAIN, BY WHAT MAKES SENSE (the Capitan, 2026-11-22: not by what is
   jst j1, j14, 1288
   jldi j1, 47
-  jcall r_cable
+  jcall fr_r_cable
                                 ; rare, by what makes sense; his chainer of 2026-11-08: two cases alike but in one place).
                                 ; Of what her subject does, its three most said facts: in a fact, the next subject is its
                                 ; word that carries a talk the most; the fact makes a chain only if that next subject does
@@ -27626,75 +27626,6 @@ dan_sc:
   jadd j5, j5, j10
   jadd j7, j7, j10
   jjmp dan_sc
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-fr_l_ring:
-  jjmp l_ring
-fr_l_ring_open:
-  jjmp l_ring_open
-fr_r_alloc:
-  jjmp r_alloc
-fr_r_cable:
-  jjmp r_cable
-fr_r_cable_flush:
-  jjmp r_cable_flush
-fr_r_cable_init:
-  jjmp r_cable_init
-fr_r_colour:
-  jjmp r_colour
-fr_r_file:
-  jjmp r_file
-fr_r_fit_cost:
-  jjmp r_fit_cost
-fr_r_free:
-  jjmp r_free
-fr_r_free_load:
-  jjmp r_free_load
-fr_r_gesture:
-  jjmp r_gesture
-fr_r_get_hex:
-  jjmp r_get_hex
-fr_r_get_num:
-  jjmp r_get_num
-fr_r_get_rec:
-  jjmp r_get_rec
-fr_r_hash:
-  jjmp r_hash
-fr_r_judge:
-  jjmp r_judge
-fr_r_open:
-  jjmp r_open
-fr_r_put_rec:
-  jjmp r_put_rec
-fr_r_randmod:
-  jjmp r_randmod
-fr_r_read_cand:
-  jjmp r_read_cand
-fr_r_read_end:
-  jjmp r_read_end
-fr_r_read_max:
-  jjmp r_read_max
-fr_r_read_poll:
-  jjmp r_read_poll
-fr_r_recompute:
-  jjmp r_recompute
-fr_r_set_hue:
-  jjmp r_set_hue
-fr_r_tocar:
-  jjmp r_tocar
-fr_r_tried:
-  jjmp r_tried
-fr_ul_cmp:
-  jjmp ul_cmp
-fr_v_event:
-  jjmp v_event
-fr_v_frame:
-  jjmp v_frame
-fr_v_init:
-  jjmp v_init
-fr_v_meal:
-  jjmp v_meal
-fr_v_show:
-  jjmp v_show
 dan_se:
   jldi j6, 0162h
   jshi j6, 0
@@ -28352,6 +28283,76 @@ dse_w:                          ; her wish to answer: (S + 1/2) / (N + 1), again
   jldi j10, 1
   jst j10, j14, 0210h
   jret
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_l_ring:
+  jjmp l_ring
+fr_l_ring_open:
+  jjmp l_ring_open
+fr_r_alloc:
+  jjmp r_alloc
+fr_r_cable:
+  jjmp r_cable
+fr_r_cable_flush:
+  jjmp r_cable_flush
+fr_r_cable_init:
+  jjmp r_cable_init
+fr_r_colour:
+  jjmp r_colour
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_r_file:
+  jjmp r_file
+fr_r_fit_cost:
+  jjmp r_fit_cost
+fr_r_free:
+  jjmp r_free
+fr_r_free_load:
+  jjmp r_free_load
+fr_r_gesture:
+  jjmp r_gesture
+fr_r_get_hex:
+  jjmp r_get_hex
+fr_r_get_num:
+  jjmp r_get_num
+fr_r_get_rec:
+  jjmp r_get_rec
+fr_r_hash:
+  jjmp r_hash
+fr_r_judge:
+  jjmp r_judge
+fr_r_open:
+  jjmp r_open
+fr_r_put_rec:
+  jjmp r_put_rec
+fr_r_randmod:
+  jjmp r_randmod
+fr_r_read_cand:
+  jjmp r_read_cand
+fr_r_read_end:
+  jjmp r_read_end
+fr_r_read_max:
+  jjmp r_read_max
+fr_r_read_poll:
+  jjmp r_read_poll
+fr_r_recompute:
+  jjmp r_recompute
+fr_r_set_hue:
+  jjmp r_set_hue
+fr_r_tocar:
+  jjmp r_tocar
+fr_r_tried:
+  jjmp r_tried
+fr_ul_cmp:
+  jjmp ul_cmp
+fr_v_event:
+  jjmp v_event
+fr_v_frame:
+  jjmp v_frame
+fr_v_init:
+  jjmp v_init
+fr_v_meal:
+  jjmp v_meal
+fr_v_show:
+  jjmp v_show
 dse_yes:
   ; (EVERY BRANCH, whenever she speaks: the Capitan, 2026-11-22, "aunque conteste ella, no importa: elige las ramas
   ; igual". In the context of her mood and his charge: to answer, to ask again, to say another thing, or to go on
@@ -28500,44 +28501,8 @@ dsy_av2:
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j3, j6, 17928
-  jcall r_dlg_heart
-  jjz j0, dsy_br
-  jldi j10, 2
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j10, j6, 6864
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6848
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6848
-  jjmp dse_has
-dsy_br:                         ; (her heart first, once she chose to answer; if it did not know, she may improvise)
-  jcall r_dlg_impro
-  jjz j0, dsy_br2
-  jldi j10, 2
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j10, j6, 6864
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j1, j6, 6848
-  jldi j10, 1
-  jadd j1, j1, j10
-  jldi j6, 0162h
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jst j1, j6, 6848
-  jjmp dse_has
-dsy_br2:                        ; (and if she did not, her branches, free)
+  jjmp wy_go                    ; (HER WAY, once she chose to answer: see WY)
+dsy_br2:                        ; (and if no step of her way said anything, her branches, free)
   jcall dch_choose
   jldi j10, 4
   jsub j10, j0, j10
@@ -28580,6 +28545,7 @@ dsy_a2:
   jld j6, j6, 01D68h
   jld j1, j6, 6408
   jjz j1, dse_none
+dsy_cx:                         ; (her way's step 'cross' comes in here)
   jcall lj_follow
   ; HER OWN WORD FIRST (the Capitan, 2026-11-22: "lo suyo tiene que llevar mayoritariamente su firma, porque si no
   ; hablo contra una pared o un libro; quiero hablar con ella"). What she says as hers is NEW: a cross of her line A
@@ -28620,7 +28586,7 @@ dse_kd:
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j1, j6, 6672
-  jjz j1, dse_cite
+  jjz j1, dse_cf
   jcall r_dlg_own
   jldi j6, 0162h
   jshi j6, 0
@@ -28664,6 +28630,11 @@ dse_kb:
   jadd j4, j4, j10
   jjmp dse_kb
 dse_mine:                       ; (her cross was said: its way counts once more, and waits for his answer)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7112
   jcall gu_said
   jldi j6, 0162h
   jshi j6, 0
@@ -28703,6 +28674,14 @@ dse_mine:                       ; (her cross was said: its way counts once more,
   jld j6, j6, 01D68h
   jst j1, j6, 6848
   jjmp dse_has
+dse_cf:                         ; (no cross: if her way asked for it, her way goes on with its next step)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7112
+  jst j14, j6, 7112
+  jjnz j1, wyg_l
 dse_cite:
   jcall gu_said
   jcall r_dlg_cite
@@ -30308,11 +30287,1341 @@ tht_d:
   jld j6, j6, 01D68h
   jld j2, j6, 6400
   jjmp th_add
+wy_new:                         ; j1 = a length -> j0 = a word's room of that length, its length set
+  jst j1, j14, 1288
+  jldi j1, 406
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7192
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j10, 3
+  jshl j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7192
+  jst j1, j0, 0
+  jret
+wy_eq:                          ; j1, j2 = two words -> j0 = 1 if they are the same (uses j3-j5, j10)
+  jst j1, j14, 1288
+  jldi j1, 402
+  jcall r_cable
+  jld j3, j1, 0
+  jld j4, j2, 0
+  jsub j10, j3, j4
+  jjnz j10, wye_n
+wye_l:
+  jjz j3, wye_y
+  jldi j10, 8
+  jadd j1, j1, j10
+  jadd j2, j2, j10
+  jld j4, j1, 0
+  jld j5, j2, 0
+  jsub j10, j4, j5
+  jjnz j10, wye_n
+  jldi j10, 1
+  jsub j3, j3, j10
+  jjmp wye_l
+wye_y:
+  jldi j0, 1
+  jret
+wye_n:
+  jldi j0, 0
+  jret
+wy_known:                       ; j1 = a word -> j0 = 1 if it is her way or a way she kept (uses j2-j5, j7-j9)
+  jst j1, j14, 1288
+  jldi j1, 404
+  jcall r_cable
+  jadd j7, j1, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7056
+  jcall wy_eq
+  jjnz j0, wyk_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j8, j6, 7040
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7064
+wyk_l:
+  jjz j8, wyk_r
+  jadd j1, j7, j14
+  jld j2, j9, 0
+  jcall wy_eq
+  jjnz j0, wyk_r
+  jldi j10, 16
+  jadd j9, j9, j10
+  jldi j10, 1
+  jsub j8, j8, j10
+  jjmp wyk_l
+wyk_r:
+  jret
+wy_arch:                        ; j1 = a way, j2 = why it lost: kept, never tried again (nothing is discarded)
+  jst j1, j14, 1288
+  jldi j1, 400
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7144
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7040
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 7072
+  jsub j10, j3, j4
+  jjn j10, wyar_in
+  jadd j4, j4, j4
+  jjnz j4, wyar_c
+  jldi j4, 8
+wyar_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j4, j6, 7072
+  jldi j10, 16
+  jmul j1, j4, j10
+  jldi j10, 8
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7064
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7040
+  jldi j10, 16
+  jmul j3, j3, j10
+  jadd j4, j0, j14
+wyar_k:
+  jjz j3, wyar_kd
+  jld j7, j5, 0
+  jst j7, j4, 0
+  jldi j10, 8
+  jadd j4, j4, j10
+  jadd j5, j5, j10
+  jsub j3, j3, j10
+  jjmp wyar_k
+wyar_kd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7064
+wyar_in:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7040
+  jldi j10, 4
+  jshl j4, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7064
+  jadd j5, j5, j4
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jst j1, j5, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7152
+  jst j2, j5, 8
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 7040
+  jret
+wy_vadd:                        ; j1 = a way that won: a letter of her alphabet from now on
+  jst j1, j14, 1288
+  jldi j1, 411
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7144
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7048
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 7088
+  jsub j10, j3, j4
+  jjn j10, wyva_in
+  jadd j4, j4, j4
+  jjnz j4, wyva_c
+  jldi j4, 8
+wyva_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j4, j6, 7088
+  jldi j10, 8
+  jmul j1, j4, j10
+  jldi j10, 8
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7080
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7048
+  jldi j10, 8
+  jmul j3, j3, j10
+  jadd j4, j0, j14
+wyva_k:
+  jjz j3, wyva_kd
+  jld j7, j5, 0
+  jst j7, j4, 0
+  jldi j10, 8
+  jadd j4, j4, j10
+  jadd j5, j5, j10
+  jsub j3, j3, j10
+  jjmp wyva_k
+wyva_kd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7080
+wyva_in:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7048
+  jldi j10, 3
+  jshl j4, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7080
+  jadd j5, j5, j4
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jst j1, j5, 0
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 7048
+  jret
+wy_push:                        ; j1 = a word, walked from its first letter (a way may hold ways)
+  jst j1, j14, 1288
+  jldi j1, 408
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7176
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7128
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 7136
+  jsub j10, j3, j4
+  jjn j10, wyps_in
+  jadd j4, j4, j4
+  jjnz j4, wyps_c
+  jldi j4, 8
+wyps_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j4, j6, 7136
+  jldi j10, 16
+  jmul j1, j4, j10
+  jldi j10, 8
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7120
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7128
+  jldi j10, 16
+  jmul j3, j3, j10
+  jadd j4, j0, j14
+wyps_k:
+  jjz j3, wyps_kd
+  jld j7, j5, 0
+  jst j7, j4, 0
+  jldi j10, 8
+  jadd j4, j4, j10
+  jadd j5, j5, j10
+  jsub j3, j3, j10
+  jjmp wyps_k
+wyps_kd:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7120
+wyps_in:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7128
+  jldi j10, 4
+  jshl j4, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7120
+  jadd j5, j5, j4
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7176
+  jst j1, j5, 0
+  jst j14, j5, 8
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 7128
+  jret
+wy_babble:                      ; -> j0 = 1 with a way she never tried in WY_C (her way, one letter of her whole
+  jst j1, j14, 1288
+  jldi j1, 401
+  jcall r_cable
+                                ; alphabet put in, changed or taken out), or 0 if her tries found none
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jld j5, j1, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j5, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7048
+  jldi j10, 5
+  jadd j2, j2, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7168
+  ; (as many tries as there are such ways: (length + 1) x alphabet put in, length x alphabet changed, length taken out)
+  jldi j10, 1
+  jadd j1, j5, j10
+  jmul j1, j1, j2
+  jmul j3, j5, j2
+  jadd j1, j1, j3
+  jadd j1, j1, j5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7184
+wyb_t:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7184
+  jjz j1, wyb_no
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7184
+  jldi j1, 3
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7144
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7160
+  jjnz j1, wyb_o
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7144
+wyb_o:                          ; (where: any place to put in, any letter to change or take out)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7144
+  jjnz j2, wyb_p
+  jldi j10, 1
+  jadd j1, j1, j10
+wyb_p:
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7168
+  jcall r_randmod
+  jldi j10, 1
+  jadd j0, j0, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7176
+  ; (its length: one more, the same, one less)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7144
+  jjnz j2, wyb_l1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jjmp wyb_l3
+wyb_l1:
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjnz j10, wyb_l3
+  jldi j10, 1
+  jsub j1, j1, j10
+wyb_l3:
+  jcall wy_new
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7096
+  ; (its letters: her way's, with the one put in, changed or taken out at WY_J)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j7, j6, 7056
+  jldi j10, 8
+  jadd j7, j7, j10
+  jadd j8, j0, j10
+  jldi j9, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7160
+wyb_c:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7152
+  jsub j10, j9, j2
+  jjnz j10, wyb_cp
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7144
+  jjnz j2, wyb_c1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7176
+  jst j1, j8, 0
+  jldi j10, 8
+  jadd j8, j8, j10
+  jjmp wyb_cp
+wyb_c1:
+  jldi j10, 1
+  jsub j10, j2, j10
+  jjnz j10, wyb_c2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7176
+  jst j1, j8, 0
+  jldi j10, 8
+  jadd j8, j8, j10
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j9, j9, j10
+  jjmp wyb_c
+wyb_c2:
+  jldi j10, 8
+  jadd j7, j7, j10
+  jldi j10, 1
+  jadd j9, j9, j10
+  jjmp wyb_c
+wyb_cp:
+  jsub j10, j9, j3
+  jjnn j10, wyb_ck
+  jld j1, j7, 0
+  jst j1, j8, 0
+  jldi j10, 8
+  jadd j7, j7, j10
+  jadd j8, j8, j10
+  jldi j10, 1
+  jadd j9, j9, j10
+  jjmp wyb_c
+wyb_ck:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jcall wy_known
+  jjnz j0, wyb_t
+  jldi j0, 1
+  jret
+wyb_no:
+  jldi j0, 0
+  jret
+wy_go:                          ; HER WAY (see WY), once she chose to answer
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7128
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7112
+  ; (a babbled way that waits for him is walked again; else her luck against her way's wish: babble as much as it fails)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7104
+  jldi j10, 2
+  jsub j10, j1, j10
+  jjz j10, wyg_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7032
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7024
+  jcall dse_wish
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7192
+  jldi j1, 010h
+  jshi j1, 0
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7192
+  jsub j10, j0, j1
+  jjn j10, wyg_w
+  jcall wy_babble
+  jjz j0, wyg_w
+wyg_c:
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7104
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jcall wy_push
+  jjmp wyg_l
+wyg_w:
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7104
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jcall wy_push
+wyg_l:                          ; (the next letter: a step of hers, or a way of hers walked inside)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7128
+  jjz j3, dsy_br2
+  jldi j10, 1
+  jsub j3, j3, j10
+  jldi j10, 4
+  jshl j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7120
+  jadd j5, j5, j3
+  jld j1, j5, 0
+  jld j2, j5, 8
+  jld j4, j1, 0
+  jsub j10, j2, j4
+  jjnn j10, wyg_pop
+  jldi j10, 1
+  jadd j4, j2, j10
+  jst j4, j5, 8
+  jldi j10, 3
+  jshl j2, j4, j10
+  jadd j1, j1, j2
+  jld j2, j1, 0
+  jldi j10, 5
+  jsub j10, j10, j2
+  jjnn j10, wyg_st
+  jldi j10, 6
+  jsub j2, j2, j10
+  jldi j10, 3
+  jshl j2, j2, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7080
+  jadd j1, j1, j2
+  jld j1, j1, 0
+  jcall wy_push
+  jjmp wyg_l
+wyg_pop:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7128
+  jldi j10, 1
+  jsub j3, j3, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j3, j6, 7128
+  jjmp wyg_l
+wyg_st:
+  jldi j10, 1
+  jsub j10, j2, j10
+  jjz j10, wys_heart
+  jldi j10, 2
+  jsub j10, j2, j10
+  jjz j10, wys_impro
+  jldi j10, 3
+  jsub j10, j2, j10
+  jjz j10, wys_own
+  jldi j10, 4
+  jsub j10, j2, j10
+  jjz j10, wys_quien
+  jldi j10, 5
+  jsub j10, j2, j10
+  jjz j10, wys_cross
+  jjmp wyg_l
+wys_heart:
+  jcall r_dlg_heart
+  jjz j0, wyg_l
+  jjmp wyg_ok
+wys_impro:
+  jcall r_dlg_impro
+  jjz j0, wyg_l
+  jjmp wyg_ok
+wys_own:
+  jcall r_dlg_heart_own
+  jjz j0, wyg_l
+  jjmp wyg_ok
+wys_quien:
+  jcall r_dlg_quien
+  jjz j0, wyg_l
+  jcall gu_said
+  jjmp wyg_ok
+wys_cross:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6408
+  jjz j1, wyg_l
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7112
+  jjmp dsy_cx
+wyg_ok:
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6864
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6848
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6848
+  jjmp dse_has
+wy_pay:                         ; j0 = 1 if her frame in most harmony paid what waited: her way is judged; keeps j0
+  jst j1, j14, 1288
+  jldi j1, 407
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7192
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7104
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7104
+  jjz j1, wyy_r
+  jldi j10, 1
+  jsub j10, j1, j10
+  jjnz j10, wyy_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7024
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7024
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 7192
+  jjz j0, wyy_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7032
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7032
+  jjmp wyy_r
+wyy_c:                          ; (a babbled way: not paid, kept with why)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 7192
+  jjnz j0, wyy_cp
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jldi j2, 1
+  jcall wy_arch
+  jjmp wyy_r
+wyy_cp:                         ; (paid once, (1 + 1/2) / 2, against her way's wish)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7032
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7024
+  jcall dse_wish
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7184
+  jldi j1, 1
+  jldi j2, 1
+  jcall dse_wish
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7184
+  jsub j10, j2, j1
+  jjn j10, wyy_win
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jldi j2, 3
+  jcall wy_arch
+  jjmp wyy_r
+wyy_win:                        ; (it takes her way's place, and is a letter of hers; her old way is kept with why)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jldi j2, 2
+  jcall wy_arch
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7056
+  jcall wy_vadd
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7024
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7032
+wyy_r:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 7192
+  jret
+wy_put:                         ; j1 = a word, written as it is (its length, its letters)
+  jst j1, j14, 1288
+  jldi j1, 409
+  jcall r_cable
+  jadd j11, j1, j14
+  jld j12, j1, 0
+  jldi j10, 1
+  jadd j12, j12, j10
+  jldi j10, 3
+  jshl j12, j12, j10
+  jldi j10, 6
+  jcall r_file
+  jret
+wy_save:                        ; her ways into "caminos"
+  jst j1, j14, 1288
+  jldi j1, 410
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jjz j1, wysv_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7200
+  jadd j11, j6, j10
+  jldi j12, 7
+  jldi j10, 12
+  jcall r_tocar
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7200
+  jadd j11, j6, j10
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, wysv_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7024
+  jadd j11, j6, j10
+  jldi j12, 32
+  jldi j10, 6
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7144
+wysv_v:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7048
+  jsub j10, j1, j2
+  jjnn j10, wysv_w
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7080
+  jadd j2, j2, j1
+  jld j1, j2, 0
+  jcall wy_put
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7144
+  jjmp wysv_v
+wysv_w:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jcall wy_put
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7144
+wysv_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7040
+  jsub j10, j1, j2
+  jjnn j10, wysv_e
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7064
+  jadd j11, j2, j1
+  jldi j10, 8
+  jadd j11, j11, j10
+  jldi j12, 8
+  jldi j10, 6
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7064
+  jadd j2, j2, j1
+  jld j1, j2, 0
+  jcall wy_put
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7144
+  jjmp wysv_a
+wysv_e:
+  jldi j10, 7
+  jcall r_file
+wysv_r:
+  jret
+wy_get:                         ; -> j0 = a word read as it is (its length, its letters), or 0
+  jst j1, j14, 1288
+  jldi j1, 403
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7176
+  jadd j11, j6, j10
+  jldi j12, 8
+  jcall r_read_all
+  jldi j10, 8
+  jsub j10, j0, j10
+  jjnz j10, wyg2_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7176
+  jcall wy_new
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7184
+  jadd j11, j0, j14
+  jldi j10, 8
+  jadd j11, j11, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j12, j6, 7176
+  jldi j10, 3
+  jshl j12, j12, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j12, j6, 7176
+  jcall r_read_all
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7176
+  jsub j10, j0, j1
+  jjnz j10, wyg2_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j0, j6, 7184
+  jret
+wyg2_no:
+  jldi j0, 0
+  jret
+wy_load:                        ; her ways, from "caminos"; with none, the way she had
+  jst j1, j14, 1288
+  jldi j1, 405
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7200
+  jadd j11, j6, j10
+  jldi j12, 7
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, wyl_first
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7024
+  jadd j11, j6, j10
+  jldi j12, 32
+  jcall r_read_all
+  jldi j10, 32
+  jsub j10, j0, j10
+  jjnz j10, wyl_hb
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7048
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7048
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7040
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7168
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7040
+wyl_v:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7160
+  jjz j1, wyl_w
+  jcall wy_get
+  jjz j0, wyl_bad
+  jadd j1, j0, j14
+  jcall wy_vadd
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7160
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7160
+  jjmp wyl_v
+wyl_w:
+  jcall wy_get
+  jjz j0, wyl_bad
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7056
+wyl_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7168
+  jjz j1, wyl_ok
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7152
+  jadd j11, j6, j10
+  jldi j12, 8
+  jcall r_read_all
+  jldi j10, 8
+  jsub j10, j0, j10
+  jjnz j10, wyl_bad
+  jcall wy_get
+  jjz j0, wyl_bad
+  jadd j1, j0, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7152
+  jcall wy_arch
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7168
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7168
+  jjmp wyl_a
+wyl_ok:
+  jldi j10, 7
+  jcall r_file
+  jret
+wyl_hb:                         ; (her counts not read whole: none is trusted)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7024
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7032
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7040
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7048
+wyl_bad:                        ; (a word not read whole: what was read whole stays; her way, if none, the one she had)
+  jldi j10, 7
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7056
+  jjnz j1, wyl_r
+wyl_first:
+  jldi j1, 2
+  jcall wy_new
+  jldi j10, 1
+  jst j10, j0, 8
+  jldi j10, 2
+  jst j10, j0, 16
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7056
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7024
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7032
+wyl_r:
+  jret
 r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "gustos" kept
   jst j1, j14, 1288
   jldi j1, 193
   jcall r_cable
-  jldi j1, 01B78h
+  jldi j1, 01C30h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
@@ -30402,6 +31711,29 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j14, j0, 7000
   jst j14, j0, 7008
   jst j14, j0, 7016
+  jst j14, j0, 7024
+  jst j14, j0, 7032
+  jst j14, j0, 7040
+  jst j14, j0, 7048
+  jst j14, j0, 7056
+  jst j14, j0, 7064
+  jst j14, j0, 7072
+  jst j14, j0, 7080
+  jst j14, j0, 7088
+  jst j14, j0, 7096
+  jst j14, j0, 7104
+  jst j14, j0, 7112
+  jst j14, j0, 7120
+  jst j14, j0, 7128
+  jst j14, j0, 7136
+  jst j14, j0, 7144
+  jst j14, j0, 7152
+  jst j14, j0, 7160
+  jst j14, j0, 7168
+  jst j14, j0, 7176
+  jst j14, j0, 7184
+  jst j14, j0, 7192
+  jst j14, j0, 7200
   jldi j10, 105
   jstb j10, j0, 6552
   jldi j10, 109
@@ -30462,7 +31794,22 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jstb j10, j0, 7021
   jldi j10, 115
   jstb j10, j0, 7022
+  jldi j10, 99
+  jstb j10, j0, 7200
+  jldi j10, 97
+  jstb j10, j0, 7201
+  jldi j10, 109
+  jstb j10, j0, 7202
+  jldi j10, 105
+  jstb j10, j0, 7203
+  jldi j10, 110
+  jstb j10, j0, 7204
+  jldi j10, 111
+  jstb j10, j0, 7205
+  jldi j10, 115
+  jstb j10, j0, 7206
   jcall lj_load                  ; (the signatures of her books)
+  jcall wy_load                  ; (her ways)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30603,6 +31950,7 @@ r_gustos_save:                  ; her tastes into "gustos"
   jcall r_cable
   jcall ig_save
   jcall lj_save
+  jcall wy_save
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30967,6 +32315,12 @@ r_marco:                        ; HER FRAME (see GU_F): if something of hers wai
   jld j6, j6, 32728
   jld j2, j6, 6352
   jor j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7104
+  jor j1, j1, j2
   jjz j1, mc_r
   jldi j6, 0162h
   jshi j6, 0
@@ -31098,6 +32452,7 @@ mc_s0:
   jadd j0, j1, j14
 mc_p:
   jcall gu_pay
+  jcall wy_pay                 ; (and her way, by the music of her frame)
   jjz j0, mc_r
   jldi j6, 0162h
   jshi j6, 0
@@ -45481,13 +46836,13 @@ bzl_ct:
   jldi j10, 128
   jadd j11, j11, j10
   jldi j12, 6
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, bzl_r
   jldi j10, 38
   jldi j11, -1
   jldi j12, 0
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45495,7 +46850,7 @@ bzl_ct:
   jldi j10, 38
   jldi j11, 0
   jldi j12, 0
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45516,9 +46871,9 @@ bzl_ct:
   jshi j6, 0
   jld j6, j6, 07FF8h
   jld j12, j6, 40
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45729,7 +47084,7 @@ bz_qlog:                        ; into "caminos": the question of the walk W_Q, 
   jld j11, j9, 56
   jld j12, j9, 64
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45737,7 +47092,7 @@ bz_qlog:                        ; into "caminos": the question of the walk W_Q, 
   jadd j11, j11, j10
   jldi j12, 3
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jret
 bz_from:                        ; j2, j3 = where the walk W_Q comes from, as its next step will: its door, or, at
   jst j1, j14, 1288
@@ -45781,7 +47136,7 @@ bu_wstep:                       ; HER WALKS, a step each time she is born; each 
   jldi j10, 134
   jadd j11, j11, j10
   jldi j12, 7
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjnn j9, bzs_o
   jldi j6, 0162h
@@ -45798,14 +47153,14 @@ bu_wstep:                       ; HER WALKS, a step each time she is born; each 
   jldi j10, 134
   jadd j11, j11, j10
   jldi j12, 7
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, bzs_x
 bzs_o:
   jldi j10, 38
   jldi j11, -1
   jldi j12, 0
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45855,7 +47210,7 @@ bzs_lost:                       ; (a walk with nowhere to go is lost: it starts 
   jld j11, j7, 80
   jld j12, j7, 88
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45863,7 +47218,7 @@ bzs_lost:                       ; (a walk with nowhere to go is lost: it starts 
   jadd j11, j11, j10
   jldi j12, 28
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45871,7 +47226,7 @@ bzs_lost:                       ; (a walk with nowhere to go is lost: it starts 
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jcall bz_tnew
   jldi j6, 0162h
   jshi j6, 0
@@ -45918,7 +47273,7 @@ bzs_have:
   jld j11, j7, 96
   jld j12, j7, 104
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45926,7 +47281,7 @@ bzs_have:
   jadd j11, j11, j10
   jldi j12, 4
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45942,7 +47297,7 @@ bzs_have:
   jld j11, j7, 80
   jld j12, j7, 88
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45950,7 +47305,7 @@ bzs_have:
   jadd j11, j11, j10
   jldi j12, 27
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -45971,7 +47326,7 @@ bzs_have:
   jldi j12, 300
 bzp_0:
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -45979,7 +47334,7 @@ bzp_0:
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jcall bz_tnew
   jldi j6, 0162h
   jshi j6, 0
@@ -46198,7 +47553,7 @@ bzk2_g:
   jadd j11, j2, j14
   jadd j12, j3, j14
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -46206,7 +47561,7 @@ bzk2_g:
   jadd j11, j11, j10
   jldi j12, 4
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -46222,7 +47577,7 @@ bzk2_g:
   jld j11, j7, 112
   jld j12, j7, 120
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -46230,7 +47585,7 @@ bzk2_g:
   jadd j11, j11, j10
   jldi j12, 2
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -46251,7 +47606,7 @@ bzk2_g:
   jldi j12, 300
 bzp_1:
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -46259,7 +47614,7 @@ bzp_1:
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jcall bz_tnew
   jldi j6, 0162h
   jshi j6, 0
@@ -46306,7 +47661,7 @@ bzs_n:
   jjmp bzs_q
 bzs_cl:
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
   ; where each walk is now: "rodeos", a line each (the door, where it comes from; empty: at the front door)
   jldi j6, 0162h
   jshi j6, 0
@@ -46322,7 +47677,7 @@ bzs_cl:
   jldi j10, 128
   jadd j11, j11, j10
   jldi j12, 6
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, bzs_m
   jldi j6, 0162h
@@ -46355,7 +47710,7 @@ bzr_q:
   jjz j11, bzr_e
   jld j12, j7, 120
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -46363,12 +47718,12 @@ bzr_q:
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jcall bz_from
   jadd j11, j2, j14
   jadd j12, j3, j14
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
 bzr_e:
   jldi j6, 0162h
   jshi j6, 0
@@ -46377,7 +47732,7 @@ bzr_e:
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -46391,7 +47746,7 @@ bzr_e:
   jjmp bzr_q
 bzr_d:
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
 bzs_m:                          ; her own questions: "preguntas-mias", each the question of her heart with what all
                                 ; of them seek put in place of the door its walk goes to
   jldi j6, 0162h
@@ -46408,7 +47763,7 @@ bzs_m:                          ; her own questions: "preguntas-mias", each the 
   jldi j10, 141
   jadd j11, j11, j10
   jldi j12, 14
-  jcall r_open
+  jcall fr_r_open
   jld j9, j14, 04A8h
   jjn j9, bzs_x
   jldi j6, 0162h
@@ -46494,7 +47849,7 @@ bzm_rp:
   jld j12, j6, 01D78h
   jsub j12, j12, j11
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -46510,7 +47865,7 @@ bzm_rp:
   jld j11, j7, 112
   jld j12, j7, 120
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F00h
@@ -46529,7 +47884,7 @@ bzm_e:
   jld j12, j6, 07F08h
   jsub j12, j12, j11
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -46537,7 +47892,7 @@ bzm_e:
   jadd j11, j11, j10
   jldi j12, 1
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
 bzm_n:
   jldi j6, 0162h
   jshi j6, 0
@@ -46552,7 +47907,7 @@ bzm_n:
   jjmp bzm_q
 bzm_d:
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
 bzs_x:                          ; (what the walks took, given back)
   jldi j6, 0162h
   jshi j6, 0
@@ -46584,7 +47939,7 @@ bzx_q:
   jjz j11, bzx_n
   jldi j10, 3
   jldi j12, 0
-  jcall r_tocar
+  jcall fr_r_tocar
 bzx_n:
   jldi j6, 0162h
   jshi j6, 0
@@ -46605,14 +47960,14 @@ bzx_d:
   jjz j11, bzx_b
   jldi j10, 3
   jldi j12, 0
-  jcall r_tocar
+  jcall fr_r_tocar
 bzx_b:
   jldi j10, 3
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
   jldi j12, 0
-  jcall r_tocar
+  jcall fr_r_tocar
   jret
 r_read_max:                     ; -> j0 = the best reading among her forms and with no organ at all, in
   jst j1, j14, 1288
@@ -47174,7 +48529,7 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jshi j6, 0
   jld j2, j6, 01858h
   jadd j1, j1, j2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 016D8h
@@ -47197,12 +48552,12 @@ rp_arm:                         ; something new: a letter, a song or an instinct
   jjn j2, rp_join
   ; an instinct a step up or down, inside its range (patience 1-8, firmness 1-4, readings 1-3: pulso.jsm)
   jldi j1, 3
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01668h
   jldi j1, 2
-  jcall r_randmod
+  jcall fr_r_randmod
   jadd j0, j0, j0
   jldi j10, 1
   jsub j4, j0, j10
@@ -47405,7 +48760,7 @@ r_tramo_add:                    ; j9 = a recipe: one statement of it, by her luc
   jcall r_tramos
   jjz j0, ta_no
   jadd j1, j0, j14
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01878h
@@ -47503,12 +48858,12 @@ rj_max_d:
   jshi j6, 0
   jld j1, j6, 01838h
   jjz j1, rj_true
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01678h
   jldi j1, 7
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 1
   jadd j0, j0, j10
   jldi j6, 0162h
@@ -47642,12 +48997,12 @@ rp_l_lap:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01838h
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01678h
   jldi j1, 8
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 1
   jadd j0, j0, j10
   jldi j6, 0162h
@@ -47673,7 +49028,7 @@ rp_l_lap:
   jshi j6, 0
   jst j1, j6, 01910h
   jldi j1, 0FF0h
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jst j0, j6, 01918h
@@ -47690,7 +49045,7 @@ rp_l_len:                       ; room for its letters (a recipe has room for 31
   jjnn j10, rp_l_next
   jldi j10, 1
   jadd j1, j3, j10
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j7, 0162h
   jshi j7, 01700h
   jldb j3, j7, 0
@@ -47843,7 +49198,7 @@ rp_s_lap:
   jst j14, j7, 16
   jst j14, j7, 24
   jldi j1, 2
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 2
   jadd j0, j0, j10
   jldi j6, 0162h
@@ -47854,7 +49209,7 @@ rp_s_lap:
   jst j14, j6, 01680h
 rp_s_word:
   jldi j1, 8
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j10, 1
   jadd j2, j0, j10
   jldi j6, 0162h
@@ -59545,7 +60900,7 @@ v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 
   jld j12, j13, 24
   jld j13, j13, 32
   jret
-; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 400 routines
+; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 412 routines
 r_cable:                        ; j1 = the routine that came (its S1 kept j1): one bit for the cable from the last one
   jst j2, j14, 1296
   jst j3, j14, 1304
@@ -59565,7 +60920,7 @@ r_cable:                        ; j1 = the routine that came (its S1 kept j1): o
   jjz j3, rc_out
   jldi j4, 1
   jsub j2, j2, j4
-  jldi j4, 400
+  jldi j4, 412
   jmul j2, j2, j4
   jadd j1, j2, j1
   jldi j4, 3
@@ -59787,7 +61142,7 @@ ci_cl:
   jcall fr_r_file
   jjz j7, ci_no
   jjn j7, ci_no
-  jldi j1, 01908h
+  jldi j1, 019C8h
   jcall fr_r_alloc
   jst j0, j14, 1400
   jld j1, j14, 1432
@@ -59801,7 +61156,7 @@ ci_n:
   jldi j10, 10
   jsub j10, j5, j10
   jjnz j10, ci_nn
-  jldi j10, 400
+  jldi j10, 412
   jsub j10, j4, j10
   jjnn j10, ci_no
   jld j6, j14, 1400
@@ -59819,14 +61174,14 @@ ci_nn:
   jadd j1, j1, j10
   jjmp ci_n
 ci_nd:
-  jldi j10, 400
+  jldi j10, 412
   jsub j10, j4, j10
   jjnz j10, ci_no
   ; (the matrix: as her house kept it, if it is of these routines; else new)
-  jldi j1, 04E28h
+  jldi j1, 052F0h
   jcall fr_r_alloc
   jst j0, j14, 1416
-  jldi j2, 04E28h
+  jldi j2, 052F0h
   jadd j3, j0, j2
 ci_z:
   jst j14, j0, 0
@@ -59843,17 +61198,17 @@ ci_z:
   jjn j9, ci_mx
   jldi j10, 5
   jld j11, j14, 1416
-  jldi j12, 04E28h
+  jldi j12, 052F0h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
 ci_mx:
   jld j1, j14, 1416
   jld j2, j1, 0
-  jldi j10, 400
+  jldi j10, 412
   jsub j10, j2, j10
   jjz j10, ci_mk
-  jldi j2, 04E28h
+  jldi j2, 052F0h
   jadd j3, j1, j2
 ci_z2:
   jst j14, j1, 0
@@ -59862,7 +61217,7 @@ ci_z2:
   jsub j10, j3, j1
   jjnz j10, ci_z2
   jld j1, j14, 1416
-  jldi j10, 400
+  jldi j10, 412
   jst j10, j1, 0
 ci_mk:
   jldi j1, 04000h
@@ -59915,7 +61270,7 @@ cf_l:
   jsub j10, j8, j1
   jjnn j10, cf_w
   jld j1, j8, 0
-  jldi j10, 400
+  jldi j10, 412
   jdiv j2, j1, j10
   jmul j3, j2, j10
   jsub j3, j1, j3
@@ -59992,7 +61347,7 @@ cf_w:
   jjn j9, cf_done
   jldi j10, 6
   jld j11, j14, 1416
-  jldi j12, 04E28h
+  jldi j12, 052F0h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
