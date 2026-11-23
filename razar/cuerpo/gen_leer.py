@@ -287,7 +287,8 @@ D_X = 0x1900 + 8 * 21        # four words of scratch for her word
 # HER ALPHABET, LEARNED: what she draws beyond her own 5 x 7 letters, copied from her book of letters ("letras": GNU
 # Unifont, free) the first time she meets it, kept in "abecedario" (a line of the book each, as it is). A letter: its
 # code point, its width (8 or 16), its 16 rows (a word each, the leftmost dot the highest of 16 bits): 144 bytes
-LE_SIZE = 144
+LE_SIZE = 152
+LE_VEC = 144       # a learned letter's strokes, told the first time it is drawn (0: not yet): see lv_make
 # HER VOICE: to quote (1) or to say it her way (2), each with its counts (N said, S answered back), the way of her last
 # answer, the first of her lines shown and how many there are, where her quote comes from (D_SRC, D_SRCL bytes), and
 # the scratch of her own words
@@ -1724,6 +1725,78 @@ def make(g, ST, free):
             J("jldi j10, %d" % ord(ch), "jsub j10, j5, j10", "jjnz j10, gl_%d" % ord(ch)); li("j0", glyph_bits(ch)); J("jret")
             o("gl_%d:" % ord(ch))
         J("jldi j0, 0", "jret")
+        # ---- HER LETTERS AS VECTORS OF PARTICLES (the Capitan, 2026-11-23: "letras vectoriales"; "mira un svg: en
+        # cualquier tamano pesa lo mismo y es igual de nitido"; "arma vectores de particulas, asi jugamos con mi nube"). A
+        # learned letter (8 or 16 x 16 dots from her book of letters) is told as straight strokes, across, down or
+        # slanting: each time the stroke that covers the most ink not yet covered, until all of it is (the greedy cover,
+        # the shortest telling of it a step at a time). Drawn at any size, each stroke lets out its particles along it, one
+        # a dot of that size (Bresenham): no blots when it is small, no holes when it is big. Told the first time it is
+        # drawn (an event), and kept with the letter (LE_VEC). Its room: how many strokes, the walk's own (8 to 63), what
+        # is covered (64, sixteen rows), the strokes (192, a qword each: x0, y0, x1, y1, a byte each)
+        LV_DIRS = ((1, 0), (0, 1), (1, 1), (-1, 1))
+        lvn = [0]
+        def lv_dot(xr, yr, base, off):   # j0 = the dot (xr, yr) of the rows at base + off, 0 outside (j8 = the width); uses j6, j10
+            lvn[0] += 1; k = lvn[0]
+            J("jjn %s, lvd_o%d" % (xr, k), "jsub j10, %s, j8" % xr, "jjnn j10, lvd_o%d" % k, "jjn %s, lvd_o%d" % (yr, k), "jldi j10, 16", "jsub j10, %s, j10" % yr, "jjnn j10, lvd_o%d" % k,
+              "jldi j10, 3", "jshl j6, %s, j10" % yr, "jadd j6, j6, %s" % base, "jld j6, j6, %d" % off, "jldi j10, 15", "jsub j10, j10, %s" % xr, "jshr j0, j6, j10", "jldi j10, 1", "jand j0, j0, j10", "jjmp lvd_e%d" % k)
+            o("lvd_o%d:" % k)
+            J("jldi j0, 0")
+            o("lvd_e%d:" % k)
+        o("lv_make:                        ; j9 = a learned letter -> j13 = its strokes' room (see above). Uses j0-j13")
+        o("  ; (its ink, to know the room: never more strokes than dots)")
+        J("jldi j1, 0", "jldi j2, 0")
+        o("lvm_i:")
+        J("jldi j10, 16", "jsub j10, j2, j10", "jjnn j10, lvm_ia", "jldi j10, 3", "jshl j3, j2, j10", "jadd j3, j3, j9", "jld j3, j3, 16")
+        o("lvm_ib:")
+        J("jjz j3, lvm_in", "jldi j10, 1", "jand j4, j3, j10", "jadd j1, j1, j4", "jshr j3, j3, j10", "jjmp lvm_ib")
+        o("lvm_in:")
+        J("jldi j10, 1", "jadd j2, j2, j10", "jjmp lvm_i")
+        o("lvm_ia:")
+        J("jldi j10, 3", "jshl j1, j1, j10", "jldi j10, 200", "jadd j1, j1, j10", "jcall r_alloc", "jadd j13, j0, j14")
+        J("jldi j2, 0")
+        o("lvm_z:")
+        J("jldi j10, 192", "jsub j10, j2, j10", "jjnn j10, lvm_g", "jadd j10, j13, j2", "jst j14, j10, 0", "jldi j10, 8", "jadd j2, j2, j10", "jjmp lvm_z")
+        o("lvm_g:                          ; (a stroke more: the one that covers the most ink not yet covered)")
+        J("jld j8, j9, 8", "jst j14, j13, 32", "jldi j2, 0")
+        o("lvm_y:")
+        J("jldi j10, 16", "jsub j10, j2, j10", "jjnn j10, lvm_add", "jldi j1, 0")
+        o("lvm_x:")
+        J("jsub j10, j1, j8", "jjnn j10, lvm_yn")
+        lv_dot("j1", "j2", "j9", 16); J("jjz j0, lvm_xn")
+        for d, (dx, dy) in enumerate(LV_DIRS):
+            o("  ; (slant %d, %d: only from where its run begins)" % (dx, dy))
+            J("jldi j10, %d" % dx, "jsub j11, j1, j10", "jldi j10, %d" % dy, "jsub j12, j2, j10"); lv_dot("j11", "j12", "j9", 16); J("jjnz j0, lvm_d%d" % d)
+            J("jadd j11, j1, j14", "jadd j12, j2, j14", "jldi j7, 0")
+            o("lvm_w%d:" % d)
+            lv_dot("j11", "j12", "j9", 16); J("jjz j0, lvm_we%d" % d)
+            lv_dot("j11", "j12", "j13", 64); J("jjnz j0, lvm_wc%d" % d, "jldi j10, 1", "jadd j7, j7, j10")
+            o("lvm_wc%d:" % d)
+            J("jldi j10, %d" % dx, "jadd j11, j11, j10", "jldi j10, %d" % dy, "jadd j12, j12, j10", "jjmp lvm_w%d" % d)
+            o("lvm_we%d:" % d)
+            J("jld j10, j13, 32", "jsub j10, j10, j7", "jjnn j10, lvm_d%d" % d, "jst j7, j13, 32")
+            J("jldi j10, %d" % dx, "jsub j11, j11, j10", "jldi j10, %d" % dy, "jsub j12, j12, j10")
+            J("jldi j10, 8", "jshl j4, j2, j10", "jor j4, j4, j1", "jldi j10, 16", "jshl j5, j11, j10", "jor j4, j4, j5", "jldi j10, 24", "jshl j5, j12, j10", "jor j4, j4, j5", "jst j4, j13, 40")
+            o("lvm_d%d:" % d)
+        o("lvm_xn:")
+        J("jldi j10, 1", "jadd j1, j1, j10", "jjmp lvm_x")
+        o("lvm_yn:")
+        J("jldi j10, 1", "jadd j2, j2, j10", "jjmp lvm_y")
+        o("lvm_add:                        ; (none covers anything new: it is told)")
+        J("jld j10, j13, 32", "jjz j10, lvm_r")
+        J("jld j4, j13, 40", "jld j3, j13, 0", "jldi j10, 3", "jshl j5, j3, j10", "jadd j5, j5, j13", "jst j4, j5, 192", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j13, 0")
+        o("  ; (its dots are covered now: walked from its start to its end, one step toward it each time)")
+        J("jldi j10, 255", "jand j1, j4, j10", "jldi j10, 8", "jshr j2, j4, j10", "jldi j10, 255", "jand j2, j2, j10", "jldi j10, 16", "jshr j11, j4, j10", "jldi j10, 255", "jand j11, j11, j10", "jldi j10, 24", "jshr j12, j4, j10", "jldi j10, 255", "jand j12, j12, j10")
+        o("lvm_m:")
+        J("jldi j10, 3", "jshl j6, j2, j10", "jadd j6, j6, j13", "jld j5, j6, 64", "jldi j10, 15", "jsub j10, j10, j1", "jldi j7, 1", "jshl j7, j7, j10", "jor j5, j5, j7", "jst j5, j6, 64")
+        J("jsub j10, j1, j11", "jjnz j10, lvm_mx", "jsub j10, j2, j12", "jjz j10, lvm_g")
+        o("lvm_mx:")
+        J("jsub j10, j11, j1", "jjz j10, lvm_my", "jjn j10, lvm_ml", "jldi j10, 1", "jadd j1, j1, j10", "jjmp lvm_my")
+        o("lvm_ml:")
+        J("jldi j10, 1", "jsub j1, j1, j10")
+        o("lvm_my:")
+        J("jsub j10, j12, j2", "jjz j10, lvm_m", "jldi j10, 1", "jadd j2, j2, j10", "jjmp lvm_m")
+        o("lvm_r:")
+        J("jret")
         o("r_txt:                          ; the text at j3 (j4 bytes of UTF-8) drawn from the cell j1, j2, in the colour PR PG PB")
         o("                                ; -> j0 = the cells it took across, j1 = the bytes it took. Her own letters take 6; a")
         o("                                ; learned one, half its width and one. j5: a width it must not pass (0: none); j7: 1 draws,")
@@ -1743,18 +1816,35 @@ def make(g, ST, free):
         J("jldi j10, 1", "jadd j7, j7, j10"); ts("j7", 0xA0)
         o("tx_g:")
         ts("j5", 0xD0); J("jcall r_glyph", "jjnz j0, tx_5"); tl("j3", 0xD0); J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, tx_5", "jcall r_letra_get", "jjz j0, tx_5")
-        ts("j0", 0xD8); ts("j14", 0xE0)
-        o("tb_r:                           ; (a learned letter: rows 2r and 2r + 1, columns 2c and 2c + 1, make one dot)")
-        tl("j7", 0xE0); J("jldi j10, 8", "jsub j10, j7, j10", "jjnn j10, tb_d"); ts("j14", 0xE8)
-        o("tb_c:")
-        tl("j8", 0xE8); tl("j9", 0xD8); J("jld j10, j9, 8", "jldi j11, 1", "jshr j10, j10, j11", "jsub j10, j8, j10", "jjnn j10, tb_rn")
-        tl("j7", 0xE0); J("jldi j10, 4", "jshl j10, j7, j10", "jadd j10, j9, j10", "jld j11, j10, 16", "jld j10, j10, 24", "jor j11, j11, j10",
-          "jldi j10, 1", "jshl j10, j8, j10", "jldi j12, 14", "jsub j12, j12, j10", "jshr j11, j11, j12", "jldi j10, 3", "jand j11, j11, j10", "jjz j11, tb_cn")
-        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10", "jadd j1, j1, j8"); tl("j2", 0x88); tl("j7", 0xE0); J("jadd j2, j2, j7", "jldi j10, 1", "jsub j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tb_cn", "jcall %s" % PLOT)
-        o("tb_cn:")
-        tl("j8", 0xE8); J("jldi j10, 1", "jadd j8, j8, j10"); ts("j8", 0xE8); J("jjmp tb_c")
-        o("tb_rn:")
-        tl("j7", 0xE0); J("jldi j10, 1", "jadd j7, j7, j10"); ts("j7", 0xE0); J("jjmp tb_r")
+        ts("j0", 0xD8); J("jld j13, j0, %d" % LE_VEC, "jjnz j13, tv_h", "jadd j9, j0, j14", "jcall lv_make"); tl("j9", 0xD8); J("jst j13, j9, %d" % LE_VEC)
+        o("tv_h:                           ; (a learned letter: each of its strokes lets out its particles at this size)")
+        ts("j13", 0x100); ts("j14", 0x108)
+        o("tv_s:")
+        tl("j13", 0x100); tl("j3", 0x108); J("jld j10, j13, 0", "jsub j10, j3, j10", "jjnn j10, tb_d", "jldi j10, 3", "jshl j4, j3, j10", "jadd j4, j4, j13", "jld j4, j4, 192"); tl("j9", 0xD8); J("jld j8, j9, 8")
+        o("  ; (its ends at this size: the middle of each dot of its book, (2v + 1) x size / (2 x its size))")
+        for sh, slot, across in ((0, 0x110, True), (8, 0x118, False), (16, 0x120, True), (24, 0x128, False)):
+            J("jldi j10, %d" % sh, "jshr j5, j4, j10", "jldi j10, 255", "jand j5, j5, j10", "jadd j5, j5, j5", "jldi j10, 1", "jadd j5, j5, j10")
+            if across:
+                J("jldi j10, 1", "jshr j7, j8, j10", "jmul j5, j5, j7", "jadd j10, j8, j8", "jdiv j5, j5, j10")
+            else:
+                J("jldi j10, 8", "jmul j5, j5, j10", "jldi j10, 32", "jdiv j5, j5, j10")
+            ts("j5", slot)
+        tl("j1", 0x110); tl("j2", 0x120); J("jsub j3, j2, j1", "jldi j4, 1", "jjnn j3, tv_a", "jsub j3, j14, j3", "jldi j4, -1")
+        o("tv_a:")
+        ts("j3", 0x130); ts("j4", 0x138)
+        tl("j1", 0x118); tl("j2", 0x128); J("jsub j3, j2, j1", "jldi j4, 1", "jjnn j3, tv_b", "jsub j3, j14, j3", "jldi j4, -1")
+        o("tv_b:")
+        J("jsub j3, j14, j3"); ts("j3", 0x140); ts("j4", 0x148); tl("j1", 0x130); J("jadd j3, j1, j3"); ts("j3", 0x150)
+        o("tv_p:                           ; (a particle, then a step toward its end: Bresenham)")
+        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10"); tl("j10", 0x110); J("jadd j1, j1, j10"); tl("j2", 0x88); tl("j10", 0x118); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tv_q", "jcall %s" % PLOT)
+        o("tv_q:")
+        tl("j1", 0x110); tl("j2", 0x120); J("jsub j10, j1, j2", "jjnz j10, tv_e"); tl("j1", 0x118); tl("j2", 0x128); J("jsub j10, j1, j2", "jjz j10, tv_n")
+        o("tv_e:")
+        tl("j3", 0x150); J("jadd j4, j3, j3"); ts("j4", 0x158); tl("j5", 0x140); J("jsub j10, j4, j5", "jjn j10, tv_f", "jadd j3, j3, j5"); ts("j3", 0x150); tl("j1", 0x110); tl("j10", 0x138); J("jadd j1, j1, j10"); ts("j1", 0x110)
+        o("tv_f:")
+        tl("j4", 0x158); tl("j5", 0x130); J("jsub j10, j5, j4", "jjn j10, tv_p"); tl("j3", 0x150); J("jadd j3, j3, j5"); ts("j3", 0x150); tl("j2", 0x118); tl("j10", 0x148); J("jadd j2, j2, j10"); ts("j2", 0x118); J("jjmp tv_p")
+        o("tv_n:")
+        tl("j3", 0x108); J("jldi j10, 1", "jadd j3, j3, j10"); ts("j3", 0x108); J("jjmp tv_s")
         o("tb_d:")
         tl("j9", 0xD8); J("jld j10, j9, 8", "jldi j11, 1", "jshr j10, j10, j11", "jadd j10, j10, j11"); tl("j11", 0xC8); J("jadd j11, j11, j10"); ts("j11", 0xC8)
         tl("j7", 0xC0); J("jldi j10, 1", "jadd j7, j7, j10"); ts("j7", 0xC0); J("jjmp tx_c")
