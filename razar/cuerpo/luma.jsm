@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03D56h
-  jshi j2, 04A29h
-  jshi j2, 0826Dh
-  jshi j2, 0AB5Bh
+  jldi j2, 01A56h
+  jshi j2, 0986Ch
+  jshi j2, 021ACh
+  jshi j2, 0D9B3h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -25382,37 +25382,21 @@ dw_4:
   jadd j7, j7, j10
   jjmp dw_t
 dw_5:
-dw_t:
+dw_t:                           ; (the line is written from where it is, never copied: a story of any length fits,
+                                ; and no scratch room of a fixed size runs over onto what lies after it)
   jldi j10, 2
   jsub j10, j1, j10
-  jjz j10, dw_nl
+  jjz j10, dw_ns
   jldi j10, 3
   jsub j10, j1, j10
-  jjz j10, dw_nl
+  jjnz j10, dw_nl
+dw_ns:                          ; (her silence: the words of who, and nothing after them)
+  jldi j10, 0
   jldi j6, 019Fh
   jshi j6, 0
   jld j6, j6, 01D68h
-  jld j2, j6, 6568
-  jldi j6, 019Fh
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j3, j6, 6576
-  jldi j4, 0
-dw_c:
-  jsub j10, j4, j3
-  jjnn j10, dw_nl
-  jadd j5, j2, j4
-  jldb j5, j5, 0
-  jstb j5, j7, 0
-  jldi j10, 1
-  jadd j7, j7, j10
-  jadd j4, j4, j10
-  jjmp dw_c
+  jst j10, j6, 6576
 dw_nl:
-  jldi j10, 10
-  jstb j10, j7, 0
-  jldi j10, 1
-  jadd j7, j7, j10
   jldi j6, 019Fh
   jshi j6, 0
   jld j8, j6, 01D68h
@@ -25446,6 +25430,28 @@ dw_nl:
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j12, j6, 6584
+  jcall r_file
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j12, j6, 6576
+  jjz j12, dw_e
+  jldi j10, 6
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j11, j6, 6568
+  jcall r_file
+dw_e:
+  jldi j10, 10
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j11, j6, 01D68h
+  jldi j15, 4096
+  jadd j11, j11, j15
+  jstb j10, j11, 0
+  jldi j12, 1
+  jldi j10, 6
   jcall r_file
   jldi j10, 7
   jcall r_file
