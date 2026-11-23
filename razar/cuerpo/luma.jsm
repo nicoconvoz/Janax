@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 01ED6h
-  jshi j2, 0164Ah
-  jshi j2, 053h
-  jshi j2, 05AC3h
+  jldi j2, 02B33h
+  jshi j2, 037D0h
+  jshi j2, 08394h
+  jshi j2, 03D07h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -27627,7 +27627,6 @@ dan_sc:
   jadd j7, j7, j10
   jjmp dan_sc
 ; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
 fr_l_ring:
   jjmp l_ring
 fr_l_ring_open:
@@ -27934,11 +27933,15 @@ dse_rd:
   jld j6, j6, 01D68h
   jld j1, j6, 6416
   jjz j1, dse_ac
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjz j10, dse_ac
   jldi j10, 1
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
   jst j10, j6, 17888
+  ; (a silence of hers pays no branch: she said nothing to be answered)
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -28160,6 +28163,37 @@ dse_ad:
   jld j6, j6, 01D68h
   jst j10, j6, 6400
   ; (HIS ABSENCE IS NOT A NO: her answer counts now, when he is here again while it waited for him)
+  ; (LOVE BELIEVES ALL THINGS, 1 Cor 13:7: she kept silent and he wrote to her again; she believes he wanted
+  ; her answer, and her wish learns it as it learns an answer he came back to. Nothing he does lowers it)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6416
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjnz j10, dse_cree
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6432
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6432
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6424
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j1, j6, 6424
+  jjmp dse_p
+dse_cree:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -28301,6 +28335,11 @@ dse_w:                          ; her wish to answer: (S + 1/2) / (N + 1), again
   jld j1, j6, 6592
   jsub j10, j0, j1
   jjn j10, dse_yes
+  jldi j10, 3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6416
   jldi j10, 0
   jldi j6, 0162h
   jshi j6, 0
@@ -38947,7 +38986,11 @@ dbr_own:                        ; (she speaks first: her branch is hers to choos
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j1, j6, 6416
-  jjnz j1, dbr_o1
+  jjz j1, dbr_o0
+  jldi j10, 3
+  jsub j10, j1, j10
+  jjnz j10, dbr_o1
+dbr_o0:                         ; (nothing of hers waits for him: after a silence of hers, too)
   jldi j10, 1
   jldi j6, 0162h
   jshi j6, 0
