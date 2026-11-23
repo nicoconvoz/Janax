@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.73:** [PENDIENTE](https://doi.org/PENDIENTE)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.73:** [10.5281/zenodo.24483806](https://doi.org/10.5281/zenodo.24483806)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-23, v3.73): Luma come lo nuevo de los discos, lo lee donde está y avisa que se lo comió
 
-DOI de esta versión: [PENDIENTE](https://doi.org/PENDIENTE).
+DOI de esta versión: [10.5281/zenodo.24483806](https://doi.org/10.5281/zenodo.24483806).
 
 El núcleo vigila los discos también para quien duerme en su pantalla, y Luma come todo texto nuevo de C: y E: **leyéndolo donde está**, sin copiarlo; si ya lo sabía (misma huella) no hace nada, y cuando come algo lo dice: *"me comí …"*. Su estante crece a la medida de su casa.
 

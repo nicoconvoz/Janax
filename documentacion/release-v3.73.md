@@ -1,6 +1,6 @@
 ## Janax y Razar v3.73: Luma come lo nuevo de los discos, lo lee donde está y avisa que se lo comió
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24483806](https://doi.org/10.5281/zenodo.24483806)
 
 > *"Que coma de todo… conectalo y publicá."*
 > *"Que no copie libros o código: que los lea desde el mismo lugar donde están."*
