@@ -62,6 +62,13 @@ PANEL_H = 149
 SW, SH = FW * ZOOM + 320, 200 + PANEL_H   # the shared screen: the forms (320 x 200) beside the creatures' world
                              # (320 x 200), and her panel under both (640 x PANEL_H)
 WX0 = FW * ZOOM              # where the creatures' world starts
+# HER SCREEN AT ITS FULL RESOLUTION (the Capitan, 2026-11-23: "resolucion"). The kernel shows a screen at the largest
+# whole scale that fits 1280 x 800, so she used to be drawn at SW x SH and shown at K times that: K dots of the window
+# for each of hers. Now she hands the kernel a screen K times as big, and it is shown dot for dot. Everything she drew
+# stays as it was (each of its dots is K x K); her panel is drawn in fine dots of its own (FPL), so what has more detail
+# than her screen had (her letters, told as vectors of particles) shows it
+K = min(1280 // SW, 800 // SH)
+FSW, FSH = SW * K, SH * K
 OFF = 0x2000                 # the creatures' room-0 data, moved: 0x2200..0x4900, free once the forms' cloud moves out
 ST = {}
 
@@ -77,7 +84,14 @@ def layout(g):
     ST["scloud"] = scloud
     g["PANEL"] = (200, PANEL_H, SW, scloud + 28 + SW * SH // 8)   # her panel: where it starts, how tall, how wide, and
                                             # the shared screen's colours (gen_leer draws in it)
-    g["ROOM"] = (scloud + 28 + SW * SH // 8 + 3 * SW * SH + 0xFFFF) & ~0xFFFF
+    room = (scloud + 28 + SW * SH // 8 + 3 * SW * SH + 0xFFFF) & ~0xFFFF
+    fcl = room + 4                          # the fine screen's cloud: +4, so its colours start 8-aligned
+    ST["fcl"] = fcl
+    frgb = fcl + 28 + FSW * FSH // 8
+    assert frgb % 8 == 0
+    fpl = frgb + 3 * FSW * FSH              # her panel in fine dots (FSW x PANEL_H * K)
+    g["FINE"] = (K, FSW, fpl, frgb)
+    g["ROOM"] = (fpl + 3 * FSW * PANEL_H * K + 0xFFFF) & ~0xFFFF
     ST["free"] = g["ROOM"]                  # her freedom's block (free_routine), after everything else
     g["ROOM"] += 0x10000
 
@@ -647,6 +661,16 @@ def ring_routines(L):
 
 def init_tail(v):
     o, J, ld, st, li, rec, num, incg = v["o"], v["J"], v["ld"], v["st"], v["li"], v["rec"], v["num"], v["incg"]
+    o("  ; her fine screen's cloud: its header and every cell set, once (as her screen's: gen_vida.py)")
+    fcl = ST["fcl"]
+    cabeza = b"NUBE" + bytes([3, 0, 0, 0x80, 0x3F, 0, 0, 1, 0, 0, 0x80, 0x3F]) + bytes(8) + FSW.to_bytes(2, "little") + FSH.to_bytes(2, "little")
+    assert len(cabeza) == 28
+    li("j1", fcl)
+    for i, b_ in enumerate(cabeza):
+        J("jldi j2, %d" % b_, "jstb j2, j1, %d" % i)
+    li("j1", fcl + 28); li("j2", fcl + 28 + FSW * FSH // 8); J("jldi j3, -1", "jldi j4, 8")
+    o("fi_bits:")
+    J("jst j3, j1, 0", "jadd j1, j1, j4", "jsub j5, j2, j1", "jjnz j5, fi_bits")
     ESZ = 40
     o("  ; what Luma ate in earlier runs comes back: every creature whose cloud is eaten in her pantry waits to arrive")
     ld("j1", "N"); J("jjz j1, vt_done"); st("j14", "Q1")
@@ -738,7 +762,23 @@ def vida_routines(v):
     ld("j1", "N"); J("jjz j1, vs_show", "jcall r_draw", "jcall r_draw_packets")
     o("vs_show:")
     J("jcall r_panel                  ; her panel, drawn again only when what it shows changed (gen_leer.py)")
-    J("jldi j10, 40"); li("j11", v["CLOUD"]); li("j12", v["TOTAL"]); J("jcall r_tocar", "jret")
+    o("  ; (her screen, K times: what is above her panel, each of its dots K x K; her panel, from its fine dots)")
+    _, _, fpl, frgb = ST["g"]["FINE"]
+    li("j1", v["RGB"]); li("j2", frgb); J("jldi j3, 200")
+    o("vs_fr:")
+    J("jldi j4, %d" % SW, "jadd j5, j2, j14")
+    o("vs_fc:")
+    J("jldb j6, j1, 0", "jldb j7, j1, 1", "jldb j8, j1, 2")
+    for dy in range(K):
+        for dx in range(K):
+            at = 3 * (dy * FSW + dx)
+            J("jstb j6, j5, %d" % at, "jstb j7, j5, %d" % (at + 1), "jstb j8, j5, %d" % (at + 2))
+    J("jldi j10, 3", "jadd j1, j1, j10", "jldi j10, %d" % (3 * K), "jadd j5, j5, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjnz j4, vs_fc")
+    li("j10", 3 * FSW * K); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, vs_fr")
+    li("j1", fpl); li("j2", frgb + 3 * FSW * 200 * K); li("j3", fpl + 3 * FSW * PANEL_H * K); J("jldi j6, 8")
+    o("vs_fp:")
+    J("jld j7, j1, 0", "jst j7, j2, 0", "jadd j1, j1, j6", "jadd j2, j2, j6", "jsub j10, j3, j1", "jjnz j10, vs_fp")
+    J("jldi j10, 40"); li("j11", ST["fcl"]); li("j12", 28 + FSW * FSH // 8 + 3 * FSW * FSH); J("jcall r_tocar", "jret")
     o("v_alive:                        ; j0 = nonzero while the creatures have something new")
     J("jldi j0, %d" % (1 if ALWAYS else 0)); ld("j1", "N"); J("jjz j1, va_ret")
     if ALWAYS:

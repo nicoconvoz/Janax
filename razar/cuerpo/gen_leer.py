@@ -1715,10 +1715,16 @@ def make(g, ST, free):
         def tl(r, k): gl("j6", NMROOM); J("jld %s, j6, %d" % (r, 3584 + k))   # r_txt's own, in her name's room (past what
         def ts(r, k): gl("j6", NMROOM); J("jst %s, j6, %d" % (r, 3584 + k))   # a name may take: 64 + 3000 bytes)
         PLOT = "r_tplot" if g.get("PANEL") else "r_plot"
+        FK, PLOTF = (g["FINE"][0], "r_tfplot") if g.get("PANEL") else (1, PLOT)   # her letters' particles: in fine dots, K a dot
         if g.get("PANEL"):
             o("r_tplot:                        ; a dot of her letters: on her panel while it is drawn (D_FLP), else on her forms'")
             o("                                ; screen (uses j10, j11, as r_plot)")
             li("j10", B); J("jld j10, j10, %s" % num(DLR), "jjz j10, r_plot", "jld j10, j10, %d" % D_FLP, "jjz j10, r_plot", "jjmp r_splot")
+            o("r_tfplot:                       ; a fine dot of her letters (j1, j2 on her fine screen): on her panel while it is drawn,")
+            o("                                ; else its dot on her forms' screen")
+            li("j10", B); J("jld j10, j10, %s" % num(DLR), "jjz j10, tfp_b", "jld j10, j10, %d" % D_FLP, "jjnz j10, r_fsplot")
+            o("tfp_b:")
+            J("jldi j10, %d" % g["FINE"][0], "jdiv j1, j1, j10", "jdiv j2, j2, j10", "jjmp r_plot")
         o("r_glyph:                       ; j5 = a letter -> j0 = its dots (5 x 7, row by row, the lowest bit first; 0: none)")
         o("gl_up:                          ; (a small letter is not drawn as its capital: she draws it as her book of letters does)")
         for ch in sorted(FONT):
@@ -1815,7 +1821,22 @@ def make(g, ST, free):
         o("tx_one:")
         J("jldi j10, 1", "jadd j7, j7, j10"); ts("j7", 0xA0)
         o("tx_g:")
-        ts("j5", 0xD0); J("jcall r_glyph", "jjnz j0, tx_5"); tl("j3", 0xD0); J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, tx_5", "jcall r_letra_get", "jjz j0, tx_5")
+        ts("j5", 0xD0)
+        if g.get("PANEL"):
+            o("  ; (each letter drawn by the finest telling she has of it that this surface can show: on her panel, whose dots")
+            o("  ; are fine, her learned letter first; elsewhere her own 5 x 7)")
+            li("j10", B); J("jld j10, j10, %s" % num(DLR), "jjz j10, tx_gf", "jld j10, j10, %d" % D_FLP, "jjz j10, tx_gf"); tl("j3", 0xD0)
+            J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, tx_gf", "jcall r_letra_get", "jjnz j0, tx_gk")
+            o("  ; (one she only knows coarse, her 5 x 7: she learns it from her book of letters, once)")
+            tl("j5", 0xD0); J("jcall r_glyph", "jjz j0, tx_gf"); tl("j3", 0xD0); J("jcall r_letra_fine"); tl("j3", 0xD0); J("jcall r_letra_get", "jjz j0, tx_gf")
+            o("tx_gk:                          ; (only a learned letter with ink: one her book had not got is a frame, drawn coarse)")
+            J("jldi j7, 0")
+            for r_ in range(16):
+                J("jld j8, j0, %d" % (16 + 8 * r_), "jor j7, j7, j8")
+            J("jjnz j7, tx_gl")
+            o("tx_gf:")
+        J("jcall r_glyph", "jjnz j0, tx_5"); tl("j3", 0xD0); J("jldi j10, 32", "jsub j10, j3, j10", "jjz j10, tx_5", "jcall r_letra_get", "jjz j0, tx_5")
+        o("tx_gl:")
         ts("j0", 0xD8); J("jld j13, j0, %d" % LE_VEC, "jjnz j13, tv_h", "jadd j9, j0, j14", "jcall lv_make"); tl("j9", 0xD8); J("jst j13, j9, %d" % LE_VEC)
         o("tv_h:                           ; (a learned letter: each of its strokes lets out its particles at this size)")
         ts("j13", 0x100); ts("j14", 0x108)
@@ -1825,9 +1846,9 @@ def make(g, ST, free):
         for sh, slot, across in ((0, 0x110, True), (8, 0x118, False), (16, 0x120, True), (24, 0x128, False)):
             J("jldi j10, %d" % sh, "jshr j5, j4, j10", "jldi j10, 255", "jand j5, j5, j10", "jadd j5, j5, j5", "jldi j10, 1", "jadd j5, j5, j10")
             if across:
-                J("jldi j10, 1", "jshr j7, j8, j10", "jmul j5, j5, j7", "jadd j10, j8, j8", "jdiv j5, j5, j10")
+                J("jldi j10, 1", "jshr j7, j8, j10", "jldi j10, %d" % FK, "jmul j7, j7, j10", "jmul j5, j5, j7", "jadd j10, j8, j8", "jdiv j5, j5, j10")
             else:
-                J("jldi j10, 8", "jmul j5, j5, j10", "jldi j10, 32", "jdiv j5, j5, j10")
+                J("jldi j10, %d" % (8 * FK), "jmul j5, j5, j10", "jldi j10, 32", "jdiv j5, j5, j10")
             ts("j5", slot)
         tl("j1", 0x110); tl("j2", 0x120); J("jsub j3, j2, j1", "jldi j4, 1", "jjnn j3, tv_a", "jsub j3, j14, j3", "jldi j4, -1")
         o("tv_a:")
@@ -1836,7 +1857,8 @@ def make(g, ST, free):
         o("tv_b:")
         J("jsub j3, j14, j3"); ts("j3", 0x140); ts("j4", 0x148); tl("j1", 0x130); J("jadd j3, j1, j3"); ts("j3", 0x150)
         o("tv_p:                           ; (a particle, then a step toward its end: Bresenham)")
-        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10"); tl("j10", 0x110); J("jadd j1, j1, j10"); tl("j2", 0x88); tl("j10", 0x118); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tv_q", "jcall %s" % PLOT)
+        tl("j1", 0x80); tl("j10", 0xC8); J("jadd j1, j1, j10", "jldi j10, %d" % FK, "jmul j1, j1, j10"); tl("j10", 0x110); J("jadd j1, j1, j10")
+        tl("j2", 0x88); J("jldi j10, 1", "jsub j2, j2, j10", "jldi j10, %d" % FK, "jmul j2, j2, j10"); tl("j10", 0x118); J("jadd j2, j2, j10"); tl("j10", 0xF8); J("jjz j10, tv_q", "jcall %s" % PLOTF)
         o("tv_q:")
         tl("j1", 0x110); tl("j2", 0x120); J("jsub j10, j1, j2", "jjnz j10, tv_e"); tl("j1", 0x118); tl("j2", 0x128); J("jsub j10, j1, j2", "jjz j10, tv_n")
         o("tv_e:")
@@ -4531,6 +4553,9 @@ def make(g, ST, free):
         J("jldi j10, 3", "jshl j10, j8, j10", "jadd j10, j9, j10", "jst j4, j10, 16", "jldi j10, 1", "jadd j8, j8, j10", "jjmp la_r")
         o("la_ok:")
         J("jret")
+        o("r_letra_fine:                   ; j3 = a code point she draws coarse on a surface with finer dots: learned from her book")
+        o("                                ; of letters as if she could not draw it (as when she compares her book's own letters)")
+        gl("j1", DLR); J("jjz j1, ll_r"); ds("j3", D_LCP); J("jjmp ll_g2")
         o("r_letra_learn:                  ; j3 = a code point she met: if she cannot draw it, she looks for it in her book of letters")
         o("                                ; and keeps it in her alphabet and in \"abecedario\"; if her book has not got it either, she")
         o("                                ; keeps a frame for it (she meets it, and says she does not know it)")
@@ -4866,16 +4891,35 @@ def make(g, ST, free):
         X0, XR, WID, Y0 = 2, PW // 2 + 2, PW // 2 - 4, PY + 2
         INMAX = WID // 6
         SRGB, SH = g["PANEL"][3], PY + PH
-        o("r_splot:                        ; the cell j1, j2 of her host's shared screen in the colour PR PG PB (uses j10, j11)")
+        K_, FSW_, FPL_, _ = g["FINE"]
+        o("r_splot:                        ; the cell j1, j2 of her host's shared screen in the colour PR PG PB (uses j10, j11): above")
+        o("                                ; her panel, a dot of it; on her panel, K x K of its fine dots (see gen_luma.py: K)")
         J("jjn j1, spl_o", "jjn j2, spl_o", "jldi j10, %d" % PW, "jsub j11, j1, j10", "jjnn j11, spl_o",
-          "jldi j11, %d" % SH, "jsub j11, j2, j11", "jjnn j11, spl_o", "jmul j11, j2, j10", "jadd j11, j11, j1", "jldi j10, 3", "jmul j11, j11, j10")
+          "jldi j11, %d" % SH, "jsub j11, j2, j11", "jjnn j11, spl_o", "jldi j11, %d" % PY, "jsub j11, j2, j11", "jjnn j11, spl_f",
+          "jmul j11, j2, j10", "jadd j11, j11, j1", "jldi j10, 3", "jmul j11, j11, j10")
         li("j10", SRGB); J("jadd j11, j11, j10")
         for k, c in enumerate(("PR", "PG", "PB")):
             ld("j10", c); J("jstb j10, j11, %d" % k)
+        J("jret")
+        o("spl_f:")
+        J("jldi j10, %d" % (K_ * FSW_), "jmul j11, j11, j10", "jldi j10, %d" % K_, "jmul j10, j1, j10", "jadd j11, j11, j10", "jldi j10, 3", "jmul j11, j11, j10")
+        li("j10", FPL_); J("jadd j11, j11, j10")
+        for dy in range(K_):
+            for dx in range(K_):
+                for k, c in enumerate(("PR", "PG", "PB")):
+                    ld("j10", c); J("jstb j10, j11, %d" % (3 * (dy * FSW_ + dx) + k))
         o("spl_o:")
         J("jret")
-        o("r_panel_clear:                  ; her panel, black (8 bytes at a time)")
-        li("j1", SRGB + 3 * PW * PY); li("j2", SRGB + 3 * PW * SH); J("jldi j6, 8")
+        o("r_fsplot:                       ; the fine dot j1, j2 (her fine screen) in the colour PR PG PB, if it is on her panel")
+        J("jjn j1, fsp_o", "jldi j10, %d" % FSW_, "jsub j11, j1, j10", "jjnn j11, fsp_o", "jldi j10, %d" % (PY * K_), "jsub j11, j2, j10", "jjn j11, fsp_o",
+          "jldi j10, %d" % (PH * K_), "jsub j10, j11, j10", "jjnn j10, fsp_o", "jldi j10, %d" % FSW_, "jmul j11, j11, j10", "jadd j11, j11, j1", "jldi j10, 3", "jmul j11, j11, j10")
+        li("j10", FPL_); J("jadd j11, j11, j10")
+        for k, c in enumerate(("PR", "PG", "PB")):
+            ld("j10", c); J("jstb j10, j11, %d" % k)
+        o("fsp_o:")
+        J("jret")
+        o("r_panel_clear:                  ; her panel, black (its fine dots, 8 bytes at a time)")
+        li("j1", FPL_); li("j2", FPL_ + 3 * FSW_ * PH * K_); J("jldi j6, 8")
         o("pcl_l:")
         J("jst j14, j1, 0", "jadd j1, j1, j6", "jsub j7, j2, j1", "jjnz j7, pcl_l", "jret")
         def green(k):
