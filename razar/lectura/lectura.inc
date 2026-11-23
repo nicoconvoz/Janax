@@ -283,20 +283,54 @@ putword:
 
 ; The shelf (Capitan: "let it eat the new book"): every file whose label starts "libro", listed by the system
 ; (request 14: {its length, its bytes padded to 8}, as many as fit) and kept in order at SHELF, SHN of them. The book
-; is all of them, one after the other. Uses j1-j14.
+; is all of them, one after the other. THE LIST GROWS TO THE HOUSE (Capitan: "que sea autoajustable"): it is asked
+; into a room, and while what is left of the room could not have held one more label (8 + 512 bytes: more than the
+; host lets a label be), the room is twice as big and it is asked again. Uses j1-j14.
 shelf_build:
   jldi j1, 0
   jst j1, j1, SHN
-  jldi j11, 4096
+  jldi j2, 4096
+  jst j2, j1, SHI
+sb_try:
+  jldi j1, 0
+  jld j11, j1, SHI
   jcall0 j1, room
   jst j13, j1, SHELF
   jldi j10, 14
   jadd j11, j13, j1
-  jldi j12, 4096
+  jld j12, j1, SHI
   jcall0 j1, ask
   jldi j2, 63
   jsar j2, j13, j2
   jjnz j2, sb_done
+  jld j9, j1, SHELF             ; (what the list took: each one 8 + its length padded to 8)
+  jldi j5, 0
+  jadd j6, j13, j1
+sb_used:
+  jjz j6, sb_fit
+  jadd j7, j9, j5
+  jld j7, j7, 0
+  jldi j8, 7
+  jadd j7, j7, j8
+  jldi j8, -8
+  jand j7, j7, j8
+  jldi j8, 8
+  jadd j7, j7, j8
+  jadd j5, j5, j7
+  jldi j8, 1
+  jsub j6, j6, j8
+  jjmp sb_used
+sb_fit:
+  jld j7, j1, SHI
+  jsub j7, j7, j5
+  jldi j8, 520
+  jsub j7, j7, j8
+  jjnn j7, sb_list
+  jld j7, j1, SHI
+  jadd j7, j7, j7
+  jst j7, j1, SHI
+  jjmp sb_try
+sb_list:
   jld j9, j1, SHELF             ; from, to
   jadd j10, j9, j1
   jadd j11, j13, j1
@@ -559,7 +593,73 @@ scan:
   jret
 
 ; One file of the book (LABEL, LABLEN), every byte through tok_byte. Uses j1-j14.
+; A BOOK OF THE DISK (Capitan, 2026-11-23: "que no copie libros o codigo, que los lea desde el mismo lugar donde
+; estan"): a book whose label starts "libro-disco-" holds only the print of a file of the host (8 bytes: her body
+; writes it, gen_luma.py r_host_eat) and its address. It is read there, with 37 (read only): the book goes into BUF,
+; and LABEL and LABLEN become the address after the print. A file that is no longer there is passed over: the rest
+; of the shelf is read.
 scan_file:
+  jldi j1, 0
+  jld j2, j1, HOSTB
+  jjnz j2, sf_plain
+  jld j2, j1, LABLEN
+  jldi j3, 12
+  jsub j2, j2, j3
+  jjn j2, sf_plain
+  jld j3, j1, LABEL
+  jld j2, j3, 0
+  jldi j4, 6964h                ; "libro-di"
+  jshi j4, 2D6Fh
+  jshi j4, 7262h
+  jshi j4, 696Ch
+  jsub j2, j2, j4
+  jjnz j2, sf_plain
+  jld j2, j3, 8                 ; "sco-"
+  jldi j4, 32
+  jshl j2, j2, j4
+  jshr j2, j2, j4
+  jldi j4, 2D6Fh
+  jshi j4, 6373h
+  jsub j2, j2, j4
+  jjnz j2, sf_plain
+  jldi j10, 4
+  jld j11, j1, LABEL
+  jld j12, j1, LABLEN
+  jcall0 j1, ask
+  jjn j13, sf_skip
+  jst j13, j1, HAND
+  jldi j3, 32
+  jshl j10, j13, j3
+  jldi j3, 5
+  jor j10, j10, j3
+  jldi j11, 0
+  jshi j11, BUF
+  jldi j12, 4096
+  jcall0 j1, ask
+  jst j13, j1, LABLEN
+  jld j2, j1, HAND
+  jldi j3, 32
+  jshl j10, j2, j3
+  jldi j3, 7
+  jor j10, j10, j3
+  jcall0 j1, ask
+  jld j2, j1, LABLEN
+  jldi j3, 8
+  jsub j2, j2, j3
+  jjn j2, sf_skip
+  jjz j2, sf_skip
+  jst j2, j1, LABLEN
+  jldi j2, 0
+  jshi j2, BUF
+  jldi j3, 8
+  jadd j2, j2, j3
+  jst j2, j1, LABEL
+  jldi j10, 37
+  jjmp sf_label
+sf_skip:
+  jldi j1, 0
+  jret
+sf_plain:
   jldi j1, 0
   jldi j10, 4
   jld j2, j1, HOSTB             ; (a book of the host: open on the host, read only)
@@ -573,6 +673,13 @@ sf_label:
   jldi j2, 1
   jadd j2, j13, j2
   jjnz j2, sc_open
+  jld j2, j1, LABEL             ; (a book of the disk that is no longer there: passed over)
+  jldi j3, 0
+  jshi j3, BUF
+  jldi j4, 8
+  jadd j3, j3, j4
+  jsub j2, j2, j3
+  jjz j2, sf_skip
   jldi j1, S_NOBOOK
   jcall puts
   jjmp finish

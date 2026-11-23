@@ -55,7 +55,9 @@ armar() {
 if [ -f "$carpeta/casa/$(etiqueta vida-memoria)" ]; then
   echo "luma: casa propia, sin nubes ni oidos del anfitrion" >&2
   armar
-  JANAX_VENTANA_FONDO=1 JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
+  # what is new on the disks reaches her (gen_luma.py: r_host_eat); LUMA_VIGIA names other folders ("-": none)
+  vig=${LUMA_VIGIA:-'C:\;E:\'}; [ "$vig" = "-" ] && vig=
+  JANAX_VIGIA="$vig" JANAX_VENTANA_FONDO=1 JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
 fi
 # the pantry
 lineas=$(mktemp); max=8; n=0

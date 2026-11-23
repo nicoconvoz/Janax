@@ -178,7 +178,7 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
                           "FOCUS EPOCH WINS WINSRUN RADIUS BUDGET WTOTAL WSTART WSTRIDE WALKI HCOUNT TOTAL WMAX GHN "
                           "TRN AH GREC GREG GBMP GKEEP GOX GOY GCOUNT TX TY PREV GT GC GDXA GDYA GK GN0 GI GMR GMP "
                           "JF JFA JCNT JJ JI JWC JCC JNC JWP JCP JNP JT2 JMX ALOSER AOTHER AREASON ATL ATW ASLOT "
-                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI").split()):
+                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI HOSTR").split()):
     G[name] = GV + 8 * i
 assert max(G.values()) < FORMS
 if COMER:
@@ -298,8 +298,9 @@ o("main_frames:                    ; between two frames: what is left of this on
 ld("j12", "BLEFT"); st("j12", "REMAIN"); J("jjz j12, frame", "jjmp main")
 o("main_time:")
 if RD:
-    o("  ; (no event and time left: her doorbell rang, her reader asks, says or ended)")
-    ld("j9", "BLEFT"); J("jjz j9, main_timed", "jcall r_read_poll"); ld("j12", "BLEFT"); st("j12", "REMAIN"); J("jjmp main")
+    o("  ; (no event and time left: her doorbell rang, her reader asks, says or ended, or something new on the disks is")
+    o("  ;  quiet now and the kernel woke her for it: she eats it, gen_luma.py r_host_eat)")
+    ld("j9", "BLEFT"); J("jjz j9, main_timed", "jcall r_read_poll", "jcall r_host_eat"); ld("j12", "BLEFT"); st("j12", "REMAIN"); J("jjmp main")
     o("main_timed:")
 ld("j9", "FOREVER"); J("jjz j9, frame")
 ld("j0", "WINSRUN", "for ever ran out: there is no window to wait on (JANAX_SIN_VENTANA)"); J("jhalt")

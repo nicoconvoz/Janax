@@ -112,6 +112,7 @@ def init(g):
     if not os.environ.get("LUMA_GALEOTE"):
         g["J"]("jcall r_free_load             ; her own conclusions, kept in the folder (libre)")
     RD.init()
+    g["J"]("jcall r_host_eat              ; she asks once at birth: from then on the kernel watches the disks for her")
     if PRESENT:
         g["o"]("  ; the forms' archive as a ring (its handle is set by r_load_archive)")
         g["li"]("j3", RING_F); g["J"]("jldi j1, %d" % RING_K, "jst j1, j3, 8", "jldi j1, %d" % g["RECLEN"], "jst j1, j3, 16")
@@ -225,7 +226,77 @@ def free_routine(g):
     J("jldi j10, 6"); li("j11", B + RD.R); J("jldi j12, %d" % RD.KEPT, "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("lbs_done:")
     J("jret")
+    # ---- SHE EATS WHAT IS NEW ON THE DISKS (the Capitan, 2026-11-23: "que coma de todo... conectalo"; "que no copie
+    # libros o codigo, que los lea desde el mismo lugar donde estan"; "la diff: si algo ya lo sabe, para que aprender lo
+    # mismo"). Each time a round of hers ends (r_free: an event of hers, never a timer) she asks the kernel what is new
+    # and quiet in the host's folders (39: JANAX_VIGIA, set by luma.sh; the kernel's own rules leave out hidden, system
+    # and administrator places, and her own house). Nothing new: one request, nothing else. Something new is looked at
+    # where it is, every byte: a zero byte says it is not text. Text gets its print (FNV-1a of all its bytes), and a
+    # book of the disk on her shelf, "libro-disco-<16 hex>" (the print of its PATH: a file written again is the same
+    # book, never a second one), holds only that print and the address. Nothing is copied: her reader goes there and
+    # reads it in its place (lectura.inc, scan_file). THE DIFFERENCE: if the book already holds the same print, she
+    # knew it already, and nothing is written. Her room, made the first time: the host's handle, the path's length,
+    # the print, the print the book had, the label (64), the path (4096, the kernel's own room for a path), a piece of
+    # the file (64 KB, looked at piece by piece: a file of any size fits).
+    HE_PATH, HE_BUF, HE_PN = 128, 128 + 4096, 65536
+    def he_room(r): ld(r, "HOSTR")
+    o("r_host_eat:")
+    he_room("j1"); J("jjnz j1, he_go"); li("j1", HE_BUF + HE_PN); J("jcall r_alloc"); st("j0", "HOSTR")
+    o("he_go:")
+    he_room("j9"); J("jldi j10, 39", "jldi j11, %d" % HE_PATH, "jadd j11, j9, j11"); li("j12", 4096); J("jcall r_tocar")
+    J("jjn j13, he_r", "jjz j13, he_r"); he_room("j9"); J("jst j13, j9, 8")
+    o("  ; (its label: \"libro-disco-\" and the print of its path)")
+    for k, ch in enumerate(b"libro-disco-"):
+        J("jldi j10, %d" % ch, "jstb j10, j9, %d" % (64 + k))
+    li("j1", 0xcbf29ce484222325); li("j2", 0x100000001b3); J("jldi j3, 0", "jld j4, j9, 8")
+    o("he_h:")
+    J("jsub j10, j3, j4", "jjnn j10, he_hx", "jldi j10, %d" % HE_PATH, "jadd j10, j9, j10", "jadd j10, j10, j3", "jldb j5, j10, 0",
+      "jxor j1, j1, j5", "jmul j1, j1, j2", "jldi j10, 1", "jadd j3, j3, j10", "jjmp he_h")
+    o("he_hx:")
+    J("jldi j3, 0")
+    o("he_x:")
+    J("jldi j10, 2", "jshl j10, j3, j10", "jldi j5, 60", "jsub j5, j5, j10", "jshr j5, j1, j5", "jldi j10, 15", "jand j5, j5, j10",
+      "jldi j10, 10", "jsub j10, j5, j10", "jjn j10, he_d", "jldi j10, 39", "jadd j5, j5, j10")
+    o("he_d:")
+    J("jldi j10, 48", "jadd j5, j5, j10", "jadd j10, j9, j3", "jstb j5, j10, 76", "jldi j10, 1", "jadd j3, j3, j10", "jldi j10, 16", "jsub j10, j3, j10", "jjnz j10, he_x")
+    o("  ; (the file of the host, open to read, where it is)")
+    J("jldi j10, 37", "jldi j11, %d" % HE_PATH, "jadd j11, j9, j11", "jld j12, j9, 8", "jcall r_tocar", "jjn j13, he_r"); he_room("j9"); J("jst j13, j9, 0")
+    li("j1", 0xcbf29ce484222325); J("jst j1, j9, 16")
+    o("he_piece:                       ; (a piece, looked at: text or not, and its print)")
+    he_room("j9"); J("jld j1, j9, 0"); st("j1", "FH"); J("jldi j10, 5", "jldi j11, %d" % HE_BUF, "jadd j11, j9, j11"); li("j12", HE_PN); J("jcall r_file")
+    J("jjn j13, he_done", "jjz j13, he_done"); he_room("j9"); J("jld j1, j9, 16"); li("j2", 0x100000001b3); J("jldi j3, 0", "jldi j4, %d" % HE_BUF, "jadd j4, j9, j4")
+    o("he_z:")
+    J("jsub j10, j3, j13", "jjnn j10, he_w", "jadd j10, j4, j3", "jldb j5, j10, 0", "jjz j5, he_bin", "jxor j1, j1, j5", "jmul j1, j1, j2", "jldi j10, 1", "jadd j3, j3, j10", "jjmp he_z")
+    o("he_w:")
+    J("jst j1, j9, 16", "jjmp he_piece")
+    o("he_bin:                         ; (a zero byte: not text, not a book)")
+    J("jcall he_shut", "jret")
+    o("he_done:                        ; (text, all of it: the book's print, if it has one)")
+    J("jcall he_shut"); he_room("j9"); J("jst j14, j9, 24", "jldi j11, 64", "jadd j11, j9, j11", "jldi j12, 28", "jcall r_open"); ld("j1", "FH"); J("jjn j1, he_r")
+    he_room("j9"); J("jldi j10, 5", "jldi j11, 24", "jadd j11, j9, j11", "jldi j12, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    he_room("j9"); J("jld j1, j9, 24", "jld j2, j9, 16", "jsub j1, j1, j2", "jjz j1, he_r")
+    o("  ; (new to her, or changed: the book anew, its print and its address)")
+    J("jldi j10, 12", "jldi j11, 64", "jadd j11, j9, j11", "jldi j12, 28", "jcall r_tocar")
+    he_room("j9"); J("jldi j11, 64", "jadd j11, j9, j11", "jldi j12, 28", "jcall r_open"); ld("j1", "FH"); J("jjn j1, he_r")
+    he_room("j9"); J("jldi j10, 6", "jldi j11, 16", "jadd j11, j9, j11", "jldi j12, 8", "jcall r_file")
+    he_room("j9"); J("jldi j10, 6", "jldi j11, %d" % HE_PATH, "jadd j11, j9, j11", "jld j12, j9, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("  ; (and she says so, in her own voice: \"me comi\" and where, a line of her talk and of her panel; the Capitan:")
+    o("  ; \"quiero que avise con un saludo que se lo comio\")")
+    he_room("j9"); J("jldi j7, %d" % HE_BUF, "jadd j7, j9, j7")
+    for k, ch in enumerate("me comí ".encode()):
+        J("jldi j10, %d" % ch, "jstb j10, j7, %d" % k)
+    J("jldi j3, 0", "jld j4, j9, 8")
+    o("he_say:")
+    J("jsub j10, j3, j4", "jjnn j10, he_said", "jldi j10, %d" % HE_PATH, "jadd j10, j9, j10", "jadd j10, j10, j3", "jldb j5, j10, 0",
+      "jadd j10, j7, j3", "jstb j5, j10, %d" % len("me comí ".encode()), "jldi j10, 1", "jadd j3, j3, j10", "jjmp he_say")
+    o("he_said:")
+    J("jldi j10, %d" % len("me comí ".encode()), "jadd j3, j4, j10", "jadd j2, j7, j14", "jldi j1, 1", "jcall r_dlg_write"); setg("CHANGED", 1)
+    o("he_r:")
+    J("jret")
+    o("he_shut:                        ; (the file of the host closed)")
+    he_room("j9"); J("jld j1, j9, 0"); st("j1", "FH"); J("jldi j10, 7", "jcall r_file", "jret")
     o("r_free:")
+    J("jcall r_host_eat")
     gl("j1", FIRST); J("jjnz j1, fr_go", "jldi j1, 1"); gs("j1", FIRST)
     gl("j1", SLEPT); gs("j1", WOKE); gs("j14", SLEPT)       # (she slept: she is waking now, reborn)
     gl("j1", WOKE); J("jjz j1, fr_same"); RD.gl("j1", RD.NEWST); J("jjz j1, fr_same"); inc(S4)   # (she woke made of something new: sleeping paid)

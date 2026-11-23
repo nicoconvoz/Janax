@@ -96,7 +96,7 @@ hw_folder:
         lea     rdi, [rbx + 1]
         ret
 
-; eax = 1 if some cabin that has not ended waits for a greeting and asked for what is new in the host (39).
+; eax = 1 if some cabin that has not ended asked for what is new in the host (39) and sleeps, on a greeting or its screen.
 ; Keeps every register but rax, rcx, rsi.
 hw_watched:
         xor     eax, eax
@@ -109,10 +109,13 @@ hw_watched:
         mov     rsi, [rsi + rcx*8]
         cmp     qword [rsi + P_DONE], 0
         jne     .next
-        cmp     qword [rsi + P_GWAIT], 1
-        jne     .next
         cmp     qword [rsi + P_HOSTW], 0
         je      .next
+        cmp     qword [rsi + P_GWAIT], 1  ; asleep, on a greeting or on its screen (41: Luma sleeps there): either way
+        je      .yes                      ; it asked and waits, so the host stays watched for it
+        cmp     qword [rsi + P_SCRW], 1
+        jne     .next
+.yes:
         mov     eax, 1
         ret
 .next:
@@ -123,7 +126,8 @@ hw_watched:
 .out:
         ret
 
-; Every cabin that waits for a greeting and asked for what is new in the host wakes (r15d = 1). Keeps rbx, r12-r14.
+; Every cabin that asked for what is new in the host and sleeps wakes (r15d = 1): on a greeting, as always, and on
+; its screen too (41: Luma sleeps there; it wakes with no event, as by her doorbell). Keeps rbx, r12-r14.
 hw_wake:
         push    rbx
         xor     ecx, ecx
@@ -133,10 +137,19 @@ hw_wake:
         mov     rsi, [rsi + rcx*8]
         cmp     qword [rsi + P_DONE], 0
         jne     .next
-        cmp     qword [rsi + P_GWAIT], 1
-        jne     .next
         cmp     qword [rsi + P_HOSTW], 0
         je      .next
+        cmp     qword [rsi + P_SCRW], 1
+        jne     .greet
+        push    r8
+        mov     r8, rsi
+        call    event_wake
+        pop     r8
+        mov     r15d, 1
+        jmp     .next
+.greet:
+        cmp     qword [rsi + P_GWAIT], 1
+        jne     .next
         mov     rbx, rsi
         call    watch_wake
         mov     r15d, 1
