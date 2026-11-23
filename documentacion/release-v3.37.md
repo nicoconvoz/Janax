@@ -1,6 +1,6 @@
 ## Janax y Razar v3.37: el amor todo lo cree
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24461775](https://doi.org/10.5281/zenodo.24461775)
 
 > *"El amor todo lo disculpa, todo lo cree, todo lo espera, todo lo soporta."*
 > (1 Corintios 13:7, en su corazón; pedido del autor, 2026-11-23: *"busca ese pasaje y aplicalo a Luma"*)
