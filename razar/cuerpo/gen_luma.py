@@ -659,6 +659,61 @@ def ring_routines(L):
         J("jst j14, j9, %d" % off)
     J("jadd j3, j9, j14", "jcall l_ring_head", "jret")
 
+def contour_routine(v):
+    """HER CONTOURS, TRACED WHERE SHE IS MADE BIGGER (the Capitan, 2026-11-23: "nitidez vectorizada en particulas al
+    resto de todo LUMA... inclui las curvas"; "las lineas vienen del hombre, las curvas de la mujer"; "fusiona los dos
+    en uno"). One routine, for every time she is made twice as big. Each dot of hers is four dots; each quarter takes
+    the colour of the side its contour runs along: when the two neighbours that meet at that corner are one colour, and
+    the other two are not it, the edge cuts that corner (Scale2x, Andrea Mazzoleni 2001, EPX before it). A staircase
+    becomes a slant, and slants one after another a curve. CSW x CSH dots at CSRC (CSS dots a row) -> twice as many each
+    way at CDST (CDS dots a row). Uses j1-j13"""
+    o, J, li, ld = v["o"], v["J"], v["li"], v["ld"]
+    def col(r, ptr, off):
+        J("jldb %s, %s, %d" % (r, ptr, off + 2), "jldi j10, 8", "jshl %s, %s, j10" % (r, r), "jldb j11, %s, %d" % (ptr, off + 1), "jor %s, %s, j11" % (r, r),
+          "jshl %s, %s, j10" % (r, r), "jldb j11, %s, %d" % (ptr, off), "jor %s, %s, j11" % (r, r))
+    def put(r, ptr, off):
+        J("jadd j12, %s, j14" % r, "jstb j12, %s, %d" % (ptr, off), "jldi j10, 8", "jshr j12, j12, j10", "jstb j12, %s, %d" % (ptr, off + 1), "jshr j12, j12, j10", "jstb j12, %s, %d" % (ptr, off + 2))
+    o("r_contour:                      ; (see contour_routine in gen_luma.py)")
+    J("jldi j2, 0")
+    o("ct_y:")
+    ld("j10", "CSH"); J("jsub j10, j2, j10", "jjnn j10, ct_e")
+    ld("j10", "CSS"); J("jldi j11, 3", "jmul j10, j10, j11", "jmul j3, j2, j10"); ld("j10", "CSRC"); J("jadd j3, j3, j10")
+    ld("j10", "CDS"); J("jldi j11, 6", "jmul j10, j10, j11", "jmul j4, j2, j10"); ld("j10", "CDST"); J("jadd j4, j4, j10", "jldi j1, 0")
+    o("ct_x:")
+    ld("j10", "CSW"); J("jsub j10, j1, j10", "jjnn j10, ct_yn")
+    col("j5", "j3", 0)
+    o("  ; (the dot above it, below it, left of it, right of it: itself past the edge)")
+    J("jadd j6, j5, j14", "jjz j2, ct_na"); ld("j12", "CSS"); J("jldi j10, 3", "jmul j12, j12, j10", "jsub j12, j3, j12"); col("j6", "j12", 0)
+    o("ct_na:")
+    J("jadd j9, j5, j14"); ld("j10", "CSH"); J("jldi j11, 1", "jsub j10, j10, j11", "jsub j10, j2, j10", "jjz j10, ct_nd"); ld("j12", "CSS"); J("jldi j10, 3", "jmul j12, j12, j10", "jadd j12, j3, j12"); col("j9", "j12", 0)
+    o("ct_nd:")
+    J("jadd j8, j5, j14", "jjz j1, ct_nc"); col("j8", "j3", -3)
+    o("ct_nc:")
+    J("jadd j7, j5, j14"); ld("j10", "CSW"); J("jldi j11, 1", "jsub j10, j10, j11", "jsub j10, j1, j10", "jjz j10, ct_nb"); col("j7", "j3", 3)
+    o("ct_nb:")
+    o("  ; (j5 the dot, j6 above it, j7 right, j8 left, j9 below: each quarter, by the corner's two neighbours)")
+    for k, (s1, s2, o1, o2, low, off) in enumerate((("j8", "j6", "j9", "j7", False, 0), ("j6", "j7", "j8", "j9", False, 3),
+                                                   ("j9", "j8", "j7", "j6", True, 0), ("j7", "j9", "j6", "j8", True, 3))):
+        J("jadd j13, j5, j14", "jsub j10, %s, %s" % (s1, s2), "jjnz j10, ct_q%d" % k, "jsub j10, %s, %s" % (s1, o1), "jjz j10, ct_q%d" % k,
+          "jsub j10, %s, %s" % (s2, o2), "jjz j10, ct_q%d" % k, "jadd j13, %s, j14" % s2)
+        o("ct_q%d:" % k)
+        if low:
+            ld("j11", "CDS"); J("jldi j10, 3", "jmul j11, j11, j10", "jadd j11, j4, j11"); put("j13", "j11", off)
+        else:
+            put("j13", "j4", off)
+    J("jldi j10, 3", "jadd j3, j3, j10", "jldi j10, 6", "jadd j4, j4, j10", "jldi j10, 1", "jadd j1, j1, j10", "jjmp ct_x")
+    o("ct_yn:")
+    J("jldi j10, 1", "jadd j2, j2, j10", "jjmp ct_y")
+    o("ct_e:")
+    J("jret")
+
+def contour2x(v, tag, src, sw, sh, sstride, dst, dstride):
+    """her contours traced, twice as big (the one routine, r_contour, with these)"""
+    J, li, st = v["J"], v["li"], v["st"]
+    for name, val in (("CSRC", src), ("CSW", sw), ("CSH", sh), ("CSS", sstride), ("CDST", dst), ("CDS", dstride)):
+        li("j1", val); st("j1", name)
+    J("jcall r_contour")
+
 def init_tail(v):
     o, J, ld, st, li, rec, num, incg = v["o"], v["J"], v["ld"], v["st"], v["li"], v["rec"], v["num"], v["incg"]
     o("  ; her fine screen's cloud: its header and every cell set, once (as her screen's: gen_vida.py)")
@@ -737,6 +792,7 @@ def vida_routines(v):
     FRAME_MS, EV = v["FRAME_MS"], v["EV"]
     g = ST["g"]
     o("; ---- the creatures inside Luma: a frame, the shared picture, alive or not, the calm, an event, a meal")
+    contour_routine(v)
     o("v_frame:")
     ld("j1", "N"); J("jjz j1, vf_ret")
     incg("FRAMES")
@@ -748,33 +804,15 @@ def vida_routines(v):
     o("v_show:                         ; the ground, her forms at twice their size on the left, the creatures on the right")
     J("jcall r_mus_frame              ; (her school's song goes on; with Tab it is shown instead: gen_leer.py)", "jjnz j0, vs_show")
     J("jcall r_fill")
-    li("j1", g["RGB"]); li("j2", v["RGB"]); J("jldi j3, %d" % FH)
-    o("vs_row:")
-    J("jldi j4, %d" % FW, "jadd j5, j2, j14")
-    o("vs_cell:")
-    J("jldb j6, j1, 0", "jldb j7, j1, 1", "jldb j8, j1, 2")
-    for dy in range(ZOOM):
-        for dx in range(ZOOM):
-            at = 3 * (dy * SW + dx)
-            J("jstb j6, j5, %d" % at, "jstb j7, j5, %d" % (at + 1), "jstb j8, j5, %d" % (at + 2))
-    J("jldi j10, 3", "jadd j1, j1, j10", "jldi j10, %d" % (3 * ZOOM), "jadd j5, j5, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjnz j4, vs_cell")
-    li("j10", 3 * SW * ZOOM); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, vs_row")
+    assert ZOOM == 2 and K == 2, "her contours are traced at twice: ZOOM and K are 2 (measured: gen_luma.py)"
+    o("  ; (her forms at twice their size, their contours traced)")
+    contour2x(v, "vsz", g["RGB"], FW, FH, FW, v["RGB"], SW)
     ld("j1", "N"); J("jjz j1, vs_show", "jcall r_draw", "jcall r_draw_packets")
     o("vs_show:")
     J("jcall r_panel                  ; her panel, drawn again only when what it shows changed (gen_leer.py)")
     o("  ; (her screen, K times: what is above her panel, each of its dots K x K; her panel, from its fine dots)")
     _, _, fpl, frgb = ST["g"]["FINE"]
-    li("j1", v["RGB"]); li("j2", frgb); J("jldi j3, 200")
-    o("vs_fr:")
-    J("jldi j4, %d" % SW, "jadd j5, j2, j14")
-    o("vs_fc:")
-    J("jldb j6, j1, 0", "jldb j7, j1, 1", "jldb j8, j1, 2")
-    for dy in range(K):
-        for dx in range(K):
-            at = 3 * (dy * FSW + dx)
-            J("jstb j6, j5, %d" % at, "jstb j7, j5, %d" % (at + 1), "jstb j8, j5, %d" % (at + 2))
-    J("jldi j10, 3", "jadd j1, j1, j10", "jldi j10, %d" % (3 * K), "jadd j5, j5, j10", "jldi j10, 1", "jsub j4, j4, j10", "jjnz j4, vs_fc")
-    li("j10", 3 * FSW * K); J("jadd j2, j2, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjnz j3, vs_fr")
+    contour2x(v, "vsk", v["RGB"], SW, 200, SW, frgb, FSW)
     li("j1", fpl); li("j2", frgb + 3 * FSW * 200 * K); li("j3", fpl + 3 * FSW * PANEL_H * K); J("jldi j6, 8")
     o("vs_fp:")
     J("jld j7, j1, 0", "jst j7, j2, 0", "jadd j1, j1, j6", "jadd j2, j2, j6", "jsub j10, j3, j1", "jjnz j10, vs_fp")
