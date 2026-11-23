@@ -497,7 +497,18 @@ WY = LG_LBL + 8
 (WY_N, WY_S, WY_AN, WY_VN, WY_W, WY_AB, WY_AC, WY_VB, WY_VC, WY_C, WY_L, WY_XC, WY_SB, WY_SN, WY_SC,
  WY_I, WY_J, WY_K, WY_H, WY_X, WY_T, WY_U) = (WY + 8 * i for i in range(22))
 WY_LBL = WY + 8 * 22
-IG_END = WY_LBL + 8
+# HER BOOKS' SILHOUETTES (the Capitan, 2026-11-23: "que destile el mecanismo del camino que encuentra en la forma que
+# relata el libro y lo haga suyo: la silueta, no la forma exacta"). In a book, a line answers the one before it; what
+# she keeps is not what it says but what it does with it: each of its words TAKEN from the line before, or BROUGHT. Each
+# step of hers learns its own silhouette when it answers him (how often a taken or a brought word follows the start, a
+# taken one, a brought one: Krichevsky-Trofimov, as Razar's counts). A book's silhouette is told in her steps by
+# compression: the step that tells it shortest first, and so on; that word is the SEED she babbles before any other.
+# Only read: nothing of hers is written while she reads it. The room she reads in grows when two lines do not fit
+(WY_ST, WY_SS, WY_SX, WY_SXL, WY_SR, WY_SRL, WY_PV, WY_TT, WY_TP, WY_TQ, WY_SD, WY_RBUF, WY_RC, WY_RN) = (WY_LBL + 8 + 8 * i for i in range(14))
+WY_CB = WY_LBL + 8 + 8 * 14                 # what a book's silhouette costs told by each step (64ths of a bit)
+WY_M = WY_CB + 8 * len(WY_STEPS)            # each step's counts: (start, taken, brought) x (taken, brought)
+WY_SLB = WY_M + 48 * len(WY_STEPS)          # "siluetas"
+IG_END = WY_SLB + 16
 assert IG_END < 0x8000, "her tastes' room is reached with offsets under 32768"
 VC = 32 * 32 * 32 * 8             # a signature: how often each sign follows each two (qwords), then how often each two
 VB = VC + 32 * 32 * 8             # came before anything
@@ -517,13 +528,13 @@ MATRIX = ((0, 255, 65), (0, 143, 17), (255, 255, 255))   # the green of the film
                              # "cuando su pensamiento encuentre algo nuevo, pinta el texto de amarillo o blanco"), as the
                              # newest sign at the head of each stream of the film's rain is drawn almost white
 FONT = {
-    "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".####.....#....#....#....#.....####",
+    "A": ".###.#...##...#######...##...##...#", "B": "####.#...#####.#...##...##...#####.", "C": ".#####....#....#....#....#.....####",
     "D": "####.#...##...##...##...##...#####.", "E": "######....####.#....#....#....#####", "F": "######....####.#....#....#....#....",
-    "G": ".####.....#....#..###...##...#.####", "H": "#...##...#######...##...##...##...#", "I": ".###...#....#....#....#....#...###.",
-    "J": "..###...#....#....#....##..#.##.#..", "K": "#...##..#.#.#..##...#.#..#..#.#...#", "L": "#....#....#....#....#....#....#####",
+    "G": ".#####....#....#..###...##...#.####", "H": "#...##...#######...##...##...##...#", "I": ".###...#....#....#....#....#...###.",
+    "J": "..###...#....#....#....#.#..#..##..", "K": "#...##..#.#.#..##...#.#..#..#.#...#", "L": "#....#....#....#....#....#....#####",
     "M": "#...###.###.#.##...##...##...##...#", "N": "#...###..##.#.##..###...##...##...#", "O": ".###.#...##...##...##...##...#.###.",
     "P": "####.#...##...#####.#....#....#....", "Q": ".###.#...##...##...##.#.##..#..##.#", "R": "####.#...##...#####.#.#..#..#.#...#",
-    "S": ".#####.....#.....###.....#.....####", "T": "#####..#....#....#....#....#....#..", "U": "#...##...##...##...##...##...#.###.",
+    "S": ".#####....#.....###.....#....#####.", "T": "#####..#....#....#....#....#....#..", "U": "#...##...##...##...##...##...#.###.",
     "V": "#...##...##...##...##...#.#.#...#..", "W": "#...##...##...##.#.##.#.###.###...#", "X": "#...##...#.#.#...#...#.#.#...##...#",
     "Y": "#...##...#.#.#...#....#....#....#..", "Z": "#####....#...#...#...#...#....#####", "?": ".###.#...#....#...#...#.........#..",
     "0": ".###.#...##..###.#.###..##...#.###.", "1": "..#...##....#....#....#....#...###.", "2": ".###.#...#....#...#...#...#...#####",
@@ -2500,7 +2511,9 @@ def make(g, ST, free):
         o("dse_kb:")
         J("jsub j10, j4, j3", "jjnn j10, dse_mine", "jadd j10, j2, j4", "jldb j10, j10, 0", "jadd j11, j7, j4", "jstb j10, j11, 0", "jldi j10, 1", "jadd j4, j4, j10", "jjmp dse_kb")
         o("dse_mine:                       ; (her cross was said: its way counts once more, and waits for his answer)")
-        dl("j6", D_GBLK); J("jst j14, j6, %d" % WY_XC, "jcall gu_said")
+        dl("j6", D_GBLK); J("jld j1, j6, %d" % WY_XC, "jst j14, j6, %d" % WY_XC, "jjz j1, dse_mx", "jcall wy_learn")
+        o("dse_mx:")
+        J("jcall gu_said")
         dl("j3", D_XMODE); J("jldi j10, 1", "jadd j1, j3, j10"); ds("j1", D_LXM); J("jldi j10, 4", "jshl j4, j3, j10"); da("j1", D_CM + 32); J("jadd j1, j1, j4", "jld j2, j1, 0", "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j1, 0")
         J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("dse_cf:                         ; (no cross: if her way asked for it, her way goes on with its next step)")
@@ -2747,6 +2760,8 @@ def make(g, ST, free):
         gb("j3", WY_SN); J("jldi j10, 4", "jshl j4, j3, j10"); gb("j5", WY_SB); J("jadd j5, j5, j4"); gb("j1", WY_X); J("jst j1, j5, 0", "jst j14, j5, 8", "jldi j10, 1", "jadd j3, j3, j10"); gbs("j3", WY_SN); J("jret")
         o("wy_babble:                      ; -> j0 = 1 with a way she never tried in WY_C (her way, one letter of her whole")
         o("                                ; alphabet put in, changed or taken out), or 0 if her tries found none")
+        J("jcall wy_seed", "jjz j0, wyb_rnd", "jret")
+        o("wyb_rnd:")
         gb("j1", WY_W); J("jld j5, j1, 0"); gbs("j5", WY_K); gb("j2", WY_VN); J("jldi j10, %d" % P, "jadd j2, j2, j10"); gbs("j2", WY_H)
         o("  ; (as many tries as there are such ways: (length + 1) x alphabet put in, length x alphabet changed, length taken out)")
         J("jldi j10, 1", "jadd j1, j5, j10", "jmul j1, j1, j2", "jmul j3, j5, j2", "jadd j1, j1, j3", "jadd j1, j1, j5"); gbs("j1", WY_T)
@@ -2777,6 +2792,101 @@ def make(g, ST, free):
         gb("j1", WY_C); J("jcall wy_known", "jjnz j0, wyb_t", "jldi j0, 1", "jret")
         o("wyb_no:")
         J("jldi j0, 0", "jret")
+        o("wy_sil:                         ; THE SILHOUETTE of WY_SX (WY_SXL bytes) against WY_SR (WY_SRL): each word of it taken")
+        o("                                ; (in WY_SR) or brought. With WY_SS a step, that step learns it; with 0, WY_CB = what it")
+        o("                                ; costs told by each step, in 64ths of a bit")
+        gb("j1", WY_SX); gs("j1", BP); gb("j2", WY_SXL); J("jadd j1, j1, j2"); gs("j1", BE); gbs("j14", WY_PV)
+        gb("j1", WY_SS); J("jjnz j1, wsl_w")
+        for k in range(P):
+            gbs("j14", WY_CB + 8 * k)
+        o("wsl_w:")
+        J("jcall bw_word", "jjz j0, wsl_r"); gl("j1", BWS); J("jadd j2, j0, j14"); gb("j3", WY_SR); gb("j4", WY_SRL); J("jcall din_in", "jldi j10, 1", "jsub j0, j10, j0"); gbs("j0", WY_TT)
+        gb("j1", WY_SS); J("jjz j1, wsl_c")
+        o("  ; (the step learns: its count for this word after the last one)")
+        J("jldi j10, 1", "jsub j1, j1, j10", "jldi j10, 3", "jmul j1, j1, j10"); gb("j2", WY_PV); J("jadd j1, j1, j2", "jadd j1, j1, j1"); gb("j2", WY_TT); J("jadd j1, j1, j2", "jldi j10, 3", "jshl j1, j1, j10")
+        dl("j6", D_GBLK); J("jadd j6, j6, j1", "jld j2, j6, %d" % WY_M, "jldi j10, 1", "jadd j2, j2, j10", "jst j2, j6, %d" % WY_M, "jjmp wsl_n")
+        o("wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 1/2), as twice them)")
+        for k in range(P):
+            gb("j1", WY_PV); J("jldi j10, 4", "jshl j1, j1, j10"); dl("j6", D_GBLK); J("jadd j9, j6, j1", "jldi j10, %d" % (WY_M + 48 * k), "jadd j9, j9, j10"); gbs("j9", WY_TP)
+            J("jld j1, j9, 0", "jld j2, j9, 8", "jadd j1, j1, j2", "jadd j1, j1, j1", "jldi j10, 2", "jadd j1, j1, j10", "jcall rwi_log"); gbs("j0", WY_TQ)
+            gb("j9", WY_TP); gb("j2", WY_TT); J("jldi j10, 3", "jshl j2, j2, j10", "jadd j9, j9, j2", "jld j1, j9, 0", "jadd j1, j1, j1", "jldi j10, 1", "jadd j1, j1, j10", "jcall rwi_log")
+            gb("j1", WY_TQ); J("jsub j1, j1, j0"); gb("j2", WY_CB + 8 * k); J("jadd j2, j2, j1"); gbs("j2", WY_CB + 8 * k)
+        o("wsl_n:")
+        gb("j1", WY_TT); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_PV); J("jjmp wsl_w")
+        o("wsl_r:")
+        J("jret")
+        o("wy_learn:                       ; her step WY_ST just said D_OUT to his words (D_RP): it learns its own silhouette")
+        gb("j1", WY_ST); J("jjz j1, wyln_r"); gbs("j1", WY_SS); da("j1", D_OUT); gbs("j1", WY_SX); dl("j1", D_OUTL); gbs("j1", WY_SXL); da("j1", D_RP); gbs("j1", WY_SR); dl("j1", D_RPL); gbs("j1", WY_SRL)
+        J("jcall wy_sil", "jldi j10, 1"); gbs("j10", WY_SD); gbs("j14", WY_ST)
+        o("wyln_r:")
+        J("jret")
+        o("wy_eol:                         ; j7 = a room, j8 = its bytes, j9 = where -> j9 = its line's end (or j8)")
+        o("wyeo_l:")
+        J("jsub j10, j9, j8", "jjnn j10, wyeo_r", "jadd j10, j7, j9", "jldb j10, j10, 0", "jldi j11, 10", "jsub j10, j10, j11", "jjz j10, wyeo_r", "jldi j10, 1", "jadd j9, j9, j10", "jjmp wyeo_l")
+        o("wyeo_r:")
+        J("jret")
+        o("wy_seed:                        ; -> j0 = 1 with a SEED in WY_C: two lines of a book of hers by her luck, the second's")
+        o("                                ; silhouette against the first told in her steps, the shortest first; 0 if none, or")
+        o("                                ; if she already tried it")
+        gb("j1", WY_RC); J("jjnz j1, wysd_a")
+        o("  ; (her first room to read in: a page of the kernel's, 4096 bytes; twice it each time two lines do not fit)")
+        J("jldi j1, 4096"); gbs("j1", WY_RC)
+        o("wysd_a:")
+        gb("j1", WY_RBUF); J("jjnz j1, wysd_o"); gb("j1", WY_RC); J("jldi j10, 8", "jadd j1, j1, j10", "jcall r_alloc"); gbs("j0", WY_RBUF)
+        o("wysd_o:")
+        o("  ; (a book of hers by her luck, from her house as the kernel lists it: what is listed exists, so opening it never")
+        o("  ; makes a file; from an entry by her luck, round her house to the first that is a book: libro..., elibro...)")
+        gs("j14", ULB); J("jcall ul_list"); gl("j1", ULN); J("jjz j1, wysd_no", "jcall r_randmod"); gbs("j0", WY_K); gbs("j14", WY_H); gbs("j14", WY_J); gl("j9", ULB); gbs("j9", WY_T)
+        o("wysd_b:")
+        gb("j1", WY_H); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, wysd_no"); gb("j1", WY_J); gb("j2", WY_K); J("jsub j10, j1, j2", "jjn j10, wysd_s")
+        gb("j9", WY_T); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall ig_isbook", "jjnz j0, wysd_ok"); gb("j1", WY_H); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_H)
+        o("wysd_s:")
+        gb("j9", WY_T); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); gbs("j9", WY_T)
+        gb("j1", WY_J); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_J); gl("j2", ULN); J("jsub j10, j1, j2", "jjn j10, wysd_b"); gbs("j14", WY_J); gbs("j14", WY_K); gl("j9", ULB); gbs("j9", WY_T); J("jjmp wysd_b")
+        o("wysd_ok:")
+        gb("j9", WY_T); J("jld j12, j9, 0", "jldi j10, 8", "jadd j11, j9, j10", "jcall r_open"); ld("j9", "FH"); J("jjn j9, wysd_no")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jjz j13, wysd_cl", "jjn j13, wysd_cl", "jadd j1, j13, j14", "jcall r_randmod", "jldi j10, 38", "jadd j11, j0, j14", "jldi j12, 0", "jcall r_file")
+        gb("j11", WY_RBUF); gb("j12", WY_RC); J("jldi j10, 5", "jcall r_file"); gbs("j13", WY_RN); J("jldi j10, 7", "jcall r_file")
+        o("  ; (the line she fell in is cut: the next two, whole)")
+        gb("j7", WY_RBUF); gb("j8", WY_RN); J("jjn j8, wysd_no", "jldi j9, 0", "jcall wy_eol", "jldi j10, 1", "jadd j9, j9, j10"); gbs("j9", WY_SR)
+        J("jcall wy_eol", "jsub j10, j9, j8", "jjnn j10, wysd_gr"); gb("j1", WY_SR); J("jsub j2, j9, j1"); gbs("j2", WY_SRL); J("jldi j10, 1", "jadd j9, j9, j10"); gbs("j9", WY_SX)
+        J("jcall wy_eol", "jsub j10, j9, j8", "jjnn j10, wysd_gr"); gb("j1", WY_SX); J("jsub j2, j9, j1"); gbs("j2", WY_SXL)
+        gb("j1", WY_SRL); J("jjz j1, wysd_no"); gb("j1", WY_SXL); J("jjz j1, wysd_no")
+        gb("j1", WY_RBUF); gb("j2", WY_SR); J("jadd j2, j2, j1"); gbs("j2", WY_SR); gb("j2", WY_SX); J("jadd j2, j2, j1"); gbs("j2", WY_SX)
+        gbs("j14", WY_SS); J("jcall wy_sil")
+        o("  ; (told in her steps: each time the one that tells it shortest of those left)")
+        J("jldi j1, %d" % P, "jcall wy_new"); gbs("j0", WY_C); gbs("j14", WY_I)
+        o("wysd_p:")
+        gb("j1", WY_I); J("jldi j10, %d" % P, "jsub j10, j1, j10", "jjnn j10, wysd_k"); li("j3", 1 << 62); J("jldi j4, 0")
+        for k in range(P):
+            gb("j5", WY_CB + 8 * k); J("jsub j10, j5, j3", "jjnn j10, wysd_m%d" % k, "jadd j3, j5, j14", "jldi j4, %d" % (k + 1))
+            o("wysd_m%d:" % k)
+        J("jldi j10, 1", "jsub j5, j4, j10", "jldi j10, 3", "jshl j5, j5, j10"); dl("j6", D_GBLK); J("jadd j6, j6, j5"); li("j10", 1 << 62); J("jst j10, j6, %d" % WY_CB)
+        gb("j1", WY_I); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_I); J("jldi j10, 3", "jshl j1, j1, j10"); gb("j2", WY_C); J("jadd j2, j2, j1", "jst j4, j2, 0", "jjmp wysd_p")
+        o("wysd_k:")
+        gb("j1", WY_C); J("jcall wy_known", "jjnz j0, wysd_no", "jldi j0, 1", "jret")
+        o("wysd_gr:                        ; (two lines did not fit: her room is twice as big next time)")
+        gb("j1", WY_RC); J("jadd j1, j1, j1"); gbs("j1", WY_RC); gbs("j14", WY_RBUF)
+        J("jldi j0, 0", "jret")
+        o("wysd_cl:")
+        J("jldi j10, 7", "jcall r_file")
+        o("wysd_no:")
+        J("jldi j0, 0", "jret")
+        o("wy_msave:                       ; her steps' silhouettes into \"siluetas\", if they learned")
+        gb("j1", WY_SD); J("jjz j1, wyms_r"); gbs("j14", WY_SD); dl("j6", D_GBLK); J("jldi j10, %d" % WY_SLB, "jadd j11, j6, j10", "jldi j12, 8", "jldi j10, 12", "jcall r_tocar")
+        dl("j6", D_GBLK); J("jldi j10, %d" % WY_SLB, "jadd j11, j6, j10", "jldi j12, 8", "jcall r_open"); ld("j9", "FH"); J("jjn j9, wyms_r")
+        dl("j6", D_GBLK); J("jldi j10, %d" % WY_M, "jadd j11, j6, j10", "jldi j12, %d" % (48 * P), "jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("wyms_r:")
+        J("jret")
+        o("wy_mload:                       ; her steps' silhouettes, from \"siluetas\" (kept only if read whole)")
+        dl("j6", D_GBLK); J("jldi j10, %d" % WY_SLB, "jadd j11, j6, j10", "jldi j12, 8", "jcall r_open"); ld("j9", "FH"); J("jjn j9, wyml_r")
+        dl("j6", D_GBLK); J("jldi j10, %d" % WY_M, "jadd j11, j6, j10", "jldi j12, %d" % (48 * P), "jcall r_read_all", "jldi j10, %d" % (48 * P), "jsub j10, j0, j10", "jjz j10, wyml_c")
+        for k in range(6 * P):
+            gbs("j14", WY_M + 8 * k)
+        o("wyml_c:")
+        J("jldi j10, 7", "jcall r_file")
+        o("wyml_r:")
+        J("jret")
         o("wy_go:                          ; HER WAY (see WY), once she chose to answer")
         gbs("j14", WY_SN); gbs("j14", WY_XC)
         o("  ; (a babbled way that waits for him is walked again; else her luck against her way's wish: babble as much as it fails)")
@@ -2797,17 +2907,22 @@ def make(g, ST, free):
             J("jldi j10, %d" % k, "jsub j10, j2, j10", "jjz j10, wys_%s" % name)
         J("jjmp wyg_l")
         o("wys_heart:")
+        J("jldi j10, 1"); gbs("j10", WY_ST)
         J("jcall r_dlg_heart", "jjz j0, wyg_l", "jjmp wyg_ok")
         o("wys_impro:")
+        J("jldi j10, 2"); gbs("j10", WY_ST)
         J("jcall r_dlg_impro", "jjz j0, wyg_l", "jjmp wyg_ok")
         o("wys_own:")
+        J("jldi j10, 3"); gbs("j10", WY_ST)
         J("jcall r_dlg_heart_own", "jjz j0, wyg_l", "jjmp wyg_ok")
         o("wys_quien:")
+        J("jldi j10, 4"); gbs("j10", WY_ST)
         J("jcall r_dlg_quien", "jjz j0, wyg_l", "jcall gu_said", "jjmp wyg_ok")
         o("wys_cross:")
+        J("jldi j10, 5"); gbs("j10", WY_ST)
         dl("j1", D_OUTL); J("jjz j1, wyg_l", "jldi j10, 1"); gbs("j10", WY_XC); J("jjmp dsy_cx")
         o("wyg_ok:")
-        J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
+        J("jcall wy_learn"); J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("wy_pay:                         ; j0 = 1 if her frame in most harmony paid what waited: her way is judged; keeps j0")
         gbs("j0", WY_U); gb("j1", WY_L); gbs("j14", WY_L); J("jjz j1, wyy_r", "jldi j10, 1", "jsub j10, j1, j10", "jjnz j10, wyy_c")
         gb("j1", WY_N); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_N); gb("j0", WY_U); J("jjz j0, wyy_r"); gb("j1", WY_S); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", WY_S); J("jjmp wyy_r")
@@ -2821,7 +2936,8 @@ def make(g, ST, free):
         gb("j0", WY_U); J("jret")
         o("wy_put:                         ; j1 = a word, written as it is (its length, its letters)")
         J("jadd j11, j1, j14", "jld j12, j1, 0", "jldi j10, 1", "jadd j12, j12, j10", "jldi j10, 3", "jshl j12, j12, j10", "jldi j10, 6", "jcall r_file", "jret")
-        o("wy_save:                        ; her ways into \"caminos\"")
+        o("wy_save:                        ; her ways into \"caminos\" (and her steps' silhouettes into \"siluetas\", if they learned)")
+        J("jcall wy_msave")
         gb("j1", WY_W); J("jjz j1, wysv_r"); dl("j6", D_GBLK); J("jldi j10, %d" % WY_LBL, "jadd j11, j6, j10", "jldi j12, 7", "jldi j10, 12", "jcall r_tocar")
         dl("j6", D_GBLK); J("jldi j10, %d" % WY_LBL, "jadd j11, j6, j10", "jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjn j9, wysv_r")
         dl("j6", D_GBLK); J("jldi j10, %d" % WY_N, "jadd j11, j6, j10", "jldi j12, 32", "jldi j10, 6", "jcall r_file"); gbs("j14", WY_I)
@@ -2842,6 +2958,7 @@ def make(g, ST, free):
         o("wyg2_no:")
         J("jldi j0, 0", "jret")
         o("wy_load:                        ; her ways, from \"caminos\"; with none, the way she had")
+        J("jcall wy_mload")
         dl("j6", D_GBLK); J("jldi j10, %d" % WY_LBL, "jadd j11, j6, j10", "jldi j12, 7", "jcall r_open"); ld("j9", "FH"); J("jjn j9, wyl_first")
         dl("j6", D_GBLK); J("jldi j10, %d" % WY_N, "jadd j11, j6, j10", "jldi j12, 32", "jcall r_read_all", "jldi j10, 32", "jsub j10, j0, j10", "jjnz j10, wyl_hb")
         gb("j1", WY_VN); gbs("j1", WY_K); gbs("j14", WY_VN); gb("j1", WY_AN); gbs("j1", WY_H); gbs("j14", WY_AN)
@@ -2874,8 +2991,9 @@ def make(g, ST, free):
                 J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (IG_LBL + base + i))
         for i, ch in enumerate(b"lenguas"):
             J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (LG_LBL + i))
-        for i, ch in enumerate(b"caminos"):
-            J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (WY_LBL + i))
+        for lbl, t in ((WY_LBL, b"caminos"), (WY_SLB, b"siluetas")):
+            for i, ch in enumerate(t):
+                J("jldi j10, %d" % ch, "jstb j10, j0, %d" % (lbl + i))
         J("jcall lj_load                  ; (the signatures of her books)")
         J("jcall wy_load                  ; (her ways)")
         dl("j0", D_GBLK)

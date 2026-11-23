@@ -8592,7 +8592,7 @@ init_popc:
   jcall r_nombre_load            ; her name, or she will ask it (gen_leer.py)
   jcall r_dlg_load               ; her word, in her window (gen_leer.py)
   jcall r_gustos_load            ; her tastes for her books (gen_leer.py)
-  jcall r_mus_init               ; her school, born to sing what she says (gen_leer.py)
+  jcall fr_r_mus_init               ; her school, born to sing what she says (gen_leer.py)
   jcall r_read_init              ; her readings, her instincts, the table of the judge (gen_leer.py)
   ; the forms' archive as a ring (its handle is set by r_load_archive)
   jldi j3, 06720h
@@ -18412,10 +18412,10 @@ r_read_init:
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 029C4h
-  jshi j2, 0292Ah
-  jshi j2, 0164Ah
-  jshi j2, 0F975h
+  jldi j2, 02489h
+  jshi j2, 0FFCh
+  jshi j2, 053D8h
+  jshi j2, 089A9h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 0162h
@@ -22714,7 +22714,7 @@ gl_66:
   jjnz j10, gl_67
   jldi j0, 7
   jshi j0, 08210h
-  jshi j0, 0841Eh
+  jshi j0, 0843Eh
   jret
 gl_67:
   jldi j10, 68
@@ -22745,7 +22745,7 @@ gl_70:
   jjnz j10, gl_71
   jldi j0, 7
   jshi j0, 0A31Ch
-  jshi j0, 0841Eh
+  jshi j0, 0843Eh
   jret
 gl_71:
   jldi j10, 72
@@ -22768,7 +22768,7 @@ gl_73:
   jsub j10, j5, j10
   jjnz j10, gl_74
   jldi j0, 1
-  jshi j0, 06984h
+  jshi j0, 09284h
   jshi j0, 0211Ch
   jret
 gl_74:
@@ -22838,9 +22838,9 @@ gl_82:
   jldi j10, 83
   jsub j10, j5, j10
   jjnz j10, gl_83
-  jldi j0, 7
-  jshi j0, 0820Eh
-  jshi j0, 083Eh
+  jldi j0, 3
+  jshi j0, 0E107h
+  jshi j0, 043Eh
   jret
 gl_83:
   jldi j10, 84
@@ -25939,7 +25939,7 @@ dpc_fr:
 dpc_scan:                       ; (her books once: each word that is a next subject; the word after it, one of its fact's?)
   jst j1, j14, 1288
   jldi j1, 46
-  jcall r_cable
+  jcall fr_r_cable
   jldi j10, 0
   jldi j6, 0162h
   jshi j6, 0
@@ -26283,7 +26283,7 @@ dps_end:
 dch_say:                        ; (first a full stop, then commas; the name j1 (j2 bytes), a space, the clause j3 (j5
   jst j1, j14, 1288
   jldi j1, 27
-  jcall r_cable
+  jcall fr_r_cable
                                 ; bytes)) -> j0 = 0 if her room is full
   jldi j6, 0162h
   jshi j6, 0
@@ -26650,7 +26650,7 @@ dch_x:
 dq_scan:                        ; every line of her books where D_SX stands, and what follows it there (only D_SR, if not 0)
   jst j1, j14, 1288
   jldi j1, 49
-  jcall r_cable
+  jcall fr_r_cable
   jldi j10, 0
   jldi j6, 0162h
   jshi j6, 0
@@ -26930,7 +26930,7 @@ dq_end:
 dq_rec:                         ; (a next word D_SV at D_SVS: counted, its first clause kept, to its stop or 120 bytes)
   jst j1, j14, 1288
   jldi j1, 48
-  jcall r_cable
+  jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -26965,7 +26965,7 @@ dqr_one:
 dq_tw:                          ; -> j11 = what one more time weighs: her taste for this book, in 1024ths, at least 1 (keeps j3)
   jst j1, j14, 1288
   jldi j1, 50
-  jcall r_cable
+  jcall fr_r_cable
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -28283,76 +28283,6 @@ dse_w:                          ; her wish to answer: (S + 1/2) / (N + 1), again
   jldi j10, 1
   jst j10, j14, 0210h
   jret
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-fr_l_ring:
-  jjmp l_ring
-fr_l_ring_open:
-  jjmp l_ring_open
-fr_r_alloc:
-  jjmp r_alloc
-fr_r_cable:
-  jjmp r_cable
-fr_r_cable_flush:
-  jjmp r_cable_flush
-fr_r_cable_init:
-  jjmp r_cable_init
-fr_r_colour:
-  jjmp r_colour
-; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
-fr_r_file:
-  jjmp r_file
-fr_r_fit_cost:
-  jjmp r_fit_cost
-fr_r_free:
-  jjmp r_free
-fr_r_free_load:
-  jjmp r_free_load
-fr_r_gesture:
-  jjmp r_gesture
-fr_r_get_hex:
-  jjmp r_get_hex
-fr_r_get_num:
-  jjmp r_get_num
-fr_r_get_rec:
-  jjmp r_get_rec
-fr_r_hash:
-  jjmp r_hash
-fr_r_judge:
-  jjmp r_judge
-fr_r_open:
-  jjmp r_open
-fr_r_put_rec:
-  jjmp r_put_rec
-fr_r_randmod:
-  jjmp r_randmod
-fr_r_read_cand:
-  jjmp r_read_cand
-fr_r_read_end:
-  jjmp r_read_end
-fr_r_read_max:
-  jjmp r_read_max
-fr_r_read_poll:
-  jjmp r_read_poll
-fr_r_recompute:
-  jjmp r_recompute
-fr_r_set_hue:
-  jjmp r_set_hue
-fr_r_tocar:
-  jjmp r_tocar
-fr_r_tried:
-  jjmp r_tried
-fr_ul_cmp:
-  jjmp ul_cmp
-fr_v_event:
-  jjmp v_event
-fr_v_frame:
-  jjmp v_frame
-fr_v_init:
-  jjmp v_init
-fr_v_meal:
-  jjmp v_meal
-fr_v_show:
-  jjmp v_show
 dse_yes:
   ; (EVERY BRANCH, whenever she speaks: the Capitan, 2026-11-22, "aunque conteste ella, no importa: elige las ramas
   ; igual". In the context of her mood and his charge: to answer, to ask again, to say another thing, or to go on
@@ -28634,7 +28564,11 @@ dse_mine:                       ; (her cross was said: its way counts once more,
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
+  jld j1, j6, 7112
   jst j14, j6, 7112
+  jjz j1, dse_mx
+  jcall wy_learn
+dse_mx:
   jcall gu_said
   jldi j6, 0162h
   jshi j6, 0
@@ -29051,6 +28985,78 @@ dh_tw:
   jld j6, j6, 01D68h
   jst j1, j6, 31960
   jjmp dh_tw
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_l_ring:
+  jjmp l_ring
+fr_l_ring_open:
+  jjmp l_ring_open
+fr_r_alloc:
+  jjmp r_alloc
+fr_r_cable:
+  jjmp r_cable
+fr_r_cable_flush:
+  jjmp r_cable_flush
+fr_r_cable_init:
+  jjmp r_cable_init
+; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)
+fr_r_colour:
+  jjmp r_colour
+fr_r_file:
+  jjmp r_file
+fr_r_fit_cost:
+  jjmp r_fit_cost
+fr_r_free:
+  jjmp r_free
+fr_r_free_load:
+  jjmp r_free_load
+fr_r_gesture:
+  jjmp r_gesture
+fr_r_get_hex:
+  jjmp r_get_hex
+fr_r_get_num:
+  jjmp r_get_num
+fr_r_get_rec:
+  jjmp r_get_rec
+fr_r_hash:
+  jjmp r_hash
+fr_r_judge:
+  jjmp r_judge
+fr_r_mus_init:
+  jjmp r_mus_init
+fr_r_open:
+  jjmp r_open
+fr_r_put_rec:
+  jjmp r_put_rec
+fr_r_randmod:
+  jjmp r_randmod
+fr_r_read_cand:
+  jjmp r_read_cand
+fr_r_read_end:
+  jjmp r_read_end
+fr_r_read_max:
+  jjmp r_read_max
+fr_r_read_poll:
+  jjmp r_read_poll
+fr_r_recompute:
+  jjmp r_recompute
+fr_r_set_hue:
+  jjmp r_set_hue
+fr_r_tocar:
+  jjmp r_tocar
+fr_r_tried:
+  jjmp r_tried
+fr_ul_cmp:
+  jjmp ul_cmp
+fr_v_event:
+  jjmp v_event
+fr_v_frame:
+  jjmp v_frame
+fr_v_init:
+  jjmp v_init
+fr_v_meal:
+  jjmp v_meal
+fr_v_show:
+  jjmp v_show
 dh_twd:                         ; (the thread helps a paragraph reach half of his words now; it does not raise the bar)
   ; (WHERE SHE LOOKS FIRST IS HERS (the Capitan: "no cortes ramas, deja que se exprese"): by her wish for the thread
   ; against her luck, with the thread from the start; else with his words now, and the thread only if they do not reach)
@@ -30289,7 +30295,7 @@ tht_d:
   jjmp th_add
 wy_new:                         ; j1 = a length -> j0 = a word's room of that length, its length set
   jst j1, j14, 1288
-  jldi j1, 406
+  jldi j1, 410
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -30310,7 +30316,7 @@ wy_new:                         ; j1 = a length -> j0 = a word's room of that le
   jret
 wy_eq:                          ; j1, j2 = two words -> j0 = 1 if they are the same (uses j3-j5, j10)
   jst j1, j14, 1288
-  jldi j1, 402
+  jldi j1, 403
   jcall r_cable
   jld j3, j1, 0
   jld j4, j2, 0
@@ -30336,7 +30342,7 @@ wye_n:
   jret
 wy_known:                       ; j1 = a word -> j0 = 1 if it is her way or a way she kept (uses j2-j5, j7-j9)
   jst j1, j14, 1288
-  jldi j1, 404
+  jldi j1, 405
   jcall r_cable
   jadd j7, j1, j14
   jldi j6, 0162h
@@ -30473,7 +30479,7 @@ wyar_in:
   jret
 wy_vadd:                        ; j1 = a way that won: a letter of her alphabet from now on
   jst j1, j14, 1288
-  jldi j1, 411
+  jldi j1, 417
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -30564,7 +30570,7 @@ wyva_in:
   jret
 wy_push:                        ; j1 = a word, walked from its first letter (a way may hold ways)
   jst j1, j14, 1288
-  jldi j1, 408
+  jldi j1, 412
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -30659,6 +30665,10 @@ wy_babble:                      ; -> j0 = 1 with a way she never tried in WY_C (
   jldi j1, 401
   jcall r_cable
                                 ; alphabet put in, changed or taken out), or 0 if her tries found none
+  jcall wy_seed
+  jjz j0, wyb_rnd
+  jret
+wyb_rnd:
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -30872,6 +30882,1250 @@ wyb_ck:
 wyb_no:
   jldi j0, 0
   jret
+wy_sil:                         ; THE SILHOUETTE of WY_SX (WY_SXL bytes) against WY_SR (WY_SRL): each word of it taken
+  jst j1, j14, 1288
+  jldi j1, 416
+  jcall r_cable
+                                ; (in WY_SR) or brought. With WY_SS a step, that step learns it; with 0, WY_CB = what it
+                                ; costs told by each step, in 64ths of a bit
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7224
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F00h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7232
+  jadd j1, j1, j2
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j1, j6, 07F08h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7256
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7216
+  jjnz j1, wsl_w
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7320
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7328
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7336
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7344
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7352
+wsl_w:
+  jcall bw_word
+  jjz j0, wsl_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D78h
+  jadd j2, j0, j14
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 7240
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j4, j6, 7248
+  jcall din_in
+  jldi j10, 1
+  jsub j0, j10, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7264
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7216
+  jjz j1, wsl_c
+  ; (the step learns: its count for this word after the last one)
+  jldi j10, 1
+  jsub j1, j1, j10
+  jldi j10, 3
+  jmul j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7256
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jadd j1, j1, j2
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j6, j6, j1
+  jld j2, j6, 7360
+  jldi j10, 1
+  jadd j2, j2, j10
+  jst j2, j6, 7360
+  jjmp wsl_n
+wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 1/2), as twice them)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7360
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7320
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7320
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7408
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7328
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7328
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7456
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7336
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7336
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7504
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7344
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7344
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7552
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7352
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7352
+wsl_n:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7264
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7256
+  jjmp wsl_w
+wsl_r:
+  jret
+wy_learn:                       ; her step WY_ST just said D_OUT to his words (D_RP): it learns its own silhouette
+  jst j1, j14, 1288
+  jldi j1, 406
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7208
+  jjz j1, wyln_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7216
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7224
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6408
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7232
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 18200
+  jadd j1, j1, j15
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7240
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 17656
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7248
+  jcall wy_sil
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7288
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7208
+wyln_r:
+  jret
+wy_eol:                         ; j7 = a room, j8 = its bytes, j9 = where -> j9 = its line's end (or j8)
+  jst j1, j14, 1288
+  jldi j1, 402
+  jcall r_cable
+wyeo_l:
+  jsub j10, j9, j8
+  jjnn j10, wyeo_r
+  jadd j10, j7, j9
+  jldb j10, j10, 0
+  jldi j11, 10
+  jsub j10, j10, j11
+  jjz j10, wyeo_r
+  jldi j10, 1
+  jadd j9, j9, j10
+  jjmp wyeo_l
+wyeo_r:
+  jret
+wy_seed:                        ; -> j0 = 1 with a SEED in WY_C: two lines of a book of hers by her luck, the second's
+  jst j1, j14, 1288
+  jldi j1, 415
+  jcall r_cable
+                                ; silhouette against the first told in her steps, the shortest first; 0 if none, or
+                                ; if she already tried it
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7304
+  jjnz j1, wysd_a
+  ; (her first room to read in: a page of the kernel's, 4096 bytes; twice it each time two lines do not fit)
+  jldi j1, 4096
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7304
+wysd_a:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7296
+  jjnz j1, wysd_o
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7304
+  jldi j10, 8
+  jadd j1, j1, j10
+  jcall r_alloc
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7296
+wysd_o:
+  ; (a book of hers by her luck, from her house as the kernel lists it: what is listed exists, so opening it never
+  ; makes a file; from an entry by her luck, round her house to the first that is a book: libro..., elibro...)
+  jldi j6, 0162h
+  jshi j6, 0
+  jst j14, j6, 01EA0h
+  jcall ul_list
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j1, j6, 01EA8h
+  jjz j1, wysd_no
+  jcall r_randmod
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7168
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j9, j6, 01EA0h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7184
+wysd_b:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7168
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjnn j10, wysd_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7160
+  jsub j10, j1, j2
+  jjn j10, wysd_s
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7184
+  jld j3, j9, 0
+  jldi j10, 8
+  jadd j1, j9, j10
+  jcall ig_isbook
+  jjnz j0, wysd_ok
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7168
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7168
+wysd_s:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7184
+  jld j3, j9, 0
+  jldi j10, 7
+  jadd j3, j3, j10
+  jldi j10, -8
+  jand j3, j3, j10
+  jldi j10, 8
+  jadd j3, j3, j10
+  jadd j9, j9, j3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7184
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7152
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j2, j6, 01EA8h
+  jsub j10, j1, j2
+  jjn j10, wysd_b
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7152
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7160
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j9, j6, 01EA0h
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7184
+  jjmp wysd_b
+wysd_ok:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7184
+  jld j12, j9, 0
+  jldi j10, 8
+  jadd j11, j9, j10
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, wysd_no
+  jldi j10, 38
+  jldi j11, -1
+  jldi j12, 0
+  jcall r_file
+  jjz j13, wysd_cl
+  jjn j13, wysd_cl
+  jadd j1, j13, j14
+  jcall r_randmod
+  jldi j10, 38
+  jadd j11, j0, j14
+  jldi j12, 0
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j11, j6, 7296
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j12, j6, 7304
+  jldi j10, 5
+  jcall r_file
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j13, j6, 7312
+  jldi j10, 7
+  jcall r_file
+  ; (the line she fell in is cut: the next two, whole)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j7, j6, 7296
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j8, j6, 7312
+  jjn j8, wysd_no
+  jldi j9, 0
+  jcall wy_eol
+  jldi j10, 1
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7240
+  jcall wy_eol
+  jsub j10, j9, j8
+  jjnn j10, wysd_gr
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7240
+  jsub j2, j9, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7248
+  jldi j10, 1
+  jadd j9, j9, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7224
+  jcall wy_eol
+  jsub j10, j9, j8
+  jjnn j10, wysd_gr
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7224
+  jsub j2, j9, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7232
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7248
+  jjz j1, wysd_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7232
+  jjz j1, wysd_no
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7296
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7240
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7240
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7224
+  jadd j2, j2, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7224
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7216
+  jcall wy_sil
+  ; (told in her steps: each time the one that tells it shortest of those left)
+  jldi j1, 5
+  jcall wy_new
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7096
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7144
+wysd_p:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnn j10, wysd_k
+  jldi j3, 04000h
+  jshi j3, 0
+  jshi j3, 0
+  jshi j3, 0
+  jldi j4, 0
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7320
+  jsub j10, j5, j3
+  jjnn j10, wysd_m0
+  jadd j3, j5, j14
+  jldi j4, 1
+wysd_m0:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7328
+  jsub j10, j5, j3
+  jjnn j10, wysd_m1
+  jadd j3, j5, j14
+  jldi j4, 2
+wysd_m1:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7336
+  jsub j10, j5, j3
+  jjnn j10, wysd_m2
+  jadd j3, j5, j14
+  jldi j4, 3
+wysd_m2:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7344
+  jsub j10, j5, j3
+  jjnn j10, wysd_m3
+  jadd j3, j5, j14
+  jldi j4, 4
+wysd_m3:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7352
+  jsub j10, j5, j3
+  jjnn j10, wysd_m4
+  jadd j3, j5, j14
+  jldi j4, 5
+wysd_m4:
+  jldi j10, 1
+  jsub j5, j4, j10
+  jldi j10, 3
+  jshl j5, j5, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j6, j6, j5
+  jldi j10, 04000h
+  jshi j10, 0
+  jshi j10, 0
+  jshi j10, 0
+  jst j10, j6, 7320
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7144
+  jldi j10, 1
+  jadd j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7144
+  jldi j10, 3
+  jshl j1, j1, j10
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7096
+  jadd j2, j2, j1
+  jst j4, j2, 0
+  jjmp wysd_p
+wysd_k:
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7096
+  jcall wy_known
+  jjnz j0, wysd_no
+  jldi j0, 1
+  jret
+wysd_gr:                        ; (two lines did not fit: her room is twice as big next time)
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7304
+  jadd j1, j1, j1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j1, j6, 7304
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7296
+  jldi j0, 0
+  jret
+wysd_cl:
+  jldi j10, 7
+  jcall r_file
+wysd_no:
+  jldi j0, 0
+  jret
+wy_msave:                       ; her steps' silhouettes into "siluetas", if they learned
+  jst j1, j14, 1288
+  jldi j1, 409
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7288
+  jjz j1, wyms_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7288
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7600
+  jadd j11, j6, j10
+  jldi j12, 8
+  jldi j10, 12
+  jcall r_tocar
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7600
+  jadd j11, j6, j10
+  jldi j12, 8
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, wyms_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7360
+  jadd j11, j6, j10
+  jldi j12, 240
+  jldi j10, 6
+  jcall r_file
+  jldi j10, 7
+  jcall r_file
+wyms_r:
+  jret
+wy_mload:                       ; her steps' silhouettes, from "siluetas" (kept only if read whole)
+  jst j1, j14, 1288
+  jldi j1, 408
+  jcall r_cable
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7600
+  jadd j11, j6, j10
+  jldi j12, 8
+  jcall r_open
+  jld j9, j14, 04A8h
+  jjn j9, wyml_r
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jldi j10, 7360
+  jadd j11, j6, j10
+  jldi j12, 240
+  jcall r_read_all
+  jldi j10, 240
+  jsub j10, j0, j10
+  jjz j10, wyml_c
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7360
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7368
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7376
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7384
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7392
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7400
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7408
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7416
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7424
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7432
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7440
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7448
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7456
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7464
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7472
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7480
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7488
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7496
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7504
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7512
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7520
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7528
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7536
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7544
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7552
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7560
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7568
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7576
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7584
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7592
+wyml_c:
+  jldi j10, 7
+  jcall r_file
+wyml_r:
+  jret
 wy_go:                          ; HER WAY (see WY), once she chose to answer
   jldi j6, 0162h
   jshi j6, 0
@@ -31024,23 +32278,53 @@ wyg_st:
   jjz j10, wys_cross
   jjmp wyg_l
 wys_heart:
+  jldi j10, 1
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
   jcall r_dlg_heart
   jjz j0, wyg_l
   jjmp wyg_ok
 wys_impro:
+  jldi j10, 2
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
   jcall r_dlg_impro
   jjz j0, wyg_l
   jjmp wyg_ok
 wys_own:
+  jldi j10, 3
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
   jcall r_dlg_heart_own
   jjz j0, wyg_l
   jjmp wyg_ok
 wys_quien:
+  jldi j10, 4
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
   jcall r_dlg_quien
   jjz j0, wyg_l
   jcall gu_said
   jjmp wyg_ok
 wys_cross:
+  jldi j10, 5
+  jldi j6, 0162h
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -31054,6 +32338,7 @@ wys_cross:
   jst j10, j6, 7112
   jjmp dsy_cx
 wyg_ok:
+  jcall wy_learn
   jldi j10, 2
   jldi j6, 0162h
   jshi j6, 0
@@ -31072,7 +32357,7 @@ wyg_ok:
   jjmp dse_has
 wy_pay:                         ; j0 = 1 if her frame in most harmony paid what waited: her way is judged; keeps j0
   jst j1, j14, 1288
-  jldi j1, 407
+  jldi j1, 411
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -31213,7 +32498,7 @@ wyy_r:
   jret
 wy_put:                         ; j1 = a word, written as it is (its length, its letters)
   jst j1, j14, 1288
-  jldi j1, 409
+  jldi j1, 413
   jcall r_cable
   jadd j11, j1, j14
   jld j12, j1, 0
@@ -31224,10 +32509,11 @@ wy_put:                         ; j1 = a word, written as it is (its length, its
   jldi j10, 6
   jcall r_file
   jret
-wy_save:                        ; her ways into "caminos"
+wy_save:                        ; her ways into "caminos" (and her steps' silhouettes into "siluetas", if they learned)
   jst j1, j14, 1288
-  jldi j1, 410
+  jldi j1, 414
   jcall r_cable
+  jcall wy_msave
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -31376,7 +32662,7 @@ wysv_r:
   jret
 wy_get:                         ; -> j0 = a word read as it is (its length, its letters), or 0
   jst j1, j14, 1288
-  jldi j1, 403
+  jldi j1, 404
   jcall r_cable
   jldi j6, 0162h
   jshi j6, 0
@@ -31434,8 +32720,9 @@ wyg2_no:
   jret
 wy_load:                        ; her ways, from "caminos"; with none, the way she had
   jst j1, j14, 1288
-  jldi j1, 405
+  jldi j1, 407
   jcall r_cable
+  jcall wy_mload
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -31621,7 +32908,7 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j1, j14, 1288
   jldi j1, 193
   jcall r_cable
-  jldi j1, 01C30h
+  jldi j1, 01DC8h
   jcall r_alloc
   jldi j6, 0162h
   jshi j6, 0
@@ -31734,6 +33021,57 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j14, j0, 7184
   jst j14, j0, 7192
   jst j14, j0, 7200
+  jst j14, j0, 7208
+  jst j14, j0, 7216
+  jst j14, j0, 7224
+  jst j14, j0, 7232
+  jst j14, j0, 7240
+  jst j14, j0, 7248
+  jst j14, j0, 7256
+  jst j14, j0, 7264
+  jst j14, j0, 7272
+  jst j14, j0, 7280
+  jst j14, j0, 7288
+  jst j14, j0, 7296
+  jst j14, j0, 7304
+  jst j14, j0, 7312
+  jst j14, j0, 7320
+  jst j14, j0, 7328
+  jst j14, j0, 7336
+  jst j14, j0, 7344
+  jst j14, j0, 7352
+  jst j14, j0, 7360
+  jst j14, j0, 7368
+  jst j14, j0, 7376
+  jst j14, j0, 7384
+  jst j14, j0, 7392
+  jst j14, j0, 7400
+  jst j14, j0, 7408
+  jst j14, j0, 7416
+  jst j14, j0, 7424
+  jst j14, j0, 7432
+  jst j14, j0, 7440
+  jst j14, j0, 7448
+  jst j14, j0, 7456
+  jst j14, j0, 7464
+  jst j14, j0, 7472
+  jst j14, j0, 7480
+  jst j14, j0, 7488
+  jst j14, j0, 7496
+  jst j14, j0, 7504
+  jst j14, j0, 7512
+  jst j14, j0, 7520
+  jst j14, j0, 7528
+  jst j14, j0, 7536
+  jst j14, j0, 7544
+  jst j14, j0, 7552
+  jst j14, j0, 7560
+  jst j14, j0, 7568
+  jst j14, j0, 7576
+  jst j14, j0, 7584
+  jst j14, j0, 7592
+  jst j14, j0, 7600
+  jst j14, j0, 7608
   jldi j10, 105
   jstb j10, j0, 6552
   jldi j10, 109
@@ -31808,6 +33146,22 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jstb j10, j0, 7205
   jldi j10, 115
   jstb j10, j0, 7206
+  jldi j10, 115
+  jstb j10, j0, 7600
+  jldi j10, 105
+  jstb j10, j0, 7601
+  jldi j10, 108
+  jstb j10, j0, 7602
+  jldi j10, 117
+  jstb j10, j0, 7603
+  jldi j10, 101
+  jstb j10, j0, 7604
+  jldi j10, 116
+  jstb j10, j0, 7605
+  jldi j10, 97
+  jstb j10, j0, 7606
+  jldi j10, 115
+  jstb j10, j0, 7607
   jcall lj_load                  ; (the signatures of her books)
   jcall wy_load                  ; (her ways)
   jldi j6, 0162h
@@ -45362,7 +46716,7 @@ bl_s5:
   jldi j10, 38
   jldi j11, 0
   jldi j12, 0
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07EF8h
@@ -45379,9 +46733,9 @@ bl_s5:
   jldi j6, 0162h
   jshi j6, 0
   jld j12, j6, 07EF8h
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
   jcall bu_scan
   jldi j10, 3
   jldi j6, 0162h
@@ -45599,7 +46953,7 @@ bud_l:
   jldi j10, 6
   jadd j11, j3, j14
   jadd j12, j4, j14
-  jcall r_file
+  jcall fr_r_file
   jret
   ; as a text anyone can read: the question; how near, of how many words of its own, in how many places and where
   ; the first is; what that place says
@@ -45621,12 +46975,12 @@ bw_q:
   jld j11, j7, 56
   jld j12, j7, 64
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 07F9Ch
   jldi j12, 1
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45642,14 +46996,14 @@ bw_q:
   jldi j11, 0162h
   jshi j11, 07FA0h
   jldi j12, 27
-  jcall r_file
+  jcall fr_r_file
   jjmp bw_qn
 bw_lab:
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 07F70h
   jldi j12, 3
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45665,7 +47019,7 @@ bw_lab:
   jldi j11, 0162h
   jshi j11, 07F74h
   jldi j12, 4
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45681,7 +47035,7 @@ bw_lab:
   jldi j11, 0162h
   jshi j11, 07F78h
   jldi j12, 5
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45697,7 +47051,7 @@ bw_lab:
   jldi j11, 0162h
   jshi j11, 07F80h
   jldi j12, 25
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45712,17 +47066,17 @@ bw_lab:
   jadd j11, j9, j10
   jld j12, j9, 0
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 07F9Ah
   jldi j12, 2
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 07F70h
   jldi j12, 3
-  jcall r_file
+  jcall fr_r_file
   jldi j6, 0162h
   jshi j6, 0
   jld j1, j6, 07F38h
@@ -45735,12 +47089,12 @@ bw_lab:
   jld j11, j7, 32
   jld j12, j7, 40
   jldi j10, 6
-  jcall r_file
+  jcall fr_r_file
   jldi j10, 6
   jldi j11, 0162h
   jshi j11, 07F9Ch
   jldi j12, 1
-  jcall r_file
+  jcall fr_r_file
 bw_qn:
   jldi j6, 0162h
   jshi j6, 0
@@ -45753,7 +47107,7 @@ bw_qn:
   jjmp bw_q
 bw_end:
   jldi j10, 7
-  jcall r_file
+  jcall fr_r_file
 bu_free:
   jcall bu_wstep
   jldi j6, 0162h
@@ -46857,7 +48211,7 @@ bzl_ct:
   jld j1, j6, 40
   jldi j10, 64
   jadd j1, j1, j10
-  jcall r_alloc
+  jcall fr_r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -47146,7 +48500,7 @@ bu_wstep:                       ; HER WALKS, a step each time she is born; each 
   jadd j11, j11, j10
   jldi j10, 12
   jldi j12, 7
-  jcall r_tocar
+  jcall fr_r_tocar
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -47395,7 +48749,7 @@ bzs_pick:                       ; (the next door: a word of the place, the longe
   jadd j1, j1, j10
   jldi j10, 5
   jshl j1, j1, j10
-  jcall r_alloc
+  jcall fr_r_alloc
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -47497,10 +48851,10 @@ bzd_e:
   jld j6, j6, 07FF8h
   jld j11, j6, 72
   jldi j12, 0
-  jcall r_tocar
+  jcall fr_r_tocar
   jjmp bzs_lost
 bzs_go:
-  jcall r_randmod
+  jcall fr_r_randmod
   jldi j6, 0162h
   jshi j6, 0
   jld j6, j6, 07FF8h
@@ -47547,7 +48901,7 @@ bzk2_g:
   jld j6, j6, 07FF8h
   jld j11, j6, 72
   jldi j12, 0
-  jcall r_tocar
+  jcall fr_r_tocar
   jcall bz_qlog
   jcall bz_from
   jadd j11, j2, j14
@@ -47670,7 +49024,7 @@ bzs_cl:
   jadd j11, j11, j10
   jldi j10, 12
   jldi j12, 6
-  jcall r_tocar
+  jcall fr_r_tocar
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -47756,7 +49110,7 @@ bzs_m:                          ; her own questions: "preguntas-mias", each the 
   jadd j11, j11, j10
   jldi j10, 12
   jldi j12, 14
-  jcall r_tocar
+  jcall fr_r_tocar
   jldi j6, 0162h
   jshi j6, 0
   jld j11, j6, 07FF8h
@@ -60900,7 +62254,7 @@ v_r_tocar:                        ; one request (j10 type, j11 a, j12 b) -> j13 
   jld j12, j13, 24
   jld j13, j13, 32
   jret
-; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 412 routines
+; ---- HER LIVING CABLES (gen_leer.py, cables_vivos): 418 routines
 r_cable:                        ; j1 = the routine that came (its S1 kept j1): one bit for the cable from the last one
   jst j2, j14, 1296
   jst j3, j14, 1304
@@ -60920,7 +62274,7 @@ r_cable:                        ; j1 = the routine that came (its S1 kept j1): o
   jjz j3, rc_out
   jldi j4, 1
   jsub j2, j2, j4
-  jldi j4, 412
+  jldi j4, 418
   jmul j2, j2, j4
   jadd j1, j2, j1
   jldi j4, 3
@@ -61142,7 +62496,7 @@ ci_cl:
   jcall fr_r_file
   jjz j7, ci_no
   jjn j7, ci_no
-  jldi j1, 019C8h
+  jldi j1, 01A28h
   jcall fr_r_alloc
   jst j0, j14, 1400
   jld j1, j14, 1432
@@ -61156,7 +62510,7 @@ ci_n:
   jldi j10, 10
   jsub j10, j5, j10
   jjnz j10, ci_nn
-  jldi j10, 412
+  jldi j10, 418
   jsub j10, j4, j10
   jjnn j10, ci_no
   jld j6, j14, 1400
@@ -61174,14 +62528,14 @@ ci_nn:
   jadd j1, j1, j10
   jjmp ci_n
 ci_nd:
-  jldi j10, 412
+  jldi j10, 418
   jsub j10, j4, j10
   jjnz j10, ci_no
   ; (the matrix: as her house kept it, if it is of these routines; else new)
-  jldi j1, 052F0h
+  jldi j1, 05560h
   jcall fr_r_alloc
   jst j0, j14, 1416
-  jldi j2, 052F0h
+  jldi j2, 05560h
   jadd j3, j0, j2
 ci_z:
   jst j14, j0, 0
@@ -61198,17 +62552,17 @@ ci_z:
   jjn j9, ci_mx
   jldi j10, 5
   jld j11, j14, 1416
-  jldi j12, 052F0h
+  jldi j12, 05560h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
 ci_mx:
   jld j1, j14, 1416
   jld j2, j1, 0
-  jldi j10, 412
+  jldi j10, 418
   jsub j10, j2, j10
   jjz j10, ci_mk
-  jldi j2, 052F0h
+  jldi j2, 05560h
   jadd j3, j1, j2
 ci_z2:
   jst j14, j1, 0
@@ -61217,7 +62571,7 @@ ci_z2:
   jsub j10, j3, j1
   jjnz j10, ci_z2
   jld j1, j14, 1416
-  jldi j10, 412
+  jldi j10, 418
   jst j10, j1, 0
 ci_mk:
   jldi j1, 04000h
@@ -61270,7 +62624,7 @@ cf_l:
   jsub j10, j8, j1
   jjnn j10, cf_w
   jld j1, j8, 0
-  jldi j10, 412
+  jldi j10, 418
   jdiv j2, j1, j10
   jmul j3, j2, j10
   jsub j3, j1, j3
@@ -61347,7 +62701,7 @@ cf_w:
   jjn j9, cf_done
   jldi j10, 6
   jld j11, j14, 1416
-  jldi j12, 052F0h
+  jldi j12, 05560h
   jcall fr_r_file
   jldi j10, 7
   jcall fr_r_file
