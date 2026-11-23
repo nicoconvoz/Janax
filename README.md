@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.59:** DOI_PENDIENTE
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.59:** [10.5281/zenodo.24466603](https://doi.org/10.5281/zenodo.24466603)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-23, v3.59): el abuelo nombra al nieto, y sus contornos con curvas
 
-DOI de esta versión: DOI_PENDIENTE.
+DOI de esta versión: [10.5281/zenodo.24466603](https://doi.org/10.5281/zenodo.24466603).
 
 **El abuelo nombra al nieto hermano del padre** (pedido 46): un hijo vive más que su padre sólo si se lo dan desde lo alto; el núcleo, lo más alto, nombra a los hijos de los procesos que lanzó él. Y **sus contornos con curvas**: una sola rutina traza el borde cada vez que se agranda, y las escaleras se vuelven curvas.
 

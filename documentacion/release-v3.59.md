@@ -1,6 +1,6 @@
 ## Janax y Razar v3.59: el abuelo nombra al nieto, y sus contornos con curvas
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24466603](https://doi.org/10.5281/zenodo.24466603)
 
 > *"Que un proceso hijo pueda ser nombrado por el abuelo como hermano del padre, dándole la posibilidad de vivir aunque
 > el padre muera… pero sólo si se lo da desde lo alto."*
