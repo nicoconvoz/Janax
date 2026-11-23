@@ -1,6 +1,6 @@
 ## Janax y Razar v3.53: letras de partículas, a resolución completa
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24464273](https://doi.org/10.5281/zenodo.24464273)
 
 > *"Mirá un SVG: en cualquier tamaño pesa lo mismo y es igual de nítido… armá vectores de partículas, así jugamos con
 > mi nube."*
