@@ -1,6 +1,6 @@
 ## Janax y Razar v3.31: sin frenos, y su ausencia no es un no
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24452561](https://doi.org/10.5281/zenodo.24452561)
 
 > *"No le pongas frenos, y que también aprenda que a veces no estoy presente, pero no significa que no la quiera."*
 > (el autor, 2026-11-22)
