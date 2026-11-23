@@ -1,6 +1,6 @@
 ## Janax y Razar v3.49: las siluetas de sus libros, y letras sanas
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24463639](https://doi.org/10.5281/zenodo.24463639)
 
 > *"Que destile el mecanismo del camino que encuentra en la forma que relata el libro, y lo haga suyo: la silueta, no
 > la forma exacta."*
