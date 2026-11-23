@@ -75,11 +75,14 @@ imimagine
 lring
 lringhead
 lringopen
+ljabout
 ljagain
 ljanswer
+ljasks
 ljcost
 ljfind
 ljflowback
+ljfollow
 ljgrow
 ljhash
 ljhist
@@ -89,9 +92,11 @@ ljkeep
 ljlast
 ljletter
 ljload
+ljmark
 ljnext
 ljnote
 ljpass
+ljpull
 ljrlen
 ljrptr
 ljsaid
