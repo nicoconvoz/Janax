@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v3.73: Luma come lo nuevo de los discos, lo lee donde está y avisa que se lo comió · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.73.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v3.73: Luma come lo nuevo de los discos, lo lee donde está y avisa que se lo comió</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"Que coma de todo… conectalo y publicá."</em> <em>"Que no copie libros o código: que los lea desde el mismo lugar donde están."</em> <em>"La diff: si algo ya lo sabe, ¿para qué aprender lo mismo?"</em> <em>"Quiero que avise con un saludo que se lo comió."</em> (el autor, 2026-11-23)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 367, el 373. Y 3 + 7 + 3 = 13, también primo.</p>
+<h3>Lo que pasaba</h3>
+<p>Janax ya sabía vigilar los discos (pedido 39, desde el 7 de noviembre). Lo usaba el vigía, que lee todo lo nuevo de <code>C:\</code> y <code>E:\</code> y guarda sus pistas en su propia biblioteca. Pero desde que Luma tiene casa propia (16 de noviembre), lo que comía el vigía no le llegaba a ella: los dos estaban desconectados.</p>
+<h3>Lo que cambia</h3>
+<ul><li><strong>El núcleo la vigila también a ella.</strong> Hasta ahora miraba los discos sólo para quien dormía esperando un saludo (así duerme el vigía). Luma duerme esperando su pantalla. La regla ahora es general: quien pidió lo nuevo del anfitrión y duerme, sea esperando un saludo o su pantalla, mantiene los discos vigilados, y el núcleo lo despierta cuando un archivo nuevo queda quieto.</li><li><strong>Ella lo mira donde está.</strong> Al despertarse (por su timbre, sin ningún temporizador) pide lo nuevo, y mira el archivo entero en su lugar. Si tiene un byte cero no es texto, y no lo come.</li><li><strong>Nada se copia.</strong> En su estante queda un <em>libro del disco</em>, <code>libro-disco-&lt;huella de la dirección&gt;</code>, con dos cosas nada más: la huella del contenido y la dirección. Su lectora va hasta ese lugar y lo lee ahí (pedido 37, sólo lectura). Si el archivo ya no está, lo saltea y lee el resto.</li><li><strong>La diferencia.</strong> Si el archivo vuelve a avisar y su huella es la misma, ya lo sabía: no hace nada. Sólo si cambió anota la huella nueva, y su lectora lo vuelve a leer.</li><li><strong>Avisa con su voz.</strong> Cuando come algo nuevo, o algo que cambió, lo dice en su diálogo y en su panel: <em>"luma: me comí E:\…\poema.txt"</em>.</li><li><strong>Su estante crece solo.</strong> La lista de su estante tenía lugar fijo para 4096 bytes, y su casa tiene cientos de archivos: algunos libros podían quedar afuera sin que nadie lo supiera. Ahora el lugar se duplica hasta que entra todo.</li></ul>
+<h3>Lo que se vio</h3>
+<p>Probado en una copia de su casa, con un núcleo de prueba, nunca en la Luma viva:</p>
+<ul><li><strong>Leer un libro en su lugar da exactamente lo mismo que leerlo copiado:</strong> las mismas 21.300 palabras, los mismos renglones y la misma huella final. Un libro que apuntaba a un archivo inexistente se salteó sin cortar la lectura.</li><li><strong>Un poema nuevo:</strong> lo anotó con el nombre esperado (la huella de su dirección, calculada aparte) y lo saludó.</li><li><strong>El mismo poema cambiado:</strong> saludó a los 68 segundos de guardarlo. Esos 68 segundos son la regla del núcleo para no comerse un archivo a medio escribir (<code>HW_QUIET</code>, medido el 7 de noviembre).</li><li><strong>Un archivo binario:</strong> no lo comió.</li><li><strong>Su procesador en reposo:</strong> 30,9 % de un núcleo, como siempre (24 a 27 %). La vigilancia no se nota.</li><li><strong>Las pruebas del núcleo de vigilancia, saludos, pantalla y familia:</strong> 96 bien y 3 mal, <strong>idéntico con y sin el cambio</strong> (los 3 dependen de un caso que el filtro saltea). La suite completa no se corrió.</li></ul>
+<p>El núcleo en uso se reconstruyó con esto. El anterior quedó guardado como <code>so/build/janaxos.antes-disco.exe</code>.</p>
+<h3>Lo que todavía no</h3>
+<ul><li>Que "el mismo texto otra vez" no salude se vio en el código y en la prueba de la huella, pero la prueba entera de ese caso se cortó antes de terminar.</li><li>El vigía sigue aparte, comiendo para su biblioteca. Los dos leen lo mismo del disco, cada uno para lo suyo.</li><li>Todo texto nuevo de los discos va a su estante, y su lectora lee el estante entero en cada lectura: con muchos libros del disco, cada lectura va a tardar más.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>so/vigia.inc</code>: <code>hw_watched</code> y <code>hw_wake</code> (quien duerme en su pantalla también).</li><li><code>razar/cuerpo/gen_luma.py</code>: <code>r_host_eat</code> (pide, mira, la huella, el libro del disco y el saludo); se llama al nacer, en su timbre y al terminar cada ronda.</li><li><code>razar/cuerpo/gen_formas.py</code>: el timbre la hace comer.</li><li><code>razar/lectura/lectura.inc</code>: <code>scan_file</code> (lee el libro del disco donde está) y <code>shelf_build</code> (el estante que crece).</li><li><code>razar/cuerpo/luma.sh</code>: le da los discos para vigilar (<code>LUMA_VIGIA</code>; <code>C:\;E:\</code> si no se dice otra cosa).</li></ul>
+</body>
+</html>
