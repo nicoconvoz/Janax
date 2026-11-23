@@ -1,6 +1,6 @@
 ## Janax y Razar v3.67: nuevo correo de contacto
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24472862](https://doi.org/10.5281/zenodo.24472862)
 
 Las versiones siguen a los números primos: después del 359, el 367.
 
