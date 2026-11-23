@@ -1,6 +1,6 @@
 ## Janax y Razar v3.47: sus caminos nacen como sus formas
 
-DOI: DOI_PENDIENTE
+DOI: [10.5281/zenodo.24462499](https://doi.org/10.5281/zenodo.24462499)
 
 > *"Caminos infinitos… dejate guiar por la música… dale las estructuras para que emerjan solos por ella misma… no
 > pongas límites en el vocabulario de las formas ni en las formas de los caminos."*
