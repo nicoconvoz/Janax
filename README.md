@@ -1226,4 +1226,4 @@ Si eso te hace sentido y querés empujar:
 
 ## Contacto
 
-[ingenieriaaplicada@opendoors.com.ar](mailto:ingenieriaaplicada@opendoors.com.ar)
+[diosyunalma@gmail.com](mailto:diosyunalma@gmail.com)
