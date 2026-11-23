@@ -156,7 +156,7 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 44                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 46                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
@@ -207,14 +207,17 @@ section '.data' data readable writeable
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
               dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps, serve_title, serve_note
+              dq serve_k45, serve_name
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
              db 3, 1, 1, 0, 1, 1
+             db 0, 0                    ; (45: kept for the signature inherited from the parent, nucleo/ceder-firma; 46: name)
   assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
              db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN, 0, R_SCREEN, R_SCREEN
+             db 0, 0
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
@@ -223,6 +226,8 @@ section '.data' data readable writeable
                  db 1                   ; (rowing in the gaps changes a process)
                  db 0                   ; (naming the window only draws)
                  db 0                   ; (a note only sounds)
+                 db 0                   ; (45: kept)
+                 db 1                   ; (naming one of my line its parent's sibling changes a process)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -3954,7 +3959,8 @@ gate_cede_label:
 ; changes a process, a file or the system) of a child waits for the signature of its parent only
 ; (Capitan: "the hierarchy rules: the micro asks the macro"); while it waits, the child sleeps and its
 ; jsys runs again once everything is signed or rejected. When a process ends, what waited for its
-; signature goes up to its own parent (the kernel signs at once) and its children are adopted.
+; signature goes up to its own parent (the kernel signs at once) and its line ends with it (line_end): a child
+; outlives its parent only if one above its parent named it its parent's sibling (46).
 
 ; In the window: rbx = child, rcx = entry, rdx = kind -> r8 = 1 signed, 2 rejected, 0 waiting (asked).
 ; Keeps rax, rcx, rdx.
@@ -4048,6 +4054,9 @@ new_record:
 
 ; rbx = a process that just ended (Capitan: "the parent goes, not its shadow, which keeps its permissions
 ; for the line below, and the shadow goes only when there is nobody below").
+; SINCE 2026-11-23 THE SHADOW SLEEPS: a parent's line ends with it (line_end, called first), and one named its
+; parent's sibling (46) is not below it any more, so nobody is left alive below and no shadow is left. It is kept,
+; not removed (nothing is discarded): if a line is ever let outlive its parent again, it is what decides for it.
 ;  - With living descendants it leaves its shadow: what waited for its signature is decided now with the
 ;    parent's own permissions, and so is everything its line asks later. Nobody else decides for that
 ;    line, neither the grandparent nor the kernel. Nobody is adopted.
@@ -4122,6 +4131,8 @@ living_below:
         mov     r8, [procs]
         mov     r8, [r8 + rcx*8]
         cmp     qword [r8 + P_DONE], 0
+        jne     .next
+        cmp     qword [r8 + P_KILL], 0  ; (one that ends when its turn does is not left alive below)
         jne     .next
         jmp     .up
 .up_lap:
@@ -4200,6 +4211,8 @@ serve_gate serve_budget,  34, family_budget
 serve_gate serve_rowed,   35, family_rowed
 serve_gate serve_remake,  36, family_remake
 serve_gate serve_gaps,    42, family_gaps
+serve_gate serve_k45,     45, family_k45
+serve_gate serve_name,    46, family_name
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -4503,6 +4516,73 @@ family_end:
         ret
 .not_mine:
         mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 46 name (the Capitan, 2026-11-23: "que un proceso hijo pueda ser nombrado por el abuelo como hermano del padre,
+; dandole la posibilidad de vivir aunque el padre muera; pero solo si se lo da desde lo alto"): a = number of a
+; process whose parent descends from me, or is my child (my grandchild, or one further down) -> it is its parent's
+; sibling now, a child of its parent's parent, so it does not end when its parent does. It comes only from above:
+; neither it nor its parent can ask for it. Its porters stay as they were: being named gives it life, never more
+; than it had. What waited for its parent's signature now waits for its new parent's. Answers 0; -2 if it is not
+; one of mine further down than my children, or it has ended.
+family_name:
+        mov     rax, [rbp + r13 + 8]
+        cmp     rax, [nprocs]
+        jae     .no
+        mov     r8, [procs]
+        mov     r8, [r8 + rax*8]
+        cmp     qword [r8 + P_DONE], 0
+        jne     .no
+        mov     r9, [r8 + P_PARENT]     ; its parent
+        test    r9, r9
+        jz      .no
+        cmp     r9, rbx
+        je      .no                     ; (my own child: it is already where naming would put it)
+        mov     r10, [r9 + P_PARENT]
+        jmp     .climb
+.climb_lap:                             ; I must be its parent's parent, or above it
+        cmp     r10, rbx
+        je      .yes
+        mov     r10, [r10 + P_PARENT]
+.climb:                                 ; while an ancestor is left
+        test    r10, r10
+        jnz     .climb_lap
+        jmp     .no
+.yes:
+        mov     r10, [r9 + P_PARENT]    ; its new parent
+        mov     [r8 + P_PARENT], r10
+        xor     ecx, ecx
+        jmp     .rec
+.rec_lap:
+        imul    r11, rcx, REC_SIZE
+        add     r11, [recs]
+        cmp     [r11 + R_CHILD], r8
+        jne     .rec_next
+        cmp     qword [r11 + R_STATE], 0
+        jne     .rec_next
+        cmp     [r11 + R_SIGNER], r9
+        jne     .rec_next
+        mov     [r11 + R_SIGNER], r10
+        dec     qword [r9 + P_BLOCKS]
+        inc     qword [r10 + P_BLOCKS]
+        push    rcx r8 r9 r10 r11
+        call    kern_wake_special       ; the special rower looks at what its new parent holds
+        pop     r11 r10 r9 r8 rcx
+.rec_next:
+        inc     rcx
+.rec:
+        cmp     rcx, [nrecs]
+        jb      .rec_lap
+        mov     qword [rbp + r13 + 24], 0
+        ret
+.no:
+        mov     qword [rbp + r13 + 24], -2
+        ret
+
+; 45 is kept for the signature a child inherits from its parent (the branch nucleo/ceder-firma): until it joins,
+; it answers -1.
+family_k45:
+        mov     qword [rbp + r13 + 24], -1
         ret
 
 ; 42 row in the gaps (the work that must not take the machine from who uses it: a reading, an exam): a = number of
@@ -4910,6 +4990,52 @@ cabin_end:
 line_end:
         push    rsi r12
         sub     rsp, 8
+        cmp     qword [rbx + P_PARENT], 0
+        jne     .ends
+        ; THE KERNEL NAMES (the Capitan, 2026-11-23: "el nucleo nombra"): the kernel is the mother of all, what is
+        ; highest. One it launched itself ends: its children are named its siblings (46, from the highest), so they
+        ; live on with what it left them (its boxes, its associations). What waited for its signature is decided
+        ; now with its own permissions, as its shadow used to.
+        xor     esi, esi
+        jmp     .k
+.k_lap:
+        mov     r12, [procs]
+        mov     r12, [r12 + rsi*8]
+        cmp     [r12 + P_PARENT], rbx
+        jne     .k_next
+        cmp     qword [r12 + P_DONE], 0
+        jne     .k_next
+        mov     qword [r12 + P_PARENT], 0
+.k_next:
+        inc     rsi
+.k:                                     ; while there are cabins to look at
+        cmp     rsi, [nprocs]
+        jb      .k_lap
+        xor     esi, esi
+        jmp     .r
+.r_lap:
+        imul    r12, rsi, REC_SIZE
+        add     r12, [recs]
+        cmp     [r12 + R_SIGNER], rbx
+        jne     .r_next
+        cmp     qword [r12 + R_STATE], 0
+        jne     .r_next
+        mov     r10, rbx
+        mov     rdx, [r12 + R_KIND]
+        call    shadow_decides
+        mov     [r12 + R_STATE], r8
+        dec     qword [rbx + P_BLOCKS]
+        dec     qword [held]
+        mov     r8, [r12 + R_CHILD]
+        dec     qword [r8 + P_WAITING]
+        call    q_wake                  ; its signature arrived
+.r_next:
+        inc     rsi
+.r:                                     ; while there are records to look at
+        cmp     rsi, [nrecs]
+        jb      .r_lap
+        jmp     .done
+.ends:
         xor     esi, esi
         jmp     .one
 .one_lap:
@@ -4933,6 +5059,7 @@ line_end:
 .one:                                   ; while there are cabins to look at
         cmp     rsi, [nprocs]
         jb      .one_lap
+.done:
         add     rsp, 8
         pop     r12 rsi
         ret

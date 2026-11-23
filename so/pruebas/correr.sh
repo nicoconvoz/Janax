@@ -795,7 +795,7 @@ ventanilla: *
 porteros: nodos=* negados=1" familia_rechazo
 
 familia familia_huerfano ventanilla_hola
-caso "familia: la sombra del padre firma por su linea" 0 0 "$fijo0
+caso "familia: el nucleo nombra al hijo de una madre suya que se va" 0 0 "$fijo0
 P0 codigo=0 j0=0000000000000007 t=*
 hola
 P1 codigo=0 j0=0000000000000005 t=*
@@ -808,16 +808,36 @@ P0 codigo=0 j0=0000000000000000 t=*
 ventanilla: *
 porteros: nodos=10 negados=1" familia_espera@pl
 
-# Three generations: "padre" launches "hijo" and ends; the grandchild's request is signed by the
-# parent's shadow with the parent's permissions, never by the grandparent (which signs only 1 request).
+# Three generations: "padre" launches "hijo" and ends. Nobody above named the grandchild (46), so its line ends
+# with its parent (the Capitan, 2026-11-23): it never says "hola", and the grandparent signs only 1 request.
 familia familia_sombra ventanilla_hola
 cp "$salida/familia_padre_se_va.bin" "$salida/familia_sombra/7061647265"
-caso "familia: la sombra decide por su linea, no el abuelo" 0 0 "$fijo0
+caso "familia: sin nombrar, el nieto termina con su padre" 0 0 "$fijo0
+P2 codigo=9 j0=0000000000000000 t=*
+P1 codigo=0 j0=0000000000000003 t=*
+P0 codigo=0 j0=0000000000000001 t=*
+ventanilla: *" familia_abuelo
+
+# The grandparent names the grandchild its parent's sibling (46, the Capitan: "solo si se lo da desde lo alto"): it
+# outlives its parent: it says "hola" after its parent ended, and it is the grandparent's to sign (2 signatures:
+# the launch of "hijo", and its "hola").
+familia familia_nombra familia_hijo_tarde
+cp "$salida/familia_padre_espera.bin" "$salida/familia_nombra/7061647265"
+caso "familia: el abuelo nombra al nieto hermano del padre" 0 0 "$fijo0
 P1 codigo=0 j0=0000000000000003 t=*
 hola
 P2 codigo=0 j0=0000000000000005 t=*
-P0 codigo=0 j0=0000000000000001 t=*
-ventanilla: *" familia_abuelo
+P0 codigo=0 j0=0000000000000002 t=*
+ventanilla: *" familia_nombra
+
+# Only from above: a parent cannot name its own child (46 answers -2). It is one the kernel launched, so when it
+# ends the kernel, highest of all, names its child, and its "hola" is decided with its permissions.
+familia familia_nombra_padre ventanilla_hola
+caso "familia: el padre no puede nombrar a su hijo" 0 0 "$fijo0
+P0 codigo=0 j0=FFFFFFFFFFFFFFFE t=*
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+ventanilla: *" familia_nombra_padre
 if [ -z "${JANAX_SOLO:-}" ]; then   # (the assembler and the combinations: only in the whole suite)
 # --- the PDP assembler: Janax assembled by Janax. Every source must come out byte for byte as FASM builds
 # it, the assembler's own source included. A source that uses what the assembler does not have yet is
