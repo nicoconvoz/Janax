@@ -990,7 +990,14 @@ def vida_routines(v):
     o("v_event:                        ; an event on the shared screen -> j0 = 1 if it was the creatures' (taken)")
     o("  jld j9, j14, %s" % num(EV)); J("jldi j10, 5", "jsub j10, j9, j10", "jjnz j10, ve_open", "jcall v_calm", "jldi j0, 0", "jret")
     o("ve_open:")
-    J("jldi j10, 4", "jsub j10, j9, j10", "jjnz j10, ve_pointer", "jcall ve_gesture", "jldi j0, 0", "jret")
+    J("jldi j10, 4", "jsub j10, j9, j10", "jjnz j10, ve_fine", "jcall ve_gesture", "jldi j0, 0", "jret")
+    o("ve_fine:                        ; (the pointer comes in the cells of the screen shown, K times finer since her screen is")
+    o("                                ; at its full resolution (2026-11-23): into her screen's own cells first, -1 kept. Read")
+    o("                                ; K times too far, only a form near the corner could be held, 2026-11-24)")
+    J("jldi j10, 4", "jsub j10, j9, j10", "jjnn j10, ve_pointer")   # (pointer kinds 1..3 only)
+    for off in (8, 16):
+        a = "ve_k%d" % off
+        o("  jld j1, j14, %s" % num(EV + off)); J("jjn j1, %s" % a, "jldi j10, %d" % K, "jdiv j1, j1, j10"); o("  jst j1, j14, %s" % num(EV + off)); o("%s:" % a)
     o("ve_pointer:                     ; held by a form: always the forms'; outside the drawing: the forms'")
     o("  jld j1, j14, %s" % num(EV + 8)); J("jjn j1, ve_forms")
     o("  jld j2, j14, %s" % num(fg("GRAB"))); J("jjnz j2, ve_half")
