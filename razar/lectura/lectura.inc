@@ -594,8 +594,8 @@ scan:
 
 ; One file of the book (LABEL, LABLEN), every byte through tok_byte. Uses j1-j14.
 ; A BOOK OF THE DISK (Capitan, 2026-11-23: "que no copie libros o codigo, que los lea desde el mismo lugar donde
-; estan"): a book whose label starts "libro-disco-" holds only the print of a file of the host (8 bytes: her body
-; writes it, gen_luma.py r_host_eat) and its address. It is read there, with 37 (read only): the book goes into BUF,
+; estan"): a book whose label starts "libro-disco-" holds only the print of a file of the host and its size (8 bytes
+; each: her body writes them, gen_luma.py r_host_eat) and its address. It is read there, with 37 (read only): the book goes into BUF,
 ; and LABEL and LABLEN become the address after the print. A file that is no longer there is passed over: the rest
 ; of the shelf is read.
 scan_file:
@@ -644,14 +644,14 @@ scan_file:
   jor j10, j10, j3
   jcall0 j1, ask
   jld j2, j1, LABLEN
-  jldi j3, 8
+  jldi j3, 16
   jsub j2, j2, j3
   jjn j2, sf_skip
   jjz j2, sf_skip
   jst j2, j1, LABLEN
   jldi j2, 0
   jshi j2, BUF
-  jldi j3, 8
+  jldi j3, 16
   jadd j2, j2, j3
   jst j2, j1, LABEL
   jldi j10, 37
@@ -676,7 +676,7 @@ sf_label:
   jld j2, j1, LABEL             ; (a book of the disk that is no longer there: passed over)
   jldi j3, 0
   jshi j3, BUF
-  jldi j4, 8
+  jldi j4, 16
   jadd j3, j3, j4
   jsub j2, j2, j3
   jjz j2, sf_skip
