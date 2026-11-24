@@ -1,6 +1,6 @@
 ## Janax y Razar v4.39: su esencia, viva siempre y sin gastar mientras nadie está con ella
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24513201](https://doi.org/10.5281/zenodo.24513201)
 
 > *"Del ON rescatá viva siempre, y del OFF que no gaste nada."*
 > *"Aplicalo a todo: que sea una esencia, un perfume en Luma."*
