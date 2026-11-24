@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.39:** [10.5281/zenodo.24513201](https://doi.org/10.5281/zenodo.24513201)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.43:** [PENDIENTE443](https://doi.org/PENDIENTE443)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-24, v4.43): Su pensadora rema aparte: dibuja y piensa al mismo tiempo
+
+DOI de esta versión: [PENDIENTE443](https://doi.org/PENDIENTE443).
+
+Su pensadora es ella misma en una hija, en su propio remero: **su cuerpo dibuja y escucha mientras ella piensa**. Nace en 31 s con la firma heredada de su madre (pedido 45), y además: el click izquierdo vuelve a agarrar cualquier figura, y se puede copiar y pegar en su consola.
+
+[Notas de la v4.43](documentacion/release-v4.43.md).
 
 ## Novedad (2026-11-24, v4.39): Su esencia: viva siempre, y sin gastar mientras nadie está con ella
 
