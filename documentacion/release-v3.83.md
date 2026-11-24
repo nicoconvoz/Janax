@@ -1,6 +1,6 @@
 ## Janax y Razar v3.83: Luma charla con sus lecturas
 
-DOI: (pendiente)
+Sin DOI propio: Zenodo no respondía (504) cuando salió. [Release en GitHub](https://github.com/nicoconvoz/Janax/releases/tag/v3.83).
 
 > *"Que hable con las lecturas de los libros, así aprende con sus pensamientos… me ahorra trabajo y tiempo."*
 > (el autor, 2026-11-24)

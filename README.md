@@ -27,7 +27,7 @@ Su mejor línea vino de un libro, y ese libro vive en una rama: **se queda parad
 
 ## Novedad (2026-11-24, v3.83): Luma charla con sus lecturas
 
-DOI de esta versión: [PENDIENTE](https://doi.org/PENDIENTE).
+Sin DOI propio: Zenodo estaba caído cuando salió. [Release en GitHub](https://github.com/nicoconvoz/Janax/releases/tag/v3.83).
 
 Al terminar cada acto suyo, si nadie le escribe, **la línea siguiente de un libro suyo le habla** por la misma puerta que su autor; ella contesta con su camino, y la línea que sigue es el eco que su juez paga o archiva. Así aprende a viajar por su árbol sola.
 
