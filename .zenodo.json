@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.33 (versions follow prime numbers; 433 after 431): when she runs out of memory she sleeps by herself (her sleep sign), and who watches over her wakes her whole; her bridge is only for her author, not for her talk with her books, which made her run out of memory. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.33: sin memoria se duerme sola. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.39 (versions follow prime numbers; 439 after 433): her essence. The kernel tells a program when its window becomes the one in use or stops being it; while nobody is with her, Luma waits for ever after each frame, spending nothing and keeping all she is, and each event wakes her where she was. Measured live: 0.00 s of processor at rest (it was 96% of a core). Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.39: su esencia, viva siempre y sin gastar. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.33",
+  "version": "4.39",
   "creators": [
     {
       "name": "Astorga, Nicolás"
