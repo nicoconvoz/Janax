@@ -1,6 +1,6 @@
 ## Janax y Razar v3.89: Luma se queda en la rama que le sirvió
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24494956](https://doi.org/10.5281/zenodo.24494956)
 
 > *"Mirá cómo se abren todas las ramas al costado, en vez de aprovechar la primera búsqueda y subir o bajar por las
 > ramas justo a la que necesita, sin recorrer todo de nuevo."*
