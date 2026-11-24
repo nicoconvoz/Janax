@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.83:** [PENDIENTE](https://doi.org/PENDIENTE)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.89:** [PENDIENTE389](https://doi.org/PENDIENTE389)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-24, v3.89): Luma se queda en la rama que le sirvió
+
+DOI de esta versión: [PENDIENTE389](https://doi.org/PENDIENTE389).
+
+Su mejor línea vino de un libro, y ese libro vive en una rama: **se queda parada ahí**, y la próxima respuesta arranca en esa rama. Si no encuentra nada, sube un escalón y lee sólo lo que no leyó.
+
+[Notas de la v3.89](documentacion/release-v3.89.md).
 
 ## Novedad (2026-11-24, v3.83): Luma charla con sus lecturas
 
