@@ -1,6 +1,6 @@
 ## Janax y Razar v3.79: su árbol de temas, que crece sola, y la memoria desde cero
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24487953](https://doi.org/10.5281/zenodo.24487953)
 
 > *"Ramificá un tema general, de ahí hijos de temas que nacen de ese tema general: así Luma viaja entre padres, hijos y
 > hermanos buscando lo que necesita; además, cuando puede, improvisa."*
