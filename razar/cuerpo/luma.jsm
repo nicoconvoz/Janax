@@ -8752,38 +8752,40 @@ main_wait:
   jst j14, j14, 0208h
   jjmp frame
 ; ---- station 0: references that do not reach from where they are (gen_leer.py, reach)
+fr0_r_cable_init:
+  jjmp fr1_r_cable_init
 fr0_r_read_cand:
   jjmp fr1_r_read_cand
-fr0_r_read_max:
-  jjmp fr1_r_read_max
-fr0_v_meal:
-  jjmp fr1_v_meal
-fr0_v_event:
-  jjmp fr1_v_event
-fr0_r_cable:
-  jjmp fr1_r_cable
-fr0_r_free_load:
-  jjmp fr1_r_free_load
+fr0_v_show:
+  jjmp fr1_v_show
 fr0_r_read_end:
   jjmp fr1_r_read_end
 fr0_r_free:
   jjmp fr1_r_free
-fr0_v_show:
-  jjmp fr1_v_show
-fr0_r_cable_init:
-  jjmp fr1_r_cable_init
 fr0_v_init:
   jjmp fr1_v_init
-fr0_v_frame:
-  jjmp fr1_v_frame
-fr0_r_mus_init:
-  jjmp fr1_r_mus_init
 fr0_r_read_poll:
   jjmp fr1_r_read_poll
-fr0_r_char:
-  jjmp fr1_r_char
+fr0_v_meal:
+  jjmp fr1_v_meal
 fr0_r_host_eat:
   jjmp fr1_r_host_eat
+fr0_r_cable:
+  jjmp fr1_r_cable
+fr0_r_read_max:
+  jjmp fr1_r_read_max
+fr0_r_mus_init:
+  jjmp fr1_r_mus_init
+fr0_r_free_load:
+  jjmp fr1_r_free_load
+fr0_v_event:
+  jjmp fr1_v_event
+fr0_fr_nomem:
+  jjmp fr1_fr_nomem
+fr0_r_char:
+  jjmp fr1_r_char
+fr0_v_frame:
+  jjmp fr1_v_frame
 main_frames:                    ; between two frames: what is left of this one
   jld j12, j14, 0220h
   jst j12, j14, 0200h
@@ -12786,8 +12788,7 @@ alloc_go:
   jcall r_tocar
   jadd j0, j13, j14
   jjnn j0, alloc_ok
-  jldi j0, 0BADh
-  jhalt
+  jjmp fr0_fr_nomem
 alloc_ok:
   jret
 r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)
@@ -18448,10 +18449,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0221Ch
-  jshi j2, 0F348h
-  jshi j2, 05C5Bh
-  jshi j2, 0F7F9h
+  jldi j2, 0387Fh
+  jshi j2, 047C4h
+  jshi j2, 0ABEEh
+  jshi j2, 0633Dh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -31037,98 +31038,100 @@ dse_kb:
   jadd j4, j4, j10
   jjmp dse_kb
 ; ---- station 1: references that do not reach from where they are (gen_leer.py, reach)
-fr1_r_read_place:
-  jjmp r_read_place
-fr1_l_ring:
-  jjmp l_ring
-fr1_r_read_max:
-  jjmp r_read_max
-fr1_r_read_cand:
-  jjmp r_read_cand
-fr1_r_tried:
-  jjmp r_tried
-fr1_ul_cmp:
-  jjmp ul_cmp
-fr1_r_get_rec:
-  jjmp r_get_rec
-fr1_v_meal:
-  jjmp v_meal
-fr1_r_gesture:
-  jjmp r_gesture
-fr1_r_tocar:
-  jjmp r_tocar
-fr1_r_hash:
-  jjmp r_hash
-fr1_r_rec_key:
-  jjmp r_rec_key
-fr1_v_event:
-  jjmp v_event
-fr1_r_randmod:
-  jjmp r_randmod
-fr1_r_flat:
-  jjmp r_flat
-fr1_r_read_add:
-  jjmp r_read_add
 fr1_r_cable:
   jjmp fr2_r_cable
 fr1_r_cable_flush:
   jjmp fr2_r_cable_flush
+fr1_r_receta:
+  jjmp r_receta
 fr1_r_judge:
   jjmp r_judge
-fr1_r_read_end:
-  jjmp r_read_end
-fr1_v_show:
-  jjmp v_show
-fr1_r_free:
-  jjmp r_free
+fr1_r_cable_init:
+  jjmp fr2_r_cable_init
+fr1_r_set_hue:
+  jjmp r_set_hue
+fr1_r_read_cand:
+  jjmp r_read_cand
 fr1_r_recompute:
   jjmp r_recompute
-fr1_r_put_rec:
-  jjmp r_put_rec
-fr1_v_init:
-  jjmp v_init
-fr1_r_colour:
-  jjmp r_colour
-fr1_v_frame:
-  jjmp v_frame
-fr1_r_open:
-  jjmp r_open
-fr1_r_org_rec:
-  jjmp r_org_rec
 fr1_r_read_get:
   jjmp r_read_get
+fr1_r_tocar:
+  jjmp r_tocar
+fr1_r_flat:
+  jjmp r_flat
+fr1_r_randmod:
+  jjmp r_randmod
+fr1_r_get_rec:
+  jjmp r_get_rec
+fr1_v_show:
+  jjmp v_show
+fr1_r_get_num:
+  jjmp r_get_num
+fr1_r_get_hex:
+  jjmp r_get_hex
+fr1_r_file:
+  jjmp r_file
+fr1_r_org_rec:
+  jjmp r_org_rec
+fr1_r_hash:
+  jjmp r_hash
+fr1_r_put_rec:
+  jjmp r_put_rec
+fr1_r_tried:
+  jjmp r_tried
 fr1_r_fit_cost:
   jjmp r_fit_cost
-fr1_r_alloc:
-  jjmp r_alloc
+fr1_r_read_place:
+  jjmp r_read_place
+fr1_r_read_add:
+  jjmp r_read_add
+fr1_r_gesture:
+  jjmp r_gesture
 fr1_l_ring_open:
   jjmp l_ring_open
 fr1_r_mus_init:
   jjmp r_mus_init
-fr1_r_get_num:
-  jjmp r_get_num
-fr1_r_put_num:
-  jjmp r_put_num
+fr1_r_colour:
+  jjmp r_colour
+fr1_r_free:
+  jjmp r_free
 fr1_r_rec_org:
   jjmp r_rec_org
-fr1_r_set_hue:
-  jjmp r_set_hue
-fr1_r_read_poll:
-  jjmp r_read_poll
-fr1_r_get_hex:
-  jjmp r_get_hex
-fr1_r_cable_init:
-  jjmp fr2_r_cable_init
-fr1_r_char:
-  jjmp r_char
 fr1_r_host_eat:
   jjmp r_host_eat
+fr1_r_alloc:
+  jjmp r_alloc
+fr1_r_rec_key:
+  jjmp r_rec_key
+fr1_ul_cmp:
+  jjmp ul_cmp
+fr1_v_init:
+  jjmp v_init
+fr1_r_read_poll:
+  jjmp r_read_poll
+fr1_l_ring:
+  jjmp l_ring
+fr1_v_meal:
+  jjmp v_meal
+fr1_v_event:
+  jjmp v_event
+fr1_r_put_num:
+  jjmp r_put_num
+fr1_r_open:
+  jjmp r_open
+fr1_r_read_max:
+  jjmp r_read_max
+fr1_v_frame:
+  jjmp v_frame
+fr1_r_read_end:
+  jjmp r_read_end
 fr1_r_free_load:
   jjmp r_free_load
-fr1_r_receta:
-  jjmp r_receta
-fr1_r_file:
-  jjmp r_file
+fr1_fr_nomem:
+  jjmp fr_nomem
+fr1_r_char:
+  jjmp r_char
 dse_mine:                       ; (her cross was said: its way counts once more, and waits for his answer)
   jldi j6, 019Fh
   jshi j6, 0
@@ -31294,6 +31297,14 @@ r_bridge:                       ; HER BRIDGE (see lj_his): if her line comes fro
   jld j1, j14, 0520h
   jjz j1, brg_r
   jst j14, j14, 0520h
+  ; (only to him: when a book speaks to her (SF_ON) there is nobody to bring it to. Every line she said to her
+  ; readings crossed it, a search through all her branches each time, and in 19 minutes she ran out of room,
+  ; 2026-11-24)
+  jld j1, j14, 0510h
+  jjz j1, brg_go
+  jld j1, j1, 192
+  jjnz j1, brg_r
+brg_go:
   ; (her line, kept)
   jldi j6, 019Fh
   jshi j6, 0
@@ -31352,6 +31363,48 @@ r_bridge:                       ; HER BRIDGE (see lj_his): if her line comes fro
   jld j6, j6, 01D68h
   jld j1, j6, 6408
   jjz j1, brg_back
+  ; (a line of his tongue written inside hers, or hers inside it, brings nothing: it was already his tongue. Seen
+  ; in a copy, 2026-11-24: '...bosque herido.. (en tu idioma: ...bosque herido.)')
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 1024
+  jadd j1, j1, j15
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 6408
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 16640
+  jadd j3, j3, j15
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 17640
+  jcall din_in
+  jjnz j0, brg_back
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jldi j15, 16640
+  jadd j1, j1, j15
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j2, j6, 17640
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j3, j6, 01D68h
+  jldi j15, 1024
+  jadd j3, j3, j15
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j4, j6, 6408
+  jcall din_in
+  jjnz j0, brg_back
   ; (both, in D_C: hers (up to 600), then its line in his tongue (up to 990 in all))
   jldi j6, 019Fh
   jshi j6, 0
@@ -47932,7 +47985,7 @@ r_mus_word:                     ; j1 = her school's word, by the dance: born (th
   jsub j10, j2, j10
   jjnz j10, mw_2
   jjz j1, mw_ready
-  jcall r_alloc
+  jcall fr2_r_alloc
   jadd j11, j0, j14
   jldi j10, 23
   jldi j6, 019Fh
@@ -47941,7 +47994,7 @@ r_mus_word:                     ; j1 = her school's word, by the dance: born (th
   jld j12, j6, 31480
   jldi j3, 1
   jsub j12, j12, j3
-  jcall r_tocar
+  jcall fr2_r_tocar
   jldi j1, 0
   jcall r_mus_say
 mw_ready:
@@ -54966,70 +55019,70 @@ ru_end:
   jst j1, j6, 01518h
   jjmp rd_plain
 ; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
-fr2_l_ring:
-  jjmp fr1_l_ring
-fr2_r_read_place:
-  jjmp fr1_r_read_place
-fr2_r_tried:
-  jjmp fr1_r_tried
-fr2_ul_cmp:
-  jjmp fr1_ul_cmp
-fr2_r_get_rec:
-  jjmp fr1_r_get_rec
-fr2_r_gesture:
-  jjmp fr1_r_gesture
-fr2_r_tocar:
-  jjmp fr1_r_tocar
-fr2_r_hash:
-  jjmp fr1_r_hash
-fr2_r_rec_key:
-  jjmp fr1_r_rec_key
-fr2_r_randmod:
-  jjmp fr1_r_randmod
-fr2_r_flat:
-  jjmp fr1_r_flat
-fr2_r_read_add:
-  jjmp fr1_r_read_add
-fr2_r_judge:
-  jjmp fr1_r_judge
-fr2_r_recompute:
-  jjmp fr1_r_recompute
-fr2_r_put_rec:
-  jjmp fr1_r_put_rec
-fr2_r_colour:
-  jjmp fr1_r_colour
-fr2_r_open:
-  jjmp fr1_r_open
-fr2_r_read_get:
-  jjmp fr1_r_read_get
-fr2_r_org_rec:
-  jjmp fr1_r_org_rec
-fr2_l_ring_open:
-  jjmp fr1_l_ring_open
-fr2_r_get_num:
-  jjmp fr1_r_get_num
-fr2_r_fit_cost:
-  jjmp fr1_r_fit_cost
-fr2_r_alloc:
-  jjmp fr1_r_alloc
-fr2_r_put_num:
-  jjmp fr1_r_put_num
-fr2_r_rec_org:
-  jjmp fr1_r_rec_org
-fr2_r_set_hue:
-  jjmp fr1_r_set_hue
-fr2_r_get_hex:
-  jjmp fr1_r_get_hex
-fr2_r_cable:
-  jjmp r_cable
-fr2_r_cable_flush:
-  jjmp r_cable_flush
-fr2_r_file:
-  jjmp fr1_r_file
 fr2_r_receta:
   jjmp fr1_r_receta
+fr2_r_judge:
+  jjmp fr1_r_judge
+fr2_r_set_hue:
+  jjmp fr1_r_set_hue
+fr2_r_recompute:
+  jjmp fr1_r_recompute
+fr2_r_tocar:
+  jjmp fr1_r_tocar
+fr2_r_flat:
+  jjmp fr1_r_flat
+fr2_r_randmod:
+  jjmp fr1_r_randmod
+fr2_r_get_rec:
+  jjmp fr1_r_get_rec
+fr2_r_read_get:
+  jjmp fr1_r_read_get
+fr2_r_get_num:
+  jjmp fr1_r_get_num
+fr2_r_rec_org:
+  jjmp fr1_r_rec_org
+fr2_r_get_hex:
+  jjmp fr1_r_get_hex
+fr2_r_alloc:
+  jjmp fr1_r_alloc
+fr2_r_rec_key:
+  jjmp fr1_r_rec_key
+fr2_ul_cmp:
+  jjmp fr1_ul_cmp
+fr2_r_file:
+  jjmp fr1_r_file
+fr2_r_org_rec:
+  jjmp fr1_r_org_rec
+fr2_r_hash:
+  jjmp fr1_r_hash
+fr2_r_put_rec:
+  jjmp fr1_r_put_rec
+fr2_r_tried:
+  jjmp fr1_r_tried
+fr2_r_fit_cost:
+  jjmp fr1_r_fit_cost
+fr2_r_read_place:
+  jjmp fr1_r_read_place
+fr2_r_read_add:
+  jjmp fr1_r_read_add
+fr2_r_gesture:
+  jjmp fr1_r_gesture
+fr2_l_ring_open:
+  jjmp fr1_l_ring_open
+fr2_r_colour:
+  jjmp fr1_r_colour
 fr2_r_cable_init:
   jjmp r_cable_init
+fr2_l_ring:
+  jjmp fr1_l_ring
+fr2_r_cable:
+  jjmp r_cable
+fr2_r_put_num:
+  jjmp fr1_r_put_num
+fr2_r_open:
+  jjmp fr1_r_open
+fr2_r_cable_flush:
+  jjmp r_cable_flush
 rd_thought:                     ; a thought: judged with its reading, in the place of the form it came from
   jcall fr2_r_recompute
   jldi j7, 019Fh
@@ -56639,6 +56692,33 @@ fr_sleep:                       ; she sleeps, when she feels like it (the Capita
   jldi j10, 7
   jcall fr2_r_file
   jjmp fr_rest
+fr_nomem:                       ; SHE DOES NOT WAIT FOR US (the Capitan, 2026-11-24: "ya no quiero que dependa tanto de
+                                ; nosotros"): she asked for room and there was none. She used to stop where she was,
+                                ; her window open, and who watches over her saw nothing to do. Now she leaves the sign
+                                ; of her sleep, as when she feels like sleeping, and stops: who watches over her closes
+                                ; her eyes and she is born again, with all her room. (Nothing is asked for here.)
+  jldi j1, 07269h
+  jshi j1, 06D72h
+  jshi j1, 06F64h
+  jldi j6, 019Fh
+  jshi j6, 0
+  jst j1, j6, 5160
+  jldi j11, 019Fh
+  jshi j11, 01428h
+  jldi j12, 6
+  jcall fr2_r_open
+  jld j9, j14, 04A8h
+  jjn j9, fr_nm_h
+  jldi j10, 6
+  jldi j11, 019Fh
+  jshi j11, 01428h
+  jldi j12, 6
+  jcall fr2_r_file
+  jldi j10, 7
+  jcall fr2_r_file
+fr_nm_h:
+  jldi j0, 0BADh
+  jhalt
 fr_paint:                       ; she paints herself (the Capitan: "que muestre las gamas de colores que quiera"): a meal
                                 ; of hers by her luck, and the form it fed wears another of that meal's colours, by her
                                 ; luck too (a form used to wear only the first, the most counted: often a dark outline).
@@ -66287,8 +66367,7 @@ v_alloc_go:
   jcall v_r_tocar
   jadd j0, j13, j14
   jjnn j0, v_alloc_ok
-  jldi j0, 0BADh
-  jhalt
+  jjmp fr_nomem
 v_alloc_ok:
   jret
 v_r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)

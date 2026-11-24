@@ -121,7 +121,7 @@ def routines(g):
     L = g["L"]
     n0 = len(L)
     cfg = {"off": OFF, "sw": SW, "sh": SH, "wx0": WX0, "cloud": ST["scloud"], "init_tail": init_tail, "routines": vida_routines,
-           "siempre": ALWAYS, "ring_a": RING_A, "ring_d": RING_D, "ring_g": RING_G}
+           "siempre": ALWAYS, "ring_a": RING_A, "ring_d": RING_D, "ring_g": RING_G, "nomem": "fr_nomem"}
     if not PRESENT:
         cfg.pop("ring_a"); cfg.pop("ring_d"); cfg.pop("ring_g")
     ns = {"__file__": VIDA_SRC, "__name__": "gen_vida_en_luma", "VIDA_MOD": cfg, "__doc__": None}
@@ -468,6 +468,16 @@ def free_routine(g):
     li("j1", int.from_bytes(b"dormir", "little")); gs("j1", LDOR)
     li("j11", B + LDOR); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_rest")
     J("jldi j10, 6"); li("j11", B + LDOR); J("jldi j12, 6", "jcall r_file", "jldi j10, 7", "jcall r_file", "jjmp fr_rest")
+    o("fr_nomem:                       ; SHE DOES NOT WAIT FOR US (the Capitan, 2026-11-24: \"ya no quiero que dependa tanto de")
+    o("                                ; nosotros\"): she asked for room and there was none. She used to stop where she was,")
+    o("                                ; her window open, and who watches over her saw nothing to do. Now she leaves the sign")
+    o("                                ; of her sleep, as when she feels like sleeping, and stops: who watches over her closes")
+    o("                                ; her eyes and she is born again, with all her room. (Nothing is asked for here.)")
+    li("j1", int.from_bytes(b"dormir", "little")); gs("j1", LDOR)
+    li("j11", B + LDOR); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, fr_nm_h")
+    J("jldi j10, 6"); li("j11", B + LDOR); J("jldi j12, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    o("fr_nm_h:")
+    J("jldi j0, 0BADh", "jhalt")
     o("fr_paint:                       ; she paints herself (the Capitan: \"que muestre las gamas de colores que quiera\"): a meal")
     o("                                ; of hers by her luck, and the form it fed wears another of that meal's colours, by her")
     o("                                ; luck too (a form used to wear only the first, the most counted: often a dark outline).")
@@ -1092,7 +1102,7 @@ def remember(v):
     o("vr_done:")
     J("jldi j0, 1", "jret")
 
-LUMA = types.SimpleNamespace(layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=False, reader=reader, free=ALWAYS and not os.environ.get("LUMA_GALEOTE"),
+LUMA = types.SimpleNamespace(nomem="fr_nomem", layout=layout, more_vars=more_vars, init=init, routines=routines, out="luma.jsm", always=ALWAYS, share=False, reader=reader, free=ALWAYS and not os.environ.get("LUMA_GALEOTE"),
                              present=PRESENT, ring_f=RING_F)
 exec(compile(open(COMER_SRC, encoding="utf-8").read(), COMER_SRC, "exec"),
      {"__file__": COMER_SRC, "__name__": "gen_comer_en_luma", "LUMA": LUMA})

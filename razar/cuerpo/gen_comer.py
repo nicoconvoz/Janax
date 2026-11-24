@@ -238,7 +238,11 @@ def small_helpers():
     o("r_alloc:                        ; j1 = bytes -> j0 = a new environment of that size (request 2), its address")
     J("jldi j10, 8", "jsub j10, j1, j10", "jjnn j10, alloc_go", "jldi j1, 8")
     o("alloc_go:")
-    J("jadd j11, j1, j14", "jldi j10, 2", "jldi j12, 0", "jcall r_tocar", "jadd j0, j13, j14", "jjnn j0, alloc_ok", "jldi j0, 0BADh", "jhalt")
+    J("jadd j11, j1, j14", "jldi j10, 2", "jldi j12, 0", "jcall r_tocar", "jadd j0, j13, j14", "jjnn j0, alloc_ok")
+    if getattr(globals().get("LUMA"), "nomem", None):    # (no room: who hosts this decides what happens; Luma sleeps)
+        J("jjmp %s" % LUMA.nomem)
+    else:
+        J("jldi j0, 0BADh", "jhalt")
     o("alloc_ok:")
     J("jret")
     o("r_read_all:                     ; FH, j11 = where, j12 = bytes -> j0 = bytes read (reads until all or none)")
