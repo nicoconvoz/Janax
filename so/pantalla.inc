@@ -421,6 +421,8 @@ screen_proc:
         je      .note
         cmp     edx, WM_SIZE
         je      .note
+        cmp     edx, WM_ACTIVATE        ; (it became the window in use, or stopped being it: minimized too)
+        je      .note
         jmp     [DefWindowProcW]
 .note:
         call    screen_note
@@ -485,7 +487,8 @@ screen_proc:
 ; {kind, x, y, extra}: 1 the pointer moved (extra: the buttons held, 1 left, 2 right), 2 a button went down and 3 up
 ; (extra 1 left, 2 right), 4 a key went down (extra: its virtual-key code; x, y where the pointer was), 5 the window
 ; closed (x, y = -1), 6 a new size (x, y: the client area in pixels), 7 a character was typed (extra: its Unicode
-; code point, the two halves of a surrogate pair joined; x, y where the pointer was). The pointer's x, y are cells of the cloud shown,
+; code point, the two halves of a surrogate pair joined; x, y where the pointer was), 8 the window became the one in use
+; (extra 1) or stopped being it, minimized too (extra 0; x, y = -1). The pointer's x, y are cells of the cloud shown,
 ; through the same proportions and centring the painting uses; -1, -1 outside the picture. A move right after
 ; another kept move takes its place. Then the bell rings: the kernel, asleep on it while nobody rows, wakes whoever
 ; sleeps on the screen (and a rower that ends a turn looks too). This thread never takes the kernel's lock: a rower
@@ -535,6 +538,8 @@ screen_note:
         je      .size
         cmp     r12d, WM_DESTROY
         je      .gone
+        cmp     r12d, WM_ACTIVATE
+        je      .act
         jmp     .unlock                 ; (another button message: not kept)
 .move:
         mov     edi, r13d
@@ -591,6 +596,12 @@ screen_note:
         mov     esi, r14d
         shr     esi, 16
         mov     r12d, 6
+        jmp     .put
+.act:
+        xor     edi, edi                ; WA_INACTIVE (0) in the low word: not in use; anything else: in use
+        test    r13w, r13w
+        setnz   dil
+        mov     r12d, 8
         jmp     .put
 .gone:
         mov     byte [scr_live], 0      ; from here on nobody sleeps on it

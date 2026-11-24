@@ -178,7 +178,7 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
                           "FOCUS EPOCH WINS WINSRUN RADIUS BUDGET WTOTAL WSTART WSTRIDE WALKI HCOUNT TOTAL WMAX GHN "
                           "TRN AH GREC GREG GBMP GKEEP GOX GOY GCOUNT TX TY PREV GT GC GDXA GDYA GK GN0 GI GMR GMP "
                           "JF JFA JCNT JJ JI JWC JCC JNC JWP JCP JNP JT2 JMX ALOSER AOTHER AREASON ATL ATW ASLOT "
-                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI HOSTR ARR BRG BFOR").split()):
+                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI HOSTR ARR BRG BFOR SEEN").split()):
     G[name] = GV + 8 * i
 assert max(G.values()) < FORMS
 if COMER:
@@ -328,6 +328,14 @@ if LUMA:
 else:
     J("jldi j10, 40                   ; show"); li("j11", CLOUD); li("j12", TOTAL); J("jcall r_tocar")
 incg("FRAMES")
+if LUMA:
+    o("  ; HER ESSENCE (the Capitan, 2026-11-24: \"del ON rescata viva siempre y del OFF que no gaste nada\"; \"que sea una")
+    o("  ; esencia, un perfume\"): while nobody is with her (her window not in use, nothing typed to her), she waits for ever")
+    o("  ; after each frame: nothing is spent, and all she is stays as it is. Each event (a key, a new file on the disks, her")
+    o("  ; window in use again) wakes her where she was: one frame for it, and back to rest; while someone is with her she")
+    o("  ; lives every frame, always alive (the Capitan, 2026-11-16).")
+    ld("j9", "SEEN"); J("jjnz j9, frame_seen"); setg("FOREVER", 1); J("jjmp main")
+    o("frame_seen:")
 ld("j9", "MOVING"); ld("j10", "GHN"); J("jor j9, j9, j10")
 ld("j10", "GRAB"); J("jjnz j10, frame_held")
 ld("j10", "EXPLORE"); J("jor j9, j9, j10")
@@ -357,6 +365,14 @@ J("jldi j0, 0BADh", "jhalt")
 o("; ---- one event (the record at %Xh): 5 closed, 2 a button down, 3 up, 1 the pointer moved, 4 a key" % EV)
 o("r_handle:")
 if LUMA:
+    o("  ; (HER ESSENCE, see frame: her window in use or not (8), and a key or a letter typed to her: someone is with her)")
+    o("  jld j9, j14, %s" % num(EV)); J("jldi j10, 8", "jsub j10, j9, j10", "jjnz j10, h_nseen")
+    o("  jld j3, j14, %s" % num(EV + 24)); st("j3", "SEEN"); st("j3", "CHANGED"); J("jret")
+    o("h_nseen:")
+    J("jldi j10, 4", "jsub j10, j9, j10", "jjz j10, h_with", "jldi j10, 7", "jsub j10, j9, j10", "jjnz j10, h_go0")
+    o("h_with:")
+    J("jldi j10, 1"); st("j10", "SEEN")
+    o("h_go0:")
     J("jcall v_event", "jjz j0, h_go", "jret                          ; the creatures' side took it")
     o("h_go:")
 o("  jld j9, j14, %s" % num(EV))
