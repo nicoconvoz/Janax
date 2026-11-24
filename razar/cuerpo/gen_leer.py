@@ -5090,7 +5090,10 @@ def make(g, ST, free):
         o("ms_w:")
         J("jcall bw_word", "jjz j0, ms_wd", "jldi j9, 0")
         for k in range(3):
-            J("jldi j10, %d" % (16 * k), "jshr j1, j4, j10", "jldi j10, %d" % N2, "jdiv j2, j1, j10", "jmul j2, j2, j10", "jsub j1, j1, j2",
+            # (its 16 bits first: a print is signed, and the remainder of a negative one is negative, a piece the
+            # school does not have; it wrote outside its room and died, 2026-11-24)
+            J("jldi j10, %d" % (16 * k), "jshr j1, j4, j10"); li("j10", 0xFFFF)
+            J("jand j1, j1, j10", "jldi j10, %d" % N2, "jdiv j2, j1, j10", "jmul j2, j2, j10", "jsub j1, j1, j2",
               "jldi j10, %d" % (16 * k), "jshl j1, j1, j10", "jor j9, j9, j1")
         J("jadd j1, j9, j14", "jcall r_mus_say"); dl("j7", MU_CNT); J("jldi j10, 1", "jsub j7, j7, j10"); ds("j7", MU_CNT); J("jjnz j7, ms_w")
         o("ms_wd:")
