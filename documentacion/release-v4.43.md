@@ -1,6 +1,6 @@
 ## Janax y Razar v4.43: su pensadora rema aparte — dibuja y piensa al mismo tiempo
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24515576](https://doi.org/10.5281/zenodo.24515576)
 
 > *"Que use más remeros, uno para cada cosa: lo que más prioridad tenga, dale más. Usá todos los recursos,
 > autoajustable, sin abusar."* — *"Estaban desde siempre: no inventes nada, que tenemos todo."*
