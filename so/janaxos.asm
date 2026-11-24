@@ -156,7 +156,7 @@ section '.data' data readable writeable
   line      db 96 dup 0
 
   ; the window
-  KINDS     = 46                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
+  KINDS     = 47                ; write, grow, destroy, open, read, write to file, close, cede, use, revoke,
                                 ; consult, delete, rename, list, cede with label, launch, sign, pending, state, bolita,
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
@@ -207,17 +207,19 @@ section '.data' data readable writeable
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
               dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps, serve_title, serve_note
-              dq serve_k45, serve_name
+              dq serve_k45, serve_name, serve_copy
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
              db 3, 1, 1, 0, 1, 1
              db 0, 0                    ; (45: kept for the signature inherited from the parent, nucleo/ceder-firma; 46: name)
+             db 1                       ; (47: copy, the screen's door)
   assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
              db R_READ, 0, 0, 0, 0, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, R_MEM, 0, 0, 0, 0, R_READ, 0, 0, 0, R_READ
              db R_READ, R_READ, R_READ, R_SCREEN, R_SCREEN, 0, R_SCREEN, R_SCREEN
              db 0, 0
+             db R_SCREEN
   assert $ - kind_right = KINDS + 1
   ; important = it changes a process, a file or the system (Capitan): a child's needs its parent's signature
   kind_important db 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1
@@ -228,6 +230,7 @@ section '.data' data readable writeable
                  db 0                   ; (a note only sounds)
                  db 0                   ; (45: kept)
                  db 1                   ; (naming one of my line its parent's sibling changes a process)
+                 db 1                   ; (copying writes the host's clipboard: it changes something outside)
   assert $ - kind_important = KINDS + 1
   ; requests waiting for a signature
   REC_SIZE  = 40
@@ -597,6 +600,7 @@ section '.idata' import data readable writeable
          GetSystemInfo, 'GetSystemInfo',\
          VirtualAlloc, 'VirtualAlloc',\
          VirtualFree, 'VirtualFree',\
+         GlobalAlloc, 'GlobalAlloc',         GlobalLock, 'GlobalLock',           GlobalUnlock, 'GlobalUnlock',\
          VirtualProtect, 'VirtualProtect',\
          AddVectoredExceptionHandler, 'AddVectoredExceptionHandler',\
          GetEnvironmentVariableA, 'GetEnvironmentVariableA',\
@@ -649,7 +653,9 @@ section '.idata' import data readable writeable
          AdjustWindowRectEx, 'AdjustWindowRectEx',\
          SystemParametersInfoW, 'SystemParametersInfoW',\
          LoadCursorW, 'LoadCursorW',         SetCapture, 'SetCapture',         ReleaseCapture, 'ReleaseCapture',\
-         SetWindowTextW, 'SetWindowTextW',   PostMessageW, 'PostMessageW'
+         SetWindowTextW, 'SetWindowTextW',   PostMessageW, 'PostMessageW',\
+         OpenClipboard, 'OpenClipboard',     CloseClipboard, 'CloseClipboard',   EmptyClipboard, 'EmptyClipboard',\
+         GetClipboardData, 'GetClipboardData', SetClipboardData, 'SetClipboardData'
 
   import gdi32,\
          StretchDIBits, 'StretchDIBits',\
@@ -2718,6 +2724,40 @@ serve_title:
         mov     rsi, rax
         mov     rcx, [rbp + r13 + 16]
         call    screen_title
+        mov     [rbp + r13 + 24], rax
+        jmp     .next
+.invalid:
+        mov     qword [rbp + r13 + 24], -1
+.next:
+        inc     r12
+.one:
+        cmp     r12, r15
+        jb      .one_lap
+        add     rsp, 8
+        pop     r15 r14 r13 r12
+        ret
+
+; Screen tuned to "copy" (kind 47; the Capitan, 2026-11-24: "que se pueda copiar y pegar texto en la consola de
+; LUMA"): a = a text in UTF-8, b = its bytes -> it goes to the host's clipboard (pantalla.inc, screen_copy). Answers
+; its letters, 0 if no window lives, or -1 (not in its rooms, or not text). Pasting needs no request: Ctrl+V in the
+; window comes to the program as the letters typed (pantalla.inc, screen_note).
+serve_copy:
+        push    r12 r13 r14 r15
+        sub     rsp, 8
+        xor     r12d, r12d
+        jmp     .one
+.one_lap:
+        mov     r13, r12
+        shl     r13, 5
+        cmp     dword [rbp + r13], 47
+        jne     .next
+        mov     rax, [rbp + r13 + 8]
+        mov     rdx, [rbp + r13 + 16]
+        call    cabin_at                ; all of it inside one room
+        jc      .invalid
+        mov     rsi, rax
+        mov     rcx, [rbp + r13 + 16]
+        call    screen_copy
         mov     [rbp + r13 + 24], rax
         jmp     .next
 .invalid:

@@ -8752,40 +8752,40 @@ main_wait:
   jst j14, j14, 0208h
   jjmp frame
 ; ---- station 0: references that do not reach from where they are (gen_leer.py, reach)
-fr0_r_read_end:
-  jjmp fr1_r_read_end
-fr0_r_free:
-  jjmp fr1_r_free
-fr0_r_cable_init:
-  jjmp fr1_r_cable_init
-fr0_v_init:
-  jjmp fr1_v_init
-fr0_r_mus_init:
-  jjmp fr1_r_mus_init
-fr0_r_read_poll:
-  jjmp fr1_r_read_poll
-fr0_fr_nomem:
-  jjmp fr1_fr_nomem
-fr0_r_free_load:
-  jjmp fr1_r_free_load
-fr0_r_read_max:
-  jjmp fr1_r_read_max
-fr0_r_char:
-  jjmp fr1_r_char
 fr0_v_event:
   jjmp fr1_v_event
-fr0_r_host_eat:
-  jjmp fr1_r_host_eat
-fr0_v_show:
-  jjmp fr1_v_show
-fr0_r_read_cand:
-  jjmp fr1_r_read_cand
-fr0_v_meal:
-  jjmp fr1_v_meal
-fr0_v_frame:
-  jjmp fr1_v_frame
+fr0_r_free_load:
+  jjmp fr1_r_free_load
+fr0_r_read_end:
+  jjmp fr1_r_read_end
+fr0_r_read_max:
+  jjmp fr1_r_read_max
 fr0_r_cable:
   jjmp fr1_r_cable
+fr0_r_mus_init:
+  jjmp fr1_r_mus_init
+fr0_r_free:
+  jjmp fr1_r_free
+fr0_v_frame:
+  jjmp fr1_v_frame
+fr0_r_cable_init:
+  jjmp fr1_r_cable_init
+fr0_fr_nomem:
+  jjmp fr1_fr_nomem
+fr0_r_char:
+  jjmp fr1_r_char
+fr0_r_read_cand:
+  jjmp fr1_r_read_cand
+fr0_v_show:
+  jjmp fr1_v_show
+fr0_r_read_poll:
+  jjmp fr1_r_read_poll
+fr0_v_init:
+  jjmp fr1_v_init
+fr0_r_host_eat:
+  jjmp fr1_r_host_eat
+fr0_v_meal:
+  jjmp fr1_v_meal
 main_frames:                    ; between two frames: what is left of this one
   jld j12, j14, 0220h
   jst j12, j14, 0200h
@@ -18480,10 +18480,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0E89h
-  jshi j2, 0F9EFh
-  jshi j2, 060C9h
-  jshi j2, 09211h
+  jldi j2, 02042h
+  jshi j2, 099D4h
+  jshi j2, 06F4Ch
+  jshi j2, 0D9D1h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -31069,100 +31069,100 @@ dse_kb:
   jadd j4, j4, j10
   jjmp dse_kb
 ; ---- station 1: references that do not reach from where they are (gen_leer.py, reach)
-fr1_r_cable:
-  jjmp fr2_r_cable
-fr1_r_gesture:
-  jjmp r_gesture
-fr1_r_fit_cost:
-  jjmp r_fit_cost
-fr1_r_tried:
-  jjmp r_tried
-fr1_r_file:
-  jjmp r_file
-fr1_r_read_end:
-  jjmp r_read_end
-fr1_r_cable_init:
-  jjmp fr2_r_cable_init
-fr1_r_cable_flush:
-  jjmp fr2_r_cable_flush
-fr1_r_free:
-  jjmp r_free
-fr1_v_init:
-  jjmp v_init
-fr1_r_hash:
-  jjmp r_hash
-fr1_r_mus_init:
-  jjmp r_mus_init
-fr1_r_open:
-  jjmp r_open
-fr1_r_randmod:
-  jjmp r_randmod
-fr1_r_read_poll:
-  jjmp r_read_poll
-fr1_r_get_num:
-  jjmp r_get_num
-fr1_r_read_max:
-  jjmp r_read_max
-fr1_r_alloc:
-  jjmp r_alloc
-fr1_r_free_load:
-  jjmp r_free_load
-fr1_r_flat:
-  jjmp r_flat
-fr1_r_org_rec:
-  jjmp r_org_rec
-fr1_l_ring_open:
-  jjmp l_ring_open
-fr1_r_read_add:
-  jjmp r_read_add
-fr1_r_get_hex:
-  jjmp r_get_hex
-fr1_r_read_cand:
-  jjmp r_read_cand
-fr1_r_rec_org:
-  jjmp r_rec_org
-fr1_r_judge:
-  jjmp r_judge
-fr1_r_read_get:
-  jjmp r_read_get
-fr1_r_get_rec:
-  jjmp r_get_rec
-fr1_r_receta:
-  jjmp r_receta
-fr1_fr_nomem:
-  jjmp fr_nomem
-fr1_r_read_place:
-  jjmp r_read_place
-fr1_r_char:
-  jjmp r_char
-fr1_ul_cmp:
-  jjmp ul_cmp
-fr1_l_ring:
-  jjmp l_ring
-fr1_v_meal:
-  jjmp v_meal
-fr1_r_set_hue:
-  jjmp r_set_hue
+fr1_r_recompute:
+  jjmp r_recompute
 fr1_v_event:
   jjmp v_event
-fr1_r_host_eat:
-  jjmp r_host_eat
-fr1_r_tocar:
-  jjmp r_tocar
-fr1_r_put_rec:
-  jjmp r_put_rec
-fr1_v_show:
-  jjmp v_show
+fr1_r_free_load:
+  jjmp r_free_load
+fr1_r_read_end:
+  jjmp r_read_end
+fr1_l_ring_open:
+  jjmp l_ring_open
+fr1_r_judge:
+  jjmp r_judge
+fr1_r_read_max:
+  jjmp r_read_max
+fr1_r_fit_cost:
+  jjmp r_fit_cost
+fr1_r_cable:
+  jjmp fr2_r_cable
+fr1_r_alloc:
+  jjmp r_alloc
+fr1_r_read_place:
+  jjmp r_read_place
+fr1_r_mus_init:
+  jjmp r_mus_init
 fr1_r_put_num:
   jjmp r_put_num
+fr1_r_put_rec:
+  jjmp r_put_rec
+fr1_r_get_hex:
+  jjmp r_get_hex
+fr1_r_hash:
+  jjmp r_hash
+fr1_r_read_cand:
+  jjmp r_read_cand
+fr1_r_open:
+  jjmp r_open
+fr1_r_flat:
+  jjmp r_flat
+fr1_r_gesture:
+  jjmp r_gesture
+fr1_v_show:
+  jjmp v_show
+fr1_r_rec_org:
+  jjmp r_rec_org
+fr1_r_read_poll:
+  jjmp r_read_poll
+fr1_r_host_eat:
+  jjmp r_host_eat
+fr1_r_set_hue:
+  jjmp r_set_hue
+fr1_r_receta:
+  jjmp r_receta
+fr1_r_rec_key:
+  jjmp r_rec_key
+fr1_r_org_rec:
+  jjmp r_org_rec
+fr1_r_tried:
+  jjmp r_tried
+fr1_r_read_get:
+  jjmp r_read_get
 fr1_r_colour:
   jjmp r_colour
 fr1_v_frame:
   jjmp v_frame
-fr1_r_rec_key:
-  jjmp r_rec_key
-fr1_r_recompute:
-  jjmp r_recompute
+fr1_r_cable_flush:
+  jjmp fr2_r_cable_flush
+fr1_r_free:
+  jjmp r_free
+fr1_r_read_add:
+  jjmp r_read_add
+fr1_r_cable_init:
+  jjmp fr2_r_cable_init
+fr1_fr_nomem:
+  jjmp fr_nomem
+fr1_r_char:
+  jjmp r_char
+fr1_l_ring:
+  jjmp l_ring
+fr1_ul_cmp:
+  jjmp ul_cmp
+fr1_v_init:
+  jjmp v_init
+fr1_r_get_rec:
+  jjmp r_get_rec
+fr1_r_get_num:
+  jjmp r_get_num
+fr1_r_tocar:
+  jjmp r_tocar
+fr1_r_file:
+  jjmp r_file
+fr1_r_randmod:
+  jjmp r_randmod
+fr1_v_meal:
+  jjmp v_meal
 dse_mine:                       ; (her cross was said: its way counts once more, and waits for his answer)
   jldi j6, 019Fh
   jshi j6, 0
@@ -45570,6 +45570,28 @@ r_char:                         ; j3 = a character typed (its Unicode code point
   jldi j1, 142
   jcall r_cable
                                 ; (her name while she asks it, else her word). The ones that are not text are left
+  ; (Ctrl+C, a character 3: what she said last goes to his clipboard (the Capitan, 2026-11-24: "que se pueda copiar
+  ; y pegar texto en la consola de LUMA"); Ctrl+V comes as the letters typed, from the kernel)
+  jldi j10, 3
+  jsub j10, j3, j10
+  jjnz j10, ch_nc
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j1, j6, 01D68h
+  jjz j1, ch_r
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jjz j6, ch_r
+  jld j11, j6, 6808
+  jld j12, j6, 6816
+  jjz j11, ch_r
+  jjz j12, ch_r
+  jldi j10, 47
+  jcall r_tocar
+  jjmp ch_r
+ch_nc:
   jldi j10, 32
   jsub j10, j3, j10
   jjn j10, ch_r
@@ -47976,7 +47998,7 @@ r_mus_mail:                     ; her mailbox while no reader reads: her school'
   jldi j11, 019Fh
   jshi j11, 017C0h
   jldi j12, 0
-  jcall r_tocar
+  jcall fr2_r_tocar
   jldi j10, 1
   jsub j10, j13, j10
   jjnz j10, mm_r
@@ -53073,7 +53095,7 @@ rp_f_lap:
   jldi j6, 019Fh
   jshi j6, 0
   jld j3, j6, 01630h
-  jcall r_read_get
+  jcall fr2_r_read_get
   jldi j10, -32768
   jshi j10, 0
   jshi j10, 0
@@ -55050,70 +55072,70 @@ ru_end:
   jst j1, j6, 01518h
   jjmp rd_plain
 ; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
-fr2_r_gesture:
-  jjmp fr1_r_gesture
-fr2_r_fit_cost:
-  jjmp fr1_r_fit_cost
-fr2_r_tried:
-  jjmp fr1_r_tried
-fr2_r_file:
-  jjmp fr1_r_file
-fr2_r_rec_org:
-  jjmp fr1_r_rec_org
-fr2_r_judge:
-  jjmp fr1_r_judge
-fr2_r_hash:
-  jjmp fr1_r_hash
-fr2_r_open:
-  jjmp fr1_r_open
-fr2_r_randmod:
-  jjmp fr1_r_randmod
-fr2_r_get_num:
-  jjmp fr1_r_get_num
-fr2_r_read_get:
-  jjmp fr1_r_read_get
-fr2_r_get_rec:
-  jjmp fr1_r_get_rec
-fr2_r_receta:
-  jjmp fr1_r_receta
-fr2_r_read_place:
-  jjmp fr1_r_read_place
-fr2_r_alloc:
-  jjmp fr1_r_alloc
-fr2_r_flat:
-  jjmp fr1_r_flat
-fr2_ul_cmp:
-  jjmp fr1_ul_cmp
-fr2_l_ring:
-  jjmp fr1_l_ring
-fr2_r_org_rec:
-  jjmp fr1_r_org_rec
-fr2_l_ring_open:
-  jjmp fr1_l_ring_open
-fr2_r_cable:
-  jjmp r_cable
-fr2_r_read_add:
-  jjmp fr1_r_read_add
-fr2_r_get_hex:
-  jjmp fr1_r_get_hex
-fr2_r_cable_init:
-  jjmp r_cable_init
-fr2_r_cable_flush:
-  jjmp r_cable_flush
-fr2_r_colour:
-  jjmp fr1_r_colour
-fr2_r_set_hue:
-  jjmp fr1_r_set_hue
-fr2_r_tocar:
-  jjmp fr1_r_tocar
-fr2_r_put_rec:
-  jjmp fr1_r_put_rec
-fr2_r_rec_key:
-  jjmp fr1_r_rec_key
 fr2_r_recompute:
   jjmp fr1_r_recompute
+fr2_r_judge:
+  jjmp fr1_r_judge
+fr2_r_fit_cost:
+  jjmp fr1_r_fit_cost
+fr2_l_ring_open:
+  jjmp fr1_l_ring_open
+fr2_r_alloc:
+  jjmp fr1_r_alloc
+fr2_r_read_place:
+  jjmp fr1_r_read_place
 fr2_r_put_num:
   jjmp fr1_r_put_num
+fr2_r_tried:
+  jjmp fr1_r_tried
+fr2_r_put_rec:
+  jjmp fr1_r_put_rec
+fr2_r_read_get:
+  jjmp fr1_r_read_get
+fr2_r_colour:
+  jjmp fr1_r_colour
+fr2_r_get_hex:
+  jjmp fr1_r_get_hex
+fr2_r_hash:
+  jjmp fr1_r_hash
+fr2_r_read_add:
+  jjmp fr1_r_read_add
+fr2_r_open:
+  jjmp fr1_r_open
+fr2_r_flat:
+  jjmp fr1_r_flat
+fr2_r_gesture:
+  jjmp fr1_r_gesture
+fr2_r_rec_org:
+  jjmp fr1_r_rec_org
+fr2_l_ring:
+  jjmp fr1_l_ring
+fr2_r_set_hue:
+  jjmp fr1_r_set_hue
+fr2_r_receta:
+  jjmp fr1_r_receta
+fr2_r_rec_key:
+  jjmp fr1_r_rec_key
+fr2_r_org_rec:
+  jjmp fr1_r_org_rec
+fr2_r_cable:
+  jjmp r_cable
+fr2_ul_cmp:
+  jjmp fr1_ul_cmp
+fr2_r_get_rec:
+  jjmp fr1_r_get_rec
+fr2_r_get_num:
+  jjmp fr1_r_get_num
+fr2_r_tocar:
+  jjmp fr1_r_tocar
+fr2_r_file:
+  jjmp fr1_r_file
+fr2_r_randmod:
+  jjmp fr1_r_randmod
+fr2_r_cable_flush:
+  jjmp r_cable_flush
+fr2_r_cable_init:
+  jjmp r_cable_init
 rd_thought:                     ; a thought: judged with its reading, in the place of the form it came from
   jcall fr2_r_recompute
   jldi j7, 019Fh

@@ -54,6 +54,11 @@ SCR_TITLE_MAX = 512               ; the letters a title keeps (criterion: what a
   scr_event dq 0                ; the host's bell (auto-reset) that rings at each event kept
   scr_head  dq 0                ; the oldest event kept, and how many
   scr_count dq 0
+  scr_paste dq 0                ; Ctrl+V: the host's clipboard as it was (UTF-16 units, its own room, as big as it is)
+  scr_pastelen dq 0             ; its units, and the next one to give: given as letters typed, one each time a program
+  scr_pastepos dq 0             ; takes an event and the ring has none (screen_take)
+  scr_copy  dq 0                ; 47: the text a program copies (UTF-16 units, its own room), and its units: the
+  scr_copylen dq 0              ; window's thread puts it on the host's clipboard (message 8002h)
   scr_lastx dq -1               ; the pointer's last cell (a key says where it was)
   scr_lasty dq -1
   scr_high  dq 0                ; the first half of a surrogate pair, while the second has not come (0: none)
@@ -407,6 +412,11 @@ screen_proc:
         add     rsp, 40
         xor     eax, eax
         ret
+@@:     cmp     edx, 8002h              ; a text to copy (screen_copy): put on the host's clipboard here, by its own thread
+        jne     @f
+        call    screen_clip
+        xor     eax, eax
+        ret
 @@:     cmp     edx, WM_PAINT
         je      .paint
         cmp     edx, WM_DESTROY
@@ -570,6 +580,8 @@ screen_note:
         jmp     .put
 .char:
         movzx   edi, r13w               ; a UTF-16 unit
+        cmp     edi, 16h                ; Ctrl+V: what the host's clipboard holds, given as letters typed
+        je      .paste
         mov     eax, edi
         and     eax, 0FC00h
         cmp     eax, 0D800h             ; the first half of a pair: kept until the second comes
@@ -603,6 +615,11 @@ screen_note:
         setnz   dil
         mov     r12d, 8
         jmp     .put
+.paste:                                 ; (the screen's lock is held; rbx = the window)
+        call    screen_paste_take
+        invoke  LeaveCriticalSection, scr_lock
+        invoke  SetEvent, [scr_event]   ; whoever sleeps on the screen wakes to take its letters
+        jmp     .out
 .gone:
         mov     byte [scr_live], 0      ; from here on nobody sleeps on it
         mov     r12d, 5
@@ -716,6 +733,241 @@ screen_cell:
 .out:
         ret
 
+; Ctrl+V (screen_note, the screen's lock held, rbx = the window): what the host's clipboard holds as text is kept, as
+; big as it is, in its own room (the one kept before is let go). Keeps every register but rax; any stack alignment.
+screen_paste_take:
+        push    rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 32
+        mov     rcx, rbx
+        call    [OpenClipboard]
+        test    eax, eax
+        jz      .out
+        mov     ecx, 13                 ; CF_UNICODETEXT
+        call    [GetClipboardData]
+        test    rax, rax
+        jz      .close
+        mov     rcx, rax
+        mov     r12, rax
+        call    [GlobalLock]
+        test    rax, rax
+        jz      .close
+        mov     rsi, rax
+        xor     ecx, ecx                ; its units, to the first 0
+.len:
+        cmp     word [rsi + rcx*2], 0
+        je      .len_done
+        inc     rcx
+        jmp     .len
+.len_done:
+        mov     rdi, rcx
+        mov     rcx, [scr_paste]        ; the one kept before: let go
+        test    rcx, rcx
+        jz      @f
+        xor     edx, edx
+        mov     r8d, MEM_RELEASE
+        call    [VirtualFree]
+        mov     qword [scr_paste], 0
+@@:     mov     qword [scr_pastelen], 0
+        mov     qword [scr_pastepos], 0
+        test    rdi, rdi
+        jz      .unlock
+        xor     ecx, ecx
+        lea     rdx, [rdi*2 + 2]
+        mov     r8d, MEM_COMMIT + MEM_RESERVE
+        mov     r9d, PAGE_READWRITE
+        call    [VirtualAlloc]
+        test    rax, rax
+        jz      .unlock
+        mov     [scr_paste], rax
+        mov     [scr_pastelen], rdi
+        xor     ecx, ecx
+.copy:
+        cmp     rcx, rdi
+        jae     .unlock
+        mov     dx, [rsi + rcx*2]
+        mov     [rax + rcx*2], dx
+        inc     rcx
+        jmp     .copy
+.unlock:
+        mov     rcx, r12
+        call    [GlobalUnlock]
+.close:
+        call    [CloseClipboard]
+.out:
+        mov     rsp, rbp
+        pop     rbp r12 r11 r10 r9 r8 rdi rsi rdx rcx rbx
+        ret
+
+; screen_take, its lock held, the ring empty: rdi = 32 bytes of the program's -> ebx = 1 and the next letter pasted
+; written there as a letter typed (kind 7, where the pointer was): a pair of halves joined, a line's end as a space
+; (what is pasted goes where she listens, to be said with Enter), a CR before it left out. ebx = 0 if none is left.
+screen_paste_next:
+        mov     rsi, [scr_paste]
+.again:
+        mov     rcx, [scr_pastepos]
+        cmp     rcx, [scr_pastelen]
+        jae     .none
+        movzx   eax, word [rsi + rcx*2]
+        inc     rcx
+        mov     [scr_pastepos], rcx
+        cmp     eax, 13                 ; CR: left out (its LF, or nothing, follows)
+        je      .again
+        cmp     eax, 10
+        je      .space
+        cmp     eax, 9
+        jne     @f
+.space:
+        mov     eax, 32
+@@:     mov     edx, eax
+        and     edx, 0FC00h
+        cmp     edx, 0D800h             ; the first half of a pair: joined with the second
+        jne     .put
+        cmp     rcx, [scr_pastelen]
+        jae     .again
+        movzx   edx, word [rsi + rcx*2]
+        mov     r8d, edx
+        and     r8d, 0FC00h
+        cmp     r8d, 0DC00h
+        jne     .again                  ; (alone, it is not a letter)
+        inc     rcx
+        mov     [scr_pastepos], rcx
+        sub     eax, 0D800h
+        shl     eax, 10
+        sub     edx, 0DC00h
+        lea     eax, [rdx + rax + 10000h]
+.put:
+        mov     qword [rdi], 7
+        mov     rdx, [scr_lastx]
+        mov     [rdi + 8], rdx
+        mov     rdx, [scr_lasty]
+        mov     [rdi + 16], rdx
+        mov     [rdi + 24], rax
+        mov     ebx, 1
+        ret
+.none:
+        xor     ebx, ebx
+        ret
+
+; 47: rsi = a text in UTF-8 (a pointer in this process), rcx = its bytes -> rax = its letters, 0 if no window lives, -1
+; if it is not UTF-8. Kept in its own room (the one before is let go) and put on the host's clipboard by the window's
+; own thread (message 8002h). Keeps rbx, rbp, r12-r15.
+screen_copy:
+        push    r12 r13 r14 rsi rdi
+        sub     rsp, 32
+        mov     r12, rsi
+        mov     r13, rcx
+        xor     eax, eax
+        cmp     qword [scr_hwnd], 0
+        je      .done
+        mov     ecx, 65001              ; CP_UTF8: how many units
+        mov     edx, 8                  ; MB_ERR_INVALID_CHARS
+        mov     r8, r12
+        mov     r9, r13
+        sub     rsp, 16                 ; (the fifth and sixth arguments, past the shadow space)
+        mov     qword [rsp + 32], 0
+        mov     qword [rsp + 40], 0
+        call    [MultiByteToWideChar]
+        add     rsp, 16
+        mov     r14, rax
+        test    eax, eax
+        jz      .bad
+        xor     ecx, ecx
+        lea     rdx, [r14*2 + 2]
+        mov     r8d, MEM_COMMIT + MEM_RESERVE
+        mov     r9d, PAGE_READWRITE
+        call    [VirtualAlloc]
+        test    rax, rax
+        jz      .bad
+        mov     rdi, rax
+        mov     ecx, 65001
+        mov     edx, 8
+        mov     r8, r12
+        mov     r9, r13
+        sub     rsp, 16
+        mov     [rsp + 32], rdi
+        mov     [rsp + 40], r14
+        call    [MultiByteToWideChar]
+        add     rsp, 16
+        lea     rcx, [scr_lock]
+        call    [EnterCriticalSection]
+        mov     rcx, [scr_copy]         ; the one before: let go
+        mov     [scr_copy], rdi
+        mov     [scr_copylen], r14
+        test    rcx, rcx
+        jz      @f
+        xor     edx, edx
+        mov     r8d, MEM_RELEASE
+        call    [VirtualFree]
+@@:     lea     rcx, [scr_lock]
+        call    [LeaveCriticalSection]
+        mov     rcx, [scr_hwnd]
+        mov     edx, 8002h
+        xor     r8d, r8d
+        xor     r9d, r9d
+        call    [PostMessageW]
+        mov     rax, r14
+        jmp     .done
+.bad:
+        mov     rax, -1
+.done:
+        add     rsp, 32
+        pop     rdi rsi r14 r13 r12
+        ret
+
+; The window's thread, on 8002h: the text kept to copy goes to the host's clipboard. Keeps every register but rax.
+screen_clip:
+        push    rbx rcx rdx rsi rdi r8 r9 r10 r11 r12 rbp
+        mov     rbp, rsp
+        and     rsp, -16
+        sub     rsp, 32
+        mov     rbx, rcx                ; the window
+        lea     rcx, [scr_lock]
+        call    [EnterCriticalSection]
+        mov     rsi, [scr_copy]
+        mov     rdi, [scr_copylen]
+        test    rsi, rsi
+        jz      .unlock
+        mov     rcx, rbx
+        call    [OpenClipboard]
+        test    eax, eax
+        jz      .unlock
+        call    [EmptyClipboard]
+        mov     ecx, 2                  ; GMEM_MOVEABLE
+        lea     rdx, [rdi*2 + 2]
+        call    [GlobalAlloc]
+        test    rax, rax
+        jz      .close
+        mov     r12, rax
+        mov     rcx, rax
+        call    [GlobalLock]
+        test    rax, rax
+        jz      .close
+        xor     ecx, ecx
+.copy:
+        cmp     rcx, rdi
+        jae     .end
+        mov     dx, [rsi + rcx*2]
+        mov     [rax + rcx*2], dx
+        inc     rcx
+        jmp     .copy
+.end:
+        mov     word [rax + rcx*2], 0
+        mov     rcx, r12
+        call    [GlobalUnlock]
+        mov     ecx, 13                 ; CF_UNICODETEXT: the clipboard owns it from here
+        mov     rdx, r12
+        call    [SetClipboardData]
+.close:
+        call    [CloseClipboard]
+.unlock:
+        lea     rcx, [scr_lock]
+        call    [LeaveCriticalSection]
+        mov     rsp, rbp
+        pop     rbp r12 r11 r10 r9 r8 rdi rsi rdx rcx rbx
+        ret
+
 ; 41: eax = 1 if a cabin may sleep on the screen: the window lives and has no event kept. Read without the screen's
 ; lock: an event kept after this look rings the bell, and the kernel looks again. Keeps every other register.
 screen_waitable:
@@ -724,6 +976,9 @@ screen_waitable:
         je      .out
         cmp     qword [scr_count], 0
         jne     .out
+        mov     rcx, [scr_pastepos]     ; (letters still to paste: there is something to take)
+        cmp     rcx, [scr_pastelen]
+        jb      .out
         inc     eax
 .out:
         ret
@@ -742,7 +997,10 @@ screen_take:
         call    [EnterCriticalSection]
         xor     ebx, ebx
         cmp     qword [scr_count], 0
-        je      .unlock
+        jne     .ring
+        call    screen_paste_next       ; (the ring is empty: the next letter pasted, if any; ebx = 1 if given)
+        jmp     .unlock
+.ring:
         dec     qword [scr_count]
         mov     rsi, [scr_head]
         lea     rax, [rsi + 1]
