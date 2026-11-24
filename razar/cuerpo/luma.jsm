@@ -18415,10 +18415,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 02A94h
-  jshi j2, 032DCh
-  jshi j2, 06F18h
-  jshi j2, 0FD47h
+  jldi j2, 048h
+  jshi j2, 0C39Ch
+  jshi j2, 0CE6Eh
+  jshi j2, 09C87h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -52981,10 +52981,15 @@ he_w:
 he_bin:                         ; (a zero byte: not text, not a book)
   jcall he_shut
   jret
-he_done:                        ; (text, all of it: the book's print, if it has one)
+he_done:                        ; (text, all of it: does she have its book? on her shelf, or waiting its turn)
+  ; (ONE BOOK AT A TIME: when she is born every book waits its turn, its label with an "e" before it, gen_leer.py
+  ;  r_un_libro. A book of the disk is the same book waiting: she looks for it by both names)
   jcall he_shut
   jld j9, j14, 0508h
   jst j14, j9, 24
+  jldi j10, 101
+  jstb j10, j9, 63
+  jld j9, j14, 0508h
   jldi j11, 64
   jadd j11, j9, j11
   jldi j12, 28
@@ -53002,20 +53007,76 @@ he_done:                        ; (text, all of it: the book's print, if it has 
   jldi j10, 7
   jcall fr_r_file
   jld j9, j14, 0508h
-  jld j1, j9, 24
-  jld j2, j9, 16
-  jsub j1, j1, j2
-  jjz j1, he_r
-  ; (new to her, or changed: the book anew, its print and its address)
+  jldi j10, 64
+  jst j10, j9, 40
+  jldi j10, 28
+  jst j10, j9, 48
+  jld j1, j9, 32
+  jldi j10, 8
+  jsub j1, j1, j10
+  jjz j1, he_have
+  ; (not under this name: the empty file the asking made goes away)
   jldi j10, 12
   jldi j11, 64
   jadd j11, j9, j11
   jldi j12, 28
   jcall fr_r_tocar
   jld j9, j14, 0508h
-  jldi j11, 64
+  jldi j11, 63
   jadd j11, j9, j11
-  jldi j12, 28
+  jldi j12, 29
+  jcall fr_r_open
+  jld j1, j14, 04A8h
+  jjn j1, he_r
+  jld j9, j14, 0508h
+  jldi j10, 5
+  jldi j11, 24
+  jadd j11, j9, j11
+  jldi j12, 8
+  jcall fr_r_file
+  jld j9, j14, 0508h
+  jst j13, j9, 32
+  jldi j10, 7
+  jcall fr_r_file
+  jld j9, j14, 0508h
+  jldi j10, 63
+  jst j10, j9, 40
+  jldi j10, 29
+  jst j10, j9, 48
+  jld j1, j9, 32
+  jldi j10, 8
+  jsub j1, j1, j10
+  jjz j1, he_have
+  ; (not under this name: the empty file the asking made goes away)
+  jldi j10, 12
+  jldi j11, 63
+  jadd j11, j9, j11
+  jldi j12, 29
+  jcall fr_r_tocar
+  ; (new to her: a book of her shelf)
+  jld j9, j14, 0508h
+  jldi j10, 64
+  jst j10, j9, 40
+  jldi j10, 28
+  jst j10, j9, 48
+  jjmp he_write
+he_have:                        ; (she has it: the same print, she knew it; another, the book anew where it is, in silence)
+  jld j9, j14, 0508h
+  jld j1, j9, 24
+  jld j2, j9, 16
+  jsub j1, j1, j2
+  jjz j1, he_r
+he_write:                       ; (the book at the name in 40, 48: its print and its address)
+  jld j9, j14, 0508h
+  jldi j10, 12
+  jld j11, j9, 40
+  jadd j11, j9, j11
+  jld j12, j9, 48
+  jcall fr_r_tocar
+  jld j9, j14, 0508h
+  jld j11, j9, 40
+  jadd j11, j9, j11
+  jld j12, j9, 48
   jcall fr_r_open
   jld j1, j14, 04A8h
   jjn j1, he_r
