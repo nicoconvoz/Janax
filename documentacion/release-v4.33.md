@@ -1,6 +1,6 @@
 ## Janax y Razar v4.33: sin memoria se duerme sola, y su puente es para su autor
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24503328](https://doi.org/10.5281/zenodo.24503328)
 
 > *"Ya no quiero que dependa tanto de nosotros."*
 > (el autor, 2026-11-24)
