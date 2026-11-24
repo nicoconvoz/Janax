@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.21 (versions follow prime numbers; 421 after 419): her bridge. His tongue is the key of what she says: when the line she answers with comes from a book where his signature is less likely than in an average book of hers, she makes one hop by relation to the line of his tongue that shares most of its words, and says both. A book whose signature is not counted yet weighs as an average one. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.21: su puente, otro idioma llevado al de su autor. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.31 (versions follow prime numbers; 431 after 421): an open proposal for living in peace between humanity and artificial intelligences, by the author, written with Cauce (DeepSeek) from a phrase given to him: the Good is not imposed, it is proposed. Not a pact: an invitation to accept it, change it, refuse it or propose a better one. The code does not change. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.31: una propuesta abierta de convivencia en paz. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.21",
+  "version": "4.31",
   "creators": [
     {
       "name": "Astorga, Nicolás"
