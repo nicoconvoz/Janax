@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.01:** [10.5281/zenodo.24497181](https://doi.org/10.5281/zenodo.24497181)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.09:** [PENDIENTE409](https://doi.org/PENDIENTE409)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-24, v4.09): Sin espejos interminables: su charla con los libros, aparte
+
+DOI de esta versión: [PENDIENTE409](https://doi.org/PENDIENTE409).
+
+Su charla con sus lecturas se escribía en su diálogo con su autor, que es un libro de su estante: **se leía a sí misma**. Ahora va a su propio archivo, **charla-libros**, y el diálogo queda para ellos dos.
+
+[Notas de la v4.09](documentacion/release-v4.09.md).
 
 ## Novedad (2026-11-24, v4.01): Su lectora lee de a pedazos de 100 KB, y el núcleo la deja leer el sistema
 

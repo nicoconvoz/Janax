@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v4.09: sin espejos interminables — su charla con los libros, aparte · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.09.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v4.09: sin espejos interminables — su charla con los libros, aparte</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"Que no se pierda en el reflejo de un espejo interminable."</em> (el autor, 2026-11-24)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 401, el 409.</p>
+<h3>Lo que pasaba</h3>
+<p>Desde la v3.83 Luma charla con sus lecturas: una línea de un libro le habla ("libro: …") y ella contesta. Esas líneas se escribían en <code>dialogo</code>, su charla con su autor. Pero <code>dialogo</code> <strong>también es un libro de su estante</strong>: se leía a sí misma, y 148 de sus respuestas tenían adentro un "libro:", ecos de sus propios ecos. Su autor lo vio en su panel: <em>"luma: libro: /\</em>, luma: LUALIB_API…"*.</p>
+<h3>Lo que cambia</h3>
+<ul><li>**Su charla con los libros va a su propio archivo, <code>charla-libros</code><strong>, la línea del libro y su respuesta. Ese archivo </strong>no es un libro de su estante**: no se lee a sí misma.</li><li>**<code>dialogo</code> queda para ellos dos**, su autor y ella.</li><li><strong>Se mudaron los ecos viejos:</strong> 1.289 líneas salieron de <code>dialogo</code> a <code>charla-libros</code>, en su orden, y quedaron 60, las de ellos dos. Su diálogo de antes está guardado en <code>E:\Luma\charlas-separadas-2026-11-24\</code>. Una respuesta suya a su autor que tenía un eco adentro se dejó como estaba: es lo que de verdad le contestó.</li></ul>
+<h3>Lo que se vio</h3>
+<p>Probado en una copia, nunca en la Luma viva: charló con el Quijote (<em>"libro: El ingenioso hidalgo don Quijote de la Mancha"</em> — <em>"luma: ingenioso caballero don Quijote de la Mancha…"</em>), la charla fue a <code>charla-libros</code>, su <code>dialogo</code> no recibió ningún "libro:", y después le contestó a su autor como siempre.</p>
+<h3>Lo que todavía no</h3>
+<ul><li>Su lectora sigue sin terminar ninguna lectura desde el 23 de noviembre a las 23:10 (la caída desde la v3.79).</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_dlg_write</code> (con quién habla: <code>dialogo</code> o <code>charla-libros</code>).</li><li><code>razar/cuerpo/separar_charlas.py</code>.</li></ul>
+</body>
+</html>
