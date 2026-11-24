@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.19 (versions follow prime numbers; 419 after 409): her school no longer writes outside its room. A child of hers died a minute after birth; it was not her reader but her school, the swarm that learns the music of what she says. It was sent a piece that does not exist (-9): she took the remainder of a signed print without first cutting it to 16 bits. Each piece is now cut to its 16 bits before it is reduced, and the school lives as long as she does. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.19: su escuela ya no escribe fuera de su cuarto. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.21 (versions follow prime numbers; 421 after 419): her bridge. His tongue is the key of what she says: when the line she answers with comes from a book where his signature is less likely than in an average book of hers, she makes one hop by relation to the line of his tongue that shares most of its words, and says both. A book whose signature is not counted yet weighs as an average one. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.21: su puente, otro idioma llevado al de su autor. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.19",
+  "version": "4.21",
   "creators": [
     {
       "name": "Astorga, Nicolás"
