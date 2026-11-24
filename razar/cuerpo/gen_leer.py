@@ -492,7 +492,7 @@ LG_LBL = LG_FL + 80               # (LG_SN + 8: the room her flow is kept in)   
 # loser is kept with why it lost (1: not paid; 2: lost its place; 3: paid, but no more than her way). His absence is not
 # a no: a way waits for him to be judged. Kept in "caminos": N, S, how many kept and how many letters of hers, then her
 # letters' words, her way's word, and each kept way with why
-WY_STEPS = ("heart", "impro", "own", "quien", "cross")
+WY_STEPS = ("heart", "impro", "own", "quien", "cross", "baja", "hermano", "sube")
 WY_FIRST = (1, 2)                 # her ladder until now: her heart, then she improvises
 WY = LG_LBL + 8
 (WY_N, WY_S, WY_AN, WY_VN, WY_W, WY_AB, WY_AC, WY_VB, WY_VC, WY_C, WY_L, WY_XC, WY_SB, WY_SN, WY_SC,
@@ -514,6 +514,21 @@ assert IG_END < 0x8000, "her tastes' room is reached with offsets under 32768"
 VC = 32 * 32 * 32 * 8             # a signature: how often each sign follows each two (qwords), then how often each two
 VB = VC + 32 * 32 * 8             # came before anything
 IG_CH = 1 << 16                   # a book is searched this many bytes at a time (memory, not a measure: any size finds the same)
+# HER TREE OF THEMES (the Capitan, 2026-11-23: "ramifica un tema general, de ahi hijos de temas que nacen de ese tema
+# general, asi Luma viaja entre padres e hijos y hermanos buscando lo que necesita; ademas cuando puede improvisa";
+# "no lo hagas vos: deja que Luma lo haga por si misma"). Only the structure is given: a place for her tree ("arbol"),
+# a print of the words of each book she reads, and three steps of her ways to walk it (baja, hermano, sube). Where a
+# book goes is said by her own judge of bits as she reads it; which walks serve is said by her ways' judge.
+(AR_T, AR_NN, AR_NC, AR_CUR, AR_B, AR_NB, AR_BC, AR_CH, AR_SK, AR_ON, AR_E, AR_K, AR_X0, AR_X1, AR_X2, AR_X3, AR_X4,
+ AR_X5, AR_X6, AR_X7, AR_Y0, AR_Y1, AR_Y2, AR_Y3) = (8 * i for i in range(24))
+AR_ROOM = 8 * 24    # her tree's own room (its address in ARR): her word's room is full
+AR_M = 32768     # the bits of a print of words. Measured 2026-11-23 over her 190 books: 15630 different words in the one
+                 # at the 90th place (most of her bytes are in such books); a print of one bit a word says most when half
+                 # full, n / ln 2 = 22549 bits, so the next power of two. Smaller books fill less of it: room, not error
+AR_LGM = 15 * 64 # log2 AR_M, in 64ths of a bit
+AR_MB = AR_M // 8
+AR_NS = 32 + AR_MB   # a branch: its parent, its first child, its next sibling, its books here, the print of its words
+AR_BS = 32 + AR_MB   # a book: its key, its size, its branch, its words' count, the print of its words
 D_ROOM = IM_L + 8 * 12
 PC_E = 384                            # a fact tried (one pass for all): its next subject's print, its fact's entry, how many
                                       # words, how many times it went on, the word it went on by, its name (bytes, 48 of it),
@@ -1982,7 +1997,7 @@ def make(g, ST, free):
         o("dll_z:")
         J("jst j14, j6, 0", "jldi j10, 8", "jadd j6, j6, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, dll_z")
         dtext(D_LBL, b"dialogo"); dtext(D_LBL + 16, b"charla"); dtext(D_LBL + 32, b"letras"); dtext(D_LBL + 48, b"abecedario")
-        dtext(D_LBL + 64, b"rodeos"); dtext(D_LBL + 80, b"preguntas-mias"); dtext(D_LBL + 96, b"libro-preguntas"); dtext(D_LBL + 112, b"preguntas-viejas")
+        dtext(D_LBL + 64, b"rodeos"); dtext(D_LBL + 80, b"preguntas-mias"); dtext(D_LBL + 96, b"libro-preguntas"); dtext(D_LBL + 112, b"preguntas-viejas"); dtext(D_LBL + 128, b"arbol")
         da("j11", D_LBL + 16); J("jldi j12, 6", "jcall r_open"); ld("j9", "FH"); J("jjn j9, dll_r")
         J("jldi j10, 5"); da("j11", D_NC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_MC); J("jldi j12, 32", "jcall r_file", "jldi j10, 5"); da("j11", D_BN0); J("jldi j12, 48", "jcall r_file", "jldi j10, 5"); da("j11", D_PM); J("jldi j12, %d" % (48 + 2048 + 96), "jcall r_file", "jldi j10, 7", "jcall r_file")
         o("dll_r:                          ; (her alphabet: every line of \"abecedario\", a letter)")
@@ -2397,6 +2412,7 @@ def make(g, ST, free):
         J("jjz j3, dan_m1", "jst j14, j9, 0", "jldi j10, 8", "jadd j9, j9, j10", "jldi j10, 1", "jsub j3, j3, j10", "jjmp dan_mz")
         o("dan_m1:")
         dl("j1", D_NW); J("jjz j1, dan_r")
+        J("jcall ar_load                  ; (her tree: where she is, and the books she placed)")
         J("jcall lj_pass                  ; (each book's signature against what he writes: his words count where his voice is)")
         gs("j14", ULB); J("jcall ul_list"); gl("j1", ULB); ds("j1", D_LI); J("jldi j10, 0"); ds("j10", D_LC)
         o("dan_f:")
@@ -2414,6 +2430,7 @@ def make(g, ST, free):
         for i, ch in enumerate(b"libro"):
             J("jldb j3, j9, %d" % (8 + i), "jldi j10, %d" % ch, "jsub j10, j3, j10", "jjnz j10, dan_n")
         o("dan_o:")
+        dl("j9", D_LI); J("jcall ar_in", "jjz j0, dan_n                ; (a book of another branch than where she is: not read now)")
         dl("j6", D_GBLK); J("jld j7, j6, %d" % LG_TKB, "jjz j7, thk_b")
         J("jldi j10, 108", "jstb j10, j7, 0")
         J("jldi j10, 101", "jstb j10, j7, 1")
@@ -2427,10 +2444,15 @@ def make(g, ST, free):
         dl("j1", D_FE); J("jldi j10, 64", "jadd j1, j1, j10", "jcall r_alloc"); ds("j0", D_FB)
         J("jldi j10, 5"); dl("j11", D_FB); dl("j12", D_FE); J("jcall r_file", "jldi j10, 7", "jcall r_file")
         dl("j1", D_FB); gs("j1", BP); dl("j2", D_FE); J("jadd j1, j1, j2"); gs("j1", BE)
+        J("jcall ar_begin                 ; (a book new to her, or changed: its words leave their print as she reads it)")
         o("dan_line:")
         gl("j1", BP); gl("j2", BE); J("jsub j10, j1, j2", "jjnn j10, dan_free"); ds("j1", D_LS); J("jldi j10, 0"); ds("j10", D_CNT); dinc(D_ID)
         o("dan_w:")
         J("jcall bw_word", "jjz j0, dan_eol"); J("jldi j10, 4", "jsub j10, j0, j10", "jjn j10, dan_w")
+        ld("j8", "ARR"); J("jld j8, j8, %d" % AR_ON, "jjz j8, dan_wk"); ld("j8", "ARR"); J("jld j8, j8, %d" % AR_SK)
+        J("jldi j10, %d" % (AR_M - 1), "jand j11, j4, j10", "jldi j10, 3", "jshr j12, j11, j10", "jadd j12, j8, j12", "jldi j10, 7", "jand j11, j11, j10",
+          "jldi j10, 1", "jshl j10, j10, j11", "jldb j11, j12, 0", "jor j11, j11, j10", "jstb j11, j12, 0")
+        o("dan_wk:")
         dl("j3", D_NW); da("j7", D_WORDS); J("jldi j5, 0")
         o("dan_m:")
         J("jsub j10, j5, j3", "jjnn j10, dan_w", "jldi j10, 3", "jshl j8, j5, j10", "jadd j8, j7, j8", "jld j10, j8, 0", "jsub j10, j10, j4", "jjz j10, dan_hit", "jldi j10, 1", "jadd j5, j5, j10", "jjmp dan_m")
@@ -2488,13 +2510,217 @@ def make(g, ST, free):
         o("dan_nl:")
         gl("j1", BP); J("jldi j10, 1", "jadd j1, j1, j10"); gs("j1", BP); J("jjmp dan_line")
         o("dan_free:")
+        J("jcall ar_end                   ; (read: its print, and its place in her tree)")
         J("jldi j10, 3"); dl("j11", D_FB); J("jldi j12, 0", "jcall r_tocar")
         o("dan_n:")
         dl("j9", D_LI); J("jld j3, j9, 0", "jldi j10, 7", "jadd j3, j3, j10", "jldi j10, -8", "jand j3, j3, j10", "jldi j10, 8", "jadd j3, j3, j10", "jadd j9, j9, j3"); ds("j9", D_LI); dinc(D_LC); J("jjmp dan_f")
         o("dan_end:")
+        J("jcall ar_save")
         J("jldi j10, 3"); gl("j11", ULB); J("jldi j12, 0", "jcall r_tocar"); gs("j14", ULB)
         o("dan_r:")
         J("jret")
+        def al(r, off): ld("j6", "ARR"); J("jld %s, j6, %d" % (r, off))
+        def as_(r, off): ld("j6", "ARR"); J("jst %s, j6, %d" % (r, off))
+        # ---- HER TREE OF THEMES (see AR_T): its room, a book's print and place, where she is, her steps in it
+        def naddr(out, idx): li("j10", AR_NS); J("jmul %s, %s, j10" % (out, idx)); al("j10", AR_T); J("jadd %s, %s, j10" % (out, out))
+        def baddr(out, idx): li("j10", AR_BS); J("jmul %s, %s, j10" % (out, idx)); al("j10", AR_B); J("jadd %s, %s, j10" % (out, out))
+        def words(out, base): J("jldi j10, 32", "jadd %s, %s, j10" % (out, base))
+        o("ar_pop:                         ; j1 = a print, j2 = another or 0 -> j0 = the words of j1 (and of j2, if any). Uses j1-j5, j7, j8, j10-j12")
+        J("jldi j0, 0", "jldi j3, %d" % (AR_MB // 8))
+        li("j7", 0x5555555555555555); li("j8", 0x3333333333333333); li("j11", 0x0f0f0f0f0f0f0f0f); li("j12", 0x0101010101010101)
+        o("arp_l:")
+        J("jjz j3, arp_r", "jld j4, j1, 0", "jjz j2, arp_a", "jld j5, j2, 0", "jand j4, j4, j5")
+        o("arp_a:")
+        J("jldi j10, 1", "jshr j5, j4, j10", "jand j5, j5, j7", "jsub j4, j4, j5", "jand j5, j4, j8", "jldi j10, 2", "jshr j4, j4, j10", "jand j4, j4, j8",
+          "jadd j4, j4, j5", "jldi j10, 4", "jshr j5, j4, j10", "jadd j4, j4, j5", "jand j4, j4, j11", "jmul j4, j4, j12", "jldi j10, 56", "jshr j4, j4, j10",
+          "jadd j0, j0, j4", "jldi j10, 8", "jadd j1, j1, j10", "jjz j2, arp_n", "jadd j2, j2, j10")
+        o("arp_n:")
+        J("jldi j10, 1", "jsub j3, j3, j10", "jjmp arp_l")
+        o("arp_r:")
+        J("jret")
+        o("ar_or:                          ; j1 |= j2 (prints). Uses j1-j5, j10")
+        J("jldi j3, %d" % (AR_MB // 8))
+        o("aro_l:")
+        J("jjz j3, aro_r", "jld j4, j1, 0", "jld j5, j2, 0", "jor j4, j4, j5", "jst j4, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jadd j2, j2, j10",
+          "jldi j10, 1", "jsub j3, j3, j10", "jjmp aro_l")
+        o("aro_r:")
+        J("jret")
+        o("ar_copy:                        ; j1 = j2 (prints)")
+        li("j3", AR_MB)
+        o("ar_mcopy:                       ; j1 = j2, j3 bytes (a multiple of 8). Uses j1-j4, j10")
+        J("jjz j3, arm_r", "jld j4, j2, 0", "jst j4, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jadd j2, j2, j10", "jsub j3, j3, j10", "jjmp ar_mcopy")
+        o("arm_r:")
+        J("jret")
+        o("ar_zero:                        ; j1 = a print, emptied")
+        li("j3", AR_MB)
+        o("arz_l:")
+        J("jjz j3, arz_r", "jst j14, j1, 0", "jldi j10, 8", "jadd j1, j1, j10", "jsub j3, j3, j10", "jjmp arz_l")
+        o("arz_r:")
+        J("jret")
+        def grow(T, N, C, size, tag):   # (a table full: twice the room, what it held copied)
+            al("j1", N); al("j2", C); J("jsub j10, j1, j2", "jjn j10, %s_ok" % tag)
+            al("j1", C); J("jadd j1, j1, j1"); as_("j1", C); li("j10", size); J("jmul j1, j1, j10", "jcall r_alloc"); as_("j0", AR_Y3)
+            al("j1", AR_Y3); al("j2", T); al("j3", N); li("j10", size); J("jmul j3, j3, j10", "jcall ar_mcopy")
+            J("jldi j10, 3"); al("j11", T); J("jldi j12, 0", "jcall r_tocar"); al("j1", AR_Y3); as_("j1", T)
+            o("%s_ok:" % tag)
+        o("ar_load:                        ; her tree from \"arbol\" (a new one, only its root, if there is none)")
+        ld("j1", "ARR"); J("jjnz j1, arl_have"); li("j1", AR_ROOM); J("jcall r_alloc"); st("j0", "ARR"); J("jldi j2, %d" % (AR_ROOM // 8))
+        o("arl_z0:")
+        J("jst j14, j0, 0", "jldi j10, 8", "jadd j0, j0, j10", "jldi j10, 1", "jsub j2, j2, j10", "jjnz j2, arl_z0")
+        o("arl_have:")
+        al("j1", AR_T); J("jjnz j1, arl_r")
+        J("jldi j10, 0"); as_("j10", AR_NN); as_("j10", AR_NB); as_("j10", AR_CUR); as_("j10", AR_CH); as_("j10", AR_ON)
+        da("j11", D_LBL + 128); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, arl_new")
+        J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file"); as_("j13", AR_X0); J("jldi j10, 38", "jldi j11, 0", "jldi j12, 0", "jcall r_file")
+        al("j1", AR_X0); J("jldi j10, 24", "jsub j10, j1, j10", "jjn j10, arl_cl")
+        ld("j11", "ARR"); J("jldi j10, %d" % AR_X1, "jadd j11, j11, j10"); J("jldi j12, 24", "jcall r_read_all")
+        al("j1", AR_X1); J("jadd j1, j1, j1", "jldi j10, 64", "jadd j1, j1, j10"); as_("j1", AR_NC); li("j10", AR_NS); J("jmul j1, j1, j10", "jcall r_alloc"); as_("j0", AR_T)
+        al("j1", AR_X3); J("jadd j1, j1, j1", "jldi j10, 64", "jadd j1, j1, j10"); as_("j1", AR_BC); li("j10", AR_BS); J("jmul j1, j1, j10", "jcall r_alloc"); as_("j0", AR_B)
+        al("j11", AR_T); al("j12", AR_X1); li("j10", AR_NS); J("jmul j12, j12, j10", "jcall r_read_all")
+        al("j11", AR_B); al("j12", AR_X3); li("j10", AR_BS); J("jmul j12, j12, j10", "jcall r_read_all")
+        al("j1", AR_X1); as_("j1", AR_NN); al("j1", AR_X2); as_("j1", AR_CUR); al("j1", AR_X3); as_("j1", AR_NB)
+        o("arl_cl:")
+        J("jldi j10, 7", "jcall r_file")
+        al("j1", AR_NN); J("jjnz j1, arl_r")
+        o("arl_new:                        ; (no tree yet: only its root, everything under it)")
+        al("j1", AR_T); J("jjnz j1, arl_rt"); li("j1", 64 * AR_NS); J("jcall r_alloc"); as_("j0", AR_T); J("jldi j10, 64"); as_("j10", AR_NC)
+        li("j1", 64 * AR_BS); J("jcall r_alloc"); as_("j0", AR_B); J("jldi j10, 64"); as_("j10", AR_BC); J("jldi j10, 0"); as_("j10", AR_NB)
+        o("arl_rt:")
+        al("j1", AR_T); J("jldi j10, -1", "jst j10, j1, 0", "jst j10, j1, 8", "jst j10, j1, 16", "jst j14, j1, 24"); words("j1", "j1"); J("jcall ar_zero")
+        J("jldi j10, 1"); as_("j10", AR_NN); J("jldi j10, 0"); as_("j10", AR_CUR)
+        o("arl_r:")
+        J("jret")
+        o("ar_save:                        ; her tree into \"arbol\", when it changed (a book placed, a step taken)")
+        al("j1", AR_CH); J("jjz j1, ars_r", "jldi j10, 0"); as_("j10", AR_CH)
+        da("j11", D_LBL + 128); J("jldi j12, 5", "jldi j10, 12", "jcall r_tocar")
+        da("j11", D_LBL + 128); J("jldi j12, 5", "jcall r_open"); ld("j9", "FH"); J("jjn j9, ars_r")
+        al("j1", AR_NN); as_("j1", AR_X1); al("j1", AR_CUR); as_("j1", AR_X2); al("j1", AR_NB); as_("j1", AR_X3)
+        ld("j11", "ARR"); J("jldi j10, %d" % AR_X1, "jadd j11, j11, j10"); J("jldi j12, 24", "jldi j10, 6", "jcall r_file")
+        al("j12", AR_NN); li("j10", AR_NS); J("jmul j12, j12, j10"); al("j11", AR_T); J("jldi j10, 6", "jcall r_file")
+        al("j12", AR_NB); li("j10", AR_BS); J("jmul j12, j12, j10"); al("j11", AR_B); J("jldi j10, 6", "jcall r_file", "jldi j10, 7", "jcall r_file")
+        o("ars_r:")
+        J("jret")
+        o("ar_key:                         ; j9 = a book as ul_list gives it -> AR_K, its key (its name without the e of waiting)")
+        J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jldb j4, j1, 0", "jldi j10, 101", "jsub j10, j4, j10", "jjnz j10, ark_h", "jldi j10, 1", "jadd j1, j1, j10", "jsub j3, j3, j10")
+        o("ark_h:")
+        J("jldi j2, 0")
+        o("ark_l:")
+        J("jjz j3, ark_d", "jldb j4, j1, 0", "jldi j10, 31", "jmul j2, j2, j10", "jadd j2, j2, j4", "jldi j10, 1", "jadd j1, j1, j10", "jsub j3, j3, j10", "jjmp ark_l")
+        o("ark_d:")
+        as_("j2", AR_K); J("jret")
+        o("ar_find:                        ; AR_K -> j0 = the book with that key, or -1")
+        al("j5", AR_NB); al("j7", AR_B); al("j8", AR_K); J("jldi j0, 0")
+        o("arf_l:")
+        J("jsub j10, j0, j5", "jjnn j10, arf_no", "jld j10, j7, 0", "jsub j10, j10, j8", "jjz j10, arf_r"); li("j10", AR_BS); J("jadd j7, j7, j10", "jldi j10, 1", "jadd j0, j0, j10", "jjmp arf_l")
+        o("arf_no:")
+        J("jldi j0, -1")
+        o("arf_r:")
+        J("jret")
+        o("ar_in:                          ; j9 = a book as ul_list gives it -> j0 = 1 if it is under where she is (one she has")
+        o("                                ; not placed yet, too: she reads it to place it)")
+        al("j1", AR_CUR); J("jjz j1, ari_y", "jcall ar_key", "jcall ar_find", "jjn j0, ari_y")
+        baddr("j1", "j0"); J("jld j2, j1, 16"); al("j3", AR_CUR)
+        o("ari_u:")
+        J("jsub j10, j2, j3", "jjz j10, ari_y", "jjn j2, ari_n"); naddr("j1", "j2"); J("jld j2, j1, 0", "jjmp ari_u")
+        o("ari_n:")
+        J("jldi j0, 0", "jret")
+        o("ari_y:")
+        J("jldi j0, 1", "jret")
+        o("ar_begin:                       ; (a book opened, D_LI, D_FE its size) new to her or changed: its print, as she reads it")
+        J("jldi j10, 0"); as_("j10", AR_ON); dl("j9", D_LI); J("jcall ar_key", "jcall ar_find"); as_("j0", AR_E); J("jjn j0, arb_new")
+        baddr("j1", "j0"); J("jld j2, j1, 8"); dl("j3", D_FE); J("jsub j10, j2, j3", "jjz j10, arb_r")
+        o("arb_new:")
+        al("j1", AR_SK); J("jjnz j1, arb_z"); li("j1", AR_MB); J("jcall r_alloc"); as_("j0", AR_SK)
+        o("arb_z:")
+        al("j1", AR_SK); J("jcall ar_zero", "jldi j10, 1"); as_("j10", AR_ON)
+        o("arb_r:")
+        J("jret")
+        o("ar_end:                         ; (the book read) its print kept, and its place found by her judge")
+        al("j1", AR_ON); J("jjz j1, are_r", "jldi j10, 0"); as_("j10", AR_ON); J("jldi j10, 1"); as_("j10", AR_CH)
+        al("j0", AR_E); J("jjnn j0, are_old")
+        grow(AR_B, AR_NB, AR_BC, AR_BS, "are_g")
+        al("j0", AR_NB); as_("j0", AR_E); J("jldi j10, 1", "jadd j1, j0, j10"); as_("j1", AR_NB)
+        al("j0", AR_E); baddr("j1", "j0"); al("j2", AR_K); J("jst j2, j1, 0", "jldi j2, -1", "jst j2, j1, 16", "jjmp are_set")
+        o("are_old:                        ; (changed: it leaves its branch, and is placed again)")
+        baddr("j1", "j0"); J("jld j2, j1, 16", "jjn j2, are_set"); naddr("j3", "j2"); J("jld j4, j3, 24", "jldi j10, 1", "jsub j4, j4, j10", "jst j4, j3, 24")
+        o("are_set:")
+        al("j0", AR_E); baddr("j1", "j0"); dl("j2", D_FE); J("jst j2, j1, 8"); words("j1", "j1"); al("j2", AR_SK); J("jcall ar_copy")
+        al("j0", AR_E); baddr("j1", "j0"); words("j1", "j1"); J("jldi j2, 0", "jcall ar_pop"); al("j1", AR_E); baddr("j2", "j1"); J("jst j0, j2, 24")
+        J("jcall ar_place")
+        o("are_r:")
+        J("jret")
+        o("ar_place:                       ; (the book AR_E) from her root down: to the branch that says its words shortest; where")
+        o("                                ; none says them shorter than here, with the book of here it shares most a new branch,")
+        o("                                ; if saying both there is shorter. Bits: a word in a branch of n words costs log2 n, out of")
+        o("                                ; it log2 AR_M; a branch's words, said among its parent's N, k log2 (N / k) + k log2 e")
+        J("jldi j10, 0"); as_("j10", AR_X0)
+        o("arpl_d:")
+        al("j1", AR_X0); naddr("j1", "j1"); words("j1", "j1"); al("j2", AR_E); baddr("j2", "j2"); words("j2", "j2"); J("jcall ar_or")
+        al("j1", AR_X0); naddr("j1", "j1"); words("j1", "j1"); J("jldi j2, 0", "jcall ar_pop"); as_("j0", AR_X4); J("jadd j1, j0, j14", "jcall rwi_log"); as_("j0", AR_X5)
+        al("j2", AR_E); baddr("j2", "j2"); J("jld j1, j2, 24"); as_("j1", AR_X6); al("j2", AR_X5); J("jmul j1, j1, j2"); as_("j1", AR_X2)
+        J("jldi j10, -1"); as_("j10", AR_X1); al("j1", AR_X0); naddr("j1", "j1"); J("jld j2, j1, 8"); as_("j2", AR_X3)
+        o("arpl_c:")
+        al("j2", AR_X3); J("jjn j2, arpl_cd")
+        al("j1", AR_X3); naddr("j1", "j1"); words("j1", "j1"); al("j2", AR_E); baddr("j2", "j2"); words("j2", "j2"); J("jcall ar_pop"); as_("j0", AR_X7)
+        al("j1", AR_X3); naddr("j1", "j1"); words("j1", "j1"); J("jldi j2, 0", "jcall ar_pop", "jadd j1, j0, j14", "jcall rwi_log")
+        al("j1", AR_X7); J("jmul j0, j0, j1"); al("j2", AR_X6); al("j3", AR_X7); J("jsub j2, j2, j3", "jldi j10, %d" % AR_LGM, "jmul j2, j2, j10", "jadd j0, j0, j2")
+        al("j1", AR_X2); J("jsub j10, j0, j1", "jjnn j10, arpl_cn"); as_("j0", AR_X2); al("j1", AR_X3); as_("j1", AR_X1)
+        o("arpl_cn:")
+        al("j1", AR_X3); naddr("j1", "j1"); J("jld j2, j1, 16"); as_("j2", AR_X3); J("jjmp arpl_c")
+        o("arpl_cd:")
+        al("j1", AR_X1); J("jjn j1, arpl_s"); as_("j1", AR_X0); J("jjmp arpl_d")
+        o("arpl_s:")
+        J("jldi j10, -1"); as_("j10", AR_X1); J("jldi j10, 0"); as_("j10", AR_X2); as_("j10", AR_X3)
+        o("arpl_b:")
+        al("j1", AR_X3); al("j2", AR_NB); J("jsub j10, j1, j2", "jjnn j10, arpl_bd"); al("j2", AR_E); J("jsub j10, j1, j2", "jjz j10, arpl_bn")
+        baddr("j2", "j1"); J("jld j3, j2, 16"); al("j4", AR_X0); J("jsub j10, j3, j4", "jjnz j10, arpl_bn")
+        al("j1", AR_X3); baddr("j1", "j1"); words("j1", "j1"); al("j2", AR_E); baddr("j2", "j2"); words("j2", "j2"); J("jcall ar_pop")
+        al("j1", AR_X3); baddr("j1", "j1"); J("jld j2, j1, 24"); al("j3", AR_X6); J("jadd j2, j2, j3"); as_("j2", AR_X7); J("jsub j1, j2, j0"); as_("j1", AR_Y0)
+        J("jcall rwi_log"); as_("j0", AR_Y1)
+        al("j1", AR_X5); al("j2", AR_Y1); J("jsub j1, j1, j2", "jldi j10, 92", "jadd j1, j1, j10"); al("j2", AR_Y0); J("jmul j1, j1, j2"); as_("j1", AR_Y2)
+        al("j1", AR_X7); al("j2", AR_X5); J("jmul j3, j1, j2"); al("j2", AR_Y1); J("jmul j4, j1, j2"); al("j5", AR_Y2); J("jadd j4, j4, j5", "jsub j3, j3, j4")
+        al("j1", AR_X2); J("jsub j10, j3, j1", "jjn j10, arpl_bn", "jjz j10, arpl_bn"); as_("j3", AR_X2); al("j1", AR_X3); as_("j1", AR_X1)
+        o("arpl_bn:")
+        al("j1", AR_X3); J("jldi j10, 1", "jadd j1, j1, j10"); as_("j1", AR_X3); J("jjmp arpl_b")
+        o("arpl_bd:")
+        al("j1", AR_X1); J("jjnn j1, arpl_new")
+        o("  ; (here, among the books of this branch)")
+        al("j1", AR_E); baddr("j1", "j1"); al("j2", AR_X0); J("jst j2, j1, 16"); naddr("j1", "j2"); J("jld j3, j1, 24", "jldi j10, 1", "jadd j3, j3, j10", "jst j3, j1, 24", "jret")
+        o("arpl_new:                       ; (a new branch, born here, for the two books that say each other shortest)")
+        grow(AR_T, AR_NN, AR_NC, AR_NS, "arpl_g")
+        al("j1", AR_NN); as_("j1", AR_Y3); J("jldi j10, 1", "jadd j1, j1, j10"); as_("j1", AR_NN)
+        al("j1", AR_Y3); naddr("j1", "j1"); al("j2", AR_X0); J("jst j2, j1, 0", "jldi j3, -1", "jst j3, j1, 8")
+        al("j4", AR_X0); naddr("j4", "j4"); J("jld j5, j4, 8", "jst j5, j1, 16"); al("j5", AR_Y3); J("jst j5, j4, 8")
+        J("jldi j3, 2", "jst j3, j1, 24", "jld j3, j4, 24", "jldi j10, 1", "jsub j3, j3, j10", "jst j3, j4, 24")
+        al("j1", AR_Y3); naddr("j1", "j1"); words("j1", "j1"); al("j2", AR_E); baddr("j2", "j2"); words("j2", "j2"); J("jcall ar_copy")
+        al("j1", AR_Y3); naddr("j1", "j1"); words("j1", "j1"); al("j2", AR_X1); baddr("j2", "j2"); words("j2", "j2"); J("jcall ar_or")
+        al("j1", AR_E); baddr("j1", "j1"); al("j2", AR_Y3); J("jst j2, j1, 16"); al("j1", AR_X1); baddr("j1", "j1"); J("jst j2, j1, 16", "jret")
+        o("ar_move:                        ; HER STEPS IN HER TREE: j1 = 1 down (to the branch holding most of the words said to")
+        o("                                ; her), 2 to a sibling (the next, round), 3 up -> j0 = 1 if she moved")
+        as_("j1", AR_X0); J("jcall ar_load"); al("j1", AR_X0); al("j2", AR_CUR); naddr("j3", "j2")
+        J("jldi j10, 3", "jsub j10, j1, j10", "jjnz j10, armv_s", "jld j4, j3, 0", "jjn j4, armv_no"); as_("j4", AR_CUR); J("jjmp armv_yes")
+        o("armv_s:")
+        J("jldi j10, 2", "jsub j10, j1, j10", "jjnz j10, armv_d", "jld j4, j3, 16", "jjnn j4, armv_sy", "jld j5, j3, 0", "jjn j5, armv_no"); naddr("j5", "j5"); J("jld j4, j5, 8")
+        o("armv_sy:")
+        al("j2", AR_CUR); J("jsub j10, j4, j2", "jjz j10, armv_no", "jjn j4, armv_no"); as_("j4", AR_CUR); J("jjmp armv_yes")
+        o("armv_d:")
+        J("jld j4, j3, 8"); as_("j4", AR_X1); J("jldi j10, -1"); as_("j10", AR_X2); J("jldi j10, 0"); as_("j10", AR_X3)
+        o("armd_c:")
+        al("j4", AR_X1); J("jjn j4, armd_e"); naddr("j5", "j4"); words("j5", "j5"); dl("j3", D_NW); da("j7", D_WORDS); J("jldi j8, 0")
+        o("armd_w:")
+        J("jjz j3, armd_wd", "jld j4, j7, 0", "jldi j10, %d" % (AR_M - 1), "jand j4, j4, j10", "jldi j10, 3", "jshr j11, j4, j10", "jadd j11, j5, j11", "jldb j11, j11, 0",
+          "jldi j10, 7", "jand j4, j4, j10", "jshr j11, j11, j4", "jldi j10, 1", "jand j11, j11, j10", "jadd j8, j8, j11", "jldi j10, 8", "jadd j7, j7, j10",
+          "jldi j10, 1", "jsub j3, j3, j10", "jjmp armd_w")
+        o("armd_wd:")
+        al("j1", AR_X3); J("jsub j10, j8, j1", "jjn j10, armd_n", "jjz j10, armd_n"); as_("j8", AR_X3); al("j1", AR_X1); as_("j1", AR_X2)
+        o("armd_n:")
+        al("j4", AR_X1); naddr("j5", "j4"); J("jld j4, j5, 16"); as_("j4", AR_X1); J("jjmp armd_c")
+        o("armd_e:")
+        al("j4", AR_X2); J("jjn j4, armv_no"); as_("j4", AR_CUR)
+        o("armv_yes:")
+        J("jldi j10, 1"); as_("j10", AR_CH); J("jldi j0, 1", "jret")
+        o("armv_no:")
+        J("jldi j0, 0", "jret")
         o("r_dlg_sent:                     ; Enter: what was typed is said to her. If what she said waited, it was answered (it")
         o("                                ; pays). Then she answers, or not, by her wish")
         J("jcall th_turn                  ; (her thread: the exchange that ended, and his words begin another)")
@@ -3037,6 +3263,10 @@ def make(g, ST, free):
         o("wys_cross:")
         J("jldi j10, 5"); gbs("j10", WY_ST)
         dl("j1", D_OUTL); J("jjz j1, wyg_l", "jldi j10, 1"); gbs("j10", WY_XC); J("jjmp dsy_cx")
+        for k, name in ((6, "baja"), (7, "hermano"), (8, "sube")):
+            o("wys_%s:                        ; (a step in her tree: she moves, and answers again from where she is)" % name)
+            J("jldi j10, %d" % k); gbs("j10", WY_ST)
+            J("jldi j1, %d" % (k - 5), "jcall ar_move", "jjz j0, wyg_l", "jcall r_dlg_answer", "jjmp wyg_l")
         o("wyg_ok:")
         J("jcall wy_learn"); J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("wy_pay:                         ; j0 = 1 if her frame in most harmony paid what waited: her way is judged; keeps j0")
@@ -3607,7 +3837,7 @@ def make(g, ST, free):
         J("jldi j10, 1", "jldi j11, 62", "jshl j10, j10, j11"); gbs("j10", LG_MIN); gbs("j14", LG_NB); gbs("j14", LG_S)
         gs("j14", ULB); J("jcall ul_list"); gl("j1", ULB); gbs("j1", LG_IT); gbs("j14", LG_IN)
         o("ljp_a:")
-        gb("j1", LG_IN); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ljp_ad"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall ig_isbook", "jjz j0, ljp_an")
+        gb("j1", LG_IN); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ljp_ad"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall ig_isbook", "jjz j0, ljp_an"); gb("j9", LG_IT); J("jcall ar_in", "jjz j0, ljp_an")
         gb("j9", LG_IT); J("jcall lj_isdlg", "jjnz j0, ljp_an"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall lj_hash", "jadd j1, j2, j14", "jcall lj_find", "jjz j2, ljp_vc", "jld j3, j2, 24", "jjz j3, ljp_vc")
         gb("j1", LG_IN); gb("j3", LG_VR); J("jsub j10, j1, j3", "jjz j10, ljp_vc", "jadd j0, j2, j14", "jjmp ljp_vk")
         o("ljp_vc:")
@@ -3630,7 +3860,7 @@ def make(g, ST, free):
         o("ljp_a2:")
         gl("j1", ULB); gbs("j1", LG_IT); gbs("j14", LG_IN)
         o("ljp_b:")
-        gb("j1", LG_IN); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ljp_bd"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall ig_isbook", "jjz j0, ljp_bn")
+        gb("j1", LG_IN); gl("j2", ULN); J("jsub j10, j1, j2", "jjnn j10, ljp_bd"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall ig_isbook", "jjz j0, ljp_bn"); gb("j9", LG_IT); J("jcall ar_in", "jjz j0, ljp_bn")
         gb("j9", LG_IT); J("jcall lj_isdlg", "jjnz j0, ljp_bn"); gb("j9", LG_IT); J("jld j3, j9, 0", "jldi j10, 8", "jadd j1, j9, j10", "jcall lj_hash", "jadd j1, j2, j14", "jcall lj_find", "jjz j2, ljp_bn")
         gb("j1", LG_NB); J("jldi j10, 1", "jadd j1, j1, j10"); gbs("j1", LG_NB)
         J("jld j1, j2, 16"); gb("j3", LG_MIN); J("jsub j1, j1, j3", "jldi j10, 6", "jshr j1, j1, j10", "jldi j10, 20", "jsub j10, j10, j1", "jjn j10, ljp_bn", "jldi j11, 1", "jshl j11, j11, j10"); gb("j1", LG_S); J("jadd j1, j1, j11"); gbs("j1", LG_S)
@@ -6216,23 +6446,47 @@ def make(g, ST, free):
             far = [(i, t) for i, p, t in refs if t in lab and not -32768 <= lab[t] - p - 1 <= 32767]
             if not far:
                 return
-            assert n < 65534, "her program is longer than a springboard can serve: %d words" % n
-            names = sorted({t for _, t in far})
-            for i, t in far:
-                L[i] = re.sub(r"\b%s\b(\s*)$" % t, "fr_" + t + r"\1", L[i].split(";")[0]) + (";" + L[i].split(";", 1)[1] if ";" in L[i] else "")
-            half = n // 2; m_at = None; w = 0
+            # STATIONS, AS MANY AS HER BODY NEEDS (2026-11-23: one springboard in the middle served up to 65534 words, and her
+            # tree of themes made her longer): a station every 30000 words at most (2767 under what a jump reaches, room
+            # for the stations themselves). A reference that does not reach goes to the station nearest it; a station
+            # jumps to its target if it reaches it, else to the next station toward it.
+            K = max(2, -(-n // 30000))
+            st_line, st_pos, w, j = [], [], 0, 0
             for i, l in enumerate(L):
                 w += words_of([l], here)
                 c = l.split(";")[0].strip()
-                if w >= half and c.split() and c.split()[0] in ("jret", "jjmp", "jhalt") and (c.split()[0] != "jjmp" or True):
-                    m_at = i; break
-            assert m_at is not None
-            block = ["; ---- springboards: references that do not reach from where they are (gen_leer.py, reach)"]
-            for t in names:
-                if "fr_" + t + ":" not in L:
-                    block += ["fr_%s:" % t, "  jjmp %s" % t]
-            L[m_at + 1:m_at + 1] = block
-            print("luma: %d saltos por trampolin (%s)" % (len(far), " ".join(names)))
+                if j < K and w >= n * (2 * j + 1) // (2 * K) and c.split() and c.split()[0] in ("jret", "jjmp", "jhalt"):
+                    st_line.append(i); st_pos.append(w); j += 1
+            assert len(st_line) == K, "her stations: %d of %d" % (len(st_line), K)
+            near = lambda q: min(range(K), key=lambda k: abs(q - st_pos[k]))
+            names, blocks = set(), [[] for _ in range(K)]
+            for i, q, t in [(i, p, t) for i, p, t in refs if t in lab and not -32768 <= lab[t] - p - 1 <= 32767]:
+                k = near(q)
+                lm = re.match(r"^fr(\d+)_(\w+):$", L[i - 1].strip()) if i else None
+                if lm:                                   # (a station that does not reach: on to the next one toward it)
+                    k0 = int(lm.group(1)); base = lm.group(2); k = k0 + (1 if lab[t] > st_pos[k0] else -1)
+                    k = max(0, min(K - 1, k))
+                    L[i] = "  jjmp fr%d_%s" % (k, base); names.add((k, base)); continue
+                base = t[t.index("_") + 1:] if re.match(r"^fr\d+_", t) else t
+                L[i] = re.sub(r"\b%s\b(\s*)$" % t, "fr%d_%s" % (k, base) + r"\1", L[i].split(";")[0]) + (";" + L[i].split(";", 1)[1] if ";" in L[i] else "")
+                names.add((k, base))
+            have = {l.strip() for l in L}
+            todo = set(names)
+            while todo:                                  # (each station toward the target, until one reaches it)
+                k, base = todo.pop()
+                if "fr%d_%s:" % (k, base) in have:
+                    continue
+                have.add("fr%d_%s:" % (k, base))
+                if abs(lab[base] - st_pos[k]) <= 30000:
+                    blocks[k] += ["fr%d_%s:" % (k, base), "  jjmp %s" % base]
+                else:
+                    k2 = k + (1 if lab[base] > st_pos[k] else -1)
+                    blocks[k] += ["fr%d_%s:" % (k, base), "  jjmp fr%d_%s" % (k2, base)]
+                    todo.add((k2, base))
+            for k in range(K - 1, -1, -1):
+                if blocks[k]:
+                    L[st_line[k] + 1:st_line[k] + 1] = ["; ---- station %d: references that do not reach from where they are (gen_leer.py, reach)" % k] + blocks[k]
+            print("luma: %d saltos por %d estaciones" % (len(far), K))
         raise AssertionError("her jumps still do not reach after six laps")
         print("luma: su lectora adentro (%d lineas de pulso.jsm), %d nombres del cuerpo con b_: %s" % (len(src) - 2, len(both), " ".join(both)))
 
