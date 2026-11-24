@@ -38,6 +38,9 @@ armar() {
   # her reader is herself: the same program, in her house, with the reader's initial data beside it
   cmp -s "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/lectora.bin)" \
     || cp "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/lectora.bin)"
+  # her thinker is herself too (gen_leer.py: r_pens_launch): the same program, on its own rower
+  cmp -s "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/pensadora.bin)" \
+    || cp "$carpeta/bin/luma.bin" "$carpeta/casa/$(etiqueta luma/pensadora.bin)"
   cmp -s "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)" \
     || cp "$carpeta/bin/pulso.datos" "$carpeta/casa/$(etiqueta luma/lectora.molde)"
   # her gears: SHE MAKES THEM HERSELF (gen_leer.py: r_gears): born without them, she takes her own machine code apart.

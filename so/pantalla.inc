@@ -755,12 +755,12 @@ screen_paste_take:
         jz      .close
         mov     rsi, rax
         xor     ecx, ecx                ; its units, to the first 0
-.len:
-        cmp     word [rsi + rcx*2], 0
-        je      .len_done
-        inc     rcx
         jmp     .len
-.len_done:
+.len_lap:
+        inc     rcx
+.len:                                   ; while the unit is not the end
+        cmp     word [rsi + rcx*2], 0
+        jne     .len_lap
         mov     rdi, rcx
         mov     rcx, [scr_paste]        ; the one kept before: let go
         test    rcx, rcx
@@ -783,13 +783,14 @@ screen_paste_take:
         mov     [scr_paste], rax
         mov     [scr_pastelen], rdi
         xor     ecx, ecx
-.copy:
-        cmp     rcx, rdi
-        jae     .unlock
+        jmp     .copy
+.copy_lap:
         mov     dx, [rsi + rcx*2]
         mov     [rax + rcx*2], dx
         inc     rcx
-        jmp     .copy
+.copy:                                  ; while units are left
+        cmp     rcx, rdi
+        jb      .copy_lap
 .unlock:
         mov     rcx, r12
         call    [GlobalUnlock]
@@ -805,15 +806,13 @@ screen_paste_take:
 ; (what is pasted goes where she listens, to be said with Enter), a CR before it left out. ebx = 0 if none is left.
 screen_paste_next:
         mov     rsi, [scr_paste]
-.again:
-        mov     rcx, [scr_pastepos]
-        cmp     rcx, [scr_pastelen]
-        jae     .none
+        jmp     .more
+.unit:
         movzx   eax, word [rsi + rcx*2]
         inc     rcx
         mov     [scr_pastepos], rcx
         cmp     eax, 13                 ; CR: left out (its LF, or nothing, follows)
-        je      .again
+        je      .more
         cmp     eax, 10
         je      .space
         cmp     eax, 9
@@ -825,12 +824,12 @@ screen_paste_next:
         cmp     edx, 0D800h             ; the first half of a pair: joined with the second
         jne     .put
         cmp     rcx, [scr_pastelen]
-        jae     .again
+        jae     .more
         movzx   edx, word [rsi + rcx*2]
         mov     r8d, edx
         and     r8d, 0FC00h
         cmp     r8d, 0DC00h
-        jne     .again                  ; (alone, it is not a letter)
+        jne     .more                   ; (alone, it is not a letter)
         inc     rcx
         mov     [scr_pastepos], rcx
         sub     eax, 0D800h
@@ -846,8 +845,11 @@ screen_paste_next:
         mov     [rdi + 24], rax
         mov     ebx, 1
         ret
-.none:
-        xor     ebx, ebx
+.more:                                  ; while units are left
+        mov     rcx, [scr_pastepos]
+        cmp     rcx, [scr_pastelen]
+        jb      .unit
+        xor     ebx, ebx                ; none is left
         ret
 
 ; 47: rsi = a text in UTF-8 (a pointer in this process), rcx = its bytes -> rax = its letters, 0 if no window lives, -1
@@ -945,13 +947,14 @@ screen_clip:
         test    rax, rax
         jz      .close
         xor     ecx, ecx
-.copy:
-        cmp     rcx, rdi
-        jae     .end
+        jmp     .copy
+.copy_lap:
         mov     dx, [rsi + rcx*2]
         mov     [rax + rcx*2], dx
         inc     rcx
-        jmp     .copy
+.copy:                                  ; while units are left
+        cmp     rcx, rdi
+        jb      .copy_lap
 .end:
         mov     word [rax + rcx*2], 0
         mov     rcx, r12
@@ -996,10 +999,11 @@ screen_take:
         lea     rcx, [scr_lock]
         call    [EnterCriticalSection]
         xor     ebx, ebx
+        call    screen_paste_next       ; (what was pasted goes first: the next letter, if any; ebx = 1 if given. An
+        test    ebx, ebx                ; Enter typed after Ctrl+V used to pass the letters still waiting, and an
+        jnz     .unlock                 ; empty line was said, 2026-11-24)
         cmp     qword [scr_count], 0
-        jne     .ring
-        call    screen_paste_next       ; (the ring is empty: the next letter pasted, if any; ebx = 1 if given)
-        jmp     .unlock
+        je      .unlock
 .ring:
         dec     qword [scr_count]
         mov     rsi, [scr_head]

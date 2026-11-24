@@ -749,6 +749,48 @@ P1 codigo=0 j0=0000000000000000 t=*
 P0 codigo=0 j0=0000000000002A11 t=*
 ventanilla: *" familia_huecos
 
+# Showing (40) only draws: a child of a process shows without its parent's signature. The parent never signs
+# (it looks at the child's state in a loop), so if 40 waited for one the child would sleep forever (a timeout).
+familia familia_muestra pantalla_mostrar
+caso "familia: el hijo muestra (40) sin la firma del padre" 0 0 "$fijo0
+P1 codigo=0 j0=0000000000000003 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" familia_espera
+
+# 45 inherit signatures (Capitan: "herencia paterna"): a parent chooses which kinds of important requests its child
+# is born signed for, never more than it has itself. Signed by inheritance, the child's write does not wait.
+familia firma_hereda hola_tras_saludo
+caso "firma: el hijo nace con la firma heredada y escribe sin esperar" 0 0 "$fijo0
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+P0 codigo=0 j0=0000000000020001 t=*
+ventanilla: *" firma_hereda
+
+# Taken back (45 with a = the child, b = 0): its write waits for the parent's signature again.
+familia firma_revoca hola_tras_saludo
+caso "firma: la herencia se revoca y el hijo vuelve a esperar" 0 0 "$fijo0
+hola
+P1 codigo=0 j0=0000000000000005 t=*
+P0 codigo=0 j0=0000000000020101 t=*
+ventanilla: *" firma_revoca
+
+# A child of the kernel has every kind (bits 1..45); its child, given write and inherit, asks for all and gets just those.
+familia firma_da firma_medio
+caso "firma: nadie hereda mas de lo que tiene su padre" 0 0 "$fijo0
+P1 codigo=0 j0=0000200000000002 t=*
+P0 codigo=0 j0=0000FFFFFFFFFFFE t=*
+ventanilla: *" firma_da
+
+# Three generations: the grandfather takes back what it gave, and the grandchild's write waits for its own parent.
+familia firma_cadena firma_medio_nieto
+cp "$salida/hola_tras_saludo.bin" "$salida/firma_cadena/6e6965746f"
+caso "firma: revocar arriba corta la herencia de toda la linea" 0 0 "$fijo0
+hola
+P2 codigo=0 j0=0000000000000005 t=*
+P1 codigo=0 j0=0000000000000001 t=*
+P0 codigo=0 j0=0000000000000000 t=*
+ventanilla: *" firma_cadena
+
 # A cabin remakes itself (36) with another program when it ends: not a child, the same cabin, started again.
 familia familia_rehace 02_ldi
 caso "familia: la cabina se rehace con otro programa" 0 0 "$fijo0

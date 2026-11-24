@@ -110,7 +110,9 @@ P_HOSTW  = 640                  ; 1 = it asked for what is new in the host (39):
 P_SCRW   = 648                  ; 41: 1 = it sleeps until the screen has an event or its time runs out, 2 = woken
 P_SCRDL  = 656                  ; 41: when its time runs out (GetTickCount64 ms; FOREVER = never)
 P_GAPS   = 664                  ; 42: 1 = it rows in the gaps: its rower takes the host's lowest thread priority while it rows it
-PROC_SIZE = 672
+P_SIGNED = 672                  ; 45: the kinds it was born signed for by its parent (bit k = kind k; inheritance)
+P_SIGNNEXT = 680                ; 45: the kinds its next child is born signed for (taken by the next launch)
+PROC_SIZE = 688
 
 ; porters: rights and tree nodes
 R_SCREEN = 1
@@ -161,7 +163,11 @@ section '.data' data readable writeable
                                 ; treat a box, dowry, move, link, receive, fuse, associate,
                                 ; greet, wait for a greeting, say a word, read a word, watch, end a child, a child's budget, rowed, remake,
                                 ; open on the host, go to, what is new in the host, show, wait for an event, row in the gaps,
-                                ; name the window, a note
+                                ; name the window, a note, inherit signatures
+  ; 45 keeps one bit per kind in a qword (bit k = kind k, bit 0 unused): it holds kinds up to 63. Past that the
+  ; inherited signatures need a block that grows; the assert says so instead of losing bits in silence.
+  assert KINDS < 64
+  KINDS_ALL = (1 shl (KINDS + 1)) - 2   ; every kind there is: what a child of the kernel signs
   requests  dq 0
   hostcalls dq 0
   retunes   dq 0
@@ -207,12 +213,12 @@ section '.data' data readable writeable
               dq serve_treat, serve_dowry, serve_move, serve_link, serve_receive, serve_fuse, serve_assoc
               dq serve_greet, serve_greeting, serve_say, serve_hear, serve_watch, serve_end, serve_budget, serve_rowed, serve_remake
               dq serve_host_open, serve_seek, serve_hostnew, serve_show, serve_wait_event, serve_gaps, serve_title, serve_note
-              dq serve_k45, serve_name, serve_copy
+              dq serve_inherit, serve_name, serve_copy
   ; door and right each kind needs (index = kind; door 0 = answers to the tree rules instead)
   ;              -  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38
   kind_door  db 0, 1, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0, 3, 3, 3, 0, 3, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 3, 0, 0, 0, 3, 3, 3
              db 3, 1, 1, 0, 1, 1
-             db 0, 0                    ; (45: kept for the signature inherited from the parent, nucleo/ceder-firma; 46: name)
+             db 0, 0                    ; (45: inherit signatures; 46: name)
              db 1                       ; (47: copy, the screen's door)
   assert $ - kind_door = KINDS + 1
   kind_right db 0, R_SCREEN, R_MEM, R_MEM, R_READ + R_WRITE, R_READ, R_WRITE, 0, 0, 0, 0, 0, R_WRITE, R_WRITE, R_READ, 0
@@ -228,7 +234,7 @@ section '.data' data readable writeable
                  db 1                   ; (rowing in the gaps changes a process)
                  db 0                   ; (naming the window only draws)
                  db 0                   ; (a note only sounds)
-                 db 0                   ; (45: kept)
+                 db 1                   ; (inheriting signatures changes a process)
                  db 1                   ; (naming one of my line its parent's sibling changes a process)
                  db 1                   ; (copying writes the host's clipboard: it changes something outside)
   assert $ - kind_important = KINDS + 1
@@ -2309,7 +2315,10 @@ ventanilla:
         je      .go                     ; it only looks: no signature
         cmp     qword [rbx + P_PARENT], 0
         je      .go                     ; the kernel's children: the kernel signs through the porters
-        call    signature               ; r8 = 1 signed, 2 rejected, 0 now waiting for the parent
+        call    born_signed             ; r8d = 1: its line signed this kind at birth (45), and still does
+        test    r8d, r8d
+        jnz     .go
+        call    signature              ; r8 = 1 signed, 2 rejected, 0 now waiting for the parent
         cmp     r8d, 1
         je      .go
         cmp     r8d, 2
@@ -4253,8 +4262,60 @@ serve_gate serve_budget,  34, family_budget
 serve_gate serve_rowed,   35, family_rowed
 serve_gate serve_remake,  36, family_remake
 serve_gate serve_gaps,    42, family_gaps
-serve_gate serve_k45,     45, family_k45
+serve_gate serve_inherit, 45, family_inherit
 serve_gate serve_name,    46, family_name
+
+; 45 inherit signatures (Capitan: "herencia paterna"; "siempre honrando la familia"): a = 0 for my next child, or
+; the number of one of my children (then it changes now, so it is also how a signature is taken back); b = the kinds
+; of important requests it is signed for, bit k = kind k. Cut to what I may sign myself (signed_mask): nobody gives
+; more than it was given. An important request of a kind its line signed does not wait for my signature; the porters
+; still decide, before and when it runs. Answers what remained; -2 if a is not 0 nor my child.
+family_inherit:
+        call    signed_mask
+        and     r8, [rbp + r13 + 16]
+        mov     rax, [rbp + r13 + 8]
+        test    rax, rax
+        jnz     .child
+        mov     [rbx + P_SIGNNEXT], r8
+        mov     [rbp + r13 + 24], r8
+        ret
+.child:
+        cmp     rax, [nprocs]
+        jae     .not_mine
+        mov     r9, [procs]
+        mov     r9, [r9 + rax*8]
+        cmp     [r9 + P_PARENT], rbx
+        jne     .not_mine
+        mov     [r9 + P_SIGNED], r8
+        mov     [rbp + r13 + 24], r8
+        ret
+.not_mine:
+        mov     qword [rbp + r13 + 24], -2
+        ret
+
+; rbx = a cabin, edx = an important kind -> r8d = 1 if its line signed that kind at birth (45): it is in the cabin's
+; own inherited signatures and in those of every one above it. Keeps every register but r8, r9.
+born_signed:
+        call    signed_mask
+        bt      r8, rdx
+        setc    r8b
+        movzx   r8d, r8b
+        ret
+
+; rbx = a cabin -> r8 = the kinds its line still signs for it: its inherited signatures cut by those of every one
+; above, up to a child of the kernel, which signs them all. Climbing, like the porters, so taking a signature back
+; anywhere above cuts it for the whole line at once. Costs the height of the family. Keeps every register but r8, r9.
+signed_mask:
+        mov     r8, KINDS_ALL
+        mov     r9, rbx
+        jmp     .up
+.up_lap:
+        and     r8, [r9 + P_SIGNED]
+        mov     r9, [r9 + P_PARENT]
+.up:                                    ; while it is not a child of the kernel
+        cmp     qword [r9 + P_PARENT], 0
+        jne     .up_lap
+        ret
 
 ; 21 treat a box (Capitan): a = the room's address, b = how to treat it (ambientes.inc, rooms_treat).
 ; Answers 0, or -1.
@@ -4413,6 +4474,9 @@ family_launch:
         mov     [mp_prio], rax
         mov     qword [mp_pfx_len], 0
         call    make_process
+        mov     rcx, [rbx + P_SIGNNEXT] ; born with the signatures its parent chose for it (45), once
+        mov     [rax + P_SIGNED], rcx
+        mov     qword [rbx + P_SIGNNEXT], 0
         push    rax
         sub     rsp, 8
         call    family_data
@@ -4619,12 +4683,6 @@ family_name:
         ret
 .no:
         mov     qword [rbp + r13 + 24], -2
-        ret
-
-; 45 is kept for the signature a child inherits from its parent (the branch nucleo/ceder-firma): until it joins,
-; it answers -1.
-family_k45:
-        mov     qword [rbp + r13 + 24], -1
         ret
 
 ; 42 row in the gaps (the work that must not take the machine from who uses it: a reading, an exam): a = number of

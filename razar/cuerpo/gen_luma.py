@@ -112,6 +112,8 @@ def init(g):
     if not os.environ.get("LUMA_GALEOTE"):
         g["J"]("jcall r_free_load             ; her own conclusions, kept in the folder (libre)")
     RD.init()
+    g["ld"]("j1", "PENS"); g["J"]("jjnz j1, pz_go                ; her thinker: to its mailbox (gen_leer.py)")
+    g["J"]("jcall r_pens_launch           ; her thinker, born once with her (gen_leer.py)")
     g["J"]("jcall r_host_eat              ; she asks once at birth: from then on the kernel watches the disks for her")
     if PRESENT:
         g["o"]("  ; the forms' archive as a ring (its handle is set by r_load_archive)")
@@ -373,7 +375,7 @@ def free_routine(g):
     o("he_shut:                        ; (the file of the host closed)")
     he_room("j9"); J("jld j1, j9, 0"); st("j1", "FH"); J("jldi j10, 7", "jcall r_file", "jret")
     o("r_free:")
-    J("jcall r_host_eat", "jcall r_self_talk          ; (an act of hers ended: a line of a book of hers, said to her, gen_leer.py)")
+    J("jcall r_host_eat", "jcall r_pens_free          ; (an act of hers ended: a line of a book of hers, said to her, gen_leer.py)")
     gl("j1", FIRST); J("jjnz j1, fr_go", "jldi j1, 1"); gs("j1", FIRST)
     gl("j1", SLEPT); gs("j1", WOKE); gs("j14", SLEPT)       # (she slept: she is waking now, reborn)
     gl("j1", WOKE); J("jjz j1, fr_same"); RD.gl("j1", RD.NEWST); J("jjz j1, fr_same"); inc(S4)   # (she woke made of something new: sleeping paid)
