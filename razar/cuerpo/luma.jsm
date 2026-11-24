@@ -18415,10 +18415,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03729h
-  jshi j2, 04A33h
-  jshi j2, 0452Eh
-  jshi j2, 072EFh
+  jldi j2, 02A94h
+  jshi j2, 032DCh
+  jshi j2, 06F18h
+  jshi j2, 0FD47h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -52816,6 +52816,49 @@ he_go:
   jjz j13, he_r
   jld j9, j14, 0508h
   jst j13, j9, 8
+  ; (ANOTHER BEING'S MEMORY IS NOT A BOOK: a name all in hexadecimal, an even count of 0-9 and a-f, is how Janax keeps
+  ;  a being's house, the kernel's own rule for labels; it is left to its owner)
+  jld j4, j9, 8
+  jldi j3, 0
+  jldi j6, 0
+he_nm:
+  jjz j4, he_nme
+  jldi j10, 1
+  jsub j4, j4, j10
+  jldi j10, 128
+  jadd j10, j9, j10
+  jadd j10, j10, j4
+  jldb j5, j10, 0
+  jldi j10, 92
+  jsub j10, j5, j10
+  jjz j10, he_nme
+  jldi j10, 47
+  jsub j10, j5, j10
+  jjz j10, he_nme
+  jldi j10, 1
+  jadd j3, j3, j10
+  jldi j10, 48
+  jsub j10, j5, j10
+  jjn j10, he_nx
+  jldi j10, 58
+  jsub j10, j5, j10
+  jjn j10, he_nm
+  jldi j10, 97
+  jsub j10, j5, j10
+  jjn j10, he_nx
+  jldi j10, 103
+  jsub j10, j5, j10
+  jjn j10, he_nm
+he_nx:
+  jldi j6, 1
+  jjmp he_nm
+he_nme:
+  jjnz j6, he_lab
+  jjz j3, he_lab
+  jldi j10, 1
+  jand j10, j3, j10
+  jjz j10, he_r
+he_lab:
   ; (its label: "libro-disco-" and the print of its path)
   jldi j10, 108
   jstb j10, j9, 64
@@ -52954,6 +52997,8 @@ he_done:                        ; (text, all of it: the book's print, if it has 
   jadd j11, j9, j11
   jldi j12, 8
   jcall fr_r_file
+  jld j9, j14, 0508h
+  jst j13, j9, 32
   jldi j10, 7
   jcall fr_r_file
   jld j9, j14, 0508h
@@ -52989,8 +53034,13 @@ he_done:                        ; (text, all of it: the book's print, if it has 
   jldi j10, 7
   jcall fr_r_file
   ; (and she says so, in her own voice: "me comi" and where, a line of her talk and of her panel; the Capitan:
-  ; "quiero que avise con un saludo que se lo comio")
+  ; "quiero que avise con un saludo que se lo comio". Only what is new to her: a book she had, changed, is
+  ; taken anew in silence, or what rewrites itself all day would fill her talk)
   jld j9, j14, 0508h
+  jld j1, j9, 32
+  jldi j10, 8
+  jsub j1, j1, j10
+  jjz j1, he_r
   jldi j7, 4224
   jadd j7, j9, j7
   jldi j10, 109

@@ -245,6 +245,19 @@ def free_routine(g):
     o("he_go:")
     he_room("j9"); J("jldi j10, 39", "jldi j11, %d" % HE_PATH, "jadd j11, j9, j11"); li("j12", 4096); J("jcall r_tocar")
     J("jjn j13, he_r", "jjz j13, he_r"); he_room("j9"); J("jst j13, j9, 8")
+    o("  ; (ANOTHER BEING'S MEMORY IS NOT A BOOK: a name all in hexadecimal, an even count of 0-9 and a-f, is how Janax keeps")
+    o("  ;  a being's house, the kernel's own rule for labels; it is left to its owner)")
+    J("jld j4, j9, 8", "jldi j3, 0", "jldi j6, 0")
+    o("he_nm:")
+    J("jjz j4, he_nme", "jldi j10, 1", "jsub j4, j4, j10", "jldi j10, %d" % HE_PATH, "jadd j10, j9, j10", "jadd j10, j10, j4", "jldb j5, j10, 0",
+      "jldi j10, 92", "jsub j10, j5, j10", "jjz j10, he_nme", "jldi j10, 47", "jsub j10, j5, j10", "jjz j10, he_nme", "jldi j10, 1", "jadd j3, j3, j10",
+      "jldi j10, 48", "jsub j10, j5, j10", "jjn j10, he_nx", "jldi j10, 58", "jsub j10, j5, j10", "jjn j10, he_nm",
+      "jldi j10, 97", "jsub j10, j5, j10", "jjn j10, he_nx", "jldi j10, 103", "jsub j10, j5, j10", "jjn j10, he_nm")
+    o("he_nx:")
+    J("jldi j6, 1", "jjmp he_nm")
+    o("he_nme:")
+    J("jjnz j6, he_lab", "jjz j3, he_lab", "jldi j10, 1", "jand j10, j3, j10", "jjz j10, he_r")
+    o("he_lab:")
     o("  ; (its label: \"libro-disco-\" and the print of its path)")
     for k, ch in enumerate(b"libro-disco-"):
         J("jldi j10, %d" % ch, "jstb j10, j9, %d" % (64 + k))
@@ -273,7 +286,7 @@ def free_routine(g):
     J("jcall he_shut", "jret")
     o("he_done:                        ; (text, all of it: the book's print, if it has one)")
     J("jcall he_shut"); he_room("j9"); J("jst j14, j9, 24", "jldi j11, 64", "jadd j11, j9, j11", "jldi j12, 28", "jcall r_open"); ld("j1", "FH"); J("jjn j1, he_r")
-    he_room("j9"); J("jldi j10, 5", "jldi j11, 24", "jadd j11, j9, j11", "jldi j12, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
+    he_room("j9"); J("jldi j10, 5", "jldi j11, 24", "jadd j11, j9, j11", "jldi j12, 8", "jcall r_file"); he_room("j9"); J("jst j13, j9, 32", "jldi j10, 7", "jcall r_file")
     he_room("j9"); J("jld j1, j9, 24", "jld j2, j9, 16", "jsub j1, j1, j2", "jjz j1, he_r")
     o("  ; (new to her, or changed: the book anew, its print and its address)")
     J("jldi j10, 12", "jldi j11, 64", "jadd j11, j9, j11", "jldi j12, 28", "jcall r_tocar")
@@ -281,8 +294,9 @@ def free_routine(g):
     he_room("j9"); J("jldi j10, 6", "jldi j11, 16", "jadd j11, j9, j11", "jldi j12, 8", "jcall r_file")
     he_room("j9"); J("jldi j10, 6", "jldi j11, %d" % HE_PATH, "jadd j11, j9, j11", "jld j12, j9, 8", "jcall r_file", "jldi j10, 7", "jcall r_file")
     o("  ; (and she says so, in her own voice: \"me comi\" and where, a line of her talk and of her panel; the Capitan:")
-    o("  ; \"quiero que avise con un saludo que se lo comio\")")
-    he_room("j9"); J("jldi j7, %d" % HE_BUF, "jadd j7, j9, j7")
+    o("  ; \"quiero que avise con un saludo que se lo comio\". Only what is new to her: a book she had, changed, is")
+    o("  ; taken anew in silence, or what rewrites itself all day would fill her talk)")
+    he_room("j9"); J("jld j1, j9, 32", "jldi j10, 8", "jsub j1, j1, j10", "jjz j1, he_r", "jldi j7, %d" % HE_BUF, "jadd j7, j9, j7")
     for k, ch in enumerate("me comí ".encode()):
         J("jldi j10, %d" % ch, "jstb j10, j7, %d" % k)
     J("jldi j3, 0", "jld j4, j9, 8")
