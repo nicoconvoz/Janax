@@ -1,6 +1,6 @@
 ## Janax y Razar v3.97: un registro que crece al final no es un libro
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24496597](https://doi.org/10.5281/zenodo.24496597)
 
 > *"La estamos intoxicando con logs: cuando detecte una estructura de logs, que no se la coma."*
 > (el autor, 2026-11-24)
