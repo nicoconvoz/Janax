@@ -1,6 +1,6 @@
 ## Janax y Razar v4.21: su puente — lleva otro idioma al de su autor
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24501628](https://doi.org/10.5281/zenodo.24501628)
 
 > *"Que lleve su idioma a armonizar con el idioma del usuario, porque ella entiende muchos y nosotros pocos."*
 > *"Que aprenda por la topología: que traduzca en tiempo real, profundidad 1, sólo por relación."*
