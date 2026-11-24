@@ -345,6 +345,8 @@ section '.data' data readable writeable
   align 8
   hw_sys    dq HW_KNOWN dup 0   ; each of them: its path (UTF-16, kept for the kernel's life), its characters
   hw_sysn   dq HW_KNOWN dup 0
+  hw_sysr   dq HW_KNOWN dup 0   ; 1: a place of the system that may be read (Windows, Program Files: the Capitan, 2026-11-24)
+  HW_SECRET = 4                 ; the first four known folders keep the programs' data (and with it, their secrets): closed
   hw_nsys   dq 0
   hw_kpath  dq 0
   align 8

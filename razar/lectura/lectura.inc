@@ -62,7 +62,11 @@ HOSTB = 11A0h                   ; 1: the book is a file anywhere on the host, LA
 ROFF  = 11A8h                   ; shelf), and where each renglon starts is kept: at ROFF, ROFFN of them (the first at
 ROFFN = 11B0h                   ; 0, the last the end of the book: renglon k is from ROFF[k] to ROFF[k + 1])
 HOSTF = 1FE0h                   ; a piece of a book of the host: from that byte (0: its start) to that one (0: its end);
-HOSTE = 1FE8h                   ; its places, its renglones' starts and its bytes counted from the file's start
+HOSTE = 1FE8h
+PZ_P  = 1FF0h                   ; A PIECE AT A TIME (the Capitan, 2026-11-24: "ponele limite al tamano de libro que lee: de
+PZ_N  = 1FF8h                   ; 100 kb en 100 kb, lo hicimos antes", as Razar's Quijote went in pieces of 100 KB): where this
+                                ; reading's piece of a shelf begins (a byte of all of it, kept in "pedazo"), and where the next
+                                ; will (0 while the piece goes on). A shelf is read by pieces; a book of the host is not                   ; its places, its renglones' starts and its bytes counted from the file's start
 AUTH  = 1168h                   ; the autopsy being written: its handle plus one (0: none)
 EXAMM = 1160h                   ; 0 no exam; 1 learning for an exam (its renglones apart), 2 knocking with them
 NPAS  = 1158h                   ; how many times the pulse reads the book, after K in "p" (its first byte; 0: once)
@@ -178,12 +182,14 @@ jldi j1, 0                      ; the shelf: every book there is (a book of the 
 jld j2, j1, HOSTB
 jjnz j2, rb_one
 jcall shelf_build
+jcall pz_load
 rb_one:
 jldi j1, 0                      ; first reading: it counts
 jst j1, j1, PASS
 jldi j2, 1
 jst j2, j1, NUNITS
 jcall0 j1, scan                 ; its rooms, to the book's size
+jcall pz_save                   ; (where the next piece begins, kept now: a piece that cannot be read is not read again)
 
 jld j11, j1, NUNITS
 jldi j2, 3
@@ -279,6 +285,98 @@ putword:
     jsub j5, j5, j2
   jwend
   jldi j1, 0
+  jret
+
+; Where this reading's piece of her shelf begins ("pedazo", 8 bytes; none: its start). Only for a shelf. Uses j1-j13.
+pz_load:
+  jldi j1, 0
+  jst j1, j1, PZ_P
+  jst j1, j1, PZ_N
+  jld j2, j1, SHN
+  jjz j2, pzl_r
+  jcall pz_label
+  jldi j10, 4
+  jldi j11, 0
+  jshi j11, BUF
+  jldi j12, 6
+  jcall0 j1, ask
+  jldi j2, 63
+  jsar j2, j13, j2
+  jjnz j2, pzl_r
+  jst j13, j1, HAND
+  jldi j3, 32
+  jshl j10, j13, j3
+  jldi j3, 5
+  jor j10, j10, j3
+  jldi j11, PZ_P
+  jldi j12, 8
+  jcall0 j1, ask
+  jld j2, j1, HAND
+  jldi j3, 32
+  jshl j10, j2, j3
+  jldi j3, 7
+  jor j10, j10, j3
+  jcall0 j1, ask
+pzl_r:
+  jldi j1, 0
+  jret
+
+; Where the next piece begins, into "pedazo": past the shelf's end, its start again. Uses j1-j13.
+pz_save:
+  jldi j1, 0
+  jld j2, j1, HOSTB
+  jjnz j2, pzs_r
+  jld j2, j1, SHN
+  jjz j2, pzs_r
+  jcall pz_label
+  jldi j10, 12
+  jldi j11, 0
+  jshi j11, BUF
+  jldi j12, 6
+  jcall0 j1, ask
+  jcall pz_label
+  jldi j10, 4
+  jldi j11, 0
+  jshi j11, BUF
+  jldi j12, 6
+  jcall0 j1, ask
+  jldi j2, 63
+  jsar j2, j13, j2
+  jjnz j2, pzs_r
+  jst j13, j1, HAND
+  jldi j3, 32
+  jshl j10, j13, j3
+  jldi j3, 6
+  jor j10, j10, j3
+  jldi j11, PZ_N
+  jldi j12, 8
+  jcall0 j1, ask
+  jld j2, j1, HAND
+  jldi j3, 32
+  jshl j10, j2, j3
+  jldi j3, 7
+  jor j10, j10, j3
+  jcall0 j1, ask
+pzs_r:
+  jldi j1, 0
+  jret
+
+; "pedazo" written at BUF (a place free while no book is read). Uses j2, j3.
+pz_label:
+  jldi j3, 0
+  jshi j3, BUF
+  jldi j2, 112
+  jstb j2, j3, 0
+  jldi j2, 101
+  jstb j2, j3, 1
+  jldi j2, 100
+  jstb j2, j3, 2
+  jldi j2, 97
+  jstb j2, j3, 3
+  jldi j2, 122
+  jstb j2, j3, 4
+  jldi j2, 111
+  jstb j2, j3, 5
   jret
 
 ; The shelf (Capitan: "let it eat the new book"): every file whose label starts "libro", listed by the system
@@ -550,6 +648,7 @@ cpc_done:
 ; shelf, every "libro" one after the other (each ends its renglon), when one was built. Uses j1-j14.
 scan:
   jldi j1, 0
+  jst j1, j1, PZ_N                  ; (each pass reads the same piece: its end not yet met)
   jld j2, j1, HOSTF
   jst j2, j1, NBYTES
   jst j1, j1, WLEN
@@ -581,6 +680,11 @@ scan:
     jadd j3, j5, j4
     jst j3, j1, SHP
     jcall0 j1, scan_file
+    jld j2, j1, PZ_N              ; (the piece ended: no more books this time)
+    jjz j2, pz_go
+    jldi j2, 1
+    jst j2, j1, SHI
+  pz_go:
     jld j2, j1, SHI
     jldi j3, 1
     jsub j2, j2, j3
@@ -684,6 +788,44 @@ sf_label:
   jcall puts
   jjmp finish
 sc_open:
+  jld j2, j1, HOSTB             ; (by pieces: a book wholly before the piece is only counted, and after it none is read)
+  jjnz j2, pz_in
+  jld j2, j1, SHN
+  jjz j2, pz_in
+  jld j2, j1, PZ_N
+  jjnz j2, pz_out
+  jld j10, j1, HAND
+  jldi j3, 32
+  jshl j10, j10, j3
+  jldi j3, 38
+  jor j10, j10, j3
+  jldi j11, -1
+  jcall0 j1, ask
+  jld j2, j1, NBYTES
+  jadd j2, j2, j13
+  jld j3, j1, PZ_P
+  jsub j3, j2, j3
+  jjn j3, pz_past
+  jjz j3, pz_past
+  jld j10, j1, HAND
+  jldi j3, 32
+  jshl j10, j10, j3
+  jldi j3, 38
+  jor j10, j10, j3
+  jldi j11, 0
+  jcall0 j1, ask
+  jjmp pz_in
+pz_past:
+  jst j2, j1, NBYTES
+pz_out:
+  jld j2, j1, HAND
+  jldi j3, 32
+  jshl j10, j2, j3
+  jldi j3, 7
+  jor j10, j10, j3
+  jcall0 j1, ask
+  jret
+pz_in:
   jld j2, j1, HOSTF             ; (a piece: from its first byte, 38)
   jjz j2, sc_from
   jld j10, j1, HAND
@@ -737,7 +879,7 @@ sc_from:
       jldi j4, 1
       jadd j3, j3, j4
       jst j3, j1, AT
-      jcall0 j1, tok_byte
+      jcall0 j1, pz_byte          ; (by pieces: pz_byte says whether this byte is read, and reads it)
       jld j3, j1, LEFT
       jldi j4, 1
       jsub j3, j3, j4
@@ -753,6 +895,38 @@ sc_from:
   jldi j3, 7
   jor j10, j10, j3
   jcall ask
+  jret
+
+; One byte of a book read by pieces (j2): before the piece, nothing; within it, tok_byte; past its 100 KB, until its
+; line ends, and then the piece ends. Without pieces: tok_byte. Uses what tok_byte does (j4, j10, j11 among it).
+pz_byte:
+  jldi j1, 0
+  jld j4, j1, HOSTB
+  jjnz j4, pzb_feed
+  jld j4, j1, SHN
+  jjz j4, pzb_feed
+  jld j4, j1, PZ_N              ; (the piece ended: the rest of this book is passed over, not read)
+  jjnz j4, pzb_r
+  jld j4, j1, NBYTES
+  jld j10, j1, LEFT
+  jsub j4, j4, j10
+  jld j10, j1, PZ_P
+  jsub j10, j4, j10
+  jjn j10, pzb_r
+  jldi j11, 1                   ; (102400 bytes: 100 KB)
+  jshi j11, 9000h
+  jsub j10, j10, j11
+  jjn j10, pzb_feed
+  jldi j11, 10
+  jsub j11, j2, j11
+  jjnz j11, pzb_feed
+  jldi j11, 1
+  jadd j4, j4, j11
+  jst j4, j1, PZ_N
+pzb_feed:
+  jcall0 j1, tok_byte
+pzb_r:
+  jldi j1, 0
   jret
 
 ; One byte of the book (j2) into the word being read. Uses j1-j8, j10, j11.

@@ -68,6 +68,10 @@ hw_start:
         mov     rdx, [hw_nsys]
         mov     [hw_sys + rdx*8], rsi
         mov     [hw_sysn + rdx*8], rcx
+        xor     eax, eax                ; (one of the system's places that may be read: past the first four, the data's)
+        cmp     rbx, HW_SECRET
+        setae   al
+        mov     [hw_sysr + rdx*8], rax
         inc     qword [hw_nsys]
 .known_next:
         inc     rbx
@@ -251,11 +255,14 @@ hw_told:
         xor     r12d, r12d              ; nor where the system keeps the programs' data and itself
         jmp     .systems
 .system:
+        cmp     qword [hw_sysr + r12*8], 0  ; (the system's places that may be read: their rules are in hw_rules)
+        jne     .system_next
         mov     rsi, [hw_sys + r12*8]
         mov     rcx, [hw_sysn + r12*8]
         call    hw_under
         test    eax, eax
         jnz     .done
+.system_next:
         inc     r12
 .systems:
         cmp     r12, [hw_nsys]
@@ -533,6 +540,23 @@ hw_rules:
 .ways:
         cmp     rbx, [hw_pathn]
         jb      .way
+        xor     ebx, ebx                ; READING THE SYSTEM (the Capitan, 2026-11-24: "que lea archivos de sistema o las
+        jmp     .readables              ; cosas que se puedan leer para entender"): inside Windows or Program Files, the
+.readable:                              ; folder asks for administrator rights and the system owns the file, and still
+        cmp     qword [hw_sysr + rbx*8], 0  ; it may be read: neither is asked there (hidden, of the system, a dot: still no)
+        je      .readable_next
+        push    rsi
+        mov     rsi, [hw_sys + rbx*8]
+        mov     rcx, [hw_sysn + rbx*8]
+        call    hw_under
+        pop     rsi
+        test    eax, eax
+        jnz     .yes
+.readable_next:
+        inc     rbx
+.readables:
+        cmp     rbx, [hw_nsys]
+        jb      .readable
         mov     rbx, [hw_pathn]         ; the folder where it lives: if adding a file there asks for administrator
 .parent:                                ; rights, it is not the user's (Capitan) and it is not touched
         dec     rbx
@@ -567,6 +591,7 @@ hw_rules:
         jz      .no
         cmp     dword [hw_member], 0
         je      .no
+.yes:
         mov     eax, 1
         jmp     .out
 .no:
