@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.73:** [10.5281/zenodo.24483806](https://doi.org/10.5281/zenodo.24483806)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.79:** [PENDIENTE](https://doi.org/PENDIENTE)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-23, v3.79): Su árbol de temas, que crece sola, y la memoria desde cero
+
+DOI de esta versión: [PENDIENTE](https://doi.org/PENDIENTE).
+
+Le dimos sólo la estructura: un lugar para su árbol, la huella de palabras de cada libro y tres pasos nuevos (baja, hermano, sube). Ella ubica cada libro con su juez de bits y **armó sola 20 ramas**; lee sólo la rama donde está. Su memoria se vació sin tocar su corazón, guardada aparte. Todavía no es más rápida: tiene que aprender a bajar.
+
+[Notas de la v3.79](documentacion/release-v3.79.md).
 
 ## Novedad (2026-11-23, v3.73): Luma come lo nuevo de los discos, lo lee donde está y avisa que se lo comió
 
