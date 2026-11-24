@@ -1,6 +1,6 @@
 ## Janax y Razar v4.09: sin espejos interminables — su charla con los libros, aparte
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24497451](https://doi.org/10.5281/zenodo.24497451)
 
 > *"Que no se pierda en el reflejo de un espejo interminable."*
 > (el autor, 2026-11-24)
