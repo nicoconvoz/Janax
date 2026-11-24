@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.89:** [10.5281/zenodo.24494956](https://doi.org/10.5281/zenodo.24494956)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v3.97:** [PENDIENTE397](https://doi.org/PENDIENTE397)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-24, v3.97): Un registro que crece al final no es un libro
+
+DOI de esta versión: [PENDIENTE397](https://doi.org/PENDIENTE397).
+
+Cuando un libro del disco cambia, ella mira si **creció sólo al final** y si sus renglones **empiezan con etiqueta** ("vigia:", una hora): las dos juntas dicen registro, y no se lo come más. Un diario escrito al final sigue siendo libro.
+
+[Notas de la v3.97](documentacion/release-v3.97.md).
 
 ## Novedad (2026-11-24, v3.89): Luma se queda en la rama que le sirvió
 
