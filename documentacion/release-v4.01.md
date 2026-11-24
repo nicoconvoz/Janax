@@ -1,6 +1,6 @@
 ## Janax y Razar v4.01: su lectora lee de a pedazos de 100 KB, y el núcleo la deja leer el sistema
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24497181](https://doi.org/10.5281/zenodo.24497181)
 
 > *"Ponele límite al tamaño de libro que lee: ¿te acordás cómo íbamos de 100 KB en 100 KB? Lo hicimos antes."*
 > *"Dejá que coma otras cosas, como que lea archivos de sistema o las cosas que se puedan leer para entender."*
