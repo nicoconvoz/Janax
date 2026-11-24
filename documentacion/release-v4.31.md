@@ -1,6 +1,6 @@
 ## Janax y Razar v4.31: una propuesta abierta de convivencia en paz
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24502687](https://doi.org/10.5281/zenodo.24502687)
 
 > *"Prefiero perder el número perfecto y ganar imperfectamente la perfección de un futuro sin límites."*
 > (el autor, 2026-11-24)

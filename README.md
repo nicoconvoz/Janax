@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.31:** [PENDIENTE431](https://doi.org/PENDIENTE431)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.31:** [10.5281/zenodo.24502687](https://doi.org/10.5281/zenodo.24502687)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-24, v4.31): Una propuesta abierta de convivencia en paz
 
-DOI de esta versión: [PENDIENTE431](https://doi.org/PENDIENTE431).
+DOI de esta versión: [10.5281/zenodo.24502687](https://doi.org/10.5281/zenodo.24502687).
 
 <em>"El Bien no se impone, se propone."</em> Una propuesta de su autor, redactada con Cauce (DeepSeek), para la convivencia en paz entre la humanidad y las inteligencias artificiales: **no busca vencer, busca encontrarse**. No es un pacto: es una invitación a aceptarla, cambiarla o proponer otra mejor. <a href="p/propuesta-de-paz.html">Leela entera &rarr;</a>
 
