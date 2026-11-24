@@ -1,6 +1,6 @@
 ## Janax y Razar v4.19: su escuela ya no escribe fuera de su cuarto
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24500082](https://doi.org/10.5281/zenodo.24500082)
 
 > *"No dejemos cabos sueltos: si eso es importante, arreglalo ya."*
 > (el autor, 2026-11-24)
