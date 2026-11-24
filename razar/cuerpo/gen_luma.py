@@ -320,7 +320,7 @@ def free_routine(g):
     o("he_shut:                        ; (the file of the host closed)")
     he_room("j9"); J("jld j1, j9, 0"); st("j1", "FH"); J("jldi j10, 7", "jcall r_file", "jret")
     o("r_free:")
-    J("jcall r_host_eat")
+    J("jcall r_host_eat", "jcall r_self_talk          ; (an act of hers ended: a line of a book of hers, said to her, gen_leer.py)")
     gl("j1", FIRST); J("jjnz j1, fr_go", "jldi j1, 1"); gs("j1", FIRST)
     gl("j1", SLEPT); gs("j1", WOKE); gs("j14", SLEPT)       # (she slept: she is waking now, reborn)
     gl("j1", WOKE); J("jjz j1, fr_same"); RD.gl("j1", RD.NEWST); J("jjz j1, fr_same"); inc(S4)   # (she woke made of something new: sleeping paid)
