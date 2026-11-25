@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.09:** [10.5281/zenodo.24541884](https://doi.org/10.5281/zenodo.24541884)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.21:** [PENDIENTE521](https://doi.org/PENDIENTE521)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-25, v5.21): Imagina la respuesta, no la información
+
+DOI de esta versión: [PENDIENTE521](https://doi.org/PENDIENTE521).
+
+Su imaginación, que usaba sólo al improvisar, ahora actúa también en lo que contesta. **La información es la información**: una palabra de su respuesta sólo puede cambiar si la charla con quien le habla ya la dijo, y por otra de esa misma charla; lo que viene de un libro queda como lo comió. Y lo que no trae palabras nuevas ya no entra. En la última prueba contestó las cinco frases, pero no imaginó en ninguna.
+
+[Notas de la v5.21](documentacion/release-v5.21.md).
 
 ## Novedad (2026-11-25, v5.09): Un libro del disco no se lee como renglones
 
