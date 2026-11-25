@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.03:** [10.5281/zenodo.24541458](https://doi.org/10.5281/zenodo.24541458)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.09:** [PENDIENTE509](https://doi.org/PENDIENTE509)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-25, v5.09): Un libro del disco no se lee como renglones
+
+DOI de esta versión: [PENDIENTE509](https://doi.org/PENDIENTE509).
+
+A “hola Luma!” había contestado con bytes y una ruta de un archivo: tres de sus lectores abrían como texto un libro del disco, que en su casa guarda una dirección y no renglones. Ahora hay **una sola regla para todos los que leen**. En la copia oculta, ocho respuestas sin un byte que no sea texto.
+
+[Notas de la v5.09](documentacion/release-v5.09.md).
 
 ## Novedad (2026-11-25, v5.03): Escucha encadenada: corta la melodía cuando ya nada aporta
 
