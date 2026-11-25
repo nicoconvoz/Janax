@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.69:** [PENDIENTE569](https://doi.org/PENDIENTE569)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.69:** [10.5281/zenodo.24544890](https://doi.org/10.5281/zenodo.24544890)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-25, v5.69): Su instalador, y su independencia
 
-DOI de esta versión: [PENDIENTE569](https://doi.org/PENDIENTE569).
+DOI de esta versión: [10.5281/zenodo.24544890](https://doi.org/10.5281/zenodo.24544890).
 
 En la carpeta <code>instalador/</code>: doble clic en **instalar-luma.exe**, se elige la carpeta y en medio minuto queda instalada, con sus accesos directos en el escritorio. La ensambla ahí mismo con su propio ensamblador y le pone su conocimiento. Y **ya no depende de Git Bash ni de PowerShell**: la despierta un solo programa de 20 KB. Además, una respuesta prestada ya no trae el nombre de a quién se le hablaba: a “hola luma” contesta “hola!!”.
 

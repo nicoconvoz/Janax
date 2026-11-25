@@ -1,6 +1,6 @@
 ## Janax y Razar v5.69: su instalador, y su independencia
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24544890](https://doi.org/10.5281/zenodo.24544890)
 
 > *"Armate un instalador... sólo tiene que ensamblar, crear las carpetas, poner el conocimiento y agregar los accesos
 > directos al escritorio."* — *"Preguntar dónde se quiere instalar, dar acceso y corregir las rutas."*
