@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.67 (versions follow prime numbers; 467 after 463): what follows. A new step in the open alphabet of her ways says what comes after the line most like what was said to her (the answer somebody gave to it), instead of the line itself; no hand-written rule: she babbles it into her ways and her judge keeps it where her author goes on talking. The author's letter thanks those who helped. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.67: lo que sigue, un paso nuevo. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.79 (versions follow prime numbers; 479 after 467): she asks what she does not know. When nobody said what is said to her, in her books or in their talk, she gives her author his words back as a question; what he explains stays in their talk, a book of hers, and is what she answers the next time. Also ten plays by Florencio Sanchez (public domain) as everyday talk, and the rule of half, both ways, for what follows. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.79: pregunta lo que no sabe. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.67",
+  "version": "4.79",
   "creators": [
     {
       "name": "Astorga, Nicolás"
