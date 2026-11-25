@@ -1,6 +1,6 @@
 ## Janax y Razar v5.47: los dos lectores que faltaban
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24544190](https://doi.org/10.5281/zenodo.24544190)
 
 Las versiones siguen a los números primos: después del 541, el 547.
 

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.47:** [PENDIENTE547](https://doi.org/PENDIENTE547)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.47:** [10.5281/zenodo.24544190](https://doi.org/10.5281/zenodo.24544190)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.47): Los dos lectores que faltaban
 
-DOI de esta versión: [PENDIENTE547](https://doi.org/PENDIENTE547).
+DOI de esta versión: [10.5281/zenodo.24544190](https://doi.org/10.5281/zenodo.24544190).
 
 A “¿quién es Isaac Newton?” había contestado la dirección de un archivo de Windows: quedaban dos lectores que abrían un libro del disco como si fuera texto. **Los cinco usan ahora la misma regla.** En la copia oculta, seis frases sin una ruta ni un byte que no sea texto. Lo que contesta desde sus libros todavía no tiene que ver con la pregunta.
 
