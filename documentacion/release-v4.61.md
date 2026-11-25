@@ -1,6 +1,6 @@
 ## Janax y Razar v4.61: su escuela vuelve a cantar lo que ella dice
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24536048](https://doi.org/10.5281/zenodo.24536048)
 
 > *"El Tab no me muestra nada."*
 > (el autor, 2026-11-25)

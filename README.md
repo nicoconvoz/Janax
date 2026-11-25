@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.61:** [PENDIENTE461](https://doi.org/PENDIENTE461)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.61:** [10.5281/zenodo.24536048](https://doi.org/10.5281/zenodo.24536048)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v4.61): Su escuela vuelve a cantar lo que ella dice
 
-DOI de esta versión: [PENDIENTE461](https://doi.org/PENDIENTE461).
+DOI de esta versión: [10.5281/zenodo.24536048](https://doi.org/10.5281/zenodo.24536048).
 
 Con Tab no se veía nada: desde que piensa su pensadora, a su escuela (que vive en su cuerpo) no le llegaba ninguna canción. Ahora **su cuerpo le canta a su escuela** cada respuesta de su pensadora, como antes.
 
