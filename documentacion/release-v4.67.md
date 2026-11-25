@@ -1,6 +1,6 @@
 ## Janax y Razar v4.67: lo que sigue — un paso nuevo para tejer el hilo
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24536902](https://doi.org/10.5281/zenodo.24536902)
 
 > *"Tiene ejemplos de sobra para trabajar una respuesta tejiendo un hilo desde el saludo común."*
 > *"No quiero imponerle un parche: quiero darle una mecánica para que emerja todo de ella misma."*

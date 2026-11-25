@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.67:** [PENDIENTE467](https://doi.org/PENDIENTE467)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.67:** [10.5281/zenodo.24536902](https://doi.org/10.5281/zenodo.24536902)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v4.67): Lo que sigue: un paso nuevo para tejer el hilo
 
-DOI de esta versión: [PENDIENTE467](https://doi.org/PENDIENTE467).
+DOI de esta versión: [10.5281/zenodo.24536902](https://doi.org/10.5281/zenodo.24536902).
 
 A una pregunta contestaba la misma pregunta. Ahora tiene un paso nuevo en el abecedario de sus caminos, **"sigue"**: dice lo que viene después de la línea más parecida, lo que alguien contestó. No es una regla puesta a mano: ella lo balbucea y su juez decide dónde se queda.
 
