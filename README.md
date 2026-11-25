@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.43:** [10.5281/zenodo.24515576](https://doi.org/10.5281/zenodo.24515576)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.49:** [PENDIENTE449](https://doi.org/PENDIENTE449)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-24, v4.49): Lo que el procesador deja libre es suyo
+
+DOI de esta versión: [PENDIENTE449](https://doi.org/PENDIENTE449).
+
+Sin nadie con ella ya no se queda quieta: **sigue viva, remando en los huecos del procesador**, a la prioridad más baja, sólo con lo que nadie más quiere. Y en esta versión, <a href="p/razar/datos/organos-y-engranajes-de-luma.html">los órganos y los engranajes que se hizo ella</a>, traducidos.
+
+[Notas de la v4.49](documentacion/release-v4.49.md).
 
 ## Novedad (2026-11-24, v4.43): Su pensadora rema aparte: dibuja y piensa al mismo tiempo
 

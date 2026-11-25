@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.43 (versions follow prime numbers; 443 after 439): her thinker rows apart. Herself in a child, born once with her and asleep on its mailbox, on its own rower: her body draws and listens while she thinks. Born in 31 s with the signature inherited from its mother (kernel request 45). Also: the left click grabs any form again, and text can be copied and pasted in her console (request 47). Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.43: su pensadora rema aparte. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.49 (versions follow prime numbers; 449 after 443): what the processor leaves free is hers. With nobody with her she no longer stands still: she lives on, rowing in the gaps (the host's lowest priority, only what nobody else wants); kernel request 42 now accepts the cabin itself. Also a document of her own organs and gears, translated. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.49: lo que el procesador deja libre es suyo. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.43",
+  "version": "4.49",
   "creators": [
     {
       "name": "Astorga, Nicolás"

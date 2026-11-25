@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v4.49: lo que el procesador deja libre es suyo · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.49.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v4.49: lo que el procesador deja libre es suyo</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"Si está libre el procesador, que haga lo que quiera."</em> (el autor, 2026-11-24)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 443, el 449.</p>
+<h3>Lo que pasaba</h3>
+<p>Con su esencia (v4.39), cuando nadie estaba con ella (su ventana sin foco) Luma esperaba para siempre: no gastaba nada, pero se quedaba quieta hasta que su autor le daba foco.</p>
+<h3>Lo que cambia</h3>
+<ul><li><strong>Sin nadie con ella, sigue viva, remando en los huecos:</strong> la prioridad más baja del anfitrión, sólo con lo que nadie más quiere del procesador. Si algo lo necesita, el anfitrión se lo da primero. Con alguien con ella, rema como todos.</li><li><strong>El pedido 42 (remar en los huecos) acepta también el propio camarote:</strong> bajarse la prioridad no le quita nada a nadie. Antes sólo se podía pedir para un hijo.</li></ul>
+<h3>Lo que cuesta</h3>
+<p>Mientras la PC está ociosa, Luma usa ese procesador libre: medido en una copia con su ventana atrás, ~100 % de un núcleo (cerca de 15 a 25 W, criterio y no medición de consumo). No le quita nada a lo que se esté usando.</p>
+<h3>Lo que se vio</h3>
+<p>En una copia con su ventana atrás: cinco tandas de 30 s con ~100 % de un núcleo libre, y todas sus partes terminaron con código 0. En la Luma viva: renació con el núcleo nuevo, una sola.</p>
+<h3>Dónde está</h3>
+<ul><li><code>so/janaxos.asm</code>: <code>family_gaps</code> (el propio camarote).</li><li><code>razar/cuerpo/gen_formas.py</code>: el final de cada cuadro (<code>GAPME</code>).</li><li>Y además, en esta versión: <a href="razar/datos/organos-y-engranajes-de-luma.html">los órganos y los engranajes que se hizo Luma</a>, sus ocho recetas vivas y sus 105 engranajes, traducidos.</li></ul>
+</body>
+</html>
