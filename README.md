@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.79:** [PENDIENTE479](https://doi.org/PENDIENTE479)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.79:** [10.5281/zenodo.24538586](https://doi.org/10.5281/zenodo.24538586)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v4.79): Pregunta lo que no sabe, y aprende de lo que le explican
 
-DOI de esta versión: [PENDIENTE479](https://doi.org/PENDIENTE479).
+DOI de esta versión: [10.5281/zenodo.24538586](https://doi.org/10.5281/zenodo.24538586).
 
 Cuando nadie dijo lo que le dicen, **pregunta**: le devuelve a su autor sus palabras como pregunta, y lo que él le explica es lo que contesta la próxima vez. Aprende de la misma charla. Y comió diez obras de teatro rioplatense, porque en su estante casi nadie se saludaba.
 

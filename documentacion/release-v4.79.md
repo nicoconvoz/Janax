@@ -1,6 +1,6 @@
 ## Janax y Razar v4.79: pregunta lo que no sabe, y aprende de lo que le explican
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24538586](https://doi.org/10.5281/zenodo.24538586)
 
 > *"Que emerja, pero quiero que emerja el diálogo: si le digo hola o cómo estás, ya debería saber responder."*
 > *"Que aprenda cómo dirigir cualquier tipo de conversación."*
