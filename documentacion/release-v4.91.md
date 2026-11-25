@@ -1,6 +1,6 @@
 ## Janax y Razar v4.91: más comida de diálogos, y su charla a la izquierda
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24540555](https://doi.org/10.5281/zenodo.24540555)
 
 > *"Dale mucha comida de diálogos: que aprenda rápido."*
 > (el autor, 2026-11-25)
