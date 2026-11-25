@@ -1,6 +1,6 @@
 ## Janax y Razar v4.49: lo que el procesador deja libre es suyo
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24519218](https://doi.org/10.5281/zenodo.24519218)
 
 > *"Si está libre el procesador, que haga lo que quiera."*
 > (el autor, 2026-11-24)
