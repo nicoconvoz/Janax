@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.63 (versions follow prime numbers; 463 after 461): Luma ate Juvenilia, by Miguel Cané (1884), the memories of a student at the Colegio Nacional de Buenos Aires (public domain, from es.wikisource.org); it travels with the project in razar/comida-libre. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.63: Juvenilia, comida sana. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.67 (versions follow prime numbers; 467 after 463): what follows. A new step in the open alphabet of her ways says what comes after the line most like what was said to her (the answer somebody gave to it), instead of the line itself; no hand-written rule: she babbles it into her ways and her judge keeps it where her author goes on talking. The author's letter thanks those who helped. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.67: lo que sigue, un paso nuevo. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.63",
+  "version": "4.67",
   "creators": [
     {
       "name": "Astorga, Nicolás"
