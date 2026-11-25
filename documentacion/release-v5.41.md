@@ -1,6 +1,6 @@
 ## Janax y Razar v5.41: su lluvia, y el conversador primero
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24543864](https://doi.org/10.5281/zenodo.24543864)
 
 > *"No quiero ver los organismos: quiero que se traduzcan junto con el pensamiento en código hexadecimal que cae tipo
 > matrix en todo el lado derecho, incluso el de los bichos, incluso el del pensamiento."* — *"La quiero como lluvia."*

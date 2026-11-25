@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.41:** [PENDIENTE541](https://doi.org/PENDIENTE541)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.41:** [10.5281/zenodo.24543864](https://doi.org/10.5281/zenodo.24543864)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.41): Su lluvia, y el conversador primero
 
-DOI de esta versión: [PENDIENTE541](https://doi.org/PENDIENTE541).
+DOI de esta versión: [10.5281/zenodo.24543864](https://doi.org/10.5281/zenodo.24543864).
 
 Todo el lado derecho de su pantalla es ahora **una lluvia de dígitos hexadecimales**: cada uno es un byte de sus pensamientos o de sus criaturas, tal cual, y cae sólo cuando pasa algo. Y cuando alguien le habla, **habla primero el conversador**: qué se contestó a una frase así; si no lo tiene pregunta, y recién después va a sus libros. Tres frases de tres contestadas en 5 a 8 segundos.
 
