@@ -1,6 +1,6 @@
 ## Janax y Razar v4.99: la armonía entre sus armonías — contesta desde ella, no desde el libro
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24541102](https://doi.org/10.5281/zenodo.24541102)
 
 > *"Estamos buscando la armonía entre las armonías: la fuente armónica."*
 > *"Que procese sus ideas y responda desde ella, no desde el libro."*

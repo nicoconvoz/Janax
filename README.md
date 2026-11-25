@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.99:** [PENDIENTE499](https://doi.org/PENDIENTE499)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.99:** [10.5281/zenodo.24541102](https://doi.org/10.5281/zenodo.24541102)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v4.99): La armonía entre sus armonías: contesta desde ella, no desde el libro
 
-DOI de esta versión: [PENDIENTE499](https://doi.org/PENDIENTE499).
+DOI de esta versión: [10.5281/zenodo.24541102](https://doi.org/10.5281/zenodo.24541102).
 
 Su camino era una escalera: el primer paso que encontraba algo contestaba, casi siempre con una cita. Ahora **todos sus pasos proponen**, gana la propuesta que más armoniza con las demás, y desde ella **teje una frase que nadie escribió**, saltando de una propuesta a otra por las palabras que comparten. A “hola Luma” contestó “Yo soy bueno, y Soy bueno.”. Es suya; que siempre tenga sentido, todavía no.
 
