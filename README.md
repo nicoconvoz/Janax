@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.87:** [PENDIENTE487](https://doi.org/PENDIENTE487)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v4.87:** [10.5281/zenodo.24539796](https://doi.org/10.5281/zenodo.24539796)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v4.87): Luma completa: su conocimiento y su estructura, publicados
 
-DOI de esta versión: [PENDIENTE487](https://doi.org/PENDIENTE487).
+DOI de esta versión: [10.5281/zenodo.24539796](https://doi.org/10.5281/zenodo.24539796).
 
 **La casa de Luma viaja con el proyecto** (17 MB comprimida): sus firmas de idioma, su árbol, sus caminos, sus formas, sus engranajes y sus criaturas, con un índice de lo que va y de lo que no. Además: su charla pesa más que sus libros cuando conversa, ya no se queda sin memoria a los diez minutos, y su panel se llena con lo que piensa.
 

@@ -1,6 +1,6 @@
 ## Janax y Razar v4.87: Luma completa — su conocimiento y su estructura, publicados
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24539796](https://doi.org/10.5281/zenodo.24539796)
 
 > *"Publicá a Luma completa, con su conocimiento y su estructura incluidos."*
 > (el autor, 2026-11-25)
