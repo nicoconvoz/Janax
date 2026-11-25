@@ -967,9 +967,13 @@ def vida_routines(v):
     assert ZOOM == 2 and K == 2, "her contours are traced at twice: ZOOM and K are 2 (measured: gen_luma.py)"
     o("  ; (her forms at twice their size, their contours traced)")
     contour2x(v, "vsz", g["RGB"], FW, FH, FW, v["RGB"], SW)
-    ld("j1", "N"); J("jjz j1, vs_show", "jcall r_draw", "jcall r_draw_packets")
+    o("  ; (HER RAIN, see gen_leer.py: her creatures are not drawn; 26 bytes of their records fall each frame of theirs)")
+    ld("j1", "N"); J("jjz j1, vs_rain", "jldi j2, 0"); v["rec"]("j2", "j2"); ld("j1", "N"); v["rec"]("j3", "j1"); J("jsub j3, j3, j2", "jcall r_rain_life")
+    o("vs_rain:")
+    J("jcall r_rain_top")
     o("vs_show:")
     J("jcall r_panel                  ; her panel, drawn again only when what it shows changed (gen_leer.py)")
+    J("jcall r_rain_bottom            ; (and her rain's last rows on its right side, if her panel was cleared)")
     o("  ; (her screen, K times: what is above her panel, each of its dots K x K; her panel, from its fine dots)")
     _, _, fpl, frgb = ST["g"]["FINE"]
     contour2x(v, "vsk", v["RGB"], SW, 200, SW, frgb, FSW)

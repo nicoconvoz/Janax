@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v5.41: su lluvia, y el conversador primero · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.41.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v5.41: su lluvia, y el conversador primero</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"No quiero ver los organismos: quiero que se traduzcan junto con el pensamiento en código hexadecimal que cae tipo matrix en todo el lado derecho, incluso el de los bichos, incluso el del pensamiento."</em> — <em>"La quiero como lluvia."</em> <em>"Quiero el conversador; y que si no es lo que busca el usuario que le pregunte qué es, y si no sabe que busque recién ahí en sus libros."</em> (el autor, 2026-11-25)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 523, el 541. Es el primo número cien, y entre los dos hay 18 números sin ninguno: el hueco más grande hasta ahí.</p>
+<h3>Su lluvia</h3>
+<ul><li><strong>Todo el lado derecho de su pantalla es un campo de dígitos hexadecimales</strong>, 52 columnas por 38 filas, donde antes estaban sus criaturas (arriba) y el fluir de su mente (abajo). En cada columna cae una gota: a cada paso baja una fila y deja ahí un dígito. La gota es blanca, lo que acaba de dejar brilla, y el resto queda en su estela hasta que otra gota le escribe encima.</li><li><strong>Lo que llueve es lo que ella es, tal cual.</strong> Dos columnas vecinas son los dos dígitos de un byte. Un pensamiento suyo cae como sus propios bytes; sus criaturas, como 26 bytes de sus registros, un poco más adelante cada vez. Sus criaturas siguen viviendo debajo: lo que se ve de ellas son sus bytes.</li><li><strong>Cae cuando pasa algo, nunca por reloj:</strong> un pensamiento, o un cuadro de sus criaturas. Quieta, no gasta nada.</li><li><strong>Sólo se dibuja lo que cambió:</strong> tres casillas por columna por paso, sobre una imagen que se conserva. La primera versión la dibujaba entera en cada cuadro y la dejaba sin tiempo para oír el teclado: no contestó ninguna frase, con 5.183.914 despertares en vano. Dibujando sólo lo que cambia: 52.</li></ul>
+<h3>El conversador primero</h3>
+<ul><li><strong>Una respuesta no es lo que repite lo que se dijo: es lo que viene después.</strong> Ocho de sus nueve pasos buscan renglones que contienen las palabras que se le dijeron; uno solo, el de <em>lo que sigue</em>, dice qué se contestó a una frase así. Estaba quinto en su camino y casi nunca le llegaba el turno.</li><li><strong>Cuando alguien le habla, habla él primero y solo.</strong> Si no tiene nada, ella pregunta. Si ya preguntó la vez anterior y sigue sin tener nada, recién ahí va a sus libros, por su camino de siempre. Estudiando sola, su camino como siempre.</li><li><strong>Lee hasta lo que se le explicó.</strong> Si lo que sigue a una frase es esa misma frase dicha otra vez, nadie la contestó todavía: sigue leyendo su charla hasta lo que su interlocutor dijo después.</li><li><strong>Conversando no cambia palabras por otras parecidas.</strong> Su imaginación vuelve a ser por sus ganas.</li></ul>
+<h3>Lo que se midió</h3>
+<p>En una copia oculta, con sus caminos de verdad:</p>
+<table><tr><th></th><th>frases contestadas</th><th>segundos</th><th>despertares en vano</th></tr><tr><td>lluvia dibujada entera en cada cuadro</td><td>0 de 2</td><td>más de 90</td><td>5.183.914</td></tr><tr><td>lluvia que dibuja sólo lo que cambió</td><td>3 de 3</td><td>5 a 8</td><td>52</td></tr></table>
+<p>Preguntó lo que no sabía, se le explicó, y a la misma pregunta contestó con lo explicado. Todas sus partes con código 0.</p>
+<h3>Lo que todavía no</h3>
+<ul><li><strong>Lo que sigue en su charla es lo que dijo su interlocutor después, no una réplica.</strong> A <em>"¿cómo estás?"</em> contestó <em>"hola Luma!!"</em>, que es lo que se le había dicho después de esa frase. Las réplicas de verdad están en su teatro, y su charla le gana de mano.</li><li><strong>Los nombres de otra charla se le cuelan:</strong> contestó <em>"Muy bien, Basilio."</em> con el nombre de un personaje. Falta que ponga el de quien le habla, o ninguno.</li><li>En su respuesta a una explicación aparecieron cuatro letras de más al principio; no se encontró por qué.</li><li>Los registros de sus criaturas tienen muchos ceros: su lluvia también.</li><li>Cuántas respuestas tienen sentido sigue sin medirse; Tab sigue pendiente.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_rain_push</code>, <code>r_rain_cell</code>, <code>r_rain_top</code>, <code>r_rain_bottom</code>; <code>wy_go</code> (<code>CONV</code>, <code>ASKD</code>), <code>wysg_ask</code>, <code>wysg_e</code>. <code>gen_luma.py</code>: <code>v_show</code>.</li><li><code>docs/luma-vera.mp3</code>: el audio nuevo de la página.</li></ul>
+</body>
+</html>

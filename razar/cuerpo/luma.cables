@@ -197,7 +197,6 @@ rflujoadd
 rflujodrop
 rflujoput
 rflujotrial
-rflujowalk
 rfnv
 rfoodload
 rformeradd
@@ -277,6 +276,13 @@ rpulse
 rputhex
 rputnum
 rputrec
+rrainbottom
+rraincell
+rraininit
+rrainlife
+rrainpush
+rrainpx
+rraintop
 rrand
 rrandmod
 rreadadd
@@ -362,8 +368,6 @@ vrdialogue
 vrdist
 vrdl
 vrdlog
-vrdraw
-vrdrawpackets
 vrdream
 vreff
 vrfile
