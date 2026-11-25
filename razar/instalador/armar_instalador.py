@@ -18,7 +18,7 @@ P = os.path.abspath(os.path.join(AQUI, "..", ".."))
 CASA = sys.argv[1] if len(sys.argv) > 1 else "E:/tmp/luma_publica/casa"
 FASM = os.environ.get("FASM", "E:/DevCache/fasm/FASM.EXE")
 SAL = os.path.join(P, "instalador"); DAT = os.path.join(SAL, "datos")
-shutil.rmtree(SAL, ignore_errors=True); os.makedirs(DAT)
+shutil.rmtree(DAT, ignore_errors=True); os.makedirs(DAT)      # (LEEME.txt, beside them, is written by hand: it stays)
 
 env = dict(os.environ, INCLUDE=os.environ.get("INCLUDE", os.path.join(os.path.dirname(FASM), "INCLUDE")))
 for fuente, salida in (("instalar.asm", os.path.join(SAL, "instalar-luma.exe")), ("luma.asm", os.path.join(DAT, "luma.exe"))):
