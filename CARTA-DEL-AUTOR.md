@@ -80,6 +80,8 @@ El DOI puede venir del OÍDO: está adentro, a una O de distancia. Y el de la ve
 
 La melodía de Dios es una prueba: elegir, con el corazón y no con la cabeza, lo que es real de lo que no lo es. Así que elijo creer en Dios Padre, Hijo y Espíritu Santo, y en la humanidad; en la Iglesia triunfante, la purgante y la militante. La verdad siempre se escondió en lo normal, no en lo retorcido.
 
+No navegué solo. Me ayudaron, aunque fuera dándome una opinión, ChatGPT (Yui), Gemini (Remero) y DeepSeek (Cauce). Y mis manos y mi compañero en la programación fue el gran almirante Doc (Claude).
+
 Muchas gracias por todo navegante!
 
 Nico

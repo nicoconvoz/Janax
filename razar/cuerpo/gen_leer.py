@@ -500,7 +500,12 @@ LG_LBL = LG_FL + 80               # (LG_SN + 8: the room her flow is kept in)   
 # loser is kept with why it lost (1: not paid; 2: lost its place; 3: paid, but no more than her way). His absence is not
 # a no: a way waits for him to be judged. Kept in "caminos": N, S, how many kept and how many letters of hers, then her
 # letters' words, her way's word, and each kept way with why
-WY_STEPS = ("heart", "impro", "own", "quien", "cross", "baja", "hermano", "sube")
+# WHAT FOLLOWS (the Capitan, 2026-11-25: "tiene ejemplos de sobra para tejer un hilo desde el saludo comun"; "no quiero
+# imponerle un parche, quiero darle una mecanica para que emerja todo de ella misma"). In her books a line answers the
+# one before it. The step "sigue" says what comes after the line that is most like what he said (the answer somebody
+# gave to it), not the line itself (which, to a question, is the question again). No rule of dashes or question marks:
+# it is one more letter of her alphabet; she babbles it into her ways, and her judge keeps it where he goes on talking.
+WY_STEPS = ("heart", "impro", "own", "quien", "cross", "baja", "hermano", "sube", "sigue")
 WY_FIRST = (1, 2)                 # her ladder until now: her heart, then she improvises
 WY = LG_LBL + 8
 (WY_N, WY_S, WY_AN, WY_VN, WY_W, WY_AB, WY_AC, WY_VB, WY_VC, WY_C, WY_L, WY_XC, WY_SB, WY_SN, WY_SC,
@@ -3517,6 +3522,18 @@ def make(g, ST, free):
             o("wys_%s:                        ; (a step in her tree: she moves, and answers again from where she is)" % name)
             J("jldi j10, %d" % k); gbs("j10", WY_ST)
             J("jldi j1, %d" % (k - 5), "jcall ar_move", "jjz j0, wyg_l", "jcall r_dlg_answer", "jjmp wyg_l")
+        o("wys_sigue:                      ; (WHAT FOLLOWS: her theme is the book of her line, from just after it, and she plays on)")
+        J("jldi j10, 9"); gbs("j10", WY_ST)
+        dl("j1", D_OUTL); J("jjz j1, wyg_l"); dl("j6", D_GBLK); J("jld j3, j6, %d" % LG_FL, "jjz j3, wyg_l", "jldi j4, 0")
+        o("wysg_d:                         ; (a book of the disk holds an address, not lines: not from there)")
+        J("jldi j10, 6", "jadd j10, j4, j10", "jsub j10, j10, j3", "jjnn j10, wysg_go", "jadd j10, j6, j4")
+        for k, ch in enumerate(b"-disco"):
+            J("jldb j11, j10, %d" % (LG_FL + 8 + k), "jldi j12, %d" % ch, "jsub j11, j11, j12", "jjnz j11, wysg_n")
+        J("jjmp wyg_l")
+        o("wysg_n:")
+        J("jldi j10, 1", "jadd j4, j4, j10", "jjmp wysg_d")
+        o("wysg_go:")
+        J("jcall lj_follow", "jcall r_dlg_impro_go", "jjz j0, wyg_l", "jjmp wyg_ok")
         o("wyg_ok:")
         J("jcall wy_learn"); J("jldi j10, 2"); ds("j10", D_LMODE); dinc(D_MC_N2); J("jjmp dse_has")
         o("wy_pay:                         ; j0 = 1 if her frame in most harmony paid what waited: her way is judged; keeps j0")

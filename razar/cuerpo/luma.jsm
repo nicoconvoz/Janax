@@ -8763,40 +8763,40 @@ main_wait:
   jst j14, j14, 0208h
   jjmp frame
 ; ---- station 0: references that do not reach from where they are (gen_leer.py, reach)
-fr0_r_cable:
-  jjmp fr1_r_cable
-fr0_v_frame:
-  jjmp fr1_v_frame
-fr0_r_free:
-  jjmp fr1_r_free
-fr0_r_read_cand:
-  jjmp fr1_r_read_cand
-fr0_v_init:
-  jjmp fr1_v_init
 fr0_r_free_load:
   jjmp fr1_r_free_load
-fr0_r_read_end:
-  jjmp fr1_r_read_end
-fr0_r_mus_init:
-  jjmp fr1_r_mus_init
 fr0_v_event:
   jjmp fr1_v_event
-fr0_r_char:
-  jjmp fr1_r_char
-fr0_r_host_eat:
-  jjmp fr1_r_host_eat
-fr0_v_meal:
-  jjmp fr1_v_meal
-fr0_fr_nomem:
-  jjmp fr1_fr_nomem
-fr0_r_read_max:
-  jjmp fr1_r_read_max
-fr0_r_cable_init:
-  jjmp fr1_r_cable_init
 fr0_v_show:
   jjmp fr1_v_show
+fr0_v_meal:
+  jjmp fr1_v_meal
+fr0_r_read_cand:
+  jjmp fr1_r_read_cand
+fr0_fr_nomem:
+  jjmp fr1_fr_nomem
+fr0_r_mus_init:
+  jjmp fr1_r_mus_init
+fr0_r_read_max:
+  jjmp fr1_r_read_max
+fr0_v_init:
+  jjmp fr1_v_init
+fr0_r_free:
+  jjmp fr1_r_free
+fr0_r_cable_init:
+  jjmp fr1_r_cable_init
 fr0_r_read_poll:
   jjmp fr1_r_read_poll
+fr0_v_frame:
+  jjmp fr1_v_frame
+fr0_r_cable:
+  jjmp fr1_r_cable
+fr0_r_host_eat:
+  jjmp fr1_r_host_eat
+fr0_r_char:
+  jjmp fr1_r_char
+fr0_r_read_end:
+  jjmp fr1_r_read_end
 main_frames:                    ; between two frames: what is left of this one
   jld j12, j14, 0220h
   jst j12, j14, 0200h
@@ -18556,10 +18556,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 0B13h
-  jshi j2, 05AABh
-  jshi j2, 08999h
-  jshi j2, 0C8D1h
+  jldi j2, 0F92h
+  jshi j2, 09451h
+  jshi j2, 03676h
+  jshi j2, 0985Dh
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -31559,100 +31559,100 @@ brg_go:
   jcall brg_cp
   jret
 ; ---- station 1: references that do not reach from where they are (gen_leer.py, reach)
+fr1_r_rec_key:
+  jjmp r_rec_key
+fr1_r_mus_init:
+  jjmp r_mus_init
+fr1_r_free_load:
+  jjmp r_free_load
+fr1_r_colour:
+  jjmp r_colour
+fr1_r_get_hex:
+  jjmp r_get_hex
+fr1_ul_cmp:
+  jjmp ul_cmp
+fr1_r_recompute:
+  jjmp r_recompute
+fr1_r_read_add:
+  jjmp r_read_add
+fr1_r_read_place:
+  jjmp r_read_place
+fr1_r_rec_org:
+  jjmp r_rec_org
+fr1_v_meal:
+  jjmp v_meal
+fr1_fr_nomem:
+  jjmp fr_nomem
+fr1_r_tried:
+  jjmp r_tried
+fr1_r_read_get:
+  jjmp r_read_get
+fr1_r_randmod:
+  jjmp r_randmod
+fr1_v_init:
+  jjmp v_init
+fr1_r_put_rec:
+  jjmp r_put_rec
+fr1_r_put_num:
+  jjmp r_put_num
+fr1_r_get_rec:
+  jjmp r_get_rec
+fr1_r_cable_init:
+  jjmp fr2_r_cable_init
+fr1_r_tocar:
+  jjmp r_tocar
+fr1_r_gesture:
+  jjmp r_gesture
+fr1_r_file:
+  jjmp r_file
+fr1_r_get_num:
+  jjmp r_get_num
+fr1_r_open:
+  jjmp r_open
+fr1_r_judge:
+  jjmp r_judge
+fr1_r_set_hue:
+  jjmp r_set_hue
+fr1_l_ring:
+  jjmp l_ring
+fr1_v_show:
+  jjmp v_show
+fr1_r_read_cand:
+  jjmp r_read_cand
+fr1_l_ring_open:
+  jjmp l_ring_open
+fr1_r_fit_cost:
+  jjmp r_fit_cost
+fr1_r_read_max:
+  jjmp r_read_max
+fr1_r_org_rec:
+  jjmp r_org_rec
+fr1_r_free:
+  jjmp r_free
+fr1_r_flat:
+  jjmp r_flat
 fr1_r_cable_flush:
   jjmp fr2_r_cable_flush
 fr1_r_cable:
   jjmp fr2_r_cable
-fr1_r_free:
-  jjmp r_free
-fr1_r_rec_key:
-  jjmp r_rec_key
-fr1_r_colour:
-  jjmp r_colour
-fr1_r_read_place:
-  jjmp r_read_place
-fr1_v_frame:
-  jjmp v_frame
-fr1_r_judge:
-  jjmp r_judge
-fr1_r_read_cand:
-  jjmp r_read_cand
-fr1_v_init:
-  jjmp v_init
-fr1_r_free_load:
-  jjmp r_free_load
-fr1_r_read_end:
-  jjmp r_read_end
-fr1_r_rec_org:
-  jjmp r_rec_org
-fr1_r_hash:
-  jjmp r_hash
-fr1_r_flat:
-  jjmp r_flat
-fr1_r_open:
-  jjmp r_open
-fr1_r_fit_cost:
-  jjmp r_fit_cost
-fr1_r_put_num:
-  jjmp r_put_num
-fr1_v_meal:
-  jjmp v_meal
-fr1_r_get_num:
-  jjmp r_get_num
-fr1_r_read_add:
-  jjmp r_read_add
-fr1_r_randmod:
-  jjmp r_randmod
-fr1_r_receta:
-  jjmp r_receta
-fr1_r_read_get:
-  jjmp r_read_get
-fr1_r_get_rec:
-  jjmp r_get_rec
-fr1_r_file:
-  jjmp r_file
-fr1_ul_cmp:
-  jjmp ul_cmp
-fr1_r_mus_init:
-  jjmp r_mus_init
-fr1_v_event:
-  jjmp v_event
-fr1_r_char:
-  jjmp r_char
 fr1_r_host_eat:
   jjmp r_host_eat
-fr1_r_org_rec:
-  jjmp r_org_rec
-fr1_l_ring:
-  jjmp l_ring
-fr1_r_put_rec:
-  jjmp r_put_rec
-fr1_r_set_hue:
-  jjmp r_set_hue
-fr1_r_cable_init:
-  jjmp fr2_r_cable_init
-fr1_r_recompute:
-  jjmp r_recompute
-fr1_r_tried:
-  jjmp r_tried
-fr1_r_tocar:
-  jjmp r_tocar
+fr1_r_receta:
+  jjmp r_receta
+fr1_r_char:
+  jjmp r_char
 fr1_r_alloc:
   jjmp r_alloc
-fr1_r_gesture:
-  jjmp r_gesture
-fr1_r_get_hex:
-  jjmp r_get_hex
-fr1_fr_nomem:
-  jjmp fr_nomem
-fr1_r_read_max:
-  jjmp r_read_max
-fr1_v_show:
-  jjmp v_show
-fr1_l_ring_open:
-  jjmp l_ring_open
+fr1_r_hash:
+  jjmp r_hash
 fr1_r_read_poll:
   jjmp r_read_poll
+fr1_v_event:
+  jjmp v_event
+fr1_v_frame:
+  jjmp v_frame
+fr1_r_read_end:
+  jjmp r_read_end
 brg_back:                       ; (no line of his tongue shares a word: hers, as it was)
   jldi j6, 019Fh
   jshi j6, 0
@@ -32055,7 +32055,7 @@ pz_end:                         ; (nobody is left who could speak to it: its mot
 brg_cp:                         ; j2 = from, j3 = bytes, j7 = into, j4 = where in it, up to j8 -> j4 after (uses j5, j10, j11)
   jst j1, j14, 1472
   jldi j1, 16
-  jcall r_cable
+  jcall fr1_r_cable
   jldi j5, 0
 brg_cpl:
   jsub j10, j5, j3
@@ -32075,7 +32075,7 @@ brg_cpr:
 r_dlg_heart:                    ; HER HEART ANSWERS FIRST (see D_HL): each book of her heart read by paragraphs (a list
   jst j1, j14, 1472
   jldi j1, 163
-  jcall r_cable
+  jcall fr1_r_cable
                                 ; is one), its title what all of it speaks of. The paragraph with most of his words (at
                                 ; least half of them) answers: its title in her own voice (her heart says 'tu' to her: she
                                 ; says 'mi'), then its lines that name what he said. A line ending in '?' asks: it does not
@@ -33971,7 +33971,7 @@ wyb_rnd:
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jld j2, j6, 7048
-  jldi j10, 8
+  jldi j10, 9
   jadd j2, j2, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34242,6 +34242,11 @@ wy_sil:                         ; THE SILHOUETTE of WY_SX (WY_SXL bytes) against
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jst j14, j6, 7376
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7384
 wsl_w:
   jcall bw_word
   jjz j0, wsl_r
@@ -34298,10 +34303,10 @@ wsl_w:
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j6, j6, j1
-  jld j2, j6, 7384
+  jld j2, j6, 7392
   jldi j10, 1
   jadd j2, j2, j10
-  jst j2, j6, 7384
+  jst j2, j6, 7392
   jjmp wsl_n
 wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 1/2), as twice them)
   jldi j6, 019Fh
@@ -34316,7 +34321,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7384
+  jldi j10, 7392
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34382,7 +34387,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7432
+  jldi j10, 7440
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34448,7 +34453,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7480
+  jldi j10, 7488
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34514,7 +34519,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7528
+  jldi j10, 7536
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34580,7 +34585,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7576
+  jldi j10, 7584
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34646,7 +34651,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7624
+  jldi j10, 7632
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34712,7 +34717,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7672
+  jldi j10, 7680
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34778,7 +34783,7 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jadd j9, j6, j1
-  jldi j10, 7720
+  jldi j10, 7728
   jadd j9, j9, j10
   jldi j6, 019Fh
   jshi j6, 0
@@ -34832,6 +34837,72 @@ wsl_c:                          ; (each step tells it: log2 (n + 1) - log2 (c + 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jst j2, j6, 7376
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7256
+  jldi j10, 4
+  jshl j1, j1, j10
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jadd j9, j6, j1
+  jldi j10, 7776
+  jadd j9, j9, j10
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j9, j6, 7272
+  jld j1, j9, 0
+  jld j2, j9, 8
+  jadd j1, j1, j2
+  jadd j1, j1, j1
+  jldi j10, 2
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j0, j6, 7280
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7272
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7264
+  jldi j10, 3
+  jshl j2, j2, j10
+  jadd j9, j9, j2
+  jld j1, j9, 0
+  jadd j1, j1, j1
+  jldi j10, 1
+  jadd j1, j1, j10
+  jcall rwi_log
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j1, j6, 7280
+  jsub j1, j1, j0
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j2, j6, 7384
+  jadd j2, j2, j1
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j2, j6, 7384
 wsl_n:
   jldi j6, 019Fh
   jshi j6, 0
@@ -35251,7 +35322,7 @@ wysd_ok:
   jst j14, j6, 7216
   jcall wy_sil
   ; (told in her steps: each time the one that tells it shortest of those left)
-  jldi j1, 8
+  jldi j1, 9
   jcall wy_new
   jldi j6, 019Fh
   jshi j6, 0
@@ -35269,7 +35340,7 @@ wysd_p:
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jld j1, j6, 7144
-  jldi j10, 8
+  jldi j10, 9
   jsub j10, j1, j10
   jjnn j10, wysd_k
   jldi j3, 04000h
@@ -35357,6 +35428,16 @@ wysd_m6:
   jadd j3, j5, j14
   jldi j4, 8
 wysd_m7:
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j5, j6, 7384
+  jsub j10, j5, j3
+  jjnn j10, wysd_m8
+  jadd j3, j5, j14
+  jldi j4, 9
+wysd_m8:
   jldi j10, 1
   jsub j5, j4, j10
   jldi j10, 3
@@ -35447,7 +35528,7 @@ wy_msave:                       ; her steps' silhouettes into "siluetas", if the
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
-  jldi j10, 7768
+  jldi j10, 7824
   jadd j11, j6, j10
   jldi j12, 8
   jldi j10, 12
@@ -35456,7 +35537,7 @@ wy_msave:                       ; her steps' silhouettes into "siluetas", if the
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
-  jldi j10, 7768
+  jldi j10, 7824
   jadd j11, j6, j10
   jldi j12, 8
   jcall r_open
@@ -35466,9 +35547,9 @@ wy_msave:                       ; her steps' silhouettes into "siluetas", if the
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
-  jldi j10, 7384
+  jldi j10, 7392
   jadd j11, j6, j10
-  jldi j12, 384
+  jldi j12, 432
   jldi j10, 6
   jcall r_file
   jldi j10, 7
@@ -35483,7 +35564,7 @@ wy_mload:                       ; her steps' silhouettes, from "siluetas" (kept 
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
-  jldi j10, 7768
+  jldi j10, 7824
   jadd j11, j6, j10
   jldi j12, 8
   jcall r_open
@@ -35493,18 +35574,13 @@ wy_mload:                       ; her steps' silhouettes, from "siluetas" (kept 
   jshi j6, 0
   jld j6, j6, 01D68h
   jld j6, j6, 32728
-  jldi j10, 7384
+  jldi j10, 7392
   jadd j11, j6, j10
-  jldi j12, 384
+  jldi j12, 432
   jcall r_read_all
-  jldi j10, 384
+  jldi j10, 432
   jsub j10, j0, j10
   jjz j10, wyml_c
-  jldi j6, 019Fh
-  jshi j6, 0
-  jld j6, j6, 01D68h
-  jld j6, j6, 32728
-  jst j14, j6, 7384
   jldi j6, 019Fh
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -35740,6 +35816,41 @@ wy_mload:                       ; her steps' silhouettes, from "siluetas" (kept 
   jld j6, j6, 01D68h
   jld j6, j6, 32728
   jst j14, j6, 7760
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7768
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7776
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7784
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7792
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7800
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7808
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 7816
 wyml_c:
   jldi j10, 7
   jcall r_file
@@ -35849,10 +35960,10 @@ wyg_l:                          ; (the next letter: a step of hers, or a way of 
   jshl j2, j4, j10
   jadd j1, j1, j2
   jld j2, j1, 0
-  jldi j10, 8
+  jldi j10, 9
   jsub j10, j10, j2
   jjnn j10, wyg_st
-  jldi j10, 9
+  jldi j10, 10
   jsub j2, j2, j10
   jldi j10, 3
   jshl j2, j2, j10
@@ -35904,6 +36015,9 @@ wyg_st:
   jldi j10, 8
   jsub j10, j2, j10
   jjz j10, wys_sube
+  jldi j10, 9
+  jsub j10, j2, j10
+  jjz j10, wys_sigue
   jjmp wyg_l
 wys_heart:
   jldi j10, 1
@@ -36001,6 +36115,65 @@ wys_sube:                        ; (a step in her tree: she moves, and answers a
   jjz j0, wyg_l
   jcall r_dlg_answer
   jjmp wyg_l
+wys_sigue:                      ; (WHAT FOLLOWS: her theme is the book of her line, from just after it, and she plays on)
+  jldi j10, 9
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j1, j6, 6408
+  jjz j1, wyg_l
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j3, j6, 6936
+  jjz j3, wyg_l
+  jldi j4, 0
+wysg_d:                         ; (a book of the disk holds an address, not lines: not from there)
+  jldi j10, 6
+  jadd j10, j4, j10
+  jsub j10, j10, j3
+  jjnn j10, wysg_go
+  jadd j10, j6, j4
+  jldb j11, j10, 6944
+  jldi j12, 45
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jldb j11, j10, 6945
+  jldi j12, 100
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jldb j11, j10, 6946
+  jldi j12, 105
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jldb j11, j10, 6947
+  jldi j12, 115
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jldb j11, j10, 6948
+  jldi j12, 99
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jldb j11, j10, 6949
+  jldi j12, 111
+  jsub j11, j11, j12
+  jjnz j11, wysg_n
+  jjmp wyg_l
+wysg_n:
+  jldi j10, 1
+  jadd j4, j4, j10
+  jjmp wysg_d
+wysg_go:
+  jcall lj_follow
+  jcall r_dlg_impro_go
+  jjz j0, wyg_l
+  jjmp wyg_ok
 wyg_ok:
   jcall wy_learn
   jldi j10, 2
@@ -36572,7 +36745,7 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j1, j14, 1472
   jldi j1, 214
   jcall r_cable
-  jldi j1, 01E70h
+  jldi j1, 01EA8h
   jcall r_alloc
   jldi j6, 019Fh
   jshi j6, 0
@@ -36757,6 +36930,13 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jst j14, j0, 7760
   jst j14, j0, 7768
   jst j14, j0, 7776
+  jst j14, j0, 7784
+  jst j14, j0, 7792
+  jst j14, j0, 7800
+  jst j14, j0, 7808
+  jst j14, j0, 7816
+  jst j14, j0, 7824
+  jst j14, j0, 7832
   jldi j10, 105
   jstb j10, j0, 6552
   jldi j10, 109
@@ -36832,21 +37012,21 @@ r_gustos_load:                  ; HER TASTES (see D_GBLK): her room, and what "g
   jldi j10, 115
   jstb j10, j0, 7206
   jldi j10, 115
-  jstb j10, j0, 7768
+  jstb j10, j0, 7824
   jldi j10, 105
-  jstb j10, j0, 7769
+  jstb j10, j0, 7825
   jldi j10, 108
-  jstb j10, j0, 7770
+  jstb j10, j0, 7826
   jldi j10, 117
-  jstb j10, j0, 7771
+  jstb j10, j0, 7827
   jldi j10, 101
-  jstb j10, j0, 7772
+  jstb j10, j0, 7828
   jldi j10, 116
-  jstb j10, j0, 7773
+  jstb j10, j0, 7829
   jldi j10, 97
-  jstb j10, j0, 7774
+  jstb j10, j0, 7830
   jldi j10, 115
-  jstb j10, j0, 7775
+  jstb j10, j0, 7831
   jcall lj_load                  ; (the signatures of her books)
   jcall wy_load                  ; (her ways)
   jldi j6, 019Fh
@@ -55600,70 +55780,70 @@ ru_end:
   jst j1, j6, 01518h
   jjmp rd_plain
 ; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
-fr2_r_rec_key:
-  jjmp fr1_r_rec_key
-fr2_r_read_place:
-  jjmp fr1_r_read_place
 fr2_r_colour:
   jjmp fr1_r_colour
-fr2_r_judge:
-  jjmp fr1_r_judge
-fr2_r_read_get:
-  jjmp fr1_r_read_get
-fr2_r_file:
-  jjmp fr1_r_file
-fr2_r_get_rec:
-  jjmp fr1_r_get_rec
+fr2_r_get_hex:
+  jjmp fr1_r_get_hex
 fr2_ul_cmp:
   jjmp fr1_ul_cmp
-fr2_r_rec_org:
-  jjmp fr1_r_rec_org
-fr2_r_hash:
-  jjmp fr1_r_hash
-fr2_r_flat:
-  jjmp fr1_r_flat
-fr2_r_org_rec:
-  jjmp fr1_r_org_rec
-fr2_r_put_num:
-  jjmp fr1_r_put_num
-fr2_r_open:
-  jjmp fr1_r_open
-fr2_r_fit_cost:
-  jjmp fr1_r_fit_cost
-fr2_l_ring:
-  jjmp fr1_l_ring
-fr2_r_put_rec:
-  jjmp fr1_r_put_rec
-fr2_r_get_num:
-  jjmp fr1_r_get_num
-fr2_r_tried:
-  jjmp fr1_r_tried
-fr2_r_cable_flush:
-  jjmp r_cable_flush
-fr2_r_alloc:
-  jjmp fr1_r_alloc
-fr2_r_read_add:
-  jjmp fr1_r_read_add
-fr2_r_randmod:
-  jjmp fr1_r_randmod
-fr2_r_receta:
-  jjmp fr1_r_receta
-fr2_r_cable:
-  jjmp r_cable
+fr2_r_judge:
+  jjmp fr1_r_judge
 fr2_r_set_hue:
   jjmp fr1_r_set_hue
 fr2_r_recompute:
   jjmp fr1_r_recompute
+fr2_r_read_add:
+  jjmp fr1_r_read_add
+fr2_r_read_place:
+  jjmp fr1_r_read_place
+fr2_r_rec_key:
+  jjmp fr1_r_rec_key
+fr2_r_rec_org:
+  jjmp fr1_r_rec_org
+fr2_l_ring:
+  jjmp fr1_l_ring
+fr2_l_ring_open:
+  jjmp fr1_l_ring_open
+fr2_r_fit_cost:
+  jjmp fr1_r_fit_cost
+fr2_r_tried:
+  jjmp fr1_r_tried
+fr2_r_read_get:
+  jjmp fr1_r_read_get
+fr2_r_org_rec:
+  jjmp fr1_r_org_rec
+fr2_r_randmod:
+  jjmp fr1_r_randmod
+fr2_r_flat:
+  jjmp fr1_r_flat
+fr2_r_put_rec:
+  jjmp fr1_r_put_rec
+fr2_r_put_num:
+  jjmp fr1_r_put_num
+fr2_r_get_rec:
+  jjmp fr1_r_get_rec
+fr2_r_open:
+  jjmp fr1_r_open
 fr2_r_tocar:
   jjmp fr1_r_tocar
 fr2_r_gesture:
   jjmp fr1_r_gesture
-fr2_r_get_hex:
-  jjmp fr1_r_get_hex
-fr2_l_ring_open:
-  jjmp fr1_l_ring_open
+fr2_r_file:
+  jjmp fr1_r_file
+fr2_r_get_num:
+  jjmp fr1_r_get_num
+fr2_r_receta:
+  jjmp fr1_r_receta
 fr2_r_cable_init:
   jjmp r_cable_init
+fr2_r_alloc:
+  jjmp fr1_r_alloc
+fr2_r_hash:
+  jjmp fr1_r_hash
+fr2_r_cable:
+  jjmp r_cable
+fr2_r_cable_flush:
+  jjmp r_cable_flush
 rd_thought:                     ; a thought: judged with its reading, in the place of the form it came from
   jcall fr2_r_recompute
   jldi j7, 019Fh
