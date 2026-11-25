@@ -4686,7 +4686,8 @@ family_name:
         ret
 
 ; 42 row in the gaps (the work that must not take the machine from who uses it: a reading, an exam): a = number of
-; one of my children, b = 1 it rows in the gaps, 0 as everyone. While a rower rows that cabin its thread has the
+; one of my children, or my own (giving up one's own priority takes nothing from anybody: the Capitan, 2026-11-24, "si
+; esta libre el procesador que haga lo que quiera"), b = 1 it rows in the gaps, 0 as everyone. While a rower rows that cabin its thread has the
 ; host's lowest priority ("only when nothing else wants the processor": not a number of ours, the host's own word for
 ; it), and takes its own back for the next cabin; the change is asked of the host only when it differs from the cabin
 ; before (remos.inc, run_all). Answers 0; -2 if it is not my child.
@@ -4696,8 +4697,11 @@ family_gaps:
         jae     .not_mine
         mov     r8, [procs]
         mov     r8, [r8 + rax*8]
+        cmp     r8, rbx                 ; (itself)
+        je      .mine
         cmp     [r8 + P_PARENT], rbx
         jne     .not_mine
+.mine:
         xor     eax, eax
         cmp     qword [rbp + r13 + 16], 0
         setne   al

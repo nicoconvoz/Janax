@@ -178,7 +178,7 @@ for i, name in enumerate(("REMAIN FOREVER CHANGED MOVING BLEFT FRAMES EXPLORE RN
                           "FOCUS EPOCH WINS WINSRUN RADIUS BUDGET WTOTAL WSTART WSTRIDE WALKI HCOUNT TOTAL WMAX GHN "
                           "TRN AH GREC GREG GBMP GKEEP GOX GOY GCOUNT TX TY PREV GT GC GDXA GDYA GK GN0 GI GMR GMP "
                           "JF JFA JCNT JJ JI JWC JCC JNC JWP JCP JNP JT2 JMX ALOSER AOTHER AREASON ATL ATW ASLOT "
-                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI HOSTR ARR BRG BFOR SEEN PENS PKID PBUSY PQ PR1 PR2 PB1 PB2 PB3 PD1 PD2 PD3 PQBUF PQLEN PREADY").split()):
+                          "AF ASRC ADST AN AK SF SFA DGROWN PR PG PB HX HY DFA TF TI RI FH FN FP FOUND DT BX BY BN GMX GMY GHEAD GFI HOSTR ARR BRG BFOR SEEN PENS PKID PBUSY PQ PR1 PR2 PB1 PB2 PB3 PD1 PD2 PD3 PQBUF PQLEN PREADY GAPME").split()):
     G[name] = GV + 8 * i
 assert max(G.values()) < FORMS
 if COMER:
@@ -334,8 +334,14 @@ if LUMA:
     o("  ; after each frame: nothing is spent, and all she is stays as it is. Each event (a key, a new file on the disks, her")
     o("  ; window in use again) wakes her where she was: one frame for it, and back to rest; while someone is with her she")
     o("  ; lives every frame, always alive (the Capitan, 2026-11-16).")
-    ld("j9", "SEEN"); J("jjnz j9, frame_seen"); setg("FOREVER", 1); J("jjmp main")
+    o("  ; WHAT THE PROCESSOR HAS LEFT IS HERS (the Capitan, 2026-11-24: \"si esta libre el procesador, que haga lo que")
+    o("  ; quiera\"): while nobody is with her she does not wait any more; she lives on, rowing in the gaps (42 on herself:")
+    o("  ; the host's lowest priority, only what nobody else wants). With someone, as everyone again.")
+    ld("j9", "SEEN"); J("jjnz j9, frame_seen")
+    ld("j9", "GAPME"); J("jjnz j9, frame_on", "jldi j9, 1"); st("j9", "GAPME"); J("jldi j10, 42", "jldi j11, 0", "jldi j12, 1", "jcall r_tocar", "jjmp frame_on")
     o("frame_seen:")
+    ld("j9", "GAPME"); J("jjz j9, frame_on"); st("j14", "GAPME"); J("jldi j10, 42", "jldi j11, 0", "jldi j12, 0", "jcall r_tocar")
+    o("frame_on:")
 ld("j9", "MOVING"); ld("j10", "GHN"); J("jor j9, j9, j10")
 ld("j10", "GRAB"); J("jjnz j10, frame_held")
 ld("j10", "EXPLORE"); J("jor j9, j9, j10")
