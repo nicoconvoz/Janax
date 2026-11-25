@@ -1,6 +1,6 @@
 ## Janax y Razar v5.21: imagina la respuesta, no la información
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24542452](https://doi.org/10.5281/zenodo.24542452)
 
 > *"No quiero recitados, quiero originalidad; y eso ya lo hace, sólo quiero que lo aplique."*
 > *"No imagina la información, imagina la respuesta... la información es la información; aunque quiero que se

@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.21:** [PENDIENTE521](https://doi.org/PENDIENTE521)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.21:** [10.5281/zenodo.24542452](https://doi.org/10.5281/zenodo.24542452)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.21): Imagina la respuesta, no la información
 
-DOI de esta versión: [PENDIENTE521](https://doi.org/PENDIENTE521).
+DOI de esta versión: [10.5281/zenodo.24542452](https://doi.org/10.5281/zenodo.24542452).
 
 Su imaginación, que usaba sólo al improvisar, ahora actúa también en lo que contesta. **La información es la información**: una palabra de su respuesta sólo puede cambiar si la charla con quien le habla ya la dijo, y por otra de esa misma charla; lo que viene de un libro queda como lo comió. Y lo que no trae palabras nuevas ya no entra. En la última prueba contestó las cinco frases, pero no imaginó en ninguna.
 
