@@ -13,3 +13,7 @@ el proyecto (y con su archivo en Zenodo). Esta carpeta está oculta en la máqui
   *Moneda falsa*, *Nuestros hijos*, *Un buen negocio*. Sólo lo que se dice (4.400 parlamentos): sin los nombres de quién
   habla ni las acotaciones, y sin acentos, como sus otros libros. Pedido del autor, 2026-11-25: *"que aprenda cómo
   dirigir cualquier tipo de conversación"*. Están en su estante (`elibro-teatro-…`).
+- `teatro-castellano/`: *El médico a palos* (Leandro Fernández de Moratín), *La de San Quintín* y *Los condenados* (Benito
+  Pérez Galdós) y *La casa de Bernarda Alba* (Federico García Lorca). Dominio público, de es.wikisource.org. Sólo lo que
+  se dice (4.067 parlamentos), sin acentos, como sus otros libros. Pedido del autor, 2026-11-25: *"dale mucha comida de
+  diálogos"*. Están en su estante (`elibro-teatro-…`).
