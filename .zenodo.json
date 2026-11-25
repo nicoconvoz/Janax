@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.57 (versions follow prime numbers; 457 after 449): her greetings go to their own notebook. Her talk with her author is a book she answers from, and her notices of every file she ate filled her answers; now they are written apart, and she was cleaned of thousands of test files she had eaten (nothing thrown away: kept with the reason). Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.57: su diálogo vuelve a ser de ellos dos. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.61 (versions follow prime numbers; 461 after 457): her school sings what she says again. Since her thinker speaks, no song reached her school, which lives in her body, and Tab showed nothing; now her body sings each answer of her thinker to her school. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.61: su escuela vuelve a cantar. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.57",
+  "version": "4.61",
   "creators": [
     {
       "name": "Astorga, Nicolás"
