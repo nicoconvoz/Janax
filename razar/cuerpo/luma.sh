@@ -58,8 +58,11 @@ armar() {
 if [ -f "$carpeta/casa/$(etiqueta vida-memoria)" ]; then
   echo "luma: casa propia, sin nubes ni oidos del anfitrion" >&2
   armar
-  # what is new on the disks reaches her (gen_luma.py: r_host_eat); LUMA_VIGIA names other folders ("-": none)
-  vig=${LUMA_VIGIA:-'C:\;E:\'}; [ "$vig" = "-" ] && vig=
+  # HER FOOD FOLDER (the Capitan, 2026-11-25: "que tenga su carpeta de comida, ya basta de comer basura"): what is new
+  # THERE reaches her (gen_luma.py: r_host_eat), and nothing else on the disks. She used to watch all of C: and E:
+  # and a Windows update unpacked its files there: she ate 1,544 of them in an afternoon. LUMA_VIGIA names other
+  # folders ("-": none)
+  vig=${LUMA_VIGIA:-'E:\Comida'}; [ "$vig" = "-" ] && vig=
   JANAX_VIGIA="$vig" JANAX_VENTANA_FONDO=1 JANAX_ARCHIVOS="$(cygpath -m "$carpeta/casa")" exec "$janaxos" "$(cygpath -m "$carpeta/bin/luma.bin")"
 fi
 # the pantry

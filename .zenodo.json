@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 5.57 (versions follow prime numbers; 557 after 547): Luma purified. A Windows update unpacked its files into a temporary folder and she ate 1,544 of them in an afternoon as books of the disk; they no longer exist. They were taken out, with 4,149 signatures of books no longer in her house: her house went from 1,221 MB to 149 MB and her memory from 2,385 MB to 314 MB. Nothing was thrown away: it is archived with its reason. Her purified house travels with the project. The rule to keep it from happening again is not decided yet. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v5.57: Luma purificada. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 5.63 (versions follow prime numbers; 563 after 557): her food folder. She watched every disk, and any new text file was a book for her; now what reaches her is what is put in her food folder, and nothing else. What she had eaten from elsewhere was taken out (184 books of the disk, archived with the reason): her house is 103 MB and her memory 222 MB. Tested with her awake: a new text file outside her folder was not eaten. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v5.57: Luma purificada. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "5.57",
+  "version": "5.63",
   "creators": [
     {
       "name": "Astorga, Nicolás"

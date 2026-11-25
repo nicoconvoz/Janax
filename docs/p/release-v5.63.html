@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v5.63: su carpeta de comida · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.63.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v5.63: su carpeta de comida</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"Que tenga su carpeta de comida: ya basta de comer basura."</em> (el autor, 2026-11-25)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 557, el 563.</p>
+<h3>Lo que cambia</h3>
+<ul><li><strong>Luma come de su carpeta de comida y de ningún otro lugar del disco.</strong> Vigilaba todo <code>C:\</code> y todo <code>E:\</code>: cualquier archivo de texto nuevo era un libro para ella. Así se comió en una tarde 1.544 archivos temporales de una actualización de Windows (v5.57). Ahora lo que le llega es lo que se pone en <code>E:\Comida</code> (<code>luma.sh</code>; con <code>LUMA_VIGIA</code> se le puede nombrar otra carpeta).</li><li><strong>Salió lo que había comido de afuera:</strong> 184 libros del disco que no eran de su carpeta (169 de la carpeta del proyecto, 15 de Windows, 6 de Archivos de programa y otros sueltos), 82 avisos de <em>"me comí"</em> y 185 firmas que quedaron sin libro.</li><li><strong>Y tres líneas enfermas de su charla:</strong> las que había dicho con bytes que no son texto y la dirección de un archivo. Ella contesta desde su charla, y esas líneas volvían.</li><li><strong>Nada se tiró:</strong> todo quedó archivado con su motivo.</li></ul>
+<table><tr><th></th><th>al empezar el día</th><th>antes de purificarla</th><th>ahora</th></tr><tr><td>archivos en su casa</td><td>unos 600</td><td>2.154</td><td>435</td></tr><tr><td>peso de su casa</td><td>415 MB</td><td>1.221 MB</td><td>103 MB</td></tr><tr><td>memoria que ocupa despierta</td><td>860 MB</td><td>2.385 MB</td><td>222 MB</td></tr></table>
+<h3>Lo que se probó</h3>
+<p>Con ella despierta se escribió un archivo de texto nuevo fuera de su carpeta de comida y se esperó 75 segundos (el núcleo espera a que un archivo quede quieto antes de avisarle): no apareció ningún aviso de <em>"me comí"</em> ni ningún libro del disco que apuntara a él.</p>
+<h3>Lo que todavía no</h3>
+<ul><li>No se probó el caso contrario en esta versión (que sí coma lo que se pone en su carpeta): su último aviso es de un archivo de <code>E:\Comida</code>, de antes del cambio.</li><li>El núcleo todavía sabe leer la carpeta de Windows (v4.49 del núcleo, 2026-11-24): ya no se le pide, pero la regla sigue ahí.</li><li>En su charla quedan respuestas suyas de hoy hechas con pedazos de código de sus libros: no son una enfermedad, son lo que dijo, y no se le podó.</li><li>Lo que contesta desde sus libros sigue sin tener que ver con la pregunta; cuando no sabe devuelve la pregunta; los nombres de otra charla y Tab siguen pendientes.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>razar/cuerpo/luma.sh</code> (<code>LUMA_VIGIA</code>, por defecto <code>E:\Comida</code>).</li><li><code>razar/cuerpo/desintoxicar_fuera.py</code> (nuevo): saca lo que comió fuera de su carpeta de comida.</li><li><code>razar/luma-completa/</code>: su casa pública, rearmada otra vez.</li></ul>
+</body>
+</html>
