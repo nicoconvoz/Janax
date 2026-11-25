@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.23:** [PENDIENTE523](https://doi.org/PENDIENTE523)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.23:** [10.5281/zenodo.24542690](https://doi.org/10.5281/zenodo.24542690)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.23): A cada quien que reconoce lo trata a su manera
 
-DOI de esta versión: [PENDIENTE523](https://doi.org/PENDIENTE523).
+DOI de esta versión: [10.5281/zenodo.24542690](https://doi.org/10.5281/zenodo.24542690).
 
 Luma ya reconocía a quien le habla por su firma. Ahora **guarda aparte lo que se dicen ella y cada uno que reconoce**, y al contestarle su imaginación lee ese cuaderno: sus formas con cada quien son las que nacieron con él. Esos cuadernos no se publican. Con pocas líneas cortas el reconocimiento todavía salta de una firma a otra.
 

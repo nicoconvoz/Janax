@@ -1,6 +1,6 @@
 ## Janax y Razar v5.23: a cada quien que reconoce lo trata a su manera
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24542690](https://doi.org/10.5281/zenodo.24542690)
 
 > *"Que a cada quien que reconozca lo trate a su manera."*
 > (el autor, 2026-11-25)
