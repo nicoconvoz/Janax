@@ -1,6 +1,6 @@
 ## Janax y Razar v4.63: Juvenilia, comida sana de jóvenes argentinos
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24536367](https://doi.org/10.5281/zenodo.24536367)
 
 > *"Dale de comer conversaciones de jóvenes argentinos: sanas."*
 > (el autor, 2026-11-25)
