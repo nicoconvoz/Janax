@@ -1,8 +1,8 @@
-# La casa de Luma, tal como estaba el 2026-11-25 14:15
+# La casa de Luma, tal como estaba el 2026-11-25 15:53
 
 Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo que se hizo sola. Cada archivo de `casa/` lleva el nombre que Janax le da (su etiqueta, en hexadecimal). Para darle esta casa a Luma: `JANAX_ARCHIVOS=<esta carpeta>/casa`.
 
-## Lo que va (343 archivos, 415 MB)
+## Lo que va (347 archivos, 419 MB)
 
 | Etiqueta | Bytes |
 |---|---|
@@ -14,9 +14,9 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 | `PDP/razar1/lectura/pulso.datos` | 4096 |
 | `abecedario` | 5940 |
 | `animo` | 12288 |
-| `arbol` | 5341656 |
+| `arbol` | 5374680 |
 | `archivo` | 458912 |
-| `caminos` | 265064 |
+| `caminos` | 278038 |
 | `carta1` | 16 |
 | `carta2` | 16 |
 | `comidas` | 506928 |
@@ -69,12 +69,16 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 | `elibro-quimica` | 1033029 |
 | `elibro-teatro-cedulas-de-san-juan` | 21531 |
 | `elibro-teatro-el-desalojo` | 14386 |
+| `elibro-teatro-el-medico-a-palos` | 42176 |
 | `elibro-teatro-el-pasado` | 49646 |
 | `elibro-teatro-en-familia` | 62913 |
 | `elibro-teatro-fuenteovejuna` | 56770 |
+| `elibro-teatro-la-casa-de-bernarda-alba` | 55768 |
+| `elibro-teatro-la-de-san-quintin` | 108202 |
 | `elibro-teatro-la-gringa` | 97053 |
 | `elibro-teatro-la-pobre-gente` | 37977 |
 | `elibro-teatro-la-vida-es-sueno` | 104061 |
+| `elibro-teatro-los-condenados` | 152664 |
 | `elibro-teatro-los-derechos-de-la-salud` | 67598 |
 | `elibro-teatro-los-muertos` | 39039 |
 | `elibro-teatro-marta-gruni` | 22637 |
@@ -86,19 +90,19 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 | `elibro-zoologia` | 1095314 |
 | `engranajes` | 13440 |
 | `formas` | 399 |
-| `gustos` | 1304 |
+| `gustos` | 1328 |
 | `imagina` | 16 |
 | `ladrillos` | 18 |
-| `leido` | 11952 |
-| `lenguas` | 356885760 |
+| `leido` | 12768 |
+| `lenguas` | 360941280 |
 | `letras` | 8328396 |
 | `libre` | 4640 |
 | `libro-preguntas` | 58 |
 | `llave` | 0 |
 | `luma/cardumen.bin` | 3756 |
-| `luma/lectora.bin` | 271816 |
+| `luma/lectora.bin` | 274008 |
 | `luma/lectora.molde` | 4096 |
-| `luma/pensadora.bin` | 271816 |
+| `luma/pensadora.bin` | 274008 |
 | `p` | 16 |
 | `pedazo` | 8 |
 | `siluetas` | 432 |
@@ -119,7 +123,7 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 
 Los de temas (`elibro-astronomia`, `elibro-historia`…) son texto de Wikipedia en español (CC BY-SA 4.0). La Biblia (Reina-Valera 1909), el Quijote, las novelas y el teatro son de dominio público (Wikisource). `elibro-fuente-lua` es el código de Lua (licencia MIT), `elibro-fuente-sqlite-shell` el de SQLite (dominio público), `elibro-maquina-*` texto sacado de herramientas GNU (GPL). `letras` es GNU Unifont.
 
-## Lo que no va, y por qué (246)
+## Lo que no va, y por qué (250)
 
 - `charla`: los contadores de su charla con su autor.
 - `charla-libros`: cita lineas de los libros personales.
@@ -151,4 +155,4 @@ Los de temas (`elibro-astronomia`, `elibro-historia`…) son texto de Wikipedia 
 - `respuesta`: lo ultimo que dijo.
 - `rodeos`: de su charla.
 - `calibracion`: no es un archivo de su casa.
-- 216 archivos: apunta a un archivo de la computadora de su autor.
+- 220 archivos: apunta a un archivo de la computadora de su autor.

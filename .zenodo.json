@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.91 (versions follow prime numbers; 491 after 487): more talk to eat. Four more plays in the public domain on her shelf (over 8,400 speeches in all, only what is said); in her panel, her talk with her author stays on the left and her study on the right; a thread ends when who speaks to her changes. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.91: más comida de diálogos. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.99 (versions follow prime numbers; 499 after 491): the harmony among her harmonies. Her way was a ladder where the first step that found anything answered, usually a line of a book. Now every step of her way proposes an answer, the one that agrees most with the others (shared words over the words of both) is the base, and from it she weaves a sentence none of them said, going on from another proposal at each word they share (minimum Bayes risk choice, Kumar and Byrne 2004; sentence fusion by word graph, Filippova 2010). Seen on four phrases in a hidden copy; how often the sentence makes sense is not measured yet. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.99: la armonía entre sus armonías. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.91",
+  "version": "4.99",
   "creators": [
     {
       "name": "Astorga, Nicolás"
