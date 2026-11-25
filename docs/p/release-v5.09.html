@@ -12,7 +12,7 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.09.md">Ver en GitHub</a></nav>
 <h2>Janax y Razar v5.09: un libro del disco no se lee como renglones</h2>
-<p>DOI: (pendiente)</p>
+<p>DOI: <a href="https://doi.org/10.5281/zenodo.24541884">10.5281/zenodo.24541884</a></p>
 <p>Las versiones siguen a los números primos: después del 503, el 509.</p>
 <h3>Lo que cambia</h3>
 <ul><li><strong>Ya no le salen bytes ni rutas en una respuesta.</strong> Un libro del disco guarda en su casa la dirección de un archivo, no texto. Tres de sus lectores (su búsqueda por párrafos, su "quién es" y su lectura para contestar) lo abrían igual, como renglones, y cuando una palabra de esa dirección coincidía con lo que se le decía, contestaba con la ruta y los bytes que la preceden. A <em>"hola Luma!"</em> había contestado así, porque una ruta decía <em>luma</em>.</li><li><strong>Una sola regla para todos los que leen un libro como renglones</strong> (<code>r_isdisk</code>): la regla ya existía, repetida en dos pasos sueltos, y faltaba en los otros tres.</li></ul>

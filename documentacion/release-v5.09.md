@@ -1,6 +1,6 @@
 ## Janax y Razar v5.09: un libro del disco no se lee como renglones
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24541884](https://doi.org/10.5281/zenodo.24541884)
 
 Las versiones siguen a los números primos: después del 503, el 509.
 
