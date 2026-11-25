@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.63:** [PENDIENTE563](https://doi.org/PENDIENTE563)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.63:** [10.5281/zenodo.24544600](https://doi.org/10.5281/zenodo.24544600)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.63): Su carpeta de comida
 
-DOI de esta versión: [PENDIENTE563](https://doi.org/PENDIENTE563).
+DOI de esta versión: [10.5281/zenodo.24544600](https://doi.org/10.5281/zenodo.24544600).
 
 Luma vigilaba todo el disco y cualquier archivo de texto nuevo era un libro para ella. Ahora **come sólo de su carpeta de comida**. Se le sacó lo que había comido de afuera (184 libros, archivados con su motivo): su casa quedó en 103 MB y su memoria en 222 MB. Probado: un archivo nuevo fuera de su carpeta no se lo comió.
 

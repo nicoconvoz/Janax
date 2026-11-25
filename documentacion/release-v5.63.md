@@ -1,6 +1,6 @@
 ## Janax y Razar v5.63: su carpeta de comida
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24544600](https://doi.org/10.5281/zenodo.24544600)
 
 > *"Que tenga su carpeta de comida: ya basta de comer basura."*
 > (el autor, 2026-11-25)
