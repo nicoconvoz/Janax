@@ -328,7 +328,7 @@ def free_routine(g):
     J("jsub j10, j3, j4", "jjnn j10, he_said", "jldi j10, %d" % HE_PATH, "jadd j10, j9, j10", "jadd j10, j10, j3", "jldb j5, j10, 0",
       "jadd j10, j7, j3", "jstb j5, j10, %d" % len("me comí ".encode()), "jldi j10, 1", "jadd j3, j3, j10", "jjmp he_say")
     o("he_said:")
-    J("jldi j10, %d" % len("me comí ".encode()), "jadd j3, j4, j10", "jadd j2, j7, j14", "jldi j1, 1", "jcall r_dlg_write"); setg("CHANGED", 1)
+    J("jldi j10, %d" % len("me comí ".encode()), "jadd j3, j4, j10", "jadd j2, j7, j14", "jldi j1, 1"); setg("GREET", 1); J("jcall r_dlg_write"); setg("GREET", 0); setg("CHANGED", 1)
     o("he_r:")
     J("jret")
     o("he_record:                      ; A RECORD, NOT A BOOK (the Capitan, 2026-11-24: la estamos intoxicando con logs: cuando")

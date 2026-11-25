@@ -2050,7 +2050,11 @@ def make(g, ST, free):
         o("  ; (NOT A MIRROR, the Capitan, 2026-11-24: \"que no se pierda en el reflejo de un espejo interminable\": her talk with")
         o("  ;  her readings goes to its own file, charla-libros, which is no book of hers; dialogo is theirs alone, his and hers,")
         o("  ;  and a book of her shelf: written there, she would read her own echoes and answer them)")
-        da("j11", D_LBL); J("jldi j12, 7"); ld("j1", "ARR"); J("jjz j1, dw_op", "jld j1, j1, %d" % SF_ON, "jjz j1, dw_op"); da("j11", D_LBL + 144); J("jldi j12, 13")
+        o("  ; (HER GREETINGS ARE NOT THEIR TALK (the Capitan, 2026-11-25: \"estoy harto de los logs\"): \"me comí\" goes to its")
+        o("  ; own notebook, \"me-comi\"; their talk is a book she answers from, and her notices filled her answers to him)")
+        da("j11", D_LBL); J("jldi j12, 7"); ld("j1", "GREET"); J("jjz j1, dw_sf"); li("j11", g["G"]["MCL"]); J("jldi j12, 7", "jjmp dw_op")
+        o("dw_sf:")
+        ld("j1", "ARR"); J("jjz j1, dw_op", "jld j1, j1, %d" % SF_ON, "jjz j1, dw_op"); da("j11", D_LBL + 144); J("jldi j12, 13")
         o("dw_op:")
         J("jcall r_open"); ld("j9", "FH"); J("jjn j9, dw_r")
         J("jldi j10, 38", "jldi j11, -1", "jldi j12, 0", "jcall r_file", "jldi j10, 6"); da("j11", D_SCR); dl("j12", D_X + 16); J("jcall r_file")
@@ -6098,6 +6102,7 @@ def make(g, ST, free):
                             (("PD1", "PD2", "PD3"), b"luma/pensadora.datos")):
             for i, nm in enumerate(names):
                 li("j1", int.from_bytes(word[8 * i:8 * i + 8].ljust(8, b"\0"), "little")); st("j1", nm)
+        li("j1", int.from_bytes(b"me-comi", "little")); st("j1", "MCL")
         gl("j1", STAMP); li("j2", build_stamp()); J("jsub j3, j1, j2", "jjz j3, ri_same"); gs("j2", STAMP); J("jldi j1, 1"); gs("j1", NEWST)
         o("ri_same:                        ; (made of the same as when she slept: nothing new in her)")
         J("jcall r_ltab")
