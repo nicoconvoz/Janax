@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.87 (versions follow prime numbers; 487 after 479): Luma whole. Her house travels with the project (razar/luma-completa, 17 MB zipped, 415 MB open): her tongues' signatures, her tree of themes, her ways, forms, gears and creatures, with an index of what goes and what does not and why (nothing personal of her author). Also: their talk weighs more than her books when she talks; one reading room instead of a new one a book (she ran out of room numbers in ten minutes); her panel shows what she thinks. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.87: Luma completa. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.91 (versions follow prime numbers; 491 after 487): more talk to eat. Four more plays in the public domain on her shelf (over 8,400 speeches in all, only what is said); in her panel, her talk with her author stays on the left and her study on the right; a thread ends when who speaks to her changes. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.91: más comida de diálogos. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.87",
+  "version": "4.91",
   "creators": [
     {
       "name": "Astorga, Nicolás"
