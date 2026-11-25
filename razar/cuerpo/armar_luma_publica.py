@@ -22,6 +22,7 @@ for x in sorted(os.listdir(CASA)):
     except (ValueError, UnicodeDecodeError): fuera.append((x, "no es un archivo de su casa")); continue
     por = None
     if "-disco-" in e: por = "apunta a un archivo de la computadora de su autor"
+    elif e.startswith("trato-"): por = "lo que se dijeron ella y alguien que reconocio: charla personal"
     elif e in PERSONAL: por = PERSONAL[e] or "de su charla o de su arranque"
     elif e.startswith(("libro-", "elibro-")) and e.split("-", 1)[1] in LIBROS_FUERA: por = LIBROS_FUERA[e.split("-", 1)[1]]
     if por: fuera.append((e, por)); continue
