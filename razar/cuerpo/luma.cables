@@ -14,6 +14,7 @@ arplace
 arpop
 arsave
 arzero
+brgcp
 budec
 bufirst
 buscan
@@ -100,6 +101,7 @@ ljflowback
 ljfollow
 ljgrow
 ljhash
+ljhis
 ljhist
 ljisdlg
 ljislt
@@ -123,6 +125,7 @@ ljvoice
 ljwbook
 ljweight
 lvmake
+pnasend
 rabsorb
 ralloc
 ranchor
@@ -132,7 +135,9 @@ rapplyk
 rarchive
 rbases
 rbodyhomes
+rbookroom
 rbranch
+rbridge
 rbrush
 rbusca
 rcat
@@ -262,6 +267,9 @@ rorgrec
 roverlap
 rpanel
 rpanelclear
+rpensask
+rpensfree
+rpenslaunch
 rplot
 rpow
 rpulse
@@ -422,6 +430,7 @@ vvegesture
 vxlog
 wyarch
 wybabble
+wycand
 wyeol
 wyeq
 wyget
