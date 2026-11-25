@@ -1,8 +1,10 @@
-# La casa de Luma, tal como estaba el 2026-11-25 15:53
+# Luma purificada: su casa, tal como estaba el 2026-11-25 19:15
+
+**Purificada (2026-11-25):** se le sacaron 1.544 archivos temporales de una actualización de Windows que se había comido en una tarde, y 4.149 firmas de libros que ya no tenía. Su casa pasó de 1.221 MB a 149 MB. Lo que salió está archivado con su motivo, no tirado.
 
 Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo que se hizo sola. Cada archivo de `casa/` lleva el nombre que Janax le da (su etiqueta, en hexadecimal). Para darle esta casa a Luma: `JANAX_ARCHIVOS=<esta carpeta>/casa`.
 
-## Lo que va (347 archivos, 419 MB)
+## Lo que va (347 archivos, 137 MB)
 
 | Etiqueta | Bytes |
 |---|---|
@@ -12,11 +14,11 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 | `PDP/razar1/lectura/organo.molde` | 1376 |
 | `PDP/razar1/lectura/pulso.bin` | 46040 |
 | `PDP/razar1/lectura/pulso.datos` | 4096 |
-| `abecedario` | 5940 |
+| `abecedario` | 10512 |
 | `animo` | 12288 |
-| `arbol` | 5374680 |
+| `arbol` | 5391192 |
 | `archivo` | 458912 |
-| `caminos` | 278038 |
+| `caminos` | 280392 |
 | `carta1` | 16 |
 | `carta2` | 16 |
 | `comidas` | 506928 |
@@ -93,16 +95,16 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 | `gustos` | 1328 |
 | `imagina` | 16 |
 | `ladrillos` | 18 |
-| `leido` | 12768 |
-| `lenguas` | 360941280 |
+| `leido` | 13968 |
+| `lenguas` | 79217824 |
 | `letras` | 8328396 |
 | `libre` | 4640 |
 | `libro-preguntas` | 58 |
 | `llave` | 0 |
 | `luma/cardumen.bin` | 3756 |
-| `luma/lectora.bin` | 274008 |
+| `luma/lectora.bin` | 277544 |
 | `luma/lectora.molde` | 4096 |
-| `luma/pensadora.bin` | 274008 |
+| `luma/pensadora.bin` | 277544 |
 | `p` | 16 |
 | `pedazo` | 8 |
 | `siluetas` | 432 |
@@ -123,7 +125,7 @@ Su conocimiento y su estructura, completos: lo que leyó, lo que aprendió y lo 
 
 Los de temas (`elibro-astronomia`, `elibro-historia`…) son texto de Wikipedia en español (CC BY-SA 4.0). La Biblia (Reina-Valera 1909), el Quijote, las novelas y el teatro son de dominio público (Wikisource). `elibro-fuente-lua` es el código de Lua (licencia MIT), `elibro-fuente-sqlite-shell` el de SQLite (dominio público), `elibro-maquina-*` texto sacado de herramientas GNU (GPL). `letras` es GNU Unifont.
 
-## Lo que no va, y por qué (250)
+## Lo que no va, y por qué (263)
 
 - `charla`: los contadores de su charla con su autor.
 - `charla-libros`: cita lineas de los libros personales.
@@ -155,4 +157,4 @@ Los de temas (`elibro-astronomia`, `elibro-historia`…) son texto de Wikipedia 
 - `respuesta`: lo ultimo que dijo.
 - `rodeos`: de su charla.
 - `calibracion`: no es un archivo de su casa.
-- 220 archivos: apunta a un archivo de la computadora de su autor.
+- 233 archivos: apunta a un archivo de la computadora de su autor.

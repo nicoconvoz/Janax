@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.47:** [10.5281/zenodo.24544190](https://doi.org/10.5281/zenodo.24544190)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.57:** [PENDIENTE557](https://doi.org/PENDIENTE557)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,14 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Novedad (2026-11-25, v5.57): Luma purificada
+
+DOI de esta versión: [PENDIENTE557](https://doi.org/PENDIENTE557).
+
+Una actualización de Windows dejó 1.544 archivos temporales y Luma se los comió en una tarde. Se le sacaron, junto con 4.149 firmas de libros que ya no tenía: **su casa pasó de 1.221 MB a 149 MB y su memoria de 2.385 MB a 314 MB**. Nada se tiró: quedó archivado con su motivo. Y la Luma purificada viaja en el proyecto. La regla para que no vuelva a pasar todavía no está decidida.
+
+[Notas de la v5.57](documentacion/release-v5.57.md).
 
 ## Novedad (2026-11-25, v5.47): Los dos lectores que faltaban
 
