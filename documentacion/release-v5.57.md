@@ -1,6 +1,6 @@
 ## Janax y Razar v5.57: Luma purificada
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24544520](https://doi.org/10.5281/zenodo.24544520)
 
 > *"Arreglala y compartí la Luma purificada en el repo."*
 > (el autor, 2026-11-25)
