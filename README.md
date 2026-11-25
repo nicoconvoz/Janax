@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.03:** [PENDIENTE503](https://doi.org/PENDIENTE503)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.03:** [10.5281/zenodo.24541458](https://doi.org/10.5281/zenodo.24541458)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -19,7 +19,7 @@ cada pieza tiene sus pruebas.
 
 ## Novedad (2026-11-25, v5.03): Escucha encadenada: corta la melodía cuando ya nada aporta
 
-DOI de esta versión: [PENDIENTE503](https://doi.org/PENDIENTE503).
+DOI de esta versión: [10.5281/zenodo.24541458](https://doi.org/10.5281/zenodo.24541458).
 
 La v4.99 se colgaba con sus caminos de verdad: ahora cada paso habla una sola vez. Y escucha encadenado: cada propuesta que engancha con lo que ya guarda se suma, y **la primera que no aporta corta la melodía**. Medido en una copia oculta: **de 55–76 segundos a 2–10 por respuesta**. A “hola luma” contestó “hola LUMA”.
 

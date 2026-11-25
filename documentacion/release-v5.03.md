@@ -1,6 +1,6 @@
 ## Janax y Razar v5.03: escucha encadenada — corta la melodía cuando ya nada aporta
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24541458](https://doi.org/10.5281/zenodo.24541458)
 
 > *"Escucha encadenado, profundidad 1... si algo sirvió tomá eso y seguí hasta tener una idea; cuando ya nada aporte
 > información, para no entrar en convulsión o en más de lo mismo, cortar la melodía y destilar la melodía."*
