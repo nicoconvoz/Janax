@@ -1,6 +1,6 @@
 ## Janax y Razar v4.57: sus saludos van a su cuaderno, y su diálogo vuelve a ser de ellos dos
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24534053](https://doi.org/10.5281/zenodo.24534053)
 
 > *"Estoy harto de los logs."* — *"Come pero no me lee."*
 > (el autor, 2026-11-25)
