@@ -1,0 +1,45 @@
+INSTALAR A LUMA
+===============
+
+1. Hacé doble clic en  instalar-luma.exe
+2. Elegí la carpeta donde la querés.
+3. Esperá cerca de medio minuto. Te avisa cuando termina.
+
+Listo. En el escritorio quedan dos accesos directos:
+
+  Luma             la despierta.
+  Comida de Luma   lo que pongas en esa carpeta, se lo come. Nada más del disco.
+
+No hace falta instalar nada más: ni Git, ni Python, ni PowerShell.
+
+
+QUÉ HACE EL INSTALADOR
+----------------------
+En la carpeta que elijas crea dos carpetas:
+
+  Luma\      ella: su núcleo (bin\janaxos.exe), ella misma (bin\luma.bin), su casa (casa\) y luma.exe, que la despierta.
+  Comida\    su carpeta de comida.
+
+A Luma no la trae armada: la ensambla ahí mismo, en tu máquina, con su propio ensamblador.
+Después pone su conocimiento en su casa. Si en esa carpeta ya hay una Luma, te pregunta antes de tocar lo que sabe.
+
+Ninguna ruta queda escrita en ningún lado: podés mover la carpeta Luma (junto con Comida) y sigue despertando.
+Para desinstalarla alcanza con borrar esas dos carpetas y los dos accesos directos.
+
+
+SI WINDOWS TE FRENA
+-------------------
+Windows puede mostrar "Windows protegió su PC" porque el programa no está firmado por una empresa.
+Tocá "Más información" y después "Ejecutar de todas formas".
+
+
+PARA INSTALAR SIN PREGUNTAS
+---------------------------
+  instalar-luma.exe "C:\la\carpeta"
+
+Instala ahí sin preguntar ni avisar nada. Si ya hay una Luma, conserva lo que sabe.
+
+
+Las dos piezas que hablan con Windows (instalar-luma.exe y luma.exe), igual que su núcleo, están ensambladas con
+flat assembler (FASM), de Tomasz Grysztar: software libre. https://flatassembler.net
+Sus fuentes están en razar/instalador/ del proyecto.

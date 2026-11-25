@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.63:** [10.5281/zenodo.24544600](https://doi.org/10.5281/zenodo.24544600)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.69:** [PENDIENTE569](https://doi.org/PENDIENTE569)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -16,6 +16,20 @@ cada pieza tiene sus pruebas.
 
 
 > *English summary below.*
+
+## Instalar a Luma
+
+En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
+
+A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-25, v5.69): Su instalador, y su independencia
+
+DOI de esta versión: [PENDIENTE569](https://doi.org/PENDIENTE569).
+
+En la carpeta <code>instalador/</code>: doble clic en **instalar-luma.exe**, se elige la carpeta y en medio minuto queda instalada, con sus accesos directos en el escritorio. La ensambla ahí mismo con su propio ensamblador y le pone su conocimiento. Y **ya no depende de Git Bash ni de PowerShell**: la despierta un solo programa de 20 KB. Además, una respuesta prestada ya no trae el nombre de a quién se le hablaba: a “hola luma” contesta “hola!!”.
+
+[Notas de la v5.69](documentacion/release-v5.69.md).
 
 ## Novedad (2026-11-25, v5.63): Su carpeta de comida
 

@@ -1,0 +1,4 @@
+*.exe -delta binary
+*.paquete -delta binary
+*.bin -delta binary
+*.datos -delta binary
