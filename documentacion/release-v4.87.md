@@ -41,8 +41,8 @@ memoria a los 6), su pensadora contestando hasta el final, y su panel lleno.
 
 ### Lo que todavía no
 
-- Con una sola sala de lectura siguen quedando unas pocas salas nuevas por búsqueda: los 65.000 números le duran más
-  de un día en vez de diez minutos, y cuando se acaban se duerme sola y renace (v4.33).
+- Con una sola sala de lectura siguen quedando unas pocas salas nuevas por búsqueda: los 65.000 números se
+  siguen gastando, mucho más despacio (cuánto le duran no se midió; se estima más de un día), y cuando se acaban se duerme sola y renace (v4.33).
 - Tab sigue pendiente.
 
 ### Dónde está

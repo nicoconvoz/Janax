@@ -1,8 +1,8 @@
 {
   "title": "Janax y Razar: un sistema operativo, un idioma y un ensamblador propios para un razonamiento artificial que piensa con melodías",
-  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.79 (versions follow prime numbers; 479 after 467): she asks what she does not know. When nobody said what is said to her, in her books or in their talk, she gives her author his words back as a question; what he explains stays in their talk, a book of hers, and is what she answers the next time. Also ten plays by Florencio Sanchez (public domain) as everyday talk, and the rule of half, both ways, for what follows. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.79: pregunta lo que no sabe. Prototipo de investigación.</p>",
+  "description": "<p>Janax is a hand-written operating system, language and assembler (all in assembly, no third-party engines) built to host Razar, an artificial reasoning system whose single judge is compression (two-part MDL). Version 4.87 (versions follow prime numbers; 487 after 479): Luma whole. Her house travels with the project (razar/luma-completa, 17 MB zipped, 415 MB open): her tongues' signatures, her tree of themes, her ways, forms, gears and creatures, with an index of what goes and what does not and why (nothing personal of her author). Also: their talk weighs more than her books when she talks; one reading room instead of a new one a book (she ran out of room numbers in ten minutes); her panel shows what she thinks. Documentation is in Spanish.</p><p>Janax es un sistema operativo, un idioma y un ensamblador escritos a mano en assembler, hechos para alojar a Razar. v4.87: Luma completa. Prototipo de investigación.</p>",
   "upload_type": "software",
-  "version": "4.79",
+  "version": "4.87",
   "creators": [
     {
       "name": "Astorga, Nicolás"
