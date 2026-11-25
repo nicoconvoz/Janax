@@ -8763,42 +8763,42 @@ main_wait:
   jst j14, j14, 0208h
   jjmp frame
 ; ---- station 0: references that do not reach from where they are (gen_leer.py, reach)
-fr0_r_free:
-  jjmp fr1_r_free
-fr0_v_event:
-  jjmp fr1_v_event
-fr0_r_dlg_mind:
-  jjmp fr1_r_dlg_mind
-fr0_v_frame:
-  jjmp fr1_v_frame
-fr0_r_read_max:
-  jjmp fr1_r_read_max
-fr0_v_meal:
-  jjmp fr1_v_meal
-fr0_r_cable_init:
-  jjmp fr1_r_cable_init
-fr0_r_host_eat:
-  jjmp fr1_r_host_eat
-fr0_fr_nomem:
-  jjmp fr1_fr_nomem
-fr0_r_read_poll:
-  jjmp fr1_r_read_poll
-fr0_r_mus_init:
-  jjmp fr1_r_mus_init
-fr0_v_init:
-  jjmp fr1_v_init
 fr0_r_cable:
   jjmp fr1_r_cable
+fr0_v_init:
+  jjmp fr1_v_init
+fr0_r_read_poll:
+  jjmp fr1_r_read_poll
+fr0_r_cable_init:
+  jjmp fr1_r_cable_init
 fr0_r_char:
   jjmp fr1_r_char
-fr0_v_show:
-  jjmp fr1_v_show
-fr0_r_read_cand:
-  jjmp fr1_r_read_cand
-fr0_r_free_load:
-  jjmp fr1_r_free_load
+fr0_v_meal:
+  jjmp fr1_v_meal
+fr0_r_dlg_mind:
+  jjmp fr1_r_dlg_mind
+fr0_r_mus_init:
+  jjmp fr1_r_mus_init
+fr0_r_host_eat:
+  jjmp fr1_r_host_eat
+fr0_v_frame:
+  jjmp fr1_v_frame
 fr0_r_read_end:
   jjmp fr1_r_read_end
+fr0_r_free_load:
+  jjmp fr1_r_free_load
+fr0_r_free:
+  jjmp fr1_r_free
+fr0_r_read_max:
+  jjmp fr1_r_read_max
+fr0_v_event:
+  jjmp fr1_v_event
+fr0_fr_nomem:
+  jjmp fr1_fr_nomem
+fr0_r_read_cand:
+  jjmp fr1_r_read_cand
+fr0_v_show:
+  jjmp fr1_v_show
 main_frames:                    ; between two frames: what is left of this one
   jld j12, j14, 0220h
   jst j12, j14, 0200h
@@ -18558,10 +18558,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 01400h
-  jshi j2, 0B04Fh
-  jshi j2, 0210Eh
-  jshi j2, 059C9h
+  jldi j2, 06E4h
+  jshi j2, 0385Ch
+  jshi j2, 02387h
+  jshi j2, 087F1h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -32201,7 +32201,9 @@ r_isdisk:                       ; j9 = a book of her list (its label's bytes, th
   jcall fr1_r_cable
                                 ; of the disk: it holds the address of a file, not lines. ONE RULE FOR ALL WHO READ A
                                 ; BOOK AS LINES (2026-11-25): three of her readers opened it as text, and its address
-                                ; and the bytes before it came out in her answers. Uses j3, j4, j10-j12
+                                ; and the bytes before it came out in her answers. Uses j3, j4, j10-j12. (Two more had
+                                ; been left out, the book her luck picks and her theme's book: to "quien es Isaac
+                                ; Newton" she answered the address of a file of Windows. All five now)
   jld j3, j9, 0
   jldi j4, 0
 rid_l:
@@ -32528,104 +32530,104 @@ dh_nm:
   jst j1, j6, 31984
   jjmp dh_nm
 ; ---- station 1: references that do not reach from where they are (gen_leer.py, reach)
-fr1_r_cable:
-  jjmp fr2_r_cable
-fr1_r_read_get:
-  jjmp r_read_get
-fr1_r_get_num:
-  jjmp r_get_num
-fr1_v_meal:
-  jjmp v_meal
-fr1_r_free:
-  jjmp r_free
-fr1_v_event:
-  jjmp v_event
-fr1_r_dlg_mind:
-  jjmp r_dlg_mind
-fr1_v_frame:
-  jjmp v_frame
-fr1_r_read_max:
-  jjmp r_read_max
-fr1_r_tried:
-  jjmp r_tried
-fr1_l_ring_open:
-  jjmp l_ring_open
-fr1_fr_nomem:
-  jjmp fr_nomem
-fr1_r_receta:
-  jjmp r_receta
-fr1_r_read_poll:
-  jjmp r_read_poll
-fr1_r_recompute:
-  jjmp r_recompute
-fr1_ul_cmp:
-  jjmp ul_cmp
-fr1_r_plot:
-  jjmp r_plot
-fr1_r_mus_init:
-  jjmp r_mus_init
-fr1_r_judge:
-  jjmp r_judge
 fr1_r_cable_flush:
   jjmp fr2_r_cable_flush
+fr1_r_read_place:
+  jjmp r_read_place
+fr1_r_cable:
+  jjmp fr2_r_cable
+fr1_r_receta:
+  jjmp r_receta
+fr1_l_ring:
+  jjmp l_ring
+fr1_r_flat:
+  jjmp r_flat
+fr1_v_meal:
+  jjmp v_meal
+fr1_r_set_hue:
+  jjmp r_set_hue
+fr1_r_fit_cost:
+  jjmp r_fit_cost
+fr1_r_colour:
+  jjmp r_colour
+fr1_r_read_end:
+  jjmp r_read_end
+fr1_r_randmod:
+  jjmp r_randmod
+fr1_r_host_eat:
+  jjmp r_host_eat
+fr1_r_alloc:
+  jjmp r_alloc
+fr1_r_free:
+  jjmp r_free
+fr1_r_read_max:
+  jjmp r_read_max
+fr1_r_org_rec:
+  jjmp r_org_rec
+fr1_r_gesture:
+  jjmp r_gesture
+fr1_r_rec_org:
+  jjmp r_rec_org
+fr1_r_read_get:
+  jjmp r_read_get
+fr1_r_recompute:
+  jjmp r_recompute
+fr1_r_cable_init:
+  jjmp fr2_r_cable_init
+fr1_r_read_add:
+  jjmp r_read_add
+fr1_r_dlg_mind:
+  jjmp r_dlg_mind
+fr1_r_char:
+  jjmp r_char
+fr1_r_rec_key:
+  jjmp r_rec_key
+fr1_r_put_rec:
+  jjmp r_put_rec
+fr1_r_file:
+  jjmp r_file
+fr1_r_mus_init:
+  jjmp r_mus_init
+fr1_v_frame:
+  jjmp v_frame
+fr1_r_get_num:
+  jjmp r_get_num
+fr1_r_get_hex:
+  jjmp r_get_hex
+fr1_r_free_load:
+  jjmp r_free_load
+fr1_ul_cmp:
+  jjmp ul_cmp
+fr1_v_event:
+  jjmp v_event
+fr1_r_plot:
+  jjmp r_plot
+fr1_r_get_rec:
+  jjmp r_get_rec
+fr1_r_judge:
+  jjmp r_judge
+fr1_v_show:
+  jjmp v_show
+fr1_r_hash:
+  jjmp r_hash
+fr1_r_open:
+  jjmp r_open
+fr1_fr_nomem:
+  jjmp fr_nomem
+fr1_r_tried:
+  jjmp r_tried
+fr1_r_read_cand:
+  jjmp r_read_cand
+fr1_l_ring_open:
+  jjmp l_ring_open
+fr1_r_tocar:
+  jjmp r_tocar
 fr1_r_put_num:
   jjmp r_put_num
 fr1_v_init:
   jjmp v_init
-fr1_l_ring:
-  jjmp l_ring
-fr1_r_org_rec:
-  jjmp r_org_rec
-fr1_r_char:
-  jjmp r_char
-fr1_r_set_hue:
-  jjmp r_set_hue
-fr1_r_file:
-  jjmp r_file
-fr1_r_tocar:
-  jjmp r_tocar
-fr1_r_get_hex:
-  jjmp r_get_hex
-fr1_r_cable_init:
-  jjmp fr2_r_cable_init
-fr1_r_read_place:
-  jjmp r_read_place
-fr1_r_rec_org:
-  jjmp r_rec_org
-fr1_r_host_eat:
-  jjmp r_host_eat
-fr1_r_fit_cost:
-  jjmp r_fit_cost
-fr1_r_open:
-  jjmp r_open
-fr1_r_randmod:
-  jjmp r_randmod
-fr1_r_rec_key:
-  jjmp r_rec_key
-fr1_r_read_add:
-  jjmp r_read_add
-fr1_r_alloc:
-  jjmp r_alloc
-fr1_r_colour:
-  jjmp r_colour
-fr1_r_hash:
-  jjmp r_hash
-fr1_r_flat:
-  jjmp r_flat
-fr1_r_put_rec:
-  jjmp r_put_rec
-fr1_r_read_cand:
-  jjmp r_read_cand
-fr1_r_gesture:
-  jjmp r_gesture
-fr1_r_free_load:
-  jjmp r_free_load
-fr1_v_show:
-  jjmp v_show
-fr1_r_get_rec:
-  jjmp r_get_rec
-fr1_r_read_end:
-  jjmp r_read_end
+fr1_r_read_poll:
+  jjmp r_read_poll
 dh_nmd:
   ; (each word of his weighs what it carries for her, r_winfo: a word in every line carries little)
   jldi j6, 019Fh
@@ -35437,7 +35439,15 @@ wysd_b:
   jldi j10, 8
   jadd j1, j9, j10
   jcall ig_isbook
-  jjnz j0, wysd_ok
+  jjz j0, wysd_nb
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jld j9, j6, 7184
+  jcall r_isdisk
+  jjz j0, wysd_ok            ; (a book of the disk holds an address, not lines)
+wysd_nb:
   jldi j6, 019Fh
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -39475,6 +39485,12 @@ tmp_f:
   jld j2, j6, 01EA8h
   jsub j10, j1, j2
   jjnn j10, tmp_end
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 31888
+  jcall r_isdisk
+  jjnz j0, tmp_n             ; (a book of the disk holds an address, not lines)
   jldi j6, 019Fh
   jshi j6, 0
   jld j6, j6, 01D68h
@@ -46876,7 +46892,7 @@ dgo_mva:
   jld j12, j6, 31200
   jcall r_file
   jldi j10, 7
-  jcall r_file
+  jcall fr2_r_file
 dgo_mv:
   jldi j6, 019Fh
   jshi j6, 0
@@ -57127,6 +57143,73 @@ pl_state:
   jadd j1, j1, j10
   jjnz j1, r_read_done
   jret
+; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
+fr2_r_read_place:
+  jjmp fr1_r_read_place
+fr2_r_receta:
+  jjmp fr1_r_receta
+fr2_l_ring:
+  jjmp fr1_l_ring
+fr2_r_recompute:
+  jjmp fr1_r_recompute
+fr2_r_read_get:
+  jjmp fr1_r_read_get
+fr2_r_read_add:
+  jjmp fr1_r_read_add
+fr2_r_flat:
+  jjmp fr1_r_flat
+fr2_r_set_hue:
+  jjmp fr1_r_set_hue
+fr2_r_rec_key:
+  jjmp fr1_r_rec_key
+fr2_r_fit_cost:
+  jjmp fr1_r_fit_cost
+fr2_r_colour:
+  jjmp fr1_r_colour
+fr2_r_put_rec:
+  jjmp fr1_r_put_rec
+fr2_r_file:
+  jjmp fr1_r_file
+fr2_r_randmod:
+  jjmp fr1_r_randmod
+fr2_r_get_num:
+  jjmp fr1_r_get_num
+fr2_r_alloc:
+  jjmp fr1_r_alloc
+fr2_r_org_rec:
+  jjmp fr1_r_org_rec
+fr2_r_gesture:
+  jjmp fr1_r_gesture
+fr2_l_ring_open:
+  jjmp fr1_l_ring_open
+fr2_r_rec_org:
+  jjmp fr1_r_rec_org
+fr2_r_cable:
+  jjmp r_cable
+fr2_r_get_hex:
+  jjmp fr1_r_get_hex
+fr2_ul_cmp:
+  jjmp fr1_ul_cmp
+fr2_r_plot:
+  jjmp fr1_r_plot
+fr2_r_get_rec:
+  jjmp fr1_r_get_rec
+fr2_r_judge:
+  jjmp fr1_r_judge
+fr2_r_hash:
+  jjmp fr1_r_hash
+fr2_r_open:
+  jjmp fr1_r_open
+fr2_r_cable_flush:
+  jjmp r_cable_flush
+fr2_r_tried:
+  jjmp fr1_r_tried
+fr2_r_tocar:
+  jjmp fr1_r_tocar
+fr2_r_put_num:
+  jjmp fr1_r_put_num
+fr2_r_cable_init:
+  jjmp r_cable_init
 r_read_done:                    ; it ended: its line in "leido", and what it changes in her
   jldi j6, 019Fh
   jshi j6, 0
@@ -57297,73 +57380,6 @@ ru_mn:
   jldi j10, 1
   jsub j2, j2, j10
   jjmp ru_m
-; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
-fr2_r_read_get:
-  jjmp fr1_r_read_get
-fr2_r_get_num:
-  jjmp fr1_r_get_num
-fr2_r_tried:
-  jjmp fr1_r_tried
-fr2_r_file:
-  jjmp fr1_r_file
-fr2_r_tocar:
-  jjmp fr1_r_tocar
-fr2_r_get_hex:
-  jjmp fr1_r_get_hex
-fr2_l_ring_open:
-  jjmp fr1_l_ring_open
-fr2_r_read_place:
-  jjmp fr1_r_read_place
-fr2_r_rec_org:
-  jjmp fr1_r_rec_org
-fr2_r_receta:
-  jjmp fr1_r_receta
-fr2_r_fit_cost:
-  jjmp fr1_r_fit_cost
-fr2_r_recompute:
-  jjmp fr1_r_recompute
-fr2_r_open:
-  jjmp fr1_r_open
-fr2_r_plot:
-  jjmp fr1_r_plot
-fr2_ul_cmp:
-  jjmp fr1_ul_cmp
-fr2_r_judge:
-  jjmp fr1_r_judge
-fr2_r_put_num:
-  jjmp fr1_r_put_num
-fr2_r_rec_key:
-  jjmp fr1_r_rec_key
-fr2_r_hash:
-  jjmp fr1_r_hash
-fr2_l_ring:
-  jjmp fr1_l_ring
-fr2_r_org_rec:
-  jjmp fr1_r_org_rec
-fr2_r_gesture:
-  jjmp fr1_r_gesture
-fr2_r_set_hue:
-  jjmp fr1_r_set_hue
-fr2_r_randmod:
-  jjmp fr1_r_randmod
-fr2_r_read_add:
-  jjmp fr1_r_read_add
-fr2_r_alloc:
-  jjmp fr1_r_alloc
-fr2_r_colour:
-  jjmp fr1_r_colour
-fr2_r_flat:
-  jjmp fr1_r_flat
-fr2_r_put_rec:
-  jjmp fr1_r_put_rec
-fr2_r_cable:
-  jjmp r_cable
-fr2_r_get_rec:
-  jjmp fr1_r_get_rec
-fr2_r_cable_flush:
-  jjmp r_cable_flush
-fr2_r_cable_init:
-  jjmp r_cable_init
 ru_md:
   jjz j8, ru_scan
   jdiv j7, j7, j8
