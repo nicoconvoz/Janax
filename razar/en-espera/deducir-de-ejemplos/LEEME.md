@@ -28,7 +28,34 @@ es un recuerdo; lo que dicen dos, una regla"*). Lo que falta es que ese canto an
   *"Sentate."*, *"Uff!... Lúgubres!"*…) y el canto aprende letra por letra, donde no se repiten.
 - Con ejemplos que sí comparten la costumbre, copia bien el nombre y se equivoca en lo demás.
 
+## Los lentes: la nitidez entre letra, palabra y oración (2026-11-26)
+
+> *"Que cambie la nitidez entre letra, palabra y oraciones."* (el autor)
+
+`nitidez_canto.py` pone un lente delante del canto, **sin cambiarle una línea**: el lente dice qué es una "letra".
+Con *oración*, cada respuesta entera es una; con *palabra*, cada palabra distinta es una; con *letra*, como siempre.
+Y un cuarto, *palabra nítida*, que le aplica a las palabras la regla del propio canto: **lo que dice un solo ejemplo
+es un particular (un nombre); lo que dicen dos, la regla.** La palabra que dice un solo ejemplo se oye como "alguien",
+y lo cantado se lee de vuelta con la palabra propia de la pregunta en ese hueco.
+
+Con los 7 ejemplos armados (`pares_armados.txt`: *como estas, X? → muy bien, X* y *hola, X → hola, X*):
+
+| se le preguntó | oración | palabra | **palabra nítida** | letra |
+|---|---|---|---|---|
+| *como estas, nico?* | hola, andres | estas nico | **muy bien nico** | estas nico |
+| *hola, nico* | muy bien, maria | hola nico | **hola nico** | hola nico |
+| *hola, capitan* | | | **hola capitan** | |
+| *como estas?* | hola, lucia | muy bien estas | muy bien estas | como estas |
+
+Con los 5 de su teatro (`pares_teatro.txt`): *como estas?* → *estas*; *como estas, luma?* → casi todo huecos.
+
+- **Cambiar sólo el grano no alcanzaba.** Por palabras seguía cantando *estas nico*: cada ejemplo trae un nombre
+  distinto y el canto no veía que las cuatro preguntas eran la misma. Con la nitidez sí: 3 de 4, y contesta con un
+  nombre que no estaba en ningún ejemplo.
+- **Con su teatro no hay costumbre que deducir**, con ningún lente: cada respuesta es de su obra.
+
 ## Qué la despierta
 
-Que el canto aprenda por palabras y no por letras, o que coma charla de todos los días, donde una misma pregunta se
-contesta parecido muchas veces. Ahí vale volver a medir con `canto_como.sh`.
+Ejemplos que traigan la costumbre: charla de todos los días, donde una misma pregunta se contesta parecido muchas
+veces, o lo que su autor le explica (cada explicación es un ejemplo). Y llevar el lente de la palabra nítida a su cuerpo:
+juntar los ejemplos, borronear los particulares, darle el canto y leerlo de vuelta. Se mide con `nitidez_canto.py`.

@@ -1,0 +1,14 @@
+P: como estas, ana?
+R: muy bien, ana
+P: como estas, pedro?
+R: muy bien, pedro
+P: como estas, juan?
+R: muy bien, juan
+P: como estas, maria?
+R: muy bien, maria
+P: hola, tomas
+R: hola, tomas
+P: hola, lucia
+R: hola, lucia
+P: hola, andres
+R: hola, andres
