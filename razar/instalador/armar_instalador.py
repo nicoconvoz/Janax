@@ -61,7 +61,7 @@ for raiz in ("escalon0", "so", "razar"):
             if f.endswith(".inc"):
                 rel = os.path.relpath(os.path.join(d, f), P).replace("\\", "/")
                 fuentes.append((etiqueta("PDP/" + rel), os.path.join(d, f)))
-for rel in ("razar/cuerpo/luma.jsm", "razar/lectura/pulso.datos.jsm"):
+for rel in ("razar/cuerpo/luma.jsm", "razar/lectura/pulso.datos.jsm", "razar/cardumen/memoria_pares.jsm", "razar/cardumen/memoria_pares.datos.jsm"):
     fuentes.append((etiqueta("PDP/" + rel), os.path.join(P, rel)))
 print("fuentes: %d archivos, %.1f MB -> %.1f MB" % tuple(x / d for x, d in zip(paquete(os.path.join(DAT, "fuentes.paquete"), fuentes), (1, 1e6, 1e6))))
 

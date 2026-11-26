@@ -73,6 +73,11 @@ section '.data' data readable writeable
   s_h_pens  du '6c756d612f70656e7361646f72612e62696e', 0                           ; luma/pensadora.bin
   s_h_molde du '6c756d612f6c6563746f72612e6d6f6c6465', 0                           ; luma/lectora.molde
   s_h_vida  du '766964612d6d656d6f726961', 0                                       ; vida-memoria: a Luma lives there
+  ; her school's song (razar/cardumen/memoria_pares): assembled with her, and in her house as luma/canto
+  s_h_mpb   du '5044502f72617a61722f63617264756d656e2f6d656d6f7269615f70617265732e62696e', 0       ; PDP/razar/cardumen/memoria_pares.bin
+  s_h_mpd   du '5044502f72617a61722f63617264756d656e2f6d656d6f7269615f70617265732e6461746f73', 0   ; PDP/razar/cardumen/memoria_pares.datos
+  s_h_cab   du '6c756d612f63616e746f2e62696e', 0                                    ; luma/canto.bin
+  s_h_cad   du '6c756d612f63616e746f2e6461746f73', 0                                ; luma/canto.datos
   s_e_arch  du 'JANAX_ARCHIVOS', 0
   s_e_camb  du 'JANAX_CAMBIO', 0
   s_cero    du '0', 0
@@ -323,6 +328,13 @@ start:
         call    copia
         une     r1, bind, s_pulso
         une     r2, casad, s_h_molde
+        call    copia
+        ; her school's song, which she asks when someone speaks to her (gen_leer.py: r_canto)
+        une     r1, fuend, s_h_mpb
+        une     r2, casad, s_h_cab
+        call    copia
+        une     r1, fuend, s_h_mpd
+        une     r2, casad, s_h_cad
         call    copia
         ; the two shortcuts on the desktop
         invoke  SHGetFolderPathW, 0, 10h, 0, 0, nombre  ; CSIDL_DESKTOPDIRECTORY

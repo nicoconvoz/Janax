@@ -124,6 +124,12 @@ ljthink
 ljvoice
 ljwbook
 ljweight
+lnclass
+lnemit
+lnfile
+lnline
+lnputc
+lntok
 lvmake
 pnasend
 rabsorb
@@ -140,6 +146,7 @@ rbranch
 rbridge
 rbrush
 rbusca
+rcanto
 rcat
 rcell
 rchar
