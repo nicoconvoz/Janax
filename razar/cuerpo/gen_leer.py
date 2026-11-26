@@ -3655,8 +3655,25 @@ def make(g, ST, free):
         o("wysg_dl:")
         J("jldi j10, 5", "jadd j10, j1, j10", "jsub j10, j5, j10", "jjn j10, wysg_fail", "jadd j9, j7, j1")
         for k, ch in enumerate(b"vos: "):
-            J("jldb j11, j9, %d" % k, "jldi j12, %d" % ch, "jsub j11, j11, j12", "jjnz j11, wysg_dn")
+            J("jldb j11, j9, %d" % k, "jldi j12, %d" % ch, "jsub j11, j11, j12", "jjnz j11, wysg_lq")
         J("jldi j10, 5", "jadd j1, j1, j10", "jjmp wysg_c")
+        o("wysg_lq:                        ; WHAT HE SAID NEXT ANSWERS ONLY WHAT SHE HAD ASKED (2026-11-26: to \"como estas?\" she")
+        o("                                ; said \"hola!!\", what he had once written after it). A line of hers here is either")
+        o("                                ; his words again (she was asking: read on, to what he explained) or something else")
+        o("                                ; she answered: then nobody explained it, their talk has nothing for it, and what")
+        o("                                ; people answer each other is looked for in her books)")
+        J("jldi j10, 6", "jadd j10, j1, j10", "jsub j10, j5, j10", "jjn j10, wysg_dn", "jadd j9, j7, j1")
+        for k, ch in enumerate(b"luma: "):
+            J("jldb j11, j9, %d" % k, "jldi j12, %d" % ch, "jsub j11, j11, j12", "jjnz j11, wysg_dn")
+        dl("j3", D_RPL); da("j13", D_RP); J("jldi j9, 0")
+        o("wysg_lql:")
+        J("jsub j10, j9, j3", "jjnn j10, wysg_lqe", "jldi j10, 6", "jadd j10, j10, j1", "jadd j10, j10, j9", "jsub j11, j10, j5", "jjnn j11, wysg_fail", "jadd j10, j7, j10", "jldb j11, j10, 0",
+          "jadd j10, j13, j9", "jldb j12, j10, 0", "jsub j11, j11, j12", "jjnz j11, wysg_fail", "jldi j10, 1", "jadd j9, j9, j10", "jjmp wysg_lql")
+        o("wysg_lqe:                       ; (his words, and then the line ends, or a '?' comes: she was asking)")
+        J("jldi j10, 6", "jadd j10, j10, j1", "jadd j10, j10, j3", "jsub j11, j10, j5", "jjnn j11, wysg_dn", "jadd j10, j7, j10", "jldb j11, j10, 0")
+        for mark in (10, 13, 63):
+            J("jldi j12, %d" % mark, "jsub j12, j11, j12", "jjz j12, wysg_dn")
+        J("jjmp wysg_fail")
         o("wysg_dn:                        ; (to the next line)")
         J("jsub j10, j1, j5", "jjnn j10, wysg_fail", "jadd j10, j7, j1", "jldb j3, j10, 0", "jldi j10, 1", "jadd j1, j1, j10", "jldi j10, 10", "jsub j10, j3, j10", "jjnz j10, wysg_dn", "jjmp wysg_dl")
         o("wysg_s:                         ; (past the end of her line)")
