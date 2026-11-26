@@ -61,6 +61,7 @@ S_SD6   = 640h
 S_SD7   = 680h
 S_SD8   = 6C0h
 S_SD9   = 700h
+S_CANTADO = 7A0h                ; "cantado": what it sang, left in the house (mp_keep)
 S_SD10  = 710h
 S_SD11  = 720h
 S_MARCOS = 730h
@@ -179,6 +180,7 @@ RG2   = 16B8h
 RG3   = 16C0h
 CTC   = 16C8h                   ; CT's room, bytes; the question's longest word
 QMW   = 16D0h
+KH    = 16D8h                   ; (the file being written: mp_keep)
 CEC   = 16E0h                   ; places of the question sung, and how many of them said a word (over the pairs asked)
 CEW   = 16E8h
 SEN   = 1700h                   ; the seed (mp_seed): the book's sentences, and the rest of its walking
@@ -1458,6 +1460,7 @@ msg_mxd:
     jldi j1, S_ARROW
     jcall puts
     jcall mp_puttext
+    jcall mp_keep
     jldi j2, 10
     jcall putch
   msg_lnext:
@@ -3610,6 +3613,43 @@ mpt10_out:
   jjmp putnum
 
 ; What it sang (CT, CTN), out. Uses j1-j3, j9.
+; What it sang (CT, CTN bytes), left in the house too, in "cantado" (2026-11-26): whoever asked it to sing reads it
+; there, and is told with a word (9, to its mother: none, when it is run alone, and then nobody hears it). The last
+; question sung is the one kept. Uses j1-j3, j10-j14.
+mp_keep:
+  jldi j10, 12
+  jldi j11, S_CANTADO
+  jldi j12, 7
+  jcall0 j1, ask
+  jldi j10, 4
+  jldi j11, S_CANTADO
+  jldi j12, 7
+  jcall0 j1, ask
+  jldi j2, 63
+  jsar j2, j13, j2
+  jjnz j2, mpk_r
+  jst j13, j1, KH
+  jldi j3, 32
+  jshl j10, j13, j3
+  jldi j3, 6
+  jor j10, j10, j3
+  jld j11, j1, CT
+  jld j12, j1, CTN
+  jcall0 j1, ask
+  jld j2, j1, KH
+  jldi j3, 32
+  jshl j10, j2, j3
+  jldi j3, 7
+  jor j10, j10, j3
+  jcall0 j1, ask
+  jldi j10, 30
+  jldi j11, 0
+  jldi j12, 9
+  jcall0 j1, ask
+mpk_r:
+  jldi j1, 0
+  jret
+
 mp_puttext:
   jldi j9, 0
   jwhile j2

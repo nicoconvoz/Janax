@@ -95,3 +95,5 @@ db 'N: ', 0
 times 760h - $ db 0
 db '%, la que mas palabras comparte contandolas todas ', 0
 times 7A0h - $ db 0
+db 'cantado', 0
+times 7B0h - $ db 0
