@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.71:** [PENDIENTE571](https://doi.org/PENDIENTE571)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.71:** [10.5281/zenodo.24557882](https://doi.org/10.5281/zenodo.24557882)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-25, v5.71): Conversa, con su libro de costumbres y el canto de su cardumen
 
-DOI de esta versión: [PENDIENTE571](https://doi.org/PENDIENTE571).
+DOI de esta versión: [10.5281/zenodo.24557882](https://doi.org/10.5281/zenodo.24557882).
 
 A “como estas?” contesta **“muy bien, y vos?”**, en un segundo. Tiene un libro de costumbres en su estante, y cuando alguien le habla le da hasta siete ejemplos al **canto de su cardumen**, que deduce qué se contesta; ella le pone el lente de su regla del hueco (dos palabras en el mismo hueco son de una misma clase). Si no hay regla, dice el recuerdo más cercano. Seis frases de seis en la prueba; por ahora lo que contesta son recuerdos de su libro, no composiciones.
 

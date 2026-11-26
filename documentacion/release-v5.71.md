@@ -1,6 +1,6 @@
 ## Janax y Razar v5.71: conversa, con su libro de costumbres y el canto de su cardumen
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24557882](https://doi.org/10.5281/zenodo.24557882)
 
 > *"Busca de 3 a 7 ejemplos donde se use el 'como estas', deducir el mecanismo y aplicarlo a ella: se pasó, aprende."*
 > *"Eso lo hace con su caja armónica del cardumen: no construyamos por fuera de su razonamiento."*
