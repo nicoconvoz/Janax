@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.77:** [PENDIENTE577](https://doi.org/PENDIENTE577)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.77:** [10.5281/zenodo.24562906](https://doi.org/10.5281/zenodo.24562906)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-25, v5.77): No repite, y los dados de su canto son su lluvia
 
-DOI de esta versión: [PENDIENTE577](https://doi.org/PENDIENTE577).
+DOI de esta versión: [10.5281/zenodo.24562906](https://doi.org/10.5281/zenodo.24562906).
 
 A “hola Luma” contestaba cuatro veces lo mismo. Ahora **no dice de nuevo lo que ya dijo**: primero los recuerdos que todavía no dijo; cuando los dijo todos, canta su cardumen; y si no hay regla, su suerte. Y **los dados de ese canto son su propia lluvia**: los dígitos que caen a su derecha, tal como están en ese instante. Tres veces “como estas?”, tres respuestas distintas.
 

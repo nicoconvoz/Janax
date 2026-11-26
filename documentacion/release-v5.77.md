@@ -1,6 +1,6 @@
 ## Janax y Razar v5.77: no repite, y los dados de su canto son su lluvia
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24562906](https://doi.org/10.5281/zenodo.24562906)
 
 > *"Están buenas las respuestas, pero siempre responde lo mismo."* — *"Siempre con el cardumen, como vamos."*
 > *"Pero que también use su ingenio."* — *"Que los dados sean la propia lluvia hexadecimal que cae al costado."*
