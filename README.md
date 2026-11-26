@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.71:** [10.5281/zenodo.24557882](https://doi.org/10.5281/zenodo.24557882)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.77:** [PENDIENTE577](https://doi.org/PENDIENTE577)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -22,6 +22,14 @@ cada pieza tiene sus pruebas.
 En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-25, v5.77): No repite, y los dados de su canto son su lluvia
+
+DOI de esta versión: [PENDIENTE577](https://doi.org/PENDIENTE577).
+
+A “hola Luma” contestaba cuatro veces lo mismo. Ahora **no dice de nuevo lo que ya dijo**: primero los recuerdos que todavía no dijo; cuando los dijo todos, canta su cardumen; y si no hay regla, su suerte. Y **los dados de ese canto son su propia lluvia**: los dígitos que caen a su derecha, tal como están en ese instante. Tres veces “como estas?”, tres respuestas distintas.
+
+[Notas de la v5.77](documentacion/release-v5.77.md).
 
 ## Novedad (2026-11-25, v5.71): Conversa, con su libro de costumbres y el canto de su cardumen
 

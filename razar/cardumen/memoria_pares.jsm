@@ -61,6 +61,7 @@ S_SD6   = 640h
 S_SD7   = 680h
 S_SD8   = 6C0h
 S_SD9   = 700h
+S_DADOS = 7B0h                  ; "dados": the dice it is given (mp_dice)
 S_CANTADO = 7A0h                ; "cantado": what it sang, left in the house (mp_keep)
 S_SD10  = 710h
 S_SD11  = 720h
@@ -180,6 +181,7 @@ RG2   = 16B8h
 RG3   = 16C0h
 CTC   = 16C8h                   ; CT's room, bytes; the question's longest word
 QMW   = 16D0h
+DICE  = 16F0h                   ; the dice it was given (0: none, its own seed)
 KH    = 16D8h                   ; (the file being written: mp_keep)
 CEC   = 16E0h                   ; places of the question sung, and how many of them said a word (over the pairs asked)
 CEW   = 16E8h
@@ -274,6 +276,7 @@ jld j2, j1, PPN
 jcall putnum
 jldi j2, 10
 jcall putch
+jcall mp_dice
 jcall mp_sing                   ; (with "canta": it sings instead)
 jjnz j2, finish
 jldi j1, 0
@@ -1382,6 +1385,8 @@ msg_mxd:
   jshi j2, 5678h
   jshi j2, 9ABCh
   jshi j2, 0DEF1h
+  jld j3, j1, DICE              ; (the dice it was given: another song each time)
+  jxor j2, j2, j3
   jst j2, j1, RNG
   jst j1, j1, TT1
   jwhile j2
@@ -3613,9 +3618,30 @@ mpt10_out:
   jjmp putnum
 
 ; What it sang (CT, CTN), out. Uses j1-j3, j9.
+; HER OWN DICE (the Capitan, 2026-11-26: "siempre con el cardumen"; "siempre responde lo mismo"): its lottery was
+; seeded the same every time, so the same examples sang the same song. With "dados" in the house, all its bytes (their
+; print) are mixed into its seed: whoever asks it to sing gives the dice. Luma gives her rain (the Capitan: "que los
+; dados sean la propia lluvia hexadecimal que cae al costado"). With none, its own seed, as always (its tests say the
+; same every run). Uses j1-j14.
 ; What it sang (CT, CTN bytes), left in the house too, in "cantado" (2026-11-26): whoever asked it to sing reads it
 ; there, and is told with a word (9, to its mother: none, when it is run alone, and then nobody hears it). The last
 ; question sung is the one kept. Uses j1-j3, j10-j14.
+mp_dice:
+  jldi j11, S_DADOS
+  jldi j12, 5
+  jcall0 j1, mp_aside
+  jldi j1, 0
+  jst j1, j1, DICE
+  jjz j3, mpd_r
+  jadd j4, j3, j1
+  jadd j3, j2, j1
+  jcall mp_print
+  jldi j1, 0
+  jst j5, j1, DICE
+mpd_r:
+  jldi j1, 0
+  jret
+
 mp_keep:
   jldi j10, 12
   jldi j11, S_CANTADO

@@ -286,6 +286,7 @@ rputnum
 rputrec
 rrainbottom
 rraincell
+rraindice
 rraininit
 rrainlife
 rrainpush
@@ -334,6 +335,7 @@ runlibro
 rwinfo
 rworth
 rwritemeal
+rcsaid
 rwilog
 thadd
 thfollows
