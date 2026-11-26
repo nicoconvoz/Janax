@@ -85,14 +85,69 @@ def nitida(pares, preguntas):
     return out, len(tabla)
 
 
+def hueco(pares, preguntas):
+    """The word lens with her own rule of the hole (the Capitan: "por el hueco topologico y la encadenacion de sucesos
+    similares para el mismo objeto o ser lo catalogaba como persona, perro, auto o lo que sea"). Two words that stand in
+    one same hole (the same word before and the same word after; a line's start and its end are words too) are of one
+    kind: they are heard as one same letter. Nobody says which kind. What it sings is read back saying, of each kind,
+    the word the question itself has of it."""
+    INI, FIN = "<", ">"
+    lineas = [palabras(x) for q, a in pares for x in (q, a)] + [palabras(q) for q in preguntas]
+    lugar = {}
+    for ws in lineas:
+        t = [INI] + ws + [FIN]
+        for i in range(1, len(t) - 1): lugar.setdefault((t[i - 1], t[i + 1]), set()).add(t[i])
+    clase = {}
+    def raiz(w):
+        while clase.get(w, w) != w: w = clase[w]
+        return w
+    for ws in lugar.values():
+        ws = sorted(ws)
+        for w in ws[1:]: clase[raiz(w)] = raiz(ws[0])
+    miembros = {}
+    for ws in lineas:
+        for w in ws: miembros.setdefault(raiz(w), [])
+        for w in ws:
+            if w not in miembros[raiz(w)]: miembros[raiz(w)].append(w)
+    tabla = {}
+    def cod(ws):
+        o = []
+        for w in ws:
+            u = raiz(w)
+            if u not in tabla:
+                if len(tabla) >= len(SIM): continue
+                tabla[u] = SIM[len(tabla)]
+            o.append(tabla[u])
+        return b" ".join(o)
+    pp = [(cod(palabras(q)), cod(palabras(a))) for q, a in pares]
+    qq = [cod(palabras(q)) for q in preguntas]
+    vuelta = {v: k for k, v in tabla.items()}
+    out = []
+    for q, x in zip(preguntas, correr(pp, qq)):
+        suyas = {}
+        for w in palabras(q): suyas.setdefault(raiz(w), []).append(w)
+        res = []
+        for ch in x:
+            if ch == 32: continue
+            u = vuelta.get(bytes([ch]))
+            if u is None: res.append("?"); continue
+            if len(miembros[u]) == 1: res.append(miembros[u][0])
+            elif suyas.get(u): res.append(suyas[u][0])
+            else: res.append("{" + "/".join(miembros[u][:4]) + "}")
+        out.append(" ".join(res))
+    clases = ["/".join(m[:5]) for m in miembros.values() if len(m) > 1]
+    return out, len(tabla), clases
+
+
 pares = []; p = None
 for l in open(sys.argv[1], encoding="utf-8").read().split("\n"):
     if l.startswith("P: "): p = l[3:]
     elif l.startswith("R: ") and p is not None: pares.append((p, l[3:])); p = None
 preguntas = sys.argv[2:]
-for nivel in ("oracion", "palabra", "palabra nitida", "letra"):
-    r = nitida(pares, preguntas) if nivel == "palabra nitida" else lente(nivel, pares, preguntas)
+for nivel in ("palabra por su hueco", "palabra nitida", "palabra"):
+    r = hueco(pares, preguntas) if nivel == "palabra por su hueco" else nitida(pares, preguntas) if nivel == "palabra nitida" else lente(nivel, pares, preguntas)
     n = ""
-    if isinstance(r, tuple): r, k = r; n = " (%d unidades distintas)" % k
+    if isinstance(r, tuple) and len(r) == 3: r, k, cl = r; n = " (%d unidades; clases que encontro sola: %s)" % (k, "; ".join(cl) or "ninguna")
+    elif isinstance(r, tuple): r, k = r; n = " (%d unidades distintas)" % k
     print("lente %s%s:" % (nivel, n))
     for q, x in zip(preguntas, r): print("    %-28s -> %s" % (q, x))
