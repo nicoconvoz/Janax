@@ -21,3 +21,7 @@ el proyecto (y con su archivo en Zenodo). Esta carpeta está oculta en la máqui
 ## costumbres
 
 `costumbres/costumbres.txt`: 59 intercambios de todos los dias, lo que se dice y lo que se contesta, separados por un renglon en blanco. Escrito para este proyecto (2026-11-26), libre como el resto. Es un borrador: se corrige a gusto. Va en su estante como `elibro-costumbres`.
+
+## ciencia
+
+`ciencia/`: siete libros de ciencia, 223 artículos enteros de Wikipedia en español (licencia CC BY-SA 4.0), elegidos por su nombre: `genoma`, `universo`, `sistema-solar`, `origen-de-la-vida`, `cuerpo-humano`, `planeta-tierra` y `ciencia`. Sin acentos y sin las secciones de referencias, como sus otros libros. Cada artículo y su dirección están en `ciencia/FUENTES.md`. Pedido del autor, 2026-11-27: *"alimentala de más libros sobre ciencias, sobre el espacio, sobre la vida, sobre todo, sobre el genoma"*. Están en su estante (`elibro-genoma`, `elibro-universo`…).
