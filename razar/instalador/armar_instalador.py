@@ -22,7 +22,7 @@ shutil.rmtree(DAT, ignore_errors=True); os.makedirs(DAT)      # (LEEME.txt, besi
 
 env = dict(os.environ, INCLUDE=os.environ.get("INCLUDE", os.path.join(os.path.dirname(FASM), "INCLUDE")))
 for fuente, salida in (("instalar.asm", os.path.join(SAL, "instalar-luma.exe")), ("luma.asm", os.path.join(DAT, "luma.exe"))):
-    r = subprocess.run([FASM, os.path.join(AQUI, fuente), salida], env=env, capture_output=True, text=True)
+    r = subprocess.run([FASM, os.path.join(AQUI, fuente), salida], env=env, cwd=AQUI, capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
 
 shutil.copy(os.path.join(P, "so", "build", "janaxos.exe"), DAT)

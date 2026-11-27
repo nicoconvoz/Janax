@@ -19,6 +19,9 @@ entry start
 include 'win64w.inc'
 
 MAXP = 700
+LADO = 720                      ; her logo's side, as razar/logo/armar_icono.py draws it
+VER  = 2000                     ; (criterion, not a measure: the logo is seen two seconds at least; her window can be
+                                ; there in less than one, and a picture that flashes is not seen)
 
 section '.data' data readable writeable
 
@@ -61,6 +64,11 @@ section '.data' data readable writeable
   hventana  dq 0
   pidv      dd 0, 0
   manijas   dq 0, 0
+  s_static  du 'STATIC', 0
+  hlogo     dq 0
+  hbmp      dq 0
+  t0        dq 0
+  msg       MSG
 
 section '.text' code readable executable
 
@@ -141,6 +149,7 @@ start:
         invoke  lstrcatW, cmd, s_qluma
         invoke  lstrcpyW, bind, dir
         invoke  lstrcatW, bind, s_bin
+        call    logo_mostrar            ; opened by hand: her logo, large, while she wakes
 
 .nacer:
         invoke  DeleteFileW, senal
@@ -160,6 +169,7 @@ start:
         invoke  CloseHandle, [hlog]
         test    ebx, ebx
         jnz     .nacida
+        call    logo_cerrar
         invoke  MessageBoxW, 0, s_falta, s_tit, 10h
         jmp     .fin
 .nacida:
@@ -167,7 +177,8 @@ start:
         jne     .cuidar
         mov     [vez], 1
         mov     ebx, 240                ; opened by hand: wait for her window (a minute at most), then to the front
-.venta: call    su_ventana
+.venta: call    bombea
+        call    su_ventana
         test    rax, rax
         jnz     .frente
         invoke  WaitForSingleObject, [pinf.hProcess], 250
@@ -176,10 +187,23 @@ start:
         dec     ebx
         jnz     .venta
         jmp     .fondo
-.frente:
+.frente:                                ; (her window is there: her logo stays until it has been seen, see VER)
+        call    bombea
+        invoke  GetTickCount64
+        sub     rax, [t0]
+        cmp     rax, VER
+        jae     .visto
+        cmp     [hlogo], 0
+        je      .visto
+        invoke  WaitForSingleObject, [pinf.hProcess], 100
+        test    eax, eax
+        jz      .termino
+        jmp     .frente
+.visto: call    logo_cerrar
         invoke  ShowWindow, [hventana], 3
         invoke  SetForegroundWindow, [hventana]
-.fondo: invoke  SetEnvironmentVariableW, s_e_fondo, s_uno      ; born again later, she is born behind
+.fondo: call    logo_cerrar
+        invoke  SetEnvironmentVariableW, s_e_fondo, s_uno      ; born again later, she is born behind
 .cuidar:
         invoke  FindFirstChangeNotificationW, casad, 0, 1      ; a file's name in her house: made, taken away
         mov     [hcambio], rax
@@ -213,6 +237,7 @@ start:
         invoke  CloseHandle, [pinf.hThread]
         jmp     .nacer
 .termino:
+        call    logo_cerrar
         invoke  CloseHandle, [pinf.hProcess]
         invoke  CloseHandle, [pinf.hThread]
 .fin:
@@ -246,6 +271,60 @@ una_ventana:                            ; rcx = a window -> eax = 1 to go on, 0 
         pop     rbx
         ret
 
+; HER LOGO, LARGE, BEFORE SHE WAKES (the Capitan, 2026-11-27: "que el programa antes de arrancar muestre el logo en
+; grande"). The picture is carried inside this program (no file beside it to lose): a window with no frame, in the
+; middle of the screen, over the others. It goes when her own window is there, not by a clock alone.
+logo_mostrar:
+        push    rbx
+        push    rsi
+        sub     rsp, 40
+        invoke  GetTickCount64
+        mov     [t0], rax
+        invoke  GetModuleHandleW, 0
+        invoke  LoadImageW, rax, 30, 0, 0, 0, 0                ; IMAGE_BITMAP, as large as it is
+        test    rax, rax
+        jz      .r
+        mov     [hbmp], rax
+        invoke  GetSystemMetrics, 0
+        sub     eax, LADO
+        sar     eax, 1
+        mov     ebx, eax
+        invoke  GetSystemMetrics, 1
+        sub     eax, LADO
+        sar     eax, 1
+        mov     esi, eax
+        invoke  CreateWindowExW, 88h, s_static, 0, 9000000Eh, rbx, rsi, LADO, LADO, 0, 0, 0, 0   ; over the others, not in the bar; a picture
+        test    rax, rax
+        jz      .r
+        mov     [hlogo], rax
+        invoke  SendMessageW, rax, 172h, 0, [hbmp]             ; STM_SETIMAGE
+        invoke  UpdateWindow, [hlogo]
+.r:     add     rsp, 40
+        pop     rsi
+        pop     rbx
+        ret
+logo_cerrar:
+        sub     rsp, 40
+        cmp     [hlogo], 0
+        je      .b
+        invoke  DestroyWindow, [hlogo]
+        mov     [hlogo], 0
+.b:     cmp     [hbmp], 0
+        je      .r
+        invoke  DeleteObject, [hbmp]
+        mov     [hbmp], 0
+.r:     add     rsp, 40
+        ret
+bombea:                                 ; what the host has to say to her logo's window (so that it is drawn)
+        sub     rsp, 40
+.l:     invoke  PeekMessageW, msg, 0, 0, 0, 1
+        test    eax, eax
+        jz      .r
+        invoke  DispatchMessageW, msg
+        jmp     .l
+.r:     add     rsp, 40
+        ret
+
 ; she is awake already (started by another run of this): her window, as big as the screen and in front
 al_frente:
         push    rbx
@@ -262,7 +341,10 @@ al_frente:
 
 section '.idata' import data readable writeable
 
-  library kernel32, 'KERNEL32.DLL', user32, 'USER32.DLL'
+  library kernel32, 'KERNEL32.DLL', user32, 'USER32.DLL', gdi32, 'GDI32.DLL'
+
+  import gdi32,\
+         DeleteObject, 'DeleteObject'
 
   import kernel32,\
          CreateMutexW, 'CreateMutexW',\
@@ -282,6 +364,8 @@ section '.idata' import data readable writeable
          FindCloseChangeNotification, 'FindCloseChangeNotification',\
          GetFileAttributesW, 'GetFileAttributesW',\
          TerminateProcess, 'TerminateProcess',\
+         GetTickCount64, 'GetTickCount64',\
+         GetModuleHandleW, 'GetModuleHandleW',\
          ExitProcess, 'ExitProcess'
 
   import user32,\
@@ -289,4 +373,24 @@ section '.idata' import data readable writeable
          ShowWindow, 'ShowWindow',\
          SetForegroundWindow, 'SetForegroundWindow',\
          PostMessageW, 'PostMessageW',\
-         MessageBoxW, 'MessageBoxW'
+         MessageBoxW, 'MessageBoxW',\
+         LoadImageW, 'LoadImageW',\
+         GetSystemMetrics, 'GetSystemMetrics',\
+         CreateWindowExW, 'CreateWindowExW',\
+         SendMessageW, 'SendMessageW',\
+         UpdateWindow, 'UpdateWindow',\
+         DestroyWindow, 'DestroyWindow',\
+         PeekMessageW, 'PeekMessageW',\
+         DispatchMessageW, 'DispatchMessageW'
+
+; her icon and her logo (razar/logo/armar_icono.py makes them from razar/logo/logo.png)
+section '.rsrc' resource data readable
+
+  directory RT_ICON, iconos, RT_GROUP_ICON, grupos, RT_BITMAP, mapas
+
+  resource iconos, 1, LANG_NEUTRAL, ico16, 2, LANG_NEUTRAL, ico32, 3, LANG_NEUTRAL, ico48, 4, LANG_NEUTRAL, ico256
+  resource grupos, 17, LANG_NEUTRAL, ico_luma
+  resource mapas, 30, LANG_NEUTRAL, mapa_logo
+
+  icon ico_luma, ico16, 'luma-16.ico', ico32, 'luma-32.ico', ico48, 'luma-48.ico', ico256, 'luma-256.ico'
+  bitmap mapa_logo, 'luma-logo.bmp'
