@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.87:** [10.5281/zenodo.24585916](https://doi.org/10.5281/zenodo.24585916)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.93:** [PENDIENTE593](https://doi.org/PENDIENTE593)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -22,6 +22,14 @@ cada pieza tiene sus pruebas.
 En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-27, v5.93): Una regla, los lugares, y de lo que sale arma lo que contesta
+
+DOI de esta versión: [PENDIENTE593](https://doi.org/PENDIENTE593).
+
+Una sola regla, la del autor: **un lugar es lo que una palabra tiene al lado; dos palabras que comparten dos lugares son de una clase**. Nadie le dijo qué es un personaje: a “quien es Marianela?” juntó sola <em>Marianela, Nela, Florentina, Teodoro, Pablo</em>. Esas palabras sueltas son pistas: con ellas elige en sus libros la oración que más dice. “que es una celula?” → <em>Una celula procariota es un organismo unicelular…</em> Y su logo ahora es la bandera argentina.
+
+[Notas de la v5.93](documentacion/release-v5.93.md).
 
 ## Novedad (2026-11-27, v5.87): Lo que sus costumbres no cubren, lo contesta con lo que dicen sus libros
 
