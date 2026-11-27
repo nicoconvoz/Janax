@@ -8763,44 +8763,44 @@ main_wait:
   jst j14, j14, 0208h
   jjmp frame
 ; ---- station 0: references that do not reach from where they are (gen_leer.py, reach)
-fr0_fr_nomem:
-  jjmp fr1_fr_nomem
-fr0_r_read_end:
-  jjmp fr1_r_read_end
-fr0_r_free_load:
-  jjmp fr1_r_free_load
-fr0_r_flujo_trial:
-  jjmp fr1_r_flujo_trial
-fr0_v_frame:
-  jjmp fr1_v_frame
-fr0_r_host_eat:
-  jjmp fr1_r_host_eat
-fr0_v_show:
-  jjmp fr1_v_show
-fr0_r_read_max:
-  jjmp fr1_r_read_max
-fr0_r_busca:
-  jjmp fr1_r_busca
-fr0_r_read_poll:
-  jjmp fr1_r_read_poll
-fr0_r_free:
-  jjmp fr1_r_free
-fr0_r_mus_init:
-  jjmp fr1_r_mus_init
-fr0_r_cable:
-  jjmp fr1_r_cable
-fr0_v_meal:
-  jjmp fr1_v_meal
-fr0_v_event:
-  jjmp fr1_v_event
 fr0_v_init:
   jjmp fr1_v_init
-fr0_r_dlg_mind:
-  jjmp fr1_r_dlg_mind
-fr0_r_cable_init:
-  jjmp fr1_r_cable_init
+fr0_r_free_load:
+  jjmp fr1_r_free_load
 fr0_r_read_cand:
   jjmp fr1_r_read_cand
+fr0_r_free:
+  jjmp fr1_r_free
+fr0_v_event:
+  jjmp fr1_v_event
+fr0_r_cable_init:
+  jjmp fr1_r_cable_init
+fr0_v_show:
+  jjmp fr1_v_show
+fr0_v_frame:
+  jjmp fr1_v_frame
+fr0_r_flujo_trial:
+  jjmp fr1_r_flujo_trial
+fr0_r_host_eat:
+  jjmp fr1_r_host_eat
+fr0_r_mus_init:
+  jjmp fr1_r_mus_init
+fr0_r_read_end:
+  jjmp fr1_r_read_end
+fr0_v_meal:
+  jjmp fr1_v_meal
+fr0_r_cable:
+  jjmp fr1_r_cable
+fr0_r_busca:
+  jjmp fr1_r_busca
+fr0_r_read_max:
+  jjmp fr1_r_read_max
+fr0_r_dlg_mind:
+  jjmp fr1_r_dlg_mind
+fr0_fr_nomem:
+  jjmp fr1_fr_nomem
+fr0_r_read_poll:
+  jjmp fr1_r_read_poll
 fr0_r_char:
   jjmp fr1_r_char
 main_frames:                    ; between two frames: what is left of this one
@@ -18562,10 +18562,10 @@ r_read_init:
   jldi j6, 019Fh
   jshi j6, 0
   jld j1, j6, 01540h
-  jldi j2, 03B36h
-  jshi j2, 0A1D2h
-  jshi j2, 057BEh
-  jshi j2, 04A27h
+  jldi j2, 03354h
+  jshi j2, 07CC1h
+  jshi j2, 0C057h
+  jshi j2, 0AC95h
   jsub j3, j1, j2
   jjz j3, ri_same
   jldi j6, 019Fh
@@ -29213,6 +29213,76 @@ dan_ohd:
   jadd j11, j11, j15
   jst j2, j11, 48
 dan_ohx:
+  ; (THE BOOK, see wysg_pt: her first book, the one whose label is "libro" and nothing else. While only it is
+  ; read, every other book is passed over)
+  jld j11, j14, 0740h
+  jjz j11, dan_obz
+  jldi j15, 3
+  jshi j15, 02BA0h
+  jadd j11, j11, j15
+  jld j1, j11, 80
+  jjz j1, dan_obz
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j9, j6, 17776
+  jld j3, j9, 0
+  jldi j10, 5
+  jsub j10, j3, j10
+  jjnz j10, dan_obk0
+  jldb j10, j9, 8
+  jldi j1, 108
+  jsub j10, j10, j1
+  jjnz j10, dan_obk0
+  jldb j10, j9, 9
+  jldi j1, 105
+  jsub j10, j10, j1
+  jjnz j10, dan_obk0
+  jldb j10, j9, 10
+  jldi j1, 98
+  jsub j10, j10, j1
+  jjnz j10, dan_obk0
+  jldb j10, j9, 11
+  jldi j1, 114
+  jsub j10, j10, j1
+  jjnz j10, dan_obk0
+  jldb j10, j9, 12
+  jldi j1, 111
+  jsub j10, j10, j1
+  jjnz j10, dan_obk0
+  jjmp dan_obz
+dan_obk0:
+  jldi j10, 6
+  jsub j10, j3, j10
+  jjnz j10, dan_obk1
+  jldb j10, j9, 8
+  jldi j1, 101
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jldb j10, j9, 9
+  jldi j1, 108
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jldb j10, j9, 10
+  jldi j1, 105
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jldb j10, j9, 11
+  jldi j1, 98
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jldb j10, j9, 12
+  jldi j1, 114
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jldb j10, j9, 13
+  jldi j1, 111
+  jsub j10, j10, j1
+  jjnz j10, dan_obk1
+  jjmp dan_obz
+dan_obk1:
+  jjmp dan_n
+dan_obz:
   jld j1, j14, 0638h
   jldi j10, 2
   jsub j10, j1, j10
@@ -34245,110 +34315,110 @@ dh_nm:
   jst j1, j6, 31984
   jjmp dh_nm
 ; ---- station 1: references that do not reach from where they are (gen_leer.py, reach)
-fr1_r_cable:
-  jjmp fr2_r_cable
-fr1_r_flat:
-  jjmp r_flat
-fr1_fr_nomem:
-  jjmp fr_nomem
-fr1_r_read_end:
-  jjmp r_read_end
-fr1_r_randmod:
-  jjmp r_randmod
-fr1_r_read_get:
-  jjmp r_read_get
-fr1_r_get_num:
-  jjmp r_get_num
-fr1_r_rec_org:
-  jjmp r_rec_org
 fr1_r_cable_flush:
   jjmp fr2_r_cable_flush
-fr1_r_fit_cost:
-  jjmp r_fit_cost
-fr1_r_flujo_trial:
-  jjmp r_flujo_trial
-fr1_r_read_add:
-  jjmp r_read_add
+fr1_r_tocar:
+  jjmp r_tocar
+fr1_r_cable:
+  jjmp fr2_r_cable
+fr1_v_init:
+  jjmp v_init
+fr1_r_free_load:
+  jjmp r_free_load
+fr1_r_read_cand:
+  jjmp r_read_cand
+fr1_r_put_rec:
+  jjmp r_put_rec
 fr1_r_judge:
   jjmp r_judge
 fr1_l_ring:
   jjmp l_ring
-fr1_r_hash:
-  jjmp r_hash
-fr1_r_alloc:
-  jjmp r_alloc
-fr1_r_set_hue:
-  jjmp r_set_hue
-fr1_r_get_hex:
-  jjmp r_get_hex
-fr1_r_file:
-  jjmp r_file
-fr1_ul_cmp:
-  jjmp ul_cmp
-fr1_r_dlg_write:
-  jjmp r_dlg_write
-fr1_r_gesture:
-  jjmp r_gesture
-fr1_r_read_place:
-  jjmp r_read_place
-fr1_r_tocar:
-  jjmp r_tocar
-fr1_r_colour:
-  jjmp r_colour
-fr1_r_org_rec:
-  jjmp r_org_rec
-fr1_v_meal:
-  jjmp v_meal
-fr1_r_rec_key:
-  jjmp r_rec_key
-fr1_r_recompute:
-  jjmp r_recompute
-fr1_r_free_load:
-  jjmp r_free_load
-fr1_v_frame:
-  jjmp v_frame
-fr1_r_host_eat:
-  jjmp r_host_eat
-fr1_v_show:
-  jjmp v_show
-fr1_r_receta:
-  jjmp r_receta
-fr1_r_get_rec:
-  jjmp r_get_rec
-fr1_r_open:
-  jjmp r_open
-fr1_r_read_max:
-  jjmp r_read_max
-fr1_r_busca:
-  jjmp r_busca
 fr1_r_tried:
   jjmp r_tried
-fr1_r_read_poll:
-  jjmp r_read_poll
-fr1_r_free:
-  jjmp r_free
-fr1_r_put_rec:
-  jjmp r_put_rec
-fr1_r_mus_init:
-  jjmp r_mus_init
-fr1_r_put_num:
-  jjmp r_put_num
+fr1_v_show:
+  jjmp v_show
 fr1_r_plot:
   jjmp r_plot
-fr1_l_ring_open:
-  jjmp l_ring_open
+fr1_r_fit_cost:
+  jjmp r_fit_cost
+fr1_r_recompute:
+  jjmp r_recompute
+fr1_r_receta:
+  jjmp r_receta
+fr1_r_mus_init:
+  jjmp r_mus_init
+fr1_r_open:
+  jjmp r_open
+fr1_r_colour:
+  jjmp r_colour
+fr1_r_read_place:
+  jjmp r_read_place
+fr1_v_meal:
+  jjmp v_meal
+fr1_r_alloc:
+  jjmp r_alloc
+fr1_r_randmod:
+  jjmp r_randmod
+fr1_r_flat:
+  jjmp r_flat
+fr1_r_set_hue:
+  jjmp r_set_hue
+fr1_r_org_rec:
+  jjmp r_org_rec
+fr1_r_free:
+  jjmp r_free
 fr1_v_event:
   jjmp v_event
-fr1_v_init:
-  jjmp v_init
-fr1_r_dlg_mind:
-  jjmp r_dlg_mind
+fr1_r_read_add:
+  jjmp r_read_add
+fr1_l_ring_open:
+  jjmp l_ring_open
 fr1_r_cable_init:
   jjmp fr2_r_cable_init
-fr1_r_read_cand:
-  jjmp r_read_cand
+fr1_r_get_num:
+  jjmp r_get_num
+fr1_r_dlg_write:
+  jjmp r_dlg_write
+fr1_r_get_hex:
+  jjmp r_get_hex
+fr1_v_frame:
+  jjmp v_frame
+fr1_r_dlg_mind:
+  jjmp r_dlg_mind
+fr1_r_flujo_trial:
+  jjmp r_flujo_trial
+fr1_r_rec_key:
+  jjmp r_rec_key
+fr1_r_hash:
+  jjmp r_hash
+fr1_r_get_rec:
+  jjmp r_get_rec
+fr1_r_host_eat:
+  jjmp r_host_eat
+fr1_r_read_get:
+  jjmp r_read_get
+fr1_ul_cmp:
+  jjmp ul_cmp
+fr1_r_read_end:
+  jjmp r_read_end
+fr1_r_gesture:
+  jjmp r_gesture
+fr1_r_file:
+  jjmp r_file
+fr1_r_put_num:
+  jjmp r_put_num
+fr1_r_busca:
+  jjmp r_busca
 fr1_r_char:
   jjmp r_char
+fr1_r_read_max:
+  jjmp r_read_max
+fr1_fr_nomem:
+  jjmp fr_nomem
+fr1_r_rec_org:
+  jjmp r_rec_org
+fr1_r_read_poll:
+  jjmp r_read_poll
 dh_nmd:
   ; (each word of his weighs what it carries for her, r_winfo: a word in every line carries little)
   jldi j6, 019Fh
@@ -38323,6 +38393,70 @@ wysg_pt:                        ; (her customs do not cover what he asks about, 
   ; her examples always go, r_canto: the first she has not said to him yet, as it is; when she has said them all,
   ; her school's song from them; her luck last. No sentence about it: she asks, as before. What a book says of
   ; someone keeps its names: it is not an answer borrowed from a talk)
+  jld j1, j14, 0740h
+  jjnz j1, wysg_pa
+  jldi j1, 3
+  jshi j1, 05C20h
+  jcall r_alloc
+  jst j0, j14, 0740h
+wysg_pa:
+  ; THE MOST IMPORTANT PLACE (the Capitan, 2026-11-27: "el lugar mas importante para Papa Dios y Mama Maria y
+  ; Jesus"; 2026-11-22: "Dios es el libro que contiene todos los libros"). Her first book, the one whose label
+  ; is "libro" and nothing else, is the Book. If the Book speaks of what he asks, the Book answers, before her
+  ; own heart: its sentences about it, as they are written, never woven nor imagined over. Measured: asked who
+  ; Jesus is she answered with her father's names, Jesus being one of them, with Jesus 1071 times in the Book.
+  ; The Book does not speak of it (her father, the genome): her heart, and then all the rest, as before)
+  jld j7, j14, 0740h
+  jldi j15, 01C00h
+  jadd j7, j7, j15
+  jldi j1, 3
+  jshi j1, 04020h
+wysg_pk:
+  jjz j1, wysg_pkd
+  jldi j10, 8
+  jsub j1, j1, j10
+  jadd j11, j7, j1
+  jst j14, j11, 0
+  jjmp wysg_pk
+wysg_pkd:
+  jld j11, j14, 0740h
+  jldi j15, 3
+  jshi j15, 02BA0h
+  jadd j11, j11, j15
+  jldi j10, 1
+  jst j10, j11, 80
+  jst j14, j14, 0748h
+  jldi j10, 0
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jst j10, j6, 6600
+  jcall r_dlg_answer
+  jst j14, j14, 0520h
+  jld j1, j14, 0748h
+  jjz j1, wysg_pn
+  jldi j10, 5
+  jst j10, j14, 0638h
+  jcall r_canto
+  jjz j0, wysg_pn
+  jst j14, j14, 0638h
+  jldi j10, 07711h
+  jst j10, j14, 06E8h
+  jldi j10, 9
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j10, j6, 7208
+  jldi j6, 019Fh
+  jshi j6, 0
+  jld j6, j6, 01D68h
+  jld j6, j6, 32728
+  jst j14, j6, 6936
+  jjmp wyg_ok
+wysg_pn:
+  jldi j10, 2
+  jst j10, j14, 0638h
   ; HER HEART ANSWERS FIRST (the Capitan, 2026-11-22; left out here until 2026-11-27, when to "lumita yo soy tu
   ; papa" she answered with a sentence of an encyclopedia about a pope). What her customs do not cover is asked of
   ; her heart before any book: who she is and who her father is are written there. Only what her heart does not
@@ -38345,13 +38479,6 @@ wysg_pt:                        ; (her customs do not cover what he asks about, 
   jst j14, j6, 6936
   jjmp wyg_ok
 wysg_ph0:
-  jld j1, j14, 0740h
-  jjnz j1, wysg_pa
-  jldi j1, 3
-  jshi j1, 05C20h
-  jcall r_alloc
-  jst j0, j14, 0740h
-wysg_pa:
   jld j7, j14, 0740h
   jldi j15, 01C00h
   jadd j7, j7, j15
@@ -52219,6 +52346,14 @@ rc_xn:                          ; (FROM THE SUREST TO THE MOST HER OWN, 2026-11-
   ; sentences. Her school's song first: what two of them say. It sings no rule: the sentence of most clues, as it
   ; is; her luck last)
   jld j1, j14, 0638h
+  jldi j10, 5
+  jsub j10, j1, j10
+  jjnz j10, rc_u3
+  jldi j10, 1
+  jst j10, j14, 0638h
+  jjmp rc_no                 ; (the Book, CNB = 5: its sentences as they are, never woven; all said, her luck among them)
+rc_u3:
+  jld j1, j14, 0638h
   jldi j10, 3
   jsub j10, j1, j10
   jjnz j10, rc_uq
@@ -60379,72 +60514,72 @@ rp_s_word:
   jldi j0, 1
   jret
 ; ---- station 2: references that do not reach from where they are (gen_leer.py, reach)
-fr2_r_flat:
-  jjmp fr1_r_flat
 fr2_r_randmod:
   jjmp fr1_r_randmod
-fr2_r_read_get:
-  jjmp fr1_r_read_get
-fr2_r_get_num:
-  jjmp fr1_r_get_num
-fr2_r_recompute:
-  jjmp fr1_r_recompute
-fr2_r_rec_org:
-  jjmp fr1_r_rec_org
-fr2_r_fit_cost:
-  jjmp fr1_r_fit_cost
+fr2_r_alloc:
+  jjmp fr1_r_alloc
+fr2_r_flat:
+  jjmp fr1_r_flat
+fr2_r_set_hue:
+  jjmp fr1_r_set_hue
+fr2_r_org_rec:
+  jjmp fr1_r_org_rec
+fr2_l_ring_open:
+  jjmp fr1_l_ring_open
 fr2_r_read_add:
   jjmp fr1_r_read_add
+fr2_r_tocar:
+  jjmp fr1_r_tocar
+fr2_r_put_rec:
+  jjmp fr1_r_put_rec
 fr2_r_judge:
   jjmp fr1_r_judge
 fr2_l_ring:
   jjmp fr1_l_ring
-fr2_r_receta:
-  jjmp fr1_r_receta
-fr2_r_hash:
-  jjmp fr1_r_hash
-fr2_r_alloc:
-  jjmp fr1_r_alloc
-fr2_r_get_rec:
-  jjmp fr1_r_get_rec
-fr2_r_set_hue:
-  jjmp fr1_r_set_hue
-fr2_r_open:
-  jjmp fr1_r_open
-fr2_r_get_hex:
-  jjmp fr1_r_get_hex
-fr2_r_file:
-  jjmp fr1_r_file
-fr2_ul_cmp:
-  jjmp fr1_ul_cmp
-fr2_r_dlg_write:
-  jjmp fr1_r_dlg_write
-fr2_r_gesture:
-  jjmp fr1_r_gesture
-fr2_r_read_place:
-  jjmp fr1_r_read_place
-fr2_r_tocar:
-  jjmp fr1_r_tocar
-fr2_r_colour:
-  jjmp fr1_r_colour
-fr2_r_org_rec:
-  jjmp fr1_r_org_rec
-fr2_r_rec_key:
-  jjmp fr1_r_rec_key
-fr2_r_put_num:
-  jjmp fr1_r_put_num
 fr2_r_tried:
   jjmp fr1_r_tried
-fr2_r_put_rec:
-  jjmp fr1_r_put_rec
+fr2_r_get_num:
+  jjmp fr1_r_get_num
 fr2_r_plot:
   jjmp fr1_r_plot
-fr2_l_ring_open:
-  jjmp fr1_l_ring_open
+fr2_r_dlg_write:
+  jjmp fr1_r_dlg_write
+fr2_r_fit_cost:
+  jjmp fr1_r_fit_cost
+fr2_r_recompute:
+  jjmp fr1_r_recompute
+fr2_r_receta:
+  jjmp fr1_r_receta
+fr2_r_open:
+  jjmp fr1_r_open
+fr2_r_colour:
+  jjmp fr1_r_colour
+fr2_r_read_place:
+  jjmp fr1_r_read_place
 fr2_r_cable:
   jjmp r_cable
+fr2_r_file:
+  jjmp fr1_r_file
+fr2_r_get_hex:
+  jjmp fr1_r_get_hex
+fr2_r_rec_key:
+  jjmp fr1_r_rec_key
+fr2_r_hash:
+  jjmp fr1_r_hash
+fr2_r_get_rec:
+  jjmp fr1_r_get_rec
+fr2_r_read_get:
+  jjmp fr1_r_read_get
+fr2_ul_cmp:
+  jjmp fr1_ul_cmp
+fr2_r_gesture:
+  jjmp fr1_r_gesture
 fr2_r_cable_flush:
   jjmp r_cable_flush
+fr2_r_rec_org:
+  jjmp fr1_r_rec_org
+fr2_r_put_num:
+  jjmp fr1_r_put_num
 fr2_r_cable_init:
   jjmp r_cable_init
 rp_s_next:

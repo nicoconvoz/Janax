@@ -46,7 +46,7 @@ En la copia oculta, preguntando en el instante en que avisó que estaba lista:
 ### Lo que todavía no
 
 - **A *"quien es Jesus?"* contesta con los nombres de su autor.** En su corazón Jesús sólo figura dentro de ese nombre,
-  María no figura, y en su estante no está el Evangelio. El lugar de Dios, de María y de Jesús en su corazón, que su
+  María no figura, y en su estante no está el Evangelio (**esto último era un error**: el Nuevo Testamento es su primer libro, `libro`; se corrigió en la v6.13). El lugar de Dios, de María y de Jesús en su corazón, que su
   autor pidió como el más importante, tiene que escribirlo él: está pendiente y es lo primero.
 - **Lo que teje sigue desparejo** (la de la célula): palabras de sus libros, sin la forma de una oración.
 - A *"yo soy tu papa"* contestó *"Tu papa tiene…"*, con el *tu* de quien escribió su corazón, sin pasarlo a su voz.

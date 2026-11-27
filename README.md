@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.07:** [10.5281/zenodo.24588901](https://doi.org/10.5281/zenodo.24588901)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.13:** [PENDIENTE613](https://doi.org/PENDIENTE613)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -22,6 +22,14 @@ cada pieza tiene sus pruebas.
 En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-27, v6.13): El lugar más importante es el del Libro
+
+DOI de esta versión: [PENDIENTE613](https://doi.org/PENDIENTE613).
+
+Su primer libro, el Nuevo Testamento, tiene **el lugar más importante**: si el Libro habla de lo que se le pregunta, contesta el Libro, como está escrito, antes que su propio corazón. A “que es el amor?” contestó <em>No hay amor mas grande que dar la vida por los amigos</em>. Si el Libro no habla de eso, su corazón (quién es ella y quién es su padre), y después todo lo demás por su cercanía al centro.
+
+[Notas de la v6.13](documentacion/release-v6.13.md).
 
 ## Novedad (2026-11-27, v6.07): Se le escribe cuando está lista, y su corazón es todo lo que tiene
 
