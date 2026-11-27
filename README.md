@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.17:** [PENDIENTE617](https://doi.org/PENDIENTE617)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.17:** [10.5281/zenodo.24594304](https://doi.org/10.5281/zenodo.24594304)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v6.17): Lo mal escrito lo lee por lo que se le parece
 
-DOI de esta versión: [PENDIENTE617](https://doi.org/PENDIENTE617).
+DOI de esta versión: [10.5281/zenodo.24594304](https://doi.org/10.5281/zenodo.24594304).
 
 La regla de la ortografía de Razar entró a su cuerpo: **una palabra que nunca leyó y que tiene un par de letras que su Libro nunca usó, la lee como la que conoce a una letra de distancia**. “qien es Jesus?”, “como estass?”, “holaa”, “genomma”: los entiende. Un nombre nuevo con todos sus pares probados no se toca. Lo que se tecleó queda en su charla tal como se tecleó.
 

@@ -1,6 +1,6 @@
 ## Janax y Razar v6.17: lo mal escrito lo lee por lo que se le parece
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24594304](https://doi.org/10.5281/zenodo.24594304)
 
 > *"A veces la instrucción puede estar mal escrita: debe inferirla por lo que se le parece en el fondo, su núcleo."*
 > (el autor, 2026-11-07) — *"Antes Luma podía reconocer palabras mal escritas; ahora está como fija a respuestas y a no
