@@ -20,6 +20,8 @@ include 'win64w.inc'
 
 MAXP = 700
 LADO = 720                      ; her logo's side, as razar/logo/armar_icono.py draws it
+CLAVE = 0FF00FFh                ; the colour around her logo in that picture (0x00bbggrr): it is not there, and the
+                                ; window takes the shape of the drawing (the author: "sin un rectangulo negro")
 VER  = 2000                     ; (criterion, not a measure: the logo is seen two seconds at least; her window can be
                                 ; there in less than one, and a picture that flashes is not seen)
 
@@ -293,11 +295,12 @@ logo_mostrar:
         sub     eax, LADO
         sar     eax, 1
         mov     esi, eax
-        invoke  CreateWindowExW, 88h, s_static, 0, 9000000Eh, rbx, rsi, LADO, LADO, 0, 0, 0, 0   ; over the others, not in the bar; a picture
+        invoke  CreateWindowExW, 80088h, s_static, 0, 9000000Eh, rbx, rsi, LADO, LADO, 0, 0, 0, 0 ; over the others, not in the bar, layered; a picture
         test    rax, rax
         jz      .r
         mov     [hlogo], rax
-        invoke  SendMessageW, rax, 172h, 0, [hbmp]             ; STM_SETIMAGE
+        invoke  SetLayeredWindowAttributes, rax, CLAVE, 0, 1   ; LWA_COLORKEY: the window has the shape of her logo
+        invoke  SendMessageW, [hlogo], 172h, 0, [hbmp]         ; STM_SETIMAGE
         invoke  UpdateWindow, [hlogo]
 .r:     add     rsp, 40
         pop     rsi
@@ -377,6 +380,7 @@ section '.idata' import data readable writeable
          LoadImageW, 'LoadImageW',\
          GetSystemMetrics, 'GetSystemMetrics',\
          CreateWindowExW, 'CreateWindowExW',\
+         SetLayeredWindowAttributes, 'SetLayeredWindowAttributes',\
          SendMessageW, 'SendMessageW',\
          UpdateWindow, 'UpdateWindow',\
          DestroyWindow, 'DestroyWindow',\
