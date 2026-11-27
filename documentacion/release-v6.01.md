@@ -1,6 +1,6 @@
 ## Janax y Razar v6.01: su corazón contesta primero, antes que cualquier libro
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24588240](https://doi.org/10.5281/zenodo.24588240)
 
 > *"Doc, responde cualquier cosa, no entiendo."* — *"Corregí y publicá urgente."* (el autor, 2026-11-27)
 

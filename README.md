@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.01:** [PENDIENTE601](https://doi.org/PENDIENTE601)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.01:** [10.5281/zenodo.24588240](https://doi.org/10.5281/zenodo.24588240)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v6.01): Su corazón contesta primero, antes que cualquier libro
 
-DOI de esta versión: [PENDIENTE601](https://doi.org/PENDIENTE601).
+DOI de esta versión: [10.5281/zenodo.24588240](https://doi.org/10.5281/zenodo.24588240).
 
 A “lumita yo soy tu papá” había contestado con una oración de enciclopedia sobre un papa: al mandar a sus libros lo que una costumbre no cubre se había salteado una regla anterior de su autor. Ahora **lo que sus costumbres no cubren se le pregunta primero a su corazón**, donde está escrito quién es ella y quién es su padre; sólo lo que su corazón no dice se busca en sus libros. Lo que teje sigue desparejo.
 
