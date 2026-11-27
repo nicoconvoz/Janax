@@ -120,8 +120,9 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}"""
 
 
 def envolver(titulo, cuerpo, raiz_rel, fuente):
-    nav = '<nav><a href="%s">Janax y Razar</a> · <a href="%sp/index.html">Documentación</a>%s</nav>' % (
-        raiz_rel, raiz_rel, (' · <a href="%s">Ver en GitHub</a>' % (REPO + fuente)) if fuente else "")
+    nav = ('<nav><a href="%s">Janax y Razar</a> · <a href="%sp/index.html">Manifiesto</a> · '
+           '<a href="%sp/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a>%s</nav>') % (
+        raiz_rel, raiz_rel, raiz_rel, (' · <a href="%s">Ver en GitHub</a>' % (REPO + fuente)) if fuente else "")
     return ('<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
             '<title>%s · Janax y Razar</title>\n<style>%s</style>\n</head>\n<body>\n%s\n%s\n</body>\n</html>\n') % (html.escape(titulo), ESTILO, nav, cuerpo)
 
@@ -140,10 +141,16 @@ def main():
         hechas.append((destino, titulo or rel, rel))
     notas = sorted((h for h in hechas if re.match(r"release-v[\d.]+\.html$", h[0])),
                    key=lambda h: [int(x) for x in re.findall(r"\d+", h[0])], reverse=True)
-    resto = [h for h in hechas if h not in notas]
+    tecnica = [h for h in hechas if h[0].startswith("especificacion/")]
+    resto = [h for h in hechas if h not in notas and h not in tecnica]
     lista = lambda hs: "<ul>" + "".join('<li><a href="%s">%s</a></li>' % (d, html.escape(t)) for d, t, _ in hs) + "</ul>"
-    indice = "<h1>Documentación de Janax y Razar</h1>\n<h2>Documentos</h2>\n%s\n<h2>Notas de cada versión</h2>\n%s" % (lista(resto), lista(notas))
-    escribir(os.path.join(SALIDA, "index.html"), envolver("Documentación", indice, "../", None))
+    cartel = ('<div style="border:3px solid #7a3e9d;background:#f3ecf8;padding:1rem;margin:1rem 0">'
+              '<strong>IMPORTANTE: Documentación Técnica para ingenieros expertos.</strong> La especificación del sistema '
+              'tal como está implementado (protocolos, formatos, pedidos, estructuras y algoritmos, con su referencia en el '
+              'código): <a href="especificacion/00-indice-y-arquitectura.html">entrá por el índice</a>.</div>')
+    indice = ("<h1>Janax y Razar</h1>\n%s\n<h2>Documentación Técnica</h2>\n%s\n<h2>Manifiesto</h2>\n%s\n"
+              "<h2>Notas de cada versión</h2>\n%s") % (cartel, lista(tecnica), lista(resto), lista(notas))
+    escribir(os.path.join(SALIDA, "index.html"), envolver("Manifiesto y Documentación Técnica", indice, "../", None))
     urls = [SITIO, SITIO + "p/index.html"] + [SITIO + "p/" + d for d, _, _ in hechas]
     escribir(os.path.join(RAIZ, "docs", "sitemap.xml"), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
              + "".join("  <url><loc>%s</loc></url>\n" % html.escape(u) for u in urls) + "</urlset>\n")

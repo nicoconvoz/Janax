@@ -14,6 +14,15 @@ cada pieza tiene sus pruebas.
 > en **dos núcleos, sin GPU y sin nube**.
 📖 **[Carta del autor](CARTA-DEL-AUTOR.md)** — la otra mitad: el diario espiritual, en audio y con licencia libre.
 
+> 🛠️ **IMPORTANTE: [Documentación Técnica para ingenieros expertos](documentacion/especificacion/00-indice-y-arquitectura.md)**
+> ([en la página](https://nicoconvoz.github.io/Janax/p/especificacion/00-indice-y-arquitectura.html)).
+> La especificación completa del sistema tal como está implementado: el idioma y su máquina virtual, el ensamblador,
+> el núcleo y su ABI de pedidos, Razar, Luma, el instalador y la publicación. Protocolos, formatos, estructuras y
+> algoritmos, cada afirmación con su referencia `ruta:línea` en el código.
+>
+> 📜 **[Manifiesto](https://nicoconvoz.github.io/Janax/p/index.html)**: el resto de `documentacion/`, el porqué y la
+> idea de cada pieza.
+
 
 > *English summary below.*
 

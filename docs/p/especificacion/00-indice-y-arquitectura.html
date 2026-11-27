@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación Técnica de Janax, Razar y Luma · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../../">Janax y Razar</a> · <a href="../../p/index.html">Manifiesto</a> · <a href="../../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/especificacion/00-indice-y-arquitectura.md">Ver en GitHub</a></nav>
+<h1>Documentación Técnica de Janax, Razar y Luma</h1>
+<blockquote><p><strong>Documentación técnica para ingenieros expertos.</strong> Especificación del sistema tal como está implementado: formatos, protocolos, códigos de pedido, estructuras de memoria y algoritmos, con su referencia <code>ruta:línea</code> en el código. Para el porqué y la idea del proyecto, ver el <strong>Manifiesto</strong> (el resto de <code>documentacion/</code>).</p></blockquote>
+<h2>Alcance y convenciones</h2>
+<ul><li>Describe la versión 6.17 (DOI <a href="https://doi.org/10.5281/zenodo.24594304">10.5281/zenodo.24594304</a>).</li><li>Cada afirmación lleva su referencia <code>ruta:línea</code>, relativa a la raíz del repositorio. Lo que no se pudo comprobar en el código está marcado <strong>(no verificado)</strong>.</li><li>Cada capítulo fue escrito a partir del código y revisado después por un auditor independiente, que contrastó sus citas contra la fuente.</li><li>Los números son literales de la fuente salvo que el texto diga otra cosa; los que son criterio y no medición están marcados así.</li></ul>
+<h2>Arquitectura en capas</h2>
+<pre><code>+-----------------------------------------------------------------+
+| Instalador y lanzador (Win32, assembler)            cap. 11     |
++-----------------------------------------------------------------+
+| Luma: cuerpo, conversación, pantalla        caps. 08, 09, 10    |
+|   generadores Python -&gt; luma.jsm (programa Janax)               |
++-----------------------------------------------------------------+
+| Razar: lectura, órganos, cardumen, canto        caps. 06, 07    |
++-----------------------------------------------------------------+
+| Núcleo JanaxOS: arranque, memoria, procesos,                    |
+|   ABI de pedidos, pantalla, teclado, vigía      caps. 03-05     |
++-----------------------------------------------------------------+
+| Idioma Janax (máquina virtual) y ensamblador PDP  caps. 01, 02  |
++-----------------------------------------------------------------+
+| Anfitrión: Windows x86-64                                       |
++-----------------------------------------------------------------+</code></pre>
+<p>Cada capa usa sólo la de abajo: Luma y Razar son programas en el idioma Janax, y hablan con el núcleo únicamente por pedidos (cap. 04). El núcleo es el único que toca al anfitrión.</p>
+<h2>Capítulos</h2>
+<table><tr><th>#</th><th>Capítulo</th><th>Contenido</th></tr><tr><td>01</td><td><a href="01-idioma-janax.html">El idioma Janax</a></td><td>Máquina virtual, codificación e instrucciones.</td></tr><tr><td>02</td><td><a href="02-ensamblador-pdp-y-construccion.html">El ensamblador PDP y la construcción</a></td><td>Ensamblador, cadena de construcción y herramientas.</td></tr><tr><td>03</td><td><a href="03-nucleo-arranque-memoria-procesos.html">Núcleo: arranque, memoria y procesos</a></td><td>Arranque, memoria, procesos, firmas y planificación.</td></tr><tr><td>04</td><td><a href="04-nucleo-abi-de-pedidos.html">Núcleo: ABI de pedidos</a></td><td>Las llamadas al sistema, una por una.</td></tr><tr><td>05</td><td><a href="05-nucleo-pantalla-teclado-vigia.html">Núcleo: pantalla, teclado y vigía</a></td><td>Pantalla, teclado, ventana, vigía y Venn.</td></tr><tr><td>06</td><td><a href="06-razar-lectura-y-organos.html">Razar: lectura y órganos</a></td><td>Lectura, órganos, recetas, juez y ortografía.</td></tr><tr><td>07</td><td><a href="07-razar-cardumen-canto-hilos.html">Razar: cardumen, canto e hilos</a></td><td>Cardumen, canto (<code>memoria_pares</code>), hilos y nitidez.</td></tr><tr><td>08</td><td><a href="08-luma-cuerpo-procesos-y-casa.html">Luma: cuerpo, procesos y casa</a></td><td>Cuerpo, generadores, procesos y formato de su casa.</td></tr><tr><td>09</td><td><a href="09-luma-conversacion-y-respuesta.html">Luma: conversación y respuesta</a></td><td>El protocolo de conversación y la construcción de una respuesta.</td></tr><tr><td>10</td><td><a href="10-luma-pantalla-lluvia-y-organos-vivos.html">Luma: pantalla y órganos vivos</a></td><td>Pantalla, lluvia hexadecimal, panel, criaturas y órganos vivos.</td></tr><tr><td>11</td><td><a href="11-instalador-lanzador-y-publicacion.html">Instalador, lanzador y publicación</a></td><td>Instalador, lanzador y proceso de publicación.</td></tr></table>
+<p>Orden de lectura sugerido: 01 → 04 para la base, después el subsistema que interese.</p>
+<h2>Pendiente</h2>
+<ul><li><strong>Glosario</strong> de los nombres propios del proyecto (cardumen, canto, órganos, casa, pedidos…): no está escrito todavía. Hasta entonces, cada capítulo define sus términos donde los usa.</li><li>La revisión cruzada entre capítulos (que dos capítulos no describan lo mismo de formas distintas) no se hizo.</li></ul>
+</body>
+</html>
