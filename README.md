@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.99:** [PENDIENTE599](https://doi.org/PENDIENTE599)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.99:** [10.5281/zenodo.24587951](https://doi.org/10.5281/zenodo.24587951)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v5.99): Teje su propia oración
 
-DOI de esta versión: [PENDIENTE599](https://doi.org/PENDIENTE599).
+DOI de esta versión: [10.5281/zenodo.24587951](https://doi.org/10.5281/zenodo.24587951).
 
 Ya no elige la mejor oración de sus libros: **teje la suya**. Las palabras sueltas que salen de la regla de los lugares son el índice; con ellas encuentra oraciones, que son la sustancia; y esas oraciones, sólo ellas, pasan por el canto de su cardumen. A “que es el genoma?” tejió una que no está en ningún libro: <em>…es El total del material genetico de un organismo e incluye los genes y tambien las secuencias no codificantes</em>. Todavía teje desparejo.
 

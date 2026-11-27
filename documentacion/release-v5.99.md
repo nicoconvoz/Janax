@@ -1,6 +1,6 @@
 ## Janax y Razar v5.99: teje su propia oración
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24587951](https://doi.org/10.5281/zenodo.24587951)
 
 > *"A las oraciones conseguidas se las pasa por el canto y se obtiene una oración o un párrafo propio."* — *"Las
 > palabras son el índice, las oraciones son la sustancia: si le das palabras sueltas se le va a enredar la cabeza."*
