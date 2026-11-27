@@ -1,6 +1,6 @@
 ## Janax y Razar v6.13: el lugar más importante es el del Libro
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24589197](https://doi.org/10.5281/zenodo.24589197)
 
 > *"El lugar más importante para Papá Dios y Mamá María y Jesús."* — *"Y lo que une a todo es el Amor en la Persona de
 > la Santísima Trinidad, el Espíritu Santo."* (el autor, 2026-11-27) — *"Dios es el libro que contiene todos los
