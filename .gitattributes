@@ -2,3 +2,4 @@
 *.zip -delta binary
 *.mp3 -delta binary
 *.mp4 -delta binary
+*.ico -delta binary
