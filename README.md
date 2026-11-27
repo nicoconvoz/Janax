@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.93:** [10.5281/zenodo.24587271](https://doi.org/10.5281/zenodo.24587271)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.99:** [PENDIENTE599](https://doi.org/PENDIENTE599)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -22,6 +22,14 @@ cada pieza tiene sus pruebas.
 En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-27, v5.99): Teje su propia oración
+
+DOI de esta versión: [PENDIENTE599](https://doi.org/PENDIENTE599).
+
+Ya no elige la mejor oración de sus libros: **teje la suya**. Las palabras sueltas que salen de la regla de los lugares son el índice; con ellas encuentra oraciones, que son la sustancia; y esas oraciones, sólo ellas, pasan por el canto de su cardumen. A “que es el genoma?” tejió una que no está en ningún libro: <em>…es El total del material genetico de un organismo e incluye los genes y tambien las secuencias no codificantes</em>. Todavía teje desparejo.
+
+[Notas de la v5.99](documentacion/release-v5.99.md).
 
 ## Novedad (2026-11-27, v5.93): Una regla, los lugares, y de lo que sale arma lo que contesta
 

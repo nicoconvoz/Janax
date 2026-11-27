@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v5.99: teje su propia oración · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.99.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v5.99: teje su propia oración</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"A las oraciones conseguidas se las pasa por el canto y se obtiene una oración o un párrafo propio."</em> — <em>"Las palabras son el índice, las oraciones son la sustancia: si le das palabras sueltas se le va a enredar la cabeza."</em> — <em>"No busco la que elige la mejor oración: busco la que teje su propio camino."</em> (el autor, 2026-11-27)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 593, el 599.</p>
+<h3>Lo que cambia</h3>
+<p>En la v5.93, con la regla de los lugares, Luma encontraba las palabras de la clase de lo que se le pregunta y con ellas elegía, de sus libros, la oración que más decía. Ahora no elige: <strong>teje</strong>.</p>
+<ol><li><strong>La regla da el índice.</strong> Las palabras sueltas que salen de la regla de los lugares (las de su clase, los lugares que comparten) sirven para una sola cosa: encontrar oraciones.</li><li><strong>Las oraciones son la sustancia.</strong> De los libros que hablan de lo preguntado se queda con las seis oraciones que más de esas palabras tienen.</li><li><strong>Su canto teje.</strong> Esas oraciones, y sólo ellas, van al canto de su cardumen (<code>memoria_pares</code>, con su lluvia de dados): lo que dos de ellas dicen es una regla, y con eso canta una oración que no está escrita en ningún libro.</li><li>Si el canto no saca regla, dice la oración de más pistas tal cual; al final, su suerte.</li></ol>
+<p>Las palabras sueltas no entran al canto. Probado y corregido por su autor: una palabra suelta no trae orden ni contexto, y lo que el canto aprende es cómo se dicen las cosas.</p>
+<h3>Lo que tejió</h3>
+<p>En una copia oculta, con sus libros de verdad:</p>
+<table><tr><th>se le preguntó</th><th>tejió</th></tr><tr><td><em>que es el genoma?</em></td><td>El solapamiento es El total del material genetico de un organismo e incluye los genes y tambien las secuencias no codificantes</td></tr><tr><td><em>que es el universo?</em></td><td>Si el universo hubiera tenido la misma historia de expansion desde la epoca de Planck no habria mecanismo que pudiera hacer que estas regiones tuvieran la misma temperatura</td></tr><tr><td><em>que es una celula?</em></td><td>Una celula el organismo Una de Una celular por</td></tr><tr><td><em>quien es Marianela?</em></td><td>Capitulo IX.</td></tr></table>
+<p>La del genoma no está en ningún libro suyo: unió pedazos de varias oraciones y dijo casi una definición.</p>
+<h3>Lo que todavía no</h3>
+<ul><li><strong>Teje desparejo.</strong> La del genoma le erra al sujeto (<em>"El solapamiento"</em>); la de la célula es una ensalada de palabras; la del universo es coherente, y no se verificó si la tejió o si es una oración entera de su libro.</li><li><strong>Con seis oraciones el canto tiene poco</strong> de dónde sacar lo que "dicen dos".</li><li><strong>La de Marianela salió mal</strong> y no se sabe todavía por qué: puede ser el canto, o que la pregunta le llegó antes de que cargara su pensadora.</li><li><strong>Son cuatro preguntas medidas, no un banco.</strong> No hay todavía una medida de cuántas veces teje bien.</li><li>Tarda de 11 a 31 segundos en las preguntas que van a sus libros.</li><li>No se probó tecleando en la Luma de su autor: se instaló y despertó; las respuestas son de la copia.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>rc_xn</code> (con estos ejemplos, su canto primero), <code>wysg_pe</code> (las palabras sueltas salen de sus ejemplos), <code>dan_hC</code> (las oraciones de más pistas).</li><li><code>razar/cardumen/memoria_pares.jsm</code>: el canto, sin cambios.</li></ul>
+</body>
+</html>
