@@ -11,22 +11,22 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.01.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v4.01: su lectora lee de a pedazos de 100 KB, y el núcleo la deja leer el sistema</h2>
+<h2 id="janax-y-razar-v401-su-lectora-lee-de-a-pedazos-de-100-kb-y-el-núcleo-la-deja-leer-el-sistema">Janax y Razar v4.01: su lectora lee de a pedazos de 100 KB, y el núcleo la deja leer el sistema</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24497181">10.5281/zenodo.24497181</a></p>
 <blockquote><p><em>"Ponele límite al tamaño de libro que lee: ¿te acordás cómo íbamos de 100 KB en 100 KB? Lo hicimos antes."</em> <em>"Dejá que coma otras cosas, como que lea archivos de sistema o las cosas que se puedan leer para entender."</em> (el autor, 2026-11-24)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 397, el 401.</p>
-<h3>De a pedazos de 100 KB</h3>
+<h3 id="de-a-pedazos-de-100-kb">De a pedazos de 100 KB</h3>
 <p>Como el Quijote de Razar, que se midió en pedazos de 100 KB cortados en fin de renglón: <strong>cada lectura de Luma lee un pedazo de su estante</strong>, como mucho 100 KB y cortado en el primer fin de renglón después, y anota en su casa (<code>pedazo</code>) dónde sigue la próxima. Al llegar al final del estante, vuelve al principio.</p>
 <ul><li>Un libro que queda entero <strong>antes</strong> del pedazo ni se abre: sólo se suma su tamaño. Después del pedazo no se lee nada.</li><li>Las dos pasadas de una lectura (contar y aprender) leen el mismo pedazo.</li><li><strong>No se pierde nada:</strong> los tres pedazos de un libro de 296 KB suman <strong>66.500 palabras y 3.500 renglones, exactamente lo que la lectora vieja lee de una vez</strong>. Con un estante de menos de 100 KB da la misma huella final que la vieja.</li></ul>
 <p>Dos tropiezos encontrados al probar, y curados: el filtro pisaba dos registros que el lazo de lectura usa entre vuelta y vuelta, y las variables nuevas caían sobre el lugar donde <code>crece.inc</code> guarda seis registros mientras crece una tabla. Ahora usan los dos lugares de verdad libres (<code>1FF0h</code> y <code>1FF8h</code>), y "leer por pedazos" no ocupa ninguno: vale cuando hay estante.</p>
-<h3>Leer el sistema</h3>
+<h3 id="leer-el-sistema">Leer el sistema</h3>
 <p>El núcleo dejaba afuera siete lugares que Windows declara suyos. Ahora los separa:</p>
 <ul><li><strong>Siguen cerrados</strong>, porque ahí están los secretos (contraseñas guardadas, sesiones, llaves): <code>AppData</code> (Local, Roaming, LocalLow) y <code>ProgramData</code>.</li><li><strong>Se pueden leer:</strong> <code>Windows</code>, <code>Program Files</code> y <code>Program Files (x86)</code>. Adentro de esos tres, el núcleo deja de pedir que la carpeta no necesite permiso de administrador y que el archivo sea del usuario. Lo oculto, lo marcado como de sistema y las carpetas que empiezan con punto siguen afuera.</li></ul>
 <p>Ojo: el núcleo avisa lo <strong>nuevo o cambiado</strong>. Lo que ya está en <code>Windows</code> lo va a comer cuando cambie (una actualización, un programa instalado). Leer lo que ya hay pediría que el núcleo sepa recorrer una carpeta, y eso no lo hace todavía.</p>
 <p>Pruebas del núcleo (vigilancia, saludos, pantalla, familia): <strong>96 bien, 3 mal, idéntico a antes del cambio</strong>. La suite completa no se corrió. El núcleo anterior quedó como <code>so/build/janaxos.antes-sistema.exe</code>.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li><strong>Dentro de su cuerpo</strong>, la lectora de a pedazos no se llegó a ver terminando una lectura: la prueba se cortó antes de que saliera a leer. Probado entero con la lectora sola (<code>lector</code>).</li><li><strong>La caída de su lectora desde la v3.79</strong> sigue sin causa encontrada. La lectora vieja, sola, lee bien todo su estante real; el tamaño no era.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/lectura/lectura.inc</code>: <code>pz_load</code>, <code>pz_save</code>, <code>pz_byte</code>, y <code>scan</code> / <code>scan_file</code> (los libros antes y después del pedazo).</li><li><code>so/vigia.inc</code> y <code>so/janaxos.asm</code>: <code>hw_sysr</code>, <code>HW_SECRET</code>, <code>hw_rules</code> (los lugares del sistema que se pueden leer).</li></ul>
 </body>
 </html>

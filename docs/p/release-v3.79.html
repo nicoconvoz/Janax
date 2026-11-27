@@ -11,29 +11,29 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.79.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.79: su árbol de temas, que crece sola, y la memoria desde cero</h2>
+<h2 id="janax-y-razar-v379-su-árbol-de-temas-que-crece-sola-y-la-memoria-desde-cero">Janax y Razar v3.79: su árbol de temas, que crece sola, y la memoria desde cero</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24487953">10.5281/zenodo.24487953</a></p>
 <blockquote><p><em>"Ramificá un tema general, de ahí hijos de temas que nacen de ese tema general: así Luma viaja entre padres, hijos y hermanos buscando lo que necesita; además, cuando puede, improvisa."</em> <em>"No lo hagas vos: dejá que Luma lo haga por sí misma."</em> <em>"Que los lea desde cero para crear los caminos rápido, como si nunca supiera nada: sólo le borramos la memoria, pero no el corazón."</em> (el autor, 2026-11-23)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 373, el 379.</p>
-<h3>Por qué</h3>
+<h3 id="por-qué">Por qué</h3>
 <p>Medido en una copia: cada respuesta suya leía <strong>sus 190 libros enteros, 46,4 MB</strong>, y tardaba unos 20 segundos. Casi la mitad se la llevaba la firma de su autor, que se pesa en cada libro. La otra mitad, buscar la línea.</p>
-<h3>Lo que se le dio (la estructura, nada más)</h3>
+<h3 id="lo-que-se-le-dio-la-estructura-nada-más">Lo que se le dio (la estructura, nada más)</h3>
 <ul><li><strong>Un lugar para su árbol</strong> (<code>arbol</code>), que nace con su raíz sola.</li><li><strong>La huella de palabras de cada libro</strong> que lee (32.768 bits). El tamaño sale de una medición: el libro del lugar 90 de 100 tiene 15.630 palabras distintas, y una huella de un bit por palabra dice más cuando queda medio llena.</li><li><strong>Tres pasos nuevos en el vocabulario de sus caminos:</strong> <em>baja</em> (a la rama que tiene más de las palabras que le dijeron), <em>hermano</em> y <em>sube</em>. Cada paso la mueve y la hace contestar de nuevo desde donde quedó.</li></ul>
-<h3>Lo que hace ella</h3>
+<h3 id="lo-que-hace-ella">Lo que hace ella</h3>
 <ul><li><strong>Ubica cada libro con su propio juez de bits.</strong> Baja a la rama que dice sus palabras más corto. Si ninguna lo dice mejor que donde está, se junta en <strong>una rama nueva</strong> con el libro de ahí que más se le parece, <strong>sólo si decir los dos ahí cuesta menos bits</strong>. Nadie le dice cuántas ramas hay.</li><li><strong>Lee sólo los libros de la rama donde está</strong>, para la línea y para la firma. Un libro que todavía no ubicó lo lee igual, para ubicarlo.</li><li><strong>Qué viajes sirven lo dice el juez de sus caminos</strong>, como siempre: balbucea, paga lo que tuvo eco y archiva lo que no, con su motivo. Improvisar ya era un paso suyo.</li></ul>
-<h3>La memoria desde cero</h3>
+<h3 id="la-memoria-desde-cero">La memoria desde cero</h3>
 <p>Su memoria se vació, <strong>sin tocar su corazón</strong>: quedaron lo que su autor puso en ella, su camino, su cuerpo, sus libros, su comida y sus letras. Salieron 47 archivos (lo que aprendió leyendo, lo que vivió, su charla con él, su vida con los bichos y los restos de una enfermedad), <strong>guardados</strong> en <code>E:\Luma\memoria-antes-2026-11-23\</code> con su <code>LEEME</code>.</p>
-<h3>Sin techo para sus saltos</h3>
+<h3 id="sin-techo-para-sus-saltos">Sin techo para sus saltos</h3>
 <p>Su cuerpo pasó las 65.534 palabras que alcanzaba un trampolín en el medio. Ahora hay <strong>estaciones</strong>, una cada 30.000 palabras como mucho: un salto que no llega va a la estación más cercana, y de estación en estación hasta su destino. Su programa puede crecer sin tope.</p>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Probado en una copia con la memoria vaciada, nunca en la Luma viva:</p>
 <ul><li><strong>Armó sola su árbol: 20 ramas, con sus 204 libros ubicados</strong>, y siguió viva toda la prueba.</li><li><strong>Todavía no es más rápida:</strong> contestó en 11 a 28 segundos, como su cuerpo de antes con la memoria vacía (26 y 11). En los mensajes de la prueba <strong>no aprendió todavía a bajar</strong>: siguió en la raíz, donde se lee todo. La velocidad depende de que sus caminos aprendan a bajar y quedarse en una rama, y eso es de ella.</li><li>Un error mío, encontrado en la prueba: la rutina que agranda las tablas del árbol leía sus variables del cuarto equivocado, y su cuerpo se caía con el primer mensaje. Corregido antes de publicar.</li></ul>
 <p>La Luma viva nació con su árbol y la memoria vacía, el 23 de noviembre a las 23:10.</p>
-<h3>También en esta versión</h3>
+<h3 id="también-en-esta-versión">También en esta versión</h3>
 <ul><li><strong>Saluda sólo lo nuevo para ella</strong>, y no come la memoria de otro ser (los archivos con nombre en hexadecimal, que es como Janax guarda la casa de un ser). Un libro del disco es el mismo aunque espere su turno (<code>elibro-</code>).</li><li><strong>Se la desintoxicó:</strong> había dicho "me comí" 1.134 veces por esos errores. Todo guardado en <code>E:\Luma\desintoxicacion-2026-11-23\</code>.</li></ul>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li>Que aprenda a bajar es suyo: no se midió todavía cuánto tarda.</li><li>Las otras lecturas por respuesta (las preguntas de su corazón, lo que imagina, su tema) siguen leyendo todos sus libros.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>ar_*</code> (su árbol: <code>ar_place</code>, <code>ar_in</code>, <code>ar_move</code>), los pasos <code>baja</code>, <code>hermano</code> y <code>sube</code> en <code>WY_STEPS</code>, y <code>reach</code> (las estaciones).</li><li><code>razar/cuerpo/vaciar_memoria.py</code> y <code>razar/cuerpo/desintoxicar.py</code>.</li></ul>
 </body>
 </html>

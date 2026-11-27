@@ -4,30 +4,30 @@ Este capítulo especifica los servicios del núcleo JanaxOS (modo simbiosis sobr
 programas Janax con el anfitrión fuera del sistema de archivos propio: la pantalla de Janax (modelo de imagen,
 ventana del anfitrión, pintado), la entrada (puntero, teclado, portapapeles), el sonido, el vigía de carpetas del
 anfitrión (`JANAX_VIGIA`), el bucle del centinela que duerme sobre todas esas fuentes de eventos, el motor de
-selección Venn y la ventanita al anfitrión (`jhost`) del escalón 0 y de JanaxOS. No cubre: el idioma Janax y su
-codificación de palabras (capítulo 01), el ensamblador PDP y la construcción (02), el arranque, la memoria, las salas
-y la planificación de procesos (03), el formato general de la cola de pedidos, los porteros y las firmas (04), la
-lectura de Razar (06), el cardumen (07), el cuerpo y la casa de Luma (08), la conversación (09), la pantalla y la
-vida de Luma, incluida su fuente tipográfica y la composición de imágenes (10), ni el instalador y la publicación
-(11). Las rutas citadas son relativas a la raíz del repositorio; `archivo:línea` o `archivo:inicio-fin` remiten al
+selección Venn y la [ventanita al anfitrión (`jhost`)](#12-ventanita-al-anfitrión-jhost) del escalón 0 y de JanaxOS. No cubre: el idioma Janax y su
+codificación de palabras ([capítulo 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador PDP y la construcción ([02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), el arranque, la memoria, las salas
+y la planificación de procesos ([03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), el formato general de la cola de pedidos, los porteros y las firmas ([04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)), la
+lectura de Razar ([06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), [el cardumen](07-razar-cardumen-canto-hilos.md#4-el-cubo-la-escuela) ([07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo y [la casa](08-luma-cuerpo-procesos-y-casa.md#8-formato-de-la-casa) de Luma ([08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), la conversación ([09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)), la pantalla y la
+vida de Luma, incluida su fuente tipográfica y la composición de imágenes ([10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)), ni el instalador y la publicación
+([11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)). Las rutas citadas son relativas a la raíz del repositorio; `archivo:línea` o `archivo:inicio-fin` remiten al
 código que sustenta cada afirmación.
 
 ## 1. Definiciones y notación
 
 | Término | Definición |
 |---|---|
-| Cabina | Un proceso de JanaxOS. Su estructura se describe en el capítulo 03; aquí se usan los campos `P_*` de la §2.3. |
-| Toque | Una ejecución de `jsys` sobre una cola de pedidos, atendida por la rutina `ventanilla` (`so/janaxos.asm:2224-2451`). |
-| Pantalla de la ventanilla | Servidor interno sintonizado a una clase de pedido (`tune`, `nscreens`, `so/janaxos.asm:174-176`). No tiene relación con la imagen; el contador `pantallas=` del informe final (`so/janaxos.asm:1143-1164`) se refiere a ellos. Detalle en el capítulo 04. |
+| Cabina | Un proceso de JanaxOS. Su estructura se describe en el [capítulo 03](03-nucleo-arranque-memoria-procesos.md#52-bloque-de-proceso); aquí se usan los campos `P_*` de la [§2.3](#23-campos-de-cabina-usados). |
+| Toque | Una ejecución de [`jsys`](01-idioma-janax.md#58-jsys-janax-os) sobre una [cola de pedidos](04-nucleo-abi-de-pedidos.md#4-formato-de-la-cola-de-pedidos), atendida por la rutina `ventanilla` (`so/janaxos.asm:2224-2451`). |
+| Pantalla de la ventanilla | Servidor interno sintonizado a una clase de pedido (`tune`, `nscreens`, `so/janaxos.asm:174-176`). No tiene relación con la imagen; el contador `pantallas=` del informe final (`so/janaxos.asm:1143-1164`) se refiere a ellos. Detalle en el [capítulo 04](04-nucleo-abi-de-pedidos.md#5-procesamiento-de-un-toque). |
 | Pantalla de Janax | La imagen que los programas muestran y la ventana del anfitrión que la presenta (`so/pantalla.inc`). En este capítulo "pantalla" significa siempre esto. |
-| Nube | Archivo o bloque de memoria en formato `.nube` versión 3 (§4.1). El núcleo dibuja el primer nivel de una nube. |
+| Nube | Archivo o bloque de memoria en formato `.nube` versión 3 ([§4.1](#41-formato-nube-versión-3-lo-que-lee-el-núcleo)). El núcleo dibuja el primer nivel de una nube. |
 | Celda | Un elemento de la rejilla de un nivel de nube. Una celda es un píxel lógico de la pantalla. |
 | Partícula | Una celda marcada (bit a 1) de la rejilla; tiene un color RGB. |
 | Campana | Un evento del anfitrión (objeto de sincronización de Windows) que el núcleo usa para despertar. |
-| Hilo de la ventana | Hilo del anfitrión que posee la ventana y su bucle de mensajes (`screen_thread`). Lo crea el primer pedido 40 que supera la validación, si `JANAX_SIN_VENTANA` no está definida (`so/pantalla.inc:272-282`). |
+| Hilo de la ventana | Hilo del anfitrión que posee la ventana y su bucle de mensajes (`screen_thread`). Lo crea el primer [pedido 40](04-nucleo-abi-de-pedidos.md#98-pantalla-sonido-y-portapapeles) que supera la validación, si `JANAX_SIN_VENTANA` no está definida (`so/pantalla.inc:272-282`). |
 | Centinela | La rutina `watch_wait` (`so/ambientes.inc:1680-1820`): un remero que, cuando nadie rema, duerme sobre las campanas de carpetas y de pantalla. |
 | Vigía | La parte del centinela que observa carpetas del anfitrión nombradas en `JANAX_VIGIA` (`so/vigia.inc`). |
-| Remero | Hilo del núcleo que ejecuta cabinas (capítulo 03, `so/remos.inc`). |
+| Remero | Hilo del núcleo que ejecuta cabinas ([capítulo 03](03-nucleo-arranque-memoria-procesos.md#13-remeros), `so/remos.inc`). |
 | Cerrojo del núcleo | Sección crítica `kern_lock`, tomada con `kern_enter` y liberada con `kern_leave`. |
 | Cerrojo de pantalla | Sección crítica `scr_lock` (`so/pantalla.inc:27`), compartida entre el núcleo y el hilo de la ventana. |
 
@@ -43,7 +43,7 @@ estándar de Win32 que provee `win64a.inc` (`so/janaxos.asm:33`); se indican ent
 
 | Inclusión | Valor de `PANTALLA_PARTE` | Contenido | Fuente |
 |---|---|---|---|
-| Sección de datos | 0 | Estado de la pantalla (§5.1). | `so/janaxos.asm:571-572`, `so/pantalla.inc:12-66` |
+| Sección de datos | 0 | Estado de la pantalla ([§5.1](#51-estado-pantalla_parte--0)). | `so/janaxos.asm:571-572`, `so/pantalla.inc:12-66` |
 | Sección de código | 1 | Rutinas. | `so/janaxos.asm:2018-2019`, `so/pantalla.inc:68-1027` |
 
 El archivo se declara como implementación Windows de un puerto: otro anfitrión debe proveer un `pantalla.inc` con los
@@ -66,7 +66,7 @@ Bibliotecas del anfitrión importadas para estos servicios: `USER32.DLL`, `GDI32
 
 ### 2.2 Pedidos de este capítulo
 
-Formato de la entrada de cola: capítulo 04 §4.2 (32 bytes: `kind` dword en +0, `a` en +8, `b` en +16, `respuesta`
+Formato de la entrada de cola: [capítulo 04 §4.2](04-nucleo-abi-de-pedidos.md#42-entrada-32-bytes) (32 bytes: `kind` dword en +0, `a` en +8, `b` en +16, `respuesta`
 en +24). La ventanilla copia las entradas enteras de vuelta a la cola al final, de modo que una reescritura de `b`
 llega al programa (`so/janaxos.asm:2432-2441`).
 
@@ -81,7 +81,7 @@ llega al programa (`so/janaxos.asm:2432-2441`).
 | 47 | copiar | 1 pantalla | `R_SCREEN` | 1 | `serve_copy` | `so/janaxos.asm:222`, `228`, `239` |
 
 "Importante" = 1 significa que el pedido de una cabina que no es hija del núcleo requiere la firma del padre
-(capítulo 04 §7.3). La asignación de servidores está en `serve_table` (`so/janaxos.asm:210-216`). Para 27 y 39 la
+([capítulo 04 §7.3](04-nucleo-abi-de-pedidos.md#73-pedidos-importantes-y-firma-del-padre)). La asignación de servidores está en `serve_table` (`so/janaxos.asm:210-216`). Para 27 y 39 la
 entrada de `serve_table` es `serve_assoc` y `serve_hostnew`, generadas por la macro `serve_gate`
 (`so/janaxos.asm:3861-3882`, `4387`, `4421`), que recorre las entradas de esa clase y llama, para cada una, a
 `gate_assoc` o `gate_hostnew` con `r13` = desplazamiento de la entrada en el libro del toque. `R_SCREEN` = 1,
@@ -91,16 +91,16 @@ Resumen de argumentos y respuestas (detalle en las secciones citadas):
 
 | Clase | `a` | `b` | Respuesta | Sección |
 |---|---|---|---|---|
-| 27 | número de cabina de la familia | palabra Venn | 0, o -1 | §11.6 |
-| 39 | dirección destino | bytes disponibles | bytes de la ruta UTF-8; 0 nada nuevo; -1 | §10.8 |
-| 40 | dirección de la nube | bytes de la nube | partículas dibujadas, o -1 | §4 |
-| 41 | dirección del registro de 32 bytes | espera máxima en ms (reescrito) | 1, 0 o -1 | §8 |
-| 43 | dirección del texto | bytes | letras del título, o -1 | §5.9 |
-| 44 | mensaje MIDI en los 24 bits bajos | — | 1, 0 o -1 | §9 |
-| 47 | dirección del texto UTF-8 | bytes | unidades UTF-16, 0, o -1 | §7.4 |
+| 27 | número de cabina de la familia | palabra Venn | 0, o -1 | [§11.6](#116-protocolo-de-asociación-pedido-27) |
+| 39 | dirección destino | bytes disponibles | bytes de la ruta UTF-8; 0 nada nuevo; -1 | [§10.8](#108-entrega-pedido-39) |
+| 40 | dirección de la nube | bytes de la nube | partículas dibujadas, o -1 | [§4](#4-modelo-de-imagen-pedido-40-mostrar) |
+| 41 | dirección del registro de 32 bytes | espera máxima en ms (reescrito) | 1, 0 o -1 | [§8](#8-esperar-un-evento-pedido-41) |
+| 43 | dirección del texto | bytes | letras del título, o -1 | [§5.9](#59-título-pedido-43) |
+| 44 | mensaje MIDI en los 24 bits bajos | — | 1, 0 o -1 | [§9](#9-sonido-pedido-44) |
+| 47 | dirección del texto UTF-8 | bytes | unidades UTF-16, 0, o -1 | [§7.4](#74-copiar-pedido-47) |
 
-En 40, 43 y 47 el bloque `[a, a+b)` debe estar entero dentro de una sala de la cabina (`cabin_at`, capítulo 04
-§6.3); si no, la respuesta es -1 (`so/janaxos.asm:2697-2698`, `2731-2732`, `2765-2766`). El pedido 44 no valida
+En 40, 43 y 47 el bloque `[a, a+b)` debe estar entero dentro de una sala de la cabina (`cabin_at`, [capítulo 04
+§6.3](04-nucleo-abi-de-pedidos.md#63-validación-de-punteros-cabin_at)); si no, la respuesta es -1 (`so/janaxos.asm:2697-2698`, `2731-2732`, `2765-2766`). El pedido 44 no valida
 `a` como dirección (`so/janaxos.asm:2795-2797`).
 
 ### 2.3 Campos de cabina usados
@@ -110,13 +110,13 @@ En 40, 43 y 47 el bloque `[a, a+b)` debe estar entero dentro de una sala de la c
 | `P_DONE` | 184 | ≠ 0: la cabina terminó. | `so/janaxos.asm:53` |
 | `P_GATES` | 224 | Porteros por puerta; `P_GATES + (puerta-1)·8`. | `so/janaxos.asm:58`, `2294` |
 | `P_WAITING` | 264 | Esperas pendientes del toque suspendido. | `so/janaxos.asm:61` |
-| `P_ROOMS`, `P_NROOMS` | 288, 296 | Cartel de salas (adaptador Venn, §11.5). | `so/janaxos.asm:64-65` |
+| `P_ROOMS`, `P_NROOMS` | 288, 296 | Cartel de salas (adaptador Venn, [§11.5](#115-adaptador-de-cartel)). | `so/janaxos.asm:64-65` |
 | `P_PARTNER`, `P_ASSOC` | 536, 544 | Pareja y palabra Venn de la asociación (27). | `so/janaxos.asm:95-96` |
 | `P_GREET`, `P_NGREET` | 552, 560 | Lista de quienes la saludaron. | `so/janaxos.asm:97-98` |
 | `P_GWAIT` | 568 | 1: espera un saludo (29); 2: nadie puede saludarla. | `so/janaxos.asm:99` |
 | `P_WATCH`, `P_WATCHN` | 592, 600 | Prefijos de etiqueta vigilados (32). | `so/janaxos.asm:102-104` |
 | `P_HOSTW` | 640 | 1: pidió lo nuevo del anfitrión (39) alguna vez. Nunca se vuelve a 0. | `so/janaxos.asm:109`, `so/vigia.inc:666` |
-| `P_SCRW` | 648 | Estado de espera sobre la pantalla (§8.2). | `so/janaxos.asm:110` |
+| `P_SCRW` | 648 | Estado de espera sobre la pantalla ([§8.2](#82-estados-de-p_scrw)). | `so/janaxos.asm:110` |
 | `P_SCRDL` | 656 | Plazo de esa espera en ms; `FOREVER` = sin plazo. | `so/janaxos.asm:111` |
 
 `FOREVER` = 7FFFFFFFFFFFFFFFh (`so/janaxos.asm:42`).
@@ -125,12 +125,12 @@ En 40, 43 y 47 el bloque `[a, a+b)` debe estar entero dentro de una sala de la c
 
 | Variable | Leída por | Efecto | Fuente |
 |---|---|---|---|
-| `JANAX_SIN_VENTANA` | `screen_show`, una vez (primer pedido 40) | Con cualquier valor: nunca se crea ventana; el resto de la pantalla responde igual (§5.10). | `so/pantalla.inc:17`, `203-210` |
-| `JANAX_VENTANA_FONDO` | `screen_show`, en cada pedido 40 | Con cualquier valor: la ventana nace al fondo del orden Z, sin activarse (§5.4). Una vez fijada la marca no se borra. | `so/pantalla.inc:18`, `211-215`, `374-377` |
-| `JANAX_VIGIA` | `hw_start`, al arrancar | Carpetas del anfitrión que vigila el vigía, separadas por `;` (§10.2). | `so/janaxos.asm:307`, `so/vigia.inc:18` |
-| `JANAX_ARCHIVOS` | arranque | Carpeta propia del sistema; excluida del vigía (§10.6). | `so/janaxos.asm:283-284`, `697-708` |
+| `JANAX_SIN_VENTANA` | `screen_show`, una vez (primer [pedido 40](04-nucleo-abi-de-pedidos.md#98-pantalla-sonido-y-portapapeles)) | Con cualquier valor: nunca se crea ventana; el resto de la pantalla responde igual ([§5.10](#510-modo-sin-ventana)). | `so/pantalla.inc:17`, `203-210` |
+| `JANAX_VENTANA_FONDO` | `screen_show`, en cada pedido 40 | Con cualquier valor: la ventana nace al fondo del orden Z, sin activarse ([§5.4](#54-mostrar-y-modo-fondo)). Una vez fijada la marca no se borra. | `so/pantalla.inc:18`, `211-215`, `374-377` |
+| `JANAX_VIGIA` | `hw_start`, al arrancar | Carpetas del anfitrión que vigila el vigía, separadas por `;` ([§10.2](#102-configuración)). | `so/janaxos.asm:307`, `so/vigia.inc:18` |
+| `JANAX_ARCHIVOS` | arranque | Carpeta propia del sistema; excluida del vigía ([§10.6](#106-recepción-de-una-notificación-hw_told)). | `so/janaxos.asm:283-284`, `697-708` |
 | `JANAX_TABLERO` | arranque | Carpeta tablero; excluida del vigía y vigilada por el centinela. | `so/janaxos.asm:290`, `709-710` |
-| `JANAX_SIN` | `host_init` (escalón 0) | Nombres de pedidos que la ventanita no ofrece (§12.3). | `escalon0/ventanita_datos.inc:12`, `escalon0/ventanita.inc:104-163` |
+| [`JANAX_SIN`](01-idioma-janax.md#77-reducción-del-catálogo-en-windows-janax_sin) | `host_init` (escalón 0) | Nombres de pedidos que la ventanita no ofrece ([§12.3](#123-escalón-0-host_service)). | `escalon0/ventanita_datos.inc:12`, `escalon0/ventanita.inc:104-163` |
 
 Las variables de pantalla se leen con `GetEnvironmentVariableA` sobre el búfer `env_value` (32 bytes,
 `so/janaxos.asm:472`), pasando `nSize` = 31; sólo se evalúa si el resultado es distinto de 0, por lo que un valor de
@@ -181,7 +181,7 @@ número de bits a 1 de la rejilla.
 Además responde -1 si no se puede reservar memoria para el búfer de píxeles (`so/pantalla.inc:228-230`,
 `292-295`). Este caso sí altera el estado: el búfer anterior ya fue liberado y quedan `scr_pix` = 0 y `scr_cap` = 0,
 mientras `scr_w`, `scr_h` y `scr_bmi` conservan los valores de la nube anterior (`so/pantalla.inc:223-227`). Hasta el
-siguiente pedido 40 aceptado, la ventana pinta sólo negro (§5.6) y `screen_cell` sigue usando las dimensiones
+siguiente [pedido 40](04-nucleo-abi-de-pedidos.md#98-pantalla-sonido-y-portapapeles) aceptado, la ventana pinta sólo negro ([§5.6](#56-pintado)) y `screen_cell` sigue usando las dimensiones
 anteriores. Fuera de estos casos responde `P` (`so/pantalla.inc:289-291`).
 
 ### 4.3 Resolución lógica y búfer de píxeles
@@ -204,11 +204,11 @@ El núcleo no ofrece pedidos de píxel suelto, rectángulo, línea ni texto, ni 
 referencias a fuentes ni a `TextOut`/`DrawText` en `so/`). Un programa dibuja componiendo en su propia memoria una
 nube completa y enviándola con el pedido 40; cada pedido reemplaza la imagen entera. La rasterización de texto es
 responsabilidad del programa; Luma usa una fuente propia de 5×7 puntos (`r_glyph`, `razar/cuerpo/luma.jsm:22769`),
-especificada en el capítulo 10.
+especificada en el [capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#1054-letras-r_txt).
 
 ### 4.5 Secuencia de `screen_show`
 
-1. Validar (§4.2) y contar partículas.
+1. Validar ([§4.2](#42-validación)) y contar partículas.
 2. Primera vez (`scr_ready` = 0): `InitializeCriticalSection(scr_lock)`, `scr_ready` = 1, leer `JANAX_SIN_VENTANA`
    (`so/pantalla.inc:203-210`).
 3. Leer `JANAX_VENTANA_FONDO` (`so/pantalla.inc:212-215`).
@@ -237,7 +237,7 @@ siguen actualizando el búfer y respondiendo `P`.
 | `scr_class_name` | UTF-16 | `JanaxPantalla` | `so/pantalla.inc:19` |
 | `scr_title` | UTF-16, 513 unidades | Título; valor inicial `Janax` | `so/pantalla.inc:20-21` |
 | `SCR_TITLE_MAX` | constante | 512 (criterio, sin medición) | `so/pantalla.inc:22` |
-| `scr_ready`, `scr_quiet`, `scr_back` | u8 | Marcas (§4.5, §3) | `so/pantalla.inc:23-25` |
+| `scr_ready`, `scr_quiet`, `scr_back` | u8 | Marcas ([§4.5](#45-secuencia-de-screen_show), [§3](#3-variables-de-entorno)) | `so/pantalla.inc:23-25` |
 | `scr_lock` | 40 bytes | `CRITICAL_SECTION` | `so/pantalla.inc:27` |
 | `scr_pix`, `scr_cap`, `scr_w`, `scr_h` | u64 | Búfer, capacidad, dimensiones | `so/pantalla.inc:28-31` |
 | `scr_bits`, `scr_rgb` | u64 | Punteros de trabajo de `screen_show` | `so/pantalla.inc:32-33` |
@@ -289,7 +289,7 @@ Ejecutado en el hilo de la ventana (`so/pantalla.inc:327-369`), con `W`, `Hc` le
 4. `k` = min(⌊`aw`/`W`⌋, ⌊`ah`/`Hc`⌋); si `k` = 0, `k` = 1.
 5. Cliente deseado `k·W` × `k·Hc`; `AdjustWindowRectEx` de nuevo para obtener el tamaño exterior.
 6. `CreateWindowExW(0, "JanaxPantalla", scr_title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, ancho, alto,
-   0, 0, hInstance, 0)` (`so/pantalla.inc:370`). Si falla, el hilo va directamente a su salida (§5.8).
+   0, 0, hInstance, 0)` (`so/pantalla.inc:370`). Si falla, el hilo va directamente a su salida ([§5.8](#58-cierre-y-fin-del-sistema)).
 
 El factor inicial es entero y la posición la elige el anfitrión. No hay tamaño fijo.
 
@@ -303,7 +303,7 @@ El factor inicial es entero y la posición la elige el anfitrión. No hay tamañ
 
 Maximizar: el estilo `WS_OVERLAPPEDWINDOW` incluye los botones de maximizar y minimizar y el borde redimensionable;
 el núcleo no maximiza por programa. Maximizar, restaurar o redimensionar lo gestiona `DefWindowProcW`; el núcleo sólo
-observa el resultado (`WM_SIZE`, evento 6) y repinta escalando (§5.6).
+observa el resultado (`WM_SIZE`, evento 6) y repinta escalando ([§5.6](#56-pintado)).
 
 ### 5.5 Bucle de mensajes y procedimiento de ventana
 
@@ -311,15 +311,15 @@ Bucle (`so/pantalla.inc:383-389`): mientras `GetMessageW(&scr_msg, 0, 0, 0)` > 0
 `DispatchMessageW`. `TranslateMessage` es el que produce `WM_CHAR` a partir de las teclas (comportamiento del
 anfitrión).
 
-`screen_proc` (`so/pantalla.inc:400-446`) trata los mensajes así; "nota" significa llamar a `screen_note` (§6) y luego
+`screen_proc` (`so/pantalla.inc:400-446`) trata los mensajes así; "nota" significa llamar a `screen_note` ([§6](#6-eventos)) y luego
 saltar a `DefWindowProcW`:
 
 | Mensaje | Valor | Tratamiento | Devuelve |
 |---|---|---|---|
 | `WM_NCCREATE` | 81h | `scr_hwnd` = hwnd; continúa | `DefWindowProcW` |
 | `WM_NCDESTROY` | 82h | `scr_hwnd` = 0; continúa | `DefWindowProcW` |
-| privado 8001h | 8001h | `SetWindowTextW(hwnd, scr_title)` (§5.9) | 0 |
-| privado 8002h | 8002h | `screen_clip` (§7.4) | 0 |
+| privado 8001h | 8001h | `SetWindowTextW(hwnd, scr_title)` ([§5.9](#59-título-pedido-43)) | 0 |
+| privado 8002h | 8002h | `screen_clip` ([§7.4](#74-copiar-pedido-47)) | 0 |
 | `WM_PAINT` | 0Fh | Pintado (§5.6) | 0 |
 | `WM_DESTROY` | 02h | `screen_note` (evento 5), `PostQuitMessage(0)` | 0 |
 | `WM_MOUSEMOVE`..`WM_RBUTTONUP` | 200h..205h | nota | `DefWindowProcW` |
@@ -331,7 +331,7 @@ saltar a `DefWindowProcW`:
 
 No se tratan, y por tanto no llegan a los programas: `WM_KEYUP`, `WM_SYSKEYDOWN`/`WM_SYSCHAR` (combinaciones con
 Alt), la rueda, el botón central, `WM_CLOSE` (su tratamiento por defecto destruye la ventana). `WM_LBUTTONDBLCLK`
-(203h) está en el rango notado pero `screen_note` lo descarta (§6.2), y la clase no pide doble clic.
+(203h) está en el rango notado pero `screen_note` lo descarta ([§6.2](#62-tipos-de-evento)), y la clase no pide doble clic.
 
 ### 5.6 Pintado
 
@@ -382,11 +382,11 @@ fuera de ella.
    `scr_title[m]`. El texto no se decodifica como UTF-8: un byte ≥ 80h aparece como U+0080..U+00FF.
 3. Si `scr_hwnd` ≠ 0: `PostMessageW(scr_hwnd, 8001h, 0, 0)`; el hilo de la ventana aplica el título
    (`SetWindowTextW`), de modo que ninguna ventana se toca desde otro hilo. Si la ventana aún no existe, nacerá con
-   este título (§5.3, paso 6).
+   este título ([§5.3](#53-tamaño-inicial), paso 6).
 4. Respuesta: `m`.
 
 Con `JANAX_SIN_VENTANA` el título se guarda pero nunca se muestra. Ni la copia ni la lectura de `scr_title` usan
-`scr_lock` (§13).
+`scr_lock` ([§13](#13-observaciones-del-código)).
 
 ### 5.10 Modo sin ventana
 
@@ -395,7 +395,7 @@ Con `JANAX_SIN_VENTANA` (`scr_quiet` = 1), comprobado en el código:
 | Pedido | Comportamiento |
 |---|---|
 | 40 | Valida y convierte igual; responde `P` o −1; no crea hilo ni campana (`so/pantalla.inc:272-273`). |
-| 41 | `screen_waitable` = 0 (`scr_live` = 0): nunca duerme; `screen_take` = 0. Responde 0 y `b` = 0 (§8). |
+| 41 | `screen_waitable` = 0 (`scr_live` = 0): nunca duerme; `screen_take` = 0. Responde 0 y `b` = 0 ([§8](#8-esperar-un-evento-pedido-41)). |
 | 43 | Guarda el título; responde `m`. |
 | 44 | `scr_hwnd` = 0: responde 0. |
 | 47 | `scr_hwnd` = 0: responde 0. |
@@ -420,13 +420,13 @@ Generados por `screen_note` (`so/pantalla.inc:506-676`) en el hilo de la ventana
 
 | `kind` | Origen | `x`, `y` | `extra` |
 |---|---|---|---|
-| 1 | `WM_MOUSEMOVE` | Celda del puntero (§5.7) | `wParam & 3`: bit 0 izquierdo presionado (`MK_LBUTTON`), bit 1 derecho (`MK_RBUTTON`) |
+| 1 | `WM_MOUSEMOVE` | Celda del puntero ([§5.7](#57-correspondencia-píxel-del-cliente--celda)) | `wParam & 3`: bit 0 izquierdo presionado (`MK_LBUTTON`), bit 1 derecho (`MK_RBUTTON`) |
 | 2 | `WM_LBUTTONDOWN` / `WM_RBUTTONDOWN` | Celda | 1 izquierdo, 2 derecho |
 | 3 | `WM_LBUTTONUP` / `WM_RBUTTONUP` | Celda | 1 izquierdo, 2 derecho |
 | 4 | `WM_KEYDOWN` | Última celda conocida (`scr_lastx`, `scr_lasty`) | `wParam` completo: código de tecla virtual |
 | 5 | `WM_DESTROY` | −1, −1 | 0 |
 | 6 | `WM_SIZE` | `x` = `LOWORD(lParam)`, `y` = `HIWORD(lParam)`: cliente en píxeles | 0 |
-| 7 | `WM_CHAR` (§7.2) o texto pegado (§7.3) | Última celda conocida | Punto de código Unicode |
+| 7 | `WM_CHAR` ([§7.2](#72-caracteres)) o texto pegado ([§7.3](#73-pegado-ctrlv)) | Última celda conocida | Punto de código Unicode |
 | 8 | `WM_ACTIVATE` | −1, −1 | 1 si `LOWORD(wParam)` ≠ 0 (`WA_ACTIVE`/`WA_CLICKACTIVE`); 0 si es `WA_INACTIVE` |
 
 Reglas adicionales:
@@ -451,7 +451,7 @@ Reglas adicionales:
 4. Se libera `scr_lock` y `SetEvent(scr_event)`.
 
 Extracción (`screen_take`, `so/pantalla.inc:991-1025`), bajo `scr_lock`: si `scr_ready` = 0 responde 0 sin tocar
-nada. Si quedan letras pegadas (§7.3), entrega la siguiente y responde 1. Si no, si `scr_count` > 0, copia la casilla
+nada. Si quedan letras pegadas ([§7.3](#73-pegado-ctrlv)), entrega la siguiente y responde 1. Si no, si `scr_count` > 0, copia la casilla
 `scr_head` al destino, avanza `scr_head`, decrementa `scr_count` y responde 1. Si no, responde 0.
 
 Invariante de orden: mientras queden letras pegadas, toda extracción entrega una letra pegada antes que cualquier
@@ -465,7 +465,7 @@ evento del anillo, incluidos eventos anteriores al pegado.
   (`so/pantalla.inc:131`, `287`, `911`); título y portapapeles los ejecuta el hilo de la ventana.
 - `screen_waitable` (`so/pantalla.inc:976-987`) lee `scr_live`, `scr_count`, `scr_pastepos` y `scr_pastelen` sin
   cerrojo. Es correcto porque todo evento guardado después de esa lectura hace sonar la campana y el centinela vuelve
-  a evaluar (§8.4).
+  a evaluar ([§8.4](#84-despertadores)).
 
 ## 7. Teclado y portapapeles
 
@@ -483,7 +483,7 @@ Cada `WM_CHAR` lleva una unidad UTF-16 en la palabra baja de `wParam`. `screen_n
 
 | Unidad `u` | Acción |
 |---|---|
-| 16h (Ctrl+V) | Pegado (§7.3); no se guarda evento de carácter. |
+| 16h (Ctrl+V) | Pegado ([§7.3](#73-pegado-ctrlv)); no se guarda evento de carácter. |
 | D800h..DBFFh (mitad alta) | `scr_high` = `u`; sin evento. |
 | DC00h..DFFFh (mitad baja) | Si `scr_high` = 0: se descarta. Si no: `cp` = 10000h + ((`scr_high` − D800h) << 10) + (`u` − DC00h); `scr_high` = 0; evento 7 con `extra` = `cp`. |
 | cualquier otra | `scr_high` = 0; evento 7 con `extra` = `u`. |
@@ -517,7 +517,7 @@ Entrega (`screen_paste_next`, `so/pantalla.inc:807-853`), una letra por cada `sc
 2. 0Dh (CR): se omite y se sigue.
 3. 0Ah (LF) y 09h (TAB): se convierten en 20h (espacio).
 4. Mitad alta: si no quedan unidades, se omite. Si la siguiente unidad es mitad baja, se consume y se combinan
-   como en §7.2; si no, la mitad alta se omite (la siguiente unidad no se consume).
+   como en [§7.2](#72-caracteres); si no, la mitad alta se omite (la siguiente unidad no se consume).
 5. Se escribe un evento 7 con `x`, `y` = `scr_lastx`, `scr_lasty` y `extra` = el punto de código; resultado 1.
 6. Si no quedan unidades, resultado 0.
 
@@ -541,8 +541,8 @@ El hilo de la ventana, al recibir 8002h (`screen_clip`, `so/pantalla.inc:922-972
 `OpenClipboard(hwnd)`, `EmptyClipboard`, `GlobalAlloc(GMEM_MOVEABLE (2), 2·u + 2)`, copia y termina en 0,
 `SetClipboardData(CF_UNICODETEXT, h)` y `CloseClipboard`. El búfer `scr_copy` se conserva hasta el próximo 47.
 
-El pedido 47 es importante (§2.2): el portapapeles es estado fuera de Janax. No hay pedido de pegado: el pegado llega
-como letras tecleadas (§7.3).
+El pedido 47 es importante ([§2.2](#22-pedidos-de-este-capítulo)): el portapapeles es estado fuera de Janax. No hay pedido de pegado: el pegado llega
+como letras tecleadas ([§7.3](#73-pegado-ctrlv)).
 
 ## 8. Esperar un evento: pedido 41
 
@@ -550,8 +550,8 @@ como letras tecleadas (§7.3).
 
 | Campo | Entrada | Salida |
 |---|---|---|
-| `a` | Dirección de un registro de 32 bytes en las salas de la cabina | Si la respuesta es 1, contiene el evento (§6.1) |
-| `b` | Espera máxima en ms; 0 = no esperar; ≥ FFFFFFFFh (comparación sin signo; incluye valores negativos) = sin plazo | Ms que quedaban de la espera (§8.5) |
+| `a` | Dirección de un registro de 32 bytes en las salas de la cabina | Si la respuesta es 1, contiene el evento ([§6.1](#61-registro-de-evento-32-bytes)) |
+| `b` | Espera máxima en ms; 0 = no esperar; ≥ FFFFFFFFh (comparación sin signo; incluye valores negativos) = sin plazo | Ms que quedaban de la espera ([§8.5](#85-servicio-serve_wait_event)) |
 | `respuesta` | — | 1 evento entregado; 0 sin evento; −1 registro fuera de las salas |
 
 ### 8.2 Estados de `P_SCRW`
@@ -574,7 +574,7 @@ Al marcar cada entrada de clase 41 de un toque (`so/janaxos.asm:2308-2312`, `287
   `P_SCRDL`, pasa a 2 y `scr_nwait` −= 1; si no, sigue durmiendo.
 
 Si alguna entrada del toque duerme, ningún pedido del toque se atiende: `P_WAITING` = número de esperas y el `jsys` se
-reejecuta al despertar (`so/janaxos.asm:2348-2355`, `2201-2207`; capítulo 04 §3.4).
+reejecuta al despertar (`so/janaxos.asm:2348-2355`, `2201-2207`; [capítulo 04 §3.4](04-nucleo-abi-de-pedidos.md#34-suspensión-y-reejecución)).
 
 ### 8.4 Despertadores
 
@@ -584,11 +584,11 @@ vuelve a la fila si `P_WAITING` = 0, `so/remos.inc:406-418`). Lo invocan:
 | Quién | Condición | Fuente |
 |---|---|---|
 | `screen_due` | Para cada cabina con `P_SCRW` = 1: si `screen_waitable` = 0 (hay evento, hay letras pegadas o la ventana murió), o la cabina terminó, o `now` ≥ `P_SCRDL`. | `so/janaxos.asm:2928-2958` |
-| `greet` | La cabina recibe un saludo (pedido 28, o una palabra 30 que lo usa) mientras duerme sobre la pantalla. | `so/ambientes.inc:1481-1484` |
-| `hw_wake` | La cabina tiene `P_HOSTW` ≠ 0 y hay algo nuevo del anfitrión (§10.9). | `so/vigia.inc:146-153` |
+| `greet` | La cabina recibe un saludo ([pedido 28](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas), o una palabra 30 que lo usa) mientras duerme sobre la pantalla. | `so/ambientes.inc:1481-1484` |
+| `hw_wake` | La cabina tiene `P_HOSTW` ≠ 0 y hay algo nuevo del anfitrión ([§10.9](#109-protocolo-de-un-consumidor)). | `so/vigia.inc:146-153` |
 
 `screen_due` se ejecuta con el cerrojo del núcleo: tras cada turno remado si `scr_nwait` > 0
-(`so/remos.inc:230-232`), y en el centinela cuando suena `scr_event` o vence el tiempo (§10.10).
+(`so/remos.inc:230-232`), y en el centinela cuando suena `scr_event` o vence el tiempo ([§10.10](#1010-bucle-del-centinela-watch_wait)).
 
 ### 8.5 Servicio (`serve_wait_event`)
 
@@ -628,7 +628,7 @@ entregando sin dormir.
 ### 10.1 Alcance
 
 El centinela (`watch_wait`) es el único lugar donde el núcleo duerme esperando fuentes externas. Combina tres
-fuentes: la carpeta propia y el tablero (pedido 32, prefijos de etiqueta; capítulo 04 §9.7), las carpetas del
+fuentes: la carpeta propia y el tablero (pedido 32, prefijos de etiqueta; [capítulo 04 §9.7](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas)), las carpetas del
 anfitrión de `JANAX_VIGIA` (pedido 39) y la campana de pantalla (pedido 41). El vigía no lee el contenido de los
 archivos: entrega rutas; decidir si un archivo es texto corresponde al programa (`so/vigia.inc:11-12`).
 
@@ -704,7 +704,7 @@ NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED | FILE_FLAG_BACKUP_SEMANTICS (42000000
 Para comparación, carpeta propia y tablero (`watch_read`, `so/ambientes.inc:1825-1858`): `CreateFileA`, búfer de
 4096, `bWatchSubtree` = FALSE, filtro 11h (`FILE_NAME` \| `LAST_WRITE`).
 
-Las lecturas de las carpetas del anfitrión sólo se arman cuando `hw_watched` = 1 (§10.9). Que el anfitrión acumule
+Las lecturas de las carpetas del anfitrión sólo se arman cuando `hw_watched` = 1 ([§10.9](#109-protocolo-de-un-consumidor)). Que el anfitrión acumule
 cambios entre una lectura y la siguiente sobre el mismo manejador es comportamiento de Windows (no verificado en el
 código); antes del primer armado no se observa nada.
 
@@ -804,7 +804,7 @@ La ruta entregada es la raíz de `JANAX_VIGIA` tal como se escribió, un `\` y e
 
 Precondición (`so/remos.inc:155-205`): la fila está vacía, ningún remero rema, alguna cabina viva tiene
 `P_WAITING` ≠ 0 y ningún otro remero está dentro del centinela (`watch_in` = 0). Se entra con el cerrojo del núcleo.
-Si responde 0, el remero pasa a `nobody_signs` (capítulo 03).
+Si responde 0, el remero pasa a `nobody_signs` ([capítulo 03](03-nucleo-arranque-memoria-procesos.md#106-nadie-firma)).
 
 `so/ambientes.inc:1680-1820`:
 
@@ -828,7 +828,7 @@ Si responde 0, el remero pasa a `nobody_signs` (capítulo 03).
      falla, ir a 9. Si devolvió 0 bytes (desborde del búfer): para `r` ≥ 2 se ignora (lo perdido no se conoce); para
      `r` < 2, `watch_all` despierta a todas las cabinas vivas que esperan saludo y vigilan prefijos, y `despertó` = 1
      aunque no hubiera ninguna (`so/ambientes.inc:1775-1777`). Si devolvió datos: para
-     `r` < 2, `watch_name` por cada registro (§10.11); para `r` ≥ 2, `hw_told` por cada registro.
+     `r` < 2, `watch_name` por cada registro ([§10.11](#1011-carpeta-propia-y-tablero-contexto)); para `r` ≥ 2, `hw_told` por cada registro.
 9. Si `despertó` = 0, volver a 3. Si no, `watch_in` = 0 y responder 1.
 
 Invariantes: sin pendientes ni plazos de pantalla, `T` es infinito y el centinela no consume procesador
@@ -841,7 +841,7 @@ Pedido 32 (`gate_watch`, `so/ambientes.inc:1633-1674`): `a` = bytes del prefijo 
 prefijo en un qword; un prefijo repetido no se duplica. `watch_name` (`so/ambientes.inc:1917-1978`): un nombre de
 archivo de la carpeta propia es la etiqueta en hexadecimal en minúsculas; si sus primeras `2·p` letras (plegando
 mayúsculas con `or 20h`) coinciden con el hexadecimal de un prefijo de una cabina que espera saludo, esa cabina recibe
-un saludo de sí misma. Especificación completa del pedido 32 en el capítulo 04 §9.7.
+un saludo de sí misma. Especificación completa del pedido 32 en el [capítulo 04 §9.7](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas).
 
 ## 11. Venn: motor de selección
 
@@ -850,7 +850,7 @@ un saludo de sí misma. Especificación completa del pedido 32 en el capítulo 0
 Venn (`so/venn.inc`) es un motor genérico que recibe dos conjuntos `A` y `B`, accesibles sólo mediante adaptadores, y
 una palabra Venn; entrega, uno por uno y en el orden pedido, los elementos de la selección a una rutina del llamante.
 El motor no conoce salas, archivos ni procesos. Su único uso actual en el núcleo es la asociación de carteles del
-pedido 27 (§11.6).
+pedido 27 ([§11.6](#116-protocolo-de-asociación-pedido-27)).
 
 ### 11.2 Palabra Venn
 
@@ -859,7 +859,7 @@ pedido 27 (§11.6).
 | 0–2 | `VENN_REGIONS` = 7 | Regiones: bit 0 = elementos que ambos conjuntos tienen (misma clave); bit 1 = sólo de `A`; bit 2 = sólo de `B`. 0 ninguno, 7 todos. |
 | 3 | `VENN_B_FIRST` = 8 | Mirada: 0 `A` primero, 1 `B` primero. Un elemento compartido se entrega desde el lado mirado primero, con su pareja del otro. |
 | 4–7 | — | Criterio: 0 el orden de cada conjunto; `n` > 0 un valor que el adaptador sabe dar. |
-| 8 | `VENN_DESC` = 100h | Descendente (sólo en modo selección, §11.4). |
+| 8 | `VENN_DESC` = 100h | Descendente (sólo en modo selección, [§11.4](#114-algoritmo-venn_run-sovenninc61-124)). |
 | 9 | `VENN_WHOLE` = 200h | El criterio ordena la selección entera (0: dentro de cada lado, en el orden de la mirada). |
 | 10–15 | — | Reservados: deben ser 0. |
 | 16–31 | — | Cantidad máxima a entregar (0 = todos). |
@@ -958,7 +958,7 @@ Estructuras globales `assoc_va`, `assoc_vb` (adaptadores) y `assoc_vq` (selecci�
 1. Cabina `A` pide 27 con `a` = número de cabina de su familia `B`, `b` = palabra Venn (`gate_assoc`,
    `so/janaxos.asm:4387-4394`).
 2. `rooms_associate` (`so/ambientes.inc:1276-1300`): −1 si `b` tiene bits fuera de `VENN_KNOWN`, si el criterio
-   (bits 4–7) no está en `CARTEL_CRITS`, o si `a` no es una cabina de la familia (`cabin_family`, capítulo 03). Si no,
+   (bits 4–7) no está en `CARTEL_CRITS`, o si `a` no es una cabina de la familia (`cabin_family`, [capítulo 03](03-nucleo-arranque-memoria-procesos.md#91-relaciones)). Si no,
    `A.P_PARTNER` = `B`, `A.P_ASSOC` = `b`; respuesta 0. Una nueva petición reemplaza la anterior.
 3. `B` hace lo mismo nombrando a `A` (cada una nombra a la otra).
 4. Cuando `A` lanza su próximo hijo, `rooms_born` (`so/ambientes.inc:1004-1020`) entrega la dote y llama a
@@ -970,18 +970,18 @@ Estructuras globales `assoc_va`, `assoc_vb` (adaptadores) y `assoc_vq` (selecci�
    pareja.
 
 El comentario de `gate_assoc` (`so/janaxos.asm:4385-4386`) describe `b` como "0 compartidas, 1 mías, 2 suyas, 3
-todas"; el código interpreta `b` como palabra Venn (§11.2), donde 1 = compartidas, 2 = sólo de `A`, 4 = sólo de `B`,
+todas"; el código interpreta `b` como palabra Venn ([§11.2](#112-palabra-venn)), donde 1 = compartidas, 2 = sólo de `A`, 4 = sólo de `B`,
 7 = todas, y 0 no selecciona nada. Prevalece el código.
 
 ## 12. Ventanita al anfitrión (`jhost`)
 
 ### 12.1 Instrucción
 
-`jhost rd, ra` es la palabra de código de operación 17h (`escalon0/janax.inc:104`): `ra` contiene la dirección Janax de
+[`jhost rd, ra`](01-idioma-janax.md#7-protocolo-de-la-ventana-al-anfitrión-jhost) es la palabra de código de operación 17h (`escalon0/janax.inc:104`): `ra` contiene la dirección Janax de
 un bloque y `rd` recibe la respuesta. En el escalón 0 la ejecutan el intérprete (`op_host`,
 `escalon0/janax.asm:31`, `359-368`) y el traductor (`e_host`, `escalon0/traductor.asm:105`, `533-537`; la
 dirección de `host_service` se guarda en `C_HOST` del contexto, `escalon0/traductor.asm:46`, `999-1000`); el código
-16h (`jsys`) es inválido allí (`fail_op` en el intérprete, `e_bad` en el traductor). En JanaxOS la ejecuta `op_jhost` (`so/janaxos.asm:2166-2172`).
+16h ([`jsys`](01-idioma-janax.md#58-jsys-janax-os)) es inválido allí (`fail_op` en el intérprete, `e_bad` en el traductor). En JanaxOS la ejecuta `op_jhost` (`so/janaxos.asm:2166-2172`).
 
 ### 12.2 Bloque
 
@@ -1021,7 +1021,7 @@ desactiva nada.
 `so/anfitrion.inc:6-30`. Un proceso de JanaxOS se comunica con el sistema por la ventanilla; la ventanita le ofrece un
 catálogo vacío. `cabin_at(bloque, 32)` inválido → código 5; bloque no alineado a 8 → 6. Pedido 0: si `a` no está
 alineado a 8 → 6; respuesta 0. Otro pedido: −1. Con código ≠ 0 el proceso termina por `ended` con ese código
-(`so/janaxos.asm:2169-2170`; semántica de `ended` en el capítulo 03).
+(`so/janaxos.asm:2169-2170`; semántica de `ended` en el [capítulo 03](03-nucleo-arranque-memoria-procesos.md#96-fin-de-una-cabina-secuencia-completa)).
 
 ## 13. Observaciones del código
 
@@ -1035,24 +1035,24 @@ Hechos comprobados en el código que un reimplementador debe conocer:
 3. `screen_copy` comprueba `scr_hwnd` al entrar y lo vuelve a leer para `PostMessageW` sin cerrojo
    (`so/pantalla.inc:864`, `907-911`); si la ventana se destruye entre ambas lecturas, el mensaje se publica con
    hwnd 0.
-4. La exclusión de la carpeta propia y del tablero en el vigía compara cadenas (§10.6): si `JANAX_ARCHIVOS` o
+4. La exclusión de la carpeta propia y del tablero en el vigía compara cadenas ([§10.6](#106-recepción-de-una-notificación-hw_told)): si `JANAX_ARCHIVOS` o
    `JANAX_TABLERO` son rutas relativas (el valor por defecto `janax_archivos` lo es, `so/janaxos.asm:284`), no
    coinciden con las rutas absolutas notificadas y la exclusión no actúa sobre ellas, salvo que la raíz de
    `JANAX_VIGIA` se haya escrito con el mismo prefijo relativo.
 5. Un desborde del búfer de una carpeta del anfitrión (0 bytes devueltos) pierde los cambios de ese intervalo sin
    aviso (`so/ambientes.inc:1773-1774`).
-6. `P_HOSTW` nunca vuelve a 0 (§2.3).
-7. El comentario de `gate_assoc` no coincide con el código (§11.6).
+6. `P_HOSTW` nunca vuelve a 0 ([§2.3](#23-campos-de-cabina-usados)).
+7. El comentario de `gate_assoc` no coincide con el código ([§11.6](#116-protocolo-de-asociación-pedido-27)).
 8. Ni `RegisterClassExW` ni `SetClipboardData` comprueban su resultado; si `GlobalLock` falla en `screen_clip`, el
    bloque `GlobalAlloc` no se libera (`so/pantalla.inc:941-948`).
-9. `screen_sound` nunca cierra el dispositivo MIDI (§9).
+9. `screen_sound` nunca cierra el dispositivo MIDI ([§9](#9-sonido-pedido-44)).
 10. Un fallo de `VirtualAlloc` en `screen_show` deja la pantalla sin píxeles (`scr_pix` = 0) con las dimensiones
-    anteriores (§4.2).
+    anteriores ([§4.2](#42-validación)).
 11. En `screen_clip`, `EmptyClipboard` se ejecuta antes de `GlobalAlloc`: si la reserva falla, el portapapeles del
     anfitrión queda vacío (`so/pantalla.inc:938-943`).
 12. En `screen_paste_take`, el pegado anterior se libera antes de reservar el nuevo: si `VirtualAlloc` falla, no
     queda ningún texto pendiente (`so/pantalla.inc:765-782`).
-13. El núcleo no comprueba el resultado de `CreateEventA` ni de `CreateThread` al abrir la ventana (§4.5).
+13. El núcleo no comprueba el resultado de `CreateEventA` ni de `CreateThread` al abrir la ventana ([§4.5](#45-secuencia-de-screen_show)).
 
 ## 14. Resumen de constantes y límites
 

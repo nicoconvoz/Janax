@@ -9,7 +9,7 @@ The Markdown reader is small on purpose (no third-party code): headings, paragra
 tables, emphasis, inline code, links and images. A link to another document becomes a link to its page; any other
 relative link points to the file in the repository on GitHub.
 """
-import html, os, re, sys
+import html, os, re, sys, unicodedata
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITIO = "https://nicoconvoz.github.io/Janax/"
@@ -64,9 +64,15 @@ def en_linea(t, desde, todos):
     return "".join(out)
 
 
+def ancla(t):   # the anchor GitHub gives a heading, so a link to a section works the same there and here
+    t = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", t).replace("`", "").replace("*", "").strip().lower()
+    return "".join(c for c in t if c in " -" or unicodedata.category(c)[0] in "LMN"
+                   or unicodedata.category(c) == "Pc").replace(" ", "-")
+
+
 def a_html(texto, desde, todos):
     ls = texto.replace("\r\n", "\n").split("\n")
-    out, i, titulo = [], 0, None
+    out, i, titulo, vistos = [], 0, None, {}
     while i < len(ls):
         l = ls[i]
         if l.startswith("```"):
@@ -74,10 +80,12 @@ def a_html(texto, desde, todos):
             while j < len(ls) and not ls[j].startswith("```"):
                 j += 1
             out.append("<pre><code>" + html.escape("\n".join(ls[i + 1:j])) + "</code></pre>"); i = j + 1; continue
-        m = re.match(r"^(#{1,6})\s+(.*)$", l)
+        m = re.match(r"^(#{1,6})\s+(.*?)\s*#*\s*$", l)
         if m:
             n = len(m.group(1)); titulo = titulo or re.sub(r"[*`]", "", m.group(2))
-            out.append("<h%d>%s</h%d>" % (n, en_linea(m.group(2), desde, todos), n)); i += 1; continue
+            s = ancla(m.group(2)); k = vistos.get(s, 0); vistos[s] = k + 1
+            out.append('<h%d id="%s">%s</h%d>' % (n, html.escape(s if k == 0 else "%s-%d" % (s, k)),
+                                                   en_linea(m.group(2), desde, todos), n)); i += 1; continue
         if l.startswith("|") and i + 1 < len(ls) and re.match(r"^\|[\s:|-]+\|?\s*$", ls[i + 1]):
             fila = lambda s: [c.strip() for c in s.strip().strip("|").split("|")]
             t = ["<table><tr>" + "".join("<th>%s</th>" % en_linea(c, desde, todos) for c in fila(l)) + "</tr>"]

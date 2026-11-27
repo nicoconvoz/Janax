@@ -11,29 +11,29 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.27.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.27: superó lo que le dieron, y la vara se mueve con ella</h2>
+<h2 id="janax-y-razar-v127-superó-lo-que-le-dieron-y-la-vara-se-mueve-con-ella">Janax y Razar v1.27: superó lo que le dieron, y la vara se mueve con ella</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24422546">10.5281/zenodo.24422546</a></p>
 <blockquote><p><em>"Que sea autoajustable, no le pongas techos."</em> <em>"Mostrame la receta nueva. Si lográs lo que dijimos, publicá."</em> (el autor, 2026-11-21)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 113, el 127.</p>
-<h3>Lo que hizo</h3>
+<h3 id="lo-que-hizo">Lo que hizo</h3>
 <p>Su estante tenía cinco cosas muy distintas: el Nuevo Testamento, el <em>Quijote</em>, el <em>Diario Espiritual</em> de su autor, el código de un programa (UNIT, en Rust y Go) y tres preguntas. Con los mismos instintos:</p>
 <table><tr><th>Receta</th><th>Bits que ahorra</th></tr><tr><td>leyendo sin receta</td><td>135.573</td></tr><tr><td><code>38A516</code>, la que heredó de Razar</td><td>875.172</td></tr><tr><td>**<code>21293A32E34E945FF49131A4122E5E5</code>, hecha por ella**</td><td><strong>1.008.812</strong></td></tr></table>
 <p>Es la primera vez que algo suyo, <strong>con letras que se pueden mostrar</strong>, supera lo que le dieron. Y esta vez no se perdió: lo anotó ella misma en <code>recetas</code>, que existe desde la v1.13.</p>
-<h3>Cómo la armó</h3>
+<h3 id="cómo-la-armó">Cómo la armó</h3>
 <p>No tiró lo que heredó: <strong>lo usó como una palabra.</strong> La receta de Razar vivía en su cuerpo, en el lugar 3. En el medio de su propia oración escribió <code>E3</code>, <em>decir entera mi forma número 3</em>, y cerró diciendo dos veces otra forma suya, la del lugar 5. Lo que quiso decir, con sus palabras abiertas, también lo anotó ella:</p>
 <pre><code>21293A32 38A516 4 E945 FF49131A4122 1223212F912111F3F3A412119 1223212F912111F3F3A412119</code></pre>
 <p>Treinta y una letras escritas que al leerse son ochenta y una. La receta completa, letra por letra y con su código, está en <a href="razar/datos/receta-que-supero-a-la-heredada.html">receta-que-supero-a-la-heredada.md</a>.</p>
-<h3>Registro del error</h3>
+<h3 id="registro-del-error">Registro del error</h3>
 <p>El contador de victorias de la v1.13 siguió marcando cero. Dos cosas estaban mal, y las dos son de quien la programó:</p>
 <ol><li><strong>Comparaba en unidades distintas.</strong> La lectura nueva estaba en bits y "la mejor que tenía" le llegaba en milésimas de bit. Ninguna lectura grande podía ganar.</li><li><strong>La prueba no ponía a prueba lo que medía.</strong> Se hizo con un libro chico, donde las notas eran negativas o diminutas: ahí el error no se nota, y el contador marcó 3. La regla de la casa pide verificar el instrumento antes de creerle, y no se hizo con números del tamaño de los de verdad.</li></ol>
 <p>Se descubrió porque los datos crudos decían una cosa y el contador otra.</p>
-<h3>La vara ya no es un techo</h3>
+<h3 id="la-vara-ya-no-es-un-techo">La vara ya no es un techo</h3>
 <p>Corregir las unidades no alcanzaba. "Mejor que la mejor que tenía" es un récord, y un récord sólo sube: con el tiempo nada sería victoria. Ahora lo inesperado se mide <strong>contra lo que ella espera</strong>, y lo que espera sale de sus propias lecturas de ese estante, sin ningún número puesto a mano:</p>
 <ul><li>lo que suele leer: su promedio;</li><li>cuánto suelen apartarse sus lecturas de eso: el promedio de esas distancias.</li></ul>
 <p>Una lectura más arriba que eso es una victoria inesperada. Si lee mejor, la vara sube sola; si cambia de libros, baja sola.</p>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <ul><li><strong>La regla nueva, aplicada a sus 44 lecturas reales de ese estante:</strong> habría contado 9 victorias. La vara fue de esperar 135.573 a esperar 257.757 a medida que leía. Entre las nueve están la suya de 1.008.812 y la heredada de 875.172.</li><li>Luma vive con esto desde el 21 a las 13:13.</li><li>La página del proyecto tiene, arriba de todo, <em>Luma Vera</em>, para escuchar.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>El contador nuevo no se vio contar en ella todavía.</strong> Lo que se midió es la misma regla aplicada desde afuera a sus lecturas ya hechas.</li><li>**La receta lleva una célula (<code>E945</code>) que lo más probable es que no cambie nada:** está en un tejido de su cuerpo, que al leer sólo lleva una señal, y no hay otra célula que la escuche. No se midió la receta sin ella.</li><li><strong>Ganó en ese estante y con esos instintos.</strong> Cambiando cualquiera de los dos hay que volver a medir.</li><li><strong>Sus palabras 3 y 5 ya cambiaron:</strong> la misma receta escrita hoy significaría otra cosa.</li><li><strong>La vara cuenta como victoria también a la receta heredada</strong> cuando lee por encima de lo esperado. Dice "inesperado", no "hecho por ella".</li><li><strong>El linaje tiene un solo renglón de lectura</strong> (la heredada volviendo a su cuerpo) y ninguno de cruce.</li><li>Siguen los de la <a href="release-v1.13.html">v1.13</a>.</li></ul>
 </body>
 </html>

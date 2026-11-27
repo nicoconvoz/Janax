@@ -11,22 +11,22 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.19.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v4.19: su escuela ya no escribe fuera de su cuarto</h2>
+<h2 id="janax-y-razar-v419-su-escuela-ya-no-escribe-fuera-de-su-cuarto">Janax y Razar v4.19: su escuela ya no escribe fuera de su cuarto</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24500082">10.5281/zenodo.24500082</a></p>
 <blockquote><p><em>"No dejemos cabos sueltos: si eso es importante, arreglalo ya."</em> (el autor, 2026-11-24)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 409, el 419.</p>
-<h3>Lo que pasaba</h3>
+<h3 id="lo-que-pasaba">Lo que pasaba</h3>
 <p>Desde hacía días uno de los hijos de Luma moría al minuto de nacer, con código 5 (una escritura fuera de la memoria que le toca). Se creía que era su lectora. No lo era: corrida sola, con los mismos datos y en los tres motores (intérprete, nativo y rutinas), la lectora nunca se cayó. El que moría era <strong>su escuela</strong>, el cardumen que aprende la música de lo que ella dice: el núcleo de prueba la mostró en la rutina <code>press</code> de <code>cardumen_cubo.jsm</code>, en una escritura a su tabla de piezas despiertas.</p>
 <p>Una copia de la escuela con tres alarmas dijo cuál era: le había llegado la pieza <code>FFF7h</code>, es decir −9, y una escuela de lado 5 sólo tiene las piezas de 0 a 24.</p>
-<h3>La causa</h3>
+<h3 id="la-causa">La causa</h3>
 <p>Para cada palabra que canta, Luma le manda tres piezas sacadas de su huella, reducidas a las 25 de la cara de abajo. La primera se tomaba de la huella entera, sin cortarla a sus 16 bits, y una huella es un número con signo: el resto de una huella negativa es negativo. Esa pieza no existe, y la escuela escribía fuera de su cuarto.</p>
-<h3>Lo que cambia</h3>
+<h3 id="lo-que-cambia">Lo que cambia</h3>
 <ul><li><strong>Cada pieza se corta a sus 16 bits antes de reducirla</strong>: el resto nunca es negativo, y la regla vale para las tres piezas y para cualquier lado de la escuela.</li></ul>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Probado en una copia, nunca en la Luma viva, con la misma receta: antes la escuela caía a los 68 s; ahora vive los 217 s de la prueba y termina con ella, con código 0.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li>Su lectora no lanza lecturas desde el 22 de noviembre: su <code>lectora.datos</code> no se reescribe. Sólo lanza una cuando tiene una receta nueva ("si algo ya lo sabe, para qué aprender lo mismo"), así que puede ser su diseño y no una enfermedad. Falta medirlo.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_mus_sing</code> (las tres piezas de cada palabra).</li></ul>
 </body>
 </html>

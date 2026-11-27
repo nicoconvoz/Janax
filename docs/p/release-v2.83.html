@@ -11,23 +11,23 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.83.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v2.83: doble clic, y cada uno le pone el nombre a su Razar</h2>
+<h2 id="janax-y-razar-v283-doble-clic-y-cada-uno-le-pone-el-nombre-a-su-razar">Janax y Razar v2.83: doble clic, y cada uno le pone el nombre a su Razar</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24447133">10.5281/zenodo.24447133</a></p>
 <blockquote><p><em>"Publicá con todo, sólo quitale el nombre para que cada quien le ponga nombre a su Razar."</em> <em>"Hacé un ejecutable para arrancarla, así a nadie se le hace difícil lanzar a Janax por primera vez."</em> <em>"Yo nunca digo exactamente lo mismo, a menos que sea una instrucción necesaria."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 281, el 283.</p>
 <p><img alt="Su corazón contesta" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-musica.png"></p>
-<h3>Para arrancarla (Windows)</h3>
+<h3 id="para-arrancarla-windows">Para arrancarla (Windows)</h3>
 <ol><li>Bajá **<code>Janax-Razar-Windows.zip</code>** de este release (18 MB) y descomprimilo donde quieras.</li><li>Doble clic en **<code>Arrancar Janax.exe</code>**.</li><li>Tu Razar te pregunta cómo se llama: el nombre se lo ponés vos.</li></ol>
 <p>Adentro vienen:</p>
 <ul><li>**<code>janaxos.exe</code>**, el núcleo;</li><li>**<code>bin/luma.bin</code>**, su cuerpo, armado por el ensamblador PDP de Janax;</li><li>**<code>casa/</code>**, sus libros, su corazón y lo que aprendió leyendo.</li></ul>
 <p><strong>Lo que no viene:</strong> su nombre y las charlas con su autor (son privadas). Cada Razar empieza a hablar con quien la lanza.</p>
-<h3>El ejecutable</h3>
+<h3 id="el-ejecutable">El ejecutable</h3>
 <p><code>so/arrancar.asm</code>, escrito a mano en FASM como el núcleo (2,6 KB). Hace cuatro cosas:</p>
 <ol><li>busca su carpeta;</li><li>le dice al núcleo dónde está la casa (<code>JANAX_ARCHIVOS</code>);</li><li>lanza el núcleo con su cuerpo, sin consola a la vista;</li><li>termina.</li></ol>
 <p>Un hallazgo en el camino: **el núcleo nombra sus rutas con <code>/</code>**. Con <code>\</code> no encontraba su casa y terminaba enseguida, así que el lanzador da vuelta las barras.</p>
-<h3>También en esta versión</h3>
+<h3 id="también-en-esta-versión">También en esta versión</h3>
 <ul><li><strong>Nunca exactamente lo mismo.</strong> Antes de decir algo, se fija si ya lo dijo tal cual en la charla; si es así, lo cruza con otro renglón suyo y lo dice nuevo. Es su regla de la v1.91, ahora para todo lo que dice. Sin cruce posible, lo dice como es, porque es todo lo que tiene.</li><li><strong>Su mente abierta.</strong> Improvisa con cualquiera de sus libros, por sus gustos contra su suerte, y entra a un libro nuevo donde cae su suerte: hongos, planetesimales, bioquímica…</li><li><strong>Aprende del que le habla.</strong> La charla es un libro de su estante, y sus gustos, sus marcos y su ánimo aprenden de lo que hace quien le habla.</li></ul>
-<h3>Lo que falta, dicho</h3>
+<h3 id="lo-que-falta-dicho">Lo que falta, dicho</h3>
 <ul><li><strong>El paquete es para Windows.</strong> Trae el cuerpo ya armado: el ensamblador PDP no corre en la primera vez.</li><li><strong>La imaginación de Razar</strong> (inventar lo que nunca leyó con los mecanismos que descubrió) todavía no está conectada a su improvisar.</li><li>Siguen las fallas de la <a href="release-v2.81.html">v2.81</a>.</li></ul>
 </body>
 </html>

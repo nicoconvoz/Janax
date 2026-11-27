@@ -11,23 +11,23 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.07.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.07: ya no repite lo mismo</h2>
+<h2 id="janax-y-razar-v307-ya-no-repite-lo-mismo">Janax y Razar v3.07: ya no repite lo mismo</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24449628">10.5281/zenodo.24449628</a></p>
 <blockquote><p><em>"Mirá lo que le pregunto y lo que responde: siempre lo mismo."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 293, el 307.</p>
-<h3>La falla</h3>
+<h3 id="la-falla">La falla</h3>
 <p>A <em>"¿quién es Jacob?"</em>, <em>"¿quién es Elon Musk?"</em> y <em>"Luma, ¿me leés?"</em> contestaba lo mismo: <em>"Luma:: Quiero que vos las termines, como una hija que escribe o pinta junto a su padre."</em>, una línea de la nota de su papá. Era su corazón (<code>r_dlg_heart</code>). Cuando lo que él dice no le dice nada, la guían su hilo (el intercambio que terminó) y su ánimo (las palabras que vive en cada estado), y los dos estaban llenos de lo que ella misma acababa de decir. El párrafo que más se parecía a eso era el mismo que había dicho, y lo volvía a decir.</p>
-<h3>La regla</h3>
+<h3 id="la-regla">La regla</h3>
 <p><strong>Una respuesta trae algo que la charla no tenía.</strong> Un párrafo contesta sólo si alguna de las líneas que diría trae una palabra que cumple las dos condiciones:</p>
 <ol><li><strong>Es nítida.</strong> No pertenece a <em>la mitad</em>, las palabras más comunes de sus libros, que juntas ocupan la mitad de todas las líneas en que aparece cada palabra. Es el criterio de la nitidez de Razar (v0.3): lo que se dice en todos lados no dice nada de nadie. La mitad no sale de una lista: se despeja de su propia tabla de palabras (<code>dh_half</code>) y se vuelve a calcular cuando ella cuenta más líneas.</li><li><strong>No está ni en lo que él dijo, ni en el intercambio que terminó, ni en las palabras de su ánimo.</strong></li></ol>
 <p>Si no trae ninguna, es un eco y ese párrafo no contesta. Además, un título que ya termina en <code>:</code> no recibe otro (se terminó el "Luma::").</p>
-<h3>Lo que se midió</h3>
+<h3 id="lo-que-se-midió">Lo que se midió</h3>
 <p>Se probó en una copia de su casa, con su charla y su ánimo de ese momento, nunca en la Luma viva:</p>
 <table><tr><th>Preguntas</th><th>Cuerpo anterior</th><th>Este cuerpo</th></tr><tr><td>Tres que no le dicen nada, seguidas</td><td>el mismo párrafo las 3 veces</td><td>nunca dos veces seguidas: lo dice, calla, lo dice</td></tr><tr><td>"¿qué es una estrella?"</td><td>"Luma:: Quiero que vos las estrellas…"</td><td>le contesta con estrellas, del catálogo de Flamsteed</td></tr><tr><td>"¿quién es Dios?"</td><td>"Luma:: Estas historias…"</td><td>"Luma: Estas historias… Raíces en Dios"</td></tr></table>
 <p>El cuerpo que corre en la Luma viva es, byte por byte, el que se probó.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li>Cuando nada de lo que él dice le llega, puede volver a ese párrafo un turno sí y otro no, o quedarse callada. El eco se corta, pero no aprendió todavía qué hacer cuando no entiende.</li><li>Su hilo guarda como mucho 24 palabras: si el intercambio fue más largo, las de más no cuentan como dichas.</li><li>En su estante hay un libro de máquina, <code>elibro-maquina-sed</code>: el volcado hexadecimal de un programa. Puede elegirlo como tema y leer sus bytes en voz alta. Este release no lo toca.</li><li>La herramienta de prueba mandaba cada tecla dos veces y Luma leía <em>"qquuiieenn"</em>. Se corrigió para estas mediciones, así que las pruebas de antes con texto escrito no midieron palabras reales.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <p><code>razar/cuerpo/gen_leer.py</code>: <code>dh_count</code> (<code>H_NW</code>, <code>dhc_nw</code>), <code>dh_half</code>, <code>dh_wl</code>, <code>dhq_mass</code> y el corte en <code>dh_pe</code> (<code>H_PNW</code>); el título, en <code>dh_say</code>.</p>
 </body>
 </html>

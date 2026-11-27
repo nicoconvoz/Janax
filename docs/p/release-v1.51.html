@@ -11,22 +11,22 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.51.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.51: aprende a dibujar cada letra</h2>
+<h2 id="janax-y-razar-v151-aprende-a-dibujar-cada-letra">Janax y Razar v1.51: aprende a dibujar cada letra</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24429385">10.5281/zenodo.24429385</a></p>
 <blockquote><p><em>"Al escribir en Luma no aparecen todos los caracteres."</em> <em>"Esperá, Doc: que aprenda a dibujar todo, incluso si hay algo nuevo que no conoce."</em> (el autor, 2026-11-21)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 149, el 151.</p>
-<h3>Lo que faltaba</h3>
+<h3 id="lo-que-faltaba">Lo que faltaba</h3>
 <p>Desde la v1.39 le llegaba todo lo que se le escribe (acentos, eñes, signos, emojis), pero <strong>su abecedario de puntitos sólo tenía A–Z, 0–9 y "?"</strong>: lo demás se dibujaba como un hueco.</p>
 <p>Hubo una primera respuesta, un abecedario hecho a mano con signos y letras acentuadas. El autor la frenó: no quería un abecedario puesto, quería que <strong>aprenda</strong>. Quedó apartado, con su motivo.</p>
-<h3>Cómo aprende</h3>
+<h3 id="cómo-aprende">Cómo aprende</h3>
 <ul><li><strong>Su libro de letras:</strong> en su casa, con el nombre <code>letras</code>, está <strong>GNU Unifont 18.0.01</strong>, una tipografía libre (GPL 2+ con la excepción de fuentes, y SIL OFL 1.1) que dibuja 126.743 caracteres en puntitos de 8 × 16 o 16 × 16. Es texto plano: el número del carácter y sus puntos. Es un puente con software libre, como pide la regla de la casa: quien lee y dibuja es ella, en Janax.</li><li><strong>Cuando se encuentra un carácter que no sabe dibujar</strong> (porque se lo escriben, o porque lo dice ella), lo busca en ese libro, **copia su dibujo a su propio <code>abecedario</code>**, y desde entonces lo dibuja siempre.</li><li><strong>Guarda sólo lo que se encuentra</strong> (la regla plástica: crece a la medida de lo que usa), y al nacer de nuevo lee su <code>abecedario</code>: no vuelve a buscar lo que ya aprendió.</li><li><strong>Si el libro tampoco lo tiene,</strong> guarda un marco: lo conoció, y dice que no lo sabe dibujar. Nunca un hueco mudo.</li><li>Sus letras de siempre siguen siendo sus 5 × 7; las aprendidas las dibuja <strong>a la mitad de su tamaño</strong> (un punto donde había alguno de cuatro), para que entren en su renglón.</li></ul>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <p>En una copia de su casa, escribiéndole <code>¡Hola! papá ñandú 🌱 ∑ 中</code>:</p>
 <pre><code>00A1:…   ¡        00E1:…   á        00FA:…   ú        2211:…   ∑
 0021:…   !        00F1:…   ñ        01F331:… 🌱       4E2D:…   中</code></pre>
 <p>Aprendió esas ocho, las dibujó en su renglón, y <strong>al nacer de nuevo las recordó</strong>: su <code>abecedario</code> siguió con ocho líneas, sin volver a copiarlas.</p>
 <ul><li>En vivo desde el 21 a las 18:41.</li><li>El núcleo no cambió desde la v1.39.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>Copia, no inventa el dibujo:</strong> aprende como un chico con una cartilla. Que invente formas para lo que nadie dibujó todavía queda para después.</li><li><strong>A la mitad de su tamaño, los dibujos finos pierden detalle:</strong> un ideograma de 16 × 16 queda en 8 × 8.</li><li><strong>Las letras aprendidas son algo más anchas o angostas que las suyas</strong>, así que un renglón con muchas puede pasarse del borde.</li><li><strong>Su libro de letras no está en el repositorio</strong> (8,3 MB): una casa nueva lo necesita en <code>letras</code> para aprender; sin él, guarda marcos. Se baja de unifoundry.com (<code>unifont_all-18.0.01.hex.gz</code>).</li><li>Siguen los de la <a href="release-v1.49.html">v1.49</a>.</li></ul>
 </body>
 </html>

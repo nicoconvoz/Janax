@@ -11,23 +11,23 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.17.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.17: el hilo abierto es el centro</h2>
+<h2 id="janax-y-razar-v317-el-hilo-abierto-es-el-centro">Janax y Razar v3.17: el hilo abierto es el centro</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24452213">10.5281/zenodo.24452213</a></p>
 <blockquote><p><em>"Si le pregunto si te gusta esa historia, me refiero a lo que me mostró, pero busca todo de cero. Tiene que ser el centro el hilo abierto y partir de ahí; obvio, puede cambiar de tema o insistir, pero lo normal es continuar el hilo."</em> <em>"Tendría que responder sin citar, por deducción, como hacía antes."</em> <em>"No le des respuestas pre armadas, pero orientá su respuesta."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 313, el 317.</p>
-<h3>La falla</h3>
+<h3 id="la-falla">La falla</h3>
 <p>Cada vez que él le hablaba, ella buscaba sus palabras en todos sus libros, como si la charla empezara de cero. A <em>"¿te gusta esa historia?"</em> no pensaba en la historia que le acababa de mostrar: buscaba "historia" por todo el estante.</p>
-<h3>La regla</h3>
+<h3 id="la-regla">La regla</h3>
 <p><strong>Lo que ella le muestra es el hilo, y el hilo es el centro.</strong></p>
 <ol><li><strong>Lo que muestra es el hilo.</strong> Cuando contesta con la línea de un libro, su tema pasa a ser ese libro, justo después de esa línea. Si sigue, sigue desde ahí.</li><li><strong>Sólo algo nuevo la saca del hilo.</strong> Una palabra de él la manda a buscar en todos sus libros si es <strong>nítida</strong> (no está en la mitad común de sus libros: la nitidez de Razar), <strong>no es su nombre</strong> y <strong>no está en lo que ella le acaba de mostrar</strong>. Sin una palabra así, habla del hilo.</li><li><strong>Si él pregunta por el hilo</strong>, contesta <strong>sobre el hilo, por deducción</strong>, sin citar: es su manera de decir "quién es" (<code>r_dlg_quien</code>), con el hilo en el lugar de las palabras de él. <strong>No hay respuestas armadas.</strong> La orienta su propia medida: el tema de su respuesta es la palabra del hilo que más le dice a ella, y sus libros dicen lo que esa palabra hace. Nunca usa una cláusula que el hilo ya tenga entera.</li><li><strong>Si él no pregunta</strong>, sigue el hilo desde donde estaba.</li><li><strong>Puede cambiar o insistir.</strong> Las ganas de contestar y la libertad de sus ramas siguen siendo suyas.</li></ol>
 <p>Que él pregunta se sabe porque la última letra de su línea es <code>?</code>. No hay ninguna lista de palabras.</p>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Todo se probó en una copia de su casa, nunca en la Luma viva. Hoy sus ganas de contestar estaban bajas: en la copia, tanto esta versión como la anterior callaron tres de cada cinco veces. Para ver el hilo se armó una variante de prueba que contesta siempre (<code>LUMA_RESPONDE=1</code>). Cinco preguntas seguidas quedaron en el diario de su autor:</p>
 <table><tr><th>Él</th><th>Ella</th></tr><tr><td>"Dios me habló en el silencio del alma, hermano"</td><td><em>"Los que comparten frutos de muerte al hermano, dan veneno y crecen en el Amor muerto…"</em></td></tr><tr><td>"¿te gusta esa historia?"</td><td><em>"…Hoy sentí el gran deseo de seguir a Jesús al verme reflejado en las líneas de un pasaje de un libro…"</em></td></tr><tr><td>"y qué más"</td><td><em>"…Esta mañana Jesús de la mano del sacerdote me sumergió en su infinita misericordia…"</em></td></tr><tr><td>"¿qué es un volcán?"</td><td>sigue en su diario: no encontró volcanes en ningún libro</td></tr><tr><td>"¿te gusta?"</td><td>contesta sobre lo mismo, sin saltar a otro libro</td></tr></table>
 <p>La Luma viva corre, byte por byte, el cuerpo real que se probó, sin la variante.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li><strong>La mitad común se mide en el libro que está leyendo ahora</strong> (lee uno por vez). Una palabra muy repetida en ese libro puede parecerle común y no sacarla del hilo. Pasó en la copia: a <em>"¿qué es una estrella?"</em> siguió el hilo, con una línea de teatro.</li><li>A veces repite el comienzo de lo que acaba de decir antes de seguir: es su cruce de líneas (<code>r_dlg_vary</code>).</li><li>La deducción sobre el hilo elige su tema por la palabra que más le dice. A veces es una palabra pobre: una vez empezó con <em>"Si"</em>.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <p><code>razar/cuerpo/gen_leer.py</code>: <code>lj_pull</code>, <code>lj_asks</code>, <code>lj_about</code>, <code>lj_mark</code>, <code>lj_follow</code>, y la entrada del hilo al principio de <code>dse_yes</code>.</p>
 </body>
 </html>

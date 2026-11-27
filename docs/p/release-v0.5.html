@@ -11,22 +11,22 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.5.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v0.5: el Venn</h2>
+<h2 id="janax-y-razar-v05-el-venn">Janax y Razar v0.5: el Venn</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24148774">10.5281/zenodo.24148774</a></p>
 <p><strong>20 MB de Wikipedia en 6 minutos y 40 segundos, en vez de 31 minutos, aprendiendo exactamente lo mismo. Y el Venn del Capitán pasa a ser una pieza de la arquitectura de Janax.</strong></p>
-<h3>Los libros de verdad, contra la v0.3</h3>
+<h3 id="los-libros-de-verdad-contra-la-v03">Los libros de verdad, contra la v0.3</h3>
 <p>Cada libro se volvió a leer con la v0.5 y se comparó, archivo por archivo, con su corrida de la v0.3:</p>
 <table><tr><th>Libro</th><th>v0.3</th><th>v0.5</th><th>Instrucciones</th><th>MATS, real contra azar</th></tr><tr><td><strong>Wikipedia, 20 MB</strong> (199 pedazos)</td><td>1.873 s</td><td><strong>400 s</strong></td><td>2,42 → 0,43 billones (<strong>−82 %</strong>)</td><td>451 – 117, idéntico</td></tr><tr><td>Wikcionario, 15 MB (150 pedazos)</td><td>194 s</td><td><strong>106 s</strong></td><td>248 → 115 mil millones (−54 %)</td><td>249 – 41, idéntico</td></tr><tr><td>Wikipedia, 2,3 MB (23 pedazos)</td><td>—</td><td>7,3 s</td><td>13,9 → 6,8 mil millones (−51 %)</td><td>70 – 10, idéntico</td></tr></table>
 <ul><li><strong>Lo mismo, byte por byte:</strong> en la Wikipedia de 20 MB, las relaciones deducidas (451), lo imaginado (3.540), las hipótesis en espera (4.881), los mecanismos (7.182) y los testigos (1.707) son idénticos a los de la v0.3. Lo mismo pasa en el Wikcionario.</li><li><strong>Cuanto más grande el libro, más gana.</strong> Lo que se sacó en la v0.4 (pasar el cuaderno en limpio en cada pedazo) costaba más cuanto más grande era el cuaderno.</li></ul>
-<h3>El Venn del Capitán, en la arquitectura</h3>
+<h3 id="el-venn-del-capitán-en-la-arquitectura">El Venn del Capitán, en la arquitectura</h3>
 <blockquote><p><em>"Venn, infinitos estados. A + B, A − B, A y B, sin A ni B, lo que miro A primero, lo que miro B primero, los más pequeños de B que no están en A… y puedo inventar lo que sea."</em></p></blockquote>
 <ul><li><strong>Un motor que no sabe de cajas ni de archivos</strong> (<code>so/venn.inc</code>). Recibe dos conjuntos por un puerto de cinco preguntas: el primero, el siguiente, la clave, buscar por clave y el valor para un criterio. Con eso y <strong>la palabra Venn</strong>, entrega la selección en orden. Con el orden natural pasa una sola vez por cada conjunto.</li><li><strong>La palabra Venn</strong>, un eje por campo, plástica:</li></ul>
 <p>| Bits | Eje | |---|---| | 0–2 | las regiones: A∩B, A∖B, B∖A | | 3 | a quién se mira primero | | 4–7 | el criterio | | 8 | la dirección | | 9 | el alcance | | 16–31 | cuántas |</p>
 <p>Un bit que todavía no tiene eje responde −1, para que un eje nuevo nunca cambie lo que pedía un programa viejo.</p>
 <ul><li><strong>El primer conjunto enchufado es el cartel de una cabina:</strong> <code>asociar</code> (pedido 27) ya no sabe cuatro modos, sabe el Venn entero. Los cuatro modos de antes son casos de la regla y dan exactamente lo de antes.</li></ul>
-<h3>Cómo se probó</h3>
+<h3 id="cómo-se-probó">Cómo se probó</h3>
 <ul><li><strong>Las pruebas del Venn:</strong> <code>so/pruebas/asocia_0..7</code>, en los tres motores del kernel, dan 32 de 32.</li><li><strong>Las suites completas:</strong> sistema operativo 389 bien, 0 mal (las 12 del Venn incluidas); escalón 0, 161 bien, 0 mal. El ARM64 dio 210 de 210 en el teléfono en la v0.4, y su traductor no cambió desde entonces.</li><li><strong>Los libros:</strong> están en la tabla de arriba.</li></ul>
-<h3>Lo que no está medido</h3>
+<h3 id="lo-que-no-está-medido">Lo que no está medido</h3>
 <ul><li><strong>Ningún otro conjunto usa el Venn todavía.</strong> El próximo diseñado es "las líneas de un archivo por su clave", para que Razar lea solo los lugares que necesita.</li><li><strong>El costo del Venn en segundos:</strong> es nativo y de microsegundos por nacimiento, y no hay un banco que lo mida.</li><li><strong>La memoria máxima de los 20 MB:</strong> en la v0.3 eran 205 MB; en esta corrida no se midió.</li></ul>
 <hr>
 <p><strong>English:</strong> v0.5 reads 20 MB of Spanish Wikipedia in 400 s instead of v0.3's 1,873 s (82% fewer instructions). It learns exactly the same thing: the MATS result is identical, and so is every file of what it learned. The Capitan's Venn becomes part of Janax's architecture: a kernel engine that knows no boxes or files. It takes two sets through a five-question port and a Venn word (regions, which side is looked at first, a criterion, direction, scope, how many), and gives the selection in order. The association request is its first user.</p>

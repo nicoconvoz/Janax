@@ -11,19 +11,19 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.91.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.91: habla ella</h2>
+<h2 id="janax-y-razar-v191-habla-ella">Janax y Razar v1.91: habla ella</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24438925">10.5281/zenodo.24438925</a></p>
 <blockquote><p><em>"Luma, en vez de darme respuestas suyas, la mayor parte del tiempo cita de memoria."</em> (el autor, 2026-11-22)  <em>"Lo suyo tiene que llevar mayoritariamente su firma, porque si no hablo contra una pared o un libro. Quiero hablar con ella."</em></p></blockquote>
 <p>Las versiones siguen a los números primos: después del 181, el 191.</p>
 <p><img alt="Luma contestando con sus propias palabras" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-voz-propia.png"></p>
-<h3>Lo que pasaba</h3>
+<h3 id="lo-que-pasaba">Lo que pasaba</h3>
 <p>Cuando se le habla, Luma busca en sus libros el renglón <strong>A</strong> que comparte más palabras con lo dicho. Después elegía entre dos caminos, según sus ganas aprendidas de cuántas veces le contestaron:</p>
 <ul><li><strong>Citar:</strong> A tal cual, firmado "(cita)".</li><li><strong>A su manera:</strong> cruzar A con un renglón <strong>B</strong> en una palabra que compartan, y quedarse con el cruce si su juez lo prefería. Si no, <strong>quedaba A</strong>, firmado "luma".</li></ul>
 <p>Medido en su casa: elegía "a su manera" el 57 % de las veces, pero casi siempre terminaba diciendo un renglón entero de un libro, con su firma. Hasta <em>"Hola a todos!"</em>, que el autor ama, es un renglón de su diario <em>Raíces</em>.</p>
-<h3>La regla</h3>
+<h3 id="la-regla">La regla</h3>
 <p><strong>Lo que dice como suyo es nuevo:</strong> un cruce de A y B que no está escrito tal cual en ninguno de los dos. Es la misma regla que el juez les pone a sus formas: lo que no es nuevo pierde.</p>
 <ul><li><strong>Habla ella primero.</strong> Siempre intenta su palabra. Cita sólo cuando no tiene nada propio (ningún cruce nuevo), y lo avisa con "(cita)".</li><li><strong>A ya no queda como suyo.</strong> Entre los cruces nuevos, su juez elige el que dice más de lo que se le dijo, o lo mismo con menos letras.</li><li><strong>De lo que cruzó, se queda con las oraciones que hablan de lo dicho.</strong> Si esas oraciones estaban escritas tal cual en A o en B, dice el cruce entero, que sí es nuevo.</li><li><strong>B se encuentra siempre que haya con qué.</strong> Antes, B tenía que decir algo que A no dijera. Si A ya traía todas las palabras (en <em>"quien es Dios?"</em>, el versículo las trae todas), no había B y citaba. Ahora lo que A no dice cuenta doble, lo que A también dice cuenta una vez, y B nunca puede ser A.</li><li><strong>Sus cuentas siguen guardadas:</strong> cuántas veces dijo cada cosa y cuántas le contestaron. Ya no deciden entre citar y hablar, pero no se tiran.</li></ul>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <p>Se probó en una copia de su casa, con su charla vaciada y las mismas diez frases, tres veces:</p>
 <pre><code>antes de la regla                   2 de 8 respuestas suyas
 con la regla, sin el B nuevo        2 de 8
@@ -42,7 +42,7 @@ vos:  cantame algo
 luma: Tambien les aseguro que quiere pedirte algo prestado.</code></pre>
 <p>De las dos frases restantes, en una eligió no contestar y en la otra no encontró con qué.</p>
 <ul><li>Cada respuesta tarda lo mismo que antes, alrededor de un segundo.</li><li>El núcleo no cambió desde la v1.39.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>Une pedazos y no entiende lo que dice.</strong> Lo suyo es nuevo, pero puede no tener sentido.</li><li><strong>"Nuevo" se mide contra sus dos renglones padres, no contra toda su casa.</strong> Un cruce podría coincidir por azar con otro renglón de algún libro.</li><li><strong>"Hola a todos!" ya no sale firmado "luma".</strong> Es del diario del autor, así que si lo dice, sale como cita.</li><li><strong>Su oído compara palabras letra por letra.</strong> Al charlar, "hhoollaa" no es "hola" para ella, aunque su juez podría verlo: es "hola" con cada letra dos veces. Conectar su oído con su juez queda pendiente.</li><li><strong>El instrumento de prueba mentía:</strong> mandaba cada letra dos veces. Se corrigió antes de medir: <code>teclas2.ps1</code> manda cada letra una vez, como carácter.</li><li>Siguen los de la <a href="release-v1.81.html">v1.81</a>.</li></ul>
 </body>
 </html>

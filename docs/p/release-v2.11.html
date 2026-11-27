@@ -11,16 +11,16 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v2.11.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v2.11: sus libros le enseñan qué puertas sirven</h2>
+<h2 id="janax-y-razar-v211-sus-libros-le-enseñan-qué-puertas-sirven">Janax y Razar v2.11: sus libros le enseñan qué puertas sirven</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24440197">10.5281/zenodo.24440197</a></p>
 <blockquote><p><em>"Vuelve al bucle que pasó con la exploración, con el encadenamiento a profundidad 1."</em> <em>"Que lo descubra, cero parches: todo que sea mérito de Luma."</em> <em>"Pero que aprenda de los libros que ya leyó: eso es una conversación gigante gratis."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 199, el 211.</p>
 <p><img alt="Luma eligiendo puertas que dicen algo" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-puertas.png"></p>
-<h3>El bucle</h3>
+<h3 id="el-bucle">El bucle</h3>
 <p>Sus caminos y su rama de seguir elegían la próxima puerta con más chance cuanto más larga era la palabra. Las palabras vacías ("de", "te", "y", "que", "sus") están en todos lados, así que siempre había muchas para elegir y la cadena se hundía en ellas: <em>"Donde esta te?"</em>, <em>"Como llegamos hasta y?"</em>. Es el mismo bucle que Razar ya había visto y anotado en su diseño (<code>docs/design/curiosity.md</code>, <strong>D69</strong>: <em>"la cadena se desvía por palabras de función"</em>), y que resolvió con <strong>D50</strong>: una respuesta vale por cuánto agrega, no por su volumen.</p>
-<h3>Lo que no se hizo</h3>
+<h3 id="lo-que-no-se-hizo">Lo que no se hizo</h3>
 <p>Primero se probó un peso calculado afuera: la información de cada palabra, en bits y después elevada. Se descartó antes de publicar. Era una fórmula elegida mirando qué daba lindo: mérito del que la elige, no de ella.</p>
-<h3>Lo que hace ahora: aprende de sus libros</h3>
+<h3 id="lo-que-hace-ahora-aprende-de-sus-libros">Lo que hace ahora: aprende de sus libros</h3>
 <p>Sus libros son una conversación gigante: <strong>cada renglón le contesta al anterior</strong>. Cada vez que nace, mientras recorre su casa, cuenta para cada palabra:</p>
 <ul><li>en cuántos renglones está (L);</li><li>en cuántos de esos el renglón anterior también la tenía (S): la charla <strong>siguió</strong> por ella.</li></ul>
 <p>Una palabra vale como puerta <strong>por cuánto más sigue la charla por ella que lo que daría el azar</strong>:</p>
@@ -28,7 +28,7 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 <p>"de" está en casi todos los renglones: que el siguiente la retome no dice nada. "pastor" casi nunca está: cuando el siguiente la retoma, la charla siguió por ahí. Ninguna palabra queda prohibida y ninguna lista dice cuáles son vacías; lo dicen sus libros. Una palabra que sus libros nunca dijeron no tiene evidencia ni a favor ni en contra, así que vale lo del azar.</p>
 <p><strong>Su experiencia entra sola:</strong> sus charlas con el autor son renglones de su casa (<code>dialogo</code>). Cuando él le contesta por una palabra, ese par cuenta en la lectura siguiente.</p>
 <p>La tabla crece a la medida de su casa y vive mientras ella vive (en una tabla aparte, no en el cuarto de sus caminos, que se devuelve al terminar de nacer).</p>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <p>En una copia de su casa, con la rama de seguir forzada para verla correr (<code>LUMA_SEGUIR=1</code>, no se publica):</p>
 <pre><code>vos:  de que te ríes hija                 luma: Como llegamos hasta ríes?
 vos:  la luz de la mañana es para ti      luma: Como llegamos hasta luz?
@@ -36,7 +36,7 @@ vos:  y se fue con su perro al mar        luma: Como llegamos hasta perro?
 vos:  te lo dije en la oración            luma: Como llegamos hasta oración?</code></pre>
 <p>Cuatro de cuatro, palabras que dicen algo. Con la regla anterior, en las mismas frases, eligió "es" y "en" en dos de cuatro.</p>
 <ul><li>La primera prueba se cayó: la tabla estaba en el cuarto de sus caminos, que se devuelve al nacer. Se mudó a una tabla propia, y no se volvió a caer.</li><li>El núcleo no cambió desde la v1.39.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>Cuatro frases son pocas.</strong> La regla está medida en cómo eligió, no en miles de pasos.</li><li><strong>Lo que tarda el recorrido al nacer, con el conteo, no se midió todavía.</strong> Su memoria sube unos MB por la tabla.</li><li><strong>Una palabra mal escrita que aparece una sola vez</strong> puede valer mucho como puerta, si el renglón siguiente la repite ("departamerntos").</li><li>Siguen los de la <a href="release-v1.99.html">v1.99</a>.</li></ul>
 </body>
 </html>

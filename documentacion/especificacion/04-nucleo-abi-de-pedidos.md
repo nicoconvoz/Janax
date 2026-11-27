@@ -1,15 +1,15 @@
 # 04. Núcleo JanaxOS: ABI de pedidos (llamadas al sistema)
 
 **Alcance.** Este capítulo especifica la interfaz binaria por la que un programa Janax que corre como proceso de
-JanaxOS pide servicios al núcleo: la instrucción `jsys` y su convención de registros, el formato de la cola de
-pedidos, el algoritmo con que el núcleo atiende una cola (la "ventanilla"), el modelo de permisos que decide si un
-pedido se atiende (porteros, prefijos de etiqueta, firmas del padre), la tabla completa de los 47 pedidos numerados
-con sus argumentos, respuestas y efectos, la "casa de archivos" (cómo una etiqueta se convierte en un nombre de
-archivo del anfitrión) y la instrucción `jhost`. No cubre: la codificación general de instrucciones ni la semántica
-de las demás operaciones del idioma (capítulo 01), el ensamblador PDP y la construcción del núcleo (capítulo 02), la
+JanaxOS pide servicios al núcleo: la instrucción [`jsys`](01-idioma-janax.md#58-jsys-janax-os) y su convención de registros, el formato de la cola de
+pedidos, el algoritmo con que el núcleo atiende una cola (la ["ventanilla"](#5-procesamiento-de-un-toque)), el modelo de permisos que decide si un
+pedido se atiende ([porteros](#71-porteros), prefijos de etiqueta, firmas del padre), la tabla completa de los 47 pedidos numerados
+con sus argumentos, respuestas y efectos, la ["casa de archivos"](#10-la-casa-de-archivos) (cómo una etiqueta se convierte en un nombre de
+archivo del anfitrión) y la instrucción [`jhost`](#11-la-ventana-al-anfitrión-jhost). No cubre: la codificación general de instrucciones ni la semántica
+de las demás operaciones del idioma ([capítulo 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador PDP y la construcción del núcleo ([capítulo 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), la
 creación de procesos desde la línea de comandos, el planificador, los remeros, las salas y el motor de ejecución
-(capítulo 03), el detalle interno de la ventana, el teclado, el ratón, el sonido y el vigía del anfitrión (capítulo
-05), ni nada de Razar o Luma (capítulos 06 a 10) o del instalador (capítulo 11). Donde un pedido depende de esos
+([capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), el detalle interno de la ventana, el teclado, el ratón, el sonido y el vigía del anfitrión ([capítulo
+05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), ni nada de Razar o Luma ([capítulos 06 a 10](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)) o del instalador ([capítulo 11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)). Donde un pedido depende de esos
 mecanismos se da aquí su contrato observable y se remite al capítulo correspondiente.
 
 Las referencias `ruta:línea` son relativas a la raíz del repositorio. Las afirmaciones salen del código; lo que no
@@ -21,19 +21,19 @@ pudo verificarse en el código se marca "(no verificado)".
 
 | Término | Definición |
 |---|---|
-| Cabina | Un proceso de JanaxOS: su bloque de control de `PROC_SIZE` = 688 bytes (`so/janaxos.asm:44-115`), sus 16 registros, su programa, su pila de retorno y sus salas. |
-| Número de proceso | `P_ID`: el índice de la cabina en la tabla global `procs` (`so/janaxos.asm:1339-1343`). Los hijos del núcleo reciben 0, 1, 2… en el orden de la línea de comandos; los nacidos por el pedido 16 reciben el siguiente índice libre. Los números no se reutilizan (la tabla sólo crece). |
+| Cabina | Un proceso de JanaxOS: [su bloque de control](03-nucleo-arranque-memoria-procesos.md#52-bloque-de-proceso) de `PROC_SIZE` = 688 bytes (`so/janaxos.asm:44-115`), sus 16 registros, su programa, su pila de retorno y sus salas. |
+| Número de proceso | `P_ID`: el índice de la cabina en la tabla global `procs` (`so/janaxos.asm:1339-1343`). Los hijos del núcleo reciben 0, 1, 2… en el orden de la línea de comandos; los nacidos por el [pedido 16](#96-familia) reciben el siguiente índice libre. Los números no se reutilizan (la tabla sólo crece). |
 | Padre | `P_PARENT`: puntero a la cabina que lo lanzó; 0 = el núcleo (`so/janaxos.asm:60`). |
 | Familia de X | Para los pedidos que nombran "una cabina de la familia": su padre, uno de sus hijos o un hermano (mismo `P_PARENT`), que no sea X y no haya terminado (`so/ambientes.inc:1033-1059`). Todos los hijos del núcleo son hermanos entre sí (comparten `P_PARENT` = 0). |
-| Sala | Región de memoria de datos de una cabina. Ver §6. |
+| Sala | Región de memoria de datos de una cabina. Ver [§6](#6-direcciones-salas-y-validación-de-punteros). |
 | Dirección Janax | Entero de 64 bits: número de sala en los 32 bits altos, posición dentro de la sala en los 32 bajos (`so/ambientes.inc:38`). |
-| Etiqueta | Nombre de archivo de un programa: cualquier secuencia UTF-8 válida no vacía. Ver §10. |
-| Toque | Una ejecución de `jsys` que llega a la ventanilla con una cola. Es la unidad de atención: todos los pedidos de la cola se atienden en el mismo toque o el toque entero se suspende. |
+| Etiqueta | Nombre de archivo de un programa: cualquier secuencia UTF-8 válida no vacía. Ver [§10](#10-la-casa-de-archivos). |
+| Toque | Una ejecución de `jsys` que llega a la [ventanilla](#5-procesamiento-de-un-toque) con una cola. Es la unidad de atención: todos los pedidos de la cola se atienden en el mismo toque o el toque entero se suspende. |
 | Pedido / clase | Una entrada de la cola; su "clase" (`kind`) es el número de pedido, 1..47 (`KINDS` = 47, `so/janaxos.asm:161`). |
-| Portero | Nodo del árbol de permisos (§7.1). |
-| Pedido importante | Clase marcada en `kind_important` (`so/janaxos.asm:231-240`): requiere la firma del padre si quien pide no es hijo del núcleo (§7.3). |
+| Portero | Nodo del árbol de permisos ([§7.1](#71-porteros)). |
+| Pedido importante | Clase marcada en `kind_important` (`so/janaxos.asm:231-240`): requiere la firma del padre si quien pide no es hijo del núcleo ([§7.3](#73-pedidos-importantes-y-firma-del-padre)). |
 | Bolita | Prioridad de una cabina en 1/65536 (`P_PRIO`, `so/janaxos.asm:81`). |
-| "Dentro de sus salas" | Que un rango `[dirección, dirección + n)` esté entero dentro de una sola sala en pie que el núcleo pueda tocar, según `cabin_at` (§6.3). |
+| "Dentro de sus salas" | Que un rango `[dirección, dirección + n)` esté entero dentro de una sola sala en pie que el núcleo pueda tocar, según `cabin_at` ([§6.3](#63-validación-de-punteros-cabin_at)). |
 
 Valores numéricos: los negativos se escriben en decimal con signo (`-1` = `0xFFFFFFFFFFFFFFFF`). "qword" = 8
 bytes little-endian; "dword" = 4 bytes.
@@ -47,13 +47,13 @@ Un programa sólo tiene dos instrucciones que salen de su propio cómputo:
 | Opcódigo | Mnemónico | Formato | Función |
 |---|---|---|---|
 | `16h` (22) | `jsys rd, ra` | rd en bits 8-11, ra en bits 12-15, bits 16-31 sin uso | Ventanilla de JanaxOS: atiende la cola de pedidos cuya dirección está en `ra`; deja en `rd` cuántos pedidos tenía la cola. |
-| `17h` (23) | `jhost rd, ra` | ídem | Ventana al anfitrión: bloque de 32 bytes en `ra`; respuesta en `rd` (§11). |
+| `17h` (23) | `jhost rd, ra` | ídem | Ventana al anfitrión: bloque de 32 bytes en `ra`; respuesta en `rd` ([§11](#11-la-ventana-al-anfitrión-jhost)). |
 
 Fuentes: tabla de despacho `optable` (`so/janaxos.asm:523-526`, posiciones 22 y 23), decodificación del intérprete
-(`so/janaxos.asm:1841-1854`: opcódigo = byte bajo, rd = bits 8-11, ra = bits 12-15), macros de notación
+(`so/janaxos.asm:1841-1854`: opcódigo = byte bajo, rd = bits 8-11, ra = bits 12-15), [macros de notación](01-idioma-janax.md#810-notación-fasm-escalon0janaxinc)
 `jsys`/`jhost` (`escalon0/janax.inc:99`, `escalon0/janax.inc:104`).
 
-Los tres motores (intérprete, rutinas, traductor) implementan `jsys` con la misma secuencia: `op_sys`
+[Los tres motores](03-nucleo-arranque-memoria-procesos.md#53-motores-de-ejecución) (intérprete, rutinas, traductor) implementan `jsys` con la misma secuencia: `op_sys`
 (`so/janaxos.asm:2175-2207`) y `t_sys` (`so/rutinas.inc:612-644`). El traductor no genera código nativo para los
 opcódigos 16h y 17h (`native_kind` = 0 en esas posiciones, `so/nativo.inc:554-558`): ejecuta la rutina `t_sys` /
 `t_jhost` de la tabla.
@@ -66,7 +66,7 @@ opcódigos 16h y 17h (`native_kind` = 0 en esas posiciones, `so/nativo.inc:554-5
 
 | Registro | Entrada | Salida |
 |---|---|---|
-| `ra` | Dirección Janax de la cola (§4). En la primera orden (§3.2): tamaño en bytes de la sala 0. | Sin cambios (salvo que `ra` = `rd`). |
+| `ra` | Dirección Janax de la cola ([§4](#4-formato-de-la-cola-de-pedidos)). En la primera orden ([§3.2](#32-primera-orden-construcción-de-la-sala-0)): tamaño en bytes de la sala 0. | Sin cambios (salvo que `ra` = `rd`). |
 | `rd` | Ignorado. | Número de entradas que tenía la cola (no el número de pedidos exitosos): `so/janaxos.asm:2187-2188`, `so/janaxos.asm:2442`. En la primera orden: 0. |
 | `j15` | — | Sólo en la primera orden: tamaño de la sala 0 (redondeado a 8). En las demás, sin cambios. |
 | Resto | — | Preservados. El núcleo no escribe ningún otro registro Janax. |
@@ -76,17 +76,17 @@ y una sola instrucción `jsys` puede llevar pedidos de varias clases. La elecci�
 de j0..j15). Si `rd` = `j15` en la primera orden, `j15` termina en 0, porque `rd` se escribe después que `j15`
 (`so/ambientes.inc:758`, luego `so/janaxos.asm:2188`).
 
-Las respuestas individuales de cada pedido se escriben en la propia cola (campo `+24` de cada entrada, §4.2).
+Las respuestas individuales de cada pedido se escriben en la propia cola (campo `+24` de cada entrada, [§4.2](#42-entrada-32-bytes)).
 
 ### 3.2 Primera orden: construcción de la sala 0
 
-Una cabina nace sin memoria de datos (`P_DATA` apunta al "cajón muerto", `so/janaxos.asm:1284-1285`). Mientras
+Una cabina nace sin memoria de datos (`P_DATA` apunta al ["cajón muerto"](03-nucleo-arranque-memoria-procesos.md#62-caja-vista-cajón-y-cartel), `so/janaxos.asm:1284-1285`). Mientras
 `P_ROOM0` = 0, cualquier `jsys` se interpreta como primera orden (`so/janaxos.asm:2228-2233`, `rooms_first` en
 `so/ambientes.inc:710-771`):
 
 1. El valor de `ra` es el tamaño pedido `s`. Debe ser `s` > 0; se redondea hacia arriba a múltiplo de 8; debe ser
    `s` ≤ `ROOM_MAX` = 2^32 (`so/janaxos.asm:40`).
-2. Si el programa tiene datos iniciales (archivo `.datos`, §10.4) de longitud `P_INITLEN`, debe ser `P_INITLEN` ≤ `s`.
+2. Si el programa tiene datos iniciales (archivo `.datos`, [§10.4](#104-datos-iniciales-datos)) de longitud `P_INITLEN`, debe ser `P_INITLEN` ≤ `s`.
 3. Se crea una caja de `s` bytes en ceros, vista para lectura y escritura, como entrada 0 del cartel; se copian los
    datos iniciales al comienzo; `P_LIM1` = `s`, `P_LIM8` = `s` − 7; `j15` = `s`.
 4. Respuesta: `rd` = 0 (la dirección de la sala 0).
@@ -95,33 +95,33 @@ Si cualquiera de las condiciones falla, `rooms_first` devuelve −1 y el proceso
 (`so/janaxos.asm:2183-2184`, `so/janaxos.asm:2198-2200`). Antes de la primera orden todo acceso a memoria termina el
 proceso con código 5 (no hay sala que lo contenga; `room_package`, `so/ambientes.inc:76-77`).
 
-La primera orden no pasa por porteros ni firmas. Una cabina rehecha (pedido 36) vuelve a `P_ROOM0` = 0
+La primera orden no pasa por porteros ni firmas. Una cabina rehecha ([pedido 36](#96-familia)) vuelve a `P_ROOM0` = 0
 (`so/janaxos.asm:4868`) y debe emitir de nuevo su primera orden.
 
 ### 3.3 Toque normal y fallos fatales
 
-Con `P_ROOM0` = 1, `jsys` llama a `ventanilla` con la dirección de la cola bajo el candado global del núcleo
+Con `P_ROOM0` = 1, `jsys` llama a `ventanilla` con la dirección de la cola bajo el [candado global del núcleo](03-nucleo-arranque-memoria-procesos.md#132-cerrojo-y-variables-de-condición)
 (`kern_enter`, `so/remos.inc:28-37`). Hay tres resultados:
 
 | Resultado de `ventanilla` | Efecto en la cabina |
 |---|---|
 | `n` ≥ 0 | `rd` = `n`; la ejecución sigue en la instrucción siguiente. |
-| −1 | La cola es inválida (§4.4) o la cabina es un ayudante interno del núcleo: el proceso termina con código 5 (`so/janaxos.asm:2198-2200`; `so/rutinas.inc:636-638`). |
-| −2 | El toque se suspende (§3.4). |
+| −1 | La cola es inválida ([§4.4](#44-validación-de-la-cola-fallo--código-5)) o la cabina es un ayudante interno del núcleo: el proceso termina con código 5 (`so/janaxos.asm:2198-2200`; `so/rutinas.inc:636-638`). |
+| −2 | El toque se suspende ([§3.4](#34-suspensión-y-reejecución)). |
 
 Un pedido individual inválido **no** es fatal: se responde −1 (u otro código) en su entrada y el toque continúa.
 
 ### 3.4 Suspensión y reejecución
 
-Si durante el marcado (§5, paso 2) algún pedido debe esperar (firma del padre, saludo del pedido 29 o evento de
-pantalla del pedido 41), **ningún pedido del toque se atiende**: el núcleo guarda en `P_WAITING` cuántas esperas
+Si durante el marcado ([§5](#5-procesamiento-de-un-toque), paso 2) algún pedido debe esperar (firma del padre, saludo del [pedido 29](#97-comunicación-entre-cabinas) o evento de
+pantalla del [pedido 41](#98-pantalla-sonido-y-portapapeles)), **ningún pedido del toque se atiende**: el núcleo guarda en `P_WAITING` cuántas esperas
 quedaron abiertas, descuenta los pedidos del contador global y devuelve −2 (`so/janaxos.asm:2347-2355`). Entonces:
 
 - El contador de programa retrocede a la propia `jsys` (`dec r12`, `so/janaxos.asm:2202`; `sub r12, R_SIZE`,
   `so/rutinas.inc:640`) y el turno termina.
 - `rd` no se escribe y la cola no se modifica (las respuestas −1 provisionales del marcado quedan en la copia
   privada del núcleo y se descartan).
-- La cabina sale de la fila de ejecución mientras `P_WAITING` ≠ 0 (`so/remos.inc:211-212`, `so/remos.inc:257-258`).
+- La cabina sale de la [fila de ejecución](03-nucleo-arranque-memoria-procesos.md#133-fila) mientras `P_WAITING` ≠ 0 (`so/remos.inc:211-212`, `so/remos.inc:257-258`).
   Cada evento que resuelve una espera decrementa `P_WAITING`; al llegar a 0, `q_wake` la devuelve a la fila
   (`so/remos.inc:406-418`).
 - Al volver a correr, ejecuta la misma `jsys` con los mismos registros y la misma memoria, y el toque se procesa
@@ -132,7 +132,7 @@ Consecuencia: un pedido que espera bloquea a todos los pedidos de su toque. Los 
 toque propio si el programa no quiere que bloqueen a otros (recomendación derivada del algoritmo; el código no lo
 exige).
 
-El marcado tiene efectos aunque el toque se suspenda: crea registros de firma y toca el timbre del padre (§5,
+El marcado tiene efectos aunque el toque se suspenda: crea registros de firma y toca el timbre del padre ([§5](#5-procesamiento-de-un-toque),
 paso 2.5), fija `P_GWAIT` = 1 (29) o `P_SCRW` = 1 y el plazo (41), y suma `denied`. En particular, una decisión de
 firma (estado 1 ó 2) encontrada durante el marcado pasa a estado 3 (usado) en ese mismo momento
 (`so/janaxos.asm:4042`); si otra entrada del mismo toque obliga a suspenderlo, esa decisión queda consumida y en la
@@ -140,7 +140,7 @@ reejecución se crea un registro nuevo que vuelve a pedir la firma (derivado del
 
 ### 3.5 Efecto en el turno
 
-Si en el toque nació un proceso (pedido 16) o se resolvió una firma (pedido 17), el núcleo marca `sched_dirty` y
+Si en el toque nació un proceso ([pedido 16](#96-familia)) o se resolvió una firma ([pedido 17](#96-familia)), el núcleo marca `sched_dirty` y
 corta el turno de quien pidió al terminar el toque, contando sólo lo realmente ejecutado
 (`so/janaxos.asm:2189-2194`, `so/janaxos.asm:4487`, `so/janaxos.asm:4518`).
 
@@ -153,16 +153,16 @@ corta el turno de quien pidió al terminar el toque, contando sólo lo realmente
 | Desplazamiento | Tamaño | Campo | Descripción |
 |---|---|---|---|
 | +0 | 8 | `N` | Número de entradas. Al terminar un toque con `N` > 0, el núcleo lo deja en 0 (`so/janaxos.asm:2436`). Con `N` = 0 el toque responde 0 y no escribe nada (`so/janaxos.asm:2254-2255`, `so/janaxos.asm:2444-2446`). |
-| +8 | 32·`N` | Entradas | `N` entradas consecutivas (§4.2). |
+| +8 | 32·`N` | Entradas | `N` entradas consecutivas ([§4.2](#42-entrada-32-bytes)). |
 
 ### 4.2 Entrada (32 bytes)
 
 | Desplazamiento | Tamaño | Campo | Descripción |
 |---|---|---|---|
 | +0 | 4 | `kind` | Número de pedido, 1..47. Se lee como dword sin signo (`so/janaxos.asm:2287`). |
-| +4 | 4 | `alto` | Argumento auxiliar ("mitad alta del tipo"); su uso depende de la clase (§4.3). |
+| +4 | 4 | `alto` | Argumento auxiliar ("mitad alta del tipo"); su uso depende de la clase ([§4.3](#43-uso-del-campo-alto)). |
 | +8 | 8 | `a` | Primer argumento. |
-| +16 | 8 | `b` | Segundo argumento. El pedido 41 lo reescribe (§9.8). |
+| +16 | 8 | `b` | Segundo argumento. El pedido 41 lo reescribe ([§9.8](#98-pantalla-sonido-y-portapapeles)). |
 | +24 | 8 | `respuesta` | Escrito por el núcleo. El valor de entrada se ignora. |
 
 La ventanilla copia las entradas a un libro privado al empezar y las vuelve a copiar enteras sobre la cola al final
@@ -175,7 +175,7 @@ propia cola (por ejemplo, una lectura de archivo con destino solapado) queda sob
 |---|---|---|
 | 5, 6, 7, 38 | Número de manejador de archivo (índice en la tabla de la cabina). | `file_handle`, `so/janaxos.asm:3557-3566` |
 | 13 | Longitud en bytes de la etiqueta nueva. | `so/janaxos.asm:3286` |
-| 16 | Derechos del hijo (bits `R_*`, §7.1). | `so/janaxos.asm:4471-4472` |
+| 16 | Derechos del hijo (bits `R_*`, [§7.1](#71-porteros)). | `so/janaxos.asm:4471-4472` |
 | 24 | Trato con que la cabina destino verá la sala (0, 1 ó 3). | `so/janaxos.asm:4357` |
 | Demás | Ignorado. | — |
 
@@ -201,14 +201,14 @@ Algoritmo de `ventanilla` (`so/janaxos.asm:2224-2451`), ejecutado con el candado
 2. **Marcado**, entrada por entrada en orden de cola, con `k` = `kind`:
    1. Si `k` ∉ [1, 47]: respuesta −1 y siguiente (`so/janaxos.asm:2288-2290`).
    2. Si `kind_door[k]` ≠ 0: el portero de la cabina para esa puerta debe permitir algún derecho de
-      `kind_right[k]` (`gate_allows`, §7.1). Si no: contador `denied` +1, respuesta −1.
+      `kind_right[k]` (`gate_allows`, [§7.1](#71-porteros)). Si no: contador `denied` +1, respuesta −1.
    3. Si `k` = 29 y nadie la saludó todavía (`greet_must_wait`, `so/ambientes.inc:1529-1538`): espera.
-   4. Si `k` = 41 y debe dormir sobre la pantalla (`event_must_wait`, `so/janaxos.asm:2878-2923`): espera.
+   4. Si `k` = 41 y debe dormir sobre la pantalla ([`event_must_wait`](05-nucleo-pantalla-teclado-vigia.md#83-marcación-del-toque-event_must_wait), `so/janaxos.asm:2878-2923`): espera.
    5. Si `kind_important[k]` = 1, la cabina no es hija del núcleo y su línea no le heredó la firma de `k`
-      (`born_signed`, §7.4): se consulta la firma (`signature`, §7.5). Firmada: sigue. Rechazada: `denied` +1,
-      respuesta −1. Pendiente: se toca el timbre del padre (un saludo de la cabina al padre, pedido 28) y espera.
+      (`born_signed`, [§7.4](#74-firmas-heredadas)): se consulta la firma (`signature`, [§7.5](#75-registro-de-pedidos-en-espera)). Firmada: sigue. Rechazada: `denied` +1,
+      respuesta −1. Pendiente: se toca el timbre del padre (un saludo de la cabina al padre, [pedido 28](#97-comunicación-entre-cabinas)) y espera.
    6. Si pasó todo: la clase queda "presente" en este toque.
-3. **Suspensión.** Si hubo alguna espera: se devuelve −2 (§3.4).
+3. **Suspensión.** Si hubo alguna espera: se devuelve −2 ([§3.4](#34-suspensión-y-reejecución)).
 4. **Asignación de pantallas.** Una "pantalla" es un servidor interno sintonizado a una clase. Primero cada clase
    presente que ya tiene pantalla sintonizada la conserva; luego cada clase presente sin pantalla toma una pantalla
    que no recibió nada en este toque (cambiándole la sintonía, contador `retunes`) o, si no hay, se abre una nueva
@@ -227,25 +227,25 @@ apertura, usar la dirección que devuelve un crecimiento) debe ir en un toque po
 validan al servir, con el estado que dejaron los pedidos servidos antes en el mismo toque.
 
 **Servidores en lote.** El pedido 1 junta todas las escrituras válidas del toque en una sola llamada al anfitrión
-(§9.1). Los demás servidores atienden sus entradas una por una.
+([§9.1](#91-consola)). Los demás servidores atienden sus entradas una por una.
 
 ---
 
 ## 6. Direcciones, salas y validación de punteros
 
-El modelo completo de salas es materia del capítulo 03. Para la ABI importan las reglas siguientes.
+El modelo completo de salas es materia del [capítulo 03](03-nucleo-arranque-memoria-procesos.md#6-modelo-de-memoria-de-un-proceso). Para la ABI importan las reglas siguientes.
 
 ### 6.1 Dirección Janax
 
 `dirección = (número_de_sala << 32) | posición` (`ROOM_SHIFT` = 32, `so/ambientes.inc:38`). La sala 0 es la de la
-primera orden. Las salas nuevas (pedidos 2, 25, 26, dote, asociación) reciben números crecientes a partir de
+primera orden. Las salas nuevas ([pedidos 2, 25, 26](#92-memoria-y-cajas), dote, asociación) reciben números crecientes a partir de
 `P_NEXTROOM` (inicialmente 1); un número no se reutiliza hasta que la cabina se queda sólo con la sala 0, momento en
 que la cuenta vuelve a 1 (`so/ambientes.inc:334-337`, `so/ambientes.inc:518-522`). El tamaño de toda sala es múltiplo
 de 8.
 
 ### 6.2 Trato de una sala
 
-Bits 48-63 de la entrada del cartel (`so/ambientes.inc:48-60`). La ABI usa sólo los dos primeros como "trato":
+Bits 48-63 de la entrada del [cartel](03-nucleo-arranque-memoria-procesos.md#62-caja-vista-cajón-y-cartel) (`so/ambientes.inc:48-60`). La ABI usa sólo los dos primeros como "trato":
 
 | Valor de trato (en argumentos) | Bits | Significado |
 |---|---|---|
@@ -296,7 +296,7 @@ Nodos fijos creados al arrancar (`so/janaxos.asm:841-856`): 0 raíz (`R_ALL`), 1
 
 Cada cabina tiene un portero por puerta (`P_GATES`, 3 qwords, `so/janaxos.asm:58`). Al nacer, el portero de la
 puerta `p` es un nodo nuevo hijo del portero `p` de su padre (o del nodo `p` si el padre es el núcleo), con
-derechos = derechos de ese nodo ∧ derechos pedidos (`make_process`, `so/janaxos.asm:1291-1315`). El portero de
+derechos = derechos de ese nodo ∧ derechos pedidos ([`make_process`](03-nucleo-arranque-memoria-procesos.md#51-creación-make_process), `so/janaxos.asm:1291-1315`). El portero de
 archivos lleva el prefijo de lanzamiento, si lo hay.
 
 **Comprobación** (`gate_allows`, `so/janaxos.asm:3808-3828`): desde el nodo hasta la raíz, cada nodo debe estar vivo
@@ -308,14 +308,14 @@ llega al portero propio de la cabina para la puerta del nodo (el propio portero 
 ### 7.2 Prefijo de etiqueta
 
 `prefix_allows` (`so/janaxos.asm:3105-3132`): subiendo desde el portero de archivos hasta la raíz, cada nodo con
-prefijo (`N_PLEN` > 0) debe ser prefijo, byte a byte, de la etiqueta normalizada (§10.2). No comprueba si el nodo
+prefijo (`N_PLEN` > 0) debe ser prefijo, byte a byte, de la etiqueta normalizada ([§10.2](#102-de-etiqueta-a-nombre-de-archivo)). No comprueba si el nodo
 está vivo. Una etiqueta vacía (longitud 0) es rechazada por cualquier nodo con prefijo; los pedidos 37 y 39 usan esa
 propiedad para exigir "ningún prefijo en el camino" (`so/janaxos.asm:2587-2591`, `so/vigia.inc:659-663`).
 
 ### 7.3 Pedidos importantes y firma del padre
 
-Una clase importante (§8, columna "Imp.") pedida por una cabina cuyo padre no es el núcleo requiere la firma del
-padre, salvo herencia (§7.4). Los hijos del núcleo nunca esperan firma: el núcleo firma "a través de los porteros"
+Una clase importante ([§8](#8-tabla-resumen-de-pedidos), columna "Imp.") pedida por una cabina cuyo padre no es el núcleo requiere la firma del
+padre, salvo herencia ([§7.4](#74-firmas-heredadas)). Los hijos del núcleo nunca esperan firma: el núcleo firma "a través de los porteros"
 (`so/janaxos.asm:2316-2317`). Puerta y firma son independientes: un pedido firmado igual debe pasar su portero.
 
 ### 7.4 Firmas heredadas
@@ -346,11 +346,11 @@ Ciclo de vida (`signature`, `so/janaxos.asm:4018-4055`; `new_record`, `so/janaxo
 
 1. En el marcado, el núcleo busca un registro con el mismo (`R_CHILD`, `R_INDEX`, `R_KIND`) y estado ≠ 3. Si su
    estado es 1 ó 2, lo pasa a 3 (usado) y aplica la decisión. Si es 0, sigue esperando. Si no existe, crea uno en
-   estado 0, suma 1 a `P_BLOCKS` del firmante y despierta al remero especial.
+   estado 0, suma 1 a `P_BLOCKS` del firmante y despierta al [remero especial](03-nucleo-arranque-memoria-procesos.md#131-hilos-y-clases-de-remero).
 2. La identidad de un pedido es su posición en la cola y su clase: la decisión se aplica a la entrada que ocupe esa
    posición con esa clase cuando la `jsys` se reejecute. La decisión se consume en el primer marcado que la
-   encuentra, aunque ese toque termine suspendido por otra entrada (§3.4).
-3. Resoluciones posibles: el padre firma o rechaza (pedido 17); el padre termina (§7.6); quien pide termina
+   encuentra, aunque ese toque termine suspendido por otra entrada ([§3.4](#34-suspensión-y-reejecución)).
+3. Resoluciones posibles: el padre firma o rechaza ([pedido 17](#96-familia)); el padre termina ([§7.6](#76-cuando-el-firmante-termina)); quien pide termina
    (`end_records`, rechazados, `so/janaxos.asm:5173-5195`); nadie que pueda firmar sigue corriendo
    (`nobody_signs`, rechazados, `so/janaxos.asm:4228-4253`, llamado desde `so/remos.inc:204`).
 
@@ -362,13 +362,13 @@ Ciclo de vida (`signature`, `so/janaxos.asm:4018-4055`; `new_record`, `so/janaxo
   se decide en el acto con los permisos del padre que termina (`shadow_decides`: firmado si su portero permite la
   puerta y el derecho de la clase, o si la clase no tiene puerta; rechazado si no) (`so/janaxos.asm:5097-5141`,
   `so/janaxos.asm:4211-4225`).
-- El mecanismo de "sombra" (`orphans`, `P_SHADOW`) sigue en el código (`so/janaxos.asm:4115-4175`) pero, con las dos
+- El mecanismo de ["sombra"](03-nucleo-arranque-memoria-procesos.md#105-sombra) (`orphans`, `P_SHADOW`) sigue en el código (`so/janaxos.asm:4115-4175`) pero, con las dos
   reglas anteriores, no queda descendencia viva debajo de un padre que termina; sólo se activa si esa condición
   cambia.
 
 ### 7.7 Derechos de los hijos del núcleo
 
-Los procesos de la línea de comandos (`so/janaxos.asm:949-1048`) reciben:
+Los procesos de la [línea de comandos](03-nucleo-arranque-memoria-procesos.md#35-línea-de-comandos) (`so/janaxos.asm:949-1048`) reciben:
 
 | Sintaxis del argumento | Efecto |
 |---|---|
@@ -431,7 +431,7 @@ número de un hijo directo (`P_PARENT` = quien pide).
 | 38 | `serve_seek` | 3 / `R_READ` | 0 | manejador | posición, o −1 (final) | — | posición, o −1 |
 | 39 | `serve_hostnew` | 3 / `R_READ` | 0 | — | destino | capacidad | bytes, 0, o −1 |
 | 40 | `serve_show` | 1 / `R_SCREEN` | 0 | — | nube `.nube` v3 | bytes | partículas, o −1 |
-| 41 | `serve_wait_event` | 1 / `R_SCREEN` | 0 | — | registro de 32 bytes | espera en ms | 1, 0, o −1 (puede dormir) |
+| 41 | [`serve_wait_event`](05-nucleo-pantalla-teclado-vigia.md#85-servicio-serve_wait_event) | 1 / `R_SCREEN` | 0 | — | registro de 32 bytes | espera en ms | 1, 0, o −1 (puede dormir) |
 | 42 | `serve_gaps` | 0 | 1 | — | hijo o sí mismo | 1 / 0 | 0, o −2 |
 | 43 | `serve_title` | 1 / `R_SCREEN` | 0 | — | texto | bytes | letras, o −1 |
 | 44 | `serve_note` | 1 / `R_SCREEN` | 0 | — | mensaje MIDI (24 bits bajos) | — | 1, 0, o −1 |
@@ -442,7 +442,7 @@ número de un hijo directo (`P_PARENT` = quien pide).
 Observaciones transversales:
 
 - No existe un pedido separado para "crear" archivo: el pedido 4 abre con `OPEN_ALWAYS`, que crea el archivo si no
-  existe (§9.3).
+  existe ([§9.3](#93-archivos-del-sistema)).
 - La respuesta −2 sólo la usan pedidos de familia para "no es mi hijo/descendiente" (19, 33, 34, 35, 42, 45, 46).
 - Un pedido rechazado por portero o por firma responde −1 aunque su clase use −2 para otros errores
   (`so/janaxos.asm:2299-2300`, `so/janaxos.asm:2326-2327`, `so/janaxos.asm:2341`).
@@ -452,7 +452,7 @@ Observaciones transversales:
 ## 9. Especificación de cada pedido
 
 Notación: `E` = la entrada; `E.a`, `E.b`, `E.alto`, `E.r` (respuesta). "Inválido" = `E.r` = −1. Todas las
-validaciones de punteros usan §6.3.
+validaciones de punteros usan [§6.3](#63-validación-de-punteros-cabin_at).
 
 ### 9.1 Consola
 
@@ -464,7 +464,7 @@ validaciones de punteros usan §6.3.
    **una** llamada `WriteFile` a la salida estándar del núcleo.
 3. `E.r` se fija antes de escribir: vale `E.b` aunque la reserva del búfer o `WriteFile` fallen.
 
-Es importante: un hijo de un proceso necesita firma (o herencia) para escribir en la consola.
+Es importante: un hijo de un proceso necesita [firma](#73-pedidos-importantes-y-firma-del-padre) (o [herencia](#74-firmas-heredadas)) para escribir en la consola.
 
 ### 9.2 Memoria y cajas
 
@@ -479,7 +479,7 @@ Es importante: un hijo de un proceso necesita firma (o herencia) para escribir e
 - `E.a` debe ser exactamente el inicio de una sala en pie (posición 0). Inválido si la sala es la que contiene la
   cola de este toque (se comparan los números de sala de `E.a` y de la cola).
 - La sala deja la cabina: su vista y su llave vuelven al anfitrión; la caja sigue viva si otra cabina la tiene. Su
-  número no se reutiliza (§6.1). La sala 0 puede destruirse si la cola no está en ella; desde entonces el núcleo no
+  número no se reutiliza ([§6.1](#61-dirección-janax)). La sala 0 puede destruirse si la cola no está en ella; desde entonces el núcleo no
   puede tocar la sala 0 (`so/ambientes.inc:489-494`).
 - `E.r` = 0.
 
@@ -498,7 +498,7 @@ Es importante: un hijo de un proceso necesita firma (o herencia) para escribir e
 - `E.a` = inicio de sala; `E.b` = trato 0, 1 ó 3, contenido en el trato **actual** de la sala.
 - Duplica la llave de la caja y agrega al final de la lista `P_DOWRY` una ranura de `DOWRY_SIZE` = 32 bytes
   {llave +0, tamaño +8, trato +16, número de caja +24} (`so/ambientes.inc:848`). Marca la sala propia como compartida.
-- El próximo hijo que lance esta cabina (pedido 16) nace con las cajas de la dote como sus salas 1, 2, … en el orden
+- El próximo hijo que lance esta cabina ([pedido 16](#96-familia)) nace con las cajas de la dote como sus salas 1, 2, … en el orden
   dado, con trato y techo = el trato de la ranura; luego la dote se vacía (`rooms_born`, `so/ambientes.inc:1004-1029`).
   Una dote no usada vuelve al anfitrión cuando la cabina termina.
 - `E.r` = 0.
@@ -531,7 +531,7 @@ Es importante: un hijo de un proceso necesita firma (o herencia) para escribir e
 
 **27 — asociar** (`rooms_associate`, `so/ambientes.inc:1276-1300`)
 
-- `E.a` = cabina B de la familia (−1 = el padre); `E.b` = palabra Venn.
+- `E.a` = cabina B de la familia (−1 = el padre); `E.b` = [palabra Venn](05-nucleo-pantalla-teclado-vigia.md#112-palabra-venn).
 - Inválido si `E.b` tiene bits fuera de `VENN_KNOWN` = `0FFFF03FFh` (`so/venn.inc:29`), si el criterio (bits 4-7) no
   está en `CARTEL_CRITS` = `0Fh` (criterios 0..3, `so/ambientes.inc:1398`) o si B no es de la familia.
 - Guarda B y la palabra en `P_PARTNER`/`P_ASSOC`. Al lanzar el próximo hijo, si B también nombró a esta cabina como
@@ -540,16 +540,16 @@ Es importante: un hijo de un proceso necesita firma (o herencia) para escribir e
 - Campos de la palabra Venn (`so/venn.inc:9-29`): bits 0-2 regiones (1 comunes, 2 sólo de A, 4 sólo de B); bit 3
   mirar B primero; bits 4-7 criterio (0 orden del cartel, 1 tamaño, 2 número de caja, 3 trato; `cartel_crit`,
   `so/ambientes.inc:1431-1445`); bit 8 descendente; bit 9 criterio sobre toda la selección; bits 16-31 cuántas (0 =
-  todas). El algoritmo de selección está en `so/venn.inc` y no se re-especifica aquí (semántica de orden tomada de la
+  todas). [El algoritmo de selección](05-nucleo-pantalla-teclado-vigia.md#114-algoritmo-venn_run-sovenninc61-124) está en `so/venn.inc` y no se re-especifica aquí (semántica de orden tomada de la
   cabecera de `so/venn.inc`, no verificado línea a línea).
 - Una caja que ambas tienen se entrega con el trato que ambas permiten (AND) (`assoc_give`, `so/ambientes.inc:1384-1394`).
 - `E.r` = 0.
 
 ### 9.3 Archivos del sistema
 
-Todas las clases de esta sección que reciben una etiqueta la convierten con `label_path` (§10.2) y exigen que el
+Todas las clases de esta sección que reciben una etiqueta la convierten con `label_path` ([§10.2](#102-de-etiqueta-a-nombre-de-archivo)) y exigen que el
 portero de archivos permita la etiqueta normalizada (`files_prefix_ok`, `so/janaxos.asm:3136-3145`; un rechazo suma
-`denied`). El manejador es un índice en la tabla de archivos de la cabina (§9.3.1).
+`denied`). El manejador es un índice en la tabla de archivos de la cabina ([§9.3.1](#931-tabla-de-manejadores)).
 
 **4 — abrir** (`serve_open`, `so/janaxos.asm:3023-3066`)
 
@@ -583,20 +583,20 @@ portero de archivos permita la etiqueta normalizada (`files_prefix_ok`, `so/jana
 
 - `[E.a, E.a + E.b)` dentro de sus salas: zona de destino.
 - Recorre la carpeta propia y después, si existe, la del tablero (`FindFirstFileA`/`FindNextFileA`). Omite
-  directorios y nombres que no decodifican (§10.3). Sólo incluye etiquetas que el prefijo permite.
+  directorios y nombres que no decodifican ([§10.3](#103-del-nombre-de-archivo-a-la-etiqueta-listado)). Sólo incluye etiquetas que el prefijo permite.
 - Formato de cada etiqueta escrita: qword con la longitud `L`, seguida de los `L` bytes; el registro ocupa
   `8 + redondeo_a_8(L)` bytes (`so/janaxos.asm:3395-3396`). Los bytes de relleno no se escriben.
 - Cuando un registro no cabe, se deja de listar esa carpeta y se pasa a la siguiente (la del tablero puede aportar
   registros más cortos que sí quepan).
 - `E.r` = cantidad de etiquetas escritas; −1 si la zona es inválida. El orden es el que entregue el anfitrión
-  (no verificado).
+  (`so/janaxos.asm:3374-3413`).
 
 **38 — ir a** (`serve_seek`, `so/janaxos.asm:2641-2681`)
 
 - `E.alto` = manejador; `E.a` = posición absoluta ≥ 0, o −1 para el final.
 - `SetFilePointerEx` desde el inicio (o `FILE_END` con desplazamiento 0). `E.r` = la posición nueva; −1 si el
   manejador no está abierto, `E.a` < −1 o el anfitrión falla.
-- Sirve también para manejadores del pedido 37.
+- Sirve también para manejadores del [pedido 37](#94-salidas-al-anfitrión).
 
 #### 9.3.1 Tabla de manejadores
 
@@ -610,30 +610,30 @@ rehacerse, se cierran todos sus archivos (`close_files`, `so/janaxos.asm:3614-36
 
 **37 — abrir en el anfitrión** (`serve_host_open`, `so/janaxos.asm:2577-2636`)
 
-- Requiere `R_READ` y que **ningún** portero en el camino del portero de archivos tenga prefijo (§7.2); si no, `denied`
+- Requiere `R_READ` y que **ningún** portero en el camino del portero de archivos tenga prefijo ([§7.2](#72-prefijo-de-etiqueta)); si no, `denied`
   +1 y −1.
 - `E.a`, `E.b` = ruta del anfitrión en UTF-8; 1 ≤ `E.b` ≤ 1023 (`WIDE_CAP` − 1, `so/janaxos.asm:373`); UTF-8 válido
-  (§10.2 paso 3). No se normaliza.
+  ([§10.2 paso 3](#102-de-etiqueta-a-nombre-de-archivo)). No se normaliza.
 - `CreateFileW(ruta, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, OPEN_EXISTING)`. Una ruta relativa se resuelve
   contra el directorio actual del núcleo. El núcleo no impone lista de carpetas prohibidas para este pedido: el
   límite es lo que el usuario del anfitrión pueda abrir para lectura.
-- `E.r` = manejador (sólo lectura: un pedido 6 sobre él falla en el anfitrión y responde −1).
+- `E.r` = manejador (sólo lectura: un [pedido 6](#93-archivos-del-sistema) sobre él falla en el anfitrión y responde −1).
 
 **39 — lo nuevo del anfitrión** (`gate_hostnew`, `so/vigia.inc:657-701`)
 
 - Requiere `R_READ`, ningún prefijo en el camino y al menos una carpeta en `JANAX_VIGIA` (`hw_n` > 0); si no, −1.
 - Marca la cabina como interesada (`P_HOSTW` = 1): desde entonces, mientras espere un saludo (29) o duerma sobre la
-  pantalla (41), un archivo nuevo del anfitrión la despierta (§9.7, pedido 32).
+  pantalla (41), un archivo nuevo del anfitrión la despierta ([§9.7](#97-comunicación-entre-cabinas), pedido 32).
 - Si la fila de novedades está vacía: `E.r` = 0. Si no, toma la más antigua `{qword longitud, ruta UTF-8 rellenada a
   8}`: si su longitud > `E.b` o `[E.a, E.a + longitud)` es inválido, −1 y la novedad queda en la fila; si no, copia
   la ruta (sin terminador), la saca de la fila y `E.r` = su longitud.
 - Qué archivos llegan a la fila (carpetas de `JANAX_VIGIA` con subcarpetas, quietud `HW_QUIET` = 67803 ms,
   atributos, dueño, exclusión de la carpeta propia, el tablero y las carpetas conocidas de datos de programas) se
-  especifica en el capítulo 05 (`so/vigia.inc:1-12`, `so/vigia.inc:515-601`, `so/janaxos.asm:308-358`).
+  especifica en el [capítulo 05](05-nucleo-pantalla-teclado-vigia.md#10-vigía-y-centinela) (`so/vigia.inc:1-12`, `so/vigia.inc:515-601`, `so/janaxos.asm:308-358`).
 
 ### 9.5 Porteros
 
-**8 — ceder** (`gate_cede`, `so/janaxos.asm:3890-3903`): `E.a` = nodo de la cabina (§7.1, `mine`); `E.b` = derechos.
+**8 — ceder** (`gate_cede`, `so/janaxos.asm:3890-3903`): `E.a` = nodo de la cabina ([§7.1](#71-porteros), `mine`); `E.b` = derechos.
 Crea un nodo hijo de `E.a`, de la misma puerta, con derechos `E.b` ∧ derechos de `E.a`. `E.r` = número del nodo.
 
 **9 — usar** (`gate_use`, `so/janaxos.asm:3906-3917`): `E.a` = nodo de la cabina. Pasa a ser su portero para la
@@ -667,9 +667,9 @@ En 8, 9, 10 y 15, un nodo que no es de la cabina responde −1 y suma `denied` (
 2. Se lee el archivo (`OPEN_EXISTING`, sólo lectura) hasta `MAX_PROGRAM` = 2^20 bytes; palabras = bytes / 4 (los
    bytes sobrantes se ignoran).
 3. Se crea la cabina hija (`make_process`): padre = quien pide; derechos pedidos = `E.alto` (recortados por puerta,
-   §7.1); sin prefijo propio (hereda los de su padre por el árbol); bolita y techo de bolita = `P_PRIO` actual del
+   [§7.1](#71-porteros)); sin prefijo propio (hereda los de su padre por el árbol); bolita y techo de bolita = `P_PRIO` actual del
    padre; nace con la dote y la asociación del padre; `P_SIGNED` = `P_SIGNNEXT` del padre, que vuelve a 0.
-4. Datos iniciales: el archivo de la etiqueta con extensión `.datos` (§10.4), si el prefijo lo permite.
+4. Datos iniciales: el archivo de la etiqueta con extensión `.datos` ([§10.4](#104-datos-iniciales-datos)), si el prefijo lo permite.
 5. `E.r` = número del hijo; −1 si la etiqueta o el prefijo fallan, si `CreateFileA` no abre el archivo o si no hay
    memoria para el búfer de carga (`program_buffer`). El resultado de `ReadFile` no se comprueba
    (`so/janaxos.asm:4463-4469`): un error de lectura produce un hijo con las palabras leídas hasta ese momento
@@ -680,7 +680,7 @@ Un programa con las mismas palabras que otro ya cargado comparte su texto y su t
 
 **17 — firmar** (`family_sign`, `so/janaxos.asm:4498-4523`)
 
-- `E.a` = número de registro (§7.5); debe ser < `nrecs`, tener `R_SIGNER` = quien pide y estado 0.
+- `E.a` = número de registro ([§7.5](#75-registro-de-pedidos-en-espera)); debe ser < `nrecs`, tener `R_SIGNER` = quien pide y estado 0.
 - `E.b` ≠ 0 firma (estado 1); `E.b` = 0 rechaza (estado 2). Decrementa `P_BLOCKS` del firmante y `P_WAITING` del
   hijo; si este llega a 0, el hijo vuelve a la fila.
 - `E.r` = 0; −1 si el registro no es válido para quien pide.
@@ -697,7 +697,7 @@ Un programa con las mismas palabras que otro ya cargado comparte su texto y su t
 **20 — bolita** (`family_bolita`, `so/janaxos.asm:5199-5207`)
 
 - `E.a` = bolita deseada en 1/65536 (comparación sin signo). Se recorta a `P_PRIO_TOP` (la bolita con que nació).
-- `P_PRIO` = ese valor y se recalcula el turno (`plan_quantum`, `so/ayudantes.inc:96-125`).
+- `P_PRIO` = ese valor y se [recalcula el turno](03-nucleo-arranque-memoria-procesos.md#123-turno-por-prioridad-cuanto) (`plan_quantum`, `so/ayudantes.inc:96-125`).
 - `E.r` = la bolita fijada.
 
 **33 — terminar hijo** (`family_end`, `so/janaxos.asm:4593-4625`)
@@ -725,7 +725,7 @@ Un programa con las mismas palabras que otro ya cargado comparte su texto y su t
 - No tiene efecto inmediato. Cuando la cabina termina por sí misma con código 0 (`jhalt`), en lugar de terminar se
   rehace (`so/remos.inc:266-271`): se cierran sus archivos y se liberan sus salas, listas y buzones; se instala el
   programa nuevo; registros, pc, profundidad, salas, esperas y vigilancias vuelven a cero. Conserva número, padre,
-  hijos, porteros, bolita, presupuesto, `P_SERVED` y firmas. Debe emitir de nuevo la primera orden.
+  hijos, porteros, bolita, presupuesto, `P_SERVED` y firmas. Debe emitir de nuevo la [primera orden](#32-primera-orden-construcción-de-la-sala-0).
 - Una terminación con código ≠ 0 termina normalmente.
 - `E.r` = 0; −1 si la etiqueta o el prefijo fallan, si el archivo no se abre o si falta memoria (búfer de carga o
   copia propia). Como en 16, el resultado de `ReadFile` no se comprueba. La copia de un pedido 36 anterior se libera
@@ -765,11 +765,11 @@ Un programa con las mismas palabras que otro ya cargado comparte su texto y su t
   guardado (entonces 1).
 - `E.r` = 0; −1 si no es familia, terminó o falta memoria.
 - El núcleo también saluda: al padre cuando un hijo termina (`ring_parent`, `so/janaxos.asm:4884-4898`) o pide una
-  firma (§5 paso 2.5).
+  firma ([§5 paso 2.5](#5-procesamiento-de-un-toque)).
 
 **29 — esperar un saludo** (`greeting`, `so/ambientes.inc:1504-1525`)
 
-- Si no hay marcas y todavía alguien podría saludar, el toque entero duerme (§3.4) hasta que llegue un saludo.
+- Si no hay marcas y todavía alguien podría saludar, el toque entero duerme ([§3.4](#34-suspensión-y-reejecución)) hasta que llegue un saludo.
 - Al atender: `E.r` = número de la cabina del saludo más antiguo, y esa marca se quita. −1 si nadie queda que pueda
   saludar (`P_GWAIT` = 2, fijado por `greet_nobody` cuando ningún remero tiene trabajo, `so/ambientes.inc:1604-1623`).
 - Un despertar por vigilancia (32) o por novedad del anfitrión (39) es un saludo de la cabina a sí misma
@@ -804,15 +804,15 @@ Un programa con las mismas palabras que otro ya cargado comparte su texto y su t
 
 ### 9.8 Pantalla, sonido y portapapeles
 
-Contratos observables; la ventana, su hilo y el formato de nube se especifican en el capítulo 05. Los valores de
+Contratos observables; la ventana, su hilo y el formato de nube se especifican en el [capítulo 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn). Los valores de
 respuesta de 40, 43, 44 y 47 provienen de las cabeceras de `so/pantalla.inc` y de los servidores; el detalle interno
 no se verifica en este capítulo.
 
-**40 — mostrar** (`serve_show`, `so/janaxos.asm:2685-2714`): `[E.a, E.a + E.b)` = nube `.nube` versión 3. Dibuja su
+**40 — mostrar** (`serve_show`, `so/janaxos.asm:2685-2714`): `[E.a, E.a + E.b)` = [nube `.nube` versión 3](05-nucleo-pantalla-teclado-vigia.md#41-formato-nube-versión-3-lo-que-lee-el-núcleo). Dibuja su
 primer nivel. `E.r` = partículas dibujadas; −1 si el rango es inválido o la nube está mal formada. Según la cabecera
 de `screen_show` (`so/pantalla.inc:138-140`), mal formada es: firma o versión incorrectas, ningún nivel, un tamaño
 que excede los bytes, o un lado 0 o mayor que `SCR_SIDE` = 4096 (`so/pantalla.inc:14`) (la lista proviene de la
-cabecera; el formato se especifica en el capítulo 05).
+cabecera; el formato se especifica en el [capítulo 05 §4.1](05-nucleo-pantalla-teclado-vigia.md#41-formato-nube-versión-3-lo-que-lee-el-núcleo)).
 
 **41 — esperar un evento** (`serve_wait_event`, `so/janaxos.asm:2812-2873`; `event_must_wait`,
 `so/janaxos.asm:2878-2923`)
@@ -828,7 +828,7 @@ cabecera; el formato se especifica en el capítulo 05).
 - `E.b` de vuelta: si durmió con plazo finito, los ms que quedaban (≥ 0); si no durmió y no hubo evento, 0; si no
   durmió y hubo evento, o la espera era para siempre, sin cambios.
 - Tipos de evento (cabecera, `so/pantalla.inc:496-505`): 1 movimiento, 2 botón abajo, 3 botón arriba, 4 tecla, 5
-  ventana cerrada, 6 nuevo tamaño, 7 carácter, 8 foco; detalle en el capítulo 05.
+  ventana cerrada, 6 nuevo tamaño, 7 carácter, 8 foco; detalle en el [capítulo 05](05-nucleo-pantalla-teclado-vigia.md#62-tipos-de-evento).
 
 **43 — título** (`serve_title`, `so/janaxos.asm:2719-2747`; `screen_title`, `so/pantalla.inc:109-136`):
 `[E.a, E.a + E.b)` = texto. `E.r` = min(`E.b`, `SCR_TITLE_MAX` = 512, `so/pantalla.inc:22`); −1 si el rango es
@@ -843,7 +843,7 @@ respuesta es la misma.
 anfitrión. `E.r` = número de unidades UTF-16 resultantes (`MultiByteToWideChar` con `MB_ERR_INVALID_CHARS`,
 `so/pantalla.inc:858-919`); 0 sin ventana (se comprueba antes que el texto); −1 rango inválido, no UTF-8, `E.b` = 0
 con ventana viva, o falta de memoria. Pegar no es un pedido: Ctrl+V llega como
-caracteres tecleados (capítulo 05). Es importante: un hijo necesita firma.
+caracteres tecleados ([capítulo 05](05-nucleo-pantalla-teclado-vigia.md#73-pegado-ctrlv)). Es importante: un hijo necesita firma.
 
 ---
 
@@ -859,7 +859,7 @@ caracteres tecleados (capítulo 05). Es importante: un hijo necesita firma.
 Ambas variables se leen con `GetEnvironmentVariableA` y un búfer de `HOST_PATH` − 1 = 259 caracteres ANSI; el valor
 devuelto por la función se guarda sin comprobar como `dir_len` / `board_len` (`so/janaxos.asm:697-710`). Para un valor
 que no cabe, la función del anfitrión devuelve el tamaño requerido sin escribir el búfer; con ese `dir_len` ≥ 259 la
-comprobación de longitud de §10.2 paso 6 rechaza toda etiqueta (deducido del contrato documentado de la función del
+comprobación de longitud de [§10.2 paso 6](#102-de-etiqueta-a-nombre-de-archivo) rechaza toda etiqueta (deducido del contrato documentado de la función del
 anfitrión; no verificado en ejecución).
 
 ### 10.2 De etiqueta a nombre de archivo
@@ -909,9 +909,9 @@ normalizar.
 
 `data_name` (`so/datos.inc:10-42`): se reemplaza la última extensión de la etiqueta (el último `.` que no esté antes
 de un `/` o `\`) por `.datos`, o se agrega si no hay extensión. Para un proceso lanzado por pedido (16, 36) ese nombre
-es otra etiqueta y pasa por §10.2 y el prefijo del lanzador (`family_data`, `so/datos.inc:90-118`); para la línea de
+es otra etiqueta y pasa por [§10.2](#102-de-etiqueta-a-nombre-de-archivo) y el prefijo del lanzador (`family_data`, `so/datos.inc:90-118`); para la línea de
 comandos es una ruta del anfitrión junto al programa. El contenido (hasta `MAX_PROGRAM` = 2^20 bytes) se copia al
-inicio de la sala 0 en la primera orden; si no cabe, la primera orden termina el proceso con código 5.
+inicio de la sala 0 en la [primera orden](#32-primera-orden-construcción-de-la-sala-0); si no cabe, la primera orden termina el proceso con código 5.
 
 Detalles de `family_data` y `read_data` (`so/datos.inc:47-118`):
 
@@ -927,10 +927,10 @@ Detalles de `family_data` y `read_data` (`so/datos.inc:47-118`):
 |---|---|---|
 | Etiquetas (4, 5, 6, 12, 13, 14, 16, 36, `.datos`) | Sólo archivos directamente dentro de la carpeta propia o del tablero, con nombre hexadecimal. Lectura y escritura. | Derechos de la puerta 3 y prefijo del portero. |
 | Pedido 37 | Cualquier archivo existente que el usuario del anfitrión pueda abrir, sólo lectura. | `R_READ`, ningún prefijo en el camino. Sin lista de exclusión en el núcleo. |
-| Pedido 39 | Sólo rutas (no contenido) de archivos nuevos y quietos bajo las carpetas de `JANAX_VIGIA` que pasan las reglas del vigía; excluye carpeta propia, tablero, ocultos, de sistema, nombres con `.` inicial, y los datos de programas (`LocalAppData`, `RoamingAppData`, `LocalAppDataLow`, `ProgramData`); `Windows` y `Program Files` sólo se aceptan como lectura de sistema. | `R_READ`, ningún prefijo; detalle en capítulo 05 (`so/vigia.inc:515-601`, `so/janaxos.asm:332-358`). |
+| Pedido 39 | Sólo rutas (no contenido) de archivos nuevos y quietos bajo las carpetas de `JANAX_VIGIA` que pasan las [reglas del vigía](05-nucleo-pantalla-teclado-vigia.md#107-quietud-reglas-y-lista-de-listos); excluye carpeta propia, tablero, ocultos, de sistema, nombres con `.` inicial, y los datos de programas (`LocalAppData`, `RoamingAppData`, `LocalAppDataLow`, `ProgramData`); `Windows` y `Program Files` sólo se aceptan como lectura de sistema. | `R_READ`, ningún prefijo; detalle en capítulo 05 (`so/vigia.inc:515-601`, `so/janaxos.asm:332-358`). |
 | Pedido 1 | Salida estándar del núcleo. | `R_SCREEN`. |
 | Pedidos 40, 41, 43, 44, 47 | Ventana propia, sintetizador MIDI, portapapeles. | `R_SCREEN`. |
-| `jhost` | Nada (catálogo vacío, §11). | — |
+| `jhost` | Nada (catálogo vacío, [§11](#11-la-ventana-al-anfitrión-jhost)). | — |
 
 Un programa no puede borrar, renombrar ni escribir fuera de la carpeta propia y del tablero, ni abrir nada del
 anfitrión para escritura.
@@ -939,7 +939,7 @@ anfitrión para escritura.
 
 ## 11. La ventana al anfitrión: `jhost`
 
-`host_window` (`so/anfitrion.inc:6-30`), llamada por `op_jhost` (`so/janaxos.asm:2166-2172`) y `t_jhost`
+[`host_window`](05-nucleo-pantalla-teclado-vigia.md#124-janaxos-host_window) (`so/anfitrion.inc:6-30`), llamada por `op_jhost` (`so/janaxos.asm:2166-2172`) y `t_jhost`
 (`so/rutinas.inc:601-609`):
 
 | Desplazamiento del bloque | Campo |
@@ -1004,8 +1004,8 @@ de 39 (`so/vigia.inc:659-663`), las etiquetas omitidas en el listado 14, ni los 
 1. El núcleo escribe en la memoria de una cabina sólo: la cola del toque (respuestas, `b` del 41 y `N` = 0), las zonas
    de destino de 5, 14, 18, 31, 39 y 41, la sala 0 en la primera orden y el contenido inicial de las salas que crea
    (ceros en 2; la concatenación en 26).
-2. Una cabina nunca obtiene más derechos que su padre: todo nodo nuevo es AND con su padre (§7.1, §9.5); todo trato
-   dado está contenido en el del dador (§9.2); la bolita no supera la de nacimiento; las firmas heredadas son AND por
+2. Una cabina nunca obtiene más derechos que su padre: todo nodo nuevo es AND con su padre ([§7.1](#71-porteros), [§9.5](#95-porteros)); todo trato
+   dado está contenido en el del dador ([§9.2](#92-memoria-y-cajas)); la bolita no supera la de nacimiento; las firmas heredadas son AND por
    toda la línea.
 3. Un pedido que el portero o la firma rechazan nunca se ejecuta parcialmente.
 4. Mientras un toque está suspendido, la cabina no ejecuta instrucciones y su cola no cambia.
@@ -1022,11 +1022,11 @@ de 39 (`so/vigia.inc:659-663`), las etiquetas omitidas en el listado 14, ni los 
 ## 15. Elementos no verificados
 
 - Comportamiento con `JANAX_ARCHIVOS` o `JANAX_TABLERO` de 259 caracteres o más: deducido del contrato de
-  `GetEnvironmentVariableA`, no ejecutado (§10.1).
+  `GetEnvironmentVariableA`, no ejecutado ([§10.1](#101-carpetas)).
 - Pérdida de una decisión de firma consumida en un toque que luego se suspende: deducida del código, no ejecutada
-  (§3.4).
-- Orden de las entradas del listado (14): el que entregue `FindFirstFileA`/`FindNextFileA` (§9.3).
+  ([§3.4](#34-suspensión-y-reejecución)).
+- Orden de las entradas del listado (14): el que entregue `FindFirstFileA`/`FindNextFileA` ([§9.3](#93-archivos-del-sistema)).
 - Transferencia de 0 bytes en 5/6 con `b` = 2^32 por truncamiento a 32 bits del parámetro del anfitrión (§9.3).
-- Semántica detallada de la selección Venn del pedido 27 (tomada de la cabecera de `so/venn.inc`) (§9.2).
+- Semántica detallada de la selección Venn del pedido 27 (tomada de la cabecera de `so/venn.inc`) ([§9.2](#92-memoria-y-cajas)).
 - Detalle interno de los pedidos 40, 41, 43, 44 y 47 (formato `.nube`, tipos de evento, sintetizador, portapapeles):
-  contrato tomado de las cabeceras de `so/pantalla.inc`; especificado en el capítulo 05 (§9.8).
+  contrato tomado de las cabeceras de `so/pantalla.inc`; especificado en el [capítulo 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn) ([§9.8](#98-pantalla-sonido-y-portapapeles)).

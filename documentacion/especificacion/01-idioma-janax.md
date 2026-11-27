@@ -6,10 +6,10 @@ binaria de cada instrucción, la semántica exacta de las 29 instrucciones defin
 de ensamblado (`jwhile`, `jwhilez`, `jwcheck`, `jwend`, `jfirst`), el protocolo de la ventana al anfitrión
 (`jhost`), la sintaxis del fuente `.jsm`, el formato de los archivos resultantes (`.bin`, `.datos`,
 `.huella`) y el esquema con que los traductores convierten Janax a código nativo x86-64 y ARM64. No cubre:
-el funcionamiento interno del ensamblador PDP ni la cadena de construcción (capítulo 02), los procesos,
-ambientes y motores de ejecución de Janax OS (capítulo 03), los pedidos de la instrucción `jsys` (capítulo 04),
-pantalla, teclado y vigía (capítulo 05), la lectura de Razar (06), el cardumen (07), el cuerpo y la casa de
-Luma (08), la conversación (09), la pantalla y vida de Luma (10) ni el instalador y la publicación (11).
+el funcionamiento interno del ensamblador PDP ni la cadena de construcción ([capítulo 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), los procesos,
+ambientes y motores de ejecución de Janax OS ([capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), los pedidos de la instrucción `jsys` ([capítulo 04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)),
+pantalla, teclado y vigía ([capítulo 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), la lectura de Razar ([06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), el cardumen ([07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo y la casa de
+Luma ([08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), la conversación ([09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)), la pantalla y vida de Luma ([10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)) ni el instalador y la publicación ([11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)).
 
 Todas las rutas son relativas a la raíz del repositorio. Las citas `ruta:línea` señalan el código del que sale
 cada afirmación.
@@ -22,11 +22,11 @@ cada afirmación.
 |---|---|---|
 | Notación del idioma (macros FASM) | `escalon0/janax.inc` | Define nombres de registros, la palabra de instrucción y una macro por instrucción (`escalon0/janax.inc:5-116`). |
 | Intérprete de referencia | `escalon0/janax.asm` | Ejecuta un `.bin` palabra por palabra en Windows x86-64. Es la referencia contra la que se comparan los traductores (`escalon0/janax.asm:1-6`, `escalon0/pruebas/correr.sh:46`). |
-| Ventana al anfitrión (Windows) | `escalon0/ventanita.inc`, `escalon0/ventanita_datos.inc` | Servicio de `jhost` compartido por intérprete y traductor x86-64. |
+| [Ventana al anfitrión](#7-protocolo-de-la-ventana-al-anfitrión-jhost) (Windows) | `escalon0/ventanita.inc`, `escalon0/ventanita_datos.inc` | Servicio de `jhost` compartido por intérprete y traductor x86-64. |
 | Traductor x86-64 | `escalon0/traductor.asm` | Traduce el `.bin` completo a código x86-64 en memoria, lo ejecuta y guarda un caché incremental. |
 | Traductor ARM64 cruzado | `escalon0/traductor_arm64.asm` | Corre en Windows x86-64 y escribe un ejecutable ELF64 estático para Linux ARM64. |
-| Ensamblador PDP | `so/pdp/ensamblador/ensamblador.jsm` + tabla `so/pdp/ensamblador/ensamblador.datos.jsm` | Convierte `.jsm` en `.bin`/`.datos`. Es el ensamblador que usa la batería de pruebas (`escalon0/pruebas/correr.sh:21-25`). Su sintaxis aceptada es la que se especifica en la sección 8. |
-| Batería de conformidad | `escalon0/pruebas/*.jsm`, `escalon0/pruebas/correr.sh` | Sección 14. |
+| [Ensamblador PDP](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas) | `so/pdp/ensamblador/ensamblador.jsm` + tabla `so/pdp/ensamblador/ensamblador.datos.jsm` | Convierte `.jsm` en `.bin`/`.datos`. Es el ensamblador que usa la batería de pruebas (`escalon0/pruebas/correr.sh:21-25`). Su sintaxis aceptada es la que se especifica en [la sección 8](#8-fuente-jsm). |
+| Batería de conformidad | `escalon0/pruebas/*.jsm`, `escalon0/pruebas/correr.sh` | [Sección 14](#14-conformidad). |
 
 Los tres ejecutores del escalón 0 (intérprete, traductor x86-64, ejecutable ARM64) DEBEN producir la misma
 salida estándar y el mismo código de salida para cada programa de la batería (`escalon0/pruebas/correr.sh:46-57`,
@@ -70,7 +70,7 @@ salida estándar y el mismo código de salida para cada programa de la batería 
 | `OP_COUNT` | 1Dh = 29 | Cantidad de códigos de operación definidos (00h..1Ch) | `escalon0/janax.asm:16` |
 
 Janax OS ejecuta el mismo idioma con otro modelo de memoria (ambientes creados a pedido) y con pila de retorno
-que crece; esos detalles pertenecen al capítulo 03 (sección 13 de este capítulo).
+que crece; esos detalles pertenecen al [capítulo 03](03-nucleo-arranque-memoria-procesos.md#6-modelo-de-memoria-de-un-proceso) ([sección 13](#13-otros-ejecutores-janax-os) de este capítulo).
 
 ### 3.3 Estado inicial (escalón 0)
 
@@ -98,8 +98,8 @@ paso 1 siguiente. Prueba: `escalon0/pruebas/20_sin_halt.jsm`.
 
 | Código | Condición | Producido por |
 |---|---|---|
-| 0 | `jhalt`. Se imprime `j0` en hexadecimal (sección 10.3). | los tres ejecutores |
-| 1 | Código de operación no definido (`op >= 1Dh`), o `16h` (`jsys`) fuera de Janax OS | `escalon0/janax.asm:31`, `escalon0/janax.asm:125-126`, `escalon0/janax.asm:392-393`; `escalon0/traductor.asm:227-230`; `escalon0/traductor_arm64.asm:410-412` |
+| 0 | `jhalt`. Se imprime `j0` en hexadecimal ([sección 10.3](#103-salida-de-jhalt)). | los tres ejecutores |
+| 1 | Código de operación no definido (`op >= 1Dh`), o `16h` ([`jsys`](04-nucleo-abi-de-pedidos.md#3-convención-de-llamada-de-jsys)) fuera de Janax OS | `escalon0/janax.asm:31`, `escalon0/janax.asm:125-126`, `escalon0/janax.asm:392-393`; `escalon0/traductor.asm:227-230`; `escalon0/traductor_arm64.asm:410-412` |
 | 2 | `pc` fuera de `[0, N)` al buscar la instrucción | `escalon0/janax.asm:110-111`; `escalon0/traductor.asm:232-235`; `escalon0/traductor_arm64.asm:609-610` |
 | 3 | No se pudo abrir o leer el archivo, o reservar memoria (también al escribir el `.arm64`) | `escalon0/janax.asm:396-397`; `escalon0/traductor.asm:1087-1088`; `escalon0/traductor_arm64.asm:817-818` |
 | 4 | Falta el argumento; en los traductores, también una ruta de más de 1024 bytes | `escalon0/janax.asm:398-399`; `escalon0/traductor.asm:596-598`; `escalon0/traductor_arm64.asm:499-501` |
@@ -114,7 +114,7 @@ haya escrito con `jhost` antes del error).
 
 ### 3.6 Convenciones de software sobre registros (no impuestas por la máquina)
 
-La máquina no da a ningún registro un uso especial, salvo el valor inicial de `j15` (3.3). Los programas del
+La máquina no da a ningún registro un uso especial, salvo el valor inicial de `j15` ([3.3](#33-estado-inicial-escalón-0)). Los programas del
 repositorio aplican estas convenciones, que DEBEN tratarse como convenciones de cada programa y no como
 parte del idioma:
 
@@ -122,7 +122,7 @@ parte del idioma:
 |---|---|---|
 | `j15` | Puntero de pila de datos; arranca en el tope de la memoria y crece hacia abajo. Apilar: `jsub j15, j15, j12` / `jst rX, j15, 0`. Desapilar: `jld rX, j15, 0` / `jadd j15, j15, j12`. | `so/pdp/ensamblador/ensamblador.jsm:16`, `so/pdp/ensamblador/ensamblador.jsm:183-186`, `so/pdp/ensamblador/ensamblador.jsm:213-216` |
 | `j14` | Vale 0 durante todo el programa. Sirve de base para direcciones absolutas `jld rX, j14, A` con `A` en 0..7FFFh (el inmediato se extiende con signo, por eso las variables globales viven debajo de 8000h), y de operando neutro: `jadd rd, rs, j14` copia `rs` en `rd`; `jsub rd, j14, rs` niega. | `so/pdp/ensamblador/ensamblador.jsm:16`, `so/pdp/ensamblador/ensamblador.jsm:120`, `razar/cuerpo/luma.jsm:43` |
-| `j12`, `j13` | En el ensamblador PDP: constantes 8 y 1. | `so/pdp/ensamblador/ensamblador.jsm:16`, `so/pdp/ensamblador/ensamblador.jsm:118-119` |
+| `j12`, `j13` | En el [ensamblador PDP](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas): constantes 8 y 1. | `so/pdp/ensamblador/ensamblador.jsm:16`, `so/pdp/ensamblador/ensamblador.jsm:118-119` |
 | `j0`..`j7`, `j8`..`j11` | En el ensamblador PDP: las rutinas reciben argumentos en `j1`..`j3`, devuelven en `j0`, pueden alterar `j0`..`j7` y preservan `j8`..`j11` guardándolos en la pila de datos. | `so/pdp/ensamblador/ensamblador.jsm:17` |
 | `j0` | Resultado del programa: lo imprime `jhalt` en el escalón 0. | `escalon0/janax.asm:372-390` |
 
@@ -145,7 +145,7 @@ Cada instrucción ocupa exactamente una palabra de 32 bits almacenada en little-
 | 16..31 | `imm16` | 16 | Inmediato, desplazamiento de salto o, en las instrucciones de tres registros, `rb` |
 | 16..19 | `rb` | 4 | Segundo registro fuente: los 4 bits bajos de `imm16` |
 
-Expresión de armado (macro `j_word`, `escalon0/janax.inc:22`; ensamblador PDP, `so/pdp/ensamblador/ensamblador.jsm:1450-1464`):
+Expresión de armado (macro `j_word`, `escalon0/janax.inc:22`; [ensamblador PDP](02-ensamblador-pdp-y-construccion.md#31-formato-de-palabra), `so/pdp/ensamblador/ensamblador.jsm:1450-1464`):
 
 ```
 w = op | (rd << 8) | (ra << 12) | ((imm & 0FFFFh) << 16)
@@ -167,7 +167,7 @@ ignoran (`escalon0/janax.asm:114-127`).
 
 ### 4.2 Formatos
 
-Los formatos tienen el número que usa la tabla del ensamblador (`so/pdp/ensamblador/ensamblador.datos.jsm:7-27`).
+Los formatos tienen el número que usa [la tabla del ensamblador](02-ensamblador-pdp-y-construccion.md#4-la-tabla-del-ensamblador-ensambladordatos) (`so/pdp/ensamblador/ensamblador.datos.jsm:7-27`).
 
 | Formato | Nº | Sintaxis | `rd` | `ra` | `imm16` |
 |---|---|---|---|---|---|
@@ -191,7 +191,7 @@ imm16 = ((destino_en_bytes - dirección_de_esta_instrucción_en_bytes) - 4) / 4
 nuevo_pc = pc + sext16(imm16)          ; pc = índice de la palabra siguiente
 ```
 
-Alcance: −32768..+32767 palabras desde la palabra siguiente. El ensamblador PDP rechaza en la segunda pasada
+Alcance: −32768..+32767 palabras desde la palabra siguiente. El ensamblador PDP rechaza en la [segunda pasada](02-ensamblador-pdp-y-construccion.md#13-pasadas-y-resolución-de-saltos)
 un desplazamiento que no entra en 16 bits con signo (`so/pdp/ensamblador/ensamblador.jsm:1430-1447`). La
 macro FASM no lo verifica: el valor se trunca a 16 bits (`escalon0/janax.inc:22`, `escalon0/janax.inc:36`).
 
@@ -226,9 +226,9 @@ Semántica tal como la ejecuta el intérprete de referencia. `a` es la direcció
 | 12h | `jldb rd, ra, imm` | `F_RRI` | `a = R[ra] + sext16(imm)`; `R[rd] = zext8(M8[a])` | 5 si `a >u DATA_SIZE − 1` | `escalon0/janax.asm:264-271` |
 | 13h | `jstb rd, ra, imm` | `F_RRI` | `a = R[ra] + sext16(imm)`; `M8[a] = R[rd] & 0FFh` | ídem `jldb` | `escalon0/janax.asm:273-280` |
 | 14h | `jcall destino` | `F_T` | Apila la vuelta `pc`; `pc = pc + sext16(imm)` | 7 si profundidad `>= RET_DEPTH` | `escalon0/janax.asm:282-289` |
-| 15h | `jret` | `F_NONE` | Desapila la vuelta y continúa en ella; si la vuelta viene de un `jcall0`, pone en 0 el registro que ese `jcall0` indicó (5.7). | 8 si la pila está vacía | `escalon0/janax.asm:291-305` |
-| 16h | `jsys rd, ra` | `F_RR` | Sólo en Janax OS (5.8). En el escalón 0 es código inválido. | 1 en el escalón 0 | `escalon0/janax.asm:31`, `escalon0/janax.inc:97-99` |
-| 17h | `jhost rd, ra` | `F_RR` | `R[rd] = respuesta del anfitrión al bloque en R[ra]` (sección 7) | 5, 6 | `escalon0/janax.asm:359-368` |
+| 15h | `jret` | `F_NONE` | Desapila la vuelta y continúa en ella; si la vuelta viene de un `jcall0`, pone en 0 el registro que ese `jcall0` indicó ([5.7](#57-llamadas-y-pila-de-retorno)). | 8 si la pila está vacía | `escalon0/janax.asm:291-305` |
+| 16h | `jsys rd, ra` | `F_RR` | Sólo en Janax OS ([5.8](#58-jsys-janax-os)). En el escalón 0 es código inválido. | 1 en el escalón 0 | `escalon0/janax.asm:31`, `escalon0/janax.inc:97-99` |
+| 17h | `jhost rd, ra` | `F_RR` | `R[rd] = respuesta del anfitrión al bloque en R[ra]` ([sección 7](#7-protocolo-de-la-ventana-al-anfitrión-jhost)) | 5, 6 | `escalon0/janax.asm:359-368` |
 | 18h | `jjn rd, destino` | `F_RT` | Si `R[rd] < 0` (con signo): salta | 2 al buscar | `escalon0/janax.asm:320-325` |
 | 19h | `jjnn rd, destino` | `F_RT` | Si `R[rd] >= 0` (con signo; el cero no es negativo): salta | ídem | `escalon0/janax.asm:327-332` |
 | 1Ah | `jldadd rd, ra, imm` | `F_RRI` | `a = R[ra] + sext16(imm)`; `t = M64[a] + R[rd]`; `M64[a] = t`; `R[rd] = t` | ídem `jld` | `escalon0/janax.asm:334-345` |
@@ -287,7 +287,7 @@ arma con `jldi r, 7269h` / `jshi r, 6269h` / `jshi r, 7263h` / `jshi r, 7365h`
 
 ### 5.6 Control
 
-- El destino de un salto no se valida al saltar: se valida al buscar la siguiente instrucción (3.4). Un
+- El destino de un salto no se valida al saltar: se valida al buscar la siguiente instrucción ([3.4](#34-ciclo-de-ejecución)). Un
   destino igual a `N` o mayor, o negativo, termina con código 2 (`escalon0/pruebas/21_salto_afuera.jsm`).
 - Los saltos condicionales prueban sólo `R[rd]`; no hay banderas.
 
@@ -309,31 +309,31 @@ arma con `jldi r, 7269h` / `jshi r, 6269h` / `jshi r, 7263h` / `jshi r, 7365h`
   se aplica al volver, de modo que cualquier escritura de la rutina sobre `rd` queda anulada. Un `jcall`
   común anidado dentro no borra nada (`escalon0/pruebas/48_jcall0.jsm`).
 - El formato interno de la entrada no es observable por el programa. Los traductores guardan direcciones
-  nativas en lugar de índices (secciones 11.6 y 12.3).
+  nativas en lugar de índices (secciones [11.6](#116-llamadas) y [12.3](#123-esquema-de-traducción)).
 - Pruebas: `29_llamada_y_vuelta.jsm`, `30_factorial_recursivo.jsm`, `31_vuelta_sin_llamada.jsm` (código 8),
   `32_recursion_infinita.jsm` (código 7), `48_jcall0.jsm`.
 
 ### 5.8 `jsys` (Janax OS)
 
-`jsys rd, ra` (16h) es la ventanilla del sistema Janax OS: `ra` contiene la dirección de una cola de pedidos
+`jsys rd, ra` (16h) es la ventanilla del sistema Janax OS: `ra` contiene la dirección de una [cola de pedidos](04-nucleo-abi-de-pedidos.md#4-formato-de-la-cola-de-pedidos)
 (un contador de 8 bytes seguido de entradas de 32 bytes `{tipo, a, b, resultado}`) y `rd` recibe la cantidad
 de pedidos atendidos (`escalon0/janax.inc:97-99`, `so/janaxos.asm:2175-2188`). Si el proceso todavía no tiene
-ambiente 0, el primer `jsys` lo construye con el tamaño contenido en `R[ra]` (redondeado hacia arriba a
-múltiplo de 8), copia al principio el archivo `.datos` del programa si existe, deja `j15` en el tamaño y
+[ambiente 0](04-nucleo-abi-de-pedidos.md#32-primera-orden-construcción-de-la-sala-0), el primer `jsys` lo construye con el tamaño contenido en `R[ra]` (redondeado hacia arriba a
+múltiplo de 8), copia al principio el archivo [`.datos`](#92-datos-datos-iniciales) del programa si existe, deja `j15` en el tamaño y
 responde 0 en `rd`; un tamaño inválido o unos datos que no entran terminan con código 5
 (`so/janaxos.asm:2228-2233`, `so/ambientes.inc:710-762`, `so/janaxos.asm:2198-2200`). Los tipos de pedido se
-especifican en el capítulo 04. En el escalón 0, 16h es inválido (código 1).
+especifican en [el capítulo 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido). En el escalón 0, 16h es inválido (código 1).
 
 ---
 
 ## 6. Construcciones de ensamblado
 
-Son nombres del ensamblador que se expanden a instrucciones de la sección 5. No tienen código de operación
+Son nombres del ensamblador que se expanden a instrucciones de [la sección 5](#5-instrucciones). No tienen código de operación
 propio.
 
 ### 6.1 El while: `jwhile`, `jwhilez`, `jwcheck`, `jwend`
 
-El idioma no tiene otra construcción de bucle. Forma (while rotado) emitida por el ensamblador PDP
+El idioma no tiene otra construcción de bucle. Forma (while rotado) emitida por el [ensamblador PDP](02-ensamblador-pdp-y-construccion.md#10-bucles-jwhile-jwhilez-jwcheck-jwend)
 (`so/pdp/ensamblador/ensamblador.jsm:831-931`) y por las macros FASM (`escalon0/janax.inc:49-75`):
 
 ```
@@ -376,7 +376,7 @@ tabla indexada por orden durante la primera pasada y se lee en la segunda para r
 
 ### 6.2 `jfirst r, tamaño`
 
-Construye el ambiente 0 de un proceso de Janax OS (`escalon0/janax.inc:105-116`,
+Construye el [ambiente 0](03-nucleo-arranque-memoria-procesos.md#63-primera-orden-la-sala-0) de un proceso de Janax OS (`escalon0/janax.inc:105-116`,
 `so/pdp/ensamblador/ensamblador.jsm:932-969`):
 
 ```
@@ -387,7 +387,7 @@ luego:               jsys r, r
 ```
 
 La comparación `tamaño < 8000h` es con signo. Para tamaños de 2^31 o más la carga de `jldi` se extiende con
-signo y el valor resultante no coincide con `tamaño` (consecuencia directa de 5.4). En el escalón 0 el
+signo y el valor resultante no coincide con `tamaño` (consecuencia directa de [5.4](#54-constantes)). En el escalón 0 el
 `jsys` emitido termina con código 1.
 
 ---
@@ -455,7 +455,7 @@ Cualquier otro número, o un pedido quitado del catálogo, responde −1 (todos 
 |---|---|---|
 | Windows (intérprete y traductor x86-64) | `escribir` = 1 | `escalon0/ventanita_datos.inc:3-6` |
 | Linux ARM64 (ejecutable traducido) | `escribir` = 1, implementado con la llamada al sistema `write` (64) | `escalon0/traductor_arm64.asm:105-163` |
-| Proceso de Janax OS | Vacío: el catálogo responde 0 (con la verificación de alineación de `a`), todo otro pedido responde −1 | `so/anfitrion.inc:1-30` |
+| [Proceso de Janax OS](04-nucleo-abi-de-pedidos.md#11-la-ventana-al-anfitrión-jhost) | Vacío: el catálogo responde 0 (con la verificación de alineación de `a`), todo otro pedido responde −1 | `so/anfitrion.inc:1-30` |
 
 El programa DEBE consultar el catálogo y buscar los pedidos por nombre; no puede suponer números.
 
@@ -477,9 +477,9 @@ El ARM64 no implementa `JANAX_SIN` (`escalon0/pruebas/correr.sh:139-149`).
 
 ## 8. Fuente `.jsm`
 
-Esta sección especifica la sintaxis que acepta el ensamblador PDP (`so/pdp/ensamblador/ensamblador.jsm:7-15`).
+Esta sección especifica la sintaxis que acepta el [ensamblador PDP](02-ensamblador-pdp-y-construccion.md#6-sintaxis-de-las-sentencias) (`so/pdp/ensamblador/ensamblador.jsm:7-15`).
 La notación FASM de `escalon0/janax.inc` comparte los mnemónicos y la codificación; sus diferencias se
-listan en 8.10.
+listan en [8.10](#810-notación-fasm-escalon0janaxinc).
 
 ### 8.1 Léxico
 
@@ -492,7 +492,7 @@ listan en 8.10.
 | Caracteres de nombre | `0-9`, `A-Z`, `a-z`, `_`, `.` | `so/pdp/ensamblador/ensamblador.jsm:2024-2046` |
 | Nombre | Secuencia de caracteres de nombre que no empieza con dígito. Sensible a mayúsculas (comparación byte a byte). | `so/pdp/ensamblador/ensamblador.jsm:1589-1646`, `so/pdp/ensamblador/ensamblador.jsm:1916-1930` |
 | Número | Secuencia de caracteres de nombre que empieza con dígito. Si termina en `h` o `H`, hexadecimal (los dígitos son los anteriores al sufijo; se admiten `A-F` y `a-f`); si no, decimal. Cualquier carácter que no sea dígito de su base es error. Se acumula en 64 bits sin detección de desborde. | `so/pdp/ensamblador/ensamblador.jsm:1653-1727` |
-| Texto | Entre comillas simples `'...'`, sólo en `db` y en `include`. Sin secuencias de escape; un LF o el fin del texto antes de la comilla de cierre es error. | `so/pdp/ensamblador/ensamblador.jsm:985-1019` |
+| Texto | Entre comillas simples `'...'`, sólo en [`db`](02-ensamblador-pdp-y-construccion.md#9-datos-db-dd-dq-times) y en [`include`](02-ensamblador-pdp-y-construccion.md#12-textos-anidados-include-repeat-macros). Sin secuencias de escape; un LF o el fin del texto antes de la comilla de cierre es error. | `so/pdp/ensamblador/ensamblador.jsm:985-1019` |
 
 Consecuencia: `.` es carácter de nombre, de modo que `a.b` y `.x` son nombres simples (no hay etiquetas
 locales al estilo FASM).
@@ -514,7 +514,7 @@ sentencia   = nombre "=" expr
 - Puede haber varias etiquetas en una línea antes de la sentencia (`so/pdp/ensamblador/ensamblador.jsm:601-644`).
 - Después de una sentencia sólo puede venir espacio y fin de línea o comentario; otra cosa es error
   (`so/pdp/ensamblador/ensamblador.jsm:680-689`).
-- Una palabra que está en la tabla de nombres (8.9) es instrucción o directiva. Si no está, se busca como
+- Una palabra que está en la tabla de nombres ([8.9](#89-tabla-de-nombres-ensambladordatos)) es instrucción o directiva. Si no está, se busca como
   macro del fuente; si tampoco, es error (`so/pdp/ensamblador/ensamblador.jsm:660-679`).
 - Un nombre de la tabla con formato `F_CONST` (registro), `F_END` o `F_LOCAL` usado como sentencia es error
   (`so/pdp/ensamblador/ensamblador.jsm:753`).
@@ -538,7 +538,7 @@ term   = unario { ("*" | "/") unario } ;
 unario = "-" unario | "+" unario | "(" expr ")" | "$" | número | nombre ;
 ```
 
-- Aritmética de 64 bits que da la vuelta; `/` es la división de Janax (`jdiv`): trunca hacia cero, `x/0 = 0`
+- Aritmética de 64 bits que da la vuelta; `/` es la división de Janax ([`jdiv`](#51-tabla-completa)): trunca hacia cero, `x/0 = 0`
   (`so/pdp/ensamblador/ensamblador.jsm:1513-1650`).
 - `$` es la posición actual de salida en bytes al evaluar (`so/pdp/ensamblador/ensamblador.jsm:1625-1631`).
 - No hay operadores de desplazamiento, lógicos ni de comparación.
@@ -553,25 +553,25 @@ Al armar la palabra (`so/pdp/ensamblador/ensamblador.jsm:1450-1464`):
 - `rd` y `ra` no se enmascaran: un valor mayor que 15 invade los campos siguientes de la palabra. El
   ensamblador no lo diagnostica.
 - En `F_RRR`, `rb` ocupa el campo `imm16` truncado a 16 bits; los ejecutores sólo leen sus 4 bits bajos.
-- Destinos de salto (`F_T`, `F_RT`): expresión en bytes; se convierte con 4.3 y se verifica el alcance en la
+- Destinos de salto (`F_T`, `F_RT`): expresión en bytes; se convierte con [4.3](#43-desplazamiento-de-salto) y se verifica el alcance en la
   segunda pasada.
 
 ### 8.6 Directivas
 
 | Directiva | Sintaxis | Efecto | Fuente |
 |---|---|---|---|
-| `db` | `db v, v, ...` | Cada valor emite su byte bajo; un texto `'...'` emite sus bytes. | `so/pdp/ensamblador/ensamblador.jsm:973-1049` |
-| `dd` | `dd v, ...` | Cada valor emite sus 4 bytes bajos, little-endian. Textos: error. | `so/pdp/ensamblador/ensamblador.jsm:970-972` |
-| `dq` | `dq v, ...` | Cada valor emite sus 8 bytes, little-endian. Textos: error. | `so/pdp/ensamblador/ensamblador.jsm:976-978` |
-| `times` | `times n sentencia` | El resto de la línea se repite `n` veces, cada copia como una línea. `n` negativo equivale a 0. | `so/pdp/ensamblador/ensamblador.jsm:1051-1106` |
-| `repeat` / `end repeat` | `repeat n` en una línea, cuerpo, `end repeat` en una línea | El cuerpo se repite `n` veces (negativo = 0). Los `repeat` internos se anidan: se buscan líneas cuya primera palabra es `repeat` o `end` seguido de `repeat`. Sin cierre: error. | `so/pdp/ensamblador/ensamblador.jsm:2537-2627` |
+| [`db`](02-ensamblador-pdp-y-construccion.md#9-datos-db-dd-dq-times) | `db v, v, ...` | Cada valor emite su byte bajo; un texto `'...'` emite sus bytes. | `so/pdp/ensamblador/ensamblador.jsm:973-1049` |
+| [`dd`](02-ensamblador-pdp-y-construccion.md#9-datos-db-dd-dq-times) | `dd v, ...` | Cada valor emite sus 4 bytes bajos, little-endian. Textos: error. | `so/pdp/ensamblador/ensamblador.jsm:970-972` |
+| [`dq`](02-ensamblador-pdp-y-construccion.md#9-datos-db-dd-dq-times) | `dq v, ...` | Cada valor emite sus 8 bytes, little-endian. Textos: error. | `so/pdp/ensamblador/ensamblador.jsm:976-978` |
+| [`times`](02-ensamblador-pdp-y-construccion.md#9-datos-db-dd-dq-times) | `times n sentencia` | El resto de la línea se repite `n` veces, cada copia como una línea. `n` negativo equivale a 0. | `so/pdp/ensamblador/ensamblador.jsm:1051-1106` |
+| [`repeat`](02-ensamblador-pdp-y-construccion.md#12-textos-anidados-include-repeat-macros) / `end repeat` | `repeat n` en una línea, cuerpo, `end repeat` en una línea | El cuerpo se repite `n` veces (negativo = 0). Los `repeat` internos se anidan: se buscan líneas cuya primera palabra es `repeat` o `end` seguido de `repeat`. Sin cierre: error. | `so/pdp/ensamblador/ensamblador.jsm:2537-2627` |
 | `macro` | `macro nombre p1, p2, ... { cuerpo }` | Define una macro; el cuerpo puede ocupar varias líneas y termina en la primera `}`. Redefinir reemplaza. Debe definirse antes de su primer uso. | `so/pdp/ensamblador/ensamblador.jsm:2065-2109` |
 | `local` | `local n1, n2, ...` (línea dentro del cuerpo de una macro) | Declara nombres locales de la expansión. | `so/pdp/ensamblador/ensamblador.jsm:2259-2299` |
-| `include` | `include 'ruta'` | Inserta el texto del archivo. Una ruta cuyos últimos 9 bytes son `janax.inc` se ignora (el idioma ya está incorporado). | `so/pdp/ensamblador/ensamblador.jsm:1107-1167` |
-| `jfirst` | `jfirst r, tamaño` | 6.2 | `so/pdp/ensamblador/ensamblador.jsm:932-969` |
-| `jwhile`, `jwhilez`, `jwcheck`, `jwend` | 6.1 | 6.1 | `so/pdp/ensamblador/ensamblador.jsm:831-931` |
+| [`include`](02-ensamblador-pdp-y-construccion.md#12-textos-anidados-include-repeat-macros) | `include 'ruta'` | Inserta el texto del archivo. Una ruta cuyos últimos 9 bytes son `janax.inc` se ignora (el idioma ya está incorporado). | `so/pdp/ensamblador/ensamblador.jsm:1107-1167` |
+| `jfirst` | `jfirst r, tamaño` | [6.2](#62-jfirst-r-tamaño) | `so/pdp/ensamblador/ensamblador.jsm:932-969` |
+| `jwhile`, `jwhilez`, `jwcheck`, `jwend` | [6.1](#61-el-while-jwhile-jwhilez-jwcheck-jwend) | 6.1 | `so/pdp/ensamblador/ensamblador.jsm:831-931` |
 
-Expansión de macros (`so/pdp/ensamblador/ensamblador.jsm:2111-2390`):
+[Expansión de macros](02-ensamblador-pdp-y-construccion.md#125-macros) (`so/pdp/ensamblador/ensamblador.jsm:2111-2390`):
 
 1. Argumentos: desde el nombre hasta el fin de línea, separados por comas. Un argumento entre `<` y `>` se
    toma literal (puede contener comas); uno común termina en coma o fin de línea, sin espacios ni tabuladores
@@ -587,13 +587,14 @@ Expansión de macros (`so/pdp/ensamblador/ensamblador.jsm:2111-2390`):
    el contenido residual de la tabla (comportamiento no definido; derivado de
    `so/pdp/ensamblador/ensamblador.jsm:2123-2193` y `so/pdp/ensamblador/ensamblador.jsm:2329-2336`).
 
-`include` (`so/pdp/ensamblador/ensamblador.jsm:1169-1332`):
+[`include`](02-ensamblador-pdp-y-construccion.md#123-resolución-de-include) (`so/pdp/ensamblador/ensamblador.jsm:1169-1332`):
 
-- La ruta es relativa a la carpeta del fuente que incluye; `..` sube una carpeta, `.` se ignora, `/` separa.
-- Subir por encima de la raíz del sistema de archivos de Janax OS, o una ruta resultante de 400 bytes o más,
+- La ruta es relativa a la carpeta del fuente principal (no a la del archivo que contiene el `include`;
+  `so/pdp/ensamblador/ensamblador.jsm:1218-1236` y `so/pdp/ensamblador/ensamblador.jsm:405-406`); `..` sube una carpeta, `.` se ignora, `/` separa.
+- Subir por encima de la raíz del [sistema de archivos de Janax OS](04-nucleo-abi-de-pedidos.md#10-la-casa-de-archivos), o una ruta resultante de 400 bytes o más,
   es error.
 - Después de la comilla de cierre sólo puede venir fin de línea o comentario.
-- En la primera pasada los bytes del archivo incluido se agregan a la huella del fuente (9.3).
+- En la primera pasada los bytes del archivo incluido se agregan a la huella del fuente ([9.3](#93-huella-huella-del-armado)).
 
 Textos anidados (archivos incluidos, cuerpos de `repeat`/`times`, expansiones de macro): hasta 32 niveles,
 en una región de 2 MiB por pasada (`so/pdp/ensamblador/ensamblador.jsm:1349-1389`,
@@ -602,7 +603,7 @@ en una región de 2 MiB por pasada (`so/pdp/ensamblador/ensamblador.jsm:1349-138
 ### 8.7 Pasadas
 
 1. Primera pasada: define etiquetas, registra posiciones de condición de los whiles, agrega los archivos
-   incluidos a la huella. No escribe salida (`so/pdp/ensamblador/ensamblador.jsm:547-560`,
+   incluidos a la [huella](#93-huella-huella-del-armado). No escribe salida (`so/pdp/ensamblador/ensamblador.jsm:547-560`,
    `so/pdp/ensamblador/ensamblador.jsm:1470-1478`).
 2. Segunda pasada: reevalúa todo con los símbolos conocidos, verifica alcances de salto y escribe los bytes
    (`so/pdp/ensamblador/ensamblador.jsm:562-570`).
@@ -617,7 +618,7 @@ resultado es `j0 = fuentes armados + (fuentes con error << 32)` (`so/pdp/ensambl
 | Salida por fuente | 1 MiB (100000h bytes) | `so/pdp/ensamblador/ensamblador.jsm:1489-1495` |
 | Símbolos | 65536 entradas de 32 bytes (dispersión FNV-1a, sondeo lineal) | `so/pdp/ensamblador/ensamblador.jsm:34`, `so/pdp/ensamblador/ensamblador.jsm:1834-1913` |
 | Macros | 4096 entradas | `so/pdp/ensamblador/ensamblador.jsm:35`, `so/pdp/ensamblador/ensamblador.jsm:1844-1850` |
-| Whiles abiertos / por fuente | 128 / 2560 | 6.1 |
+| Whiles abiertos / por fuente | 128 / 2560 | [6.1](#61-el-while-jwhile-jwhilez-jwcheck-jwend) |
 | Anidamiento de textos | 32 | `so/pdp/ensamblador/ensamblador.jsm:1361-1366` |
 | Región de textos anidados | 2 MiB (440000h..63FFFFh) | `so/pdp/ensamblador/ensamblador.jsm:36`, `so/pdp/ensamblador/ensamblador.jsm:1350-1356` |
 | Argumentos, parámetros, locales por macro | 16 cada uno | `so/pdp/ensamblador/ensamblador.jsm:2178-2183`, `so/pdp/ensamblador/ensamblador.jsm:2220-2223`, `so/pdp/ensamblador/ensamblador.jsm:2271-2274` |
@@ -626,13 +627,13 @@ resultado es `j0 = fuentes armados + (fuentes con error << 32)` (`so/pdp/ensambl
 ### 8.9 Tabla de nombres (`ensamblador.datos`)
 
 Los nombres que el ensamblador reconoce no están en su código: vienen de un archivo de datos que se carga al
-principio de su ambiente 0 (`so/pdp/ensamblador/ensamblador.datos.jsm:1-5`, `so/datos.inc:1-6`). Formato:
+principio de su [ambiente 0](02-ensamblador-pdp-y-construccion.md#151-mapa-del-ambiente-0) (`so/pdp/ensamblador/ensamblador.datos.jsm:1-5`, `so/datos.inc:1-6`). Formato:
 
 | Desplazamiento | Tamaño | Campo |
 |---|---|---|
 | 0 | 8 | Nombre ASCII rellenado con ceros (1 a 8 bytes) |
 | 8 | 4 | Valor (código de operación, registro, o 0) |
-| 12 | 4 | Formato (4.2 y tabla siguiente) |
+| 12 | 4 | Formato ([4.2](#42-formatos) y tabla siguiente) |
 
 Una entrada cuyo primer campo de 8 bytes vale 0 termina la tabla (`so/pdp/ensamblador/ensamblador.datos.jsm:96`,
 `so/pdp/ensamblador/ensamblador.jsm:1789-1802`). Cambiar la tabla cambia los nombres del idioma sin tocar el
@@ -646,7 +647,7 @@ Contenido de la tabla del repositorio (`so/pdp/ensamblador/ensamblador.datos.jsm
 
 | Nombre | Valor | Formato |
 |---|---|---|
-| `jhalt` .. `jcall0` | 00h..1Ch (5.1) | según 5.1 |
+| `jhalt` .. `jcall0` | 00h..1Ch ([5.1](#51-tabla-completa)) | según 5.1 |
 | `jwhile` | 0Eh | `F_WHILE` |
 | `jwhilez` | 0Dh | `F_WHILE` |
 | `jwend`, `jwcheck`, `jfirst` | 0 | `F_WEND`, `F_WCHECK`, `F_FIRST` |
@@ -658,7 +659,7 @@ Contenido de la tabla del repositorio (`so/pdp/ensamblador/ensamblador.datos.jsm
 `janax.inc` define los mismos mnemónicos como macros de FASM, con la misma codificación. Diferencias con el
 PDP observables en el código:
 
-- FASM no verifica el alcance de los saltos (4.3).
+- FASM no verifica el alcance de los saltos ([4.3](#43-desplazamiento-de-salto)).
 - FASM tiene etiquetas locales que empiezan con `.` y operadores propios de expresión (`shl`, `and`, etc.,
   usados dentro de `janax.inc`); el PDP no.
 - En FASM, `jwhile`/`jwend` usan constantes simbólicas apiladas (`equ`/`restore`)
@@ -682,24 +683,24 @@ Que todos los fuentes actuales del repositorio se armen igual con FASM que con e
 - Carga: la palabra `i` ocupa los bytes `4i..4i+3`. `N = ⌊tamaño / 4⌋`; los bytes sobrantes se ignoran. Se
   leen como máximo `MAX_PROGRAM` bytes (`escalon0/janax.asm:88-94`).
 - Los bytes emitidos con `db`/`dd`/`dq` en un `.bin` son palabras de programa, no datos: la máquina no puede
-  leerlos con las instrucciones de memoria (3.1). Se usan, por ejemplo, para fabricar una palabra inválida
-  (`escalon0/pruebas/19_opcode_invalido.jsm`). Los datos iniciales van en `.datos` (9.2).
+  leerlos con las instrucciones de memoria ([3.1](#31-estado)). Se usan, por ejemplo, para fabricar una palabra inválida
+  (`escalon0/pruebas/19_opcode_invalido.jsm`). Los datos iniciales van en `.datos` ([9.2](#92-datos-datos-iniciales)).
 
 ### 9.2 `.datos`: datos iniciales
 
 - Producido por un fuente `X.datos.jsm` (la extensión `.jsm` se quita y la anterior se conserva,
-  9.4). Formato: bytes crudos sin encabezado.
-- Asociación: el núcleo de Janax OS busca, junto al programa, el archivo con el mismo nombre y la última
+  [9.4](#94-nombres-de-salida)). Formato: bytes crudos sin encabezado.
+- Asociación: [el núcleo de Janax OS](04-nucleo-abi-de-pedidos.md#104-datos-iniciales-datos) busca, junto al programa, el archivo con el mismo nombre y la última
   extensión reemplazada por `.datos` (o agregada si no tiene); un punto antes de un separador de carpeta no
   cuenta como extensión (`so/datos.inc:8-42`). Ejemplos del código: `X.bin` → `X.datos`; `hijo` → `hijo.datos`.
-- Uso: el primer `jsys` (6.2) copia el archivo completo al principio del ambiente 0; si no entra en el tamaño
+- Uso: el primer `jsys` ([6.2](#62-jfirst-r-tamaño)) copia el archivo completo al principio del [ambiente 0](04-nucleo-abi-de-pedidos.md#32-primera-orden-construcción-de-la-sala-0); si no entra en el tamaño
   pedido, el proceso termina con código 5 (`so/ambientes.inc:721-722`, `so/ambientes.inc:752-755`). Sin
   archivo, el ambiente 0 empieza en ceros.
 - El escalón 0 no carga `.datos`.
 
 ### 9.3 `.huella`: huella del armado
 
-8 bytes: FNV-1a de 64 bits (base CBF29CE484222325h, primo 100000001B3h) sobre, en este orden: la tabla de
+8 bytes: [FNV-1a de 64 bits](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333) (base CBF29CE484222325h, primo 100000001B3h) sobre, en este orden: la tabla de
 nombres completa incluida su entrada final vacía, los bytes del fuente, y los bytes de cada archivo incluido
 en el orden en que se leen en la primera pasada (`so/pdp/ensamblador/ensamblador.jsm:312-350`,
 `so/pdp/ensamblador/ensamblador.jsm:489-494`, `so/pdp/ensamblador/ensamblador.jsm:1191-1197`). Si `X.huella`
@@ -742,7 +743,7 @@ significativo primero), CR, LF; termina con código 0 (`escalon0/janax.asm:26-27
 
 ### 10.4 `jhost`
 
-Llama a `host_service` con `rax = R[ra]` y `rdx` = base de la memoria; si devuelve `edx ≠ 0`, termina con ese
+Llama a [`host_service`](05-nucleo-pantalla-teclado-vigia.md#123-escalón-0-host_service) con `rax = R[ra]` y `rdx` = base de la memoria; si devuelve `edx ≠ 0`, termina con ese
 código; si no, `R[rd] = rax` (`escalon0/janax.asm:359-368`, `escalon0/ventanita.inc:4-6`).
 
 ---
@@ -753,7 +754,7 @@ código; si no, `R[rd] = rax` (`escalon0/janax.asm:359-368`, `escalon0/ventanita
 
 `janaxt <programa.bin>` (nombre de uso tomado de la cabecera, `escalon0/traductor.asm:2`; el código no fija el
 nombre del ejecutable y la batería lo arma como `build/traductor.exe`, `escalon0/pruebas/correr.sh:13-14`). El
-argumento se toma de la línea de comandos igual que en el intérprete (10.1) y la ruta del caché es la ruta del
+argumento se toma de la línea de comandos igual que en el intérprete ([10.1](#101-invocación)) y la ruta del caché es la ruta del
 programa seguida de `.x64` (`escalon0/traductor.asm:557-606`). Traduce todas las palabras, enlaza, guarda el caché `<programa.bin>.x64`, informa por
 la salida de error estándar y ejecuta el código nativo. Salida y códigos de salida idénticos al intérprete
 (`escalon0/traductor.asm:1-4`, `escalon0/traductor.asm:998-1028`).
@@ -774,7 +775,7 @@ la salida de error estándar y ejecuta el código nativo. Salida y códigos de s
    `r14`, `r15` (`escalon0/traductor.asm:98-99`). En cada ronda, el registro Janax aún sin asignar con mayor
    cuenta recibe el siguiente nativo; los empates favorecen el índice menor (`escalon0/traductor.asm:664-691`).
    La mejor cuenta de cada ronda arranca en −1 y la comparación es con signo, de modo que los 11 nativos se
-   asignan siempre, también a registros con cuenta 0; por eso el stub de entrada (11.7) mide siempre 160 bytes.
+   asignan siempre, también a registros con cuenta 0; por eso el stub de entrada ([11.7](#117-entrada-y-salida-del-código-generado)) mide siempre 160 bytes.
 3. Los 5 registros Janax restantes viven en el contexto.
 4. Registros reservados: `rax`, `rcx`, `rdx` (trabajo), `rbp` (contexto), `rsp` (pila nativa)
    (`escalon0/traductor.asm:20-22`, `escalon0/traductor.asm:97`).
@@ -815,7 +816,7 @@ instrucciones idénticas en x86-64 ("a") se emiten como una sola instrucción na
 | `jst`, `jstb` | `mov rax, loc(ra)` / `mov rcx, loc(rd)` / plantilla |
 | `jldadd` | `mov rax, loc(ra)` / `mov rcx, loc(rd)` / plantilla con cuerpo `add rcx,[rdx+rax]; mov [rdx+rax],rcx; mov rax,rcx` / `mov loc(rd), rax` |
 | `jldx` | `mov rax, loc(ra)` / `mov rcx, loc(rb)` / plantilla con dirección `lea rax,[rax+rcx*8]` / `mov loc(rd), rax` |
-| `jcall` | plantilla `t_call` (11.6) |
+| `jcall` | plantilla `t_call` ([11.6](#116-llamadas)) |
 | `jcall0` | `t_call` / `31 C0` (`xor eax, eax`) / `mov loc(rd), rax` |
 | `jret` | plantilla `t_ret` (11.6) |
 | `jhost` | `mov rax, loc(ra)` / `mov rdx,[rbp+C_MEM]; call [rbp+C_HOST]; test edx,edx; jz ok; mov eax,edx; ret; ok:` / `mov loc(rd), rax` |
@@ -879,7 +880,7 @@ Formato (`escalon0/traductor.asm:35-38`, `escalon0/traductor.asm:89-93`, `escalo
 | 0 | 4 | Magia: bytes `4A 58 36 35` (`'JX65'`) |
 | 4 | 4 | Huella del traductor (FNV-1a de 32 bits) |
 | 8 | 8 | `n`: cantidad de palabras |
-| 16 | 16 | `jmap` (11.2) |
+| 16 | 16 | `jmap` ([11.2](#112-asignación-de-registros)) |
 | 32 | 4n | Las palabras del programa |
 | 32 + 4n | n | `lens` |
 | 32 + 5n | n | `joffs` (FFh = sin campo de salto) |
@@ -992,7 +993,7 @@ Identificadores en `stub_off` (`escalon0/traductor_arm64.asm:42-45`, `escalon0/t
 | 0 (`S_FINISH`) | `finish`: escribe `x0` como 16 dígitos hexadecimales en mayúsculas más LF (17 bytes) con `write(1, línea, 17)` (llamada 64) y sale con `exit(0)` (llamada 93) (`escalon0/traductor_arm64.asm:82-103`) |
 | 1, 2, 5, 6, 7, 8 | Salida con ese código: `MOVZ x0, #código` / `B exit` (`escalon0/traductor_arm64.asm:443-453`). La de código 2 está en `offs[N]` (destino "fuera del programa"). |
 | 3 (`S_EXIT`) | `exit`: `MOVZ x8, #93` / `SVC #0` (`escalon0/traductor_arm64.asm:100-102`) |
-| 9 (`S_HOST`) | Rutina de `jhost` (7.6); sus ramas a las salidas 5 y 6 se parchean al colocarla (`escalon0/traductor_arm64.asm:105-167`, `escalon0/traductor_arm64.asm:623-645`) |
+| 9 (`S_HOST`) | Rutina de `jhost` ([7.6](#76-catálogo-por-puerto)); sus ramas a las salidas 5 y 6 se parchean al colocarla (`escalon0/traductor_arm64.asm:105-167`, `escalon0/traductor_arm64.asm:623-645`) |
 
 Diferencia observable con Windows: la línea final termina en LF, no en CR LF.
 
@@ -1024,18 +1025,18 @@ Un único segmento cargable de lectura, escritura y ejecución en `BASE` = 40000
 
 ## 13. Otros ejecutores: Janax OS
 
-Janax OS ejecuta el mismo idioma con tres motores seleccionables por la variable `JANAX_MOTOR`: `interprete`,
+Janax OS ejecuta el mismo idioma con [tres motores](03-nucleo-arranque-memoria-procesos.md#53-motores-de-ejecución) seleccionables por la variable [`JANAX_MOTOR`](03-nucleo-arranque-memoria-procesos.md#34-variables-de-entorno): `interprete`,
 `rutinas` y `traductor` (por omisión) (`so/janaxos.asm:755`, `so/rutinas.inc:1-12`, `so/nativo.inc:1-5`). Su
 intérprete aplica la misma semántica aritmética, de saltos y de llamadas que el escalón 0
-(`so/janaxos.asm:1909-2163`), con estas diferencias, que especifica el capítulo 03:
+(`so/janaxos.asm:1909-2163`), con estas diferencias, que especifica [el capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación):
 
-- La memoria de datos son ambientes; el ambiente 0 no existe hasta el primer `jsys` (5.8) y los límites de
+- La memoria de datos son [ambientes](03-nucleo-arranque-memoria-procesos.md#6-modelo-de-memoria-de-un-proceso); el ambiente 0 no existe hasta el primer `jsys` ([5.8](#58-jsys-janax-os)) y los límites de
   acceso son los del proceso (`so/janaxos.asm:2021-2052`).
-- La pila de retorno crece a pedido; el código 7 aparece cuando no puede crecer (`so/janaxos.asm:2101-2118`).
-- `jsys` está definido; `jhost` ofrece un catálogo vacío (7.6).
-- La ejecución se reparte en turnos.
+- [La pila de retorno](03-nucleo-arranque-memoria-procesos.md#67-pila-de-retorno) crece a pedido; el código 7 aparece cuando no puede crecer (`so/janaxos.asm:2101-2118`).
+- `jsys` está definido; `jhost` ofrece un catálogo vacío ([7.6](#76-catálogo-por-puerto)).
+- La ejecución se reparte en [turnos](03-nucleo-arranque-memoria-procesos.md#123-turno-por-prioridad-cuanto).
 
-Valores iniciales de los registros de un proceso antes de su primer `jsys`: (no verificado).
+Valores iniciales de los registros de un proceso antes de su primer `jsys`: todos en 0 (el bloque del proceso se reserva con `VirtualAlloc`, que lo entrega en cero, `so/janaxos.asm:1277`; al rehacerse se vuelven a poner en cero, `so/janaxos.asm:4858-4860`).
 
 ---
 
@@ -1043,7 +1044,7 @@ Valores iniciales de los registros de un proceso antes de su primer `jsys`: (no 
 
 `escalon0/pruebas/correr.sh` es el procedimiento de conformidad del escalón 0:
 
-1. Arma el intérprete, el traductor x86-64 y Janax OS con FASM, y las pruebas con el ensamblador PDP sobre
+1. Arma el intérprete, el traductor x86-64 y Janax OS con FASM, y las pruebas con el [ensamblador PDP](02-ensamblador-pdp-y-construccion.md#15-protocolo-de-una-corrida-del-ensamblador) sobre
    Janax OS (`escalon0/pruebas/correr.sh:13-25`). El traductor ARM64 también se arma con FASM, antes del paso 5
    (`escalon0/pruebas/correr.sh:103-105`).
 2. Cada prueba declara `; espera: <16 hex>` (valor de `j0`), `; codigo: <n>` (por omisión 0) y opcionalmente
@@ -1055,7 +1056,7 @@ Valores iniciales de los registros de un proceso antes de su primer `jsys`: (no 
 5. Traduce a ARM64 y corre en un dispositivo real por adb, si hay uno conectado
    (`escalon0/pruebas/correr.sh:101-137`).
 6. Prueba `JANAX_SIN=escribir` en Windows (`escalon0/pruebas/correr.sh:139-149`).
-7. Verifica que todo bucle del código del escalón 0 tenga forma de while rotado
+7. Verifica que todo bucle del código del escalón 0 tenga forma de [while rotado](#61-el-while-jwhile-jwhilez-jwcheck-jwend)
    (`escalon0/pruebas/correr.sh:150-157`).
 
 Resultados esperados (`escalon0/pruebas/*.jsm`, encabezados):
@@ -1086,7 +1087,7 @@ Resultados esperados (`escalon0/pruebas/*.jsm`, encabezados):
 | 37 | catálogo de `jhost` | 100000001h (con `JANAX_SIN=escribir`: 0) |
 | 38 | `escribir` | salida `hola`, `j0` = 5 (con `JANAX_SIN=escribir`: 0) |
 | 39, 40 | pedido no ofrecido, bloque fuera de memoria | FFFFFFFFFFFFFFFFh; código 5 |
-| 41, 43 | programas generados por `so/herramientas/turnos.pl` (226 casos) y `so/herramientas/cuantos.pl` (73 casos) que comparan el cálculo de turnos del planificador contra valores exactos; `j0` = casos discrepantes | 0 |
+| 41, 43 | programas generados por [`so/herramientas/turnos.pl`](02-ensamblador-pdp-y-construccion.md#217-cuantospl-y-turnospl--generadores-de-pruebas-del-planificador) (226 casos) y `so/herramientas/cuantos.pl` (73 casos) que comparan el cálculo de turnos del planificador contra valores exactos; `j0` = casos discrepantes | 0 |
 | 45 | `jjn`/`jjnn` | 13Fh |
 | 46, 47, 48 | `jldadd`, `jldx`, `jcall0` | 15E5h; 0FAh; 5Bh |
 | 49, 50 | `jldadd` desalineado, `jldx` fuera de rango | código 6; código 5 |
@@ -1100,21 +1101,21 @@ No existe prueba número 42.
 Marcados como "(no verificado)" en este capítulo:
 
 1. Que los fuentes actuales del repositorio se armen igual con FASM y `janax.inc` que con el ensamblador PDP
-   (8.10).
-2. El efecto de pasar al intérprete una ruta entre comillas (10.1): del código sólo se deduce que las
+   ([8.10](#810-notación-fasm-escalon0janaxinc)).
+2. El efecto de pasar al intérprete una ruta entre comillas ([10.1](#101-invocación)): del código sólo se deduce que las
    comillas no se quitan.
-3. Los valores iniciales de los registros de un proceso de Janax OS antes de su primer `jsys` (13).
+3. Los valores iniciales de los registros de un proceso de Janax OS antes de su primer `jsys` ([13](#13-otros-ejecutores-janax-os)): verificado, todos en 0 (`so/janaxos.asm:1277`).
 4. El comportamiento de las macros FASM ante `jwend` o `jwcheck` sin while abierto (8.10).
 
 Comportamientos que el código deja sin definir o sin diagnosticar (derivados del código, sin prueba que los
 fije):
 
-- Ensamblador PDP: `rd`/`ra` mayores que 15 invaden otros campos de la palabra sin error (8.5); un parámetro
-  de macro sin argumento toma el contenido residual de la tabla de argumentos (8.6); un cuerpo de macro no
+- Ensamblador PDP: `rd`/`ra` mayores que 15 invaden otros campos de la palabra sin error ([8.5](#85-operandos-de-instrucciones)); un parámetro
+  de macro sin argumento toma el contenido residual de la tabla de argumentos ([8.6](#86-directivas)); un cuerpo de macro no
   puede contener `}`; locales por encima de 16 se ignoran; las tablas de símbolos y de macros no verifican
   estar llenas: con todas las entradas ocupadas por la generación actual, el sondeo lineal de un nombre
   ausente no termina (`so/pdp/ensamblador/ensamblador.jsm:1869-1904`).
-- `jfirst` con tamaños de 2^31 o más no carga el tamaño pedido (6.2).
+- `jfirst` con tamaños de 2^31 o más no carga el tamaño pedido ([6.2](#62-jfirst-r-tamaño)).
 - La respuesta de `escribir` cuando la escritura falla: en Windows es la cantidad informada por `WriteFile`
   en `host_written` (inicializada en 0, `escalon0/ventanita.inc:98-100`); en ARM64 es el valor que devuelve
   la llamada `write` en `x0` (`escalon0/traductor_arm64.asm:137-138`), que en Linux puede ser negativo.

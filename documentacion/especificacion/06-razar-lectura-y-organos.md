@@ -9,12 +9,12 @@ binario y textual de una receta y de una forma, el ciclo que muta, examina y con
 archivos que todo esto lee y escribe con sus desplazamientos, y la regla de ortografía (`ort_eat`, `ort_load`,
 `ort_fix`). Los demás programas del directorio (`lector`, `comer`, `vigia`, `pregunta`, `sentido`, y los módulos
 `pistas.inc`, `idioma.inc`, `negacion.inc`) se describen en su interfaz y sus formatos; su algoritmo interno completo
-no se especifica aquí (§15). No cubre: la codificación de instrucciones Janax y la semántica de `jwhile`/`jcall0`
-(capítulo 01), el ensamblador PDP y la construcción de `.bin`/`.datos` (capítulo 02), procesos, salas y planificador
-(capítulo 03), el contrato de cada pedido al núcleo (capítulo 04; aquí sólo se dice cómo se usa), la ventana y el
-vigía del anfitrión (capítulo 05), el cardumen (capítulo 07), el cuerpo de Luma que escribe las formas y los
-engranajes en los datos del lector (capítulo 08), la conversación (capítulo 09), la pantalla y vida de Luma
-(capítulo 10) y el instalador (capítulo 11).
+no se especifica aquí ([§15](#15-otros-programas-del-directorio)). No cubre: la codificación de instrucciones Janax y la semántica de [`jwhile`](01-idioma-janax.md#61-el-while-jwhile-jwhilez-jwcheck-jwend)/[`jcall0`](01-idioma-janax.md#57-llamadas-y-pila-de-retorno)
+([capítulo 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador PDP y la construcción de `.bin`/`.datos` ([capítulo 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), procesos, salas y planificador
+([capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), el contrato de cada pedido al núcleo ([capítulo 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido); aquí sólo se dice cómo se usa), la [ventana](05-nucleo-pantalla-teclado-vigia.md#5-ventana-del-anfitrión) y el
+[vigía del anfitrión](05-nucleo-pantalla-teclado-vigia.md#10-vigía-y-centinela) ([capítulo 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), el cardumen ([capítulo 07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo de Luma que escribe las formas y los
+engranajes en los datos del lector ([capítulo 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), la conversación ([capítulo 09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)), la pantalla y vida de Luma
+([capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)) y el instalador ([capítulo 11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)).
 
 Las referencias `ruta:línea` son relativas a la raíz del repositorio. Las afirmaciones salen del código; lo que no
 pudo verificarse en el código se marca "(no verificado)". Los números hexadecimales se escriben como en el código
@@ -26,29 +26,29 @@ pudo verificarse en el código se marca "(no verificado)". Los números hexadeci
 
 | Término | Definición |
 |---|---|
-| Libro | Secuencia de bytes que el lector recorre. Puede ser el archivo `libro`, la concatenación de un estante, un libro del disco o un libro del anfitrión (§5.1). |
+| Libro | Secuencia de bytes que el lector recorre. Puede ser el archivo `libro`, la concatenación de un estante, un libro del disco o un libro del anfitrión ([§5.1](#51-fuentes-del-libro)). |
 | Unidad | Elemento de la fila: una palabra, una marca o un fin de renglón. |
 | Palabra | Secuencia máxima de letras (`a`-`z`, `A`-`Z` pasadas a minúscula, `0`-`9`, y U+00C0..U+00FF codificadas `C3 xx`) (`razar/lectura/lectura.inc:933-1103`). |
 | Marca | Unidad de un solo carácter no alfanumérico (ASCII `21h`-`7Fh` que no es letra ni dígito; `7Fh` incluido, consecuencia de `tb_small`) o una secuencia UTF-8 de 2 a 4 bytes que no es `C3 xx` (`razar/lectura/lectura.inc:995-1024,1042-1051,1094-1098`). Recibe número como una palabra. `w_mark` la reconoce porque su primer byte no es `C3h`, `a`-`z` ni `0`-`9` (`razar/lectura/lectura.inc:2068-2102`). |
 | Renglón | Fin de línea (`0Ah`) o salto de página (`0Ch`); en la fila es el número 0. Dos renglones seguidos son uno (`razar/lectura/lectura.inc:1267-1294`). |
 | Número de palabra | Índice asignado en orden de primera aparición, desde 1; 0 = renglón (`razar/lectura/lectura.inc:1379-1514`). `NV` = siguiente número libre. |
 | Fila | `ROOMT`: un qword por unidad; la unidad 0 es un renglón (`razar/lectura/lectura.inc:247-251`). `NTOK` = unidades. |
-| Renglón de prueba | Uno de cada `K` renglones, apartado (§5.6). |
+| Renglón de prueba | Uno de cada `K` renglones, apartado ([§5.6](#56-renglones-de-prueba-y-examen)). |
 | Ventana | Cuatro unidades consecutivas `w0 w1 w2 w3` a partir de la posición `JJ` de la fila (`WAT` = dirección de `w0`) (`razar/lectura/pulso.inc:449-602`). |
 | Medio y cola de la ventana | Términos de este capítulo (no del código): el *medio* son `w1` y `w2`, las posiciones que un molde puede sacar; la *cola* es `w3`, presente sólo en los moldes de cuatro palabras. |
 | Pedido con hueco | Entrada `{clave, silueta, peso, ocurrencia}` de `ROOMR`: un marco con un hueco y lo que lo llena. |
 | Llenado | Valor que ocupa el hueco: una letra (piso 1), un número de palabra o 0 = "dicho vacío" (piso 2), dos palabras empaquetadas (piso 3). |
-| Pulso | Encuentro, en la misma clave, de dos llenados distintos (§6.4). |
-| Diferencia | Par no ordenado de llenados de un pulso, con su piso y, en el piso 3, si dio vuelta (§6.4). |
-| Pieza | Diferencia cuyo juez da bits ahorrados > 0 (§7). |
-| Órgano / receta | Cadena de letras de 4 bits (1..15) que el lector de órganos interpreta sobre cada ventana (§10). "Receta" es también el texto que la describe (§11). |
-| Forma | Receta de hasta 31 letras guardada como una "palabra" de 16 bytes en `ORGT` (§11.6). |
-| Engranaje | Hasta 15 instrucciones Janax aritméticas en un bloque de 128 bytes (§10.7). |
-| Genoma | Qword de instintos: byte 0 paciencia, byte 1 firmeza, byte 2 lecturas (§9.3). |
-| `j0`..`j14` | Registros Janax. `j1` se usa como base 0 en casi todo acceso a variables. |
+| Pulso | Encuentro, en la misma clave, de dos llenados distintos ([§6.4](#64-pulso-y-diferencia)). |
+| Diferencia | Par no ordenado de llenados de un pulso, con su piso y, en el piso 3, si dio vuelta ([§6.4](#64-pulso-y-diferencia)). |
+| Pieza | Diferencia cuyo juez da bits ahorrados > 0 ([§7](#7-el-juez-de-armonía)). |
+| Órgano / receta | Cadena de letras de 4 bits (1..15) que el lector de órganos interpreta sobre cada ventana ([§10](#10-el-lector-de-órganos-organoinc)). "Receta" es también el texto que la describe ([§11](#11-recetas-y-formas)). |
+| Forma | Receta de hasta 31 letras guardada como una "palabra" de 16 bytes en `ORGT` ([§11.6](#116-forma)). |
+| Engranaje | Hasta 15 instrucciones Janax aritméticas en un bloque de 128 bytes ([§10.7](#107-engranajes-formato-de-128-bytes)). |
+| Genoma | Qword de instintos: byte 0 paciencia, byte 1 firmeza, byte 2 lecturas ([§9.3](#93-genoma-y-evolución)). |
+| `j0`..`j14` | [Registros Janax](01-idioma-janax.md#31-estado). `j1` se usa como base 0 en casi todo acceso a variables. |
 
 Notación de los hashes: `FNVO` = `CBF29CE484222325h`, `FNVP` = `100000001B3h` (`razar/lectura/lectura.inc:144-154`).
-`hw(h, x)` = `(h xor x) * FNVP mod 2^64` sobre un qword entero (`razar/lectura/pulso.inc:605-610`). FNV-1a de bytes =
+`hw(h, x)` = `(h xor x) * FNVP mod 2^64` sobre un qword entero (`razar/lectura/pulso.inc:605-610`). [FNV-1a](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333) de bytes =
 `hw` aplicado byte a byte desde `FNVO`.
 
 ---
@@ -64,21 +64,21 @@ Notación de los hashes: `FNVO` = `CBF29CE484222325h`, `FNVP` = `100000001B3h` (
 | `razar/lectura/negacion.inc` | Destilado del interruptor sí/no (`distill_no`, `n_flags`). | — |
 | `razar/lectura/casa.inc` | Cimiento y muebles (`house_decide`). | — |
 | `razar/lectura/idioma.inc`, `pistas.inc`, `carpeta.inc` | Idiomas por contexto; preguntar siguiendo pistas; carpeta propia. | — |
-| `razar/lectura/pulso.jsm` | Programa principal de Razar: pulso, evolución de instintos, memoria, ciclo de órganos, sociedad. | `crece.inc`, `casa.inc`, `pulso.inc`, `organo.inc`, `negacion.inc`, `lectura.inc`, en ese orden (`razar/lectura/pulso.jsm:7977-7982`) |
+| `razar/lectura/pulso.jsm` | Programa principal de Razar: pulso, evolución de instintos, memoria, ciclo de órganos, sociedad. | [`crece.inc`](07-razar-cardumen-canto-hilos.md#13-tablas-que-crecen-creceinc), `casa.inc`, `pulso.inc`, `organo.inc`, `negacion.inc`, `lectura.inc`, en ese orden (`razar/lectura/pulso.jsm:7977-7982`) |
 | `razar/lectura/lector.jsm` | Lector de prueba: tapar palabras (eco / izquierda / dos lados). | `crece.inc`, `lectura.inc` (`razar/lectura/lector.jsm:742-743`) |
 | `razar/lectura/comer.jsm` | Comer un libro del anfitrión y dejar pistas en la biblioteca. | `crece.inc`, `casa.inc`, `pulso.inc`, `organo.inc`, `negacion.inc`, `lectura.inc`, `carpeta.inc` (`razar/lectura/comer.jsm:2689-2695`) |
 | `razar/lectura/sentido.jsm` | Esqueletos, significado, ortografía. | `crece.inc`, `casa.inc`, `pulso.inc`, `organo.inc`, `negacion.inc`, `lectura.inc`, `idioma.inc` (`razar/lectura/sentido.jsm:11804-11810`) |
 | `razar/lectura/pregunta.jsm` | Preguntas con huecos. | `crece.inc`, `pulso.inc`, `organo.inc`, `negacion.inc`, `pistas.inc`, `carpeta.inc` (`razar/lectura/pregunta.jsm:375-380`); `lectura.inc`, `idioma.inc` (`razar/lectura/pregunta.jsm:1535-1536`) |
 | `razar/lectura/vigia.jsm` | Espera archivos nuevos del anfitrión y lanza `comer`. | ninguno de este directorio (sólo `escalon0/janax.inc`, `razar/lectura/vigia.jsm:43`) |
-| `razar/lectura/organo.molde` | Bloques de etiquetas y descripciones de letras que lee `pulso.jsm` (§12.1). | — |
-| `X.datos.jsm` | Datos iniciales de cada programa: etiquetas y textos cada `40h` bytes, terminados en 0 (p. ej. `razar/lectura/pulso.datos.jsm:1-3`). | — |
+| `razar/lectura/organo.molde` | Bloques de etiquetas y descripciones de letras que lee `pulso.jsm` ([§12.1](#121-preparación-og_init)). | — |
+| `X.datos.jsm` | [Datos iniciales](04-nucleo-abi-de-pedidos.md#104-datos-iniciales-datos) de cada programa: etiquetas y textos cada `40h` bytes, terminados en 0 (p. ej. `razar/lectura/pulso.datos.jsm:1-3`). | — |
 
-Cada programa empieza con `jfirst j1, 10000h` (sala 0 de `10000h` bytes) salvo `vigia` (`4000h`)
+Cada programa empieza con [`jfirst j1, 10000h`](01-idioma-janax.md#62-jfirst-r-tamaño) ([sala 0](03-nucleo-arranque-memoria-procesos.md#63-primera-orden-la-sala-0) de `10000h` bytes) salvo `vigia` (`4000h`)
 (`razar/lectura/pulso.jsm:318`, `razar/lectura/lector.jsm:81`, `razar/lectura/sentido.jsm:450`,
 `razar/lectura/comer.jsm:168`, `razar/lectura/pregunta.jsm:93`, `razar/lectura/vigia.jsm:44`). Las variables se
 direccionan como desplazamientos absolutos en la sala 0. Como `organo.inc` y `pulso.inc` están incluidos también en
 `comer`, `sentido` y `pregunta`, el lector de órganos corre en esos programas con el `ORGW` de sus propios datos
-iniciales (cero: no hace nada, §10.2).
+iniciales (cero: no hace nada, [§10.2](#102-máquina-de-estado)).
 
 ---
 
@@ -96,39 +96,39 @@ iniciales (cero: no hace nada, §10.2).
 | `QUEUE+24` | argumento b (`j12`) |
 | `QUEUE+32` | respuesta (leída a `j13`) |
 
-y ejecuta `jsys j14, j14` con `j14` = `QUEUE`. Para pedidos sobre un manejador abierto, `j10` = `(manejador << 32) | tipo`.
-Formato de cola y semántica de cada pedido: capítulo 04.
+y ejecuta [`jsys j14, j14`](01-idioma-janax.md#58-jsys-janax-os) con `j14` = `QUEUE`. Para pedidos sobre un manejador abierto, `j10` = `(manejador << 32) | tipo`.
+[Formato de cola](04-nucleo-abi-de-pedidos.md#4-formato-de-la-cola-de-pedidos) y semántica de cada pedido: [capítulo 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido).
 
 Pedidos que usa este código (descripción según su uso aquí):
 
 | Nº | Uso en `razar/lectura` |
 |---|---|
-| 1 | Escribir texto a la consola (`razar/lectura/lectura.inc:1891-1896`). |
-| 2 | Pedir una sala de `j11` bytes → dirección; −1 = sin memoria (`razar/lectura/lectura.inc:1737-1743`). |
-| 3 | Devolver una sala (`razar/lectura/crece.inc:148-151`). |
-| 4 | Abrir (crea si no existe) un archivo por etiqueta → manejador o negativo (`razar/lectura/lectura.inc:156-159`). |
-| 5 | Leer del manejador a una dirección → bytes leídos (`razar/lectura/lectura.inc:840-868`). |
-| 6 | Escribir al manejador. |
-| 7 | Cerrar. |
-| 12 | Borrar archivo por etiqueta (`razar/lectura/pulso.jsm:3705`). |
-| 14 | Listar etiquetas: `{largo qword, bytes rellenados a 8}` por etiqueta → cantidad que entró (`razar/lectura/lectura.inc:382-403`). |
-| 16 | Lanzar un hijo; en `og_trial` `j10` = `(14 << 32) | 16` (`razar/lectura/pulso.jsm:4855-4860`). |
-| 17, 18, 19 | Firmar un pedido pendiente; listar pendientes `{número, hijo, tipo}` de 24 bytes; estado de una cabina (`razar/lectura/pulso.jsm:4877-4965`). |
-| 20 | Bolita (fracción de turno) de la cabina; `j11` = −1 consulta/restituye (`razar/lectura/organo.inc:453-505,603-616`) (semántica exacta de −1: no verificado aquí). |
-| 29 | Timbre: dormir hasta un evento → quién tocó, −1 = nadie queda (`razar/lectura/pulso.jsm:4880-4884`). |
-| 30 | Decir una palabra a otra cabina; −1 = el padre (`razar/lectura/pulso.jsm:5085-5096`). |
-| 31 | Leer una palabra oída a `{de, palabra}` (16 bytes); respuesta 1 = se leyó una (`razar/lectura/pulso.jsm:4930-4955`). |
-| 32 | Pedir que despierte un cambio en los archivos cuya etiqueta empieza con un prefijo: `j11` = largo del prefijo, `j12` = hasta 8 bytes del prefijo (p. ej. `libro`, largo 5) (`razar/lectura/pulso.jsm:2379-2390,6326-6329`) (semántica: capítulo 04). |
-| 34 | Jaula: presupuesto de un hijo (`razar/lectura/pulso.jsm:4865-4868`). |
-| 35 | Costo gastado hasta ahora (con −1) (`razar/lectura/pulso.jsm:2468-2472`). |
-| 36 | Rehacerse: la misma cabina con un programa nuevo (`razar/lectura/pulso.jsm:2596-2600`). |
-| 37 | Abrir un archivo del anfitrión, sólo lectura (`razar/lectura/lectura.inc:761,771`). |
-| 38 | Posicionar en un manejador (−1: al final, devuelve el tamaño) (`razar/lectura/lectura.inc:797-816`) (semántica de la respuesta: no verificado). |
-| 39 | Vigía del anfitrión: esperar archivo nuevo (`razar/lectura/vigia.jsm:69`). |
+| [1](04-nucleo-abi-de-pedidos.md#91-consola) | Escribir texto a la consola (`razar/lectura/lectura.inc:1891-1896`). |
+| [2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Pedir una sala de `j11` bytes → dirección; −1 = sin memoria (`razar/lectura/lectura.inc:1737-1743`). |
+| [3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Devolver una sala (`razar/lectura/crece.inc:148-151`). |
+| [4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Abrir (crea si no existe) un archivo por etiqueta → manejador o negativo (`razar/lectura/lectura.inc:156-159`). |
+| [5](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Leer del manejador a una dirección → bytes leídos (`razar/lectura/lectura.inc:840-868`). |
+| [6](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Escribir al manejador. |
+| [7](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Cerrar. |
+| [12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Borrar archivo por etiqueta (`razar/lectura/pulso.jsm:3705`). |
+| [14](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Listar etiquetas: `{largo qword, bytes rellenados a 8}` por etiqueta → cantidad que entró (`razar/lectura/lectura.inc:382-403`). |
+| [16](04-nucleo-abi-de-pedidos.md#96-familia) | Lanzar un hijo; en `og_trial` `j10` = `(14 << 32) | 16` (`razar/lectura/pulso.jsm:4855-4860`). |
+| [17](04-nucleo-abi-de-pedidos.md#96-familia), [18](04-nucleo-abi-de-pedidos.md#96-familia), [19](04-nucleo-abi-de-pedidos.md#96-familia) | Firmar un pedido pendiente; listar pendientes `{número, hijo, tipo}` de 24 bytes; estado de una cabina (`razar/lectura/pulso.jsm:4877-4965`). |
+| [20](03-nucleo-arranque-memoria-procesos.md#121-bolita-20) | Bolita (fracción de turno) de la cabina; `j11` = −1 consulta/restituye (`razar/lectura/organo.inc:453-505,603-616`) (semántica exacta de −1: `so/janaxos.asm:5197-5206`). |
+| [29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Timbre: dormir hasta un evento → quién tocó, −1 = nadie queda (`razar/lectura/pulso.jsm:4880-4884`). |
+| [30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Decir una palabra a otra cabina; −1 = el padre (`razar/lectura/pulso.jsm:5085-5096`). |
+| [31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Leer una palabra oída a `{de, palabra}` (16 bytes); respuesta 1 = se leyó una (`razar/lectura/pulso.jsm:4930-4955`). |
+| [32](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Pedir que despierte un cambio en los archivos cuya etiqueta empieza con un prefijo: `j11` = largo del prefijo, `j12` = hasta 8 bytes del prefijo (p. ej. `libro`, largo 5) (`razar/lectura/pulso.jsm:2379-2390,6326-6329`) (semántica: capítulo 04). |
+| [34](04-nucleo-abi-de-pedidos.md#96-familia) | Jaula: presupuesto de un hijo (`razar/lectura/pulso.jsm:4865-4868`). |
+| [35](04-nucleo-abi-de-pedidos.md#96-familia) | Costo gastado hasta ahora (con −1) (`razar/lectura/pulso.jsm:2468-2472`). |
+| [36](03-nucleo-arranque-memoria-procesos.md#98-rehacerse-36) | Rehacerse: la misma cabina con un programa nuevo (`razar/lectura/pulso.jsm:2596-2600`). |
+| [37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión) | Abrir un archivo del anfitrión, sólo lectura (`razar/lectura/lectura.inc:761,771`). |
+| [38](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Posicionar en un manejador (−1: al final, devuelve el tamaño) (`razar/lectura/lectura.inc:797-816`) (semántica de la respuesta: `so/janaxos.asm:2655-2672`). |
+| [39](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39) | Vigía del anfitrión: esperar archivo nuevo (`razar/lectura/vigia.jsm:69`). |
 
 ### 3.2 Salas y tablas que crecen
 
-`room` (`razar/lectura/lectura.inc:1737-1807`) pide una sala; sin memoria escribe `S_NOMEM` y termina (`jhalt`). Si
+`room` (`razar/lectura/lectura.inc:1737-1807`) pide una sala; sin memoria escribe `S_NOMEM` y termina ([`jhalt`](01-idioma-janax.md#35-terminación-y-códigos-de-salida)). Si
 `RLIST` ≠ 0 anota cada sala en una lista `{capacidad, salas…}` que se duplica al llenarse, para devolverlas todas al
 renacer.
 
@@ -145,8 +145,8 @@ Tabla creciente (`razar/lectura/crece.inc:23-158`): descriptor de 4 qwords en la
 - Índice inicial de la clave `k`: `((k >> 32) xor k) & máscara`; sondeo lineal `+1 & máscara`. Un lugar está vacío
   cuando su primer qword es 0; por lo tanto **ninguna clave puede ser 0**: todo productor de claves reemplaza 0 por 1.
 - `pl_take` inserta; antes de insertar, si `máscara − 2·(entradas+1) < 0` duplica (`pl_grow`: reubica cada entrada,
-  devuelve la sala vieja con el pedido 3).
-- El contenido de una sala nueva se supone en ceros (no verificado aquí; capítulo 04).
+  devuelve la sala vieja con el [pedido 3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas)).
+- El contenido de una sala nueva se supone en ceros (`so/ambientes.inc:100-102,387-400`; [capítulo 04](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas)).
 
 `buf_need` (`razar/lectura/lectura.inc:1109-1185`): búfer `{dirección, capacidad, necesario, guardado, 13 registros}`
 que duplica (desde 256) hasta cubrir lo necesario y copia lo que tenía. Lo usan la palabra en lectura (`WBP`), la
@@ -166,7 +166,7 @@ x *= 94D049BB133111EBh; x ^= x>>31`).
 ### 3.4 Salida de texto
 
 `TEXT` = `2000h`, `TEXTN` = `1000h` bytes, `POS` = bytes escritos. `putch` vacía (`flush`) al llenarse. `flush`
-escribe a `SINK` (0 = consola, pedido 1; si no, `SINK` = manejador + 1, pedido 6). Sólo en el camino de consola, si
+escribe a `SINK` (0 = consola, [pedido 1](04-nucleo-abi-de-pedidos.md#91-consola); si no, `SINK` = manejador + 1, [pedido 6](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)). Sólo en el camino de consola, si
 `AUTH` ≠ 0 (manejador + 1), copia además el mismo texto a la autopsia con el pedido 6; con `SINK` ≠ 0 no hay copia
 (`razar/lectura/lectura.inc:1877-1910`). `putnum` decimal sin signo; `putq16` valor `2^-16` con dos decimales y coma
 (`razar/lectura/lectura.inc:1848-1874`).
@@ -175,12 +175,12 @@ escribe a `SINK` (0 = consola, pedido 1; si no, `SINK` = manejador + 1, pedido 6
 
 ## 4. El archivo de parámetros `p`
 
-`read_book` abre `p` (pedido 4) y lee 16 bytes a `QSCR` = `4100h` (`razar/lectura/lectura.inc:156-179`). Si no abre,
+`read_book` abre `p` ([pedido 4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) y lee 16 bytes a `QSCR` = `4100h` (`razar/lectura/lectura.inc:156-179`). Si no abre,
 `K` = 10. El manejador de `p` no se cierra en ese camino (observado en el código).
 
 | Desplazamiento | Campo | Variable | Uso |
 |---|---|---|---|
-| 0 (qword) | `K`: uno de cada `K` renglones es de prueba; 0 → 10 (criterio, `razar/lectura/lectura.inc:160`) | `PK` | §5.6 |
+| 0 (qword) | `K`: uno de cada `K` renglones es de prueba; 0 → 10 (criterio, `razar/lectura/lectura.inc:160`) | `PK` | [§5.6](#56-renglones-de-prueba-y-examen) |
 | 8, byte 0 | lecturas (pasadas) del aprendizaje; 0 → 1 | `NPAS` | `razar/lectura/pulso.inc:211-218` |
 | 8, byte 1 | generaciones de la evolución de instintos (0: ninguna) | | `razar/lectura/pulso.jsm:1998-2008` |
 | 8, byte 2 | identidad `QUIEN` (0: solo) | | `razar/lectura/pulso.jsm:5594-5599` |
@@ -191,7 +191,7 @@ escribe a `SINK` (0 = consola, pedido 1; si no, `SINK` = manejador + 1, pedido 6
 | 8, byte 7 | paisaje: órganos de hasta este número de letras | | `razar/lectura/pulso.jsm:2404-2409` |
 
 Prioridad dentro de `organ_trials`: paisaje (byte 7) > auditoría (byte 6) > pruebas (byte 5)
-(`razar/lectura/pulso.jsm:2403-2426`). `ev_set` sobrescribe el byte 0 con las lecturas del genoma
+(`razar/lectura/pulso.jsm:2403-2426`). [`ev_set`](#91-ev_exam) sobrescribe el byte 0 con las lecturas del genoma
 (`razar/lectura/pulso.jsm:6669-6673`).
 
 ---
@@ -203,16 +203,16 @@ Prioridad dentro de `organ_trials`: paisaje (byte 7) > auditoría (byte 6) > pru
 `read_book` (`razar/lectura/lectura.inc:130-255`):
 
 1. **Libro del anfitrión** (`HOSTB` = 1, puesto por quien incluye): `LABEL`/`LABLEN` es una dirección del anfitrión;
-   se abre con el pedido 37; no hay estante. `come_piece` (`razar/lectura/lectura.inc:582-645`) interpreta el contenido
+   se abre con el [pedido 37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión); no hay estante. `come_piece` (`razar/lectura/lectura.inc:582-645`) interpreta el contenido
    del archivo `come`: la dirección y, si sigue una línea, `"<desde> <hasta>"` en decimal → `HOSTF`, `HOSTE` (0 y 0 =
    el libro entero). Se registran los inicios de renglón en `ROFF` (`ROFFN` qwords; el renglón k va de `ROFF[k]` a
    `ROFF[k+1]`) (`razar/lectura/lectura.inc:232-245,1298-1319`).
-2. **Estante** (`shelf_build`, `razar/lectura/lectura.inc:387-482`): todas las etiquetas listadas (pedido 14) de 5 o más
+2. **Estante** (`shelf_build`, `razar/lectura/lectura.inc:387-482`): todas las etiquetas listadas ([pedido 14](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) de 5 o más
    bytes cuyos 5 primeros son `libro`, en el orden del listado, copiadas a `SHELF` (`SHN` entradas `{largo, bytes
    rellenados a 8}`). La sala del listado empieza en 4096 bytes y se duplica mientras lo que sobra sea menor que 520
    (8 + 512). El libro es la concatenación de todos; cada archivo termina su renglón.
 3. **Libro del disco** (`scan_file`, `razar/lectura/lectura.inc:705-789`): una etiqueta de estante de 12+ bytes que empieza
-   por `libro-disco-` contiene `{huella qword, tamaño qword, dirección del anfitrión}`. Se leen hasta 4096 bytes a `BUF`;
+   por [`libro-disco-`](08-luma-cuerpo-procesos-y-casa.md#8817-libro-disco-16-hex-elibro-disco-16-hex) contiene `{huella qword, tamaño qword, dirección del anfitrión}`. Se leen hasta 4096 bytes a `BUF`;
    la dirección es lo que sigue a los 16 bytes (debe tener más de 0 bytes) y se abre con el pedido 37. Si no abre, se
    salta y se sigue con el resto del estante. La huella y el tamaño no se comprueban en este código.
 4. Si no hay estante, se lee `libro` (`S_LIBRO`). Si no abre: `S_NOBOOK` y fin (`razar/lectura/lectura.inc:787-789`).
@@ -222,7 +222,7 @@ guarda 8 bytes `PZ_P`, el byte del estante concatenado donde empieza el pedazo d
 la lectura:
 
 - un libro que termina antes de `PZ_P` o justo en `PZ_P` (`NBYTES + tamaño ≤ PZ_P`) sólo se cuenta (su tamaño por
-  el pedido 38 con −1, sumado a `NBYTES`) y se cierra sin leerse;
+  el [pedido 38](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) con −1, sumado a `NBYTES`) y se cierra sin leerse;
 - si no, se vuelve a la posición 0 con el pedido 38 (`j11` = 0), se lee entero y `pz_byte` descarta los bytes cuya
   posición absoluta en el estante (`NBYTES − LEFT`) es menor que `PZ_P` (`razar/lectura/lectura.inc:902-930`);
 - si `PZ_N` ≠ 0 al abrir un libro, se cierra sin leerlo;
@@ -326,7 +326,7 @@ donde `is_train` ≠ 0; con `TESTING` = 1 se golpea donde `is_train` = 0. Result
 | Examen (`EXAMM` 1), aprendiendo | renglones que no son de prueba |
 | Examen (`EXAMM` 2, `TESTING` 1), golpeando | **los mismos** renglones de los que aprendió (segunda lectura); los de prueba no se tocan |
 
-El piso 1 (§6.1) no usa `is_train`: aprendiendo cuelga las palabras con `ROOMC` ≠ 0 y golpeando las de `ROOMC` = 0
+El piso 1 ([§6.1](#61-pisos-y-moldes)) no usa `is_train`: aprendiendo cuelga las palabras con `ROOMC` ≠ 0 y golpeando las de `ROOMC` = 0
 (`razar/lectura/pulso.inc:352-383`). En el examen (`EXAMM` 2) el piso 1 golpea, por lo tanto, sólo con las palabras que
 aparecen únicamente en renglones de prueba, mientras los pisos 2 y 3 golpean en los renglones de aprendizaje
 (consecuencia del código).
@@ -366,7 +366,7 @@ clave = `hw(…hw(hw(hw(FNVO,1), L), b0'), …, b(L-1)')` con `bi'` = 0 en la po
 | 1 | `w1`, `w2` ≠ 0 | 2 | `w0 w1 w2` | `hw(hw(hw(hw(FNVO,2),w0),w1),w2)` | 0 (dicho vacío) |
 | 2 | además `w3` ≠ 0 | 2 | `w0 w2 w3` | `hw(…(FNVO,2),w0,w2,w3)` | `w1` (sale el primero del medio) |
 | 3 | idem | 2 | `w0 w1 w3` | `hw(…(FNVO,2),w0,w1,w3)` | `w2` (sale el segundo del medio) |
-| 4 | idem | — | — | órgano (§10) | — |
+| 4 | idem | — | — | órgano ([§10](#10-el-lector-de-órganos-organoinc)) | — |
 | 5 | idem, `w0 ≠ w3` | 3 | — | `hw(hw(hw(FNVO,3),lo),hi)`, `lo = min(w0,w3)`, `hi = max` | `w1 | w2 << 24 | s << 48`, `s` = 1 si `w0 < w3` |
 
 El molde 1 y los moldes 2/3 comparten espacio de claves: `a b c` consecutivos (vacío) y `a x b c` con `x` fuera dan la
@@ -381,8 +381,8 @@ misma clave, y el pulso entre ambos es un interruptor. El empaquetado del piso 3
 2. Si `OCCUR` ≠ 0 y el pedido existe en `ROOMR` y su ocurrencia (+24) = `OCCUR`: no hace nada (un lugar, un
    testimonio). Si existe y difiere, guarda `OCCUR`.
 3. Golpeando (`TESTING` = 1): si el pedido no existe, nada; si existe, `po_meet` sin modificarlo.
-4. Despierto, con `FORMS` = 1, `PASN` = 0, `FLOOR` = 2 y llenado 0 o una palabra con `n_flags & 1` (interruptor
-   destilado): registra la forma en `ROOMS` (§6.6).
+4. Despierto, con `FORMS` = 1, `PASN` = 0, `FLOOR` = 2 y llenado 0 o una palabra con [`n_flags & 1`](#156-módulos) (interruptor
+   destilado): registra la forma en `ROOMS` ([§6.6](#66-tablas-del-pulso)).
 5. Despierto: pedido nuevo → `{clave, silueta = código(llenado), peso 1, OCCUR}`, `NREQ` += 1. Pedido viejo →
    `po_meet` y luego actualización de la silueta.
 
@@ -438,7 +438,7 @@ piso), `PREVX[piso]` = `PB`; si `x` ≠ 0, `TBLN[RC]` += 1, `d_make(PA, x)`; si 
 
 `learn_pulses` (`razar/lectura/pulso.inc:91-231`): crea o vacía las tablas; cuenta `ROOMC[w]` (veces que la palabra `w`
 aparece en renglones de aprendizaje); corre `all_floors` tantas veces como lecturas (`NPAS & 255`, 0 → 1), con `PASN`
-= 0, 1, …; luego `judge` y `concepts`.
+= 0, 1, …; luego [`judge`](#7-el-juez-de-armonía) y [`concepts`](#7-el-juez-de-armonía).
 
 ### 6.6 Tablas del pulso
 
@@ -513,8 +513,8 @@ especificado aquí, no verificado).
 `ev_exam` (`razar/lectura/pulso.jsm:6676-6752`):
 
 1. `EVCH` = `EVC`; `ev_set`: `GPAC` = byte 0, `GFIRM` = byte 1, lecturas = byte 2 (en `NPAS` byte 0).
-2. `EXAMM` = 1; `learn_pulses`.
-3. `EXAMM` = 2, `TESTING` = 1; `all_floors`; `TESTING` = 0.
+2. `EXAMM` = 1; [`learn_pulses`](#65-aprendizaje).
+3. `EXAMM` = 2, `TESTING` = 1; [`all_floors`](#61-pisos-y-moldes); `TESTING` = 0.
 4. Nota, en **bits enteros**:
 
 ```
@@ -550,8 +550,8 @@ Genoma (`razar/lectura/pulso.jsm:2025-2039,6588-6674`):
 `evolve` (`razar/lectura/pulso.jsm:1998-2350`), si el byte 1 de `NPAS` > 0: campeón `EVC` y segundo `EVR` con sus notas
 `EVCS`, `EVRS`; por generación, hijo = cada instinto tomado de campeón o segundo según `rand & 1`, más una mutación;
 `ev_exam`; si supera al campeón (estricto) pasa a campeón, el campeón a segundo, se escribe la línea y se llama a
-`mem_save` (la memoria se reescribe con las piezas de ese examen); si sólo supera al segundo, pasa a segundo
-(`razar/lectura/pulso.jsm:2174-2220`). Al final: `nest_save`, `letter_write`, `organ_trials`. Formato de línea: `ev_line`
+[`mem_save`](#8-memoria-de-piezas) (la memoria se reescribe con las piezas de ese examen); si sólo supera al segundo, pasa a segundo
+(`razar/lectura/pulso.jsm:2174-2220`). Al final: `nest_save`, `letter_write`, [`organ_trials`](#126-pruebas-organ_trials). Formato de línea: `ev_line`
 (`razar/lectura/pulso.jsm:6782-6851`): `instinto <gen>: <pac> <firm> <lect> = <nota con signo>[ *]`.
 
 ---
@@ -560,7 +560,7 @@ Genoma (`razar/lectura/pulso.jsm:2025-2039,6588-6674`):
 
 ### 10.1 Datos del órgano en los datos iniciales
 
-El órgano no se compila: sus letras y tablas son datos de la sala 0, cargados desde `X.datos`
+El órgano no se compila: sus letras y tablas son datos de la [sala 0](03-nucleo-arranque-memoria-procesos.md#63-primera-orden-la-sala-0), cargados desde [`X.datos`](04-nucleo-abi-de-pedidos.md#104-datos-iniciales-datos)
 (`razar/lectura/organo.inc:1-11,27-43,100-126`; `razar/lectura/pulso.jsm:169-171`).
 
 | Desplazamiento | Nombre | Tamaño | Contenido |
@@ -600,7 +600,7 @@ Variables de trabajo del lector de órganos (en la misma sala):
 
 ### 10.2 Máquina de estado
 
-`organ` se llama una vez por ventana, después del molde 3 (`razar/lectura/pulso.inc:558`) y sólo si `w0..w3` ≠ 0
+`organ` se llama una vez por ventana, después del [molde 3](#61-pisos-y-moldes) (`razar/lectura/pulso.inc:558`) y sólo si `w0..w3` ≠ 0
 (`razar/lectura/organo.inc:148-156`). Estado:
 
 | Registro | Significado | Inicial |
@@ -637,7 +637,7 @@ escribe como el byte `30h + n` (`razar/lectura/pulso.jsm:3489-3503,3350-3353,503
 | 11 | `;` | `og_lB` | ojo una palabra atrás: `j10` −= 1 |
 | 12 | `<` | `og_lC` | ojo una palabra adelante: `j10` += 1 |
 | 13 | `=` | `og_lD` | `j11` ^= 1 (borroso ↔ nítido) |
-| 14 | `>` | `og_lE` | palabra o célula (§10.5, §10.6) |
+| 14 | `>` | `og_lE` | palabra o célula ([§10.5](#105-palabras--k--forma-k), [§10.6](#106-células-y-tejidos)) |
 | 15 | `?` | `og_lF` | sentido: mirada **borrosa** de la palabra 3 con el ojo donde esté; `j11` se restituye; `hw` |
 
 Referencias: `razar/lectura/organo.inc:277-401,638-659`. Cualquier cadena de letras es un órgano válido: ninguna letra
@@ -664,7 +664,7 @@ la construcción, ésta se descarta y no se toman nibbles de `ORGQ1`..`ORGQ3` (`
 
 `og_lE` (`razar/lectura/organo.inc:372-401`): si no quedan letras, nada. Si no, consume la letra siguiente `k`.
 
-- `k ≥ 9`: es una célula (§10.6).
+- `k ≥ 9`: es una célula ([§10.6](#106-células-y-tejidos)).
 - `k ≤ 8` y `ORGIN` ≠ 0 (dentro de una palabra): nada; `k` queda consumida (una palabra no puede llamarse a sí misma).
 - `k ≤ 8` y `ORGT0[k]` = 0 (palabra vacía): nada.
 - Si no: `ORGQ3` ← `ORGQ1` (letras de la oración más allá de la 16.ª), `ORGQ2` ← `ORGL` (resto de la oración),
@@ -694,7 +694,7 @@ Una célula son cuatro letras: `>` `g1` `g2` `t` con `g1` ∈ 9..15 (`razar/lect
 | 2 | marco | `j2` = `og_cell(j2)` |
 | 3 | posición del ojo | `j10` = `og_cell(j10)` |
 | 4 | nitidez del ojo | `j11` = `og_cell(j11)` (≠ 0 = borroso) |
-| 7 | corazón | §10.9 |
+| 7 | corazón | [§10.9](#109-corazón-tejido-7) |
 | 8 | un lugar de la memoria | cuatro letras más `d1..d4`: `a = ((((d1−1)·15 + d2−1)·15 + d3−1)·15 + d4−1)`; si se cortan, no hay célula; `ORGA` = `8a`; `mem[8a]` = `og_cell(mem[8a])`. Alcanza 50625 palabras; un lugar fuera de la memoria termina al lector (el núcleo corta) |
 | 0, 5, 6, 9..15 | portador | `ORGCS[t]` = `og_cell(ORGCS[t])` |
 
@@ -706,7 +706,7 @@ Bloque del engranaje `g` en `4380h + 80h·g` (`razar/lectura/organo.inc:717-848`
 | Desplazamiento | Contenido |
 |---|---|
 | +0 | cantidad de instrucciones (se usa `& 15`) |
-| +8 + 8i | instrucción i (i < 15), una palabra del idioma Janax |
+| +8 + 8i | instrucción i (i < 15), [una palabra del idioma Janax](01-idioma-janax.md#41-palabra-de-instrucción) |
 
 Decodificación de la instrucción `w` (`razar/lectura/organo.inc:742-759`):
 
@@ -746,12 +746,12 @@ hace `or` con `w >> 16` completo (48 bits), que con este productor son 16.
 4. Devuelve `ORGCN`.
 
 `og_rest` (`razar/lectura/organo.inc:586-619`), en cada hueco y al final: si `ORGCD`, pone en 0 los 49 qwords desde
-`ORGCA` (`ORGCA`, `ORGCT`, `ORGCH`, `ORGCS`) y `ORGCD` = 0; si `ORGH`, `ORGH` = 0 y pide 20 con −1 (`ORGB` = respuesta
+`ORGCA` (`ORGCA`, `ORGCT`, `ORGCH`, `ORGCS`) y `ORGCD` = 0; si `ORGH`, `ORGH` = 0 y pide [20](03-nucleo-arranque-memoria-procesos.md#121-bolita-20) con −1 (`ORGB` = respuesta
 + 1). Conserva el ojo. Invariante: una célula sola no oye a nadie, y un 0 nunca se dice.
 
 ### 10.9 Corazón (tejido 7)
 
-`og_t7` (`razar/lectura/organo.inc:452-506`): guarda el ojo; si `ORGB` = 0 pide 20 con −1 → `ORGBT` = respuesta,
+`og_t7` (`razar/lectura/organo.inc:452-506`): guarda el ojo; si `ORGB` = 0 pide [20](03-nucleo-arranque-memoria-procesos.md#121-bolita-20) con −1 → `ORGBT` = respuesta,
 `ORGB` = respuesta + 1. `v` = `og_cell(ORGB − 1)`; si `v < 0` o `v > ORGBT`, `v` = `ORGBT`; si el recorte cambió el
 valor dicho, corrige `ORGCT[7]` y `ORGCA` por `v − ORGCN`. Si `v ≠ ORGB − 1`: pide 20 con `v` → `ORGB` = respuesta + 1,
 `ORGH` = 1. Restituye el ojo.
@@ -760,7 +760,7 @@ valor dicho, corrige `ORGCT[7]` y `ORGCA` por `v − ORGCN`. Si `v ≠ ORGB − 
 
 - El hash del marco se reinicia en cada hueco: un marco está hecho sólo de sus letras.
 - Los pedidos del órgano usan la misma `OCCUR` de la ventana y el piso 2; su prefijo `102h` los separa de los moldes
-  fijos (salvo colisión de hash). Si producen asociados, la casa los guarda con `KW1..KW3` = 0.
+  fijos (salvo colisión de hash). Si producen asociados, [la casa](#64-pulso-y-diferencia) los guarda con `KW1..KW3` = 0.
 - Discrepancia comentario/código: el comentario (`razar/lectura/organo.inc:50-52`) dice que un hueco apaga las lentes;
   el código sólo pone `ORGP` = 0 en los huecos 5-8, no en el 9 (`razar/lectura/organo.inc:300-301,349-358`). Rige el
   código.
@@ -772,10 +772,10 @@ valor dicho, corrige `ORGCT[7]` y `ORGCA` por `v − ORGCN`. Si `v ≠ ORGB − 
 ### 11.1 Representación binaria
 
 Un órgano es un qword: letra j en los bits `4j..4j+3`, j = 0 la primera. El lector deja de leer cuando el resto es 0;
-`og_mutate` cuenta como largo la cantidad de nibbles hasta el más alto no nulo (`razar/lectura/pulso.jsm:4529-4538`).
+[`og_mutate`](#125-mutación-og_mutate) cuenta como largo la cantidad de nibbles hasta el más alto no nulo (`razar/lectura/pulso.jsm:4529-4538`).
 Máximo 16 letras por qword. Una receta de hasta 31 letras usa dos qwords: las 16 primeras en `ORGW` y el resto en
 `ORGX`/`ORGD` (`razar/lectura/organo.inc:30-31`). El tope de 31 es del productor (`razar/cuerpo/gen_leer.py`,
-capítulo 08); el lector admite hasta 32 nibbles (16 + 16).
+[capítulo 08](08-luma-cuerpo-procesos-y-casa.md#2-generación-de-lumajsm)); el lector admite hasta 32 nibbles (16 + 16).
 
 ### 11.2 Archivo de recetas
 
@@ -820,7 +820,7 @@ próxima cabeza. Inserción (`razar/lectura/pulso.jsm:3879-3989`): la nueva va a
 estrictamente menor; si antes de ese punto hay una con el mismo alfabeto y la misma nota (cualquier código), no se
 escribe. Se copian a lo sumo 10 en total, contando la nueva; el archivo se reescribe entero (`og_wopen`).
 
-Huella del alfabeto `OGALF` = FNV-1a de los bytes de `organo.inc` omitiendo `0Dh` (`razar/lectura/pulso.jsm:3239-3298`).
+Huella del alfabeto `OGALF` = [FNV-1a](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333) de los bytes de `organo.inc` omitiendo `0Dh` (`razar/lectura/pulso.jsm:3239-3298`).
 Código de cada letra (`og_rec_block`, `razar/lectura/pulso.jsm:4117-4201`): las líneas que siguen a la que empieza con
 `og_l` + `(30h+n)` + `:` y empiezan con espacio, sin `0Dh`. Para las letras 10..15 la etiqueta buscada (`og_l:`…`og_l?`)
 no existe en `organo.inc` (las etiquetas son `og_lA`..`og_lF`): no se copia código; el molde tampoco tiene esos bloques.
@@ -854,8 +854,8 @@ Nota: este procedimiento trata cualquier letra ≥ 5 (incluidas 10..15) como hue
 
 ### 11.5 Huella y estante
 
-`OGBK` = `shelf_print` (huella del estante: nombres y bytes; algoritmo en `razar/lectura/pulso.jsm:6928` en adelante, no
-especificado aquí, no verificado). Separa las recetas de libros distintos.
+`OGBK` = `shelf_print` (huella del estante: nombres y bytes; algoritmo en `razar/lectura/pulso.jsm:6926-7028`, no
+especificado aquí). Separa las recetas de libros distintos.
 
 ### 11.6 Forma
 
@@ -866,8 +866,8 @@ Una forma es una receta guardada como palabra del lector: entrada `k` de `ORGT` 
 | +0 | primeras 16 letras (como `ORGW`) |
 | +8 | letras más allá de la 16.ª (como `ORGX`) |
 
-Las ocho formas vivas de Luma son las palabras 1..8; quien lanza el lector las escribe en sus datos iniciales
-(`razar/cuerpo/gen_leer.py:194-200,251`; capítulo 08). Dentro del lector, `>` `k` despliega la forma `k`.
+Las ocho [formas vivas](10-luma-pantalla-lluvia-y-organos-vivos.md#108-formas-vivas) de Luma son las palabras 1..8; quien lanza el lector las escribe en sus datos iniciales
+(`razar/cuerpo/gen_leer.py:194-200,251`; [capítulo 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)). Dentro del lector, `>` `k` despliega la forma `k`.
 
 ---
 
@@ -888,12 +888,12 @@ Las ocho formas vivas de Luma son las palabras 1..8; quien lanza el lector las e
 | 4512 | etiqueta en construcción |
 
 Lee el molde (hasta 64 KB, criterio), copia `pulso.bin` → `hijo.bin` (una vez por llamada a `og_init`, es decir, por
-`organ_trials`), calcula `OGALF`, prepara las salas de recetas (4096, crecen), `OGQN` = `OGQI` = 0 y `OGBK` =
-`shelf_print` (`razar/lectura/pulso.jsm:3178-3237`).
+[`organ_trials`](#126-pruebas-organ_trials)), calcula `OGALF`, prepara las salas de recetas (4096, crecen), `OGQN` = `OGQI` = 0 y `OGBK` =
+[`shelf_print`](#115-huella-y-estante) (`razar/lectura/pulso.jsm:3178-3237`).
 
 ### 12.2 El hijo sin recompilar
 
-`og_copy(origen, destino)` (`razar/lectura/pulso.jsm:4752-4842`): abre el origen (pedido 4; negativo → devuelve 0), borra
+`og_copy(origen, destino)` (`razar/lectura/pulso.jsm:4752-4842`): abre el origen ([pedido 4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema); negativo → devuelve 0), borra
 el destino (12) y lo abre (4), y copia en trozos de 4096 bytes por `OGBUF`; con `OGPAT` = 1 escribe en el primer trozo
 `ORGK` = `OGP0`, `ORGG` = `OGP1`, `ORGW` = `OGP2`, `ORGF` = `OGP3` (desplazamientos `20h`, `28h`, `30h`, `38h` del
 archivo). Devuelve 1 si todas las escrituras devolvieron la cantidad pedida y ninguna lectura falló. Los argumentos
@@ -911,13 +911,13 @@ son nombres de bloque del molde: `p` = 112, `d` = 100, `k` = 107, `e` = 101.
 | Paso | Quién | Acción |
 |---|---|---|
 | 1 | Razar | `og_kid` escribe `hijo.datos`. |
-| 2 | Razar | Pedido 16 con la etiqueta del bloque `k` (`hijo.bin`), `j10` = `(14<<32)|16` → `OGKID`. Falla: nota = `−2^63`. |
-| 3 | Razar | Pedido 34 (`OGKID`, `OGBUD`): jaula. |
-| 4 | Candidato | Arranca (`renace`), lee el libro (`read_book`; si el byte 4 de `p` ≠ 0 calcula `BOOKH` = `shelf_print`, si no `BOOKH` queda como en sus datos); `ORGK` ≠ 0 → `candidate` (`razar/lectura/pulso.jsm:324-339,5076-5097`): `ORGX` = `ORGD`; `distill_no`; `FORMS` = 1; `EVC` = `ORGG`; `ev_exam` (sin memoria: no llama `mem_load`). |
-| 5 | Candidato | Pedido 30 a −1 tres veces, en este orden: `ORGCE`, `BOOKH`, `EVS`; `jhalt`. Quien escucha toma la última. |
-| 6 | Razar | `og_serve` (`razar/lectura/pulso.jsm:4877-4971`), bucle: (a) pedido 29; respuesta −1 → fin. (b) Si quien tocó no es `OGKID` y `OGWAKE` = 0, pide 19 sobre esa cabina; si responde −2, `OGWAKE` = cabina + 1 (el timbre se conserva para después). (c) Pedido 18 a `OGPEND` (4096 bytes) → cantidad de pendientes (negativa = ninguno); firma cada uno con el pedido 17 (`j11` = número, `j12` = 1). (d) Pedido 31 repetido mientras responda 1; cada palabra cuyo campo `de` es `OGKID` reemplaza `OGSC`. (e) Pedido 19 sobre `OGKID`: −1 (sigue corriendo) → vuelve a (a); cualquier otra respuesta → fin. |
+| 2 | Razar | [Pedido 16](04-nucleo-abi-de-pedidos.md#96-familia) con la etiqueta del bloque `k` (`hijo.bin`), `j10` = `(14<<32)|16` → `OGKID`. Falla: nota = `−2^63`. |
+| 3 | Razar | [Pedido 34](04-nucleo-abi-de-pedidos.md#96-familia) (`OGKID`, `OGBUD`): jaula. |
+| 4 | Candidato | Arranca (`renace`), lee el libro ([`read_book`](#51-fuentes-del-libro); si el byte 4 de `p` ≠ 0 calcula `BOOKH` = [`shelf_print`](#115-huella-y-estante), si no `BOOKH` queda como en sus datos); `ORGK` ≠ 0 → `candidate` (`razar/lectura/pulso.jsm:324-339,5076-5097`): `ORGX` = `ORGD`; [`distill_no`](#156-módulos); `FORMS` = 1; `EVC` = `ORGG`; [`ev_exam`](#91-ev_exam) (sin memoria: no llama `mem_load`). |
+| 5 | Candidato | [Pedido 30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) a −1 tres veces, en este orden: `ORGCE`, `BOOKH`, `EVS`; `jhalt`. Quien escucha toma la última. |
+| 6 | Razar | `og_serve` (`razar/lectura/pulso.jsm:4877-4971`), bucle: (a) [pedido 29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas); respuesta −1 → fin. (b) Si quien tocó no es `OGKID` y `OGWAKE` = 0, pide [19](04-nucleo-abi-de-pedidos.md#96-familia) sobre esa cabina; si responde −2, `OGWAKE` = cabina + 1 (el timbre se conserva para después). (c) [Pedido 18](04-nucleo-abi-de-pedidos.md#96-familia) a `OGPEND` (4096 bytes) → cantidad de pendientes (negativa = ninguno); firma cada uno con el [pedido 17](04-nucleo-abi-de-pedidos.md#96-familia) (`j11` = número, `j12` = 1). (d) [Pedido 31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) repetido mientras responda 1; cada palabra cuyo campo `de` es `OGKID` reemplaza `OGSC`. (e) Pedido 19 sobre `OGKID`: −1 (sigue corriendo) → vuelve a (a); cualquier otra respuesta → fin. |
 
-Presupuesto `OGBUD` = 2 × respuesta del pedido 35 con −1 (el 2 es criterio) (`razar/lectura/pulso.jsm:2468-2472`).
+Presupuesto `OGBUD` = 2 × respuesta del [pedido 35](04-nucleo-abi-de-pedidos.md#96-familia) con −1 (el 2 es criterio) (`razar/lectura/pulso.jsm:2468-2472`).
 
 ### 12.4 Nichos
 
@@ -965,7 +965,7 @@ campeón, se muta ese; si no, el propio (`razar/lectura/pulso.jsm:4277-4296`).
    - Si tomó nicho y no supera al campeón (`OGSC ≤ OGBASE`): si supera al examen sin órgano `OGZ` (calculado una vez
      por estante), escribe su receta con lo que desplazó del nicho.
    - Si `OGSC > OGBASE`: `OGB0` = `OGBASE`, `OGBA` = `OGCODE`, `OGBASE` = `OGSC`, `OGCODE` = `OGTRY`; escribe receta.
-4. Guarda nichos. Si `OGCODE` ≠ `ORGW`: `og_self`; si funcionó, escribe `se rehace` y pide 36 con el bloque `p`;
+4. Guarda nichos. Si `OGCODE` ≠ `ORGW`: `og_self`; si funcionó, escribe `se rehace` y pide [36](03-nucleo-arranque-memoria-procesos.md#98-rehacerse-36) con el bloque `p`;
    `jhalt` (`razar/lectura/pulso.jsm:2586-2600`).
 
 Línea de cada prueba (`og_line`, `razar/lectura/pulso.jsm:4973-5009`):
@@ -986,17 +986,17 @@ Línea de cada prueba (`og_line`, `razar/lectura/pulso.jsm:4973-5009`):
 
 | Archivo | Formato | Fuente |
 |---|---|---|
-| `p` | §4 | `razar/lectura/lectura.inc:156-179` |
-| `libro`, `libro*`, `libro-disco-*` | §5.1 | `razar/lectura/lectura.inc:387-789` |
+| `p` | [§4](#4-el-archivo-de-parámetros-p) | `razar/lectura/lectura.inc:156-179` |
+| `libro`, `libro*`, `libro-disco-*` | [§5.1](#51-fuentes-del-libro) | `razar/lectura/lectura.inc:387-789` |
 | `pedazo` | 8 bytes: `PZ_P` | `razar/lectura/lectura.inc:290-380` |
-| `memoria[N]` | §8 | `razar/lectura/pulso.jsm:5100-5463` |
+| `memoria[N]` | [§8](#8-memoria-de-piezas) | `razar/lectura/pulso.jsm:5100-5463` |
 | `nido[N]` | 56 bytes: +0 marca `RAZARNID` (`4449_4E52_415A_4152h`), +8 campeón, +16 segundo, +24 nota campeón, +32 nota segundo, +40 suerte, +48 generaciones vividas | `razar/lectura/pulso.jsm:5465-5565,6579-6586` |
 | `cartaN` (N = `QUIEN`) y la del otro `carta(3−N)` | 16 bytes: +0 genoma, +8 órgano `ORGW` | `razar/lectura/pulso.jsm:5612-5626,6540-6576` |
 | `autopsia[N]` | texto: copia de la consola | `razar/lectura/pulso.jsm:5567-5585`, `razar/lectura/lectura.inc:1896-1907` |
-| `organos[N]` | §12.4 | `razar/lectura/pulso.jsm:4416-4520` |
-| `…/recetas` | §11.2 | `razar/lectura/pulso.jsm:3876-3989` |
-| `PDP/razar[N]/lectura/hijo.bin`, `hijo.datos`, `pulso.datos` | §12.2 | `razar/lectura/pulso.jsm:4707-4842` |
-| `PDP/razar/lectura/organo.molde`, `organo.inc` | §11.2-11.3 | `razar/lectura/pulso.jsm:3121-3298` |
+| `organos[N]` | [§12.4](#124-nichos) | `razar/lectura/pulso.jsm:4416-4520` |
+| `…/recetas` | [§11.2](#112-archivo-de-recetas) | `razar/lectura/pulso.jsm:3876-3989` |
+| `PDP/razar[N]/lectura/hijo.bin`, `hijo.datos`, `pulso.datos` | [§12.2](#122-el-hijo-sin-recompilar) | `razar/lectura/pulso.jsm:4707-4842` |
+| `PDP/razar/lectura/organo.molde`, `organo.inc` | [§11.2-11.3](#112-archivo-de-recetas) | `razar/lectura/pulso.jsm:3121-3298` |
 | tablero `tablero/razar-<llave>` y siluetas | no especificado aquí (no verificado) | `razar/lectura/pulso.jsm:233-236,6239-6493` |
 
 ---
@@ -1018,12 +1018,12 @@ contar (`ORF` ≠ 0) un par se cuenta una sola vez por palabra (`op_seen`); al j
 | 1 | `oe_pair` (+1 palabra) | `ORE` |
 | 2 | `ot_pair` (+1 palabra) | `ORT` |
 
-Tablas `ORT`, `ORE`: tablas crecientes de 16 B `{clave, palabras}`.
+Tablas `ORT`, `ORE`: [tablas crecientes](#32-salas-y-tablas-que-crecen) de 16 B `{clave, palabras}`.
 
 ### 14.2 `ort_eat` (al comer)
 
-Si `EATB` ≠ 0 (`EATB` = FNV-1a de los bytes del libro o pedazo comido, `razar/lectura/sentido.jsm:9711-9719`): cuenta
-en `ORE` los pares distintos de cada palabra 1..`NV`−1 que no sea marca (`w_mark`). Escribe (borrar 12, abrir 4,
+Si `EATB` ≠ 0 (`EATB` = [FNV-1a](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333) de los bytes del libro o pedazo comido, `razar/lectura/sentido.jsm:9711-9719`): cuenta
+en `ORE` los pares distintos de cada palabra 1..`NV`−1 que no sea marca ([`w_mark`](#1-definiciones-y-notación)). Escribe (borrar 12, abrir 4,
 escribir 6, cerrar 7) el archivo:
 
 ```
@@ -1039,7 +1039,7 @@ Las entradas se escriben en el orden de los lugares de la tabla `ORE` (orden de 
 
 ### 14.3 `ort_load`
 
-Lista las etiquetas (pedido 14, sala que se duplica desde 4096 mientras lo libre sea < 4104,
+Lista las etiquetas ([pedido 14](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema), sala que se duplica desde 4096 mientras lo libre sea < 4104,
 `razar/lectura/sentido.jsm:5310-5356`); para cada una de exactamente 34 bytes cuyos 18 primeros son
 `tablero/ortografia`: la lee; exige ≥ 16 bytes y qword 0 = 1; `n` = `min(qword 1, bytes/16 − 1)`; suma `palabras` por
 clave en `ORT` (claves 0 se saltan); `ORS` = 1 si sumó algo (`razar/lectura/sentido.jsm:5203-5308`). Sin archivos,
@@ -1053,7 +1053,7 @@ tienen es ≥ 2.
 
 ### 14.5 `ort_fix`
 
-`ort_fix` (`razar/lectura/sentido.jsm:5422-5581`), llamado tras `read_book` y `ort_load`
+`ort_fix` (`razar/lectura/sentido.jsm:5422-5581`), llamado tras [`read_book`](#51-fuentes-del-libro) y [`ort_load`](#143-ort_load)
 (`razar/lectura/sentido.jsm:453-455`):
 
 1. Si `ORS` = 0: nada.
@@ -1097,7 +1097,7 @@ conocidas)/(C(x)+1))` por palabra tapada; cada manera paga sus resultados `k·lo
 
 ### 15.2 `comer`
 
-`razar/lectura/comer.jsm:1-35`. Lee el libro del anfitrión cuya dirección está en `come` (pedido 37) y escribe en la
+`razar/lectura/comer.jsm:1-35`. Lee el libro del anfitrión cuya dirección está en `come` ([pedido 37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión)) y escribe en la
 biblioteca un índice `tablero/pistas<hex16>` y piezas `tablero/pieza<hex16>-<decimal>`. Codificación de bits
 (verificada, `razar/lectura/comer.jsm:1410-1634`): bits del menos significativo al más; unario = `k` unos y un cero;
 gamma(v ≥ 1) = `N` = posición del bit alto en unario y luego los `N` bits bajos de `v`; Rice(k) = `v >> k` en unario y
@@ -1105,30 +1105,30 @@ luego los `k` bits bajos; una corrida = `k` en 4 bits (el de menos bits entre 0.
 Rice; `zb_align` redondea a byte. El orden de los campos de cada palabra de una pieza y del índice está en el
 comentario de cabecera (`razar/lectura/comer.jsm:15-35`) (no verificado campo por campo). Sales de nombres de la
 biblioteca según el comentario de `lib_sweep` (`razar/lectura/comer.jsm:1737-1742`): vueltas 2 y 1, lecciones 3,
-composiciones 5, índice 7 (6 antes de la versión 7), diccionario de instrucciones 9, ortografía 11. Sólo las sales 2
+composiciones 5, índice 7 (6 antes de la versión 7), diccionario de instrucciones 9, ortografía 11. Las sales 2
 (esqueletos) y 11 (ortografía) se verificaron en el código (`razar/lectura/sentido.jsm:9719-9721,5783-5787`); las
-demás, no verificado.
+demás, también: 1, 3, 5 y 9 (`razar/lectura/sentido.jsm:9749-9753,2593-2597,9029-9033,4494-4498`) y 7 o 6 del índice (`razar/lectura/comer.jsm:1772-1777`).
 
 ### 15.3 `vigia`
 
 `razar/lectura/vigia.jsm:1-7,46-110`. Pide salas (ruta del anfitrión de `1_8000h` = 98304 bytes, búfer de 65536);
-pide 39 con `j11` = ruta y `j12` = 98304 → largo de la ruta de un archivo nuevo, −1 = ninguno (escribe `S_NOVIG` y
-termina); sin novedad duerme en 29. Comprueba que sea texto (`is_text`; detalle no verificado), y por pedazos
-(`vg_cut`) reescribe `come` (borrar 12, abrir 4) con la dirección y el tramo, y lanza `comer` firmando sus pedidos
-(detalle del lanzamiento no verificado). Pedazo `PIECE` = `40h` × 64 KB = 4 MB, cortado en fin de renglón; el valor es
+pide [39](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39) con `j11` = ruta y `j12` = 98304 → largo de la ruta de un archivo nuevo, −1 = ninguno (escribe `S_NOVIG` y
+termina); sin novedad duerme en [29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas). Comprueba que sea texto (`is_text`, `razar/lectura/vigia.jsm:363-469`), y por pedazos
+(`vg_cut`) reescribe `come` (borrar 12, abrir 4) con la dirección y el tramo, y lanza [`comer`](#152-comer) firmando sus pedidos
+(`child`, `sign_all`, `razar/lectura/vigia.jsm:302-361`). Pedazo `PIECE` = `40h` × 64 KB = 4 MB, cortado en fin de renglón; el valor es
 criterio (`razar/lectura/vigia.jsm:38-40`).
 
 ### 15.4 `pregunta`
 
 `razar/lectura/pregunta.jsm:1-15` (cabecera; algoritmo no verificado): cuelga pedidos "dos palabras con una a tres
-entre ellas" y responde preguntas del archivo `q`, una por línea, con `?` como hueco (en `PASS` 2, §5.2).
+entre ellas" y responde preguntas del archivo `q`, una por línea, con `?` como hueco (en `PASS` 2, [§5.2](#52-dos-pasadas)).
 
 ### 15.5 `sentido`
 
 `razar/lectura/sentido.jsm:1-20` (cabecera) y flujo principal `razar/lectura/sentido.jsm:450-505`: `eat_mode`,
 `read_book`, `ort_load`, `ort_fix`, idiomas (`ln_scan`), y con el libro entero `learn_pulses`, `house_decide`,
 `distill_no`, `limits`, `sil_load`, `genders`, `gather`. Comiendo escribe en la biblioteca esqueletos, preguntas,
-enganches, diccionario de instrucciones, estructuras y ortografía. Sólo la ortografía (§14) se especifica aquí; el
+enganches, diccionario de instrucciones, estructuras y ortografía. Sólo la ortografía ([§14](#14-ortografía)) se especifica aquí; el
 resto, no verificado en este capítulo.
 
 ### 15.6 Módulos
@@ -1139,7 +1139,7 @@ resto, no verificado en este capítulo.
 - `idioma.inc` (`razar/lectura/idioma.inc:1-6`): idiomas por contexto con Chinese Whispers (cabecera; no verificado).
 - `casa.inc` (`razar/lectura/casa.inc:1-7`): cimiento y muebles desde `ROOMHL`; deja `ROOMGB`, `ROOMSD` (cabecera; no
   verificado).
-- `pistas.inc` (`razar/lectura/pistas.inc:1-19`): rondas de pregunta siguiendo pistas; cada ronda es una vida (36);
+- `pistas.inc` (`razar/lectura/pistas.inc:1-19`): rondas de pregunta siguiendo pistas; cada ronda es una vida ([36](03-nucleo-arranque-memoria-procesos.md#98-rehacerse-36));
   archivos `camino` y `libro` (cabecera; no verificado).
 
 ---
@@ -1174,7 +1174,7 @@ resto, no verificado en este capítulo.
 ## 17. Puntos no verificados
 
 1. Semántica exacta de los pedidos 16 (bits altos `14`), 19, 20 con −1, 34, 35 y 38 con −1: se describen por su uso;
-   el contrato está en el capítulo 04.
+   el contrato está en el [capítulo 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido).
 2. Que las salas nuevas lleguen en ceros (supuesto de `pl_new` y de la fila).
 3. Contenido de `ORGT0[0]` (`7EF0h`) y del engranaje 0 (`4380h`).
 4. `shelf_print`, `sil_export`/`sil_import`, el tablero y las cartas en el tablero.
@@ -1185,4 +1185,4 @@ resto, no verificado en este capítulo.
 8. Significado de la respuesta −2 del pedido 19 (usada en `og_serve` para conservar un timbre ajeno).
 9. Si el candidato comparte el espacio de archivos de su padre. `read_book` llama a `pz_save` en todo programa con
    estante y sin `HOSTB`, también en el candidato (`razar/lectura/lectura.inc:185,192`); si el archivo `pedazo` es el
-   mismo, cada candidato avanzaría el pedazo que leerá el siguiente. No verificado (capítulos 03 y 04).
+   mismo, cada candidato avanzaría el pedazo que leerá el siguiente. No verificado ([capítulos 03](03-nucleo-arranque-memoria-procesos.md#13-remeros) y [04](04-nucleo-abi-de-pedidos.md#5-procesamiento-de-un-toque)).

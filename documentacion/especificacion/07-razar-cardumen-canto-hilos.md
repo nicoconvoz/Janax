@@ -7,10 +7,10 @@ relaciones, el while de hipótesis, la deducción, lo sabido, lo pendiente, los 
 lugares con sus diarios `lugares0`/`lugares1`/`nitidas`), el cubo de piezas (`cardumen*.jsm`) y las voluntades que lo
 manejan (`voluntad*.jsm`) con su protocolo madre/hijo por palabras, el encadenador `encadena.jsm` y los jueces externos
 de `razar/jueces/`. No cubre: la sintaxis y semántica de las instrucciones Janax ni las macros `jwhile`/`jcall0`
-(capítulo 01), el ensamblador PDP, `armar.sh` y la redefinición de constantes (capítulo 02), procesos, salas y remeros
-(capítulo 03), el detalle de cada pedido del núcleo (capítulo 04), pantalla y teclado (capítulo 05), el lector de libros
-`lectura.inc`, `sentido.jsm` y las tablas crecientes `crece.inc` (capítulo 06), ni cómo Luma lanza estos programas desde
-su cuerpo, su casa y su conversación (capítulos 08, 09 y 10). El instalador y la publicación están en el capítulo 11.
+([capítulo 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador PDP, `armar.sh` y la redefinición de constantes ([capítulo 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), procesos, salas y remeros
+([capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), el detalle de cada pedido del núcleo ([capítulo 04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)), pantalla y teclado ([capítulo 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), el lector de libros
+`lectura.inc`, `sentido.jsm` y las tablas crecientes `crece.inc` ([capítulo 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), ni cómo Luma lanza estos programas desde
+su cuerpo, su casa y su conversación ([capítulos 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa), [09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta) y [10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)). El instalador y la publicación están en el [capítulo 11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación).
 
 Las referencias `ruta:línea` son relativas a la raíz del repositorio. Las afirmaciones salen del código; lo que se tomó
 de un comentario sin verificar en las instrucciones se marca "(no verificado)".
@@ -23,29 +23,29 @@ de un comentario sin verificar en las instrucciones se marca "(no verificado)".
 
 | Elemento | Convención | Fuente |
 |---|---|---|
-| Pedido al núcleo | `ask`: `j10` = clase (con el manejador en los 32 bits altos cuando el pedido lo requiere), `j11` = `a`, `j12` = `b`; respuesta en `j13`. Arma una cola de un pedido en `QUEUE` (qwords: `+0` = 1 pedido, `+8` = clase, `+16` = `a`, `+24` = `b`, `+32` = respuesta) y ejecuta `jsys` con `QUEUE`. | `razar/lectura/lectura.inc:2042-2054`, `razar/cardumen/cardumen_cubo.jsm:1047-1059` |
-| Sala nueva | `room`: pedido 2 con `j11` bytes; sin memoria escribe `S_NOMEM` y termina. | `razar/lectura/lectura.inc:1736-1807` |
+| Pedido al núcleo | [`ask`](06-razar-lectura-y-organos.md#31-ventana-de-pedidos-ask): `j10` = clase (con el manejador en los 32 bits altos cuando el pedido lo requiere), `j11` = `a`, `j12` = `b`; respuesta en `j13`. Arma [una cola de un pedido](04-nucleo-abi-de-pedidos.md#4-formato-de-la-cola-de-pedidos) en `QUEUE` (qwords: `+0` = 1 pedido, `+8` = clase, `+16` = `a`, `+24` = `b`, `+32` = respuesta) y ejecuta [`jsys`](04-nucleo-abi-de-pedidos.md#3-convención-de-llamada-de-jsys) con `QUEUE`. | `razar/lectura/lectura.inc:2042-2054`, `razar/cardumen/cardumen_cubo.jsm:1047-1059` |
+| Sala nueva | `room`: [pedido 2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) con `j11` bytes; sin memoria escribe `S_NOMEM` y termina. | `razar/lectura/lectura.inc:1736-1807` |
 | Argumentos internos | Cada rutina documenta "Uses jX-jY"; los valores viajan en `j2`..`j14` y en variables fijas de la sala 0. | — |
-| Salida de texto | `puts`, `putch`, `putnum`, `flush` de `lectura.inc`; con `SINK` = manejador + 1, `flush` escribe en ese archivo en vez de la consola. | `razar/lectura/lectura.inc:1876-1934`, capítulo 06 |
+| Salida de texto | `puts`, `putch`, `putnum`, `flush` de `lectura.inc`; con `SINK` = manejador + 1, `flush` escribe en ese archivo en vez de la consola. | `razar/lectura/lectura.inc:1876-1934`, [capítulo 06](06-razar-lectura-y-organos.md#34-salida-de-texto) |
 
-Los números de pedido usados en este capítulo (semántica completa en el capítulo 04):
+Los números de pedido usados en este capítulo (semántica completa en el [capítulo 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido)):
 
 | N.º | Uso aquí |
 |---|---|
-| 1 | Escribir `b` bytes desde `a` en la consola (`flush` sin `SINK`; `voluntad.jsm` escribe así su línea final). `razar/lectura/lectura.inc:1891-1896`, `razar/cardumen/voluntad.jsm:338-342`. |
-| 2 | Pedir una sala de `a` bytes; responde su dirección o −1 (`room` termina el programa con `S_NOMEM` ante −1, `lectura.inc:1736-1807`). |
-| 3 | Devolver una sala (`pl_grow` devuelve la tabla vieja). |
-| 4 | Abrir una etiqueta de la casa. En el anfitrión abre **o crea** (`CreateFileA` con `OPEN_ALWAYS`, `so/janaxos.asm:3042`): consultar un archivo ausente lo deja creado vacío; vacío equivale a ausente en todos estos programas. Responde el manejador, o un valor negativo. |
-| 5 / 6 / 7 | Leer / escribir / cerrar (`j10` = manejador << 32 \| clase). |
-| 12 | Borrar una etiqueta (se usa antes de reescribir un archivo entero). |
-| 13 | Renombrar: etiqueta vieja en `[a, a+b)`, la nueva a continuación, de `alto` bytes (`alto` = los 32 bits altos de `j10`). |
-| 16 | Lanzar un hijo: `j10` = (15 << 32) \| 16, es decir clase 16 con derechos 15; `a`/`b` = etiqueta del programa; responde el número de cabina del hijo. |
-| 23 / 25 | Mover la sala `a` a la cabina `b` / recibir la sala que otra cabina movió (responde su dirección). |
-| 29 | Esperar hasta que llegue una carta; responde −1 si ya no queda nadie que pueda escribir. |
-| 30 | Decir la palabra `b` a la cabina `a` (en los hijos, `a` = 0: la madre). Ningún programa de este capítulo mira la respuesta (que sea −1 sin destinatario: no verificado). |
-| 31 | Leer una carta del buzón en `a` (`b` = 16 bytes: `+0` remitente, `+8` palabra); responde 1 si había carta. |
-| 36 | Rehacerse con otro programa al terminar con código 0. |
-| 38 | Ir a una posición del archivo (−1 = el final). |
+| [1](04-nucleo-abi-de-pedidos.md#91-consola) | Escribir `b` bytes desde `a` en la consola (`flush` sin `SINK`; `voluntad.jsm` escribe así su línea final). `razar/lectura/lectura.inc:1891-1896`, `razar/cardumen/voluntad.jsm:338-342`. |
+| [2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Pedir una sala de `a` bytes; responde su dirección o −1 (`room` termina el programa con `S_NOMEM` ante −1, `lectura.inc:1736-1807`). |
+| [3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Devolver una sala (`pl_grow` devuelve la tabla vieja). |
+| [4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Abrir una etiqueta de la casa. En el anfitrión abre **o crea** (`CreateFileA` con `OPEN_ALWAYS`, `so/janaxos.asm:3042`): consultar un archivo ausente lo deja creado vacío; vacío equivale a ausente en todos estos programas. Responde el manejador, o un valor negativo. |
+| [5 / 6 / 7](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Leer / escribir / cerrar (`j10` = manejador << 32 \| clase). |
+| [12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Borrar una etiqueta (se usa antes de reescribir un archivo entero). |
+| [13](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Renombrar: etiqueta vieja en `[a, a+b)`, la nueva a continuación, de `alto` bytes (`alto` = los 32 bits altos de `j10`). |
+| [16](04-nucleo-abi-de-pedidos.md#96-familia) | Lanzar un hijo: `j10` = (15 << 32) \| 16, es decir clase 16 con derechos 15; `a`/`b` = etiqueta del programa; responde el número de cabina del hijo. |
+| [23 / 25](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Mover la sala `a` a la cabina `b` / recibir la sala que otra cabina movió (responde su dirección). |
+| [29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Esperar hasta que llegue una carta; responde −1 si ya no queda nadie que pueda escribir. |
+| [30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Decir la palabra `b` a la cabina `a` (`a` es el número de cabina: en los hijos, `a` = 0 es la cabina 0, que es la madre sólo cuando la madre es la cabina 0; a la madre como tal se la nombra con −1: `so/ambientes.inc:1033-1040`, `1547`). Ningún programa de este capítulo mira la respuesta (que sea −1 sin destinatario: `so/ambientes.inc:1033-1059`, `1565-1569`). |
+| [31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Leer una carta del buzón en `a` (`b` = 16 bytes: `+0` remitente, `+8` palabra); responde 1 si había carta. |
+| [36](04-nucleo-abi-de-pedidos.md#96-familia) | Rehacerse con otro programa al terminar con código 0. |
+| [38](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Ir a una posición del archivo (−1 = el final). |
 
 ### 1.2 Palabras, huellas y azar
 
@@ -53,7 +53,7 @@ Los números de pedido usados en este capítulo (semántica completa en el capí
 |---|---|---|
 | Letra de palabra | Un byte es letra si está en `a`..`z` (61h..7Ah) o es ≥ 80h. Las mayúsculas ASCII y los dígitos **no** son letras para estos programas. | `razar/cardumen/memoria_pares.jsm:643-663`, `razar/cardumen/hilos.jsm:10033-10053` |
 | Palabra | Racha máxima de letras. | `memoria_pares.jsm:777-825` |
-| Huella de una palabra (`mp_print`) | FNV-1a de 64 bits: base `0xCBF29CE484222325`, primo `0x100000001B3`, por byte `h = (h xor b) * primo`; si da 0 se usa 1 (las claves de tabla nunca son 0). | `memoria_pares.jsm:618-641`, `hilos.jsm:10008-10031` |
+| Huella de una palabra (`mp_print`) | [FNV-1a de 64 bits](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333): base `0xCBF29CE484222325`, primo `0x100000001B3`, por byte `h = (h xor b) * primo`; si da 0 se usa 1 (las claves de tabla nunca son 0). | `memoria_pares.jsm:618-641`, `hilos.jsm:10008-10031` |
 | `mp_mix` (canto) | `h = (h xor (s + 1)) * 0x100000001B3`, 0 → 1. Encadena un símbolo `s` a una huella. | `memoria_pares.jsm:3761-3774` |
 | `hl_mix` (hilos) | `h = h * 1000003 xor v` (1000003 = 0F4243h). Las claves resultantes 0 se reemplazan por 1 en cada uso. | `hilos.jsm:861-867` |
 | Azar del canto | splitmix64: `s += 0x9E3779B97F4A7C15; z = s; z ^= z>>30; z *= 0xBF58476D1CE4E5B9; z ^= z>>27; z *= 0x94D049BB133111EB; z ^= z>>31`; devuelve `z >> 1` (no negativo). | `memoria_pares.jsm:1200-1234` |
@@ -62,17 +62,17 @@ Los números de pedido usados en este capítulo (semántica completa en el capí
 
 ### 1.3 Tablas que crecen (`crece.inc`)
 
-Una tabla creciente se describe con 4 qwords en la dirección que la nombra: `{dirección de sus lugares, lugares − 1,
+Una [tabla creciente](06-razar-lectura-y-organos.md#32-salas-y-tablas-que-crecen) se describe con 4 qwords en la dirección que la nombra: `{dirección de sus lugares, lugares − 1,
 entradas, bytes por lugar}`. Nace con 2 lugares (`pl_new`). Índice inicial `(clave >> 32 xor clave) and (lugares − 1)`,
 sondeo lineal; un lugar cuyo primer qword es 0 está vacío. `pl_take` duplica la tabla antes de insertar cuando
-`2 · (entradas + 1) > lugares − 1` y devuelve la sala vieja con el pedido 3. `pl_find` devuelve en `j4` el lugar de la
+`2 · (entradas + 1) > lugares − 1` y devuelve la sala vieja con el [pedido 3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas). `pl_find` devuelve en `j4` el lugar de la
 clave o el vacío donde iría; `pl_take` devuelve además `j6` = 1 si la clave es nueva (`razar/lectura/crece.inc:23-158`).
 Sus variables viven en 1F90h..1FDFh de la sala 0 (`crece.inc:5-9`).
 
 ### 1.4 La casa
 
 Cada etiqueta (nombre de archivo) es texto UTF-8; en el anfitrión el archivo se llama con los bytes de la etiqueta en
-hexadecimal (capítulo 04, §10; las pruebas lo calculan con `etiqueta()`, por ejemplo `razar/cardumen/canto_prueba.sh:8`).
+hexadecimal ([capítulo 04, §10](04-nucleo-abi-de-pedidos.md#102-de-etiqueta-a-nombre-de-archivo); las pruebas lo calculan con `etiqueta()`, por ejemplo `razar/cardumen/canto_prueba.sh:8`).
 Todas las etiquetas de este capítulo son ASCII.
 
 ### 1.5 "La mitad"
@@ -99,7 +99,7 @@ Un programa de una cabina, sin hijos, que lee el archivo `pares` de la casa y, s
 tres cosas: (a) mide cuántas respuestas recupera el núcleo cuando la pregunta llega con piezas que tiemblan (el "oído");
 (b) canta una respuesta propia para cada línea de `canta` con un modelo de Markov de contexto variable aprendido de los
 pares; (c) con `semilla`, toma las respuestas del propio libro como semillas y elige, para cada pregunta apartada, la
-oración que mejor se canta como respuesta. Incluye `lectura.inc` y `crece.inc` (`memoria_pares.jsm:4680-4681`); su sala
+oración que mejor se canta como respuesta. Incluye [`lectura.inc`](06-razar-lectura-y-organos.md#3-convenciones-comunes) y [`crece.inc`](#13-tablas-que-crecen-creceinc) (`memoria_pares.jsm:4680-4681`); su sala
 0 mide 10000h bytes (`memoria_pares.jsm:262`). Los textos viven en `memoria_pares.datos.jsm` en desplazamientos fijos
 `S_*` (`memoria_pares.jsm:22-71`, `memoria_pares.datos.jsm:1-101`).
 
@@ -107,17 +107,17 @@ oración que mejor se canta como respuesta. Incluye `lectura.inc` y `crece.inc` 
 
 | Etiqueta | Dirección | Contenido | Efecto | Fuente |
 |---|---|---|---|---|
-| `pares` | entrada | Texto en líneas (§2.3). | Obligatorio: sin bytes, el programa termina sin escribir nada. | `memoria_pares.jsm:264-269` |
-| `cf` | entrada | 30 × 31 qwords (7440 bytes) de confusiones del cubo, escritos por `voluntad_oraciones.jsm` (§5.6). | Si se leen exactamente 7440 bytes, las piezas pasan a ser 30 (`BASE` = 30) y cada pieza se oye como la oyó el cubo. Si no, `BASE` = 7 (Fano). | `memoria_pares.jsm:301-381` |
-| `canta` | entrada | Líneas; cada una, una pregunta. | Activa el canto (§2.5). | `memoria_pares.jsm:1289-1297` |
-| `semilla` | entrada | Cualquier contenido no vacío. | Activa la semilla (§2.6); tiene prioridad sobre `canta`. | `memoria_pares.jsm:1283-1288` |
+| `pares` | entrada | Texto en líneas ([§2.3](#23-formato-de-pares)). | Obligatorio: sin bytes, el programa termina sin escribir nada. | `memoria_pares.jsm:264-269` |
+| `cf` | entrada | 30 × 31 qwords (7440 bytes) de confusiones del cubo, escritos por `voluntad_oraciones.jsm` ([§5.6](#56-el-archivo-cf)). | Si se leen exactamente 7440 bytes, las piezas pasan a ser 30 (`BASE` = 30) y cada pieza se oye como la oyó el cubo. Si no, `BASE` = 7 (Fano). | `memoria_pares.jsm:301-381` |
+| `canta` | entrada | Líneas; cada una, una pregunta. | Activa el canto ([§2.7](#27-el-canto-con-canta)). | `memoria_pares.jsm:1289-1297` |
+| `semilla` | entrada | Cualquier contenido no vacío. | Activa la semilla ([§2.9](#29-la-semilla-con-semilla)); tiene prioridad sobre `canta`. | `memoria_pares.jsm:1283-1288` |
 | `razona` | entrada | Cualquier contenido no vacío. | Activa los lugares de la pregunta (`GON` = cantidad de bytes del archivo, usado como booleano). | `memoria_pares.jsm:1340-1343` |
 | `fuera` | entrada | Texto con dos números decimales `k n`. | Si `k ≠ 0`, `n ≠ 0` y `k ≤ n`: aparta los pares `[FK, FE)` con `FK = (k − 1)·PPN div n` y `FE = k·PPN div n` (no se aprenden, sólo se preguntan) y escribe `aparte, sin leer: pares <FK> a <FE>`. En otro caso se ignora. | `memoria_pares.jsm:1304-1338`, `1764-1833` |
-| `marcos` | entrada | Cualquier contenido no vacío. | En modo semilla, escribe las líneas `M:` y `N:` (§2.7). | `memoria_pares.jsm:2232-2236` |
-| `dados` | entrada | Bytes cualesquiera. | Su huella FNV-1a se mezcla (xor) en la semilla del azar del canto. | `memoria_pares.jsm:3629-3643`, `1383-1390` |
-| `cantado` | salida | Bytes del último texto cantado. | Se borra y se reescribe tras cada línea de `canta`; luego se dice la palabra 9 a la cabina 0 (§2.8). | `memoria_pares.jsm:3645-3677` |
+| `marcos` | entrada | Cualquier contenido no vacío. | En modo semilla, escribe las líneas `M:` y `N:` ([§2.10](#210-marcos-y-notas-marcos-para-el-cubo)). | `memoria_pares.jsm:2232-2236` |
+| `dados` | entrada | Bytes cualesquiera. | Su [huella FNV-1a](#12-palabras-huellas-y-azar) se mezcla (xor) en la semilla del azar del canto. | `memoria_pares.jsm:3629-3643`, `1383-1390` |
+| `cantado` | salida | Bytes del último texto cantado. | Se borra y se reescribe tras cada línea de `canta`; luego se dice la palabra 9 a la cabina 0 ([§2.8](#28-dados-y-cantado-contrato-con-quien-lo-lanza)). | `memoria_pares.jsm:3645-3677` |
 
-Toda lectura usa `mp_read`: abre (pedido 4), lee en una sala de 64 KiB que se duplica mientras el archivo siga
+Toda lectura usa `mp_read`: abre ([pedido 4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)), lee en una sala de 64 KiB que se duplica mientras el archivo siga
 llenándola, y cierra (`memoria_pares.jsm:383-454`). `mp_aside` lee otro archivo sin perder el de `pares`
 (`memoria_pares.jsm:1747-1762`).
 
@@ -143,7 +143,7 @@ respuesta.
 
 **Modo semilla** (`ms_lines`, `memoria_pares.jsm:2244-2354`): una línea de 3 bytes o más cuyo segundo byte es `:` (3Ah)
 y cuyo primer byte es `Q` (pregunta) u `O` (oración que no pregunta) es una "construcción" del libro: `SEN` = {inicio
-tras el prefijo, bytes, 1 si pregunta} (24 bytes). Las demás líneas se ignoran. Ver el capítulo 06 para quién escribe
+tras el prefijo, bytes, 1 si pregunta} (24 bytes). Las demás líneas se ignoran. Ver el [capítulo 06](06-razar-lectura-y-organos.md#155-sentido) para quién escribe
 estos archivos (`sentido.jsm`).
 
 ### 2.4 Flujo principal
@@ -171,7 +171,7 @@ Una letra de número `L` se canta como dos piezas: `L div BASE` y `L mod BASE`.
 
 ### 2.6 El oído y el núcleo (modo sin `canta` ni `semilla`)
 
-**Índice** (`mp_index`, `memoria_pares.jsm:715-773`): tabla creciente `WIX` (24 bytes por lugar: {huella de palabra,
+**Índice** (`mp_index`, `memoria_pares.jsm:715-773`): [tabla creciente](#13-tablas-que-crecen-creceinc) `WIX` (24 bytes por lugar: {huella de palabra,
 primer enlace, último par anotado + 1}) y lista de enlaces `LNK` ({par, siguiente}). Cada palabra distinta de la
 pregunta, y de su contexto `C:`, se anota una vez por par.
 
@@ -182,7 +182,7 @@ pregunta, y de su contexto `C:`, se anota una vez por par.
    Un byte sin número de letra pasa igual. Una letra se parte en sus dos piezas; cada pieza pasa por `mp_tremble`; si
    alguna se pierde (−1) o el número recompuesto es ≥ `ALN`, el byte oído es un espacio; si no, es la letra recompuesta.
 3. `mp_tremble` (`memoria_pares.jsm:1131-1198`):
-   - sin `cf`: con probabilidad `PCH`/1000 (sorteo `r mod 1000 < PCH`) la pieza `p` se oye como
+   - sin [`cf`](#56-el-archivo-cf): con probabilidad `PCH`/1000 (sorteo `r mod 1000 < PCH`) la pieza `p` se oye como
      `(p + 1 + (r' mod 6)) mod 7`; si no, igual;
    - con `cf`: se sortea `r mod suma(fila p)` y se recorre la fila `p` de la tabla (31 columnas): la columna 0 da −1
      (nada oído), la columna `g + 1` da la pieza `g`.
@@ -192,7 +192,7 @@ pregunta, y de su contexto `C:`, se anota una vez por par.
    palabras distintas: 1-5, 6-12, 13 o más (`memoria_pares.jsm:962-984`).
 6. Salida: `piezas que tiemblan (milesimas): <PCH> | respuestas bien, por largo: <b1>/<n1> <b2>/<n2> <b3>/<n3> (1-5
    palabras, 6-12, 13 o mas)` (`memoria_pares.jsm:993-1026`). El 2 % (20) y el 20 % (200) son criterio; 40 y 90
-   corresponden, según el comentario, a mediciones del cubo de Fano con temblor 10 % y 20 % (no verificado: el número
+   corresponden, según el comentario, a mediciones del [cubo de Fano](#4-el-cubo-la-escuela) con temblor 10 % y 20 % (no verificado: el número
    está escrito en el código sin la medición).
 
 ### 2.7 El canto (con `canta`)
@@ -223,12 +223,12 @@ Con `razona` (`mp_ansongs`/`mp_encode`, `memoria_pares.jsm:1847-1959`): la respu
 entre dos palabras se emite un silencio (sea cual fuere la puntuación del texto); una palabra cuya huella coincide con
 una palabra de la pregunta del mismo par (buscando desde el final, la más cercana) se emite como lugar `BASE + 3 + k`;
 si `BASE + 3 + k ≥ 256`, o si no coincide, se deletrea. En modo semilla (`PLC` = 1) las palabras de la pregunta que son
-de la mitad se quitan antes (`mp_qlfilter`, `memoria_pares.jsm:1961-2016`); una palabra que ningún libro tiene se
+[de la mitad](#15-la-mitad) se quitan antes (`mp_qlfilter`, `memoria_pares.jsm:1961-2016`); una palabra que ningún libro tiene se
 conserva.
 
 #### 2.7.3 Aprendizaje: contextos con la regla de dos
 
-`mp_learn` (`memoria_pares.jsm:3917-4054`) mantiene dos tablas crecientes:
+`mp_learn` (`memoria_pares.jsm:3917-4054`) mantiene [dos tablas crecientes](#13-tablas-que-crecen-creceinc):
 
 | Tabla | Lugar | Campos (desplazamiento: contenido) |
 |---|---|---|
@@ -279,7 +279,7 @@ mientras (CQN − CQ0) < MAXA:
 ```
 
 El contexto usado es siempre el más largo que dicen dos pares o más. El azar se siembra con `0x123456789ABCDEF1 xor
-DICE` una vez antes de la primera línea de `canta` (`memoria_pares.jsm:1383-1390`); sin `dados`, `DICE` = 0 y cada
+DICE` una vez antes de la primera línea de `canta` (`memoria_pares.jsm:1383-1390`); sin [`dados`](#28-dados-y-cantado-contrato-con-quien-lo-lanza), `DICE` = 0 y cada
 corrida canta lo mismo.
 
 #### 2.7.5 Del canto al texto
@@ -299,7 +299,7 @@ prueba: con cuatro pares que responden "buen dia" a "hola amigo"/"hola hermano",
 
 #### 2.7.6 Medición sobre los pares (después de las líneas de `canta`)
 
-Para cada par preguntado (todos, o el tramo de `fuera`) se compone la respuesta a partir de su pregunta y su turno y se
+Para cada par preguntado (todos, o el tramo de [`fuera`](#22-archivos-de-la-casa)) se compone la respuesta a partir de su pregunta y su turno y se
 mide (`memoria_pares.jsm:1485-1745`):
 
 | Medida | Definición |
@@ -307,7 +307,7 @@ mide (`memoria_pares.jsm:1485-1745`):
 | `CSW` | Palabras cantadas. |
 | `CSR` | De ellas, las que algún par leído tiene (`VOC`). |
 | `CSO` | Las que son palabras de la respuesta propia del par (`OWN`, clave `mix(huella, par)`). |
-| `CSWC`, `CSOC` | Lo mismo, sólo palabras que no son de la mitad. |
+| `CSWC`, `CSOC` | Lo mismo, sólo palabras que no son [de la mitad](#15-la-mitad). |
 | Inventadas | Palabras cantadas que ningún libro leído tiene; cada una se escribe una vez tras `inventadas:`. |
 | Copia (`CCP`) | Subcadena común más larga (en bytes) entre el texto cantado y la respuesta propia, en milésimas del largo cantado, sumada (`mp_copy`, programación dinámica con una fila, `memoria_pares.jsm:4616-4678`). |
 | Recitado (`CRS`) | `CRMAX · 1000 / símbolos cantados`, sumado. |
@@ -325,29 +325,29 @@ leido <%>%`. Los porcentajes enteros truncan (`mp_pct`); los de un decimal usan 
 
 | Paso | Quién | Acción | Fuente |
 |---|---|---|---|
-| 1 | Lanzador | Escribe en la casa `pares`, `canta` y, opcionalmente, `razona` y `dados`. | `razar/cuerpo/gen_leer.py:6551` (no verificado: la generación del cuerpo es capítulo 08) |
+| 1 | Lanzador | Escribe en la casa `pares`, `canta`, `razona` y, opcionalmente, `dados`. | `razar/cuerpo/gen_leer.py:6551`, `6722-6725`, `6896-6906` (la generación del cuerpo es [capítulo 08](08-luma-cuerpo-procesos-y-casa.md#6-protocolo-con-el-canto)) |
 | 2 | `memoria_pares` | Lee `dados` y fija `DICE` = FNV-1a de todos sus bytes (0 si vacío). | `memoria_pares.jsm:3629-3643` |
-| 3 | `memoria_pares` | Por cada línea no vacía de `canta`: canta, escribe la línea a consola, borra `cantado` (12), lo abre (4), escribe `CT` con `CTN` bytes (6), cierra (7) y dice la palabra 9 (pedido 30, `a` = 0: la cabina número 0 de la familia). Si la apertura responde negativo, no escribe ni dice la palabra 9. | `memoria_pares.jsm:1409-1412`, `3645-3677` |
-| 4 | Lanzador | Al recibir la palabra 9, lee `cantado`: contiene el texto de la **última** línea cantada, sin LF final. | — |
+| 3 | `memoria_pares` | Por cada línea no vacía de `canta`: canta, escribe la línea a consola, borra `cantado` (12), lo abre (4), escribe `CT` con `CTN` bytes (6), cierra (7) y dice la palabra 9 ([pedido 30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas), `a` = 0: la cabina número 0 de la familia). Si la apertura responde negativo, no escribe ni dice la palabra 9. | `memoria_pares.jsm:1409-1412`, `3645-3677` |
+| 4 | Lanzador | Al terminar `memoria_pares` (lo consulta con el pedido 19), lee `cantado`: contiene el texto de la **última** línea cantada, sin LF final. | `razar/cuerpo/gen_leer.py:6726-6738` |
 
 `mp_keep` no mira la respuesta del pedido 30: en una corrida sola (sin cabina 0 que escuche) el programa sigue igual
-(la respuesta concreta del núcleo en ese caso: no verificado).
+(la respuesta concreta del núcleo en ese caso: −1, `so/ambientes.inc:1033-1059`, `1565-1569`).
 
 ### 2.9 La semilla (con `semilla`)
 
 `mp_seed` (`memoria_pares.jsm:2140-2242`):
 
-1. `ms_lines` y `ms_vocab`: las construcciones y el vocabulario de **todas** las oraciones; la mitad (§1.5).
+1. `ms_lines` y `ms_vocab`: las construcciones y el vocabulario de **todas** las oraciones; la mitad ([§1.5](#15-la-mitad)).
 2. `ms_seeds` (`memoria_pares.jsm:2496-2614`): para cada pregunta `Q` en la posición `SA`, su respuesta son las
    oraciones `O` desde `SA + 1` hasta la próxima `Q`. Su semilla es la oración de su respuesta que dice más palabras
    distintas de la pregunta que no son de la mitad (`ms_qset`/`ms_overlap`); se exige al menos una; a igualdad gana la
    primera. Las semillas son los pares: `PPR` = la pregunta, `PAN` = la semilla; `SDQ` (32 bytes) = {pregunta, primera
    oración de su respuesta, una después de la última, la semilla}.
 3. Escribe `semilla: preguntas del libro <NQS>, con su respuesta en el libro: <PPN>, oraciones: <SENN>`.
-4. `fuera` se interpreta sobre las semillas (tramo k de n, §2.2).
+4. `fuera` se interpreta sobre las semillas (tramo k de n, [§2.2](#22-archivos-de-la-casa)).
 5. Se activan `razona` y `PLC` (los lugares son sólo lo que la pregunta trata, sin las palabras de la mitad) y se
-   aprende la fila de las semillas no apartadas (§2.7.2-2.7.3).
-6. Con `marcos`: §2.10.
+   aprende la fila de las semillas no apartadas ([§2.7.2](#272-la-fila-de-los-libros)-[2.7.3](#273-aprendizaje-contextos-con-la-regla-de-dos)).
+6. Con `marcos`: [§2.10](#210-marcos-y-notas-marcos-para-el-cubo).
 7. `ms_eval` (`memoria_pares.jsm:2639-2875`): para cada semilla preguntada, sus candidatas son todas las oraciones `O`
    del libro que dicen al menos una palabra (no de la mitad) de la pregunta. Para cada candidata:
    - costo con lugares menos costo sin lugares (`ms_cost` → `ms_fit`); gana el menor (`SBEST`);
@@ -384,7 +384,7 @@ N: <semilla> <oración> <ídem> <ídem> <cantidad de notas> nota1 nota2 ...
 |---|---|
 | 0 | Fuera de la oración. |
 | 1 | Una palabra que no es lugar, no es de la mitad y no la dicen dos respuestas leídas. |
-| ≥ 2 | Número por orden de primera aparición (`TOK`, desde 2) de: un lugar (clave 3 + k) o la palabra misma (clave su huella), si es de la mitad o la dicen dos semillas leídas (`SDW`, `ms_seedwords`, `memoria_pares.jsm:3381-3451`). |
+| ≥ 2 | Número por orden de primera aparición (`TOK`, desde 2) de: un lugar (clave 3 + k) o la palabra misma (clave su huella), si es [de la mitad](#15-la-mitad) o la dicen dos semillas leídas (`SDW`, `ms_seedwords`, `memoria_pares.jsm:3381-3451`). |
 
 Las notas (`ms_notes`, `memoria_pares.jsm:3107-3250`) se numeran por primera aparición (`NTK`, desde 0); cada una se
 escribe una vez por línea. Claves:
@@ -411,45 +411,45 @@ crecientes ocupan 4 qwords (`WIX` 1248h, `CXT` 1420h, `NXT` 1440h, `VOC` 1460h, 
 ### 3.1 Qué es
 
 Un programa de una cabina que lee `pares` (las construcciones del libro) y, sin preguntas, encuentra relaciones
-("formas"), las une por razonamiento en un while de hipótesis, deduce relaciones nuevas, y deja en la casa lo que sabe
+("formas"), las une por razonamiento en un [while de hipótesis](#38-el-while), deduce relaciones nuevas, y deja en la casa lo que sabe
 para el libro siguiente. Sala 0 de 10000h bytes (`hilos.jsm:482`); textos en `hilos.datos.jsm`; incluye `lectura.inc`
-y `crece.inc` (`hilos.jsm:10055-10056`).
+y [`crece.inc`](#13-tablas-que-crecen-creceinc) (`hilos.jsm:10055-10056`).
 
 ### 3.2 Archivos de la casa
 
 | Etiqueta | Dir. | Formato | Fuente |
 |---|---|---|---|
-| `pares` | E | Líneas `Q:`, `O:`, `R:` (§3.3). Obligatorio: sin él escribe `hilos: no hay libro`. | `hilos.jsm:541-548` |
+| `pares` | E | Líneas `Q:`, `O:`, `R:` ([§3.3](#33-lectura)). Obligatorio: sin él escribe `hilos: no hay libro`. | `hilos.jsm:541-548` |
 | `cruce` | E | Primer número decimal: cuántos pares atrás se cruza cada par (sólo en la tanda; 1 si falta o es 0). | `hilos.jsm:484-495` |
-| `suspende` | E | Primer número: la regla a suspender (§3.10). | `hilos.jsm:496-515` |
-| `tanda` | E | Dos números: formas a elegir y lado del cubo (§3.18). | `hilos.jsm:516-524`, `3029-3070` |
+| `suspende` | E | Primer número: la regla a suspender ([§3.10](#310-reglas-y-suspensión)). | `hilos.jsm:496-515` |
+| `tanda` | E | Dos números: formas a elegir y lado del cubo ([§3.18](#318-la-tanda)). | `hilos.jsm:516-524`, `3029-3070` |
 | `signos` | E | No vacío: cada byte no-letra que no sea espacio ni CR es una palabra de un byte. | `hilos.jsm:526-530`, `9830-9840` |
 | `toda` | E | No vacío: ninguna palabra es de la mitad. | `hilos.jsm:531-535` |
-| `nitidez` | E | No vacío: activa la nitidez (§3.16). | `hilos.jsm:536-540` |
-| `partes` | E | No vacío: sólo busca las piezas de palabras (§3.17) y termina. | `hilos.jsm:8686-8699` |
-| `vuelca` | E | No vacío: escribe `relaciones` (§3.14). | `hilos.jsm:9584-9589` |
+| `nitidez` | E | No vacío: activa la nitidez ([§3.16](#316-nitidez-por-lugares)). | `hilos.jsm:536-540` |
+| `partes` | E | No vacío: sólo busca las piezas de palabras ([§3.17](#317-piezas-de-palabras-partes)) y termina. | `hilos.jsm:8686-8699` |
+| `vuelca` | E | No vacío: escribe `relaciones` ([§3.14](#314-ejemplos-y-relaciones)). | `hilos.jsm:9584-9589` |
 | `pedazo` | E | Primer número: bytes por pedazo (por defecto 102400 = 1 << 16 \| 9000h; criterio declarado en el comentario). | `hilos.jsm:598-666` |
 | `sigue` | E/S | Primer número: desplazamiento donde empieza el pedazo actual. | `hilos.jsm:623-633`, `668-718` |
-| `hilos` | E | Etiqueta del programa que el pedido 36 vuelve a cargar para seguir por pedazos (cómo se deja el binario en la casa: no verificado). | `hilos.jsm:703-706` |
-| `sabido` | E/S | §3.11. | `hilos.jsm:5616-6161` |
-| `pendiente` | E/S | §3.12. | `hilos.jsm:6218-6696` |
-| `testigos` | E/S | §3.13. | `hilos.jsm:9466-9573` |
-| `ejemplos` | E/S | §3.14. | `hilos.jsm:9297-9464` |
-| `imaginado` | E/S | §3.15. | `hilos.jsm:7276-7576`, `8579-8684` |
-| `mecanismos` | E/S | §3.15. | `hilos.jsm:7669-7793` |
-| `relaciones` | S | §3.14. | `hilos.jsm:9581-9682` |
-| `piezas` | S | §3.17. | `hilos.jsm:9103-9161` |
-| `lugar`, `lugares0`, `lugares1`, `nitidas`, `nitidas0`, `nitidas1` | E/S | §3.16. | `hilos.jsm:7795-8577` |
+| `hilos` | E | Etiqueta del programa que el [pedido 36](04-nucleo-abi-de-pedidos.md#96-familia) vuelve a cargar para seguir por pedazos (cómo se deja el binario en la casa: `razar/cardumen/hilos_pedazos_prueba.sh:25`). | `hilos.jsm:703-706` |
+| `sabido` | E/S | [§3.11](#311-sabido). | `hilos.jsm:5616-6161` |
+| `pendiente` | E/S | [§3.12](#312-pendiente). | `hilos.jsm:6218-6696` |
+| `testigos` | E/S | [§3.13](#313-testigos). | `hilos.jsm:9466-9573` |
+| `ejemplos` | E/S | [§3.14](#314-ejemplos-y-relaciones). | `hilos.jsm:9297-9464` |
+| `imaginado` | E/S | [§3.15](#315-instrucciones-imaginado-y-mecanismos). | `hilos.jsm:7276-7576`, `8579-8684` |
+| `mecanismos` | E/S | [§3.15](#315-instrucciones-imaginado-y-mecanismos). | `hilos.jsm:7669-7793` |
+| `relaciones` | S | [§3.14](#314-ejemplos-y-relaciones). | `hilos.jsm:9581-9682` |
+| `piezas` | S | [§3.17](#317-piezas-de-palabras-partes). | `hilos.jsm:9103-9161` |
+| `lugar`, `lugares0`, `lugares1`, `nitidas`, `nitidas0`, `nitidas1` | E/S | [§3.16](#316-nitidez-por-lugares). | `hilos.jsm:7795-8577` |
 
 Los archivos que se reescriben enteros siguen el patrón borrar (12) → abrir (4) → escribir lo viejo que se conserva →
 escribir lo nuevo → cerrar (7). Los que sólo crecen (`lugares*`, `nitidas`) se abren y se posicionan al final con el
-pedido 38 (`a` = −1) (`hilos.jsm:8225-8243`, `8484-8497`).
+[pedido 38](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) (`a` = −1) (`hilos.jsm:8225-8243`, `8484-8497`).
 
 ### 3.3 Lectura
 
 `en_lines` (`hilos.jsm:9756-9933`): una línea cuyo segundo byte es `:` y cuyo primero es `Q` (clase 1), `O` (2) o `R`
 (3) se lee desde el byte 2; las demás se saltan. Registro de línea `ZLN` (32 bytes): {clase, primera palabra, cantidad,
-inicio}. Registro de palabra `ZWD` (24 bytes): {huella, inicio, bytes}. `ZWT` (tabla creciente de 24 bytes) da el texto
+inicio}. Registro de palabra `ZWD` (24 bytes): {huella, inicio, bytes}. `ZWT` ([tabla creciente](#13-tablas-que-crecen-creceinc) de 24 bytes) da el texto
 de cada huella. Todas las líneas leídas, sean de la clase que sean, participan en las formas.
 
 **Pedazos** (`hl_piece`, `hilos.jsm:598-666`; `hl_next`, `hilos.jsm:668-718`): `HPFR` = inicio del pedazo (número
@@ -457,23 +457,23 @@ de `sigue`, 0 si falta) y `HPTO` = bytes por pedazo (número de `pedazo`, o 1024
 libro, el pedazo llega hasta el final; si no, termina justo después del primer LF que esté en la posición
 `HPFR + HPTO` o más adelante (o en el final del libro). Desde ahí `HPTO` guarda el fin absoluto del pedazo y
 `PRB`/`PRN` pasan a describir sólo el pedazo. Al terminar un pedazo que no es el último: borra y reescribe `sigue` con
-el fin del pedazo en decimal (sin LF), pide 36 con la etiqueta `hilos` y termina; el núcleo lo rehace desde su primera
+el fin del pedazo en decimal (sin LF), pide [36](04-nucleo-abi-de-pedidos.md#96-familia) con la etiqueta `hilos` y termina; el núcleo lo rehace desde su primera
 orden con lo que la casa guarda. Si `sigue` no se pudo abrir, no pide 36. Tras el último pedazo de un libro leído por pedazos, borra
 `sigue`. Prueba: `razar/cardumen/hilos_pedazos_prueba.sh`.
 
 ### 3.4 Formas y pares
 
-`hl_facts` (`hilos.jsm:869-1054`): en cada línea, para cada palabra A en la posición i que no es de la mitad, y cada
+`hl_facts` (`hilos.jsm:869-1054`): en cada línea, para cada palabra A en la posición i que no es [de la mitad](#15-la-mitad), y cada
 k ∈ {1, 2, 3}, si la palabra B en i + k + 1 existe en la línea, no es de la mitad y su huella difiere de la de A:
 
-- clave de forma = `k` mezclado con las huellas de las k palabras intermedias (`hl_mix` en orden); las intermedias
+- clave de forma = `k` mezclado con las huellas de las k palabras intermedias ([`hl_mix`](#12-palabras-huellas-y-azar) en orden); las intermedias
   pueden ser de la mitad;
 - clave del par = `mix(mix(clave de forma, A), B)`; un par se guarda una vez por forma (`HFT`).
 
 | Tabla | Tamaño | Campos |
 |---|---|---|
 | `HMID` | creciente, 16 B | {clave de forma, número} |
-| `HMA` | 48 B por forma, sala de `3·ZNWD + 2` | 0 clave; 8 registro de su primera línea; 16 índice en la línea de la primera palabra intermedia; 24 cuántas intermedias (negativo: forma deducida, §3.9); 32 cuántos pares; 40 último par (lista enlazada, −1 = ninguno) |
+| `HMA` | 48 B por forma, sala de `3·ZNWD + 2` | 0 clave; 8 registro de su primera línea; 16 índice en la línea de la primera palabra intermedia; 24 cuántas intermedias (negativo: forma deducida, [§3.9](#39-formato-de-las-formas-en-texto)); 32 cuántos pares; 40 último par (lista enlazada, −1 = ninguno) |
 | `HFL` | 32 B por par | 0 forma; 8 huella A; 16 huella B; 24 par anterior de la misma forma |
 
 Sólo las formas con `HMA+32 ≥ 2` (dos pares o más) participan en el razonamiento (`hilos.jsm:1164-1169`); una forma
@@ -487,8 +487,8 @@ recorre `HCLS` hasta la raíz y acumula con xor los bits `HPAR` ("invertida cont
 `hl_groups` (`hilos.jsm:1141-1264`): para cada par de una forma con ≥ 2 pares, la relación de su forma (girando A y B
 si está invertida) y la clave del par sin orden: `mix(mix(min, max), 7)` con `min`/`max` en orden por `(v >> 1)` y luego
 por el bit 0 (`hl_pkey`, `hilos.jsm:1062-1095`). En dos pasadas: cuenta por clave en `HGT` y luego coloca en `HGE` (32
-bytes: {relación, `HDIR` = 1 si A era el menor, cruzado, forma}). Sólo con la tanda se agregan pares cruzados: la
-segunda palabra del par `HCRS` posiciones atrás en la lista de la misma forma (`hilos.jsm:1187-1223`). En el while no
+bytes: {relación, `HDIR` = 1 si A era el menor, cruzado, forma}). Sólo con [la tanda](#318-la-tanda) se agregan pares cruzados: la
+segunda palabra del par `HCRS` posiciones atrás en la lista de la misma forma (`hilos.jsm:1187-1223`). En el [while](#38-el-while) no
 hay cruce.
 
 `hl_agree` (`hilos.jsm:1266-1422`): para cada clave de `HGT` con ≥ 2 entradas, para cada dos entradas x, y:
@@ -512,7 +512,7 @@ Puntaje (`hl_score`, `hilos.jsm:4814-4832`): `2·leídas − una_cruzada` si `le
    cuántos valores, un valor}. Un valor está confirmado si lo dicen 2 pares o más.
 3. Por relación y lado (`2R + lado`): `HSUPP` = palabras con exactamente un valor confirmado; `HBROK` = 1 si alguna
    tiene dos o más.
-4. `hp_is(R, lado)` = 1 si `HBROK` = 0 y `HSUPP` ≥ 2, salvo que sea la regla suspendida (`hilos.jsm:4171-4205`). Lado
+4. `hp_is(R, lado)` = 1 si `HBROK` = 0 y `HSUPP` ≥ 2, salvo que sea [la regla suspendida](#310-reglas-y-suspensión) (`hilos.jsm:4171-4205`). Lado
    0 = "un B por cada A"; lado 1 = "un A por cada B".
 5. `hp_index` arma, por relación, las palabras con un valor confirmado en un lado donde la relación "es así".
 
@@ -530,11 +530,11 @@ Una entrada de `HAG` es la hipótesis "la segunda relación es la primera" (mism
 
 | Condición | Resultado |
 |---|---|
-| Está en `HREF` (refutada) y no despierta (§3.8) | 0 (en coma) |
+| Está en `HREF` (refutada) y no despierta ([§3.8](#38-el-while)) | 0 (en coma) |
 | `leídas` < 2 | 0 |
 | Alguna de las dos relaciones es pegamento | 0 |
 | Existe la entrada de la vía opuesta con `leídas` > 0 | 0 (el libro lo dice al revés) |
-| `hp_contra` | 0 |
+| [`hp_contra`](#36-propiedades-y-contradicciones) | 0 |
 | En otro caso | `leídas` |
 
 `hl_explains` (`hilos.jsm:3834-3859`) exige `hex_dir` en los dos sentidos. `hex_dir(R, S, via)`
@@ -558,7 +558,7 @@ mientras HNMRG + HNDER + HNREF ≠ 0
 hl_end; hl_icheck; hl_inventa; hl_ksave; hl_psave; hl_esave; hl_tsave; hl_vuelca; hl_next
 ```
 
-(`hilos.jsm:567-596`.) Antes de la primera vuelta corren `hl_known` (lo sabido) y `hl_pending` (lo pendiente).
+(`hilos.jsm:567-596`.) Antes de la primera vuelta corren [`hl_known`](#311-sabido) (lo sabido) y [`hl_pending`](#312-pendiente) (lo pendiente).
 
 **Unión** (`hl_merge`, `hilos.jsm:4834-5042`):
 
@@ -566,7 +566,7 @@ hl_end; hl_icheck; hl_inventa; hl_ksave; hl_psave; hl_esave; hl_tsave; hl_vuelca
    confirmación (`HBST`, `HBSE`); a igualdad queda la primera vista.
 2. Para cada hipótesis elegida por **las dos** relaciones (`HBSE[rmin]` = `HBSE[rmax]` = esa entrada), con
    `R1` = `rmin` (el menor número de relación, comparación con signo) y `R2` = `rmax`:
-   - si `hl_explains` = 0: entra en `HREF` (56 bytes: {clave, vuelta en que cayó (−1 = despierta), inicio del
+   - si [`hl_explains`](#37-la-hipótesis-y-su-examen) = 0: entra en `HREF` (56 bytes: {clave, vuelta en que cayó (−1 = despierta), inicio del
      contexto, cantidad, R1, R2, vía}); `HNREF` cuenta las refutadas por primera vez; `hm_absurd` cuenta huecos;
    - si no: marca `HAG+56`, toca las palabras de los pares de R2 (`HWT[palabra]` = vuelta), `HCLS[R2] = R1`,
      `HPAR[R2] = via − 1`, `HSIZE[R1] += HSIZE[R2]`, `HNMRG` += 1, y escribe
@@ -599,7 +599,7 @@ entradas> | deducidas en espera (sin testigo): <HNESP> | huecos de las refutadas
 `hl_rules` (`hilos.jsm:5548-5614`), después del while: para cada número de regla `N = 2·forma + lado` con `HPBP[N]` > 0,
 `regla <N>: <forma> | un B por cada A|un A por cada B | frena <HPBP> uniones (<HPBW> palabras)`. Con `suspende` = N en la
 casa, `HSUSF = N + 1`; en cada vuelta se toma la relación actual de la forma `N >> 1` y el lado `(N and 1) xor
-invertida`, y `hp_is` responde 0 para ella (`hilos.jsm:3107-3119`, `4173-4182`).
+invertida`, y [`hp_is`](#36-propiedades-y-contradicciones) responde 0 para ella (`hilos.jsm:3107-3119`, `4173-4182`).
 
 ### 3.11 `sabido`
 
@@ -630,15 +630,15 @@ segunda lo dice así (a favor) o sólo al revés (en contra):
 | Formas ausentes | — | Se conserva igual. |
 
 Resumen: `sabido: <aplicadas> aplicadas | <sin usar> sin usar (sus formas no estan en este libro)` y `sabido: <n>
-dormida | ... se duermen, <m> despiertan`. Las claves de forma dependen sólo de las huellas de sus palabras, por eso
+dormida | ... se duermen, <m> despiertan`. Las [claves de forma](#34-formas-y-pares) dependen sólo de las huellas de sus palabras, por eso
 valen en cualquier libro. Prueba: `razar/cardumen/hilos_sabido_prueba.sh:26-30`.
 
 ### 3.12 `pendiente`
 
-Mismo formato de línea que `sabido` (claves en 0-15 y 17-32, vía en el byte 34) (`hilos.jsm:6218-6344`). Una línea cuyas
+Mismo formato de línea que [`sabido`](#311-sabido) (claves en 0-15 y 17-32, vía en el byte 34) (`hilos.jsm:6218-6344`). Una línea cuyas
 dos formas existen en el libro queda en `HQA` (24 bytes: {forma, forma, vía 0/1}); en cada vuelta `hl_pinject`
-(`hilos.jsm:6346-6420`) suma 1 a `leídas` de la entrada de `HAG` entre sus relaciones actuales, **sólo si esa entrada
-ya existe** (lo pendiente suma a una hipótesis, no la crea), y registra un testigo sin palabras.
+(`hilos.jsm:6346-6420`) suma 1 a `leídas` de la entrada de [`HAG`](#35-relaciones-de-relaciones-hgt-hge-hag) entre sus relaciones actuales, **sólo si esa entrada
+ya existe** (lo pendiente suma a una hipótesis, no la crea), y registra [un testigo](#313-testigos) sin palabras.
 
 Al guardar (`hl_psave`, `hilos.jsm:6472-6696`): se escriben las líneas viejas (una vez por par de formas, en cualquier
 orden), salvo las que en este libro quedaron unidas (`verifica: <f> ~ <g>`); luego las entradas de `HAG` de la última
@@ -654,8 +654,8 @@ forma1, forma2}), campos separados por tabulador (`hl_tsave`, `hilos.jsm:9466-95
 <R1>\t<R2>\t<1|2>\t<A o ->\t<B o ->\t<forma1>\t<forma2>\n
 ```
 
-`R1`, `R2`, `forma1` y `forma2` se escriben como texto de forma (`hl_sayform`, §3.9); `A` y `B` como el texto de la
-palabra; la vía como el dígito `'0' + vía`. `-` marca un testigo de lo pendiente (el par fue de otro libro). El
+`R1`, `R2`, `forma1` y `forma2` se escriben como texto de forma (`hl_sayform`, [§3.9](#39-formato-de-las-formas-en-texto)); `A` y `B` como el texto de la
+palabra; la vía como el dígito `'0' + vía`. `-` marca un testigo de [lo pendiente](#312-pendiente) (el par fue de otro libro). El
 archivo se borra y se reescribe: primero el contenido viejo, byte a byte, y luego las líneas nuevas. Prueba: `razar/cardumen/hilos_testigos_prueba.sh:28-35`.
 
 ### 3.14 `ejemplos` y `relaciones`
@@ -667,7 +667,7 @@ cuya relación tiene ≥ 2 formas, si su clave no estaba:
 <clave del par hex16>\t<clave de la forma hex16>\t<palabras de la forma>\t<A>\t<B>\n
 ```
 
-La clave del par es la de `HFT` (§3.4). Al leer, toma los primeros 16 dígitos de cada línea mientras queden ≥ 34 bytes.
+La clave del par es la de `HFT` ([§3.4](#34-formas-y-pares)). Al leer, toma los primeros 16 dígitos de cada línea mientras queden ≥ 34 bytes.
 
 `relaciones` (sólo con `vuelca`, `hl_vuelca`, `hilos.jsm:9581-9682`): borrado y reescrito; para cada relación raíz no
 deducida con ≥ 2 pares, una línea por par: `<HSIZE>\t<forma raíz>\t<A>\t<B>`.
@@ -713,7 +713,7 @@ Se activa con `nitidez` (`hl_nitidez`, `hilos.jsm:7795-7856`) y corre antes de `
 
 | Concepto | Definición | Fuente |
 |---|---|---|
-| Lugar | `mix(clave de forma, lado)`, lado 0 para A y 1 para B de cada par leído. No cuentan las formas cuyas palabras intermedias son todas de la mitad, ni las palabras de la mitad (con `HHC`, aun con `toda`). | `hilos.jsm:7860-7933`, `8301-8353` |
+| Lugar | `mix(clave de forma, lado)`, lado 0 para A y 1 para B de cada par leído. No cuentan las formas cuyas palabras intermedias son todas [de la mitad](#15-la-mitad), ni las palabras de la mitad (con `HHC`, aun con `toda`). | `hilos.jsm:7860-7933`, `8301-8353` |
 | Miembro | `HPLW[mix(lugar, palabra)]` = {clave, 1 nuevo aquí / 2 de antes, lugar, palabra}. | `hilos.jsm:7898-7911` |
 | Lugar contado | `HPLC[lugar]` = {lugar, palabras, inicio, puestas}. | `hilos.jsm:7907-7911` |
 | Pareja | `HPAR[mix(mix(min, max), 77h)]` = {clave, palabra, otra, lugares compartidos}; `min`/`max` por comparación con signo de las huellas. Se cuenta cada dos miembros de un lugar salvo si ambos son de antes. | `hilos.jsm:8355-8459` |
@@ -723,10 +723,10 @@ archivo actual (`HLGC`, 0 si no hay `lugar`). Línea: `<lugar hex16> <palabra he
 Se lee en tramos de hasta 32300 bytes (criterio, sin medición) dentro de una sala de 64 KiB; una línea cortada se
 traslada al principio. Un miembro cuyo lugar está en `HPLC` (lugares de este pedazo) despierta: si no estaba en
 `HPLW` se agrega y su lugar suma una palabra en `HPLC`; esté o no, queda marcado 2 ("de antes"), aunque el pedazo
-también lo haya traído. Su texto se copia a `ZWT` si el libro no lo tiene. Los demás no se tocan. `hnz_keep` (`hilos.jsm:8223-8299`) agrega al
+también lo haya traído. Su texto se copia a [`ZWT`](#33-lectura) si el libro no lo tiene. Los demás no se tocan. `hnz_keep` (`hilos.jsm:8223-8299`) agrega al
 final sólo los miembros nuevos (marca 1).
 
-**`nitidas`** (`hnz_save`, `hilos.jsm:8461-8558`): primero intenta renombrar `nitidas<HLGC>` a `nitidas` (pedido 13; si
+**`nitidas`** (`hnz_save`, `hilos.jsm:8461-8558`): primero intenta renombrar `nitidas<HLGC>` a `nitidas` ([pedido 13](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema); si
 no existe o `nitidas` ya existe, falla sin efecto); luego abre `nitidas`, va al final y agrega una línea por pareja con
 lugares > 0 en este pedazo:
 
@@ -753,7 +753,7 @@ La consola recibe los 20 de más raíces con `pieza: ` (`hilos.jsm:9162-9259`). 
 
 ### 3.18 La tanda
 
-Con `tanda` (`k n`), en vez del while: `hl_groups`, `hl_agree`, `hl_tanda` (`hilos.jsm:560-566`). Las tres piezas de
+Con `tanda` (`k n`), en vez del [while](#38-el-while): `hl_groups`, `hl_agree`, `hl_tanda` (`hilos.jsm:560-566`). Las tres piezas de
 una nota salen de un valor v (una huella, o A xor B de un par): `v' = v >> 4`, `M = n²`, `p1 = v' mod M`,
 `p2 = (v' div M) mod M` corrido +1 (módulo M) si coincide con p1, `p3 = (v' div M²) mod M` corrido +1 hasta diferir de
 p1 y p2 (`ht_pieces`, `hilos.jsm:2409-2450`). Las líneas `T:`, `N:`, `R:`, `P:`, `Q:`, `U:`, `V:`, `W:`, `G:`, `H:`,
@@ -762,13 +762,13 @@ línea por línea). Una canción admite 255 notas como máximo (`ht_fits`, `hilo
 
 ### 3.19 Constantes asignadas dos veces
 
-El ensamblador PDP toma, en cada uso, la última asignación anterior en la misma pasada (capítulo 02, §8.3). Como todas
+El ensamblador PDP toma, en cada uso, la última asignación anterior en la misma pasada ([capítulo 02, §8.3](02-ensamblador-pdp-y-construccion.md#83-asignaciones-ensambladorjsm646-659-define_symbol-1807-1831)). Como todas
 las asignaciones están en la cabecera, cada uso ve la segunda:
 
 | Constante | Primera | Segunda (efectiva) | Consecuencia |
 |---|---|---|---|
 | `HWX` | 13B0h (`hilos.jsm:195`) | 17D8h (`hilos.jsm:288`) | Una sola variable. |
-| `HPAR` | 1440h, tabla de parejas de la nitidez (`hilos.jsm:200`) | 1708h, sala "invertida" del while (`hilos.jsm:262`) | La tabla de la nitidez ocupa 1708h..1727h, encima de `HPAR`, `HSIZE`, `HBST`, `HBSE`; funciona porque `hl_nitidez` termina antes de que `hl_rooms` los inicialice (`hilos.jsm:556-557`). |
+| `HPAR` | 1440h, tabla de parejas de [la nitidez](#316-nitidez-por-lugares) (`hilos.jsm:200`) | 1708h, sala "invertida" del while (`hilos.jsm:262`) | La tabla de la nitidez ocupa 1708h..1727h, encima de `HPAR`, `HSIZE`, `HBST`, `HBSE`; funciona porque `hl_nitidez` termina antes de que `hl_rooms` los inicialice (`hilos.jsm:556-557`). |
 | `HPI` | 1468h (`hilos.jsm:202`) | 1B98h (`hilos.jsm:362`) | Una sola variable de recorrido. |
 | `HFT` | 1588h, tabla de pares por forma (`hilos.jsm:235`) | 1830h (`hilos.jsm:474`) | Una sola tabla en 1830h. |
 | `HEX` | 1998h (`hilos.jsm:317`) | 1F78h (`hilos.jsm:464`) | `hex_dir` y `hl_esave` comparten la variable; no se usan a la vez. |
@@ -786,7 +786,7 @@ Cada pieza tiene un peso de un byte hacia cada vecino y una tasa de un byte (`ca
 
 | Regla | `cardumen_cubo.jsm` | Fuente |
 |---|---|---|
-| Nacer | Pesos = `(s >> 16) and FFh` con el congruencial (partiendo de `s` = semilla), 6 por pieza en orden de dirección; cada pieza ocupa 8 bytes en `AW` (los bytes 6 y 7 no se usan y no avanzan el azar); tasa = 20. Vecinos en `ANB`: un qword por dirección, −1 (FFFFh cargado como inmediato) fuera del borde. | `cardumen_cubo.jsm:241-327`, `532-545` |
+| Nacer | Pesos = `(s >> 16) and FFh` con [el congruencial](#12-palabras-huellas-y-azar) (partiendo de `s` = semilla), 6 por pieza en orden de dirección; cada pieza ocupa 8 bytes en `AW` (los bytes 6 y 7 no se usan y no avanzan el azar); tasa = 20. Vecinos en `ANB`: un qword por dirección, −1 (FFFFh cargado como inmediato) fuera del borde. | `cardumen_cubo.jsm:241-327`, `532-545` |
 | Ola | Cada saludo t de la canción inicia la ola t con sus 3 piezas despiertas. | `cardumen_cubo.jsm:568-605` |
 | Empuje | Cada pieza despierta de cada ola, que no sea de la cara de arriba, suma su peso a cada vecino que todavía no despertó en esa ola; se marca qué dirección empujó. | `cardumen_cubo.jsm:714-800` |
 | Despertar | Una pieza empujada despierta si la suma de todas las olas es ≥ 100 y `2 · direcciones que empujaron ≤ vecinos` (armonía); si no, queda ahogada. Despierta en cada ola que la empujó. | `cardumen_cubo.jsm:802-878` |
@@ -794,21 +794,21 @@ Cada pieza tiene un peso de un byte hacia cada vecino y una tasa de un byte (`ca
 | Respuesta | Por paso, qué piezas de arriba están despiertas. | `cardumen_cubo.jsm:666-682` |
 | Aprender | Para cada pieza i que despertó en el paso `ft[i]`: hacia un vecino q que no despertó, peso −1 (mínimo 0); hacia uno con `(ft[q] − ft[i])² ≤ 1`, peso + tasa (máximo 255); los demás, sin cambio. Luego tasa −1 (mínimo 1). No aprende si nació quieto o si la canción es sólo oída. | `cardumen_cubo.jsm:886-982` |
 | Conservar (bit 9 al nacer) | Si lo que la pieza dice en total difiere de lo que decía al nacer, cada peso pasa a `round(w · nacido / ahora)` (máx. 255) y la diferencia se reparte de a uno, en orden, entre los pesos que pueden tomarla. | `cardumen_cubo.jsm:378-463` |
-| Huella | Todos los pesos y tasas en orden con `mix` (§1.2). | `cardumen_cubo.jsm:1021-1045` |
+| Huella | Todos los pesos y tasas en orden con `mix` ([§1.2](#12-palabras-huellas-y-azar)). | `cardumen_cubo.jsm:1021-1045` |
 
 Una canción dura como mucho `TMAX = 256 + n³` pasos (`cardumen_cubo.jsm:152-154`), según el comentario porque la última
 ola empieza a lo sumo en el paso 254 y cada ola despierta cada pieza una vez (no verificado como cota demostrada).
 
 ### 4.2 `cardumen_cubo.jsm`: protocolo
 
-Hijo de `voluntad_juego.jsm`, `voluntad_acertijos.jsm` y `voluntad_semilla.jsm`. Sala 0 de 1000h bytes
-(`cardumen_cubo.jsm:59`). Escucha con `hear` (31 con `MAIL`, 16 bytes; si responde distinto de 1, duerme con 29 y
-vuelve a leer; si 29 responde −1, termina con `jhalt`) y habla con `say` (30 a la cabina 0)
+Hijo de [`voluntad_juego.jsm`](#57-voluntad_juegojsm-y-voluntad_acertijosjsm), [`voluntad_acertijos.jsm`](#57-voluntad_juegojsm-y-voluntad_acertijosjsm) y [`voluntad_semilla.jsm`](#58-voluntad_semillajsm). Sala 0 de 1000h bytes
+(`cardumen_cubo.jsm:59`). Escucha con `hear` ([31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) con `MAIL`, 16 bytes; si responde distinto de 1, duerme con [29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) y
+vuelve a leer; si 29 responde −1, termina con `jhalt`) y habla con `say` ([30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) a la cabina 0)
 (`cardumen_cubo.jsm:1061-1090`). El byte bajo de cada palabra es la orden (`cardumen_cubo.jsm:71-124`):
 
 | Orden | Palabra de la madre | Datos que siguen | Respuesta del hijo |
 |---|---|---|---|
-| 5 nacer | bit 8 quieto; bit 9 conservar; bits 16-23 lado n; bits 24.. semilla | — | Una palabra: bytes que necesitan sus tablas, o 0 si la sala que ya tiene alcanza. Si no es 0, espera una palabra de la madre y recibe la sala (25). |
+| 5 nacer | bit 8 quieto; bit 9 conservar; bits 16-23 lado n; bits 24.. semilla | — | Una palabra: bytes que necesitan sus tablas, o 0 si la sala que ya tiene alcanza. Si no es 0, espera una palabra de la madre y recibe la sala ([25](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas)). |
 | 6 canción | bits 8-15 = S saludos (≤ 255); bit 16 = sólo oída | S palabras: piezas en bits 0-15, 16-31, 32-47 | Una palabra con los pasos T; luego ⌈T·n²/64⌉ palabras: el bit `t·n² + j` es la pieza de arriba j en el paso t. |
 | 7 cómo está | — | — | Dos palabras: piezas fuera de su total; `(pesos en 255) << 32 \| pesos con vecino`. |
 | otra (3) | — | — | Su huella como una palabra; termina. |
@@ -816,16 +816,16 @@ vuelve a leer; si 29 responde −1, termina con `jhalt`) y habla con `say` (30 a
 Tablas en su propia sala, en este orden (P = n³, Q = 8P, B = P redondeado a 8): `AW` (Q), `ARATE` (B), `AFT` (Q), `ANB`
 (6Q), `AINP` (Q), `AMASK` (B), `ANCNT` (B), `AORP` (B), `AUNI` (B), `ANOW` (256B), `AWOKE` (256B), `APUSH` (256B),
 `ATOP` (`TMAX·n²` redondeado a 8), `ABORN` (Q). `NEED` = la suma (`cardumen_cubo.jsm:158-205`). Al nacer otra vez el hijo
-no devuelve la sala anterior (no hay pedido 3 en `born`).
+no devuelve la sala anterior (no hay [pedido 3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) en `born`).
 
-**Entrega de memoria.** El hijo no pide su sala con el pedido 2: según el comentario, ese pedido en un hijo requiere
-la autorización de la madre (no verificado en este capítulo; ver capítulo 04). El procedimiento es:
+**Entrega de memoria.** El hijo no pide su sala con el [pedido 2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas): según el comentario, ese pedido en un hijo requiere
+la autorización de la madre (`so/janaxos.asm:231`; ver [capítulo 04](04-nucleo-abi-de-pedidos.md#73-pedidos-importantes-y-firma-del-padre)). El procedimiento es:
 
 | Paso | Madre | Hijo |
 |---|---|---|
 | 1 | Dice la orden 5. | — |
 | 2 | — | Dice `NEED` (o 0). |
-| 3 | Si no es 0: pide una sala de `NEED` bytes (2), la mueve al hijo (23, `a` = sala, `b` = número del hijo) y dice 0. | — |
+| 3 | Si no es 0: pide una sala de `NEED` bytes (2), la mueve al hijo ([23](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas), `a` = sala, `b` = número del hijo) y dice 0. | — |
 | 4 | — | Oye esa palabra, recibe la sala (25) y la usa. |
 
 (`voluntad_semilla.jsm:189-234`, `cardumen_cubo.jsm:205-226`.)
@@ -843,7 +843,7 @@ piezas de abajo en una máscara de 64 bits: punto {0, 1, 4} = 13h, raya {2, 3, 7
 | 6 canción exacta | bits 8-15 = S; luego S palabras, cada una la máscara de piezas de un saludo. | Igual que la 4. |
 | otra (3) | — | Huella; termina. |
 
-Es hijo de `voluntad_canto.jsm` y de `voluntad_oraciones.jsm`.
+Es hijo de [`voluntad_canto.jsm`](#55-voluntad_cantojsm-y-voluntad_oracionesjsm) y de [`voluntad_oraciones.jsm`](#55-voluntad_cantojsm-y-voluntad_oracionesjsm).
 
 ### 4.4 `cardumen_lazo.jsm`
 
@@ -856,7 +856,7 @@ carga) (`cardumen_lazo.jsm:12-35`). Órdenes (`cardumen_lazo.jsm:45-87`):
 | 1 señal | Bytes 1, 2, 3 = las 3 piezas de abajo que despiertan. | Una palabra: bit j = pieza de arriba j despertó; luego ⌈n²/8⌉ palabras con el paso de cada pieza de arriba, un byte cada una (FFh = no despertó). |
 | otra (3) | — | Huella (pesos, tasas y fragmentos); termina. |
 
-Hijo de `voluntad.jsm` y `voluntad_hilos.jsm`. El detalle de la ola de una señal (sin cruce de olas) no se verificó
+Hijo de [`voluntad.jsm`](#53-voluntadjsm-con-cardumen_lazo) y [`voluntad_hilos.jsm`](#54-voluntad_hilosjsm). El detalle de la ola de una señal (sin cruce de olas) no se verificó
 línea por línea.
 
 ### 4.5 `cardumen.jsm` y `cardumen_olas.jsm`
@@ -874,8 +874,8 @@ con olas que se cruzan) y dejan la huella en `j0` para compararla bit a bit con 
 | Paso | Acción | Fuente |
 |---|---|---|
 | 1 | La voluntad abre `p` (etiqueta de 1 byte `p` = 70h) y lee sus parámetros como qwords little-endian. | `voluntad.jsm:62-74` |
-| 2 | Lanza `hijo` (etiqueta `68 69 6A 6F`) con derechos 15 (pedido 16); guarda el número del hijo. | `voluntad.jsm:91-103` |
-| 3 | Habla con `say` (30 al número del hijo) y oye con `hear` (31; vacío → 29; −1 → `jhalt`). | `voluntad_semilla.jsm:2225-2254` |
+| 2 | Lanza `hijo` (etiqueta `68 69 6A 6F`) con derechos 15 ([pedido 16](04-nucleo-abi-de-pedidos.md#96-familia)); guarda el número del hijo. | `voluntad.jsm:91-103` |
+| 3 | Habla con `say` ([30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) al número del hijo) y oye con `hear` ([31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas); vacío → [29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas); −1 → `jhalt`). | `voluntad_semilla.jsm:2225-2254` |
 | 4 | Termina diciendo una orden de fin; el hijo responde su huella. | `voluntad.jsm:372-378` |
 
 El binario del hijo debe estar en la casa como `hijo` (por ejemplo `razar/cardumen/conserva_prueba.sh:16`).
@@ -884,13 +884,13 @@ El binario del hijo debe estar en la casa como `hijo` (por ejemplo `razar/cardum
 
 | Programa | Hijo | `p` (qwords leídos) | Otras entradas | Fuente |
 |---|---|---|---|---|
-| `voluntad.jsm` | `cardumen_lazo` | 4: lado n, cosas k, vueltas, semilla de la escuela | — | `voluntad.jsm:16-74` |
+| `voluntad.jsm` | [`cardumen_lazo`](#44-cardumen_lazojsm) | 4: lado n, cosas k, vueltas, semilla de la escuela | — | `voluntad.jsm:16-74` |
 | `voluntad_hilos.jsm` | `cardumen_lazo` | 4 (como `voluntad.jsm`) | `cosas` (k × 4 bytes: 3 piezas y uno sin uso); `cantos` (por cosa: 2 bytes cantidad, luego 3 bytes por nota; después, canciones nuevas) | `voluntad_hilos.jsm:1-40`, `174-212`, `662`; `voluntad_hilos_prueba.sh:34-55` |
-| `voluntad_canto.jsm` | `cardumen_canto` | ninguno | 30 palabras fijas, 3 pasadas | `voluntad_canto.jsm:1-12` |
-| `voluntad_oraciones.jsm` | `cardumen_canto` | 4: semilla, % de dedos que resbalan, quieto, `CONFN` | — ; escribe `cf` | `voluntad_oraciones.jsm:14-21`, `589-600` |
-| `voluntad_juego.jsm` | `cardumen_cubo` | 6: semilla, lado, vueltas, acertijos practicados, tipo (0 mas, 1 mas y menos), quieto | — | `voluntad_juego.jsm:1-20`, `90-101` |
+| `voluntad_canto.jsm` | [`cardumen_canto`](#43-cardumen_cantojsm) | ninguno | 30 palabras fijas, 3 pasadas | `voluntad_canto.jsm:1-12` |
+| `voluntad_oraciones.jsm` | `cardumen_canto` | 4: semilla, % de dedos que resbalan, quieto, `CONFN` | — ; escribe [`cf`](#56-el-archivo-cf) | `voluntad_oraciones.jsm:14-21`, `589-600` |
+| `voluntad_juego.jsm` | [`cardumen_cubo`](#42-cardumen_cubojsm-protocolo) | 6: semilla, lado, vueltas, acertijos practicados, tipo (0 mas, 1 mas y menos), quieto | — | `voluntad_juego.jsm:1-20`, `90-101` |
 | `voluntad_acertijos.jsm` | `cardumen_cubo` | 18: semilla, `DESLIZ`, `N0`, `CRECE`, `TOPE`, `RONDAS`, `CUENTAS`, quieto, `TIPO`, `EJEM`, `LISTA`, `REVU`, `ESCRITA`, `MODO`, `ENSENA`, `PREGUNTA`, `REPS`, `CIEGOS` | — | `voluntad_acertijos.jsm:77-97`, `232-243` |
-| `voluntad_semilla.jsm` | `cardumen_cubo` | 11: semilla, lado, vueltas, quieto, `PASADA`, `MEMO`, `REPS`, `CONSV`, `UNA`, `VER`, `PRECIO` | `marcos` (líneas `M:`/`N:` de §2.10) | `voluntad_semilla.jsm:50-67`, `159-172` |
+| `voluntad_semilla.jsm` | `cardumen_cubo` | 11: semilla, lado, vueltas, quieto, `PASADA`, `MEMO`, `REPS`, `CONSV`, `UNA`, `VER`, `PRECIO` | `marcos` (líneas `M:`/`N:` de [§2.10](#210-marcos-y-notas-marcos-para-el-cubo)) | `voluntad_semilla.jsm:50-67`, `159-172` |
 
 La cabecera de `voluntad_acertijos.jsm` habla de 12 qwords y la de `voluntad_semilla.jsm` de 8; el código lee 144 y 88
 bytes respectivamente.
@@ -903,13 +903,13 @@ veces que la pieza de arriba j despertó en el paso t cuando dijo g. Adivina la 
 Aprende siempre lo que dijo. Si acertó (y algo respondió), suena otra vez la misma señal; si no, mueve una de las 3
 piezas de esa cosa (la quita, corre las siguientes y sortea una nueva al final). Huella:
 `cosa·8 + adivinada·2 + acierto + 1` por vuelta, mezclada con `j0 = (j0·31 + v) mod 2^48` (`voluntad.jsm:137-315`).
-Cada 50 vueltas agrega a una línea los aciertos del bloque; la línea se escribe una vez al final con el pedido 1
+Cada 50 vueltas agrega a una línea los aciertos del bloque; la línea se escribe una vez al final con el [pedido 1](04-nucleo-abi-de-pedidos.md#91-consola)
 (`voluntad.jsm:325-342`). Sala 0 de 2000h bytes; lo aprendido vive en una sala de `k · n² · n³ · 8` bytes pedida con el
-pedido 2 (`voluntad.jsm:49`, `75-89`).
+[pedido 2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) (`voluntad.jsm:49`, `75-89`).
 
 ### 5.4 `voluntad_hilos.jsm`
 
-Como `voluntad.jsm`; con `cosas`, cada cosa se dice con las piezas dadas y nunca se mueven; en el último cuarto de las
+Como [`voluntad.jsm`](#53-voluntadjsm-con-cardumen_lazo); con `cosas`, cada cosa se dice con las piezas dadas y nunca se mueven; en el último cuarto de las
 vueltas cuenta lo adivinado y escribe `C: <cosa> <bien> <todas> <otra más adivinada> <veces>`. Con `cantos`, cada cosa
 es una canción y se adivina por forma (coseno, según la cabecera); las canciones después de las k se oyen una vez al
 final y se escribe `U: <canción> <cosa o ->` (`voluntad_hilos.jsm:1-29`; criterios de la prueba en
@@ -917,7 +917,7 @@ final y se escribe `U: <canción> <cosa o ->` (`voluntad_hilos.jsm:1-29`; criter
 
 ### 5.5 `voluntad_canto.jsm` y `voluntad_oraciones.jsm`
 
-`voluntad_canto.jsm` dice sus 30 palabras como canciones (orden 4) en 3 pasadas y adivina por ritmo; huella
+`voluntad_canto.jsm` dice sus 30 palabras como canciones ([orden 4](#43-cardumen_cantojsm)) en 3 pasadas y adivina por ritmo; huella
 `dicha·1024 + (adivinada + 1)·2 + acierto` (`voluntad_canto.jsm:1-12`). `voluntad_oraciones.jsm` aprende 30 palabras en
 20 pasadas con la orden 6 y dedos que resbalan, lee 40 oraciones de 3 a 5 palabras y oye 20 palabras nuevas
 (`voluntad_oraciones.jsm:1-12`, no verificado en detalle).
@@ -926,12 +926,12 @@ final y se escribe `U: <canción> <cosa o ->` (`voluntad_hilos.jsm:1-29`; criter
 
 Con `CONFN` > 0, `voluntad_oraciones.jsm` canta cada una de las 30 palabras `CONFN` veces y cuenta `CONF[w][g]`:
 columna 0 = nada adivinado, columna g + 1 = adivinó g. Borra `cf`, lo abre y escribe los 30 × 31 qwords (7440 bytes,
-fila w = palabra cantada) (`voluntad_oraciones.jsm:767-836`). `memoria_pares.jsm` lo lee como tabla de temblor (§2.6).
+fila w = palabra cantada) (`voluntad_oraciones.jsm:767-836`). `memoria_pares.jsm` lo lee como tabla de temblor ([§2.6](#26-el-oído-y-el-núcleo-modo-sin-canta-ni-semilla)).
 
 ### 5.7 `voluntad_juego.jsm` y `voluntad_acertijos.jsm`
 
 `voluntad_juego.jsm`: cada palabra (uno..seis, mas, menos) es un conjunto de 3 piezas sorteado; un acertijo "a op b" es
-una canción de 3 saludos (orden 6); adivina la respuesta por la melodía; acierto → se canta otra vez; error → se mueve
+una canción de 3 saludos ([orden 6](#42-cardumen_cubojsm-protocolo)); adivina la respuesta por la melodía; acierto → se canta otra vez; error → se mueve
 una pieza de una de las tres palabras. Practica acertijos sorteados y luego se le preguntan los no practicados sin
 aprender (`voluntad_juego.jsm:1-20`). `voluntad_acertijos.jsm`: tres etapas (oído con crecimiento del lado, conteo,
 acertijos por igualdad de caminos) descriptas en su cabecera (`voluntad_acertijos.jsm:1-29`) (no verificado en
@@ -939,7 +939,7 @@ detalle).
 
 ### 5.8 `voluntad_semilla.jsm`
 
-Lee `marcos` (cada línea `M:` = 9 números: semilla, oración, contesta, leída, t1..t5; registros de 72 bytes `ITB`) y,
+Lee [`marcos`](#210-marcos-y-notas-marcos-para-el-cubo) (cada línea `M:` = 9 números: semilla, oración, contesta, leída, t1..t5; registros de 72 bytes `ITB`) y,
 con `MEMO` = 3 o 4, las notas `N:` (`voluntad_semilla.jsm:672-981`). Cada token se dice con 3 piezas distintas de abajo
 sorteadas; un marco es una canción de 5 saludos (orden 6). Aprende de dos cajones ("contesta" / "no contesta") y sortea
 mitad de cada uno; acierto → se canta otra vez; error → se mueve una pieza de una de sus 5 palabras. Después pregunta
@@ -972,7 +972,7 @@ Salida (`encadena.datos.jsm:12-52`): `paso: ...`, `parentesis: <texto> | lo dice
 
 ## 7. Jueces externos (`razar/jueces/`)
 
-Programas Python que Razar nunca lee: miden desde afuera los archivos de la casa contra bancos que Razar no vio. Se
+Programas Python que Razar nunca lee: miden desde afuera los archivos de [la casa](#14-la-casa) contra bancos que Razar no vio. Se
 corren con `python -I` (`razar/jueces/LEEME.md:1-23`).
 
 ### 7.1 Nitidez
@@ -992,7 +992,7 @@ corren con `python -I` (`razar/jueces/LEEME.md:1-23`).
 sólo de las 200 palabras más dichas (criterio declarado). Tokens: `[^\W\d_]+`.
 
 **`nitidez.py <imaginado> <fuente> <validador>...`** (`razar/jueces/nitidez.py:1-57`): toma el 20 % de las líneas de
-`imaginado` (semilla 3), su texto "z relación b" (3 a 5 palabras) y su tipo (`i`/`a`); para cada voto que la fuente no
+[`imaginado`](#315-instrucciones-imaginado-y-mecanismos) (semilla 3), su texto "z relación b" (3 a 5 palabras) y su tipo (`i`/`a`); para cada voto que la fuente no
 dice, su nitidez k = máximo de moldes compartidos entre b y las palabras que la fuente da a "z relación" (tope 10);
 confirmado si algún validador dice "z relación b"; convive si dice otra cosa. Salida por k: confirmados/decididos con
 y sin mecanismo.
@@ -1035,7 +1035,7 @@ vacía (`if False else ''`, `moldes.py:15`), por lo que cuenta toda palabra que 
 
 | Invariante o límite | Valor | Fuente |
 |---|---|---|
-| Regla de dos | Un contexto crece y se usa sólo si lo dicen ≥ 2 pares; una forma es relación con ≥ 2 pares; un valor está confirmado con ≥ 2; una hipótesis necesita ≥ 2 confirmaciones. | `memoria_pares.jsm:3978-3988`, `hilos.jsm:1164-1169`, `3226-3237`, `5069-5074` |
+| [Regla de dos](#273-aprendizaje-contextos-con-la-regla-de-dos) | Un contexto crece y se usa sólo si lo dicen ≥ 2 pares; una forma es relación con ≥ 2 pares; un valor está confirmado con ≥ 2; una hipótesis necesita ≥ 2 confirmaciones. | `memoria_pares.jsm:3978-3988`, `hilos.jsm:1164-1169`, `3226-3237`, `5069-5074` |
 | Símbolo del canto | 1 byte; lugares sólo si `BASE + 3 + k < 256`. | `memoria_pares.jsm:1920-1928` |
 | Letras del canto | ≤ `BASE²` (49 ó 900). | `memoria_pares.jsm:689-693` |
 | Largo del canto | ≤ `MAXA` símbolos. | `memoria_pares.jsm:4176-4185` |
@@ -1051,18 +1051,18 @@ vacía (`if False else ''`, `moldes.py:15`), por lo que cuenta toda palabra que 
 
 ## 9. Lo que quedó sin verificar
 
-- La correspondencia de los temblores 40 y 90 milésimas con mediciones del cubo (§2.6).
-- Cómo el cuerpo de Luma escribe `pares`/`canta`/`dados` y lee `cantado` (`gen_leer.py`, §2.8; capítulo 08).
-- Los casos completos de `hx_rescue` (§3.7).
-- Las claves internas de `hl_partes` (§3.17).
-- Las líneas de la tanda (`T:` .. `F:`) y su orden (§3.18).
-- La cota de pasos del cubo como demostración (§4.1).
-- La ola de una señal en `cardumen_lazo.jsm` (§4.4).
-- `cardumen.jsm` y `cardumen_olas.jsm` más allá de su cabecera (§4.5).
-- El coseno de `voluntad_hilos.jsm` con `cantos` (§5.4).
-- El detalle interno de `voluntad_oraciones.jsm`, `voluntad_juego.jsm` y `voluntad_acertijos.jsm` (§5.5, §5.7).
-- El algoritmo de `encadena.jsm` línea por línea (§6).
+- La correspondencia de los temblores 40 y 90 milésimas con mediciones del cubo ([§2.6](#26-el-oído-y-el-núcleo-modo-sin-canta-ni-semilla)).
+- Cómo el cuerpo de Luma escribe `pares`/`canta`/`dados` y lee `cantado` (`gen_leer.py`, [§2.8](#28-dados-y-cantado-contrato-con-quien-lo-lanza); [capítulo 08](08-luma-cuerpo-procesos-y-casa.md#6-protocolo-con-el-canto)).
+- Los casos completos de `hx_rescue` ([§3.7](#37-la-hipótesis-y-su-examen)).
+- Las claves internas de `hl_partes` ([§3.17](#317-piezas-de-palabras-partes)).
+- Las líneas de la tanda (`T:` .. `F:`) y su orden ([§3.18](#318-la-tanda)).
+- La cota de pasos del cubo como demostración ([§4.1](#41-modelo-común)).
+- La ola de una señal en `cardumen_lazo.jsm` ([§4.4](#44-cardumen_lazojsm)).
+- `cardumen.jsm` y `cardumen_olas.jsm` más allá de su cabecera ([§4.5](#45-cardumenjsm-y-cardumen_olasjsm)).
+- El coseno de `voluntad_hilos.jsm` con `cantos` ([§5.4](#54-voluntad_hilosjsm)).
+- El detalle interno de `voluntad_oraciones.jsm`, `voluntad_juego.jsm` y `voluntad_acertijos.jsm` ([§5.5](#55-voluntad_cantojsm-y-voluntad_oracionesjsm), [§5.7](#57-voluntad_juegojsm-y-voluntad_acertijosjsm)).
+- El algoritmo de `encadena.jsm` línea por línea ([§6](#6-encadenajsm)).
 - Que `enfoque_bits.py` falle al ejecutarse (deducido de la lectura; no se ejecutó).
-- La respuesta del pedido 30 cuando no existe la cabina destino (§1.1, §2.8).
-- Por qué un hijo no puede usar el pedido 2 por su cuenta (§4.2; capítulo 04).
-- Cómo queda en la casa el binario que `hilos` recarga con el pedido 36 (§3.2).
+- La respuesta del pedido 30 cuando no existe la cabina destino ([§1.1](#11-registros-y-llamadas), [§2.8](#28-dados-y-cantado-contrato-con-quien-lo-lanza)).
+- Por qué un hijo no puede usar el pedido 2 por su cuenta ([§4.2](#42-cardumen_cubojsm-protocolo); [capítulo 04](04-nucleo-abi-de-pedidos.md#73-pedidos-importantes-y-firma-del-padre)).
+- Cómo queda en la casa el binario que `hilos` recarga con el pedido 36 ([§3.2](#32-archivos-de-la-casa)).

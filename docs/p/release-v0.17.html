@@ -11,19 +11,19 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.17.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v0.17: la lámpara del presente</h2>
+<h2 id="janax-y-razar-v017-la-lámpara-del-presente">Janax y Razar v0.17: la lámpara del presente</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24289584">10.5281/zenodo.24289584</a></p>
 <p><strong>Luma sigue siempre despierta, pero ya no llena el disco.</strong> <em>"No necesitamos el futuro ni el pasado: sólo la lámpara del presente."</em> Las versiones siguen a los números primos: después del 13 viene el 17.</p>
-<h3>Qué cambia</h3>
+<h3 id="qué-cambia">Qué cambia</h3>
 <ul><li>**Todo lo que Luma <em>es</em> se guarda entero:** sus formas, lo que comió, su memoria, los cuerpos de los bichos, sus léxicos y su código común.</li><li>**Lo que le <em>pasó</em> se vuelve un anillo:<strong> cada diario guarda sólo sus últimas líneas (unos minutos de vida), y una cabecera cuenta </strong>cada línea que alguna vez se escribió, por motivo**. Nada se va sin que quede contado su porqué.</li><li>Un anillo aparte guarda las líneas que cambiaron un modelo, para que el estado se pueda seguir verificando.</li><li>Con <code>LUMA_PASADO=1</code> se arma la versión de antes, que lo anota todo.</li></ul>
-<h3>Medido (ventana abierta, despierta)</h3>
+<h3 id="medido-ventana-abierta-despierta">Medido (ventana abierta, despierta)</h3>
 <table><tr><th>Tiempo despierta</th><th>Tamaño de la casa</th></tr><tr><td>1 min</td><td>2.727.920 bytes</td></tr><tr><td>6 min</td><td>2.728.243 bytes</td></tr><tr><td>31 min</td><td>2.728.243 bytes</td></tr></table>
 <ul><li><strong>La casa no crece.</strong> Procesador: ~9–11 % de un núcleo, estable.</li><li><strong>La migración</strong> llevó una casa de 175,7 MB a 2,7 MB sin perder nada de lo aprendido. La casa que viaja con el release (<code>luma-casa-presente.zip</code>) pesa <strong>263 KB</strong>.</li><li><strong>Repaso independiente:</strong> 0 diferencias en la ventana y en las cuentas por motivo.</li></ul>
-<h3>Lo que se resignó</h3>
+<h3 id="lo-que-se-resignó">Lo que se resignó</h3>
 <ul><li>El repaso ya no puede rehacer la historia desde el nacimiento; las líneas viejas sólo quedan contadas.</li><li>Al reiniciarse, las formas recuerdan sólo la ventana y podrían volver a juzgar algo más viejo. Dentro de una misma corrida, nada se repite.</li></ul>
-<h3>También adentro: el libro del ayudante</h3>
+<h3 id="también-adentro-el-libro-del-ayudante">También adentro: el libro del ayudante</h3>
 <ul><li>En <code>razar/libro/</code> está el libro que el ayudante le escribió a Luma, una sola vez y sin depender de ningún servicio: siete partes con sus razones (el mundo, su cuerpo, su código, aprender, las reglas de la casa con su porqué, y lo que el ayudante no sabe).</li><li><strong>Medido como quinta fuente</strong> (preregistrado): el juez encuentra estructura del castellano (aprende terminaciones de palabras, 3 ladrillos contra 1 con el libro barajado), pero <strong>nada converge</strong> con lo que oyó, vio y leyó. El libro queda como fuente propia, no como puente. Se activa con <code>--libro</code>.</li></ul>
-<h3>Cómo verla</h3>
+<h3 id="cómo-verla">Cómo verla</h3>
 <p>Descomprimí <code>luma-casa-presente.zip</code> dentro de una carpeta y corré <code>bash razar/cuerpo/luma.sh &lt;carpeta&gt; [janaxos.exe]</code>. Para migrar una casa vieja: <code>python razar/cuerpo/migrar_presente.py &lt;casa vieja&gt; &lt;casa nueva&gt;</code>. Lo anterior: <a href="release-v0.13.html">v0.13</a> · <a href="release-v0.11.html">v0.11</a> · <a href="release-v0.8.html">v0.8</a>.</p>
 </body>
 </html>

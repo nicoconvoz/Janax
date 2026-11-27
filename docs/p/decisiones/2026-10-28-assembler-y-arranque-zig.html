@@ -12,15 +12,15 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 <body>
 <nav><a href="../../">Janax y Razar</a> · <a href="../../p/index.html">Manifiesto</a> · <a href="../../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/decisiones/2026-10-28-assembler-y-arranque-zig.md">Ver en GitHub</a></nav>
 <blockquote><p><strong>REEMPLAZADA</strong> el 2026-10-28 por <code>2026-10-28-idioma-janax.md</code>: el juego se escribe una sola vez en el idioma Janax y se traduce a cada procesador. Se conserva como historia.</p></blockquote>
-<h1>Núcleo en assembler, arranque en Zig</h1>
+<h1 id="núcleo-en-assembler-arranque-en-zig">Núcleo en assembler, arranque en Zig</h1>
 <p><strong>Fecha:</strong> 2026-10-28 · <strong>Decide:</strong> Capitán</p>
-<h2>Decisión</h2>
+<h2 id="decisión">Decisión</h2>
 <ul><li>El juego y el motor se escriben en <strong>assembler</strong>, una versión por familia de procesador: <strong>x86-64</strong> (PC) y <strong>ARM64</strong> (celulares, Mac).</li><li>Un <strong>módulo de arranque en Zig</strong> corre antes que todo y:</li><li>Identifica la familia y las <strong>extensiones</strong> del procesador (CPUID en x86, registros de identificación / auxv en ARM).</li><li>Para cada función del juego elige la implementación más rápida que ese procesador soporta.</li><li>Recién entonces arranca el juego, ya adaptado.</li><li><strong>Se elige por capacidad, nunca por modelo.</strong> Un procesador desconocido de una familia conocida declara sus extensiones (SSE/AVX2/AVX-512, NEON/SVE…) y recibe las funciones que corresponden, sin lista de modelos.</li><li>La elección se hace una sola vez al arrancar: cada llamada posterior va directo a la función elegida.</li></ul>
-<h2>Por qué</h2>
+<h2 id="por-qué">Por qué</h2>
 <p>Rendimiento máximo en cada máquina sin cargar código que no se usa, y un juego que se adapta solo a procesadores que todavía no existen.</p>
-<h2>Reglas que se desprenden</h2>
+<h2 id="reglas-que-se-desprenden">Reglas que se desprenden</h2>
 <ul><li><strong>Todas las variantes de una función dan el mismo resultado, bit por bit.</strong> Sin eso, dos pares con procesadores distintos calculan distinto un combate y se rompe el acuerdo entre pares. Cada variante se prueba contra las demás con los mismos casos.</li><li>Matemática de la simulación en <strong>punto fijo</strong>, no flotantes.</li><li>Las firmas Ed25519 tienen vectores de prueba compartidos con Wenas (<code>icebreak_core/test/vectors.json</code>).</li></ul>
-<h2>Familia de procesador nueva: traductor de instrucciones (Capitán, 2026-10-28)</h2>
+<h2 id="familia-de-procesador-nueva-traductor-de-instrucciones-capitán-2026-10-28">Familia de procesador nueva: traductor de instrucciones (Capitán, 2026-10-28)</h2>
 <p>En una familia sin assembler propio (p. ej. RISC-V), el arranque traduce nuestro assembler a la familia nueva:</p>
 <ul><li><strong>Solo traduce nuestro código.</strong> El assembler del juego se limita a un <strong>subconjunto documentado</strong> de instrucciones; el traductor cubre ese subconjunto y nada más. Una instrucción fuera del subconjunto es un error de compilación del juego, no un caso del traductor.</li><li><strong>Traduce una vez, antes de arrancar</strong>, y guarda el resultado en disco (con la huella del original para invalidarlo si cambia). Los arranques siguientes usan la traducción guardada.</li><li><strong>Escrito en Zig</strong>, que compila para la familia nueva.</li><li><strong>Mismas pruebas bit por bit</strong>: el código traducido da el mismo resultado que el original.</li><li><strong>Más lento que el nativo</strong>: cuánto, se mide cuando exista; no hay número todavía.</li></ul>
 </body>

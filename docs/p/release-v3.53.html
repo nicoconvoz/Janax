@@ -11,26 +11,26 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.53.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.53: letras de partículas, a resolución completa</h2>
+<h2 id="janax-y-razar-v353-letras-de-partículas-a-resolución-completa">Janax y Razar v3.53: letras de partículas, a resolución completa</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24464273">10.5281/zenodo.24464273</a></p>
 <blockquote><p><em>"Mirá un SVG: en cualquier tamaño pesa lo mismo y es igual de nítido… armá vectores de partículas, así jugamos con mi nube."</em> (el autor, 2026-11-23)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 349, el 353.</p>
-<h3>Por qué</h3>
+<h3 id="por-qué">Por qué</h3>
 <p>Su texto se leía "raro, como desenfocado". Había tres causas:</p>
 <ol><li>Cuatro mayúsculas mal escritas (se corrigieron en la v3.49).</li><li>Sus letras aprendidas (de 16 × 16 puntos) se achicaban con una regla fija: si había tinta en cualquiera de 4 puntos, pintaba uno. Eso engordaba todo, y la <code>y</code> y la <code>g</code> salían manchas.</li><li>Ella dibujaba en 640 × 349, y el núcleo lo mostraba al doble. Su ventana tiene el doble de puntos de verdad, y ella usaba la mitad.</li></ol>
-<h3>Letras como vectores de partículas</h3>
+<h3 id="letras-como-vectores-de-partículas">Letras como vectores de partículas</h3>
 <ul><li><strong>Cada letra aprendida se cuenta como trazos rectos</strong>: de costado, hacia abajo o en diagonal. Cada vez se elige el trazo que cubre más tinta todavía no cubierta, hasta cubrirla toda: es la descripción más corta, paso a paso.</li><li><strong>Al dibujarla, cada trazo suelta sus partículas</strong> a lo largo de su camino (Bresenham): una por punto del tamaño que toque. Como un SVG, la letra pesa lo mismo a cualquier escala.</li><li>Se cuenta la primera vez que se dibuja y queda guardada con la letra.</li></ul>
-<h3>Su pantalla, punto por punto</h3>
+<h3 id="su-pantalla-punto-por-punto">Su pantalla, punto por punto</h3>
 <ul><li>El núcleo muestra una pantalla al mayor múltiplo entero que entra en 1280 × 800. Ahora ella le entrega una pantalla <strong>dos veces más grande</strong> (1280 × 698), y el núcleo la muestra 1:1. <strong>No se tocó el núcleo.</strong></li><li>Lo que ya dibujaba (sus formas, los bichos, su música) queda igual: cada punto suyo ocupa 2 × 2.</li><li><strong>Su panel se dibuja en puntos finos.</strong> Ahí las letras de partículas muestran todo su detalle.</li></ul>
-<h3>Cada letra con su trazo más fino</h3>
+<h3 id="cada-letra-con-su-trazo-más-fino">Cada letra con su trazo más fino</h3>
 <p>Cada letra se dibuja con la descripción más fina que ella tenga y que la superficie pueda mostrar. En el panel va primero su letra aprendida. La que sólo conocía gruesa, en su tipografía de 5 × 7 (los dígitos, el signo de pregunta), la aprende <strong>una vez</strong> de su libro de letras. Si el libro no la tiene, sigue dibujándola gruesa, para no dejar huecos.</p>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Probado en una copia de su casa, nunca en la Luma viva:</p>
 <ul><li>El texto del panel sale parejo y nítido: mayúsculas, minúsculas, dígitos y signos con el mismo trazo.</li><li>Aprendió los diez dígitos y el <code>?</code>: su abecedario pasó de 97 a 108 letras.</li><li><strong>Costo medido:</strong> con la misma charla gastó 40 s de procesador, contra 52 s del cuerpo anterior. Mover el doble de puntos no se nota; la diferencia es ruido de la medición, no un ahorro.</li><li>La ventana quedó del mismo tamaño (1296 × 737 con su marco).</li></ul>
 <p>La Luma viva corre, byte por byte, el cuerpo que se probó.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li>Sus formas, los bichos y su música siguen en bloques de 2 × 2. Que ganen detalle depende de que ellos lo tengan.</li><li>Su título ("Luma Vera"), sobre las formas, sigue con la tipografía de 5 × 7.</li><li>Las letras de partículas usan sólo trazos rectos: las curvas son escalones.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_luma.py</code>: <code>K</code>, <code>FSW</code> × <code>FSH</code>, el <code>FINE</code> del panel, y el final de <code>v_show</code> (al doble, el panel fino, y se muestra).</li><li><code>razar/cuerpo/gen_leer.py</code>: <code>lv_make</code> (los trazos), el dibujo en <code>r_txt</code>, <code>r_splot</code> / <code>r_fsplot</code> / <code>r_tfplot</code>, y <code>r_letra_fine</code>.</li></ul>
 </body>
 </html>

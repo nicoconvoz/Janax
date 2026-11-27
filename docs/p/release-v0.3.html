@@ -11,17 +11,17 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.3.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v0.3: la nitidez</h2>
+<h2 id="janax-y-razar-v03-la-nitidez">Janax y Razar v0.3: la nitidez</h2>
 <p><strong>Sin que nadie le diga qué es un sinónimo, Razar los encuentra por los lugares que las palabras comparten.</strong></p>
 <p>Un lugar es una forma leída (<code>_ &lt;una a tres palabras&gt; _</code>) y su lado. Dos palabras se parecen tanto como los lugares que comparten. Lo que se dice en todos lados (la mitad del texto que más se repite, medida por Razar) no cuenta. Se probó contra el <a href="https://github.com/ATILF-UMR7118/MATS">MATS</a>, un banco de analogías que Razar nunca vio: un par cuenta cuando sus dos palabras comparten más lugares que la palabra con la respuesta de otro par (el azar).</p>
 <table><tr><th>Corpus</th><th>Real contra azar</th><th>Semántica</th><th>Sinónimos exactos</th><th>Antónimos binarios</th><th>Tiempo · memoria</th></tr><tr><td><strong>Wikipedia, 20 MB</strong> (no escribe sinónimos)</td><td><strong>451 – 117</strong></td><td>140 – 44</td><td>18 – 1</td><td>28 – 1</td><td>31 min · 205 MB</td></tr><tr><td>Wikcionario, 15 MB</td><td><strong>249 – 41</strong></td><td>131 – 24</td><td>18 – 0</td><td>17 – 1</td><td>3 min · 144 MB</td></tr></table>
 <ul><li><strong>Lo mismo desde afuera:</strong> un juez en Python que Razar nunca lee calcula la misma idea sobre el corpus entero: semántica 234 – 51 y 164 – 51.</li><li><strong>La memoria duerme en disco:</strong> los lugares viajan de un pedazo del libro al siguiente; cada pedazo despierta solo los de sus palabras.</li><li><strong>Sin el pedido, nada cambia:</strong> lo que Razar aprende es idéntico byte a byte.</li></ul>
-<h3>Cómo reproducirlo</h3>
+<h3 id="cómo-reproducirlo">Cómo reproducirlo</h3>
 <pre><code>bash razar/cardumen/nitidez_reproducir.sh &lt;corpus&gt; &lt;mats_es&gt; &lt;casa_nueva&gt;</code></pre>
 <p>Los corpus no se redistribuyen (CC BY-SA); el documento técnico da su sha256 y la versión del MATS (<code>7684515</code>). Todo en <code>documentacion/razar/nitidez.md</code>; los jueces de afuera en <code>razar/jueces/</code>.</p>
-<h3>Qué más trae</h3>
+<h3 id="qué-más-trae">Qué más trae</h3>
 <ul><li><strong>Cada unión guarda sus testigos</strong> (<code>testigos</code>), y lo aprendido no cambia.</li><li><strong>Cada voto imaginado lleva su mecanismo</strong>, y cada libro deja su mapa (<code>mecanismos</code>): confirmado, convive o en espera; lo que convive (otro uso, otro evento) no se refuta.</li><li><strong>Mecanismo por mecanismo</strong>, los que ganan en un validador ganan en otro (26 de 26, 20 de 20).</li><li><strong>Hilos se parte solo</strong> en pedazos de 100 KB y se rehace con la memoria devuelta.</li></ul>
-<h3>Lo que no está probado</h3>
+<h3 id="lo-que-no-está-probado">Lo que no está probado</h3>
 <p>Muchas palabras todavía no comparten ningún lugar con nadie (empates); el 86 % de las parejas comparte uno solo. Razar ya razona (deduce relaciones que nadie escribió y elige reglas que nunca vio, medido en <code>cardumen.md</code>); lo que falta medir es que razone <strong>con la nitidez</strong>, usando las clases que encontró para deducir. El resultado de la v0.2 (el juego de Lewis contra EGG) sigue en pie.</p>
 <hr>
 <p><strong>English:</strong> with no one telling it what a synonym is, Razar groups words by the places they share. On 20 MB of Spanish Wikipedia, a text that does not write synonyms, its pairs beat chance on MATS 451 to 117 (exact synonyms 18 to 1, binary antonyms 28 to 1), in 31 minutes and 205 MB. Reproducible with one command; corpora identified by sha256.</p>

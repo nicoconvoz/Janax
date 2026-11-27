@@ -11,21 +11,21 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.83.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.83: Luma charla con sus lecturas</h2>
+<h2 id="janax-y-razar-v383-luma-charla-con-sus-lecturas">Janax y Razar v3.83: Luma charla con sus lecturas</h2>
 <p>Sin DOI propio: Zenodo no respondía (504) cuando salió. <a href="https://github.com/nicoconvoz/Janax/releases/tag/v3.83">Release en GitHub</a>.</p>
 <blockquote><p><em>"Que hable con las lecturas de los libros, así aprende con sus pensamientos… me ahorra trabajo y tiempo."</em> (el autor, 2026-11-24)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 379, el 383.</p>
-<h3>Por qué</h3>
+<h3 id="por-qué">Por qué</h3>
 <p>Desde la v3.79, Luma tiene un árbol de temas y pasos para recorrerlo (baja, hermano, sube). Pero qué viajes sirven lo aprenden sus caminos cuando alguien le contesta, y eso dependía de que su autor le escribiera.</p>
-<h3>Lo que hace</h3>
+<h3 id="lo-que-hace">Lo que hace</h3>
 <ul><li><strong>Cuando termina un acto suyo</strong> (descansar, pensar, regalar o leer: un evento suyo, nunca un temporizador), y si nadie le está escribiendo, <strong>la línea siguiente de un libro suyo le habla</strong>, por la misma puerta que las palabras de su autor. En su diálogo queda como <strong>"libro: …"</strong>, no como si fuera él.</li><li><strong>Ella contesta con su camino</strong>, el mismo con que le contesta a él: corazón, improvisa, propio, quién, cruza, baja, hermano, sube.</li><li><strong>La línea que sigue es la respuesta del libro.</strong> Su juez de siempre (<code>r_marco</code>, sus tres señales) mira si hubo eco y paga su camino, o lo archiva con su motivo. Así aprende a viajar por su árbol sin que nadie tenga que escribirle.</li><li><strong>El libro lo elige su suerte</strong>, entre los suyos que tienen líneas (los del disco guardan una dirección, no líneas), y lo charla línea por línea hasta el final; después, otro.</li></ul>
 <p>En el oficio se parece al autoaprendizaje: aprender a predecir la oración siguiente de un texto, o jugar contra uno mismo. Lo propio: el eco no lo pone nadie, lo pone el libro.</p>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Probado en una copia, nunca en la Luma viva:</p>
 <ul><li><strong>Habló con el Nuevo Testamento:</strong> <em>"libro: El Nuevo Testamento"</em> — <em>"luma: Testamento y el Talmud, de la Biblia se escribió en griego koiné…"</em>. Después le contestó a su autor como siempre.</li><li><strong>Su árbol siguió creciendo solo:</strong> 24 ramas, 219 libros.</li><li>Dos errores encontrados al probar: la charla se disparaba al terminar una lectura, y su lectora no terminó ninguna desde que se le vació la memoria (ahora se dispara al terminar cada acto). Y una comparación leía 8 bytes desde una dirección no alineada (Janax lo prohíbe: código 6); ahora compara letra por letra.</li></ul>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li><strong>Es lenta para aprender:</strong> en la Luma viva, un acto suyo termina más o menos cada media hora, y charla una línea por acto.</li><li><strong>Su lectora no terminó ninguna lectura</strong> desde el 23 de noviembre a las 23:10, cuando se le vació la memoria. Queda por mirar.</li><li>Lo que le dice su autor todavía pesa igual que lo que le dice un libro.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_self_talk</code> (su charla con sus lecturas), la voz <code>libro:</code> en <code>r_dlg_write</code>, y quién habla en <code>r_dlg_sent</code>.</li><li><code>razar/cuerpo/gen_luma.py</code>: <code>r_free</code> la llama al terminar cada acto.</li></ul>
 </body>
 </html>

@@ -6,11 +6,11 @@ registro, logotipo en ventana con forma, espera de la ventana, señal de dormir 
 `instalar-luma.exe` (elección de carpeta, carpetas creadas, formato de paquete y descompresión, ensamblado de Luma con
 PDP en la máquina destino, accesos directos, conservación de una instalación previa), los guiones que arman el
 instalador y sus recursos gráficos, y la cadena de publicación (páginas generadas desde `documentacion/`, numeración
-de versiones, metadatos de cita y archivo en Zenodo). No cubre: el idioma Janax (cap. 01), el ensamblador PDP y la
-construcción por punto fijo (cap. 02), el arranque del núcleo, su memoria y sus procesos (cap. 03), la semántica de
-cada pedido al núcleo y la nomenclatura de archivos del sistema (cap. 04), la ventana `JanaxPantalla`, el teclado y el
-vigía del anfitrión (cap. 05), la lectura de Razar (cap. 06), el cardumen y su canto (cap. 07), el cuerpo de Luma y su
-casa (cap. 08), la conversación (cap. 09) ni la pantalla y la vida de Luma (cap. 10). Cuando una pieza de este capítulo
+de versiones, metadatos de cita y archivo en Zenodo). No cubre: el idioma Janax ([cap. 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador PDP y la
+construcción por punto fijo ([cap. 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), el arranque del núcleo, su memoria y sus procesos ([cap. 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), la semántica de
+cada pedido al núcleo y la nomenclatura de archivos del sistema ([cap. 04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)), la ventana `JanaxPantalla`, el teclado y el
+[vigía del anfitrión](05-nucleo-pantalla-teclado-vigia.md#10-vigía-y-centinela) ([cap. 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), la lectura de Razar ([cap. 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), el cardumen y su [canto](07-razar-cardumen-canto-hilos.md#27-el-canto-con-canta) ([cap. 07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo de Luma y su
+[casa](08-luma-cuerpo-procesos-y-casa.md#8-formato-de-la-casa) ([cap. 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), la conversación ([cap. 09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)) ni la pantalla y la vida de Luma ([cap. 10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)). Cuando una pieza de este capítulo
 depende de un comportamiento descrito en otro, se nombra el capítulo y la fuente.
 
 ## 11.1 Convenciones y fuentes
@@ -39,7 +39,7 @@ cadenas UTF-16) (`razar/instalador/luma.asm:19`, `razar/instalador/instalar.asm:
 - `etiqueta(s)` es el nombre con que Janax guarda en su carpeta del sistema el archivo de nombre lógico `s`: los bytes
   UTF-8 de `s` escritos en hexadecimal en minúsculas, dos dígitos por byte
   (`razar/instalador/armar_instalador.py:54`; la misma regla en `so/herramientas/armar.sh:15`). La nomenclatura
-  completa está en el capítulo 04. Ejemplo verificable en el código: `etiqueta("dormir") = 646f726d6972`
+  completa está en el [capítulo 04](04-nucleo-abi-de-pedidos.md#102-de-etiqueta-a-nombre-de-archivo). Ejemplo verificable en el código: `etiqueta("dormir") = 646f726d6972`
   (`razar/instalador/luma.asm:38`).
 - Las constantes numéricas de Windows se dan con su nombre simbólico y el valor literal que figura en el código.
 
@@ -66,11 +66,11 @@ Resultado de una instalación completa en `<base>` (derivado de `razar/instalado
 └── Comida\                              carpeta vigilada por el núcleo (JANAX_VIGIA)
 ```
 
-Escritorio del usuario (`CSIDL_DESKTOPDIRECTORY`): `Luma.lnk` y `Comida de Luma.lnk` (§11.5.9).
+Escritorio del usuario (`CSIDL_DESKTOPDIRECTORY`): `Luma.lnk` y `Comida de Luma.lnk` ([§11.5.9](#1159-accesos-directos)).
 
 Ninguna ruta absoluta se escribe en archivo alguno de la instalación, salvo dentro de los dos accesos directos `.lnk`,
 que guardan su destino absoluto (`razar/instalador/instalar.asm:339-353`). `luma.exe` deriva todas sus rutas de su
-propia ubicación (§11.2.3); mover `Luma\` y `Comida\` juntas conserva el funcionamiento del lanzador, no el de los
+propia ubicación ([§11.2.3](#1123-derivación-de-rutas)); mover `Luma\` y `Comida\` juntas conserva el funcionamiento del lanzador, no el de los
 accesos directos (inferido de lo anterior; no verificado en ejecución).
 
 ## 11.2 Lanzador `luma.exe`: datos, rutas y entorno
@@ -89,7 +89,7 @@ accesos directos (inferido de lo anterior; no verificado en ejecución).
 | Etiqueta | Contenido (UTF-16, terminado en 0) | Uso | Fuente |
 |---|---|---|---|
 | `s_mutex` | `LumaVera.una` | Nombre del mutex de instancia única. | `razar/instalador/luma.asm:30` |
-| `s_class` | `JanaxPantalla` | Clase de la ventana del núcleo (`so/pantalla.inc:19`). | `razar/instalador/luma.asm:31` |
+| `s_class` | [`JanaxPantalla`](05-nucleo-pantalla-teclado-vigia.md#52-clase-de-ventana) | Clase de la ventana del núcleo (`so/pantalla.inc:19`). | `razar/instalador/luma.asm:31` |
 | `s_casa` | `casa` | Subcarpeta de la casa. | `:32` |
 | `s_comida` | `Comida` | Carpeta de comida, hermana de `<dir>`. | `:33` |
 | `s_kernel` | `bin\janaxos.exe` | Núcleo, relativo a `<dir>`. | `:34` |
@@ -129,7 +129,7 @@ Algoritmo (`razar/instalador/luma.asm:116-153`):
 
 | Búfer | Valor | Destino |
 |---|---|---|
-| `casad` | `<dir>casa` (sin `\` final) | Carpeta observada por el aviso de cambios (§11.3.5). |
+| `casad` | `<dir>casa` (sin `\` final) | Carpeta observada por el aviso de cambios ([§11.3.5](#1135-vigilancia-de-la-señal-de-dormir)). |
 | `arch` | `casad` con cada `\` sustituido por `/` (rutina `barras`, `razar/instalador/luma.asm:78-86`) | Valor de `JANAX_ARCHIVOS`. |
 | `ruta` | `<padre>Comida` | Valor de `JANAX_VIGIA` (conserva `\`). |
 | `senal` | `<dir>casa\646f726d6972` | Archivo señal de dormir. |
@@ -144,9 +144,9 @@ Se fijan con `SetEnvironmentVariableW` en el bloque de entorno del propio lanzad
 
 | Variable | Valor | Momento | Efecto en el núcleo | Fuente |
 |---|---|---|---|---|
-| `JANAX_ARCHIVOS` | `<dir>casa` con `/` | Antes del primer nacimiento | Carpeta del sistema. El núcleo la lee con `GetEnvironmentVariableA` en un búfer de `HOST_PATH - 1` = 259 bytes (terminador incluido: el valor cabe entero si mide 258 bytes o menos); si falta, usa `janax_archivos` (relativa a la carpeta de trabajo); la crea con `CreateDirectoryA` si no existe. | `razar/instalador/luma.asm:138`; `so/janaxos.asm:283-285, 697-708, 716` |
-| `JANAX_VIGIA` | `<padre>Comida` | Antes del primer nacimiento | Carpetas del anfitrión vigiladas, separadas por `;`, leídas con `GetEnvironmentVariableW` en un búfer de `HW_RAW - 1` = 32767 unidades UTF-16; si el valor mide 32767 unidades o más, no se vigila ninguna carpeta (cap. 05). | `razar/instalador/luma.asm:141`; `so/janaxos.asm:307-310`; `so/vigia.inc:18-20` |
-| `JANAX_VENTANA_FONDO` | `1` | Después del primer nacimiento (§11.3.3) | Cualquier valor no vacío: la ventana nace con `SetWindowPos(h, 1 /* HWND_BOTTOM */, 0, 0, 0, 0, 53h)` (`53h` = `SWP_NOSIZE` 1 + `SWP_NOMOVE` 2 + `SWP_NOACTIVATE` 10h + `SWP_SHOWWINDOW` 40h) en lugar de `ShowWindow(h, SW_SHOW)`. | `razar/instalador/luma.asm:208`; `so/pantalla.inc:18, 212-215, 374-379` |
+| `JANAX_ARCHIVOS` | `<dir>casa` con `/` | Antes del primer nacimiento | [Carpeta del sistema](04-nucleo-abi-de-pedidos.md#101-carpetas). El núcleo la lee con `GetEnvironmentVariableA` en un búfer de `HOST_PATH - 1` = 259 bytes (terminador incluido: el valor cabe entero si mide 258 bytes o menos); si falta, usa `janax_archivos` (relativa a la carpeta de trabajo); la crea con `CreateDirectoryA` si no existe. | `razar/instalador/luma.asm:138`; `so/janaxos.asm:283-285, 697-708, 716` |
+| `JANAX_VIGIA` | `<padre>Comida` | Antes del primer nacimiento | Carpetas del anfitrión vigiladas, separadas por `;`, leídas con `GetEnvironmentVariableW` en un búfer de `HW_RAW - 1` = 32767 unidades UTF-16; si el valor mide 32767 unidades o más, no se vigila ninguna carpeta ([cap. 05](05-nucleo-pantalla-teclado-vigia.md#102-configuración)). | `razar/instalador/luma.asm:141`; `so/janaxos.asm:307-310`; `so/vigia.inc:18-20` |
+| `JANAX_VENTANA_FONDO` | `1` | Después del primer nacimiento ([§11.3.3](#1133-primer-nacimiento-espera-de-la-ventana-y-paso-al-frente)) | Cualquier valor no vacío: la ventana nace con `SetWindowPos(h, 1 /* HWND_BOTTOM */, 0, 0, 0, 0, 53h)` (`53h` = `SWP_NOSIZE` 1 + `SWP_NOMOVE` 2 + `SWP_NOACTIVATE` 10h + `SWP_SHOWWINDOW` 40h) en lugar de `ShowWindow(h, SW_SHOW)`. | `razar/instalador/luma.asm:208`; `so/pantalla.inc:18, 212-215, 374-379` |
 
 El lanzador no fija ni borra ninguna otra variable: las demás que lee el núcleo (`JANAX_TABLERO`, `JANAX_CAMBIO`,
 `JANAX_MOTOR`, `JANAX_REMOS`, `JANAX_SALAS`, `JANAX_SIN_VENTANA`; `so/janaxos.asm:290, 425-426, 469, 567`;
@@ -163,7 +163,7 @@ Consecuencias del código del núcleo sobre estas rutas:
 
 ### 11.2.5 Línea de comando del núcleo y carpeta de trabajo
 
-El núcleo toma su línea de comando con `GetCommandLineA`, salta el nombre del programa (entre comillas si empieza con
+El núcleo toma su [línea de comando](03-nucleo-arranque-memoria-procesos.md#35-línea-de-comandos) con `GetCommandLineA`, salta el nombre del programa (entre comillas si empieza con
 `"`) y parte el resto en cada espacio, sin interpretar comillas: cada fragmento no vacío es la ruta de un programa
 (`so/janaxos.asm:858-930`). Por eso el lanzador:
 
@@ -172,7 +172,7 @@ El núcleo toma su línea de comando con `GetCommandLineA`, salta el nombre del 
 - inicia el proceso con `lpCurrentDirectory = <dir>bin\`, de modo que `luma.bin` se resuelva en `<dir>bin\luma.bin`
   (`razar/instalador/luma.asm:146-153, 169`).
 
-El núcleo busca los datos iniciales de un programa en el archivo hermano con la extensión sustituida por `.datos`
+El núcleo busca los [datos iniciales](04-nucleo-abi-de-pedidos.md#104-datos-iniciales-datos) de un programa en el archivo hermano con la extensión sustituida por `.datos`
 (`so/datos.inc:10-42`); para `luma.bin` ese archivo es `luma.datos`, que la instalación no crea.
 
 ## 11.3 Lanzador `luma.exe`: comportamiento
@@ -192,7 +192,7 @@ Propiedades que se siguen del código:
 - El mutex existe mientras vive el lanzador que lo creó, no mientras vive el núcleo. Si el lanzador termina por otra
   causa y el núcleo sigue vivo, una nueva ejecución arranca otro núcleo (inferido; no verificado en ejecución).
 - `al_frente` busca por clase: elige la primera ventana `JanaxPantalla` de la sesión, sea o no de Luma. La búsqueda por
-  proceso (§11.3.4) sólo se usa dentro del lanzador que creó el núcleo.
+  proceso ([§11.3.4](#1134-ventana-del-proceso-su_ventana)) sólo se usa dentro del lanzador que creó el núcleo.
 
 ### 11.3.2 Nacimiento
 
@@ -210,19 +210,19 @@ Etiqueta `.nacer` (`razar/instalador/luma.asm:156-176`), ejecutada en el primer 
 6. Si `CreateProcessW` falló: se cierra el logotipo, se muestra `MessageBoxW(NULL, s_falta, "Luma", 10h)`
    (`MB_ICONERROR`) y el programa termina con código 0.
 
-El contenido de `luma.log` es la salida estándar y de error del núcleo (cap. 03); el lanzador no lo lee.
+El contenido de `luma.log` es la salida estándar y de error del núcleo ([cap. 03](03-nucleo-arranque-memoria-procesos.md#37-salida-estándar-del-núcleo-y-códigos-de-salida)); el lanzador no lo lee.
 
 ### 11.3.3 Primer nacimiento: espera de la ventana y paso al frente
 
 Sólo cuando `vez = 0`; se pone `vez = 1` (`razar/instalador/luma.asm:177-208`).
 
-1. Contador `ebx = 240`. En cada vuelta: `bombea`; `su_ventana`; si devolvió una ventana, ir al paso 2; si no,
+1. Contador `ebx = 240`. En cada vuelta: [`bombea`](#1141-ventana-del-logotipo); [`su_ventana`](#1134-ventana-del-proceso-su_ventana); si devolvió una ventana, ir al paso 2; si no,
    `WaitForSingleObject(hProcess, 250)`: si devuelve 0 (`WAIT_OBJECT_0`, el núcleo terminó) ir a `.termino`;
    decrementar; si llega a 0, ir al paso 4. Cota de la espera: 240 × 250 ms = 60 s más el tiempo de las
    enumeraciones.
 2. Mientras `GetTickCount64() - t0 < VER` y `hlogo ≠ 0`: `bombea`; `WaitForSingleObject(hProcess, 100)`; si el
    núcleo terminó, `.termino`.
-3. `logo_cerrar`; `ShowWindow(hventana, 3)` (`SW_MAXIMIZE`); `SetForegroundWindow(hventana)`.
+3. [`logo_cerrar`](#1141-ventana-del-logotipo); `ShowWindow(hventana, 3)` (`SW_MAXIMIZE`); `SetForegroundWindow(hventana)`.
 4. `.fondo`: `logo_cerrar` (idempotente); `SetEnvironmentVariableW("JANAX_VENTANA_FONDO", "1")`. A partir de aquí todo
    renacimiento hereda la variable y su ventana nace detrás de las demás sin tomar el teclado.
 
@@ -255,17 +255,17 @@ Caso de fallo no tratado: si `FindFirstChangeNotificationW` devuelve `INVALID_HA
 `<dir>casa` no existe), `WaitForMultipleObjects` devuelve `WAIT_FAILED` (`0FFFFFFFFh`), que no es 0, y el bucle
 repite `FindNextChangeNotification` y la espera sin bloquearse: espera activa hasta que aparezca la señal o termine el
 núcleo (inferido del código y del contrato del anfitrión; no verificado en ejecución). En la instalación normal la
-carpeta existe, porque la crea el instalador (§11.5.5) y el núcleo (`so/janaxos.asm:716`).
+carpeta existe, porque la crea el instalador ([§11.5.5](#1155-carpetas)) y el núcleo (`so/janaxos.asm:716`).
 
-Quién crea la señal: el programa `luma.jsm` escribe el archivo de nombre lógico `dormir` (6 bytes, armado en un
+Quién crea la señal: el programa [`luma.jsm`](08-luma-cuerpo-procesos-y-casa.md#2-generación-de-lumajsm) escribe el archivo de nombre lógico [`dormir`](08-luma-cuerpo-procesos-y-casa.md#71-dormir) (6 bytes, armado en un
 registro como `72696D726F64h`) en su carpeta del sistema en dos rutinas:
 
-- `fr_sleep` (`razar/cuerpo/luma.jsm:63995-64032`), cuando decide dormir: primero guarda su estado
+- [`fr_sleep`](08-luma-cuerpo-procesos-y-casa.md#71-dormir) (`razar/cuerpo/luma.jsm:63995-64032`), cuando decide dormir: primero guarda su estado
   (`jcall r_free_save`, `:64012`), después escribe la señal y sigue ejecutando (`jjmp fr_rest`, `:64032`).
-- `fr_nomem` (`razar/cuerpo/luma.jsm:64033-64059`), cuando un pedido de memoria no puede atenderse: escribe la señal
+- [`fr_nomem`](08-luma-cuerpo-procesos-y-casa.md#72-falta-de-memoria) (`razar/cuerpo/luma.jsm:64033-64059`), cuando un pedido de memoria no puede atenderse: escribe la señal
   sin guardar estado y se detiene con `j0 = 0BADh` y `jhalt` (`:64058-64059`).
 
-El detalle del guardado pertenece al capítulo 08.
+El detalle del guardado pertenece al [capítulo 08](08-luma-cuerpo-procesos-y-casa.md#71-dormir).
 
 ### 11.3.6 Dormir y renacer
 
@@ -274,12 +274,12 @@ Etiquetas `.dormir`, `.espera`, `.cerrada` (`razar/instalador/luma.asm:225-240`)
 1. `su_ventana`; si hay ventana, `PostMessageW(h, 10h, 0, 0)` (`WM_CLOSE`). El procedimiento de ventana del núcleo
    no trata `WM_CLOSE` y lo pasa a `DefWindowProcW`, que destruye la ventana; ante `WM_DESTROY` anota el evento para
    los programas y llama a `PostQuitMessage(0)`, lo que termina el bucle de mensajes de la ventana
-   (`so/pantalla.inc:386-392, 400-446, 549-550`; cap. 05).
+   (`so/pantalla.inc:386-392, 400-446, 549-550`; [cap. 05](05-nucleo-pantalla-teclado-vigia.md#58-cierre-y-fin-del-sistema)).
 2. `WaitForSingleObject(hProcess, 40000)`. Si el núcleo termina dentro de 40 s, ir al paso 4.
 3. Si no: `TerminateProcess(hProcess, 1)` y `WaitForSingleObject(hProcess, 5000)`. El código no justifica los valores
    40000 y 5000 ms con una medición (criterio sin medición declarada).
 4. `FindCloseChangeNotification(hcambio)`; `CloseHandle` de la manija del proceso y del hilo; volver a `.nacer`
-   (§11.3.2). Como `vez = 1`, el nuevo nacimiento va directo a §11.3.5, sin logotipo, sin espera de ventana y con
+   ([§11.3.2](#1132-nacimiento)). Como `vez = 1`, el nuevo nacimiento va directo a [§11.3.5](#1135-vigilancia-de-la-señal-de-dormir), sin logotipo, sin espera de ventana y con
    `JANAX_VENTANA_FONDO=1` heredado.
 
 Invariante: en ningún momento el lanzador tiene dos núcleos vivos; el renacimiento sólo se inicia tras la terminación
@@ -340,13 +340,13 @@ cerró la ventana), tanto en la espera de la ventana como en la vigilancia. El l
 
 `bombea` (`razar/instalador/luma.asm:321-329`) vacía la cola de mensajes del hilo con
 `PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)` y `DispatchMessageW`, sin `TranslateMessage`; sólo se llama dentro de las
-esperas de §11.3.3, que es cuando la ventana del logotipo existe.
+esperas de [§11.3.3](#1133-primer-nacimiento-espera-de-la-ventana-y-paso-al-frente), que es cuando la ventana del logotipo existe.
 
 `logo_cerrar` (`razar/instalador/luma.asm:309-320`): si `hlogo ≠ 0`, `DestroyWindow` y `hlogo = 0`; si `hbmp ≠ 0`,
 `DeleteObject` y `hbmp = 0`. Es idempotente.
 
 El logotipo desaparece por la primera de dos condiciones: que la ventana del núcleo exista y hayan pasado `VER` ms
-desde `t0`, o que se agote la espera de ventana (§11.3.3). No desaparece por tiempo solo.
+desde `t0`, o que se agote la espera de ventana ([§11.3.3](#1133-primer-nacimiento-espera-de-la-ventana-y-paso-al-frente)). No desaparece por tiempo solo.
 
 ### 11.4.2 Recursos del ejecutable
 
@@ -361,7 +361,7 @@ Sección `.rsrc` (`razar/instalador/luma.asm:391-400`), todos con `LANG_NEUTRAL`
 | `RT_GROUP_ICON` | 17 | grupo de los cuatro anteriores | macro `icon` de FASM |
 | `RT_BITMAP` | 30 | `luma-logo.bmp` | BMP `BITMAPINFOHEADER` de 40 bytes, 720×720, altura positiva (filas de abajo hacia arriba), 24 bpp, `BI_RGB`, 1 555 254 bytes |
 
-Los archivos se resuelven relativos a la carpeta de trabajo de FASM, que `armar_instalador.py` fija en
+Los archivos se resuelven relativos a la carpeta de trabajo de FASM, que [`armar_instalador.py`](#117-armado-del-instalador-armar_instaladorpy) fija en
 `razar/instalador/` (`razar/instalador/armar_instalador.py:25`). El mapa de bits viaja dentro del ejecutable; el
 tamaño de `luma.exe` en `instalador/datos/` es 1 854 464 bytes.
 
@@ -407,7 +407,7 @@ El modo se decide con `CommandLineToArgvW(GetCommandLineW(), &argc)`: si `argc �
 `lstrcpyW` sin comprobar longitud a un búfer de 700 unidades) y los demás argumentos se ignoran. El arreglo de
 `CommandLineToArgvW` no se libera.
 
-Códigos de salida: 0 en éxito o si el usuario cancela el selector; 1 en cualquier error de §11.5.11
+Códigos de salida: 0 en éxito o si el usuario cancela el selector; 1 en cualquier error de [§11.5.11](#11511-errores)
 (`razar/instalador/instalar.asm:361-369`).
 
 ### 11.5.2 Constantes, cadenas y estructuras
@@ -421,10 +421,10 @@ Nombres de archivo del paquete y de la instalación (`razar/instalador/instalar.
 
 | Etiqueta | Valor | Etiqueta | Valor |
 |---|---|---|---|
-| `s_datos` | `datos\` | `s_kernel` | `janaxos.exe` |
+| `s_datos` | `datos\` | `s_kernel` | [`janaxos.exe`](02-ensamblador-pdp-y-construccion.md#202-núcleo-janaxosexe) |
 | `s_luma` | `Luma\` | `s_lanza` | `luma.exe` |
 | `s_comida` | `Comida` | `s_ens` | `ensamblador.bin` |
-| `s_bin` | `bin\` | `s_ensd` | `ensamblador.datos` |
+| `s_bin` | `bin\` | `s_ensd` | [`ensamblador.datos`](01-idioma-janax.md#89-tabla-de-nombres-ensambladordatos) |
 | `s_casa` | `casa\` | `s_plan` | `planificador.bin` |
 | `s_pdp` | `pdp\` | `s_pfuen` | `fuentes.paquete` |
 | `s_fuen` | `fuentes\` | `s_pcasa` | `casa.paquete` |
@@ -445,7 +445,7 @@ Nombres etiqueta usados (`razar/instalador/instalar.asm:70-80`; cada valor es `e
 | `s_h_molde` | `luma/lectora.molde` | Copia de `pulso.datos` en la casa. |
 | `s_h_cab` | `luma/canto.bin` | Copia de `memoria_pares.bin` en la casa. |
 | `s_h_cad` | `luma/canto.datos` | Copia de `memoria_pares.datos` en la casa. |
-| `s_h_vida` | `vida-memoria` | Marca de que en la casa vive una Luma. |
+| `s_h_vida` | [`vida-memoria`](08-luma-cuerpo-procesos-y-casa.md#891-vida-lista-vida-memoria) | Marca de que en la casa vive una Luma. |
 
 Textos para el usuario (`razar/instalador/instalar.asm:34-47, 86-87`):
 
@@ -533,25 +533,25 @@ Rutina `copia` (`razar/instalador/instalar.asm:372-380`): `CopyFileW(r1, r2, FAL
 El instalador no detiene una Luma en ejecución. `CopyFileW` sobre un ejecutable en uso falla, lo que produce
 `s_e_copia` (comportamiento del anfitrión; no verificado en ejecución).
 
-`ensamblador.datos` queda junto a `ensamblador.bin` porque el núcleo carga como datos iniciales el archivo hermano de
+`ensamblador.datos` queda junto a `ensamblador.bin` porque el núcleo carga como [datos iniciales](04-nucleo-abi-de-pedidos.md#104-datos-iniciales-datos) el archivo hermano de
 extensión `.datos` (`so/datos.inc:10-42`). El núcleo no lee `pdp\planificador.bin` por esa ruta: usa el planificador
 de etiqueta `PDP/so/nucleo/planificador.bin` de la carpeta del sistema o, si falta, el de fábrica incrustado en el
 propio núcleo (`so/ayudantes.inc:5-8`; `so/janaxos.asm:444-446`). El consumidor de `<pdpd>planificador.bin` no se
-identificó en el código (no verificado).
+identificó en el código (sólo lo copian `razar/instalador/instalar.asm:258-260` y `razar/instalador/armar_instalador.py:29`).
 
 ### 11.5.7 Ensamblado de Luma en la máquina destino
 
 Protocolo (`razar/instalador/instalar.asm:262-313`):
 
 1. `CreateDecompressor(2, NULL, &hdec)`: `COMPRESS_ALGORITHM_MSZIP`. El resultado no se comprueba.
-2. `desempaca(<datos>fuentes.paquete, fuend)` (§11.6.3).
+2. `desempaca(<datos>fuentes.paquete, fuend)` ([§11.6.3](#1163-descompresión-desempaca)).
 3. `JANAX_ARCHIVOS` = `fuend` con `/` y sin la barra final (`:267-272`); `JANAX_CAMBIO` = `0` (`:273`).
    `JANAX_CAMBIO` fija el costo de cambio de contexto en lugar de medirlo al arrancar (`so/janaxos.asm:796-812`;
-   cap. 03). El límite de 258 bytes ANSI de §11.2.4 se aplica aquí a `<base>Luma/bin/pdp/fuentes`, que es la ruta más
-   larga que recibe el núcleo: con `<base>` de `B` bytes, mide `B + 20` (inferido; no verificado en ejecución).
-4. `cmd = "<bind>janaxos.exe" ensamblador.bin` (`:274-277`): mismo motivo que en §11.2.5.
+   [cap. 03](03-nucleo-arranque-memoria-procesos.md#41-origen-de-c)). El límite de 258 bytes ANSI de [§11.2.4](#1124-variables-de-entorno-que-fija) se aplica aquí a `<base>Luma/bin/pdp/fuentes`, que es la ruta más
+   larga que recibe el núcleo: con `<base>` de `B` bytes, mide `B + 20` (`razar/instalador/instalar.asm:211-216, 267-272`).
+4. `cmd = "<bind>janaxos.exe" ensamblador.bin` (`:274-277`): mismo motivo que en [§11.2.5](#1125-línea-de-comando-del-núcleo-y-carpeta-de-trabajo).
 5. Registro `<bind>armado.log`, abierto con `CREATE_ALWAYS`, compartido (3) y heredable (`:279-281`).
-6. `STARTUPINFO` como en §11.3.2; `CreateProcessW(NULL, cmd, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, pdpd, ...)`:
+6. `STARTUPINFO` como en [§11.3.2](#1132-nacimiento); `CreateProcessW(NULL, cmd, NULL, NULL, TRUE, CREATE_NO_WINDOW, NULL, pdpd, ...)`:
    carpeta de trabajo `<pdpd>`, donde `ensamblador.bin` se resuelve (`:282-291`). Si falla, error `s_e_arma`.
 7. `WaitForSingleObject(hProcess, INFINITE)`; cierre de manijas (`:296-298`).
 8. Se borran del entorno `JANAX_ARCHIVOS` y `JANAX_CAMBIO` (`SetEnvironmentVariableW(nombre, NULL)`) (`:299-300`).
@@ -561,13 +561,13 @@ Protocolo (`razar/instalador/instalar.asm:262-313`):
 
 Qué ensambla el ensamblador: todo programa fuente `.jsm` presente en la carpeta del sistema, con salida de nombre
 `X.bin` para `X.jsm` y `X.ext` para `X.ext.jsm`; el registro `j0` al terminar es la cantidad de fuentes armadas sin
-error (`so/herramientas/armar.sh:58-64`; cap. 02). Con el paquete de fuentes de §11.7.3 se producen
+error (`so/herramientas/armar.sh:58-64`; [cap. 02](02-ensamblador-pdp-y-construccion.md#15-protocolo-de-una-corrida-del-ensamblador)). Con el paquete de fuentes de [§11.7.3](#1173-paquete-de-fuentes) se producen
 `luma.bin`, `pulso.datos`, `memoria_pares.bin` y `memoria_pares.datos`.
 
 Criterio de éxito implementado: sólo la existencia (copia posible) de `luma.bin` y `pulso.datos`. El instalador no
 lee el código de salida del núcleo, no lee `armado.log` y no comprueba `j0`; un ensamblado parcial que produzca esos
 dos archivos se acepta. Si faltan `memoria_pares.bin` o `memoria_pares.datos`, el fallo aparece después como
-`s_e_copia` (§11.5.8).
+`s_e_copia` ([§11.5.8](#1158-conocimiento-y-archivos-de-la-casa)).
 
 ### 11.5.8 Conocimiento y archivos de la casa
 
@@ -586,7 +586,7 @@ Qué se conserva cuando ya hay una Luma:
 
 | Conjunto | `conserva = 1` | `conserva = 0` |
 |---|---|---|
-| Ejecutables y semilla (§11.5.6) | sobrescritos | sobrescritos |
+| Ejecutables y semilla ([§11.5.6](#1156-copia-de-los-ejecutables-y-la-semilla)) | sobrescritos | sobrescritos |
 | `bin\luma.bin`, `bin\pulso.datos`, `fuentes\` | sobrescritos | sobrescritos |
 | Los cinco archivos de la tabla anterior en `casa\` | sobrescritos | sobrescritos |
 | Archivos de `casa\` incluidos en `casa.paquete` | intactos | sobrescritos con los del paquete |
@@ -614,7 +614,7 @@ El modo "reemplazo" es por lo tanto una superposición: el instalador nunca borr
 | 8 | `IShellLinkW::Release()` | 2 |
 
    Cualquier fallo de COM se ignora en silencio (no hay error para el usuario). No se fija ícono: el acceso usa el del
-   destino (para `luma.exe`, el grupo 17 de §11.4.2).
+   destino (para `luma.exe`, el grupo 17 de [§11.4.2](#1142-recursos-del-ejecutable)).
 
 3. Los dos accesos (`:341-353`):
 
@@ -675,7 +675,7 @@ Entrada, con desplazamientos relativos a su inicio y enteros en little-endian:
 | 4 | `L` | `nombre` | Nombre del archivo en ASCII, sin terminador. En los paquetes generados es siempre una etiqueta (dígitos hexadecimales en minúsculas). |
 | 4 + `L` | 8 | `crudo` | Tamaño del archivo descomprimido (entero sin signo de 64 bits). |
 | 12 + `L` | 8 | `pack` | Tamaño de los datos comprimidos (entero sin signo de 64 bits). |
-| 20 + `L` | `pack` | datos | El archivo comprimido (§11.6.2). Si `crudo = 0`, `pack = 0` y no hay datos. |
+| 20 + `L` | `pack` | datos | El archivo comprimido ([§11.6.2](#1162-compresión)). Si `crudo = 0`, `pack = 0` y no hay datos. |
 
 La entrada siguiente empieza en `20 + L + pack`.
 
@@ -722,7 +722,7 @@ Límites e invariantes que se siguen del código:
 
 ### 11.6.4 Contenido de los paquetes publicados (medido)
 
-Medición sobre `instalador/datos/` del repositorio, analizando el formato de §11.6.1:
+Medición sobre `instalador/datos/` del repositorio, analizando el formato de [§11.6.1](#1161-estructura):
 
 | Paquete | Bytes | Entradas | Suma de `crudo` | Suma de `pack` | Entradas vacías | Mayor `crudo` |
 |---|---|---|---|---|---|---|
@@ -738,7 +738,7 @@ Las entradas de `fuentes.paquete`, en el orden del archivo: `PDP/escalon0/janax.
 `PDP/razar/lectura/organo.inc`, `PDP/razar/lectura/pistas.inc`, `PDP/razar/lectura/pulso.inc`,
 `PDP/razar/cuerpo/luma.jsm`, `PDP/razar/lectura/pulso.datos.jsm`, `PDP/razar/cardumen/memoria_pares.jsm`,
 `PDP/razar/cardumen/memoria_pares.datos.jsm` (nombres lógicos; en el paquete figuran como etiquetas). El contenido de
-`casa.paquete` es la casa pública de Luma (cap. 08); aquí sólo interesa su formato.
+`casa.paquete` es la casa pública de Luma ([cap. 08](08-luma-cuerpo-procesos-y-casa.md#8-formato-de-la-casa)); aquí sólo interesa su formato.
 
 ## 11.7 Armado del instalador: `armar_instalador.py`
 
@@ -754,7 +754,7 @@ Las entradas de `fuentes.paquete`, en el orden del archivo: `PDP/escalon0/janax.
 | `P` | — | Raíz del proyecto: dos niveles arriba del guion (`:17`). |
 
 Precondiciones: `so/build/janaxos.exe` construido (`:28`); semilla de PDP en `so/pdp/semilla/` (`:29-30`; su vigencia
-la garantiza la construcción del cap. 02); `CASA` es una casa de Luma (aserción de §11.7.4); Python en Windows con
+la garantiza la construcción del [cap. 02](02-ensamblador-pdp-y-construccion.md#20-construcción-reproducible)); `CASA` es una casa de Luma (aserción de [§11.7.4](#1174-paquete-de-la-casa)); Python en Windows con
 `cabinet.dll` (`:32`).
 
 ### 11.7.2 Pasos
@@ -767,7 +767,7 @@ la garantiza la construcción del cap. 02); `CASA` es una casa de Luma (aserció
 3. Copia `so/build/janaxos.exe` y `so/pdp/semilla/{ensamblador.bin, ensamblador.datos, planificador.bin}` a `DAT`
    (`:28-30`).
 4. Crea el compresor MSZIP (`:32-35`).
-5. Arma `fuentes.paquete` (§11.7.3) y `casa.paquete` (§11.7.4).
+5. Arma `fuentes.paquete` ([§11.7.3](#1173-paquete-de-fuentes)) y `casa.paquete` ([§11.7.4](#1174-paquete-de-la-casa)).
 6. Imprime, para cada paquete, la cantidad de archivos y los megabytes (10^6 bytes) sin comprimir y comprimidos, y
    luego el tamaño de cada archivo de `instalador/` (`:66, 72-75`).
 
@@ -792,13 +792,13 @@ ocultos.
 
 1. Lista `sorted(os.listdir(CASA))` (orden lexicográfico de los nombres etiqueta).
 2. Excluye el conjunto `FUERA` = etiquetas de `luma/lectora.bin`, `luma/pensadora.bin`, `luma/lectora.molde`
-   (los escribe el instalador, §11.5.8), `engranajes`, `dormir`, `pregunta` y `respuesta` (estado que Luma produce en
-   ejecución; cap. 08 y 10).
+   (los escribe el instalador, [§11.5.8](#1158-conocimiento-y-archivos-de-la-casa)), `engranajes`, `dormir`, `pregunta` y `respuesta` (estado que Luma produce en
+   ejecución; [cap. 08](08-luma-cuerpo-procesos-y-casa.md#8-formato-de-la-casa) y 10).
 3. Aserción: alguna entrada es `etiqueta("vida-memoria")`; si no, el armado falla.
 4. Empaqueta cada archivo con su nombre tal cual (ya es etiqueta).
 
 `CASA` debe ser una carpeta plana: una subcarpeta haría fallar la lectura. La casa pública la produce
-`razar/cuerpo/armar_luma_publica.py` (cap. 08).
+`razar/cuerpo/armar_luma_publica.py` ([cap. 08](08-luma-cuerpo-procesos-y-casa.md#9-herramientas-de-mantenimiento-de-la-casa)).
 
 ### 11.7.5 Contenido de `instalador/` (medido)
 
@@ -844,14 +844,14 @@ Archivos que cambia una publicación (observado en el historial de git, commits 
 | `CITATION.cff` | Campo `version`. | A mano. |
 | `.zenodo.json` | Campos `version` y `description`. | A mano. |
 | `docs/index.html` | Página de entrada del sitio: versión y DOI de cada novedad. | A mano (no lo genera `armar_paginas.py`). |
-| `docs/p/**`, `docs/sitemap.xml` | Páginas y mapa. | `documentacion/armar_paginas.py` (§11.8.4). |
-| `instalador/**` | Instalador rearmado. | `razar/instalador/armar_instalador.py` (§11.7). |
+| `docs/p/**`, `docs/sitemap.xml` | Páginas y mapa. | `documentacion/armar_paginas.py` ([§11.8.4](#1184-generación-de-páginas-armar_paginaspy)). |
+| `instalador/**` | Instalador rearmado. | `razar/instalador/armar_instalador.py` ([§11.7](#117-armado-del-instalador-armar_instaladorpy)). |
 
 ### 11.8.3 Secuencia
 
 Secuencia observada (los pasos 4 y 5 ocurren fuera del repositorio):
 
-1. Commit de la versión con los artefactos de §11.8.2; donde aún no se conoce el DOI de la versión se escribe el
+1. Commit de la versión con los artefactos de [§11.8.2](#1182-artefactos-de-una-versión); donde aún no se conoce el DOI de la versión se escribe el
    marcador `PENDIENTE<N>` (por ejemplo `PENDIENTE617`) como texto y como destino `https://doi.org/PENDIENTE<N>`
    (commit `41268c9`, `README.md`).
 2. Generación de páginas con `armar_paginas.py`.
@@ -968,7 +968,7 @@ Objeto JSON (`.zenodo.json:1-39`):
 | `language` | cadena | `spa` |
 | `notes` | cadena | Texto de contacto. |
 
-El archivo no contiene identificadores de DOI: el DOI de versión lo asigna Zenodo (§11.8.3, paso 5).
+El archivo no contiene identificadores de DOI: el DOI de versión lo asigna Zenodo ([§11.8.3](#1183-secuencia), paso 5).
 
 ### 11.8.7 Atributos de git para binarios
 
@@ -976,7 +976,7 @@ El archivo no contiene identificadores de DOI: el DOI de versión lo asigna Zeno
 marca `*.exe`, `*.paquete`, `*.bin`, `*.datos` igual. Con `-delta`, git no busca diferencias entre versiones de esos
 archivos al empaquetar. `.gitignore` excluye, entre otros, `log_*.txt`, `*.log` (incluidos `luma.log` y `armado.log`
 si se generan dentro del repositorio), `escalon0/build/`, `so/build/`, `janax_archivos/` (la carpeta del sistema por
-omisión del núcleo, §11.2.4) y `razar/**/*.bin` (los programas armados no se versionan, salvo los de `instalador/datos/` y
+omisión del núcleo, [§11.2.4](#1124-variables-de-entorno-que-fija)) y `razar/**/*.bin` (los programas armados no se versionan, salvo los de `instalador/datos/` y
 `so/pdp/semilla/`, que no coinciden con esos patrones).
 
 ## 11.9 Límites y propiedades resumidas
@@ -996,6 +996,6 @@ omisión del núcleo, §11.2.4) y `razar/**/*.bin` (los programas armados no se 
 | Código de salida del instalador | 0 éxito o cancelación; 1 error | `razar/instalador/instalar.asm:361-369` |
 | Temporizadores periódicos | ninguno en el lanzador; sólo esperas por objeto con plazo durante el primer nacimiento y el dormir | `razar/instalador/luma.asm:177-240` |
 
-Existe además en `so/arrancar.asm` un lanzador anterior (fija sólo `JANAX_ARCHIVOS` y arranca `janaxos.exe` con
+Existe además en `so/arrancar.asm` un [lanzador anterior](03-nucleo-arranque-memoria-procesos.md#31-lanzador-arrancarexe) (fija sólo `JANAX_ARCHIVOS` y arranca `janaxos.exe` con
 `bin/luma.bin`, con `CREATE_NEW_CONSOLE` (10h) y la consola oculta por `STARTF_USESHOWWINDOW` con `SW_HIDE`); no
 forma parte del instalador ni lo usa ninguna pieza de este capítulo (`so/arrancar.asm:1-75`, en particular `:46-48`).

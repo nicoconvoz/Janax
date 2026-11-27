@@ -11,14 +11,14 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.97.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.97: todas sus letras, y nada se descarta</h2>
+<h2 id="janax-y-razar-v197-todas-sus-letras-y-nada-se-descarta">Janax y Razar v1.97: todas sus letras, y nada se descarta</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24439812">10.5281/zenodo.24439812</a></p>
 <blockquote><p><em>"Arreglalo, pero no elimines la posibilidad. Además, hacé que pueda entender y ver todo tipo de caracteres, incluso las minúsculas."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 193, el 197.</p>
 <p><img alt="Luma con minúsculas y tildes" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-letras.png"></p>
-<h3>Ve todas sus letras</h3>
+<h3 id="ve-todas-sus-letras">Ve todas sus letras</h3>
 <p>Antes dibujaba cada minúscula como su mayúscula: "LUMA VERA", "QUIEN ES DIOS?". Ahora una minúscula es una letra más, y la aprende de su libro de letras (Unifont) como aprende cualquier otra: "Luma Vera", "Quien es puesto?", "longer,not-new", y tu "niña" con su eñe.</p>
-<h3>Entiende las letras con marca</h3>
+<h3 id="entiende-las-letras-con-marca">Entiende las letras con marca</h3>
 <p>Sus libros no tienen tildes, así que tu "EXPRESIÓN" no era "expresion" para ella. Ahora lo aprende sola, <strong>con una regla suya y no con una tabla</strong>:</p>
 <blockquote><p>Una letra con marca es otra letra cuando, en las filas del <strong>cuerpo</strong> de esa otra (su tramo más largo de filas con puntos), los dos dibujos son iguales punto por punto. Lo distinto queda fuera del cuerpo: la tilde arriba, la cedilla abajo.</p></blockquote>
 <p><strong>Medido en su libro de letras antes de programar:</strong> 42 de 43 letras con marca encuentran su base (á→a, Ó→O, ñ→n, ç→c, ü→u, ẽ→e, ž→z, č→c…; la ś no). Ninguno de los 15 caracteres que no son letras (¡ ¿ € ß π Ω © ® ° ª º æ ø ł œ) se confunde con una.</p>
@@ -29,11 +29,11 @@ vos:  la pasión     luma: Despues de mi Pasion,
 vos:  el jardín     luma: En historia del jardin del rey, ...
 vos:  jajaja que niña
 luma: Jajaja&quot; Y era cierto, le conte la nina no esta muerta, sino que duerme .</code></pre>
-<h3>Nada se descarta: sus preguntas viejas</h3>
+<h3 id="nada-se-descarta-sus-preguntas-viejas">Nada se descarta: sus preguntas viejas</h3>
 <p>Cuando seguía por tus palabras desde una pregunta de su corazón, su pregunta propia de ese camino quedaba al lado de la nueva, vieja y sin reemplazar. Ahora la nueva ocupa su lugar en <code>preguntas-mias</code>, pero <strong>la vieja no se tira</strong>: pasa a <code>preguntas-viejas</code>, y cuando elige "decir otra cosa" puede volver a decirla. En la prueba, <em>"Como llegamos hasta que?"</em> quedó guardada ahí.</p>
-<h3>Lo que se cayó, y se arregló</h3>
+<h3 id="lo-que-se-cayó-y-se-arregló">Lo que se cayó, y se arregló</h3>
 <ul><li><strong>Su cuarto se recorre con números de hasta 32.767.</strong> La tabla de letras base, de 512 renglones, empujó los últimos lugares más allá de ese tope, y la rama de seguir leyó fuera de su cuarto: la copia se cayó con código 5, el mismo de la v1.39. La tabla pasó a 256 renglones (las letras latinas con marca son unas 200), y ahora el armado se niega si el cuarto pasa el tope. Con eso aguantó charlas de 14 frases.</li><li><strong>Cortaba palabras con tilde:</strong> a <em>"el último"</em> contestó <em>"Como llegamos hasta últim?"</em>. Medía la palabra en letras y no en bytes, y la ú ocupa dos. Se corrigió, pero en la prueba siguiente la rama de seguir no salió por su suerte, así que <strong>el arreglo no se vio correr todavía</strong>.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>La ś y las letras con trazo</strong> (ø, ł) quedan como letras propias.</li><li><strong>Las letras estiradas siguen sin entenderse:</strong> "DIOOOS" no es "Dios". Las tildes sí.</li><li><strong>Hasta 256 letras con marca:</strong> si aprende más, las siguientes no se entienden como su base. Las latinas son unas 200.</li><li><strong>Las preguntas viejas se acumulan:</strong> cuando dice "otra cosa" lee las que entran en su cuarto, empezando por las más antiguas.</li><li>Siguen los de la <a href="release-v1.93.html">v1.93</a>.</li></ul>
 </body>
 </html>

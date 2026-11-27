@@ -1,15 +1,15 @@
 # 10. Luma: pantalla, lluvia hexadecimal, panel, criaturas y órganos vivos
 
-Este capítulo especifica la parte visible y viva del programa `luma.jsm`: la geometría de su pantalla y la composición
+Este capítulo especifica la parte visible y viva del programa [`luma.jsm`](08-luma-cuerpo-procesos-y-casa.md#2-generación-de-lumajsm): la geometría de su pantalla y la composición
 de cada cuadro; la lluvia hexadecimal del lado derecho; el panel inferior y su protocolo de redibujo; el tratamiento
 del teclado (incluido el bloqueo de escritura mientras el pensador despierta y la vista de música con Tab); las ocho
 formas vivas (recetas que crecen, mutan y son juzgadas); los engranajes que Luma recorta de su propio código máquina;
 la comida (nubes de partículas de la despensa y libros del disco de la carpeta vigilada); y las criaturas (simulación
-de marcha, reglas locales, diálogos y su realimentación con las formas). No cubre: el idioma y el ensamblador (cap. 01
-y 02), el núcleo, la memoria y los procesos (cap. 03), la semántica de cada pedido al núcleo (cap. 04), la ventana, el
-teclado y el vigía del lado del núcleo (cap. 05), la lectura de Razar, el órgano, sus lentes y el juez de lectura
-(cap. 06), el cardumen y su canto (cap. 07), el cuerpo de Luma, su casa, su pensador y su libertad (cap. 08), la
-conversación y sus libros (cap. 09) ni el instalador y la publicación (cap. 11). Cuando una rutina de este capítulo
+de marcha, reglas locales, diálogos y su realimentación con las formas). No cubre: el idioma y el ensamblador ([cap. 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)
+y [02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), el núcleo, la memoria y los procesos ([cap. 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), la semántica de cada pedido al núcleo ([cap. 04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)), la ventana, el
+teclado y el vigía del lado del núcleo ([cap. 05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), la lectura de Razar, el órgano, sus lentes y el juez de lectura
+([cap. 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), el cardumen y su canto ([cap. 07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo de Luma, su casa, su pensador y su libertad ([cap. 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), la
+conversación y sus libros ([cap. 09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)) ni el instalador y la publicación ([cap. 11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)). Cuando una rutina de este capítulo
 delega en otra de esos capítulos se nombra la rutina y el capítulo.
 
 ## 10.1 Convenciones, fuentes y construcción
@@ -18,7 +18,7 @@ delega en otra de esos capítulos se nombra la rutina y el capítulo.
 
 | Paso | Qué hace | Fuente |
 |---|---|---|
-| 1 | `gen_luma.py` define el objeto `LUMA` (ganchos `layout`, `more_vars`, `init`, `routines`, `reader`, …) y ejecuta `gen_comer.py` con él. | `razar/cuerpo/gen_luma.py:1118-1121` |
+| 1 | `gen_luma.py` define el objeto `LUMA` ([ganchos](08-luma-cuerpo-procesos-y-casa.md#22-orden-de-ejecución-mecanismo-de-ganchos) `layout`, `more_vars`, `init`, `routines`, `reader`, …) y ejecuta `gen_comer.py` con él. | `razar/cuerpo/gen_luma.py:1118-1121` |
 | 2 | `gen_comer.py` define el objeto `COMER` y ejecuta `gen_formas.py` en el mismo espacio de nombres. | `razar/cuerpo/gen_comer.py:1144-1147` |
 | 3 | `gen_formas.py` escribe el programa: llama a `COMER.layout()`, `LUMA.layout()`, `LUMA.reader()` (que crea el lector `gen_leer.make`), el bucle principal y las rutinas; escribe `luma.jsm`. | `razar/cuerpo/gen_formas.py:137-140, 220, 1331-1337`; `razar/cuerpo/gen_luma.py:98-102` |
 | 4 | `LUMA.routines` ejecuta `gen_vida.py` como módulo (`VIDA_MOD`) y renombra con prefijo `v_` toda etiqueta definida por las criaturas que no empiece con `v_`. | `razar/cuerpo/gen_luma.py:122-150` |
@@ -46,7 +46,7 @@ Variables de construcción que cambian el programa generado (todas leídas con `
 
 ### 10.1.2 Registros y memoria
 
-- `j14` vale 0 durante todo el programa; las variables globales viven en la habitación 0 y se leen con
+- `j14` vale 0 durante todo el programa; las variables globales viven en la [habitación 0](03-nucleo-arranque-memoria-procesos.md#63-primera-orden-la-sala-0) y se leen con
   `jld jX, j14, dirección` (`gen_formas.py:219, 188-191`).
 - `j10`–`j13` son de uso transitorio; `j15` se usa libremente fuera de un pedido (`gen_leer.py:1997`).
 - Coordenadas de las formas y de las partículas: punto fijo ×256 (`gen_formas.py:60, 145`). Posiciones de las
@@ -60,32 +60,32 @@ Variables de construcción que cambian el programa generado (todas leídas con `
 
 ### 10.1.3 Protocolo de pedidos
 
-`r_tocar(j10 = tipo, j11 = a, j12 = b)` escribe en la cola `QUEUE = 0x100`: `+0 = 1`, `+8 = tipo`, `+16 = a`,
-`+24 = b`; ejecuta `jsys j15, j13`; devuelve `j12 = [+24]` y `j13 = [+32]` (`gen_formas.py:1327-1329`). Los pedidos de
+`r_tocar(j10 = tipo, j11 = a, j12 = b)` escribe en la [cola](04-nucleo-abi-de-pedidos.md#4-formato-de-la-cola-de-pedidos) `QUEUE = 0x100`: `+0 = 1`, `+8 = tipo`, `+16 = a`,
+`+24 = b`; ejecuta [`jsys j15, j13`](04-nucleo-abi-de-pedidos.md#3-convención-de-llamada-de-jsys); devuelve `j12 = [+24]` y `j13 = [+32]` (`gen_formas.py:1327-1329`). Los pedidos de
 archivo se hacen con `r_file`, que compone `j10 = tipo | (FH << 32)` (`gen_formas.py:1072-1073`). La semántica de cada
-número está en el cap. 04; aquí sólo se fija cómo se usan:
+número está en el [cap. 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido); aquí sólo se fija cómo se usan:
 
 | Pedido | Uso en este capítulo | Fuente |
 |---|---|---|
-| 2 | `r_alloc(j1 bytes)`: memoria nueva (mínimo 8 bytes); fallo → `fr_nomem` (Luma deja la señal `dormir` y se detiene con `0BADh`). | `gen_comer.py:238-247`; `gen_luma.py:473-482` |
-| 3 | Devolver una memoria. | `gen_leer.py:1621-1622` |
-| 4 | `r_open(j11 etiqueta, j12 bytes)` → `FH` (negativo: fallo). | `gen_formas.py:1096-1097` |
-| 5, 6, 7 | Leer, escribir, cerrar `FH` (j11 = dirección, j12 = bytes → j13 = bytes). | `gen_formas.py:1072` |
-| 12 | Borrar la etiqueta j11 (j12 bytes) antes de reescribirla, o el archivo vacío que dejó una consulta. | `gen_luma.py:303, 309`; `gen_leer.py:6285` |
-| 20 | Corazón (tejido 7, §10.8.3): con j11 = -1 consulta un valor (j13); con j11 = n lo fija. Semántica en cap. 04 (no verificada aquí). | `gen_leer.py:7202, 7213` |
-| 30 | Decir una palabra a un proceso hijo. | `gen_leer.py:6218-6219` |
-| 35 | Con j11 = -1, j12 = 0: un valor del núcleo en j13, usado sólo para el sello del nombre (§10.6.3). | `gen_leer.py:1971` |
-| 37 | Abrir un archivo del anfitrión, sólo lectura (j11 = ruta, j12 = bytes) → manejador. | `gen_luma.py:280`; `gen_comer.py:469`; `gen_vida.py:606` |
-| 38 | Posicionar el manejador (en los 32 bits altos de j10) en el desplazamiento absoluto j11 (0: inicio); con j11 = -1 devuelve el tamaño en j13. | `gen_leer.py:1613, 1689`; `gen_luma.py:796, 808` |
-| 39 | Siguiente archivo nuevo y quieto de las carpetas vigiladas: escribe la ruta en j11 (hasta j12 = 4096 bytes), j13 = longitud (≤ 0: nada). | `gen_luma.py:250-251` |
-| 40 | Mostrar una nube (j11 = dirección, j12 = bytes). | `gen_luma.py:983` |
-| 41 | Esperar un evento en `EV` con plazo j12 (ms; -1: sin plazo). | `gen_formas.py:288-292` |
-| 42 | Prioridad propia (j12 = 1: la más baja; 0: normal). | `gen_formas.py:341-343` |
-| 43 | Título de la ventana (j11 = texto, j12 = bytes). | `gen_leer.py:1984-1985, 6277` |
-| 44 | Mensaje MIDI de 3 bytes en j11 (`estado | nota<<8 | velocidad<<16`). | `gen_leer.py:6348-6353, 6358` |
-| 47 | Portapapeles del anfitrión (j11 = texto, j12 = bytes). | `gen_leer.py:5946` |
+| [2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | `r_alloc(j1 bytes)`: memoria nueva (mínimo 8 bytes); fallo → [`fr_nomem`](08-luma-cuerpo-procesos-y-casa.md#72-falta-de-memoria) (Luma deja la señal `dormir` y se detiene con `0BADh`). | `gen_comer.py:238-247`; `gen_luma.py:473-482` |
+| [3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas) | Devolver una memoria. | `gen_leer.py:1621-1622` |
+| [4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | `r_open(j11 etiqueta, j12 bytes)` → `FH` (negativo: fallo). | `gen_formas.py:1096-1097` |
+| [5, 6, 7](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Leer, escribir, cerrar `FH` (j11 = dirección, j12 = bytes → j13 = bytes). | `gen_formas.py:1072` |
+| [12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Borrar la etiqueta j11 (j12 bytes) antes de reescribirla, o el archivo vacío que dejó una consulta. | `gen_luma.py:303, 309`; `gen_leer.py:6285` |
+| [20](04-nucleo-abi-de-pedidos.md#96-familia) | Corazón ([tejido 7](06-razar-lectura-y-organos.md#109-corazón-tejido-7), [§10.8.3](#1083-crecimiento-r_grow)): con j11 = -1 consulta un valor (j13); con j11 = n lo fija. Semántica en [cap. 04](04-nucleo-abi-de-pedidos.md#96-familia) (`so/janaxos.asm:5199-5207`). | `gen_leer.py:7202, 7213` |
+| [30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) | Decir una palabra a un proceso hijo. | `gen_leer.py:6218-6219` |
+| [35](04-nucleo-abi-de-pedidos.md#96-familia) | Con j11 = -1, j12 = 0: un valor del núcleo en j13, usado sólo para el sello del nombre ([§10.6.3](#1063-nombre)). | `gen_leer.py:1971` |
+| [37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión) | Abrir un archivo del anfitrión, sólo lectura (j11 = ruta, j12 = bytes) → manejador. | `gen_luma.py:280`; `gen_comer.py:469`; `gen_vida.py:606` |
+| [38](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) | Posicionar el manejador (en los 32 bits altos de j10) en el desplazamiento absoluto j11 (0: inicio); con j11 = -1 devuelve el tamaño en j13. | `gen_leer.py:1613, 1689`; `gen_luma.py:796, 808` |
+| [39](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39) | Siguiente archivo nuevo y quieto de las carpetas vigiladas: escribe la ruta en j11 (hasta j12 = 4096 bytes), j13 = longitud (≤ 0: nada). | `gen_luma.py:250-251` |
+| [40](05-nucleo-pantalla-teclado-vigia.md#4-modelo-de-imagen-pedido-40-mostrar) | Mostrar una nube (j11 = dirección, j12 = bytes). | `gen_luma.py:983` |
+| [41](05-nucleo-pantalla-teclado-vigia.md#8-esperar-un-evento-pedido-41) | Esperar un evento en `EV` con plazo j12 (ms; -1: sin plazo). | `gen_formas.py:288-292` |
+| [42](04-nucleo-abi-de-pedidos.md#96-familia) | Prioridad propia (j12 = 1: la más baja; 0: normal). | `gen_formas.py:341-343` |
+| [43](05-nucleo-pantalla-teclado-vigia.md#59-título-pedido-43) | Título de la ventana (j11 = texto, j12 = bytes). | `gen_leer.py:1984-1985, 6277` |
+| [44](05-nucleo-pantalla-teclado-vigia.md#9-sonido-pedido-44) | Mensaje MIDI de 3 bytes en j11 (`estado | nota<<8 | velocidad<<16`). | `gen_leer.py:6348-6353, 6358` |
+| [47](05-nucleo-pantalla-teclado-vigia.md#74-copiar-pedido-47) | Portapapeles del anfitrión (j11 = texto, j12 = bytes). | `gen_leer.py:5946` |
 
-Las etiquetas de la casa se guardan en el anfitrión con el nombre igual a los bytes de la etiqueta en hexadecimal
+Las etiquetas de la [casa](04-nucleo-abi-de-pedidos.md#102-de-etiqueta-a-nombre-de-archivo) se guardan en el anfitrión con el nombre igual a los bytes de la etiqueta en hexadecimal
 (por ejemplo `formas` → `666f726d6173`) (`razar/cuerpo/retrato_organos.py:41, 46`; `razar/cuerpo/luma.sh:57`).
 
 ## 10.2 Geometría de la pantalla
@@ -118,11 +118,11 @@ Coordenadas en celdas de la pantalla compartida (640 × 349); cada celda se mues
 | Panel derecho | 320–639 | 200–348 | Filas de lluvia 22–37 (puntos finos). | `gen_leer.py:6953-6962` |
 
 Con la vista de música activa (Tab), las filas 0–199 de todo el ancho muestran el rollo de música en lugar de formas
-y lluvia (§10.7).
+y lluvia ([§10.7](#107-vista-de-música-tab)).
 
 ### 10.2.3 Memorias de imagen
 
-Todas son nubes `NUBE` v3 con encabezado de 28 bytes. Bytes del encabezado (`gen_luma.py:881`;
+Todas son [nubes `NUBE` v3](05-nucleo-pantalla-teclado-vigia.md#41-formato-nube-versión-3-lo-que-lee-el-núcleo) con encabezado de 28 bytes. Bytes del encabezado (`gen_luma.py:881`;
 `gen_formas.py:225`; `gen_vida.py:222-223`):
 
 | Desplazamiento | Tamaño | Valor | Uso verificado |
@@ -152,21 +152,21 @@ Los bits de la nube fina se ponen en 1 una vez en `init_tail` (`gen_luma.py:879-
 ### 10.2.4 Composición de un cuadro (`v_show`)
 
 `v_show` se llama una vez por cuadro desde el bucle (`gen_formas.py:326-327`) y además, fuera del cuadro, cada vez
-que un pensamiento del cuerpo entra al flujo (`gen_leer.py:5225`). Pasos, en orden (`gen_luma.py:964-983`):
+que un pensamiento del cuerpo entra al [flujo](#1055-flujo-de-la-mente-d_flb) (`gen_leer.py:5225`). Pasos, en orden (`gen_luma.py:964-983`):
 
-1. `r_mus_frame`. Si devuelve `j0 = 1` (vista de música), saltar al paso 5.
+1. [`r_mus_frame`](#107-vista-de-música-tab). Si devuelve `j0 = 1` (vista de música), saltar al paso 5.
 2. `v_r_fill`: las filas 0–199 de la pantalla compartida, todo el ancho, en `(0x14, 0x22, 0x26)`; luego los estratos
-   de hábitat sobre x 320–639 según la cámara (§10.12.9) (`gen_vida.py:1645-1676`).
+   de hábitat sobre x 320–639 según la cámara ([§10.12.8](#10128-realimentación-con-las-formas), `gen_luma.py:540-568`) (`gen_vida.py:1645-1676`).
 3. `contour2x(RGB de las formas, 160, 100, paso 160 → RGB compartido, paso 640)`: las formas a doble tamaño.
 4. Si hay criaturas (`N > 0`): `r_rain_life(j2 = registro 0, j3 = N·CSZ)`. Luego `r_rain_top`: copia `RTBR` sobre
-   x 320–639, filas 0–199 (sólo si existe la habitación de la palabra, `DLR ≠ 0`).
-5. `r_panel` (redibuja sólo si cambió su huella, §10.5.2).
+   x 320–639, filas 0–199 (sólo si existe la [habitación de la palabra](09-luma-conversacion-y-respuesta.md#21-la-sala-de-la-palabra-dlr-32768-bytes), `DLR ≠ 0`).
+5. `r_panel` (redibuja sólo si cambió su huella, [§10.5.2](#1052-huella-y-protocolo-de-redibujo-r_panel)).
 6. `r_rain_bottom` (repone las filas de lluvia del panel si el panel se borró).
 7. `contour2x(RGB compartido, 640, 200, paso 640 → frgb, paso 1280)`: las filas 0–199 a 1280 × 400 puntos finos.
 8. Copia de `FPL` (1280 × 298 puntos) a `frgb + 3·1280·400`, de a 8 bytes.
-9. Pedido 40 con `j11 = fcl`, `j12 = 28 + FSW·FSH/8 + 3·FSW·FSH = 2 792 028` bytes.
+9. [Pedido 40](05-nucleo-pantalla-teclado-vigia.md#4-modelo-de-imagen-pedido-40-mostrar) con `j11 = fcl`, `j12 = 28 + FSW·FSH/8 + 3·FSW·FSH = 2 792 028` bytes.
 
-Las filas 200–348 de la pantalla compartida no se muestran: el panel se dibuja directamente en `FPL` (§10.5.1).
+Las filas 200–348 de la pantalla compartida no se muestran: el panel se dibuja directamente en `FPL` ([§10.5.1](#1051-superficie-y-trazado)).
 
 Lo que se redibuja selectivamente es la lluvia (sólo las celdas que cambian) y el panel (sólo si cambia su huella);
 las formas, los dos escalados y el pedido 40 se ejecutan en cada cuadro.
@@ -194,21 +194,21 @@ Es el algoritmo Scale2x (EPX).
 Variables: `REMAIN` (ms que quedan del cuadro), `FOREVER` (esperar sin plazo), `BLEFT`, `CHANGED`
 (`gen_formas.py:286-306`).
 
-1. `main`: plazo = `REMAIN`, o -1 si `FOREVER`. Pedido 41 con `j11 = EV`. `BLEFT = j12` devuelto.
+1. `main`: plazo = `REMAIN`, o -1 si `FOREVER`. [Pedido 41](05-nucleo-pantalla-teclado-vigia.md#8-esperar-un-evento-pedido-41) con `j11 = EV`. `BLEFT = j12` devuelto.
 2. `j13 < 0` → `0BADh` y fin. `j13 = 0` (sin evento) → `main_time`. Si no, `CHANGED = 0`, `r_handle`; si `FOREVER` y
    no cambió nada, volver a `main`; si `FOREVER` y cambió, `FOREVER = 0` y cuadro; si no `FOREVER`, seguir esperando
    lo que queda (`BLEFT`) o cuadro si llegó a 0.
-3. `main_time`: si `BLEFT ≠ 0` (el núcleo la despertó sin evento) → `r_read_poll`, `r_host_eat`, volver a esperar lo
+3. `main_time`: si `BLEFT ≠ 0` (el núcleo la despertó sin evento) → `r_read_poll`, [`r_host_eat`](#10114-protocolo-r_host_eat), volver a esperar lo
    que queda (`gen_formas.py:300-304`). Si `BLEFT = 0`: con `FOREVER = 0` → cuadro; con `FOREVER ≠ 0` (una espera sin
    plazo que terminó sin evento) el programa se detiene con `j0 = WINSRUN` (`gen_formas.py:305-306`).
 4. `frame` (`gen_formas.py:307-356`): `r_read_poll`; `r_step` (formas); `r_meal_step` (comida); `v_frame`
    (criaturas); si nada se mueve ni hay forma tomada y `EXPLORE ≠ 0`, `r_explore_frame`; dibujo de formas
    (`r_fill`, `r_draw_ghosts`, `r_draw_all`), `r_nombre_draw`, `r_draw_meal`, `v_show`; `FRAMES += 1`.
-5. Prioridad: si `SEEN = 0` y `GAPME = 0`, `GAPME = 1` y pedido 42 (`j12 = 1`); si `SEEN ≠ 0` y `GAPME ≠ 0`,
+5. Prioridad: si `SEEN = 0` y `GAPME = 0`, `GAPME = 1` y [pedido 42](04-nucleo-abi-de-pedidos.md#96-familia) (`j12 = 1`); si `SEEN ≠ 0` y `GAPME ≠ 0`,
    `GAPME = 0` y pedido 42 (`j12 = 0`) (`gen_formas.py:340-344`).
 6. Si algo se mueve (`MOVING`, fantasmas `GHN`, `EXPLORE` sin forma tomada, o `MEALPH ≠ 0`) → `r_dlg_mind`,
    `REMAIN = 33`, volver a `main`.
-7. Si no (`frame_forever`): `r_hungry`; si empezó una comida, como 6. Si no, `r_free` (§10.8.12) y como 6
+7. Si no (`frame_forever`): `r_hungry`; si empezó una comida, como 6. Si no, [`r_free`](08-luma-cuerpo-procesos-y-casa.md#44-libertad-elección-de-actos-r_free) ([§10.8.12](#10812-actos-libres-relacionados)) y como 6
    (`gen_formas.py:357-361`).
 
 Con la construcción por defecto (`free`), el paso 7 siempre continúa: hay un cuadro cada `FRAME_MS = 33` ms
@@ -216,7 +216,7 @@ Con la construcción por defecto (`free`), el paso 7 siempre continúa: hay un c
 
 ### 10.3.2 Registro de evento
 
-`EV = 0x140` (`gen_formas.py:102`): `+0` tipo, `+8` x, `+16` y, `+24` valor (botón, tecla o carácter).
+[`EV = 0x140`](05-nucleo-pantalla-teclado-vigia.md#61-registro-de-evento-32-bytes) (`gen_formas.py:102`): `+0` tipo, `+8` x, `+16` y, `+24` valor (botón, tecla o carácter).
 
 | Tipo | Significado (según el código que lo trata) | Fuente |
 |---|---|---|
@@ -225,7 +225,7 @@ Con la construcción por defecto (`free`), el paso 7 siempre continúa: hay un c
 | 3 | Botón arriba | `gen_formas.py:394, 419-431` |
 | 4 | Tecla (`+24`: código virtual) | `gen_formas.py:396, 446-461` |
 | 5 | Ventana cerrada | `gen_formas.py:387-390` |
-| 6 | (No tratado por este programa salvo para no marcar presencia; significado en cap. 05, no verificado.) | `gen_formas.py:380` |
+| 6 | (No tratado por este programa salvo para no marcar presencia; significado en [cap. 05](05-nucleo-pantalla-teclado-vigia.md#62-tipos-de-evento), `so/pantalla.inc:499, 606-611`.) | `gen_formas.py:380` |
 | 7 | Carácter escrito (`+24`: punto de código Unicode) | `gen_formas.py:398, 401-402` |
 | 8 | Ventana en uso o no (`+24` → `SEEN`) | `gen_formas.py:375-376` |
 
@@ -245,8 +245,8 @@ Con la construcción por defecto (`free`), el paso 7 siempre continúa: hay un c
 - Si `x < 0` → 0 (formas). Si hay forma tomada (`GRAB ≠ 0`) o `x < 320` → las coordenadas se dividen por `ZOOM`
   (celdas de las formas) y devuelve 0.
 - Si no (lado derecho): tipo 2 → `ve_gesture`; devuelve 1.
-- Los tipos 6 y 7 llegan a esta prueba sin división (el 8 ya terminó en `r_handle`); su `+8` lo fija el núcleo (no
-  verificado).
+- Los tipos 6 y 7 llegan a esta prueba sin división (el 8 ya terminó en `r_handle`); su `+8` lo fija el núcleo
+  (`so/pantalla.inc:600-611`).
 
 ## 10.4 Lluvia hexadecimal
 
@@ -329,8 +329,8 @@ en 1 con el color de la clase `k`. Cada punto pasa por `r_rain_px`: `y ≥ 200` 
 | Fuente | Bytes | Cuándo | Fuente del código |
 |---|---|---|---|
 | Criaturas | 26 bytes de la tabla de registros (N · 384 bytes), a partir de `min((RAINN·26) mod total, total − 26)` | En cada `v_show` con `N > 0` y total ≥ 26 | `gen_luma.py:971`; `gen_leer.py:6910-6915` |
-| Pensamientos | El texto que entra al flujo, recortado | Cada `r_flujo_put` | `gen_leer.py:7023` |
-| Ensayos de las formas | La línea de archivo de 112 bytes | Cada línea escrita al anillo `RING_F` | `gen_luma.py:790-791`; `gen_leer.py:7005-7010` |
+| Pensamientos | El texto que entra al flujo, recortado | Cada [`r_flujo_put`](#1055-flujo-de-la-mente-d_flb) | `gen_leer.py:7023` |
+| Ensayos de las formas | La línea de archivo de 112 bytes | Cada línea escrita al [anillo `RING_F`](#1013-anillos-del-presente) | `gen_luma.py:790-791`; `gen_leer.py:7005-7010` |
 
 No hay temporizador propio: la lluvia sólo avanza con estos eventos.
 
@@ -343,9 +343,9 @@ No hay temporizador propio: la lluvia sólo avanza con estos eventos.
 
 ### 10.4.6 Archivo `dados`
 
-`r_rain_dice` borra y reescribe la etiqueta `dados` con la rejilla completa (1 976 bytes de caracteres) cada vez que
-lo escrito se envía al pensador (`gen_leer.py:6896-6909, 3624`). El canto del cardumen lo usa como fuente de azar
-(cap. 07).
+`r_rain_dice` borra y reescribe la etiqueta [`dados`](09-luma-conversacion-y-respuesta.md#18-la-lluvia-como-dados) con la rejilla completa (1 976 bytes de caracteres) cada vez que
+lo escrito [se envía al pensador](09-luma-conversacion-y-respuesta.md#32-cuerpo--pensador-r_pens_ask) (`gen_leer.py:6896-6909, 3624`). El canto del cardumen lo usa como fuente de azar
+([cap. 07](07-razar-cardumen-canto-hilos.md#28-dados-y-cantado-contrato-con-quien-lo-lanza)).
 
 ## 10.5 Panel
 
@@ -360,7 +360,7 @@ lo escrito se envía al pensador (`gen_leer.py:6896-6909, 3624`). El canto del c
 
 ### 10.5.2 Huella y protocolo de redibujo (`r_panel`)
 
-Condición previa: `DLR ≠ 0` y `NMROOM ≠ 0` (`gen_leer.py:6475`). Huella (`gen_leer.py:6475-6482`):
+Condición previa: [`DLR ≠ 0`](09-luma-conversacion-y-respuesta.md#21-la-sala-de-la-palabra-dlr-32768-bytes) y [`NMROOM ≠ 0`](#1063-nombre) (`gen_leer.py:6475`). Huella (`gen_leer.py:6475-6482`):
 
 ```
 h = 0;  mezclar(v): h = h · 1000003 + v
@@ -384,8 +384,8 @@ Si `h = D_FLH` no se hace nada. Si no: `D_FLH = h`; `r_panel_clear`; `D_FLP = 1`
 
 Procedimiento (`gen_leer.py:6487-6518`), color `(0, 255, 65)`:
 
-1. Recorre las líneas de la conversación con `lj_rlen`/`lj_rptr` (cap. 09), partiéndolas en renglones de ancho
-   `WID` con `r_txt`. El renglón número `t` se dibuja en `y = 202 + 9·(t − D_SCR0)` sólo si
+1. Recorre su respuesta única (`lj_rlen`/`lj_rptr`, [cap. 09](09-luma-conversacion-y-respuesta.md#197-respuesta-única-y-flujo); sin ella, `D_OUT`; `gen_leer.py:5237-5244`, `gen_leer.py:6491`), partiéndola en renglones de ancho
+   `WID` con [`r_txt`](#1054-letras-r_txt). El renglón número `t` se dibuja en `y = 202 + 9·(t − D_SCR0)` sólo si
    `0 ≤ t − D_SCR0 < 12`; los demás sólo se miden. `D_NL` = total de renglones.
 2. Si `D_SCR0 > 0`: un punto en `(318, 202)` (hay más arriba). Si `D_SCR0 + 12 < D_NL`: un punto en `(318, 301)`.
 3. Renglones 12 y 13: vacíos (el código que dibujaba el último pensamiento está saltado por `jjmp dpl_in2`,
@@ -393,7 +393,7 @@ Procedimiento (`gen_leer.py:6487-6518`), color `(0, 255, 65)`:
 4. Renglón 14 (`y = 328`): lo que se escribe, `D_IN`; si mide más de 52 bytes se muestran sus últimos 52 bytes.
    Cursor: 5 puntos en `y = 336` desde `x = 2 + ancho dibujado`.
 
-Cada línea nueva de la conversación escrita con `r_dlg_write` (j1: 0 `vos: `, 1 `luma: `, 2 silencio) pone
+Cada línea nueva de la conversación escrita con [`r_dlg_write`](09-luma-conversacion-y-respuesta.md#161-r_dlg_write) (j1: 0 `vos: `, 1 `luma: `, 2 silencio) pone
 `D_SCR0 = 0` (`gen_leer.py:2034-2036`).
 
 El lado derecho del panel lo ocupa la lluvia. `r_flujo_walk` (texto del flujo a la derecha) está definida pero no se
@@ -404,7 +404,7 @@ llama desde ningún punto (`gen_leer.py:6967`).
 `r_txt(j1, j2 celda, j3 texto UTF-8, j4 bytes, j5 ancho máximo o 0, j7 = 1 dibuja / 0 mide)` → `j0` celdas de
 avance, `j1` bytes consumidos (`gen_leer.py:1837-1915`). Una letra propia de 5 × 7 avanza 6 celdas; un byte de
 continuación UTF-8 suelto no ocupa celda. En el panel (`D_FLP = 1`) se usa primero la letra aprendida de 8 o 16 × 16
-puntos del libro de letras (`r_letra_get`; si sólo existe la propia, `r_letra_fine` la aprende una vez); se dibuja
+puntos del [libro de letras](08-luma-cuerpo-procesos-y-casa.md#8811-letras-abecedario) (`r_letra_get`; si sólo existe la propia, `r_letra_fine` la aprende una vez); se dibuja
 por trazos rectos (cobertura voraz, `lv_make`, guardados en `LE_VEC = 144` del registro de la letra) recorridos con
 Bresenham en puntos finos: un punto de libro `v` va a `(2v + 1)·(w/2)·K / (2w)` puntos finos en horizontal y
 `(2v + 1)·8·K / 32` en vertical, y avanza `w/2 + 1` celdas (`gen_leer.py:1765-1836, 1856-1903`). Una letra aprendida
@@ -412,7 +412,7 @@ sin tinta se dibuja con la propia.
 
 ### 10.5.5 Flujo de la mente (`D_FLB`)
 
-Memoria de `FL_CAP = 2048` bytes en la habitación de la palabra (`gen_leer.py:306-309`). Cada entrada:
+Memoria de `FL_CAP = 2048` bytes en la [habitación de la palabra](09-luma-conversacion-y-respuesta.md#21-la-sala-de-la-palabra-dlr-32768-bytes) (`gen_leer.py:306-309`). Cada entrada:
 
 | Desplazamiento | Tamaño | Contenido |
 |---|---|---|
@@ -426,7 +426,7 @@ Contadores: `D_FL` bytes usados, `D_FLC` entradas llegadas, `D_FLT` renglones to
 `r_flujo_put(j2 texto, j3 bytes, j4 clase)` (`gen_leer.py:7014-7050`):
 
 1. `n = min(j3, 1000)`; quitar del final espacios y bytes 0; si queda 0, terminar.
-2. `r_rain_push(texto, n)`.
+2. [`r_rain_push(texto, n)`](#1043-paso-de-lluvia-r_rain_push).
 3. Mientras `D_FL + n ≥ 2045` descartar la entrada más vieja (`r_flujo_drop`); si sólo había una, vaciar todo.
 4. Copiar la entrada al final; `D_FLC += 1`.
 5. Si `NMROOM ≠ 0`: medir sus renglones con `r_txt` (ancho 316, sin dibujar), guardarlos en el byte 1 y sumarlos a
@@ -444,18 +444,18 @@ de formas con clase 2, o 3 si su motivo es 0, preservando `j1`–`j3` (`gen_leer
 
 - Si `NMASK ≠ 0` (está preguntando su nombre): `CHANGED = 1`; Backspace (8) borra un carácter UTF-8 completo del
   nombre; Enter (13) con nombre no vacío → `r_nombre_keep`; cualquier tecla devuelve 1 (consumida).
-- Si no: `r_dlg_key`. Si devuelve 1, la tecla termina ahí; si 0, pasa a las acciones de las formas.
+- Si no: [`r_dlg_key`](09-luma-conversacion-y-respuesta.md#31-teclado-r_dlg_key-r_char). Si devuelve 1, la tecla termina ahí; si 0, pasa a las acciones de las formas.
 
-`r_dlg_key` (`gen_leer.py:5908-5939`). Sin `DLR` devuelve 0. Con `DLR`:
+`r_dlg_key` (`gen_leer.py:5908-5939`). Sin [`DLR`](09-luma-conversacion-y-respuesta.md#21-la-sala-de-la-palabra-dlr-32768-bytes) devuelve 0. Con `DLR`:
 
 | Código | Acción | Devuelve |
 |---|---|---|
 | 8 (Backspace) | Si `D_INL > 0`, borra el último carácter UTF-8 (sus bytes de continuación incluidos). | 1 |
-| 13 (Enter) | Si `D_INL > 0`, `r_pens_ask` (envía lo escrito; cap. 08/09). | 1 |
-| 9 (Tab) | `r_mus_tab` (§10.7). | 1 |
+| 13 (Enter) | Si `D_INL > 0`, [`r_pens_ask`](09-luma-conversacion-y-respuesta.md#32-cuerpo--pensador-r_pens_ask) (envía lo escrito; cap. 08/09). | 1 |
+| 9 (Tab) | `r_mus_tab` ([§10.7](#107-vista-de-música-tab)). | 1 |
 | 33 (Re Pág) | `D_SCR0 = max(0, D_SCR0 − 4)`. | 1 |
 | 34 (Av Pág) | `D_SCR0 = min(D_SCR0 + 4, max(0, D_NL − 12))`. | 1 |
-| 32, 48–57, 65–90, 96–111, 186–226 | Teclas que escriben: no hacen nada aquí (el carácter llega como evento 7). | 1 |
+| 32, 48–57, 65–90, 96–111, 186–226 | Teclas que escriben: no hacen nada aquí (el carácter llega como [evento 7](#1062-caracteres-tipo-7-r_char)). | 1 |
 | Cualquier otra | — | 0 |
 
 En todos los casos que devuelven 1 pone `CHANGED = 1`.
@@ -476,34 +476,34 @@ alcanzables las de códigos que `r_dlg_key` no toma:
 | 0x42 / 0x45 | Crecer de nuevo / crecer entera | No |
 | 0x0D / 0x44 | Habilitar / deshabilitar mutación | No |
 
-Toda tecla que llega a las formas llama antes a `r_gesture` (§10.8.8).
+Toda tecla que llega a las formas llama antes a `r_gesture` ([§10.8.8](#1088-gesto)).
 
 ### 10.6.2 Caracteres (tipo 7, `r_char`)
 
 `r_char(j3 = punto de código)` (`gen_leer.py:5940-5958`):
 
-1. `j3 = 3` (Ctrl+C): si `DLR ≠ 0` y la última línea (`lj_rlen`, `lj_rptr`, cap. 09) no está vacía, pedido 47 con
+1. `j3 = 3` (Ctrl+C): si `DLR ≠ 0` y la última línea (`lj_rlen`, `lj_rptr`, [cap. 09](09-luma-conversacion-y-respuesta.md#197-respuesta-única-y-flujo)) no está vacía, [pedido 47](05-nucleo-pantalla-teclado-vigia.md#74-copiar-pedido-47) con
    ella. Fin.
 2. Si `PKID ≠ 0` y `PREADY = 0` (el pensador existe pero no está listo): se descarta. Fin.
 3. `j3 < 32` o `j3 = 127`: se descarta.
 4. Si `NMROOM ≠ 0` y `NMASK ≠ 0`: `ch_put` en el nombre (`NMROOM + 64`, capacidad 3000). Si no, si `DLR ≠ 0`:
    `ch_put` en `D_IN` (capacidad 1000).
-5. `r_letra_learn` (cap. 09) y `CHANGED = 1`.
+5. `r_letra_learn` ([cap. 09](09-luma-conversacion-y-respuesta.md#31-teclado-r_dlg_key-r_char)) y `CHANGED = 1`.
 
 `ch_put` (`gen_leer.py:5959-5974`) codifica en UTF-8 (1 byte si `< 0x80`; 2 si `< 0x800`; 3 si `< 0x10000`; 4 en otro
-caso) sólo si `longitud + 4 < capacidad`. Ctrl+V lo resuelve el núcleo como caracteres escritos (cap. 05).
+caso) sólo si `longitud + 4 < capacidad`. Ctrl+V lo resuelve el núcleo como caracteres escritos ([cap. 05](05-nucleo-pantalla-teclado-vigia.md#73-pegado-ctrlv)).
 
 ### 10.6.3 Nombre
 
 - `r_nombre_load` (`gen_leer.py:1916-1936`): memoria de 4096 bytes en `NMROOM`: `+0` el texto `COMO ME LLAMO?`,
-  `+32` la etiqueta `nombre`, `+64` el nombre, `+3584` variables de `r_txt`. Lee hasta 1000 bytes de `nombre`; el
+  `+32` la etiqueta [`nombre`](08-luma-cuerpo-procesos-y-casa.md#852-nombre), `+64` el nombre, `+3584` variables de `r_txt`. Lee hasta 1000 bytes de `nombre`; el
   nombre es su primera línea (hasta `\n` o `\r`). Vacío o ausente → `NMASK = 1`.
 - `r_nombre_draw` (`gen_leer.py:1937-1952`), color `(236, 236, 228)`, sobre la pantalla de las formas: preguntando, la
   pregunta en `(4, 6)`, lo escrito en `(4, 18)` y cursor de 5 puntos en `y = 26`; si no, el nombre en `(2, 2)`.
 - `r_nombre_keep` (`gen_leer.py:1969-1983`): escribe en `nombre` el nombre, `\n`, un sello de 16 dígitos hex y `\n`
   (`NMLEN + 18` bytes). Sello: `s = (RNG xor j13 del pedido 35 con j11 = -1) · 0x9E3779B97F4A7C15`;
-  `s = s xor (s >> 31)` (semántica del pedido 35 en cap. 04). Luego `NMASK = 0` y `r_nombre_titulo`.
-- `r_nombre_titulo`: pedido 43 con el nombre.
+  `s = s xor (s >> 31)` (semántica del pedido 35 en [cap. 04](04-nucleo-abi-de-pedidos.md#96-familia)). Luego `NMASK = 0` y `r_nombre_titulo`.
+- `r_nombre_titulo`: [pedido 43](05-nucleo-pantalla-teclado-vigia.md#59-título-pedido-43) con el nombre.
 
 ### 10.6.4 Despertar del pensador
 
@@ -516,17 +516,17 @@ Máquina de estados (`gen_leer.py:3583, 6225-6290`):
 | Lista | `PREADY = 1` | El nombre (`r_lista` → `r_nombre_titulo`) | Se aceptan |
 
 Transición a "Lista": `r_mus_from` recibe del proceso `PKID − 1` una palabra cuyo valor en `WBUF + 8` es 5; pone
-`PREADY = 1` y ejecuta `r_lista`: borra y escribe la etiqueta `lista` con los 5 bytes `lista`, `CHANGED = 1`, título
-con el nombre. El paso a "Despertando" ocurre al lanzar el pensador (`r_pens_launch`, cap. 08). Mientras despierta,
-`r_dlg_key` sigue tomando sus teclas, pero `D_IN` no recibe caracteres.
+`PREADY = 1` y ejecuta `r_lista`: borra y escribe la etiqueta [`lista`](08-luma-cuerpo-procesos-y-casa.md#54-la-señal-lista) con los 5 bytes `lista`, `CHANGED = 1`, título
+con el nombre. El paso a "Despertando" ocurre al lanzar el pensador (`r_pens_launch`, [cap. 08](08-luma-cuerpo-procesos-y-casa.md#53-secuencias)). Mientras despierta,
+[`r_dlg_key`](09-luma-conversacion-y-respuesta.md#31-teclado-r_dlg_key-r_char) sigue tomando sus teclas, pero `D_IN` no recibe caracteres.
 
 ## 10.7 Vista de música (Tab)
 
 Constantes: `MU_N = 5`, `MU_FRAMES = 4` cuadros por paso (criterio), `MU_WORDS = ((256 + 125)·25 + 63) // 64`
 (`gen_leer.py:376-380`). Estados `MU_ST`: 0 quieto, 1 naciendo, 2 pensando, 3 recibiendo, 4 tocando
-(`gen_leer.py:6295-6312`; el canto mismo, cap. 07).
+(`gen_leer.py:6295-6312`; el canto mismo, [cap. 07](07-razar-cardumen-canto-hilos.md#27-el-canto-con-canta)).
 
-- `r_mus_tab` (`gen_leer.py:6356-6360`): `MU_VIEW ^= 1`; `MU_DIRTY = 1`; al salir de la vista, pedido 44 con
+- `r_mus_tab` (`gen_leer.py:6356-6360`): `MU_VIEW ^= 1`; `MU_DIRTY = 1`; al salir de la vista, [pedido 44](05-nucleo-pantalla-teclado-vigia.md#9-sonido-pedido-44) con
   `0x7BB0` (control 123, todas las notas apagadas).
 - `r_mus_frame` (`gen_leer.py:6361-6373`): con `MU_ST = 4`, cada 4 cuadros `MU_T += 1` y, si la vista está activa,
   `r_mus_notes` (pedido 44: `0x90 | nota<<8 | 100<<16` al despertar una pieza, `0x80 | nota<<8` al dormirse); al
@@ -556,7 +556,7 @@ Constantes: `MU_N = 5`, `MU_FRAMES = 4` cuadros por paso (criterio), `MU_WORDS =
 | `F_MX`, `F_MY` | 64, 72 | Escala efectiva (×256) | `F_T` | 160 | Trazo (celdas) |
 | `F_CX`, `F_CY` | 168, 240 | Centro de dibujo | `F_BMP` | 176 | Dirección de su mapa de bits: `BMPS + 512·f` (50 qwords, fila `y` bit `x`) |
 | `F_S` | 184 | Celdas dibujadas por celda de receta (×256) | `F_REC` | 192 | Receta (32 bytes) |
-| `F_COMP`, `F_NOV` | 224, 232 | Compresión, novedad (×1000) | `F_READ` | 248 | Campo de lectura del lector (sólo en Luma; uso en cap. 06) |
+| `F_COMP`, `F_NOV` | 224, 232 | Compresión, novedad (×1000) | `F_READ` | 248 | Campo de lectura del lector (sólo en Luma; uso en [cap. 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)) |
 
 Fuente: `gen_formas.py:141-144, 122, 272`; `gen_leer.py:618`. Partícula: 128 bytes, campos `hx hy px py vx vy k parent birth tx ty` en los
 desplazamientos 0–80 (`gen_formas.py:131, 145`).
@@ -567,13 +567,13 @@ Byte 0 = longitud `n` (0–31, `LMAX = 31`), bytes 1–n = letras 1–15 (`gen_f
 `v` se escribe como el byte `48 + v` (`'1'`–`'9'`, `':'`, `';'`, `'<'`, `'='`, `'>'`, `'?'`) y las posiciones sin
 letra como `'.'`, siempre 31 caracteres (`r_put_rec`, `gen_formas.py:1049-1054`); `r_get_rec` acepta `'1'`–`'?'`
 hasta el primer otro carácter (`gen_formas.py:1064-1071`). Las semillas se fijan al generar: la línea `organos <ruta>`
-de `razar/cuerpo/aprendido.txt` nombra un archivo cuyas líneas `organo <receta> = <puntaje>` se ordenan por puntaje
+de [`razar/cuerpo/aprendido.txt`](08-luma-cuerpo-procesos-y-casa.md#23-entradas-leídas-al-generar) nombra un archivo cuyas líneas `organo <receta> = <puntaje>` se ordenan por puntaje
 descendente (orden estable); las 8 primeras recetas son las semillas (`gen_formas.py:18-48`). Una forma sin receta
-válida en `formas` arranca de su semilla.
+válida en [`formas`](#1089-archivos-de-las-formas) arranca de su semilla.
 
 ### 10.8.3 Crecimiento (`r_grow`)
 
-En Luma la receta se dice primero "plana" (`r_flat`, cap. 06: `E` y un número 1–8 se expanden a la forma viva de ese
+En Luma la receta se dice primero "plana" (`r_flat`, [cap. 06](06-razar-lectura-y-organos.md#105-palabras--k--forma-k): `E` y un número 1–8 se expanden a la forma viva de ese
 número) y `RD.grow_letter` toma las letras de esa versión plana (`gen_formas.py:599-614`;
 `gen_leer.py:7176-7221`). Interpretación (`gen_formas.py:615-661`), con `GHEAD` el giro actual y las direcciones
 `k = 0..3` = este, sur, oeste, norte:
@@ -586,7 +586,7 @@ número) y `RD.grow_letter` toma las letras de esa versión plana (`gen_formas.p
 | 10 | Brazo en dirección `(GHEAD − 1) & 3`. |
 | 11 / 12 | `GHEAD −= 1` / `GHEAD += 1`. |
 | 13 | Nada. |
-| 14 (`E`) | En Luma: célula `E g1 g2 t`; engranaje `(g1 − 9)·15 + g2 − 1`, tejido `t` (5: la pluma pasa por el engranaje; 6: el giro; 7: el corazón; 8: lugar del lector, ocupa 4 letras más y no dibuja; otro: palabra que sólo transporta). |
+| 14 (`E`) | En Luma: [célula](06-razar-lectura-y-organos.md#106-células-y-tejidos) `E g1 g2 t`; [engranaje](#109-engranajes) `(g1 − 9)·15 + g2 − 1`, tejido `t` (5: la pluma pasa por el engranaje; 6: el giro; 7: [el corazón](06-razar-lectura-y-organos.md#109-corazón-tejido-7); 8: lugar del lector, ocupa 4 letras más y no dibuja; otro: palabra que sólo transporta). |
 | 15 | Brazo en dirección `(3 + GHEAD) & 3`. |
 
 `r_cell` (`gen_formas.py:662-687`) crea una partícula por celda nueva dentro de la habitación de 40 × 50; su padre es
@@ -599,7 +599,7 @@ volteo y pliegue (0 si plegada); trazo `T = max(1, (min(|MX|,|MY|)·5 + 511) >> 
 Paso de resortes por cuadro (`r_step`, `gen_formas.py:1173-1211`): una letra crece cada `GROW_FRAMES = 9` cuadros;
 cada partícula crecida va hacia su destino `t = ancla + h·M >> 8` con `v += (t − p)·k >> 8`,
 `v −= v·40 >> 8`, `p += v`; se asienta (`p = t`, `v = 0`) si `|t − p| ≤ REST` y `|v| ≤ REST`, con `REST = 32`
-(`gen_formas.py:1198-1204`). `k` vale `K_BASE = 20`, o, mientras la forma está tomada con la mano,
+(`gen_formas.py:1198-1204`). `k` vale `K_BASE = 20`, o, mientras la forma está tomada con la [mano](#10810-mano),
 `K_FAR + (K_NEAR − K_FAR)·D0/(D0 + d) = 8 + 672/(12 + d)`, con `d` la distancia Manhattan en celdas de la partícula al
 punto tomado (`r_stiffen`, `gen_formas.py:61-62, 538-550`).
 
@@ -615,11 +615,11 @@ forma con `C` celdas, `n` letras y `M = max_j O[i][j]` (`gen_formas.py:725-736`;
 - `comp = C·100000 / (n·391)`, `nov = 1000 − 1000·M/C` (sólo para motivos y color).
 - Valor en Luma: `L(C − M) − n·3907` milésimas de bit, con `L(k) = log2 C(2000, k)` (tabla `LTAB`).
 
-`TOTAL` = suma de valores + la mejor lectura entre las formas (`r_read_max`, cap. 06) (`gen_formas.py:746-767`).
+`TOTAL` = suma de valores + la mejor lectura entre las formas (`r_read_max`, [cap. 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)) (`gen_formas.py:746-767`).
 
 Color (`gen_formas.py:771-784`): `PAL[f]·(600 + 400·valor/WMAX)/1000` por canal; en reposo, gris (promedio).
 Paleta inicial: `FF6B6B, FF9F43, FFD93D, 6BCB77, 4DD0C8, 4D96FF, 9B7BFF, E07BE0` (`gen_formas.py:73-74`), que las
-comidas y la pintura de Luma reemplazan (§10.10, §10.8.12).
+comidas y la pintura de Luma reemplazan ([§10.10](#1010-comida-de-nubes-despensa), [§10.8.12](#10812-actos-libres-relacionados)).
 
 `r_judge(CAND como forma JF)` (`gen_formas.py:785-867`): crece el candidato en `CREG`, calcula
 `JT2` = total con el candidato en lugar de `JF` (incluida la lectura, `r_read_cand`). Gana si
@@ -633,11 +633,11 @@ comidas y la pintura de Luma reemplazan (§10.10, §10.8.12).
 | 2 | `longer` | `comp` del candidato < la del padre. |
 | 1 | `longer,not-new` | Las dos anteriores. |
 | 0 | `replaced` | (Ganó.) |
-| 6 | `meal-climb` | Paso de escalada de una comida (§10.10.4). |
+| 6 | `meal-climb` | Paso de escalada de una comida ([§10.10.4](#10104-fases-mealph)). |
 
-Al perder: línea de archivo y fantasma del candidato en el cuadro. Al ganar: `r_linaje`; línea de archivo con el
+Al perder: línea de archivo y fantasma del candidato en el cuadro. Al ganar: [`r_linaje`](08-luma-cuerpo-procesos-y-casa.md#883-linaje); línea de archivo con el
 padre como perdedor y motivo 0; el candidato ocupa la receta; `r_regrow`; `F_GROWN` completo; `r_recompute`;
-`EPOCH`, `WINS`, `WINSRUN` + 1; `RADIUS = 1`; `r_meal_won`; tabla de probados vacía; recorrido nuevo; `formas`
+`EPOCH`, `WINS`, `WINSRUN` + 1; `RADIUS = 1`; `r_meal_won`; [tabla de probados](#1086-tabla-de-probados) vacía; recorrido nuevo; `formas`
 reescrito; `j0 = 2`.
 
 ### 10.8.5 Mutaciones (Luma: las de `gen_comer.py`)
@@ -683,7 +683,7 @@ vigentes. `r_load_archive` inserta las recetas perdedoras de las líneas de la r
 
 ### 10.8.9 Archivos de las formas
 
-`formas` (399 bytes, `gen_formas.py:146-148, 1098-1121`):
+[`formas`](08-luma-cuerpo-procesos-y-casa.md#841-formas-399-bytes-de-texto) (399 bytes, `gen_formas.py:146-148, 1098-1121`):
 
 | Desp. | Tam. | Contenido |
 |---|---|---|
@@ -699,7 +699,7 @@ vigentes. `r_load_archive` inserta las recetas perdedoras de las líneas de la r
 Se lee sólo si mide exactamente 399 bytes y empieza con `formas1 `; un `RNG` de 0 no se aplica; una receta vacía
 conserva la semilla (`gen_formas.py:1122-1148`).
 
-`archivo` (líneas de `RECLEN = 112`, `gen_formas.py:1074-1095`):
+[`archivo`](08-luma-cuerpo-procesos-y-casa.md#842-archivo-líneas-de-112-bytes) (líneas de `RECLEN = 112`, `gen_formas.py:1074-1095`):
 
 | Desp. | Tam. | Contenido |
 |---|---|---|
@@ -713,32 +713,32 @@ conserva la semilla (`gen_formas.py:1122-1148`).
 | 105 | 1 | `RADIUS` |
 | 111 | 1 | `\n` |
 
-En Luma con `PRESENT`, `archivo` es un anillo (§10.13) de 4 096 líneas; cada línea también va al flujo y a la lluvia.
+En Luma con `PRESENT`, `archivo` es un anillo ([§10.13](#1013-anillos-del-presente)) de 4 096 líneas; cada línea también va al [flujo](#1055-flujo-de-la-mente-d_flb) y a la [lluvia](#104-lluvia-hexadecimal).
 
 ### 10.8.10 Mano
 
-`h_down` (`gen_formas.py:403-418`): `r_gesture`, `r_hit` (forma delantera con una partícula crecida a distancia
+`h_down` (`gen_formas.py:403-418`): [`r_gesture`](#1088-gesto), `r_hit` (forma delantera con una partícula crecida a distancia
 `≤ T`); botón derecho: pulso hacia afuera (`v += (p − semilla)·64 >> 8`); izquierdo: toma la forma (rigidez por
 distancia). `h_move` la arrastra; `h_up` sin mover alterna plegar.
 
 ### 10.8.11 Archivo de linaje y retrato
 
-`r_linaje` (cap. 06) conserva de qué forma y lectura viene una victoria. `retrato_organos.py` (§10.14) lee `formas` y
-`engranajes` para un informe externo.
+[`r_linaje`](08-luma-cuerpo-procesos-y-casa.md#883-linaje) (cap. 06) conserva de qué forma y lectura viene una victoria. `retrato_organos.py` ([§10.14](#1014-retrato-de-órganos-retrato_organospy)) lee [`formas`](#1089-archivos-de-las-formas) y
+[`engranajes`](#1094-archivo-engranajes) para un informe externo.
 
 ### 10.8.12 Actos libres relacionados
 
-`r_free` (`gen_luma.py:377-502`; marco completo en cap. 08) llama primero a `r_host_eat` y `r_pens_free`, y elige un
+`r_free` (`gen_luma.py:377-502`; marco completo en [cap. 08](08-luma-cuerpo-procesos-y-casa.md#44-libertad-elección-de-actos-r_free)) llama primero a [`r_host_eat`](#10114-protocolo-r_host_eat) y `r_pens_free`, y elige un
 acto con probabilidad proporcional a su deseo `(S + 1/2)/(N + 1)` escalado por `2^21`:
 
 | Acto | Deseo | Efecto en este capítulo |
 |---|---|---|
 | Descansar | `(2S0+1)<<20 / (N0+1)` | Ninguna exploración durante `LASTF` cuadros; paga si `RADIUS` cambió (un gesto). |
-| Pensar | `(2S1+1)<<20 / (N1+1)` | `r_gesture`; paga si hubo una victoria (`WINS`). |
-| Dar | `(2S2+1)<<20 / (N2+1)` | Regalo de una forma a una criatura (§10.12.8). |
-| Pintar | `1<<20 / (N3+1)` | Una comida al azar; la forma que alimentó toma otro de sus colores al azar (`r_set_hue`, `r_colour`); la paleta se guarda en `libre`. |
-| Dormir | `(2S4+1)<<20 / (N4+1)` | Deja la señal `dormir` (cap. 08). |
-| Hablar / Leer | Del lector | Cap. 09 / cap. 06. |
+| Pensar | `(2S1+1)<<20 / (N1+1)` | [`r_gesture`](#1088-gesto); paga si hubo una victoria (`WINS`). |
+| Dar | `(2S2+1)<<20 / (N2+1)` | Regalo de una forma a una criatura ([§10.12.8](#10128-realimentación-con-las-formas)). |
+| Pintar | `1<<20 / (N3+1)` | Una comida al azar; la forma que alimentó toma otro de sus colores al azar (`r_set_hue`, `r_colour`); la paleta se guarda en [`libre`](08-luma-cuerpo-procesos-y-casa.md#851-libre-4640-bytes-binarios). |
+| Dormir | `(2S4+1)<<20 / (N4+1)` | Deja la señal `dormir` ([cap. 08](08-luma-cuerpo-procesos-y-casa.md#71-dormir)). |
+| Hablar / Leer | Del lector | [Cap. 09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta) / [cap. 06](06-razar-lectura-y-organos.md#5-lectura-de-un-libro). |
 
 ## 10.9 Engranajes
 
@@ -752,7 +752,7 @@ canonizada por renombre de registros, elegida por ahorro (`gen_leer.py:102-109, 
 Desde la instrucción `p` (`gen_leer.py:1628-1652`), mientras haya menos de 8 y no termine el programa:
 
 1. `w` = palabra de 32 bits; `op = w & 0xFF`. Termina si `op ∈ {0x00, 0x05}` o `op ≥ 0x0C` salvo `0x0F`. Quedan
-   `jldi` (01), `jadd`/`jsub`/`jmul` (02–04), `jshl`/`jshr`/`jsar`/`jand`/`jor`/`jxor` (06–0B), `jshi` (0F)
+   [`jldi`](01-idioma-janax.md#51-tabla-completa) (01), `jadd`/`jsub`/`jmul` (02–04), `jshl`/`jshr`/`jsar`/`jand`/`jor`/`jxor` (06–0B), `jshi` (0F)
    (`escalon0/janax.inc:24-39`).
 2. Campos: `rd = (w >> 8) & 15`, `ra = (w >> 12) & 15`, `imm = w >> 16`.
 3. Renombre en orden de aparición, con tabla de 16 entradas: para `op ∈ {01, 0F}` sólo `rd`, y se conserva `imm`
@@ -761,7 +761,7 @@ Desde la instrucción `p` (`gen_leer.py:1628-1652`), mientras haya menos de 8 y 
 
 ### 10.9.3 Conteo y selección (`r_gears`)
 
-1. `r_digest_food` (cap. 06). Abrir `luma/lectora.bin`; leerlo entero (`GNW` = bytes/4 instrucciones), con lugar
+1. [`r_digest_food`](08-luma-cuerpo-procesos-y-casa.md#8810-comida-digerido) (cap. 06). Abrir [`luma/lectora.bin`](08-luma-cuerpo-procesos-y-casa.md#8813-p-y-luma); leerlo entero (`GNW` = bytes/4 instrucciones), con lugar
    para lo digerido (`r_digest`) (`gen_leer.py:1686-1693`).
 2. Tabla `GHT` de `pow2(16·GNW)` ranuras de 32 bytes (`r_pow2`: la primera potencia de 2 no menor, mínimo 16):
    `+0` huella, `+8` cuenta, `+16` cabeza de cadena (lugar + 1), `+24` `L<<32 | lugar`. Cadenas `GNX`
@@ -782,17 +782,17 @@ de instrucciones `n`; `+8 + 8i` la palabra canónica `i` (qword); el resto en 0.
 Carga (`gen_leer.py:7591-7605`): si `engranajes` existe y su lectura devuelve más de 0 bytes, se usa; si no, se ejecuta
 `r_gears`. `NGE` = registros con primer qword ≠ 0; `GFP` = FNV de los 13 440 bytes leídos de a qword (xor y
 multiplicación por qword, sin forzar el bit 0) (`gen_leer.py:7600-7605`). El programa no regenera el archivo si ya
-existe; lo invalida el guion de arranque, que borra `engranajes` de la casa cuando `bin/luma.bin` es más nuevo que él
+existe; lo invalida el [guion de arranque](08-luma-cuerpo-procesos-y-casa.md#3-construcción-y-arranque-lumash), que borra `engranajes` de la casa cuando `bin/luma.bin` es más nuevo que él
 (`razar/cuerpo/luma.sh:49-50`), de modo que el siguiente nacimiento ejecuta `r_gears` sobre el cuerpo nuevo.
 
-Uso: índice de engranaje en una célula `E g1 g2 t` = `(g1 − 9)·15 + g2 − 1` ∈ [0, 104]; un índice `≥ NGE` no hace
-nada (`gen_leer.py:7185-7191`). Como lente del lector, cap. 06.
+Uso: índice de engranaje en una [célula](06-razar-lectura-y-organos.md#106-células-y-tejidos) `E g1 g2 t` = `(g1 − 9)·15 + g2 − 1` ∈ [0, 104]; un índice `≥ NGE` no hace
+nada (`gen_leer.py:7185-7191`). Como lente del lector, [cap. 06](06-razar-lectura-y-organos.md#107-engranajes-formato-de-128-bytes).
 
 ## 10.10 Comida de nubes (despensa)
 
 ### 10.10.1 Despensa
 
-`despensa` (escrita fuera del programa por el guion de arranque, `razar/cuerpo/luma.sh`; con casa propia
+[`despensa`](08-luma-cuerpo-procesos-y-casa.md#843-despensa) (escrita fuera del programa por el [guion de arranque](08-luma-cuerpo-procesos-y-casa.md#3-construcción-y-arranque-lumash), `razar/cuerpo/luma.sh`; con casa propia
 `vida-memoria` no se escribe, `luma.sh:57-66`): encabezado de 37 bytes `despensa1 NNNNNN MMMMMMMMM TTTTTTTTT\n`
 (cantidad en 10, tamaño máximo en 17, bytes de texto en 27) y una línea por nube `BBBBBBBBB ruta\n`
 (`gen_comer.py:304-342`). En Luma, una línea cuya ruta empieza con `#` da la huella con 16 hex en lugar de la ruta
@@ -805,8 +805,8 @@ Orden de las comidas: `FA` aleatorio y `FB` coprimo con `NPAN`, con su propio ge
 ### 10.10.2 Hambre y lectura
 
 `r_hungry` (`gen_comer.py:441-462`): primera entrada no comida en el orden `FB·k + FA mod NPAN`; se marca comida;
-`r_meal_read`; si falla, se escribe su línea con `'-'` y se sigue; si lee, `v_meal` (§10.12.6), `MEALPH = 1`.
-`r_meal_read` (`gen_comer.py:467-490`): pedido 37, lectura completa (debe coincidir el tamaño), formato `NUBE` v3,
+`r_meal_read`; si falla, se escribe su línea con `'-'` y se sigue; si lee, `v_meal` ([§10.12.6](#10126-aprendizaje-sueños-y-diálogos)), `MEALPH = 1`.
+`r_meal_read` (`gen_comer.py:467-490`): [pedido 37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión), lectura completa (debe coincidir el tamaño), formato `NUBE` v3,
 nivel 0, celdas.
 
 ### 10.10.3 Juez de una comida (`r_fit_cost`)
@@ -826,7 +826,7 @@ distintas (`1097 = round(100·log2 2000)`).
 | 4 fluyendo | Partículas hacia las de la forma destino. | Quietas → `r_absorb` → 0 |
 
 Fuente: `gen_comer.py:669-899`. `r_absorb`: la forma destino toma el primer color de la comida, se escribe su línea en
-`comidas` y `ladrillos`, `ATE += 1`, `r_recompute` (`gen_comer.py:795-802`). Ladrillos: fusión voraz de pares por
+[`comidas`](#10105-comidas-líneas-de-cline--537-bytes) y [`ladrillos`](08-luma-cuerpo-procesos-y-casa.md#845-ladrillos), `ATE += 1`, `r_recompute` (`gen_comer.py:795-802`). Ladrillos: fusión voraz de pares por
 longitud de descripción sobre el corpus de recetas comidas (`gen_comer.py:947-951`; detalle de `r_dl` no
 verificado línea por línea).
 
@@ -850,18 +850,18 @@ verificado línea por línea).
 Fuente: `gen_comer.py:1086-1120`. Al nacer, cada línea marca su entrada como comida, agrega la receta al corpus y da a
 la forma alimentada su primer color (`gen_comer.py:381-416`).
 
-`ladrillos`: `ladrillos1 NNNNNN\n` (18 bytes) y una línea de 40 por ladrillo aprendido: receta (31), espacio, usos (7),
+[`ladrillos`](08-luma-cuerpo-procesos-y-casa.md#845-ladrillos): `ladrillos1 NNNNNN\n` (18 bytes) y una línea de 40 por ladrillo aprendido: receta (31), espacio, usos (7),
 `\n` (`gen_comer.py:1121-1142`).
 
 ## 10.11 Comida del disco: libros del disco
 
 ### 10.11.1 Carpeta vigilada
 
-El núcleo vigila las carpetas de la variable de entorno `JANAX_VIGIA`. `luma.sh` sólo la fija en la rama de casa
+El núcleo vigila las carpetas de la variable de entorno [`JANAX_VIGIA`](05-nucleo-pantalla-teclado-vigia.md#102-configuración). [`luma.sh`](08-luma-cuerpo-procesos-y-casa.md#3-construcción-y-arranque-lumash) sólo la fija en la rama de casa
 propia (la casa contiene `vida-memoria`): toma `LUMA_VIGIA` o, si no está definida, una carpeta `Comida` fija del
 anfitrión escrita en el guion; `-` significa ninguna (`razar/cuerpo/luma.sh:58-66`). En la otra rama (lista de nubes y
-oídos del anfitrión) no se fija `JANAX_VIGIA` (`luma.sh:92-93`) y el pedido 39 no tiene carpetas que vigilar (lo que
-el núcleo hace entonces: cap. 05, no verificado aquí). El programa no conoce rutas: pide al núcleo la siguiente novedad
+oídos del anfitrión) no se fija `JANAX_VIGIA` (`luma.sh:92-93`) y el [pedido 39](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39) no tiene carpetas que vigilar (lo que
+el núcleo hace entonces: [cap. 05](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39), `so/vigia.inc:664-665, 697-698`). El programa no conoce rutas: pide al núcleo la siguiente novedad
 (pedido 39).
 
 ### 10.11.2 Habitación `HOSTR`
@@ -886,7 +886,7 @@ el núcleo hace entonces: cap. 05, no verificado aquí). El programa no conoce r
 
 ### 10.11.3 Formato de libro del disco
 
-Etiquetas `libro-disco-H`, `elibro-disco-H` (en espera de turno, cap. 09) y `registro-disco-H`, con `H` = FNV-1a de
+Etiquetas [`libro-disco-H`](08-luma-cuerpo-procesos-y-casa.md#8817-libro-disco-16-hex-elibro-disco-16-hex), `elibro-disco-H` ([en espera de turno](08-luma-cuerpo-procesos-y-casa.md#887-turno-y-rotación-de-libros), [cap. 09](09-luma-conversacion-y-respuesta.md#15-la-lista-de-libros)) y [`registro-disco-H`](08-luma-cuerpo-procesos-y-casa.md#8818-registro-disco-16-hex), con `H` = FNV-1a de
 los bytes de la ruta, 16 dígitos hex minúscula, el más significativo primero (`gen_luma.py:265-278`). Contenido
 (`gen_luma.py:315-319`; `razar/cuerpo/libros_del_disco.py:36-48`):
 
@@ -896,18 +896,18 @@ los bytes de la ruta, 16 dígitos hex minúscula, el más significativo primero 
 | 8 | 8 | Tamaño del archivo (u64 LE) |
 | 16 | n | Ruta (bytes tal como los dio el pedido 39) |
 
-El texto no se copia: el lector lo abre en su lugar (cap. 06).
+El texto no se copia: el lector lo abre en su lugar ([cap. 06](06-razar-lectura-y-organos.md#51-fuentes-del-libro)).
 
 ### 10.11.4 Protocolo (`r_host_eat`)
 
-1. Pedido 39 → ruta y largo `j13`; `≤ 0` → fin (`gen_luma.py:250-251`).
+1. [Pedido 39](05-nucleo-pantalla-teclado-vigia.md#108-entrega-pedido-39) → ruta y largo `j13`; `≤ 0` → fin (`gen_luma.py:250-251`).
 2. Componente final de la ruta (tras el último `\` o `/`): si no es vacío, tiene largo par y todos sus caracteres
    están en `0–9a–f`, es la casa de otro ser → fin (`gen_luma.py:252-263`).
-3. Construir las etiquetas (paso 2 de §10.11.3).
-4. Pedido 37; leer trozos de 64 KB acumulando la huella y el tamaño; un byte 0 → no es texto: cerrar, fin
+3. Construir las etiquetas (paso 2 de [§10.11.3](#10113-formato-de-libro-del-disco)).
+4. [Pedido 37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión); leer trozos de 64 KB acumulando la huella y el tamaño; un byte 0 → no es texto: cerrar, fin
    (`gen_luma.py:280-290`).
 5. Cerrar. Abrir `registro-disco-H` (si `r_open` falla → fin); si se leen 8 bytes, es un registro conocido → fin; si
-   no, borrar el archivo vacío (pedido 12) (`gen_luma.py:291-303`). En el paso 6 un fallo de `r_open` también termina.
+   no, borrar el archivo vacío ([pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) (`gen_luma.py:291-303`). En el paso 6 un fallo de `r_open` también termina.
 6. Probar `libro-disco-H` y luego `elibro-disco-H`: leer 16 bytes; si los 16 existen, se tiene el libro con ese nombre;
    si no, borrar el vacío (`gen_luma.py:304-309`).
 7. Nuevo: escribir como `libro-disco-H` (paso 9).
@@ -915,7 +915,7 @@ El texto no se copia: el lector lo abre en su lugar (cap. 06).
    (`gen_luma.py:312-313`).
 9. Escribir (borrar, abrir, huella, tamaño, ruta, cerrar) con el nombre en uso (`gen_luma.py:314-319`).
 10. Sólo si era nuevo (el último intento de lectura del paso 6 no devolvió 16 bytes): escribir en su conversación,
-    con `r_dlg_write` y `j1 = 1` (prefijo `luma: `), el texto `me comí ` (UTF-8, 9 bytes) seguido de la ruta, con
+    con [`r_dlg_write`](09-luma-conversacion-y-respuesta.md#161-r_dlg_write) y `j1 = 1` (prefijo `luma: `), el texto `me comí ` (UTF-8, 9 bytes) seguido de la ruta, con
     `GREET = 1` durante la llamada; luego `CHANGED = 1` (`gen_luma.py:320-331`; `gen_leer.py:2034`). Un libro cambiado se reescribe en silencio.
 
 Un llamado procesa a lo sumo un archivo. Se llama al nacer (`gen_luma.py:117`), cada vez que el núcleo la despierta
@@ -937,7 +937,7 @@ calculando la huella de sus primeros `t0` bytes y, por línea (`gen_luma.py:343-
 | cualquiera | `\n` | → 0 |
 
 Es registro si la huella del prefijo es la del libro y `2·marcadas > líneas`. Entonces se borra el libro y se escribe
-`registro-disco-H` con el mismo formato de §10.11.3 (`gen_luma.py:362-372`).
+`registro-disco-H` con el mismo formato de [§10.11.3](#10113-formato-de-libro-del-disco) (`gen_luma.py:362-372`).
 
 ## 10.12 Criaturas
 
@@ -946,7 +946,7 @@ Es registro si la huella del prefijo es la del libro y `2·marcadas > líneas`. 
 Cuerpos de partículas que caminan sobre un toro de `W × H = 320 × 200` celdas con su marcha (ritmos por miembro), con
 reglas sólo locales: atracción si uno tiene algo que enseñar al otro, alejamiento si no; aprendizaje de piezas de
 marcha cuando se tocan si acorta su descripción (MDL); sueños (mutaciones de su marcha) nombrados con melodías;
-estratos de hábitat. En Luma no se dibujan: sus registros caen como lluvia (§10.4.4)
+estratos de hábitat. En Luma no se dibujan: sus registros caen como lluvia ([§10.4.4](#1044-qué-bytes-caen))
 (`gen_vida.py:1-43`; `gen_luma.py:970-971`). En Luma `ALWAYS` es verdadero: siempre caminan
 (`gen_vida.py:123, 341-342`; `gen_luma.py:984-991`).
 
@@ -985,9 +985,9 @@ unidad 256), `C_L` (miembros), `C_K` (motivos), `C_NE`, `C_DL`, `C_LIMB`, `C_MOD
 | 3 | Comida, espera llegar | `gen_luma.py:896, 1032` |
 | 4 | No pudo llegar (no se reintenta) | `gen_vida.py:327-328` |
 
-Llegadas (`gen_vida.py:319-328`): una por cuadro, la primera en estado 3. Con `vida-memoria`, la marcha sale del
-texto guardado y el cuerpo de `v_remember` (§10.12.8); sin ella, de los archivos `.oido` y `.nube` del anfitrión
-(pedido 37) (`gen_vida.py:593-641`).
+Llegadas (`gen_vida.py:319-328`): una por cuadro, la primera en estado 3. Con [`vida-memoria`](08-luma-cuerpo-procesos-y-casa.md#891-vida-lista-vida-memoria), la marcha sale del
+texto guardado y el cuerpo de `v_remember` ([§10.12.8](#10128-realimentación-con-las-formas)); sin ella, de los archivos `.oido` y `.nube` del anfitrión
+([pedido 37](04-nucleo-abi-de-pedidos.md#94-salidas-al-anfitrión)) (`gen_vida.py:593-641`).
 
 ### 10.12.4 Juez de la marcha
 
@@ -1032,7 +1032,7 @@ Luego: deriva aleatoria `w ∈ [−8, 8]` (rotación `x −= y·w>>8`, `y += x·
 - `r_dialogue` (`gen_vida.py:1302-1363`): el hablante nombra su primer sueño con una melodía de su léxico (nueva al
   azar si no la tiene); el oyente reconstruye una pieza desde la melodía (su léxico o su propio sueño); si acorta su
   `DL`, se conserva (4 `dreamt`, veredicto `K`), si no, 5 `unfit` (`U`); sin sueño ni palabra, `N`. Puntaje de
-  léxico ±1. Con `vida-codigo`, el sueño viaja como texto cortado en ladrillos del código común. Detalle de
+  léxico ±1. Con [`vida-codigo`](08-luma-cuerpo-procesos-y-casa.md#898-vida-habitat-vida-codigo-vida-nube-16-hex), el sueño viaja como texto cortado en ladrillos del código común. Detalle de
   `r_dream`, `r_welcome`, `r_spawn` y paquetes: no verificado línea por línea.
 
 ### 10.12.7 Hábitats
@@ -1057,7 +1057,7 @@ cuántos viven en cada uno (mínimo 2 cuerpos); colores de estrato de la paleta 
 | `v_remember` | Rehacer cuerpo | Crece la receta guardada como forma en 40 × 50 (identidad: 50 filas, una vez) y escribe su nube `vida-nube-H`. | `gen_luma.py:1051-1116` |
 
 Condición común: `v_born` sólo ofrece, y `v_learned` sólo transforma y ofrece, si `MEM ≠ 0` (la lista se cargó de
-`vida-memoria`); `v_shrink`, `v_offer_creature` y `v_gift_to` tampoco actúan sin `MEM` (`gen_luma.py:572, 578, 642,
+[`vida-memoria`](08-luma-cuerpo-procesos-y-casa.md#891-vida-lista-vida-memoria)); `v_shrink`, `v_offer_creature` y `v_gift_to` tampoco actúan sin `MEM` (`gen_luma.py:572, 578, 642,
 690, 723`).
 
 Tamaño del cuerpo: `min(isqrt(B² + B·C_BITS), 2B)` (`gen_luma.py:535-539`). Cámara (`gen_luma.py:540-568,
@@ -1068,22 +1068,22 @@ En Luma sólo afecta a los estratos, que la lluvia tapa.
 
 | Etiqueta | Formato | Fuente |
 |---|---|---|
-| `vida-lista` | `lista1 N(6) NMAX(9) OMAX(9) TEXT(9)\n` (44) + `<nube 9> <oido 9> <ruta nube>\t<ruta oido>\n` | `gen_vida.py:371-462` |
-| `vida-memoria` | Mismo encabezado; línea: huella (16 hex), espacio, receta (31), espacio, color 1 (6 hex), espacio, color 2 (6 hex), espacio, bytes de marcha (9), `\n`, texto de la marcha | `gen_vida.py:441-448` |
-| `vida-aprendido` | `aprendido1 NNNNNN\n` + `<huella 16> <K 3>` y K veces ` <P 5> <q 2> <s 2>`, `\n`; relleno con espacios hasta el mayor largo | `gen_vida.py:469-550` |
-| `vida-archivo` | Líneas de 80: cuadro (9), alumno (16 hex) en 10, maestro en 27, P en 44, q en 50, s en 53, veredicto (8) en 56, DL actual (6) en 65, DL con la pieza (6) en 72, `\n` | `gen_vida.py:564-590` |
-| `vida-dialogos` | Líneas de 104: cuadro, hablante en 10, oyente en 27, sueño P q s en 44/50/53, melodía dicha en 56, enviada en 59, pieza reconstruida en 62/68/71, `K`/`U`/`N` en 74, exacta en 76, DL en 78 y 85, cuarto campo del sueño en 93, `\n` | `gen_vida.py:1429-1459` |
-| `vida-lexico` | `lexico1 NNNNNNN\n` (16) + líneas de 37: huella, melodía (2) en 17, P (5) en 20, q (2) en 26, s (2) en 29, puntaje (4) en 32, `\n` | `gen_vida.py:1467-1500` |
-| `vida-habitat` | Líneas de 19: huella, espacio, modo, `\n` | `gen_vida.py:1762-1772` |
-| `vida-cuerpos` | `cuerpos1 N(6)\n` (16) + líneas de 56: huella, espacio, receta (31), espacio, bits (6), `\n`; la línea `i` es la criatura `i` y su huella debe coincidir | `gen_luma.py:751-769, 924-933` |
-| `vida-intercambios` | Líneas de 65: cuadro (9), clase `F`/`C`/`M` en 10, criatura (16 hex) en 12, forma en 29, candidato (31) en 31, resultado `K`/`L`/`W`/`P` en 63 (motivo del anillo 0/1/2/3), `\n` | `gen_luma.py:730-750` |
-| `vida-guardados` | Copia de las líneas de `vida-archivo` cuyo veredicto es 0, 1 o 4 | `gen_vida.py:584-586` |
-| `vida-nube-H` | `NUBE` v3 40 × 50: encabezado, 250 bytes de bits, 3 bytes RGB por celda encendida (contorno en `C_C1`, interior en `C_C2`) | `gen_luma.py:1081-1114` |
-| `vida-codigo` | Código común (escrito por `codigo_comun.py`): ladrillos de 20 bytes | `gen_vida.py:1414-1428` |
+| [`vida-lista`](08-luma-cuerpo-procesos-y-casa.md#891-vida-lista-vida-memoria) | `lista1 N(6) NMAX(9) OMAX(9) TEXT(9)\n` (44) + `<nube 9> <oido 9> <ruta nube>\t<ruta oido>\n` | `gen_vida.py:371-462` |
+| [`vida-memoria`](08-luma-cuerpo-procesos-y-casa.md#891-vida-lista-vida-memoria) | Mismo encabezado; línea: huella (16 hex), espacio, receta (31), espacio, color 1 (6 hex), espacio, color 2 (6 hex), espacio, bytes de marcha (9), `\n`, texto de la marcha | `gen_vida.py:441-448` |
+| [`vida-aprendido`](08-luma-cuerpo-procesos-y-casa.md#892-vida-aprendido) | `aprendido1 NNNNNN\n` + `<huella 16> <K 3>` y K veces ` <P 5> <q 2> <s 2>`, `\n`; relleno con espacios hasta el mayor largo | `gen_vida.py:469-550` |
+| [`vida-archivo`](08-luma-cuerpo-procesos-y-casa.md#893-vida-archivo-vida-guardados-80-bytes) | Líneas de 80: cuadro (9), alumno (16 hex) en 10, maestro en 27, P en 44, q en 50, s en 53, veredicto (8) en 56, DL actual (6) en 65, DL con la pieza (6) en 72, `\n` | `gen_vida.py:564-590` |
+| [`vida-dialogos`](08-luma-cuerpo-procesos-y-casa.md#894-vida-dialogos-104-bytes) | Líneas de 104: cuadro, hablante en 10, oyente en 27, sueño P q s en 44/50/53, melodía dicha en 56, enviada en 59, pieza reconstruida en 62/68/71, `K`/`U`/`N` en 74, exacta en 76, DL en 78 y 85, cuarto campo del sueño en 93, `\n` | `gen_vida.py:1429-1459` |
+| [`vida-lexico`](08-luma-cuerpo-procesos-y-casa.md#895-vida-lexico) | `lexico1 NNNNNNN\n` (16) + líneas de 37: huella, melodía (2) en 17, P (5) en 20, q (2) en 26, s (2) en 29, puntaje (4) en 32, `\n` | `gen_vida.py:1467-1500` |
+| [`vida-habitat`](08-luma-cuerpo-procesos-y-casa.md#898-vida-habitat-vida-codigo-vida-nube-16-hex) | Líneas de 19: huella, espacio, modo, `\n` | `gen_vida.py:1762-1772` |
+| [`vida-cuerpos`](08-luma-cuerpo-procesos-y-casa.md#897-vida-cuerpos) | `cuerpos1 N(6)\n` (16) + líneas de 56: huella, espacio, receta (31), espacio, bits (6), `\n`; la línea `i` es la criatura `i` y su huella debe coincidir | `gen_luma.py:751-769, 924-933` |
+| [`vida-intercambios`](08-luma-cuerpo-procesos-y-casa.md#896-vida-intercambios-65-bytes) | Líneas de 65: cuadro (9), clase `F`/`C`/`M` en 10, criatura (16 hex) en 12, forma en 29, candidato (31) en 31, resultado `K`/`L`/`W`/`P` en 63 (motivo del anillo 0/1/2/3), `\n` | `gen_luma.py:730-750` |
+| [`vida-guardados`](08-luma-cuerpo-procesos-y-casa.md#893-vida-archivo-vida-guardados-80-bytes) | Copia de las líneas de `vida-archivo` cuyo veredicto es 0, 1 o 4 | `gen_vida.py:584-586` |
+| [`vida-nube-H`](08-luma-cuerpo-procesos-y-casa.md#898-vida-habitat-vida-codigo-vida-nube-16-hex) | `NUBE` v3 40 × 50: encabezado, 250 bytes de bits, 3 bytes RGB por celda encendida (contorno en `C_C1`, interior en `C_C2`) | `gen_luma.py:1081-1114` |
+| [`vida-codigo`](08-luma-cuerpo-procesos-y-casa.md#898-vida-habitat-vida-codigo-vida-nube-16-hex) | Código común (escrito por `codigo_comun.py`): ladrillos de 20 bytes | `gen_vida.py:1414-1428` |
 
 ## 10.13 Anillos del presente
 
-Con `PRESENT` (`gen_luma.py:37-51, 771-820`), cada registro de sucesos es un anillo: encabezado de `RHDR = 160` bytes
+Con `PRESENT` (`gen_luma.py:37-51, 771-820`), cada registro de sucesos es un [anillo](08-luma-cuerpo-procesos-y-casa.md#82-formato-anillo-anillo1): encabezado de `RHDR = 160` bytes
 y `K` líneas fijas.
 
 Descriptor de 12 qwords: `+0` manejador, `+8` K, `+16` largo de línea, `+24` cuenta, `+32 + 8m` cuenta del motivo `m`
@@ -1099,15 +1099,15 @@ Descriptor de 12 qwords: `+0` manejador, `+8` K, `+16` largo de línea, `+24` cu
 
 Encabezado: `anillo1` en 0; K (9 dígitos) en 8; cuenta (12) en 18; cuenta del motivo `m` (12) en `31 + 13m`; `\n` en
 159; el resto espacios. `l_ring(línea, motivo, descriptor)`: incrementa la cuenta del motivo; escribe la línea en
-`160 + (cuenta mod K)·largo` (pedido 38 y 6 con el manejador en los 32 bits altos); cuenta + 1; reescribe el
+`160 + (cuenta mod K)·largo` ([pedido 38 y 6](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) con el manejador en los 32 bits altos); cuenta + 1; reescribe el
 encabezado. `l_ring_open` lee el encabezado si mide 160 y empieza con `anillo1 `; si no, lo crea en cero. Una línea
-de `RING_F` también va a `r_flujo_trial`.
+de `RING_F` también va a [`r_flujo_trial`](#1055-flujo-de-la-mente-d_flb).
 
 ## 10.14 Retrato de órganos (`retrato_organos.py`)
 
 Instrumento externo, en Python, que no forma parte del programa: `retrato_organos.py <casa> <salida.md>`
-(`razar/cuerpo/retrato_organos.py:1-7`). Lee `formas` (líneas de tres campos: receta, valor, celdas) ordenadas por
-valor, y `engranajes` (registros de 128 bytes con `0 < n ≤ 15`), decodifica cada palabra con los macros de
+(`razar/cuerpo/retrato_organos.py:1-7`). Lee [`formas`](#1089-archivos-de-las-formas) (líneas de tres campos: receta, valor, celdas) ordenadas por
+valor, y [`engranajes`](#1094-archivo-engranajes) (registros de 128 bytes con `0 < n ≤ 15`), decodifica cada palabra con los macros de
 `escalon0/janax.inc` (`op = w & 0xFF`, `rd = (w>>8)&15`, `ra = (w>>12)&15`, `imm` con signo de 16 bits) y escribe un
 documento Markdown con la tabla del alfabeto, los ocho órganos y los engranajes, traduciendo algunos patrones fijos
 (`retrato_organos.py:18-101`).
@@ -1132,16 +1132,16 @@ documento Markdown con la tabla del alfabeto, los ocho órganos y los engranajes
 
 ## 10.16 Puntos no verificados
 
-1. La semántica exacta de los pedidos 12, 20, 35, 38, 39, 42, 43, 44 y 47 del lado del núcleo (cap. 04); aquí sólo
+1. La semántica exacta de los pedidos 12, 20, 35, 38, 39, 42, 43, 44 y 47 del lado del núcleo ([cap. 04](04-nucleo-abi-de-pedidos.md#9-especificación-de-cada-pedido)); aquí sólo
    consta cómo se usan.
-2. El significado del evento de tipo 6 y el valor de `EV+8` en eventos de tipo 6 y 7 (cap. 05).
+2. El significado del evento de tipo 6 y el valor de `EV+8` en eventos de tipo 6 y 7 ([cap. 05](05-nucleo-pantalla-teclado-vigia.md#62-tipos-de-evento)).
 3. Que `r_open` (pedido 4) cree el archivo si no existe: se deduce del borrado del "archivo vacío" en
    `gen_luma.py:308`.
 4. El significado de los dos floats y de los 8 bytes en cero del encabezado `NUBE`.
-5. El significado preciso de `lj_rlen`/`lj_rptr` y el orden en que recorren las líneas de la conversación (cap. 09).
-6. El comportamiento del pedido 39 cuando `JANAX_VIGIA` no está definida (rama sin `vida-memoria` de `luma.sh`).
+5. El significado preciso de `lj_rlen`/`lj_rptr` y el orden en que recorren las líneas de la conversación ([cap. 09](09-luma-conversacion-y-respuesta.md#197-respuesta-única-y-flujo)).
+6. El comportamiento del pedido 39 cuando `JANAX_VIGIA` no está definida (rama sin `vida-memoria` de [`luma.sh`](08-luma-cuerpo-procesos-y-casa.md#3-construcción-y-arranque-lumash)).
 7. Los detalles internos de `r_dream`, `r_welcome`, `r_spawn`, `r_packets`, `r_body` y `r_parse_oido` de las
    criaturas, y de `r_dl`/`r_learn` de los ladrillos.
 8. Si la casa de Luma contiene una `despensa` (de ella depende que haya comidas de nubes).
-9. `r_letra_learn`, `r_letra_fine` y `r_dlg_wish` (cap. 09), `r_read_max`, `r_read_cand`, `r_linaje` y `r_flat`
-   (cap. 06).
+9. `r_letra_learn`, `r_letra_fine` y `r_dlg_wish` ([cap. 09](09-luma-conversacion-y-respuesta.md#09-luma-el-protocolo-de-conversación-y-la-construcción-de-una-respuesta)), `r_read_max`, `r_read_cand`, `r_linaje` y `r_flat`
+   ([cap. 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)).

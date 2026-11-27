@@ -11,24 +11,24 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.39.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.39: lo que se le escribe, tal cual</h2>
+<h2 id="janax-y-razar-v139-lo-que-se-le-escribe-tal-cual">Janax y Razar v1.39: lo que se le escribe, tal cual</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24427888">10.5281/zenodo.24427888</a></p>
 <blockquote><p><em>"Primero no reconoce UTF-8; segundo, hubo un desborde cuando escribí un texto más largo: se tildó todo."</em> <em>"Si el código máquina entrega toda clase de caracteres, no solo la UTF-8, ¿no podría aprender según lo que se encuentre?"</em> (el autor, 2026-11-21)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 137, el 139.</p>
-<h3>1. Se tildaba con un renglón largo</h3>
+<h3 id="1-se-tildaba-con-un-renglón-largo">1. Se tildaba con un renglón largo</h3>
 <p>Lo que se le escribe se ve en una línea de 25 letras; cuando el renglón pasaba de ahí, Luma mostraba el final <strong>restando donde tenía que sumar</strong>: leía antes del comienzo de su propio cuarto, el núcleo la frenaba por salirse de su memoria, y la ventana quedaba congelada en la letra 25. No era la búsqueda de la respuesta: era un signo.</p>
 <p>Medido en una copia de su casa: una frase de casi 150 letras, contestada en el acto.</p>
-<h3>2. El núcleo entrega cada carácter escrito</h3>
+<h3 id="2-el-núcleo-entrega-cada-carácter-escrito">2. El núcleo entrega cada carácter escrito</h3>
 <p>Hasta ahora el núcleo decía sólo <strong>qué tecla</strong> bajó (evento 4). Ahora además dice <strong>qué carácter</strong> se escribió: el <strong>evento 7</strong>, con su punto de código Unicode (las dos mitades de un par sustituto ya juntas). Acentos, eñes, griego, árabe, emojis: lo que el teclado arme, sin filtro ni traducción.</p>
-<h3>3. Luma lo guarda tal cual, y lo que es igual lo aprende ella</h3>
+<h3 id="3-luma-lo-guarda-tal-cual-y-lo-que-es-igual-lo-aprende-ella">3. Luma lo guarda tal cual, y lo que es igual lo aprende ella</h3>
 <p>Lo que se le escribe queda en <code>dialogo</code> en UTF-8, byte por byte. Para ella, <strong>una letra</strong> es a..z (minúscula o mayúscula da igual) o <strong>cualquier carácter entero más allá de ASCII</strong>, cuya huella es su propio punto de código: <em>"corazón"</em> es una palabra entera, y no <em>"coraz"</em> + <em>"n"</em> como antes.</p>
 <p><strong>Qué acentos valen lo mismo no se le da en una tabla.</strong> Fue decisión del autor: que lo aprenda con lo que lea. Su juez es la compresión, y dos formas que aparecen en los mismos lugares se explican mejor como una sola; y puede descubrir que <em>"papa"</em> y <em>"papá"</em> no lo son.</p>
 <p>La palabra de cuatro letras o más se cuenta en letras, no en bytes; borrar quita un carácter entero (un emoji también); en su ventana cada carácter ocupa un lugar.</p>
-<h3>4. Dos pisadas de memoria, arregladas</h3>
+<h3 id="4-dos-pisadas-de-memoria-arregladas">4. Dos pisadas de memoria, arregladas</h3>
 <p>El dibujo de letras y el diálogo usaban de borrador casillas de su digestión (los nombres de una pieza, sus cuentas). Pasaron a su propio cuarto. El verificador del corazón (<code>busca.py</code>) sigue la misma regla de letra.</p>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <ul><li>Escribiéndole a su ventana como lo hace un teclado: <code>á</code> quedó <code>c3 a1</code>, <code>ñ</code> <code>c3 b1</code>, 🌱 <code>f0 9f 8c b1</code>.</li><li>A <em>"¿Quién es Dios? 🌱 luz"</em> contestó: <em>"La Virgen concebira y dara a luz un hijo..."</em> (así, sin tildes, como está en su libro).</li><li>La batería del núcleo: <strong>411 bien, 0 mal</strong>.</li><li>En vivo desde el 21 a las 17:48.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>Todavía no aprendió que "ó" y "o" son la misma letra.</strong> Sus libros están escritos sin acentos, así que a <em>"corazón"</em> con tilde hoy no le encuentra la palabra. Está dicho que es suyo aprenderlo; no se lo vio hacer.</li><li><strong>En su ventana, las letras que su abecedario de puntitos no tiene</strong> (ó, ñ, 🌱) se ven como un hueco.</li><li><strong>Cualquier carácter más allá de ASCII cuenta como letra</strong>: una raya larga o unas comillas curvas pegadas a una palabra quedan dentro de ella.</li><li>El evento 7 no tiene prueba propia en la batería del núcleo: se probó escribiéndole a su ventana.</li><li>Siguen los de la <a href="release-v1.37.html">v1.37</a>, salvo los que esta versión salda.</li></ul>
 </body>
 </html>

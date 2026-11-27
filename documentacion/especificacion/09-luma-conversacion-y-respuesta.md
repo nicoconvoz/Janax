@@ -1,18 +1,18 @@
 # 09. Luma: el protocolo de conversación y la construcción de una respuesta
 
 Este capítulo especifica el camino completo que recorre un turno de diálogo dentro de Luma: desde que el usuario
-pulsa Enter en la línea de entrada hasta que la respuesta queda escrita en el archivo `dialogo` y en el archivo
-`respuesta`. Cubre el protocolo entre el cuerpo y el proceso pensador, la corrección ortográfica, la decisión de
+pulsa Enter en la línea de entrada hasta que la respuesta queda escrita en el archivo [`dialogo`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros) y en el archivo
+[`respuesta`](08-luma-cuerpo-procesos-y-casa.md#863-pregunta-respuesta-lista). Cubre el protocolo entre el cuerpo y el proceso pensador, la corrección ortográfica, la decisión de
 responder, el motor de selección de líneas (`r_dlg_answer`), el camino de pasos (`wy_go`), el paso `sigue` y su
 orden de fuentes, las costumbres y su regla de cobertura (`r_canto`), la regla de los lugares (`r_describe`), las
 pistas y la selección de oraciones, el canto y la regla de dos, la imaginación, los mecanismos para no repetir, la
 lluvia como dados, las firmas de idioma (`lj_*`) y las estructuras de memoria que todo ello usa. No cubre: el
-idioma y su codificación (capítulo 01), el ensamblador y la construcción (capítulo 02), los procesos del núcleo
-(capítulo 03), la semántica de cada pedido al núcleo (capítulo 04), la pantalla, el teclado y el vigía (capítulo
-05), la lectura de Razar y sus órganos (capítulo 06), el cardumen y el programa de canto `memoria_pares.jsm`
-(capítulo 07), el cuerpo de Luma, su casa y el árbol de temas (capítulo 08), el panel, la música y la vida de Luma
-(capítulo 10) ni el instalador y la publicación (capítulo 11). Donde este capítulo nombra un pedido al núcleo por
-su número, su semántica es la del capítulo 04.
+idioma y su codificación ([capítulo 01](01-idioma-janax.md#01-el-idioma-janax-máquina-virtual-codificación-e-instrucciones)), el ensamblador y la construcción ([capítulo 02](02-ensamblador-pdp-y-construccion.md#02-el-ensamblador-pdp-la-cadena-de-construcción-y-las-herramientas)), los procesos del núcleo
+([capítulo 03](03-nucleo-arranque-memoria-procesos.md#03-núcleo-janaxos-arranque-memoria-procesos-firmas-y-planificación)), la semántica de cada pedido al núcleo ([capítulo 04](04-nucleo-abi-de-pedidos.md#04-núcleo-janaxos-abi-de-pedidos-llamadas-al-sistema)), la pantalla, el teclado y el vigía ([capítulo
+05](05-nucleo-pantalla-teclado-vigia.md#05-núcleo-janaxos-pantalla-teclado-ventana-vigía-y-venn)), la lectura de Razar y sus órganos ([capítulo 06](06-razar-lectura-y-organos.md#06-razar-lectura-órganos-recetas-juez-y-ortografía)), el cardumen y el programa de canto [`memoria_pares.jsm`](07-razar-cardumen-canto-hilos.md#2-memoria_paresjsm-el-núcleo-de-pares-y-el-canto)
+([capítulo 07](07-razar-cardumen-canto-hilos.md#07-razar-cardumen-canto-memoria_pares-hilos-y-nitidez)), el cuerpo de Luma, [su casa](08-luma-cuerpo-procesos-y-casa.md#8-formato-de-la-casa) y [el árbol de temas](08-luma-cuerpo-procesos-y-casa.md#876-arbol) ([capítulo 08](08-luma-cuerpo-procesos-y-casa.md#08-luma-cuerpo-generadores-procesos-y-formato-de-su-casa)), el panel, la música y la vida de Luma
+([capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#10-luma-pantalla-lluvia-hexadecimal-panel-criaturas-y-órganos-vivos)) ni el instalador y la publicación ([capítulo 11](11-instalador-lanzador-y-publicacion.md#11-instalador-lanzador-y-publicación)). Donde este capítulo nombra un pedido al núcleo por
+su número, su semántica es la del [capítulo 04](04-nucleo-abi-de-pedidos.md#8-tabla-resumen-de-pedidos).
 
 ---
 
@@ -33,15 +33,15 @@ su número, su semántica es la del capítulo 04.
 
 | Elemento | Significado | Fuente |
 |---|---|---|
-| `j0`..`j15` | Registros generales de 64 bits. `j0` lleva el resultado de las rutinas. `j14` vale 0 siempre: `st("j14", X)` pone `X` a 0 y `jadd rd, rs, j14` copia. | capítulo 01; `gen_leer.py:2576` |
-| `ld(r, "NOMBRE")` / `st(r, "NOMBRE")` | Lectura/escritura de una variable global con nombre (por ejemplo `EXR`, `CNB`). Su dirección la asigna el generador (no verificado en este capítulo). | `gen_leer.py:615` |
-| `gl(r, OFF)` / `gs(r, OFF)` | Lectura/escritura del qword en `B + OFF`, donde `B = ST["free"]` es el bloque propio (64 KB según el comentario de `gen_leer.py:233`; tamaño no verificado). | `gen_leer.py:616`, `gen_leer.py:621-622` |
-| `dl(r, OFF)` / `ds(r, OFF)` / `da(r, OFF)` | Lectura, escritura y dirección de `DLR + OFF` (la sala de la palabra, §2.1). | `gen_leer.py:2004-2070` (uso) |
-| `gb(r, OFF)` / `gbs(r, OFF)` | Lectura/escritura de `[D_GBLK] + OFF` (la sala de gustos, §2.2). | `gen_leer.py:3928-3929` |
-| `r_tocar(j10=pedido, j11=a, j12=b)` | Un pedido al núcleo; respuesta en `j13`, `b` devuelto en `j12`. | `razar/cuerpo/gen_formas.py:1327-1329` |
-| `r_file(j10)` | 5 leer, 6 escribir, 7 cerrar, 38 posicionar, sobre el manejador `FH`. `38` con `j11 = -1` deja en `j13` el tamaño del archivo (posición final). | `razar/cuerpo/gen_vida.py:1898`, capítulo 04 |
-| `r_open(j11=etiqueta, j12=bytes)` | Abre por etiqueta (pedido 4); el manejador queda en `FH`, negativo si falla. | `razar/cuerpo/gen_formas.py:1096-1097` |
-| `r_alloc(j1=bytes)` | Pide una sala nueva (pedido 2); dirección en `j0`. Una sala se devuelve con el pedido 3. | `razar/cuerpo/gen_comer.py:238` |
+| `j0`..`j15` | Registros generales de 64 bits. `j0` lleva el resultado de las rutinas. `j14` vale 0 siempre: `st("j14", X)` pone `X` a 0 y `jadd rd, rs, j14` copia. | [capítulo 01](01-idioma-janax.md#36-convenciones-de-software-sobre-registros-no-impuestas-por-la-máquina); `gen_leer.py:2576` |
+| `ld(r, "NOMBRE")` / `st(r, "NOMBRE")` | Lectura/escritura de una variable global con nombre (por ejemplo `EXR`, `CNB`). Su dirección la asigna el generador (`razar/cuerpo/gen_formas.py:188-189`). | `gen_leer.py:615` |
+| `gl(r, OFF)` / `gs(r, OFF)` | Lectura/escritura del qword en `B + OFF`, donde `B = ST["free"]` es el [bloque propio](08-luma-cuerpo-procesos-y-casa.md#261-bloque-libre-b--stfree) (64 KB según el comentario de `gen_leer.py:233`; `razar/cuerpo/gen_luma.py:95-96`). | `gen_leer.py:616`, `gen_leer.py:621-622` |
+| `dl(r, OFF)` / `ds(r, OFF)` / `da(r, OFF)` | Lectura, escritura y dirección de `DLR + OFF` (la sala de la palabra, [§2.1](#21-la-sala-de-la-palabra-dlr-32768-bytes)). | `gen_leer.py:2004-2070` (uso) |
+| `gb(r, OFF)` / `gbs(r, OFF)` | Lectura/escritura de `[D_GBLK] + OFF` (la sala de gustos, [§2.2](#22-la-sala-de-gustos-d_gblk)). | `gen_leer.py:3928-3929` |
+| `r_tocar(j10=pedido, j11=a, j12=b)` | [Un pedido al núcleo](04-nucleo-abi-de-pedidos.md#8-tabla-resumen-de-pedidos); respuesta en `j13`, `b` devuelto en `j12`. | `razar/cuerpo/gen_formas.py:1327-1329` |
+| `r_file(j10)` | 5 leer, 6 escribir, 7 cerrar, 38 posicionar, sobre el manejador `FH`. `38` con `j11 = -1` deja en `j13` el tamaño del archivo (posición final). | `razar/cuerpo/gen_vida.py:1898`, [capítulo 04](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) |
+| `r_open(j11=etiqueta, j12=bytes)` | Abre por etiqueta ([pedido 4](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)); el manejador queda en `FH`, negativo si falla. | `razar/cuerpo/gen_formas.py:1096-1097` |
+| `r_alloc(j1=bytes)` | Pide una sala nueva ([pedido 2](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas)); dirección en `j0`. Una sala se devuelve con el [pedido 3](04-nucleo-abi-de-pedidos.md#92-memoria-y-cajas). | `razar/cuerpo/gen_comer.py:238` |
 
 ### 1.3 Letras, palabras y huellas
 
@@ -64,7 +64,7 @@ salta lo que no es letra hasta una letra o hasta un byte 10 (fin de línea). Dev
   final;
 - o `j0 = 0` al llegar a un byte 10 o a `BE`, con `BP` sobre él.
 
-**Huella de palabra**: FNV-1a de 64 bits sobre los puntos de código base, uno por letra:
+**Huella de palabra**: [FNV-1a de 64 bits](02-ensamblador-pdp-y-construccion.md#161-fnv-1a-de-64-bits-fnv_basis-fnv-ensambladorjsm313-333) sobre los puntos de código base, uno por letra:
 `h = 0xCBF29CE484222325; para cada letra c: h = (h XOR c) * 0x100000001B3 mod 2^64`; si `h = 0` se usa 1
 (`gen_leer.py:682`, `gen_leer.py:748-753`). Mayúsculas y minúsculas ASCII dan la misma huella.
 
@@ -84,21 +84,22 @@ salta lo que no es letra hasta una letra o hasta un byte 10 (fin de línea). Dev
 
 ### 1.5 La lista de libros
 
-`ul_list` (`gen_leer.py:7084-7094`) pide la lista de la casa (pedido 14) en una sala que se duplica hasta que la
+`ul_list` (`gen_leer.py:7084-7094`) pide [la lista de la casa](04-nucleo-abi-de-pedidos.md#103-del-nombre-de-archivo-a-la-etiqueta-listado) ([pedido 14](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) en una sala que se duplica hasta que la
 cuenta se repite. Deja en `ULB` la sala y en `ULN` la cantidad. Cada entrada es: un qword con la longitud `n` de la
 etiqueta, la etiqueta, y relleno hasta múltiplo de 8; la siguiente entrada está en `+8 + ((n + 7) & ~7)`
 (`gen_leer.py:2926`).
 
 | Clase de etiqueta | Regla | Fuente |
 |---|---|---|
-| Libro | Empieza por `libro`, o por `elibro` (libro en espera de turno). | `gen_leer.py:2589-2600`, `gen_leer.py:5333-5347` |
-| Charla | Exactamente `dialogo` (7 bytes). Cuando se lee, `D_LIVE = 1`. | `gen_leer.py:2592-2595`, `gen_leer.py:5146-5152` |
+| Libro | Empieza por `libro`, o por `elibro` ([libro en espera de turno](08-luma-cuerpo-procesos-y-casa.md#887-turno-y-rotación-de-libros)). | `gen_leer.py:2589-2600`, `gen_leer.py:5333-5347` |
+| Charla | Exactamente [`dialogo`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros) (7 bytes). Cuando se lee, `D_LIVE = 1`. | `gen_leer.py:2592-2595`, `gen_leer.py:5146-5152` |
 | El Libro | Exactamente `libro` (5 bytes) o `elibro` (6 bytes). | `gen_leer.py:2631-2637` |
-| Libro de disco | Contiene `-disco` en algún punto de la etiqueta: se descarta siempre. | `gen_leer.py:3704-3719` |
-| Libros del corazón (`HEART`) | Tupla fija de cuatro etiquetas, comparadas byte a byte y en ese orden: `libro-firma`, `libro-preguntas` y dos etiquetas más de libros del autor (literales en la fuente; su contenido no se especifica). | `gen_leer.py:583` |
+| [Libro de disco](08-luma-cuerpo-procesos-y-casa.md#8817-libro-disco-16-hex-elibro-disco-16-hex) | Contiene `-disco` en algún punto de la etiqueta: se descarta siempre. | `gen_leer.py:3704-3719` |
+| [Libros del corazón](08-luma-cuerpo-procesos-y-casa.md#886-corazón) (`HEART`) | Tupla fija de cuatro etiquetas, comparadas byte a byte y en ese orden: [`libro-firma`](08-luma-cuerpo-procesos-y-casa.md#888-firma), [`libro-preguntas`](08-luma-cuerpo-procesos-y-casa.md#885-libro-preguntas-preguntas-mias-preguntas-viejas) y dos etiquetas más de libros del autor (literales en la fuente; su contenido no se especifica). | `gen_leer.py:583` |
 
-La huella de una etiqueta de libro (para gustos y firmas) es `h = 0; h = 31h + byte` sobre la etiqueta sin la `e`
-inicial de espera (`gen_leer.py:4575-4585`, `gen_leer.py:4940-4945`).
+La huella de una etiqueta de libro es `h = 0; h = 31h + byte`: para gustos, sobre la etiqueta sin la `e`
+inicial de espera (`gen_leer.py:4575-4585`); para firmas (`lj_hash`, `gen_leer.py:4940-4945`), sobre la etiqueta tal
+como está en la lista, con la `e` si la tiene (`gen_leer.py:5035`, `gen_leer.py:5073`).
 
 ---
 
@@ -114,10 +115,10 @@ inicial de espera (`gen_leer.py:4575-4585`, `gen_leer.py:4940-4945`).
 |---|---|---|---|
 | 0x0000 | `D_IN` | 1000 | Lo que se tipea; luego, lo leído tras la ortografía. |
 | 0x0400 | `D_OUT` | 1000 | Lo que ella dice (respuesta en construcción). |
-| 0x0800 | `D_WORDS` | 120 × 8 | Huellas de las palabras dichas a ella (§6.1). |
+| 0x0800 | `D_WORDS` | 120 × 8 | Huellas de las palabras dichas a ella ([§6.1](#61-r_dlg_words)). |
 | 0x0C00 | (`D_WORDS + 1024`) | 120 × 8 | Marca de cada palabra: el `D_ID` de la última línea que la contó. |
 | 0x1000 | `D_SCR` | 2048 | Línea en preparación para `dialogo`. |
-| 0x1800 | `D_LBL` | 160 | Etiquetas: `dialogo` (+0), `charla` (+16), `letras` (+32), `abecedario` (+48), `rodeos` (+64), `preguntas-mias` (+80), `libro-preguntas` (+96), `preguntas-viejas` (+112), `arbol` (+128), `charla-libros` (+144) (`gen_leer.py:2015-2016`). |
+| 0x1800 | `D_LBL` | 160 | Etiquetas: [`dialogo`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros) (+0), [`charla`](08-luma-cuerpo-procesos-y-casa.md#853-charla-2304-bytes-binarios) (+16), [`letras`](08-luma-cuerpo-procesos-y-casa.md#8811-letras-abecedario) (+32), `abecedario` (+48), [`rodeos`](08-luma-cuerpo-procesos-y-casa.md#884-hallazgos-rodeos) (+64), [`preguntas-mias`](08-luma-cuerpo-procesos-y-casa.md#885-libro-preguntas-preguntas-mias-preguntas-viejas) (+80), `libro-preguntas` (+96), `preguntas-viejas` (+112), [`arbol`](08-luma-cuerpo-procesos-y-casa.md#876-arbol) (+128), `charla-libros` (+144) (`gen_leer.py:2015-2016`). |
 | 0x1900 | `D_INL` | 8 | Bytes de `D_IN`. |
 | 0x1908 | `D_OUTL` | 8 | Bytes de `D_OUT`. |
 | 0x1910 | `D_AWAIT` | 8 | 0 nada espera; 1 su respuesta espera; 2 habló primero; 3 calló. |
@@ -125,7 +126,7 @@ inicial de espera (`gen_leer.py:4575-4585`, `gen_leer.py:4940-4945`).
 | 0x1938 | `D_NW` | 8 | Cantidad de palabras en `D_WORDS`. |
 | 0x1960 | `D_LC` | 8 | Índice del libro que se lee en la lista. |
 | 0x1970 / 0x1978 | `D_FB` / `D_FE` | 8 + 8 | Sala de lectura del libro y su tamaño. |
-| 0x1988 | `D_CNT` | 8 | Peso de la línea en curso (§8.4). |
+| 0x1988 | `D_CNT` | 8 | Peso de la línea en curso ([§8.4](#84-recorrido-de-una-línea)). |
 | 0x19A0 | `D_ID` | 8 | Contador de líneas (sólo crece). |
 | 0x19A8 | `D_X` | 32 | Rasguños. |
 | 0x19C8 | `D_MODE` | 8 | 0 primera manera (buscar la línea A en `D_OUT`); 1 segunda manera (línea B en `D_B`). |
@@ -148,7 +149,7 @@ inicial de espera (`gen_leer.py:4575-4585`, `gen_leer.py:4940-4945`).
 | 0x4570 | `D_LI` | 8 | Puntero a la entrada actual de la lista de libros. |
 | 0x45C8 | `D_LCX` | 8 | Contexto en que dijo lo último. |
 | 0x45E0 | `D_ENT` | 8 | 1 si lo que dijo esperaba respuesta y él volvió a escribir. |
-| 0x45E8 / 0x45F0 | `D_KACT` / `D_KCLA` | 8 + 8 | Activación y claridad de él (0/1, §4). |
+| 0x45E8 / 0x45F0 | `D_KACT` / `D_KCLA` | 8 + 8 | Activación y claridad de él (0/1, [§4](#4-recepción-del-turno-r_dlg_sent)). |
 | 0x45F8 | `D_CTX` | 8 | Contexto (32 valores). |
 | 0x4608 | `D_AV` | 8 | Ramas disponibles: bit 1 preguntar de nuevo, 2 otra cosa, 4 seguir, 8 responder. |
 | 0x4718 | `D_RP` | 1000 | Lo que él dijo (copia de `D_IN`). |
@@ -156,20 +157,20 @@ inicial de espera (`gen_leer.py:4575-4585`, `gen_leer.py:4940-4945`).
 | 0x6030 | `D_CX` | 2048 | 32 contextos × 4 ramas × (N, S): entrada en `ctx·64 + (rama − 1)·16`, N en +0, S en +8. |
 | 0x6830 | `D_CM` | 96 | Pares (N, S): +0 encadenar en 2 líneas, +16 tras 2 sujetos, +32/+48 cruce (mejor / libre), +64/+72 hilo, +80/+88 improvisar. |
 | 0x7C18 | `D_HL` | 4 × 24 | Etiquetas de los libros del corazón. |
-| 0x7C78..0x7CF0 | `H_K` .. `H_NN` | | Estado de `r_dlg_heart` (§13). |
+| 0x7C78..0x7CF0 | `H_K` .. `H_NN` | | Estado de `r_dlg_heart` ([§13](#13-el-corazón-responde-r_dlg_heart)). |
 | 0x7CF8 | `H_NP` | 4 × 8 | Huellas de las palabras de su nombre. |
 | 0x7D18 | `TH_P` | 24 × 8 | Huellas del intercambio que terminó (el hilo); `TH_PN` (0x7DD8) cuántas. |
 | 0x7DE0 | `TH_N` | 24 × 8 | Huellas del intercambio que empieza; `TH_NN` (0x7EA0) cuántas. |
 | 0x7EA8 | `TH_M` | 24 × 8 | Marca (`D_ID`) de cada huella de `TH_P`. |
 | 0x7F68..0x7F80 | `TH_W`, `TH_C`, `TH_B`, `TH_L` | 4 × 8 | Deseo vigente del hilo; aporte del hilo al párrafo, al mejor; respondió por el hilo. |
 | 0x7F88..0x7FA0 | `IM_K`, `IM_P`, `IM_ON`, `IM_L` | 4 × 8 | Tema: libro del corazón, desplazamiento, tema abierto, improvisó. |
-| 0x7FD8 | `D_GBLK` | 8 | Puntero a la sala de gustos (§2.2). |
+| 0x7FD8 | `D_GBLK` | 8 | Puntero a la sala de gustos ([§2.2](#22-la-sala-de-gustos-d_gblk)). |
 | 0x7FE0 | `D_LIVE` | 8 | 1 si el libro que se lee es la charla. |
 
 Los nombres `D_LS`, `D_LI`, `D_BS` y `D_CM` se asignan dos veces en la cabecera; rige la última asignación
 (`D_LS`: `gen_leer.py:282` y `gen_leer.py:286`, final 0x1A78; `D_LI`: `gen_leer.py:282` y `gen_leer.py:316`, final
 0x4570; `D_BS`: `gen_leer.py:282` y `gen_leer.py:353`, final 0x68D0, dentro de la zona que sigue a `D_CM`; `D_CM`:
-`gen_leer.py:301` y `gen_leer.py:346`, final 0x6830). Ver §24.
+`gen_leer.py:301` y `gen_leer.py:346`, final 0x6830). Ver [§24](#24-observaciones-de-verificación).
 
 ### 2.2 La sala de gustos (`[D_GBLK]`)
 
@@ -177,23 +178,23 @@ Desplazamientos dentro de la sala apuntada por `D_GBLK` (accedida con `gb`/`gbs`
 
 | Desplazamiento | Nombre | Contenido |
 |---|---|---|
-| +0 | | Peso del libro que se lee: deseo × firma (§8.3). |
+| +0 | | Peso del libro que se lee: deseo × firma ([§8.3](#83-peso-del-libro)). |
 | +8 | | Mejor puntaje de la búsqueda en curso. |
 | +16 | | Huella del libro que se lee. |
 | +24 | | Huella del libro de su línea A. |
 | +32 | | Huella del libro que espera respuesta de él. |
 | +40 | | Cantidad de libros en la tabla de gustos. |
-| +48 (`GU_F`) | | Marco: dos de las tres señales (+0 siguió el tema, +8 trajo algo nuevo; la tercera es `D_KACT`), lo que esperaba (+16 hilo, +24 improvisación), +32/+40/+48 desacuerdos de cada marco, +56 marco de confianza, +64 puntero a la sala del ánimo. |
+| +48 (`GU_F`) | | Marco: dos de las tres señales (+0 siguió el tema, +8 trajo algo nuevo; la tercera es `D_KACT`), lo que esperaba (+16 hilo, +24 improvisación), +32/+40/+48 desacuerdos de cada marco, +56 marco de confianza, +64 puntero a la [sala del ánimo](08-luma-cuerpo-procesos-y-casa.md#871-gustos-animo-imagina). |
 | +120 (`GU_T`) | | Tabla de libros: `GU_K = 256` entradas de 24 bytes (huella, N, S). |
 | +6280 (`TM_L`) | | Etiqueta del tema: bytes (qword) y etiqueta (hasta 48). `TM_S` (+6344): 1 si cayó a mitad de línea. |
-| +6352 (`IG`) | `IG_W`, `IG_N`, `IG_S`, ..., `IG_L` | Imaginación (§15). `IG_LBL` (+6552): `imaginado` (+0), `imagina` (+16), ` \| ` (+24), ` > ` (+28), salto de línea (+32). |
-| +6592 / +6600 | `HF_T` / `HF_N` | La mitad: umbral y líneas contadas al hallarlo (+1). |
-| +6608 (`LG`) | `LG_TB` .. `LG_LL` | Firmas (§19). |
+| +6352 (`IG`) | `IG_W`, `IG_N`, `IG_S`, ..., `IG_L` | Imaginación ([§15](#15-síntesis-final-e-imaginación)). `IG_LBL` (+6552): [`imaginado`](08-luma-cuerpo-procesos-y-casa.md#872-imaginado) (+0), `imagina` (+16), ` \| ` (+24), ` > ` (+28), salto de línea (+32). |
+| +6592 / +6600 | `HF_T` / `HF_N` | [La mitad](#201-dh_wl-y-dh_half): umbral y líneas contadas al hallarlo (+1). |
+| +6608 (`LG`) | `LG_TB` .. `LG_LL` | Firmas ([§19](#19-firmas-de-idioma-lj_)). |
 | +6856 | `LG_TKB` | Puntero a la línea del flujo de pensamiento en curso (sala de 1008 bytes creada en `lj_load`, `gen_leer.py:5123`; 0 si no existe). |
 | +6888..+6912 | `LG_RB`, `LG_RN`, `LG_RC`, `LG_RW` | Su respuesta única: sala, bytes, capacidad, "él habló desde entonces". |
 | +6920 | `LG_RPS` | Sala y bytes donde se guardan las palabras de él mientras el hilo ocupa su lugar. |
 | +6936 (`LG_FL`) | | Libro de la línea con que responde: bytes de la etiqueta (+0), etiqueta (+8, hasta 64), fin de la línea en el archivo (+72). |
-| +7024 (`WY`) | `WY_N` .. `WY_U` | Caminos (§9). |
+| +7024 (`WY`) | `WY_N` .. `WY_U` | Caminos ([§9](#9-el-camino-wy_go)). |
 | +7320 (`WY_CB`) | | Costo de la silueta según cada paso (9 qwords). |
 | +7392 (`WY_M`) | | Cuentas de silueta por paso: 9 × 48 bytes. |
 
@@ -215,7 +216,7 @@ cuántas están ocupadas.
 | +1000 | Índice del libro (`D_LC & 255`), sólo en modo pistas (CNB = 30). |
 | +1008 | Cantidad de pistas, sólo en modo pistas. |
 
-La ortografía (§5) reutiliza `EXR + 0` como salida, `EXR + 1024` como estado `OS_*` y `EXR + 2048 .. +6144` como
+La ortografía ([§5](#5-ortografía-r_ortografia)) reutiliza `EXR + 0` como salida, `EXR + 1024` como estado `OS_*` y `EXR + 2048 .. +6144` como
 trozo de lectura del Libro: se ejecuta antes de que el turno llene ranuras.
 
 **Estado de ortografía `OS_*`** (en `EXR + 1024`, `gen_leer.py:3205`):
@@ -250,7 +251,7 @@ trozo de lectura del Libro: se ejecuta antes de que el turno llene ranuras.
 | `PL_CUR` | 56 | 8 | Huella de la palabra actual. |
 | `PL_XL` | 64 | 8 | Bytes del texto de la palabra preguntada (≤ 24). |
 | `PL_XT` | 72 | 24 | Texto de la palabra preguntada, tal como apareció por primera vez. |
-| `PL_OL` | 96 | 8 | Bytes del enunciado de la regla (§12.4). |
+| `PL_OL` | 96 | 8 | Bytes del enunciado de la regla ([§12.4](#124-la-regla-de-los-lugares-r_describe)). |
 | `PL_M` | 104 | 4 × 8 | Punteros a las palabras elegidas por la regla. |
 | `PL_NM` | 136 | 8 | Cuántas palabras eligió la regla (≤ 4). |
 | `PL_PPP` | 144 | 8 | Huella de la palabra previa a la anterior. |
@@ -289,7 +290,7 @@ Creada en `r_canto` y no devuelta (`gen_leer.py:6629`). Desplazamientos (`gen_le
 | 0x8400 | `LN_LIN` | Ficha de inicio de cada línea (qword). `NMS` = cantidad. |
 | 0x9000 | `LN_OUT` | Texto en escritura (`CNX` bytes). |
 | 0xA000 | | Ventana de la charla para `rc_said` (`TM_W = 4096` bytes; `CNS` = bytes leídos). |
-| 0xB000 | `LN_LBL` | Etiquetas: `pares` (+0), `canta` (+16), `razona` (+32), `cantado` (+48), `luma/canto.bin` (+64), `dados` (+80). |
+| 0xB000 | `LN_LBL` | Etiquetas: [`pares`](07-razar-cardumen-canto-hilos.md#23-formato-de-pares) (+0), `canta` (+16), `razona` (+32), `cantado` (+48), [`luma/canto.bin`](07-razar-cardumen-canto-hilos.md#2-memoria_paresjsm-el-núcleo-de-pares-y-el-canto) (+64), [`dados`](10-luma-pantalla-lluvia-y-organos-vivos.md#1046-archivo-dados) (+80). |
 
 ### 2.5 La sala de candidatos (`CNR`, 13 × 1024 bytes)
 
@@ -304,14 +305,14 @@ En el bloque propio: `WFT` (`B+0x1EF8`) apunta a la tabla, `WFM` (`B+0x1FE8`) es
 `WFN` (`B+0x1FF8`) el total de líneas contadas. Cada ranura ocupa 64 bytes: huella (+0), líneas que la tienen `L`
 (+8), líneas cuya línea siguiente la conservó `S` (+16). Índice `(h >> 17) XOR h` y prueba lineal
 (`gen_leer.py:3880-3888`, `gen_leer.py:995-1000`). La construcción de la tabla (`bu_wcount`) no se especifica aquí
-(no verificado en este capítulo).
+(`gen_leer.py:935-982`).
 
 ### 2.7 Variables globales del turno
 
 | Global | Uso en este capítulo |
 |---|---|
 | `EXR`, `EXN` | Sala de ejemplos y cantidad de ranuras ocupadas. |
-| `CNB` | Modo de búsqueda (§2.8); dentro de `wy_choose`, índice del candidato elegido. |
+| `CNB` | Modo de búsqueda ([§2.8](#28-valores-de-cnb)); dentro de `wy_choose`, índice del candidato elegido. |
 | `LNR`, `CNR`, `WVW` | Salas del canto, de candidatos y de la ventana de imaginación (`13·1024 + TM_W + 64` bytes, `gen_leer.py:4431`). |
 | `CNN`, `CNI`, `CNJ`, `CNT`, `CNX`, `CNS` | Contadores e índices de recorrido (compartidos por varias rutinas). |
 | `WVS` | Máscara de pasos del camino que ya hablaron (bit `k` para el paso `k`). |
@@ -324,19 +325,19 @@ En el bloque propio: `WFT` (`B+0x1EF8`) apunta a la tabla, `WFM` (`B+0x1FE8`) es
 | `ASKD` | 1 si en el turno anterior devolvió la pregunta; 2 si eso fue en el turno previo al actual. |
 | `SPAS` | Pasada del paso `sigue`: 1 sólo la charla, 2 todos los libros. |
 | `SOLO` | 1: `r_dlg_answer` sólo lee la charla. |
-| `SIGM` | 1: `r_dlg_answer` sólo acepta líneas que son mayormente lo que él dijo (§8.6). |
+| `SIGM` | 1: `r_dlg_answer` sólo acepta líneas que son mayormente lo que él dijo ([§8.6](#86-filtro-mayormente-lo-que-él-dijo-sigm--1)). |
 | `BRG`, `BFOR` | Modo puente; "la línea viene de otro idioma". |
 | `LNW` | Palabras que cuentan en la línea en curso. |
 | `IGK`, `IGF` | `IG_N` al empezar la síntesis; "respondiendo a alguien" para la imaginación. |
-| `WHOR`, `WHOT` | Etiqueta `trato-<libro>` de quien habla (sala de 128 bytes); copia de trabajo. |
-| `PKID`, `PREADY`, `PBUSY`, `PTASK`, `PQBUF`, `PQLEN` | Protocolo con el pensador (§3). |
-| `RAINR`, `RAINN` | Lluvia: sala y cantidad de pasos (§18). |
+| `WHOR`, `WHOT` | Etiqueta [`trato-<libro>`](08-luma-cuerpo-procesos-y-casa.md#862-trato-libro) de quien habla (sala de 128 bytes); copia de trabajo. |
+| `PKID`, `PREADY`, `PBUSY`, `PTASK`, `PQBUF`, `PQLEN` | Protocolo con el pensador ([§3](#3-protocolo-de-entrada-de-enter-al-pensador)). |
+| `RAINR`, `RAINN` | Lluvia: sala y cantidad de pasos ([§18](#18-la-lluvia-como-dados)). |
 
 ### 2.8 Valores de `CNB`
 
 | Valor | Significado | Dónde se fija | Efecto en `r_dlg_answer` |
 |---|---|---|---|
-| 0 | Búsqueda normal. | `gen_leer.py:4199`, `gen_leer.py:4207`, `gen_leer.py:4243`, `gen_leer.py:4248`, `gen_leer.py:6710` | Libros bajo la rama actual del árbol (`ar_in`); la charla incluida. |
+| 0 | Búsqueda normal. | `gen_leer.py:4199`, `gen_leer.py:4207`, `gen_leer.py:4243`, `gen_leer.py:4248`, `gen_leer.py:6710` | Libros bajo la rama actual del [árbol](08-luma-cuerpo-procesos-y-casa.md#876-arbol) (`ar_in`); la charla incluida. |
 | 1 | En `wy_choose`: número del candidato elegido. En `r_canto`: "ya cantó o no canta más". | `gen_leer.py:4359`, `gen_leer.py:4377`, `gen_leer.py:6686-6688`, `gen_leer.py:6800` | — |
 | 2 | Lo que las costumbres no cubren: primera lectura (lugares de la palabra, centro del corazón, oraciones sobre ella, `PL_BK`). El corazón sólo con lo que él dice ahora. | `gen_leer.py:4172`, `gen_leer.py:4202`, `gen_leer.py:6708` | Todos los libros (sin árbol), sin la charla. |
 | 3 | `r_canto` sobre las oraciones halladas por las pistas: primero el canto. | `gen_leer.py:4243` | No llama a `r_dlg_answer`. |
@@ -351,7 +352,7 @@ restricción del árbol (`gen_leer.py:2607`, `gen_leer.py:2613`, `gen_leer.py:26
 `CNB` no se reinicia al empezar un turno. Las únicas escrituras son las de la tabla (`gen_leer.py:4172-4248`,
 `gen_leer.py:4359`, `gen_leer.py:4377`, `gen_leer.py:6686-6710`, `gen_leer.py:6800`); tras `wy_choose` queda con el
 índice del candidato elegido (1..12). Ese valor residual es el que ven, en el turno siguiente, la primera búsqueda
-`dsy_look` (§4 paso 14), la pasada 1 del paso `sigue` y la llamada a `r_canto` de §10.1 (ver §24).
+`dsy_look` ([§4](#4-recepción-del-turno-r_dlg_sent) paso 14), la pasada 1 del paso `sigue` y la llamada a `r_canto` de [§10.1](#101-algoritmo) (ver [§24](#24-observaciones-de-verificación)).
 
 ---
 
@@ -365,11 +366,11 @@ restricción del árbol (`gen_leer.py:2607`, `gen_leer.py:2613`, `gen_leer.py:26
 |---|---|
 | 8 (borrar) | Quita un carácter UTF-8 entero del final de `D_IN` (retrocede sobre bytes 128..191). |
 | 13 (Enter) | Si `D_INL > 0`: `r_pens_ask`. |
-| 9 (Tab) | `r_mus_tab` (capítulo 10). |
+| 9 (Tab) | `r_mus_tab` ([capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#107-vista-de-música-tab)). |
 | 33 / 34 | Retrocede / avanza 4 líneas `D_SCR0` en el panel. |
 | 32, 48..57, 65..90, 96..111, 186..226 | Teclas de escritura: su carácter llega por `r_char`. |
 
-`r_char` (`gen_leer.py:5940-5958`): el carácter 3 copia su respuesta única al portapapeles (pedido 47 con
+`r_char` (`gen_leer.py:5940-5958`): el carácter 3 copia su respuesta única al portapapeles ([pedido 47](05-nucleo-pantalla-teclado-vigia.md#74-copiar-pedido-47) con
 `j11 = lj_rptr`, `j12 = lj_rlen`; nada si la longitud es 0). Si existe pensador (`PKID ≠ 0`) y aún no está listo
 (`PREADY = 0`), el carácter se descarta. Caracteres menores que 32 y el 127 se descartan. Si se está pidiendo el
 nombre (`NMROOM ≠ 0` y `NMASK ≠ 0`), el carácter va a `NMROOM + 64` con límite 3000 bytes. En otro caso se añade en
@@ -380,36 +381,36 @@ UTF-8 a `D_IN` mediante `ch_put`, que sólo escribe si `D_INL + 4 < 1000` (`gen_
 
 `gen_leer.py:3599-3626`:
 
-1. Si `PKID = 0` o `PREADY = 0`: el cuerpo procesa el turno él mismo (`r_dlg_sent`, §4, con `ANSW = 0`).
+1. Si `PKID = 0` o `PREADY = 0`: el cuerpo procesa el turno él mismo (`r_dlg_sent`, [§4](#4-recepción-del-turno-r_dlg_sent), con `ANSW = 0`).
 2. En otro caso, `D_OUT ← D_IN` (hasta 1000 bytes; lo tipeado se muestra como última palabra) y `LG_RB ← 0`.
 3. Si `PBUSY ≠ 0` (el pensador piensa): se añade `D_IN` a la cola `PQBUF` (sala de 1024 bytes creada en
    `gen_leer.py:3583`), con un espacio de separación si ya había algo, hasta que el total llega a 1000 bytes; `PQLEN`
    se actualiza. Si `PQBUF = 0`, lo tipeado se descarta sin encolar.
 4. Si no: `pna_send(D_IN, D_INL)`:
-   1. pedido 12 sobre la etiqueta `GA["PQ"]` (8 bytes: `pregunta`, `gen_leer.py:7583`), `r_open`, escribir (`r_file` 6),
+   1. [pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) sobre la etiqueta `GA["PQ"]` (8 bytes: [`pregunta`](08-luma-cuerpo-procesos-y-casa.md#863-pregunta-respuesta-lista), `gen_leer.py:7583`), `r_open`, escribir (`r_file` 6),
       cerrar (`r_file` 7); si el archivo no abre, `pna_send` termina sin los dos pasos siguientes;
-   2. `r_rain_dice` (§18);
+   2. `r_rain_dice` ([§18](#18-la-lluvia-como-dados));
    3. `r_pens_say(1)`.
 5. `D_INL ← 0`; `CHANGED ← 1`.
 
-`r_pens_say(t)` (`gen_leer.py:3588-3598`): si `PBUSY ≠ 0` no hace nada. Si no, `PBUSY ← 1`, `PTASK ← t`; pedido 42
-al hijo `PKID − 1` con `b = 0` si `t = 1` y `b = 1` en otro caso (semántica de `b` en el capítulo 04); pedido 30 al
+`r_pens_say(t)` (`gen_leer.py:3588-3598`): si `PBUSY ≠ 0` no hace nada. Si no, `PBUSY ← 1`, `PTASK ← t`; [pedido 42](04-nucleo-abi-de-pedidos.md#96-familia)
+al hijo `PKID − 1` con `b = 0` si `t = 1` y `b = 1` en otro caso (semántica de `b` en el [capítulo 04](04-nucleo-abi-de-pedidos.md#96-familia)); [pedido 30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) al
 hijo `PKID − 1` con la palabra `t`. Tareas: 1 pregunta de él, 2 estudio propio, 3 hablar primero.
 
 ### 3.3 Pensador
 
-Al nacer (`pz_go`, `gen_leer.py:3658-3659`) el pensador envía a su madre (pedido 30, `j11 = 0`) la palabra 5.
+Al nacer (`pz_go`, `gen_leer.py:3658-3659`) el pensador envía a su madre ([pedido 30](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas), `j11 = 0`) la palabra 5.
 Luego, bucle `pz_wait` (`gen_leer.py:3660-3703`):
 
-1. Pedido 31 sobre `B + WBUF` (16 bytes). Si devuelve 1 y `WBUF[0] = 0` (palabra de su madre), según `WBUF[8]`:
+1. [Pedido 31](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas) sobre `B + WBUF` (16 bytes). Si devuelve 1 y `WBUF[0] = 0` (palabra de su madre), según `WBUF[8]`:
    1 → `pz_q`; 2 → `r_self_talk`; 3 → `r_dlg_talk`; otro → `pz_done`. Una palabra de otro emisor se ignora.
-2. Si no hubo palabra: pedido 29; si devuelve −1, `jhalt` (no queda madre).
+2. Si no hubo palabra: [pedido 29](04-nucleo-abi-de-pedidos.md#97-comunicación-entre-cabinas); si devuelve −1, `jhalt` (no queda madre).
 
 `pz_q`: abre `pregunta`, lee hasta 1000 bytes en `D_IN`, `D_INL ←` bytes leídos (si ≤ 0, `pz_done`); `ANSW ← 1`;
 `r_dlg_sent`; `ANSW ← 0`. Si `WHOR ≠ 0`, `D_RPL > 0` y la respuesta única no está vacía, añade al final del archivo
 `WHOR` el registro: `vos: ` + `D_RP` + `\n` + `luma: ` + respuesta + `\n` (`gen_leer.py:3673-3690`).
 
-`pz_done`: `r_dlg_mind`; pedido 12 sobre `GA["PR1"]`..`GA["PR2"]` (9 bytes: `respuesta`, `gen_leer.py:7583`), lo abre y escribe la
+`pz_done`: `r_dlg_mind`; [pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema) sobre `GA["PR1"]`..`GA["PR2"]` (9 bytes: [`respuesta`](08-luma-cuerpo-procesos-y-casa.md#863-pregunta-respuesta-lista), `gen_leer.py:7583`), lo abre y escribe la
 respuesta única (`lj_rptr`, `lj_rlen`); pedido 30 a la madre (`j11 = 0`) con la palabra 4.
 
 ### 3.4 Pensador → cuerpo
@@ -430,7 +431,7 @@ longitud `PLL`). Si no, y si difiere de `D_OUT`, `D_OUT ← D_C`, `LG_RB ← 0`,
 
 1. **Dueño del hilo.** Si `SF_ON` del árbol (un libro le habla en su charla con lecturas) difiere de `LASTSF`,
    `LASTSF ← SF_ON` e `IM_ON ← 0` (`gen_leer.py:3354-3356`).
-2. **`th_turn`** (§6.2).
+2. **`th_turn`** ([§6.2](#62-el-hilo-de-profundidad-uno-th_)).
 3. **Pensamiento visible.** Si `LG_TKB ≠ 0`: escribe `pienso en: ` + `D_IN` en la línea de pensamiento
    (`lj_think`, `gen_leer.py:3359-3372`).
 4. **Copia.** `D_RP ← D_IN` (hasta 1000), `D_RPL` (`gen_leer.py:3375-3379`).
@@ -442,28 +443,28 @@ longitud `PLL`). Si no, y si difiere de `D_OUT`, `D_OUT ← D_C`, `LG_RB ← 0`,
 6. **Activación de él.** Sobre `D_RP`: cuenta `c` = bytes `!`, bytes `A`..`Z`, y bytes ≥ 97 iguales al anterior
    (letra estirada). `act = 1000·c / D_RPL` (0 si vacío). `D_KACT ← 1` si `act ≠ 0` y `act · D_PM[8] ≥ D_PM[0]`
    (no menor que su media previa); luego `D_PM[0] += act`, `D_PM[8] += 1` (`gen_leer.py:3394-3410`).
-7. **`r_marco`** (§6.3).
+7. **`r_marco`** ([§6.3](#63-el-marco-r_marco)).
 8. **Registro.** `r_dlg_write(quien, D_IN)`, con `quien = 6` (`libro: `) si `SF_ON`, si no 0 (`vos: `). Queda escrito
    lo tipeado, antes de la ortografía (`gen_leer.py:3412-3414`).
-9. **Ortografía.** Si `ANSW = 1`: `r_ortografia` (§5).
-10. **Palabras dichas.** `r_dlg_words(D_IN)` (§6.1); `D_INL ← 0`.
+9. **Ortografía.** Si `ANSW = 1`: `r_ortografia` ([§5](#5-ortografía-r_ortografia)).
+10. **Palabras dichas.** `r_dlg_words(D_IN)` ([§6.1](#61-r_dlg_words)); `D_INL ← 0`.
 11. **Cuentas de respuesta** (`gen_leer.py:3420-3432`):
     - `D_AWAIT = 3` (calló y él volvió a escribir): `D_SC += 1`, `D_NC += 1`.
     - `D_AWAIT = 1`: `D_SC += 1`, `D_NC += 1`; además `D_MC_S1 += 1` si `D_LMODE = 1`, `D_MC_S2 += 1` si
       `D_LMODE = 2`.
     - `D_AWAIT = 2`: `D_SH += 1`; si `D_LBR ≠ 0`, `D_RPV ← 1` y `D_BS0[(D_LBR − 1)·8] += 1`.
     - `D_AWAIT ← 0`.
-12. **Decisión de responder** (§7).
-13. **Hilo abierto** (sólo si `ANSW = 0` e `IM_ON = 1` y `lj_pull = 0`, §19.6): si `lj_asks = 1` y `lj_about = 1`,
+12. **Decisión de responder** ([§7](#7-decisión-de-responder)).
+13. **Hilo abierto** (sólo si `ANSW = 0` e `IM_ON = 1` y `lj_pull = 0`, [§19.6](#196-hilo-abierto)): si `lj_asks = 1` y `lj_about = 1`,
     responde con eso; en otro caso intenta `r_dlg_heart_own`; si éste falla, sigue al paso 14
-    (`gen_leer.py:3451-3454`). Una respuesta obtenida aquí va a `dse_has` (§16) con `D_KCLA ← 0`, `D_LMODE ← 2`,
+    (`gen_leer.py:3451-3454`). Una respuesta obtenida aquí va a `dse_has` ([§16](#16-salida-dse_has)) con `D_KCLA ← 0`, `D_LMODE ← 2`,
     `D_MC_N2 += 1`.
-14. **Primera búsqueda** `dsy_look`: `D_RPV ← 1`; `r_dlg_answer` en modo 0 (§8). Claridad
+14. **Primera búsqueda** `dsy_look`: `D_RPV ← 1`; `r_dlg_answer` en modo 0 ([§8](#8-el-motor-de-selección-de-líneas-r_dlg_answer)). Claridad
     `cla = 1000·D_BS / D_NW` (0 si `D_NW = 0`); `D_KCLA ← 1` si `cla ≠ 0` y `cla · D_PM[24] ≥ D_PM[16]`; luego
     `D_PM[16] += cla`, `D_PM[24] += 1` (`gen_leer.py:3455-3462`).
 15. **Ramas disponibles.** `D_AV ← 10` (otra cosa, responder), o `15` si `D_QL ≠ 0`; si `D_OUTL = 0`,
     `D_AV ← D_AV & 7` (`gen_leer.py:3463-3467`).
-16. **`wy_go`** (§9).
+16. **`wy_go`** ([§9](#9-el-camino-wy_go)).
 
 ---
 
@@ -477,7 +478,7 @@ longitud `PLL`). Si no, y si difiere de `D_OUT`, `D_OUT ← D_C`, `LG_RB ← 0`,
 2. Abre la etiqueta `libro` (5 bytes) o, si falla, `elibro` (6 bytes). Sin Libro, termina.
 3. Lee el Libro en trozos de 4096 bytes en `EXR + 2048`, pidiendo cada trozo por su posición (`r_file` 38 con
    `OS_BL`) mientras `OS_BL < OS_BC`; `OS_BC` es el tamaño medido con `r_file` 38, `j11 = −1`. Esa medición sólo
-   ocurre en la rama `elibro` (ver §24, observación 10).
+   ocurre en la rama `elibro` (ver [§24](#24-observaciones-de-verificación), observación 10).
 4. Por cada palabra del trozo (hasta 32 letras base guardadas), calcula su huella y recorre sus pares consecutivos
    `(l[i−1], l[i])` con ambas letras en `a`..`z`:
    - si el par está "probado", nada;
@@ -492,7 +493,7 @@ Recorre `D_IN`; lo que no es letra se copia tal cual a la salida. Por cada palab
 
 1. Guarda sus letras base en `OS_L` (hasta 32; `OS_M` cuenta todas).
 2. Si `OS_M < 4` o `OS_M ≥ 33`: se copia tal como se escribió.
-3. Si `dh_wl(huella) ≠ 0` (la palabra aparece en alguna línea de sus libros, §20.1): tal cual.
+3. Si `dh_wl(huella) ≠ 0` (la palabra aparece en alguna línea de sus libros, [§20.1](#201-dh_wl-y-dh_half)): tal cual.
 4. Si no: `OS_BC ← 1`, `OS_BL ← 0`. Intentos, cada uno evaluado por `or_try`
    (`c = dh_wl(huella(intento))`; es el mejor si `c > OS_BC`, de modo que hacen falta al menos 2 líneas; en empate
    gana el primero):
@@ -506,7 +507,7 @@ Recorre `D_IN`; lo que no es letra se copia tal cual a la salida. Por cada palab
 ### 5.3 Resultado
 
 La salida (`EXR + 0`, a lo sumo 990 bytes) reemplaza a `D_IN` y a `D_RP`; `D_INL = D_RPL = OS_O`
-(`gen_leer.py:3344-3347`). El archivo `dialogo` conserva lo tipeado (paso 8 de §4).
+(`gen_leer.py:3344-3347`). El archivo `dialogo` conserva lo tipeado (paso 8 de [§4](#4-recepción-del-turno-r_dlg_sent)).
 
 ---
 
@@ -525,7 +526,7 @@ primer fin de línea del texto. Se vuelve a llamar sobre `D_RP` cada vez que otr
 
 1. `GU_F+0 ← th_follows` y `GU_F+8 ← th_new`; `GU_F+16 ← TH_L`; `GU_F+24 ← IM_L`; `TH_L ← 0`; `IM_L ← 0`.
 2. `IG_W ← IG_L`; `IG_L ← 0`.
-3. `lj_hist` (§19.2); `LG_RW ← 1`.
+3. `lj_hist` ([§19.2](#192-texto-de-él-lj_hist)); `LG_RW ← 1`.
 4. `TH_P ← TH_N` (`TH_PN ← TH_NN`); `TH_NN ← 0`.
 5. `an_add(D_IN)` (palabras al ánimo actual) y `th_add(D_IN)`.
 
@@ -536,7 +537,7 @@ primer fin de línea del texto. Se vuelve a llamar sobre `D_RP` cada vez que otr
 | `th_add` (`gen_leer.py:4667-4676`) | texto | Añade sus huellas de 4+ letras a `TH_N`, una vez cada una, hasta `TH_K = 24`. |
 
 `th_follows` y `th_new` se evalúan antes de copiar `TH_N` a `TH_P`: comparan lo que él dice con el intercambio que
-termina (su línea anterior y lo que ella contestó, añadido en §16 paso 5).
+termina (su línea anterior y lo que ella contestó, añadido en [§16](#16-salida-dse_has) paso 5).
 
 ### 6.3 El marco (`r_marco`)
 
@@ -546,7 +547,7 @@ termina (su línea anterior y lo que ella contestó, añadido en §16 paso 5).
 2. Para cada `k` con `s_k ≠ m`: `GU_F + 32 + 8k += 1` (desacuerdo).
 3. Marco de confianza `GU_F+56`: se reemplaza por el `k` de menor desacuerdo, sólo si es estrictamente menor que el
    del vigente.
-4. `j0 = s_{confianza}`; `gu_pay` (libro que esperaba: `S += 1` si `j0`); `wy_pay` (§9.5).
+4. `j0 = s_{confianza}`; `gu_pay` (libro que esperaba: `S += 1` si `j0`); `wy_pay` ([§9.5](#95-balbuceo-y-juicio-de-caminos)).
 5. Si `j0 = 1`: `D_CM+72 += 1` si el hilo esperaba; `D_CM+88 += 1` si la improvisación esperaba; `IG_S += 1` si la
    imaginación esperaba.
 6. Limpia `GU_F+16`, `GU_F+24`, `IG_W`.
@@ -558,12 +559,12 @@ termina (su línea anterior y lo que ella contestó, añadido en §16 paso 5).
 `gen_leer.py:3433-3439`:
 
 1. `deseo = dse_wish(D_SC, D_NC)`.
-2. Si `r_randmod(2^20) < deseo`: responde (§4 paso 13 en adelante).
+2. Si `r_randmod(2^20) < deseo`: responde ([§4](#4-recepción-del-turno-r_dlg_sent) paso 13 en adelante).
 3. Si no: `D_AWAIT ← 3`, `D_OUTL ← 0`, `r_dlg_write(2)` (escribe `luma: (eligio no contestar)`), `r_dlg_save`,
    `CHANGED ← 1`, fin del turno.
 
-`D_NC` y `D_SC` sólo se incrementan juntos (§4 paso 11, `gen_leer.py:3420`, `gen_leer.py:3422`; no hay otro
-incremento de `D_NC` en el archivo). Si los valores cargados de `charla` (`gen_leer.py:2018`) son iguales, el deseo es
+`D_NC` y `D_SC` sólo se incrementan juntos ([§4](#4-recepción-del-turno-r_dlg_sent) paso 11, `gen_leer.py:3420`, `gen_leer.py:3422`; no hay otro
+incremento de `D_NC` en el archivo). Si los valores cargados de [`charla`](08-luma-cuerpo-procesos-y-casa.md#853-charla-2304-bytes-binarios) (`gen_leer.py:2018`) son iguales, el deseo es
 `(S + 1/2)/(S + 1)` y no decrece.
 
 Banderas de construcción de prueba: `LUMA_RESPONDE` responde siempre; `LUMA_CALLA` omite la decisión por azar
@@ -585,7 +586,7 @@ todos sus libros respecto de `D_WORDS`.
 2. Sólo en modo 0: limpia las marcas `D_WORDS + 1024` de las `D_NW` palabras (en modo 1 no se limpian; como `D_ID`
    sólo crece, una marca vieja nunca coincide). Si `D_NW = 0`, termina.
 3. `ar_load`; `AR_SKIP ← −1`; `AR_BK ← 0`.
-4. `lj_pass` (§19.3): se recalcula la firma de él contra cada libro en cada llamada.
+4. `lj_pass` ([§19.3](#193-pasada-lj_pass)): se recalcula la firma de él contra cada libro en cada llamada.
 5. `ul_list`; `D_LI ← ULB`; `D_LC ← 0`.
 
 ### 8.2 Filtro de libros
@@ -602,13 +603,13 @@ Para cada entrada de la lista (`gen_leer.py:2587-2660`), en este orden:
 7. Escribe `leo ` + etiqueta en la línea de pensamiento (`lj_think`).
 8. Se salta si es libro de disco o si no abre.
 9. `gu_book`: `[D_GBLK]+16 ←` huella, `[D_GBLK]+0 ← dse_wish(S, N)` de su entrada de gustos (0, 0 si no la tiene).
-10. `lj_wbook`: `[D_GBLK]+0 ← lj_weight(libro, [D_GBLK]+0)` (§19.4).
+10. `lj_wbook`: `[D_GBLK]+0 ← lj_weight(libro, [D_GBLK]+0)` ([§19.4](#194-uso-de-la-firma)).
 11. Lee el archivo entero en la sala única de lectura (`r_bookroom`, reutilizada; se reemplaza sólo si hace falta más;
     sus últimos 64 bytes en cero, `gen_leer.py:3720-3733`). `BP`, `BE` lo delimitan. `ar_begin`.
 
 ### 8.3 Peso del libro
 
-`peso = dse_wish(S, N) × factor_firma`, en unidades de 2^-20 (§1.4, §19.4). Un libro con peso 0 (por ejemplo una
+`peso = dse_wish(S, N) × factor_firma`, en unidades de 2^-20 ([§1.4](#14-deseo-y-azar), [§19.4](#194-uso-de-la-firma)). Un libro con peso 0 (por ejemplo una
 carta a ella) nunca aporta línea, porque el puntaje debe ser estrictamente positivo.
 
 ### 8.4 Recorrido de una línea
@@ -618,21 +619,21 @@ Por cada línea (`dan_line`, `gen_leer.py:2661-2847`):
 1. Si `CNB & 2`: limpia `PL_PVP`, `PL_PVX`, `PL_PVS`, `PL_PVE`, `PL_PPS`, `PL_PPP`.
 2. `D_LS ← BP`, `D_CNT ← 0`, `D_ID += 1`, `LNW ← 0`.
 3. Por cada palabra de 4+ letras:
-   1. Lugares y centro (§12.2), si `CNB & 2` y `CNB ≠ 30`.
+   1. Lugares y centro ([§12.2](#122-primera-lectura-lugares-y-centro-del-corazón-cnb--2)), si `CNB & 2` y `CNB ≠ 30`.
    2. `LNW += 1`. Si el árbol está registrando (`AR_ON`), pone el bit `huella mod 32768` de la huella de palabras del
       libro.
    3. Si la palabra está en `D_WORDS` (índice `i`):
-      - Si `CNB & 2` y existe `EXR`: `PL_PVX ← 1`. Con `CNB = 2`, además lo de §12.2 paso 5 y la oración de §12.3
-        mientras `EXN < 6`; con `CNB = 30`, la oración de §12.3 y §12.5; con `CNB ∈ {3, 6, 14}`, nada más
+      - Si `CNB & 2` y existe `EXR`: `PL_PVX ← 1`. Con `CNB = 2`, además lo de [§12.2](#122-primera-lectura-lugares-y-centro-del-corazón-cnb--2) paso 5 y la oración de [§12.3](#123-oración-sobre-la-palabra)
+        mientras `EXN < 6`; con `CNB = 30`, la oración de [§12.3](#123-oración-sobre-la-palabra) y [§12.5](#125-pistas-y-selección-de-oraciones-cnb--30); con `CNB ∈ {3, 6, 14}`, nada más
         (`gen_leer.py:2752-2766`).
       - Peso `w = 1`; en modo 1, `w = 2` si `D_AM[i] = 0` (la línea A no la dice).
       - Si la marca `D_WORDS[1024 + 8i] ≠ D_ID`, se marca y `D_CNT += w` (cada palabra cuenta una vez por línea).
-4. Al fin de línea: filtros de §8.6 y ejemplos de §8.7, luego §8.5.
+4. Al fin de línea: filtros de [§8.6](#86-filtro-mayormente-lo-que-él-dijo-sigm--1) y ejemplos de [§8.7](#87-ejemplos-sigm--1-solo--0-el-libro-no-es-la-charla), luego [§8.5](#85-elección-de-la-mejor-línea).
 
 ### 8.5 Elección de la mejor línea
 
 1. `puntaje = D_CNT × peso`. Debe ser estrictamente mayor que `[D_GBLK]+8`.
-2. Se descarta si contiene lo último que ella dijo (`lj_said`, §17).
+2. Se descarta si contiene lo último que ella dijo (`lj_said`, [§17](#17-no-repetir)).
 3. En modo 1 se descarta si es exactamente su línea A (`D_AA`, `D_AL`).
 4. Nueva mejor: `D_BS ← D_CNT`, `[D_GBLK]+8 ← puntaje`, `AR_BK ← AR_K`; en modo 0, `[D_GBLK]+24 ← [D_GBLK]+16`.
 5. Se copia la línea, hasta 1000 bytes, a `D_OUT` (modo 0) o `D_B` (modo 1). Si es de la charla, se quita el
@@ -673,15 +674,15 @@ largo `L` en +0 y `L` letras de un qword cada una a partir de +8 (`wy_new`, `gen
 
 | k | Paso | Rutina | Produce candidato |
 |---|---|---|---|
-| 1 | `heart` | `r_dlg_heart` (§13) | sí |
-| 2 | `impro` | `r_dlg_impro` (§15.4) | sí |
-| 3 | `own` | `r_dlg_heart_own` (§15.4) | sí |
-| 4 | `quien` | `r_dlg_quien` + `gu_said` (§9.6) | sí |
+| 1 | `heart` | `r_dlg_heart` ([§13](#13-el-corazón-responde-r_dlg_heart)) | sí |
+| 2 | `impro` | `r_dlg_impro` ([§15.4](#154-tema-e-improvisación-pasos-2-y-3)) | sí |
+| 3 | `own` | `r_dlg_heart_own` ([§15.4](#154-tema-e-improvisación-pasos-2-y-3)) | sí |
+| 4 | `quien` | `r_dlg_quien` + `gu_said` ([§9.6](#96-paso-quien)) | sí |
 | 5 | `cross` | Sólo si `CNN = 0` y `D_OUTL ≠ 0`: `WY_XC ← 1` y salta a `dsy_cx` (cruce, fuera de este capítulo) | no (sale del camino) |
 | 6 | `baja` | `ar_move(1)` y, si se movió, `r_dlg_answer` | no |
 | 7 | `hermano` | `ar_move(2)` y, si se movió, `r_dlg_answer` | no |
 | 8 | `sube` | `ar_move(3)` y, si se movió, `r_dlg_answer` | no |
-| 9 | `sigue` | §10 | sí |
+| 9 | `sigue` | [§10](#10-el-paso-sigue-y-el-orden-de-fuentes) | sí |
 
 Los pasos 6..8 no añaden candidato: mueven `AR_CUR` y dejan su línea en `D_OUT`, lo que influye en los pasos
 siguientes que miran `D_OUT` (`gen_leer.py:4152-4155`).
@@ -692,7 +693,7 @@ siguientes que miran `D_OUT` (`gen_leer.py:4152-4155`).
 
 1. `WY_SN ← 0`, `WY_XC ← 0`. Crea `CNR` si no existe. `WVS ← 0`, `CNN ← 0`. Ranura 0 de `CNR ← D_OUT`.
 2. **Conversación.** `CONV ← 0`. Si `ANSW = 1`: `CONV ← 1`; `ASKD ← 2` si valía 1, si no `ASKD ← 0`; salta
-   directamente al paso `sigue` (§10). En conversación no se empuja ningún camino, de modo que al terminar `sigue`
+   directamente al paso `sigue` ([§10](#10-el-paso-sigue-y-el-orden-de-fuentes)). En conversación no se empuja ningún camino, de modo que al terminar `sigue`
    (por `wyg_l` con pila vacía) se pasa a `wy_choose`.
 3. **Normal.** Si `WY_L = 2` (un camino balbuceado espera juicio): se camina `WY_C`. Si no:
    `d = dse_wish(WY_S, WY_N)`; si `r_randmod(2^20) < d` se camina `WY_W` (`WY_L ← 1`); si no, `wy_babble` y, si
@@ -702,7 +703,7 @@ siguientes que miran `D_OUT` (`gen_leer.py:4152-4155`).
 
 `wyg_l` (`gen_leer.py:4122-4135`), repetido:
 
-1. Si `WVS = 1022` (bits 1..9) o la pila `WY_SB` está vacía: `wy_choose` (§14).
+1. Si `WVS = 1022` (bits 1..9) o la pila `WY_SB` está vacía: `wy_choose` ([§14](#14-armonía-entre-candidatos-wy_choose)).
 2. Toma el marco superior (palabra, posición). Si la posición llegó al largo, lo desapila.
 3. Siguiente letra `k`. Si `k > 9`, apila el camino `WY_VB[k − 10]`.
 4. Si `k ≤ 9`: si el bit `k` de `WVS` ya está, sigue (cada paso habla una sola vez por respuesta); si no, lo pone
@@ -818,14 +819,14 @@ libros, y después la pregunta.
 - **Libro**: desde el fin de la línea, se saltan bytes ≤ 32; si aparece `\n` seguido de `\n` o `\r` (línea vacía)
   falla; si no, los bytes hasta `\n`/`\r` son el candidato.
 - Si el candidato es idéntico a `D_RP`: en la charla se lee la línea siguiente; en un libro falla.
-- Si no: `D_OUT` ← candidato; `r_names_out` (§16.3); `LG_FL ← 0`; `wyg_ok`.
+- Si no: `D_OUT` ← candidato; `r_names_out` ([§16.3](#163-nombres-prestados-r_names_out)); `LG_FL ← 0`; `wyg_ok`.
 
 ### 10.3 Devolver la pregunta (`wysg_ask`)
 
 `gen_leer.py:4312-4324`:
 
 - Si `CONV = 1` y `ASKD = 2`: `ASKD ← 0`, `CONV ← 0`, `WVS ← 1 << 9` (el paso `sigue` ya habló) y se camina el camino
-  normal (§9.2 paso 3).
+  normal ([§9.2](#92-entrada) paso 3).
 - Si `CONV = 1` y `ASKD ≠ 2`: `ASKD ← 1`.
 - Si `D_RPL = 0`, no hay candidato y se vuelve a `wyg_l`. Si no, `D_OUT ← D_RP` (hasta 998 bytes); si su último byte
   no es `?`, se añade `?`. `LG_FL ← 0`; `wyg_ok`.
@@ -860,9 +861,9 @@ resultado (`j0 = 1`).
 
 | `CNB` al entrar | Siguiente |
 |---|---|
-| 5 (el Libro) | `CNB ← 1`; memoria cercana (§11.5). |
-| 3 (oraciones por pistas) | `CNB ← 1`; canto (§11.6). |
-| otro | Regla de cobertura (§11.4). |
+| 5 (el Libro) | `CNB ← 1`; memoria cercana ([§11.5](#115-memoria-cercana)). |
+| 3 (oraciones por pistas) | `CNB ← 1`; canto ([§11.6](#116-canto-y-regla-de-dos)). |
+| otro | Regla de cobertura ([§11.4](#114-regla-de-cobertura-de-una-costumbre-por-clase-del-hueco)). |
 
 ### 11.4 Regla de cobertura de una costumbre por clase del hueco
 
@@ -871,8 +872,8 @@ clase `κ`: está **cubierta** si en la **línea** (no en la respuesta) de algú
 Las no cubiertas se juntan en `D_WORDS` (en orden, con repetición posible).
 
 - Si hay al menos una no cubierta: `D_NW ←` su cantidad, `CNB ← 2`, `j0 = 0`. El llamador busca esas palabras en los
-  libros (§12).
-- Si todas están cubiertas: `CNB ← 0` y memoria cercana (§11.5).
+  libros ([§12](#12-el-libro-y-los-demás-libros-lugares-regla-pistas-y-oraciones)).
+- Si todas están cubiertas: `CNB ← 0` y memoria cercana ([§11.5](#115-memoria-cercana)).
 
 ### 11.5 Memoria cercana
 
@@ -880,7 +881,7 @@ Las no cubiertas se juntan en `D_WORDS` (en orden, con repetición posible).
 de fichas de palabra de su línea que no aparecen (por huella) en `D_RP`; en empate, el primero. Su respuesta, tal
 cual, es el resultado.
 
-Si todas fueron dichas: si `CNB = 0`, `CNB ← 1` y canto (§11.6); si `CNB ≠ 0`, uno al azar entre los `EXN`
+Si todas fueron dichas: si `CNB = 0`, `CNB ← 1` y canto ([§11.6](#116-canto-y-regla-de-dos)); si `CNB ≠ 0`, uno al azar entre los `EXN`
 (`r_randmod(EXN)`), aunque ya haya sido dicho.
 
 ### 11.6 Canto y regla de dos
@@ -889,51 +890,51 @@ Si todas fueron dichas: si `CNB = 0`, `CNB ← 1` y canto (§11.6); si `CNB ≠ 
 
 1. **Letras** (`ln_emit`): cada clase recibe una letra la primera vez que aparece, `WVM` = 1..26 → `a`..`z`;
    27..49 → bytes 192..214; desde la 50ª, la palabra no se emite. Cada letra va seguida de un espacio.
-2. **Archivos**: `pares` con, por ejemplo, `P: ` + letras de la línea + `\n` + `R: ` + letras de la respuesta + `\n`;
-   `canta` con las letras de `D_RP` y `\n`; `razona` con `1\n`; `cantado` vacío. Cada archivo se borra (pedido 12) y
+2. **Archivos**: [`pares`](07-razar-cardumen-canto-hilos.md#22-archivos-de-la-casa) con, por ejemplo, `P: ` + letras de la línea + `\n` + `R: ` + letras de la respuesta + `\n`;
+   `canta` con las letras de `D_RP` y `\n`; `razona` con `1\n`; `cantado` vacío. Cada archivo se borra ([pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) y
    se crea al abrirlo.
-3. **Lanzamiento**: pedido 45 con `(1 << 48) − 2` (firmas heredadas); pedido 16 con el valor 14 en los bits 32..63 y
-   la etiqueta `luma/canto.bin`; si falla, memoria cercana. Pedido 34 con 50.000.000 instrucciones como límite;
-   pedido 42 con `b = 0`. Luego repite el pedido 19 sobre el hijo mientras devuelva −1 (sin otra espera entre
+3. **Lanzamiento**: [pedido 45](04-nucleo-abi-de-pedidos.md#96-familia) con `(1 << 48) − 2` ([firmas heredadas](04-nucleo-abi-de-pedidos.md#74-firmas-heredadas)); [pedido 16](04-nucleo-abi-de-pedidos.md#96-familia) con el valor 14 en los bits 32..63 y
+   la etiqueta [`luma/canto.bin`](07-razar-cardumen-canto-hilos.md#2-memoria_paresjsm-el-núcleo-de-pares-y-el-canto); si falla, memoria cercana. [Pedido 34](04-nucleo-abi-de-pedidos.md#96-familia) con 50.000.000 instrucciones como límite;
+   [pedido 42](04-nucleo-abi-de-pedidos.md#96-familia) con `b = 0`. Luego repite el [pedido 19](04-nucleo-abi-de-pedidos.md#96-familia) sobre el hijo mientras devuelva −1 (sin otra espera entre
    consultas).
 4. **Lectura**: hasta 1000 bytes de `cantado` en `D_C`. Por cada byte ≥ 33 (letra cantada), se busca la clase `κ`
    cuya letra es ese byte (si no hay, se ignora):
    - Si en `D_RP` hay una ficha de clase `κ` y esa clase no aparece en ninguna ficha de los ejemplos (líneas y
      respuestas): se emite **esa palabra de él** (un particular, por ejemplo un nombre).
    - Si no, **regla de dos**: se cuentan los ejemplos cuya **respuesta** contiene una ficha de clase `κ`. Si son
-     menos de 2, el canto se descarta y se va a memoria cercana (§11.5). Si son 2 o más, se emite la primera palabra
+     menos de 2, el canto se descarta y se va a memoria cercana ([§11.5](#115-memoria-cercana)). Si son 2 o más, se emite la primera palabra
      de esa clase (la palabra número `κ`) y `WVM += 1`.
    - Cada palabra se escribe con su texto original y un espacio, en `LN_OUT`, hasta 990 bytes.
 5. Si `WVM = 0` (sólo se emitieron palabras de él) o no se emitió nada: memoria cercana. Si no, `D_OUT ←` lo
    emitido sin el espacio final; `j0 = 1`.
 
-El programa de canto guarda en `DICE` la huella de los bytes de `dados` si el archivo existe
+[El programa de canto](07-razar-cardumen-canto-hilos.md#28-dados-y-cantado-contrato-con-quien-lo-lanza) guarda en `DICE` la huella de los bytes de `dados` si el archivo existe
 (`razar/cardumen/memoria_pares.jsm:3629-3643`, `mp_dice`) y siembra su generador con
 `0x123456789ABCDEF1 XOR DICE` (`razar/cardumen/memoria_pares.jsm:1383-1390`); el resto de su algoritmo pertenece al
-capítulo 07.
+[capítulo 07](07-razar-cardumen-canto-hilos.md#27-el-canto-con-canta).
 
 ---
 
 ## 12. El Libro y los demás libros: lugares, regla, pistas y oraciones
 
-Se entra con `CNB = 2` y `D_WORDS` = las palabras que él pregunta (todas, o las no cubiertas de §11.4).
+Se entra con `CNB = 2` y `D_WORDS` = las palabras que él pregunta (todas, o las no cubiertas de [§11.4](#114-regla-de-cobertura-de-una-costumbre-por-clase-del-hueco)).
 
 ### 12.1 El Libro (`wysg_pa`)
 
 `gen_leer.py:4183-4200`:
 
 1. Crea `EXR` si hace falta; limpia el área `PL_*` (`PL_SIZE` bytes); `PL_TMP+80 ← 1`.
-2. `EXN ← 0`; `r_dlg_answer` con `CNB = 2`, que sólo lee el Libro y recoge sus oraciones sobre la palabra (§12.3).
-3. Si `EXN > 0`: `CNB ← 5`; `r_canto` (§11.3: memoria cercana sin canto). Si responde: `CNB ← 0`,
+2. `EXN ← 0`; `r_dlg_answer` con `CNB = 2`, que sólo lee el Libro y recoge sus oraciones sobre la palabra ([§12.3](#123-oración-sobre-la-palabra)).
+3. Si `EXN > 0`: `CNB ← 5`; `r_canto` ([§11.3](#113-bifurcación-por-cnb): memoria cercana sin canto). Si responde: `CNB ← 0`,
    `RD2 ← 0x7711`, `WY_ST ← 9`, `LG_FL ← 0`, `wyg_ok`.
-4. Si no, `CNB ← 2` y se pasa al corazón (§13). Si el corazón responde: igual que en el paso 3.
+4. Si no, `CNB ← 2` y se pasa al corazón ([§13](#13-el-corazón-responde-r_dlg_heart)). Si el corazón responde: igual que en el paso 3.
 
 ### 12.2 Primera lectura: lugares y centro del corazón (`CNB = 2`)
 
 Tras limpiar de nuevo el área `PL_*`, `EXN ← 0`, `r_dlg_answer` sobre todos los libros salvo la charla
 (`gen_leer.py:4210-4214`). En cada palabra que cuenta (`dd_go`, `gen_leer.py:2674-2733`):
 
-1. **Nitidez**: si `dh_wl(h) ≥ HF_T` (la palabra es de la mitad, §20.1) y no está en `D_WORDS`, no participa en
+1. **Nitidez**: si `dh_wl(h) ≥ HF_T` (la palabra es de la mitad, [§20.1](#201-dh_wl-y-dh_half)) y no está en `D_WORDS`, no participa en
    lugares ni en el centro y es transparente: no pasa a ser la "palabra anterior". Como las palabras de menos de 4
    letras tampoco llegan aquí, los vecinos de una palabra son la palabra de 4+ letras no de la mitad que la precede y
    la que la sigue.
@@ -947,7 +948,7 @@ Tras limpiar de nuevo el área `PL_*`, `EXN ← 0`, `r_dlg_answer` sobre todos l
    `PL_BK[D_LC & 255] ← 1`; si `PL_XL = 0`, guarda su texto (hasta 24 bytes) en `PL_XT`; **lugar "antes"**: si hay
    palabra previa, clave `2·h_previa + 1` con el texto desde el inicio de la previa hasta un byte antes de la actual
    (incluye las palabras cortas intermedias).
-6. Oraciones sobre la palabra (§12.3), con `EXN < 6`.
+6. Oraciones sobre la palabra ([§12.3](#123-oración-sobre-la-palabra)), con `EXN < 6`.
 
 ### 12.3 Oración sobre la palabra
 
@@ -963,11 +964,11 @@ Tras limpiar de nuevo el área `PL_*`, `EXN ← 0`, `r_dlg_answer` sobre todos l
 4. Requiere al menos 2 rachas de 4+ bytes y largo menor que 480 bytes.
 
 Con `CNB = 2` se guarda en la ranura `EXN` (bytes en +0, línea en +8 = 0, texto en +16) y `EXN += 1`, mientras
-`EXN < 6`. Con `CNB = 30` se procesa como en §12.5.
+`EXN < 6`. Con `CNB = 30` se procesa como en [§12.5](#125-pistas-y-selección-de-oraciones-cnb--30).
 
 ### 12.4 La regla de los lugares (`r_describe`)
 
-Si `PL_NT = 0` se salta a §12.6. Si no (`gen_leer.py:4215-4217`):
+Si `PL_NT = 0` se salta a [§12.6](#126-respuesta-desde-las-oraciones-wysg_pd). Si no (`gen_leer.py:4215-4217`):
 
 1. `CNB ← 6`; `r_dlg_answer` sobre los libros que hablan de la palabra. Segunda lectura (`dd_B`,
    `gen_leer.py:2721-2730`): para cada palabra actual `c` con palabra previa `p` dentro de la oración:
@@ -986,7 +987,7 @@ Si `PL_NT = 0` se salta a §12.6. Si no (`gen_leer.py:4215-4217`):
       escribe ` ` + texto del lugar, separados por `,`. Termina con `.`. Forma:
       `X, w1, w2: l1, l2.`
    6. Sin lugar compartido por 2: deshace el desplazamiento y `j0 = 0`.
-3. Si no hubo regla: `CNB ← 14`, `r_dlg_answer` sobre los demás libros y `r_describe` otra vez. Si tampoco, §12.6
+3. Si no hubo regla: `CNB ← 14`, `r_dlg_answer` sobre los demás libros y `r_describe` otra vez. Si tampoco, [§12.6](#126-respuesta-desde-las-oraciones-wysg_pd)
    con los ejemplos que haya.
 
 ### 12.5 Pistas y selección de oraciones (`CNB = 30`)
@@ -994,7 +995,7 @@ Si `PL_NT = 0` se salta a §12.6. Si no (`gen_leer.py:4215-4217`):
 Si hubo regla (`gen_leer.py:4218-4241`):
 
 1. `EXN ← 1` (la ranura 0 conserva la regla); `CNB ← 30`; `r_dlg_answer` sobre los libros que hablan de la palabra.
-2. Para cada oración sobre la palabra (§12.3), **pistas** = cantidad de palabras de 4+ letras de la oración cuya
+2. Para cada oración sobre la palabra ([§12.3](#123-oración-sobre-la-palabra)), **pistas** = cantidad de palabras de 4+ letras de la oración cuya
    huella es una palabra elegida por la regla o la huella vecina de algún lugar (`clave >> 1`), con repetición.
 3. Conservación de las seis mejores (`dan_hC`, `gen_leer.py:2803-2841`): ranuras 1..6. Si `EXN < 7`, la oración va a
    la ranura `EXN` y `EXN += 1`. Si no, se busca la peor de las ranuras 1..6 y la nueva la reemplaza si es mejor.
@@ -1007,9 +1008,9 @@ Si hubo regla (`gen_leer.py:4218-4241`):
 
 ### 12.6 Respuesta desde las oraciones (`wysg_pd`)
 
-`gen_leer.py:4242-4246`: si `EXN > 0`, `CNB ← 3` y `r_canto` (§11.3: canto primero; si no hay regla de dos,
+`gen_leer.py:4242-4246`: si `EXN > 0`, `CNB ← 3` y `r_canto` ([§11.3](#113-bifurcación-por-cnb): canto primero; si no hay regla de dos,
 memoria cercana, que con líneas vacías elige la primera no dicha, es decir la ranura 0; luego azar). Si responde:
-`CNB ← 0`, `RD2 ← 0x7711`, `WY_ST ← 9`, `LG_FL ← 0`, `wyg_ok`. Si no, §10 `REPONER`.
+`CNB ← 0`, `RD2 ← 0x7711`, `WY_ST ← 9`, `LG_FL ← 0`, `wyg_ok`. Si no, [§10](#10-el-paso-sigue-y-el-orden-de-fuentes) `REPONER`.
 
 ---
 
@@ -1019,10 +1020,10 @@ memoria cercana, que con líneas vacías elige la primera no dicha, es decir la 
 
 ### 13.1 Preparación
 
-1. Escribe las etiquetas de `HEART` en `D_HL` (24 bytes cada una). `BFOR ← 0`; `H_BEST = H_OL = H_K = H_TOT = 0`.
+1. Escribe las etiquetas de [`HEART`](#15-la-lista-de-libros) en `D_HL` (24 bytes cada una). `BFOR ← 0`; `H_BEST = H_OL = H_K = H_TOT = 0`.
    Si `D_NW = 0`, `j0 = 0`.
-2. Nombre: las huellas de las palabras de su nombre (`NMROOM + 64`, `NMLEN` bytes), hasta 4, en `H_NP`.
-3. `H_TOT = Σ dh_wt(p)` sobre las palabras de 4+ letras de `D_RP` que no son de su nombre (§20.2).
+2. Nombre: las huellas de las palabras de [su nombre](08-luma-cuerpo-procesos-y-casa.md#852-nombre) (`NMROOM + 64`, `NMLEN` bytes), hasta 4, en `H_NP`.
+3. `H_TOT = Σ dh_wt(p)` sobre las palabras de 4+ letras de `D_RP` que no son de su nombre ([§20.2](#202-r_winfo-y-dh_wt)).
 4. `TH_PW ← dse_wish(D_CM+72, D_CM+64)`; `TH_W = TH_B = H_PS = H_CW = 0`.
 5. Si `CNB ≠ 2` y `r_randmod(2^20) < TH_PW`: `H_PS ← 1`, `TH_W ← TH_PW` (el hilo desde el principio).
 
@@ -1101,7 +1102,7 @@ párrafo que nombran, unidas por `, ` (cada una pasada por `dh_mine`), mientras 
 1. Si `RD2 = 0x7711`: `RD2 ← 0` y no se imagina (respuesta de lo que sus libros dicen de lo preguntado: el Libro, el
    corazón con `CNB = 2` o las oraciones por pistas).
 2. Si `CNN = 0`: no se imagina.
-3. Ventana: crea `WVW` si no existe. Con `ANSW = 1` usa el archivo `WHOR` (`trato-…`) y, si su tamaño es 0, la
+3. Ventana: crea `WVW` si no existe. Con `ANSW = 1` usa el archivo `WHOR` ([`trato-…`](08-luma-cuerpo-procesos-y-casa.md#862-trato-libro)) y, si su tamaño es 0, la
    charla `dialogo`; sin `ANSW`, `dialogo`. Si el archivo no abre, la ventana queda vacía. Lee sus últimos 4096 bytes
    en `WVW`.
 4. Reemplaza temporalmente `H_BUF`/`H_SZ` por esa ventana; `IGK ← IG_N`; `IGF ← ANSW`.
@@ -1109,7 +1110,7 @@ párrafo que nombran, unidas por `, ` (cada una pasada por `dh_mine`), mientras 
 6. Restituye `H_BUF`/`H_SZ`; `IGF ← 0`; si `IG_N > IGK`, `IG_N ← IGK + 1` (una imaginación por respuesta, aunque
    cambie varias palabras).
 7. Si `CONV = 0`: `wy_learn`.
-8. `D_LMODE ← 2`; `D_MC_N2 += 1`; `dse_has` (§16).
+8. `D_LMODE ← 2`; `D_MC_N2 += 1`; `dse_has` ([§16](#16-salida-dse_has)).
 
 ### 15.2 `im_imagine`
 
@@ -1131,7 +1132,7 @@ párrafo que nombran, unidas por `, ` (cada una pasada por `dh_mine`), mientras 
    signo es un byte < 128 que no es letra ASCII, dígito ni espacio (`ig_mark`).
 6. **Nunca leído**: si la cláusula está en la ventana, termina. Si `IGF = 0`, también termina si está en algún libro o
    en la charla (`ig_books`: lee cada uno en trozos de 65536 bytes más el largo de la cláusula).
-7. **Imaginado**: añade a `imaginado` la línea `cláusula | palabra_vieja > palabra_nueva\n`; pensamiento
+7. **Imaginado**: añade a [`imaginado`](08-luma-cuerpo-procesos-y-casa.md#872-imaginado) la línea `cláusula | palabra_vieja > palabra_nueva\n`; pensamiento
    `imagine: ` + cláusula (hasta 600); `D_OUT` ← texto nuevo; `IG_L ← 1`; `IG_N += 1`.
 
 ### 15.3 Cuándo se apaga
@@ -1145,12 +1146,12 @@ párrafo que nombran, unidas por `, ` (cada una pasada por `dh_mine`), mientras 
 | Texto resultante de 1000 bytes o más. | `gen_leer.py:4842` |
 | La cláusula ya está escrita (ventana; y, sin `IGF`, libros y charla). | `gen_leer.py:4861-4863` |
 
-La imaginación se paga en `r_marco` (§6.3, `IG_S += 1`) si el marco de confianza da 1 en el turno siguiente.
+La imaginación se paga en `r_marco` ([§6.3](#63-el-marco-r_marco), `IG_S += 1`) si el marco de confianza da 1 en el turno siguiente.
 
 ### 15.4 Tema e improvisación (pasos 2 y 3)
 
 - `r_dlg_impro` (`gen_leer.py:4746-4787`): si `IM_ON = 0`, `j0 = 0`. Si no son a la vez `D_KACT = D_KCLA = 1`, decide
-  por `dse_wish(D_CM+88, D_CM+80)`. `lj_stay` (§19.5). Abre el tema (`TM_L`), lee hasta 4096 bytes desde `IM_P` y, si
+  por `dse_wish(D_CM+88, D_CM+80)`. `lj_stay` ([§19.5](#195-tema-y-firma)). Abre el tema (`TM_L`), lee hasta 4096 bytes desde `IM_P` y, si
   cayó a mitad de línea, empieza en la siguiente; salta líneas vacías; junta las líneas del párrafo siguiente con
   `, ` (con `dh_mine`) hasta 800 bytes, y `.`. `D_OUT ←` eso; `IM_P` avanza; `IM_L ← 1`; `D_CM+80 += 1`;
   `im_imagine` (con `IGF = 0`). Al fin del libro, `IM_ON ← 0`.
@@ -1166,9 +1167,9 @@ La imaginación se paga en `r_marco` (§6.3, `IG_S += 1`) si el marco de confian
 
 `gen_leer.py:3508-3520`:
 
-1. `r_dlg_vary` (§17).
-2. `r_bridge` (§16.2).
-3. `r_mus_sing` (capítulo 10).
+1. `r_dlg_vary` ([§17](#17-no-repetir)).
+2. `r_bridge` ([§16.2](#162-puente-de-idioma-r_bridge)).
+3. `r_mus_sing` ([capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#107-vista-de-música-tab)).
 4. `lj_last`: `LG_LA ← D_OUT` (hasta 1000), `LG_LL`.
 5. `th_add(D_OUT)` (al intercambio que empieza); `an_add(D_OUT)`.
 6. `D_LBR ← 4`; `dcx_said`: `D_CX[ctx·64 + 48] += 1` (N de responder en el contexto actual), `D_LCX ← ctx`.
@@ -1179,13 +1180,13 @@ La imaginación se paga en `r_marco` (§6.3, `IG_S += 1`) si el marco de confian
 
 `gen_leer.py:2034-2070`. Prefijos: 0 `vos: `, 1 `luma: `, 2 `luma: (eligio no contestar)`,
 3 `luma: (no encontro con que contestar)`, 4 `luma (une): `, 5 `luma (cita): `, 6 `libro: `. Con 2 y 3 no se escribe
-texto. Orden: `D_SCR0 ← 0`, `r_letra_text`, `lj_flowback`, `lj_answer` (§19.7), `lj_note`. Destino: `dialogo`; si
-`GREET`, la etiqueta `GA["MCL"]` (7 bytes: `me-comi`, `gen_leer.py:7587`); si `SF_ON`, `charla-libros`. Se posiciona
+texto. Orden: `D_SCR0 ← 0`, `r_letra_text`, `lj_flowback`, `lj_answer` ([§19.7](#197-respuesta-única-y-flujo)), `lj_note`. Destino: `dialogo`; si
+`GREET`, la etiqueta `GA["MCL"]` (7 bytes: [`me-comi`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros), `gen_leer.py:7587`); si `SF_ON`, [`charla-libros`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros). Se posiciona
 al final (`r_file` 38 con `j11 = −1`) y escribe: prefijo, texto y `\n`. `r_dlg_write` no consulta el valor que
 devuelve `lj_note`.
 
 `r_dlg_save` (`gen_leer.py:2004-2010`) llama antes a `r_cable_flush` y `r_gustos_save` (fuera de este capítulo);
-luego borra (pedido 12) y reescribe `charla` con: `D_NC..D_SH` (32 bytes), `D_MC..D_MC_S2` (32),
+luego borra ([pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) y reescribe [`charla`](08-luma-cuerpo-procesos-y-casa.md#853-charla-2304-bytes-binarios) con: `D_NC..D_SH` (32 bytes), `D_MC..D_MC_S2` (32),
 `D_BN0..D_BS2` (48), `D_PM`, `D_CX` y `D_CM` (48 + 2048 + 96).
 
 ### 16.2 Puente de idioma (`r_bridge`)
@@ -1194,13 +1195,13 @@ luego borra (pedido 12) y reescribe `charla` con: `D_NC..D_SH` (32 bytes), `D_MC
 menos probable que en un libro promedio) y no habla un libro (`SF_ON = 0`):
 
 1. `D_AA ← D_OUT`; `D_WORDS ←` palabras de `D_OUT`; `BRG ← 1`; `r_dlg_answer` en modo 0 (sólo libros de su idioma,
-   §8.2 paso 4); `BRG ← 0`; `D_WORDS ←` palabras de `D_RP`.
+   [§8.2](#82-filtro-de-libros) paso 4); `BRG ← 0`; `D_WORDS ←` palabras de `D_RP`.
 2. Si no hay línea, o una contiene a la otra: `D_OUT ← D_AA`.
 3. Si no: `D_OUT ←` `D_AA` (hasta 600 bytes) + ` (en tu idioma: ` + línea hallada (hasta 990 en total) + `)`.
 
 ### 16.3 Nombres prestados (`r_names_out`)
 
-`gen_leer.py:6807-6845`. Se aplica a lo que sigue a una línea (§10.2) y a la respuesta de una costumbre (§10.1). En
+`gen_leer.py:6807-6845`. Se aplica a lo que sigue a una línea ([§10.2](#102-lo-que-sigue-wysg_one)) y a la respuesta de una costumbre ([§10.1](#101-algoritmo)). En
 `D_OUT` se quita:
 
 - toda palabra de su nombre (`dh_isname`, con las huellas de `H_NP` de la última llamada a `r_dlg_heart`);
@@ -1229,13 +1230,13 @@ siguientes. Si no queda nada, `D_OUT` se deja como estaba.
 
 ## 18. La lluvia como dados
 
-`r_rain_dice` (`gen_leer.py:6896-6909`) se llama sólo en `pna_send` (§3.2), es decir cuando la pregunta va al
-pensador. Si `RAINR ≠ 0`: borra (pedido 12) y crea `dados` y escribe en él `RNLN × RLW` bytes de `RAINR`, la grilla de
-dígitos hexadecimales de la lluvia tal como está (espacio donde no cayó nada).
+`r_rain_dice` (`gen_leer.py:6896-6909`) se llama sólo en `pna_send` ([§3.2](#32-cuerpo--pensador-r_pens_ask)), es decir cuando la pregunta va al
+pensador. Si `RAINR ≠ 0`: borra ([pedido 12](04-nucleo-abi-de-pedidos.md#93-archivos-del-sistema)) y crea [`dados`](10-luma-pantalla-lluvia-y-organos-vivos.md#1046-archivo-dados) y escribe en él `RNLN × RLW` bytes de `RAINR`, la grilla de
+dígitos hexadecimales de la [lluvia](10-luma-pantalla-lluvia-y-organos-vivos.md#104-lluvia-hexadecimal) tal como está (espacio donde no cayó nada).
 
 Estructura de `RAINR` (`gen_leer.py:6846-6851`, `gen_leer.py:6916-6943`): `RNLN × RLW` bytes de dígitos (fila por
 fila, iniciados en 32), luego `RLW` bytes con la fila de la gota de cada columna (255: sin gota). `RLW = 52`;
-`RNLN = PY // 9 + PNR`, con `PY` y `PNR` del panel (capítulo 10; valores numéricos no verificados aquí);
+`RNLN = PY // 9 + PNR`, con `PY` y `PNR` del panel ([capítulo 10](10-luma-pantalla-lluvia-y-organos-vivos.md#1041-constantes-y-geometría); `PY = 200`, `PNR = 16`: `razar/cuerpo/gen_luma.py:61`, `razar/cuerpo/gen_luma.py:85`, `gen_leer.py:1991`);
 `RQ = RNLN // 4`.
 
 `r_rain_push(j2, j3)`: cada 26 bytes de entrada es un paso (`RAINN += 1`). En cada paso, para cada columna `x`
@@ -1247,8 +1248,8 @@ fila, iniciados en 32), luego `RLW` bytes con la fila de la gota de cada columna
 - si la fila de la gota es menor que `RNLN`, en ella se escribe el nibble alto de `v` (columna par) o el bajo
   (columna impar) como dígito hexadecimal.
 
-La lluvia sólo avanza cuando entran bytes (pensamientos, registros de criaturas), no por reloj. El programa de canto
-usa la huella de `dados` en su semilla (§11.6), de modo que sus decisiones al azar dependen del estado de la lluvia en
+La lluvia sólo avanza cuando entran bytes (pensamientos, registros de criaturas), no por reloj. [El programa de canto](07-razar-cardumen-canto-hilos.md#28-dados-y-cantado-contrato-con-quien-lo-lanza)
+usa la huella de `dados` en su semilla ([§11.6](#116-canto-y-regla-de-dos)), de modo que sus decisiones al azar dependen del estado de la lluvia en
 el momento de la pregunta.
 
 ---
@@ -1267,7 +1268,7 @@ el momento de la pregunta.
   símbolos). `rwi_log` da `log2` en 1/64 de bit: `(bits − 1)·64` + los 6 bits siguientes al más alto
   (`gen_leer.py:1007-1019`).
 - Tabla de libros `LG_TB`: entradas de 64 bytes: huella (+0), tamaño (+8), costo acumulado del texto de él (+16,
-  inicial `2^50`), puntero a la firma (+24). Persiste en `lenguas`: por libro 32 bytes de cabecera y `VB` bytes
+  inicial `2^50`), puntero a la firma (+24). Persiste en [`lenguas`](08-luma-cuerpo-procesos-y-casa.md#873-lenguas): por libro 32 bytes de cabecera y `VB` bytes
   (`gen_leer.py:5120-5145`).
 
 ### 19.2 Texto de él (`lj_hist`)
@@ -1344,19 +1345,19 @@ restituye al hablar ella (`gen_leer.py:5211-5236`).
 
 | Etiqueta | Acceso | Formato |
 |---|---|---|
-| `pregunta` | Cuerpo escribe, pensador lee. | Texto de él, hasta 1000 bytes. |
-| `respuesta` | Pensador escribe, cuerpo lee. | Respuesta única. |
-| `dialogo` | Añadir; leer como libro. | Líneas `prefijo + texto + \n` (§16.1). |
-| `charla-libros` | Añadir. | Igual, cuando un libro le habla. |
-| `trato-<libro>` | Añadir; ventana de imaginación. | `vos: …\nluma: …\n` por turno. |
-| `charla` | Reescribir. | Cuentas (§16.1). |
-| `imaginado` | Añadir. | `cláusula \| vieja > nueva\n`. |
-| `imagina` | Reescribir. | `IG_N`, `IG_S` (16 bytes) (`gen_leer.py:4788-4793`). |
-| `pares`, `canta`, `razona`, `cantado` | Reescribir / leer. | §11.6. |
-| `dados` | Reescribir. | Grilla de la lluvia (§18). |
-| `lenguas` | Leer / reescribir si cambió. | §19.1. |
-| `caminos`, `siluetas` | Leer / reescribir. | Caminos y siluetas (`gen_leer.py:4474-4518`, `gen_leer.py:4083-4097`). |
-| `libro`, `elibro`, `libro…`, `elibro…` | Leer. | Texto en líneas. |
+| [`pregunta`](08-luma-cuerpo-procesos-y-casa.md#863-pregunta-respuesta-lista) | Cuerpo escribe, pensador lee. | Texto de él, hasta 1000 bytes. |
+| [`respuesta`](08-luma-cuerpo-procesos-y-casa.md#863-pregunta-respuesta-lista) | Pensador escribe, cuerpo lee. | Respuesta única. |
+| [`dialogo`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros) | Añadir; leer como libro. | Líneas `prefijo + texto + \n` ([§16.1](#161-r_dlg_write)). |
+| [`charla-libros`](08-luma-cuerpo-procesos-y-casa.md#861-dialogo-me-comi-charla-libros) | Añadir. | Igual, cuando un libro le habla. |
+| [`trato-<libro>`](08-luma-cuerpo-procesos-y-casa.md#862-trato-libro) | Añadir; ventana de imaginación. | `vos: …\nluma: …\n` por turno. |
+| [`charla`](08-luma-cuerpo-procesos-y-casa.md#853-charla-2304-bytes-binarios) | Reescribir. | Cuentas ([§16.1](#161-r_dlg_write)). |
+| [`imaginado`](08-luma-cuerpo-procesos-y-casa.md#872-imaginado) | Añadir. | `cláusula \| vieja > nueva\n`. |
+| [`imagina`](08-luma-cuerpo-procesos-y-casa.md#871-gustos-animo-imagina) | Reescribir. | `IG_N`, `IG_S` (16 bytes) (`gen_leer.py:4788-4793`). |
+| [`pares`, `canta`, `razona`, `cantado`](07-razar-cardumen-canto-hilos.md#22-archivos-de-la-casa) | Reescribir / leer. | [§11.6](#116-canto-y-regla-de-dos). |
+| [`dados`](10-luma-pantalla-lluvia-y-organos-vivos.md#1046-archivo-dados) | Reescribir. | Grilla de la lluvia ([§18](#18-la-lluvia-como-dados)). |
+| [`lenguas`](08-luma-cuerpo-procesos-y-casa.md#873-lenguas) | Leer / reescribir si cambió. | [§19.1](#191-modelo). |
+| [`caminos`](08-luma-cuerpo-procesos-y-casa.md#874-caminos-dos-escritores), [`siluetas`](08-luma-cuerpo-procesos-y-casa.md#875-siluetas) | Leer / reescribir. | Caminos y siluetas (`gen_leer.py:4474-4518`, `gen_leer.py:4083-4097`). |
+| [`libro`, `elibro`, `libro…`, `elibro…`](08-luma-cuerpo-procesos-y-casa.md#8816-libro--elibro-) | Leer. | Texto en líneas. |
 
 ---
 
@@ -1421,25 +1422,25 @@ Hechos del código que un mantenedor debe conocer:
    `r_dlg_seam` llama a `r_dlg_cover` con `j9 = D_CM` como sala de marcas (`gen_leer.py:5428`), lo que escribe
    `D_NW` qwords (hasta 120) a partir de `D_CM`, encima de las cuentas de encadenar, cruzar, hilo e improvisar
    (`D_CM+0..+95`) y de lo que sigue (`D_BASN`, `D_REFS`, ...).
-2. **Espera activa del canto.** El bucle `rc_w` repite el pedido 19 sin pausa mientras el hijo corre
+2. **Espera activa del canto.** El bucle `rc_w` repite el [pedido 19](04-nucleo-abi-de-pedidos.md#96-familia) sin pausa mientras el hijo corre
    (`gen_leer.py:6735-6736`).
 3. **`lj_note` sin efecto en `r_dlg_write`.** Su resultado `j0` no se consulta (`gen_leer.py:2039-2041`).
 4. **Nombres en `r_names_out`.** Usa `H_NP`/`H_NN` de la última ejecución de `r_dlg_heart`; en una conversación que
    no pasó por el corazón usa los de un turno anterior, o ninguno si nunca se ejecutó desde la carga.
-5. **`D_LC & 255`.** Con más de 256 libros, las tablas por libro de §2.3 se comparten entre libros cuyo índice difiere
+5. **`D_LC & 255`.** Con más de 256 libros, las tablas por libro de [§2.3](#23-la-sala-de-ejemplos-exr) se comparten entre libros cuyo índice difiere
    en múltiplos de 256.
 6. **Tabla de lugares llena.** Una palabra que no encuentra ranura en 8 pruebas se pierde sin aviso
    (`gen_leer.py:2471`).
-7. **Bytes, no caracteres, en §12.3.** Las rachas de 4 que deciden si una oración es "sobre la palabra" cuentan
+7. **Bytes, no caracteres, en [§12.3](#123-oración-sobre-la-palabra).** Las rachas de 4 que deciden si una oración es "sobre la palabra" cuentan
    bytes ≥ 65; una letra UTF-8 de dos bytes cuenta dos.
-8. **`CNB` residual.** `CNB` no se reinicia al empezar el turno (§2.8). Si `wy_choose` eligió en el turno anterior
+8. **`CNB` residual.** `CNB` no se reinicia al empezar el turno ([§2.8](#28-valores-de-cnb)). Si `wy_choose` eligió en el turno anterior
    el candidato 2, 3, 6, 7, 10 u 11, `CNB & 2` es verdadero en la siguiente `dsy_look` y en la pasada 1 de `sigue`:
    `r_dlg_answer` salta la charla y el árbol y, si existe `EXR`, escribe en el área `PL_*`; con `SOLO = 1` (pasada 1)
-   no queda ningún libro que leer. En §10.1, un residuo de 3 o de 5 desvía `r_canto` al canto o a la memoria cercana
+   no queda ningún libro que leer. En [§10.1](#101-algoritmo), un residuo de 3 o de 5 desvía `r_canto` al canto o a la memoria cercana
    en lugar de la regla de cobertura (`gen_leer.py:6686-6688`). En una conversación de un solo candidato `CNB = 1`
    y no hay efecto.
 9. **Copias sin límite en `dh_mine`.** `dh_mine` (`gen_leer.py:5377-5396`) no acota lo que escribe. El título de
-   §13.3 se copia entero a `D_C`, y en §15.4 la condición de 800 bytes se mira antes de añadir cada línea, que luego
+   [§13.3](#133-composición-dh_say) se copia entero a `D_C`, y en [§15.4](#154-tema-e-improvisación-pasos-2-y-3) la condición de 800 bytes se mira antes de añadir cada línea, que luego
    se copia entera (hasta `TM_W` bytes). Una línea que no cabe en los 1000 bytes de `D_C` (0x2C00) escribe sobre
    `D_BEST` (0x3000) y lo que sigue; las copias finales a `D_OUT` (`gen_leer.py:3813-3815`, `gen_leer.py:4775-4777`)
    tampoco se acotan a 1000.
@@ -1448,7 +1449,7 @@ Hechos del código que un mantenedor debe conocer:
     valores que haya en `EXR + 1064` y `EXR + 1072` (zona de la ranura de ejemplo 1). Sólo la rama `elibro` mide el
     tamaño (`gen_leer.py:3256`). Como el indicador de "ya leída" queda en 1, la tabla no se vuelve a construir
     (efecto concreto según el contenido previo de esa zona: no verificado).
-11. **Palabras no cubiertas sin tope.** §11.4 escribe en `D_WORDS` una entrada por cada ficha no cubierta de `D_RP`
+11. **Palabras no cubiertas sin tope.** [§11.4](#114-regla-de-cobertura-de-una-costumbre-por-clase-del-hueco) escribe en `D_WORDS` una entrada por cada ficha no cubierta de `D_RP`
     sin comparar con 120 (`gen_leer.py:6705-6708`); más de 128 entradas alcanzarían las marcas de `D_WORDS + 1024`.
 
 ---
@@ -1458,6 +1459,6 @@ Hechos del código que un mantenedor debe conocer:
 - Direcciones concretas de las variables globales con nombre (`EXR`, `CNB`, `LNR`, ...), asignadas por el generador.
 - Construcción de la tabla `WFT` (`bu_wcount`) y significado exacto de `S` fuera de la fórmula de `r_winfo`.
 - Valores numéricos de `PY`, `PNR` y por lo tanto `RNLN` de la lluvia.
-- Algoritmo interno de `luma/canto.bin` (`memoria_pares.jsm`) más allá de la mezcla de `dados` en su semilla.
-- Si la charla `dialogo` está ubicada en el árbol de temas, lo que decide si `ar_in` la excluye en la búsqueda normal.
+- Algoritmo interno de `luma/canto.bin` ([`memoria_pares.jsm`](07-razar-cardumen-canto-hilos.md#2-memoria_paresjsm-el-núcleo-de-pares-y-el-canto)) más allá de la mezcla de `dados` en su semilla.
+- Si la charla `dialogo` está ubicada en el [árbol de temas](08-luma-cuerpo-procesos-y-casa.md#876-arbol), lo que decide si `ar_in` la excluye en la búsqueda normal.
 - Detalle de `dq_scan`, `dq_chain`, `r_dlg_cross`, `r_dlg_own`, `r_dlg_cite`, `r_dlg_talk` y `r_mus_sing`.

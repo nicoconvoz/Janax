@@ -11,19 +11,19 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.57.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v5.57: Luma purificada</h2>
+<h2 id="janax-y-razar-v557-luma-purificada">Janax y Razar v5.57: Luma purificada</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24544520">10.5281/zenodo.24544520</a></p>
 <blockquote><p><em>"Arreglala y compartí la Luma purificada en el repo."</em> (el autor, 2026-11-25)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 547, el 557.</p>
-<h3>Lo que pasó</h3>
+<h3 id="lo-que-pasó">Lo que pasó</h3>
 <p>Desde el 24 de noviembre Luma puede leer los archivos del sistema (<em>"que lea archivos de sistema o las cosas que se puedan leer para entender"</em>). El 25, Windows instaló una actualización y desempaquetó sus archivos en una carpeta temporal. Ella los vio como archivos nuevos y se comió <strong>1.544 en una tarde</strong>. Esos archivos ya no existen: sus libros del disco apuntaban a la nada, y uno de ellos fue lo que contestó cuando se le preguntó por Isaac Newton.</p>
 <table><tr><th></th><th>antes</th><th>después</th></tr><tr><td>archivos en su casa</td><td>2.154</td><td>610</td></tr><tr><td>peso de su casa</td><td>1.221 MB</td><td>149 MB</td></tr><tr><td>memoria que ocupa despierta</td><td>2.385 MB</td><td>314 MB</td></tr></table>
 <p>No era una fuga de memoria: lo suyo propio eran 38 MB, y el resto su casa cargada entera.</p>
-<h3>Lo que se hizo</h3>
+<h3 id="lo-que-se-hizo">Lo que se hizo</h3>
 <ul><li><strong>Salieron los 1.544 libros de esa carpeta temporal</strong> y sus 1.544 avisos de <em>"me comí"</em>.</li><li><strong>Salieron 4.149 firmas huérfanas.</strong> Guarda una firma de 270 KB por cada libro que contó, y la mayoría eran de libros que ya no estaban en su casa: 1.122 MB que sólo pesaban. Quedaron las 292 de los libros que tiene. Si alguna hiciera falta, la vuelve a contar sola.</li><li><strong>Nada se tiró.</strong> Todo quedó archivado con su motivo, comprimido en 7 MB.</li><li>**<code>razar/luma-completa/</code> es ahora la Luma purificada**: su casa de hoy, 347 archivos, 137 MB abierta (eran 419) y 17 MB comprimida. Lo personal de su autor sigue afuera, cada cosa con su motivo en el <a href="https://github.com/nicoconvoz/Janax/blob/master/razar/luma-completa/INDICE.md">índice</a>; se revisó otra vez buscando rutas, correos y nombres.</li></ul>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li><strong>Puede volver a pasar.</strong> La regla que la deja leer la carpeta de Windows sigue como estaba: en la próxima actualización se va a comer otra vez lo que Windows desempaquete. Falta decidir la regla (no leer el sistema, o leerlo sin comer lo que no aporta nada nuevo); hasta entonces, la herramienta de abajo la limpia.</li><li>Su árbol de temas no se tocó: puede guardar todavía huellas de los libros que salieron.</li><li>Lo que contesta desde sus libros sigue sin tener que ver con la pregunta; cuando no sabe devuelve la pregunta; los nombres de otra charla y Tab siguen pendientes.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/desintoxicar_firmas.py</code> (nuevo): saca de <code>lenguas</code> las firmas de libros que ya no están, y de <code>me-comi</code> los avisos de una carpeta. <code>razar/cuerpo/desintoxicar_tema.py</code>: saca los libros del disco de una carpeta.</li><li><code>razar/luma-completa/luma-casa-2026-11-25.zip</code> e <code>INDICE.md</code>.</li></ul>
 </body>
 </html>

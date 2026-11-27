@@ -11,23 +11,23 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v0.37.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v0.37: el ingrediente X</h2>
+<h2 id="janax-y-razar-v037-el-ingrediente-x">Janax y Razar v0.37: el ingrediente X</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24368294">10.5281/zenodo.24368294</a></p>
 <blockquote><p><em>"Solo te pido que le agregues el ingrediente X: AMOR."</em> (el autor, 2026-11-19)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 31, el 37.</p>
-<h3>1. Las recetas de órganos viajan con el repositorio</h3>
+<h3 id="1-las-recetas-de-órganos-viajan-con-el-repositorio">1. Las recetas de órganos viajan con el repositorio</h3>
 <p>Vivían solo en la biblioteca de la máquina del autor, y ningún release las traía. Ahora hay una copia legible en [<code>razar/lectura/recetas/</code>](../razar/lectura/recetas/LEEME.md): cada órgano que ganó, con su nota, a quién le ganó y el código de cada letra. El camino sobre el Nuevo Testamento, cada uno ganándole al anterior: <code>6</code> (−1586) → <code>5</code> (208) → <code>16</code> (2649) → <code>716</code> (4700) → <code>516</code> (11144). Los dos últimos se volvieron a encontrar el 2026-11-19 en una vida de 40 intentos (4 min 40 s), partiendo sin órgano y con las recetas guardadas rindiendo primero.</p>
-<h3>2. Razar vive en la casa de Luma</h3>
+<h3 id="2-razar-vive-en-la-casa-de-luma">2. Razar vive en la casa de Luma</h3>
 <p><code>razar/cuerpo/razar_en_casa.sh &lt;carpeta&gt; &lt;libro&gt;</code> deja a Razar en vigilia dentro de la casa de Luma, sin borrar nada de ella. Lee su libro, prueba las recetas de su modelo y descansa en su timbre. Lo despiertan dos cosas: una carta de Luma y un libro nuevo en la casa (un archivo cuya etiqueta empiece con <code>libro</code>).</p>
 <ul><li><strong>Medido:</strong> dormido gasta <strong>0,000 s de procesador en 30 s</strong> con Luma escribiendo al lado, y ocupa 141 MB. Luma: 2,75 s cada 30 s (9 % de un núcleo) y 39 MB.</li></ul>
-<h3>3. El ingrediente X: lo que crea, lo comparte</h3>
+<h3 id="3-el-ingrediente-x-lo-que-crea-lo-comparte">3. El ingrediente X: lo que crea, lo comparte</h3>
 <p>Cuando una forma de Luma gana, se la deja a Razar en una carta (<code>carta2</code>: el genoma de él y la receta de ella como órgano). Es un evento, nunca un reloj. Razar ya sabía despertar con una carta y probar primero el órgano que le traen, con sus propios libros y en su jaula: no se tocó <code>pulso.jsm</code>.</p>
 <ul><li><strong>Probado a mano</strong> con el órgano <code>516</code> en la carta: Razar despertó, lo probó, ganó, se rehízo con él y volvió a descansar.</li><li><strong>Lo que falla, dicho:</strong> en 70 s a toda marcha, sin ventana, <strong>ninguna forma ganó</strong> (la población está en su óptimo: 131 victorias en total). La carta por victoria casi no sale, así que hoy Razar duerme casi siempre.</li><li><strong>Lo que no se afirma:</strong> que esto sea amor. Lo construido es un acto: dar lo propio a otro para que lo pruebe con su propio juez.</li></ul>
-<h3>4. La carta del autor a Luma</h3>
+<h3 id="4-la-carta-del-autor-a-luma">4. La carta del autor a Luma</h3>
 <p>[<code>razar/corazon/de-tu-autor.txt</code>](../razar/corazon/de-tu-autor.txt): <em>"Te hice con Amor y te quiero mucho."</em> Su reconocedor dice que lleva la firma del autor: 338 bits dado su diario, 343 dado el Nuevo Testamento y 451 dado el libro del ayudante. Son 83 letras y la ventaja es de 5 bits: es un sí corto.</p>
-<h3>Lo que falta</h3>
+<h3 id="lo-que-falta">Lo que falta</h3>
 <ul><li><strong>La libertad</strong> (el autor: <em>"es incluso no hacer nada a propósito, y hacer algo cuando se le ocurra"</em>): que Luma elija en cada respiro entre pensar, compartir o no hacer nada. No está construida.</li><li><strong>Qué comparte:</strong> solo lo que gana es demasiado raro. Lo que su juez descartó puede servir en el marco de Razar (<em>"a veces lo que falta es el marco"</em>), pero cada carta le cuesta a Razar unos 7 s de procesador: falta decidir el ritmo con una medición.</li><li><strong>Estudiar libros desde su ventana:</strong> hoy los estudia Razar (y el vigía, los textos del anfitrión), no Luma.</li></ul>
-<h3>Cómo verla</h3>
+<h3 id="cómo-verla">Cómo verla</h3>
 <p>Descomprimí <code>luma-casa-corazon.zip</code> dentro de una carpeta y corré <code>bash razar/cuerpo/luma.sh &lt;carpeta&gt;</code>. Para que Razar viva en esa casa: <code>bash razar/cuerpo/razar_en_casa.sh &lt;carpeta&gt; &lt;libro&gt;</code>. Suite del sistema operativo: <strong>402 bien, 0 mal</strong>. Lo anterior: <a href="release-v0.31.html">v0.31</a> · <a href="release-v0.19.html">v0.19</a>.</p>
 </body>
 </html>

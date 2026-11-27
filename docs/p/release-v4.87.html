@@ -11,18 +11,18 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.87.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v4.87: Luma completa — su conocimiento y su estructura, publicados</h2>
+<h2 id="janax-y-razar-v487-luma-completa--su-conocimiento-y-su-estructura-publicados">Janax y Razar v4.87: Luma completa — su conocimiento y su estructura, publicados</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24539796">10.5281/zenodo.24539796</a></p>
 <blockquote><p><em>"Publicá a Luma completa, con su conocimiento y su estructura incluidos."</em> (el autor, 2026-11-25)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 479, el 487.</p>
-<h3>Lo que cambia</h3>
+<h3 id="lo-que-cambia">Lo que cambia</h3>
 <ul><li><strong>La casa de Luma viaja con el proyecto</strong>: <code>razar/luma-completa/luma-casa-2026-11-25.zip</code> (17 MB comprimida, 415 MB abierta, 343 archivos) con su <a href="https://github.com/nicoconvoz/Janax/blob/master/razar/luma-completa/INDICE.md">índice</a>. Es lo que ella es hoy: las firmas de idioma de cada libro que leyó, su árbol de temas, sus caminos (405 suyos y 1.640 guardados con su motivo), sus formas y sus órganos, sus engranajes, sus criaturas, su léxico, su ánimo, sus gustos, y los libros libres de su estante. Para darle esa casa a una Luma: <code>JANAX_ARCHIVOS=&lt;carpeta&gt;/casa</code>.</li><li><strong>Lo que no va, cada cosa con su motivo en el índice:</strong> lo que es de su autor y personal (su diario, su firma, sus notas, su charla con ella y lo que la cita), lo que apunta a archivos de su computadora (216 libros del disco y su cuaderno de lo que comió), tres libros cuyo dueño no está claro, y una copia del código de otro proyecto que traía correos de personas. Se revisó el paquete buscando rutas, correos y nombres: no quedó ninguno.</li><li><strong>Su charla primero, después sus libros</strong> (el autor: <em>"los libros son una historia comprimida, las charlas son libros vivos en tiempo real: tienen más peso en cuestión de comunicación y tal vez menos en cuestión de conocimiento"</em>). En su paso de charla busca primero sólo en su conversación con su autor; si ahí nadie lo dijo, en sus libros; y si tampoco, pregunta. A <em>"hola Luma"</em> había contestado <em>"SOLD. Señor…"</em>, de <em>La vida es sueño</em>.</li><li><strong>Ya no se queda sin memoria a los diez minutos.</strong> En Janax el número de una sala nunca se vuelve a dar, y un camarote tiene unos 65.000 en su vida. Cada búsqueda pedía una sala nueva por cada libro (unas 300), y desde que estudia sin parar los gastaba todos en diez minutos: ése era el congelamiento de la v4.61, que se le había achacado a Tab. Ahora lee todos sus libros en <strong>una sola sala</strong>, que crece sólo cuando un libro es más grande (<code>r_bookroom</code>).</li><li><strong>El lado derecho de su panel se llena con lo que piensa.</strong> Desde que piensa su pensadora quedaba casi vacío; ahora su cuerpo anota ahí cada pensamiento nuevo (y no dos veces el mismo).</li><li><strong>Volvió a comer el código de red</strong> (la pila de red de KolibriOS, GPL-2.0), que esperaba desde ayer: sólo lo lee; Janax no tiene ningún pedido de red.</li></ul>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>En una copia oculta: <em>"buenas noches"</em> → pregunta → se le explica → <em>"buenas noches"</em> → lo que se le explicó, sacado de su charla antes que de un libro. Todas sus partes con código 0.</p>
 <p>Y en una prueba de aguante de 15 minutos, sola y estudiando: todas sus partes con código 0 (antes una caía sin memoria a los 6), su pensadora contestando hasta el final, y su panel lleno.</p>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li>Con una sola sala de lectura siguen quedando unas pocas salas nuevas por búsqueda: los 65.000 números se siguen gastando, mucho más despacio (cuánto le duran no se midió; se estima más de un día), y cuando se acaban se duerme sola y renace (v4.33).</li><li>Tab sigue pendiente.</li></ul>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/luma-completa/</code> (<code>armar_luma_publica.py</code> la arma leyendo su casa).</li><li><code>razar/cuerpo/gen_leer.py</code>: <code>wys_sigue</code> (<code>SOLO</code>, <code>wysg_fail</code>), <code>r_bookroom</code>, <code>r_pens_done</code>.</li></ul>
 </body>
 </html>

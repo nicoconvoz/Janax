@@ -11,27 +11,27 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v5.93.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v5.93: una regla, los lugares, y de lo que sale arma lo que contesta</h2>
+<h2 id="janax-y-razar-v593-una-regla-los-lugares-y-de-lo-que-sale-arma-lo-que-contesta">Janax y Razar v5.93: una regla, los lugares, y de lo que sale arma lo que contesta</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24587271">10.5281/zenodo.24587271</a></p>
 <blockquote><p><em>"Poníamos a un sujeto, por ejemplo Juli, y veíamos otro, como Nico: veíamos que compartían: caminaban, hablaban, comían, jugaban, iban a la escuela… entonces categorizaba."</em> — <em>"No te pido que construyas una estructura sino una regla general de donde emerja sola la estructura."</em> — <em>"Da palabras sueltas, pero son pistas para armar oraciones."</em> (el autor, 2026-11-27)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 587, el 593.</p>
-<h3>La regla</h3>
+<h3 id="la-regla">La regla</h3>
 <ul><li><strong>Un lugar</strong> es lo que una palabra tiene al lado en una oración: la palabra que cuenta antes y la que cuenta después (con las cortas en el medio: <em>"papa de _"</em>).</li><li><strong>Dos palabras que comparten dos lugares son de una clase.</strong></li></ul>
 <p>Nada más. No se nombra qué es una persona, qué es lo que alguien hace ni de quién es hijo: son lugares como cualquier otro, y lo que sale, sale de cuáles se comparten con quién. Es la nitidez de Razar (v0.3), ahora en el cuerpo de Luma y aplicada a lo que se le pregunta.</p>
-<h3>Cómo la usa</h3>
+<h3 id="cómo-la-usa">Cómo la usa</h3>
 <ol><li>Cuando una costumbre no cubre lo que se le pregunta (v5.87), lee sus libros y guarda <strong>los lugares de esa palabra</strong>, hasta 64 (un bit cada uno).</li><li>Vuelve a leer <strong>los libros que hablan de ella</strong> y anota qué otras palabras están en esos mismos lugares. Sólo si de ésos no sale ninguna regla lee los demás (<em>"si te falta evidencia podés usar otros libros similares"</em>).</li><li><strong>Lo que sale</strong> son las palabras que más lugares comparten con ella (dos al menos) y los lugares que dos de ellas sostienen. <strong>Son pistas:</strong> vuelve a esos libros y, de las oraciones que hablan de lo preguntado, se queda con las seis que más pistas tienen. Dice primero la de más pistas; las demás quedan para cuando vuelvan a preguntarle, y para el canto de su cardumen cuando ya las dijo todas.</li></ol>
 <ul><li>Una palabra de <strong>la mitad</strong> (la que se dice en todos lados, medida por ella en sus libros) no es lugar ni está en ninguno. La excepción es la palabra que se pregunta: en un libro propio, de quien habla el libro está entre las más dichas, y el <code>hilos</code> de Razar, que mide la mitad por pedazo, la descartaba.</li><li>Lo que sus libros dicen de lo preguntado <strong>no pasa por su imaginación</strong>: le había puesto otro nombre donde estaba el que se le preguntó.</li></ul>
-<h3>Lo que salió solo</h3>
+<h3 id="lo-que-salió-solo">Lo que salió solo</h3>
 <p>En una copia oculta, antes de usar las pistas, lo que la regla juntó:</p>
 <table><tr><th>se le preguntó</th><th>lo que salió</th></tr><tr><td><em>quien es Marianela?</em></td><td>MARIANELA, Nela, Florentina, Teodoro, Pablo: repitio, dirigio…</td></tr><tr><td><em>que es el genoma?</em></td><td>genoma, genes, celulas, procesos, organismo: organismo, genes del, cambios en el…</td></tr></table>
 <p>Nadie le dijo qué es un personaje: juntó a los de la novela, y que <em>Nela</em> es Marianela.</p>
 <p>Y con esas pistas, lo que contesta:</p>
 <table><tr><th>se le preguntó</th><th>contestó</th></tr><tr><td><em>quien es Marianela?</em></td><td>Marianela reconocio al ingeniero de las minas y al individuo que se habia extraviado en la Terrible la noche anterior.</td></tr><tr><td><em>que es el genoma?</em></td><td>El genoma humano tiene una longitud de unos 3000 millones de pares de bases; si la longitud media de cada fragmento es de 500 bases…</td></tr><tr><td><em>que es una celula?</em></td><td>Una celula procariota es un organismo unicelular, cuyo material genetico se encuentra disperso en el citoplasma, reunido en una zona denominada nucleoide.</td></tr><tr><td><em>como estas?</em></td><td>hola, muy bien, y vos?</td></tr></table>
-<h3>Lo que todavía no</h3>
+<h3 id="lo-que-todavía-no">Lo que todavía no</h3>
 <ul><li><strong>Con un libro contado en primera persona sale flojo.</strong> De un personaje de un libro de su autor juntó palabras que no son personajes: al lado del nombre están <em>"miré a"</em>, <em>"sentí"</em>, y no otros haciendo lo mismo.</li><li><strong>Elige oraciones; todavía no las arma.</strong> Las pistas sirven para elegir la oración que más dice. Que componga una propia con ellas es el paso que sigue (su canto ya recibe esas oraciones como ejemplos).</li><li><strong>Un nombre que está en varios libros se mezcla:</strong> <em>"quien es Cesar?"</em> juntó al del Nuevo Testamento.</li><li><strong>Tarda de 11 a 31 segundos</strong> en esas preguntas: lee sus libros hasta tres veces.</li><li>La primera pregunta después de despertar puede contestarla sin su pensadora, por su camino viejo.</li><li>Los cortes (64 lugares, cuatro palabras, cuatro lugares, seis oraciones) son tamaños de la estructura, no medidas.</li></ul>
-<h3>Su logo</h3>
+<h3 id="su-logo">Su logo</h3>
 <p>La bandera argentina, imagen de su autor: es el icono de su programa y lo que se ve en grande mientras despierta. La de la Vendimia y los dibujos anteriores quedan guardados en <code>razar/logo/</code>.</p>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>dd_go</code> (cada palabra que cuenta y su vecina), <code>dd_place</code>, <code>dd_word</code>, <code>r_describe</code> (lo que sale), <code>dan_hC</code> (las pistas de una oración), <code>wysg_pt</code>/<code>wysg_pc</code> (su paso).</li><li><code>razar/logo/</code>, <code>razar/instalador/luma.asm</code>.</li></ul>
 </body>
 </html>

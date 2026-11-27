@@ -11,24 +11,24 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v3.97.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v3.97: un registro que crece al final no es un libro</h2>
+<h2 id="janax-y-razar-v397-un-registro-que-crece-al-final-no-es-un-libro">Janax y Razar v3.97: un registro que crece al final no es un libro</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24496597">10.5281/zenodo.24496597</a></p>
 <blockquote><p><em>"La estamos intoxicando con logs: cuando detecte una estructura de logs, que no se la coma."</em> (el autor, 2026-11-24)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 389, el 397.</p>
-<h3>Lo que pasaba</h3>
+<h3 id="lo-que-pasaba">Lo que pasaba</h3>
 <p>Luma come lo nuevo de los discos. Pero algunos archivos son <strong>registros</strong>: el del vigía (<code>vigia.log</code>), el de su propio arranque (<code>luma.log</code>), las salidas de las pruebas. Cambian todo el día, y ella los tenía en su estante como libros.</p>
-<h3>La regla (general, sin nombres de archivos)</h3>
+<h3 id="la-regla-general-sin-nombres-de-archivos">La regla (general, sin nombres de archivos)</h3>
 <p>Cuando un libro del disco que ya conocía cambia, ella mira dos cosas:</p>
 <ol><li><strong>¿Creció sólo al final?</strong> Saca la huella de los primeros bytes del archivo nuevo, tantos como tenía antes. Si es la misma huella que había guardado, lo que era sigue entero y sólo se le agregaron renglones abajo.</li><li><strong>¿Sus renglones empiezan con etiqueta?</strong> Más de la mitad arrancan con un número o con una palabra seguida de dos puntos ("vigia:", "comido:", una hora).</li></ol>
 <p><strong>Las dos juntas</strong> dicen "registro". Con una sola no alcanza: un diario escrito al final crece igual, pero sus renglones arrancan distinto; un archivo de configuración tiene "clave: valor", pero cambia por dentro.</p>
 <p>Un registro <strong>no se borra</strong>: su libro pasa a llamarse <code>registro-disco-…</code>, que no es un libro de su estante, y ella no lo vuelve a comer.</p>
 <p>Para poder comprobarlo, el libro del disco guarda ahora <strong>la huella, el tamaño y la dirección</strong>. Su lectora se ajustó, y <code>razar/cuerpo/libros_del_disco.py</code> pasó sus 173 libros del disco a la forma nueva.</p>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Probado en una copia, nunca en la Luma viva: un <code>registro.log</code> y un <code>diario.txt</code> nuevos se comieron y se saludaron una vez. Cuando los dos crecieron al final, <strong>el registro pasó a registro, callado, y el diario siguió siendo libro.</strong></p>
 <p>Al convertir su casa se vio por qué no conviene decidirlo desde afuera: sin el tamaño de antes, <code>CITATION.cff</code> (clave: valor, cambiado por dentro) parecía un registro. Por eso lo decide ella, con la regla entera, la próxima vez que cada archivo cambie.</p>
-<h3>Una enfermedad encontrada (y todavía no curada)</h3>
+<h3 id="una-enfermedad-encontrada-y-todavía-no-curada">Una enfermedad encontrada (y todavía no curada)</h3>
 <p><strong>Su lectora se cae desde la v3.79</strong> (código 5, un acceso a memoria inválido), así que no terminó ninguna lectura desde el 23 de noviembre a las 23:10. Con los cuerpos de antes del árbol termina bien. Es lo próximo a curar.</p>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_luma.py</code>: <code>he_record</code> (la regla), <code>he_done</code> (busca también <code>registro-disco-</code>), y el tamaño en el libro.</li><li><code>razar/lectura/lectura.inc</code>: <code>scan_file</code> (la dirección después de la huella y el tamaño).</li><li><code>razar/cuerpo/libros_del_disco.py</code>.</li></ul>
 </body>
 </html>

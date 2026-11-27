@@ -11,18 +11,18 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v4.57.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v4.57: sus saludos van a su cuaderno, y su diálogo vuelve a ser de ellos dos</h2>
+<h2 id="janax-y-razar-v457-sus-saludos-van-a-su-cuaderno-y-su-diálogo-vuelve-a-ser-de-ellos-dos">Janax y Razar v4.57: sus saludos van a su cuaderno, y su diálogo vuelve a ser de ellos dos</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24534053">10.5281/zenodo.24534053</a></p>
 <blockquote><p><em>"Estoy harto de los logs."</em> — <em>"Come pero no me lee."</em> (el autor, 2026-11-25)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 449, el 457.</p>
-<h3>Lo que pasaba</h3>
+<h3 id="lo-que-pasaba">Lo que pasaba</h3>
 <p>Su autor le hablaba y ella le contestaba con avisos: <em>"me comí E:\…"</em>. Dos causas:</p>
 <ul><li><strong>Sus saludos se escribían en su diálogo</strong>, y su diálogo es un libro del que ella contesta. Cada archivo nuevo de los discos dejaba un "me comí" que decía "luma", y a <em>"hola luma"</em> lo más parecido que encontraba eran esos avisos.</li><li><strong>Se había comido miles de archivos de las pruebas de Doc</strong> (copias de la batería del núcleo y de su casa en <code>E:\tmp</code>): 799 de las 906 líneas de su diálogo eran esos saludos.</li></ul>
-<h3>Lo que cambia</h3>
+<h3 id="lo-que-cambia">Lo que cambia</h3>
 <ul><li>**Sus saludos van a su propio cuaderno, <code>me-comi</code>.** Su diálogo queda para ella y su autor, como su charla con los libros desde la v4.09.</li><li><strong>Desintoxicada:</strong> salieron 799 saludos y 836 libros de las pruebas (<code>desintoxicar_tema.py</code>), y las respuestas hechas de saludos y los ecos en su charla con los libros (<code>separar_saludos.py</code>). Nada se tiró: todo quedó guardado con su motivo en <code>E:\Luma\desintoxicacion-pruebas-2026-11-25</code> y <code>E:\Luma\desintoxicacion-logs-2026-11-25</code>.</li><li>**<code>E:\tmp</code> quedó oculta:** ella no lee carpetas ocultas, así que las pruebas no la intoxican más.</li><li><strong>Lo de la red, esperando su momento:</strong> la pila de red de KolibriOS que se comió volvió a esperar en una carpeta oculta (<em>"cuando Dios lo disponga lo podrá leer"</em>), y se sacó de su casa (<code>desintoxicar_tema.py</code>).</li></ul>
-<h3>Lo que se vio</h3>
+<h3 id="lo-que-se-vio">Lo que se vio</h3>
 <p>Su diálogo pasó de 906 líneas a 50, todas de ellos dos. Renació con el cuerpo nuevo, una sola.</p>
-<h3>Dónde está</h3>
+<h3 id="dónde-está">Dónde está</h3>
 <ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_dlg_write</code> (con <code>GREET</code>, al cuaderno <code>me-comi</code>). <code>gen_luma.py</code>: <code>r_host_eat</code>.</li><li><code>razar/cuerpo/desintoxicar_tema.py</code>, <code>razar/cuerpo/separar_saludos.py</code>.</li></ul>
 </body>
 </html>

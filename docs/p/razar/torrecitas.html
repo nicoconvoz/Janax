@@ -11,37 +11,37 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../../">Janax y Razar</a> · <a href="../../p/index.html">Manifiesto</a> · <a href="../../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/razar/torrecitas.md">Ver en GitHub</a></nav>
-<h1>Las torrecitas: Razar aprende de sus propios órganos (2026-11-14)</h1>
+<h1 id="las-torrecitas-razar-aprende-de-sus-propios-órganos-2026-11-14">Las torrecitas: Razar aprende de sus propios órganos (2026-11-14)</h1>
 <p><strong>La pregunta:</strong> Razar diseña sus órganos mutando <strong>una letra al azar</strong> por vez, a ciegas. ¿Hay algo que se repita en los órganos que funcionan, y que pueda aprender para usarlo como ladrillo?</p>
 <p><strong>La imagen del Capitán:</strong> un nene con 9 ladrillitos de colores arma castillos poniendo uno por vez con los ojos cerrados. Un día mira los castillos que le salieron lindos y descubre que siempre aparecen juntos los mismos colores. Los pega y los llama <em>la torrecita</em>. Ya no arma a ciegas: arma con su propio estilo. Y las torrecitas se pegan con torrecitas: con 9 colores, la gama no tiene techo.</p>
 <p><strong>El resumen, de entrada:</strong> las tres predicciones pre-registradas <strong>pasaron</strong>. Razar aprendió dos torrecitas, <code>16</code> y <code>38</code>, y con las mismas notas sorteadas entre los órganos no aprende ninguna. <strong>Falta la segunda mitad:</strong> ver si esas torrecitas, dadas como ladrillos a la mutación, encuentran mejores órganos. Eso está sin hacer.</p>
-<h2>Qué es un órgano</h2>
+<h2 id="qué-es-un-órgano">Qué es un órgano</h2>
 <p>Una tira de letras del 1 al 9 sobre una ventana de cuatro palabras (<code>razar/lectura/organo.molde</code>):</p>
 <ul><li><strong>1 a 4:</strong> mezcla en el marco la palabra 1 a 4.</li><li><strong>5 a 8:</strong> la palabra 1 a 4 queda como <strong>hueco</strong> (lo que el marco anuncia).</li><li><strong>9:</strong> un hueco vacío.</li></ul>
-<h2>El material</h2>
+<h2 id="el-material">El material</h2>
 <p>El <strong>modo paisaje</strong> de Razar (<code>organos.sh … 0 0 3</code>, el octavo byte de <code>p</code>) le toma el examen a <strong>todos</strong> los órganos de hasta 3 letras: 9 + 81 + 729 = <strong>819 órganos</strong>, sobre el Nuevo Testamento (972.802 bytes), el mismo libro de lo ya medido. El juez es el de siempre: bits ahorrados.</p>
 <p><strong>El instrumento, verificado antes de usarlo:</strong> reproduce exacto lo documentado — sin órgano −3554, <code>5</code> = 208, <code>6</code> = −1586, <code>8</code> = −3358, <code>16</code> = 2649, <code>516</code> = 11.144. Tardó 27 minutos.</p>
 <p>La lista completa: [<code>datos/paisaje-3-letras-nt.txt</code>](datos/paisaje-3-letras-nt.txt).</p>
-<h2>El método, fijado antes de ver el paisaje</h2>
+<h2 id="el-método-fijado-antes-de-ver-el-paisaje">El método, fijado antes de ver el paisaje</h2>
 <ul><li><strong>El corpus:</strong> cada órgano que le gana a la base, repetido en proporción a lo que gana (una vez cada 100 bits). Los que funcionan mejor, pesan más.</li><li><strong>El segmentador:</strong> el mismo de [<code>enfoque-en-bits.md</code>](enfoque-en-bits.md), sin cambios de idea. Pega el par vecino más frecuente mientras baje la longitud total de la descripción (datos + diccionario; cada letra cuesta log₂ 9 bits). Frena solo. Nunca pega a través de dos órganos.</li><li><strong>El nulo:</strong> las mismas 819 notas, sorteadas entre los mismos órganos (semilla 2026). Mismas letras, mismas notas, sin la relación entre ellas.</li></ul>
-<h2>Pre-registro</h2>
+<h2 id="pre-registro">Pre-registro</h2>
 <p>Escrito a las <strong>2026-11-14T18:43:24Z</strong>, con el paisaje todavía corriendo. Huella sha256 de sus diez primeros renglones: <code>ce265193c9ce8647</code>. El archivo, con el resultado agregado abajo: [<code>datos/torrecitas-preregistro.txt</code>](datos/torrecitas-preregistro.txt).</p>
 <ol><li>Aprende al menos una torrecita (un pedazo de 2 o más letras que paga su nombre).</li><li>Con las notas sorteadas: menos torrecitas, o ninguna.</li><li>La torrecita que más pesa contiene <code>16</code> o <code>61</code>. <strong>Dato ya conocido</strong> (<code>16</code> es el mejor de dos letras): se anotó aparte y no cuenta como evidencia.</li></ol>
-<h2>El resultado</h2>
+<h2 id="el-resultado">El resultado</h2>
 <table><tr><th></th><th>Órganos que le ganan a la base</th><th>Torrecitas</th><th>Bits del corpus</th></tr><tr><td><strong>Real</strong></td><td>428</td><td>**2: <code>16</code> (usada 837 veces) y <code>38</code> (814)**</td><td>118.812 → 117.989</td></tr><tr><td><strong>Nulo</strong></td><td>—</td><td><strong>0</strong></td><td>121.628 → 121.628</td></tr></table>
 <p>Las tres predicciones <strong>pasan</strong>. Con las notas sorteadas, inventar una torrecita no paga su nombre.</p>
-<h2>Lo que se vio después (post-hoc: no es prueba todavía)</h2>
+<h2 id="lo-que-se-vio-después-post-hoc-no-es-prueba-todavía">Lo que se vio después (post-hoc: no es prueba todavía)</h2>
 <p><strong>Las dos torrecitas son la misma forma corrida dos palabras.</strong> <code>16</code> mezcla la palabra 1 y deja de hueco la 2; <code>38</code> mezcla la 3 y deja de hueco la 4. La forma es una sola: <em>mezclá una palabra y dejá de hueco la que sigue</em>. Razar no aprendió dos ladrillos sueltos: aprendió un <strong>molde</strong>.</p>
 <p><strong>Y los mejores órganos del paisaje son una familia de esa forma:</strong></p>
 <table><tr><th>Puesto en el paisaje</th><th>Órgano</th><th>Nota</th><th>La forma</th></tr><tr><td>1</td><td><code>516</code></td><td>11.144</td><td>hueco en 1, mezcla 1, hueco en 2</td></tr><tr><td>2</td><td><code>738</code></td><td>8.638</td><td>hueco en 3, mezcla 3, hueco en 4</td></tr><tr><td>7</td><td><code>627</code></td><td>3.400</td><td>hueco en 2, mezcla 2, hueco en 3</td></tr></table>
 <p><strong>La excepción, para que no se infle:</strong> la torrecita con la palabra del medio, <code>27</code>, sola da <strong>−1407</strong>. La forma no gana en cualquier lugar de la ventana.</p>
 <p>Esto se vio <strong>mirando el resultado</strong>. Para que cuente, la predicción tiene que escribirse antes y probarse en otro lado: otro libro, u órganos de 4 letras.</p>
-<h2>Límites</h2>
+<h2 id="límites">Límites</h2>
 <ul><li><strong>Un solo libro</strong> (el Nuevo Testamento) y órganos de <strong>hasta 3 letras</strong>. Los de 4 son 7.380 exámenes (unas 4 horas).</li><li><strong>Aprender no es servir.</strong> Que las torrecitas existan no prueba que ayuden a buscar. Esa es la prueba que falta.</li><li><strong>El segmentador corre en Python</strong>, sobre la lista que escribe Razar. Razar todavía no lo hace solo.</li></ul>
-<h2>Lo siguiente</h2>
+<h2 id="lo-siguiente">Lo siguiente</h2>
 <p><strong>La prueba de verdad:</strong> darle a <code>og_mutate</code> (<code>razar/lectura/pulso.jsm</code>) las torrecitas como ladrillos —a veces mete una letra suelta, a veces una torrecita entera— y medir, <strong>con el mismo presupuesto y varias semillas</strong>, si encuentra mejores órganos o los encuentra antes que mutando de a una letra. El alfabeto no crece: cada torrecita se despliega en las mismas 9 letras, así que la protección de <code>receta-para-la-vida.md</code> queda intacta.</p>
 <p><strong>A qué se parece:</strong> es la idea de <strong>DreamCoder</strong> (Ellis y otros, 2021) —aprender abstracciones comprimiendo las propias soluciones, y usarlas como biblioteca para buscar mejor—. Lo propio: el compresor es el <strong>mismo juez</strong> que lee idiomas y bytes, y las soluciones son órganos que el sistema se inventó.</p>
-<h2>Cómo reproducirlo</h2>
+<h2 id="cómo-reproducirlo">Cómo reproducirlo</h2>
 <pre><code>JANAX_TABLERO=&lt;tablero aparte&gt; bash razar/lectura/organos.sh &lt;carpeta&gt; nuevo-testamento.txt 0 traductor 0 0 3 &gt; paisaje.txt
 python -I razar/jueces/torrecitas.py paisaje.txt</code></pre>
 </body>

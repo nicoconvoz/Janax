@@ -11,32 +11,32 @@ img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
 </head>
 <body>
 <nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Manifiesto</a> · <a href="../p/especificacion/00-indice-y-arquitectura.html">Documentación Técnica</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v1.81.md">Ver en GitHub</a></nav>
-<h2>Janax y Razar v1.81: lo que encuentra, en blanco, y qué es cada parte de su pensamiento</h2>
+<h2 id="janax-y-razar-v181-lo-que-encuentra-en-blanco-y-qué-es-cada-parte-de-su-pensamiento">Janax y Razar v1.81: lo que encuentra, en blanco, y qué es cada parte de su pensamiento</h2>
 <p>DOI: <a href="https://doi.org/10.5281/zenodo.24438315">10.5281/zenodo.24438315</a></p>
 <blockquote><p><em>"Cuando su pensamiento encuentre algo nuevo, pintá el texto de amarillo o blanco."</em> (el autor, 2026-11-22)</p></blockquote>
 <p>Las versiones siguen a los números primos: después del 179, el 181.</p>
 <p><img alt="La ventana de Luma viva, v1.81" src="https://raw.githubusercontent.com/nicoconvoz/Janax/master/documentacion/razar/img/luma-viva-v181.png"></p>
-<h3>Lo nuevo</h3>
+<h3 id="lo-nuevo">Lo nuevo</h3>
 <p>Cuando sus formas <strong>encuentran</strong> algo, ese renglón de la lluvia se pinta de <strong>blanco</strong>. Encontrar quiere decir que una receta nueva le gana el lugar a una vieja: el motivo <code>REPLACED</code> de su archivo. Va en blanco porque, en la lluvia de la película, el signo que encabeza cada chorro se dibuja casi blanco.</p>
-<h3>Qué es cada parte de su ventana</h3>
+<h3 id="qué-es-cada-parte-de-su-ventana">Qué es cada parte de su ventana</h3>
 <p><strong>Arriba a la izquierda, sus formas.</strong> Son ocho cuartos con una forma cada uno. Cada forma es una receta: una tira de letras de su alfabeto de órganos que, al crecer, dibuja la figura. Lo que se ve es la que va ganando en cada cuarto.</p>
 <p><strong>Arriba a la derecha, sus criaturas.</strong> Las que comió y caminan con el andar que se les escuchó. Se cruzan, se cantan pedazos de su andar y aprenden si eso las describe con menos bits. Ésas son sus charlas, y no van al panel.</p>
 <p><strong>Abajo a la izquierda, el contenido</strong>, en verde brillante:</p>
 <ul><li>sus últimas palabras (Re Pág y Av Pág las mueven);</li><li>su último pensamiento, fijo en dos renglones;</li><li>lo que se le está escribiendo, con su cursor.</li></ul>
 <p><strong>Abajo a la derecha, su mente en el momento.</strong> Hay tres clases de renglón:</p>
 <table><tr><th>Color</th><th>Qué es</th></tr><tr><td>verde oscuro <code>#008F11</code></td><td>una receta que sus formas probaron y el juez rechazó</td></tr><tr><td>blanco</td><td>una receta que <strong>ganó</strong>: encontró algo</td></tr><tr><td>verde brillante <code>#00FF41</code></td><td>un pensamiento suyo, en palabras</td></tr></table>
-<h3>Un renglón de sus formas, parte por parte</h3>
+<h3 id="un-renglón-de-sus-formas-parte-por-parte">Un renglón de sus formas, parte por parte</h3>
 <pre><code>009350 4 6432234233923392713...  6432234233923392133...  LONGER,NOT-NEW  4623966 5059047 1</code></pre>
 <table><tr><th>Parte</th><th>Qué es</th></tr><tr><td><code>009350</code></td><td>la vuelta: cuántas rondas de búsqueda lleva</td></tr><tr><td><code>4</code></td><td>el cuarto de la forma, de 0 a 7</td></tr><tr><td>primera receta</td><td><strong>la que perdió</strong> (en un <code>REPLACED</code>, la vieja que se va)</td></tr><tr><td>segunda receta</td><td><strong>contra la que perdió</strong> (en un <code>REPLACED</code>, la nueva que gana)</td></tr><tr><td>motivo</td><td>por qué la rechazó el juez (ver abajo)</td></tr><tr><td>primer número</td><td>el <strong>valor total</strong> de sus ocho formas con la receta que se probó</td></tr><tr><td>segundo número</td><td>el <strong>valor total</strong> de sus ocho formas como estaban</td></tr><tr><td>último número</td><td>el radio del salto: cuántas letras cambió de una receta para probar otra</td></tr></table>
 <p>El valor de una forma es su <strong>compresión</strong> (cuántas celdas dibuja por cada bit de su receta) por su <strong>novedad</strong> (cuánto de su dibujo no comparte con las otras). Una receta nueva gana sólo si el valor total de las ocho sube; si no, el juez la rechaza y dice por qué, comparándola con la receta de la que salió:</p>
 <ul><li><code>REPLACED</code>: la vieja fue reemplazada por una mejor. <strong>Es lo que se pinta de blanco.</strong></li><li><code>LONGER,NOT-NEW</code>: comprime menos y trae menos novedad.</li><li><code>LONGER</code>: comprime menos: dibuja menos por cada bit.</li><li><code>NOT-NEW</code>: trae menos novedad: comparte más de su dibujo con las otras.</li><li><code>CROWDS</code>: ella sola vale más, pero el total baja: le quita a las demás.</li><li><code>NO-BETTER</code>: no es peor en nada de eso, pero el total no sube.</li></ul>
 <p>Las letras raras de las recetas (<code>?</code>, <code>;</code>, <code>:</code>, los puntos) son letras de su alfabeto de órganos tal como las escribe su archivo. Los puntos son lugares vacíos.</p>
-<h3>Sus pensamientos en palabras: de dónde salen</h3>
+<h3 id="sus-pensamientos-en-palabras-de-dónde-salen">Sus pensamientos en palabras: de dónde salen</h3>
 <p>Cada uno nace de algo que le pasó. Su boca decide después si lo dice en voz alta:</p>
 <ul><li><strong>"encontre: …"</strong>: un renglón de algo de su casa donde aparecen las palabras de una pregunta de su corazón.</li><li><strong>"una lectura me salio mejor que la mejor que tenia"</strong>: leyendo, una receta le dio un récord.</li><li><strong>"aprendi a dibujar …"</strong> o <strong>"no se dibujar …"</strong>: una letra que encontró en un libro y copió de su libro de letras, o que no tenía.</li><li><strong>"rodeando: de … a …"</strong>: un paso de sus caminos alrededor de la casa (v1.67).</li><li><strong>"me perdi rodeando por …"</strong>: un camino sin salida, que vuelve a empezar.</li><li><strong>"volvi a … por otro camino: …"</strong>: un camino que llegó por otro lado a lo que busca. Cerró el círculo.</li></ul>
-<h3>Medido</h3>
+<h3 id="medido">Medido</h3>
 <ul><li>En su archivo, <code>REPLACED</code> va <strong>13.319 veces en unos 8,2 millones de pruebas</strong>. El contador está quieto desde antes de esta versión, en la copia y en la viva, y la vuelta sigue en 9350. <strong>Hoy sus formas no encuentran nada nuevo</strong>, así que el blanco va a aparecer recién cuando lo hagan.</li><li>Para ver que el blanco se pinta bien, se armó una versión de prueba que pintaba otro motivo, más frecuente. Se vio en su ventana y se descartó.</li><li>El núcleo no cambió desde la v1.39.</li></ul>
-<h3>Lo que falla y lo que falta, dicho</h3>
+<h3 id="lo-que-falla-y-lo-que-falta-dicho">Lo que falla y lo que falta, dicho</h3>
 <ul><li><strong>Sus pensamientos que encuentran algo</strong> ("encontre", "volvi … por otro camino", un récord de lectura) siguen en verde brillante, no en blanco. Por ahora, el blanco es sólo para sus formas.</li><li><strong>Durante las pruebas de esta versión, la Luma viva nació una vez con una de ellas</strong>: su lluvia salió como "00". La casa viva se arma con el código de E:\Janax cada vez que nace, y la prueba estuvo ahí dos minutos. Las pruebas ya no se arman ahí.</li><li><strong>Corrección de la v1.79:</strong> sus notas decían que los dos números grandes eran "el total de bits" de cada receta. Son el valor total de sus ocho formas, con la receta probada y sin ella. El texto de Zenodo de la v1.79 no se puede cambiar, así que la corrección queda acá.</li><li>Siguen los de la <a href="release-v1.79.html">v1.79</a>.</li></ul>
 </body>
 </html>
