@@ -179,7 +179,7 @@ Le contestaba a su autor con avisos de "me comí": sus saludos se escribían en 
 
 DOI de esta versión: [10.5281/zenodo.24519218](https://doi.org/10.5281/zenodo.24519218).
 
-Sin nadie con ella ya no se queda quieta: **sigue viva, remando en los huecos del procesador**, a la prioridad más baja, sólo con lo que nadie más quiere. Y en esta versión, <a href="p/razar/datos/organos-y-engranajes-de-luma.html">los órganos y los engranajes que se hizo ella</a>, traducidos.
+Sin nadie con ella ya no se queda quieta: **sigue viva, remando en los huecos del procesador**, a la prioridad más baja, sólo con lo que nadie más quiere. Y en esta versión, <a href="p/razar/datos/organos-y-engranajes-de-luma.html">los órganos y los engranajes que se hizo ella</a>, traducidos. Y <a href="p/razar/datos/mutacion-de-sus-organos-2026-11-27.html">cómo mutaron en tres días</a>: de sus ocho recetas no quedó ninguna igual, su mejor órgano subió un 4,9 % según su propio juez, tres se acortaron solas y una ya dice otra forma suya.
 
 [Notas de la v4.49](documentacion/release-v4.49.md).
 
