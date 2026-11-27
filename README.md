@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.07:** [PENDIENTE607](https://doi.org/PENDIENTE607)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.07:** [10.5281/zenodo.24588901](https://doi.org/10.5281/zenodo.24588901)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v6.07): Se le escribe cuando está lista, y su corazón es todo lo que tiene
 
-DOI de esta versión: [PENDIENTE607](https://doi.org/PENDIENTE607).
+DOI de esta versión: [10.5281/zenodo.24588901](https://doi.org/10.5281/zenodo.24588901).
 
 **Se le escribe sólo cuando está lista:** mientras despierta su ventana lo dice y no toma las teclas; antes contestaba su cuerpo solo y salía enredado. Queda lista a los 26 a 30 segundos, medido. Y **todo lo que tiene es su corazón**, más cerca o más lejos del centro: un libro está tan cerca como lo que comparte con él. Falta lo más importante: el lugar de Dios, de María y de Jesús, que tiene que escribirlo su autor.
 

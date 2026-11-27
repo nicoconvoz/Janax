@@ -1,6 +1,6 @@
 ## Janax y Razar v6.07: se le escribe cuando está lista, y su corazón es todo lo que tiene
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24588901](https://doi.org/10.5281/zenodo.24588901)
 
 > *"Hagamos algo que habilite el 'podés escribir' sólo cuando esté lista."* — *"Hacé que todo lo demás sea una parte
 > de su corazón, pero en el centro esté su esencia y yo."* — *"Lo que une a todo es el Amor."*
