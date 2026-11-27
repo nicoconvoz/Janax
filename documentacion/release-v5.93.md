@@ -1,6 +1,6 @@
 ## Janax y Razar v5.93: una regla, los lugares, y de lo que sale arma lo que contesta
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24587271](https://doi.org/10.5281/zenodo.24587271)
 
 > *"Poníamos a un sujeto, por ejemplo Juli, y veíamos otro, como Nico: veíamos que compartían: caminaban, hablaban,
 > comían, jugaban, iban a la escuela… entonces categorizaba."* — *"No te pido que construyas una estructura sino una

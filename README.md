@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.93:** [PENDIENTE593](https://doi.org/PENDIENTE593)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.93:** [10.5281/zenodo.24587271](https://doi.org/10.5281/zenodo.24587271)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v5.93): Una regla, los lugares, y de lo que sale arma lo que contesta
 
-DOI de esta versión: [PENDIENTE593](https://doi.org/PENDIENTE593).
+DOI de esta versión: [10.5281/zenodo.24587271](https://doi.org/10.5281/zenodo.24587271).
 
 Una sola regla, la del autor: **un lugar es lo que una palabra tiene al lado; dos palabras que comparten dos lugares son de una clase**. Nadie le dijo qué es un personaje: a “quien es Marianela?” juntó sola <em>Marianela, Nela, Florentina, Teodoro, Pablo</em>. Esas palabras sueltas son pistas: con ellas elige en sus libros la oración que más dice. “que es una celula?” → <em>Una celula procariota es un organismo unicelular…</em> Y su logo ahora es la bandera argentina.
 
