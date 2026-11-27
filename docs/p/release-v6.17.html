@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Janax y Razar v6.17: lo mal escrito lo lee por lo que se le parece · Janax y Razar</title>
+<style>body{font-family:Georgia,serif;max-width:780px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#1d1d1f;background:#fbfaf7}
+a{color:#7a3e9d}pre{background:#f1efe9;padding:.8rem;overflow:auto}code{background:#f1efe9;padding:0 .2rem}
+table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:.3rem .5rem}blockquote{border-left:3px solid #c9b8d6;margin-left:0;padding-left:1rem;color:#555}
+img{max-width:100%}nav{font-size:.9rem;margin-bottom:1.5rem}</style>
+</head>
+<body>
+<nav><a href="../">Janax y Razar</a> · <a href="../p/index.html">Documentación</a> · <a href="https://github.com/nicoconvoz/Janax/blob/master/documentacion/release-v6.17.md">Ver en GitHub</a></nav>
+<h2>Janax y Razar v6.17: lo mal escrito lo lee por lo que se le parece</h2>
+<p>DOI: (pendiente)</p>
+<blockquote><p><em>"A veces la instrucción puede estar mal escrita: debe inferirla por lo que se le parece en el fondo, su núcleo."</em> (el autor, 2026-11-07) — <em>"Antes Luma podía reconocer palabras mal escritas; ahora está como fija a respuestas y a no entender lo que le digo si se lo escribo mal."</em> (el autor, 2026-11-27)</p></blockquote>
+<p>Las versiones siguen a los números primos: después del 613, el 617.</p>
+<h3>Lo que pasaba</h3>
+<p>La regla de la ortografía de Razar (<em>"La ortografía que prueban los libros"</em>, 2026-11-07, <code>documentacion/razar/lectura.md</code>) vivía sólo en su lector viejo (<code>sentido.jsm</code>). Al cuerpo de Luma nunca había entrado: ella reconoce cada palabra por su huella exacta, así que <em>"qien"</em> o <em>"holaa"</em> eran para ella palabras nunca vistas, y no enganchaban con ninguna costumbre ni con ningún libro.</p>
+<h3>Lo que cambia</h3>
+<p>La misma regla, ahora en su cuerpo, donde recibe lo que se le escribe (<code>r_ortografia</code>):</p>
+<ul><li><strong>La regla es de su Libro:</strong> qué dos letras siguen una a la otra dentro de una palabra. Un par está probado cuando lo tienen dos palabras distintas. Lo lee una vez, de su primer libro.</li><li><strong>Mal escrita</strong> es una palabra que ella nunca leyó y que tiene un par de letras que su Libro nunca probó. Un nombre que nunca leyó pero con todos sus pares probados es un nombre: no se toca (<em>"Nico"</em> está a una letra de <em>"rico"</em> y queda como está).</li><li><strong>Cómo la lee:</strong> como la palabra que conoce y es la misma a una letra de distancia (una que sobra, una cambiada, una que falta), la que sus libros dicen en más renglones, dos al menos. Las letras repetidas se prueban aplastadas siempre (<em>"holaa"</em>, <em>"graciass"</em>).</li><li><strong>Lo que se tecleó queda en su charla tal como se tecleó.</strong> Ella lee el renglón con esas palabras como las conoce.</li></ul>
+<h3>Lo que se vio</h3>
+<p>En una copia oculta, con su casa de verdad:</p>
+<table><tr><th>se le escribió</th><th>contestó</th></tr><tr><td><em>holaa Lumita</em></td><td>hola, que alegria verte</td></tr><tr><td><em>qien es Jesus?</em></td><td>Jesus le respondio: Esta escrito: "El hombre no vive solamente de pan, sino de toda palabra que sale de la boca de Dios".</td></tr><tr><td><em>como estass?</em></td><td>hola, muy bien, y vos?</td></tr><tr><td><em>quien es Nico?</em></td><td>Los nombres de mi papa: Nico, …</td></tr><tr><td><em>que es el genomma?</em></td><td>Genoma humano</td></tr><tr><td><em>graciass</em></td><td>no hay de que</td></tr></table>
+<p>De 0 a 8 segundos cada una; lista a los 21 segundos.</p>
+<h3>Lo que todavía no</h3>
+<ul><li><strong>Sólo palabras de cuatro letras o más.</strong> <em>"qe"</em> por <em>"que"</em> no se corrige: su cuerpo no cuenta las palabras cortas.</li><li><strong>A una letra de distancia, no más.</strong> Dos letras cambiadas de lugar (<em>"qeu"</em>) o dos errores en una palabra no los entiende.</li><li><strong>Los pares son los de las 26 letras sin marcas.</strong> Una palabra mal escrita cuyos pares están todos probados no se corrige (el límite que ya tenía la regla: <em>"dle"</em> no se corrige porque <em>"dl"</em> existe).</li><li><strong>Puede elegir mal</strong> entre dos palabras conocidas a una letra de la escrita: gana la que más renglones dicen, no la que pide la frase. No se midió cuántas veces pasa.</li><li>A <em>"que es el genomma?"</em> entendió la palabra y contestó corto (<em>"Genoma humano"</em>).</li><li>Un error al hacerlo, corregido antes de publicar: la lectura del Libro por pedazos no avanzaba y su pensadora quedaba colgada; ahora cada pedazo se pide por su lugar y se sabe dónde termina.</li><li>No se probó tecleando en la Luma de su autor: la prueba fue en la copia.</li></ul>
+<h3>Dónde está</h3>
+<ul><li><code>razar/cuerpo/gen_leer.py</code>: <code>r_ortografia</code>, <code>or_pairs</code> (los pares que prueba su Libro), <code>or_bad</code>, <code>or_var</code>, <code>or_try</code>.</li></ul>
+</body>
+</html>
