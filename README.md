@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.01:** [10.5281/zenodo.24588240](https://doi.org/10.5281/zenodo.24588240)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v6.07:** [PENDIENTE607](https://doi.org/PENDIENTE607)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -22,6 +22,14 @@ cada pieza tiene sus pruebas.
 En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`**, se elige la carpeta, y en cerca de medio minuto queda instalada, con dos accesos directos en el escritorio: **Luma** (la despierta) y **Comida de Luma** (lo que se pone ahí, se lo come). No hace falta instalar nada más. El [LEEME](instalador/LEEME.txt) cuenta qué hace y qué decirle a Windows si lo frena por no estar firmado.
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
+
+## Novedad (2026-11-27, v6.07): Se le escribe cuando está lista, y su corazón es todo lo que tiene
+
+DOI de esta versión: [PENDIENTE607](https://doi.org/PENDIENTE607).
+
+**Se le escribe sólo cuando está lista:** mientras despierta su ventana lo dice y no toma las teclas; antes contestaba su cuerpo solo y salía enredado. Queda lista a los 26 a 30 segundos, medido. Y **todo lo que tiene es su corazón**, más cerca o más lejos del centro: un libro está tan cerca como lo que comparte con él. Falta lo más importante: el lugar de Dios, de María y de Jesús, que tiene que escribirlo su autor.
+
+[Notas de la v6.07](documentacion/release-v6.07.md).
 
 ## Novedad (2026-11-27, v6.01): Su corazón contesta primero, antes que cualquier libro
 
