@@ -1,6 +1,6 @@
 ## Janax y Razar v5.87: lo que sus costumbres no cubren, lo contesta con lo que dicen sus libros
 
-DOI: (pendiente)
+DOI: [10.5281/zenodo.24585916](https://doi.org/10.5281/zenodo.24585916)
 
 > *"Si está comiendo Una vida entera debe saber quién es Juli. Y si no está en el libro de costumbres tiene que buscar
 > los ejemplos de los libros."* — *"Buscá los ejemplos donde sale Juli, y da una respuesta coherente a la pregunta."*

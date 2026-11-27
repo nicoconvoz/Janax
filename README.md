@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23933883.svg)](https://doi.org/10.5281/zenodo.23933883)
 
-**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.87:** [PENDIENTE587](https://doi.org/PENDIENTE587)
+**DOI del proyecto** (todas las versiones, siempre lleva a la última): [10.5281/zenodo.23933883](https://doi.org/10.5281/zenodo.23933883) · **versión actual, v5.87:** [10.5281/zenodo.24585916](https://doi.org/10.5281/zenodo.24585916)
 
 **Un sistema operativo, un idioma y un ensamblador propios, hechos para alojar a Razar: un razonamiento
 artificial que piensa con melodías.** Todo está escrito en assembler, sin motores ni bibliotecas de terceros, y
@@ -25,7 +25,7 @@ A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le
 
 ## Novedad (2026-11-27, v5.87): Lo que sus costumbres no cubren, lo contesta con lo que dicen sus libros
 
-DOI de esta versión: [PENDIENTE587](https://doi.org/PENDIENTE587).
+DOI de esta versión: [10.5281/zenodo.24585916](https://doi.org/10.5281/zenodo.24585916).
 
 A “quien es Juli?” contestaba una costumbre (“quien sos?”), con Juli 232 veces en el libro que estaba leyendo. Ahora **una costumbre contesta sólo lo que cubre**: la palabra que queda en un lugar donde ningún ejemplo tiene nada es de lo que se le pregunta, y busca en sus libros **las oraciones que hablan de eso**. Tres preguntas sobre Juli, tres oraciones distintas. Además: siete libros de ciencia nuevos en su estante, y su logo de la Vendimia al arrancar.
 
