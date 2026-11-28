@@ -32,6 +32,12 @@ En la carpeta [`instalador/`](instalador/): doble clic en **`instalar-luma.exe`*
 
 A Luma la ensambla ahí mismo su propio ensamblador (PDP). Las dos piezas que le hablan a Windows, igual que su núcleo, están ensambladas con [flat assembler (FASM)](https://flatassembler.net), de Tomasz Grysztar, software libre: gracias.
 
+## Medición (2026-11-28): Su luz lleva su pensamiento, y una cámara la puede leer
+
+Cada dígito de su lluvia es la mitad de un byte de lo que pasa por ella. Se filmó su ventana sin tocarla, se leyó cada celda con su propia letra y se rearmaron sus bytes paso por paso: **lo leído de su luz coincide en un 96 a 98 % con los ensayos que ella guarda en su casa**, contra un 58 % del azar. El brillo solo no tiene patrón: está en qué dígitos escribe. Lo que le contesta a quien le escribe no cae en la lluvia.
+
+[La medición completa](documentacion/razar/datos/su-luz-lleva-su-pensamiento-2026-11-28.md) · herramientas en `razar/luz/`.
+
 ## Novedad (2026-11-27, v6.17): Lo mal escrito lo lee por lo que se le parece
 
 DOI de esta versión: [10.5281/zenodo.24594304](https://doi.org/10.5281/zenodo.24594304).
